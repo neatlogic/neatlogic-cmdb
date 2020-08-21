@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.cmdb.dao.mapper.ci.AttrMapper">
+	<cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
+
+
+	<select id="getAttrById" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.AttrVo" useCache="true">
+		SELECT
+		`id`,
+		`ci_id` AS ciId,
+		`type`,
+		`expression`,
+		`prop_id` AS propId,
+		`name`,
+		`label`,
+		`description`,
+		`validator`,
+		(SELECT name FROM cmdb_validator x WHERE x.id = validator) AS validatorName,
+		`is_required` AS isRequired,
+		`is_unique` AS isUnique,
+		`input_type` AS inputType,
+		`group_name` AS groupName,
+		`is_private` AS isPrivate
+		FROM
+		`cmdb_attr`
+		WHERE
+		id = #{value}
+	</select>
+
+	<select id="getAttrByCiId" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.AttrVo" useCache="true">
+		SELECT
+		`id`,
+		`ci_id` AS ciId,
+		`type`,
+		`prop_id` AS propId,
+		`expression`,
+		`name`,
+		`label`,
+		`description`,
+		`validator`,
+		(SELECT name FROM cmdb_validator x WHERE x.id = validator) AS validatorName,
+		`valid_config` AS validConfig,
+		`is_required` AS isRequired,
+		`is_unique` AS isUnique,
+		`input_type` AS inputType,
+		`group_name` AS groupName,
+		`is_private` AS isPrivate
+		FROM
+		`cmdb_attr`
+		WHERE
+		ci_id = #{ciId}
+		ORDER BY id
+	</select>
+
+	<update id="updateAttr" parameterType="codedriver.module.cmdb.dto.ci.AttrVo">
+		UPDATE
+		`cmdb_attr`
+		SET
+		`type` = #{type},
+		`prop_id` = #{propId},
+		`expression` = #{expression},
+		`name` = #{name},
+		`label` = #{label},
+		`description` = #{description},
+		`validator` = #{validator},
+		`valid_config` = #{validConfigStr},
+		`is_required` = #{isRequired},
+		`is_unique` = #{isUnique},
+		`input_type` = #{inputType},
+		`group_name` = #{groupName}
+		WHERE
+		id = #{id}
+	</update>
+
+	<insert id="insertAttr" parameterType="codedriver.module.cmdb.dto.ci.AttrVo">
+		INSERT INTO `cmdb_attr` (
+		`id`,
+		`ci_id`,
+		`type`,
+		`prop_id`,
+		`expression`,
+		`name`,
+		`label`,
+		`description`,
+		`validator`,
+		`valid_config`,
+		`is_required`,
+		`is_unique`,
+		`input_type`,
+		`group_name`,
+		`is_private`
+		)
+		VALUES
+		(
+		#{id},
+		#{ciId},
+		#{type},
+		#{propId},
+		#{expression},
+		#{name},
+		#{label},
+		#{description},
+		#{validator},
+		#{validConfigStr},
+		#{isRequired},
+		#{isUnique},
+		#{inputType},
+		#{groupName},
+		#{isPrivate}
+		)
+	</insert>
+
+	<delete id="deleteAttrById" parameterType="java.lang.Long">
+		DELETE FROM `cmdb_attr`
+		WHERE id = #{value}
+	</delete>
+
+	<delete id="deleteAttrByCiId" parameterType="java.lang.Long">
+		DELETE
+		FROM
+		`cmdb_attr`
+		WHERE ci_id = #{value}
+	</delete>
+
+</mapper>

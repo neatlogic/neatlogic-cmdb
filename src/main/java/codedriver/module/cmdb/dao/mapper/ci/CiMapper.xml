@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.cmdb.dao.mapper.ci.CiMapper">
+	<cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
+
+	<select id="checkCiNameIsExists" parameterType="codedriver.module.cmdb.dto.ci.CiVo" resultType="int">
+		SELECT COUNT(1) FROM cmdb_ci WHERE name = #{name} AND id != #{id}
+	</select>
+
+	<select id="checkCiLabelIsExists" parameterType="codedriver.module.cmdb.dto.ci.CiVo" resultType="int">
+		SELECT COUNT(1) FROM cmdb_ci WHERE label = #{label} AND id != #{id}
+	</select>
+
+	<resultMap id="ciTypeMap" type="codedriver.module.cmdb.dto.ci.CiTypeVo">
+		<result column="ciTypeId" property="id" />
+		<result column="ciTypeName" property="name" />
+		<result column="ciTypeIsMenu" property="isMenu" />
+		<collection property="ciList" ofType="codedriver.module.cmdb.dto.ci.CiVo">
+			<id column="id" property="id" />
+			<result column="name" property="name" />
+			<result column="label" property="label" />
+			<result column="description" property="description" />
+			<result column="icon" property="icon" />
+			<result column="ciIsMenu" property="isMenu" />
+			<result column="typeId" property="typeId" />
+		</collection>
+	</resultMap>
+
+	<select id="searchCiTypeCi" parameterType="codedriver.module.cmdb.dto.ci.CiVo" resultMap="ciTypeMap" useCache="false">
+		SELECT
+		b.`id`,
+		b.`name`,
+		b.`label`,
+		b.`description`,
+		b.`icon`,
+		b.`is_private` AS isPrivate,
+		b.`is_menu` AS ciIsMenu,
+		b.`type_id` AS typeId,
+		a.`id` AS ciTypeId,
+		a.`name` AS ciTypeName,
+		a.`is_menu` AS ciTypeIsMenu
+		FROM
+		`cmdb_citype` a LEFT JOIN `cmdb_ci` b ON a.id = b.type_id
+		<where>
+			<if test="keyword != null and keyword !=''">
+				AND (b.name LIKE CONCAT('%', #{keyword}, '%') OR b.label LIKE CONCAT('%', #{keyword}, '%'))
+			</if>
+			<if test="typeId != null">
+				AND a.id = #{typeId}
+			</if>
+		</where>
+	</select>
+
+	<select id="getCiById" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.CiVo" useCache="false">
+		SELECT
+		`id`,
+		`name`,
+		`label`,
+		`description`,
+		`icon`,
+		`type_id` AS typeId,
+		`is_private` AS isPrivate,
+		`is_menu` AS isMenu
+		FROM
+		`cmdb_ci`
+		WHERE id= #{value}
+	</select>
+
+	<update id="updateCi" parameterType="codedriver.module.cmdb.dto.ci.CiVo">
+		UPDATE
+		`cmdb_ci`
+		SET
+		`name` = #{name},
+		`label` = #{label},
+		`description` = #{description},
+		`icon` = #{icon},
+		`type_id` = #{typeId},
+		`is_private` = #{isPrivate},
+		`is_menu` = #{isMenu}
+		WHERE `id` = #{id}
+	</update>
+
+	<insert id="insertCi" parameterType="codedriver.module.cmdb.dto.ci.CiVo">
+		INSERT INTO `cmdb_ci` (
+		`id`,
+		`name`,
+		`label`,
+		`description`,
+		`icon`,
+		`type_id`,
+		`is_private`,
+		`is_menu`
+		)
+		VALUES
+		(
+		#{id},
+		#{name},
+		#{label},
+		#{description},
+		#{icon},
+		#{typeId},
+		#{isPrivate},
+		#{isMenu}
+		)
+	</insert>
+
+
+</mapper>

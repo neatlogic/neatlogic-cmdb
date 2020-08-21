@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.cmdb.dao.mapper.prop.PropMapper">
+	<cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
+
+	<select id="checkPropIsInUsed" parameterType="codedriver.module.cmdb.dto.prop.PropVo" resultType="int" useCache="false">
+		SELECT COUNT(1) FROM (
+		SELECT id FROM `cmdb_attr` WHERE prop_id = #{value} LIMIT 1
+		)t
+	</select>
+
+	<select id="checkPropNameIsExists" parameterType="codedriver.module.cmdb.dto.prop.PropVo" resultType="int" useCache="false">
+		SELECT COUNT(1) FROM (
+		SELECT id FROM `cmdb_prop`
+		WHERE
+		name = #{name} AND id != #{id} LIMIT 1
+		) t
+	</select>
+
+	<select id="checkPropLabelIsExists" parameterType="codedriver.module.cmdb.dto.prop.PropVo" resultType="int" useCache="false">
+		SELECT COUNT(1) FROM (
+		SELECT id FROM `cmdb_prop`
+		WHERE
+		label = #{label} AND id != #{id} LIMIT 1
+		) t
+	</select>
+
+	<select id="getPropById" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.prop.PropVo" useCache="true">
+		SELECT
+		`id`,
+		`name`,
+		`label`,
+		`description`,
+		`handler`,
+		`config`
+		FROM
+		`cmdb_prop`
+		WHERE
+		id = #{value}
+	</select>
+
+	<sql id="searchPropCondition">
+		<where>
+			<if test="keyword != null and keyword != ''">
+				AND (name LIKE CONCAT('%',#{keyword},'%')
+				OR label LIKE CONCAT('%', #{keyword}, '%')
+				)
+			</if>
+			<if test="handler != null and handler != ''">
+				AND handler = #{handler}
+			</if>
+		</where>
+	</sql>
+
+	<select id="searchProp" parameterType="codedriver.module.cmdb.dto.prop.PropVo" resultType="codedriver.module.cmdb.dto.prop.PropVo" useCache="false">
+		SELECT
+		`id`,
+		`name`,
+		`label`,
+		`description`,
+		`handler`,
+		(select count(1) FROM cmdb_attr ca WHERE ca.prop_id = a.id) AS invokeCount
+		FROM
+		`cmdb_prop` a
+		<include refid="searchPropCondition"></include>
+		<if test="needPage == true">
+			LIMIT #{startNum}, #{pageSize}
+		</if>
+	</select>
+
+	<select id="searchPropCount" parameterType="codedriver.module.cmdb.dto.prop.PropVo" resultType="int" useCache="false">
+		SELECT
+		count(1)
+		FROM
+		`cmdb_prop`
+		<include refid="searchPropCondition"></include>
+	</select>
+
+	<insert id="insertProp" parameterType="codedriver.module.cmdb.dto.prop.PropVo">
+		INSERT INTO `cmdb_prop` (
+		`id`,
+		`name`,
+		`label`,
+		`description`,
+		`handler`,
+		`config`
+		)
+		VALUES
+		(
+		#{id},
+		#{name},
+		#{label},
+		#{description},
+		#{handler},
+		#{configStr}
+		)
+	</insert>
+
+	<update id="updateProp" parameterType="codedriver.module.cmdb.dto.prop.PropVo">
+		UPDATE
+		`cmdb_prop`
+		SET
+		`label` = #{label},
+		`description` = #{description},
+		`handler` = #{handler},
+		`config` = #{configStr}
+		WHERE `id` = #{id}
+	</update>
+
+	<delete id="deletePropById" parameterType="java.lang.Long">
+		DELETE
+		FROM
+		`cmdb_prop`
+		WHERE `id` = #{value}
+	</delete>
+</mapper>

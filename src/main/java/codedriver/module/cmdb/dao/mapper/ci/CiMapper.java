@@ -1,0 +1,27 @@
+package codedriver.module.cmdb.dao.mapper.ci;
+
+import java.util.List;
+
+import codedriver.module.cmdb.dto.ci.CiTypeVo;
+import codedriver.module.cmdb.dto.ci.CiVo;
+
+/**
+ * 
+ * @Author:chenqiwei
+ * @Time:Aug 15, 2020
+ * @ClassName: CiMapper
+ * @Description: TODO
+ */
+public interface CiMapper {
+    public int checkCiNameIsExists(CiVo ciVo);
+
+    public int checkCiLabelIsExists(CiVo ciVo);
+
+    public List<CiTypeVo> searchCiTypeCi(CiVo ciVo);
+
+    public CiVo getCiById(Long ciId);
+
+    public int updateCi(CiVo ciVo);
+
+    public int insertCi(CiVo ciVo);
+}

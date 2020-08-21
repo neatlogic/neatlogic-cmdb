@@ -1,0 +1,92 @@
+package codedriver.module.cmdb.api.ci;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.alibaba.fastjson.JSONObject;
+
+import codedriver.framework.cmdb.constvalue.AttrType;
+import codedriver.framework.cmdb.constvalue.InputType;
+import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.reminder.core.OperationTypeEnum;
+import codedriver.framework.restful.annotation.Description;
+import codedriver.framework.restful.annotation.Input;
+import codedriver.framework.restful.annotation.OperationType;
+import codedriver.framework.restful.annotation.Output;
+import codedriver.framework.restful.annotation.Param;
+import codedriver.framework.restful.core.ApiComponentBase;
+import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
+import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
+import codedriver.module.cmdb.dto.ci.AttrVo;
+import codedriver.module.cmdb.dto.ci.CiVo;
+import codedriver.module.cmdb.exception.ci.CiLabelIsExistsException;
+import codedriver.module.cmdb.exception.ci.CiNameIsExistsException;
+
+@Service
+@OperationType(type = OperationTypeEnum.CREATE)
+@Transactional
+public class SaveCiApi extends ApiComponentBase {
+
+    @Autowired
+    private CiMapper ciMapper;
+    @Autowired
+    private AttrMapper attrMapper;
+
+    @Override
+    public String getToken() {
+        return "/cmdb/ci/save";
+    }
+
+    @Override
+    public String getName() {
+        return "保存模型";
+    }
+
+    @Override
+    public String getConfig() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "id，不提供代表新增模型"),
+        @Param(name = "name", type = ApiParamType.STRING, xss = true, isRequired = true, maxLength = 50, desc = "英文名称"),
+        @Param(name = "label", type = ApiParamType.STRING, desc = "中文名称", xss = true, maxLength = 100,
+            isRequired = true),
+        @Param(name = "description", type = ApiParamType.STRING, desc = "备注", maxLength = 500, xss = true),
+        @Param(name = "icon", type = ApiParamType.STRING, desc = "图标"),
+        @Param(name = "typeId", type = ApiParamType.LONG, desc = "类型id", isRequired = true),
+        @Param(name = "isMenu", type = ApiParamType.INTEGER, desc = "是否在菜单显示")})
+    @Output({@Param(name = "id", type = ApiParamType.STRING, desc = "模型id")})
+    @Description(desc = "保存模型接口")
+    @Override
+    public Object myDoService(JSONObject jsonObj) throws Exception {
+        CiVo ciVo = JSONObject.toJavaObject(jsonObj, CiVo.class);
+        if (ciMapper.checkCiNameIsExists(ciVo) > 0) {
+            throw new CiNameIsExistsException(ciVo.getName());
+        }
+        if (ciMapper.checkCiLabelIsExists(ciVo) > 0) {
+            throw new CiLabelIsExistsException(ciVo.getLabel());
+        }
+        Long ciId = jsonObj.getLong("id");
+        if (ciId == null) {
+            ciMapper.insertCi(ciVo);
+            // 新增模型必须要添加一个name属性
+            AttrVo attrVo = new AttrVo();
+            attrVo.setName("name");
+            attrVo.setLabel("名称");
+            attrVo.setType(AttrType.CUSTOM.getValue());
+            attrVo.setIsRequired(1);
+            attrVo.setIsUnique(1);
+            attrVo.setInputType(InputType.MT.getValue());
+            // 私有属性，不允许用户删除
+            attrVo.setIsPrivate(1);
+            attrVo.setCiId(ciVo.getId());
+            attrMapper.insertAttr(attrVo);
+        } else {
+            ciMapper.updateCi(ciVo);
+        }
+        return ciVo.getId();
+    }
+
+}
