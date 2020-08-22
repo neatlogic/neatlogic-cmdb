@@ -2,9 +2,37 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.ci.RelMapper">
 	<cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
+	<select id="checkRelGroupNameIsExists" parameterType="codedriver.module.cmdb.dto.ci.RelGroupVo" resultType="int">
+		SELECT
+		COUNT(1)
+		FROM
+		`cmdb_relgroup`
+		WHERE ci_id = #{ciId} AND name = #{name}
+	</select>
 
-	<select id="checkRelByFromToName" resultType="int">
-		SELECT COUNT(1) FROM cmdb_rel WHERE from_name = #{fromName} AND to_name = #{toName}
+	<select id="getRelGroupByCiId" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.RelGroupVo" useCache="false">
+		SELECT
+		`id`,
+		`ci_id` AS ciId,
+		`name`
+		FROM
+		`cmdb_relgroup`
+		WHERE ci_id = #{value}
+		ORDER BY id
+	</select>
+
+	<select id="getRelGroupById" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.RelGroupVo" useCache="false">
+		SELECT
+		`id`,
+		`ci_id` AS ciId,
+		`name`
+		FROM
+		`cmdb_relgroup`
+		WHERE id = #{value}
+	</select>
+
+	<select id="checkRelByFromToName" parameterType="codedriver.module.cmdb.dto.ci.RelVo" resultType="int">
+		SELECT COUNT(1) FROM cmdb_rel WHERE from_name = #{fromName} AND to_name = #{toName} AND id != #{id}
 	</select>
 
 	<select id="getRelById" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.RelVo" useCache="false">
@@ -122,6 +150,20 @@
 		`to_group_id` = #{toGroupId}
 		WHERE `id` = #{id}
 	</update>
+
+	<update id="updateRelGroup" parameterType="codedriver.module.cmdb.dto.ci.RelGroupVo">
+		UPDATE
+		`cmdb_relgroup`
+		SET
+		`name` = #{name}
+		WHERE `id` = #{id}
+	</update>
+
+	<insert id="insertRelGroup" parameterType="codedriver.module.cmdb.dto.ci.RelGroupVo">
+		INSERT INTO `cmdb_relgroup` (`id`, `ci_id`, `name`)
+		VALUES
+		(#{id}, #{ciId}, #{name})
+	</insert>
 
 	<insert id="insertRel" parameterType="codedriver.module.cmdb.dto.ci.RelVo">
 		INSERT INTO `cmdb_rel` (

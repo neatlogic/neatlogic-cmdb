@@ -10,25 +10,27 @@ import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
+import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.ApiComponentBase;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
+import codedriver.module.cmdb.dto.ci.RelGroupVo;
 
 @Service
-@OperationType(type = OperationTypeEnum.DELETE)
-public class DeleteRelApi extends ApiComponentBase {
+@OperationType(type = OperationTypeEnum.SEARCH)
+public class GetCiRelGroupListApi extends ApiComponentBase {
 
     @Autowired
     private RelMapper relMapper;
 
     @Override
     public String getToken() {
-        return "/cmdb/rel/delete";
+        return "/cmdb/relgroup/get";
     }
 
     @Override
     public String getName() {
-        return "删除模型关系";
+        return "获取模型关系分组信息";
     }
 
     @Override
@@ -36,13 +38,11 @@ public class DeleteRelApi extends ApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "关系id")})
-    @Description(desc = "删除模型关系接口")
+    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "id")})
+    @Output({@Param(explode = RelGroupVo.class)})
+    @Description(desc = "获取模型关系分组信息接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        Long relId = jsonObj.getLong("id");
-        relMapper.deleteRelById(relId);
-        return null;
+        return relMapper.getRelGroupById(jsonObj.getLong("id"));
     }
-
 }
