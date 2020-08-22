@@ -2,6 +2,7 @@ package codedriver.module.cmdb.dto.ci;
 
 import java.io.Serializable;
 
+import codedriver.framework.cmdb.constvalue.InputType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.SnowflakeUtil;
@@ -19,7 +20,7 @@ public class RelVo implements Serializable {
     @EntityField(name = "关系名称", type = ApiParamType.STRING)
     private String name;
     @EntityField(name = "数据录入方式", type = ApiParamType.STRING)
-    private String inputType;
+    private String inputType = InputType.MT.getValue();
 
     @EntityField(name = "来源端模型id", type = ApiParamType.LONG)
     private Long fromCiId;
