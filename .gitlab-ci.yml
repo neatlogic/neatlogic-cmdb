@@ -1,0 +1,17 @@
+# see https://docs.gitlab.com/ce/ci/yaml/README.html for all available options
+
+build1:
+  stage: build
+  only:
+    - /^develop.*$/
+    - /^release.*$/
+  script:
+    - echo "git clone success!"
+
+deploy1:
+  stage: deploy
+  only:
+    - /^develop.*$/
+    - /^release.*$/
+  script:
+    - mvn deploy -e --settings /home/gitlab-runner/.m2/settings.xml
