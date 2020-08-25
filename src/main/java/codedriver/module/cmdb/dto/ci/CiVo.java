@@ -42,6 +42,8 @@ public class CiVo implements Serializable {
     private List<AttrVo> attrList;
     @EntityField(name = "关系定义列表", type = ApiParamType.JSONARRAY)
     private List<RelVo> relList;
+    @EntityField(name = "授权列表", type = ApiParamType.JSONARRAY)
+    private List<CiAuthVo> authList;
 
     public Long getId() {
         if (id == null) {
@@ -141,4 +143,13 @@ public class CiVo implements Serializable {
     public void setDescription(String description) {
         this.description = description;
     }
+
+    public List<CiAuthVo> getAuthList() {
+        return authList;
+    }
+
+    public void setAuthList(List<CiAuthVo> authList) {
+        this.authList = authList;
+    }
+
 }

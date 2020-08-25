@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.fastjson.JSONObject;
 
+import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.cmdb.constvalue.AttrType;
 import codedriver.framework.cmdb.constvalue.InputType;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -20,6 +21,7 @@ import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dto.ci.AttrVo;
 import codedriver.module.cmdb.dto.ci.CiVo;
+import codedriver.module.cmdb.exception.ci.CiAuthException;
 import codedriver.module.cmdb.exception.ci.CiLabelIsExistsException;
 import codedriver.module.cmdb.exception.ci.CiNameIsExistsException;
 
@@ -61,6 +63,7 @@ public class SaveCiApi extends ApiComponentBase {
     @Description(desc = "保存模型接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
+        boolean hasAuth = AuthActionChecker.check("CI_MODIFY");
         CiVo ciVo = JSONObject.toJavaObject(jsonObj, CiVo.class);
         if (ciMapper.checkCiNameIsExists(ciVo) > 0) {
             throw new CiNameIsExistsException(ciVo.getName());
@@ -70,6 +73,10 @@ public class SaveCiApi extends ApiComponentBase {
         }
         Long ciId = jsonObj.getLong("id");
         if (ciId == null) {
+            if (!hasAuth) {
+                // 添加模型需要管理员权限
+                throw new CiAuthException();
+            }
             ciMapper.insertCi(ciVo);
             // 新增模型必须要添加一个name属性
             AttrVo attrVo = new AttrVo();
@@ -84,6 +91,10 @@ public class SaveCiApi extends ApiComponentBase {
             attrVo.setCiId(ciVo.getId());
             attrMapper.insertAttr(attrVo);
         } else {
+            // 编辑模型除了管理员权限还要看具体的模型授权
+            if (!hasAuth) {
+
+            }
             ciMapper.updateCi(ciVo);
         }
         return ciVo.getId();

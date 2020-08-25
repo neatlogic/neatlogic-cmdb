@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.cmdb.dao.mapper.ci.CiAuthMapper">
+
+	<select id="getCiAuthByCiId" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.CiAuthVo">
+		SELECT
+		`ci_id` AS ciId,
+		`auth_type` AS authType,
+		`action`,
+		`auth_uuid` AS authUuid
+		FROM
+		`cmdb_ci_auth`
+		WHERE
+		ci_id = #{value}
+	</select>
+
+	<insert id="insertCiAuth" parameterType="codedriver.module.cmdb.dto.ci.CiAuthVo">
+		INSERT INTO `cmdb_ci_auth` (
+		`ci_id`,
+		`auth_type`,
+		`action`,
+		`auth_uuid`
+		)
+		VALUES
+		(
+		#{ciId},
+		#{authType},
+		#{action},
+		#{authUuid}
+		)
+	</insert>
+
+	<delete id="deleteCiAuthByCiId" parameterType="java.lang.Long">
+		DELETE
+		FROM
+		`cmdb_ci_auth`
+		WHERE `ci_id` = #{ciId}
+	</delete>
+
+</mapper>

@@ -13,25 +13,24 @@ import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.ApiComponentBase;
-import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
+import codedriver.module.cmdb.dao.mapper.ci.CiAuthMapper;
 import codedriver.module.cmdb.dto.ci.CiVo;
-import codedriver.module.cmdb.exception.ci.CiNotFoundException;
 
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class GetCiApi extends ApiComponentBase {
+public class GetCiAuthApi extends ApiComponentBase {
 
     @Autowired
-    private CiMapper ciMapper;
+    private CiAuthMapper ciAuthMapper;
 
     @Override
     public String getToken() {
-        return "/cmdb/ci/get";
+        return "/cmdb/ci/auth/get";
     }
 
     @Override
     public String getName() {
-        return "获取模型信息";
+        return "获取模型授权信息";
     }
 
     @Override
@@ -39,16 +38,12 @@ public class GetCiApi extends ApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "模型id")})
+    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id")})
     @Output({@Param(explode = CiVo.class)})
-    @Description(desc = "获取模型信息接口")
+    @Description(desc = "获取模型授权信息接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        Long ciId = jsonObj.getLong("id");
-        CiVo ciVo = ciMapper.getCiById(ciId);
-        if (ciVo == null) {
-            throw new CiNotFoundException(ciId);
-        }
-        return ciVo;
+        Long ciId = jsonObj.getLong("ciId");
+        return ciAuthMapper.getCiAuthByCiId(ciId);
     }
 }

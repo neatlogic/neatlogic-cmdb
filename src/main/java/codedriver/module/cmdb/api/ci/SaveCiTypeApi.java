@@ -36,7 +36,6 @@ public class SaveCiTypeApi extends ApiComponentBase {
 
     @Override
     public String getConfig() {
-        // TODO Auto-generated method stub
         return null;
     }
 
