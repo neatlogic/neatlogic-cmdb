@@ -1,5 +1,7 @@
 package codedriver.module.cmdb.dto.ci;
 
+import org.apache.commons.lang3.StringUtils;
+
 import codedriver.framework.cmdb.constvalue.ShowType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.EntityField;
@@ -7,14 +9,52 @@ import codedriver.framework.restful.annotation.EntityField;
 public class CiViewVo {
     @EntityField(name = "模型Id", type = ApiParamType.LONG)
     private Long ciId;
-    @EntityField(name = "属性Id", type = ApiParamType.LONG)
-    private Long attrId;
-    @EntityField(name = "关系Id", type = ApiParamType.LONG)
-    private Long relId;
+    @EntityField(name = "属性或关系id", type = ApiParamType.LONG)
+    private Long itemId;
+    @EntityField(name = "属性或关系名称", type = ApiParamType.STRING)
+    private String itemName;
+    @EntityField(name = "类型，attr或rel", type = ApiParamType.STRING)
+    private String type;
+    @EntityField(name = "类型名称", type = ApiParamType.STRING)
+    private String typeText;
     @EntityField(name = "排序", type = ApiParamType.INTEGER)
     private Integer sort;
-    @EntityField(name = "显示方式，none:不显示，all:全部显示，list:仅列表显示，detail:仅明细显示", type = ApiParamType.INTEGER)
+    @EntityField(name = "显示方式，none:不显示，all:全部显示，list:仅列表显示，detail:仅明细显示", type = ApiParamType.STRING)
     private String showType = ShowType.ALL.getValue();
+    @EntityField(name = "显示方式名称", type = ApiParamType.STRING)
+    private String showTypeText;
+
+    public Long getCiId() {
+        return ciId;
+    }
+
+    public void setCiId(Long ciId) {
+        this.ciId = ciId;
+    }
+
+    public Long getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(Long itemId) {
+        this.itemId = itemId;
+    }
+
+    public String getItemName() {
+        return itemName;
+    }
+
+    public void setItemName(String itemName) {
+        this.itemName = itemName;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 
     public Integer getSort() {
         return sort;
@@ -32,27 +72,30 @@ public class CiViewVo {
         this.showType = showType;
     }
 
-    public Long getCiId() {
-        return ciId;
+    public String getTypeText() {
+        if (StringUtils.isBlank(typeText) && StringUtils.isNotBlank(type)) {
+            if (type.equals("attr")) {
+                typeText = "属性";
+            } else {
+                typeText = "关系";
+            }
+        }
+        return typeText;
     }
 
-    public void setCiId(Long ciId) {
-        this.ciId = ciId;
+    public void setTypeText(String typeText) {
+        this.typeText = typeText;
     }
 
-    public Long getAttrId() {
-        return attrId;
+    public String getShowTypeText() {
+        if (StringUtils.isBlank(showTypeText) && StringUtils.isNotBlank(showType)) {
+            showTypeText = ShowType.getText(showType);
+        }
+        return showTypeText;
     }
 
-    public void setAttrId(Long attrId) {
-        this.attrId = attrId;
+    public void setShowTypeText(String showTypeText) {
+        this.showTypeText = showTypeText;
     }
 
-    public Long getRelId() {
-        return relId;
-    }
-
-    public void setRelId(Long relId) {
-        this.relId = relId;
-    }
 }

@@ -2,5 +2,71 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.ci.CiViewMapper">
 
+	<select id="getCiViewByCiId" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.CiViewVo">
+		SELECT
+		attr.id AS itemId,
+		attr.`label` AS itemName,
+		'attr' AS type,
+		show_type AS showType,
+		v.sort
+		FROM
+		cmdb_attr attr
+		LEFT JOIN cmdb_view v
+		ON attr.`ci_id` = v.`ci_id`
+		AND attr.`id` = v.`item_id`
+		AND v.`type` = 'attr'
+		WHERE attr.`ci_id` = #{value}
+		UNION
+		SELECT
+		rel.id AS itemId,
+		rel.name AS itemName,
+		'rel' AS type,
+		show_type AS showType,
+		v.sort
+		FROM
+		cmdb_rel rel
+		LEFT JOIN cmdb_view v
+		ON rel.from_ci_id = v.`ci_id`
+		AND rel.id = v.`item_id`
+		AND v.`type` = 'rel'
+		WHERE rel.from_ci_id = #{value}
+		UNION
+		SELECT
+		rel.id AS itemId,
+		rel.name AS itemName,
+		'rel' AS type,
+		show_type AS showType,
+		v.sort
+		FROM
+		cmdb_rel rel
+		LEFT JOIN cmdb_view v
+		ON rel.to_ci_id = v.`ci_id`
+		AND rel.id = v.`item_id`
+		AND v.`type` = 'rel'
+		WHERE rel.to_ci_id = #{value}
+		ORDER BY sort,TYPE,itemId
+		<!-- 按照sort,type,itemId进行排序，当sort未空时，得到的是自然顺序 -->
+	</select>
 
+	<insert id="insertCiView" parameterType="codedriver.module.cmdb.dto.ci.CiViewVo">
+		INSERT INTO `cmdb_view` (
+		`ci_id`,
+		`item_id`,
+		`type`,
+		`sort`,
+		`show_type`
+		)
+		VALUES
+		(
+		#{ciId},
+		#{itemId},
+		#{type},
+		#{sort},
+		#{showType}
+		)
+	</insert>
+
+	<delete id="deleteCiViewByCiId" parameterType="java.lang.Long">
+		DELETE FROM cmdb_view WHERE ci_id = #{value}
+	</delete>
 </mapper>

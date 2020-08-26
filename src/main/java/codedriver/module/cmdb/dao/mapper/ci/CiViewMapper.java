@@ -1,10 +1,19 @@
 package codedriver.module.cmdb.dao.mapper.ci;
 
+import java.util.List;
+
+import codedriver.module.cmdb.dto.ci.CiViewVo;
+
 /**
  * 
  * @Author:chenqiwei
  * @Time:Aug 15, 2020
  * @ClassName: CiMapper
- * @Description: TODO
  */
-public interface CiViewMapper {}
+public interface CiViewMapper {
+    public List<CiViewVo> getCiViewByCiId(Long ciId);
+
+    public int insertCiView(CiViewVo ciViewVo);
+
+    public int deleteCiViewByCiId(Long ciId);
+}
