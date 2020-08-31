@@ -12,13 +12,13 @@ import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
-import codedriver.framework.restful.core.ApiComponentBase;
+import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.dao.mapper.ci.CiTypeMapper;
 import codedriver.module.cmdb.dto.ci.CiTypeVo;
 
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class GetCiTypeApi extends ApiComponentBase {
+public class GetCiTypeApi extends PrivateApiComponentBase {
 
     @Autowired
     private CiTypeMapper ciTypeMapper;

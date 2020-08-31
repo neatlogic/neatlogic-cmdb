@@ -33,6 +33,7 @@
 		`ci_id` AS ciId,
 		`type`,
 		`prop_id` AS propId,
+		(select handler from cmdb_prop where id = prop_id ) AS propHandler,
 		`expression`,
 		`name`,
 		`label`,

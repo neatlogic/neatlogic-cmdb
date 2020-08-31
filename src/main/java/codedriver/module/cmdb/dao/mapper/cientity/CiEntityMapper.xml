@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper">
+	<sql id="searchCiEntityIdCoundition">
+		<if test="attrFilterList != null and attrFilterList.size() > 0">
+			<foreach collection="attrFilterList" item="filter" index="index">
+				<choose>
+					<when test="filter.expressionName != 'null' and filter.expressionName != 'notnull'">
+						JOIN (SELECT ci_entity_id FROM
+						cmdb_cientity ce
+						JOIN cmdb_attrentity ae ON ce.id = ae.ci_entity_id
+						WHERE ce.ci_id = #{ciId} AND ae.attr_id = #{filter.attrId}
+						<if test="filter.valueList != null and filter.valueList.size() > 0">
+							AND
+							<foreach collection="filter.valueList" item="val" open="(" separator="OR" close=")">
+								ae.value ${filter.expression}
+								<choose>
+									<when test="filter.expressionName == 'li' or filter.expressionName == 'nl'">CONCAT('%', #{val},'%')</when>
+									<otherwise>#{val}</otherwise>
+								</choose>
+							</foreach>
+						</if>
+						<if test="filter.expressionName == 'ne' or filter.expressionName == 'nl'">
+							UNION
+							SELECT ce.ci_entity_id FROM
+							cmdb_cientity ce
+							JOIN cmdb_attrentity ae ON ce.id = ae.ci_entity_id
+							WHERE ce.ci_id = #{ciId}
+							AND NOT EXISTS (SELECT 1 FROM ecmdb_attr_entity xx WHERE
+							ae.ci_entity_id = xx.ci_entity_id AND xx.`attr_id` = #{filter.attrId} )
+						</if>
+						) attr_${index} ON cientity.id = attr_${index}.ci_entity_id
+					</when>
+					<when test="filter.expressionName == 'null'">
+						JOIN (SELECT ce.ci_entity_id FROM
+						cmdb_cientity ce
+						JOIN cmdb_attrentity ae ON ce.id = ae.ci_entity_id
+						WHERE ce.ci_id = #{ciId}
+						AND NOT EXISTS (SELECT 1 FROM cmdb_attrentity xx WHERE
+						ae.ci_entity_id = xx.ci_entity_id AND xx.`attr_id` = #{filter.attrId} )
+						) attr_${index} ON cientity.id = attr_${index}.ci_entity_id
+					</when>
+					<when test="filter.expressionName == 'notnull'">
+						JOIN (SELECT ce.ci_entity_id FROM
+						cmdb_cientity ce
+						JOIN cmdb_attrentity ae ON ce.id = ae.ci_entity_id
+						WHERE ce.ci_id = #{ciId}
+						AND EXISTS (SELECT 1 FROM cmdb_attrentity xx WHERE
+						ae.ci_entity_id = xx.ci_entity_id AND xx.`attr_id` = #{filter.attrId} )
+						) attr_${index} ON cientity.id = attr_${index}.ci_entity_id
+					</when>
+				</choose>
+			</foreach>
+		</if>
+		<if test="relFilterList != null and relFilterList.size() > 0">
+			<foreach collection="relFilterList" item="filter" index="index">
+				<choose>
+					<when test="filter.expressionName == 'eq' and filter.valueList != null and filter.valueList.size() > 0">
+						JOIN (SELECT ce.ci_entity_id FROM
+						cmdb_cientity ce
+						JOIN cmdb_relentity re ON ce.id = re.from_cientity_id
+						WHERE ce.ci_id = #{ciId} AND re.rel_id = #{filter.relId}
+						AND re.to_cientity_id IN
+						<foreach collection="filter.valueList" item="val" open="(" separator="," close=")">
+							#{val}
+						</foreach>
+						UNION
+						SELECT ce.ci_entity_id FROM
+						cmdb_cientity ce
+						JOIN cmdb_relentity re ON ce.id = re.to_cientity_id
+						WHERE ce.ci_id = #{ciId} AND re.rel_id = #{filter.relId}
+						AND re.from_cientity_id IN
+						<foreach collection="filter.valueList" item="val" open="(" separator="," close=")">
+							#{val}
+						</foreach>
+						) rel_${index} ON cientity.id = rel_${index}.ci_entity_id
+					</when>
+					<when test="filter.expressionName == 'ne' and filter.valueList != null and filter.valueList.size() > 0">
+						JOIN (SELECT ce.ci_entity_id FROM
+						cmdb_cientity ce
+						JOIN cmdb_relentity re ON ce.id = re.from_cientity_id
+						WHERE ce.ci_id = #{ciId} AND re.rel_id = #{filter.relId}
+						AND NOT EXISTS (SELECT 1 FROM cmdb_relentity xx WHERE xx.from_cientity_id = re.from_cientity_id AND xx.rel_id = re.id AND re.to_cientity_id IN
+						<foreach collection="filter.valueList" item="val" open="(" separator="," close=")">
+							#{val}
+						</foreach>
+						)
+						UNION
+						SELECT ce.ci_entity_id FROM
+						cmdb_cientity ce
+						JOIN cmdb_relentity re ON ce.id = re.to_cientity_id
+						WHERE ce.ci_id = #{ciId} AND re.rel_id = #{filter.relId}
+						AND NOT EXISTS (SELECT 1 FROM cmdb_relentity xx WHERE xx.to_cientity_id = re.to_cientity_id AND xx.rel_id = re.id AND re.from_cientity_id IN
+						<foreach collection="filter.valueList" item="val" open="(" separator="," close=")">
+							#{val}
+						</foreach>
+						)
+						) rel_${index} ON cientity.id = rel_${index}.ci_entity_id
+					</when>
+				</choose>
+			</foreach>
+		</if>
+	</sql>
+
+	<select id="searchCiEntityByIdList" resultType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
+		SELECT
+		`id`,
+		`ci_id` AS ciId,
+		`name`,
+		`fcu`,
+		`fcd`,
+		`lcu`,
+		`lcd`,
+		`status`,
+		`last_transactionid`,
+		`is_locked` AS isLocked
+		FROM
+		`cmdb_cientity`
+		WHERE
+		id IN
+		<foreach collection="idList" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+		ORDER BY id DESC
+	</select>
+
+	<select id="searchCiEntityId" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo" resultType="java.lang.Long">
+		SELECT distinct(cientity.id) FROM (SELECT id FROM cmdb_cientity WHERE ci_id = #{ciId}) cientity
+		<include refid="searchCiEntityIdCoundition"></include>
+		ORDER BY cientity.id DESC
+		<if test="needPage == true">
+			LIMIT #{startNum}, #{pageSize}
+		</if>
+	</select>
+
+	<select id="searchCiEntityIdCount" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo" resultType="int">
+		SELECT distinct(cientity.id) FROM (SELECT id FROM cmdb_cientity WHERE ci_id = #{ciId}) cientity
+		<include refid="searchCiEntityIdCoundition"></include>
+	</select>
+
+	<insert id="insertCiEntity" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
+		INSERT INTO `cmdb_cientity` (
+		`id`,
+		`ci_id`,
+		`name`,
+		`fcu`,
+		`fcd`,
+		`status`,
+		`last_transactionid`,
+		`is_locked`
+		)
+		VALUES
+		(
+		#{id},
+		#{ciId},
+		#{name},
+		#{fcu},
+		NOW(),
+		#{status},
+		#{lastTransactionid},
+		#{isLocked}
+		)
+	</insert>
+</mapper>

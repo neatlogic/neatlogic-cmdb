@@ -23,8 +23,10 @@ public class AttrVo implements Serializable {
     private String type;
     @EntityField(name = "值类型名称", type = ApiParamType.STRING)
     private String typeText;
-    @EntityField(name = "基础属性id", type = ApiParamType.LONG)
+    @EntityField(name = "属性定义id", type = ApiParamType.LONG)
     private Long propId;
+    @EntityField(name = "属性定义类型", type = ApiParamType.STRING)
+    private String propHandler;
     @EntityField(name = "值表达式", type = ApiParamType.STRING)
     private String expression;
     @EntityField(name = "英文名称，模型内唯一", type = ApiParamType.STRING)
@@ -215,6 +217,14 @@ public class AttrVo implements Serializable {
 
     public void setValidatorName(String validatorName) {
         this.validatorName = validatorName;
+    }
+
+    public String getPropHandler() {
+        return propHandler;
+    }
+
+    public void setPropHandler(String propHandler) {
+        this.propHandler = propHandler;
     }
 
 }

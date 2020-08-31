@@ -19,6 +19,8 @@ public class RelVo implements Serializable {
     private Long id;
     @EntityField(name = "关系名称", type = ApiParamType.STRING)
     private String name;
+    @EntityField(name = "当前模型位置，from|to", type = ApiParamType.STRING)
+    private String direction;
     @EntityField(name = "数据录入方式", type = ApiParamType.STRING)
     private String inputType = InputType.MT.getValue();
 
@@ -42,7 +44,7 @@ public class RelVo implements Serializable {
     private String fromGroupId;
     @EntityField(name = "来源端分组名称", type = ApiParamType.STRING)
     private String fromGroupName;
-    
+
     @EntityField(name = "目标端模型id", type = ApiParamType.LONG)
     private Long toCiId;
     @EntityField(name = "目标端模型图标", type = ApiParamType.STRING)
@@ -251,5 +253,12 @@ public class RelVo implements Serializable {
         this.toGroupName = toGroupName;
     }
 
+    public String getDirection() {
+        return direction;
+    }
+
+    public void setDirection(String direction) {
+        this.direction = direction;
+    }
 
 }

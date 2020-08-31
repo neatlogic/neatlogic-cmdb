@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper">
+
+	<insert id="insertTransaction" parameterType="codedriver.module.cmdb.dto.transaction.TransactionVo">
+		INSERT INTO `cmdb_transaction` (
+		`ci_id`,
+		`group_id`,
+		`id`,
+		`status`,
+		`create_user`,
+		`input_type`,
+		`source`,
+		`expire_time`,
+		`create_time`
+		)
+		VALUES
+		(
+		#{ciId},
+		#{groupId},
+		#{id},
+		#{status},
+		#{createUser},
+		#{inputType},
+		#{source},
+		#{expireTime},
+		#{createTime}
+		)
+	</insert>
+</mapper>

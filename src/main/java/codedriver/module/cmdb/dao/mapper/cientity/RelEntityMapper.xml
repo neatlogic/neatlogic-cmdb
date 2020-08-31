@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper">
+	<select id="searchRelEntityByCiEntityIdList" resultType="codedriver.module.cmdb.dto.cientity.RelEntityVo">
+		SELECT
+		`id`,
+		`rel_id` AS relId,
+		`from_cientity_id` AS fromCiEntityId,
+		`to_cientity_id` AS toCiEntityId
+		FROM
+		`cmdb_relentity`
+		WHERE
+		from_cientity_id IN
+		<foreach collection="idList" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+		UNION
+		SELECT
+		`id`,
+		`rel_id` AS relId,
+		`from_cientity_id` AS fromCiEntityId,
+		`to_cientity_id` AS toCiEntityId
+		FROM
+		`cmdb_relentity`
+		WHERE
+		to_cientity_id IN
+		<foreach collection="idList" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+</mapper>

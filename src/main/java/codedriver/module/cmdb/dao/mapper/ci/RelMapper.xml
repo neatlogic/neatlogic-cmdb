@@ -92,7 +92,8 @@
 		a.`to_type_id` AS toTypeId,
 		a.`to_rule` AS toRule,
 		a.`to_group_id` AS toGroupId,
-		(SELECT name FROM cmdb_relgroup g WHERE g.id = a.`to_group_id`) AS toGroupName
+		(SELECT name FROM cmdb_relgroup g WHERE g.id = a.`to_group_id`) AS toGroupName,
+		'from' AS direction
 		FROM
 		`cmdb_rel` a
 		JOIN cmdb_ci f ON a.from_ci_id = f.id
@@ -123,7 +124,8 @@
 		a.`to_type_id` AS toTypeId,
 		a.`to_rule` AS toRule,
 		a.`to_group_id` AS toGroupId,
-		(SELECT name FROM cmdb_relgroup g WHERE g.id = a.`to_group_id`) AS toGroupName
+		(SELECT name FROM cmdb_relgroup g WHERE g.id = a.`to_group_id`) AS toGroupName,
+		'to' AS direction
 		FROM
 		`cmdb_rel` a
 		JOIN cmdb_ci f ON a.from_ci_id = f.id

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.cmdb.dao.mapper.cientity.AttrEntityMapper">
+	<select id="searchAttrEntityByCiEntityIdList" resultType="codedriver.module.cmdb.dto.cientity.AttrEntityVo">
+		SELECT
+		`id`,
+		`ci_entity_id` AS ciEntityId,
+		`attr_id` AS attrId,
+		`valuehash`,
+		`value`,
+		`input_type` AS inputType,
+		`source`
+		FROM
+		`cmdb_attrentity`
+		WHERE ci_entity_id IN
+		<foreach collection="idList" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+</mapper>
