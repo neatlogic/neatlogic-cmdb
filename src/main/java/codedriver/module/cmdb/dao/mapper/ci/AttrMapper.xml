@@ -29,27 +29,27 @@
 
 	<select id="getAttrByCiId" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.AttrVo" useCache="true">
 		SELECT
-		`id`,
-		`ci_id` AS ciId,
-		`type`,
-		`prop_id` AS propId,
-		(select handler from cmdb_prop where id = prop_id ) AS propHandler,
-		`expression`,
-		`name`,
-		`label`,
-		`description`,
-		`validator`,
-		(SELECT name FROM cmdb_validator x WHERE x.id = validator) AS validatorName,
-		`valid_config` AS validConfig,
-		`is_required` AS isRequired,
-		`is_unique` AS isUnique,
-		`input_type` AS inputType,
-		`group_name` AS groupName,
-		`is_private` AS isPrivate
+		attr.`id`,
+		attr.`ci_id` AS ciId,
+		attr.`type`,
+		attr.`prop_id` AS propId,
+		(SELECT `handler` FROM cmdb_prop WHERE id = attr.prop_id ) AS propHandler,
+		attr.`expression`,
+		attr.`name`,
+		attr.`label`,
+		attr.`description`,
+		attr.`validator`,
+		cv.`name` AS validatorName,
+		cv.`config` AS validConfig,
+		attr.`is_required` AS isRequired,
+		attr.`is_unique` AS isUnique,
+		attr.`input_type` AS inputType,
+		attr.`group_name` AS groupName,
+		attr.`is_private` AS isPrivate
 		FROM
-		`cmdb_attr`
+		`cmdb_attr` attr LEFT JOIN cmdb_validator cv ON attr.`validator` = cv.id
 		WHERE
-		ci_id = #{ciId}
+		ci_id = #{value}
 		ORDER BY id
 	</select>
 
@@ -64,7 +64,6 @@
 		`label` = #{label},
 		`description` = #{description},
 		`validator` = #{validator},
-		`valid_config` = #{validConfigStr},
 		`is_required` = #{isRequired},
 		`is_unique` = #{isUnique},
 		`input_type` = #{inputType},
@@ -84,7 +83,6 @@
 		`label`,
 		`description`,
 		`validator`,
-		`valid_config`,
 		`is_required`,
 		`is_unique`,
 		`input_type`,
@@ -102,7 +100,6 @@
 		#{label},
 		#{description},
 		#{validator},
-		#{validConfigStr},
 		#{isRequired},
 		#{isUnique},
 		#{inputType},

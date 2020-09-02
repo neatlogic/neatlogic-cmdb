@@ -12,5 +12,7 @@ import codedriver.module.cmdb.dto.cientity.RelEntityVo;
  * @Time:Aug 15, 2020
  */
 public interface RelEntityMapper {
+    public List<RelEntityVo> getRelEntityByCiEntityId(Long ciEntityId);
+
     public List<RelEntityVo> searchRelEntityByCiEntityIdList(@Param("idList") List<Long> idList);
 }

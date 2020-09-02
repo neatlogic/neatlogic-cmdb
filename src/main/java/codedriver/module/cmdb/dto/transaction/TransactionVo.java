@@ -2,23 +2,46 @@ package codedriver.module.cmdb.dto.transaction;
 
 import java.util.Date;
 
+import org.apache.commons.lang3.StringUtils;
+
+import com.alibaba.fastjson.annotation.JSONField;
+
+import codedriver.framework.asynchronization.threadlocal.UserContext;
+import codedriver.framework.cmdb.constvalue.InputFrom;
+import codedriver.framework.cmdb.constvalue.TransactionStatus;
+import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
+import codedriver.framework.restful.annotation.EntityField;
+import codedriver.framework.util.SnowflakeUtil;
 
 public class TransactionVo extends BasePageVo {
+    @EntityField(name = "id", type = ApiParamType.LONG)
     private Long id;
+    @EntityField(name = "模型id", type = ApiParamType.LONG)
     private Long ciId;
-    private Long groupId;
-    private String status;
-    private String inputType;
+    @EntityField(name = "状态", type = ApiParamType.STRING, member = TransactionStatus.class)
+    private String status = TransactionStatus.UNCOMMIT.getValue();
+    @EntityField(name = "输入来源", type = ApiParamType.STRING, member = InputFrom.class)
+    private String inputFrom = InputFrom.PAGE.getValue();
     private String source;
+    @EntityField(name = "创建用户", type = ApiParamType.STRING)
     private String createUser;
+    @EntityField(name = "提交用户", type = ApiParamType.STRING, member = InputFrom.class)
     private String commitUser;
     private Date expireTime;
+    @EntityField(name = "创建时间", type = ApiParamType.LONG)
     private Date createTime;
+    @EntityField(name = "提交时间", type = ApiParamType.LONG)
     private Date commitTime;
+    @EntityField(name = "异常", type = ApiParamType.STRING)
     private String error;
+    @JSONField(serialize = false) // 配置项事务
+    private transient CiEntityTransactionVo ciEntityTransactionVo;
 
     public Long getId() {
+        if (id == null) {
+            id = SnowflakeUtil.uniqueLong();
+        }
         return id;
     }
 
@@ -34,14 +57,6 @@ public class TransactionVo extends BasePageVo {
         this.ciId = ciId;
     }
 
-    public Long getGroupId() {
-        return groupId;
-    }
-
-    public void setGroupId(Long groupId) {
-        this.groupId = groupId;
-    }
-
     public String getStatus() {
         return status;
     }
@@ -50,12 +65,12 @@ public class TransactionVo extends BasePageVo {
         this.status = status;
     }
 
-    public String getInputType() {
-        return inputType;
+    public String getInputFrom() {
+        return inputFrom;
     }
 
-    public void setInputType(String inputType) {
-        this.inputType = inputType;
+    public void setInputFrom(String inputFrom) {
+        this.inputFrom = inputFrom;
     }
 
     public String getSource() {
@@ -67,6 +82,9 @@ public class TransactionVo extends BasePageVo {
     }
 
     public String getCreateUser() {
+        if (StringUtils.isBlank(createUser)) {
+            createUser = UserContext.get().getUserId(true);
+        }
         return createUser;
     }
 
@@ -75,6 +93,9 @@ public class TransactionVo extends BasePageVo {
     }
 
     public String getCommitUser() {
+        if (StringUtils.isBlank(commitUser)) {
+            commitUser = UserContext.get().getUserId(true);
+        }
         return commitUser;
     }
 
@@ -112,6 +133,14 @@ public class TransactionVo extends BasePageVo {
 
     public void setError(String error) {
         this.error = error;
+    }
+
+    public CiEntityTransactionVo getCiEntityTransactionVo() {
+        return ciEntityTransactionVo;
+    }
+
+    public void setCiEntityTransactionVo(CiEntityTransactionVo ciEntityTransactionVo) {
+        this.ciEntityTransactionVo = ciEntityTransactionVo;
     }
 
 }

@@ -3,12 +3,16 @@ package codedriver.module.cmdb.dto.cientity;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.collections4.CollectionUtils;
+
 import com.alibaba.fastjson.annotation.JSONField;
 
+import codedriver.framework.cmdb.constvalue.EditModeType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.SnowflakeUtil;
+import codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo;
 
 public class CiEntityVo extends BasePageVo {
     @JSONField(serialize = false)
@@ -17,8 +21,6 @@ public class CiEntityVo extends BasePageVo {
     private Long id;
     @EntityField(name = "模型id", type = ApiParamType.LONG)
     private Long ciId;
-    @EntityField(name = "配置项名称", type = ApiParamType.STRING)
-    private String name;
     @EntityField(name = "创建人", type = ApiParamType.STRING)
     private String fcu;
     @EntityField(name = "创建时间", type = ApiParamType.LONG)
@@ -29,10 +31,8 @@ public class CiEntityVo extends BasePageVo {
     private Date lcd;
     @EntityField(name = "状态", type = ApiParamType.STRING)
     private String status;
-    @EntityField(name = "当前版本id", type = ApiParamType.LONG)
-    private Long lastTransactionId;
     @EntityField(name = "是否锁定编辑", type = ApiParamType.INTEGER)
-    private Integer isLocked;
+    private Integer isLocked = 0;
     @EntityField(name = "属性列表", type = ApiParamType.JSONARRAY)
     private List<AttrEntityVo> attrEntityList;
     @EntityField(name = "关系列表", type = ApiParamType.JSONARRAY)
@@ -41,6 +41,46 @@ public class CiEntityVo extends BasePageVo {
     private List<AttrFilterVo> attrFilterList;
     @EntityField(name = "关系过滤器列表", type = ApiParamType.JSONARRAY)
     private List<RelFilterVo> relFilterList;
+    @JSONField(serialize = false)
+    private transient String inputType;// 更新时设置输入方式
+    @JSONField(serialize = false)
+    private transient String editMode = EditModeType.GLOBAL.getValue();
+    @JSONField(serialize = false)
+    private transient Long transactionId;
+
+    public CiEntityVo() {
+
+    }
+
+    public CiEntityVo(CiEntityTransactionVo ciEntityTransactionVo) {
+        this.id = ciEntityTransactionVo.getCiEntityId();
+        this.ciId = ciEntityTransactionVo.getCiId();
+    }
+
+    @JSONField(serialize = false)
+    public AttrEntityVo getAttrEntityByAttrId(Long attrId) {
+        if (CollectionUtils.isNotEmpty(this.attrEntityList)) {
+            for (AttrEntityVo attrEntityVo : this.attrEntityList) {
+                if (attrEntityVo.getAttrId().equals(attrId)) {
+                    attrEntityVo.setCiEntityId(this.getId());
+                    return attrEntityVo;
+                }
+            }
+        }
+        return null;
+    }
+
+    @JSONField(serialize = false)
+    public RelEntityVo getRelEntityByRelId(Long relId) {
+        if (CollectionUtils.isNotEmpty(this.relEntityList)) {
+            for (RelEntityVo relEntityVo : this.relEntityList) {
+                if (relEntityVo.getRelId().equals(relId)) {
+                    return relEntityVo;
+                }
+            }
+        }
+        return null;
+    }
 
     public Long getId() {
         if (id == null) {
@@ -59,14 +99,6 @@ public class CiEntityVo extends BasePageVo {
 
     public void setCiId(Long ciId) {
         this.ciId = ciId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getFcu() {
@@ -107,14 +139,6 @@ public class CiEntityVo extends BasePageVo {
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public Long getLastTransactionId() {
-        return lastTransactionId;
-    }
-
-    public void setLastTransactionId(Long lastTransactionId) {
-        this.lastTransactionId = lastTransactionId;
     }
 
     public Integer getIsLocked() {
@@ -163,6 +187,30 @@ public class CiEntityVo extends BasePageVo {
 
     public void setRelFilterList(List<RelFilterVo> relFilterList) {
         this.relFilterList = relFilterList;
+    }
+
+    public String getInputType() {
+        return inputType;
+    }
+
+    public void setInputType(String inputType) {
+        this.inputType = inputType;
+    }
+
+    public String getEditMode() {
+        return editMode;
+    }
+
+    public void setEditMode(String editMode) {
+        this.editMode = editMode;
+    }
+
+    public Long getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(Long transactionId) {
+        this.transactionId = transactionId;
     }
 
 }

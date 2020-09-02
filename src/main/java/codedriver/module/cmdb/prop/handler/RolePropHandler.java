@@ -9,11 +9,11 @@ import codedriver.framework.cmdb.constvalue.SearchExpression;
 import codedriver.framework.cmdb.prop.core.IPropertyHandler;
 
 @Component
-public class TextPropHandler implements IPropertyHandler {
+public class RolePropHandler implements IPropertyHandler {
 
     @Override
     public String getName() {
-        return "text";
+        return "role";
     }
 
     @Override

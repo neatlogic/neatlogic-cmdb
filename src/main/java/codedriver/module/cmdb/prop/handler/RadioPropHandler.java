@@ -5,15 +5,17 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
+import com.alibaba.fastjson.JSONArray;
+
 import codedriver.framework.cmdb.constvalue.SearchExpression;
 import codedriver.framework.cmdb.prop.core.IPropertyHandler;
 
 @Component
-public class TextPropHandler implements IPropertyHandler {
+public class RadioPropHandler implements IPropertyHandler {
 
     @Override
     public String getName() {
-        return "text";
+        return "radio";
     }
 
     @Override

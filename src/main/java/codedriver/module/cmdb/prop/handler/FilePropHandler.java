@@ -9,16 +9,16 @@ import codedriver.framework.cmdb.constvalue.SearchExpression;
 import codedriver.framework.cmdb.prop.core.IPropertyHandler;
 
 @Component
-public class TextPropHandler implements IPropertyHandler {
+public class FilePropHandler implements IPropertyHandler {
 
     @Override
     public String getName() {
-        return "text";
+        return "file";
     }
 
     @Override
     public Boolean canSearch() {
-        return true;
+        return false;
     }
 
     @Override

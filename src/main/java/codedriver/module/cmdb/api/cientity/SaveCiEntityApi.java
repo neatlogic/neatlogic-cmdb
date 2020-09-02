@@ -1,10 +1,18 @@
 package codedriver.module.cmdb.api.cientity;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+import codedriver.framework.cmdb.constvalue.TransactionActionType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
@@ -13,7 +21,8 @@ import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.service.ci.CiAuthService;
+import codedriver.module.cmdb.dto.cientity.AttrEntityVo;
+import codedriver.module.cmdb.dto.cientity.CiEntityVo;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 
 @Service
@@ -22,9 +31,6 @@ public class SaveCiEntityApi extends PrivateApiComponentBase {
 
     @Autowired
     private CiEntityService ciEntityService;
-
-    @Autowired
-    private CiAuthService ciAuthService;
 
     @Override
     public String getToken() {
@@ -42,19 +48,38 @@ public class SaveCiEntityApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "id，不提供代表新增模型"),
-        @Param(name = "name", type = ApiParamType.STRING, xss = true, isRequired = true, maxLength = 50, desc = "英文名称"),
-        @Param(name = "label", type = ApiParamType.STRING, desc = "中文名称", xss = true, maxLength = 100,
-            isRequired = true),
-        @Param(name = "description", type = ApiParamType.STRING, desc = "备注", maxLength = 500, xss = true),
-        @Param(name = "icon", type = ApiParamType.STRING, desc = "图标"),
-        @Param(name = "typeId", type = ApiParamType.LONG, desc = "类型id", isRequired = true),
-        @Param(name = "isMenu", type = ApiParamType.INTEGER, desc = "是否在菜单显示")})
-    @Output({@Param(name = "id", type = ApiParamType.STRING, desc = "模型id")})
+    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
+        @Param(name = "id", type = ApiParamType.LONG, desc = "配置项id，不存在代表添加"),
+        @Param(name = "attrEntityData", type = ApiParamType.JSONOBJECT, desc = "属性数据"),
+        @Param(name = "relEntityData", type = ApiParamType.JSONOBJECT, desc = "关系数据")})
+    @Output({@Param(name = "id", type = ApiParamType.LONG, desc = "配置项id")})
     @Description(desc = "保存配置项接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        return null;
+        Long id = jsonObj.getLong("id");
+        TransactionActionType mode = TransactionActionType.INSERT;
+        CiEntityVo ciEntityVo = new CiEntityVo();
+        if (id != null) {
+            ciEntityVo.setId(id);
+            mode = TransactionActionType.UPDATE;
+        }
+        ciEntityVo.setCiId(jsonObj.getLong("ciId"));
+        JSONObject attrObj = jsonObj.getJSONObject("attrEntityData");
+        if (MapUtils.isNotEmpty(attrObj)) {
+            List<AttrEntityVo> attrEntityList = new ArrayList<>();
+            Iterator<String> keys = attrObj.keySet().iterator();
+            while (keys.hasNext()) {
+                String key = keys.next();
+                AttrEntityVo attrEntityVo = new AttrEntityVo();
+                attrEntityVo.setAttrId(Long.parseLong(key));
+                JSONArray valueObjList = attrObj.getJSONArray(key);
+                attrEntityVo.setValueList(valueObjList.stream().map(v -> v.toString()).collect(Collectors.toList()));
+                attrEntityList.add(attrEntityVo);
+            }
+            ciEntityVo.setAttrEntityList(attrEntityList);
+        }
+        Long transactionId = ciEntityService.saveCiEntity(ciEntityVo, mode);
+        return transactionId;
     }
 
 }

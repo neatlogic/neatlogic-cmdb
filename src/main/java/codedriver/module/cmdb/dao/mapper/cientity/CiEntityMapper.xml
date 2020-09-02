@@ -1,6 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper">
+	<select id="getCiEntityById" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
+		SELECT
+		`id`,
+		`ci_id` AS ciId,
+		`fcu`,
+		`fcd`,
+		`lcu`,
+		`lcd`,
+		`status`,
+		`is_locked` AS isLocked
+		FROM
+		`cmdb_cientity`
+		WHERE id = #{value}
+	</select>
+
 	<sql id="searchCiEntityIdCoundition">
 		<if test="attrFilterList != null and attrFilterList.size() > 0">
 			<foreach collection="attrFilterList" item="filter" index="index">
@@ -106,13 +121,11 @@
 		SELECT
 		`id`,
 		`ci_id` AS ciId,
-		`name`,
 		`fcu`,
 		`fcd`,
 		`lcu`,
 		`lcd`,
 		`status`,
-		`last_transactionid`,
 		`is_locked` AS isLocked
 		FROM
 		`cmdb_cientity`
@@ -138,26 +151,30 @@
 		<include refid="searchCiEntityIdCoundition"></include>
 	</select>
 
+	<update id="updateCiEntityLockById" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
+		UPDATE
+		`cmdb_cientity`
+		SET
+		`is_locked` = #{isLocked}
+		WHERE `id` = #{id}
+	</update>
+
 	<insert id="insertCiEntity" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
 		INSERT INTO `cmdb_cientity` (
 		`id`,
 		`ci_id`,
-		`name`,
 		`fcu`,
 		`fcd`,
 		`status`,
-		`last_transactionid`,
 		`is_locked`
 		)
 		VALUES
 		(
 		#{id},
 		#{ciId},
-		#{name},
 		#{fcu},
 		NOW(),
 		#{status},
-		#{lastTransactionid},
 		#{isLocked}
 		)
 	</insert>

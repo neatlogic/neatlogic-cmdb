@@ -9,23 +9,21 @@ import codedriver.framework.cmdb.constvalue.SearchExpression;
 import codedriver.framework.cmdb.prop.core.IPropertyHandler;
 
 @Component
-public class TextPropHandler implements IPropertyHandler {
+public class TablePropHandler implements IPropertyHandler {
 
     @Override
     public String getName() {
-        return "text";
+        return "table";
     }
 
     @Override
     public Boolean canSearch() {
-        return true;
+        return false;
     }
 
     @Override
     public SearchExpression[] getSupportExpression() {
-        return new SearchExpression[] {SearchExpression.EQ, SearchExpression.GE, SearchExpression.GT,
-            SearchExpression.LE, SearchExpression.LT, SearchExpression.LI, SearchExpression.NE, SearchExpression.NL,
-            SearchExpression.NOTNULL, SearchExpression.NULL,};
+        return new SearchExpression[] {};
     }
 
     @Override

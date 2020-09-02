@@ -2,14 +2,106 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper">
 
+	<resultMap id="attrEntityTransactionMap" type="codedriver.module.cmdb.dto.transaction.AttrEntityTransactionVo">
+		<id property="attrId" column="attrId" />
+		<result property="ciEntityId" column="ciEntityId" />
+		<collection property="valueList" ofType="java.lang.String">
+			<result column="value" />
+		</collection>
+	</resultMap>
+
+	<select id="getAttrEntityTransactionByTransactionId" parameterType="java.lang.Long" resultMap="attrEntityTransactionMap">
+		SELECT
+		`id`,
+		`ci_entity_id` AS ciEntityId,
+		`attr_id` AS attrId,
+		`value`,
+		`transaction_id` AS transactionId
+		FROM
+		`cmdb_attrentity_transaction`
+		WHERE
+		transaction_id = #{value}
+		ORDER BY id
+	</select>
+
+	<select id="getCiEntityTransactionByTransactionId" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo">
+		SELECT
+		`id`,
+		`ci_id` AS ciId,
+		`ci_entity_id` AS ciEntityId,
+		`action`,
+		`transaction_id` AS transactionId
+		FROM
+		`cmdb_cientity_transaction`
+		WHERE transaction_id = #{value}
+	</select>
+
+	<update id="updateTransactionStatus" parameterType="codedriver.module.cmdb.dto.transaction.TransactionVo">
+		UPDATE
+		`cmdb_transaction`
+		SET
+		`status` = #{status},
+		`commit_time` = NOW(),
+		`commit_user` = #{commitUser},
+		`error` = #{error}
+		WHERE `id` = #{id}
+	</update>
+
+	<insert id="insertAttrEntityTransaction" parameterType="codedriver.module.cmdb.dto.transaction.AttrEntityTransactionVo">
+		INSERT INTO `cmdb_attrentity_transaction` (
+		`ci_entity_id`,
+		`attr_id`,
+		`value`,
+		`transaction_id`
+		)
+		VALUES
+		<choose>
+			<when test="valueList != null and valueList.size() >0">
+				<foreach collection="valueList" item="item" separator=",">
+					(
+					#{ciEntityId},
+					#{attrId},
+					#{item},
+					#{transactionId}
+					)
+				</foreach>
+			</when>
+			<otherwise>
+				(
+				#{ciEntityId},
+				#{attrId},
+				'',<!-- 用于表示删除配置项属性值 -->
+				#{transactionId}
+				)
+			</otherwise>
+		</choose>
+	</insert>
+
+	<insert id="insertCiEntityTransaction" parameterType="codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo">
+		INSERT INTO `cmdb_cientity_transaction` (
+		`id`,
+		`ci_id`,
+		`ci_entity_id`,
+		`action`,
+		`transaction_id`
+		)
+		VALUES
+		(
+		#{id},
+		#{ciId},
+		#{ciEntityId},
+		#{action},
+		#{transactionId}
+		)
+	</insert>
+
 	<insert id="insertTransaction" parameterType="codedriver.module.cmdb.dto.transaction.TransactionVo">
 		INSERT INTO `cmdb_transaction` (
 		`ci_id`,
-		`group_id`,
 		`id`,
 		`status`,
 		`create_user`,
-		`input_type`,
+		`input_from`,
 		`source`,
 		`expire_time`,
 		`create_time`
@@ -17,14 +109,13 @@
 		VALUES
 		(
 		#{ciId},
-		#{groupId},
 		#{id},
 		#{status},
 		#{createUser},
-		#{inputType},
+		#{inputFrom},
 		#{source},
 		#{expireTime},
-		#{createTime}
+		NOW()
 		)
 	</insert>
 </mapper>

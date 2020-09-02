@@ -1,15 +1,44 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.cientity.AttrEntityMapper">
+	<select id="checkAttrEntityValueIsExists" parameterType="codedriver.module.cmdb.dto.cientity.AttrEntityVo" resultType="int">
+		SELECT COUNT(1) FROM (
+		SELECT
+		1
+		FROM
+		`cmdb_attrentity`
+		WHERE ci_entity_id != #{ciEntityId} AND attr_id = #{attrId} AND value IN
+		<foreach collection="valueList" item="item" open="(" separator="," close=")"> #{item}</foreach>
+		LIMIT 1
+		) tmp
+	</select>
+
+	<resultMap id="attrEntityMap" type="codedriver.module.cmdb.dto.cientity.AttrEntityVo">
+		<id property="attrId" column="attrId" />
+		<result property="ciEntityId" column="ciEntityId" />
+		<collection property="valueList" ofType="java.lang.String">
+			<result column="value" />
+		</collection>
+	</resultMap>
+
+	<select id="getAttrEntityByCiEntityId" parameterType="java.lang.Long" resultMap="attrEntityMap">
+		SELECT
+		`id`,
+		`ci_entity_id` AS ciEntityId,
+		`attr_id` AS attrId,
+		`value`
+		FROM
+		`cmdb_attrentity`
+		WHERE ci_entity_id = #{value}
+		ORDER BY id
+	</select>
+
 	<select id="searchAttrEntityByCiEntityIdList" resultType="codedriver.module.cmdb.dto.cientity.AttrEntityVo">
 		SELECT
 		`id`,
 		`ci_entity_id` AS ciEntityId,
 		`attr_id` AS attrId,
-		`valuehash`,
-		`value`,
-		`input_type` AS inputType,
-		`source`
+		`value`
 		FROM
 		`cmdb_attrentity`
 		WHERE ci_entity_id IN
@@ -17,4 +46,40 @@
 			#{item}
 		</foreach>
 	</select>
+
+	<update id="updateAttrEntity" parameterType="codedriver.module.cmdb.dto.cientity.AttrEntityVo">
+		UPDATE
+		`cmdb_attrentity`
+		SET
+		`ci_entity_id` = #{ciEntityId},
+		`attr_id` = #{attrId},
+		`value` = #{value}
+		WHERE `id` = #{id}
+	</update>
+
+	<insert id="insertAttrEntity" parameterType="codedriver.module.cmdb.dto.cientity.AttrEntityVo">
+		INSERT INTO `cmdb_attrentity` (
+		`ci_entity_id`,
+		`attr_id`,
+		`value`
+		)
+		VALUES
+		<foreach collection="valueList" item="item" separator=",">
+			(
+			#{ciEntityId},
+			#{attrId},
+			#{item}
+			)
+		</foreach>
+	</insert>
+
+	<delete id="deleteAttrEntity" parameterType="codedriver.module.cmdb.dto.cientity.AttrEntityVo">
+		DELETE
+		FROM
+		`cmdb_attrentity`
+		WHERE ci_entity_id = #{ciEntityId}
+		AND attr_id = #{attrId}
+	</delete>
+
+
 </mapper>

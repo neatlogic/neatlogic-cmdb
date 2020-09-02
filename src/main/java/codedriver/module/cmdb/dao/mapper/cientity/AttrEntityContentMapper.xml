@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.cmdb.dao.mapper.cientity.AttrEntityContentMapper">
+	<cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
+
+	<select id="getAttrEntityContentByHash" parameterType="java.lang.String" resultType="java.lang.String" useCache="true">
+		SELECT
+		`content`
+		FROM
+		`cmdb_attrentity_content`
+		WHERE
+		hash = #{value}
+	</select>
+	
+	<select id="checkAttrEntityHashIsExists" parameterType="java.lang.String" resultType="int">
+		SELECT COUNT(1) FROM (
+			SELECT 1 FROM cmdb_attrentity_content WHERE hash = #{value} LIMIT 1
+		) tmp
+	</select>
+
+	<insert id="insertAttrEntityContent">
+		INSERT INTO `cmdb_attrentity_content` (`hash`, `content`)
+		VALUES
+		(#{hash}, #{content})
+	</insert>
+
+</mapper>

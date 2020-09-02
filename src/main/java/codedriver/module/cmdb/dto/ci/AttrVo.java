@@ -5,7 +5,6 @@ import java.io.Serializable;
 import org.apache.commons.lang3.StringUtils;
 
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.annotation.JSONField;
 
 import codedriver.framework.cmdb.constvalue.AttrType;
 import codedriver.framework.cmdb.constvalue.InputType;
@@ -19,7 +18,7 @@ public class AttrVo implements Serializable {
     private Long id;
     @EntityField(name = "模型id", type = ApiParamType.LONG)
     private Long ciId;
-    @EntityField(name = "值类型", type = ApiParamType.STRING)
+    @EntityField(name = "值类型，custom|property|expression", type = ApiParamType.STRING)
     private String type;
     @EntityField(name = "值类型名称", type = ApiParamType.STRING)
     private String typeText;
@@ -41,9 +40,6 @@ public class AttrVo implements Serializable {
     private String validatorName;
     @EntityField(name = "验证组件配置", type = ApiParamType.JSONOBJECT)
     private JSONObject validConfig;
-
-    @JSONField(serialize = false)
-    private transient String validConfigStr;
 
     @EntityField(name = "是否必填", type = ApiParamType.INTEGER)
     private Integer isRequired = 0;
@@ -150,13 +146,6 @@ public class AttrVo implements Serializable {
         this.groupName = groupName;
     }
 
-    public String getValidConfigStr() {
-        if (StringUtils.isBlank(validConfigStr) && validConfig != null) {
-            validConfigStr = validConfig.toJSONString();
-        }
-        return validConfigStr;
-    }
-
     public JSONObject getValidConfig() {
         return validConfig;
     }
@@ -165,7 +154,6 @@ public class AttrVo implements Serializable {
         try {
             this.validConfig = JSONObject.parseObject(validConfigStr);
         } catch (Exception ex) {
-
         }
     }
 
