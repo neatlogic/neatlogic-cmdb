@@ -52,6 +52,7 @@
 		ci_id = #{value}
 		ORDER BY id
 	</select>
+	
 
 	<update id="updateAttr" parameterType="codedriver.module.cmdb.dto.ci.AttrVo">
 		UPDATE

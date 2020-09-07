@@ -79,7 +79,12 @@ public class SaveCiEntityApi extends PrivateApiComponentBase {
             ciEntityVo.setAttrEntityList(attrEntityList);
         }
         Long transactionId = ciEntityService.saveCiEntity(ciEntityVo, mode);
-        return transactionId;
+        JSONObject returnObj = new JSONObject();
+        returnObj.put("transactionId", transactionId);
+        if (transactionId > 0) {
+            returnObj.put("ciEntityId", ciEntityVo.getId());
+        }
+        return returnObj;
     }
 
 }

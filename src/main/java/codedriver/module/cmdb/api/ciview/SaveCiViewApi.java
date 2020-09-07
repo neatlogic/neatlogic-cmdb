@@ -3,6 +3,7 @@ package codedriver.module.cmdb.api.ciview;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -22,6 +23,7 @@ import codedriver.module.cmdb.service.ci.CiAuthService;
 
 @Service
 @OperationType(type = OperationTypeEnum.UPDATE)
+@Transactional
 public class SaveCiViewApi extends PrivateApiComponentBase {
 
     @Autowired

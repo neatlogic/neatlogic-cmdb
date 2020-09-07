@@ -16,7 +16,8 @@ public interface AttrEntityMapper {
 
     public List<AttrEntityVo> getAttrEntityByCiEntityId(Long ciEntityId);
 
-    public List<AttrEntityVo> searchAttrEntityByCiEntityIdList(@Param("idList") List<Long> idList);
+    public List<AttrEntityVo> searchAttrEntityByCiEntityIdList(@Param("idList") List<Long> idList,
+        @Param("attrIdList") List<Long> attrIdList);
 
     public int updateAttrEntity(AttrEntityVo attrEntityVo);
 

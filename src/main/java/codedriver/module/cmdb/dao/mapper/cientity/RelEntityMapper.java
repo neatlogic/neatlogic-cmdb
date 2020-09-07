@@ -14,5 +14,6 @@ import codedriver.module.cmdb.dto.cientity.RelEntityVo;
 public interface RelEntityMapper {
     public List<RelEntityVo> getRelEntityByCiEntityId(Long ciEntityId);
 
-    public List<RelEntityVo> searchRelEntityByCiEntityIdList(@Param("idList") List<Long> idList);
+    public List<RelEntityVo> searchRelEntityByCiEntityIdList(@Param("idList") List<Long> idList,
+        @Param("relIdList") List<Long> relIdList);
 }

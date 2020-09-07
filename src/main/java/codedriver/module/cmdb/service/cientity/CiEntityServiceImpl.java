@@ -10,10 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import codedriver.framework.cmdb.constvalue.AttrType;
+import codedriver.framework.cmdb.constvalue.RelDirectionType;
 import codedriver.framework.cmdb.constvalue.TransactionActionType;
 import codedriver.framework.cmdb.constvalue.TransactionStatus;
-import codedriver.framework.cmdb.prop.core.IPropertyHandler;
-import codedriver.framework.cmdb.prop.core.PropertyHandlerFactory;
 import codedriver.framework.common.util.PageUtil;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
@@ -65,7 +64,34 @@ public class CiEntityServiceImpl implements CiEntityService {
                 ciEntityVo.setPageCount(PageUtil.getPageCount(rowNum, ciEntityVo.getPageSize()));
             }
             ciEntityList = ciEntityMapper.searchCiEntityByIdList(ciEntityIdList);
+
+            if (CollectionUtils.isNotEmpty(ciEntityIdList)) {
+                List<AttrEntityVo> attrEntityList =
+                    attrEntityMapper.searchAttrEntityByCiEntityIdList(ciEntityIdList, ciEntityVo.getAttrIdList());
+                List<RelEntityVo> relEntityList =
+                    relEntityMapper.searchRelEntityByCiEntityIdList(ciEntityIdList, ciEntityVo.getRelIdList());
+                for (CiEntityVo entity : ciEntityList) {
+                    Iterator<AttrEntityVo> itAttrEntity = attrEntityList.iterator();
+                    while (itAttrEntity.hasNext()) {
+                        AttrEntityVo attrEntity = itAttrEntity.next();
+                        if (attrEntity.getCiEntityId().equals(entity.getId())) {
+                            entity.addAttrEntity(attrEntity);
+                            itAttrEntity.remove();
+                        }
+                    }
+                    // 一个关系可能被多个配置项引用，所以不能关联后删除
+                    for (RelEntityVo relEntity : relEntityList) {
+                        if (relEntity.getFromCiEntityId().equals(entity.getId())
+                            && relEntity.getDirection().equals(RelDirectionType.FROM.getValue())
+                            || relEntity.getToCiEntityId().equals(entity.getId())
+                                && relEntity.getDirection().equals(RelDirectionType.TO.getValue())) {
+                            entity.addRelEntity(relEntity);
+                        }
+                    }
+                }
+            }
         }
+
         return ciEntityList;
     }
 
@@ -137,6 +163,8 @@ public class CiEntityServiceImpl implements CiEntityService {
                 for (AttrVo attrVo : attrList) {
                     if (attrVo.getId().equals(attrEntityVo.getAttrId())) {
                         isExists = true;
+                        // 补充attrName
+                        attrEntityVo.setAttrName(attrVo.getName());
                         break;
                     }
                 }
@@ -145,27 +173,6 @@ public class CiEntityServiceImpl implements CiEntityService {
                 }
             }
         }
-
-        // 把attrEntity中的value拆解到valueList里
-        /*if (CollectionUtils.isNotEmpty(ciEntityVo.getAttrEntityList())) {
-            for (AttrEntityVo attrEntityVo : ciEntityVo.getAttrEntityList()) {
-                for (AttrVo attrVo : attrList) {
-                    if (attrVo.getId().equals(attrEntityVo.getAttrId())) {
-                        if (attrVo.getType().equals(AttrType.PROPERTY.getValue())) {
-                            IPropertyHandler propHandler = PropertyHandlerFactory.getHandler(attrVo.getPropHandler());
-                            attrEntityVo.setValueList(propHandler.transferValue(attrEntityVo.getValue()));
-                            break;
-                        } else if (attrVo.getType().equals(AttrType.CUSTOM.getValue())) {
-                            attrEntityVo.setValueList(new ArrayList<String>() {
-                                {
-                                    this.add(attrEntityVo.getValue().toString());
-                                }
-                            });
-                        }
-                    }
-                }
-            }
-        }*/
 
         for (AttrVo attrVo : attrList) {
             // 属性值类型是自定义或属性定义的才需要进行值校验
@@ -258,10 +265,9 @@ public class CiEntityServiceImpl implements CiEntityService {
         if (CollectionUtils.isNotEmpty(attrEntityTransactionList)) {
             for (AttrEntityTransactionVo attrEntityTransactionVo : attrEntityTransactionList) {
                 AttrEntityVo attrEntityVo = new AttrEntityVo(attrEntityTransactionVo);
+                attrEntityMapper.deleteAttrEntity(attrEntityVo);
                 if (CollectionUtils.isNotEmpty(attrEntityVo.getValueList())) {
                     attrEntityMapper.insertAttrEntity(attrEntityVo);
-                } else {
-                    attrEntityMapper.deleteAttrEntity(attrEntityVo);
                 }
             }
         }

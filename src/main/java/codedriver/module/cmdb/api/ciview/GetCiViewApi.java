@@ -43,8 +43,8 @@ public class GetCiViewApi extends PrivateApiComponentBase {
     @Description(desc = "获取模型显示设置接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        Long ciId = jsonObj.getLong("ciId");
-        return ciViewMapper.getCiViewByCiId(ciId);
+        CiViewVo ciViewVo = JSONObject.toJavaObject(jsonObj, CiViewVo.class);
+        return ciViewMapper.getCiViewByCiId(ciViewVo);
     }
 
 }

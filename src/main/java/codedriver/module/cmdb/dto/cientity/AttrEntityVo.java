@@ -24,6 +24,12 @@ public class AttrEntityVo {
     private Long attrId;
     @EntityField(name = "属性唯一标识", type = ApiParamType.STRING)
     private String attrName;
+    @EntityField(name = "属性类型", type = ApiParamType.STRING)
+    private String attrType;
+    @EntityField(name = "属性定义id", type = ApiParamType.LONG)
+    private Long propId;
+    @EntityField(name = "属性定义处理器", type = ApiParamType.STRING)
+    private String propHandler;
     @JSONField(serialize = false) // 原始值，可以是任何类型，后面在拆解到valueList里
     private transient Object value;
     @EntityField(name = "值列表", type = ApiParamType.JSONARRAY)
@@ -46,6 +52,7 @@ public class AttrEntityVo {
     public AttrEntityVo(AttrEntityTransactionVo attrEntityTransactionVo) {
         this.ciEntityId = attrEntityTransactionVo.getCiEntityId();
         this.attrId = attrEntityTransactionVo.getAttrId();
+        this.attrName = attrEntityTransactionVo.getAttrName();
         // 如果事务的valuelist包含空值，代表需要删除当前属性，则无需写入attrEntity的valueList
         if (CollectionUtils.isNotEmpty(attrEntityTransactionVo.getValueList())) {
             for (String v : attrEntityTransactionVo.getValueList()) {
@@ -121,6 +128,21 @@ public class AttrEntityVo {
 
     public void setAttrName(String attrName) {
         this.attrName = attrName;
+    }
+
+    @Override
+    public int hashCode() {
+        String key = "";
+        if (getAttrId() != null) {
+            key += getAttrId() + "_";
+        }
+        if (CollectionUtils.isNotEmpty(getActualValueList())) {
+            key += getActualValueList().size() + "_";
+            // 根据内容排序生成新数组
+            List<String> sortedList = getActualValueList().stream().sorted().collect(Collectors.toList());;
+            key += sortedList.stream().collect(Collectors.joining(","));
+        }
+        return key.hashCode();
     }
 
     @Override
@@ -206,6 +228,30 @@ public class AttrEntityVo {
 
     public void setValue(Object value) {
         this.value = value;
+    }
+
+    public String getAttrType() {
+        return attrType;
+    }
+
+    public void setAttrType(String attrType) {
+        this.attrType = attrType;
+    }
+
+    public String getPropHandler() {
+        return propHandler;
+    }
+
+    public void setPropHandler(String propHandler) {
+        this.propHandler = propHandler;
+    }
+
+    public Long getPropId() {
+        return propId;
+    }
+
+    public void setPropId(Long propId) {
+        this.propId = propId;
     }
 
 }

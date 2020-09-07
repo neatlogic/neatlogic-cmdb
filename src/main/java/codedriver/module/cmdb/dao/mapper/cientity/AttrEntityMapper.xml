@@ -15,7 +15,12 @@
 
 	<resultMap id="attrEntityMap" type="codedriver.module.cmdb.dto.cientity.AttrEntityVo">
 		<id property="attrId" column="attrId" />
-		<result property="ciEntityId" column="ciEntityId" />
+		<id property="ciEntityId" column="ciEntityId" />
+		<result property="attrName" column="attrName" />
+		<result property="attrType" column="attrType" />
+		<result property="attrName" column="attrName" />
+		<result property="propId" column="propId" />
+		<result property="propHandler" column="propHandler" />
 		<collection property="valueList" ofType="java.lang.String">
 			<result column="value" />
 		</collection>
@@ -23,44 +28,56 @@
 
 	<select id="getAttrEntityByCiEntityId" parameterType="java.lang.Long" resultMap="attrEntityMap">
 		SELECT
-		`id`,
-		`ci_entity_id` AS ciEntityId,
-		`attr_id` AS attrId,
-		`value`
+		a.`id`,
+		a.`ci_entity_id` AS ciEntityId,
+		a.`attr_id` AS attrId,
+		a.`attr_name` AS attrName,
+		a.`value`,
+		b.`type` AS attrType,
+		b.`prop_id` AS propId,
+		p.`handler` AS propHandler
 		FROM
-		`cmdb_attrentity`
-		WHERE ci_entity_id = #{value}
-		ORDER BY id
+		`cmdb_attrentity` a JOIN
+		`cmdb_attr` b ON a.`attr_id` = b.`id`
+		LEFT JOIN `cmdb_prop` p ON b.`prop_id` = p.id
+		WHERE a.ci_entity_id = #{value}
+		ORDER BY a.id
 	</select>
 
-	<select id="searchAttrEntityByCiEntityIdList" resultType="codedriver.module.cmdb.dto.cientity.AttrEntityVo">
+	<select id="searchAttrEntityByCiEntityIdList" resultMap="attrEntityMap">
 		SELECT
-		`id`,
-		`ci_entity_id` AS ciEntityId,
-		`attr_id` AS attrId,
-		`value`
+		a.`id`,
+		a.`ci_entity_id` AS ciEntityId,
+		a.`attr_id` AS attrId,
+		a.`attr_name` AS attrName,
+		a.`value`,
+		b.`type` AS attrType,
+		b.`prop_id` AS propId,
+		p.`handler` AS propHandler
 		FROM
-		`cmdb_attrentity`
-		WHERE ci_entity_id IN
+		`cmdb_attrentity` a JOIN
+		`cmdb_attr` b ON a.`attr_id` = b.`id`
+		LEFT JOIN `cmdb_prop` p ON b.`prop_id` = p.id
+		WHERE a.ci_entity_id IN
 		<foreach collection="idList" item="item" open="(" separator="," close=")">
 			#{item}
 		</foreach>
+		<if test="attrIdList != null and attrIdList.size() > 0">
+			AND a.attr_id IN
+			<foreach collection="attrIdList" item="item" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		ORDER BY 
+		a.id
 	</select>
 
-	<update id="updateAttrEntity" parameterType="codedriver.module.cmdb.dto.cientity.AttrEntityVo">
-		UPDATE
-		`cmdb_attrentity`
-		SET
-		`ci_entity_id` = #{ciEntityId},
-		`attr_id` = #{attrId},
-		`value` = #{value}
-		WHERE `id` = #{id}
-	</update>
 
 	<insert id="insertAttrEntity" parameterType="codedriver.module.cmdb.dto.cientity.AttrEntityVo">
 		INSERT INTO `cmdb_attrentity` (
 		`ci_entity_id`,
 		`attr_id`,
+		`attr_name`,
 		`value`
 		)
 		VALUES
@@ -68,6 +85,7 @@
 			(
 			#{ciEntityId},
 			#{attrId},
+			#{attrName},
 			#{item}
 			)
 		</foreach>

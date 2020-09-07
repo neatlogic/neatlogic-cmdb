@@ -13,6 +13,8 @@ public class AttrEntityTransactionVo {
     private Long ciEntityId;
     @EntityField(name = "属性id", type = ApiParamType.LONG)
     private Long attrId;
+    @EntityField(name = "属性名称", type = ApiParamType.STRING)
+    private String attrName;
     @EntityField(name = "事务id", type = ApiParamType.LONG)
     private Long transactionId;
     @EntityField(name = "值列表", type = ApiParamType.JSONARRAY)
@@ -25,6 +27,7 @@ public class AttrEntityTransactionVo {
     public AttrEntityTransactionVo(AttrEntityVo attrEntityVo) {
         ciEntityId = attrEntityVo.getCiEntityId();
         attrId = attrEntityVo.getAttrId();
+        attrName = attrEntityVo.getAttrName();
         // 获取转换后的值
         valueList = attrEntityVo.getTransferValueList();
     }
@@ -67,6 +70,14 @@ public class AttrEntityTransactionVo {
 
     public void setTransactionId(Long transactionId) {
         this.transactionId = transactionId;
+    }
+
+    public String getAttrName() {
+        return attrName;
+    }
+
+    public void setAttrName(String attrName) {
+        this.attrName = attrName;
     }
 
 }

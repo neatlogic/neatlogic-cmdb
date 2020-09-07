@@ -2,7 +2,10 @@ package codedriver.module.cmdb.dto.ci;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang3.StringUtils;
+
 import codedriver.framework.cmdb.constvalue.InputType;
+import codedriver.framework.cmdb.constvalue.RelRuleType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.SnowflakeUtil;
@@ -40,6 +43,8 @@ public class RelVo implements Serializable {
     private Long fromTypeId;
     @EntityField(name = "来源端规则", type = ApiParamType.STRING)
     private String fromRule;
+    @EntityField(name = "来源端规则名称", type = ApiParamType.STRING)
+    private String fromRuleText;
     @EntityField(name = "来源端分组id", type = ApiParamType.LONG)
     private String fromGroupId;
     @EntityField(name = "来源端分组名称", type = ApiParamType.STRING)
@@ -61,6 +66,8 @@ public class RelVo implements Serializable {
     private Long toTypeId;
     @EntityField(name = "目标端规则", type = ApiParamType.STRING)
     private String toRule;
+    @EntityField(name = "目标端规则名称", type = ApiParamType.STRING)
+    private String toRuleText;
     @EntityField(name = "目标端分组id", type = ApiParamType.LONG)
     private String toGroupId;
     @EntityField(name = "目标端分组名称", type = ApiParamType.STRING)
@@ -259,6 +266,20 @@ public class RelVo implements Serializable {
 
     public void setDirection(String direction) {
         this.direction = direction;
+    }
+
+    public String getFromRuleText() {
+        if (StringUtils.isNotBlank(fromRule) && StringUtils.isBlank(fromRuleText)) {
+            fromRuleText = RelRuleType.getText(fromRule);
+        }
+        return fromRuleText;
+    }
+
+    public String getToRuleText() {
+        if (StringUtils.isNotBlank(toRule) && StringUtils.isBlank(toRuleText)) {
+            toRuleText = RelRuleType.getText(toRule);
+        }
+        return toRuleText;
     }
 
 }

@@ -1,10 +1,15 @@
 package codedriver.module.cmdb.dto.cientity;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.annotation.JSONField;
 
 import codedriver.framework.cmdb.constvalue.EditModeType;
@@ -23,6 +28,8 @@ public class CiEntityVo extends BasePageVo {
     private Long ciId;
     @EntityField(name = "创建人", type = ApiParamType.STRING)
     private String fcu;
+    @EntityField(name = "名称", type = ApiParamType.STRING)
+    private String name;
     @EntityField(name = "创建时间", type = ApiParamType.LONG)
     private Date fcd;
     @EntityField(name = "修改人", type = ApiParamType.STRING)
@@ -35,8 +42,12 @@ public class CiEntityVo extends BasePageVo {
     private Integer isLocked = 0;
     @EntityField(name = "属性列表", type = ApiParamType.JSONARRAY)
     private List<AttrEntityVo> attrEntityList;
+    @EntityField(name = "属性对象，以attrId为key", type = ApiParamType.JSONOBJECT)
+    private JSONObject attrEntityData;
     @EntityField(name = "关系列表", type = ApiParamType.JSONARRAY)
     private List<RelEntityVo> relEntityList;
+    @EntityField(name = "关系对象，以relId为key", type = ApiParamType.JSONOBJECT)
+    private JSONObject relEntityData;
     @EntityField(name = "属性过滤器列表", type = ApiParamType.JSONARRAY)
     private List<AttrFilterVo> attrFilterList;
     @EntityField(name = "关系过滤器列表", type = ApiParamType.JSONARRAY)
@@ -47,6 +58,10 @@ public class CiEntityVo extends BasePageVo {
     private transient String editMode = EditModeType.GLOBAL.getValue();
     @JSONField(serialize = false)
     private transient Long transactionId;
+    @JSONField(serialize = false) // 需要返回的属性列表，为空代表返回所有属性
+    private transient List<Long> attrIdList;
+    @JSONField(serialize = false) // 需要返回的关系列表，为空代表返回所有关系
+    private transient List<Long> relIdList;
 
     public CiEntityVo() {
 
@@ -157,6 +172,24 @@ public class CiEntityVo extends BasePageVo {
         this.keyword = keyword;
     }
 
+    public void addAttrEntity(AttrEntityVo attrEntityVo) {
+        if (attrEntityList == null) {
+            attrEntityList = new ArrayList<>();
+        }
+        if (!attrEntityList.contains(attrEntityVo)) {
+            attrEntityList.add(attrEntityVo);
+        }
+    }
+
+    public void addRelEntity(RelEntityVo relEntityVo) {
+        if (relEntityList == null) {
+            relEntityList = new ArrayList<>();
+        }
+        if (!relEntityList.contains(relEntityVo)) {
+            relEntityList.add(relEntityVo);
+        }
+    }
+
     public List<AttrEntityVo> getAttrEntityList() {
         return attrEntityList;
     }
@@ -211,6 +244,88 @@ public class CiEntityVo extends BasePageVo {
 
     public void setTransactionId(Long transactionId) {
         this.transactionId = transactionId;
+    }
+
+    public String getName() {
+        if (StringUtils.isBlank(name) && CollectionUtils.isNotEmpty(this.attrEntityList)) {
+            for (AttrEntityVo attrEntityVo : attrEntityList) {
+                if ("name".equals(attrEntityVo.getAttrName())
+                    && CollectionUtils.isNotEmpty(attrEntityVo.getActualValueList())) {
+                    this.name = attrEntityVo.getActualValueList().get(0);
+                }
+            }
+        }
+        return name;
+    }
+
+    public List<Long> getAttrIdList() {
+        return attrIdList;
+    }
+
+    public void setAttrIdList(List<Long> attrIdList) {
+        this.attrIdList = attrIdList;
+    }
+
+    public List<Long> getRelIdList() {
+        return relIdList;
+    }
+
+    public void setRelIdList(List<Long> relIdList) {
+        this.relIdList = relIdList;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public JSONObject getAttrEntityData() {
+        String keyprefix = "attr_";
+        if (MapUtils.isEmpty(attrEntityData) && CollectionUtils.isNotEmpty(this.attrEntityList)) {
+            if (attrEntityData == null) {
+                attrEntityData = new JSONObject();
+            }
+            for (AttrEntityVo attrEntityVo : this.attrEntityList) {
+                JSONObject attrObj = new JSONObject();
+                attrObj.put("type", attrEntityVo.getAttrType());
+                attrObj.put("handler", attrEntityVo.getPropHandler());
+                attrObj.put("valueList", attrEntityVo.getActualValueList());
+                attrObj.put("propId", attrEntityVo.getPropId());
+                attrEntityData.put(keyprefix + attrEntityVo.getAttrId(), attrObj);
+            }
+        }
+        return attrEntityData;
+    }
+
+    public void setAttrEntityData(JSONObject attrEntityData) {
+        this.attrEntityData = attrEntityData;
+    }
+
+    public JSONObject getRelEntityData() {
+        if (MapUtils.isEmpty(relEntityData) && CollectionUtils.isNotEmpty(this.relEntityList)) {
+            if (relEntityData == null) {
+                relEntityData = new JSONObject();
+            }
+            for (RelEntityVo relEntityVo : this.relEntityList) {
+                String keyprefix = "rel" + relEntityVo.getDirection() + "_";
+                if (!relEntityData.containsKey(keyprefix + relEntityVo.getRelId())) {
+                    relEntityData.put(keyprefix + relEntityVo.getRelId(), new JSONArray());
+                }
+                JSONObject targetObj = new JSONObject();
+                if (relEntityVo.getDirection().equals("from")) {
+                    targetObj.put("ciEntityId", relEntityVo.getToCiEntityId());
+                    targetObj.put("ciEntityName", relEntityVo.getToCiEntityName());
+                } else {
+                    targetObj.put("ciEntityId", relEntityVo.getFromCiEntityId());
+                    targetObj.put("ciEntityName", relEntityVo.getFromCiEntityName());
+                }
+                relEntityData.getJSONArray(keyprefix + relEntityVo.getRelId()).add(targetObj);
+            }
+        }
+        return relEntityData;
+    }
+
+    public void setRelEntityData(JSONObject relEntityData) {
+        this.relEntityData = relEntityData;
     }
 
 }

@@ -15,6 +15,7 @@
 		`id`,
 		`ci_entity_id` AS ciEntityId,
 		`attr_id` AS attrId,
+		`attr_name` AS attrName,
 		`value`,
 		`transaction_id` AS transactionId
 		FROM
@@ -51,6 +52,7 @@
 		INSERT INTO `cmdb_attrentity_transaction` (
 		`ci_entity_id`,
 		`attr_id`,
+		`attr_name`,
 		`value`,
 		`transaction_id`
 		)
@@ -61,6 +63,7 @@
 					(
 					#{ciEntityId},
 					#{attrId},
+					#{attrName},
 					#{item},
 					#{transactionId}
 					)
@@ -70,6 +73,7 @@
 				(
 				#{ciEntityId},
 				#{attrId},
+				#{attrName},
 				'',<!-- 用于表示删除配置项属性值 -->
 				#{transactionId}
 				)

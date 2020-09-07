@@ -12,6 +12,8 @@ public interface RelMapper {
 
     public int checkRelByFromToName(RelVo relVo);
 
+    public int checkRelByFromToLabel(RelVo relVo);
+
     public RelVo getRelById(Long id);
 
     public RelGroupVo getRelGroupById(Long relGroupId);

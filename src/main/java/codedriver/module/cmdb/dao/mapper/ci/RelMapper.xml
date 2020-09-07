@@ -34,6 +34,10 @@
 	<select id="checkRelByFromToName" parameterType="codedriver.module.cmdb.dto.ci.RelVo" resultType="int">
 		SELECT COUNT(1) FROM cmdb_rel WHERE from_name = #{fromName} AND to_name = #{toName} AND id != #{id}
 	</select>
+	
+	<select id="checkRelByFromToLabel" parameterType="codedriver.module.cmdb.dto.ci.RelVo" resultType="int">
+		SELECT COUNT(1) FROM cmdb_rel WHERE from_label = #{fromLabel} AND to_label = #{toLbel} AND id != #{id}
+	</select>
 
 	<select id="getRelById" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.RelVo" useCache="false">
 		SELECT

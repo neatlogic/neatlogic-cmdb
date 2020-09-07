@@ -1,6 +1,11 @@
 package codedriver.module.cmdb.dto.ci;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
+
+import com.alibaba.fastjson.annotation.JSONField;
 
 import codedriver.framework.cmdb.constvalue.ShowType;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -23,6 +28,17 @@ public class CiViewVo {
     private String showType = ShowType.ALL.getValue();
     @EntityField(name = "显示方式名称", type = ApiParamType.STRING)
     private String showTypeText;
+    @JSONField(serialize = false)
+    private transient List<String> showTypeList;
+
+    public void addShowType(String showType) {
+        if (showTypeList == null) {
+            showTypeList = new ArrayList<>();
+        }
+        if (!showTypeList.contains(showType)) {
+            showTypeList.add(showType);
+        }
+    }
 
     public Long getCiId() {
         return ciId;
@@ -96,6 +112,14 @@ public class CiViewVo {
 
     public void setShowTypeText(String showTypeText) {
         this.showTypeText = showTypeText;
+    }
+
+    public List<String> getShowTypeList() {
+        return showTypeList;
+    }
+
+    public void setShowTypeList(List<String> showTypeList) {
+        this.showTypeList = showTypeList;
     }
 
 }

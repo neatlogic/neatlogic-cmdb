@@ -17,6 +17,7 @@
 	</select>
 
 	<sql id="searchCiEntityIdCoundition">
+		FROM (SELECT id FROM cmdb_cientity WHERE ci_id = #{ciId}) cientity
 		<if test="attrFilterList != null and attrFilterList.size() > 0">
 			<foreach collection="attrFilterList" item="filter" index="index">
 				<choose>
@@ -138,7 +139,7 @@
 	</select>
 
 	<select id="searchCiEntityId" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo" resultType="java.lang.Long">
-		SELECT distinct(cientity.id) FROM (SELECT id FROM cmdb_cientity WHERE ci_id = #{ciId}) cientity
+		SELECT distinct(cientity.id)
 		<include refid="searchCiEntityIdCoundition"></include>
 		ORDER BY cientity.id DESC
 		<if test="needPage == true">
@@ -147,7 +148,7 @@
 	</select>
 
 	<select id="searchCiEntityIdCount" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo" resultType="int">
-		SELECT distinct(cientity.id) FROM (SELECT id FROM cmdb_cientity WHERE ci_id = #{ciId}) cientity
+		SELECT COUNT(distinct cientity.id)
 		<include refid="searchCiEntityIdCoundition"></include>
 	</select>
 

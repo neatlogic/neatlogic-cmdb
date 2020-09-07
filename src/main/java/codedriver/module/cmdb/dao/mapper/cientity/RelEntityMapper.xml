@@ -3,51 +3,96 @@
 <mapper namespace="codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper">
 	<select id="getRelEntityByCiEntityId" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.cientity.RelEntityVo">
 		SELECT
-		`id`,
-		`rel_id` AS relId,
-		`from_cientity_id` AS fromCiEntityId,
-		`to_cientity_id` AS toCiEntityId
+		a.`id`,
+		a.`rel_id` AS relId,
+		a.`from_cientity_id` AS fromCiEntityId,
+		a.`to_cientity_id` AS toCiEntityId,
+		b.`value` AS fromCiEntityName,
+		c.`value` AS toCiEntityName,
+		'from' AS direction
 		FROM
-		`cmdb_relentity`
-		WHERE
-		from_cientity_id  = #{value}
+		`cmdb_relentity` a
+		JOIN `cmdb_attrentity` b
+		ON a.`from_cientity_id` = b.ci_entity_id
+		AND b.attr_name = 'name'
+		JOIN `cmdb_attrentity` c
+		ON a.`to_cientity_id` = c.`ci_entity_id`
+		AND c.`attr_name` = 'name'
+		WHERE a.from_cientity_id = #{value}
 		UNION
 		SELECT
-		`id`,
-		`rel_id` AS relId,
-		`from_cientity_id` AS fromCiEntityId,
-		`to_cientity_id` AS toCiEntityId
+		a.`id`,
+		a.`rel_id` AS relId,
+		a.`from_cientity_id` AS fromCiEntityId,
+		a.`to_cientity_id` AS toCiEntityId,
+		b.`value` AS fromCiEntityName,
+		c.`value` AS toCiEntityName,
+		'to' AS direction
 		FROM
-		`cmdb_relentity`
-		WHERE
-		to_cientity_id = #{value}
+		`cmdb_relentity` a
+		JOIN `cmdb_attrentity` b
+		ON a.`from_cientity_id` = b.ci_entity_id
+		AND b.attr_name = 'name'
+		JOIN `cmdb_attrentity` c
+		ON a.`to_cientity_id` = c.`ci_entity_id`
+		AND c.`attr_name` = 'name'
+		WHERE a.to_cientity_id = #{value}
+		ORDER BY id
 	</select>
 
 	<select id="searchRelEntityByCiEntityIdList" resultType="codedriver.module.cmdb.dto.cientity.RelEntityVo">
 		SELECT
-		`id`,
-		`rel_id` AS relId,
-		`from_cientity_id` AS fromCiEntityId,
-		`to_cientity_id` AS toCiEntityId
+		a.`id`,
+		a.`rel_id` AS relId,
+		a.`from_cientity_id` AS fromCiEntityId,
+		a.`to_cientity_id` AS toCiEntityId,
+		b.`value` AS fromCiEntityName,
+		c.`value` AS toCiEntityName,
+		'from' AS direction
 		FROM
-		`cmdb_relentity`
-		WHERE
-		from_cientity_id IN
+		`cmdb_relentity` a
+		JOIN `cmdb_attrentity` b
+		ON a.`from_cientity_id` = b.ci_entity_id
+		AND b.attr_name = 'name'
+		JOIN `cmdb_attrentity` c
+		ON a.`to_cientity_id` = c.`ci_entity_id`
+		AND c.`attr_name` = 'name'
+		WHERE a.from_cientity_id IN
 		<foreach collection="idList" item="item" open="(" separator="," close=")">
 			#{item}
 		</foreach>
+		<if test="relIdList != null and relIdList.size() > 0">
+			AND a.rel_id IN
+			<foreach collection="relIdList" item="item" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
 		UNION
 		SELECT
-		`id`,
-		`rel_id` AS relId,
-		`from_cientity_id` AS fromCiEntityId,
-		`to_cientity_id` AS toCiEntityId
+		a.`id`,
+		a.`rel_id` AS relId,
+		a.`from_cientity_id` AS fromCiEntityId,
+		a.`to_cientity_id` AS toCiEntityId,
+		b.`value` AS fromCiEntityName,
+		c.`value` AS toCiEntityName,
+		'to' AS direction
 		FROM
-		`cmdb_relentity`
-		WHERE
-		to_cientity_id IN
+		`cmdb_relentity` a
+		JOIN `cmdb_attrentity` b
+		ON a.`from_cientity_id` = b.ci_entity_id
+		AND b.attr_name = 'name'
+		JOIN `cmdb_attrentity` c
+		ON a.`to_cientity_id` = c.`ci_entity_id`
+		AND c.`attr_name` = 'name'
+		WHERE a.to_cientity_id IN
 		<foreach collection="idList" item="item" open="(" separator="," close=")">
 			#{item}
 		</foreach>
+		<if test="relIdList != null and relIdList.size() > 0">
+			AND a.rel_id IN
+			<foreach collection="relIdList" item="item" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
 	</select>
 </mapper>

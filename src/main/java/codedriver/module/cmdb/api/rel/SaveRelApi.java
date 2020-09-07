@@ -59,6 +59,9 @@ public class SaveRelApi extends PrivateApiComponentBase {
         if (relMapper.checkRelByFromToName(relVo) > 0) {
             throw new RelIsExistsException(relVo.getFromName(), relVo.getToName());
         }
+        if (relMapper.checkRelByFromToLabel(relVo) > 0) {
+            throw new RelIsExistsException(relVo.getFromLabel(), relVo.getToLabel());
+        }
         if (id == null) {
             relMapper.insertRel(relVo);
         } else {
