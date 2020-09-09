@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+import codedriver.framework.auth.core.AuthActionChecker;
+import codedriver.framework.cmdb.constvalue.GroupType;
 import codedriver.framework.cmdb.constvalue.TransactionActionType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.reminder.core.OperationTypeEnum;
@@ -23,6 +25,8 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.dto.cientity.AttrEntityVo;
 import codedriver.module.cmdb.dto.cientity.CiEntityVo;
+import codedriver.module.cmdb.exception.cientity.CiEntityAuthException;
+import codedriver.module.cmdb.service.ci.CiAuthService;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 
 @Service
@@ -31,6 +35,9 @@ public class SaveCiEntityApi extends PrivateApiComponentBase {
 
     @Autowired
     private CiEntityService ciEntityService;
+
+    @Autowired
+    private CiAuthService ciAuthService;
 
     @Override
     public String getToken() {
@@ -56,14 +63,36 @@ public class SaveCiEntityApi extends PrivateApiComponentBase {
     @Description(desc = "保存配置项接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
+        Long ciId = jsonObj.getLong("ciId");
         Long id = jsonObj.getLong("id");
+        boolean hasAuth = AuthActionChecker.check("CI_MODIFY", "CIENTITY_MODIFY");
+        if (!hasAuth) {
+            // 拥有模型管理权限允许添加或修改配置项
+            hasAuth = ciAuthService.hasCiManagePrivilege(ciId);
+        }
         TransactionActionType mode = TransactionActionType.INSERT;
         CiEntityVo ciEntityVo = new CiEntityVo();
         if (id != null) {
+            if (!hasAuth) {
+                hasAuth = ciAuthService.hasCiEntityUpdatePrivilege(ciId);
+            }
+            if (!hasAuth) {
+                // 判断是否在维护组内
+                hasAuth = ciAuthService.isInGroup(id, GroupType.MATAIN);
+            }
             ciEntityVo.setId(id);
             mode = TransactionActionType.UPDATE;
+        } else {
+            if (!hasAuth) {
+                hasAuth = ciAuthService.hasCiEntityInsertPrivilege(ciId);
+            }
         }
-        ciEntityVo.setCiId(jsonObj.getLong("ciId"));
+
+        if (!hasAuth) {
+            throw new CiEntityAuthException(mode.getText());
+        }
+
+        ciEntityVo.setCiId(ciId);
         JSONObject attrObj = jsonObj.getJSONObject("attrEntityData");
         if (MapUtils.isNotEmpty(attrObj)) {
             List<AttrEntityVo> attrEntityList = new ArrayList<>();

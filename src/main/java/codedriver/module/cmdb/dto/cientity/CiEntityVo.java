@@ -2,7 +2,13 @@ package codedriver.module.cmdb.dto.cientity;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -12,6 +18,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.annotation.JSONField;
 
+import codedriver.framework.cmdb.constvalue.AttrType;
 import codedriver.framework.cmdb.constvalue.EditModeType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
@@ -62,6 +69,8 @@ public class CiEntityVo extends BasePageVo {
     private transient List<Long> attrIdList;
     @JSONField(serialize = false) // 需要返回的关系列表，为空代表返回所有关系
     private transient List<Long> relIdList;
+    @JSONField(serialize = false)
+    private transient List<Long> groupIdList;// 查询时使用的群组id
 
     public CiEntityVo() {
 
@@ -278,6 +287,8 @@ public class CiEntityVo extends BasePageVo {
         this.name = name;
     }
 
+    private static final String regex = "\\{([^\\}]+?)\\}";
+
     public JSONObject getAttrEntityData() {
         String keyprefix = "attr_";
         if (MapUtils.isEmpty(attrEntityData) && CollectionUtils.isNotEmpty(this.attrEntityList)) {
@@ -287,9 +298,49 @@ public class CiEntityVo extends BasePageVo {
             for (AttrEntityVo attrEntityVo : this.attrEntityList) {
                 JSONObject attrObj = new JSONObject();
                 attrObj.put("type", attrEntityVo.getAttrType());
-                attrObj.put("handler", attrEntityVo.getPropHandler());
-                attrObj.put("valueList", attrEntityVo.getActualValueList());
-                attrObj.put("propId", attrEntityVo.getPropId());
+                if (attrEntityVo.getAttrType().equals(AttrType.EXPRESSION.getValue())) {
+                    String v = "";
+                    if (StringUtils.isNotBlank(attrEntityVo.getAttrExpression())) {
+                        v = attrEntityVo.getAttrExpression();
+                        Matcher matcher = Pattern.compile(regex).matcher(v);
+                        Set<String> labelSet = new HashSet<>();
+                        while (matcher.find()) {
+                            labelSet.add(matcher.group(1));
+                        }
+                        Iterator<String> it = labelSet.iterator();
+                        while (it.hasNext()) {
+                            String k = it.next();
+                            for (AttrEntityVo attrentity : this.attrEntityList) {
+                                // 跳过自己或express类的属性
+                                if (attrentity.getAttrId().equals(attrEntityVo.getAttrId())
+                                    || attrentity.getAttrType().equals(AttrType.EXPRESSION.getValue())) {
+                                    continue;
+                                }
+                                // 用唯一标识或名称都可以匹配
+                                if (k.equalsIgnoreCase(attrentity.getAttrName())
+                                    || k.equalsIgnoreCase(attrentity.getAttrLabel())) {
+                                    if (CollectionUtils.isNotEmpty(attrentity.getActualValueList())) {
+                                        v = v.replace("{" + k + "}",
+                                            attrentity.getActualValueList().stream().collect(Collectors.joining("_")));
+                                    } else {
+                                        v = v.replace("{" + k + "}", "");
+                                    }
+                                    it.remove();
+                                }
+                            }
+                        }
+                    }
+                    JSONArray vl = new JSONArray();
+                    vl.add(v);
+                    attrObj.put("valueList", vl);
+                } else if (attrEntityVo.getAttrType().equals(AttrType.PROPERTY.getValue())) {
+                    attrObj.put("handler", attrEntityVo.getPropHandler());
+                    attrObj.put("valueList", attrEntityVo.getActualValueList());
+                    attrObj.put("propId", attrEntityVo.getPropId());
+                } else if (attrEntityVo.getAttrType().equals(AttrType.CUSTOM.getValue())) {
+                    attrObj.put("valueList", attrEntityVo.getActualValueList());
+                }
+
                 attrEntityData.put(keyprefix + attrEntityVo.getAttrId(), attrObj);
             }
         }
@@ -326,6 +377,14 @@ public class CiEntityVo extends BasePageVo {
 
     public void setRelEntityData(JSONObject relEntityData) {
         this.relEntityData = relEntityData;
+    }
+
+    public List<Long> getGroupIdList() {
+        return groupIdList;
+    }
+
+    public void setGroupIdList(List<Long> groupIdList) {
+        this.groupIdList = groupIdList;
     }
 
 }

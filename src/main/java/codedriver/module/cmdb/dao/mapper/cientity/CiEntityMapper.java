@@ -12,6 +12,9 @@ import codedriver.module.cmdb.dto.cientity.CiEntityVo;
  * @Time:Aug 15, 2020
  */
 public interface CiEntityMapper {
+    public List<Long> getCiEntityIdByGroupIdList(@Param("groupIdList") List<Long> groupIdList,
+        @Param("ciEntityIdList") List<Long> ciEntityIdList, @Param("typeList") List<String> typeList);
+
     public CiEntityVo getCiEntityById(Long id);
 
     public List<Long> searchCiEntityId(CiEntityVo ciEntityVo);

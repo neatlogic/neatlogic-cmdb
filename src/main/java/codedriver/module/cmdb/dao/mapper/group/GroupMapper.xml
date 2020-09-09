@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.cmdb.dao.mapper.group.GroupMapper">
+	<cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
+
+	<select id="getGroupIdByUserUuid" resultType="java.lang.Long" useCache="true">
+		SELECT -1 AS group_id FROM `cmdb_group_auth` WHERE FALSE
+		<if test="userUuid != null and userUuid != ''">
+			UNION
+			SELECT
+			`group_id`
+			FROM
+			`cmdb_group_auth`
+			WHERE
+			auth_type = 'user'
+			AND
+			auth_uuid = #{uesrUuid}
+		</if>
+		<if test="teamUuidList != null and teamUuidList.size() > 0">
+			UNION
+			SELECT
+			`group_id`
+			FROM
+			`cmdb_group_auth`
+			WHERE
+			auth_type = 'team'
+			AND
+			auth_uuid IN
+			<foreach collection="teamUuidList" item="item" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test="roleUuidList != null and roleUuidList.size() > 0">
+			UNION
+			SELECT
+			`group_id`
+			FROM
+			`cmdb_group_auth`
+			WHERE
+			auth_type = 'role'
+			AND
+			auth_uuid IN
+			<foreach collection="roleUuidList" item="item" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+	</select>
+</mapper>

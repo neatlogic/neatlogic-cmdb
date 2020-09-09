@@ -24,12 +24,16 @@ public class AttrEntityVo {
     private Long attrId;
     @EntityField(name = "属性唯一标识", type = ApiParamType.STRING)
     private String attrName;
+    @EntityField(name = "属性名称", type = ApiParamType.STRING)
+    private String attrLabel;
     @EntityField(name = "属性类型", type = ApiParamType.STRING)
     private String attrType;
     @EntityField(name = "属性定义id", type = ApiParamType.LONG)
     private Long propId;
     @EntityField(name = "属性定义处理器", type = ApiParamType.STRING)
     private String propHandler;
+    @EntityField(name = "属性表达式", type = ApiParamType.STRING)
+    private String attrExpression;
     @JSONField(serialize = false) // 原始值，可以是任何类型，后面在拆解到valueList里
     private transient Object value;
     @EntityField(name = "值列表", type = ApiParamType.JSONARRAY)
@@ -252,6 +256,22 @@ public class AttrEntityVo {
 
     public void setPropId(Long propId) {
         this.propId = propId;
+    }
+
+    public String getAttrExpression() {
+        return attrExpression;
+    }
+
+    public void setAttrExpression(String attrExpression) {
+        this.attrExpression = attrExpression;
+    }
+
+    public String getAttrLabel() {
+        return attrLabel;
+    }
+
+    public void setAttrLabel(String attrLabel) {
+        this.attrLabel = attrLabel;
     }
 
 }

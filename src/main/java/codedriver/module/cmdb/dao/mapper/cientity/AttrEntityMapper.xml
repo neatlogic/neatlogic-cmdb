@@ -17,8 +17,9 @@
 		<id property="attrId" column="attrId" />
 		<id property="ciEntityId" column="ciEntityId" />
 		<result property="attrName" column="attrName" />
+		<result property="attrLabel" column="attrLabel" />
 		<result property="attrType" column="attrType" />
-		<result property="attrName" column="attrName" />
+		<result property="attrExpression" column="attrExpression"/>
 		<result property="propId" column="propId" />
 		<result property="propHandler" column="propHandler" />
 		<collection property="valueList" ofType="java.lang.String">
@@ -31,9 +32,11 @@
 		a.`id`,
 		a.`ci_entity_id` AS ciEntityId,
 		a.`attr_id` AS attrId,
-		a.`attr_name` AS attrName,
 		a.`value`,
+		b.`name` AS attrName,
+		b.`label` AS attrLabel,
 		b.`type` AS attrType,
+		b.`expression` AS attrExpression,
 		b.`prop_id` AS propId,
 		p.`handler` AS propHandler
 		FROM
@@ -49,9 +52,11 @@
 		a.`id`,
 		a.`ci_entity_id` AS ciEntityId,
 		a.`attr_id` AS attrId,
-		a.`attr_name` AS attrName,
 		a.`value`,
+		b.`name` AS attrName,
+		b.`label` AS attrLabel,
 		b.`type` AS attrType,
+		b.`expression` AS attrExpression,
 		b.`prop_id` AS propId,
 		p.`handler` AS propHandler
 		FROM

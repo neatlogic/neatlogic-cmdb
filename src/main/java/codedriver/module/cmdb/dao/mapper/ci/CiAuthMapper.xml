@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.ci.CiAuthMapper">
+	<cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
 
-	<select id="getCiAuthByCiId" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.CiAuthVo">
+	<select id="getCiAuthByCiId" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.CiAuthVo" useCache="true">
 		SELECT
 		`ci_id` AS ciId,
 		`auth_type` AS authType,

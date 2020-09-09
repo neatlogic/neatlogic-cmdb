@@ -1,6 +1,28 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper">
+	<select id="getCiEntityIdByGroupIdList" resultType="java.lang.Long">
+		SELECT
+		`ci_entity_id`
+		FROM
+		`cmdb_cientity_group`
+		WHERE
+		group_id IN
+		<foreach collection="groupIdList" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+		AND
+		ci_entity_id IN
+		<foreach collection="ciEntityIdList" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+		AND
+		type IN
+		<foreach collection="typeList" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+
 	<select id="getCiEntityById" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
 		SELECT
 		`id`,
@@ -115,6 +137,21 @@
 					</when>
 				</choose>
 			</foreach>
+		</if>
+		<if test="groupIdList != null and groupIdList.size() > 0">
+			JOIN
+			(
+			SELECT -1 AS ci_entity_id
+			UNION
+			SELECT
+			cc.id AS ci_entity_id
+			FROM
+			cmdb_cientity cc JOIN
+			`cmdb_cientity_group` ccg ON cc.id = ccg.ci_entity_id AND cc.ci_id = #{ciId} AND ccg.group_id IN
+			<foreach collection="groupIdList" item="item" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+			) auth ON auth.ci_entity_id = cientity.id
 		</if>
 	</sql>
 

@@ -1,5 +1,6 @@
 package codedriver.module.cmdb.service.ci;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,8 +8,11 @@ import org.springframework.stereotype.Service;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.cmdb.constvalue.CiAuthType;
+import codedriver.framework.cmdb.constvalue.GroupType;
 import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiAuthMapper;
+import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
+import codedriver.module.cmdb.dao.mapper.group.GroupMapper;
 import codedriver.module.cmdb.dto.ci.CiAuthVo;
 
 @Service
@@ -19,11 +23,17 @@ public class CiAuthServiceImpl implements CiAuthService {
     @Autowired
     private CiAuthMapper ciAuthMapper;
 
+    @Autowired
+    private GroupMapper groupMapper;
+
+    @Autowired
+    private CiEntityMapper ciEntityMapper;
+
     /**
      * 判断模型管理权限
      */
     @Override
-    public boolean hasCiPrivilege(Long ciId) {
+    public boolean hasCiManagePrivilege(Long ciId) {
         return hasCiPrivilege(ciId, CiAuthType.CIMANAGE);
     }
 
@@ -64,33 +74,71 @@ public class CiAuthServiceImpl implements CiAuthService {
     }
 
     @Override
-    /**
-     * 拥有模型权限的用户也拥有配置项的所有权限
-     */
-    public boolean hasCiEntityPrivilege(Long ciId, Long ciEntityId, CiAuthType auth) {
-        boolean hasAuth = false;
-        hasAuth = hasCiPrivilege(ciId, CiAuthType.CIMANAGE, auth);
-        if (!hasAuth) {
-            // 判断维护圈和消费圈权限
-            if (auth.equals(CiAuthType.CIENTITYQUERY)) {
-
-            }
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-    @Override
-    public boolean hasTransactionPrivilege(Long ciId, Long ciEntityId, Long transactionId) {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
     public boolean hasPasswordPrivilege(Long ciEntityId) {
         // TODO Auto-generated method stub
         return false;
+    }
+
+    @Override
+    public boolean hasCiEntityQueryPrivilege(Long ciId) {
+        return hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYDELETE, CiAuthType.CIENTITYQUERY,
+            CiAuthType.CIENTITYQUERY);
+    }
+
+    @Override
+    public boolean hasCiEntityQueryPrivilege(Long ciId, Long ciEntityId) {
+        if (hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYDELETE, CiAuthType.CIENTITYQUERY,
+            CiAuthType.CIENTITYQUERY)) {
+            return true;
+        } else {
+            // FIXME 补充维护群组判断
+        }
+        return false;
+    }
+
+    @Override
+    public boolean hasCiEntityInsertPrivilege(Long ciId) {
+        return hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYINSERT);
+    }
+
+    @Override
+    public boolean hasCiEntityInsertPrivilege(Long ciId, Long ciEntityId) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean hasCiEntityUpdatePrivilege(Long ciId) {
+        return hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYUPDATE);
+    }
+
+    @Override
+    public boolean hasCiEntityDeletePrivilege(Long ciId) {
+        return hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYDELETE);
+    }
+
+    @Override
+    public boolean hasTransactionPrivilege(Long ciId) {
+        return hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.TRANSACTIONMANAGE);
+    }
+
+    @Override
+    public boolean isInGroup(Long ciEntityId, GroupType... groupType) {
+
+        return false;
+    }
+
+    @Override
+    public List<Long> isInGroup(List<Long> ciEntityIdList, GroupType... groupType) {
+        String userUuid = UserContext.get().getUserUuid(true);
+        List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(userUuid);
+        List<String> roleUuidList = UserContext.get().getRoleUuidList();
+        List<Long> groupIdList = groupMapper.getGroupIdByUserUuid(userUuid, teamUuidList, roleUuidList);
+        List<String> groupTypeList = new ArrayList<>();
+        for (GroupType g : groupType) {
+            groupTypeList.add(g.getValue());
+        }
+        return ciEntityMapper.getCiEntityIdByGroupIdList(groupIdList, ciEntityIdList, groupTypeList);
     }
 
 }

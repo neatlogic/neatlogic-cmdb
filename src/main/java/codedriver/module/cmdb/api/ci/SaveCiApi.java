@@ -97,7 +97,7 @@ public class SaveCiApi extends PrivateApiComponentBase {
         } else {
             // 编辑模型除了管理员权限还要看具体的模型授权
             if (!hasAuth) {
-                hasAuth = ciAuthService.hasCiPrivilege(ciId);
+                hasAuth = ciAuthService.hasCiManagePrivilege(ciId);
             }
             if (!hasAuth) {
                 throw new CiAuthException();

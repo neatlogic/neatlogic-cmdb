@@ -56,7 +56,7 @@ public class SaveCiViewApi extends PrivateApiComponentBase {
         Long ciId = jsonObj.getLong("ciId");
         boolean hasAuth = AuthActionChecker.check("CI_MODIFY");
         if (!hasAuth) {
-            hasAuth = ciAuthService.hasCiPrivilege(ciId);
+            hasAuth = ciAuthService.hasCiManagePrivilege(ciId);
         }
         if (!hasAuth) {
             throw new CiAuthException();
