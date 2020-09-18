@@ -26,6 +26,8 @@ public class AttrVo implements Serializable {
     private Long propId;
     @EntityField(name = "属性定义类型", type = ApiParamType.STRING)
     private String propHandler;
+    @EntityField(name = "属性定义配置", type = ApiParamType.JSONOBJECT)
+    private JSONObject propConfig;
     @EntityField(name = "值表达式", type = ApiParamType.STRING)
     private String expression;
     @EntityField(name = "英文名称，模型内唯一", type = ApiParamType.STRING)
@@ -213,6 +215,18 @@ public class AttrVo implements Serializable {
 
     public void setPropHandler(String propHandler) {
         this.propHandler = propHandler;
+    }
+
+    public JSONObject getPropConfig() {
+        return propConfig;
+    }
+
+    public void setPropConfig(String propConfigStr) {
+        try {
+            this.propConfig = JSONObject.parseObject(propConfigStr);
+        } catch (Exception ex) {
+
+        }
     }
 
 }

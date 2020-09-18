@@ -1,6 +1,45 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper">
+	<select id="checkRelEntityIsExists" parameterType="codedriver.module.cmdb.dto.cientity.RelEntityVo" resultType="int">
+		SELECT
+		COUNT(1)
+		FROM
+		`cmdb_relentity`
+		WHERE
+		from_cientity_id = #{fromCiEntityId}
+		AND to_cientity_id = #{toCiEntityId}
+		AND rel_id = #{relId}
+	</select>
+
+	<select id="getRelEntityByToCiEntityIdAndRelId" resultType="codedriver.module.cmdb.dto.cientity.RelEntityVo">
+		SELECT
+		`id`,
+		`rel_id` AS relId,
+		`from_cientity_id` AS fromCiEntityId,
+		`to_cientity_id` AS toCiEntityId
+		FROM
+		`cmdb_relentity`
+		WHERE
+		to_cientity_id = #{toCiEntityId}
+		AND
+		rel_id = #{relId}
+	</select>
+
+	<select id="getRelEntityByFromCiEntityIdAndRelId" resultType="codedriver.module.cmdb.dto.cientity.RelEntityVo">
+		SELECT
+		`id`,
+		`rel_id` AS relId,
+		`from_cientity_id` AS fromCiEntityId,
+		`to_cientity_id` AS toCiEntityId
+		FROM
+		`cmdb_relentity`
+		WHERE
+		from_cientity_id = #{fromCiEntityId}
+		AND
+		rel_id = #{relId}
+	</select>
+
 	<select id="getRelEntityByCiEntityId" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.cientity.RelEntityVo">
 		SELECT
 		a.`id`,
@@ -9,15 +48,14 @@
 		a.`to_cientity_id` AS toCiEntityId,
 		b.`value` AS fromCiEntityName,
 		c.`value` AS toCiEntityName,
+		d.`from_ci_id` AS fromCiId,
+		d.`to_ci_id` AS toCiId,
 		'from' AS direction
 		FROM
 		`cmdb_relentity` a
-		JOIN `cmdb_attrentity` b
-		ON a.`from_cientity_id` = b.ci_entity_id
-		AND b.attr_name = 'name'
-		JOIN `cmdb_attrentity` c
-		ON a.`to_cientity_id` = c.`ci_entity_id`
-		AND c.`attr_name` = 'name'
+		JOIN `cmdb_attrentity` b ON a.`from_cientity_id` = b.ci_entity_id AND b.attr_name = 'name'
+		JOIN `cmdb_attrentity` c ON a.`to_cientity_id` = c.`ci_entity_id` AND c.`attr_name` = 'name'
+		JOIN `cmdb_rel` d ON a.rel_id = d.id
 		WHERE a.from_cientity_id = #{value}
 		UNION
 		SELECT
@@ -27,15 +65,14 @@
 		a.`to_cientity_id` AS toCiEntityId,
 		b.`value` AS fromCiEntityName,
 		c.`value` AS toCiEntityName,
+		d.`from_ci_id` AS fromCiId,
+		d.`to_ci_id` AS toCiId,
 		'to' AS direction
 		FROM
 		`cmdb_relentity` a
-		JOIN `cmdb_attrentity` b
-		ON a.`from_cientity_id` = b.ci_entity_id
-		AND b.attr_name = 'name'
-		JOIN `cmdb_attrentity` c
-		ON a.`to_cientity_id` = c.`ci_entity_id`
-		AND c.`attr_name` = 'name'
+		JOIN `cmdb_attrentity` b ON a.`from_cientity_id` = b.ci_entity_id AND b.attr_name = 'name'
+		JOIN `cmdb_attrentity` c ON a.`to_cientity_id` = c.`ci_entity_id` AND c.`attr_name` = 'name'
+		JOIN `cmdb_rel` d ON a.rel_id = d.id
 		WHERE a.to_cientity_id = #{value}
 		ORDER BY id
 	</select>
@@ -48,15 +85,14 @@
 		a.`to_cientity_id` AS toCiEntityId,
 		b.`value` AS fromCiEntityName,
 		c.`value` AS toCiEntityName,
+		d.`from_ci_id` AS fromCiId,
+		d.`to_ci_id` AS toCiId,
 		'from' AS direction
 		FROM
 		`cmdb_relentity` a
-		JOIN `cmdb_attrentity` b
-		ON a.`from_cientity_id` = b.ci_entity_id
-		AND b.attr_name = 'name'
-		JOIN `cmdb_attrentity` c
-		ON a.`to_cientity_id` = c.`ci_entity_id`
-		AND c.`attr_name` = 'name'
+		JOIN `cmdb_attrentity` b ON a.`from_cientity_id` = b.ci_entity_id AND b.attr_name = 'name'
+		JOIN `cmdb_attrentity` c ON a.`to_cientity_id` = c.`ci_entity_id` AND c.`attr_name` = 'name'
+		JOIN `cmdb_rel` d ON a.rel_id = d.id
 		WHERE a.from_cientity_id IN
 		<foreach collection="idList" item="item" open="(" separator="," close=")">
 			#{item}
@@ -75,15 +111,14 @@
 		a.`to_cientity_id` AS toCiEntityId,
 		b.`value` AS fromCiEntityName,
 		c.`value` AS toCiEntityName,
+		d.`from_ci_id` AS fromCiId,
+		d.`to_ci_id` AS toCiId,
 		'to' AS direction
 		FROM
 		`cmdb_relentity` a
-		JOIN `cmdb_attrentity` b
-		ON a.`from_cientity_id` = b.ci_entity_id
-		AND b.attr_name = 'name'
-		JOIN `cmdb_attrentity` c
-		ON a.`to_cientity_id` = c.`ci_entity_id`
-		AND c.`attr_name` = 'name'
+		JOIN `cmdb_attrentity` b ON a.`from_cientity_id` = b.ci_entity_id AND b.attr_name = 'name'
+		JOIN `cmdb_attrentity` c ON a.`to_cientity_id` = c.`ci_entity_id` AND c.`attr_name` = 'name'
+		JOIN `cmdb_rel` d ON a.rel_id = d.id
 		WHERE a.to_cientity_id IN
 		<foreach collection="idList" item="item" open="(" separator="," close=")">
 			#{item}
@@ -95,4 +130,39 @@
 			</foreach>
 		</if>
 	</select>
+
+	<insert id="insertRelEntity" parameterType="codedriver.module.cmdb.dto.cientity.RelEntityVo">
+		INSERT INTO `cmdb_relentity` (
+		`id`,
+		`rel_id`,
+		`from_cientity_id`,
+		`to_cientity_id`
+		)
+		VALUES
+		(
+		#{id},
+		#{relId},
+		#{fromCiEntityId},
+		#{toCiEntityId}
+		)
+	</insert>
+	
+
+	<delete id="deleteRelEntityByFromCiEntityIdAndRelId">
+		DELETE
+		FROM
+		`cmdb_relentity`
+		WHERE from_cientity_id = #{fromCiEntityId}
+		AND
+		rel_id = #{relId}
+	</delete>
+
+	<delete id="deleteRelEntityByToCiEntityIdAndRelId">
+		DELETE
+		FROM
+		`cmdb_relentity`
+		WHERE to_cientity_id = #{toCiEntityId}
+		AND
+		rel_id = #{relId}
+	</delete>
 </mapper>

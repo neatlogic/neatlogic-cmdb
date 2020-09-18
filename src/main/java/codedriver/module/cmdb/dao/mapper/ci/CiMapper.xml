@@ -2,7 +2,22 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.ci.CiMapper">
 	<cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
-	
+
+	<select id="getCiByToCiId" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.CiVo">
+		SELECT
+		a.`id`,
+		a.`name`,
+		a.`label`,
+		a.`description`,
+		a.`icon`,
+		a.`type_id` AS typeId,
+		a.`is_private` AS isPrivate,
+		a.`is_menu` AS isMenu
+		FROM
+		`cmdb_ci` a JOIN `cmdb_rel` b ON a.id = b.from_ci_id
+		WHERE b.to_ci_id = #{value} and a.id != #{value}
+	</select>
+
 	<select id="checkCiNameIsExists" parameterType="codedriver.module.cmdb.dto.ci.CiVo" resultType="int">
 		SELECT COUNT(1) FROM cmdb_ci WHERE name = #{name} AND id != #{id}
 	</select>
@@ -103,6 +118,19 @@
 		#{isMenu}
 		)
 	</insert>
+
+	<delete id="deleteCiById" parameterType="java.lang.Long">
+		DELETE a,b,c,d,e,f,g
+		FROM
+		cmdb_ci a
+		LEFT JOIN cmdb_attr b ON a.`id` = b.`ci_id`
+		LEFT JOIN cmdb_rel c ON a.`id` = c.`from_ci_id`
+		LEFT JOIN cmdb_rel d ON a.`id` = d.`to_ci_id`
+		LEFT JOIN cmdb_ci_auth e ON a.id = e.`ci_id`
+		LEFT JOIN cmdb_relgroup f ON a.id = f.`ci_id`
+		LEFT JOIN cmdb_view g ON a.id = g.`ci_id`
+		WHERE a.id = #{value}
+	</delete>
 
 
 </mapper>

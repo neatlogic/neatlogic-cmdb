@@ -29,12 +29,9 @@ public class DatePropHandler implements IPropertyHandler {
     }
 
     @Override
-    public List<String> transferValue(Object value) {
-        List<String> valueList = new ArrayList<>();
-        if (value != null) {
-            valueList.add(value.toString());
-        }
-        return valueList;
+    public List<String> getDisplayValue(List<String> valueList) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

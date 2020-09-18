@@ -48,13 +48,34 @@
 		WHERE `id` = #{id}
 	</update>
 
+	<insert id="insertRelEntityTransaction" parameterType="codedriver.module.cmdb.dto.transaction.RelEntityTransactionVo">
+		INSERT INTO `cmdb_relentity_transaction` (
+		`id`,
+		`rel_id`,
+		`from_ci_entity_id`,
+		`to_ci_entity_id`,
+		`transaction_id`,
+		`savemode`
+		)
+		VALUES
+		(
+		#{id},
+		#{relId},
+		#{fromCiEntityId},
+		#{toCiEntityId},
+		#{transactionId},
+		#{saveMode}
+		)
+	</insert>
+
 	<insert id="insertAttrEntityTransaction" parameterType="codedriver.module.cmdb.dto.transaction.AttrEntityTransactionVo">
 		INSERT INTO `cmdb_attrentity_transaction` (
 		`ci_entity_id`,
 		`attr_id`,
 		`attr_name`,
 		`value`,
-		`transaction_id`
+		`transaction_id`,
+		`savemode`
 		)
 		VALUES
 		<choose>
@@ -65,7 +86,8 @@
 					#{attrId},
 					#{attrName},
 					#{item},
-					#{transactionId}
+					#{transactionId},
+					#{saveMode}
 					)
 				</foreach>
 			</when>
@@ -75,7 +97,8 @@
 				#{attrId},
 				#{attrName},
 				'',<!-- 用于表示删除配置项属性值 -->
-				#{transactionId}
+				#{transactionId},
+				#{saveMode}
 				)
 			</otherwise>
 		</choose>
@@ -122,4 +145,12 @@
 		NOW()
 		)
 	</insert>
+
+	<delete id="deleteTransactionByCiId" parameterType="java.lang.Long">
+		DELETE a,b,c,d FROM cmdb_transaction a
+		LEFT JOIN cmdb_cientity_transaction b ON a.`id` = b.`transaction_id`
+		LEFT JOIN cmdb_attrentity_transaction c ON b.`transaction_id` = c.`transaction_id`
+		LEFT JOIN cmdb_relentity_transaction d ON b.`transaction_id` = d.`transaction_id`
+		WHERE a.`ci_id` = #{value}
+	</delete>
 </mapper>

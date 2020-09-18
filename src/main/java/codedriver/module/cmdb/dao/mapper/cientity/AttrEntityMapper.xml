@@ -1,17 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.cientity.AttrEntityMapper">
-	<select id="checkAttrEntityValueIsExists" parameterType="codedriver.module.cmdb.dto.cientity.AttrEntityVo" resultType="int">
-		SELECT COUNT(1) FROM (
-		SELECT
-		1
-		FROM
-		`cmdb_attrentity`
-		WHERE ci_entity_id != #{ciEntityId} AND attr_id = #{attrId} AND value IN
-		<foreach collection="valueList" item="item" open="(" separator="," close=")"> #{item}</foreach>
-		LIMIT 1
-		) tmp
-	</select>
 
 	<resultMap id="attrEntityMap" type="codedriver.module.cmdb.dto.cientity.AttrEntityVo">
 		<id property="attrId" column="attrId" />
@@ -19,13 +8,39 @@
 		<result property="attrName" column="attrName" />
 		<result property="attrLabel" column="attrLabel" />
 		<result property="attrType" column="attrType" />
-		<result property="attrExpression" column="attrExpression"/>
+		<result property="attrExpression" column="attrExpression" />
 		<result property="propId" column="propId" />
 		<result property="propHandler" column="propHandler" />
 		<collection property="valueList" ofType="java.lang.String">
 			<result column="value" />
 		</collection>
 	</resultMap>
+
+	<select id="getAttrEntityByAttrIdAndValue" parameterType="codedriver.module.cmdb.dto.cientity.AttrEntityVo" resultMap="attrEntityMap">
+		SELECT
+		a.`id`,
+		a.`ci_entity_id` AS ciEntityId,
+		a.`attr_id` AS attrId,
+		a.`value`,
+		b.`name` AS attrName,
+		b.`label` AS attrLabel,
+		b.`type` AS attrType,
+		b.`expression` AS attrExpression,
+		b.`prop_id` AS propId,
+		p.`handler` AS propHandler
+		FROM
+		`cmdb_attrentity` a JOIN
+		`cmdb_attr` b ON a.`attr_id` = b.`id`
+		LEFT JOIN `cmdb_prop` p ON b.`prop_id` = p.id
+		WHERE a.ci_entity_id IN (SELECT
+		DISTINCT ci_entity_id
+		FROM
+		`cmdb_attrentity`
+		WHERE ci_entity_id != #{ciEntityId} AND attr_id = #{attrId} AND value IN
+		<foreach collection="valueList" item="item" open="(" separator="," close=")"> #{item}</foreach>
+		)
+		ORDER BY a.id
+	</select>
 
 	<select id="getAttrEntityByCiEntityId" parameterType="java.lang.Long" resultMap="attrEntityMap">
 		SELECT
@@ -44,6 +59,26 @@
 		`cmdb_attr` b ON a.`attr_id` = b.`id`
 		LEFT JOIN `cmdb_prop` p ON b.`prop_id` = p.id
 		WHERE a.ci_entity_id = #{value}
+		ORDER BY a.id
+	</select>
+	
+	<select id="getAttrEntityByCiEntityIdAndAttrId" resultMap="attrEntityMap">
+		SELECT
+		a.`id`,
+		a.`ci_entity_id` AS ciEntityId,
+		a.`attr_id` AS attrId,
+		a.`value`,
+		b.`name` AS attrName,
+		b.`label` AS attrLabel,
+		b.`type` AS attrType,
+		b.`expression` AS attrExpression,
+		b.`prop_id` AS propId,
+		p.`handler` AS propHandler
+		FROM
+		`cmdb_attrentity` a JOIN
+		`cmdb_attr` b ON a.`attr_id` = b.`id`
+		LEFT JOIN `cmdb_prop` p ON b.`prop_id` = p.id
+		WHERE a.ci_entity_id = #{ciEntityId} AND a.attr_id = #{attrId}
 		ORDER BY a.id
 	</select>
 
@@ -73,7 +108,7 @@
 				#{item}
 			</foreach>
 		</if>
-		ORDER BY 
+		ORDER BY
 		a.id
 	</select>
 

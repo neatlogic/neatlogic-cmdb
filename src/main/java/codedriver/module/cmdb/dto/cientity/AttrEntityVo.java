@@ -1,11 +1,9 @@
 package codedriver.module.cmdb.dto.cientity;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import com.alibaba.fastjson.annotation.JSONField;
 
@@ -36,7 +34,7 @@ public class AttrEntityVo {
     private String attrExpression;
     @JSONField(serialize = false) // 原始值，可以是任何类型，后面在拆解到valueList里
     private transient Object value;
-    @EntityField(name = "值列表", type = ApiParamType.JSONARRAY)
+    @EntityField(name = "入库值列表", type = ApiParamType.JSONARRAY)
     private List<String> valueList;
     @EntityField(name = "真实值列表", type = ApiParamType.JSONARRAY)
     private List<String> actualValueList;
@@ -57,17 +55,8 @@ public class AttrEntityVo {
         this.ciEntityId = attrEntityTransactionVo.getCiEntityId();
         this.attrId = attrEntityTransactionVo.getAttrId();
         this.attrName = attrEntityTransactionVo.getAttrName();
-        // 如果事务的valuelist包含空值，代表需要删除当前属性，则无需写入attrEntity的valueList
-        if (CollectionUtils.isNotEmpty(attrEntityTransactionVo.getValueList())) {
-            for (String v : attrEntityTransactionVo.getValueList()) {
-                if (StringUtils.isNotBlank(v)) {
-                    if (this.valueList == null) {
-                        this.valueList = new ArrayList<>();
-                    }
-                    this.valueList.add(v);
-                }
-            }
-        }
+        this.valueList = attrEntityTransactionVo.getValueList();
+        this.actualValueList = attrEntityTransactionVo.getActualValueList();
     }
 
     public Long getId() {
@@ -200,6 +189,9 @@ public class AttrEntityVo {
     }
 
     public List<String> getValueList() {
+        if (CollectionUtils.isEmpty(valueList) && CollectionUtils.isNotEmpty(actualValueList)) {
+            valueList = AttrValueUtil.getTransferValueList(actualValueList);
+        }
         return valueList;
     }
 
@@ -212,18 +204,18 @@ public class AttrEntityVo {
     }
 
     public List<String> getActualValueList() {
-        if (CollectionUtils.isEmpty(actualValueList)) {
-            actualValueList = AttrValueUtil.getActualValueList(this.valueList);
+        if (CollectionUtils.isEmpty(actualValueList) && CollectionUtils.isNotEmpty(valueList)) {
+            actualValueList = AttrValueUtil.getActualValueList(valueList);
         }
         return actualValueList;
     }
 
-    @JSONField(serialize = false)
-    public List<String> getTransferValueList() {
-        if (CollectionUtils.isNotEmpty(valueList)) {
-            return AttrValueUtil.getTransferValueList(this.valueList);
+    public void setActualValueList(List<String> actualValueList) {
+        if (CollectionUtils.isNotEmpty(actualValueList)) {
+            this.actualValueList = actualValueList.stream().distinct().collect(Collectors.toList());
+        } else {
+            this.actualValueList = actualValueList;
         }
-        return valueList;
     }
 
     public Object getValue() {

@@ -33,7 +33,8 @@
 		attr.`ci_id` AS ciId,
 		attr.`type`,
 		attr.`prop_id` AS propId,
-		(SELECT `handler` FROM cmdb_prop WHERE id = attr.prop_id ) AS propHandler,
+		cp.`config` AS propConfig,
+		cp.`handler` AS propHandler,
 		attr.`expression`,
 		attr.`name`,
 		attr.`label`,
@@ -48,9 +49,10 @@
 		attr.`is_private` AS isPrivate
 		FROM
 		`cmdb_attr` attr LEFT JOIN cmdb_validator cv ON attr.`validator` = cv.id
+		LEFT JOIN cmdb_prop cp ON attr.prop_id = cp.id
 		WHERE
 		ci_id = #{value}
-		ORDER BY id
+		ORDER BY attr.id
 	</select>
 	
 

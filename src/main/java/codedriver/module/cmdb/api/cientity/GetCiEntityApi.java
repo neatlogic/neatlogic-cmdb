@@ -19,17 +19,10 @@ import codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper;
 import codedriver.module.cmdb.dto.cientity.AttrEntityVo;
 import codedriver.module.cmdb.dto.cientity.CiEntityVo;
 import codedriver.module.cmdb.dto.cientity.RelEntityVo;
-import codedriver.module.cmdb.service.ci.CiAuthService;
-import codedriver.module.cmdb.service.cientity.CiEntityService;
 
 @Service
 public class GetCiEntityApi extends PrivateApiComponentBase {
 
-    @Autowired
-    private CiEntityService ciEntityService;
-
-    @Autowired
-    private CiAuthService ciAuthService;
 
     @Autowired
     private CiEntityMapper ciEntityMapper;

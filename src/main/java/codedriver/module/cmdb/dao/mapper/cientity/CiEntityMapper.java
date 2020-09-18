@@ -27,4 +27,6 @@ public interface CiEntityMapper {
 
     public int updateCiEntityLockById(CiEntityVo ciEntityVo);
 
+    public int deleteCiEntityByCiId(Long ciId);
+
 }

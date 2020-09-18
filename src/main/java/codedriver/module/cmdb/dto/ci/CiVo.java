@@ -2,6 +2,7 @@ package codedriver.module.cmdb.dto.ci;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 import com.alibaba.fastjson.annotation.JSONField;
 
@@ -44,6 +45,8 @@ public class CiVo implements Serializable {
     private List<RelVo> relList;
     @EntityField(name = "授权列表", type = ApiParamType.JSONARRAY)
     private List<CiAuthVo> authList;
+    @EntityField(name = "当前用户权限情况", type = ApiParamType.JSONOBJECT)
+    private Map<String, Boolean> authData;
 
     public Long getId() {
         if (id == null) {
@@ -150,6 +153,14 @@ public class CiVo implements Serializable {
 
     public void setAuthList(List<CiAuthVo> authList) {
         this.authList = authList;
+    }
+
+    public Map<String, Boolean> getAuthData() {
+        return authData;
+    }
+
+    public void setAuthData(Map<String, Boolean> authData) {
+        this.authData = authData;
     }
 
 }

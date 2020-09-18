@@ -47,13 +47,15 @@ public class CiEntityVo extends BasePageVo {
     private String status;
     @EntityField(name = "是否锁定编辑", type = ApiParamType.INTEGER)
     private Integer isLocked = 0;
-    @EntityField(name = "属性列表", type = ApiParamType.JSONARRAY)
-    private List<AttrEntityVo> attrEntityList;
-    @EntityField(name = "属性对象，以attrId为key", type = ApiParamType.JSONOBJECT)
+    // @EntityField(name = "属性列表", type = ApiParamType.JSONARRAY)
+    @JSONField(serialize = false)
+    private transient List<AttrEntityVo> attrEntityList;
+    @EntityField(name = "属性对象，以'attr_'+attrId为key", type = ApiParamType.JSONOBJECT)
     private JSONObject attrEntityData;
-    @EntityField(name = "关系列表", type = ApiParamType.JSONARRAY)
-    private List<RelEntityVo> relEntityList;
-    @EntityField(name = "关系对象，以relId为key", type = ApiParamType.JSONOBJECT)
+    // @EntityField(name = "关系列表", type = ApiParamType.JSONARRAY)
+    @JSONField(serialize = false)
+    private transient List<RelEntityVo> relEntityList;
+    @EntityField(name = "关系对象，以'relfrom_'+relId或'relto_'+relId为key", type = ApiParamType.JSONOBJECT)
     private JSONObject relEntityData;
     @EntityField(name = "属性过滤器列表", type = ApiParamType.JSONARRAY)
     private List<AttrFilterVo> attrFilterList;
@@ -71,6 +73,8 @@ public class CiEntityVo extends BasePageVo {
     private transient List<Long> relIdList;
     @JSONField(serialize = false)
     private transient List<Long> groupIdList;// 查询时使用的群组id
+    @JSONField(serialize = false)
+    private transient List<Long> idList;// 需要查询的id列表
 
     public CiEntityVo() {
 
@@ -256,11 +260,14 @@ public class CiEntityVo extends BasePageVo {
     }
 
     public String getName() {
-        if (StringUtils.isBlank(name) && CollectionUtils.isNotEmpty(this.attrEntityList)) {
+        if (StringUtils.isBlank(name)) {
             for (AttrEntityVo attrEntityVo : attrEntityList) {
-                if ("name".equals(attrEntityVo.getAttrName())
-                    && CollectionUtils.isNotEmpty(attrEntityVo.getActualValueList())) {
-                    this.name = attrEntityVo.getActualValueList().get(0);
+                if ("name".equals(attrEntityVo.getAttrName())) {
+                    JSONObject attrData = getAttrEntityData();
+                    if (attrData != null && attrData.containsKey("attr_" + attrEntityVo.getAttrId())) {
+                        return attrData.getJSONObject("attr_" + attrEntityVo.getAttrId()).getJSONArray("valueList")
+                            .getString(0);
+                    }
                 }
             }
         }
@@ -298,6 +305,7 @@ public class CiEntityVo extends BasePageVo {
             for (AttrEntityVo attrEntityVo : this.attrEntityList) {
                 JSONObject attrObj = new JSONObject();
                 attrObj.put("type", attrEntityVo.getAttrType());
+                attrObj.put("name", attrEntityVo.getAttrName());
                 if (attrEntityVo.getAttrType().equals(AttrType.EXPRESSION.getValue())) {
                     String v = "";
                     if (StringUtils.isNotBlank(attrEntityVo.getAttrExpression())) {
@@ -311,7 +319,7 @@ public class CiEntityVo extends BasePageVo {
                         while (it.hasNext()) {
                             String k = it.next();
                             for (AttrEntityVo attrentity : this.attrEntityList) {
-                                // 跳过自己或express类的属性
+                                // 跳过自己或expression类的属性
                                 if (attrentity.getAttrId().equals(attrEntityVo.getAttrId())
                                     || attrentity.getAttrType().equals(AttrType.EXPRESSION.getValue())) {
                                     continue;
@@ -363,9 +371,11 @@ public class CiEntityVo extends BasePageVo {
                 }
                 JSONObject targetObj = new JSONObject();
                 if (relEntityVo.getDirection().equals("from")) {
+                    targetObj.put("ciId", relEntityVo.getToCiId());
                     targetObj.put("ciEntityId", relEntityVo.getToCiEntityId());
                     targetObj.put("ciEntityName", relEntityVo.getToCiEntityName());
                 } else {
+                    targetObj.put("ciId", relEntityVo.getFromCiId());
                     targetObj.put("ciEntityId", relEntityVo.getFromCiEntityId());
                     targetObj.put("ciEntityName", relEntityVo.getFromCiEntityName());
                 }
@@ -385,6 +395,14 @@ public class CiEntityVo extends BasePageVo {
 
     public void setGroupIdList(List<Long> groupIdList) {
         this.groupIdList = groupIdList;
+    }
+
+    public List<Long> getIdList() {
+        return idList;
+    }
+
+    public void setIdList(List<Long> idList) {
+        this.idList = idList;
     }
 
 }

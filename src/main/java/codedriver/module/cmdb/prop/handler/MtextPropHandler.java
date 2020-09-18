@@ -30,33 +30,11 @@ public class MtextPropHandler implements IPropertyHandler {
             SearchExpression.NOTNULL, SearchExpression.NULL,};
     }
 
+
     @Override
-    public List<String> transferValue(Object value) {
-        List<String> valueList = new ArrayList<>();
-        if (value != null) {
-            if (value instanceof List) {
-                List<Object> tl = (List)value;
-                for (Object v : tl) {
-                    if (v != null) {
-                        valueList.add(v.toString());
-                    }
-                }
-            } else {
-                String v = value.toString();
-                v = v.trim();
-                if (v.startsWith("[") && v.endsWith("]")) {
-                    try {
-                        JSONArray tl = JSONArray.parseArray(v);
-                        for (int i = 0; i < tl.size(); i++) {
-                            valueList.add(tl.getString(i));
-                        }
-                    } catch (Exception ex) {
-                        valueList.add(v);
-                    }
-                }
-            }
-        }
-        return valueList;
+    public List<String> getDisplayValue(List<String> valueList) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

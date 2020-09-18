@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import codedriver.framework.cmdb.constvalue.TransactionActionType;
 import codedriver.module.cmdb.dto.cientity.CiEntityVo;
+import codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo;
 
 public interface CiEntityService {
     public List<CiEntityVo> searchCiEntity(CiEntityVo ciEntityVo);
@@ -22,7 +23,7 @@ public interface CiEntityService {
      * @param @return
      * @return Long 事务id
      */
-    public Long saveCiEntity(CiEntityVo ciEntityVo, TransactionActionType action);
+    public Long saveCiEntity(CiEntityTransactionVo ciEntityTransactionVo, TransactionActionType action);
 
     public Long commitTransaction(Long transactionId);
 

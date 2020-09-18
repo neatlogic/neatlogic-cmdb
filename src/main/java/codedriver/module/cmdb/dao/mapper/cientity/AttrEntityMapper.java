@@ -12,6 +12,12 @@ import codedriver.module.cmdb.dto.cientity.AttrEntityVo;
  * @Time:Aug 15, 2020
  */
 public interface AttrEntityMapper {
+
+    public AttrEntityVo getAttrEntityByCiEntityIdAndAttrId(@Param("ciEntityId") Long ciEntityId,
+        @Param("attrId") Long attrId);
+
+    public List<AttrEntityVo> getAttrEntityByAttrIdAndValue(AttrEntityVo attrEntityVo);
+
     public int checkAttrEntityValueIsExists(AttrEntityVo attrEntityVo);
 
     public List<AttrEntityVo> getAttrEntityByCiEntityId(Long ciEntityId);

@@ -69,7 +69,9 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
 
     @SuppressWarnings("serial")
     @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
-        @Param(name = "needCheckAuth", type = ApiParamType.BOOLEAN, desc = "是否需要检查操作权限，如果需要检查操作权限，会根据结果返回action列")})
+        @Param(name = "ciEntityIdList", type = ApiParamType.JSONARRAY, desc = "需要查询的配置项id列表）"),
+        @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "是否需要操作列，如果需要检查操作权限，会根据结果返回action列"),
+        @Param(name = "needCheck", type = ApiParamType.BOOLEAN, desc = "是否需要复选列")})
     @Output({@Param(explode = BasePageVo.class),
         @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = CiEntityVo[].class),
         @Param(name = "theadList", type = ApiParamType.JSONARRAY, desc = "表头信息")})
@@ -83,8 +85,8 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
             hasManageAuth = ciAuthService.hasCiManagePrivilege(ciEntityVo.getCiId());
         }
 
-        boolean needCheckAuth = jsonObj.getBooleanValue("needCheckAuth");
-
+        boolean needAction = jsonObj.getBooleanValue("needAction");
+        boolean needCheck = jsonObj.getBooleanValue("needCheck");
         // 获取视图配置，只返回需要的属性和关系
         CiViewVo ciViewVo = new CiViewVo();
         ciViewVo.setCiId(ciEntityVo.getCiId());
@@ -93,6 +95,14 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
         List<CiViewVo> ciViewList = ciViewMapper.getCiViewByCiId(ciViewVo);
         List<Long> attrIdList = null, relIdList = null;
         JSONArray theadList = new JSONArray();
+        if (needCheck) {
+            // 增加复选列
+            theadList.add(new JSONObject() {
+                {
+                    this.put("key", "selection");
+                }
+            });
+        }
         if (CollectionUtils.isNotEmpty(ciViewList)) {
             attrIdList = new ArrayList<>();
             relIdList = new ArrayList<>();
@@ -111,14 +121,14 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
                 }
                 theadList.add(headObj);
             }
-            if (needCheckAuth) {
-                // 增加操作列
-                theadList.add(new JSONObject() {
-                    {
-                        this.put("key", "action");
-                    }
-                });
-            }
+            // if (needAction) {
+            // 增加操作列，无需判断needAction，因为有“查看详情”操作
+            theadList.add(new JSONObject() {
+                {
+                    this.put("key", "action");
+                }
+            });
+            // }
         }
 
         ciEntityVo.setAttrIdList(attrIdList);
@@ -138,7 +148,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
         if (CollectionUtils.isNotEmpty(ciEntityList)) {
             boolean canEdit = hasManageAuth, canDelete = hasManageAuth, canTransaction = hasManageAuth;
             List<Long> hasAuthCiEntityIdList = new ArrayList<>();
-            if (needCheckAuth) {
+            if (needAction) {
                 canEdit = !canEdit ? ciAuthService.hasCiEntityUpdatePrivilege(ciEntityVo.getCiId()) : canEdit;
                 canDelete = !canDelete ? ciAuthService.hasCiEntityDeletePrivilege(ciEntityVo.getCiId()) : canDelete;
                 canTransaction =
@@ -156,9 +166,10 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
             for (CiEntityVo entity : ciEntityList) {
                 JSONObject entityObj = new JSONObject();
                 entityObj.put("id", entity.getId());
+                entityObj.put("name", entity.getName());
                 entityObj.put("attrEntityData", entity.getAttrEntityData());
                 entityObj.put("relEntityData", entity.getRelEntityData());
-                if (needCheckAuth) {
+                if (needAction) {
                     JSONObject actionData = new JSONObject();
                     if (canEdit) {
                         actionData.put("canEdit", true);
@@ -180,6 +191,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
                     }
                     entityObj.put("actionData", actionData);
                 }
+
                 tbodyList.add(entityObj);
             }
         }

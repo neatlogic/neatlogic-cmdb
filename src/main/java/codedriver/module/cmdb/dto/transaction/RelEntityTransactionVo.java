@@ -1,15 +1,17 @@
-package codedriver.module.cmdb.dto.cientity;
+package codedriver.module.cmdb.dto.transaction;
 
 import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.base.Objects;
 
+import codedriver.framework.cmdb.constvalue.SaveModeType;
+import codedriver.framework.cmdb.constvalue.TransactionActionType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.SnowflakeUtil;
-import codedriver.module.cmdb.dto.transaction.RelEntityTransactionVo;
+import codedriver.module.cmdb.dto.cientity.RelEntityVo;
 
-public class RelEntityVo {
+public class RelEntityTransactionVo {
     @EntityField(name = "id", type = ApiParamType.LONG)
     private Long id;
     @EntityField(name = "关系id", type = ApiParamType.LONG)
@@ -26,20 +28,22 @@ public class RelEntityVo {
     private String toCiEntityName;
     @EntityField(name = "方向", type = ApiParamType.STRING)
     private String direction;
-    @EntityField(name = "目标模型id", type = ApiParamType.LONG)
-    private Long toCiId;
-    @EntityField(name = "来源模型id", type = ApiParamType.LONG)
-    private Long fromCiId;
+    @EntityField(name = "事务id", type = ApiParamType.LONG)
+    private Long transactionId;
+    @EntityField(name = "保存模式", type = ApiParamType.ENUM, member = SaveModeType.class)
+    private String saveMode = SaveModeType.REPLACE.getValue();
+    @EntityField(name = "操作", type = ApiParamType.ENUM, member = TransactionActionType.class)
+    private String action;
 
-    public RelEntityVo() {
+    public RelEntityTransactionVo() {
 
     }
 
-    public RelEntityVo(RelEntityTransactionVo relEntityTransactionVo) {
-        relId = relEntityTransactionVo.getRelId();
-        fromCiEntityId = relEntityTransactionVo.getFromCiEntityId();
-        toCiEntityId = relEntityTransactionVo.getToCiEntityId();
-        direction = relEntityTransactionVo.getDirection();
+    public RelEntityTransactionVo(RelEntityVo relEntityVo) {
+        this.relId = relEntityVo.getRelId();
+        this.direction = relEntityVo.getDirection();
+        this.toCiEntityId = relEntityVo.getToCiEntityId();
+        this.fromCiEntityId = relEntityVo.getFromCiEntityId();
     }
 
     public Long getId() {
@@ -135,10 +139,10 @@ public class RelEntityVo {
         if (other == null) {
             return false;
         }
-        if (!(other instanceof RelEntityVo)) {
+        if (!(other instanceof RelEntityTransactionVo)) {
             return false;
         }
-        final RelEntityVo rel = (RelEntityVo)other;
+        final RelEntityTransactionVo rel = (RelEntityTransactionVo)other;
         if (Objects.equal(getRelId(), rel.getRelId()) && Objects.equal(getFromCiEntityId(), rel.getFromCiEntityId())
             && Objects.equal(getToCiEntityId(), rel.getToCiEntityId())
             && Objects.equal(getDirection(), rel.getDirection())) {
@@ -148,19 +152,27 @@ public class RelEntityVo {
         }
     }
 
-    public Long getToCiId() {
-        return toCiId;
+    public Long getTransactionId() {
+        return transactionId;
     }
 
-    public void setToCiId(Long toCiId) {
-        this.toCiId = toCiId;
+    public void setTransactionId(Long transactionId) {
+        this.transactionId = transactionId;
     }
 
-    public Long getFromCiId() {
-        return fromCiId;
+    public String getSaveMode() {
+        return saveMode;
     }
 
-    public void setFromCiId(Long fromCiId) {
-        this.fromCiId = fromCiId;
+    public void setSaveMode(String saveMode) {
+        this.saveMode = saveMode;
+    }
+
+    public String getAction() {
+        return action;
+    }
+
+    public void setAction(String action) {
+        this.action = action;
     }
 }

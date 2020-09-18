@@ -3,6 +3,7 @@
 <mapper namespace="codedriver.module.cmdb.dao.mapper.ci.CiViewMapper">
 
 	<select id="getCiViewByCiId" parameterType="codedriver.module.cmdb.dto.ci.CiViewVo" resultType="codedriver.module.cmdb.dto.ci.CiViewVo">
+		SELECT * FROM (
 		SELECT
 		attr.id AS itemId,
 		attr.`label` AS itemName,
@@ -16,12 +17,6 @@
 		AND attr.`id` = v.`item_id`
 		AND v.`type` = 'attr'
 		WHERE attr.`ci_id` = #{ciId}
-		<if test="showTypeList != null and showTypeList.size() > 0">
-			AND v.show_type IN
-			<foreach collection="showTypeList" item="item" open="(" separator="," close=")">
-				#{item}
-			</foreach>
-		</if>
 		UNION
 		SELECT
 		rel.id AS itemId,
@@ -36,12 +31,6 @@
 		AND rel.id = v.`item_id`
 		AND v.`type` = 'relfrom'
 		WHERE rel.from_ci_id = #{ciId}
-		<if test="showTypeList != null and showTypeList.size() > 0">
-			AND v.show_type IN
-			<foreach collection="showTypeList" item="item" open="(" separator="," close=")">
-				#{item}
-			</foreach>
-		</if>
 		UNION
 		SELECT
 		rel.id AS itemId,
@@ -56,14 +45,19 @@
 		AND rel.id = v.`item_id`
 		AND v.`type` = 'relto'
 		WHERE rel.to_ci_id = #{ciId}
-		<if test="showTypeList != null and showTypeList.size() > 0">
-			AND v.show_type IN
-			<foreach collection="showTypeList" item="item" open="(" separator="," close=")">
-				#{item}
-			</foreach>
-		</if>
+		) t
+		<where>
+			<if test="showTypeList != null and showTypeList.size() > 0">
+				(t.showType IN
+				<foreach collection="showTypeList" item="item" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+				OR t.showType is NULL
+				)
+			</if>
+		</where>
 		ORDER BY sort,type,itemId
-		<!-- 按照sort,type,itemId进行排序，当sort未空时，得到的是自然顺序 -->
+		<!-- 按照sort,type,itemId进行排序，当sort为空时，得到的是自然顺序 -->
 	</select>
 
 	<insert id="insertCiView" parameterType="codedriver.module.cmdb.dto.ci.CiViewVo">

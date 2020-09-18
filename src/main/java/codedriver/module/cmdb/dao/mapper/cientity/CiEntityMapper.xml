@@ -39,7 +39,14 @@
 	</select>
 
 	<sql id="searchCiEntityIdCoundition">
-		FROM (SELECT id FROM cmdb_cientity WHERE ci_id = #{ciId}) cientity
+		FROM (SELECT id FROM cmdb_cientity WHERE ci_id = #{ciId}
+		<if test="idList != null and idList.size() > 0">
+			AND id IN
+			<foreach collection="idList" item="item" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		) cientity
 		<if test="attrFilterList != null and attrFilterList.size() > 0">
 			<foreach collection="attrFilterList" item="filter" index="index">
 				<choose>
@@ -216,4 +223,21 @@
 		#{isLocked}
 		)
 	</insert>
+
+	<delete id="deleteCiEntityByCiId" parameterType="java.lang.Long">
+		DELETE
+		a,b,c,d,e
+		FROM
+		cmdb_cientity a
+		LEFT JOIN cmdb_attrentity b
+		ON a.id = b.`ci_entity_id`
+		LEFT JOIN cmdb_relentity c
+		ON a.id = c.`from_cientity_id`
+		LEFT JOIN cmdb_relentity d
+		ON a.id = c.`to_cientity_id`
+		LEFT JOIN cmdb_cientity_group e
+		ON a.id = e.ci_entity_id
+		WHERE
+		a.ci_id = #{value}
+	</delete>
 </mapper>
