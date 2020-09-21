@@ -10,23 +10,22 @@ import codedriver.framework.file.dto.FileVo;
 @Component
 public class CmdbFileHandler extends FileTypeHandlerBase {
 
-	@Override
-	public boolean valid(String userUuid, JSONObject jsonObj) {
-		return true;
-	}
+    @Override
+    public boolean valid(String userUuid, JSONObject jsonObj) {
+        return true;
+    }
 
-	@Override
-	public String getDisplayName() {
-		return "ITSM附件";
-	}
+    @Override
+    public String getDisplayName() {
+        return "配置管理附件";
+    }
 
-	@Override
-	public void afterUpload(FileVo fileVo, JSONObject jsonObj) {
-	}
+    @Override
+    public void afterUpload(FileVo fileVo, JSONObject jsonObj) {}
 
-	@Override
-	public String getName() {
-		return "ITSM";
-	}
+    @Override
+    public String getName() {
+        return "CMDB";
+    }
 
 }
