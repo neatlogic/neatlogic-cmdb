@@ -49,6 +49,8 @@ public class RelVo implements Serializable {
     private String fromGroupId;
     @EntityField(name = "来源端分组名称", type = ApiParamType.STRING)
     private String fromGroupName;
+    @EntityField(name = "来源端是否唯一", type = ApiParamType.INTEGER)
+    private Integer fromIsUnique;
 
     @EntityField(name = "目标端模型id", type = ApiParamType.LONG)
     private Long toCiId;
@@ -72,6 +74,8 @@ public class RelVo implements Serializable {
     private String toGroupId;
     @EntityField(name = "目标端分组名称", type = ApiParamType.STRING)
     private String toGroupName;
+    @EntityField(name = "目标端是否唯一", type = ApiParamType.INTEGER)
+    private Integer toIsUnique;
 
     public Long getId() {
         if (id == null) {
@@ -280,6 +284,22 @@ public class RelVo implements Serializable {
             toRuleText = RelRuleType.getText(toRule);
         }
         return toRuleText;
+    }
+
+    public Integer getFromIsUnique() {
+        return fromIsUnique;
+    }
+
+    public void setFromIsUnique(Integer fromIsUnique) {
+        this.fromIsUnique = fromIsUnique;
+    }
+
+    public Integer getToIsUnique() {
+        return toIsUnique;
+    }
+
+    public void setToIsUnique(Integer toIsUnique) {
+        this.toIsUnique = toIsUnique;
     }
 
 }

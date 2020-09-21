@@ -27,7 +27,7 @@
 		id = #{value}
 	</select>
 
-	<select id="getAttrByCiId" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.AttrVo" useCache="true">
+	<select id="getAttrByCiId" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.AttrVo" useCache="false"><!-- 引用了prop数据，所以不能用cache -->
 		SELECT
 		attr.`id`,
 		attr.`ci_id` AS ciId,

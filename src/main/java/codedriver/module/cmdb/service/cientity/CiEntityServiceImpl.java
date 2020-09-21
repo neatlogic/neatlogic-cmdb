@@ -371,7 +371,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                 List<AttrEntityTransactionVo> oldAttrEntityTransactionList =
                     oldAttrEntityList.stream().map(t -> new AttrEntityTransactionVo(t)).collect(Collectors.toList());
                 // 去掉没变化的修改
-                ciEntityTransactionVo.getAttrEntityTransactionList().removeAll(oldAttrEntityList);
+                ciEntityTransactionVo.getAttrEntityTransactionList().removeAll(oldAttrEntityTransactionList);
                 if (CollectionUtils.isNotEmpty(ciEntityTransactionVo.getAttrEntityTransactionList())) {
                     hasChange = true;
                 }
