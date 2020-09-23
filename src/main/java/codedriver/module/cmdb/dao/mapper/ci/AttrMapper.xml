@@ -27,6 +27,10 @@
 		id = #{value}
 	</select>
 
+	<select id="getAttrGroupByCiId" parameterType="java.lang.Long" resultType="java.lang.String" useCache="true">
+		SELECT DISTINCT group_name FROM cmdb_attr WHERE ci_id = #{value} AND group_name is not null
+	</select>
+
 	<select id="getAttrByCiId" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.AttrVo" useCache="false"><!-- 引用了prop数据，所以不能用cache -->
 		SELECT
 		attr.`id`,
@@ -54,7 +58,7 @@
 		ci_id = #{value}
 		ORDER BY attr.id
 	</select>
-	
+
 
 	<update id="updateAttr" parameterType="codedriver.module.cmdb.dto.ci.AttrVo">
 		UPDATE

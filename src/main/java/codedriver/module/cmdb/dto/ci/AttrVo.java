@@ -8,6 +8,8 @@ import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.cmdb.constvalue.AttrType;
 import codedriver.framework.cmdb.constvalue.InputType;
+import codedriver.framework.cmdb.prop.core.IPropertyHandler;
+import codedriver.framework.cmdb.prop.core.PropertyHandlerFactory;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.SnowflakeUtil;
@@ -54,8 +56,10 @@ public class AttrVo implements Serializable {
     private String inputType = InputType.MT.getValue();
     @EntityField(name = "录入方式", type = ApiParamType.STRING)
     private String inputTypeText;
-    @EntityField(name = "分组名称", type = ApiParamType.INTEGER)
+    @EntityField(name = "分组名称", type = ApiParamType.STRING)
     private String groupName;
+    @EntityField(name = "是否支持搜索", type = ApiParamType.BOOLEAN)
+    private boolean canSearch = false;
 
     public Long getId() {
         if (id == null) {
@@ -227,6 +231,22 @@ public class AttrVo implements Serializable {
         } catch (Exception ex) {
 
         }
+    }
+
+    public boolean getCanSearch() {
+        if (StringUtils.isNotBlank(type)) {
+            if (type.equals(AttrType.CUSTOM.getValue()) || type.equals(AttrType.EXPRESSION.getValue())) {
+                canSearch = true;
+            } else if (type.equals(AttrType.PROPERTY.getValue())) {
+                if (StringUtils.isNotBlank(propHandler)) {
+                    IPropertyHandler handler = PropertyHandlerFactory.getHandler(propHandler);
+                    if (handler != null) {
+                        canSearch = handler.canSearch();
+                    }
+                }
+            }
+        }
+        return canSearch;
     }
 
 }

@@ -11,6 +11,8 @@ import codedriver.module.cmdb.dto.ci.AttrVo;
  */
 public interface AttrMapper {
 
+    public List<String> getAttrGroupByCiId(Long ciId);
+
     public AttrVo getAttrById(Long attrId);
 
     public List<AttrVo> getAttrByCiId(Long ciId);
