@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -75,6 +76,8 @@ public class CiEntityVo extends BasePageVo {
     private transient List<Long> groupIdList;// 查询时使用的群组id
     @JSONField(serialize = false)
     private transient List<Long> idList;// 需要查询的id列表
+    @EntityField(name = "当前用户权限情况", type = ApiParamType.JSONOBJECT)
+    private Map<String, Boolean> authData;
 
     public CiEntityVo() {
 
@@ -403,6 +406,14 @@ public class CiEntityVo extends BasePageVo {
 
     public void setIdList(List<Long> idList) {
         this.idList = idList;
+    }
+
+    public Map<String, Boolean> getAuthData() {
+        return authData;
+    }
+
+    public void setAuthData(Map<String, Boolean> authData) {
+        this.authData = authData;
     }
 
 }

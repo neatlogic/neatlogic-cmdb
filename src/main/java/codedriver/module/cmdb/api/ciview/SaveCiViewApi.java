@@ -19,7 +19,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.dao.mapper.ci.CiViewMapper;
 import codedriver.module.cmdb.dto.ci.CiViewVo;
 import codedriver.module.cmdb.exception.ci.CiAuthException;
-import codedriver.module.cmdb.service.ci.CiAuthService;
+import codedriver.module.cmdb.service.ci.CiAuthChecker;
 
 @Service
 @OperationType(type = OperationTypeEnum.UPDATE)
@@ -29,8 +29,6 @@ public class SaveCiViewApi extends PrivateApiComponentBase {
     @Autowired
     private CiViewMapper ciViewMapper;
 
-    @Autowired
-    private CiAuthService ciAuthService;
 
     @Override
     public String getToken() {
@@ -56,7 +54,7 @@ public class SaveCiViewApi extends PrivateApiComponentBase {
         Long ciId = jsonObj.getLong("ciId");
         boolean hasAuth = AuthActionChecker.check("CI_MODIFY");
         if (!hasAuth) {
-            hasAuth = ciAuthService.hasCiManagePrivilege(ciId);
+            hasAuth = CiAuthChecker.hasCiManagePrivilege(ciId);
         }
         if (!hasAuth) {
             throw new CiAuthException();

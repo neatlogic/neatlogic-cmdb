@@ -23,7 +23,7 @@ import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dto.ci.CiVo;
 import codedriver.module.cmdb.exception.ci.CiAuthException;
 import codedriver.module.cmdb.exception.ci.CiHasRelException;
-import codedriver.module.cmdb.service.ci.CiAuthService;
+import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.service.ci.CiService;
 
 @Service
@@ -37,8 +37,6 @@ public class DeleteCiApi extends PrivateApiComponentBase {
     @Autowired
     private CiService ciService;
 
-    @Autowired
-    private CiAuthService ciAuthService;
 
     @Override
     public String getToken() {
@@ -63,7 +61,7 @@ public class DeleteCiApi extends PrivateApiComponentBase {
         Long ciId = jsonObj.getLong("id");
         boolean hasAuth = AuthActionChecker.check("CI_MODIFY");
         if (!hasAuth) {
-            hasAuth = ciAuthService.hasCiManagePrivilege(ciId);
+            hasAuth = CiAuthChecker.hasCiManagePrivilege(ciId);
             if (!hasAuth) {
                 throw new CiAuthException();
             }

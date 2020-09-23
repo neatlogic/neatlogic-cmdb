@@ -3,6 +3,7 @@ package codedriver.module.cmdb.service.ci;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +17,7 @@ import codedriver.module.cmdb.dao.mapper.group.GroupMapper;
 import codedriver.module.cmdb.dto.ci.CiAuthVo;
 
 @Service
-public class CiAuthServiceImpl implements CiAuthService {
+public class CiAuthChecker {
     @Autowired
     private TeamMapper teamMapper;
 
@@ -29,20 +30,26 @@ public class CiAuthServiceImpl implements CiAuthService {
     @Autowired
     private CiEntityMapper ciEntityMapper;
 
+    private static CiAuthChecker instance;
+
+    @Autowired
+    public CiAuthChecker() {
+        instance = this;
+    }
+
     /**
      * 判断模型管理权限
      */
-    @Override
-    public boolean hasCiManagePrivilege(Long ciId) {
+    public static boolean hasCiManagePrivilege(Long ciId) {
         return hasCiPrivilege(ciId, CiAuthType.CIMANAGE);
     }
 
-    private boolean hasCiPrivilege(Long ciId, CiAuthType... auths) {
+    private static boolean hasCiPrivilege(Long ciId, CiAuthType... auths) {
         if (ciId != null) {
             String userUuid = UserContext.get().getUserUuid(true);
             List<String> teamUuidList = null;
             List<String> roleUuidList = UserContext.get().getRoleUuidList();
-            List<CiAuthVo> authList = ciAuthMapper.getCiAuthByCiId(ciId);
+            List<CiAuthVo> authList = instance.ciAuthMapper.getCiAuthByCiId(ciId);
             for (CiAuthVo ciAuthVo : authList) {
                 for (CiAuthType auth : auths) {
                     if (ciAuthVo.getAction().equals(auth.getValue())) {
@@ -54,7 +61,7 @@ public class CiAuthServiceImpl implements CiAuthService {
                                 break;
                             case "team":
                                 if (teamUuidList == null) {
-                                    teamUuidList = teamMapper.getTeamUuidListByUserUuid(userUuid);
+                                    teamUuidList = instance.teamMapper.getTeamUuidListByUserUuid(userUuid);
                                 }
                                 if (teamUuidList.contains(ciAuthVo.getAuthUuid())) {
                                     return true;
@@ -73,20 +80,51 @@ public class CiAuthServiceImpl implements CiAuthService {
         return false;
     }
 
-    @Override
-    public boolean hasPasswordPrivilege(Long ciEntityId) {
-        // TODO Auto-generated method stub
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private boolean hasAuth = false;
+
+        public Builder hasCiManagePrivilege(Long ciId) {
+            if (!hasAuth) {
+                hasAuth = CiAuthChecker.hasCiManagePrivilege(ciId);
+            }
+            return this;
+        }
+
+        public Builder hasCiEntityUpdatePrivilege(Long ciId) {
+            if (!hasAuth) {
+                hasAuth = CiAuthChecker.hasCiEntityUpdatePrivilege(ciId);
+            }
+            return this;
+        }
+
+        public Builder isInGroup(Long ciEntityId, GroupType... groupType) {
+            if (!hasAuth) {
+                hasAuth = CiAuthChecker.isInGroup(ciEntityId, groupType);
+            }
+            return this;
+        }
+
+        public boolean check() {
+            return hasAuth;
+        }
+
+    }
+
+    public static boolean hasPasswordPrivilege(Long ciEntityId) {
+        // FIXME 补充权限校验
         return false;
     }
 
-    @Override
-    public boolean hasCiEntityQueryPrivilege(Long ciId) {
+    public static boolean hasCiEntityQueryPrivilege(Long ciId) {
         return hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYDELETE, CiAuthType.CIENTITYQUERY,
             CiAuthType.CIENTITYQUERY);
     }
 
-    @Override
-    public boolean hasCiEntityQueryPrivilege(Long ciId, Long ciEntityId) {
+    public static boolean hasCiEntityQueryPrivilege(Long ciId, Long ciEntityId) {
         if (hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYDELETE, CiAuthType.CIENTITYQUERY,
             CiAuthType.CIENTITYQUERY)) {
             return true;
@@ -96,49 +134,48 @@ public class CiAuthServiceImpl implements CiAuthService {
         return false;
     }
 
-    @Override
-    public boolean hasCiEntityInsertPrivilege(Long ciId) {
+    public static boolean hasCiEntityInsertPrivilege(Long ciId) {
         return hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYINSERT);
     }
 
-    @Override
-    public boolean hasCiEntityInsertPrivilege(Long ciId, Long ciEntityId) {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public boolean hasCiEntityUpdatePrivilege(Long ciId) {
+    public static boolean hasCiEntityUpdatePrivilege(Long ciId) {
         return hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYUPDATE);
     }
 
-    @Override
-    public boolean hasCiEntityDeletePrivilege(Long ciId) {
+    public static boolean hasCiEntityDeletePrivilege(Long ciId) {
         return hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYDELETE);
     }
 
-    @Override
-    public boolean hasTransactionPrivilege(Long ciId) {
+    public static boolean hasTransactionPrivilege(Long ciId) {
         return hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.TRANSACTIONMANAGE);
     }
 
-    @Override
-    public boolean isInGroup(Long ciEntityId, GroupType... groupType) {
-
-        return false;
+    public static boolean isInGroup(Long ciEntityId, GroupType... groupType) {
+        @SuppressWarnings("serial")
+        List<Long> returnList = isInGroup(new ArrayList<Long>() {
+            {
+                this.add(ciEntityId);
+            }
+        }, groupType);
+        return returnList.contains(ciEntityId);
     }
 
-    @Override
-    public List<Long> isInGroup(List<Long> ciEntityIdList, GroupType... groupType) {
+    public static List<Long> isInGroup(List<Long> ciEntityIdList, GroupType... groupType) {
         String userUuid = UserContext.get().getUserUuid(true);
-        List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(userUuid);
+        List<String> teamUuidList = instance.teamMapper.getTeamUuidListByUserUuid(userUuid);
         List<String> roleUuidList = UserContext.get().getRoleUuidList();
-        List<Long> groupIdList = groupMapper.getGroupIdByUserUuid(userUuid, teamUuidList, roleUuidList);
+        // 获取当前用户属于哪个圈子
+        List<Long> groupIdList = instance.groupMapper.getGroupIdByUserUuid(userUuid, teamUuidList, roleUuidList);
         List<String> groupTypeList = new ArrayList<>();
         for (GroupType g : groupType) {
             groupTypeList.add(g.getValue());
         }
-        return ciEntityMapper.getCiEntityIdByGroupIdList(groupIdList, ciEntityIdList, groupTypeList);
+        if (CollectionUtils.isNotEmpty(groupIdList) && CollectionUtils.isNotEmpty(ciEntityIdList)
+            && CollectionUtils.isNotEmpty(groupTypeList)) {
+            return instance.ciEntityMapper.getCiEntityIdByGroupIdList(groupIdList, ciEntityIdList, groupTypeList);
+        } else {
+            return new ArrayList<>();
+        }
     }
 
 }

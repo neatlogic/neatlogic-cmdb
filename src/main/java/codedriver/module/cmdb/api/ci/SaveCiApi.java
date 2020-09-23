@@ -24,7 +24,7 @@ import codedriver.module.cmdb.dto.ci.CiVo;
 import codedriver.module.cmdb.exception.ci.CiAuthException;
 import codedriver.module.cmdb.exception.ci.CiLabelIsExistsException;
 import codedriver.module.cmdb.exception.ci.CiNameIsExistsException;
-import codedriver.module.cmdb.service.ci.CiAuthService;
+import codedriver.module.cmdb.service.ci.CiAuthChecker;
 
 @Service
 @OperationType(type = OperationTypeEnum.CREATE)
@@ -35,9 +35,6 @@ public class SaveCiApi extends PrivateApiComponentBase {
     private CiMapper ciMapper;
     @Autowired
     private AttrMapper attrMapper;
-
-    @Autowired
-    private CiAuthService ciAuthService;
 
     @Override
     public String getToken() {
@@ -97,7 +94,7 @@ public class SaveCiApi extends PrivateApiComponentBase {
         } else {
             // 编辑模型除了管理员权限还要看具体的模型授权
             if (!hasAuth) {
-                hasAuth = ciAuthService.hasCiManagePrivilege(ciId);
+                hasAuth = CiAuthChecker.hasCiManagePrivilege(ciId);
             }
             if (!hasAuth) {
                 throw new CiAuthException();

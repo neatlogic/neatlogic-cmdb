@@ -1,5 +1,6 @@
 package codedriver.module.cmdb.api.cientity;
 
+import java.util.HashMap;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +8,9 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
 
+import codedriver.framework.auth.core.AuthActionChecker;
+import codedriver.framework.cmdb.constvalue.CiAuthType;
+import codedriver.framework.cmdb.constvalue.GroupType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -19,10 +23,10 @@ import codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper;
 import codedriver.module.cmdb.dto.cientity.AttrEntityVo;
 import codedriver.module.cmdb.dto.cientity.CiEntityVo;
 import codedriver.module.cmdb.dto.cientity.RelEntityVo;
+import codedriver.module.cmdb.service.ci.CiAuthChecker;
 
 @Service
 public class GetCiEntityApi extends PrivateApiComponentBase {
-
 
     @Autowired
     private CiEntityMapper ciEntityMapper;
@@ -49,19 +53,47 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "配置项id")})
+    @SuppressWarnings("serial")
+    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "配置项id"),
+        @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "是否需要操作列，如果需要检查操作权限，会根据结果返回action列")})
     @Output({@Param(explode = CiEntityVo.class)})
     @Description(desc = "获取配置项详细信息接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         // FIXME 补充权限校验
         Long id = jsonObj.getLong("id");
+        boolean needAction = jsonObj.getBooleanValue("needAction");
         CiEntityVo ciEntityVo = ciEntityMapper.getCiEntityById(id);
         if (ciEntityVo != null) {
             List<AttrEntityVo> attrEntityList = attrEntityMapper.getAttrEntityByCiEntityId(id);
             ciEntityVo.setAttrEntityList(attrEntityList);
             List<RelEntityVo> relEntityList = relEntityMapper.getRelEntityByCiEntityId(id);
             ciEntityVo.setRelEntityList(relEntityList);
+            if (needAction) {
+                boolean canEdit = AuthActionChecker.check("CI_MODIFY", "CIENTITY_MODIFY");
+                if (!canEdit) {
+                    canEdit = CiAuthChecker.builder().hasCiManagePrivilege(ciEntityVo.getId())
+                        .hasCiEntityUpdatePrivilege(ciEntityVo.getId()).isInGroup(ciEntityVo.getId(), GroupType.MATAIN)
+                        .check();
+                }
+                /*if (!canEdit) {
+                    canEdit = ciAuthService.hasCiManagePrivilege(ciEntityVo.getCiId());
+                    if (!canEdit) {
+                        canEdit = ciAuthService.hasCiEntityUpdatePrivilege(ciEntityVo.getCiId());
+                        if (!canEdit) {
+                            canEdit = ciAuthService.isInGroup(ciEntityVo.getId(), GroupType.MATAIN);
+                        }
+                    }
+                }*/
+
+                if (canEdit) {
+                    ciEntityVo.setAuthData(new HashMap<String, Boolean>() {
+                        {
+                            this.put(CiAuthType.CIENTITYUPDATE.getValue(), true);
+                        }
+                    });
+                }
+            }
         }
         return ciEntityVo;
     }

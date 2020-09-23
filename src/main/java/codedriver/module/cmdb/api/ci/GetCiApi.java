@@ -22,7 +22,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dto.ci.CiVo;
 import codedriver.module.cmdb.exception.ci.CiNotFoundException;
-import codedriver.module.cmdb.service.ci.CiAuthService;
+import codedriver.module.cmdb.service.ci.CiAuthChecker;
 
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
@@ -32,8 +32,6 @@ public class GetCiApi extends PrivateApiComponentBase {
     @Autowired
     private CiMapper ciMapper;
 
-    @Autowired
-    private CiAuthService ciAuthService;
 
     @Override
     public String getToken() {
@@ -67,10 +65,10 @@ public class GetCiApi extends PrivateApiComponentBase {
             Map<String, Boolean> authData = new HashMap<>();
             boolean hasCiManageAuth = hasAuth, hasCiEntityInsertAuth = hasAuth;
             if (!hasCiManageAuth) {
-                hasCiEntityInsertAuth = hasCiManageAuth = ciAuthService.hasCiManagePrivilege(ciId);
+                hasCiEntityInsertAuth = hasCiManageAuth = CiAuthChecker.hasCiManagePrivilege(ciId);
             }
             if (!hasCiEntityInsertAuth) {
-                hasCiEntityInsertAuth = ciAuthService.hasCiEntityInsertPrivilege(ciId);
+                hasCiEntityInsertAuth = CiAuthChecker.hasCiEntityInsertPrivilege(ciId);
             }
             authData.put(CiAuthType.CIMANAGE.getValue(), hasCiManageAuth);
             authData.put(CiAuthType.CIENTITYINSERT.getValue(), hasCiEntityInsertAuth);

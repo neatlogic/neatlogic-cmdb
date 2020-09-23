@@ -29,7 +29,7 @@ import codedriver.module.cmdb.dao.mapper.ci.CiViewMapper;
 import codedriver.module.cmdb.dao.mapper.group.GroupMapper;
 import codedriver.module.cmdb.dto.ci.CiViewVo;
 import codedriver.module.cmdb.dto.cientity.CiEntityVo;
-import codedriver.module.cmdb.service.ci.CiAuthService;
+import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 
 @Service
@@ -38,9 +38,6 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
 
     @Autowired
     private CiEntityService ciEntityService;
-
-    @Autowired
-    private CiAuthService ciAuthService;
 
     @Autowired
     private CiViewMapper ciViewMapper;
@@ -83,7 +80,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
         boolean hasManageAuth = AuthActionChecker.check("CI_MODIFY", "CIENTITY_MODIFY");
         if (!hasManageAuth) {
             // 拥有模型管理权限查询所有配置项
-            hasManageAuth = ciAuthService.hasCiManagePrivilege(ciEntityVo.getCiId());
+            hasManageAuth = CiAuthChecker.hasCiManagePrivilege(ciEntityVo.getCiId());
         }
 
         boolean needAction = jsonObj.getBooleanValue("needAction");
@@ -135,7 +132,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
         ciEntityVo.setAttrIdList(attrIdList);
         ciEntityVo.setRelIdList(relIdList);
 
-        if (!hasManageAuth && !ciAuthService.hasCiEntityQueryPrivilege(ciEntityVo.getCiId())) {
+        if (!hasManageAuth && !CiAuthChecker.hasCiEntityQueryPrivilege(ciEntityVo.getCiId())) {
             // 没有模型维护权限并且没有配置项查询权限，则需要通过消费组或维护组进行过滤
             String userUuid = UserContext.get().getUserUuid(true);
             List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(userUuid);
@@ -150,14 +147,14 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
             boolean canEdit = hasManageAuth, canDelete = hasManageAuth, canTransaction = hasManageAuth;
             List<Long> hasAuthCiEntityIdList = new ArrayList<>();
             if (needAction) {
-                canEdit = !canEdit ? ciAuthService.hasCiEntityUpdatePrivilege(ciEntityVo.getCiId()) : canEdit;
-                canDelete = !canDelete ? ciAuthService.hasCiEntityDeletePrivilege(ciEntityVo.getCiId()) : canDelete;
+                canEdit = !canEdit ? CiAuthChecker.hasCiEntityUpdatePrivilege(ciEntityVo.getCiId()) : canEdit;
+                canDelete = !canDelete ? CiAuthChecker.hasCiEntityDeletePrivilege(ciEntityVo.getCiId()) : canDelete;
                 canTransaction =
-                    !canTransaction ? ciAuthService.hasTransactionPrivilege(ciEntityVo.getCiId()) : canTransaction;
+                    !canTransaction ? CiAuthChecker.hasTransactionPrivilege(ciEntityVo.getCiId()) : canTransaction;
                 // 任意权限缺失，都需要检查是否在运维群组
                 if (!canEdit || !canDelete || !canTransaction) {
                     if (CollectionUtils.isNotEmpty(ciEntityVo.getGroupIdList())) {
-                        hasAuthCiEntityIdList = ciAuthService.isInGroup(
+                        hasAuthCiEntityIdList = CiAuthChecker.isInGroup(
                             ciEntityList.stream().map(entity -> entity.getId()).collect(Collectors.toList()),
                             GroupType.MATAIN);
                     }

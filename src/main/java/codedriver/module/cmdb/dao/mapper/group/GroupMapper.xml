@@ -14,7 +14,7 @@
 			WHERE
 			auth_type = 'user'
 			AND
-			auth_uuid = #{uesrUuid}
+			auth_uuid = #{userUuid}
 		</if>
 		<if test="teamUuidList != null and teamUuidList.size() > 0">
 			UNION

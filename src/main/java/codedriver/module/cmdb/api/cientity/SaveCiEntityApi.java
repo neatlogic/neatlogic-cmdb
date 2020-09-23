@@ -31,7 +31,7 @@ import codedriver.module.cmdb.dto.transaction.AttrEntityTransactionVo;
 import codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.module.cmdb.dto.transaction.RelEntityTransactionVo;
 import codedriver.module.cmdb.exception.cientity.CiEntityAuthException;
-import codedriver.module.cmdb.service.ci.CiAuthService;
+import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 
 @Service
@@ -41,9 +41,6 @@ public class SaveCiEntityApi extends PrivateApiComponentBase {
 
     @Autowired
     private CiEntityService ciEntityService;
-
-    @Autowired
-    private CiAuthService ciAuthService;
 
     @Override
     public String getToken() {
@@ -74,23 +71,23 @@ public class SaveCiEntityApi extends PrivateApiComponentBase {
         boolean hasAuth = AuthActionChecker.check("CI_MODIFY", "CIENTITY_MODIFY");
         if (!hasAuth) {
             // 拥有模型管理权限允许添加或修改配置项
-            hasAuth = ciAuthService.hasCiManagePrivilege(ciId);
+            hasAuth = CiAuthChecker.hasCiManagePrivilege(ciId);
         }
         TransactionActionType mode = TransactionActionType.INSERT;
         CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
         if (id != null) {
             if (!hasAuth) {
-                hasAuth = ciAuthService.hasCiEntityUpdatePrivilege(ciId);
+                hasAuth = CiAuthChecker.hasCiEntityUpdatePrivilege(ciId);
             }
             if (!hasAuth) {
                 // 判断是否在维护组内
-                hasAuth = ciAuthService.isInGroup(id, GroupType.MATAIN);
+                hasAuth = CiAuthChecker.isInGroup(id, GroupType.MATAIN);
             }
             ciEntityTransactionVo.setCiEntityId(id);
             mode = TransactionActionType.UPDATE;
         } else {
             if (!hasAuth) {
-                hasAuth = ciAuthService.hasCiEntityInsertPrivilege(ciId);
+                hasAuth = CiAuthChecker.hasCiEntityInsertPrivilege(ciId);
             }
         }
 
