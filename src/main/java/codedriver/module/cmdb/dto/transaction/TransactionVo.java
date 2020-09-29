@@ -19,24 +19,35 @@ public class TransactionVo extends BasePageVo {
     private Long id;
     @EntityField(name = "模型id", type = ApiParamType.LONG)
     private Long ciId;
+    @EntityField(name = "配置项id", type = ApiParamType.LONG)
+    private Long ciEntityId;
     @EntityField(name = "状态", type = ApiParamType.STRING, member = TransactionStatus.class)
     private String status = TransactionStatus.UNCOMMIT.getValue();
+    @EntityField(name = "状态文本", type = ApiParamType.STRING)
+    private String statusText;
     @EntityField(name = "输入来源", type = ApiParamType.STRING, member = InputFrom.class)
     private String inputFrom = InputFrom.PAGE.getValue();
+    @EntityField(name = "输入来源文本", type = ApiParamType.STRING)
+    private String inputFromText;
     private String source;
     @EntityField(name = "创建用户", type = ApiParamType.STRING)
     private String createUser;
-    @EntityField(name = "提交用户", type = ApiParamType.STRING, member = InputFrom.class)
+    @EntityField(name = "创建用户名", type = ApiParamType.STRING)
+    private String createUserName;
+    @EntityField(name = "提交用户", type = ApiParamType.STRING)
     private String commitUser;
-    private Date expireTime;
+    @EntityField(name = "提交用户名", type = ApiParamType.STRING)
+    private String commitUserName;
+    @JSONField(serialize = false)
+    private transient Date expireTime;
     @EntityField(name = "创建时间", type = ApiParamType.LONG)
     private Date createTime;
     @EntityField(name = "提交时间", type = ApiParamType.LONG)
     private Date commitTime;
     @EntityField(name = "异常", type = ApiParamType.STRING)
     private String error;
-    @JSONField(serialize = false) // 配置项事务
-    private transient CiEntityTransactionVo ciEntityTransactionVo;
+    @EntityField(name = "配置项事务信息", type = ApiParamType.JSONOBJECT)
+    private CiEntityTransactionVo ciEntityTransactionVo;
 
     public Long getId() {
         if (id == null) {
@@ -83,7 +94,7 @@ public class TransactionVo extends BasePageVo {
 
     public String getCreateUser() {
         if (StringUtils.isBlank(createUser)) {
-            createUser = UserContext.get().getUserId(true);
+            createUser = UserContext.get().getUserUuid(true);
         }
         return createUser;
     }
@@ -94,7 +105,7 @@ public class TransactionVo extends BasePageVo {
 
     public String getCommitUser() {
         if (StringUtils.isBlank(commitUser)) {
-            commitUser = UserContext.get().getUserId(true);
+            commitUser = UserContext.get().getUserUuid(true);
         }
         return commitUser;
     }
@@ -141,6 +152,52 @@ public class TransactionVo extends BasePageVo {
 
     public void setCiEntityTransactionVo(CiEntityTransactionVo ciEntityTransactionVo) {
         this.ciEntityTransactionVo = ciEntityTransactionVo;
+    }
+
+    public Long getCiEntityId() {
+        return ciEntityId;
+    }
+
+    public void setCiEntityId(Long ciEntityId) {
+        this.ciEntityId = ciEntityId;
+    }
+
+    public String getStatusText() {
+        if (StringUtils.isNotBlank(status) && StringUtils.isNotBlank(statusText)) {
+            statusText = TransactionStatus.getText(status);
+        }
+        return statusText;
+    }
+
+    public void setStatusText(String statusText) {
+        this.statusText = statusText;
+    }
+
+    public String getInputFromText() {
+        if (StringUtils.isNotBlank(inputFrom) && StringUtils.isBlank(inputFromText)) {
+            inputFromText = InputFrom.getText(inputFrom);
+        }
+        return inputFromText;
+    }
+
+    public void setInputFromText(String inputFromText) {
+        this.inputFromText = inputFromText;
+    }
+
+    public String getCreateUserName() {
+        return createUserName;
+    }
+
+    public void setCreateUserName(String createUserName) {
+        this.createUserName = createUserName;
+    }
+
+    public String getCommitUserName() {
+        return commitUserName;
+    }
+
+    public void setCommitUserName(String commitUserName) {
+        this.commitUserName = commitUserName;
     }
 
 }

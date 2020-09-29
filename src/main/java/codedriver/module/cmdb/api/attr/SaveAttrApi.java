@@ -19,7 +19,7 @@ import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.prop.PropMapper;
 import codedriver.module.cmdb.dto.ci.AttrVo;
 import codedriver.module.cmdb.dto.prop.PropVo;
-import codedriver.module.cmdb.exception.attr.AttrExpressionIsValidedException;
+import codedriver.module.cmdb.exception.attr.AttrExpressionInvalidedException;
 import codedriver.module.cmdb.exception.attr.AttrNotFoundException;
 import codedriver.module.cmdb.exception.attr.AttrPropIdIsValidedException;
 import codedriver.module.cmdb.exception.prop.PropNotFoundException;
@@ -74,7 +74,7 @@ public class SaveAttrApi extends PrivateApiComponentBase {
         Long attrId = jsonObj.getLong("id");
         if (attrVo.getType().equals(AttrType.EXPRESSION.getValue())) {
             if (StringUtils.isBlank(attrVo.getExpression())) {
-                throw new AttrExpressionIsValidedException();
+                throw new AttrExpressionInvalidedException();
             }
         } else if (attrVo.getType().equals(AttrType.PROPERTY.getValue())) {
             if (attrVo.getPropId() == null) {

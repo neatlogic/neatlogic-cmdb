@@ -32,4 +32,7 @@ public interface RelEntityMapper {
 
     public int deleteRelEntityByToCiEntityIdAndRelId(@Param("toCiEntityId") Long toCiEntityId,
         @Param("relId") Long relId);
+
+    public int deleteRelEntityByRelIdFromCiEntityIdToCiEntityId(@Param("relId") Long relId,
+        @Param("fromCiEntityId") Long fromCiEntityId, @Param("toCiEntityId") Long toCiEntityId);
 }

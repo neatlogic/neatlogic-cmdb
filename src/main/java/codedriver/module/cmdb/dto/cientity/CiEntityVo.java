@@ -34,10 +34,10 @@ public class CiEntityVo extends BasePageVo {
     private Long id;
     @EntityField(name = "模型id", type = ApiParamType.LONG)
     private Long ciId;
+    @EntityField(name = "配置项名称", type = ApiParamType.STRING)
+    private String name;
     @EntityField(name = "创建人", type = ApiParamType.STRING)
     private String fcu;
-    @EntityField(name = "名称", type = ApiParamType.STRING)
-    private String name;
     @EntityField(name = "创建时间", type = ApiParamType.LONG)
     private Date fcd;
     @EntityField(name = "修改人", type = ApiParamType.STRING)
@@ -58,10 +58,12 @@ public class CiEntityVo extends BasePageVo {
     private transient List<RelEntityVo> relEntityList;
     @EntityField(name = "关系对象，以'relfrom_'+relId或'relto_'+relId为key", type = ApiParamType.JSONOBJECT)
     private JSONObject relEntityData;
-    @EntityField(name = "属性过滤器列表", type = ApiParamType.JSONARRAY)
-    private List<AttrFilterVo> attrFilterList;
-    @EntityField(name = "关系过滤器列表", type = ApiParamType.JSONARRAY)
-    private List<RelFilterVo> relFilterList;
+    // @EntityField(name = "属性过滤器列表", type = ApiParamType.JSONARRAY)
+    @JSONField(serialize = false)
+    private transient List<AttrFilterVo> attrFilterList;
+    // @EntityField(name = "关系过滤器列表", type = ApiParamType.JSONARRAY)
+    @JSONField(serialize = false)
+    private transient List<RelFilterVo> relFilterList;
     @JSONField(serialize = false)
     private transient String inputType;// 更新时设置输入方式
     @JSONField(serialize = false)
@@ -86,6 +88,7 @@ public class CiEntityVo extends BasePageVo {
     public CiEntityVo(CiEntityTransactionVo ciEntityTransactionVo) {
         this.id = ciEntityTransactionVo.getCiEntityId();
         this.ciId = ciEntityTransactionVo.getCiId();
+        this.name = ciEntityTransactionVo.getName();
     }
 
     @JSONField(serialize = false)
@@ -269,7 +272,7 @@ public class CiEntityVo extends BasePageVo {
                     JSONObject attrData = getAttrEntityData();
                     if (attrData != null && attrData.containsKey("attr_" + attrEntityVo.getAttrId())) {
                         return attrData.getJSONObject("attr_" + attrEntityVo.getAttrId()).getJSONArray("valueList")
-                            .getString(0);
+                            .stream().map(v -> v.toString()).collect(Collectors.joining("_"));
                     }
                 }
             }

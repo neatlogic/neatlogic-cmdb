@@ -22,6 +22,12 @@ public class AttrEntityTransactionVo {
     private Long attrId;
     @EntityField(name = "属性名称", type = ApiParamType.STRING)
     private String attrName;
+    @EntityField(name = "属性标签", type = ApiParamType.STRING)
+    private String attrLabel;
+    @EntityField(name = "属性定义id", type = ApiParamType.LONG)
+    private Long propId;
+    @EntityField(name = "属性定义处理器", type = ApiParamType.STRING)
+    private String propHandler;
     @EntityField(name = "事务id", type = ApiParamType.LONG)
     private Long transactionId;
     @EntityField(name = "入库值列表", type = ApiParamType.JSONARRAY)
@@ -41,8 +47,8 @@ public class AttrEntityTransactionVo {
         ciEntityId = attrEntityVo.getCiEntityId();
         attrId = attrEntityVo.getAttrId();
         attrName = attrEntityVo.getAttrName();
-        valueList = attrEntityVo.getValueList();
-        actualValueList = attrEntityVo.getActualValueList();
+        valueList = attrEntityVo.getValueList().stream().collect(Collectors.toList());
+        transactionId = attrEntityVo.getTransactionId();
     }
 
     @Override
@@ -203,6 +209,30 @@ public class AttrEntityTransactionVo {
         } else {
             this.actualValueList = actualValueList;
         }
+    }
+
+    public String getAttrLabel() {
+        return attrLabel;
+    }
+
+    public void setAttrLabel(String attrLabel) {
+        this.attrLabel = attrLabel;
+    }
+
+    public Long getPropId() {
+        return propId;
+    }
+
+    public void setPropId(Long propId) {
+        this.propId = propId;
+    }
+
+    public String getPropHandler() {
+        return propHandler;
+    }
+
+    public void setPropHandler(String propHandler) {
+        this.propHandler = propHandler;
     }
 
 }

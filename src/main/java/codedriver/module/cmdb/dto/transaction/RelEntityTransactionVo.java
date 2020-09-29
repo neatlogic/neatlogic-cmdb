@@ -4,8 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.base.Objects;
 
-import codedriver.framework.cmdb.constvalue.SaveModeType;
-import codedriver.framework.cmdb.constvalue.TransactionActionType;
+import codedriver.framework.cmdb.constvalue.RelActionType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.SnowflakeUtil;
@@ -16,24 +15,32 @@ public class RelEntityTransactionVo {
     private Long id;
     @EntityField(name = "关系id", type = ApiParamType.LONG)
     private Long relId;
-    @EntityField(name = "关系唯一标识", type = ApiParamType.STRING)
+    @EntityField(name = "关系名称", type = ApiParamType.STRING)
     private String relName;
-    @EntityField(name = "来源配置项id", type = ApiParamType.LONG)
+    @EntityField(name = "上游端配置项id", type = ApiParamType.LONG)
     private Long fromCiEntityId;
-    @EntityField(name = "来源配置项名称", type = ApiParamType.STRING)
+    @EntityField(name = "上游端配置项名称", type = ApiParamType.STRING)
     private String fromCiEntityName;
-    @EntityField(name = "目标配置项id", type = ApiParamType.LONG)
+    @EntityField(name = "下游端配置项id", type = ApiParamType.LONG)
     private Long toCiEntityId;
-    @EntityField(name = "目标配置项名称", type = ApiParamType.STRING)
+    @EntityField(name = "下游端配置项名称", type = ApiParamType.STRING)
     private String toCiEntityName;
+    @EntityField(name = "下游端模型id", type = ApiParamType.LONG)
+    private Long toCiId;
+    @EntityField(name = "上游端模型id", type = ApiParamType.LONG)
+    private Long fromCiId;
+    @EntityField(name = "下游端名称", type = ApiParamType.STRING)
+    private String toLabel;
+    @EntityField(name = "上游端名称", type = ApiParamType.STRING)
+    private String fromLabel;
     @EntityField(name = "方向", type = ApiParamType.STRING)
     private String direction;
     @EntityField(name = "事务id", type = ApiParamType.LONG)
     private Long transactionId;
-    @EntityField(name = "保存模式", type = ApiParamType.ENUM, member = SaveModeType.class)
-    private String saveMode = SaveModeType.REPLACE.getValue();
-    @EntityField(name = "操作", type = ApiParamType.ENUM, member = TransactionActionType.class)
+    @EntityField(name = "操作，insert或deletel", type = ApiParamType.ENUM, member = RelActionType.class)
     private String action;
+    @EntityField(name = "操作名称，添加或删除", type = ApiParamType.STRING)
+    private String actionText;
 
     public RelEntityTransactionVo() {
 
@@ -44,6 +51,16 @@ public class RelEntityTransactionVo {
         this.direction = relEntityVo.getDirection();
         this.toCiEntityId = relEntityVo.getToCiEntityId();
         this.fromCiEntityId = relEntityVo.getFromCiEntityId();
+        this.transactionId = relEntityVo.getTransactionId();
+    }
+
+    public RelEntityTransactionVo(RelEntityVo relEntityVo, RelActionType action) {
+        this.relId = relEntityVo.getRelId();
+        this.direction = relEntityVo.getDirection();
+        this.toCiEntityId = relEntityVo.getToCiEntityId();
+        this.fromCiEntityId = relEntityVo.getFromCiEntityId();
+        this.transactionId = relEntityVo.getTransactionId();
+        this.action = action.getValue();
     }
 
     public Long getId() {
@@ -160,14 +177,6 @@ public class RelEntityTransactionVo {
         this.transactionId = transactionId;
     }
 
-    public String getSaveMode() {
-        return saveMode;
-    }
-
-    public void setSaveMode(String saveMode) {
-        this.saveMode = saveMode;
-    }
-
     public String getAction() {
         return action;
     }
@@ -175,4 +184,48 @@ public class RelEntityTransactionVo {
     public void setAction(String action) {
         this.action = action;
     }
+
+    public Long getToCiId() {
+        return toCiId;
+    }
+
+    public void setToCiId(Long toCiId) {
+        this.toCiId = toCiId;
+    }
+
+    public Long getFromCiId() {
+        return fromCiId;
+    }
+
+    public void setFromCiId(Long fromCiId) {
+        this.fromCiId = fromCiId;
+    }
+
+    public String getToLabel() {
+        return toLabel;
+    }
+
+    public void setToLabel(String toLabel) {
+        this.toLabel = toLabel;
+    }
+
+    public String getFromLabel() {
+        return fromLabel;
+    }
+
+    public void setFromLabel(String fromLabel) {
+        this.fromLabel = fromLabel;
+    }
+
+    public String getActionText() {
+        if (StringUtils.isNotBlank(action) && StringUtils.isBlank(actionText)) {
+            actionText = RelActionType.getText(action);
+        }
+        return actionText;
+    }
+
+    public void setActionText(String actionText) {
+        this.actionText = actionText;
+    }
+
 }

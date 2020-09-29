@@ -17,6 +17,7 @@ import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.cmdb.constvalue.GroupType;
+import codedriver.framework.cmdb.constvalue.RelActionType;
 import codedriver.framework.cmdb.constvalue.RelDirectionType;
 import codedriver.framework.cmdb.constvalue.TransactionActionType;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -77,11 +78,8 @@ public class SaveCiEntityApi extends PrivateApiComponentBase {
         CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
         if (id != null) {
             if (!hasAuth) {
-                hasAuth = CiAuthChecker.hasCiEntityUpdatePrivilege(ciId);
-            }
-            if (!hasAuth) {
-                // 判断是否在维护组内
-                hasAuth = CiAuthChecker.isInGroup(id, GroupType.MATAIN);
+                hasAuth =
+                    CiAuthChecker.builder().hasCiEntityUpdatePrivilege(ciId).isInGroup(id, GroupType.MATAIN).check();
             }
             ciEntityTransactionVo.setCiEntityId(id);
             mode = TransactionActionType.UPDATE;
@@ -139,6 +137,7 @@ public class SaveCiEntityApi extends PrivateApiComponentBase {
                             relEntityVo.setToCiEntityId(relEntityObj.getLong("ciEntityId"));
                             relEntityVo.setDirection(RelDirectionType.FROM.getValue());
                             relEntityVo.setFromCiEntityId(ciEntityTransactionVo.getCiEntityId());
+                            relEntityVo.setAction(RelActionType.INSERT.getValue());//默认是添加关系
                             relEntityList.add(relEntityVo);
                         }
                     }
@@ -151,6 +150,7 @@ public class SaveCiEntityApi extends PrivateApiComponentBase {
                             relEntityVo.setFromCiEntityId(relEntityObj.getLong("ciEntityId"));
                             relEntityVo.setDirection(RelDirectionType.TO.getValue());
                             relEntityVo.setToCiEntityId(ciEntityTransactionVo.getCiEntityId());
+                            relEntityVo.setAction(RelActionType.INSERT.getValue());//默认是添加关系
                             relEntityList.add(relEntityVo);
                         }
                     }

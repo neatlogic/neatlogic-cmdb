@@ -24,6 +24,8 @@ public class RelEntityVo {
     private Long toCiEntityId;
     @EntityField(name = "目标配置项名称", type = ApiParamType.STRING)
     private String toCiEntityName;
+    @EntityField(name = "生效事务id", type = ApiParamType.LONG)
+    private Long transactionId;
     @EntityField(name = "方向", type = ApiParamType.STRING)
     private String direction;
     @EntityField(name = "目标模型id", type = ApiParamType.LONG)
@@ -40,6 +42,7 @@ public class RelEntityVo {
         fromCiEntityId = relEntityTransactionVo.getFromCiEntityId();
         toCiEntityId = relEntityTransactionVo.getToCiEntityId();
         direction = relEntityTransactionVo.getDirection();
+        transactionId = relEntityTransactionVo.getTransactionId();
     }
 
     public Long getId() {
@@ -162,5 +165,13 @@ public class RelEntityVo {
 
     public void setFromCiId(Long fromCiId) {
         this.fromCiId = fromCiId;
+    }
+
+    public Long getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(Long transactionId) {
+        this.transactionId = transactionId;
     }
 }

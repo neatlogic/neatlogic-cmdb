@@ -5,6 +5,7 @@
 	<resultMap id="attrEntityMap" type="codedriver.module.cmdb.dto.cientity.AttrEntityVo">
 		<id property="attrId" column="attrId" />
 		<id property="ciEntityId" column="ciEntityId" />
+		<result property="transactionId" column="transactionId" />
 		<result property="attrName" column="attrName" />
 		<result property="attrLabel" column="attrLabel" />
 		<result property="attrType" column="attrType" />
@@ -48,6 +49,7 @@
 		a.`ci_entity_id` AS ciEntityId,
 		a.`attr_id` AS attrId,
 		a.`value`,
+		a.`transaction_id` AS transactionId,
 		b.`name` AS attrName,
 		b.`label` AS attrLabel,
 		b.`type` AS attrType,
@@ -61,13 +63,14 @@
 		WHERE a.ci_entity_id = #{value}
 		ORDER BY a.id
 	</select>
-	
+
 	<select id="getAttrEntityByCiEntityIdAndAttrId" resultMap="attrEntityMap">
 		SELECT
 		a.`id`,
 		a.`ci_entity_id` AS ciEntityId,
 		a.`attr_id` AS attrId,
 		a.`value`,
+		a.`transaction_id` AS transactionId,
 		b.`name` AS attrName,
 		b.`label` AS attrLabel,
 		b.`type` AS attrType,
@@ -88,6 +91,7 @@
 		a.`ci_entity_id` AS ciEntityId,
 		a.`attr_id` AS attrId,
 		a.`value`,
+		a.`transaction_id` AS transactionId,
 		b.`name` AS attrName,
 		b.`label` AS attrLabel,
 		b.`type` AS attrType,
@@ -118,7 +122,8 @@
 		`ci_entity_id`,
 		`attr_id`,
 		`attr_name`,
-		`value`
+		`value`,
+		`transaction_id`
 		)
 		VALUES
 		<foreach collection="valueList" item="item" separator=",">
@@ -126,7 +131,8 @@
 			#{ciEntityId},
 			#{attrId},
 			#{attrName},
-			#{item}
+			#{item},
+			#{transactionId}
 			)
 		</foreach>
 	</insert>

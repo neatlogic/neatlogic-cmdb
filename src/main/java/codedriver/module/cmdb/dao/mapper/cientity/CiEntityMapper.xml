@@ -27,6 +27,7 @@
 		SELECT
 		`id`,
 		`ci_id` AS ciId,
+		`name` AS name,
 		`fcu`,
 		`fcd`,
 		`lcu`,
@@ -166,6 +167,7 @@
 		SELECT
 		`id`,
 		`ci_id` AS ciId,
+		`name` AS name,
 		`fcu`,
 		`fcd`,
 		`lcu`,
@@ -208,6 +210,7 @@
 		INSERT INTO `cmdb_cientity` (
 		`id`,
 		`ci_id`,
+		`name`,
 		`fcu`,
 		`fcd`,
 		`status`,
@@ -217,6 +220,7 @@
 		(
 		#{id},
 		#{ciId},
+		#{name},
 		#{fcu},
 		NOW(),
 		#{status},

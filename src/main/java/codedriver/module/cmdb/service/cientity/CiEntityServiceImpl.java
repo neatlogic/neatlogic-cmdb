@@ -3,7 +3,6 @@ package codedriver.module.cmdb.service.cientity;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -15,16 +14,19 @@ import com.alibaba.fastjson.JSON;
 
 import codedriver.framework.cmdb.constvalue.AttrType;
 import codedriver.framework.cmdb.constvalue.EditModeType;
+import codedriver.framework.cmdb.constvalue.RelActionType;
 import codedriver.framework.cmdb.constvalue.RelDirectionType;
 import codedriver.framework.cmdb.constvalue.RelRuleType;
 import codedriver.framework.cmdb.constvalue.SaveModeType;
 import codedriver.framework.cmdb.constvalue.TransactionActionType;
 import codedriver.framework.cmdb.constvalue.TransactionStatus;
 import codedriver.framework.common.util.PageUtil;
+import codedriver.framework.util.Md5Util;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.AttrEntityMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
+import codedriver.module.cmdb.dao.mapper.cientity.CiEntitySnapshotMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper;
 import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import codedriver.module.cmdb.dto.ci.AttrVo;
@@ -56,6 +58,9 @@ public class CiEntityServiceImpl implements CiEntityService {
 
     @Autowired
     private TransactionMapper transactionMapper;
+
+    @Autowired
+    private CiEntitySnapshotMapper ciEntitySnapshotMapper;
 
     @Autowired
     private AttrMapper attrMapper;
@@ -127,6 +132,12 @@ public class CiEntityServiceImpl implements CiEntityService {
         boolean hasChange = validateCiEntityTransaction(ciEntityTransactionVo);
 
         if (hasChange) {
+            // 计算新的配置项名称
+            createCiEntityName(ciEntityTransactionVo);
+
+            // 保存快照
+            createSnapshot(ciEntityTransactionVo);
+
             // 写入事务
             transactionMapper.insertTransaction(transactionVo);
             // 写入配置项事务
@@ -155,12 +166,38 @@ public class CiEntityServiceImpl implements CiEntityService {
         }
     }
 
-    private boolean checkCiEntityAllowUpdate(CiEntityVo ciEntityVo) {
-
-        return true;
+    private void createCiEntityName(CiEntityTransactionVo ciEntityTransactionVo) {
+        CiEntityVo ciEntityVo = new CiEntityVo(ciEntityTransactionVo);
+        ciEntityVo.setAttrEntityList(new ArrayList<>());
+        List<AttrEntityVo> attrEntityList =
+            attrEntityMapper.getAttrEntityByCiEntityId(ciEntityTransactionVo.getCiEntityId());
+        if (CollectionUtils.isNotEmpty(attrEntityList)) {
+            for (AttrEntityTransactionVo entity : ciEntityTransactionVo.getAttrEntityTransactionList()) {
+                AttrEntityVo oldEntity =
+                    attrEntityList.stream().filter(e -> e.getAttrId().equals(entity.getAttrId())).findFirst().get();
+                AttrEntityVo newEntity = new AttrEntityVo(entity);
+                if (oldEntity != null) {
+                    newEntity.setAttrType(oldEntity.getAttrType());
+                } else {
+                    AttrVo attr = attrMapper.getAttrById(entity.getAttrId());
+                    newEntity.setAttrType(attr.getType());
+                }
+                ciEntityVo.getAttrEntityList().add(newEntity);
+            }
+        }
+        ciEntityTransactionVo.setName(ciEntityVo.getName());
     }
 
-    @SuppressWarnings("serial")
+    private void createSnapshot(CiEntityTransactionVo ciEntityTransactionVo) {
+        CiEntityVo ciEntityVo = new CiEntityVo(ciEntityTransactionVo);
+        ciEntityVo.setAttrEntityList(attrEntityMapper.getAttrEntityByCiEntityId(ciEntityTransactionVo.getCiEntityId()));
+        ciEntityVo.setRelEntityList(relEntityMapper.getRelEntityByCiEntityId(ciEntityTransactionVo.getCiEntityId()));
+        String content = JSON.toJSONString(ciEntityVo);
+        String hash = Md5Util.encryptMD5(content);
+        ciEntitySnapshotMapper.replaceSnapshotContent(hash, content);
+        ciEntityTransactionVo.setSnapshotHash(hash);
+    }
+
     private boolean validateCiEntityTransaction(CiEntityTransactionVo ciEntityTransactionVo) {
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciEntityTransactionVo.getCiId());
         List<RelVo> relList = relMapper.getRelByCiId(ciEntityTransactionVo.getCiId());
@@ -375,24 +412,39 @@ public class CiEntityServiceImpl implements CiEntityService {
                 if (CollectionUtils.isNotEmpty(ciEntityTransactionVo.getAttrEntityTransactionList())) {
                     hasChange = true;
                 }
+
             } else {
                 hasChange = true;
             }
         }
 
-        // 去掉没变化的关系修改
-        if (CollectionUtils.isNotEmpty(ciEntityTransactionVo.getRelEntityTransactionList())) {
-            if (CollectionUtils.isNotEmpty(oldRelEntityList)) {
-                List<RelEntityTransactionVo> oldRelEntityTransactionList =
-                    oldRelEntityList.stream().map(t -> new RelEntityTransactionVo(t)).collect(Collectors.toList());
-                // 去掉没变化的修改
-                ciEntityTransactionVo.getRelEntityTransactionList().removeAll(oldRelEntityTransactionList);
-                if (CollectionUtils.isNotEmpty(ciEntityTransactionVo.getRelEntityTransactionList())) {
-                    hasChange = true;
-                }
-            } else {
+        List<RelEntityTransactionVo> newRelEntityTransactionList = ciEntityTransactionVo.getRelEntityTransactionList();
+        if (newRelEntityTransactionList == null) {
+            newRelEntityTransactionList = new ArrayList();
+            ciEntityTransactionVo.setRelEntityTransactionList(newRelEntityTransactionList);
+        }
+        if (CollectionUtils.isNotEmpty(oldRelEntityList)) {
+            List<RelEntityTransactionVo> needDeleteRelEntityTransactionList = oldRelEntityList.stream()
+                .map(t -> new RelEntityTransactionVo(t, RelActionType.DELETE)).collect(Collectors.toList());
+            // 去掉已存在的关系
+            needDeleteRelEntityTransactionList.removeAll(newRelEntityTransactionList);
+
+            List<RelEntityTransactionVo> sameRelEntityTransactionList =
+                oldRelEntityList.stream().map(t -> new RelEntityTransactionVo(t)).collect(Collectors.toList());
+            newRelEntityTransactionList.removeAll(sameRelEntityTransactionList);
+
+            if (CollectionUtils.isNotEmpty(newRelEntityTransactionList)) {
+                // 有添加
                 hasChange = true;
             }
+            if (CollectionUtils.isNotEmpty(needDeleteRelEntityTransactionList)) {
+                // 有删除
+                hasChange = true;
+                // 将需要删除的关系添加到事务列表
+                newRelEntityTransactionList.addAll(needDeleteRelEntityTransactionList);
+            }
+        } else {
+            hasChange = true;
         }
         return hasChange;
     }
@@ -434,30 +486,14 @@ public class CiEntityServiceImpl implements CiEntityService {
         // 写入关系
         List<RelEntityTransactionVo> relEntityTransactionList = ciEntityTransactionVo.getRelEntityTransactionList();
         if (CollectionUtils.isNotEmpty(relEntityTransactionList)) {
-            Map<String, List<RelEntityTransactionVo>> relGroupMap =
-                relEntityTransactionList.stream().collect(Collectors.groupingBy(e -> getRelGroupKey(e)));
-            Iterator<String> keys = relGroupMap.keySet().iterator();
-            while (keys.hasNext()) {
-                String key = keys.next();
-                String[] ks = key.split("#");
-                Long relId = Long.parseLong(ks[0]);
-                String direction = ks[1];
-                String saveMode = ks[2];
-                Long rootCiEntityId = Long.parseLong(ks[3]);
-                List<RelEntityTransactionVo> relEntityList = relGroupMap.get(key);
-                if (saveMode.equals(SaveModeType.REPLACE.getValue())) {// REPLACE模式需要先清空原来的关系
-                    if (direction.equals(RelDirectionType.FROM.getValue())) {
-                        relEntityMapper.deleteRelEntityByFromCiEntityIdAndRelId(rootCiEntityId, relId);
-                    } else if (direction.equals(RelDirectionType.TO.getValue())) {
-                        relEntityMapper.deleteRelEntityByToCiEntityIdAndRelId(rootCiEntityId, relId);
-                    }
-                }
-                if (CollectionUtils.isNotEmpty(relEntityList)) {
-                    for (RelEntityTransactionVo relEntityTransactionVo : relEntityList) {
-                        RelEntityVo newRelEntityVo = new RelEntityVo(relEntityTransactionVo);
-                        if (relEntityMapper.checkRelEntityIsExists(newRelEntityVo) == 0) {
-                            relEntityMapper.insertRelEntity(newRelEntityVo);
-                        }
+            for (RelEntityTransactionVo entity : relEntityTransactionList) {
+                if (entity.getAction().equals(RelActionType.DELETE.getValue())) {
+                    relEntityMapper.deleteRelEntityByRelIdFromCiEntityIdToCiEntityId(entity.getRelId(),
+                        entity.getFromCiEntityId(), entity.getToCiEntityId());
+                } else if (entity.getAction().equals(RelActionType.INSERT.getValue())) {
+                    RelEntityVo newRelEntityVo = new RelEntityVo(entity);
+                    if (relEntityMapper.checkRelEntityIsExists(newRelEntityVo) == 0) {
+                        relEntityMapper.insertRelEntity(newRelEntityVo);
                     }
                 }
             }
@@ -467,54 +503,18 @@ public class CiEntityServiceImpl implements CiEntityService {
         return ciEntityVo.getId();
     }
 
-    private static String getRelGroupKey(RelEntityTransactionVo relEntityTransactionVo) {
-        if (relEntityTransactionVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
-            return relEntityTransactionVo.getRelId() + "#" + relEntityTransactionVo.getDirection() + "#"
-                + relEntityTransactionVo.getSaveMode() + "#" + relEntityTransactionVo.getFromCiEntityId();
-        } else {
-            return relEntityTransactionVo.getRelId() + "#" + relEntityTransactionVo.getDirection() + "#"
-                + relEntityTransactionVo.getSaveMode() + "#" + relEntityTransactionVo.getToCiEntityId();
-        }
-    }
-
-    public static void main(String[] argv) {
-        List<RelEntityTransactionVo> list = new ArrayList<>();
-        RelEntityTransactionVo relEntityTransactionVo = new RelEntityTransactionVo();
-        relEntityTransactionVo.setRelId(1L);
-        relEntityTransactionVo.setDirection("from");
-        relEntityTransactionVo.setFromCiEntityId(10L);
-        relEntityTransactionVo.setToCiEntityId(20L);
-        list.add(relEntityTransactionVo);
-
-        relEntityTransactionVo = new RelEntityTransactionVo();
-        relEntityTransactionVo.setRelId(1L);
-        relEntityTransactionVo.setDirection("from");
-        relEntityTransactionVo.setFromCiEntityId(10L);
-        relEntityTransactionVo.setToCiEntityId(30L);
-        list.add(relEntityTransactionVo);
-
-        relEntityTransactionVo = new RelEntityTransactionVo();
-        relEntityTransactionVo.setRelId(1L);
-        relEntityTransactionVo.setDirection("to");
-        relEntityTransactionVo.setFromCiEntityId(30L);
-        relEntityTransactionVo.setToCiEntityId(10L);
-        list.add(relEntityTransactionVo);
-
-        relEntityTransactionVo = new RelEntityTransactionVo();
-        relEntityTransactionVo.setRelId(1L);
-        relEntityTransactionVo.setDirection("to");
-        relEntityTransactionVo.setFromCiEntityId(20L);
-        relEntityTransactionVo.setToCiEntityId(10L);
-        list.add(relEntityTransactionVo);
-
-        Map<String, List<RelEntityTransactionVo>> relGroupMap =
-            list.stream().collect(Collectors.groupingBy(e -> getRelGroupKey(e)));
-        System.out.println(JSON.toJSONString(relGroupMap));
-    }
-
     @Override
     public Long commitTransaction(Long transactionId) {
         return null;
+    }
+
+    public static void main(String[] a) {
+        List<String> list1 = new ArrayList<>();
+        list1.add("a");
+        List<String> list2 = list1.stream().collect(Collectors.toList());
+        list1.add("b");
+        System.out.println(list1);
+        System.out.println(list2);
     }
 
 }

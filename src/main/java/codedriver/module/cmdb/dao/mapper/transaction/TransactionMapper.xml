@@ -2,26 +2,175 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper">
 
+	<resultMap id="transactionDetailMap" type="codedriver.module.cmdb.dto.transaction.TransactionVo">
+		<id property="id" column="id" />
+		<result property="ciId" column="ciId" />
+		<result property="status" column="status" />
+		<result property="createUser" column="createUser" />
+		<result property="commitUser" column="commitUser" />
+		<result property="createUserName" column="createUserName" />
+		<result property="commitUserName" column="commitUserName" />
+		<result property="inputFrom" column="inputFrom" />
+		<result property="source" column="source" />
+		<result property="expireTime" column="expireTime" />
+		<result property="createTime" column="createTime" />
+		<result property="commitTime" column="commitTime" />
+		<result property="error" column="error" />
+		<association property="ciEntityTransactionVo" javaType="codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo">
+			<id property="ciEntityId" column="ciEntityId" />
+			<result property="action" column="action" />
+		</association>
+	</resultMap>
+
+
+
+	<sql id="searchTransactionCondition">
+		<where>
+			<if test="ciEntityId != null">
+				AND b.`ci_entity_id` = #{ciEntityId}
+			</if>
+			<if test="ciId != null">
+				AND a.ci_id = #{ciId}
+			</if>
+		</where>
+	</sql>
+
+	<select id="searchTransaction" parameterType="codedriver.module.cmdb.dto.transaction.TransactionVo" resultMap="transactionDetailMap">
+		SELECT
+		a.id,
+		a.ci_id AS ciId,
+		a.`status`,
+		create_user AS createUser,
+		(SELECT user_name FROM user u WHERE u.uuid = create_user) AS createUserName,
+		commit_user AS commitUser,
+		(SELECT user_name FROM user u WHERE u.uuid = commit_user) AS commitUserName,
+		input_from AS inputFrom,
+		source,
+		expire_time AS expireTime,
+		create_time AS createTime,
+		commit_time AS commitTime,
+		error,
+		b.action AS action,
+		b.ci_entity_id AS ciEntityId
+		FROM
+		cmdb_transaction a
+		JOIN cmdb_cientity_transaction b
+		ON a.id = b.`transaction_id`
+		<include refid="searchTransactionCondition"></include>
+		ORDER BY a.id DESC
+		<if test="needPage == true">
+			LIMIT #{startNum}, #{pageSize}
+		</if>
+	</select>
+
+	<select id="searchTransactionCount" parameterType="codedriver.module.cmdb.dto.transaction.TransactionVo" resultType="int">
+		SELECT
+		COUNT(1)
+		FROM
+		cmdb_transaction a
+		JOIN cmdb_cientity_transaction b
+		ON a.id = b.`transaction_id`
+		<include refid="searchTransactionCondition"></include>
+	</select>
+
 	<resultMap id="attrEntityTransactionMap" type="codedriver.module.cmdb.dto.transaction.AttrEntityTransactionVo">
 		<id property="attrId" column="attrId" />
 		<result property="ciEntityId" column="ciEntityId" />
+		<result property="attrLabel" column="attrLabel" />
+		<result property="attrName" column="attrName" />
+		<result property="propId" column="propId" />
+		<result property="propHandler" column="propHandler" />
 		<collection property="valueList" ofType="java.lang.String">
 			<result column="value" />
 		</collection>
 	</resultMap>
 
+	<select id="getRelEntityTransactionByTransactionIdAndCiEntityId" resultType="codedriver.module.cmdb.dto.transaction.RelEntityTransactionVo">
+		SELECT
+		a.`id`,
+		a.`rel_id` AS relId,
+		a.`transaction_id` AS transactionId,
+		a.`from_cientity_id` AS fromCiEntityId,
+		a.`to_cientity_id` AS toCiEntityId,
+		a.`action`,
+		b.`name` AS fromCiEntityName,
+		c.`name` AS toCiEntityName,
+		d.`from_ci_id` AS fromCiId,
+		d.`to_ci_id` AS toCiId,
+		d.`to_label` AS toLabel,
+		d.`from_label` AS fromLabel,
+		d.`name` AS relName,
+		'from' AS direction
+		FROM
+		`cmdb_relentity_transaction` a
+		LEFT JOIN `cmdb_cientity` b ON a.`from_cientity_id` = b.`id` 
+		LEFT JOIN `cmdb_cientity` c ON a.`to_cientity_id` = c.`id` 
+		JOIN `cmdb_rel` d ON a.rel_id = d.id
+		WHERE a.from_cientity_id = #{ciEntityId} AND a.`transaction_id` = #{transactionId}
+		UNION
+		SELECT
+		a.`id`,
+		a.`rel_id` AS relId,
+		a.`transaction_id` AS transactionId,
+		a.`from_cientity_id` AS fromCiEntityId,
+		a.`to_cientity_id` AS toCiEntityId,
+		a.`action`,
+		b.`name` AS fromCiEntityName,
+		c.`name` AS toCiEntityName,
+		d.`from_ci_id` AS fromCiId,
+		d.`to_ci_id` AS toCiId,
+		d.`to_label` AS toLabel,
+		d.`from_label` AS fromLabel,
+		d.`name` AS relName,
+		'to' AS direction
+		FROM
+		`cmdb_relentity_transaction` a
+		JOIN `cmdb_cientity` b ON a.`from_cientity_id` = b.`id` 
+		JOIN `cmdb_cientity` c ON a.`to_cientity_id` = c.`id` 
+		JOIN `cmdb_rel` d ON a.rel_id = d.id
+		WHERE a.to_cientity_id = #{ciEntityId} AND a.`transaction_id` = #{transactionId}
+		ORDER BY id
+	</select>
+
 	<select id="getAttrEntityTransactionByTransactionId" parameterType="java.lang.Long" resultMap="attrEntityTransactionMap">
 		SELECT
-		`id`,
-		`ci_entity_id` AS ciEntityId,
-		`attr_id` AS attrId,
-		`attr_name` AS attrName,
-		`value`,
-		`transaction_id` AS transactionId
+		a.`id`,
+		a.`ci_entity_id` AS ciEntityId,
+		a.`attr_id` AS attrId,
+		a.`attr_name` AS attrName,
+		a.`value`,
+		a.`transaction_id` AS transactionId,
+		a.`savemode` AS saveMode,
+		b.label AS attrLabel,
+		c.id AS propId,
+		c.handler AS propHandler
 		FROM
-		`cmdb_attrentity_transaction`
+		`cmdb_attrentity_transaction` a JOIN `cmdb_attr` b ON a.attr_id = b.id
+		LEFT JOIN `cmdb_prop` c ON b.`prop_id` = c.`id`
 		WHERE
 		transaction_id = #{value}
+		ORDER BY id
+	</select>
+
+	<select id="getAttrEntityTransactionByTransactionIdAndCiEntityId" resultMap="attrEntityTransactionMap">
+		SELECT
+		a.`id`,
+		a.`ci_entity_id` AS ciEntityId,
+		a.`attr_id` AS attrId,
+		a.`attr_name` AS attrName,
+		a.`value`,
+		a.`transaction_id` AS transactionId,
+		a.`savemode` AS saveMode,
+		b.label AS attrLabel,
+		c.id AS propId,
+		c.handler AS propHandler
+		FROM
+		`cmdb_attrentity_transaction` a JOIN `cmdb_attr` b ON a.attr_id = b.id
+		LEFT JOIN `cmdb_prop` c ON b.`prop_id` = c.`id`
+		WHERE
+		transaction_id = #{transactionId}
+		AND
+		ci_entity_id = #{ciEntityId}
 		ORDER BY id
 	</select>
 
@@ -30,11 +179,27 @@
 		`id`,
 		`ci_id` AS ciId,
 		`ci_entity_id` AS ciEntityId,
+		`name` AS name,
 		`action`,
-		`transaction_id` AS transactionId
+		`transaction_id` AS transactionId,
+		`snapshot_hash` AS snapshotHash
 		FROM
 		`cmdb_cientity_transaction`
 		WHERE transaction_id = #{value}
+	</select>
+
+	<select id="getCiEntityTransactionByTransactionIdAndCiEntityId" resultType="codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo">
+		SELECT
+		`id`,
+		`ci_id` AS ciId,
+		`ci_entity_id` AS ciEntityId,
+		`name` AS name,
+		`action`,
+		`transaction_id` AS transactionId,
+		`snapshot_hash` AS snapshotHash
+		FROM
+		`cmdb_cientity_transaction`
+		WHERE transaction_id = #{transactionId} AND ci_entity_id = #{ciEntityId}
 	</select>
 
 	<update id="updateTransactionStatus" parameterType="codedriver.module.cmdb.dto.transaction.TransactionVo">
@@ -52,10 +217,10 @@
 		INSERT INTO `cmdb_relentity_transaction` (
 		`id`,
 		`rel_id`,
-		`from_ci_entity_id`,
-		`to_ci_entity_id`,
+		`from_cientity_id`,
+		`to_cientity_id`,
 		`transaction_id`,
-		`savemode`
+		`action`
 		)
 		VALUES
 		(
@@ -64,7 +229,7 @@
 		#{fromCiEntityId},
 		#{toCiEntityId},
 		#{transactionId},
-		#{saveMode}
+		#{action}
 		)
 	</insert>
 
@@ -109,16 +274,20 @@
 		`id`,
 		`ci_id`,
 		`ci_entity_id`,
+		`name`,
 		`action`,
-		`transaction_id`
+		`transaction_id`,
+		`snapshot_hash`
 		)
 		VALUES
 		(
 		#{id},
 		#{ciId},
 		#{ciEntityId},
+		#{name},
 		#{action},
-		#{transactionId}
+		#{transactionId},
+		#{snapshotHash}
 		)
 	</insert>
 

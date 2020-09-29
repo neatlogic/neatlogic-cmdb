@@ -17,7 +17,8 @@
 		`id`,
 		`rel_id` AS relId,
 		`from_cientity_id` AS fromCiEntityId,
-		`to_cientity_id` AS toCiEntityId
+		`to_cientity_id` AS toCiEntityId,
+		`transaction_id` AS transactionId
 		FROM
 		`cmdb_relentity`
 		WHERE
@@ -31,7 +32,8 @@
 		`id`,
 		`rel_id` AS relId,
 		`from_cientity_id` AS fromCiEntityId,
-		`to_cientity_id` AS toCiEntityId
+		`to_cientity_id` AS toCiEntityId,
+		`transaction_id` AS transactionId
 		FROM
 		`cmdb_relentity`
 		WHERE
@@ -44,34 +46,36 @@
 		SELECT
 		a.`id`,
 		a.`rel_id` AS relId,
+		a.`transaction_id` AS transactionId,
 		a.`from_cientity_id` AS fromCiEntityId,
 		a.`to_cientity_id` AS toCiEntityId,
-		b.`value` AS fromCiEntityName,
-		c.`value` AS toCiEntityName,
+		b.`name` AS fromCiEntityName,
+		c.`name` AS toCiEntityName,
 		d.`from_ci_id` AS fromCiId,
 		d.`to_ci_id` AS toCiId,
 		'from' AS direction
 		FROM
 		`cmdb_relentity` a
-		JOIN `cmdb_attrentity` b ON a.`from_cientity_id` = b.ci_entity_id AND b.attr_name = 'name'
-		JOIN `cmdb_attrentity` c ON a.`to_cientity_id` = c.`ci_entity_id` AND c.`attr_name` = 'name'
+		JOIN `cmdb_cientity` b ON a.`from_cientity_id` = b.`id`
+		JOIN `cmdb_cientity` c ON a.`to_cientity_id` = c.`id`
 		JOIN `cmdb_rel` d ON a.rel_id = d.id
 		WHERE a.from_cientity_id = #{value}
 		UNION
 		SELECT
 		a.`id`,
 		a.`rel_id` AS relId,
+		a.`transaction_id` AS transactionId,
 		a.`from_cientity_id` AS fromCiEntityId,
 		a.`to_cientity_id` AS toCiEntityId,
-		b.`value` AS fromCiEntityName,
-		c.`value` AS toCiEntityName,
+		b.`name` AS fromCiEntityName,
+		c.`name` AS toCiEntityName,
 		d.`from_ci_id` AS fromCiId,
 		d.`to_ci_id` AS toCiId,
 		'to' AS direction
 		FROM
 		`cmdb_relentity` a
-		JOIN `cmdb_attrentity` b ON a.`from_cientity_id` = b.ci_entity_id AND b.attr_name = 'name'
-		JOIN `cmdb_attrentity` c ON a.`to_cientity_id` = c.`ci_entity_id` AND c.`attr_name` = 'name'
+		JOIN `cmdb_cientity` b ON a.`from_cientity_id` = b.`id`
+		JOIN `cmdb_cientity` c ON a.`to_cientity_id` = c.`id`
 		JOIN `cmdb_rel` d ON a.rel_id = d.id
 		WHERE a.to_cientity_id = #{value}
 		ORDER BY id
@@ -83,15 +87,16 @@
 		a.`rel_id` AS relId,
 		a.`from_cientity_id` AS fromCiEntityId,
 		a.`to_cientity_id` AS toCiEntityId,
-		b.`value` AS fromCiEntityName,
-		c.`value` AS toCiEntityName,
+		a.`transaction_id` AS transactionId,
+		b.`name` AS fromCiEntityName,
+		c.`name` AS toCiEntityName,
 		d.`from_ci_id` AS fromCiId,
 		d.`to_ci_id` AS toCiId,
 		'from' AS direction
 		FROM
 		`cmdb_relentity` a
-		JOIN `cmdb_attrentity` b ON a.`from_cientity_id` = b.ci_entity_id AND b.attr_name = 'name'
-		JOIN `cmdb_attrentity` c ON a.`to_cientity_id` = c.`ci_entity_id` AND c.`attr_name` = 'name'
+		JOIN `cmdb_cientity` b ON a.`from_cientity_id` = b.`id`
+		JOIN `cmdb_cientity` c ON a.`to_cientity_id` = c.`id`
 		JOIN `cmdb_rel` d ON a.rel_id = d.id
 		WHERE a.from_cientity_id IN
 		<foreach collection="idList" item="item" open="(" separator="," close=")">
@@ -109,15 +114,16 @@
 		a.`rel_id` AS relId,
 		a.`from_cientity_id` AS fromCiEntityId,
 		a.`to_cientity_id` AS toCiEntityId,
-		b.`value` AS fromCiEntityName,
-		c.`value` AS toCiEntityName,
+		a.`transaction_id` AS transactionId,
+		b.`name` AS fromCiEntityName,
+		c.`name` AS toCiEntityName,
 		d.`from_ci_id` AS fromCiId,
 		d.`to_ci_id` AS toCiId,
 		'to' AS direction
 		FROM
 		`cmdb_relentity` a
-		JOIN `cmdb_attrentity` b ON a.`from_cientity_id` = b.ci_entity_id AND b.attr_name = 'name'
-		JOIN `cmdb_attrentity` c ON a.`to_cientity_id` = c.`ci_entity_id` AND c.`attr_name` = 'name'
+		JOIN `cmdb_cientity` b ON a.`from_cientity_id` = b.`id`
+		JOIN `cmdb_cientity` c ON a.`to_cientity_id` = c.`id`
 		JOIN `cmdb_rel` d ON a.rel_id = d.id
 		WHERE a.to_cientity_id IN
 		<foreach collection="idList" item="item" open="(" separator="," close=")">
@@ -136,17 +142,19 @@
 		`id`,
 		`rel_id`,
 		`from_cientity_id`,
-		`to_cientity_id`
+		`to_cientity_id`,
+		`transaction_id`
 		)
 		VALUES
 		(
 		#{id},
 		#{relId},
 		#{fromCiEntityId},
-		#{toCiEntityId}
+		#{toCiEntityId},
+		#{transactionId}
 		)
 	</insert>
-	
+
 
 	<delete id="deleteRelEntityByFromCiEntityIdAndRelId">
 		DELETE
@@ -164,5 +172,12 @@
 		WHERE to_cientity_id = #{toCiEntityId}
 		AND
 		rel_id = #{relId}
+	</delete>
+
+	<delete id="deleteRelEntityByRelIdFromCiEntityIdToCiEntityId">
+		DELETE FROM
+		`cmdb_relentity`
+		WHERE
+		rel_id = #{relId} AND from_cientity_id = #{fromCiEntityId} AND to_cientity_id = #{toCiEntityId}
 	</delete>
 </mapper>

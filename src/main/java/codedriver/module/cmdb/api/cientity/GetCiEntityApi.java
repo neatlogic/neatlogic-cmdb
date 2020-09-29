@@ -60,7 +60,7 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
     @Description(desc = "获取配置项详细信息接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        // FIXME 补充权限校验
+
         Long id = jsonObj.getLong("id");
         boolean needAction = jsonObj.getBooleanValue("needAction");
         CiEntityVo ciEntityVo = ciEntityMapper.getCiEntityById(id);
@@ -69,22 +69,14 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
             ciEntityVo.setAttrEntityList(attrEntityList);
             List<RelEntityVo> relEntityList = relEntityMapper.getRelEntityByCiEntityId(id);
             ciEntityVo.setRelEntityList(relEntityList);
+
+            boolean canEdit = AuthActionChecker.check("CI_MODIFY", "CIENTITY_MODIFY");
             if (needAction) {
-                boolean canEdit = AuthActionChecker.check("CI_MODIFY", "CIENTITY_MODIFY");
                 if (!canEdit) {
                     canEdit = CiAuthChecker.builder().hasCiManagePrivilege(ciEntityVo.getId())
                         .hasCiEntityUpdatePrivilege(ciEntityVo.getId()).isInGroup(ciEntityVo.getId(), GroupType.MATAIN)
                         .check();
                 }
-                /*if (!canEdit) {
-                    canEdit = ciAuthService.hasCiManagePrivilege(ciEntityVo.getCiId());
-                    if (!canEdit) {
-                        canEdit = ciAuthService.hasCiEntityUpdatePrivilege(ciEntityVo.getCiId());
-                        if (!canEdit) {
-                            canEdit = ciAuthService.isInGroup(ciEntityVo.getId(), GroupType.MATAIN);
-                        }
-                    }
-                }*/
 
                 if (canEdit) {
                     ciEntityVo.setAuthData(new HashMap<String, Boolean>() {
@@ -92,6 +84,14 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
                             this.put(CiAuthType.CIENTITYUPDATE.getValue(), true);
                         }
                     });
+                }
+            }
+            if (!canEdit) {// 没有维护权限的情况下，判断是否拥有查看权限
+                boolean canView =
+                    CiAuthChecker.builder().hasCiEntityQueryPrivilege(ciEntityVo.getId(), ciEntityVo.getId())
+                        .isInGroup(ciEntityVo.getId(), GroupType.READONLY).check();
+                if (!canView) {
+                    
                 }
             }
         }

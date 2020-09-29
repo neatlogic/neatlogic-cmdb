@@ -101,6 +101,20 @@ public class CiAuthChecker {
             return this;
         }
 
+        public Builder hasCiEntityQueryPrivilege(Long ciId) {
+            if (!hasAuth) {
+                hasAuth = CiAuthChecker.hasCiEntityQueryPrivilege(ciId);
+            }
+            return this;
+        }
+
+        public Builder hasCiEntityQueryPrivilege(Long ciId, Long ciEntityId) {
+            if (!hasAuth) {
+                hasAuth = CiAuthChecker.hasCiEntityQueryPrivilege(ciId, ciEntityId);
+            }
+            return this;
+        }
+
         public Builder isInGroup(Long ciEntityId, GroupType... groupType) {
             if (!hasAuth) {
                 hasAuth = CiAuthChecker.isInGroup(ciEntityId, groupType);

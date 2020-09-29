@@ -1,17 +1,29 @@
 package codedriver.module.cmdb.dto.transaction;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.annotation.JSONField;
 
+import codedriver.framework.cmdb.constvalue.AttrType;
 import codedriver.framework.cmdb.constvalue.EditModeType;
 import codedriver.framework.cmdb.constvalue.TransactionActionType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.SnowflakeUtil;
+import codedriver.module.cmdb.dto.cientity.AttrEntityVo;
 import codedriver.module.cmdb.dto.cientity.CiEntityVo;
 
 public class CiEntityTransactionVo {
@@ -21,16 +33,26 @@ public class CiEntityTransactionVo {
     private Long ciId;
     @EntityField(name = "配置项id", type = ApiParamType.LONG)
     private Long ciEntityId;
+    @EntityField(name = "配置项名称", type = ApiParamType.STRING)
+    private String name;
+    @EntityField(name = "属性定义id", type = ApiParamType.LONG)
+    private Long propId;
+    @EntityField(name = "属性定义处理器", type = ApiParamType.STRING)
+    private String propHandler;
     @EntityField(name = "事务id", type = ApiParamType.LONG)
     private Long transactionId;
     @EntityField(name = "编辑模式", type = ApiParamType.ENUM, member = EditModeType.class)
     private String editMode = EditModeType.GLOBAL.getValue();
     @EntityField(name = "操作", type = ApiParamType.ENUM, member = TransactionActionType.class)
     private String action;
+    @EntityField(name = "操作文本", type = ApiParamType.STRING)
+    private String actionText;
+    @EntityField(name = "属性修改信息", type = ApiParamType.JSONARRAY)
+    private List<AttrEntityTransactionVo> attrEntityTransactionList;
+    @EntityField(name = "关系修改信息", type = ApiParamType.JSONARRAY)
+    private List<RelEntityTransactionVo> relEntityTransactionList;
     @JSONField(serialize = false)
-    private transient List<AttrEntityTransactionVo> attrEntityTransactionList;
-    @JSONField(serialize = false)
-    private transient List<RelEntityTransactionVo> relEntityTransactionList;
+    private transient String snapshotHash;// 修改前的快照
 
     public CiEntityTransactionVo() {
 
@@ -67,7 +89,7 @@ public class CiEntityTransactionVo {
         }
         return null;
     }
-
+    
     public Long getId() {
         if (id == null) {
             id = SnowflakeUtil.uniqueLong();
@@ -139,4 +161,46 @@ public class CiEntityTransactionVo {
         this.editMode = editMode;
     }
 
+    public String getActionText() {
+        if (StringUtils.isNotBlank(action) && StringUtils.isBlank(actionText)) {
+            actionText = TransactionActionType.getText(action);
+        }
+        return actionText;
+    }
+
+    public void setActionText(String actionText) {
+        this.actionText = actionText;
+    }
+
+    public Long getPropId() {
+        return propId;
+    }
+
+    public void setPropId(Long propId) {
+        this.propId = propId;
+    }
+
+    public String getPropHandler() {
+        return propHandler;
+    }
+
+    public void setPropHandler(String propHandler) {
+        this.propHandler = propHandler;
+    }
+
+    public String getSnapshotHash() {
+        return snapshotHash;
+    }
+
+    public void setSnapshotHash(String snapshotHash) {
+        this.snapshotHash = snapshotHash;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }
