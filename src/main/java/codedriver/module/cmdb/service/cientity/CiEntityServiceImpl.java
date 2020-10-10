@@ -94,7 +94,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                             itAttrEntity.remove();
                         }
                     }
-                    // 一个关系可能被多个配置项引用，所以不能关联后删除
+                    // 一个关系可能被多个配置项引用，所以不能使用属性的处理方式来处理
                     for (RelEntityVo relEntity : relEntityList) {
                         if (relEntity.getFromCiEntityId().equals(entity.getId())
                             && relEntity.getDirection().equals(RelDirectionType.FROM.getValue())
@@ -462,14 +462,7 @@ public class CiEntityServiceImpl implements CiEntityService {
      */
     private Long commitTransaction(TransactionVo transactionVo) {
         CiEntityTransactionVo ciEntityTransactionVo = transactionVo.getCiEntityTransactionVo();
-        CiEntityVo ciEntityVo = new CiEntityVo(ciEntityTransactionVo);
-        // 写入配置项
-        if (ciEntityTransactionVo.getAction().equals(TransactionActionType.INSERT.getValue())) {
-            ciEntityMapper.insertCiEntity(ciEntityVo);
-        } else if (ciEntityTransactionVo.getAction().equals(TransactionActionType.UPDATE.getValue())) {
-            ciEntityVo.setIsLocked(0);
-            ciEntityMapper.updateCiEntityLockById(ciEntityVo);
-        }
+
         // 写入属性
         List<AttrEntityTransactionVo> attrEntityTransactionList = ciEntityTransactionVo.getAttrEntityTransactionList();
         if (CollectionUtils.isNotEmpty(attrEntityTransactionList)) {
@@ -497,6 +490,17 @@ public class CiEntityServiceImpl implements CiEntityService {
                     }
                 }
             }
+        }
+
+        CiEntityVo ciEntityVo = new CiEntityVo(ciEntityTransactionVo);
+        // 最后写入配置项，因为cientityname需要依赖所有属性
+        ciEntityVo.setAttrEntityList(attrEntityMapper.getAttrEntityByCiEntityId(ciEntityVo.getId()));
+        if (ciEntityTransactionVo.getAction().equals(TransactionActionType.INSERT.getValue())) {
+            ciEntityMapper.insertCiEntity(ciEntityVo);
+        } else if (ciEntityTransactionVo.getAction().equals(TransactionActionType.UPDATE.getValue())) {
+            //解除配置项修改锁定
+            ciEntityVo.setIsLocked(0);
+            ciEntityMapper.updateCiEntityLockById(ciEntityVo);
         }
         transactionVo.setStatus(TransactionStatus.COMMITED.getValue());
         transactionMapper.updateTransactionStatus(transactionVo);

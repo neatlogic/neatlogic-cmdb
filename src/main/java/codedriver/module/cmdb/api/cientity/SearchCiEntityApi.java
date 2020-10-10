@@ -18,6 +18,8 @@ import codedriver.framework.cmdb.constvalue.ShowType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.dao.mapper.TeamMapper;
+import codedriver.framework.elasticsearch.core.ElasticSearchHandlerFactory;
+import codedriver.framework.elasticsearch.core.IElasticSearchHandler;
 import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -141,7 +143,10 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
             ciEntityVo.setGroupIdList(groupIdList);
         }
 
-        List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
+        // List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
+        IElasticSearchHandler<CiEntityVo, List<CiEntityVo>> handler =
+            ElasticSearchHandlerFactory.getHandler("cientity");
+        List<CiEntityVo> ciEntityList = handler.search(ciEntityVo);
         JSONArray tbodyList = new JSONArray();
         if (CollectionUtils.isNotEmpty(ciEntityList)) {
             boolean canEdit = hasManageAuth, canDelete = hasManageAuth, canTransaction = hasManageAuth;

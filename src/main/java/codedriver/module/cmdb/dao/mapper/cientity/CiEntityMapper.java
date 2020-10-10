@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 
+import codedriver.framework.elasticsearch.annotation.ESParam;
+import codedriver.framework.elasticsearch.annotation.ESSearch;
 import codedriver.module.cmdb.dto.cientity.CiEntityVo;
 
 /**
@@ -23,7 +25,8 @@ public interface CiEntityMapper {
 
     public List<CiEntityVo> searchCiEntityByIdList(@Param("idList") List<Long> idList);
 
-    public int insertCiEntity(CiEntityVo ciEntityVo);
+    @ESSearch
+    public int insertCiEntity(@ESParam("cientity") CiEntityVo ciEntityVo);
 
     public int updateCiEntityLockById(CiEntityVo ciEntityVo);
 

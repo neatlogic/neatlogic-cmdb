@@ -1,6 +1,10 @@
 package codedriver.module.cmdb.dto.cientity;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class AttrFilterVo {
     private Long attrId;
@@ -34,6 +38,9 @@ public class AttrFilterVo {
     }
 
     public List<String> getValueList() {
+        if (CollectionUtils.isNotEmpty(valueList)) {
+            return valueList.stream().filter(v -> StringUtils.isNotBlank(v)).collect(Collectors.toList());
+        }
         return valueList;
     }
 

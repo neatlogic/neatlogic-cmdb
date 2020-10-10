@@ -29,6 +29,10 @@ public class TransactionVo extends BasePageVo {
     private String inputFrom = InputFrom.PAGE.getValue();
     @EntityField(name = "输入来源文本", type = ApiParamType.STRING)
     private String inputFromText;
+    @EntityField(name = "更新属性数量", type = ApiParamType.INTEGER)
+    private int updateAttrCount;
+    @EntityField(name = "更新关系数量", type = ApiParamType.INTEGER)
+    private int updateRelCount;
     private String source;
     @EntityField(name = "创建用户", type = ApiParamType.STRING)
     private String createUser;
@@ -198,6 +202,22 @@ public class TransactionVo extends BasePageVo {
 
     public void setCommitUserName(String commitUserName) {
         this.commitUserName = commitUserName;
+    }
+
+    public int getUpdateAttrCount() {
+        return updateAttrCount;
+    }
+
+    public void setUpdateAttrCount(int updateAttrCount) {
+        this.updateAttrCount = updateAttrCount;
+    }
+
+    public int getUpdateRelCount() {
+        return updateRelCount;
+    }
+
+    public void setUpdateRelCount(int updateRelCount) {
+        this.updateRelCount = updateRelCount;
     }
 
 }

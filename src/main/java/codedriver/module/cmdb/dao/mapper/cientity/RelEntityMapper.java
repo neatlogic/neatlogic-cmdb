@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 
+import codedriver.framework.elasticsearch.annotation.ESParam;
+import codedriver.framework.elasticsearch.annotation.ESSearch;
 import codedriver.module.cmdb.dto.cientity.RelEntityVo;
 
 /**
@@ -25,14 +27,19 @@ public interface RelEntityMapper {
     public List<RelEntityVo> getRelEntityByToCiEntityIdAndRelId(@Param("toCiEntityId") Long toCiEntityId,
         @Param("relId") Long relId);
 
-    public int insertRelEntity(RelEntityVo relEntityVo);
+    @ESSearch
+    public int insertRelEntity(@ESParam("cientity") RelEntityVo relEntityVo);
 
-    public int deleteRelEntityByFromCiEntityIdAndRelId(@Param("fromCiEntityId") Long fromCiEntityId,
+    @ESSearch
+    public int deleteRelEntityByFromCiEntityIdAndRelId(
+        @Param("fromCiEntityId") @ESParam("cientity") Long fromCiEntityId, @Param("relId") Long relId);
+
+    @ESSearch
+    public int deleteRelEntityByToCiEntityIdAndRelId(@Param("toCiEntityId") @ESParam("cientity") Long toCiEntityId,
         @Param("relId") Long relId);
 
-    public int deleteRelEntityByToCiEntityIdAndRelId(@Param("toCiEntityId") Long toCiEntityId,
-        @Param("relId") Long relId);
-
+    @ESSearch
     public int deleteRelEntityByRelIdFromCiEntityIdToCiEntityId(@Param("relId") Long relId,
-        @Param("fromCiEntityId") Long fromCiEntityId, @Param("toCiEntityId") Long toCiEntityId);
+        @Param("fromCiEntityId") @ESParam("cientity") Long fromCiEntityId,
+        @Param("toCiEntityId") @ESParam("cientity") Long toCiEntityId);
 }

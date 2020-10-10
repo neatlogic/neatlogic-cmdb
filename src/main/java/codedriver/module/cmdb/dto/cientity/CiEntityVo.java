@@ -23,6 +23,8 @@ import codedriver.framework.cmdb.constvalue.AttrType;
 import codedriver.framework.cmdb.constvalue.EditModeType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
+import codedriver.framework.elasticsearch.annotation.ESKey;
+import codedriver.framework.elasticsearch.constvalue.ESKeyType;
 import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.SnowflakeUtil;
 import codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo;
@@ -31,6 +33,7 @@ public class CiEntityVo extends BasePageVo {
     @JSONField(serialize = false)
     private transient String keyword;
     @EntityField(name = "id", type = ApiParamType.LONG)
+    @ESKey(type = ESKeyType.PKEY, name = "id")
     private Long id;
     @EntityField(name = "模型id", type = ApiParamType.LONG)
     private Long ciId;

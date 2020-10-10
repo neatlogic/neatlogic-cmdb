@@ -2,6 +2,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper">
 
+	
+
 	<resultMap id="transactionDetailMap" type="codedriver.module.cmdb.dto.transaction.TransactionVo">
 		<id property="id" column="id" />
 		<result property="ciId" column="ciId" />
@@ -10,6 +12,8 @@
 		<result property="commitUser" column="commitUser" />
 		<result property="createUserName" column="createUserName" />
 		<result property="commitUserName" column="commitUserName" />
+		<result property="updateAttrCount" column="updateAttrCount"/>
+		<result property="updateRelCount" column="updateRelCount"/>
 		<result property="inputFrom" column="inputFrom" />
 		<result property="source" column="source" />
 		<result property="expireTime" column="expireTime" />
@@ -21,8 +25,6 @@
 			<result property="action" column="action" />
 		</association>
 	</resultMap>
-
-
 
 	<sql id="searchTransactionCondition">
 		<where>
@@ -44,6 +46,8 @@
 		(SELECT user_name FROM user u WHERE u.uuid = create_user) AS createUserName,
 		commit_user AS commitUser,
 		(SELECT user_name FROM user u WHERE u.uuid = commit_user) AS commitUserName,
+		(SELECT COUNT(DISTINCT attr_id) FROM cmdb_attrentity_transaction cat WHERE cat.transaction_id = a.id) AS updateAttrCount,
+		(SELECT COUNT(DISTINCT rel_id) FROM cmdb_relentity_transaction cat WHERE cat.transaction_id = a.id) AS updateRelCount,
 		input_from AS inputFrom,
 		source,
 		expire_time AS expireTime,

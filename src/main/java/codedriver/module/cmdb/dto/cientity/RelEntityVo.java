@@ -5,6 +5,8 @@ import org.apache.commons.lang3.StringUtils;
 import com.google.common.base.Objects;
 
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.elasticsearch.annotation.ESKey;
+import codedriver.framework.elasticsearch.constvalue.ESKeyType;
 import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.SnowflakeUtil;
 import codedriver.module.cmdb.dto.transaction.RelEntityTransactionVo;
@@ -17,10 +19,12 @@ public class RelEntityVo {
     @EntityField(name = "关系唯一标识", type = ApiParamType.STRING)
     private String relName;
     @EntityField(name = "来源配置项id", type = ApiParamType.LONG)
+    @ESKey(type = ESKeyType.PKEY, name = "id")
     private Long fromCiEntityId;
     @EntityField(name = "来源配置项名称", type = ApiParamType.STRING)
     private String fromCiEntityName;
     @EntityField(name = "目标配置项id", type = ApiParamType.LONG)
+    @ESKey(type = ESKeyType.PKEY, name = "id")
     private Long toCiEntityId;
     @EntityField(name = "目标配置项名称", type = ApiParamType.STRING)
     private String toCiEntityName;

@@ -9,6 +9,8 @@ import com.alibaba.fastjson.annotation.JSONField;
 
 import codedriver.framework.cmdb.attrvaluehandler.core.AttrValueUtil;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.elasticsearch.annotation.ESKey;
+import codedriver.framework.elasticsearch.constvalue.ESKeyType;
 import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.HtmlUtil;
 import codedriver.module.cmdb.dto.transaction.AttrEntityTransactionVo;
@@ -17,6 +19,7 @@ public class AttrEntityVo {
     @EntityField(name = "id", type = ApiParamType.LONG)
     private Long id;// 由于需要在SQL批量写入，所以这里使用数据库自增id
     @EntityField(name = "配置项id", type = ApiParamType.LONG)
+    @ESKey(type = ESKeyType.PKEY, name = "id")
     private Long ciEntityId;
     @EntityField(name = "属性id", type = ApiParamType.LONG)
     private Long attrId;
