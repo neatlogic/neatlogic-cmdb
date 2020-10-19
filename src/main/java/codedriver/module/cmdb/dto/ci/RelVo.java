@@ -20,8 +20,10 @@ public class RelVo implements Serializable {
     private static final long serialVersionUID = 4262674515934863987L;
     @EntityField(name = "id", type = ApiParamType.LONG)
     private Long id;
-    @EntityField(name = "关系名称", type = ApiParamType.STRING)
-    private String name;
+    @EntityField(name = "关系类型", type = ApiParamType.LONG)
+    private Long typeId;
+    @EntityField(name = "关系类型名称", type = ApiParamType.STRING)
+    private String typeText;
     @EntityField(name = "当前模型位置，from|to", type = ApiParamType.STRING)
     private String direction;
     @EntityField(name = "数据录入方式", type = ApiParamType.STRING)
@@ -86,14 +88,6 @@ public class RelVo implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getInputType() {
@@ -300,6 +294,22 @@ public class RelVo implements Serializable {
 
     public void setToIsUnique(Integer toIsUnique) {
         this.toIsUnique = toIsUnique;
+    }
+
+    public Long getTypeId() {
+        return typeId;
+    }
+
+    public void setTypeId(Long typeId) {
+        this.typeId = typeId;
+    }
+
+    public String getTypeText() {
+        return typeText;
+    }
+
+    public void setTypeText(String typeText) {
+        this.typeText = typeText;
     }
 
 }

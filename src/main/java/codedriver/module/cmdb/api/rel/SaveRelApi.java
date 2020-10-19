@@ -39,7 +39,7 @@ public class SaveRelApi extends PrivateApiComponentBase {
     }
 
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "id，不存在代表新增"),
-        @Param(name = "name", type = ApiParamType.STRING, isRequired = true, xss = true, desc = "关系名称"),
+        @Param(name = "typeId", type = ApiParamType.LONG, isRequired = true, desc = "关系类型"),
         @Param(name = "inputType", type = ApiParamType.ENUM, rule = "at,mt", desc = "录入方式"),
         @Param(name = "fromLabel", type = ApiParamType.STRING, isRequired = true, xss = true, desc = "来源标签",
             maxLength = 200),

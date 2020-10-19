@@ -64,6 +64,7 @@
 				AND a.id = #{typeId}
 			</if>
 		</where>
+		ORDER BY a.sort
 	</select>
 
 	<select id="getCiById" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.CiVo" useCache="false">

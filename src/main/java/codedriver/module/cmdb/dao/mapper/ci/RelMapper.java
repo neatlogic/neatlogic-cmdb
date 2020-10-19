@@ -6,6 +6,8 @@ import codedriver.module.cmdb.dto.ci.RelGroupVo;
 import codedriver.module.cmdb.dto.ci.RelVo;
 
 public interface RelMapper {
+    public List<RelVo> getAllRelList();
+
     public List<RelGroupVo> getRelGroupByCiId(Long ciId);
 
     public int checkRelGroupNameIsExists(RelGroupVo relGroupVo);

@@ -2,6 +2,28 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.ci.RelMapper">
 	<cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
+	<select id="getAllRelList" resultType="codedriver.module.cmdb.dto.ci.RelVo" useCache="true">
+		SELECT
+		`id`,
+		`type_id` AS typeId,
+		(SELECT name FROM cmdb_reltype cr WHERE cr.id = `type_id`) AS typeText,
+		`input_type` AS inputType,
+		`from_ci_id` AS fromCiId,
+		`from_name` AS fromName,
+		`from_label` AS fromLabel,
+		`from_rule` AS fromRule,
+		`from_group_id` AS fromGroupId,
+		`from_is_unique` AS fromIsUnique,
+		`to_ci_id` AS toCiId,
+		`to_name` AS toName,
+		`to_label` AS toLabel,
+		`to_rule` AS toRule,
+		`to_group_id` AS toGroupId,
+		`to_is_unique` AS toIsUnique
+		FROM
+		`cmdb_rel`
+	</select>
+
 	<select id="checkRelGroupNameIsExists" parameterType="codedriver.module.cmdb.dto.ci.RelGroupVo" resultType="int">
 		SELECT
 		COUNT(1)
@@ -42,7 +64,8 @@
 	<select id="getRelById" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.RelVo" useCache="false">
 		SELECT
 		a.`id`,
-		a.`name`,
+		a.`type_id` AS typeId,
+		(SELECT name FROM cmdb_reltype cr WHERE cr.id = a.`type_id`) AS typeText,
 		a.`input_type` AS inputType,
 		a.`from_ci_id` AS fromCiId,
 		f.icon AS fromCiIcon,
@@ -50,7 +73,6 @@
 		f.label AS fromCiLabel,
 		a.`from_name` AS fromName,
 		a.`from_label` AS fromLabel,
-		a.`from_type_id` AS fromTypeId,
 		a.`from_rule` AS fromRule,
 		a.`from_group_id` AS fromGroupId,
 		a.`from_is_unique` AS fromIsUnique,
@@ -61,7 +83,6 @@
 		t.label AS toCiLabel,
 		a.`to_name` AS toName,
 		a.`to_label` AS toLabel,
-		a.`to_type_id` AS toTypeId,
 		a.`to_rule` AS toRule,
 		a.`to_group_id` AS toGroupId,
 		a.`to_is_unique` AS toIsUnique,
@@ -77,7 +98,8 @@
 	<select id="getRelByCiId" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.RelVo" useCache="false">
 		SELECT
 		a.`id`,
-		a.`name`,
+		a.`type_id` AS typeId,
+		(SELECT name FROM cmdb_reltype cr WHERE cr.id = a.`type_id`) AS typeText,
 		a.`input_type` AS inputType,
 		a.`from_ci_id` AS fromCiId,
 		f.icon AS fromCiIcon,
@@ -85,7 +107,6 @@
 		f.label AS fromCiLabel,
 		a.`from_name` AS fromName,
 		a.`from_label` AS fromLabel,
-		a.`from_type_id` AS fromTypeId,
 		a.`from_rule` AS fromRule,
 		a.`from_group_id` AS fromGroupId,
 		a.`from_is_unique` AS fromIsUnique,
@@ -96,7 +117,6 @@
 		t.label AS toCiLabel,
 		a.`to_name` AS toName,
 		a.`to_label` AS toLabel,
-		a.`to_type_id` AS toTypeId,
 		a.`to_rule` AS toRule,
 		a.`to_group_id` AS toGroupId,
 		a.`to_is_unique` AS toIsUnique,
@@ -111,7 +131,8 @@
 		UNION
 		SELECT
 		a.`id`,
-		a.`name`,
+		a.`type_id` AS typeId,
+		(SELECT name FROM cmdb_reltype cr WHERE cr.id = a.`type_id`) AS typeText,
 		a.`input_type` AS inputType,
 		a.`from_ci_id` AS fromCiId,
 		f.icon AS fromCiIcon,
@@ -119,7 +140,6 @@
 		f.label AS fromCiLabel,
 		a.`from_name` AS fromName,
 		a.`from_label` AS fromLabel,
-		a.`from_type_id` AS fromTypeId,
 		a.`from_rule` AS fromRule,
 		a.`from_group_id` AS fromGroupId,
 		a.`from_is_unique` AS fromIsUnique,
@@ -130,7 +150,6 @@
 		t.label AS toCiLabel,
 		a.`to_name` AS toName,
 		a.`to_label` AS toLabel,
-		a.`to_type_id` AS toTypeId,
 		a.`to_rule` AS toRule,
 		a.`to_group_id` AS toGroupId,
 		a.`to_is_unique` AS toIsUnique,
@@ -150,15 +169,13 @@
 		UPDATE
 		`cmdb_rel`
 		SET
-		`name` = #{name},
+		`type_id` = #{typeId},
 		`input_type` = #{inputType},
 		`from_label` = #{fromLabel},
-		`from_type_id` = #{fromTypeId},
 		`from_rule` = #{fromRule},
 		`from_group_id` = #{fromGroupId},
 		`from_is_unique` = #{fromIsUnique},
 		`to_label` = #{toLabel},
-		`to_type_id` = #{toTypeId},
 		`to_rule` = #{toRule},
 		`to_group_id` = #{toGroupId},
 		`to_is_unique` = #{toIsUnique}
@@ -182,19 +199,17 @@
 	<insert id="insertRel" parameterType="codedriver.module.cmdb.dto.ci.RelVo">
 		INSERT INTO `cmdb_rel` (
 		`id`,
-		`name`,
+		`type_id`,
 		`input_type`,
 		`from_ci_id`,
 		`from_name`,
 		`from_label`,
-		`from_type_id`,
 		`from_rule`,
 		`from_group_id`,
 		`from_is_unique`,
 		`to_ci_id`,
 		`to_name`,
 		`to_label`,
-		`to_type_id`,
 		`to_rule`,
 		`to_group_id`,
 		`to_is_unique`
@@ -202,19 +217,17 @@
 		VALUES
 		(
 		#{id},
-		#{name},
+		#{typeId},
 		#{inputType},
 		#{fromCiId},
 		#{fromName},
 		#{fromLabel},
-		#{fromTypeId},
 		#{fromRule},
 		#{fromGroupId},
 		#{fromIsUnique},
 		#{toCiId},
 		#{toName},
 		#{toLabel},
-		#{toTypeId},
 		#{toRule},
 		#{toGroupId},
 		#{toIsUnique}

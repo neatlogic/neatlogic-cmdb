@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,15 +62,24 @@ public class EsCiEntityHandler extends ElasticSearchHandlerBase<CiEntityVo, List
             jsonObj.put("id", ciEntityVo.getId());
             jsonObj.put("ciId", ciEntityVo.getCiId());
             Iterator<String> itKey = attrEntityData.keySet().iterator();
+            // 集中所有属性内容，以便模糊检索
+            String content = "";
             while (itKey.hasNext()) {
                 String key = itKey.next();
                 JSONObject dataObj = attrEntityData.getJSONObject(key);
                 JSONArray valueList = dataObj.getJSONArray("valueList");
                 if (CollectionUtils.isNotEmpty(valueList)) {
                     // 这个值用于匹配like搜索表达式
-                    dataObj.put("value", valueList.stream().map(v -> v.toString()).collect(Collectors.joining(",")));
+                    String value = valueList.stream().map(v -> v.toString()).collect(Collectors.joining(","));
+                    dataObj.put("value", value);
+                    if (StringUtils.isNotBlank(content)) {
+                        content += ",";
+                    }
+                    content += value;
                 }
+
             }
+            jsonObj.put("content", content);
             jsonObj.put("attrEntityData", attrEntityData);
             jsonObj.put("relEntityData", relEntityData);
             return jsonObj;
@@ -86,24 +96,45 @@ public class EsCiEntityHandler extends ElasticSearchHandlerBase<CiEntityVo, List
         if (ciEntityVo.getCiId() != null) {
             whereList.add("(" + String.format(Expression.EQUAL.getExpressionEs(), "ciId", ciEntityVo.getCiId()) + ")");
         }
-        if (CollectionUtils.isNotEmpty(attrFilterList)) {
-            for (AttrFilterVo attrFilterVo : attrFilterList) {
-                if (CollectionUtils.isNotEmpty(attrFilterVo.getValueList())) {
-                    // between需要替换三个参数，暂不支持
-                    if (!attrFilterVo.getExpression().equals(Expression.BETWEEN.getExpression())) {
-                        if (!attrFilterVo.getExpression().equals(Expression.LIKE.getExpression())
-                            && !attrFilterVo.getExpression().equals(Expression.NOTLIKE.getExpression())
-                            && !attrFilterVo.getExpression().equals(Expression.ISNULL.getExpression())
-                            && !attrFilterVo.getExpression().equals(Expression.ISNOTNULL.getExpression())) {
-                            whereList.add("(" + String.format(Expression.getExpressionEs(attrFilterVo.getExpression()),
-                                "attrEntityData.attr_" + attrFilterVo.getAttrId() + ".valueList", attrFilterVo
-                                    .getValueList().stream().map(v -> "'" + v + "'").collect(Collectors.joining(",")))
-                                + ")");
-                        } else {
-                            whereList.add("(" + String.format(Expression.getExpressionEs(attrFilterVo.getExpression()),
-                                "attrEntityData.attr_" + attrFilterVo.getAttrId() + ".value", attrFilterVo
-                                    .getValueList().stream().map(v -> "'" + v + "'").collect(Collectors.joining(",")))
-                                + ")");
+        // 简易搜索
+        if (StringUtils.isNotBlank(ciEntityVo.getKeyword())) {
+            if (ciEntityVo.getKeyword().contains(" ")) {
+                String[] keywords = ciEntityVo.getKeyword().split("\\s+");
+                List<String> conditions = new ArrayList<>();
+                for (String k : keywords) {
+                    conditions.add("content contains '" + k + "'");
+                }
+                if (CollectionUtils.isNotEmpty(conditions)) {
+                    whereList.add("( " + conditions.stream().collect(Collectors.joining(" OR ")) + " )");
+                }
+            } else {
+                whereList.add("( content contains '" + ciEntityVo.getKeyword() + "')");
+            }
+            // 高级搜索
+        } else {
+            if (CollectionUtils.isNotEmpty(attrFilterList)) {
+                for (AttrFilterVo attrFilterVo : attrFilterList) {
+                    if (CollectionUtils.isNotEmpty(attrFilterVo.getValueList())) {
+                        // between需要替换三个参数，暂不支持
+                        if (!attrFilterVo.getExpression().equals(Expression.BETWEEN.getExpression())) {
+                            if (!attrFilterVo.getExpression().equals(Expression.LIKE.getExpression())
+                                && !attrFilterVo.getExpression().equals(Expression.NOTLIKE.getExpression())
+                                && !attrFilterVo.getExpression().equals(Expression.ISNULL.getExpression())
+                                && !attrFilterVo.getExpression().equals(Expression.ISNOTNULL.getExpression())) {
+                                whereList
+                                    .add("(" + String.format(Expression.getExpressionEs(attrFilterVo.getExpression()),
+                                        "attrEntityData.attr_" + attrFilterVo.getAttrId() + ".valueList",
+                                        attrFilterVo.getValueList().stream().map(v -> "'" + v + "'")
+                                            .collect(Collectors.joining(",")))
+                                        + ")");
+                            } else {
+                                whereList
+                                    .add("(" + String.format(Expression.getExpressionEs(attrFilterVo.getExpression()),
+                                        "attrEntityData.attr_" + attrFilterVo.getAttrId() + ".value",
+                                        attrFilterVo.getValueList().stream().map(v -> "'" + v + "'")
+                                            .collect(Collectors.joining(",")))
+                                        + ")");
+                            }
                         }
                     }
                 }
@@ -116,7 +147,9 @@ public class EsCiEntityHandler extends ElasticSearchHandlerBase<CiEntityVo, List
         String orderBy = "order by id desc";
         String sql = String.format("select %s from %s %s %s limit %d,%d", column, TenantContext.get().getTenantUuid(),
             where, orderBy, ciEntityVo.getStartNum(), ciEntityVo.getPageSize());
-        System.out.println(sql);
+        if (logger.isDebugEnabled()) {
+            logger.debug("ElasticSearchSql:" + sql);
+        }
         return sql;
     }
 
