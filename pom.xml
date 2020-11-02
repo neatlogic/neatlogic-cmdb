@@ -48,7 +48,7 @@
 		<dependency>
 			<groupId>org.w3c.dom</groupId>
 			<artifactId>org.w3c.dom.svg</artifactId>
-			<version>1.1.0.v201011041433</version>
+			<version>1.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.w3c.dom</groupId>
