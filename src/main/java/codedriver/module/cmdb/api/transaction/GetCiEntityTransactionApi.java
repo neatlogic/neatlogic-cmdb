@@ -147,10 +147,10 @@ public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
     private static String getRelGroupKey(RelEntityTransactionVo relEntityTransactionVo) {
         if (relEntityTransactionVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
             return relEntityTransactionVo.getRelId() + "#" + relEntityTransactionVo.getDirection() + "#"
-                + relEntityTransactionVo.getToLabel() + "#" + relEntityTransactionVo.getRelName();
+                + relEntityTransactionVo.getToLabel() + "#" + relEntityTransactionVo.getTypeId();
         } else {
             return relEntityTransactionVo.getRelId() + "#" + relEntityTransactionVo.getDirection() + "#"
-                + relEntityTransactionVo.getFromLabel() + "#" + relEntityTransactionVo.getRelName();
+                + relEntityTransactionVo.getFromLabel() + "#" + relEntityTransactionVo.getTypeId();
         }
     }
 }

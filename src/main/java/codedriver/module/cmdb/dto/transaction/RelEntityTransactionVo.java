@@ -15,8 +15,10 @@ public class RelEntityTransactionVo {
     private Long id;
     @EntityField(name = "关系id", type = ApiParamType.LONG)
     private Long relId;
-    @EntityField(name = "关系名称", type = ApiParamType.STRING)
-    private String relName;
+    @EntityField(name = "关系类型", type = ApiParamType.LONG)
+    private Long typeId;
+    @EntityField(name = "关系类型名称", type = ApiParamType.STRING)
+    private String typeText;
     @EntityField(name = "上游端配置项id", type = ApiParamType.LONG)
     private Long fromCiEntityId;
     @EntityField(name = "上游端配置项名称", type = ApiParamType.STRING)
@@ -96,14 +98,6 @@ public class RelEntityTransactionVo {
 
     public void setToCiEntityId(Long toCiEntityId) {
         this.toCiEntityId = toCiEntityId;
-    }
-
-    public String getRelName() {
-        return relName;
-    }
-
-    public void setRelName(String relName) {
-        this.relName = relName;
     }
 
     public String getDirection() {
@@ -226,6 +220,22 @@ public class RelEntityTransactionVo {
 
     public void setActionText(String actionText) {
         this.actionText = actionText;
+    }
+
+    public Long getTypeId() {
+        return typeId;
+    }
+
+    public void setTypeId(Long typeId) {
+        this.typeId = typeId;
+    }
+
+    public String getTypeText() {
+        return typeText;
+    }
+
+    public void setTypeText(String typeText) {
+        this.typeText = typeText;
     }
 
 }

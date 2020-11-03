@@ -103,7 +103,7 @@
 		d.`to_ci_id` AS toCiId,
 		d.`to_label` AS toLabel,
 		d.`from_label` AS fromLabel,
-		d.`name` AS relName,
+		d.`type_id` AS typeId,
 		'from' AS direction
 		FROM
 		`cmdb_relentity_transaction` a
@@ -125,7 +125,7 @@
 		d.`to_ci_id` AS toCiId,
 		d.`to_label` AS toLabel,
 		d.`from_label` AS fromLabel,
-		d.`name` AS relName,
+		d.`type_id` AS typeId,
 		'to' AS direction
 		FROM
 		`cmdb_relentity_transaction` a
