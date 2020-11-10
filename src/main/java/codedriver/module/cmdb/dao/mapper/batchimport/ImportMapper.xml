@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.cmdb.dao.mapper.batchimport.ImportMapper">
+
+	<select id="getCmdbImportFileList" resultType="codedriver.framework.file.dto.FileVo" parameterType="java.lang.String">
+		SELECT
+		b.`id`,
+		b.`name`,
+		b.`path`,
+		b.`size`
+		FROM
+		`cmdb_import_file` a JOIN `file` b ON a.`file_id` = b.`id`
+		WHERE
+		1=1
+		<if test="value != null and value != ''">
+			AND b.`user_uuid` = #{VALUE}
+		</if>
+	</select>
+
+	<insert id="insertCmdbImportFile" parameterType="codedriver.framework.file.dto.FileVo">
+		INSERT INTO `cmdb_import_file` (
+		`file_id`
+		)
+		VALUES
+		(
+		#{id}
+		)
+	</insert>
+
+	<delete id="deleteCmdbImportFile" parameterType="java.lang.Long">
+		DELETE FROM `cmdb_import_file`
+		WHERE `file_id` = #{value}
+	</delete>
+
+</mapper>

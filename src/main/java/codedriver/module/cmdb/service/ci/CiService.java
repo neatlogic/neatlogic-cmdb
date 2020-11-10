@@ -11,4 +11,6 @@ public interface CiService {
 	@Transactional
 	public int deleteCi(Long ciId);
 
+	public CiVo getCiById(Long id);
+
 }
