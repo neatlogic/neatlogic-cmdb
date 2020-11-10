@@ -3,9 +3,9 @@ package codedriver.module.cmdb.form.handler;
 import codedriver.framework.common.constvalue.Expression;
 import codedriver.framework.common.constvalue.FormHandlerType;
 import codedriver.framework.common.constvalue.ParamType;
-import codedriver.framework.process.constvalue.IProcessFormHandler;
+import codedriver.framework.process.constvalue.IProcessFormHandlerType;
 
-public enum CmdbFormHandlerType implements IProcessFormHandler {
+public enum CmdbFormHandlerType implements IProcessFormHandlerType {
     CIENTITYSELECT("cientityselect", "配置项修改组件", "ts-m-cmdb", "form", null, null, null);
 
     private String handler;
