@@ -199,11 +199,4 @@ public class EsCiEntityHandler extends ElasticSearchHandlerBase<CiEntityVo, List
         return ciEntityList;
     }
 
-    public static void main(String[] argv) {
-        List<String> list = new ArrayList<>();
-        list.add("a");
-        list.add("b");
-        System.out.println(list.stream().map(v -> "'" + v + "'").collect(Collectors.joining(",")));
-    }
-
 }

@@ -3,6 +3,7 @@ package codedriver.module.cmdb.service.cientity;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -173,8 +174,12 @@ public class CiEntityServiceImpl implements CiEntityService {
             attrEntityMapper.getAttrEntityByCiEntityId(ciEntityTransactionVo.getCiEntityId());
         if (CollectionUtils.isNotEmpty(attrEntityList)) {
             for (AttrEntityTransactionVo entity : ciEntityTransactionVo.getAttrEntityTransactionList()) {
-                AttrEntityVo oldEntity =
-                    attrEntityList.stream().filter(e -> e.getAttrId().equals(entity.getAttrId())).findFirst().get();
+                AttrEntityVo oldEntity = null;
+                Optional<AttrEntityVo> optionAttrEntity =
+                    attrEntityList.stream().filter(e -> e.getAttrId().equals(entity.getAttrId())).findFirst();
+                if (optionAttrEntity != null && optionAttrEntity.isPresent()) {
+                    oldEntity = optionAttrEntity.get();
+                }
                 AttrEntityVo newEntity = new AttrEntityVo(entity);
                 if (oldEntity != null) {
                     newEntity.setAttrType(oldEntity.getAttrType());
@@ -498,7 +503,7 @@ public class CiEntityServiceImpl implements CiEntityService {
         if (ciEntityTransactionVo.getAction().equals(TransactionActionType.INSERT.getValue())) {
             ciEntityMapper.insertCiEntity(ciEntityVo);
         } else if (ciEntityTransactionVo.getAction().equals(TransactionActionType.UPDATE.getValue())) {
-            //解除配置项修改锁定
+            // 解除配置项修改锁定
             ciEntityVo.setIsLocked(0);
             ciEntityMapper.updateCiEntityLockById(ciEntityVo);
         }

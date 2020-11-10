@@ -39,6 +39,12 @@
 			<version>0.1.0.0-SNAPSHOT</version>
 			<optional>true</optional>
 		</dependency>
+		<dependency>
+			<groupId>com.techsure</groupId>
+			<artifactId>codedriver-process-base</artifactId>
+			<version>0.1.0.0-SNAPSHOT</version>
+			<optional>true</optional>
+		</dependency>
 		<!-- graphviz 依赖包开始 -->
 		<dependency>
 			<groupId>guru.nidi</groupId>
