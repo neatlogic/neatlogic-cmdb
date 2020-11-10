@@ -66,4 +66,34 @@ public enum CmdbFormHandlerType implements IProcessFormHandlerType {
         return handlerType;
     }
 
+    @Override
+    public boolean isConditionable() {
+        return false;
+    }
+
+    @Override
+    public boolean isShowable() {
+        return false;
+    }
+
+    @Override
+    public boolean isValueable() {
+        return false;
+    }
+
+    @Override
+    public boolean isFilterable() {
+        return false;
+    }
+
+    @Override
+    public boolean isExtendable() {
+        return true;
+    }
+
+    @Override
+    public String getModule() {
+        return "cmdb";
+    }
+
 }
