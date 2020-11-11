@@ -37,8 +37,16 @@ public class CiEntityVo extends BasePageVo {
     private Long id;
     @EntityField(name = "模型id", type = ApiParamType.LONG)
     private Long ciId;
+    @EntityField(name = "模型名称", type = ApiParamType.STRING)
+    private String ciName;
+    @EntityField(name = "模型图标", type = ApiParamType.STRING)
+    private String ciIcon;
     @EntityField(name = "配置项名称", type = ApiParamType.STRING)
     private String name;
+    @EntityField(name = "模型类型id", type = ApiParamType.LONG)
+    private Long typeId;
+    @EntityField(name = "模型类型名称", type = ApiParamType.STRING)
+    private String typeName;
     @EntityField(name = "创建人", type = ApiParamType.STRING)
     private String fcu;
     @EntityField(name = "创建时间", type = ApiParamType.LONG)
@@ -86,6 +94,10 @@ public class CiEntityVo extends BasePageVo {
 
     public CiEntityVo() {
 
+    }
+
+    public CiEntityVo(Long id) {
+        this.id = id;
     }
 
     public CiEntityVo(CiEntityTransactionVo ciEntityTransactionVo) {
@@ -268,8 +280,12 @@ public class CiEntityVo extends BasePageVo {
         this.transactionId = transactionId;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getName() {
-        if (StringUtils.isBlank(name)) {
+        if (StringUtils.isBlank(name) && CollectionUtils.isNotEmpty(attrEntityList)) {
             for (AttrEntityVo attrEntityVo : attrEntityList) {
                 if ("name".equals(attrEntityVo.getAttrName())) {
                     JSONObject attrData = getAttrEntityData();
@@ -297,10 +313,6 @@ public class CiEntityVo extends BasePageVo {
 
     public void setRelIdList(List<Long> relIdList) {
         this.relIdList = relIdList;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     private static final String regex = "\\{([^\\}]+?)\\}";
@@ -364,10 +376,6 @@ public class CiEntityVo extends BasePageVo {
         return attrEntityData;
     }
 
-    public void setAttrEntityData(JSONObject attrEntityData) {
-        this.attrEntityData = attrEntityData;
-    }
-
     public JSONObject getRelEntityData() {
         if (MapUtils.isEmpty(relEntityData) && CollectionUtils.isNotEmpty(this.relEntityList)) {
             if (relEntityData == null) {
@@ -394,10 +402,6 @@ public class CiEntityVo extends BasePageVo {
         return relEntityData;
     }
 
-    public void setRelEntityData(JSONObject relEntityData) {
-        this.relEntityData = relEntityData;
-    }
-
     public List<Long> getGroupIdList() {
         return groupIdList;
     }
@@ -420,6 +424,61 @@ public class CiEntityVo extends BasePageVo {
 
     public void setAuthData(Map<String, Boolean> authData) {
         this.authData = authData;
+    }
+
+    public String getCiName() {
+        return ciName;
+    }
+
+    public void setCiName(String ciName) {
+        this.ciName = ciName;
+    }
+
+    public Long getTypeId() {
+        return typeId;
+    }
+
+    public void setTypeId(Long typeId) {
+        this.typeId = typeId;
+    }
+
+    public String getTypeName() {
+        return typeName;
+    }
+
+    public void setTypeName(String typeName) {
+        this.typeName = typeName;
+    }
+
+    @Override
+    public int hashCode() {
+        return getId().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (other == null) {
+            return false;
+        }
+        if (!(other instanceof CiEntityVo)) {
+            return false;
+        }
+        final CiEntityVo ciEntityVo = (CiEntityVo)other;
+        if (getId().equals(ciEntityVo.getId())) {
+            return true;
+        }
+        return false;
+    }
+
+    public String getCiIcon() {
+        return ciIcon;
+    }
+
+    public void setCiIcon(String ciIcon) {
+        this.ciIcon = ciIcon;
     }
 
 }

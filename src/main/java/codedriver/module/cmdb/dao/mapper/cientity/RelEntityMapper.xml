@@ -53,12 +53,15 @@
 		c.`name` AS toCiEntityName,
 		d.`from_ci_id` AS fromCiId,
 		d.`to_ci_id` AS toCiId,
+		d.`type_id` AS relTypeId,
+		e.`name` AS relTypeName,
 		'from' AS direction
 		FROM
 		`cmdb_relentity` a
 		JOIN `cmdb_cientity` b ON a.`from_cientity_id` = b.`id`
 		JOIN `cmdb_cientity` c ON a.`to_cientity_id` = c.`id`
 		JOIN `cmdb_rel` d ON a.rel_id = d.id
+		JOIN `cmdb_reltype` e ON d.type_id = e.id
 		WHERE a.from_cientity_id = #{value}
 		UNION
 		SELECT
@@ -71,14 +74,52 @@
 		c.`name` AS toCiEntityName,
 		d.`from_ci_id` AS fromCiId,
 		d.`to_ci_id` AS toCiId,
+		d.`type_id` AS relTypeId,
+		e.`name` AS relTypeName,
 		'to' AS direction
 		FROM
 		`cmdb_relentity` a
-		JOIN `cmdb_cientity` b ON a.`from_cientity_id` = b.`id`
+		JOIN
+		`cmdb_cientity` b ON a.`from_cientity_id` = b.`id`
 		JOIN `cmdb_cientity` c ON a.`to_cientity_id` = c.`id`
 		JOIN `cmdb_rel` d ON a.rel_id = d.id
+		JOIN `cmdb_reltype` e ON d.type_id = e.id
 		WHERE a.to_cientity_id = #{value}
 		ORDER BY id
+	</select>
+
+	<select id="getFromToCiEntityIdByCiEntityIdList" resultType="java.lang.Long">
+		SELECT
+		a.`to_cientity_id`
+		FROM
+		`cmdb_relentity` a
+		WHERE a.from_cientity_id IN
+		<foreach collection="idList" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+		UNION
+		SELECT
+		a.`from_cientity_id`
+		FROM
+		`cmdb_relentity` a
+		WHERE a.to_cientity_id IN
+		<foreach collection="idList" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+
+	<select id="getFromToCiEntityIdByCiEntityId" parameterType="java.lang.Long" resultType="java.lang.Long">
+		SELECT
+		a.`to_cientity_id`
+		FROM
+		`cmdb_relentity` a
+		WHERE a.from_cientity_id = #{value}
+		UNION
+		SELECT
+		a.`from_cientity_id`
+		FROM
+		`cmdb_relentity` a
+		WHERE a.to_cientity_id = #{value}
 	</select>
 
 	<select id="searchRelEntityByCiEntityIdList" resultType="codedriver.module.cmdb.dto.cientity.RelEntityVo">
@@ -92,12 +133,15 @@
 		c.`name` AS toCiEntityName,
 		d.`from_ci_id` AS fromCiId,
 		d.`to_ci_id` AS toCiId,
+		d.`type_id` AS relTypeId,
+		e.`name` AS relTypeName,
 		'from' AS direction
 		FROM
 		`cmdb_relentity` a
 		JOIN `cmdb_cientity` b ON a.`from_cientity_id` = b.`id`
 		JOIN `cmdb_cientity` c ON a.`to_cientity_id` = c.`id`
 		JOIN `cmdb_rel` d ON a.rel_id = d.id
+		JOIN `cmdb_reltype` e ON d.type_id = e.id
 		WHERE a.from_cientity_id IN
 		<foreach collection="idList" item="item" open="(" separator="," close=")">
 			#{item}
@@ -119,12 +163,15 @@
 		c.`name` AS toCiEntityName,
 		d.`from_ci_id` AS fromCiId,
 		d.`to_ci_id` AS toCiId,
+		d.`type_id` AS relTypeId,
+		e.`name` AS relTypeName,
 		'to' AS direction
 		FROM
 		`cmdb_relentity` a
 		JOIN `cmdb_cientity` b ON a.`from_cientity_id` = b.`id`
 		JOIN `cmdb_cientity` c ON a.`to_cientity_id` = c.`id`
 		JOIN `cmdb_rel` d ON a.rel_id = d.id
+		JOIN `cmdb_reltype` e ON d.type_id = e.id
 		WHERE a.to_cientity_id IN
 		<foreach collection="idList" item="item" open="(" separator="," close=")">
 			#{item}

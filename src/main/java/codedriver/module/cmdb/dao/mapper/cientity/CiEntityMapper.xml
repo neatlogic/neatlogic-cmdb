@@ -25,18 +25,20 @@
 
 	<select id="getCiEntityById" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
 		SELECT
-		`id`,
-		`ci_id` AS ciId,
-		`name` AS name,
-		`fcu`,
-		`fcd`,
-		`lcu`,
-		`lcd`,
-		`status`,
-		`is_locked` AS isLocked
+		a.`id`,
+		a.`ci_id` AS ciId,
+		b.`name` AS ciName,
+		b.`type_id` AS typeId,
+		c.`name` AS typeName,
+		a.`fcu`,
+		a.`fcd`,
+		a.`lcu`,
+		a.`lcd`,
+		a.`status`,
+		a.`is_locked` AS isLocked
 		FROM
-		`cmdb_cientity`
-		WHERE id = #{value}
+		`cmdb_cientity` a JOIN `cmdb_ci` b ON a.ci_id = b.id JOIN `cmdb_citype` c ON b.type_id = c.id
+		WHERE a.id = #{value}
 	</select>
 
 	<sql id="searchCiEntityIdCoundition">
@@ -165,23 +167,26 @@
 
 	<select id="searchCiEntityByIdList" resultType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
 		SELECT
-		`id`,
-		`ci_id` AS ciId,
-		`name` AS name,
-		`fcu`,
-		`fcd`,
-		`lcu`,
-		`lcd`,
-		`status`,
-		`is_locked` AS isLocked
+		a.`id`,
+		a.`ci_id` AS ciId,
+		b.`name` AS ciName,
+		b.`icon` AS ciIcon,
+		b.`type_id` AS typeId,
+		c.`name` AS typeName,
+		a.`fcu`,
+		a.`fcd`,
+		a.`lcu`,
+		a.`lcd`,
+		a.`status`,
+		a.`is_locked` AS isLocked
 		FROM
-		`cmdb_cientity`
+		`cmdb_cientity` a JOIN `cmdb_ci` b ON a.ci_id = b.id JOIN `cmdb_citype` c ON b.type_id = c.id
 		WHERE
-		id IN
+		a.id IN
 		<foreach collection="idList" item="item" open="(" separator="," close=")">
 			#{item}
 		</foreach>
-		ORDER BY id DESC
+		ORDER BY a.id DESC
 	</select>
 
 	<select id="searchCiEntityId" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo" resultType="java.lang.Long">
@@ -196,6 +201,10 @@
 	<select id="searchCiEntityIdCount" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo" resultType="int">
 		SELECT COUNT(distinct cientity.id)
 		<include refid="searchCiEntityIdCoundition"></include>
+	</select>
+
+	<select id="getCiEntityIdByCiId" parameterType="java.lang.Long" resultType="java.lang.Long">
+		SELECT id FROM cmdb_cientity WHERE ci_id = #{value}
 	</select>
 
 	<update id="updateCiEntityLockById" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
@@ -227,6 +236,23 @@
 		#{isLocked}
 		)
 	</insert>
+
+	<delete id="deleteCiEntityById" parameterType="java.lang.Long">
+		DELETE
+		a,b,c,d,e
+		FROM
+		cmdb_cientity a
+		LEFT JOIN cmdb_attrentity b
+		ON a.id = b.`ci_entity_id`
+		LEFT JOIN cmdb_relentity c
+		ON a.id = c.`from_cientity_id`
+		LEFT JOIN cmdb_relentity d
+		ON a.id = c.`to_cientity_id`
+		LEFT JOIN cmdb_cientity_group e
+		ON a.id = e.ci_entity_id
+		WHERE
+		a.id = #{value}
+	</delete>
 
 	<delete id="deleteCiEntityByCiId" parameterType="java.lang.Long">
 		DELETE

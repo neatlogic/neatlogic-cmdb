@@ -7,12 +7,16 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.fastjson.JSON;
 
+import codedriver.framework.asynchronization.thread.CodeDriverThread;
+import codedriver.framework.asynchronization.threadpool.CachedThreadPool;
 import codedriver.framework.cmdb.constvalue.AttrType;
 import codedriver.framework.cmdb.constvalue.EditModeType;
 import codedriver.framework.cmdb.constvalue.RelActionType;
@@ -22,6 +26,7 @@ import codedriver.framework.cmdb.constvalue.SaveModeType;
 import codedriver.framework.cmdb.constvalue.TransactionActionType;
 import codedriver.framework.cmdb.constvalue.TransactionStatus;
 import codedriver.framework.common.util.PageUtil;
+import codedriver.framework.elasticsearch.core.ElasticSearchHandlerFactory;
 import codedriver.framework.util.Md5Util;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
@@ -42,11 +47,13 @@ import codedriver.module.cmdb.dto.transaction.TransactionVo;
 import codedriver.module.cmdb.exception.cientity.AttrEntityDuplicateException;
 import codedriver.module.cmdb.exception.cientity.AttrEntityNotFoundException;
 import codedriver.module.cmdb.exception.cientity.CiEntityIsLockedException;
+import codedriver.module.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.module.cmdb.exception.cientity.RelEntityMutipleException;
 import codedriver.module.cmdb.exception.cientity.RelEntityNotFoundException;
 
 @Service
 public class CiEntityServiceImpl implements CiEntityService {
+    private final static Logger logger = LoggerFactory.getLogger(CiEntityServiceImpl.class);
 
     @Autowired
     private CiEntityMapper ciEntityMapper;
@@ -79,36 +86,83 @@ public class CiEntityServiceImpl implements CiEntityService {
                 ciEntityVo.setRowNum(rowNum);
                 ciEntityVo.setPageCount(PageUtil.getPageCount(rowNum, ciEntityVo.getPageSize()));
             }
-            ciEntityList = ciEntityMapper.searchCiEntityByIdList(ciEntityIdList);
+            ciEntityList = searchCiEntityByIds(ciEntityIdList, ciEntityVo);
+        }
+        return ciEntityList;
+    }
 
-            if (CollectionUtils.isNotEmpty(ciEntityIdList)) {
-                List<AttrEntityVo> attrEntityList =
-                    attrEntityMapper.searchAttrEntityByCiEntityIdList(ciEntityIdList, ciEntityVo.getAttrIdList());
-                List<RelEntityVo> relEntityList =
-                    relEntityMapper.searchRelEntityByCiEntityIdList(ciEntityIdList, ciEntityVo.getRelIdList());
-                for (CiEntityVo entity : ciEntityList) {
-                    Iterator<AttrEntityVo> itAttrEntity = attrEntityList.iterator();
-                    while (itAttrEntity.hasNext()) {
-                        AttrEntityVo attrEntity = itAttrEntity.next();
-                        if (attrEntity.getCiEntityId().equals(entity.getId())) {
-                            entity.addAttrEntity(attrEntity);
-                            itAttrEntity.remove();
-                        }
+    @Override
+    public List<CiEntityVo> searchCiEntityByIds(List<Long> ciEntityIdList, CiEntityVo ciEntityVo) {
+        List<CiEntityVo> ciEntityList = ciEntityMapper.searchCiEntityByIdList(ciEntityIdList);
+
+        if (CollectionUtils.isNotEmpty(ciEntityIdList)) {
+            List<AttrEntityVo> attrEntityList =
+                attrEntityMapper.searchAttrEntityByCiEntityIdList(ciEntityIdList, ciEntityVo.getAttrIdList());
+            List<RelEntityVo> relEntityList =
+                relEntityMapper.searchRelEntityByCiEntityIdList(ciEntityIdList, ciEntityVo.getRelIdList());
+            for (CiEntityVo entity : ciEntityList) {
+                Iterator<AttrEntityVo> itAttrEntity = attrEntityList.iterator();
+                while (itAttrEntity.hasNext()) {
+                    AttrEntityVo attrEntity = itAttrEntity.next();
+                    if (attrEntity.getCiEntityId().equals(entity.getId())) {
+                        entity.addAttrEntity(attrEntity);
+                        itAttrEntity.remove();
                     }
-                    // 一个关系可能被多个配置项引用，所以不能使用属性的处理方式来处理
-                    for (RelEntityVo relEntity : relEntityList) {
-                        if (relEntity.getFromCiEntityId().equals(entity.getId())
-                            && relEntity.getDirection().equals(RelDirectionType.FROM.getValue())
-                            || relEntity.getToCiEntityId().equals(entity.getId())
-                                && relEntity.getDirection().equals(RelDirectionType.TO.getValue())) {
-                            entity.addRelEntity(relEntity);
-                        }
+                }
+                // 一个关系可能被多个配置项引用，所以不能使用属性的处理方式来处理
+                for (RelEntityVo relEntity : relEntityList) {
+                    if (relEntity.getFromCiEntityId().equals(entity.getId())
+                        && relEntity.getDirection().equals(RelDirectionType.FROM.getValue())
+                        || relEntity.getToCiEntityId().equals(entity.getId())
+                            && relEntity.getDirection().equals(RelDirectionType.TO.getValue())) {
+                        entity.addRelEntity(relEntity);
                     }
                 }
             }
         }
-
         return ciEntityList;
+    }
+
+    @Transactional
+    @Override
+    public Long deleteCiEntity(Long ciEntityId) {
+        CiEntityVo ciEntityVo = ciEntityMapper.getCiEntityById(ciEntityId);
+
+        if (ciEntityVo == null) {
+            throw new CiEntityNotFoundException(ciEntityId);
+        }
+        List<AttrEntityVo> attrEntityList = attrEntityMapper.getAttrEntityByCiEntityId(ciEntityId);
+        List<RelEntityVo> relEntityList = relEntityMapper.getRelEntityByCiEntityId(ciEntityId);
+
+        TransactionVo transactionVo = new TransactionVo();
+        transactionVo.setCiId(ciEntityVo.getCiId());
+        CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo(ciEntityVo);
+        ciEntityTransactionVo.setAction(TransactionActionType.DELETE.getValue());
+        ciEntityTransactionVo.setTransactionId(transactionVo.getId());
+        transactionVo.setCiEntityTransactionVo(ciEntityTransactionVo);
+        // 写入旧属性值到事务对象中
+        List<AttrEntityTransactionVo> attrEntityTransactionList = new ArrayList<>();
+        for (AttrEntityVo attrEntityVo : attrEntityList) {
+            attrEntityTransactionList.add(new AttrEntityTransactionVo(attrEntityVo));
+        }
+        ciEntityTransactionVo.setAttrEntityTransactionList(attrEntityTransactionList);
+
+        // 写入旧关系到事务对象中
+        List<RelEntityTransactionVo> relEntityTransactionList = new ArrayList<>();
+        for (RelEntityVo relEntityVo : relEntityList) {
+            relEntityTransactionList.add(new RelEntityTransactionVo(relEntityVo));
+        }
+        ciEntityTransactionVo.setRelEntityTransactionList(relEntityTransactionList);
+
+        // 保存快照
+        createSnapshot(ciEntityTransactionVo);
+
+        // 写入事务
+        transactionMapper.insertTransaction(transactionVo);
+        // 写入配置项事务
+        transactionMapper.insertCiEntityTransaction(ciEntityTransactionVo);
+        commitTransaction(transactionVo);
+        return transactionVo.getId();
     }
 
     @Transactional
@@ -467,63 +521,104 @@ public class CiEntityServiceImpl implements CiEntityService {
      */
     private Long commitTransaction(TransactionVo transactionVo) {
         CiEntityTransactionVo ciEntityTransactionVo = transactionVo.getCiEntityTransactionVo();
+        // 删除配置项
+        if (ciEntityTransactionVo.getAction().equals(TransactionActionType.DELETE.getValue())) {
+            ciEntityMapper.deleteCiEntityById(ciEntityTransactionVo.getCiEntityId());
 
-        // 写入属性
-        List<AttrEntityTransactionVo> attrEntityTransactionList = ciEntityTransactionVo.getAttrEntityTransactionList();
-        if (CollectionUtils.isNotEmpty(attrEntityTransactionList)) {
-            for (AttrEntityTransactionVo attrEntityTransactionVo : attrEntityTransactionList) {
-                AttrEntityVo attrEntityVo = new AttrEntityVo(attrEntityTransactionVo);
-                if (attrEntityTransactionVo.getSaveMode().equals(SaveModeType.REPLACE.getValue())) {
-                    attrEntityMapper.deleteAttrEntity(attrEntityVo);
-                }
-                if (CollectionUtils.isNotEmpty(attrEntityVo.getValueList())) {
-                    attrEntityMapper.insertAttrEntity(attrEntityVo);
-                }
+            List<Long> changeCiEntityIdList =
+                relEntityMapper.getFromToCiEntityIdByCiEntityId(ciEntityTransactionVo.getCiEntityId());
+            changeCiEntityIdList.remove(ciEntityTransactionVo.getCiEntityId());
+
+            // 处理es索引
+            if (CollectionUtils.isNotEmpty(changeCiEntityIdList)) {
+                CachedThreadPool.execute(new CodeDriverThread(
+                    "ELASTICSEARCH-DOCUMENT-DELETE-CIENTITY:" + ciEntityTransactionVo.getCiEntityId()) {
+                    @Override
+                    protected void execute() { // 删除索引
+                        try {
+                            ElasticSearchHandlerFactory.getHandler("cientity")
+                                .delete(ciEntityTransactionVo.getCiEntityId().toString());
+                        } catch (Exception ex) {
+                            logger.error(ex.getMessage(), ex);
+                        }
+                        // 更新受影响配置项索引
+                        if (CollectionUtils.isNotEmpty(changeCiEntityIdList)) {
+                            for (Long ciEntityId : changeCiEntityIdList) {
+                                try {
+                                    this.setThreadName("ELASTICSEARCH-DOCUMENT-SAVE-" + ciEntityId);
+                                    ElasticSearchHandlerFactory.getHandler("cientity").save(ciEntityId);
+                                } catch (Exception ex) {
+                                    logger.error(ex.getMessage(), ex);
+                                }
+                            }
+                        }
+                    }
+                });
             }
-        }
-        // 写入关系
-        List<RelEntityTransactionVo> relEntityTransactionList = ciEntityTransactionVo.getRelEntityTransactionList();
-        if (CollectionUtils.isNotEmpty(relEntityTransactionList)) {
-            for (RelEntityTransactionVo entity : relEntityTransactionList) {
-                if (entity.getAction().equals(RelActionType.DELETE.getValue())) {
-                    relEntityMapper.deleteRelEntityByRelIdFromCiEntityIdToCiEntityId(entity.getRelId(),
-                        entity.getFromCiEntityId(), entity.getToCiEntityId());
-                } else if (entity.getAction().equals(RelActionType.INSERT.getValue())) {
-                    RelEntityVo newRelEntityVo = new RelEntityVo(entity);
-                    if (relEntityMapper.checkRelEntityIsExists(newRelEntityVo) == 0) {
-                        relEntityMapper.insertRelEntity(newRelEntityVo);
+            return null;
+        } else {
+            // 写入属性
+            List<AttrEntityTransactionVo> attrEntityTransactionList =
+                ciEntityTransactionVo.getAttrEntityTransactionList();
+            if (CollectionUtils.isNotEmpty(attrEntityTransactionList)) {
+                for (AttrEntityTransactionVo attrEntityTransactionVo : attrEntityTransactionList) {
+                    AttrEntityVo attrEntityVo = new AttrEntityVo(attrEntityTransactionVo);
+                    if (attrEntityTransactionVo.getSaveMode().equals(SaveModeType.REPLACE.getValue())) {
+                        attrEntityMapper.deleteAttrEntity(attrEntityVo);
+                    }
+                    if (CollectionUtils.isNotEmpty(attrEntityVo.getValueList())) {
+                        attrEntityMapper.insertAttrEntity(attrEntityVo);
                     }
                 }
             }
-        }
+            // 写入关系
+            List<RelEntityTransactionVo> relEntityTransactionList = ciEntityTransactionVo.getRelEntityTransactionList();
+            if (CollectionUtils.isNotEmpty(relEntityTransactionList)) {
+                for (RelEntityTransactionVo entity : relEntityTransactionList) {
+                    if (entity.getAction().equals(RelActionType.DELETE.getValue())) {
+                        relEntityMapper.deleteRelEntityByRelIdFromCiEntityIdToCiEntityId(entity.getRelId(),
+                            entity.getFromCiEntityId(), entity.getToCiEntityId());
+                    } else if (entity.getAction().equals(RelActionType.INSERT.getValue())) {
+                        RelEntityVo newRelEntityVo = new RelEntityVo(entity);
+                        if (relEntityMapper.checkRelEntityIsExists(newRelEntityVo) == 0) {
+                            relEntityMapper.insertRelEntity(newRelEntityVo);
+                        }
+                    }
+                }
+            }
 
-        CiEntityVo ciEntityVo = new CiEntityVo(ciEntityTransactionVo);
-        // 最后写入配置项，因为cientityname需要依赖所有属性
-        ciEntityVo.setAttrEntityList(attrEntityMapper.getAttrEntityByCiEntityId(ciEntityVo.getId()));
-        if (ciEntityTransactionVo.getAction().equals(TransactionActionType.INSERT.getValue())) {
-            ciEntityMapper.insertCiEntity(ciEntityVo);
-        } else if (ciEntityTransactionVo.getAction().equals(TransactionActionType.UPDATE.getValue())) {
-            // 解除配置项修改锁定
-            ciEntityVo.setIsLocked(0);
-            ciEntityMapper.updateCiEntityLockById(ciEntityVo);
+            CiEntityVo ciEntityVo = new CiEntityVo(ciEntityTransactionVo);
+            // 最后写入配置项，因为cientityname需要依赖所有属性
+            ciEntityVo.setAttrEntityList(attrEntityMapper.getAttrEntityByCiEntityId(ciEntityVo.getId()));
+            if (ciEntityTransactionVo.getAction().equals(TransactionActionType.INSERT.getValue())) {
+                ciEntityMapper.insertCiEntity(ciEntityVo);
+            } else if (ciEntityTransactionVo.getAction().equals(TransactionActionType.UPDATE.getValue())) {
+                // 解除配置项修改锁定
+                ciEntityVo.setIsLocked(0);
+                ciEntityMapper.updateCiEntityLockById(ciEntityVo);
+            } else if (ciEntityTransactionVo.getAction().equals(TransactionActionType.DELETE.getValue())) {
+                ciEntityMapper.deleteCiEntityById(ciEntityVo.getId());
+            }
+            transactionVo.setStatus(TransactionStatus.COMMITED.getValue());
+            transactionMapper.updateTransactionStatus(transactionVo);
+            return ciEntityVo.getId();
         }
-        transactionVo.setStatus(TransactionStatus.COMMITED.getValue());
-        transactionMapper.updateTransactionStatus(transactionVo);
-        return ciEntityVo.getId();
     }
 
     @Override
     public Long commitTransaction(Long transactionId) {
+        // FIXME 补充提交事务逻辑
         return null;
     }
 
-    public static void main(String[] a) {
-        List<String> list1 = new ArrayList<>();
-        list1.add("a");
-        List<String> list2 = list1.stream().collect(Collectors.toList());
-        list1.add("b");
-        System.out.println(list1);
-        System.out.println(list2);
+    @Override
+    public CiEntityVo getCiEntityDetailById(Long ciEntityId) {
+        CiEntityVo ciEntityVo = ciEntityMapper.getCiEntityById(ciEntityId);
+        if (ciEntityVo != null) {
+            ciEntityVo.setAttrEntityList(attrEntityMapper.getAttrEntityByCiEntityId(ciEntityId));
+            ciEntityVo.setRelEntityList(relEntityMapper.getRelEntityByCiEntityId(ciEntityId));
+        }
+        return ciEntityVo;
     }
 
 }

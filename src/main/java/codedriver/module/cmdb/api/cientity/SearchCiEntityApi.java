@@ -143,10 +143,15 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
             ciEntityVo.setGroupIdList(groupIdList);
         }
 
-        // List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
-        IElasticSearchHandler<CiEntityVo, List<CiEntityVo>> handler =
-            ElasticSearchHandlerFactory.getHandler("cientity");
-        List<CiEntityVo> ciEntityList = handler.search(ciEntityVo);
+        List<CiEntityVo> ciEntityList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(ciEntityVo.getAttrFilterList())
+            || CollectionUtils.isNotEmpty(ciEntityVo.getAttrFilterList())) {
+            IElasticSearchHandler<CiEntityVo, List<CiEntityVo>> handler =
+                ElasticSearchHandlerFactory.getHandler("cientity");
+            ciEntityList = handler.search(ciEntityVo);
+        } else {
+            ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
+        }
         JSONArray tbodyList = new JSONArray();
         if (CollectionUtils.isNotEmpty(ciEntityList)) {
             boolean canEdit = hasManageAuth, canDelete = hasManageAuth, canTransaction = hasManageAuth;

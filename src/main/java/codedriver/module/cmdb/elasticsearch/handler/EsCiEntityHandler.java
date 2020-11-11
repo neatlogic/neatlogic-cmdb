@@ -18,7 +18,6 @@ import com.techsure.multiattrsearch.MultiAttrsObject;
 import com.techsure.multiattrsearch.query.QueryResult;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
-import codedriver.framework.cmdb.constvalue.RelDirectionType;
 import codedriver.framework.common.constvalue.Expression;
 import codedriver.framework.common.util.PageUtil;
 import codedriver.framework.elasticsearch.core.ElasticSearchHandlerBase;
@@ -29,6 +28,7 @@ import codedriver.module.cmdb.dto.cientity.AttrEntityVo;
 import codedriver.module.cmdb.dto.cientity.AttrFilterVo;
 import codedriver.module.cmdb.dto.cientity.CiEntityVo;
 import codedriver.module.cmdb.dto.cientity.RelEntityVo;
+import codedriver.module.cmdb.service.cientity.CiEntityService;
 
 @Service
 public class EsCiEntityHandler extends ElasticSearchHandlerBase<CiEntityVo, List<CiEntityVo>> {
@@ -42,6 +42,9 @@ public class EsCiEntityHandler extends ElasticSearchHandlerBase<CiEntityVo, List
 
     @Autowired
     private RelEntityMapper relEntityMapper;
+
+    @Autowired
+    private CiEntityService ciEntityService;
 
     @Override
     public String getDocument() {
@@ -168,33 +171,7 @@ public class EsCiEntityHandler extends ElasticSearchHandlerBase<CiEntityVo, List
                 ciEntityVo.setRowNum(result.getTotal());
                 ciEntityVo.setPageCount(PageUtil.getPageCount(result.getTotal(), ciEntityVo.getPageSize()));
             }
-            ciEntityList = ciEntityMapper.searchCiEntityByIdList(ciEntityIdList);
-
-            if (CollectionUtils.isNotEmpty(ciEntityIdList)) {
-                List<AttrEntityVo> attrEntityList =
-                    attrEntityMapper.searchAttrEntityByCiEntityIdList(ciEntityIdList, ciEntityVo.getAttrIdList());
-                List<RelEntityVo> relEntityList =
-                    relEntityMapper.searchRelEntityByCiEntityIdList(ciEntityIdList, ciEntityVo.getRelIdList());
-                for (CiEntityVo entity : ciEntityList) {
-                    Iterator<AttrEntityVo> itAttrEntity = attrEntityList.iterator();
-                    while (itAttrEntity.hasNext()) {
-                        AttrEntityVo attrEntity = itAttrEntity.next();
-                        if (attrEntity.getCiEntityId().equals(entity.getId())) {
-                            entity.addAttrEntity(attrEntity);
-                            itAttrEntity.remove();
-                        }
-                    }
-                    // 一个关系可能被多个配置项引用，所以不能使用属性的处理方式来处理
-                    for (RelEntityVo relEntity : relEntityList) {
-                        if (relEntity.getFromCiEntityId().equals(entity.getId())
-                            && relEntity.getDirection().equals(RelDirectionType.FROM.getValue())
-                            || relEntity.getToCiEntityId().equals(entity.getId())
-                                && relEntity.getDirection().equals(RelDirectionType.TO.getValue())) {
-                            entity.addRelEntity(relEntity);
-                        }
-                    }
-                }
-            }
+            ciEntityList = ciEntityService.searchCiEntityByIds(ciEntityIdList, ciEntityVo);
         }
         return ciEntityList;
     }

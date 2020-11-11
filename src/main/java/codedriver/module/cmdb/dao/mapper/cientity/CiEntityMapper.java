@@ -14,6 +14,8 @@ import codedriver.module.cmdb.dto.cientity.CiEntityVo;
  * @Time:Aug 15, 2020
  */
 public interface CiEntityMapper {
+    public List<Long> getCiEntityIdByCiId(Long ciId);
+
     public List<Long> getCiEntityIdByGroupIdList(@Param("groupIdList") List<Long> groupIdList,
         @Param("ciEntityIdList") List<Long> ciEntityIdList, @Param("typeList") List<String> typeList);
 
@@ -31,5 +33,7 @@ public interface CiEntityMapper {
     public int updateCiEntityLockById(CiEntityVo ciEntityVo);
 
     public int deleteCiEntityByCiId(Long ciId);
+
+    public int deleteCiEntityById(Long ciEntityId);
 
 }
