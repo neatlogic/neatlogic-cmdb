@@ -5,10 +5,7 @@ import codedriver.framework.cmdb.constvalue.*;
 import codedriver.framework.cmdb.prop.core.IPropertyHandler;
 import codedriver.framework.cmdb.prop.core.PropertyHandlerFactory;
 import codedriver.framework.common.util.FileUtil;
-import codedriver.framework.dao.mapper.TeamMapper;
-import codedriver.framework.exception.file.EmptyExcelException;
 import codedriver.framework.file.dto.FileVo;
-import codedriver.framework.util.ExcelUtil;
 import codedriver.module.cmdb.dao.mapper.batchimport.ImportMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import codedriver.module.cmdb.dto.batchimport.ImportAuditVo;
@@ -19,6 +16,7 @@ import codedriver.module.cmdb.dto.cientity.CiEntityVo;
 import codedriver.module.cmdb.dto.transaction.AttrEntityTransactionVo;
 import codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.module.cmdb.dto.transaction.RelEntityTransactionVo;
+import codedriver.module.cmdb.enums.BatchImportStatus;
 import codedriver.module.cmdb.exception.ci.CiNotFoundException;
 import codedriver.module.cmdb.service.ci.CiService;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
@@ -30,7 +28,6 @@ import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.ss.usermodel.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -113,9 +110,6 @@ public class BatchImportHandler {
 		private String importUser;
 		private String action;
 		private Boolean checkProp;
-		private Boolean allowTransaction;
-		private Boolean canEditCiEntity;
-//		private RequestContext requestContext;
 
 		public Importer(Long ciId, String action, Integer editMode, FileVo fileVo, String importUser, Boolean checkProp) {
 			this.ciId = ciId;
@@ -124,29 +118,18 @@ public class BatchImportHandler {
 			this.editMode = editMode;
 			this.importUser = importUser;
 			this.checkProp = checkProp;
-//			requestContext = RequestContext.get();
 		}
 
 		@Override
 		public void execute() {
-//			RequestContext.init(requestContext);
-//			if (RequestContext.get() != null) {
-//				RequestContext.get().setInputType(InputType.IMPORT);
-//			}
 			ImportAuditVo importAuditVo = new ImportAuditVo();
 			importAuditVo.setCiId(ciId);
 			importAuditVo.setImportUser(importUser);
 			importAuditVo.setAction(action);
 			importAuditVo.setFileId(fileVo.getId());
 			importMapper.insertImportAudit(importAuditVo);
-			// TODO 鉴权
-//			this.allowTransaction = true;
-//			this.canEditCiEntity = true;
-//			this.allowTransaction = ciService.hasPrivilege(ciId, importUser, CiRoleVo.ACTION_TRANSACTION);
-//			this.canEditCiEntity = ciService.hasPrivilege(ciId, importUser, CiRoleVo.ACTION_UPDATE_CIENTITY);
 
-			//TODO
-//			importMap.put(importAuditVo.getId(), Status.RUNNING.getValue());
+			importMap.put(importAuditVo.getId(), BatchImportStatus.RUNNING.getValue());
 			int successCount = 0;
 			int failedCount = 0;
 			int errorCount = 0;
@@ -155,12 +138,6 @@ public class BatchImportHandler {
 			InputStream in = null;
 
 			try {
-				// Integer lock = ciSchemaMapper.getLock(ciId);
-				// Integer lock = CmdbToolkit.getLock(ciId);
-				// if (lock == null || lock.equals(0)) {
-				// throw new
-				// RuntimeException("当前配置项类型正处于变更过程中或正在导入数据，请稍后再进行操作");
-				// }
 				CiVo ciVo = ciService.getCiById(ciId);
 				if (ciVo == null) {
 					throw new CiNotFoundException(ciId);
@@ -271,7 +248,7 @@ public class BatchImportHandler {
 														ciEntityId = Long.parseLong(content);
 														ciEntityTransactionVo.setCiEntityId(Long.parseLong(content));
 													} catch (Exception e) {
-														throw new RuntimeException("类型转换问题，" + e.getMessage());
+														throw new RuntimeException("无法获取到ID，" + e.getMessage());
 													}
 
 												}
@@ -337,7 +314,7 @@ public class BatchImportHandler {
 													//根据content查询配置项ID
 													if(CollectionUtils.isNotEmpty(valueList)){
 														for(String o : valueList){
-															//TODO 可能存在同名配置项
+															//TODO 可能存在同名配置项，暂时只取第一个
 															Long id = ciEntityMapper.getIdByCiIdAndName(toCiId, o);
 															if(id != null){
 																RelEntityTransactionVo relEntity = new RelEntityTransactionVo();
@@ -372,7 +349,6 @@ public class BatchImportHandler {
 														}
 													}
 												}
-
 											}
 										} else {
 											Object header = typeMap.get(cellIndex.get(ci));
@@ -384,11 +360,11 @@ public class BatchImportHandler {
 											} else if (header instanceof RelVo ) {
 												RelVo rel = (RelVo) header;
 												/** 校验关系必填 */
-												if(rel.getFromLabel().equals(ciVo.getLabel())){
+												if(rel.getFromLabel().equals(ciVo.getLabel())){ //当前CI处于from
 													if(CollectionUtils.isEmpty(relList) && (rel.getToRule().equals(RelRuleType.ON.getValue()) || rel.getToRule().equals(RelRuleType.OO))){
 														errorMsgMap.put(ci + 1,"缺少" + rel.getToLabel());
 													}
-												}else if(rel.getToLabel().equals(ciVo.getLabel())){
+												}else if(rel.getToLabel().equals(ciVo.getLabel())){//当前CI处于to
 													if(CollectionUtils.isEmpty(relList) && (rel.getFromRule().equals(RelRuleType.ON.getValue()) || rel.getFromRule().equals(RelRuleType.OO))){
 														errorMsgMap.put(ci + 1,"缺少" + rel.getFromLabel());
 													}
@@ -397,108 +373,73 @@ public class BatchImportHandler {
 										}
 									}
 
-									if (action.equals("append") && ciEntityId == null) {
-										/** 没有采集到异常才保存，保存过程中发生异常再记录 */
-										try{
+									try{
+										/** 没有采集到异常才执行保存，保存过程中发生异常再put到errMsgMap中 */
+										if (action.equals("append") && ciEntityId == null) {
 											if(MapUtils.isEmpty(errorMsgMap)){
 												ciEntityService.saveCiEntity(ciEntityTransactionVo, TransactionActionType.INSERT);
 												successCount += 1;
 											}else{
 												failedCount += 1;
 											}
-										}catch (Exception e){
-											failedCount += 1;
-											errorMsgMap.put(r,e.getMessage());
-										}
-
-									} else if (action.equals("update") && ciEntityId != null) {
-										CiEntityVo entity = ciEntityMapper.getCiEntityById(ciEntityId);
-										if (entity == null) {
-											throw new RuntimeException("配置项已经被删除，无法修改配置项");
-										}
-										try{
+										} else if (action.equals("update") && ciEntityId != null) {
+											CiEntityVo entity = ciEntityMapper.getCiEntityById(ciEntityId);
+											if (entity == null) {
+												throw new RuntimeException("配置项：" + ciEntityId + "不存在");
+											}
 											if(MapUtils.isEmpty(errorMsgMap)){
 												ciEntityService.saveCiEntity(ciEntityTransactionVo, TransactionActionType.UPDATE);
 												successCount += 1;
 											}else{
 												failedCount += 1;
 											}
-										}catch (Exception e){
-											failedCount += 1;
-											errorMsgMap.put(r,e.getMessage());
-										}
-									} else if (action.equals("all")) {
-										if(ciEntityId != null){
-											CiEntityVo entity = ciEntityMapper.getCiEntityById(ciEntityId);
-											if (entity == null) {
-												throw new RuntimeException("配置项已经被删除，无法修改配置项");
-											}
-											try{
+										} else if (action.equals("all")) {
+											if(ciEntityId != null){
+												CiEntityVo entity = ciEntityMapper.getCiEntityById(ciEntityId);
+												if (entity == null) {
+													throw new RuntimeException("配置项：" + ciEntityId + "不存在");
+												}
 												if(MapUtils.isEmpty(errorMsgMap)){
 													ciEntityService.saveCiEntity(ciEntityTransactionVo, TransactionActionType.UPDATE);
 													successCount += 1;
 												}else{
 													failedCount += 1;
 												}
-											}catch (Exception e){
-												failedCount += 1;
-												errorMsgMap.put(r,e.getMessage());
-											}
-										}else{
-											try{
+											}else{
 												if(MapUtils.isEmpty(errorMsgMap)){
 													ciEntityService.saveCiEntity(ciEntityTransactionVo, TransactionActionType.INSERT);
 													successCount += 1;
 												}else{
 													failedCount += 1;
 												}
-											}catch (Exception e){
-												failedCount += 1;
-												errorMsgMap.put(r,e.getMessage());
 											}
+										} else {
+											failedCount += 1;
 										}
-									} else {
+									}catch (Exception e){
 										failedCount += 1;
-										throw new RuntimeException("缺少ID");
+										errorMsgMap.put(r,e.getMessage());
 									}
 								}
-								String err="";
-								List<Integer> columnList=new ArrayList<Integer>();
-								List<String> errorMsgList=new ArrayList<String>();
-								for(Entry<Integer,String> errVO:errorMsgMap.entrySet()) {
-									columnList.add(errVO.getKey());
-									errorMsgList.add(errVO.getValue());
-								}
-								String errMsg=Arrays.toString(errorMsgList.toArray());
-								String newerrMsg=errMsg.replace(',',';');
-								if(columnList != null && columnList.size() > 0) {
-									err = "<b style=\"color:red\">第" + r + "行第"+Arrays.toString(columnList.toArray())+"列</b>：" +newerrMsg;
-								}
-
-								importAuditVo.setError(err);
-								importAuditVo.setSuccessCount(successCount);
-								importAuditVo.setFailedCount(failedCount);
-								importAuditVo.setTotalCount(totalCount);
-								importMapper.updateImportAuditTemporary(importAuditVo);
 							} catch (Exception e) {
+								failedCount += 1;
+								errorMsgMap.put(r,e.getMessage());
+							}
+							finally {
 								String err="";
-								List<Integer> columnList=new ArrayList<Integer>();
-								List<String> errorMsgList=new ArrayList<String>();
-								for(Entry<Integer,String> errVO:errorMsgMap.entrySet()) {
-									columnList.add(errVO.getKey());
-									errorMsgList.add(errVO.getValue());
+								List<Integer> columnList = new ArrayList<>();
+								List<String> errorMsgList = new ArrayList<>();
+								for(Entry<Integer,String> _err : errorMsgMap.entrySet()) {
+									columnList.add(_err.getKey());
+									errorMsgList.add(_err.getValue());
 								}
-								String errMsg=Arrays.toString(errorMsgList.toArray());
-								String newerrMsg=errMsg.replace(',',';');
-								if(columnList!=null&&columnList.size()>0) {
-									err = "<b style=\"color:red\">第" + r + "行第"+Arrays.toString(columnList.toArray())+"列</b>：" +newerrMsg;
-								}else {
-									err ="<b style=\"color:red\">第" + r + "行</b>："+e.getMessage();
+								String errMsg = Arrays.toString(errorMsgList.toArray());
+								String newerrMsg = errMsg.replace(',',';');
+								if(CollectionUtils.isNotEmpty(columnList)) {
+									err = "<b style=\"color:red\">第" + r + "行第" + Arrays.toString(columnList.toArray()) + "列</b>：" + newerrMsg;
 								}
 
 								errorCount += 1;
-								failedCount += 1;
-								logger.error(e.getMessage(), e);
 								if (errorCount == 1) {
 									importAuditVo.setError(err);
 								} else {
@@ -514,7 +455,6 @@ public class BatchImportHandler {
 					}
 				}
 			} catch (Exception e) {
-				//TODO
 				importAuditVo.setError((("".equals(importAuditVo.getError()) || importAuditVo.getError() == null) ? "" : importAuditVo.getError() + "<br>") + e.getMessage());
 				logger.error(e.getMessage(), e);
 			} finally {
@@ -528,36 +468,19 @@ public class BatchImportHandler {
 				} catch (IOException e) {
 					logger.error(e.getMessage(), e);
 				}
-				//TODO
-//				if (Status.STOPPED.getValue().equals(importMap.get(importAuditVo.getId()))) {
-//					importAuditVo.setError((("".equals(importAuditVo.getError()) || importAuditVo.getError() == null) ? "" : importAuditVo.getError() + "<br>") + "<b style=\"color:red\">导入已停止</b>。");
-//				}
+				if (BatchImportStatus.STOPPED.getValue().equals(importMap.get(importAuditVo.getId()))) {
+					importAuditVo.setError((("".equals(importAuditVo.getError()) || importAuditVo.getError() == null) ? "" : importAuditVo.getError() + "<br>") + "<b style=\"color:red\">导入已停止</b>。");
+				}
 				importAuditVo.setSuccessCount(successCount);
 				importAuditVo.setFailedCount(failedCount);
 				importAuditVo.setTotalCount(totalCount);
-				//TODO
 				importMapper.updateImportAudit(importAuditVo);
-//				importMap.replace(importAuditVo.getId(), Status.SUCCEED.getValue());
-//				importMap.remove(importAuditVo.getId());
+				importMap.replace(importAuditVo.getId(), BatchImportStatus.SUCCEED.getValue());
+				importMap.remove(importAuditVo.getId());
 				// ciSchemaMapper.releaseLock(ciId);
 				// CmdbToolkit.releaseLock(ciId);
 			}
 
 		}
 	}
-
-	// TODO
-//	public ImportAuditVo getStatusById(Long id) {
-//		ImportAuditVo importAuditVo = importMapper.getImportAuditById(id);
-//		if (importAuditVo.getServerId() == Config.SCHEDULE_SERVER_ID && importAuditVo.getStatus() == 0 && importMap.get(id) == null) {
-//			importAuditVo.setStatus(-1);
-//			importAuditVo.setError((("".equals(importAuditVo.getError()) || importAuditVo.getError() == null) ? "" : importAuditVo.getError() + "<br>") + "<b style=\"color:red\">发生异常，导入中断</b>。");
-//			importMapper.updateImportAuditStatus(importAuditVo);
-//		}
-//		return importAuditVo;
-//	}
-//
-//	public void stopImportById(Long id) {
-//		importMap.replace(id, Status.STOPPED.getValue());
-//	}
 }

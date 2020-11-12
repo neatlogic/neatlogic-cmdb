@@ -205,6 +205,7 @@
 		`cmdb_cientity`
 		where
 		`ci_id` = #{ciId} and `name` = #{name}
+		limit 1
 	</select>
 
 	<update id="updateCiEntityLockById" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo">

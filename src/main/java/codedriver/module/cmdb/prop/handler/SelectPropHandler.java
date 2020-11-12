@@ -38,7 +38,6 @@ public class SelectPropHandler implements IPropertyHandler {
 
     @Override
     public Object getActualValue(List<String> values, JSONObject config) {
-        // todo
         JSONArray array = new JSONArray();
         if(CollectionUtils.isNotEmpty(values) && MapUtils.isNotEmpty(config)){
             String datasource = config.getString("datasource");
@@ -53,8 +52,10 @@ public class SelectPropHandler implements IPropertyHandler {
                         }
                     }
                 }
+            }else if("cube".equals(datasource)){
+                //todo 下拉框组件矩阵存在BUG，暂不支持从矩阵反查数据
+                array.addAll(values);
             }
-            //todo 矩阵数据待支持
         }
 
         return array;
