@@ -110,7 +110,6 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                         .filter(attr -> attr.getCiEntityId().equals(entity.getId())).collect(Collectors.toList()));
                     ciEntitySet.add(entity);
                     ciTypeIdSet.add(entity.getTypeId());
-                    System.out.println(entity.getName());
                 }
                 // 获取当前层次配置项所有关系(包括上下游)
                 List<RelEntityVo> relEntityList = relEntityMapper.searchRelEntityByCiEntityIdList(tmpList, null);
@@ -126,7 +125,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                     } else if (relEntityVo.getDirection().equals(RelDirectionType.TO.getValue())) {
                         // 不存在的配置项可以进入下一次检索
                         if (!ciEntitySet.contains(new CiEntityVo(relEntityVo.getFromCiEntityId()))) {
-                            ciEntityIdList.add(relEntityVo.getToCiEntityId());
+                            ciEntityIdList.add(relEntityVo.getFromCiEntityId());
                         }
                     }
                 }
@@ -164,7 +163,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                         && ciEntitySet.contains(new CiEntityVo(relEntityVo.getToCiEntityId()))) {
                         Link.Builder lb = new Link.Builder("CiEntity" + relEntityVo.getFromCiEntityId(),
                             "CiEntity" + relEntityVo.getToCiEntityId());
-                        lb.withHeadLabel(relEntityVo.getRelTypeName());
+                        lb.withLabel(relEntityVo.getRelTypeName());
                         lb.setFontSize(9);
                         gb.addLink(lb.build());
                     }
