@@ -198,6 +198,15 @@
 		<include refid="searchCiEntityIdCoundition"></include>
 	</select>
 
+	<select id="getIdByCiIdAndName" resultType="java.lang.Long">
+		SELECT
+		`id`
+		from
+		`cmdb_cientity`
+		where
+		`ci_id` = #{ciId} and `name` = #{name}
+	</select>
+
 	<update id="updateCiEntityLockById" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
 		UPDATE
 		`cmdb_cientity`

@@ -1,14 +1,14 @@
 package codedriver.module.cmdb.prop.handler;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.stereotype.Component;
-
-import com.alibaba.fastjson.JSONArray;
-
 import codedriver.framework.cmdb.constvalue.SearchExpression;
 import codedriver.framework.cmdb.prop.core.IPropertyHandler;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class MtextPropHandler implements IPropertyHandler {
@@ -37,4 +37,12 @@ public class MtextPropHandler implements IPropertyHandler {
         return null;
     }
 
+    @Override
+    public Object getActualValue(List<String> values, JSONObject config) {
+        JSONArray array = new JSONArray();
+        if(CollectionUtils.isNotEmpty(values)){
+            array = JSONArray.parseArray(JSON.toJSONString(values));
+        }
+        return array;
+    }
 }

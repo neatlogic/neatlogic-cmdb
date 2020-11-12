@@ -17,6 +17,26 @@
 		</if>
 	</select>
 
+	<update id="updateImportAudit" parameterType="codedriver.module.cmdb.dto.batchimport.ImportAuditVo">
+		UPDATE `cmdb_import_audit` SET
+		`finish_date` = NOW(),
+		`success_count` = #{successCount},
+		`failed_count` = #{failedCount},
+		`total_count` = #{totalCount},
+		`status` = 1,
+		`error` = #{error}
+		WHERE `id` = #{id}
+	</update>
+
+	<update id="updateImportAuditTemporary" parameterType="codedriver.module.cmdb.dto.batchimport.ImportAuditVo">
+		UPDATE `cmdb_import_audit` SET
+		`success_count` = #{successCount},
+		`failed_count` = #{failedCount},
+		`total_count` = #{totalCount},
+		`error` = #{error}
+		WHERE `id` = #{id}
+	</update>
+
 	<insert id="insertCmdbImportFile" parameterType="codedriver.framework.file.dto.FileVo">
 		INSERT INTO `cmdb_import_file` (
 		`file_id`
@@ -24,6 +44,28 @@
 		VALUES
 		(
 		#{id}
+		)
+	</insert>
+
+	<insert id="insertImportAudit" parameterType="codedriver.module.cmdb.dto.batchimport.ImportAuditVo">
+		INSERT INTO cmdb_import_audit
+		(
+		`id`,
+		`import_user`,
+		`import_date`,
+		`action`,
+		`file_id`,
+		`ci_id`,
+		`server_id`
+		)
+		VALUES(
+		#{id},
+		#{importUser},
+		NOW(),
+		#{action},
+		#{fileId},
+		#{ciId},
+		#{serverId}
 		)
 	</insert>
 

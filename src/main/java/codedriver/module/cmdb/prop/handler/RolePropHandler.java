@@ -1,12 +1,11 @@
 package codedriver.module.cmdb.prop.handler;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.stereotype.Component;
-
 import codedriver.framework.cmdb.constvalue.SearchExpression;
 import codedriver.framework.cmdb.prop.core.IPropertyHandler;
+import com.alibaba.fastjson.JSONObject;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class RolePropHandler implements IPropertyHandler {
@@ -34,4 +33,8 @@ public class RolePropHandler implements IPropertyHandler {
         return null;
     }
 
+    @Override
+    public Object getActualValue(List<String> values, JSONObject config) {
+        return null;
+    }
 }
