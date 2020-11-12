@@ -5,6 +5,7 @@ import java.io.Serializable;
 import org.apache.commons.lang3.StringUtils;
 
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.annotation.JSONField;
 
 import codedriver.framework.cmdb.constvalue.AttrType;
 import codedriver.framework.cmdb.constvalue.InputType;
@@ -60,6 +61,8 @@ public class AttrVo implements Serializable {
     private String groupName;
     @EntityField(name = "是否支持搜索", type = ApiParamType.BOOLEAN)
     private boolean canSearch = false;
+    @JSONField(serialize = false)
+    private transient int sort;// 排序，数据来自ciViewVo
 
     public Long getId() {
         if (id == null) {
@@ -247,6 +250,14 @@ public class AttrVo implements Serializable {
             }
         }
         return canSearch;
+    }
+
+    public int getSort() {
+        return sort;
+    }
+
+    public void setSort(int sort) {
+        this.sort = sort;
     }
 
 }
