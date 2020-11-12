@@ -13,13 +13,11 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
-@Transactional
 public class SearchBatchImportAuditApi extends PrivateApiComponentBase {
 
     @Autowired

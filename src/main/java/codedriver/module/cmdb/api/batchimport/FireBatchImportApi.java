@@ -24,7 +24,7 @@ import java.util.List;
 @Service
 @OperationType(type = OperationTypeEnum.OPERATE)
 @Transactional
-public class FireBatchImportFileApi extends PrivateApiComponentBase {
+public class FireBatchImportApi extends PrivateApiComponentBase {
 
     @Autowired
     private ImportMapper importMapper;

@@ -478,7 +478,10 @@ public class BatchImportHandler {
 				importMap.replace(importAuditVo.getId(), BatchImportStatus.SUCCEED.getValue());
 				importMap.remove(importAuditVo.getId());
 			}
-
 		}
+	}
+
+	public static void stopImportById(Long id){
+		importMap.replace(id, BatchImportStatus.STOPPED.getValue());
 	}
 }
