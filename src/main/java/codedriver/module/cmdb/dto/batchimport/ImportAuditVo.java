@@ -1,6 +1,8 @@
 package codedriver.module.cmdb.dto.batchimport;
 
+import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
+import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.SnowflakeUtil;
 
 import java.io.Serializable;
@@ -9,21 +11,36 @@ import java.util.Date;
 public class ImportAuditVo extends BasePageVo implements Serializable {
 
 	private static final long serialVersionUID = 7432609786418756446L;
+	@EntityField(name = "id",type = ApiParamType.LONG)
 	private Long id;
+	@EntityField(name = "模型ID",type = ApiParamType.LONG)
 	private Long ciId;
+	@EntityField(name = "导入的文件ID",type = ApiParamType.LONG)
 	private Long fileId;
+	@EntityField(name = "模型中文名",type = ApiParamType.STRING)
 	private String ciName;
+	@EntityField(name = "导入者UUID",type = ApiParamType.STRING)
 	private String importUser;
+	@EntityField(name = "导入者用户名",type = ApiParamType.STRING)
 	private String importUserName;
+	@EntityField(name = "发起时间",type = ApiParamType.LONG)
 	private Date importDate;
+	@EntityField(name = "完成时间",type = ApiParamType.LONG)
 	private Date finishDate;
 	private Integer importCount;
+	@EntityField(name = "状态",type = ApiParamType.INTEGER)
 	private Integer status;
+	@EntityField(name = "导入类型",type = ApiParamType.STRING)
 	private String action;
+	@EntityField(name = "导入类型文本",type = ApiParamType.STRING)
 	private String actionText;
+	@EntityField(name = "异常",type = ApiParamType.STRING)
 	private String error;
+	@EntityField(name = "成功数量",type = ApiParamType.INTEGER)
 	private Integer successCount;
+	@EntityField(name = "失败数量",type = ApiParamType.INTEGER)
 	private Integer failedCount;
+	@EntityField(name = "导入总数",type = ApiParamType.INTEGER)
 	private Integer totalCount;
 	private Integer serverId;
 

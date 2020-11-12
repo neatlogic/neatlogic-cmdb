@@ -17,6 +17,46 @@
 		</if>
 	</select>
 
+	<select id="searchImportAuditCount" parameterType="codedriver.module.cmdb.dto.batchimport.ImportAuditVo" resultType="int" useCache="false">
+		SELECT
+		COUNT(a.`id`)
+		FROM `cmdb_import_audit` a
+		WHERE 1=1
+		<if test="ciId != null">
+			and `ci_id` = #{ciId}
+		</if>
+		<if test="importUser != null and importUser != ''">
+			and `import_user` = #{importUser}
+		</if>
+	</select>
+
+	<select id="searchImportAudit" parameterType="codedriver.module.cmdb.dto.batchimport.ImportAuditVo" resultType="codedriver.module.cmdb.dto.batchimport.ImportAuditVo" useCache="false">
+		SELECT
+		`id`,
+		(select `user_name` from `user` where `uuid` = a.`import_user`) as `importUserName`,
+		`import_date`,
+		`finish_date`,
+		(select `label` from `cmdb_ci` where `id` = a.`ci_id`) as `ciName`,
+		`action`,
+		`success_count` as `successCount`,
+		`failed_count` as `failedCount`,
+		`status`,
+		`error`
+		FROM
+		`cmdb_import_audit` a
+		WHERE 1=1
+		<if test="ciId != null">
+			and `ci_id` = #{ciId}
+		</if>
+		<if test="importUser != null and importUser != ''">
+			and `import_user` = #{importUser}
+		</if>
+		order by `import_date` desc
+		<if test="needPage">
+			limit #{startNum}, #{pageSize}
+		</if>
+	</select>
+
 	<update id="updateImportAudit" parameterType="codedriver.module.cmdb.dto.batchimport.ImportAuditVo">
 		UPDATE `cmdb_import_audit` SET
 		`finish_date` = NOW(),

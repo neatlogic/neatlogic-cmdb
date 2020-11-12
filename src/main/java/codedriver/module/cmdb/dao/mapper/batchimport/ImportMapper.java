@@ -9,6 +9,10 @@ public interface ImportMapper {
 
     public List<FileVo> getCmdbImportFileList(String userUuid);
 
+    public int searchImportAuditCount(ImportAuditVo vo);
+
+    public List<ImportAuditVo> searchImportAudit(ImportAuditVo vo);
+
     public int updateImportAudit(ImportAuditVo vo);
 
     public int updateImportAuditTemporary(ImportAuditVo vo);
