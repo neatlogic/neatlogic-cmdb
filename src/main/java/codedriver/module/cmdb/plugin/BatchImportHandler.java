@@ -132,7 +132,7 @@ public class BatchImportHandler {
 			importMap.put(importAuditVo.getId(), BatchImportStatus.RUNNING.getValue());
 			int successCount = 0;
 			int failedCount = 0;
-			int errorCount = 0;
+//			int errorCount = 0;
 			int totalCount = 0;
 			Workbook wb = null;
 			InputStream in = null;
@@ -219,7 +219,8 @@ public class BatchImportHandler {
 						}
 						totalCount += sheet.getLastRowNum();
 						for (int r = sheet.getFirstRowNum() + 1; r <= sheet.getLastRowNum(); r++) {
-							Map<Integer, String> errorMsgMap=new LinkedHashMap<>();
+							/**用来记录错误信息，使用LinkedHashMap是为了计算列数*/
+							Map<Integer, String> errorMsgMap = new LinkedHashMap<>();
 							try {
 								Row row = sheet.getRow(r);
 								if (row != null) {
@@ -243,14 +244,13 @@ public class BatchImportHandler {
 											content = content.trim();
 											Object header = typeMap.get(cellIndex.get(ci));
 											if (header instanceof String) { //表示拿到的是ID列
-												if (!content.equals("")) {
+												if (StringUtils.isNotBlank(content)) {
 													try {
 														ciEntityId = Long.parseLong(content);
 														ciEntityTransactionVo.setCiEntityId(Long.parseLong(content));
 													} catch (Exception e) {
 														throw new RuntimeException("无法获取到ID，" + e.getMessage());
 													}
-
 												}
 											} else if (header instanceof AttrVo) {// 如果是属性
 												AttrVo attr = (AttrVo) header;
@@ -314,7 +314,6 @@ public class BatchImportHandler {
 													//根据content查询配置项ID
 													if(CollectionUtils.isNotEmpty(valueList)){
 														for(String o : valueList){
-															//TODO 可能存在同名配置项，暂时只取第一个
 															Long id = ciEntityMapper.getIdByCiIdAndName(toCiId, o);
 															if(id != null){
 																RelEntityTransactionVo relEntity = new RelEntityTransactionVo();
@@ -361,11 +360,11 @@ public class BatchImportHandler {
 												RelVo rel = (RelVo) header;
 												/** 校验关系必填 */
 												if(rel.getFromLabel().equals(ciVo.getLabel())){ //当前CI处于from
-													if(CollectionUtils.isEmpty(relList) && (rel.getToRule().equals(RelRuleType.ON.getValue()) || rel.getToRule().equals(RelRuleType.OO))){
+													if(rel.getToRule().equals(RelRuleType.ON.getValue()) || rel.getToRule().equals(RelRuleType.OO.getValue())){
 														errorMsgMap.put(ci + 1,"缺少" + rel.getToLabel());
 													}
 												}else if(rel.getToLabel().equals(ciVo.getLabel())){//当前CI处于to
-													if(CollectionUtils.isEmpty(relList) && (rel.getFromRule().equals(RelRuleType.ON.getValue()) || rel.getFromRule().equals(RelRuleType.OO))){
+													if(rel.getFromRule().equals(RelRuleType.ON.getValue()) || rel.getFromRule().equals(RelRuleType.OO.getValue())){
 														errorMsgMap.put(ci + 1,"缺少" + rel.getFromLabel());
 													}
 												}
@@ -423,10 +422,11 @@ public class BatchImportHandler {
 								}
 							} catch (Exception e) {
 								failedCount += 1;
+//								errorCount += 1;
 								errorMsgMap.put(r,e.getMessage());
 							}
 							finally {
-								String err="";
+								String err = "";
 								List<Integer> columnList = new ArrayList<>();
 								List<String> errorMsgList = new ArrayList<>();
 								for(Entry<Integer,String> _err : errorMsgMap.entrySet()) {
@@ -439,10 +439,10 @@ public class BatchImportHandler {
 									err = "<b style=\"color:red\">第" + r + "行第" + Arrays.toString(columnList.toArray()) + "列</b>：" + newerrMsg;
 								}
 
-								errorCount += 1;
-								if (errorCount == 1) {
+//								errorCount += 1;
+								if (failedCount == 1) {
 									importAuditVo.setError(err);
-								} else {
+								} else if(failedCount > 1){
 									importAuditVo.setError(importAuditVo.getError() + "<br>" + err);
 								}
 								importAuditVo.setSuccessCount(successCount);
@@ -477,8 +477,6 @@ public class BatchImportHandler {
 				importMapper.updateImportAudit(importAuditVo);
 				importMap.replace(importAuditVo.getId(), BatchImportStatus.SUCCEED.getValue());
 				importMap.remove(importAuditVo.getId());
-				// ciSchemaMapper.releaseLock(ciId);
-				// CmdbToolkit.releaseLock(ciId);
 			}
 
 		}
