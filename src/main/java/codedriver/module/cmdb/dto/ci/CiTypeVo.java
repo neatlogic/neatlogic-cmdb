@@ -29,6 +29,8 @@ public class CiTypeVo {
     private String icon;
     @EntityField(name = "模型列表", type = ApiParamType.JSONARRAY)
     private List<CiVo> ciList;
+    @EntityField(name = "模型数量", type = ApiParamType.INTEGER)
+    private int ciCount;
 
     public Long getId() {
         if (id == null) {
@@ -87,6 +89,14 @@ public class CiTypeVo {
 
     public void setKeyword(String keyword) {
         this.keyword = keyword;
+    }
+
+    public int getCiCount() {
+        return ciCount;
+    }
+
+    public void setCiCount(int ciCount) {
+        this.ciCount = ciCount;
     }
 
 }

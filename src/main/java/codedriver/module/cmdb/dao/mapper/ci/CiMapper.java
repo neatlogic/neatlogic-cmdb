@@ -13,6 +13,8 @@ import codedriver.module.cmdb.dto.ci.CiVo;
  * @Description: TODO
  */
 public interface CiMapper {
+    public List<CiVo> getAllCi();
+
     public List<CiVo> getCiByToCiId(Long ciId);
 
     public int checkCiNameIsExists(CiVo ciVo);

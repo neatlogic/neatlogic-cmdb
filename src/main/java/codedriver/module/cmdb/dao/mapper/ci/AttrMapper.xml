@@ -50,13 +50,22 @@
 		attr.`is_unique` AS isUnique,
 		attr.`input_type` AS inputType,
 		attr.`group_name` AS groupName,
-		attr.`is_private` AS isPrivate
+		attr.`is_private` AS isPrivate,
+		cview.sort
 		FROM
-		`cmdb_attr` attr LEFT JOIN cmdb_validator cv ON attr.`validator` = cv.id
-		LEFT JOIN cmdb_prop cp ON attr.prop_id = cp.id
+		`cmdb_attr` attr
+		LEFT JOIN cmdb_validator cv ON
+		attr.`validator` = cv.id
+		LEFT JOIN cmdb_prop cp ON
+		attr.prop_id = cp.id
+		LEFT JOIN cmdb_view cview ON
+		attr.id = cview.item_id
+		and cview.type = 'attr'
 		WHERE
-		ci_id = #{value}
-		ORDER BY attr.id
+		attr.ci_id = #{value}
+		ORDER BY
+		sort ASC,
+		attr.id ASC<!-- 现按照视图设置的排序 -->
 	</select>
 
 

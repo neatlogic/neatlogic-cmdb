@@ -31,6 +31,15 @@ public class CiViewVo {
     @JSONField(serialize = false)
     private transient List<String> showTypeList;
 
+    public CiViewVo() {
+
+    }
+
+    public CiViewVo(Long ciId, String type) {
+        this.ciId = ciId;
+        this.type = type;
+    }
+
     public void addShowType(String showType) {
         if (showTypeList == null) {
             showTypeList = new ArrayList<>();

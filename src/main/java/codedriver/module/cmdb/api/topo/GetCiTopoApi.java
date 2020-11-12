@@ -85,7 +85,7 @@ public class GetCiTopoApi extends PrivateApiComponentBase {
             for (RelVo relVo : relList) {
                 if (ciIdSet.contains(relVo.getFromCiId()) && ciIdSet.contains(relVo.getToCiId())) {
                     Link.Builder lb = new Link.Builder("Ci" + relVo.getFromCiId(), "Ci" + relVo.getToCiId());
-                    lb.withHeadLabel(relVo.getTypeText());
+                    lb.withLabel(relVo.getTypeText());
                     lb.setFontSize(9);
                     gb.addLink(lb.build());
                 }

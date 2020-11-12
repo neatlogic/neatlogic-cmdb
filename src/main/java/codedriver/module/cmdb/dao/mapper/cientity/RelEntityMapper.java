@@ -27,6 +27,10 @@ public interface RelEntityMapper {
     public List<RelEntityVo> getRelEntityByToCiEntityIdAndRelId(@Param("toCiEntityId") Long toCiEntityId,
         @Param("relId") Long relId);
 
+    public List<Long> getFromToCiEntityIdByCiEntityIdList(@Param("idList") List<Long> idList);
+
+    public List<Long> getFromToCiEntityIdByCiEntityId(Long ciEntityId);
+
     @ESSearch
     public int insertRelEntity(@ESParam("cientity") RelEntityVo relEntityVo);
 

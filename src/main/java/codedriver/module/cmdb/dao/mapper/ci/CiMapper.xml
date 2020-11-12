@@ -3,6 +3,21 @@
 <mapper namespace="codedriver.module.cmdb.dao.mapper.ci.CiMapper">
 	<cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
 
+	<select id="getAllCi" resultType="codedriver.module.cmdb.dto.ci.CiVo">
+		SELECT
+		a.`id`,
+		a.`name`,
+		a.`label`,
+		a.`description`,
+		a.`icon`,
+		a.`type_id` AS typeId,
+		a.`is_private` AS isPrivate,
+		a.`is_menu` AS isMenu
+		FROM
+		`cmdb_ci` a
+		ORDER BY `name`
+	</select>
+
 	<select id="getCiByToCiId" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.CiVo">
 		SELECT
 		a.`id`,

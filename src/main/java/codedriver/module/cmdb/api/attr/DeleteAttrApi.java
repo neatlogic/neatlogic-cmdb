@@ -48,7 +48,7 @@ public class DeleteAttrApi extends PrivateApiComponentBase {
         if (attrVo == null) {
             throw new AttrNotFoundException(attrId);
         }
-        if (attrVo.getIsPrivate().equals(1)) {
+        if (attrVo.getIsPrivate() != null && attrVo.getIsPrivate().equals(1)) {
             throw new AttrDeleteDeniedException();
         }
         attrMapper.deleteAttrById(attrId);

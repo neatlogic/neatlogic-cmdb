@@ -11,6 +11,7 @@ import codedriver.module.cmdb.dto.ci.CiViewVo;
  * @ClassName: CiMapper
  */
 public interface CiViewMapper {
+
     public List<CiViewVo> getCiViewByCiId(CiViewVo ciViewVo);
 
     public int insertCiView(CiViewVo ciViewVo);

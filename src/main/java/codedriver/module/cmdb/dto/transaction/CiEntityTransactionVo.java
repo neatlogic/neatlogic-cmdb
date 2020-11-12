@@ -1,29 +1,18 @@
 package codedriver.module.cmdb.dto.transaction;
 
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.annotation.JSONField;
 
-import codedriver.framework.cmdb.constvalue.AttrType;
 import codedriver.framework.cmdb.constvalue.EditModeType;
 import codedriver.framework.cmdb.constvalue.TransactionActionType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.SnowflakeUtil;
-import codedriver.module.cmdb.dto.cientity.AttrEntityVo;
 import codedriver.module.cmdb.dto.cientity.CiEntityVo;
 
 public class CiEntityTransactionVo {
