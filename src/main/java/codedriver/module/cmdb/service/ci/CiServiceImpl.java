@@ -1,26 +1,25 @@
 package codedriver.module.cmdb.service.ci;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import codedriver.framework.asynchronization.thread.CodeDriverThread;
+import codedriver.framework.asynchronization.threadpool.CachedThreadPool;
+import codedriver.framework.elasticsearch.core.ElasticSearchHandlerFactory;
+import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
+import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
+import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
+import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
+import codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper;
+import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
+import codedriver.module.cmdb.dto.ci.AttrVo;
+import codedriver.module.cmdb.dto.ci.CiVo;
+import codedriver.module.cmdb.dto.ci.RelVo;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
-import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
-import codedriver.module.cmdb.dto.ci.AttrVo;
-import codedriver.module.cmdb.dto.ci.RelVo;
-import codedriver.framework.asynchronization.thread.CodeDriverThread;
-import codedriver.framework.asynchronization.threadpool.CachedThreadPool;
-import codedriver.framework.elasticsearch.aop.ElasticSearchAspect;
-import codedriver.framework.elasticsearch.core.ElasticSearchHandlerFactory;
-import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
-import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
-import codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper;
-import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
-import codedriver.module.cmdb.dto.ci.CiVo;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class CiServiceImpl implements CiService {
@@ -106,7 +105,6 @@ public class CiServiceImpl implements CiService {
         List<RelVo> relList = relMapper.getRelByCiId(id);
         ciVo.setRelList(relList);
         ciVo.setAttrList(attrList);
-//        ciVo.setOperateList(operateMapper.getOperateListByCiId(ciVo.getId()));
         return ciVo;
     }
 }

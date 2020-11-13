@@ -206,11 +206,11 @@ public class BatchImportHandler {
 								}
 							}
 							for(RelVo rel : ciVo.getRelList()){
-								if(rel.getFromLabel().equals(ciVo.getLabel())){
+								if(rel.getFromCiId().equals(ciVo.getId())){
 									if(!checkAttrMap.containsKey("rel_" + rel.getId()) && (rel.getToRule().equals(RelRuleType.ON.getValue()) || rel.getToRule().equals(RelRuleType.OO.getValue()))){
 										throw new RuntimeException("导入模板缺少属性“" + rel.getToLabel() + "”");
 									}
-								}else if(rel.getToLabel().equals(ciVo.getLabel())){
+								}else if(rel.getToCiId().equals(ciVo.getId())){
 									if(!checkAttrMap.containsKey("rel_" + rel.getId()) && (rel.getFromRule().equals(RelRuleType.ON.getValue()) || rel.getFromRule().equals(RelRuleType.OO.getValue()))){
 										throw new RuntimeException("导入模板缺少属性“" + rel.getFromRule() + "”");
 									}
@@ -309,7 +309,7 @@ public class BatchImportHandler {
 													valueList.add(content);
 												}
 
-												if(rel.getFromLabel().equals(ciVo.getLabel())){ //当前配置项处于from位置
+												if(rel.getFromCiId().equals(ciVo.getId())){ //当前配置项处于from位置
 													Long toCiId = rel.getToCiId();
 													//根据content查询配置项ID
 													if(CollectionUtils.isNotEmpty(valueList)){
@@ -328,7 +328,7 @@ public class BatchImportHandler {
 															}
 														}
 													}
-												}else if(rel.getToLabel().equals(ciVo.getLabel())){ //当前配置项处于to位置
+												}else if(rel.getToCiId().equals(ciVo.getId())){ //当前配置项处于to位置
 													Long fromCiId = rel.getFromCiId();
 													//根据content查询配置项ID
 													if(CollectionUtils.isNotEmpty(valueList)){
@@ -359,11 +359,11 @@ public class BatchImportHandler {
 											} else if (header instanceof RelVo ) {
 												RelVo rel = (RelVo) header;
 												/** 校验关系必填 */
-												if(rel.getFromLabel().equals(ciVo.getLabel())){ //当前CI处于from
+												if(rel.getFromCiId().equals(ciVo.getId())){ //当前CI处于from
 													if(rel.getToRule().equals(RelRuleType.ON.getValue()) || rel.getToRule().equals(RelRuleType.OO.getValue())){
 														errorMsgMap.put(ci + 1,"缺少" + rel.getToLabel());
 													}
-												}else if(rel.getToLabel().equals(ciVo.getLabel())){//当前CI处于to
+												}else if(rel.getToCiId().equals(ciVo.getId())){//当前CI处于to
 													if(rel.getFromRule().equals(RelRuleType.ON.getValue()) || rel.getFromRule().equals(RelRuleType.OO.getValue())){
 														errorMsgMap.put(ci + 1,"缺少" + rel.getFromLabel());
 													}
