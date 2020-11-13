@@ -436,7 +436,7 @@ public class BatchImportHandler {
 								String errMsg = Arrays.toString(errorMsgList.toArray());
 								String newerrMsg = errMsg.replace(',',';');
 								if(CollectionUtils.isNotEmpty(columnList)) {
-									err = "<b style=\"color:red\">第" + r + "行第" + Arrays.toString(columnList.toArray()) + "列</b>：" + newerrMsg;
+									err = "<b class=\"text-danger\">第" + r + "行第" + Arrays.toString(columnList.toArray()) + "列</b>：" + newerrMsg;
 								}
 
 //								errorCount += 1;
@@ -469,7 +469,7 @@ public class BatchImportHandler {
 					logger.error(e.getMessage(), e);
 				}
 				if (BatchImportStatus.STOPPED.getValue().equals(importMap.get(importAuditVo.getId()))) {
-					importAuditVo.setError((("".equals(importAuditVo.getError()) || importAuditVo.getError() == null) ? "" : importAuditVo.getError() + "<br>") + "<b style=\"color:red\">导入已停止</b>。");
+					importAuditVo.setError((("".equals(importAuditVo.getError()) || importAuditVo.getError() == null) ? "" : importAuditVo.getError() + "<br>") + "<b class=\"text-danger\">导入已停止</b>。");
 				}
 				importAuditVo.setSuccessCount(successCount);
 				importAuditVo.setFailedCount(failedCount);
