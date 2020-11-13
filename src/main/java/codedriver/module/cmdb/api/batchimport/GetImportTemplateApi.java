@@ -80,7 +80,7 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
                 relIdList = relIdArray.toJavaList(Long.class);
             }
 
-            if ((attrIdList.size() + relIdList.size()) < 1) {
+            if (CollectionUtils.isEmpty(attrIdList) && CollectionUtils.isEmpty(relIdList)) {
                 throw new RuntimeException("模型属性不能为空");
             }
 
