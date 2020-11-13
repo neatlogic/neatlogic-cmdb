@@ -1,6 +1,7 @@
 package codedriver.module.cmdb.api.batchimport;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
+import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.file.dto.FileVo;
 import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.*;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@AuthAction(name = "CIENTITY_BATCH_IMPORT")
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class GetBatchImportFileListApi extends PrivateApiComponentBase {

@@ -2,6 +2,7 @@ package codedriver.module.cmdb.api.batchimport;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
+import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.util.FileUtil;
 import codedriver.framework.exception.file.*;
@@ -32,6 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
+@AuthAction(name = "CIENTITY_BATCH_IMPORT")
 @Service
 @OperationType(type = OperationTypeEnum.CREATE)
 @Transactional

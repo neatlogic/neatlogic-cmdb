@@ -11,17 +11,17 @@ import org.springframework.stereotype.Service;
 
 @AuthAction(name = "CIENTITY_BATCH_IMPORT")
 @Service
-@OperationType(type = OperationTypeEnum.OPERATE)
-public class StopBatchImportApi extends PrivateApiComponentBase {
+@OperationType(type = OperationTypeEnum.SEARCH)
+public class GetImportStatusApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "/cmdb/import/stop";
+        return "/cmdb/import/status/get";
     }
 
     @Override
     public String getName() {
-        return "停止批量导入";
+        return "获取导入状态";
     }
 
     @Override
@@ -29,13 +29,12 @@ public class StopBatchImportApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true,desc = "导入记录ID")})
+    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "日志ID")})
     @Output({})
-    @Description(desc = "停止批量导入")
+    @Description(desc = "获取导入状态")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long id = paramObj.getLong("id");
-        BatchImportHandler.stopImportById(id);
-        return null;
+        return BatchImportHandler.getStatusById(id);
     }
 }
