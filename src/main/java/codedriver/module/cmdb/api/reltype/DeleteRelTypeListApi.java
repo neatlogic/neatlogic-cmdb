@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
 
+import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
@@ -16,6 +17,7 @@ import codedriver.module.cmdb.dao.mapper.ci.RelTypeMapper;
 import codedriver.module.cmdb.exception.reltype.RelTypeIsInUsedException;
 
 @Service
+@AuthAction(name = "RELTYPE_MODIFY")
 @OperationType(type = OperationTypeEnum.DELETE)
 public class DeleteRelTypeListApi extends PrivateApiComponentBase {
 

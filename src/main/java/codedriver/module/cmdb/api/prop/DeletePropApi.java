@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
 
+import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
@@ -17,6 +18,7 @@ import codedriver.module.cmdb.dto.prop.PropVo;
 import codedriver.module.cmdb.exception.prop.PropIsInUsedException;
 
 @Service
+@AuthAction(name = "PROP_MODIFY")
 @OperationType(type = OperationTypeEnum.DELETE)
 public class DeletePropApi extends PrivateApiComponentBase {
 
