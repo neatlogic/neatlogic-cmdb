@@ -8,7 +8,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
+import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
+import codedriver.module.cmdb.dto.ci.AttrVo;
+import codedriver.module.cmdb.dto.ci.RelVo;
 import codedriver.framework.asynchronization.thread.CodeDriverThread;
 import codedriver.framework.asynchronization.threadpool.CachedThreadPool;
 import codedriver.framework.elasticsearch.aop.ElasticSearchAspect;
@@ -34,6 +37,12 @@ public class CiServiceImpl implements CiService {
 
     @Autowired
     private RelEntityMapper relEntityMapper;
+
+    @Autowired
+    private AttrMapper attrMapper;
+
+    @Autowired
+    private RelMapper relMapper;
 
     @Override
     public int saveCi(CiVo ciVo) {
@@ -90,4 +99,14 @@ public class CiServiceImpl implements CiService {
         return 1;
     }
 
+    @Override
+    public CiVo getCiById(Long id) {
+        CiVo ciVo = ciMapper.getCiById(id);
+        List<AttrVo> attrList = attrMapper.getAttrByCiId(id);
+        List<RelVo> relList = relMapper.getRelByCiId(id);
+        ciVo.setRelList(relList);
+        ciVo.setAttrList(attrList);
+//        ciVo.setOperateList(operateMapper.getOperateListByCiId(ciVo.getId()));
+        return ciVo;
+    }
 }

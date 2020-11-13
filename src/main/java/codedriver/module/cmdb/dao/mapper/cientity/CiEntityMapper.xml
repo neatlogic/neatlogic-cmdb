@@ -242,6 +242,16 @@
 		SELECT id FROM cmdb_cientity WHERE ci_id = #{value}
 	</select>
 
+    <select id="getIdByCiIdAndName" resultType="java.lang.Long">
+        SELECT
+        `id`
+        from
+        `cmdb_cientity`
+        where
+        `ci_id` = #{ciId} and `name` = #{name}
+        limit 1
+    </select>
+
 	<update id="updateCiEntityLockById" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
 		UPDATE
 		`cmdb_cientity`

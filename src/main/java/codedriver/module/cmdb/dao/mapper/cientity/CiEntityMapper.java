@@ -27,6 +27,8 @@ public interface CiEntityMapper {
 
     public List<CiEntityVo> searchCiEntityByIdList(@Param("idList") List<Long> idList);
 
+    public Long getIdByCiIdAndName(@Param("ciId") Long ciId,@Param("name") String name);
+
     @ESSearch
     public int insertCiEntity(@ESParam("cientity") CiEntityVo ciEntityVo);
 
