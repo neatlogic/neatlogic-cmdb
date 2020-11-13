@@ -33,6 +33,7 @@
 	<select id="searchImportAudit" parameterType="codedriver.module.cmdb.dto.batchimport.ImportAuditVo" resultType="codedriver.module.cmdb.dto.batchimport.ImportAuditVo" useCache="false">
 		SELECT
 		`id`,
+		`import_user` as importUser,
 		(select `user_name` from `user` where `uuid` = a.`import_user`) as `importUserName`,
 		`import_date`,
 		`finish_date`,
