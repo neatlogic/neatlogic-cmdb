@@ -64,7 +64,7 @@
 		WHERE
 		attr.ci_id = #{value}
 		ORDER BY
-        cview.`sort` ASC
+		cview.`sort` ASC
 -- 		attr.id ASC<!-- 按照视图设置的排序 -->
 	</select>
 
