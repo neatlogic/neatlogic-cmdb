@@ -2,6 +2,8 @@ package codedriver.module.cmdb.dao.mapper.ci;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Param;
+
 import codedriver.module.cmdb.dto.ci.RelGroupVo;
 import codedriver.module.cmdb.dto.ci.RelVo;
 
@@ -9,6 +11,8 @@ public interface RelMapper {
     public List<RelVo> getAllRelList();
 
     public List<RelGroupVo> getRelGroupByCiId(Long ciId);
+
+    public List<RelVo> getRelByCiIdList(@Param("ciIdList") List<Long> ciIdList);
 
     public int checkRelGroupNameIsExists(RelGroupVo relGroupVo);
 
