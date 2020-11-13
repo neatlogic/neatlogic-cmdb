@@ -82,6 +82,24 @@
 		ORDER BY a.sort
 	</select>
 
+	<select id="getCiByIdList" resultType="codedriver.module.cmdb.dto.ci.CiVo" useCache="true">
+		SELECT
+		`id`,
+		`name`,
+		`label`,
+		`description`,
+		`icon`,
+		`type_id` AS typeId,
+		`is_private` AS isPrivate,
+		`is_menu` AS isMenu
+		FROM
+		`cmdb_ci`
+		WHERE id IN
+		<foreach collection="ciIdList" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+
 	<select id="getCiById" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.CiVo" useCache="false">
 		SELECT
 		`id`,

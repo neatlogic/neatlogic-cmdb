@@ -2,6 +2,8 @@ package codedriver.module.cmdb.dao.mapper.ci;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Param;
+
 import codedriver.module.cmdb.dto.ci.CiTypeVo;
 import codedriver.module.cmdb.dto.ci.CiVo;
 
@@ -16,6 +18,8 @@ public interface CiMapper {
     public List<CiVo> getAllCi();
 
     public List<CiVo> getCiByToCiId(Long ciId);
+
+    public List<CiVo> getCiByIdList(@Param("ciIdList") List<Long> ciIds);
 
     public int checkCiNameIsExists(CiVo ciVo);
 
