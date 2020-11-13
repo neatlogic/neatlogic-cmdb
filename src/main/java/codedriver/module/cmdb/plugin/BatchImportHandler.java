@@ -219,8 +219,10 @@ public class BatchImportHandler {
 						}
 						totalCount += sheet.getLastRowNum();
 						for (int r = sheet.getFirstRowNum() + 1; r <= sheet.getLastRowNum(); r++) {
-							/**用来记录错误信息，使用LinkedHashMap是为了计算列数*/
+							/**用来详细记录每一行每一列的错误信息，使用LinkedHashMap是为了计算列数*/
 							Map<Integer, String> errorMsgMap = new LinkedHashMap<>();
+							/** 用来记录每一行最后保存时的错误 */
+							String rowError = null;
 							try {
 								Row row = sheet.getRow(r);
 								if (row != null) {
@@ -417,13 +419,15 @@ public class BatchImportHandler {
 										}
 									}catch (Exception e){
 										failedCount += 1;
-										errorMsgMap.put(r,e.getMessage());
+//										errorMsgMap.put(r,e.getMessage());
+										rowError = e.getMessage();
 									}
 								}
 							} catch (Exception e) {
 								failedCount += 1;
 //								errorCount += 1;
-								errorMsgMap.put(r,e.getMessage());
+//								errorMsgMap.put(r,e.getMessage());
+								rowError = e.getMessage();
 							}
 							finally {
 								String err = "";
@@ -437,6 +441,10 @@ public class BatchImportHandler {
 								String newerrMsg = errMsg.replace(',',';');
 								if(CollectionUtils.isNotEmpty(columnList)) {
 									err = "<b class=\"text-danger\">第" + r + "行第" + Arrays.toString(columnList.toArray()) + "列</b>：" + newerrMsg;
+								}
+
+								if(StringUtils.isNotBlank(rowError)){
+									err += "<b class=\"text-danger\">第" + r + "行：" + rowError;
 								}
 
 //								errorCount += 1;
@@ -479,6 +487,16 @@ public class BatchImportHandler {
 				importMap.remove(importAuditVo.getId());
 			}
 		}
+	}
+
+	public static ImportAuditVo getStatusById(Long id) {
+		ImportAuditVo importAuditVo = importMapper.getImportAuditById(id);
+		if (importAuditVo.getStatus() == 0 && importMap.get(id) == null) {
+			importAuditVo.setStatus(-1);
+			importAuditVo.setError((StringUtils.isNotBlank(importAuditVo.getError()) ? "" : importAuditVo.getError() + "<br>") + "<b class=\"text-danger\">发生异常，导入中断</b>。");
+			importMapper.updateImportAuditStatus(importAuditVo);
+		}
+		return importAuditVo;
 	}
 
 	public static void stopImportById(Long id){

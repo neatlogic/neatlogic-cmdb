@@ -2,6 +2,7 @@ package codedriver.module.cmdb.api.batchimport;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.asynchronization.threadpool.CommonThreadPool;
+import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.exception.file.ExcelFormatIllegalException;
 import codedriver.framework.exception.file.ExcelNameIllegalException;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@AuthAction(name = "CIENTITY_BATCH_IMPORT")
 @Service
 @OperationType(type = OperationTypeEnum.OPERATE)
 @Transactional
