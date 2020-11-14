@@ -27,9 +27,8 @@ public class DatePropHandler implements IPropertyHandler {
 
     @Override
     public SearchExpression[] getSupportExpression() {
-        return new SearchExpression[] {SearchExpression.EQ, SearchExpression.GE, SearchExpression.GT,
-            SearchExpression.LE, SearchExpression.LT, SearchExpression.LI, SearchExpression.NE, SearchExpression.NL,
-            SearchExpression.NOTNULL, SearchExpression.NULL,};
+        return new SearchExpression[] {SearchExpression.EQ, SearchExpression.NE, SearchExpression.NOTNULL,
+            SearchExpression.NULL};
     }
 
     @Override
@@ -41,11 +40,11 @@ public class DatePropHandler implements IPropertyHandler {
     @Override
     public Object getActualValue(List<String> values, JSONObject config) {
         JSONArray array = new JSONArray();
-        //日期不存在多选
-        if(CollectionUtils.isNotEmpty(values) && values.size() > 1){
+        // 日期不存在多选
+        if (CollectionUtils.isNotEmpty(values) && values.size() > 1) {
             throw new RuntimeException("只能选择一个日期");
         }
-        if(MapUtils.isNotEmpty(config)){
+        if (MapUtils.isNotEmpty(config)) {
             String format = config.getString("format");
             SimpleDateFormat sdf = new SimpleDateFormat(format);
             try {

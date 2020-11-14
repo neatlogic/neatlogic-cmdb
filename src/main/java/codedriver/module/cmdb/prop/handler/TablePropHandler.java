@@ -22,7 +22,7 @@ public class TablePropHandler implements IPropertyHandler {
 
     @Override
     public SearchExpression[] getSupportExpression() {
-        return new SearchExpression[] {};
+        return new SearchExpression[] {SearchExpression.NOTNULL, SearchExpression.NULL};
     }
 
     @Override

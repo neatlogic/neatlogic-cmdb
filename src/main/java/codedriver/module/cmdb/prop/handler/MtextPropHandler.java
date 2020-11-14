@@ -25,11 +25,9 @@ public class MtextPropHandler implements IPropertyHandler {
 
     @Override
     public SearchExpression[] getSupportExpression() {
-        return new SearchExpression[] {SearchExpression.EQ, SearchExpression.GE, SearchExpression.GT,
-            SearchExpression.LE, SearchExpression.LT, SearchExpression.LI, SearchExpression.NE, SearchExpression.NL,
-            SearchExpression.NOTNULL, SearchExpression.NULL,};
+        return new SearchExpression[] {SearchExpression.EQ, SearchExpression.LI, SearchExpression.NE,
+            SearchExpression.NL, SearchExpression.NOTNULL, SearchExpression.NULL};
     }
-
 
     @Override
     public List<String> getDisplayValue(List<String> valueList) {
@@ -40,7 +38,7 @@ public class MtextPropHandler implements IPropertyHandler {
     @Override
     public Object getActualValue(List<String> values, JSONObject config) {
         JSONArray array = new JSONArray();
-        if(CollectionUtils.isNotEmpty(values)){
+        if (CollectionUtils.isNotEmpty(values)) {
             array = JSONArray.parseArray(JSON.toJSONString(values));
         }
         return array;

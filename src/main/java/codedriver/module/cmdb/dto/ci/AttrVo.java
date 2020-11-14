@@ -1,17 +1,22 @@
 package codedriver.module.cmdb.dto.ci;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.annotation.JSONField;
+import com.alibaba.nacos.client.naming.utils.CollectionUtils;
 
 import codedriver.framework.cmdb.constvalue.AttrType;
 import codedriver.framework.cmdb.constvalue.InputType;
+import codedriver.framework.cmdb.constvalue.SearchExpression;
 import codedriver.framework.cmdb.prop.core.IPropertyHandler;
 import codedriver.framework.cmdb.prop.core.PropertyHandlerFactory;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.common.dto.ValueTextVo;
 import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.SnowflakeUtil;
 
@@ -63,6 +68,8 @@ public class AttrVo implements Serializable {
     private boolean canSearch = false;
     @JSONField(serialize = false)
     private transient int sort;// 排序，数据来自ciViewVo
+    @EntityField(name = "支持的搜索表达式列表")
+    private List<ValueTextVo> expressionList;
 
     public Long getId() {
         if (id == null) {
@@ -258,6 +265,25 @@ public class AttrVo implements Serializable {
 
     public void setSort(int sort) {
         this.sort = sort;
+    }
+
+    public List<ValueTextVo> getExpressionList() {
+        if (CollectionUtils.isEmpty(this.expressionList)) {
+            expressionList = new ArrayList<>();
+            if (type.equals(AttrType.PROPERTY.getValue())) {
+                if (StringUtils.isNotBlank(propHandler)) {
+                    IPropertyHandler handler = PropertyHandlerFactory.getHandler(propHandler);
+                    for (SearchExpression expression : handler.getSupportExpression()) {
+                        expressionList.add(new ValueTextVo(expression.getExpression(), expression.getText()));
+                    }
+                }
+            } else if (type.equals(AttrType.CUSTOM.getValue())) {
+                for (SearchExpression expression : SearchExpression.values()) {
+                    expressionList.add(new ValueTextVo(expression.getExpression(), expression.getText()));
+                }
+            }
+        }
+        return expressionList;
     }
 
 }

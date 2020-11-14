@@ -17,14 +17,12 @@ public class FilePropHandler implements IPropertyHandler {
 
     @Override
     public Boolean canSearch() {
-        return false;
+        return true;
     }
 
     @Override
     public SearchExpression[] getSupportExpression() {
-        return new SearchExpression[] {SearchExpression.EQ, SearchExpression.GE, SearchExpression.GT,
-            SearchExpression.LE, SearchExpression.LT, SearchExpression.LI, SearchExpression.NE, SearchExpression.NL,
-            SearchExpression.NOTNULL, SearchExpression.NULL,};
+        return new SearchExpression[] {SearchExpression.NOTNULL, SearchExpression.NULL};
     }
 
     @Override

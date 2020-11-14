@@ -33,9 +33,8 @@ public class UserPropHandler implements IPropertyHandler {
 
     @Override
     public SearchExpression[] getSupportExpression() {
-        return new SearchExpression[] {SearchExpression.EQ, SearchExpression.GE, SearchExpression.GT,
-            SearchExpression.LE, SearchExpression.LT, SearchExpression.LI, SearchExpression.NE, SearchExpression.NL,
-            SearchExpression.NOTNULL, SearchExpression.NULL,};
+        return new SearchExpression[] {SearchExpression.EQ, SearchExpression.LI, SearchExpression.NE,
+            SearchExpression.NL, SearchExpression.NOTNULL, SearchExpression.NULL};
     }
 
     @Override
@@ -46,25 +45,25 @@ public class UserPropHandler implements IPropertyHandler {
 
     @Override
     public Object getActualValue(List<String> values, JSONObject config) {
-        //根据values查找uuid，目前只支持用userId查找
+        // 根据values查找uuid，目前只支持用userId查找
         JSONArray array = new JSONArray();
-        if(CollectionUtils.isNotEmpty(values)){
+        if (CollectionUtils.isNotEmpty(values)) {
             Integer isMultiple = null;
-            if(MapUtils.isNotEmpty(config)){
+            if (MapUtils.isNotEmpty(config)) {
                 isMultiple = config.getInteger("isMultiple");
             }
-            if(values.size() > 1 && isMultiple != null && isMultiple.intValue() != 1){
+            if (values.size() > 1 && isMultiple != null && isMultiple.intValue() != 1) {
                 throw new RuntimeException("不支持多选");
             }
-            for(String userId : values){
+            for (String userId : values) {
                 UserVo user = userMapper.getUserByUserId(userId);
-                if(user != null){
+                if (user != null) {
                     JSONObject obj = new JSONObject();
-                    obj.put("text",user.getUserName());
+                    obj.put("text", user.getUserName());
                     obj.put("value", GroupSearch.USER.getValuePlugin() + user.getUuid());
                     array.add(obj);
-                }else{
-                   throw new UserNotFoundException(userId);
+                } else {
+                    throw new UserNotFoundException(userId);
                 }
             }
         }

@@ -24,9 +24,8 @@ public class UrlPropHandler implements IPropertyHandler {
 
     @Override
     public SearchExpression[] getSupportExpression() {
-        return new SearchExpression[] {SearchExpression.EQ, SearchExpression.GE, SearchExpression.GT,
-            SearchExpression.LE, SearchExpression.LT, SearchExpression.LI, SearchExpression.NE, SearchExpression.NL,
-            SearchExpression.NOTNULL, SearchExpression.NULL,};
+        return new SearchExpression[] {SearchExpression.LI, SearchExpression.NL, SearchExpression.NOTNULL,
+            SearchExpression.NULL};
     }
 
     @Override
@@ -38,7 +37,7 @@ public class UrlPropHandler implements IPropertyHandler {
     @Override
     public Object getActualValue(List<String> values, JSONObject config) {
         JSONArray array = new JSONArray();
-        if(CollectionUtils.isNotEmpty(values)){
+        if (CollectionUtils.isNotEmpty(values)) {
             array.add(values.get(0));
         }
         return array;

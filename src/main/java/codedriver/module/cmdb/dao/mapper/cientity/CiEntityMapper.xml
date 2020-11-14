@@ -112,7 +112,7 @@
 								</if>
 							</when>
 							<when test="filter.expression == 'is-null'">
-								JOIN (SELECT ce.ci_entity_id FROM
+								JOIN (SELECT ce.id as ci_entity_id FROM
 								cmdb_cientity ce
 								JOIN cmdb_attrentity ae ON ce.id = ae.ci_entity_id
 								WHERE ce.ci_id = #{ciId}
@@ -121,7 +121,7 @@
 								) attr_${index} ON cientity.id = attr_${index}.ci_entity_id
 							</when>
 							<when test="filter.expression == 'is-not-null'">
-								JOIN (SELECT ce.ci_entity_id FROM
+								JOIN (SELECT ce.id as ci_entity_id FROM
 								cmdb_cientity ce
 								JOIN cmdb_attrentity ae ON ce.id = ae.ci_entity_id
 								WHERE ce.ci_id = #{ciId}

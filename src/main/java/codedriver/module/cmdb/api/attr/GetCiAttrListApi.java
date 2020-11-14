@@ -1,5 +1,7 @@
 package codedriver.module.cmdb.api.attr;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -45,6 +47,7 @@ public class GetCiAttrListApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("ciId");
-        return attrMapper.getAttrByCiId(ciId);
+        List<AttrVo> attrList= attrMapper.getAttrByCiId(ciId);
+        return attrList;
     }
 }

@@ -25,9 +25,8 @@ public class RadioPropHandler implements IPropertyHandler {
 
     @Override
     public SearchExpression[] getSupportExpression() {
-        return new SearchExpression[] {SearchExpression.EQ, SearchExpression.GE, SearchExpression.GT,
-            SearchExpression.LE, SearchExpression.LT, SearchExpression.LI, SearchExpression.NE, SearchExpression.NL,
-            SearchExpression.NOTNULL, SearchExpression.NULL,};
+        return new SearchExpression[] {SearchExpression.EQ, SearchExpression.LI, SearchExpression.NE,
+            SearchExpression.NL, SearchExpression.NOTNULL, SearchExpression.NULL};
     }
 
     @Override
@@ -37,16 +36,16 @@ public class RadioPropHandler implements IPropertyHandler {
     }
 
     @Override
-    public Object getActualValue(List<String> values, JSONObject config) throws Exception{
+    public Object getActualValue(List<String> values, JSONObject config) throws Exception {
         JSONArray array = new JSONArray();
-        if(CollectionUtils.isNotEmpty(values) && values.size() > 1){
+        if (CollectionUtils.isNotEmpty(values) && values.size() > 1) {
             throw new RuntimeException("单选框不可多选");
         }
-        if(MapUtils.isNotEmpty(config)){
+        if (MapUtils.isNotEmpty(config)) {
             JSONArray dataList = config.getJSONArray("dataList");
-            if(CollectionUtils.isNotEmpty(dataList) && dataList.contains(values.get(0))){
+            if (CollectionUtils.isNotEmpty(dataList) && dataList.contains(values.get(0))) {
                 array.add(values.get(0));
-            }else{
+            } else {
                 throw new RuntimeException("所选值不在单选框可选值范围内");
             }
         }
