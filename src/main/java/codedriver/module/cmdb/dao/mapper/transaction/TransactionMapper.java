@@ -17,7 +17,6 @@ public interface TransactionMapper {
 
     public int searchTransactionCount(TransactionVo transactionVo);
 
-    public List<AttrEntityTransactionVo> getAttrEntityTransactionByTransactionId(Long transactionId);
 
     public List<AttrEntityTransactionVo> getAttrEntityTransactionByTransactionIdAndCiEntityId(
         @Param("transactionId") Long transactionId, @Param("ciEntityId") Long ciEntityId);
@@ -25,7 +24,7 @@ public interface TransactionMapper {
     public List<RelEntityTransactionVo> getRelEntityTransactionByTransactionIdAndCiEntityId(
         @Param("transactionId") Long transactionId, @Param("ciEntityId") Long ciEntityId);
 
-    public List<CiEntityTransactionVo> getCiEntityTransactionByTransactionId(Long transactionId);
+    public CiEntityTransactionVo getCiEntityTransactionByTransactionId(Long transactionId);
 
     public CiEntityTransactionVo getCiEntityTransactionByTransactionIdAndCiEntityId(
         @Param("transactionId") Long transactionId, @Param("ciEntityId") Long ciEntityId);

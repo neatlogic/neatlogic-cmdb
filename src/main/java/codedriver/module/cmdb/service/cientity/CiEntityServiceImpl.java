@@ -15,8 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.fastjson.JSON;
 
-import codedriver.framework.asynchronization.thread.CodeDriverThread;
-import codedriver.framework.asynchronization.threadpool.CachedThreadPool;
 import codedriver.framework.cmdb.constvalue.AttrType;
 import codedriver.framework.cmdb.constvalue.EditModeType;
 import codedriver.framework.cmdb.constvalue.RelActionType;
@@ -26,7 +24,6 @@ import codedriver.framework.cmdb.constvalue.SaveModeType;
 import codedriver.framework.cmdb.constvalue.TransactionActionType;
 import codedriver.framework.cmdb.constvalue.TransactionStatus;
 import codedriver.framework.common.util.PageUtil;
-import codedriver.framework.elasticsearch.core.ElasticSearchHandlerFactory;
 import codedriver.framework.util.Md5Util;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
@@ -213,7 +210,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                     transactionMapper.insertRelEntityTransaction(relEntityTransactionVo);
                 }
             }
-            commitTransaction(transactionVo);
+            // commitTransaction(transactionVo);
             return transactionVo.getId();
         } else {
             // 没有任何变化则返回零
@@ -369,7 +366,7 @@ public class CiEntityServiceImpl implements CiEntityService {
             List<RelEntityTransactionVo> toRelEntityTransactionList =
                 ciEntityTransactionVo.getRelEntityTransactionByRelId(relVo.getId(), RelDirectionType.TO.getValue());
 
-            // 标记当前模型是在关系的来源或者目的
+            // 标记当前模型是在关系的上端或者下端
             boolean isFrom = false;
             boolean isTo = false;
             if (relVo.getFromCiId().equals(ciEntityTransactionVo.getCiId())) {
@@ -482,27 +479,29 @@ public class CiEntityServiceImpl implements CiEntityService {
             newRelEntityTransactionList = new ArrayList();
             ciEntityTransactionVo.setRelEntityTransactionList(newRelEntityTransactionList);
         }
-        if (CollectionUtils.isNotEmpty(oldRelEntityList)) {
-            List<RelEntityTransactionVo> needDeleteRelEntityTransactionList = oldRelEntityList.stream()
-                .map(t -> new RelEntityTransactionVo(t, RelActionType.DELETE)).collect(Collectors.toList());
-            // 去掉已存在的关系
-            needDeleteRelEntityTransactionList.removeAll(newRelEntityTransactionList);
 
-            List<RelEntityTransactionVo> sameRelEntityTransactionList =
-                oldRelEntityList.stream().map(t -> new RelEntityTransactionVo(t)).collect(Collectors.toList());
-            newRelEntityTransactionList.removeAll(sameRelEntityTransactionList);
+        // 排除掉没变化的关系
+        List<RelEntityTransactionVo> sameRelEntityTransactionList =
+            oldRelEntityList.stream().map(t -> new RelEntityTransactionVo(t)).collect(Collectors.toList());
+        newRelEntityTransactionList.removeAll(sameRelEntityTransactionList);
 
-            if (CollectionUtils.isNotEmpty(newRelEntityTransactionList)) {
-                // 有添加
-                hasChange = true;
+        // 需要删除的关系列表
+        List<RelEntityTransactionVo> needDeleteRelEntityTransactionList = null;
+        // 全局修改模式下，事务中不包含的关系代表要删除
+        if (ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
+            if (CollectionUtils.isNotEmpty(oldRelEntityList)) {
+                // 先标记所有旧关系为需删除
+                needDeleteRelEntityTransactionList = oldRelEntityList.stream()
+                    .map(t -> new RelEntityTransactionVo(t, RelActionType.DELETE)).collect(Collectors.toList());
+                // 事务中存在的关系则排除出需删除列表
+                needDeleteRelEntityTransactionList.removeAll(newRelEntityTransactionList);
             }
-            if (CollectionUtils.isNotEmpty(needDeleteRelEntityTransactionList)) {
-                // 有删除
-                hasChange = true;
-                // 将需要删除的关系添加到事务列表
-                newRelEntityTransactionList.addAll(needDeleteRelEntityTransactionList);
-            }
-        } else {
+        }
+        if(CollectionUtils.isNotEmpty(needDeleteRelEntityTransactionList)) {
+            newRelEntityTransactionList.addAll(newRelEntityTransactionList);
+        }
+
+        if (CollectionUtils.isNotEmpty(newRelEntityTransactionList)) {
             hasChange = true;
         }
         return hasChange;
@@ -525,10 +524,11 @@ public class CiEntityServiceImpl implements CiEntityService {
         if (ciEntityTransactionVo.getAction().equals(TransactionActionType.DELETE.getValue())) {
             ciEntityMapper.deleteCiEntityById(ciEntityTransactionVo.getCiEntityId());
 
+            /*暂时不使用ES做搜索辅助
             List<Long> changeCiEntityIdList =
                 relEntityMapper.getFromToCiEntityIdByCiEntityId(ciEntityTransactionVo.getCiEntityId());
             changeCiEntityIdList.remove(ciEntityTransactionVo.getCiEntityId());
-
+            
             // 处理es索引
             if (CollectionUtils.isNotEmpty(changeCiEntityIdList)) {
                 CachedThreadPool.execute(new CodeDriverThread(
@@ -554,7 +554,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                         }
                     }
                 });
-            }
+            }*/
             return null;
         } else {
             // 写入属性
@@ -605,9 +605,25 @@ public class CiEntityServiceImpl implements CiEntityService {
         }
     }
 
+    /**
+     * 提交事务，返回配置项id
+     */
     @Override
     public Long commitTransaction(Long transactionId) {
-        // FIXME 补充提交事务逻辑
+        TransactionVo transactionVo = transactionMapper.getTransactionById(transactionId);
+        if (transactionVo != null) {
+            CiEntityTransactionVo ciEntityTransactionVo = transactionVo.getCiEntityTransactionVo();
+            ciEntityTransactionVo.setAttrEntityTransactionList(
+                transactionMapper.getAttrEntityTransactionByTransactionIdAndCiEntityId(transactionId,
+                    ciEntityTransactionVo.getCiEntityId()));
+            ciEntityTransactionVo.setRelEntityTransactionList(
+                transactionMapper.getRelEntityTransactionByTransactionIdAndCiEntityId(transactionId,
+                    ciEntityTransactionVo.getCiEntityId()));
+            // 单纯保存事务时由于不一定会修改所有属性和关系，为了通过必填属性校验，所以要将编辑模式改成局部模式
+            ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
+            boolean hasChange = validateCiEntityTransaction(ciEntityTransactionVo);
+            return this.commitTransaction(transactionVo);
+        }
         return null;
     }
 

@@ -16,8 +16,10 @@ public class CiViewVo {
     private Long ciId;
     @EntityField(name = "属性或关系id", type = ApiParamType.LONG)
     private Long itemId;
-    @EntityField(name = "属性或关系名称", type = ApiParamType.STRING)
+    @EntityField(name = "属性或关系唯一标识", type = ApiParamType.STRING)
     private String itemName;
+    @EntityField(name = "属性或关系名称", type = ApiParamType.STRING)
+    private String itemLabel;
     @EntityField(name = "类型，attr或rel", type = ApiParamType.STRING)
     private String type;
     @EntityField(name = "类型名称", type = ApiParamType.STRING)
@@ -129,6 +131,14 @@ public class CiViewVo {
 
     public void setShowTypeList(List<String> showTypeList) {
         this.showTypeList = showTypeList;
+    }
+
+    public String getItemLabel() {
+        return itemLabel;
+    }
+
+    public void setItemLabel(String itemLabel) {
+        this.itemLabel = itemLabel;
     }
 
 }

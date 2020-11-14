@@ -18,8 +18,6 @@ import codedriver.framework.cmdb.constvalue.ShowType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.dao.mapper.TeamMapper;
-import codedriver.framework.elasticsearch.core.ElasticSearchHandlerFactory;
-import codedriver.framework.elasticsearch.core.IElasticSearchHandler;
 import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
