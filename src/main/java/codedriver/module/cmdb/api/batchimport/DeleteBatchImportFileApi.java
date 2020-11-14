@@ -2,6 +2,7 @@ package codedriver.module.cmdb.api.batchimport;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
+import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.util.FileUtil;
 import codedriver.framework.exception.file.FileAccessDeniedException;
@@ -22,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@AuthAction(name = "CIENTITY_BATCH_IMPORT")
 @Service
 @OperationType(type = OperationTypeEnum.DELETE)
 @Transactional

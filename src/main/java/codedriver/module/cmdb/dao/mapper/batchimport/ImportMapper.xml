@@ -33,6 +33,7 @@
 	<select id="searchImportAudit" parameterType="codedriver.module.cmdb.dto.batchimport.ImportAuditVo" resultType="codedriver.module.cmdb.dto.batchimport.ImportAuditVo" useCache="false">
 		SELECT
 		`id`,
+		`import_user` as importUser,
 		(select `user_name` from `user` where `uuid` = a.`import_user`) as `importUserName`,
 		`import_date`,
 		`finish_date`,
@@ -57,6 +58,23 @@
 		</if>
 	</select>
 
+	<select id="getImportAuditById" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.batchimport.ImportAuditVo">
+		select
+		`id`,
+		(select `user_name` from `user` where `uuid` = a.`import_user`) as `importUserName`,
+		`import_date`,
+		`finish_date`,
+		(select `label` from `cmdb_ci` where `id` = a.`ci_id`) as `ciName`,
+		`action`,
+		`success_count` as `successCount`,
+		`failed_count` as `failedCount`,
+		`status`,
+		`error`
+		FROM
+		`cmdb_import_audit` a
+		WHERE `id` = #{value}
+	</select>
+
 	<update id="updateImportAudit" parameterType="codedriver.module.cmdb.dto.batchimport.ImportAuditVo">
 		UPDATE `cmdb_import_audit` SET
 		`finish_date` = NOW(),
@@ -73,6 +91,14 @@
 		`success_count` = #{successCount},
 		`failed_count` = #{failedCount},
 		`total_count` = #{totalCount},
+		`error` = #{error}
+		WHERE `id` = #{id}
+	</update>
+
+	<update id="updateImportAuditStatus" parameterType="codedriver.module.cmdb.dto.batchimport.ImportAuditVo">
+		UPDATE cmdb_import_audit SET
+		`finish_date` = NOW(),
+		`status` = #{status},
 		`error` = #{error}
 		WHERE `id` = #{id}
 	</update>

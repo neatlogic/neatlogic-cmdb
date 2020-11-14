@@ -13,9 +13,13 @@ public interface ImportMapper {
 
     public List<ImportAuditVo> searchImportAudit(ImportAuditVo vo);
 
+    public ImportAuditVo getImportAuditById(Long id);
+
     public int updateImportAudit(ImportAuditVo vo);
 
     public int updateImportAuditTemporary(ImportAuditVo vo);
+
+    public int updateImportAuditStatus(ImportAuditVo vo);
 
     public int insertCmdbImportFile(FileVo fileVo);
 
