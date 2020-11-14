@@ -210,7 +210,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                     transactionMapper.insertRelEntityTransaction(relEntityTransactionVo);
                 }
             }
-            // commitTransaction(transactionVo);
+            commitTransaction(transactionVo);
             return transactionVo.getId();
         } else {
             // 没有任何变化则返回零
@@ -497,7 +497,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                 needDeleteRelEntityTransactionList.removeAll(newRelEntityTransactionList);
             }
         }
-        if(CollectionUtils.isNotEmpty(needDeleteRelEntityTransactionList)) {
+        if (CollectionUtils.isNotEmpty(needDeleteRelEntityTransactionList)) {
             newRelEntityTransactionList.addAll(newRelEntityTransactionList);
         }
 
