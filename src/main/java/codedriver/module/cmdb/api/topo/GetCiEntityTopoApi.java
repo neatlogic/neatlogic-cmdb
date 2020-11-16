@@ -146,7 +146,9 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                     while (itCiEntity.hasNext()) {
                         CiEntityVo ciEntityVo = itCiEntity.next();
                         if (ciEntityVo.getTypeId().equals(ciTypeVo.getId())) {
-                            Node.Builder nb = new Node.Builder("CiEntity" + ciEntityVo.getId());
+                            Node.Builder nb =
+                                new Node.Builder("CiEntity_" + ciEntityVo.getCiId() + "_" + ciEntityVo.getId());// 必须按照这个格式写，前端会通过下划线来提取ciid和cientityid
+                            nb.withTooltip(ciEntityVo.getName());
                             nb.withLabel(ciEntityVo.getName());
                             nb.withImage(ciEntityVo.getCiIcon());
                             lb.addNode(nb.build());
@@ -161,8 +163,9 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                     RelEntityVo relEntityVo = itRelEntity.next();
                     if (ciEntitySet.contains(new CiEntityVo(relEntityVo.getFromCiEntityId()))
                         && ciEntitySet.contains(new CiEntityVo(relEntityVo.getToCiEntityId()))) {
-                        Link.Builder lb = new Link.Builder("CiEntity" + relEntityVo.getFromCiEntityId(),
-                            "CiEntity" + relEntityVo.getToCiEntityId());
+                        Link.Builder lb = new Link.Builder(
+                            "CiEntity_" + relEntityVo.getFromCiId() + "_" + relEntityVo.getFromCiEntityId(),
+                            "CiEntity_" + relEntityVo.getToCiId() + "_" + relEntityVo.getToCiEntityId());
                         lb.withLabel(relEntityVo.getRelTypeName());
                         lb.setFontSize(9);
                         gb.addLink(lb.build());

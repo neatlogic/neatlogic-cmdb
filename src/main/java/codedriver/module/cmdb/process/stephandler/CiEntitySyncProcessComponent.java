@@ -1,8 +1,11 @@
-package codedriver.module.cmdb.stephandler.component;
+package codedriver.module.cmdb.process.stephandler;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -11,10 +14,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+import codedriver.framework.cmdb.constvalue.RelActionType;
+import codedriver.framework.cmdb.constvalue.RelDirectionType;
+import codedriver.framework.cmdb.constvalue.TransactionActionType;
 import codedriver.framework.process.constvalue.ProcessStepMode;
 import codedriver.framework.process.dao.mapper.ProcessTaskStepDataMapper;
+import codedriver.framework.process.dto.ProcessTaskStepDataVo;
 import codedriver.framework.process.dto.ProcessTaskStepVo;
 import codedriver.framework.process.dto.ProcessTaskStepWorkerPolicyVo;
 import codedriver.framework.process.dto.ProcessTaskStepWorkerVo;
@@ -22,6 +30,12 @@ import codedriver.framework.process.exception.core.ProcessTaskException;
 import codedriver.framework.process.stephandler.core.ProcessStepHandlerBase;
 import codedriver.framework.process.workerpolicy.core.IWorkerPolicyHandler;
 import codedriver.framework.process.workerpolicy.core.WorkerPolicyHandlerFactory;
+import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
+import codedriver.module.cmdb.dto.transaction.AttrEntityTransactionVo;
+import codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo;
+import codedriver.module.cmdb.dto.transaction.RelEntityTransactionVo;
+import codedriver.module.cmdb.dto.transaction.TransactionGroupVo;
+import codedriver.module.cmdb.service.cientity.CiEntityService;
 
 /**
  * @Author:chenqiwei
@@ -35,6 +49,12 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
 
     @Autowired
     private ProcessTaskStepDataMapper processTaskStepDataMapper;
+
+    @Autowired
+    private CiEntityService ciEntityService;
+
+    @Autowired
+    private TransactionMapper transactionMapper;
 
     @Override
     public String getHandler() {
@@ -80,17 +100,112 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
             processTaskMapper.getProcessTaskStepBaseInfoById(currentProcessTaskStepVo.getId());
         String stepConfig = selectContentByHashMapper.getProcessTaskStepConfigByHash(processTaskStepVo.getConfigHash());
         // 获取参数
-        JSONObject ciEntitySyncConfig = null;
+        JSONArray ciEntitySyncList = null;
         try {
             JSONObject stepConfigObj = JSONObject.parseObject(stepConfig);
             currentProcessTaskStepVo.setParamObj(stepConfigObj);
             if (MapUtils.isNotEmpty(stepConfigObj)) {
-                ciEntitySyncConfig = stepConfigObj.getJSONObject("ciEntitySyncConfig");
+                ciEntitySyncList = stepConfigObj.getJSONArray("ciEntitySyncList");
             }
         } catch (Exception ex) {
             logger.error("hash为" + processTaskStepVo.getConfigHash() + "的processtask_step_config内容不是合法的JSON格式", ex);
         }
-        // FIXME 从表单获取数据，同步到CMDB
+
+        // 获取表单数据，写入CMDB
+        TransactionGroupVo transactionGroupVo = new TransactionGroupVo();
+        JSONArray transactionList = new JSONArray();
+        if (CollectionUtils.isNotEmpty(ciEntitySyncList)) {
+            for (int entityIndex = 0; entityIndex < ciEntitySyncList.size(); entityIndex++) {
+                JSONObject jsonObj = ciEntitySyncList.getJSONObject(entityIndex);
+                Long ciId = jsonObj.getLong("ciId");
+                Long id = jsonObj.getLong("id");
+                TransactionActionType mode = TransactionActionType.INSERT;
+                CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
+                ciEntityTransactionVo.setCiId(ciId);
+                // 解析属性数据
+                JSONObject attrObj = jsonObj.getJSONObject("attrEntityData");
+                if (MapUtils.isNotEmpty(attrObj)) {
+                    List<AttrEntityTransactionVo> attrEntityList = new ArrayList<>();
+                    Iterator<String> keys = attrObj.keySet().iterator();
+                    while (keys.hasNext()) {
+                        String key = keys.next();
+                        Long attrId = null;
+                        try {
+                            attrId = Long.parseLong(key.replace("attr_", ""));
+                        } catch (Exception ex) {
+                            logger.error(ex.getMessage(), ex);
+                        }
+                        if (attrId != null) {
+                            AttrEntityTransactionVo attrEntityVo = new AttrEntityTransactionVo();
+                            attrEntityVo.setAttrId(attrId);
+                            JSONObject attrDataObj = attrObj.getJSONObject(key);
+                            JSONArray valueObjList = attrDataObj.getJSONArray("valueList");
+                            attrEntityVo.setActualValueList(
+                                valueObjList.stream().map(v -> v.toString()).collect(Collectors.toList()));
+                            attrEntityList.add(attrEntityVo);
+                        }
+                    }
+                    ciEntityTransactionVo.setAttrEntityTransactionList(attrEntityList);
+                }
+                // 解析关系数据
+                JSONObject relObj = jsonObj.getJSONObject("relEntityData");
+                if (MapUtils.isNotEmpty(relObj)) {
+                    List<RelEntityTransactionVo> relEntityList = new ArrayList<>();
+                    Iterator<String> keys = relObj.keySet().iterator();
+                    while (keys.hasNext()) {
+                        String key = keys.next();
+                        JSONArray relDataList = relObj.getJSONArray(key);
+
+                        if (key.startsWith("relfrom_")) {// 当前配置项处于from位置
+                            if (CollectionUtils.isNotEmpty(relDataList)) {
+                                for (int i = 0; i < relDataList.size(); i++) {
+                                    JSONObject relEntityObj = relDataList.getJSONObject(i);
+                                    RelEntityTransactionVo relEntityVo = new RelEntityTransactionVo();
+                                    relEntityVo.setRelId(Long.parseLong(key.replace("relfrom_", "")));
+                                    relEntityVo.setToCiEntityId(relEntityObj.getLong("ciEntityId"));
+                                    relEntityVo.setDirection(RelDirectionType.FROM.getValue());
+                                    relEntityVo.setFromCiEntityId(ciEntityTransactionVo.getCiEntityId());
+                                    relEntityVo.setAction(RelActionType.INSERT.getValue());// 默认是添加关系
+                                    relEntityList.add(relEntityVo);
+                                }
+                            }
+                        } else if (key.startsWith("relto_")) {// 当前配置项处于to位置
+                            if (CollectionUtils.isNotEmpty(relDataList)) {
+                                for (int i = 0; i < relDataList.size(); i++) {
+                                    JSONObject relEntityObj = relDataList.getJSONObject(i);
+                                    RelEntityTransactionVo relEntityVo = new RelEntityTransactionVo();
+                                    relEntityVo.setRelId(Long.parseLong(key.replace("relto_", "")));
+                                    relEntityVo.setFromCiEntityId(relEntityObj.getLong("ciEntityId"));
+                                    relEntityVo.setDirection(RelDirectionType.TO.getValue());
+                                    relEntityVo.setToCiEntityId(ciEntityTransactionVo.getCiEntityId());
+                                    relEntityVo.setAction(RelActionType.INSERT.getValue());// 默认是添加关系
+                                    relEntityList.add(relEntityVo);
+                                }
+                            }
+                        }
+                    }
+                    ciEntityTransactionVo.setRelEntityTransactionList(relEntityList);
+                }
+                Long transactionId = ciEntityService.saveCiEntity(ciEntityTransactionVo, mode);
+                if (transactionId != null && transactionId > 0) {
+                    // 保存事务组，将来可能需要同时提交
+                    transactionGroupVo.addTransactionId(transactionId);
+                    transactionList.add(transactionId);
+                }
+            }
+            if (CollectionUtils.isNotEmpty(transactionGroupVo.getTransactionIdList())) {
+                for (Long transactionId : transactionGroupVo.getTransactionIdList()) {
+                    transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), transactionId);
+                }
+                ProcessTaskStepDataVo processTaskStepDataVo = new ProcessTaskStepDataVo(true);
+                processTaskStepDataVo.setProcessTaskId(currentProcessTaskStepVo.getProcessTaskId());
+                processTaskStepDataVo.setProcessTaskStepId(currentProcessTaskStepVo.getFromProcessTaskStepId());
+                processTaskStepDataVo.setType("cientitysync");
+                processTaskStepDataVo.setData(JSONObject.toJSONString(transactionGroupVo));
+                processTaskStepDataMapper.replaceProcessTaskStepData(processTaskStepDataVo);
+            }
+        }
+
         return 0;
     }
 
