@@ -11,8 +11,8 @@ import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 @Component
@@ -64,6 +64,8 @@ public class SelectPropHandler implements IPropertyHandler {
                     }
                 }
             }else if("cube".equals(datasource)){ //从矩阵中反查值字段
+                List<String> valuesCopy = new ArrayList<>(values);
+                List<String> existValues = new ArrayList<>();
                 String matrixUuid = config.getString("cube");
                 String textKey = config.getString("textKey");
                 String valueKey = config.getString("valueKey");
@@ -74,6 +76,13 @@ public class SelectPropHandler implements IPropertyHandler {
                         obj.put("text", vo.getText());
                         obj.put("value", vo.getValue());
                         array.add(obj);
+                        existValues.add(vo.getText());
+                    }
+                }
+                if(CollectionUtils.isNotEmpty(existValues)){
+                    valuesCopy.removeAll(existValues);
+                    if(valuesCopy.size() > 0){
+                        throw new RuntimeException(valuesCopy.toString() + "不在可选范围内");
                     }
                 }
             }
