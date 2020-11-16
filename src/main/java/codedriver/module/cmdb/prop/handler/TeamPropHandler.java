@@ -2,10 +2,8 @@ package codedriver.module.cmdb.prop.handler;
 
 import codedriver.framework.cmdb.constvalue.SearchExpression;
 import codedriver.framework.cmdb.prop.core.IPropertyHandler;
-import codedriver.framework.common.constvalue.GroupSearch;
+import codedriver.framework.common.dto.ValueTextVo;
 import codedriver.framework.dao.mapper.TeamMapper;
-import codedriver.framework.exception.team.FoundRepeatNameTeamException;
-import codedriver.framework.exception.team.TeamNotFoundException;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -13,6 +11,7 @@ import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -54,17 +53,23 @@ public class TeamPropHandler implements IPropertyHandler {
             if(values.size() > 1 && isMultiple != null && isMultiple.intValue() != 1){
                 throw new RuntimeException("不支持多选");
             }
-            for(String name : values){
-                List<String> uuid = teamMapper.getTeamUuidByName(name);
-                if(CollectionUtils.isNotEmpty(uuid) && uuid.size() == 1){
+            List<String> valuesCopy = new ArrayList<>(values);
+            List<String> existValues = new ArrayList<>();
+            List<ValueTextVo> list = teamMapper.getTeamUuidAndNameMapList(values);
+            if(CollectionUtils.isNotEmpty(list)){
+                for(ValueTextVo vo : list){
                     JSONObject obj = new JSONObject();
-                    obj.put("text",name);
-                    obj.put("value", GroupSearch.TEAM.getValuePlugin() + uuid);
+                    obj.put("text",vo.getText());
+                    obj.put("value", vo.getValue());
                     array.add(obj);
-                }else if(CollectionUtils.isEmpty(uuid)){
-                    throw new TeamNotFoundException(name);
-                }else if(uuid.size() != 1){
-                    throw new FoundRepeatNameTeamException(name);
+                    existValues.add(vo.getText());
+                }
+            }
+
+            if(CollectionUtils.isNotEmpty(existValues)){
+                valuesCopy.removeAll(existValues);
+                if(valuesCopy.size() > 0){
+                    throw new RuntimeException("分组：" + valuesCopy.toString() + "不存在");
                 }
             }
         }

@@ -5,7 +5,6 @@ import codedriver.framework.cmdb.prop.core.IPropertyHandler;
 import codedriver.framework.common.constvalue.GroupSearch;
 import codedriver.framework.dao.mapper.UserMapper;
 import codedriver.framework.dto.UserVo;
-import codedriver.framework.exception.user.UserNotFoundException;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -13,6 +12,7 @@ import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -55,15 +55,22 @@ public class UserPropHandler implements IPropertyHandler {
             if (values.size() > 1 && isMultiple != null && isMultiple.intValue() != 1) {
                 throw new RuntimeException("不支持多选");
             }
-            for (String userId : values) {
-                UserVo user = userMapper.getUserByUserId(userId);
-                if (user != null) {
+            List<String> valuesCopy = new ArrayList<>(values);
+            List<String> existValues = new ArrayList<>();
+            List<UserVo> list = userMapper.getUserByUserIdList(values);
+            if(CollectionUtils.isNotEmpty(list)){
+                for(UserVo vo : list){
                     JSONObject obj = new JSONObject();
-                    obj.put("text", user.getUserName());
-                    obj.put("value", GroupSearch.USER.getValuePlugin() + user.getUuid());
+                    obj.put("text", vo.getUserName());
+                    obj.put("value", GroupSearch.USER.getValuePlugin() + vo.getUuid());
                     array.add(obj);
-                } else {
-                    throw new UserNotFoundException(userId);
+                    existValues.add(vo.getUserId());
+                }
+            }
+            if(CollectionUtils.isNotEmpty(existValues)){
+                valuesCopy.removeAll(existValues);
+                if(valuesCopy.size() > 0){
+                    throw new RuntimeException("用户：" + valuesCopy.toString() + "不存在或已被禁用");
                 }
             }
         }
