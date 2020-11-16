@@ -106,7 +106,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
             relIdList = new ArrayList<>();
             for (CiViewVo ciview : ciViewList) {
                 JSONObject headObj = new JSONObject();
-                headObj.put("title", ciview.getItemName());
+                headObj.put("title", ciview.getItemLabel());
                 if (ciview.getType().equals("attr")) {
                     attrIdList.add(ciview.getItemId());
                     headObj.put("key", "attr_" + ciview.getItemId());

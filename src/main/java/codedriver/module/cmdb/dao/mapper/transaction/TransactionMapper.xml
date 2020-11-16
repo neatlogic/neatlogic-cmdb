@@ -201,6 +201,23 @@
 		WHERE transaction_id = #{value}
 	</select>
 
+	<select id="getCiEntityTransactionByTransactionIdList" resultType="codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo">
+		SELECT
+		`id`,
+		`ci_id` AS ciId,
+		`ci_entity_id` AS ciEntityId,
+		`name` AS name,
+		`action`,
+		`transaction_id` AS transactionId,
+		`snapshot_hash` AS snapshotHash
+		FROM
+		`cmdb_cientity_transaction`
+		WHERE transaction_id IN
+		<foreach collection="transactionIdList" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+
 	<select id="getCiEntityTransactionByTransactionIdAndCiEntityId" resultType="codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo">
 		SELECT
 		`id`,
@@ -225,6 +242,13 @@
 		`error` = #{error}
 		WHERE `id` = #{id}
 	</update>
+
+	<insert id="insertTransactionGroup">
+		INSERT INTO cmdb_transactiongroup
+		(id, transaction_id)
+		VALUES
+		(#{transactionGroupId}, #{transactionId})
+	</insert>
 
 	<insert id="insertRelEntityTransaction" parameterType="codedriver.module.cmdb.dto.transaction.RelEntityTransactionVo">
 		INSERT INTO `cmdb_relentity_transaction` (
