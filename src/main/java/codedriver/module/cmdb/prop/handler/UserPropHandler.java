@@ -2,8 +2,9 @@ package codedriver.module.cmdb.prop.handler;
 
 import codedriver.framework.cmdb.constvalue.SearchExpression;
 import codedriver.framework.cmdb.prop.core.IPropertyHandler;
-import codedriver.framework.common.dto.ValueTextVo;
+import codedriver.framework.common.constvalue.GroupSearch;
 import codedriver.framework.dao.mapper.UserMapper;
+import codedriver.framework.dto.UserVo;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -56,21 +57,20 @@ public class UserPropHandler implements IPropertyHandler {
             }
             List<String> valuesCopy = new ArrayList<>(values);
             List<String> existValues = new ArrayList<>();
-            List<ValueTextVo> list = userMapper.getUserUuidAndNameMapList(values);
+            List<UserVo> list = userMapper.getUserByUserIdList(values);
             if(CollectionUtils.isNotEmpty(list)){
-                for(ValueTextVo vo : list){
+                for(UserVo vo : list){
                     JSONObject obj = new JSONObject();
-                    obj.put("text", vo.getText());
-                    obj.put("value", vo.getValue());
+                    obj.put("text", vo.getUserName());
+                    obj.put("value", GroupSearch.USER.getValuePlugin() + vo.getUuid());
                     array.add(obj);
-                    existValues.add(vo.getText());
+                    existValues.add(vo.getUserId());
                 }
             }
-
             if(CollectionUtils.isNotEmpty(existValues)){
                 valuesCopy.removeAll(existValues);
                 if(valuesCopy.size() > 0){
-                    throw new RuntimeException("用户：" + valuesCopy.toString() + "不存在");
+                    throw new RuntimeException("用户：" + valuesCopy.toString() + "不存在或已被禁用");
                 }
             }
         }
