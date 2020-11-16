@@ -67,6 +67,7 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
         HSSFWorkbook wb = null;
+        OutputStream os = null;
         try {
             Long ciId = paramObj.getLong("ciId");
             JSONArray attrIdArray = paramObj.getJSONArray("attrIdList");
@@ -131,7 +132,7 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
             idcell.setCellValue("id");
             i++;
             /** 属性 */
-            if(CollectionUtils.isNotEmpty(ciVo.getAttrList())){
+            if(CollectionUtils.isNotEmpty(ciVo.getAttrList()) && CollectionUtils.isNotEmpty(attrIdList)){
                 for (AttrVo attr : ciVo.getAttrList()) {
                     if (attrIdList.contains(attr.getId())) {
                         String label = attr.getLabel();
@@ -159,7 +160,7 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
                 }
             }
             /** 关系 */
-            if(CollectionUtils.isNotEmpty(ciVo.getRelList())){
+            if(CollectionUtils.isNotEmpty(ciVo.getRelList()) && CollectionUtils.isNotEmpty(relIdList)){
                 for (RelVo rel : ciVo.getRelList()) {
                     if (relIdList.contains(rel.getId())) {
                         if(rel.getFromCiId().equals(ciVo.getId())){ //当前CI处于from
@@ -193,7 +194,7 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
             }
             response.setContentType("application/vnd.ms-excel;charset=utf-8");
             response.setHeader("Content-Disposition", "attachment;fileName=\"" + fileName + "\"");
-            OutputStream os = response.getOutputStream();
+            os = response.getOutputStream();
             wb.write(os);
         } catch (IOException ex) {
             logger.error(ex.getMessage(), ex);
@@ -204,6 +205,10 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
                 } catch (IOException ex) {
                     logger.error(ex.getMessage(), ex);
                 }
+            }
+            if (os != null) {
+                os.flush();
+                os.close();
             }
         }
         return null;
