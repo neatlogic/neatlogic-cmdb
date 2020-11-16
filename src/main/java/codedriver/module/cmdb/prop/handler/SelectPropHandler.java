@@ -2,8 +2,8 @@ package codedriver.module.cmdb.prop.handler;
 
 import codedriver.framework.cmdb.constvalue.SearchExpression;
 import codedriver.framework.cmdb.prop.core.IPropertyHandler;
+import codedriver.framework.common.dto.ValueTextVo;
 import codedriver.framework.matrix.dao.mapper.MatrixDataMapper;
-import codedriver.framework.matrix.dto.MatrixColumnVo;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Component
@@ -63,25 +64,20 @@ public class SelectPropHandler implements IPropertyHandler {
                     }
                 }
             }else if("cube".equals(datasource)){ //从矩阵中反查值字段
-                //todo 反查外部数据源
                 String matrixUuid = config.getString("cube");
                 String textKey = config.getString("textKey");
                 String valueKey = config.getString("valueKey");
-                for(String value : values){
-                    JSONObject obj = new JSONObject();
-                    MatrixColumnVo vo = new MatrixColumnVo();
-                    vo.setColumn(textKey);
-                    vo.setValue(value);
-                    List<String> data = matrixDataMapper.getDynamicTableCellData(matrixUuid, vo, valueKey);
-                    if(CollectionUtils.isNotEmpty(data)){
-                        obj.put("text",value);
-                        obj.put("value",data.get(0));
+                List<ValueTextVo> data = matrixDataMapper.getDynamicTableCellDataMap(matrixUuid, textKey, valueKey,values);
+                if(CollectionUtils.isNotEmpty(data)){
+                    for(ValueTextVo vo : data) {
+                        JSONObject obj = new JSONObject();
+                        obj.put("text", vo.getText());
+                        obj.put("value", vo.getValue());
                         array.add(obj);
                     }
                 }
             }
         }
-
         return array;
     }
 
