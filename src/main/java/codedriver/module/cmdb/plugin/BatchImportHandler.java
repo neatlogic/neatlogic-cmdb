@@ -444,7 +444,7 @@ public class BatchImportHandler {
 								}
 
 								if(StringUtils.isNotBlank(rowError)){
-									err += "<b class=\"text-danger\">第" + r + "行：" + rowError;
+									err += "<b class=\"text-danger\">第" + r + "行：" + rowError + "</b>";
 								}
 
 //								errorCount += 1;
