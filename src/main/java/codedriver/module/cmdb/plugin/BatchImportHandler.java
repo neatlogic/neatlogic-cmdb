@@ -224,6 +224,8 @@ public class BatchImportHandler {
 						}
 						if(CollectionUtils.isNotEmpty(lostColumns)){
 							error = "导入模版缺少：" + Arrays.toString(lostColumns.toArray());
+							totalCount = sheet.getPhysicalNumberOfRows() - 1;
+							failedCount = totalCount;
 						}
 						if(StringUtils.isBlank(error)){
 							totalCount += sheet.getLastRowNum();
