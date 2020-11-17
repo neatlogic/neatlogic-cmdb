@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,40 +67,42 @@ public class GetCiAttrRelListApi extends PrivateApiComponentBase {
         for (int i = 0; i < ciIds.size(); i++) {
             ciIdList.add(ciIds.getLong(i));
         }
-        List<CiVo> ciList = ciMapper.getCiByIdList(ciIdList);
         JSONArray ciObjList = new JSONArray();
-        if (CollectionUtils.isNotEmpty(ciList)) {
-            for (CiVo ciVo : ciList) {
-                JSONObject ciObj = new JSONObject();
-                ciObj.put("id", ciVo.getId());
-                ciObj.put("name", ciVo.getName());
-                ciObj.put("label", ciVo.getLabel());
-                List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
-                List<RelVo> relList = relMapper.getRelByCiId(ciVo.getId());
-                JSONArray attrObjList = new JSONArray();
-                for (AttrVo attrVo : attrList) {
-                    JSONObject attrObj = new JSONObject();
-                    attrObj.put("id", attrVo.getId());
-                    attrObj.put("name", attrVo.getName());
-                    attrObj.put("label", attrVo.getLabel());
-                    attrObjList.add(attrObj);
-                }
-                ciObj.put("attrList", attrObjList);
-                JSONArray relObjList = new JSONArray();
-                for (RelVo relVo : relList) {
-                    JSONObject relObj = new JSONObject();
-                    relObj.put("id", relVo.getId());
-                    if (relVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
-                        relObj.put("name", relVo.getToCiName());
-                        relObj.put("label", relVo.getToCiLabel());
-                    } else if (relVo.getDirection().equals(RelDirectionType.TO.getValue())) {
-                        relObj.put("name", relVo.getFromCiName());
-                        relObj.put("label", relVo.getFromCiLabel());
+        if (CollectionUtils.isNotEmpty(ciIdList)) {
+            List<CiVo> ciList = ciMapper.getCiByIdList(ciIdList);
+            if (CollectionUtils.isNotEmpty(ciList)) {
+                for (CiVo ciVo : ciList) {
+                    JSONObject ciObj = new JSONObject();
+                    ciObj.put("id", ciVo.getId());
+                    ciObj.put("name", ciVo.getName());
+                    ciObj.put("label", ciVo.getLabel());
+                    List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
+                    List<RelVo> relList = relMapper.getRelByCiId(ciVo.getId());
+                    JSONArray attrObjList = new JSONArray();
+                    for (AttrVo attrVo : attrList) {
+                        JSONObject attrObj = new JSONObject();
+                        attrObj.put("id", attrVo.getId());
+                        attrObj.put("name", attrVo.getName());
+                        attrObj.put("label", attrVo.getLabel());
+                        attrObjList.add(attrObj);
                     }
-                    relObjList.add(relObj);
+                    ciObj.put("attrList", attrObjList);
+                    JSONArray relObjList = new JSONArray();
+                    for (RelVo relVo : relList) {
+                        JSONObject relObj = new JSONObject();
+                        relObj.put("id", relVo.getId());
+                        if (relVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
+                            relObj.put("name", relVo.getToCiName());
+                            relObj.put("label", relVo.getToCiLabel());
+                        } else if (relVo.getDirection().equals(RelDirectionType.TO.getValue())) {
+                            relObj.put("name", relVo.getFromCiName());
+                            relObj.put("label", relVo.getFromCiLabel());
+                        }
+                        relObjList.add(relObj);
+                    }
+                    ciObj.put("relList", relObjList);
+                    ciObjList.add(ciObj);
                 }
-                ciObj.put("relList", relObjList);
-                ciObjList.add(ciObj);
             }
         }
         return ciObjList;
