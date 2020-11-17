@@ -222,7 +222,7 @@ public class BatchImportHandler {
 							/**用来详细记录每一行每一列的错误信息，使用LinkedHashMap是为了计算列数*/
 							Map<Integer, String> errorMsgMap = new LinkedHashMap<>();
 							/** 用来记录每一行最后保存时的错误 */
-							String rowError = null;
+							Map<Integer,String> rowError = new LinkedHashMap<>();
 							try {
 								Row row = sheet.getRow(r);
 								if (row != null) {
@@ -415,19 +415,16 @@ public class BatchImportHandler {
 												}
 											}
 										} else {
-											failedCount += 1;
+											throw new RuntimeException("请正确填写模版与选择导入模式，【只添加】不需要填写ID；【只更新】必须填写ID");
 										}
 									}catch (Exception e){
 										failedCount += 1;
-//										errorMsgMap.put(r,e.getMessage());
-										rowError = e.getMessage();
+										rowError.put(r,e.getMessage());
 									}
 								}
 							} catch (Exception e) {
 								failedCount += 1;
-//								errorCount += 1;
-//								errorMsgMap.put(r,e.getMessage());
-								rowError = e.getMessage();
+								rowError.put(r,e.getMessage());
 							}
 							finally {
 								String err = "";
@@ -443,11 +440,12 @@ public class BatchImportHandler {
 									err = "<b class=\"text-danger\">第" + r + "行第" + Arrays.toString(columnList.toArray()) + "列</b>：" + newerrMsg;
 								}
 
-								if(StringUtils.isNotBlank(rowError)){
-									err += "<b class=\"text-danger\">第" + r + "行：" + rowError + "</b>";
+								if(MapUtils.isNotEmpty(rowError)){
+									for(Map.Entry<Integer,String> entry : rowError.entrySet()){
+										err += "<b class=\"text-danger\">第" + entry.getKey() + "行：" + entry.getValue() + "</b>";
+									}
 								}
 
-//								errorCount += 1;
 								if (failedCount == 1) {
 									importAuditVo.setError(err);
 								} else if(failedCount > 1){
