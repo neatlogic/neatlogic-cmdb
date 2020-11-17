@@ -162,6 +162,19 @@ public class CiEntityServiceImpl implements CiEntityService {
         return transactionVo.getId();
     }
 
+    @Override
+    public boolean validateCiEntity(CiEntityTransactionVo ciEntityTransactionVo, TransactionActionType action) {
+        TransactionVo transactionVo = new TransactionVo();
+        transactionVo.setCiId(ciEntityTransactionVo.getCiId());
+
+        ciEntityTransactionVo.setAction(action.getValue());
+        ciEntityTransactionVo.setTransactionId(transactionVo.getId());
+
+        transactionVo.setCiEntityTransactionVo(ciEntityTransactionVo);
+
+        return validateCiEntityTransaction(ciEntityTransactionVo);
+    }
+
     @Transactional
     @Override
     public Long saveCiEntity(CiEntityTransactionVo ciEntityTransactionVo, TransactionActionType action) {

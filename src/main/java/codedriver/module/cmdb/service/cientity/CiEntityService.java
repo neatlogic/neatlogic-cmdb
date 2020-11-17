@@ -61,4 +61,15 @@ public interface CiEntityService {
      */
     public List<CiEntityVo> searchCiEntityByIds(List<Long> ciEntityIdList, CiEntityVo ciEntityVo);
 
+    /**
+    * @Author: chenqiwei
+    * @Time:2020年11月17日
+    * @Description: 验证配置项是否合法 
+    * @param @param ciEntityTransactionVo
+    * @param @param action
+    * @param @return 
+    * @return boolean
+     */
+    public boolean validateCiEntity(CiEntityTransactionVo ciEntityTransactionVo, TransactionActionType action);
+
 }
