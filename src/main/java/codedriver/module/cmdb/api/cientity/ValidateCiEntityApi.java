@@ -23,6 +23,7 @@ import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
+import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.dto.transaction.AttrEntityTransactionVo;
@@ -58,6 +59,7 @@ public class ValidateCiEntityApi extends PrivateApiComponentBase {
         @Param(name = "id", type = ApiParamType.LONG, desc = "配置项id，不存在代表添加"),
         @Param(name = "attrEntityData", type = ApiParamType.JSONOBJECT, desc = "属性数据"),
         @Param(name = "relEntityData", type = ApiParamType.JSONOBJECT, desc = "关系数据")})
+    @Output({@Param(name = "hasChange", type = ApiParamType.BOOLEAN, desc = "是否有变化")})
     @Description(desc = "校验配置项完整性接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
