@@ -100,7 +100,7 @@
 		</foreach>
 	</select>
 
-	<select id="getCiById" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.CiVo" useCache="false">
+	<select id="getCiById" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.CiVo" useCache="true">
 		SELECT
 		`id`,
 		`name`,

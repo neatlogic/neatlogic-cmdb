@@ -74,7 +74,6 @@ public class SaveCiEntityApi extends PrivateApiComponentBase {
             // 拥有模型管理权限允许添加或修改配置项
             hasAuth = CiAuthChecker.hasCiManagePrivilege(ciId);
         }
-        TransactionActionType mode = TransactionActionType.INSERT;
         CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
         if (id != null) {
             if (!hasAuth) {
@@ -82,15 +81,16 @@ public class SaveCiEntityApi extends PrivateApiComponentBase {
                     CiAuthChecker.builder().hasCiEntityUpdatePrivilege(ciId).isInGroup(id, GroupType.MATAIN).check();
             }
             ciEntityTransactionVo.setCiEntityId(id);
-            mode = TransactionActionType.UPDATE;
+            ciEntityTransactionVo.setTransactionMode(TransactionActionType.UPDATE);
         } else {
             if (!hasAuth) {
                 hasAuth = CiAuthChecker.hasCiEntityInsertPrivilege(ciId);
             }
+            ciEntityTransactionVo.setTransactionMode(TransactionActionType.INSERT);
         }
 
         if (!hasAuth) {
-            throw new CiEntityAuthException(mode.getText());
+            throw new CiEntityAuthException(ciEntityTransactionVo.getTransactionMode().getText());
         }
 
         ciEntityTransactionVo.setCiId(ciId);
@@ -137,7 +137,7 @@ public class SaveCiEntityApi extends PrivateApiComponentBase {
                             relEntityVo.setToCiEntityId(relEntityObj.getLong("ciEntityId"));
                             relEntityVo.setDirection(RelDirectionType.FROM.getValue());
                             relEntityVo.setFromCiEntityId(ciEntityTransactionVo.getCiEntityId());
-                            relEntityVo.setAction(RelActionType.INSERT.getValue());//默认是添加关系
+                            relEntityVo.setAction(RelActionType.INSERT.getValue());// 默认是添加关系
                             relEntityList.add(relEntityVo);
                         }
                     }
@@ -150,7 +150,7 @@ public class SaveCiEntityApi extends PrivateApiComponentBase {
                             relEntityVo.setFromCiEntityId(relEntityObj.getLong("ciEntityId"));
                             relEntityVo.setDirection(RelDirectionType.TO.getValue());
                             relEntityVo.setToCiEntityId(ciEntityTransactionVo.getCiEntityId());
-                            relEntityVo.setAction(RelActionType.INSERT.getValue());//默认是添加关系
+                            relEntityVo.setAction(RelActionType.INSERT.getValue());// 默认是添加关系
                             relEntityList.add(relEntityVo);
                         }
                     }
@@ -159,7 +159,7 @@ public class SaveCiEntityApi extends PrivateApiComponentBase {
             ciEntityTransactionVo.setRelEntityTransactionList(relEntityList);
         }
 
-        Long transactionId = ciEntityService.saveCiEntity(ciEntityTransactionVo, mode);
+        Long transactionId = ciEntityService.saveCiEntity(ciEntityTransactionVo);
         JSONObject returnObj = new JSONObject();
         returnObj.put("transactionId", transactionId);
         if (transactionId > 0) {

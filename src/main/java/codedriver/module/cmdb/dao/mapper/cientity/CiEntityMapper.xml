@@ -28,6 +28,8 @@
 		a.`id`,
 		a.`ci_id` AS ciId,
 		b.`name` AS ciName,
+		b.`icon` AS ciIcon,
+		b.`label` AS ciLabel,
 		b.`type_id` AS typeId,
 		c.`name` AS typeName,
 		a.`fcu`,

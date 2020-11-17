@@ -37,8 +37,10 @@ public class CiEntityVo extends BasePageVo {
     private Long id;
     @EntityField(name = "模型id", type = ApiParamType.LONG)
     private Long ciId;
-    @EntityField(name = "模型名称", type = ApiParamType.STRING)
+    @EntityField(name = "模型唯一标识", type = ApiParamType.STRING)
     private String ciName;
+    @EntityField(name = "模型名称", type = ApiParamType.STRING)
+    private String ciLabel;
     @EntityField(name = "模型图标", type = ApiParamType.STRING)
     private String ciIcon;
     @EntityField(name = "配置项名称", type = ApiParamType.STRING)
@@ -479,6 +481,14 @@ public class CiEntityVo extends BasePageVo {
 
     public void setCiIcon(String ciIcon) {
         this.ciIcon = ciIcon;
+    }
+
+    public String getCiLabel() {
+        return ciLabel;
+    }
+
+    public void setCiLabel(String ciLabel) {
+        this.ciLabel = ciLabel;
     }
 
 }

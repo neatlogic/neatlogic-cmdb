@@ -16,6 +16,8 @@ import codedriver.framework.util.SnowflakeUtil;
 import codedriver.module.cmdb.dto.cientity.CiEntityVo;
 
 public class CiEntityTransactionVo {
+    @JSONField(serialize = false)
+    private transient String ciEntityUuid;// 批量添加时的临时ID，由前端生成
     @EntityField(name = "id", type = ApiParamType.LONG)
     private Long id;
     @EntityField(name = "模型id", type = ApiParamType.LONG)
@@ -30,6 +32,8 @@ public class CiEntityTransactionVo {
     private String propHandler;
     @EntityField(name = "事务id", type = ApiParamType.LONG)
     private Long transactionId;
+    @JSONField(serialize = false)
+    private transient TransactionActionType transactionMode;// 事务动作（删除、添加或修改）
     @EntityField(name = "编辑模式", type = ApiParamType.ENUM, member = EditModeType.class)
     private String editMode = EditModeType.GLOBAL.getValue();
     @EntityField(name = "操作", type = ApiParamType.ENUM, member = TransactionActionType.class)
@@ -78,7 +82,7 @@ public class CiEntityTransactionVo {
         }
         return null;
     }
-    
+
     public Long getId() {
         if (id == null) {
             id = SnowflakeUtil.uniqueLong();
@@ -192,4 +196,21 @@ public class CiEntityTransactionVo {
     public void setName(String name) {
         this.name = name;
     }
+
+    public String getCiEntityUuid() {
+        return ciEntityUuid;
+    }
+
+    public void setCiEntityUuid(String ciEntityUuid) {
+        this.ciEntityUuid = ciEntityUuid;
+    }
+
+    public TransactionActionType getTransactionMode() {
+        return transactionMode;
+    }
+
+    public void setTransactionMode(TransactionActionType transactionMode) {
+        this.transactionMode = transactionMode;
+    }
+
 }

@@ -40,6 +40,7 @@ import codedriver.module.cmdb.dto.cientity.RelEntityVo;
 import codedriver.module.cmdb.dto.transaction.AttrEntityTransactionVo;
 import codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.module.cmdb.dto.transaction.RelEntityTransactionVo;
+import codedriver.module.cmdb.dto.transaction.TransactionGroupVo;
 import codedriver.module.cmdb.dto.transaction.TransactionVo;
 import codedriver.module.cmdb.exception.cientity.AttrEntityDuplicateException;
 import codedriver.module.cmdb.exception.cientity.AttrEntityNotFoundException;
@@ -175,9 +176,29 @@ public class CiEntityServiceImpl implements CiEntityService {
         return validateCiEntityTransaction(ciEntityTransactionVo);
     }
 
+    @Override
+    @Transactional
+    public Long saveCiEntity(List<CiEntityTransactionVo> ciEntityTransactionList) {
+        TransactionGroupVo transactionGroupVo = new TransactionGroupVo();
+        if (CollectionUtils.isNotEmpty(ciEntityTransactionList)) {
+            for (CiEntityTransactionVo ciEntityTransactionVo : ciEntityTransactionList) {
+                Long transactionId = saveCiEntity(ciEntityTransactionVo);
+                transactionGroupVo.addTransactionId(transactionId);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(transactionGroupVo.getTransactionIdList())) {
+            for (Long transactionId : transactionGroupVo.getTransactionIdList()) {
+                transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), transactionId);
+            }
+            return transactionGroupVo.getId();
+        }
+        return 0L;
+    }
+
     @Transactional
     @Override
-    public Long saveCiEntity(CiEntityTransactionVo ciEntityTransactionVo, TransactionActionType action) {
+    public Long saveCiEntity(CiEntityTransactionVo ciEntityTransactionVo) {
+        TransactionActionType action = ciEntityTransactionVo.getTransactionMode();
         if (action.equals(TransactionActionType.UPDATE)) {
             CiEntityVo checkCiEntityVo = ciEntityMapper.getCiEntityById(ciEntityTransactionVo.getCiEntityId());
             // 正在编辑中的配置项，在事务提交或删除前不允许再次修改

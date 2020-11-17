@@ -245,7 +245,8 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
                             }
                             ciEntityTransactionVo.setRelEntityTransactionList(relEntityList);
                         }
-                        Long transactionId = ciEntityService.saveCiEntity(ciEntityTransactionVo, mode);
+                        ciEntityTransactionVo.setTransactionMode(mode);
+                        Long transactionId = ciEntityService.saveCiEntity(ciEntityTransactionVo);
                         if (transactionId > 0) {
                             // 保存事务组，将来可能需要同时提交
                             transactionGroupVo.addTransactionId(transactionId);
