@@ -23,7 +23,7 @@ public class Node {
            propMap.put("class", builder.className);
         }
         if (StringUtils.isNotBlank(builder.fontColor)) {
-            propMap.put("fontColor", builder.fontColor);
+            propMap.put("fontcolor", builder.fontColor);
         }
         if (StringUtils.isNotBlank(builder.image)) {
             propMap.put("image", builder.image);

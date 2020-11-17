@@ -151,6 +151,9 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                             nb.withTooltip(ciEntityVo.getName());
                             nb.withLabel(ciEntityVo.getName());
                             nb.withImage(ciEntityVo.getCiIcon());
+                            if (ciEntityId.equals(ciEntityVo.getId())) {
+                                nb.withFontColor("red");
+                            }
                             lb.addNode(nb.build());
                         }
                     }
