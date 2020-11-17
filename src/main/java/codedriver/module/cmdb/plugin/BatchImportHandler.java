@@ -132,8 +132,9 @@ public class BatchImportHandler {
 			importMap.put(importAuditVo.getId(), BatchImportStatus.RUNNING.getValue());
 			int successCount = 0;
 			int failedCount = 0;
-//			int errorCount = 0;
 			int totalCount = 0;
+			/** 用来记录整个表格读取过程中的错误 */
+			String error = "";
 			Workbook wb = null;
 			InputStream in = null;
 
@@ -198,8 +199,11 @@ public class BatchImportHandler {
 						} catch (Exception e) {
 							throw new RuntimeException("表头为空，" + e.getMessage());
 						}
-
-						if (action.equals("all") || action.equals("append")) {
+						/**
+						 * 【只添加】与【添加&更新】模式下，不能缺少必填属性列
+						 * 【只更新】且【全局更新】模式下，不能缺少必填属性列
+						 */
+						if (action.equals("all") || action.equals("append") || (action.equals("update") && editMode == 1)) {
 							for (AttrVo attr : ciVo.getAttrList()) {
 								if (attr.getIsRequired().equals(1) && !checkAttrMap.containsKey("attr_" + attr.getId())) {
 									throw new RuntimeException("导入模板缺少属性“" + attr.getLabel() + "”");
@@ -242,8 +246,11 @@ public class BatchImportHandler {
 										Cell cell = row.getCell(cellIndex.get(ci));
 										if (cell != null) {
 											String content = getCellContent(cell);
-											content = content == null ? "" : content;
-											content = content.trim();
+											if(StringUtils.isNotBlank(content)){
+												content = content.trim();
+											}
+//											content = content == null ? "" : content;
+//											content = content.trim();
 											Object header = typeMap.get(cellIndex.get(ci));
 											if (header instanceof String) { //表示拿到的是ID列
 												if (StringUtils.isNotBlank(content)) {
@@ -293,28 +300,44 @@ public class BatchImportHandler {
 												attrEntity.setAttrId(attr.getId());
 												attrEntity.setAttrName(attr.getName());
 												attrEntity.setActualValueList(valueList);
-												/** 没有取到值且没有采集到异常，说明单元格内容为空 */
-												if(attr.getIsRequired().equals(1) && CollectionUtils.isEmpty(attrEntity.getActualValueList()) && MapUtils.isEmpty(errorMsgMap)) {
-													errorMsgMap.put(ci+1, "请补充“" + attr.getLabel() + "”信息");
-												} else if (attrEntity.getActualValueList().size() > 0) {
+												/**
+												 * 没有取到值且没有采集到异常，说明单元格内容为空
+												 * 如果是【只添加】，那所有必填属性都不能为空
+												 * 如果是【只更新】且【全局更新】：所有必填属性不能为空
+												 * 如果是【添加&更新】，没有ID的，必填属性不能为空；
+												 * 有ID的，且选择了【全局更新】，则必填属性不能为空
+												 */
+												if(Objects.equals(attr.getIsRequired(),1) && CollectionUtils.isEmpty(attrEntity.getActualValueList()) && MapUtils.isEmpty(errorMsgMap)){
+													checkAttrIsRequired(errorMsgMap, ciEntityId, ciEntityTransactionVo, ci, attr);
+												}else{
 													attrList.add(attrEntity);
 												}
+//												if(attr.getIsRequired().equals(1) && ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())
+//														&& CollectionUtils.isEmpty(attrEntity.getActualValueList())) {
+//													errorMsgMap.put(ci+1, "请补充“" + attr.getLabel() + "”信息");
+//												} else if (attrEntity.getActualValueList().size() > 0) {
+//													attrList.add(attrEntity);
+//												}
 
 											} else if (header instanceof RelVo) {
 												RelVo rel = (RelVo) header;
 												List<String> valueList = null;
-												if(content.contains(",")){
-													String[] split = content.split(",");
-													valueList = Arrays.asList(split);
-												}else{
-													valueList = new ArrayList();
-													valueList.add(content);
+												if(StringUtils.isNotBlank(content)){
+													if(content.contains(",")){
+														String[] split = content.split(",");
+														valueList = Arrays.asList(split);
+													}else{
+														valueList = new ArrayList();
+														valueList.add(content);
+													}
 												}
 
-												if(rel.getFromCiId().equals(ciVo.getId())){ //当前配置项处于from位置
-													Long toCiId = rel.getToCiId();
-													//根据content查询配置项ID
-													if(CollectionUtils.isNotEmpty(valueList)){
+												if(CollectionUtils.isEmpty(valueList)){
+													checkRelIsRequired(ciVo, errorMsgMap, ciEntityId, ciEntityTransactionVo, ci, rel);
+												}else{
+													if(rel.getFromCiId().equals(ciVo.getId())){ //当前配置项处于from位置
+														Long toCiId = rel.getToCiId();
+														//根据content查询配置项ID
 														for(String o : valueList){
 															Long id = ciEntityMapper.getIdByCiIdAndName(toCiId, o);
 															if(id != null){
@@ -329,11 +352,9 @@ public class BatchImportHandler {
 																errorMsgMap.put(ci + 1,"配置项：" + o + "不存在");
 															}
 														}
-													}
-												}else if(rel.getToCiId().equals(ciVo.getId())){ //当前配置项处于to位置
-													Long fromCiId = rel.getFromCiId();
-													//根据content查询配置项ID
-													if(CollectionUtils.isNotEmpty(valueList)){
+													}else if(rel.getToCiId().equals(ciVo.getId())){ //当前配置项处于to位置
+														Long fromCiId = rel.getFromCiId();
+														//根据content查询配置项ID
 														for(String o : valueList){
 															Long id = ciEntityMapper.getIdByCiIdAndName(fromCiId, o);
 															if(id != null){
@@ -355,21 +376,16 @@ public class BatchImportHandler {
 											Object header = typeMap.get(cellIndex.get(ci));
 											if (header instanceof AttrVo) {
 												AttrVo attr = (AttrVo) header;
-												if (attr.getIsRequired().equals(1)  ) {
-													errorMsgMap.put(ci+1,"请补充“" + attr.getLabel() + "”信息");
+												if(Objects.equals(attr.getIsRequired(),1)){
+													checkAttrIsRequired(errorMsgMap, ciEntityId, ciEntityTransactionVo, ci, attr);
 												}
+//												if (attr.getIsRequired().equals(1) && ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
+//													errorMsgMap.put(ci+1,"请补充“" + attr.getLabel() + "”信息");
+//												}
 											} else if (header instanceof RelVo ) {
 												RelVo rel = (RelVo) header;
 												/** 校验关系必填 */
-												if(rel.getFromCiId().equals(ciVo.getId())){ //当前CI处于from
-													if(rel.getToRule().equals(RelRuleType.ON.getValue()) || rel.getToRule().equals(RelRuleType.OO.getValue())){
-														errorMsgMap.put(ci + 1,"缺少" + rel.getToLabel());
-													}
-												}else if(rel.getToCiId().equals(ciVo.getId())){//当前CI处于to
-													if(rel.getFromRule().equals(RelRuleType.ON.getValue()) || rel.getFromRule().equals(RelRuleType.OO.getValue())){
-														errorMsgMap.put(ci + 1,"缺少" + rel.getFromLabel());
-													}
-												}
+												checkRelIsRequired(ciVo, errorMsgMap, ciEntityId, ciEntityTransactionVo, ci, rel);
 											}
 										}
 									}
@@ -427,7 +443,7 @@ public class BatchImportHandler {
 								rowError.put(r,e.getMessage());
 							}
 							finally {
-								String err = "";
+//								String err = "";
 								List<Integer> columnList = new ArrayList<>();
 								List<String> errorMsgList = new ArrayList<>();
 								for(Entry<Integer,String> _err : errorMsgMap.entrySet()) {
@@ -437,24 +453,30 @@ public class BatchImportHandler {
 								String errMsg = Arrays.toString(errorMsgList.toArray());
 								String newerrMsg = errMsg.replace(',',';');
 								if(CollectionUtils.isNotEmpty(columnList)) {
-									err = "<b class=\"text-danger\">第" + r + "行第" + Arrays.toString(columnList.toArray()) + "列</b>：" + newerrMsg;
+									error += "</br><b class=\"text-danger\">第" + r + "行第" + Arrays.toString(columnList.toArray()) + "列</b>：" + newerrMsg;
 								}
 
 								if(MapUtils.isNotEmpty(rowError)){
 									for(Map.Entry<Integer,String> entry : rowError.entrySet()){
-										err += "<b class=\"text-danger\">第" + entry.getKey() + "行：" + entry.getValue() + "</b>";
+										error += "</br><b class=\"text-danger\">第" + entry.getKey() + "行：" + entry.getValue() + "</b>";
 									}
 								}
 
-								if (failedCount == 1) {
-									importAuditVo.setError(err);
-								} else if(failedCount > 1){
-									importAuditVo.setError(importAuditVo.getError() + "<br>" + err);
-								}
 								importAuditVo.setSuccessCount(successCount);
 								importAuditVo.setFailedCount(failedCount);
 								importAuditVo.setTotalCount(totalCount);
+								importAuditVo.setError(StringUtils.isNotBlank(error) ? error : null);
 								importMapper.updateImportAuditTemporary(importAuditVo);
+
+//								if (failedCount == 1) {
+//									importAuditVo.setError(err);
+//								} else if(failedCount > 1){
+//									importAuditVo.setError(importAuditVo.getError() + "<br>" + err);
+//								}
+//								importAuditVo.setSuccessCount(successCount);
+//								importAuditVo.setFailedCount(failedCount);
+//								importAuditVo.setTotalCount(totalCount);
+//								importMapper.updateImportAuditTemporary(importAuditVo);
 							}
 						}
 						break;
@@ -483,6 +505,46 @@ public class BatchImportHandler {
 				importMapper.updateImportAudit(importAuditVo);
 				importMap.replace(importAuditVo.getId(), BatchImportStatus.SUCCEED.getValue());
 				importMap.remove(importAuditVo.getId());
+			}
+		}
+
+		private void checkAttrIsRequired(Map<Integer, String> errorMsgMap, Long ciEntityId, CiEntityTransactionVo ciEntityTransactionVo, int ci, AttrVo attr) {
+			if ("append".equals(action)) {
+				errorMsgMap.put(ci + 1, "请补充“" + attr.getLabel() + "”信息");
+			} else if ("update".equals(action) && ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
+				errorMsgMap.put(ci + 1, "请补充“" + attr.getLabel() + "”信息");
+			} else if ("all".equals(action) && ciEntityId == null) {
+				errorMsgMap.put(ci + 1, "请补充“" + attr.getLabel() + "”信息");
+			} else if ("all".equals(action) && ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
+				errorMsgMap.put(ci + 1, "请补充“" + attr.getLabel() + "”信息");
+			}
+		}
+
+		private void checkRelIsRequired(CiVo ciVo, Map<Integer, String> errorMsgMap, Long ciEntityId, CiEntityTransactionVo ciEntityTransactionVo, int ci, RelVo rel) {
+			if (rel.getFromCiId().equals(ciVo.getId())) { //当前CI处于from
+				if (rel.getToRule().equals(RelRuleType.ON.getValue()) || rel.getToRule().equals(RelRuleType.OO.getValue())) {
+					if ("append".equals(action)) {
+						errorMsgMap.put(ci + 1, "缺少" + rel.getToLabel());
+					} else if ("update".equals(action) && ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
+						errorMsgMap.put(ci + 1, "缺少" + rel.getToLabel());
+					} else if ("all".equals(action) && ciEntityId == null) {
+						errorMsgMap.put(ci + 1, "缺少" + rel.getToLabel());
+					} else if ("all".equals(action) && ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
+						errorMsgMap.put(ci + 1, "缺少" + rel.getToLabel());
+					}
+				}
+			} else if (rel.getToCiId().equals(ciVo.getId())) {//当前CI处于to
+				if (rel.getFromRule().equals(RelRuleType.ON.getValue()) || rel.getFromRule().equals(RelRuleType.OO.getValue())) {
+					if ("append".equals(action)) {
+						errorMsgMap.put(ci + 1, "缺少" + rel.getFromLabel());
+					} else if ("update".equals(action) && ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
+						errorMsgMap.put(ci + 1, "缺少" + rel.getFromLabel());
+					} else if ("all".equals(action) && ciEntityId == null) {
+						errorMsgMap.put(ci + 1, "缺少" + rel.getFromLabel());
+					} else if ("all".equals(action) && ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
+						errorMsgMap.put(ci + 1, "缺少" + rel.getFromLabel());
+					}
+				}
 			}
 		}
 	}
