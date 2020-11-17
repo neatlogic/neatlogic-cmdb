@@ -518,39 +518,25 @@ public class BatchImportHandler {
 		}
 
 		private void checkAttrIsRequired(Map<Integer, String> errorMsgMap, Long ciEntityId, CiEntityTransactionVo ciEntityTransactionVo, int ci, AttrVo attr) {
-			if ("append".equals(action)) {
-				errorMsgMap.put(ci + 1, "请补充“" + attr.getLabel() + "”信息");
-			} else if ("update".equals(action) && ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
-				errorMsgMap.put(ci + 1, "请补充“" + attr.getLabel() + "”信息");
-			} else if ("all".equals(action) && ciEntityId == null) {
-				errorMsgMap.put(ci + 1, "请补充“" + attr.getLabel() + "”信息");
-			} else if ("all".equals(action) && ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
+			if ("append".equals(action)
+					|| "update".equals(action) && ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())
+					|| "all".equals(action) && ciEntityId == null
+					|| "all".equals(action) && ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
 				errorMsgMap.put(ci + 1, "请补充“" + attr.getLabel() + "”信息");
 			}
 		}
 
 		private void checkRelIsRequired(CiVo ciVo, Map<Integer, String> errorMsgMap, Long ciEntityId, CiEntityTransactionVo ciEntityTransactionVo, int ci, RelVo rel) {
-			if (rel.getFromCiId().equals(ciVo.getId())) { //当前CI处于from
-				if (rel.getToRule().equals(RelRuleType.ON.getValue()) || rel.getToRule().equals(RelRuleType.OO.getValue())) {
-					if ("append".equals(action)) {
-						errorMsgMap.put(ci + 1, "缺少" + rel.getToLabel());
-					} else if ("update".equals(action) && ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
-						errorMsgMap.put(ci + 1, "缺少" + rel.getToLabel());
-					} else if ("all".equals(action) && ciEntityId == null) {
-						errorMsgMap.put(ci + 1, "缺少" + rel.getToLabel());
-					} else if ("all".equals(action) && ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
+			if ("append".equals(action)
+					|| "update".equals(action) && ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())
+					|| "all".equals(action) && ciEntityId == null
+					|| "all".equals(action) && ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
+				if (rel.getFromCiId().equals(ciVo.getId())) { //当前CI处于from
+					if (rel.getToRule().equals(RelRuleType.ON.getValue()) || rel.getToRule().equals(RelRuleType.OO.getValue())) {
 						errorMsgMap.put(ci + 1, "缺少" + rel.getToLabel());
 					}
-				}
-			} else if (rel.getToCiId().equals(ciVo.getId())) {//当前CI处于to
-				if (rel.getFromRule().equals(RelRuleType.ON.getValue()) || rel.getFromRule().equals(RelRuleType.OO.getValue())) {
-					if ("append".equals(action)) {
-						errorMsgMap.put(ci + 1, "缺少" + rel.getFromLabel());
-					} else if ("update".equals(action) && ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
-						errorMsgMap.put(ci + 1, "缺少" + rel.getFromLabel());
-					} else if ("all".equals(action) && ciEntityId == null) {
-						errorMsgMap.put(ci + 1, "缺少" + rel.getFromLabel());
-					} else if ("all".equals(action) && ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
+				} else if (rel.getToCiId().equals(ciVo.getId())) {//当前CI处于to
+					if (rel.getFromRule().equals(RelRuleType.ON.getValue()) || rel.getFromRule().equals(RelRuleType.OO.getValue())) {
 						errorMsgMap.put(ci + 1, "缺少" + rel.getFromLabel());
 					}
 				}
