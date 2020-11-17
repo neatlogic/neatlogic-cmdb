@@ -132,8 +132,9 @@ public class BatchImportHandler {
 			importMap.put(importAuditVo.getId(), BatchImportStatus.RUNNING.getValue());
 			int successCount = 0;
 			int failedCount = 0;
-//			int errorCount = 0;
 			int totalCount = 0;
+			/** 用来记录整个表格读取过程中的错误 */
+			String error = "";
 			Workbook wb = null;
 			InputStream in = null;
 
@@ -198,204 +199,212 @@ public class BatchImportHandler {
 						} catch (Exception e) {
 							throw new RuntimeException("表头为空，" + e.getMessage());
 						}
-
-						if (action.equals("all") || action.equals("append")) {
+						/**
+						 * 【只添加】与【添加&更新】模式下，不能缺少必填属性列
+						 * 【只更新】且【全局更新】模式下，不能缺少必填属性列
+						 */
+						List<String> lostColumns = new ArrayList<>();
+						if (action.equals("all") || action.equals("append") || (action.equals("update") && editMode == 1)) {
 							for (AttrVo attr : ciVo.getAttrList()) {
 								if (attr.getIsRequired().equals(1) && !checkAttrMap.containsKey("attr_" + attr.getId())) {
-									throw new RuntimeException("导入模板缺少属性“" + attr.getLabel() + "”");
+									lostColumns.add(attr.getLabel());
 								}
 							}
 							for(RelVo rel : ciVo.getRelList()){
 								if(rel.getFromCiId().equals(ciVo.getId())){
 									if(!checkAttrMap.containsKey("rel_" + rel.getId()) && (rel.getToRule().equals(RelRuleType.ON.getValue()) || rel.getToRule().equals(RelRuleType.OO.getValue()))){
-										throw new RuntimeException("导入模板缺少属性“" + rel.getToLabel() + "”");
+										lostColumns.add(rel.getToLabel());
 									}
 								}else if(rel.getToCiId().equals(ciVo.getId())){
 									if(!checkAttrMap.containsKey("rel_" + rel.getId()) && (rel.getFromRule().equals(RelRuleType.ON.getValue()) || rel.getFromRule().equals(RelRuleType.OO.getValue()))){
-										throw new RuntimeException("导入模板缺少属性“" + rel.getFromRule() + "”");
+										lostColumns.add(rel.getFromLabel());
 									}
 								}
 							}
 						}
-						totalCount += sheet.getLastRowNum();
-						for (int r = sheet.getFirstRowNum() + 1; r <= sheet.getLastRowNum(); r++) {
-							/**用来详细记录每一行每一列的错误信息，使用LinkedHashMap是为了计算列数*/
-							Map<Integer, String> errorMsgMap = new LinkedHashMap<>();
-							/** 用来记录每一行最后保存时的错误 */
-							Map<Integer,String> rowError = new LinkedHashMap<>();
-							try {
-								Row row = sheet.getRow(r);
-								if (row != null) {
-									Long ciEntityId = null;// 记录下表格中的ciEntityId，用于判断配置项是否存在
-									CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
-									ciEntityTransactionVo.setCiId(ciId);
-									if(editMode.intValue() == 1){
-										ciEntityTransactionVo.setEditMode(EditModeType.GLOBAL.getValue());
-									}else if(editMode.intValue() == 0){
-										ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
-									}
-									List<AttrEntityTransactionVo> attrList = new ArrayList<>();
-									List<RelEntityTransactionVo> relList = new ArrayList<>();
-									ciEntityTransactionVo.setAttrEntityTransactionList(attrList);
-									ciEntityTransactionVo.setRelEntityTransactionList(relList);
-									for (int ci = 0; ci < cellIndex.size(); ci++) {
-										Cell cell = row.getCell(cellIndex.get(ci));
-										if (cell != null) {
-											String content = getCellContent(cell);
-											content = content == null ? "" : content;
-											content = content.trim();
-											Object header = typeMap.get(cellIndex.get(ci));
-											if (header instanceof String) { //表示拿到的是ID列
-												if (StringUtils.isNotBlank(content)) {
-													try {
-														ciEntityId = Long.parseLong(content);
-														ciEntityTransactionVo.setCiEntityId(Long.parseLong(content));
-													} catch (Exception e) {
-														throw new RuntimeException("无法获取到ID，" + e.getMessage());
+						if(CollectionUtils.isNotEmpty(lostColumns)){
+							error = "导入模版缺少：" + Arrays.toString(lostColumns.toArray());
+						}
+						if(StringUtils.isBlank(error)){
+							totalCount += sheet.getLastRowNum();
+							for (int r = sheet.getFirstRowNum() + 1; r <= sheet.getLastRowNum(); r++) {
+								/**用来详细记录每一行每一列的错误信息，使用LinkedHashMap是为了计算列数*/
+								Map<Integer, String> errorMsgMap = new LinkedHashMap<>();
+								/** 用来记录每一行最后保存时的错误 */
+								Map<Integer,String> rowError = new LinkedHashMap<>();
+								try {
+									Row row = sheet.getRow(r);
+									if (row != null) {
+										Long ciEntityId = null;// 记录下表格中的ciEntityId，用于判断配置项是否存在
+										CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
+										ciEntityTransactionVo.setCiId(ciId);
+										if(editMode.intValue() == 1){
+											ciEntityTransactionVo.setEditMode(EditModeType.GLOBAL.getValue());
+										}else if(editMode.intValue() == 0){
+											ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
+										}
+										List<AttrEntityTransactionVo> attrList = new ArrayList<>();
+										List<RelEntityTransactionVo> relList = new ArrayList<>();
+										ciEntityTransactionVo.setAttrEntityTransactionList(attrList);
+										ciEntityTransactionVo.setRelEntityTransactionList(relList);
+										for (int ci = 0; ci < cellIndex.size(); ci++) {
+											Cell cell = row.getCell(cellIndex.get(ci));
+											if (cell != null) {
+												String content = getCellContent(cell);
+												if(StringUtils.isNotBlank(content)){
+													content = content.trim();
+												}
+//											content = content == null ? "" : content;
+//											content = content.trim();
+												Object header = typeMap.get(cellIndex.get(ci));
+												if (header instanceof String) { //表示拿到的是ID列
+													if (StringUtils.isNotBlank(content)) {
+														try {
+															ciEntityId = Long.parseLong(content);
+															ciEntityTransactionVo.setCiEntityId(Long.parseLong(content));
+														} catch (Exception e) {
+															throw new RuntimeException("无法获取到ID，" + e.getMessage());
+														}
 													}
-												}
-											} else if (header instanceof AttrVo) {// 如果是属性
-												AttrVo attr = (AttrVo) header;
+												} else if (header instanceof AttrVo) {// 如果是属性
+													AttrVo attr = (AttrVo) header;
 
-												/** 不支持导入表格、文件 */
-												if(attr.getType().equals(AttrType.PROPERTY.getValue()) && (attr.getPropHandler().equals(PropHandlerType.FILE.getValue())
-														|| attr.getPropHandler().equals(PropHandlerType.TABLE.getValue()))){
-													continue;
-												}
-												/** 不支持导入表达式 */
-												if(attr.getType().equals(AttrType.EXPRESSION.getValue())){
-													continue;
-												}
+													/** 不支持导入表格、文件 */
+													if(attr.getType().equals(AttrType.PROPERTY.getValue()) && (attr.getPropHandler().equals(PropHandlerType.FILE.getValue())
+															|| attr.getPropHandler().equals(PropHandlerType.TABLE.getValue()))){
+														continue;
+													}
+													/** 不支持导入表达式 */
+													if(attr.getType().equals(AttrType.EXPRESSION.getValue())){
+														continue;
+													}
 
-												List<String> valueList = new ArrayList<>();
-												if(StringUtils.isNotBlank(content) && attr.getType().equals(AttrType.PROPERTY.getValue()) && StringUtils.isNotBlank(attr.getPropHandler())){
-													IPropertyHandler handler = PropertyHandlerFactory.getHandler(attr.getPropHandler());
-													List<String> values = new ArrayList<>();
-													if(content.contains(",")){
-														values = Arrays.asList(content.split(","));
+													List<String> valueList = new ArrayList<>();
+													if(StringUtils.isNotBlank(content) && attr.getType().equals(AttrType.PROPERTY.getValue()) && StringUtils.isNotBlank(attr.getPropHandler())){
+														IPropertyHandler handler = PropertyHandlerFactory.getHandler(attr.getPropHandler());
+														List<String> values = new ArrayList<>();
+														if(content.contains(",")){
+															values = Arrays.asList(content.split(","));
+														}else{
+															values.add(content);
+														}
+														JSONArray valueArray = null;
+														try{
+															valueArray = (JSONArray) handler.getActualValue(values, attr.getPropConfig());
+														}catch (Exception e){
+															errorMsgMap.put(ci + 1,e.getMessage());
+														}
+														if(CollectionUtils.isNotEmpty(valueArray)){
+															valueList = valueArray.stream().map(v -> v.toString()).collect(Collectors.toList());
+														}
+													}else if(StringUtils.isNotBlank(content)){
+														valueList.add(content);
+													}
+
+													AttrEntityTransactionVo attrEntity = new AttrEntityTransactionVo();
+													attrEntity.setAttrId(attr.getId());
+													attrEntity.setAttrName(attr.getName());
+													attrEntity.setActualValueList(valueList);
+													/**
+													 * 没有取到值且没有采集到异常，说明单元格内容为空
+													 * 如果是【只添加】，那所有必填属性都不能为空
+													 * 如果是【只更新】且【全局更新】：所有必填属性不能为空
+													 * 如果是【添加&更新】，没有ID的，必填属性不能为空；
+													 * 有ID的，且选择了【全局更新】，则必填属性不能为空
+													 */
+													if(Objects.equals(attr.getIsRequired(),1) && CollectionUtils.isEmpty(attrEntity.getActualValueList()) && MapUtils.isEmpty(errorMsgMap)){
+														checkAttrIsRequired(errorMsgMap, ciEntityId, ciEntityTransactionVo, ci, attr);
 													}else{
-														values.add(content);
+														attrList.add(attrEntity);
 													}
-													JSONArray valueArray = null;
-													try{
-														valueArray = (JSONArray) handler.getActualValue(values, attr.getPropConfig());
-													}catch (Exception e){
-														errorMsgMap.put(ci + 1,e.getMessage());
-													}
-													if(CollectionUtils.isNotEmpty(valueArray)){
-														valueList = valueArray.stream().map(v -> v.toString()).collect(Collectors.toList());
-													}
-												}else if(StringUtils.isNotBlank(content)){
-													valueList.add(content);
-												}
+//												if(attr.getIsRequired().equals(1) && ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())
+//														&& CollectionUtils.isEmpty(attrEntity.getActualValueList())) {
+//													errorMsgMap.put(ci+1, "请补充“" + attr.getLabel() + "”信息");
+//												} else if (attrEntity.getActualValueList().size() > 0) {
+//													attrList.add(attrEntity);
+//												}
 
-												AttrEntityTransactionVo attrEntity = new AttrEntityTransactionVo();
-												attrEntity.setAttrId(attr.getId());
-												attrEntity.setAttrName(attr.getName());
-												attrEntity.setActualValueList(valueList);
-												/** 没有取到值且没有采集到异常，说明单元格内容为空 */
-												if(attr.getIsRequired().equals(1) && CollectionUtils.isEmpty(attrEntity.getActualValueList()) && MapUtils.isEmpty(errorMsgMap)) {
-													errorMsgMap.put(ci+1, "请补充“" + attr.getLabel() + "”信息");
-												} else if (attrEntity.getActualValueList().size() > 0) {
-													attrList.add(attrEntity);
-												}
-
-											} else if (header instanceof RelVo) {
-												RelVo rel = (RelVo) header;
-												List<String> valueList = null;
-												if(content.contains(",")){
-													String[] split = content.split(",");
-													valueList = Arrays.asList(split);
-												}else{
-													valueList = new ArrayList();
-													valueList.add(content);
-												}
-
-												if(rel.getFromCiId().equals(ciVo.getId())){ //当前配置项处于from位置
-													Long toCiId = rel.getToCiId();
-													//根据content查询配置项ID
-													if(CollectionUtils.isNotEmpty(valueList)){
-														for(String o : valueList){
-															Long id = ciEntityMapper.getIdByCiIdAndName(toCiId, o);
-															if(id != null){
-																RelEntityTransactionVo relEntity = new RelEntityTransactionVo();
-																relEntity.setToCiEntityId(id);
-																relEntity.setRelId(rel.getId());
-																relEntity.setDirection(RelDirectionType.FROM.getValue());
-																relEntity.setFromCiEntityId(ciEntityTransactionVo.getCiEntityId());
-																relEntity.setAction(RelActionType.INSERT.getValue());
-																relList.add(relEntity);
-															}else {
-																errorMsgMap.put(ci + 1,"配置项：" + o + "不存在");
-															}
+												} else if (header instanceof RelVo) {
+													RelVo rel = (RelVo) header;
+													List<String> valueList = null;
+													if(StringUtils.isNotBlank(content)){
+														if(content.contains(",")){
+															String[] split = content.split(",");
+															valueList = Arrays.asList(split);
+														}else{
+															valueList = new ArrayList();
+															valueList.add(content);
 														}
 													}
-												}else if(rel.getToCiId().equals(ciVo.getId())){ //当前配置项处于to位置
-													Long fromCiId = rel.getFromCiId();
-													//根据content查询配置项ID
-													if(CollectionUtils.isNotEmpty(valueList)){
-														for(String o : valueList){
-															Long id = ciEntityMapper.getIdByCiIdAndName(fromCiId, o);
-															if(id != null){
-																RelEntityTransactionVo relEntity = new RelEntityTransactionVo();
-																relEntity.setFromCiEntityId(id);
-																relEntity.setRelId(rel.getId());
-																relEntity.setDirection(RelDirectionType.TO.getValue());
-																relEntity.setToCiEntityId(ciEntityTransactionVo.getCiEntityId());
-																relEntity.setAction(RelActionType.INSERT.getValue());
-																relList.add(relEntity);
-															}else {
-																errorMsgMap.put(ci + 1,"配置项：" + o + "不存在");
+
+													if(CollectionUtils.isEmpty(valueList)){
+														checkRelIsRequired(ciVo, errorMsgMap, ciEntityId, ciEntityTransactionVo, ci, rel);
+													}else{
+														if(rel.getFromCiId().equals(ciVo.getId())){ //当前配置项处于from位置
+															Long toCiId = rel.getToCiId();
+															//根据content查询配置项ID
+															for(String o : valueList){
+																Long id = ciEntityMapper.getIdByCiIdAndName(toCiId, o);
+																if(id != null){
+																	RelEntityTransactionVo relEntity = new RelEntityTransactionVo();
+																	relEntity.setToCiEntityId(id);
+																	relEntity.setRelId(rel.getId());
+																	relEntity.setDirection(RelDirectionType.FROM.getValue());
+																	relEntity.setFromCiEntityId(ciEntityTransactionVo.getCiEntityId());
+																	relEntity.setAction(RelActionType.INSERT.getValue());
+																	relList.add(relEntity);
+																}else {
+																	errorMsgMap.put(ci + 1,"配置项：" + o + "不存在");
+																}
+															}
+														}else if(rel.getToCiId().equals(ciVo.getId())){ //当前配置项处于to位置
+															Long fromCiId = rel.getFromCiId();
+															//根据content查询配置项ID
+															for(String o : valueList){
+																Long id = ciEntityMapper.getIdByCiIdAndName(fromCiId, o);
+																if(id != null){
+																	RelEntityTransactionVo relEntity = new RelEntityTransactionVo();
+																	relEntity.setFromCiEntityId(id);
+																	relEntity.setRelId(rel.getId());
+																	relEntity.setDirection(RelDirectionType.TO.getValue());
+																	relEntity.setToCiEntityId(ciEntityTransactionVo.getCiEntityId());
+																	relEntity.setAction(RelActionType.INSERT.getValue());
+																	relList.add(relEntity);
+																}else {
+																	errorMsgMap.put(ci + 1,"配置项：" + o + "不存在");
+																}
 															}
 														}
 													}
 												}
-											}
-										} else {
-											Object header = typeMap.get(cellIndex.get(ci));
-											if (header instanceof AttrVo) {
-												AttrVo attr = (AttrVo) header;
-												if (attr.getIsRequired().equals(1)  ) {
-													errorMsgMap.put(ci+1,"请补充“" + attr.getLabel() + "”信息");
-												}
-											} else if (header instanceof RelVo ) {
-												RelVo rel = (RelVo) header;
-												/** 校验关系必填 */
-												if(rel.getFromCiId().equals(ciVo.getId())){ //当前CI处于from
-													if(rel.getToRule().equals(RelRuleType.ON.getValue()) || rel.getToRule().equals(RelRuleType.OO.getValue())){
-														errorMsgMap.put(ci + 1,"缺少" + rel.getToLabel());
+											} else {
+												Object header = typeMap.get(cellIndex.get(ci));
+												if (header instanceof AttrVo) {
+													AttrVo attr = (AttrVo) header;
+													if(Objects.equals(attr.getIsRequired(),1)){
+														checkAttrIsRequired(errorMsgMap, ciEntityId, ciEntityTransactionVo, ci, attr);
 													}
-												}else if(rel.getToCiId().equals(ciVo.getId())){//当前CI处于to
-													if(rel.getFromRule().equals(RelRuleType.ON.getValue()) || rel.getFromRule().equals(RelRuleType.OO.getValue())){
-														errorMsgMap.put(ci + 1,"缺少" + rel.getFromLabel());
-													}
+//												if (attr.getIsRequired().equals(1) && ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
+//													errorMsgMap.put(ci+1,"请补充“" + attr.getLabel() + "”信息");
+//												}
+												} else if (header instanceof RelVo ) {
+													RelVo rel = (RelVo) header;
+													/** 校验关系必填 */
+													checkRelIsRequired(ciVo, errorMsgMap, ciEntityId, ciEntityTransactionVo, ci, rel);
 												}
 											}
 										}
-									}
 
-									try{
-										/** 没有采集到异常才执行保存，保存过程中发生异常再put到errMsgMap中 */
-										if (action.equals("append") && ciEntityId == null) {
-											if(MapUtils.isEmpty(errorMsgMap)){
-												ciEntityService.saveCiEntity(ciEntityTransactionVo, TransactionActionType.INSERT);
-												successCount += 1;
-											}else{
-												failedCount += 1;
-											}
-										} else if (action.equals("update") && ciEntityId != null) {
-											CiEntityVo entity = ciEntityMapper.getCiEntityById(ciEntityId);
-											if (entity == null) {
-												throw new RuntimeException("配置项：" + ciEntityId + "不存在");
-											}
-											if(MapUtils.isEmpty(errorMsgMap)){
-												ciEntityService.saveCiEntity(ciEntityTransactionVo, TransactionActionType.UPDATE);
-												successCount += 1;
-											}else{
-												failedCount += 1;
-											}
-										} else if (action.equals("all")) {
-											if(ciEntityId != null){
+										try{
+											/** 没有采集到异常才执行保存，保存过程中发生异常再put到errMsgMap中 */
+											if (action.equals("append") && ciEntityId == null) {
+												if(MapUtils.isEmpty(errorMsgMap)){
+													ciEntityService.saveCiEntity(ciEntityTransactionVo, TransactionActionType.INSERT);
+													successCount += 1;
+												}else{
+													failedCount += 1;
+												}
+											} else if (action.equals("update") && ciEntityId != null) {
 												CiEntityVo entity = ciEntityMapper.getCiEntityById(ciEntityId);
 												if (entity == null) {
 													throw new RuntimeException("配置项：" + ciEntityId + "不存在");
@@ -406,58 +415,77 @@ public class BatchImportHandler {
 												}else{
 													failedCount += 1;
 												}
-											}else{
-												if(MapUtils.isEmpty(errorMsgMap)){
-													ciEntityService.saveCiEntity(ciEntityTransactionVo, TransactionActionType.INSERT);
-													successCount += 1;
+											} else if (action.equals("all")) {
+												if(ciEntityId != null){
+													CiEntityVo entity = ciEntityMapper.getCiEntityById(ciEntityId);
+													if (entity == null) {
+														throw new RuntimeException("配置项：" + ciEntityId + "不存在");
+													}
+													if(MapUtils.isEmpty(errorMsgMap)){
+														ciEntityService.saveCiEntity(ciEntityTransactionVo, TransactionActionType.UPDATE);
+														successCount += 1;
+													}else{
+														failedCount += 1;
+													}
 												}else{
-													failedCount += 1;
+													if(MapUtils.isEmpty(errorMsgMap)){
+														ciEntityService.saveCiEntity(ciEntityTransactionVo, TransactionActionType.INSERT);
+														successCount += 1;
+													}else{
+														failedCount += 1;
+													}
 												}
+											} else {
+												throw new RuntimeException("请正确填写模版与选择导入模式，【只添加】不需要填写ID；【只更新】必须填写ID");
 											}
-										} else {
-											throw new RuntimeException("请正确填写模版与选择导入模式，【只添加】不需要填写ID；【只更新】必须填写ID");
+										}catch (Exception e){
+											failedCount += 1;
+											rowError.put(r,e.getMessage());
 										}
-									}catch (Exception e){
-										failedCount += 1;
-										rowError.put(r,e.getMessage());
 									}
+								} catch (Exception e) {
+									failedCount += 1;
+									rowError.put(r,e.getMessage());
 								}
-							} catch (Exception e) {
-								failedCount += 1;
-								rowError.put(r,e.getMessage());
-							}
-							finally {
-								String err = "";
-								List<Integer> columnList = new ArrayList<>();
-								List<String> errorMsgList = new ArrayList<>();
-								for(Entry<Integer,String> _err : errorMsgMap.entrySet()) {
-									columnList.add(_err.getKey());
-									errorMsgList.add(_err.getValue());
-								}
-								String errMsg = Arrays.toString(errorMsgList.toArray());
-								String newerrMsg = errMsg.replace(',',';');
-								if(CollectionUtils.isNotEmpty(columnList)) {
-									err = "<b class=\"text-danger\">第" + r + "行第" + Arrays.toString(columnList.toArray()) + "列</b>：" + newerrMsg;
-								}
-
-								if(MapUtils.isNotEmpty(rowError)){
-									for(Map.Entry<Integer,String> entry : rowError.entrySet()){
-										err += "<b class=\"text-danger\">第" + entry.getKey() + "行：" + entry.getValue() + "</b>";
+								finally {
+//								String err = "";
+									List<Integer> columnList = new ArrayList<>();
+									List<String> errorMsgList = new ArrayList<>();
+									for(Entry<Integer,String> _err : errorMsgMap.entrySet()) {
+										columnList.add(_err.getKey());
+										errorMsgList.add(_err.getValue());
 									}
-								}
+									String errMsg = Arrays.toString(errorMsgList.toArray());
+									String newerrMsg = errMsg.replace(',',';');
+									if(CollectionUtils.isNotEmpty(columnList)) {
+										error += "</br><b class=\"text-danger\">第" + r + "行第" + Arrays.toString(columnList.toArray()) + "列</b>：" + newerrMsg;
+									}
 
-								if (failedCount == 1) {
-									importAuditVo.setError(err);
-								} else if(failedCount > 1){
-									importAuditVo.setError(importAuditVo.getError() + "<br>" + err);
+									if(MapUtils.isNotEmpty(rowError)){
+										for(Map.Entry<Integer,String> entry : rowError.entrySet()){
+											error += "</br><b class=\"text-danger\">第" + entry.getKey() + "行：" + entry.getValue() + "</b>";
+										}
+									}
+
+									importAuditVo.setSuccessCount(successCount);
+									importAuditVo.setFailedCount(failedCount);
+									importAuditVo.setTotalCount(totalCount);
+									importAuditVo.setError(StringUtils.isNotBlank(error) ? error : null);
+									importMapper.updateImportAuditTemporary(importAuditVo);
+
+//								if (failedCount == 1) {
+//									importAuditVo.setError(err);
+//								} else if(failedCount > 1){
+//									importAuditVo.setError(importAuditVo.getError() + "<br>" + err);
+//								}
+//								importAuditVo.setSuccessCount(successCount);
+//								importAuditVo.setFailedCount(failedCount);
+//								importAuditVo.setTotalCount(totalCount);
+//								importMapper.updateImportAuditTemporary(importAuditVo);
 								}
-								importAuditVo.setSuccessCount(successCount);
-								importAuditVo.setFailedCount(failedCount);
-								importAuditVo.setTotalCount(totalCount);
-								importMapper.updateImportAuditTemporary(importAuditVo);
 							}
+							break;
 						}
-						break;
 					}
 				}
 			} catch (Exception e) {
@@ -474,6 +502,9 @@ public class BatchImportHandler {
 				} catch (IOException e) {
 					logger.error(e.getMessage(), e);
 				}
+				if(StringUtils.isNotBlank(error)){
+					importAuditVo.setError(error);
+				}
 				if (BatchImportStatus.STOPPED.getValue().equals(importMap.get(importAuditVo.getId()))) {
 					importAuditVo.setError((("".equals(importAuditVo.getError()) || importAuditVo.getError() == null) ? "" : importAuditVo.getError() + "<br>") + "<b class=\"text-danger\">导入已停止</b>。");
 				}
@@ -483,6 +514,46 @@ public class BatchImportHandler {
 				importMapper.updateImportAudit(importAuditVo);
 				importMap.replace(importAuditVo.getId(), BatchImportStatus.SUCCEED.getValue());
 				importMap.remove(importAuditVo.getId());
+			}
+		}
+
+		private void checkAttrIsRequired(Map<Integer, String> errorMsgMap, Long ciEntityId, CiEntityTransactionVo ciEntityTransactionVo, int ci, AttrVo attr) {
+			if ("append".equals(action)) {
+				errorMsgMap.put(ci + 1, "请补充“" + attr.getLabel() + "”信息");
+			} else if ("update".equals(action) && ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
+				errorMsgMap.put(ci + 1, "请补充“" + attr.getLabel() + "”信息");
+			} else if ("all".equals(action) && ciEntityId == null) {
+				errorMsgMap.put(ci + 1, "请补充“" + attr.getLabel() + "”信息");
+			} else if ("all".equals(action) && ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
+				errorMsgMap.put(ci + 1, "请补充“" + attr.getLabel() + "”信息");
+			}
+		}
+
+		private void checkRelIsRequired(CiVo ciVo, Map<Integer, String> errorMsgMap, Long ciEntityId, CiEntityTransactionVo ciEntityTransactionVo, int ci, RelVo rel) {
+			if (rel.getFromCiId().equals(ciVo.getId())) { //当前CI处于from
+				if (rel.getToRule().equals(RelRuleType.ON.getValue()) || rel.getToRule().equals(RelRuleType.OO.getValue())) {
+					if ("append".equals(action)) {
+						errorMsgMap.put(ci + 1, "缺少" + rel.getToLabel());
+					} else if ("update".equals(action) && ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
+						errorMsgMap.put(ci + 1, "缺少" + rel.getToLabel());
+					} else if ("all".equals(action) && ciEntityId == null) {
+						errorMsgMap.put(ci + 1, "缺少" + rel.getToLabel());
+					} else if ("all".equals(action) && ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
+						errorMsgMap.put(ci + 1, "缺少" + rel.getToLabel());
+					}
+				}
+			} else if (rel.getToCiId().equals(ciVo.getId())) {//当前CI处于to
+				if (rel.getFromRule().equals(RelRuleType.ON.getValue()) || rel.getFromRule().equals(RelRuleType.OO.getValue())) {
+					if ("append".equals(action)) {
+						errorMsgMap.put(ci + 1, "缺少" + rel.getFromLabel());
+					} else if ("update".equals(action) && ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
+						errorMsgMap.put(ci + 1, "缺少" + rel.getFromLabel());
+					} else if ("all".equals(action) && ciEntityId == null) {
+						errorMsgMap.put(ci + 1, "缺少" + rel.getFromLabel());
+					} else if ("all".equals(action) && ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
+						errorMsgMap.put(ci + 1, "缺少" + rel.getFromLabel());
+					}
+				}
 			}
 		}
 	}
