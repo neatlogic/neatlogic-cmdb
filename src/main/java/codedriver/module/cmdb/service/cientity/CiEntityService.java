@@ -72,7 +72,7 @@ public interface CiEntityService {
      * @param @return
      * @return boolean
      */
-    public boolean validateCiEntity(CiEntityTransactionVo ciEntityTransactionVo, TransactionActionType action);
+    public boolean validateCiEntity(CiEntityTransactionVo ciEntityTransactionVo);
 
     /**
      * @Author: chenqiwei

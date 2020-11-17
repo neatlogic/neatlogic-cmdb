@@ -164,11 +164,11 @@ public class CiEntityServiceImpl implements CiEntityService {
     }
 
     @Override
-    public boolean validateCiEntity(CiEntityTransactionVo ciEntityTransactionVo, TransactionActionType action) {
+    public boolean validateCiEntity(CiEntityTransactionVo ciEntityTransactionVo) {
         TransactionVo transactionVo = new TransactionVo();
         transactionVo.setCiId(ciEntityTransactionVo.getCiId());
 
-        ciEntityTransactionVo.setAction(action.getValue());
+        ciEntityTransactionVo.setAction(ciEntityTransactionVo.getTransactionMode().getValue());
         ciEntityTransactionVo.setTransactionId(transactionVo.getId());
 
         transactionVo.setCiEntityTransactionVo(ciEntityTransactionVo);

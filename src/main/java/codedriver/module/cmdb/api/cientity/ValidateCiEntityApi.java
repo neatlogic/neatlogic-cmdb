@@ -65,9 +65,11 @@ public class ValidateCiEntityApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("ciId");
         Long id = jsonObj.getLong("id");
+        String uuid = jsonObj.getString("uuid");
         TransactionActionType mode = TransactionActionType.INSERT;
         CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
-
+        ciEntityTransactionVo.setCiEntityId(id);
+        ciEntityTransactionVo.setCiEntityUuid(uuid);
         ciEntityTransactionVo.setCiId(ciId);
         // 解析属性数据
         JSONObject attrObj = jsonObj.getJSONObject("attrEntityData");
@@ -133,8 +135,8 @@ public class ValidateCiEntityApi extends PrivateApiComponentBase {
             }
             ciEntityTransactionVo.setRelEntityTransactionList(relEntityList);
         }
-
-        boolean hasChange = ciEntityService.validateCiEntity(ciEntityTransactionVo, mode);
+        ciEntityTransactionVo.setTransactionMode(mode);
+        boolean hasChange = ciEntityService.validateCiEntity(ciEntityTransactionVo);
         JSONObject returnObj = new JSONObject();
         returnObj.put("hasChange", hasChange);
         return returnObj;
