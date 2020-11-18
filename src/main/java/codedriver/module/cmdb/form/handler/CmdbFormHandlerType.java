@@ -73,7 +73,7 @@ public enum CmdbFormHandlerType implements IProcessFormHandlerType {
 
     @Override
     public boolean isShowable() {
-        return false;
+        return true;
     }
 
     @Override
