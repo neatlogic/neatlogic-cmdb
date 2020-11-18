@@ -108,6 +108,9 @@
 		attr.id ASC<!-- 现按照视图设置的排序 -->
 	</select>
 
+	<select id="checkAttrNameIsRepeat" parameterType="codedriver.module.cmdb.dto.ci.AttrVo" resultType="int">
+		SELECT COUNT(1) FROM `cmdb_attr` WHERE `name` = #{name} AND `ci_id` = #{ciId} AND `id` != #{id}
+	</select>
 
 	<update id="updateAttr" parameterType="codedriver.module.cmdb.dto.ci.AttrVo">
 		UPDATE
