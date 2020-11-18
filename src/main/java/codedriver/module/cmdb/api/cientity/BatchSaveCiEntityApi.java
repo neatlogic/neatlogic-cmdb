@@ -82,8 +82,11 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
             JSONObject ciEntityObj = ciEntityObjList.getJSONObject(ciindex);
             Long id = ciEntityObj.getLong("id");
             String uuid = ciEntityObj.getString("uuid");
-            if (id == null && StringUtils.isNotBlank(uuid)) {
+            if (StringUtils.isNotBlank(uuid)) {
                 CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
+                if (id != null) {
+                    ciEntityTransactionVo.setCiEntityId(id);
+                }
                 ciEntityTransactionMap.put(uuid, ciEntityTransactionVo);
             }
         }
