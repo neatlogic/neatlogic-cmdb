@@ -68,7 +68,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
     @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
         @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "关键字"),
         @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "需要查询的配置项id列表）"),
-        @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "是否需要操作列，如果需要检查操作权限，会根据结果返回action列"),
+        @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "是否需要操作列，如果需要则根据用户权限返回操作列"),
         @Param(name = "needCheck", type = ApiParamType.BOOLEAN, desc = "是否需要复选列")})
     @Output({@Param(explode = BasePageVo.class),
         @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = CiEntityVo[].class),

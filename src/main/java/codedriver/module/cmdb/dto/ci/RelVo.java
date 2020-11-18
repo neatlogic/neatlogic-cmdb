@@ -53,6 +53,8 @@ public class RelVo implements Serializable {
     private String fromGroupName;
     @EntityField(name = "来源端是否唯一", type = ApiParamType.INTEGER)
     private Integer fromIsUnique;
+    @EntityField(name = "来源端是否允许添加新配置项", type = ApiParamType.BOOLEAN)
+    private Boolean fromAllowInsert;
 
     @EntityField(name = "目标端模型id", type = ApiParamType.LONG)
     private Long toCiId;
@@ -78,6 +80,8 @@ public class RelVo implements Serializable {
     private String toGroupName;
     @EntityField(name = "目标端是否唯一", type = ApiParamType.INTEGER)
     private Integer toIsUnique;
+    @EntityField(name = "目标端是否允许添加新配置项", type = ApiParamType.BOOLEAN)
+    private Boolean toAllowInsert;
 
     public Long getId() {
         if (id == null) {
@@ -310,6 +314,22 @@ public class RelVo implements Serializable {
 
     public void setTypeText(String typeText) {
         this.typeText = typeText;
+    }
+
+    public Boolean getFromAllowInsert() {
+        return fromAllowInsert;
+    }
+
+    public void setFromAllowInsert(Boolean fromAllowInsert) {
+        this.fromAllowInsert = fromAllowInsert;
+    }
+
+    public Boolean getToAllowInsert() {
+        return toAllowInsert;
+    }
+
+    public void setToAllowInsert(Boolean toAllowInsert) {
+        this.toAllowInsert = toAllowInsert;
     }
 
 }
