@@ -7,8 +7,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,7 +49,7 @@ import codedriver.module.cmdb.exception.cientity.RelEntityNotFoundException;
 
 @Service
 public class CiEntityServiceImpl implements CiEntityService {
-    private final static Logger logger = LoggerFactory.getLogger(CiEntityServiceImpl.class);
+    // private final static Logger logger = LoggerFactory.getLogger(CiEntityServiceImpl.class);
 
     @Autowired
     private CiEntityMapper ciEntityMapper;
@@ -214,7 +212,6 @@ public class CiEntityServiceImpl implements CiEntityService {
         ciEntityTransactionVo.setTransactionId(transactionVo.getId());
 
         transactionVo.setCiEntityTransactionVo(ciEntityTransactionVo);
-
         boolean hasChange = validateCiEntityTransaction(ciEntityTransactionVo);
 
         if (hasChange) {
@@ -510,14 +507,9 @@ public class CiEntityServiceImpl implements CiEntityService {
 
         List<RelEntityTransactionVo> newRelEntityTransactionList = ciEntityTransactionVo.getRelEntityTransactionList();
         if (newRelEntityTransactionList == null) {
-            newRelEntityTransactionList = new ArrayList();
+            newRelEntityTransactionList = new ArrayList<>();
             ciEntityTransactionVo.setRelEntityTransactionList(newRelEntityTransactionList);
         }
-
-        // 排除掉没变化的关系
-        List<RelEntityTransactionVo> sameRelEntityTransactionList =
-            oldRelEntityList.stream().map(t -> new RelEntityTransactionVo(t)).collect(Collectors.toList());
-        newRelEntityTransactionList.removeAll(sameRelEntityTransactionList);
 
         // 需要删除的关系列表
         List<RelEntityTransactionVo> needDeleteRelEntityTransactionList = null;
@@ -531,6 +523,12 @@ public class CiEntityServiceImpl implements CiEntityService {
                 needDeleteRelEntityTransactionList.removeAll(newRelEntityTransactionList);
             }
         }
+
+        // 排除掉没变化的关系
+        List<RelEntityTransactionVo> sameRelEntityTransactionList =
+            oldRelEntityList.stream().map(t -> new RelEntityTransactionVo(t)).collect(Collectors.toList());
+        newRelEntityTransactionList.removeAll(sameRelEntityTransactionList);
+
         if (CollectionUtils.isNotEmpty(needDeleteRelEntityTransactionList)) {
             newRelEntityTransactionList.addAll(newRelEntityTransactionList);
         }
@@ -656,7 +654,9 @@ public class CiEntityServiceImpl implements CiEntityService {
             // 单纯保存事务时由于不一定会修改所有属性和关系，为了通过必填属性校验，所以要将编辑模式改成局部模式
             ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
             boolean hasChange = validateCiEntityTransaction(ciEntityTransactionVo);
-            return this.commitTransaction(transactionVo);
+            if (hasChange) {
+                return this.commitTransaction(transactionVo);
+            }
         }
         return null;
     }
