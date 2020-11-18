@@ -57,7 +57,10 @@ public class SelectPropHandler implements IPropertyHandler {
                 if(CollectionUtils.isNotEmpty(dataList)){
                     for(String value : values){
                         if(dataList.contains(value)){
-                            array.add(value);
+                            JSONObject obj = new JSONObject();
+                            obj.put("text", value);
+                            obj.put("value", value);
+                            array.add(obj);
                         }else{
                             throw new RuntimeException(value + "不在可选值范围内");
                         }
