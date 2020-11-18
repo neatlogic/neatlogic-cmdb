@@ -76,6 +76,7 @@ public class GetCiTopoApi extends PrivateApiComponentBase {
                     nb.withTooltip(ciVo.getLabel() + "(" + ciVo.getName() + ")");
                     nb.withLabel(ciVo.getLabel());
                     nb.withImage(ciVo.getIcon());
+                    nb.withClass("cinode normalnode");
                     lb.addNode(nb.build());
                     ciIdSet.add(ciVo.getId());
                 }
