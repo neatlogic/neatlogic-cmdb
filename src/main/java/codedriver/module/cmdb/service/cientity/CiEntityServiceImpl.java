@@ -523,14 +523,15 @@ public class CiEntityServiceImpl implements CiEntityService {
                 needDeleteRelEntityTransactionList.removeAll(newRelEntityTransactionList);
             }
         }
+        
 
         // 排除掉没变化的关系
         List<RelEntityTransactionVo> sameRelEntityTransactionList =
             oldRelEntityList.stream().map(t -> new RelEntityTransactionVo(t)).collect(Collectors.toList());
         newRelEntityTransactionList.removeAll(sameRelEntityTransactionList);
-
+        
         if (CollectionUtils.isNotEmpty(needDeleteRelEntityTransactionList)) {
-            newRelEntityTransactionList.addAll(newRelEntityTransactionList);
+            newRelEntityTransactionList.addAll(needDeleteRelEntityTransactionList);
         }
 
         if (CollectionUtils.isNotEmpty(newRelEntityTransactionList)) {
