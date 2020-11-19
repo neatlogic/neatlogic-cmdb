@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 public class DatePropHandler implements IPropertyHandler {
@@ -44,13 +45,18 @@ public class DatePropHandler implements IPropertyHandler {
         if (CollectionUtils.isNotEmpty(values) && values.size() > 1) {
             throw new RuntimeException("只能选择一个日期");
         }
-        if (MapUtils.isNotEmpty(config)) {
+        if (CollectionUtils.isNotEmpty(values) && MapUtils.isNotEmpty(config)) {
             String format = config.getString("format");
             SimpleDateFormat sdf = new SimpleDateFormat(format);
-            try {
-                sdf.parse(values.get(0));
-                array.add(values.get(0));
-            } catch (ParseException e) {
+            if(Objects.equals(values.get(0).length(),format.length())){
+                try {
+                    sdf.setLenient(false);
+                    sdf.parse(values.get(0));
+                    array.add(values.get(0));
+                } catch (ParseException e) {
+                    throw new RuntimeException("时间不符合格式：" + format);
+                }
+            }else{
                 throw new RuntimeException("时间不符合格式：" + format);
             }
         }

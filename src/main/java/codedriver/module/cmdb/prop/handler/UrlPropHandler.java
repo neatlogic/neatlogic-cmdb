@@ -8,9 +8,12 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Component
 public class UrlPropHandler implements IPropertyHandler {
+
+    private static Pattern pattern = Pattern.compile("^((https|http|ftp|rtsp|mms)?:\\/\\/)[^\\s]+$");
 
     @Override
     public String getName() {
@@ -38,7 +41,11 @@ public class UrlPropHandler implements IPropertyHandler {
     public Object getActualValue(List<String> values, JSONObject config) {
         JSONArray array = new JSONArray();
         if (CollectionUtils.isNotEmpty(values)) {
-            array.add(values.get(0));
+            if(pattern.matcher(values.get(0)).matches()){
+                array.add(values.get(0));
+            }else {
+                throw new RuntimeException(values.get(0) + "不符合URL格式");
+            }
         }
         return array;
     }
