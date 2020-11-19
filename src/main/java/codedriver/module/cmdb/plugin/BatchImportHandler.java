@@ -251,7 +251,7 @@ public class BatchImportHandler {
                             }
                         }
                         if (CollectionUtils.isNotEmpty(lostColumns)) {
-                            error = "导入模版缺少：" + Arrays.toString(lostColumns.toArray());
+                            error = "<b class=\"text-danger\">导入模版缺少：" + Arrays.toString(lostColumns.toArray()) + "</b></br>";
                             totalCount = sheet.getPhysicalNumberOfRows() - 1;
                             failedCount = totalCount;
                         }
