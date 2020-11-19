@@ -159,7 +159,7 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
                 auditData.put("ciEntityList", auditList);
                 ProcessTaskStepDataVo processTaskStepDataVo = new ProcessTaskStepDataVo(true);
                 processTaskStepDataVo.setProcessTaskId(currentProcessTaskStepVo.getProcessTaskId());
-                processTaskStepDataVo.setProcessTaskStepId(currentProcessTaskStepVo.getFromProcessTaskStepId());
+                processTaskStepDataVo.setProcessTaskStepId(currentProcessTaskStepVo.getId());
                 processTaskStepDataVo.setType("cientitysync");
                 processTaskStepDataVo.setData(auditData.toJSONString());
                 processTaskStepDataMapper.replaceProcessTaskStepData(processTaskStepDataVo);
