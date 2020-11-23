@@ -88,7 +88,7 @@ public class CIEntitySyncProcessUtilHandler extends ProcessStepUtilHandlerBase {
         // TODO Auto-generated method stub
 
     }
-
+    @SuppressWarnings("serial")
     @Override
     public JSONObject makeupConfig(JSONObject configObj) {
         if (configObj == null) {
@@ -98,8 +98,7 @@ public class CIEntitySyncProcessUtilHandler extends ProcessStepUtilHandlerBase {
 
         /** 授权 **/
         JSONArray authorityArray = new JSONArray();
-        ProcessTaskOperationType[] stepActions = {ProcessTaskOperationType.VIEW, ProcessTaskOperationType.TRANSFER,
-            ProcessTaskOperationType.UPDATE, ProcessTaskOperationType.URGE};
+        ProcessTaskOperationType[] stepActions = {ProcessTaskOperationType.VIEW, ProcessTaskOperationType.TRANSFER};
         for (ProcessTaskOperationType stepAction : stepActions) {
             authorityArray.add(new JSONObject() {
                 {
