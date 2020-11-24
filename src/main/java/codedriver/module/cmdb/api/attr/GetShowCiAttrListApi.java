@@ -23,7 +23,7 @@ public class GetShowCiAttrListApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "/cmdb/ci/showattr/list";
+        return "/cmdb/ci/{ciId}/showattr/list";
     }
 
     @Override

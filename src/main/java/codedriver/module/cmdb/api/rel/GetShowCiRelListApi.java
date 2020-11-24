@@ -23,7 +23,7 @@ public class GetShowCiRelListApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "/cmdb/ci/showrel/list";
+        return "/cmdb/ci/{ciId}/showrel/list";
     }
 
     @Override
