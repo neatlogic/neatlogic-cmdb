@@ -26,6 +26,8 @@ public interface RelMapper {
 
     public List<RelVo> getRelByCiId(Long ciId);
 
+    public List<RelVo> getRelByCiIdAndShowType(@Param("ciId") Long ciId,@Param("list") List<String> showType);
+
     public int updateRel(RelVo relVo);
 
     public int updateRelGroup(RelGroupVo relGroupVo);

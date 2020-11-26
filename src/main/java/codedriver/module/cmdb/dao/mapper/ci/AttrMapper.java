@@ -21,6 +21,8 @@ public interface AttrMapper {
 
     public List<AttrVo> getAttrByCiIdList(@Param("ciIdList") List<Long> ciIdList);
 
+    public List<AttrVo> getAttrByCiIdAndShowType(@Param("ciId") Long ciId,@Param("list") List<String> showType);
+
     public int checkAttrNameIsRepeat(AttrVo attrVo);
 
     public int updateAttr(AttrVo attrVo);

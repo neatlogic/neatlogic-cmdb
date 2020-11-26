@@ -253,6 +253,90 @@
 		ORDER BY sort ASC, id ASC
 	</select>
 
+	<select id="getRelByCiIdAndShowType" resultType="codedriver.module.cmdb.dto.ci.RelVo" useCache="false">
+		SELECT
+		a.`id`,
+		a.`type_id` AS typeId,
+		(SELECT name FROM cmdb_reltype cr WHERE cr.id = a.`type_id`) AS typeText,
+		a.`input_type` AS inputType,
+		a.`from_ci_id` AS fromCiId,
+		f.icon AS fromCiIcon,
+		f.name AS fromCiName,
+		f.label AS fromCiLabel,
+		a.`from_name` AS fromName,
+		a.`from_label` AS fromLabel,
+		a.`from_rule` AS fromRule,
+		a.`from_group_id` AS fromGroupId,
+		a.`from_is_unique` AS fromIsUnique,
+		(SELECT name FROM cmdb_relgroup g WHERE g.id = a.`from_group_id`) AS fromGroupName,
+		a.`to_ci_id` AS toCiId,
+		t.icon AS toCiIcon,
+		t.name AS toCiName,
+		t.label AS toCiLabel,
+		a.`to_name` AS toName,
+		a.`to_label` AS toLabel,
+		a.`to_rule` AS toRule,
+		a.`to_group_id` AS toGroupId,
+		a.`to_is_unique` AS toIsUnique,
+		(SELECT name FROM cmdb_relgroup g WHERE g.id = a.`to_group_id`) AS toGroupName,
+		'from' AS direction,
+		cview.sort
+		FROM
+		`cmdb_rel` a
+		JOIN cmdb_ci f ON a.from_ci_id = f.id
+		JOIN cmdb_ci t ON a.to_ci_id = t.id
+		LEFT JOIN
+		cmdb_view cview ON cview.item_id = a.id AND cview.`type` = 'relfrom'
+		WHERE
+		a.from_ci_id = #{ciId}
+		and cview.show_type in
+		<foreach collection="list" item="item" separator="," open="(" close=")">
+			#{item}
+		</foreach>
+		UNION
+		SELECT
+		a.`id`,
+		a.`type_id` AS typeId,
+		(SELECT name FROM cmdb_reltype cr WHERE cr.id = a.`type_id`) AS typeText,
+		a.`input_type` AS inputType,
+		a.`from_ci_id` AS fromCiId,
+		f.icon AS fromCiIcon,
+		f.name AS fromCiName,
+		f.label AS fromCiLabel,
+		a.`from_name` AS fromName,
+		a.`from_label` AS fromLabel,
+		a.`from_rule` AS fromRule,
+		a.`from_group_id` AS fromGroupId,
+		a.`from_is_unique` AS fromIsUnique,
+		(SELECT name FROM cmdb_relgroup g WHERE g.id = a.`from_group_id`) AS fromGroupName,
+		a.`to_ci_id` AS toCiId,
+		t.icon AS toCiIcon,
+		t.name AS toCiName,
+		t.label AS toCiLabel,
+		a.`to_name` AS toName,
+		a.`to_label` AS toLabel,
+		a.`to_rule` AS toRule,
+		a.`to_group_id` AS toGroupId,
+		a.`to_is_unique` AS toIsUnique,
+		(SELECT name FROM cmdb_relgroup g WHERE g.id = a.`to_group_id`) AS toGroupName,
+		'to' AS direction,
+		cview.sort
+		FROM
+		`cmdb_rel` a
+		JOIN cmdb_ci f ON a.from_ci_id = f.id
+		JOIN cmdb_ci t ON a.to_ci_id = t.id
+		LEFT JOIN cmdb_view cview
+		ON
+		cview.item_id = a.id AND cview.`type` = 'relto'
+		WHERE
+		a.to_ci_id = #{ciId}
+		and cview.show_type in
+		<foreach collection="list" item="item" separator="," open="(" close=")">
+			#{item}
+		</foreach>
+		ORDER BY sort ASC, id ASC
+	</select>
+
 
 	<update id="updateRel" parameterType="codedriver.module.cmdb.dto.ci.RelVo">
 		UPDATE
@@ -260,10 +344,14 @@
 		SET
 		`type_id` = #{typeId},
 		`input_type` = #{inputType},
+		`from_ci_id` = #{fromCiId},
+		`from_name` = #{fromName},
 		`from_label` = #{fromLabel},
 		`from_rule` = #{fromRule},
 		`from_group_id` = #{fromGroupId},
 		`from_is_unique` = #{fromIsUnique},
+		`to_ci_id` = #{toCiId},
+		`to_name` = #{toName},
 		`to_label` = #{toLabel},
 		`to_rule` = #{toRule},
 		`to_group_id` = #{toGroupId},
