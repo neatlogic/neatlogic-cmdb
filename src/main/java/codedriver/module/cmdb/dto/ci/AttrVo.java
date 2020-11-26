@@ -44,8 +44,8 @@ public class AttrVo implements Serializable {
     private String label;
     @EntityField(name = "描述", type = ApiParamType.STRING)
     private String description;
-    @EntityField(name = "验证组件", type = ApiParamType.STRING)
-    private String validator;
+    @EntityField(name = "验证组件id", type = ApiParamType.LONG)
+    private Long validatorId;
     @EntityField(name = "验证组件名称", type = ApiParamType.STRING)
     private String validatorName;
     @EntityField(name = "验证组件配置", type = ApiParamType.JSONOBJECT)
@@ -122,12 +122,12 @@ public class AttrVo implements Serializable {
         this.description = description;
     }
 
-    public String getValidator() {
-        return validator;
+    public Long getValidatorId() {
+        return validatorId;
     }
 
-    public void setValidator(String validator) {
-        this.validator = validator;
+    public void setValidatorId(Long validatorId) {
+        this.validatorId = validatorId;
     }
 
     public Integer getIsRequired() {

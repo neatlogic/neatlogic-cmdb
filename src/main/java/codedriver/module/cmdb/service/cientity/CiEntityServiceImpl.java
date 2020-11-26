@@ -385,6 +385,11 @@ public class CiEntityServiceImpl implements CiEntityService {
                         }
                     }
                 }
+                // 调用校验器校验数据合法性
+                if (attrVo.getValidatorId() != null) {
+
+                }
+
             }
         }
 
@@ -523,13 +528,12 @@ public class CiEntityServiceImpl implements CiEntityService {
                 needDeleteRelEntityTransactionList.removeAll(newRelEntityTransactionList);
             }
         }
-        
 
         // 排除掉没变化的关系
         List<RelEntityTransactionVo> sameRelEntityTransactionList =
             oldRelEntityList.stream().map(t -> new RelEntityTransactionVo(t)).collect(Collectors.toList());
         newRelEntityTransactionList.removeAll(sameRelEntityTransactionList);
-        
+
         if (CollectionUtils.isNotEmpty(needDeleteRelEntityTransactionList)) {
             newRelEntityTransactionList.addAll(needDeleteRelEntityTransactionList);
         }
