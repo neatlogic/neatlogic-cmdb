@@ -48,6 +48,8 @@ public class AttrVo implements Serializable {
     private Long validatorId;
     @EntityField(name = "验证组件名称", type = ApiParamType.STRING)
     private String validatorName;
+    @EntityField(name="验证组件类")
+    private String validatorHandler;
     @EntityField(name = "验证组件配置", type = ApiParamType.JSONOBJECT)
     private JSONObject validConfig;
 
@@ -284,6 +286,14 @@ public class AttrVo implements Serializable {
             }
         }
         return expressionList;
+    }
+
+    public String getValidatorHandler() {
+        return validatorHandler;
+    }
+
+    public void setValidatorHandler(String validatorHandler) {
+        this.validatorHandler = validatorHandler;
     }
 
 }

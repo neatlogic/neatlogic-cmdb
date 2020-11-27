@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,9 @@ import codedriver.framework.cmdb.constvalue.RelRuleType;
 import codedriver.framework.cmdb.constvalue.SaveModeType;
 import codedriver.framework.cmdb.constvalue.TransactionActionType;
 import codedriver.framework.cmdb.constvalue.TransactionStatus;
+import codedriver.framework.cmdb.dao.mapper.validator.ValidatorMapper;
+import codedriver.framework.cmdb.validator.core.IValidator;
+import codedriver.framework.cmdb.validator.core.ValidatorFactory;
 import codedriver.framework.common.util.PageUtil;
 import codedriver.framework.util.Md5Util;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
@@ -65,6 +69,9 @@ public class CiEntityServiceImpl implements CiEntityService {
 
     @Autowired
     private CiEntitySnapshotMapper ciEntitySnapshotMapper;
+
+    @Autowired
+    private ValidatorMapper validatorMapper;
 
     @Autowired
     private AttrMapper attrMapper;
@@ -386,15 +393,22 @@ public class CiEntityServiceImpl implements CiEntityService {
                     }
                 }
                 // 调用校验器校验数据合法性
-                if (attrVo.getValidatorId() != null) {
-
+                if (attrEntityTransactionVo != null
+                    && CollectionUtils.isNotEmpty(attrEntityTransactionVo.getValueList())
+                    && StringUtils.isNotBlank(attrVo.getValidatorHandler())) {
+                    IValidator validator = ValidatorFactory.getValidator(attrVo.getValidatorHandler());
+                    if (validator != null) {
+                        validator.valid(attrVo.getLabel(), attrEntityTransactionVo.getValueList(),
+                            attrVo.getValidatorId());
+                    }
                 }
-
             }
         }
 
         // 校验关系信息
-        for (RelVo relVo : relList) {
+        for (
+
+        RelVo relVo : relList) {
             // 判断当前配置项处于from位置的规则
             List<RelEntityTransactionVo> fromRelEntityTransactionList =
                 ciEntityTransactionVo.getRelEntityTransactionByRelId(relVo.getId(), RelDirectionType.FROM.getValue());
