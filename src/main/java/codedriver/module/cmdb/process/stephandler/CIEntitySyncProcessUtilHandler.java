@@ -98,7 +98,7 @@ public class CIEntitySyncProcessUtilHandler extends ProcessStepUtilHandlerBase {
 
         /** 授权 **/
         JSONArray authorityArray = new JSONArray();
-        ProcessTaskOperationType[] stepActions = {ProcessTaskOperationType.VIEW, ProcessTaskOperationType.TRANSFER};
+        ProcessTaskOperationType[] stepActions = {ProcessTaskOperationType.VIEW, ProcessTaskOperationType.TRANSFERCURRENTSTEP};
         for (ProcessTaskOperationType stepAction : stepActions) {
             authorityArray.add(new JSONObject() {
                 {
