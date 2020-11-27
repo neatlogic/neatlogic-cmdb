@@ -1,5 +1,11 @@
 package codedriver.module.cmdb.validator.handler;
 
+import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import com.alibaba.fastjson.JSONArray;
@@ -12,19 +18,8 @@ import codedriver.framework.cmdb.validator.core.ValidatorBase;
 public class RegexValidator extends ValidatorBase {
 
     @Override
-    public boolean valid(String value, Long validatorId) throws AttrInValidatedException {
-        return false;
-    }
-
-    @Override
     public String getName() {
         return "正则表达式校验组件";
-    }
-
-    @Override
-    protected boolean myValid(String value, JSONObject config) {
-        // TODO Auto-generated method stub
-        return false;
     }
 
     @Override
@@ -37,6 +32,18 @@ public class RegexValidator extends ValidatorBase {
         itemObj.put("validateList", new String[] {"required"});
         itemList.add(itemObj);
         return itemList;
+    }
+
+    @Override
+    protected boolean myValid(List<String> valueList, JSONObject config) {
+        if (CollectionUtils.isNotEmpty(valueList) && config != null && config.containsKey("regex")) {
+            String regex = config.getString("regex");
+            if (StringUtils.isNotBlank(regex)) {
+                Pattern pattern = Pattern.compile(regex);
+                return pattern.matcher(valueList.stream().collect(Collectors.joining(","))).matches();
+            }
+        }
+        return false;
     }
 
 }

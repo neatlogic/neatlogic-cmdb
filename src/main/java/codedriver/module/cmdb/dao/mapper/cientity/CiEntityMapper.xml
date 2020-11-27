@@ -25,18 +25,22 @@
 
 	<select id="getCiEntityById" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
 		SELECT
-		`id`,
-		`ci_id` AS ciId,
-		`name` AS name,
-		`fcu`,
-		`fcd`,
-		`lcu`,
-		`lcd`,
-		`status`,
-		`is_locked` AS isLocked
+		a.`id`,
+		a.`ci_id` AS ciId,
+		b.`name` AS ciName,
+		b.`icon` AS ciIcon,
+		b.`label` AS ciLabel,
+		b.`type_id` AS typeId,
+		c.`name` AS typeName,
+		a.`fcu`,
+		a.`fcd`,
+		a.`lcu`,
+		a.`lcd`,
+		a.`status`,
+		a.`is_locked` AS isLocked
 		FROM
-		`cmdb_cientity`
-		WHERE id = #{value}
+		`cmdb_cientity` a JOIN `cmdb_ci` b ON a.ci_id = b.id JOIN `cmdb_citype` c ON b.type_id = c.id
+		WHERE a.id = #{value}
 	</select>
 
 	<sql id="searchCiEntityIdCoundition">
@@ -48,104 +52,139 @@
 			</foreach>
 		</if>
 		) cientity
-		<if test="attrFilterList != null and attrFilterList.size() > 0">
-			<foreach collection="attrFilterList" item="filter" index="index">
-				<choose>
-					<when test="filter.expressionName != 'null' and filter.expressionName != 'notnull'">
-						JOIN (SELECT ci_entity_id FROM
-						cmdb_cientity ce
-						JOIN cmdb_attrentity ae ON ce.id = ae.ci_entity_id
-						WHERE ce.ci_id = #{ciId} AND ae.attr_id = #{filter.attrId}
-						<if test="filter.valueList != null and filter.valueList.size() > 0">
-							AND
-							<foreach collection="filter.valueList" item="val" open="(" separator="OR" close=")">
-								ae.value ${filter.expression}
-								<choose>
-									<when test="filter.expressionName == 'li' or filter.expressionName == 'nl'">CONCAT('%', #{val},'%')</when>
-									<otherwise>#{val}</otherwise>
-								</choose>
-							</foreach>
-						</if>
-						<if test="filter.expressionName == 'ne' or filter.expressionName == 'nl'">
-							UNION
-							SELECT ce.ci_entity_id FROM
-							cmdb_cientity ce
-							JOIN cmdb_attrentity ae ON ce.id = ae.ci_entity_id
-							WHERE ce.ci_id = #{ciId}
-							AND NOT EXISTS (SELECT 1 FROM ecmdb_attr_entity xx WHERE
-							ae.ci_entity_id = xx.ci_entity_id AND xx.`attr_id` = #{filter.attrId} )
-						</if>
-						) attr_${index} ON cientity.id = attr_${index}.ci_entity_id
-					</when>
-					<when test="filter.expressionName == 'null'">
-						JOIN (SELECT ce.ci_entity_id FROM
-						cmdb_cientity ce
-						JOIN cmdb_attrentity ae ON ce.id = ae.ci_entity_id
-						WHERE ce.ci_id = #{ciId}
-						AND NOT EXISTS (SELECT 1 FROM cmdb_attrentity xx WHERE
-						ae.ci_entity_id = xx.ci_entity_id AND xx.`attr_id` = #{filter.attrId} )
-						) attr_${index} ON cientity.id = attr_${index}.ci_entity_id
-					</when>
-					<when test="filter.expressionName == 'notnull'">
-						JOIN (SELECT ce.ci_entity_id FROM
-						cmdb_cientity ce
-						JOIN cmdb_attrentity ae ON ce.id = ae.ci_entity_id
-						WHERE ce.ci_id = #{ciId}
-						AND EXISTS (SELECT 1 FROM cmdb_attrentity xx WHERE
-						ae.ci_entity_id = xx.ci_entity_id AND xx.`attr_id` = #{filter.attrId} )
-						) attr_${index} ON cientity.id = attr_${index}.ci_entity_id
-					</when>
-				</choose>
-			</foreach>
-		</if>
-		<if test="relFilterList != null and relFilterList.size() > 0">
-			<foreach collection="relFilterList" item="filter" index="index">
-				<choose>
-					<when test="filter.expressionName == 'eq' and filter.valueList != null and filter.valueList.size() > 0">
-						JOIN (SELECT ce.ci_entity_id FROM
-						cmdb_cientity ce
-						JOIN cmdb_relentity re ON ce.id = re.from_cientity_id
-						WHERE ce.ci_id = #{ciId} AND re.rel_id = #{filter.relId}
-						AND re.to_cientity_id IN
-						<foreach collection="filter.valueList" item="val" open="(" separator="," close=")">
-							#{val}
-						</foreach>
-						UNION
-						SELECT ce.ci_entity_id FROM
-						cmdb_cientity ce
-						JOIN cmdb_relentity re ON ce.id = re.to_cientity_id
-						WHERE ce.ci_id = #{ciId} AND re.rel_id = #{filter.relId}
-						AND re.from_cientity_id IN
-						<foreach collection="filter.valueList" item="val" open="(" separator="," close=")">
-							#{val}
-						</foreach>
-						) rel_${index} ON cientity.id = rel_${index}.ci_entity_id
-					</when>
-					<when test="filter.expressionName == 'ne' and filter.valueList != null and filter.valueList.size() > 0">
-						JOIN (SELECT ce.ci_entity_id FROM
-						cmdb_cientity ce
-						JOIN cmdb_relentity re ON ce.id = re.from_cientity_id
-						WHERE ce.ci_id = #{ciId} AND re.rel_id = #{filter.relId}
-						AND NOT EXISTS (SELECT 1 FROM cmdb_relentity xx WHERE xx.from_cientity_id = re.from_cientity_id AND xx.rel_id = re.id AND re.to_cientity_id IN
-						<foreach collection="filter.valueList" item="val" open="(" separator="," close=")">
-							#{val}
-						</foreach>
-						)
-						UNION
-						SELECT ce.ci_entity_id FROM
-						cmdb_cientity ce
-						JOIN cmdb_relentity re ON ce.id = re.to_cientity_id
-						WHERE ce.ci_id = #{ciId} AND re.rel_id = #{filter.relId}
-						AND NOT EXISTS (SELECT 1 FROM cmdb_relentity xx WHERE xx.to_cientity_id = re.to_cientity_id AND xx.rel_id = re.id AND re.from_cientity_id IN
-						<foreach collection="filter.valueList" item="val" open="(" separator="," close=")">
-							#{val}
-						</foreach>
-						)
-						) rel_${index} ON cientity.id = rel_${index}.ci_entity_id
-					</when>
-				</choose>
-			</foreach>
-		</if>
+		<choose>
+			<when test="keyword != null and keyword != ''">
+				JOIN `cmdb_attrentity` ca ON cientity.id = ca.ci_entity_id AND ca.value LIKE CONCAT('%',#{keyword},'%')
+			</when>
+			<otherwise>
+				<if test="attrFilterList != null and attrFilterList.size() > 0">
+					<foreach collection="attrFilterList" item="filter" index="index">
+						<choose>
+							<when test="filter.expression == 'include' or filter.expression == 'like' or filter.expression == 'greater-than' or filter.expression == 'less-than'"><!-- 等于、大于、小于、包含 -->
+								<if test="filter.valueList != null and filter.valueList.size() > 0">
+									JOIN (SELECT ci_entity_id FROM
+									cmdb_cientity ce
+									JOIN cmdb_attrentity ae ON ce.id = ae.ci_entity_id
+									WHERE ce.ci_id = #{ciId} AND ae.attr_id = #{filter.attrId}
+									AND
+									<foreach collection="filter.valueList" item="val" open="(" separator="OR" close=")">
+										ae.value
+										<choose>
+											<when test="filter.expression == 'include'">
+												= #{val}
+											</when>
+											<when test="filter.expression == 'like'">
+												like CONCAT('%', #{val},'%')
+											</when>
+											<when test="filter.expression == 'greater-than'">
+												&gt; #{val}
+											</when>
+											<when test="filter.expression == 'less-than'">
+												&lt; #{val}
+											</when>
+										</choose>
+									</foreach>
+									) attr_${index} ON cientity.id = attr_${index}.ci_entity_id
+								</if>
+							</when>
+							<when test="filter.expression == 'exclude' or filter.expression == 'notlike'"><!-- 不等于、不包含 -->
+								<if test="filter.valueList != null and filter.valueList.size() > 0">
+									JOIN (
+									SELECT
+									id AS ci_entity_id
+									FROM
+									cmdb_cientity ce WHERE ce.ci_id = #{ciId}
+									AND NOT EXISTS (SELECT 1 FROM
+									cmdb_attrentity ae WHERE ae.ci_entity_id = ce.id
+									AND ae.attr_id = #{filter.attrId}
+									AND
+									<foreach collection="filter.valueList" item="val" open="(" separator="OR" close=")">
+										ae.value
+										<choose>
+											<when test="filter.expression == 'exclude'">
+												= #{val}
+											</when>
+											<when test="filter.expression == 'notlike'">
+												like CONCAT('%', #{val},'%')
+											</when>
+										</choose>
+									</foreach>
+									)
+									) attr_${index} ON cientity.id = attr_${index}.ci_entity_id
+								</if>
+							</when>
+							<when test="filter.expression == 'is-null'">
+								JOIN (SELECT ce.id as ci_entity_id FROM
+								cmdb_cientity ce
+								JOIN cmdb_attrentity ae ON ce.id = ae.ci_entity_id
+								WHERE ce.ci_id = #{ciId}
+								AND NOT EXISTS (SELECT 1 FROM cmdb_attrentity xx WHERE
+								ae.ci_entity_id = xx.ci_entity_id AND xx.`attr_id` = #{filter.attrId} )
+								) attr_${index} ON cientity.id = attr_${index}.ci_entity_id
+							</when>
+							<when test="filter.expression == 'is-not-null'">
+								JOIN (SELECT ce.id as ci_entity_id FROM
+								cmdb_cientity ce
+								JOIN cmdb_attrentity ae ON ce.id = ae.ci_entity_id
+								WHERE ce.ci_id = #{ciId}
+								AND EXISTS (SELECT 1 FROM cmdb_attrentity xx WHERE
+								ae.ci_entity_id = xx.ci_entity_id AND xx.`attr_id` = #{filter.attrId} )
+								) attr_${index} ON cientity.id = attr_${index}.ci_entity_id
+							</when>
+						</choose>
+					</foreach>
+				</if>
+				<if test="relFilterList != null and relFilterList.size() > 0">
+					<foreach collection="relFilterList" item="filter" index="index">
+						<choose>
+							<when test="filter.expression == 'eq' and filter.valueList != null and filter.valueList.size() > 0">
+								JOIN (SELECT ce.ci_entity_id FROM
+								cmdb_cientity ce
+								JOIN cmdb_relentity re ON ce.id = re.from_cientity_id
+								WHERE ce.ci_id = #{ciId} AND re.rel_id = #{filter.relId}
+								AND re.to_cientity_id IN
+								<foreach collection="filter.valueList" item="val" open="(" separator="," close=")">
+									#{val}
+								</foreach>
+								UNION
+								SELECT ce.ci_entity_id FROM
+								cmdb_cientity ce
+								JOIN cmdb_relentity re ON ce.id = re.to_cientity_id
+								WHERE ce.ci_id = #{ciId} AND re.rel_id = #{filter.relId}
+								AND re.from_cientity_id IN
+								<foreach collection="filter.valueList" item="val" open="(" separator="," close=")">
+									#{val}
+								</foreach>
+								) rel_${index} ON cientity.id = rel_${index}.ci_entity_id
+							</when>
+							<when test="filter.expression == 'ne' and filter.valueList != null and filter.valueList.size() > 0">
+								JOIN (SELECT ce.ci_entity_id FROM
+								cmdb_cientity ce
+								JOIN cmdb_relentity re ON ce.id = re.from_cientity_id
+								WHERE ce.ci_id = #{ciId} AND re.rel_id = #{filter.relId}
+								AND NOT EXISTS (SELECT 1 FROM cmdb_relentity xx WHERE xx.from_cientity_id = re.from_cientity_id AND xx.rel_id = re.id AND re.to_cientity_id IN
+								<foreach collection="filter.valueList" item="val" open="(" separator="," close=")">
+									#{val}
+								</foreach>
+								)
+								UNION
+								SELECT ce.ci_entity_id FROM
+								cmdb_cientity ce
+								JOIN cmdb_relentity re ON ce.id = re.to_cientity_id
+								WHERE ce.ci_id = #{ciId} AND re.rel_id = #{filter.relId}
+								AND NOT EXISTS (SELECT 1 FROM cmdb_relentity xx WHERE xx.to_cientity_id = re.to_cientity_id AND xx.rel_id = re.id AND re.from_cientity_id IN
+								<foreach collection="filter.valueList" item="val" open="(" separator="," close=")">
+									#{val}
+								</foreach>
+								)
+								) rel_${index} ON cientity.id = rel_${index}.ci_entity_id
+							</when>
+						</choose>
+					</foreach>
+				</if>
+			</otherwise>
+		</choose>
+
 		<if test="groupIdList != null and groupIdList.size() > 0">
 			JOIN
 			(
@@ -165,23 +204,26 @@
 
 	<select id="searchCiEntityByIdList" resultType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
 		SELECT
-		`id`,
-		`ci_id` AS ciId,
-		`name` AS name,
-		`fcu`,
-		`fcd`,
-		`lcu`,
-		`lcd`,
-		`status`,
-		`is_locked` AS isLocked
+		a.`id`,
+		a.`ci_id` AS ciId,
+		b.`name` AS ciName,
+		b.`icon` AS ciIcon,
+		b.`type_id` AS typeId,
+		c.`name` AS typeName,
+		a.`fcu`,
+		a.`fcd`,
+		a.`lcu`,
+		a.`lcd`,
+		a.`status`,
+		a.`is_locked` AS isLocked
 		FROM
-		`cmdb_cientity`
+		`cmdb_cientity` a JOIN `cmdb_ci` b ON a.ci_id = b.id JOIN `cmdb_citype` c ON b.type_id = c.id
 		WHERE
-		id IN
+		a.id IN
 		<foreach collection="idList" item="item" open="(" separator="," close=")">
 			#{item}
 		</foreach>
-		ORDER BY id DESC
+		ORDER BY a.id DESC
 	</select>
 
 	<select id="searchCiEntityId" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo" resultType="java.lang.Long">
@@ -197,6 +239,20 @@
 		SELECT COUNT(distinct cientity.id)
 		<include refid="searchCiEntityIdCoundition"></include>
 	</select>
+
+	<select id="getCiEntityIdByCiId" parameterType="java.lang.Long" resultType="java.lang.Long">
+		SELECT id FROM cmdb_cientity WHERE ci_id = #{value}
+	</select>
+
+    <select id="getIdByCiIdAndName" resultType="java.lang.Long">
+        SELECT
+        `id`
+        from
+        `cmdb_cientity`
+        where
+        `ci_id` = #{ciId} and `name` = #{name}
+        limit 1
+    </select>
 
 	<update id="updateCiEntityLockById" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
 		UPDATE
@@ -227,6 +283,23 @@
 		#{isLocked}
 		)
 	</insert>
+
+	<delete id="deleteCiEntityById" parameterType="java.lang.Long">
+		DELETE
+		a,b,c,d,e
+		FROM
+		cmdb_cientity a
+		LEFT JOIN cmdb_attrentity b
+		ON a.id = b.`ci_entity_id`
+		LEFT JOIN cmdb_relentity c
+		ON a.id = c.`from_cientity_id`
+		LEFT JOIN cmdb_relentity d
+		ON a.id = c.`to_cientity_id`
+		LEFT JOIN cmdb_cientity_group e
+		ON a.id = e.ci_entity_id
+		WHERE
+		a.id = #{value}
+	</delete>
 
 	<delete id="deleteCiEntityByCiId" parameterType="java.lang.Long">
 		DELETE

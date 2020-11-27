@@ -13,6 +13,8 @@ public interface PropMapper {
 
     public int checkPropLabelIsExists(PropVo propVo);
 
+    public PropVo getPropByAttrId(Long attrId);
+
     public PropVo getPropById(Long propId);
 
     public List<PropVo> searchProp(PropVo propVo);

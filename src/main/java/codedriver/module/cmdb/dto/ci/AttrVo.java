@@ -1,16 +1,22 @@
 package codedriver.module.cmdb.dto.ci;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.annotation.JSONField;
+import com.alibaba.nacos.client.naming.utils.CollectionUtils;
 
 import codedriver.framework.cmdb.constvalue.AttrType;
 import codedriver.framework.cmdb.constvalue.InputType;
+import codedriver.framework.cmdb.constvalue.SearchExpression;
 import codedriver.framework.cmdb.prop.core.IPropertyHandler;
 import codedriver.framework.cmdb.prop.core.PropertyHandlerFactory;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.common.dto.ValueTextVo;
 import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.SnowflakeUtil;
 
@@ -38,10 +44,12 @@ public class AttrVo implements Serializable {
     private String label;
     @EntityField(name = "描述", type = ApiParamType.STRING)
     private String description;
-    @EntityField(name = "验证组件", type = ApiParamType.STRING)
-    private String validator;
+    @EntityField(name = "验证组件id", type = ApiParamType.LONG)
+    private Long validatorId;
     @EntityField(name = "验证组件名称", type = ApiParamType.STRING)
     private String validatorName;
+    @EntityField(name="验证组件类")
+    private String validatorHandler;
     @EntityField(name = "验证组件配置", type = ApiParamType.JSONOBJECT)
     private JSONObject validConfig;
 
@@ -60,6 +68,10 @@ public class AttrVo implements Serializable {
     private String groupName;
     @EntityField(name = "是否支持搜索", type = ApiParamType.BOOLEAN)
     private boolean canSearch = false;
+    @JSONField(serialize = false)
+    private transient int sort;// 排序，数据来自ciViewVo
+    @EntityField(name = "支持的搜索表达式列表")
+    private List<ValueTextVo> expressionList;
 
     public Long getId() {
         if (id == null) {
@@ -112,12 +124,12 @@ public class AttrVo implements Serializable {
         this.description = description;
     }
 
-    public String getValidator() {
-        return validator;
+    public Long getValidatorId() {
+        return validatorId;
     }
 
-    public void setValidator(String validator) {
-        this.validator = validator;
+    public void setValidatorId(Long validatorId) {
+        this.validatorId = validatorId;
     }
 
     public Integer getIsRequired() {
@@ -247,6 +259,41 @@ public class AttrVo implements Serializable {
             }
         }
         return canSearch;
+    }
+
+    public int getSort() {
+        return sort;
+    }
+
+    public void setSort(int sort) {
+        this.sort = sort;
+    }
+
+    public List<ValueTextVo> getExpressionList() {
+        if (CollectionUtils.isEmpty(this.expressionList)) {
+            expressionList = new ArrayList<>();
+            if (type.equals(AttrType.PROPERTY.getValue())) {
+                if (StringUtils.isNotBlank(propHandler)) {
+                    IPropertyHandler handler = PropertyHandlerFactory.getHandler(propHandler);
+                    for (SearchExpression expression : handler.getSupportExpression()) {
+                        expressionList.add(new ValueTextVo(expression.getExpression(), expression.getText()));
+                    }
+                }
+            } else if (type.equals(AttrType.CUSTOM.getValue())) {
+                for (SearchExpression expression : SearchExpression.values()) {
+                    expressionList.add(new ValueTextVo(expression.getExpression(), expression.getText()));
+                }
+            }
+        }
+        return expressionList;
+    }
+
+    public String getValidatorHandler() {
+        return validatorHandler;
+    }
+
+    public void setValidatorHandler(String validatorHandler) {
+        this.validatorHandler = validatorHandler;
     }
 
 }

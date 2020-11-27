@@ -6,7 +6,8 @@
 		SELECT * FROM (
 		SELECT
 		attr.id AS itemId,
-		attr.`label` AS itemName,
+		attr.`name` as itemName,
+		attr.`label` AS itemLabel,
 		'attr' AS type,
 		show_type AS showType,
 		v.sort
@@ -20,7 +21,8 @@
 		UNION
 		SELECT
 		rel.id AS itemId,
-		rel.to_label AS itemName,<!-- 当前模型作为上游时需要显示下游目标名称 -->
+		rel.to_name AS itemName,
+		rel.to_label AS itemLabel,<!-- 当前模型作为上游时需要显示下游目标名称 -->
 		'relfrom' AS type,
 		show_type AS showType,
 		v.sort
@@ -34,7 +36,8 @@
 		UNION
 		SELECT
 		rel.id AS itemId,
-		rel.from_label AS itemName,<!-- 当前模型作为下游时需要显示上游目标名称 -->
+		rel.from_name AS itemName,
+		rel.from_label AS itemLabel,<!-- 当前模型作为下游时需要显示上游目标名称 -->
 		'relto' AS type,
 		v.show_type AS showType,
 		v.sort

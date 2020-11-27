@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 import codedriver.module.cmdb.dto.transaction.AttrEntityTransactionVo;
 import codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.module.cmdb.dto.transaction.RelEntityTransactionVo;
+import codedriver.module.cmdb.dto.transaction.TransactionGroupVo;
 import codedriver.module.cmdb.dto.transaction.TransactionVo;
 
 public interface TransactionMapper {
@@ -17,7 +18,8 @@ public interface TransactionMapper {
 
     public int searchTransactionCount(TransactionVo transactionVo);
 
-    public List<AttrEntityTransactionVo> getAttrEntityTransactionByTransactionId(Long transactionId);
+    public List<CiEntityTransactionVo>
+        getCiEntityTransactionByTransactionIdList(@Param("transactionIdList") List<Long> transactionIdList);
 
     public List<AttrEntityTransactionVo> getAttrEntityTransactionByTransactionIdAndCiEntityId(
         @Param("transactionId") Long transactionId, @Param("ciEntityId") Long ciEntityId);
@@ -25,7 +27,7 @@ public interface TransactionMapper {
     public List<RelEntityTransactionVo> getRelEntityTransactionByTransactionIdAndCiEntityId(
         @Param("transactionId") Long transactionId, @Param("ciEntityId") Long ciEntityId);
 
-    public List<CiEntityTransactionVo> getCiEntityTransactionByTransactionId(Long transactionId);
+    public CiEntityTransactionVo getCiEntityTransactionByTransactionId(Long transactionId);
 
     public CiEntityTransactionVo getCiEntityTransactionByTransactionIdAndCiEntityId(
         @Param("transactionId") Long transactionId, @Param("ciEntityId") Long ciEntityId);
@@ -37,6 +39,9 @@ public interface TransactionMapper {
     public int insertAttrEntityTransaction(AttrEntityTransactionVo attrEntityTransactionVo);
 
     public int insertCiEntityTransaction(CiEntityTransactionVo ciEntityTransactionVo);
+
+    public int insertTransactionGroup(@Param("transactionGroupId") Long transactionGroupId,
+        @Param("transactionId") Long transactionId);
 
     public int insertTransaction(TransactionVo transactionVo);
 

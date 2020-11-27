@@ -1,14 +1,14 @@
 package codedriver.module.cmdb.prop.handler;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.stereotype.Component;
-
-import com.alibaba.fastjson.JSONArray;
-
 import codedriver.framework.cmdb.constvalue.SearchExpression;
 import codedriver.framework.cmdb.prop.core.IPropertyHandler;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class CheckboxPropHandler implements IPropertyHandler {
@@ -25,9 +25,8 @@ public class CheckboxPropHandler implements IPropertyHandler {
 
     @Override
     public SearchExpression[] getSupportExpression() {
-        return new SearchExpression[] {SearchExpression.EQ, SearchExpression.GE, SearchExpression.GT,
-            SearchExpression.LE, SearchExpression.LT, SearchExpression.LI, SearchExpression.NE, SearchExpression.NL,
-            SearchExpression.NOTNULL, SearchExpression.NULL,};
+        return new SearchExpression[] {SearchExpression.EQ, SearchExpression.LI, SearchExpression.NE,
+            SearchExpression.NL, SearchExpression.NOTNULL, SearchExpression.NULL};
     }
 
     @Override
@@ -36,5 +35,21 @@ public class CheckboxPropHandler implements IPropertyHandler {
         return null;
     }
 
-
+    @Override
+    public Object getActualValue(List<String> values, JSONObject config) {
+        JSONArray array = new JSONArray();
+        if (CollectionUtils.isNotEmpty(values)) {
+            if (MapUtils.isNotEmpty(config)) {
+                JSONArray dataList = config.getJSONArray("dataList");
+                for (int i = 0; i < values.size(); i++) {
+                    if (dataList.contains(values.get(i))) {
+                        array.add(values.get(i));
+                    } else {
+                        throw new RuntimeException(values.get(i) + "不在复选框可选值范围内");
+                    }
+                }
+            }
+        }
+        return array;
+    }
 }

@@ -1,14 +1,10 @@
-package codedriver.module.cmdb.api.rel;
-
-import java.util.ArrayList;
-import java.util.List;
+package codedriver.module.cmdb.api.reltype;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
 
-import codedriver.framework.common.dto.ValueTextVo;
 import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.OperationType;
@@ -20,7 +16,7 @@ import codedriver.module.cmdb.dto.ci.RelTypeVo;
 
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class GetCiRelTypeListApi extends PrivateApiComponentBase {
+public class GetRelTypeListApi extends PrivateApiComponentBase {
 
     @Autowired
     private RelTypeMapper relTypeMapper;
@@ -40,15 +36,10 @@ public class GetCiRelTypeListApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Output({@Param(explode = ValueTextVo[].class)})
+    @Output({@Param(explode = RelTypeVo[].class)})
     @Description(desc = "获取模型关系类型列表接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        List<RelTypeVo> relTypeList = relTypeMapper.getAllRelType();
-        List<ValueTextVo> returnList = new ArrayList<>();
-        for (RelTypeVo relTypeVo : relTypeList) {
-            returnList.add(new ValueTextVo(relTypeVo.getId().toString(), relTypeVo.getName()));
-        }
-        return returnList;
+        return relTypeMapper.getAllRelType();
     }
 }

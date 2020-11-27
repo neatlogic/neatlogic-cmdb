@@ -33,13 +33,10 @@
 		`cmdb_attrentity` a JOIN
 		`cmdb_attr` b ON a.`attr_id` = b.`id`
 		LEFT JOIN `cmdb_prop` p ON b.`prop_id` = p.id
-		WHERE a.ci_entity_id IN (SELECT
-		DISTINCT ci_entity_id
-		FROM
-		`cmdb_attrentity`
-		WHERE ci_entity_id != #{ciEntityId} AND attr_id = #{attrId} AND value IN
+		WHERE a.ci_entity_id != #{ciEntityId}
+		AND a.attr_id = #{attrId}
+		AND a.value IN
 		<foreach collection="valueList" item="item" open="(" separator="," close=")"> #{item}</foreach>
-		)
 		ORDER BY a.id
 	</select>
 

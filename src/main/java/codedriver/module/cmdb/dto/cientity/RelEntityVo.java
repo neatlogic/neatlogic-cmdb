@@ -18,6 +18,10 @@ public class RelEntityVo {
     private Long relId;
     @EntityField(name = "关系唯一标识", type = ApiParamType.STRING)
     private String relName;
+    @EntityField(name = "关系类型id", type = ApiParamType.LONG)
+    private Long relTypeId;
+    @EntityField(name = "关系类型名称", type = ApiParamType.STRING)
+    private String relTypeName;
     @EntityField(name = "来源配置项id", type = ApiParamType.LONG)
     @ESKey(type = ESKeyType.PKEY, name = "id")
     private Long fromCiEntityId;
@@ -84,14 +88,6 @@ public class RelEntityVo {
         this.toCiEntityId = toCiEntityId;
     }
 
-    public String getRelName() {
-        return relName;
-    }
-
-    public void setRelName(String relName) {
-        this.relName = relName;
-    }
-
     public String getDirection() {
         return direction;
     }
@@ -128,9 +124,9 @@ public class RelEntityVo {
         if (getToCiEntityId() != null) {
             key += getToCiEntityId() + "_";
         }
-        if (StringUtils.isNotBlank(this.direction)) {
+        /*if (StringUtils.isNotBlank(this.direction)) {
             key += this.direction;
-        }
+        }*/
         return key.hashCode();
     }
 
@@ -148,7 +144,7 @@ public class RelEntityVo {
         final RelEntityVo rel = (RelEntityVo)other;
         if (Objects.equal(getRelId(), rel.getRelId()) && Objects.equal(getFromCiEntityId(), rel.getFromCiEntityId())
             && Objects.equal(getToCiEntityId(), rel.getToCiEntityId())
-            && Objects.equal(getDirection(), rel.getDirection())) {
+        /* && Objects.equal(getDirection(), rel.getDirection())*/) {
             return true;
         } else {
             return false;
@@ -177,5 +173,21 @@ public class RelEntityVo {
 
     public void setTransactionId(Long transactionId) {
         this.transactionId = transactionId;
+    }
+
+    public Long getRelTypeId() {
+        return relTypeId;
+    }
+
+    public void setRelTypeId(Long relTypeId) {
+        this.relTypeId = relTypeId;
+    }
+
+    public String getRelTypeName() {
+        return relTypeName;
+    }
+
+    public void setRelTypeName(String relTypeName) {
+        this.relTypeName = relTypeName;
     }
 }

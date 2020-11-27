@@ -23,5 +23,7 @@ public interface CiTypeMapper {
 
     public int insertCiType(CiTypeVo ciTypeVo);
 
-    public int updateCitype(CiTypeVo ciTypeVo);
+    public int updateCiType(CiTypeVo ciTypeVo);
+
+    public int deleteCiTypeById(Long ciTypeId);
 }

@@ -25,6 +25,20 @@
 		) t
 	</select>
 
+	<select id="getPropByAttrId" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.prop.PropVo" useCache="true">
+		SELECT
+		a.`id`,
+		a.`name`,
+		a.`label`,
+		a.`description`,
+		a.`handler`,
+		a.`config`
+		FROM
+		`cmdb_prop` a JOIN cmdb_attr b ON a.id = b.prop_id
+		WHERE
+		b.id = #{value}
+	</select>
+
 	<select id="getPropById" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.prop.PropVo" useCache="true">
 		SELECT
 		`id`,

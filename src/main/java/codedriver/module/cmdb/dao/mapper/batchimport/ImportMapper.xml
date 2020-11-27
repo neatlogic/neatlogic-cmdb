@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.cmdb.dao.mapper.batchimport.ImportMapper">
+
+	<select id="getCmdbImportFileList" resultType="codedriver.framework.file.dto.FileVo" parameterType="java.lang.String">
+		SELECT
+		b.`id`,
+		b.`name`,
+		b.`path`,
+		b.`size`
+		FROM
+		`cmdb_import_file` a JOIN `file` b ON a.`file_id` = b.`id`
+		WHERE
+		1=1
+		<if test="value != null and value != ''">
+			AND b.`user_uuid` = #{VALUE}
+		</if>
+	</select>
+
+	<select id="searchImportAuditCount" parameterType="codedriver.module.cmdb.dto.batchimport.ImportAuditVo" resultType="int" useCache="false">
+		SELECT
+		COUNT(a.`id`)
+		FROM `cmdb_import_audit` a
+		WHERE 1=1
+		<if test="ciId != null">
+			and `ci_id` = #{ciId}
+		</if>
+		<if test="importUser != null and importUser != ''">
+			and `import_user` = #{importUser}
+		</if>
+	</select>
+
+	<select id="searchImportAudit" parameterType="codedriver.module.cmdb.dto.batchimport.ImportAuditVo" resultType="codedriver.module.cmdb.dto.batchimport.ImportAuditVo" useCache="false">
+		SELECT
+		`id`,
+		`import_user` as importUser,
+		(select `user_name` from `user` where `uuid` = a.`import_user`) as `importUserName`,
+		`import_date` as `importDate`,
+		`finish_date` as `finishDate`,
+		(select `label` from `cmdb_ci` where `id` = a.`ci_id`) as `ciName`,
+		`action`,
+		`success_count` as `successCount`,
+		`failed_count` as `failedCount`,
+		`status`,
+		`error`
+		FROM
+		`cmdb_import_audit` a
+		WHERE 1=1
+		<if test="ciId != null">
+			and `ci_id` = #{ciId}
+		</if>
+		<if test="importUser != null and importUser != ''">
+			and `import_user` = #{importUser}
+		</if>
+		order by `import_date` desc
+		<if test="needPage">
+			limit #{startNum}, #{pageSize}
+		</if>
+	</select>
+
+	<select id="getImportAuditById" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.batchimport.ImportAuditVo">
+		select
+		`id`,
+		(select `user_name` from `user` where `uuid` = a.`import_user`) as `importUserName`,
+		`import_date`,
+		`finish_date`,
+		(select `label` from `cmdb_ci` where `id` = a.`ci_id`) as `ciName`,
+		`action`,
+		`success_count` as `successCount`,
+		`failed_count` as `failedCount`,
+		`status`,
+		`error`
+		FROM
+		`cmdb_import_audit` a
+		WHERE `id` = #{value}
+	</select>
+
+	<update id="updateImportAudit" parameterType="codedriver.module.cmdb.dto.batchimport.ImportAuditVo">
+		UPDATE `cmdb_import_audit` SET
+		`finish_date` = NOW(),
+		`success_count` = #{successCount},
+		`failed_count` = #{failedCount},
+		`total_count` = #{totalCount},
+		`status` = 1,
+		`error` = #{error}
+		WHERE `id` = #{id}
+	</update>
+
+	<update id="updateImportAuditTemporary" parameterType="codedriver.module.cmdb.dto.batchimport.ImportAuditVo">
+		UPDATE `cmdb_import_audit` SET
+		`success_count` = #{successCount},
+		`failed_count` = #{failedCount},
+		`total_count` = #{totalCount},
+		`error` = #{error}
+		WHERE `id` = #{id}
+	</update>
+
+	<update id="updateImportAuditStatus" parameterType="codedriver.module.cmdb.dto.batchimport.ImportAuditVo">
+		UPDATE cmdb_import_audit SET
+		`finish_date` = NOW(),
+		`status` = #{status},
+		`error` = #{error}
+		WHERE `id` = #{id}
+	</update>
+
+	<insert id="insertCmdbImportFile" parameterType="codedriver.framework.file.dto.FileVo">
+		INSERT INTO `cmdb_import_file` (
+		`file_id`
+		)
+		VALUES
+		(
+		#{id}
+		)
+	</insert>
+
+	<insert id="insertImportAudit" parameterType="codedriver.module.cmdb.dto.batchimport.ImportAuditVo">
+		INSERT INTO cmdb_import_audit
+		(
+		`id`,
+		`import_user`,
+		`import_date`,
+		`action`,
+		`file_id`,
+		`ci_id`,
+		`server_id`
+		)
+		VALUES(
+		#{id},
+		#{importUser},
+		NOW(),
+		#{action},
+		#{fileId},
+		#{ciId},
+		#{serverId}
+		)
+	</insert>
+
+	<delete id="deleteCmdbImportFile" parameterType="java.lang.Long">
+		DELETE FROM `cmdb_import_file`
+		WHERE `file_id` = #{value}
+	</delete>
+
+</mapper>

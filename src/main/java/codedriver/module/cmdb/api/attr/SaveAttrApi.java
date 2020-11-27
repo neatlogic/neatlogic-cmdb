@@ -1,5 +1,6 @@
 package codedriver.module.cmdb.api.attr;
 
+import codedriver.module.cmdb.exception.attr.AttrNameRepeatException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -87,6 +88,10 @@ public class SaveAttrApi extends PrivateApiComponentBase {
         } else {
             attrVo.setExpression(null);
             attrVo.setPropId(null);
+        }
+        //校验name是否重复
+        if(attrMapper.checkAttrNameIsRepeat(attrVo) > 0){
+            throw new AttrNameRepeatException(attrVo.getName());
         }
         if (attrId == null) {
             attrMapper.insertAttr(attrVo);

@@ -1,12 +1,11 @@
 package codedriver.module.cmdb.prop.handler;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.stereotype.Component;
-
 import codedriver.framework.cmdb.constvalue.SearchExpression;
 import codedriver.framework.cmdb.prop.core.IPropertyHandler;
+import com.alibaba.fastjson.JSONObject;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class FilePropHandler implements IPropertyHandler {
@@ -18,14 +17,12 @@ public class FilePropHandler implements IPropertyHandler {
 
     @Override
     public Boolean canSearch() {
-        return false;
+        return true;
     }
 
     @Override
     public SearchExpression[] getSupportExpression() {
-        return new SearchExpression[] {SearchExpression.EQ, SearchExpression.GE, SearchExpression.GT,
-            SearchExpression.LE, SearchExpression.LT, SearchExpression.LI, SearchExpression.NE, SearchExpression.NL,
-            SearchExpression.NOTNULL, SearchExpression.NULL,};
+        return new SearchExpression[] {SearchExpression.NOTNULL, SearchExpression.NULL};
     }
 
     @Override
@@ -34,4 +31,8 @@ public class FilePropHandler implements IPropertyHandler {
         return null;
     }
 
+    @Override
+    public Object getActualValue(List<String> values, JSONObject config) {
+        return null;
+    }
 }

@@ -72,9 +72,11 @@ public class GetCiTopoApi extends PrivateApiComponentBase {
                 Layer.Builder lb = new Layer.Builder("CiType" + ciTypeVo.getId());
                 lb.withLabel(ciTypeVo.getName());
                 for (CiVo ciVo : ciTypeVo.getCiList()) {
-                    Node.Builder nb = new Node.Builder("Ci" + ciVo.getId());
+                    Node.Builder nb = new Node.Builder("Ci_" + ciVo.getId());
+                    nb.withTooltip(ciVo.getLabel() + "(" + ciVo.getName() + ")");
                     nb.withLabel(ciVo.getLabel());
                     nb.withImage(ciVo.getIcon());
+                    nb.withClass("cinode normalnode");
                     lb.addNode(nb.build());
                     ciIdSet.add(ciVo.getId());
                 }
@@ -84,8 +86,8 @@ public class GetCiTopoApi extends PrivateApiComponentBase {
         if (CollectionUtils.isNotEmpty(relList)) {
             for (RelVo relVo : relList) {
                 if (ciIdSet.contains(relVo.getFromCiId()) && ciIdSet.contains(relVo.getToCiId())) {
-                    Link.Builder lb = new Link.Builder("Ci" + relVo.getFromCiId(), "Ci" + relVo.getToCiId());
-                    lb.withHeadLabel(relVo.getTypeText());
+                    Link.Builder lb = new Link.Builder("Ci_" + relVo.getFromCiId(), "Ci_" + relVo.getToCiId());
+                    lb.withLabel(relVo.getTypeText());
                     lb.setFontSize(9);
                     gb.addLink(lb.build());
                 }

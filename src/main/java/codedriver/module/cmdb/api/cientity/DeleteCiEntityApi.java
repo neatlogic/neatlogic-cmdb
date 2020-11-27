@@ -1,4 +1,4 @@
-package codedriver.module.cmdb.api.ci;
+package codedriver.module.cmdb.api.cientity;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -6,31 +6,28 @@ import org.springframework.stereotype.Service;
 import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
-import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.dao.mapper.ci.CiTypeMapper;
-import codedriver.module.cmdb.dto.ci.CiTypeVo;
+import codedriver.module.cmdb.dto.cientity.CiEntityVo;
+import codedriver.module.cmdb.service.cientity.CiEntityService;
 
 @Service
-@OperationType(type = OperationTypeEnum.SEARCH)
-public class GetCiTypeApi extends PrivateApiComponentBase {
+public class DeleteCiEntityApi extends PrivateApiComponentBase {
 
     @Autowired
-    private CiTypeMapper ciTypeMapper;
+    private CiEntityService ciEntityService;
 
     @Override
     public String getToken() {
-        return "/cmdb/citype/get";
+        return "/cmdb/cientity/delete";
     }
 
     @Override
     public String getName() {
-        return "获取模型类型信息";
+        return "删除配置项";
     }
 
     @Override
@@ -38,13 +35,13 @@ public class GetCiTypeApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "类型id")})
-    @Output({@Param(explode = CiTypeVo.class)})
-    @Description(desc = "获取模型类型信息接口")
+    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "配置项id")})
+    @Output({@Param(explode = CiEntityVo.class)})
+    @Description(desc = "删除配置项接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        Long id = jsonObj.getLong("id");
-        return ciTypeMapper.getCiTypeById(id);
-        
+        ciEntityService.deleteCiEntity(jsonObj.getLong("id"));
+        return null;
     }
+
 }

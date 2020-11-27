@@ -45,7 +45,7 @@ public class SearchTransactionApi extends PrivateApiComponentBase {
         @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页大小"),
         @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页数"),
         @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页")})
-    @Output({@Param(explode = TransactionVo.class), @Param(explode = BasePageVo.class)})
+    @Output({@Param(name = "tbodyList", explode = TransactionVo[].class), @Param(explode = BasePageVo.class)})
     @Description(desc = "查询事务接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {

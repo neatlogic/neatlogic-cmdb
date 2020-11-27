@@ -14,8 +14,8 @@
 		`name`,
 		`label`,
 		`description`,
-		`validator`,
-		(SELECT name FROM cmdb_validator x WHERE x.id = validator) AS validatorName,
+		`validator_id` AS validatorId,
+		(SELECT name FROM cmdb_validator x WHERE x.id = validator_id) AS validatorName,
 		`is_required` AS isRequired,
 		`is_unique` AS isUnique,
 		`input_type` AS inputType,
@@ -43,22 +43,115 @@
 		attr.`name`,
 		attr.`label`,
 		attr.`description`,
-		attr.`validator`,
+		attr.`validator_id` AS validatorId ,
 		cv.`name` AS validatorName,
-		cv.`config` AS validConfig,
+		cv.`handler` AS validatorHandler,
 		attr.`is_required` AS isRequired,
 		attr.`is_unique` AS isUnique,
 		attr.`input_type` AS inputType,
 		attr.`group_name` AS groupName,
-		attr.`is_private` AS isPrivate
+		attr.`is_private` AS isPrivate,
+		cview.sort
 		FROM
-		`cmdb_attr` attr LEFT JOIN cmdb_validator cv ON attr.`validator` = cv.id
-		LEFT JOIN cmdb_prop cp ON attr.prop_id = cp.id
+		`cmdb_attr` attr
+		LEFT JOIN cmdb_validator cv ON
+		attr.`validator_id` = cv.id
+		LEFT JOIN cmdb_prop cp ON
+		attr.prop_id = cp.id
+		LEFT JOIN cmdb_view cview ON
+		attr.id = cview.item_id
+		and cview.type = 'attr'
 		WHERE
-		ci_id = #{value}
-		ORDER BY attr.id
+		attr.ci_id = #{value}
+		ORDER BY
+		sort ASC,
+		attr.id ASC<!-- 按照视图设置的排序 -->
 	</select>
 
+	<select id="getAttrByCiIdAndShowType" resultType="codedriver.module.cmdb.dto.ci.AttrVo" useCache="false"><!-- 引用了prop数据，所以不能用cache -->
+		SELECT
+		attr.`id`,
+		attr.`ci_id` AS ciId,
+		attr.`type`,
+		attr.`prop_id` AS propId,
+		cp.`config` AS propConfig,
+		cp.`handler` AS propHandler,
+		attr.`expression`,
+		attr.`name`,
+		attr.`label`,
+		attr.`description`,
+		attr.`validator_id` as validatorId,
+		cv.`name` AS validatorName,
+		cv.`handler` AS validatorHandler,
+		attr.`is_required` AS isRequired,
+		attr.`is_unique` AS isUnique,
+		attr.`input_type` AS inputType,
+		attr.`group_name` AS groupName,
+		attr.`is_private` AS isPrivate,
+		cview.sort
+		FROM
+		`cmdb_attr` attr
+		LEFT JOIN cmdb_validator cv ON
+		attr.`validator_id` = cv.id
+		LEFT JOIN cmdb_prop cp ON
+		attr.prop_id = cp.id
+		LEFT JOIN cmdb_view cview ON
+		attr.id = cview.item_id
+		and cview.type = 'attr'
+		WHERE
+		attr.ci_id = #{ciId}
+		and cview.show_type in
+		<foreach collection="list" item="item" separator="," open="(" close=")">
+			#{item}
+		</foreach>
+		ORDER BY
+		sort ASC,
+		attr.id ASC<!-- 按照视图设置的排序 -->
+	</select>
+
+	<select id="getAttrByCiIdList" resultType="codedriver.module.cmdb.dto.ci.AttrVo" useCache="false"><!-- 引用了prop数据，所以不能用cache -->
+		SELECT
+		attr.`id`,
+		attr.`ci_id` AS ciId,
+		attr.`type`,
+		attr.`prop_id` AS propId,
+		cp.`config` AS propConfig,
+		cp.`handler` AS propHandler,
+		attr.`expression`,
+		attr.`name`,
+		attr.`label`,
+		attr.`description`,
+		attr.`validator_id` AS validatorId,
+		cv.`name` AS validatorName,
+		cv.`handler` AS validatorHandler,
+		attr.`is_required` AS isRequired,
+		attr.`is_unique` AS isUnique,
+		attr.`input_type` AS inputType,
+		attr.`group_name` AS groupName,
+		attr.`is_private` AS isPrivate,
+		cview.sort
+		FROM
+		`cmdb_attr` attr
+		LEFT JOIN cmdb_validator cv ON
+		attr.`validator_id` = cv.id
+		LEFT JOIN cmdb_prop cp ON
+		attr.prop_id = cp.id
+		LEFT JOIN cmdb_view cview ON
+		attr.id = cview.item_id
+		and cview.type = 'attr'
+		WHERE
+		attr.ci_id IN
+		<foreach collection="ciIdList" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+		ORDER BY
+		sort ASC,
+		attr.id ASC<!-- 现按照视图设置的排序 -->
+	</select>
+
+	<select id="checkAttrNameIsRepeat" parameterType="codedriver.module.cmdb.dto.ci.AttrVo" resultType="int">
+		SELECT COUNT(1) FROM `cmdb_attr` WHERE `name` = #{name} AND `ci_id` = #{ciId} AND `id` != #{id}
+	</select>
 
 	<update id="updateAttr" parameterType="codedriver.module.cmdb.dto.ci.AttrVo">
 		UPDATE
@@ -70,7 +163,7 @@
 		`name` = #{name},
 		`label` = #{label},
 		`description` = #{description},
-		`validator` = #{validator},
+		`validator_id` = #{validatorId},
 		`is_required` = #{isRequired},
 		`is_unique` = #{isUnique},
 		`input_type` = #{inputType},
@@ -89,7 +182,7 @@
 		`name`,
 		`label`,
 		`description`,
-		`validator`,
+		`validator_id`,
 		`is_required`,
 		`is_unique`,
 		`input_type`,
@@ -106,7 +199,7 @@
 		#{name},
 		#{label},
 		#{description},
-		#{validator},
+		#{validatorId},
 		#{isRequired},
 		#{isUnique},
 		#{inputType},

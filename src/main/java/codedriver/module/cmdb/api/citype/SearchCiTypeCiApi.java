@@ -1,4 +1,4 @@
-package codedriver.module.cmdb.api.ci;
+package codedriver.module.cmdb.api.citype;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

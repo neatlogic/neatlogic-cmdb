@@ -25,41 +25,42 @@ import codedriver.module.cmdb.dto.prop.PropVo;
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class SearchPropApi extends PrivateApiComponentBase {
 
-	@Autowired
-	private PropMapper propMapper;
+    @Autowired
+    private PropMapper propMapper;
 
-	@Override
-	public String getToken() {
-		return "/cmdb/prop/search";
-	}
+    @Override
+    public String getToken() {
+        return "/cmdb/prop/search";
+    }
 
-	@Override
-	public String getName() {
-		return "查询基础属性";
-	}
+    @Override
+    public String getName() {
+        return "查询基础属性";
+    }
 
-	@Override
-	public String getConfig() {
-		return null;
-	}
+    @Override
+    public String getConfig() {
+        return null;
+    }
 
-	@Input({ @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字", xss = true), @Param(name = "typeId", type = ApiParamType.LONG, desc = "类型id"), @Param(name = "handler", type = ApiParamType.STRING, desc = "控件") })
-	@Output({ @Param(explode = BasePageVo.class), @Param(name = "tbodyList", explode = PropVo[].class) })
-	@Description(desc = "查询基础属性接口")
-	@Override
-	public Object myDoService(JSONObject jsonObj) throws Exception {
-		PropVo propVo = JSONObject.toJavaObject(jsonObj, PropVo.class);
-		JSONObject returnObj = new JSONObject();
-		List<PropVo> propList = propMapper.searchProp(propVo);
-		returnObj.put("tbodyList", propList);
-		if (propVo.getNeedPage() && CollectionUtils.isNotEmpty(propList)) {
-			int rowNum = propMapper.searchPropCount(propVo);
-			returnObj.put("currentPage", propVo.getCurrentPage());
-			returnObj.put("pageSize", propVo.getPageSize());
-			returnObj.put("rowNum", rowNum);
-			returnObj.put("pageCount", PageUtil.getPageCount(rowNum, propVo.getPageSize()));
-		}
-		return returnObj;
-	}
+    @Input({@Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字", xss = true),
+        @Param(name = "handler", type = ApiParamType.STRING, desc = "控件")})
+    @Output({@Param(explode = BasePageVo.class), @Param(name = "tbodyList", explode = PropVo[].class)})
+    @Description(desc = "查询基础属性接口")
+    @Override
+    public Object myDoService(JSONObject jsonObj) throws Exception {
+        PropVo propVo = JSONObject.toJavaObject(jsonObj, PropVo.class);
+        JSONObject returnObj = new JSONObject();
+        List<PropVo> propList = propMapper.searchProp(propVo);
+        returnObj.put("tbodyList", propList);
+        if (propVo.getNeedPage() && CollectionUtils.isNotEmpty(propList)) {
+            int rowNum = propMapper.searchPropCount(propVo);
+            returnObj.put("currentPage", propVo.getCurrentPage());
+            returnObj.put("pageSize", propVo.getPageSize());
+            returnObj.put("rowNum", rowNum);
+            returnObj.put("pageCount", PageUtil.getPageCount(rowNum, propVo.getPageSize()));
+        }
+        return returnObj;
+    }
 
 }

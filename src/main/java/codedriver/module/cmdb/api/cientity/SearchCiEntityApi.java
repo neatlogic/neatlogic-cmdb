@@ -18,8 +18,6 @@ import codedriver.framework.cmdb.constvalue.ShowType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.dao.mapper.TeamMapper;
-import codedriver.framework.elasticsearch.core.ElasticSearchHandlerFactory;
-import codedriver.framework.elasticsearch.core.IElasticSearchHandler;
 import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -69,8 +67,8 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
     @SuppressWarnings("serial")
     @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
         @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "关键字"),
-        @Param(name = "ciEntityIdList", type = ApiParamType.JSONARRAY, desc = "需要查询的配置项id列表）"),
-        @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "是否需要操作列，如果需要检查操作权限，会根据结果返回action列"),
+        @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "需要查询的配置项id列表）"),
+        @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "是否需要操作列，如果需要则根据用户权限返回操作列"),
         @Param(name = "needCheck", type = ApiParamType.BOOLEAN, desc = "是否需要复选列")})
     @Output({@Param(explode = BasePageVo.class),
         @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = CiEntityVo[].class),
@@ -108,7 +106,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
             relIdList = new ArrayList<>();
             for (CiViewVo ciview : ciViewList) {
                 JSONObject headObj = new JSONObject();
-                headObj.put("title", ciview.getItemName());
+                headObj.put("title", ciview.getItemLabel());
                 if (ciview.getType().equals("attr")) {
                     attrIdList.add(ciview.getItemId());
                     headObj.put("key", "attr_" + ciview.getItemId());
@@ -143,10 +141,15 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
             ciEntityVo.setGroupIdList(groupIdList);
         }
 
-        // List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
-        IElasticSearchHandler<CiEntityVo, List<CiEntityVo>> handler =
-            ElasticSearchHandlerFactory.getHandler("cientity");
-        List<CiEntityVo> ciEntityList = handler.search(ciEntityVo);
+        List<CiEntityVo> ciEntityList = new ArrayList<>();
+       /* if (CollectionUtils.isNotEmpty(ciEntityVo.getAttrFilterList())
+            || CollectionUtils.isNotEmpty(ciEntityVo.getAttrFilterList())) {
+            IElasticSearchHandler<CiEntityVo, List<CiEntityVo>> handler =
+                ElasticSearchHandlerFactory.getHandler("cientity");
+            ciEntityList = handler.search(ciEntityVo);
+        } else {*/
+            ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
+        //}
         JSONArray tbodyList = new JSONArray();
         if (CollectionUtils.isNotEmpty(ciEntityList)) {
             boolean canEdit = hasManageAuth, canDelete = hasManageAuth, canTransaction = hasManageAuth;
