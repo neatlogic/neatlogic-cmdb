@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.techsure.multiattrsearch.MultiAttrsObject;
+import com.techsure.multiattrsearch.QueryResultSet;
 import com.techsure.multiattrsearch.query.QueryResult;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
@@ -174,6 +175,12 @@ public class EsCiEntityHandler extends ElasticSearchHandlerBase<CiEntityVo, List
             ciEntityList = ciEntityService.searchCiEntityByIds(ciEntityIdList, ciEntityVo);
         }
         return ciEntityList;
+    }
+
+    @Override
+    protected List<CiEntityVo> makeupQueryIterateResult(CiEntityVo t, QueryResultSet result) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }
