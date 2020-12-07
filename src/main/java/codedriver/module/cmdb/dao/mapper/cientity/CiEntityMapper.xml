@@ -278,7 +278,7 @@
 		#{ciId},
 		#{name},
 		#{fcu},
-		NOW(),
+		NOW(3),
 		#{status},
 		#{isLocked}
 		)
