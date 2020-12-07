@@ -237,7 +237,7 @@
 		`cmdb_transaction`
 		SET
 		`status` = #{status},
-		`commit_time` = NOW(),
+		`commit_time` = NOW(3),
 		`commit_user` = #{commitUser},
 		`error` = #{error}
 		WHERE `id` = #{id}
@@ -348,7 +348,7 @@
 		#{inputFrom},
 		#{source},
 		#{expireTime},
-		NOW()
+		NOW(3)
 		)
 	</insert>
 

@@ -77,7 +77,7 @@
 
 	<update id="updateImportAudit" parameterType="codedriver.module.cmdb.dto.batchimport.ImportAuditVo">
 		UPDATE `cmdb_import_audit` SET
-		`finish_date` = NOW(),
+		`finish_date` = NOW(3),
 		`success_count` = #{successCount},
 		`failed_count` = #{failedCount},
 		`total_count` = #{totalCount},
@@ -97,7 +97,7 @@
 
 	<update id="updateImportAuditStatus" parameterType="codedriver.module.cmdb.dto.batchimport.ImportAuditVo">
 		UPDATE cmdb_import_audit SET
-		`finish_date` = NOW(),
+		`finish_date` = NOW(3),
 		`status` = #{status},
 		`error` = #{error}
 		WHERE `id` = #{id}
@@ -127,7 +127,7 @@
 		VALUES(
 		#{id},
 		#{importUser},
-		NOW(),
+		NOW(3),
 		#{action},
 		#{fileId},
 		#{ciId},
