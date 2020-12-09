@@ -2,11 +2,11 @@ package codedriver.module.cmdb.process.notifyhandler;
 
 import java.util.List;
 
+import codedriver.framework.notify.dto.NotifyTriggerVo;
 import org.springframework.stereotype.Component;
 
 import com.alibaba.fastjson.JSONObject;
 
-import codedriver.framework.common.dto.ValueTextVo;
 import codedriver.framework.dto.ConditionParamVo;
 import codedriver.framework.notify.core.NotifyPolicyHandlerBase;
 
@@ -19,7 +19,7 @@ public class CiEntitySyncNotifyHandler extends NotifyPolicyHandlerBase {
     }
 
     @Override
-    protected List<ValueTextVo> myNotifyTriggerList() {
+    protected List<NotifyTriggerVo> myNotifyTriggerList() {
         // TODO Auto-generated method stub
         return null;
     }
