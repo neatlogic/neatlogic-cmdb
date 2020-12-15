@@ -22,7 +22,6 @@ import codedriver.framework.cmdb.constvalue.RelRuleType;
 import codedriver.framework.cmdb.constvalue.SaveModeType;
 import codedriver.framework.cmdb.constvalue.TransactionActionType;
 import codedriver.framework.cmdb.constvalue.TransactionStatus;
-import codedriver.framework.cmdb.dao.mapper.validator.ValidatorMapper;
 import codedriver.framework.cmdb.validator.core.IValidator;
 import codedriver.framework.cmdb.validator.core.ValidatorFactory;
 import codedriver.framework.common.util.PageUtil;
@@ -69,9 +68,6 @@ public class CiEntityServiceImpl implements CiEntityService {
 
     @Autowired
     private CiEntitySnapshotMapper ciEntitySnapshotMapper;
-
-    @Autowired
-    private ValidatorMapper validatorMapper;
 
     @Autowired
     private AttrMapper attrMapper;
@@ -313,6 +309,8 @@ public class CiEntityServiceImpl implements CiEntityService {
                         isExists = true;
                         // 补充attrName
                         attrEntityVo.setAttrName(attrVo.getName());
+                        // 补充属性处理器信息（后面需要用处理器根据原始value生成值hash）
+                        attrEntityVo.setPropHandler(attrVo.getPropHandler());
                         break;
                     }
                 }
@@ -377,8 +375,8 @@ public class CiEntityServiceImpl implements CiEntityService {
                                 attrEntityTransactionVo.getCiEntityId(), attrEntityTransactionVo.getAttrId());
                             if (oldAttrEntityVo != null) {
                                 // 把老属性的值和事务添加的值进行Merge，后面比较是否有变化
-                                for (String ov : oldAttrEntityVo.getActualValueList()) {
-                                    attrEntityTransactionVo.addActualValue(ov);
+                                for (String ov : oldAttrEntityVo.getValueList()) {
+                                    attrEntityTransactionVo.addValue(ov);
                                 }
 
                                 AttrEntityVo newAttrEntityVo = new AttrEntityVo(attrEntityTransactionVo);
@@ -393,8 +391,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                     }
                 }
                 // 调用校验器校验数据合法性
-                if (attrEntityTransactionVo != null
-                    && CollectionUtils.isNotEmpty(attrEntityTransactionVo.getValueList())
+                if (attrEntityTransactionVo != null && CollectionUtils.isNotEmpty(attrEntityTransactionVo.getValueList())
                     && StringUtils.isNotBlank(attrVo.getValidatorHandler())) {
                     IValidator validator = ValidatorFactory.getValidator(attrVo.getValidatorHandler());
                     if (validator != null) {
@@ -406,9 +403,7 @@ public class CiEntityServiceImpl implements CiEntityService {
         }
 
         // 校验关系信息
-        for (
-
-        RelVo relVo : relList) {
+        for (RelVo relVo : relList) {
             // 判断当前配置项处于from位置的规则
             List<RelEntityTransactionVo> fromRelEntityTransactionList =
                 ciEntityTransactionVo.getRelEntityTransactionByRelId(relVo.getId(), RelDirectionType.FROM.getValue());
@@ -617,7 +612,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                     if (attrEntityTransactionVo.getSaveMode().equals(SaveModeType.REPLACE.getValue())) {
                         attrEntityMapper.deleteAttrEntity(attrEntityVo);
                     }
-                    if (CollectionUtils.isNotEmpty(attrEntityVo.getValueList())) {
+                    if (CollectionUtils.isNotEmpty(attrEntityVo.getValueHashList())) {
                         attrEntityMapper.insertAttrEntity(attrEntityVo);
                     }
                 }

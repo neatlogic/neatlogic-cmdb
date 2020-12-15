@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.transaction.annotation.Transactional;
 
-import codedriver.framework.cmdb.constvalue.TransactionActionType;
 import codedriver.module.cmdb.dto.cientity.CiEntityVo;
 import codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo;
 

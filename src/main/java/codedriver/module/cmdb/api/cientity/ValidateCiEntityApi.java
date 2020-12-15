@@ -90,7 +90,7 @@ public class ValidateCiEntityApi extends PrivateApiComponentBase {
                     JSONObject attrDataObj = attrObj.getJSONObject(key);
                     JSONArray valueObjList = attrDataObj.getJSONArray("valueList");
                     attrEntityVo
-                        .setActualValueList(valueObjList.stream().map(v -> v.toString()).collect(Collectors.toList()));
+                        .setValueList(valueObjList.stream().map(v -> v.toString()).collect(Collectors.toList()));
                     attrEntityList.add(attrEntityVo);
                 }
             }

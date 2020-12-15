@@ -1,6 +1,7 @@
 package codedriver.module.cmdb.dto.cientity;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -32,6 +33,8 @@ import codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo;
 public class CiEntityVo extends BasePageVo {
     @JSONField(serialize = false)
     private transient String keyword;
+    @JSONField(serialize = false) // 根据空格拆开关键字
+    private transient List<String> keywordList;
     @EntityField(name = "id", type = ApiParamType.LONG)
     @ESKey(type = ESKeyType.PKEY, name = "id")
     private Long id;
@@ -74,7 +77,6 @@ public class CiEntityVo extends BasePageVo {
     // @EntityField(name = "属性过滤器列表", type = ApiParamType.JSONARRAY)
     @JSONField(serialize = false)
     private transient List<AttrFilterVo> attrFilterList;
-    // @EntityField(name = "关系过滤器列表", type = ApiParamType.JSONARRAY)
     @JSONField(serialize = false)
     private transient List<RelFilterVo> relFilterList;
     @JSONField(serialize = false)
@@ -350,9 +352,9 @@ public class CiEntityVo extends BasePageVo {
                                 // 用唯一标识或名称都可以匹配
                                 if (k.equalsIgnoreCase(attrentity.getAttrName())
                                     || k.equalsIgnoreCase(attrentity.getAttrLabel())) {
-                                    if (CollectionUtils.isNotEmpty(attrentity.getActualValueList())) {
+                                    if (CollectionUtils.isNotEmpty(attrentity.getValueList())) {
                                         v = v.replace("{" + k + "}",
-                                            attrentity.getActualValueList().stream().collect(Collectors.joining("_")));
+                                            attrentity.getValueList().stream().collect(Collectors.joining("_")));
                                     } else {
                                         v = v.replace("{" + k + "}", "");
                                     }
@@ -366,10 +368,10 @@ public class CiEntityVo extends BasePageVo {
                     attrObj.put("valueList", vl);
                 } else if (attrEntityVo.getAttrType().equals(AttrType.PROPERTY.getValue())) {
                     attrObj.put("handler", attrEntityVo.getPropHandler());
-                    attrObj.put("valueList", attrEntityVo.getActualValueList());
+                    attrObj.put("valueList", attrEntityVo.getValueList());
                     attrObj.put("propId", attrEntityVo.getPropId());
                 } else if (attrEntityVo.getAttrType().equals(AttrType.CUSTOM.getValue())) {
-                    attrObj.put("valueList", attrEntityVo.getActualValueList());
+                    attrObj.put("valueList", attrEntityVo.getValueList());
                 }
 
                 attrEntityData.put(keyprefix + attrEntityVo.getAttrId(), attrObj);
@@ -489,6 +491,14 @@ public class CiEntityVo extends BasePageVo {
 
     public void setCiLabel(String ciLabel) {
         this.ciLabel = ciLabel;
+    }
+
+    public List<String> getKeywordList() {
+        if (StringUtils.isNotBlank(keyword)) {
+            return Arrays.asList(keyword.split("\s+"));
+        } else {
+            return null;
+        }
     }
 
 }

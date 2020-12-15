@@ -25,14 +25,8 @@ public class MtextPropHandler implements IPropertyHandler {
 
     @Override
     public SearchExpression[] getSupportExpression() {
-        return new SearchExpression[] {SearchExpression.EQ, SearchExpression.LI, SearchExpression.NE,
-            SearchExpression.NL, SearchExpression.NOTNULL, SearchExpression.NULL};
-    }
-
-    @Override
-    public List<String> getDisplayValue(List<String> valueList) {
-        // TODO Auto-generated method stub
-        return null;
+        return new SearchExpression[] {SearchExpression.LI, SearchExpression.NL, SearchExpression.NOTNULL,
+            SearchExpression.NULL};
     }
 
     @Override

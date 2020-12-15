@@ -12,8 +12,8 @@
 		<result property="attrExpression" column="attrExpression" />
 		<result property="propId" column="propId" />
 		<result property="propHandler" column="propHandler" />
-		<collection property="valueList" ofType="java.lang.String">
-			<result column="value" />
+		<collection property="valueHashList" ofType="java.lang.String">
+			<result column="valueHash" />
 		</collection>
 	</resultMap>
 
@@ -22,7 +22,7 @@
 		a.`id`,
 		a.`ci_entity_id` AS ciEntityId,
 		a.`attr_id` AS attrId,
-		a.`value`,
+		a.`value_hash` AS valueHash,
 		b.`name` AS attrName,
 		b.`label` AS attrLabel,
 		b.`type` AS attrType,
@@ -35,8 +35,8 @@
 		LEFT JOIN `cmdb_prop` p ON b.`prop_id` = p.id
 		WHERE a.ci_entity_id != #{ciEntityId}
 		AND a.attr_id = #{attrId}
-		AND a.value IN
-		<foreach collection="valueList" item="item" open="(" separator="," close=")"> #{item}</foreach>
+		AND a.value_hash IN
+		<foreach collection="valueHashList" item="item" open="(" separator="," close=")"> #{item}</foreach>
 		ORDER BY a.id
 	</select>
 
@@ -45,7 +45,7 @@
 		a.`id`,
 		a.`ci_entity_id` AS ciEntityId,
 		a.`attr_id` AS attrId,
-		a.`value`,
+		a.`value_hash` AS valueHash,
 		a.`transaction_id` AS transactionId,
 		b.`name` AS attrName,
 		b.`label` AS attrLabel,
@@ -66,7 +66,7 @@
 		a.`id`,
 		a.`ci_entity_id` AS ciEntityId,
 		a.`attr_id` AS attrId,
-		a.`value`,
+		a.`value_hash` AS valueHash,
 		a.`transaction_id` AS transactionId,
 		b.`name` AS attrName,
 		b.`label` AS attrLabel,
@@ -87,7 +87,7 @@
 		a.`id`,
 		a.`ci_entity_id` AS ciEntityId,
 		a.`attr_id` AS attrId,
-		a.`value`,
+		a.`value_hash` AS valueHash,
 		a.`transaction_id` AS transactionId,
 		b.`name` AS attrName,
 		b.`label` AS attrLabel,
@@ -119,11 +119,11 @@
 		`ci_entity_id`,
 		`attr_id`,
 		`attr_name`,
-		`value`,
+		`value_hash`,
 		`transaction_id`
 		)
 		VALUES
-		<foreach collection="valueList" item="item" separator=",">
+		<foreach collection="valueHashList" item="item" separator=",">
 			(
 			#{ciEntityId},
 			#{attrId},

@@ -112,8 +112,8 @@
 		<result property="attrName" column="attrName" />
 		<result property="propId" column="propId" />
 		<result property="propHandler" column="propHandler" />
-		<collection property="valueList" ofType="java.lang.String">
-			<result column="value" />
+		<collection property="valueHashList" ofType="java.lang.String">
+			<result column="valueHash" />
 		</collection>
 	</resultMap>
 
@@ -171,7 +171,7 @@
 		a.`ci_entity_id` AS ciEntityId,
 		a.`attr_id` AS attrId,
 		a.`attr_name` AS attrName,
-		a.`value`,
+		a.`value_hash` as valueHash,
 		a.`transaction_id` AS transactionId,
 		a.`savemode` AS saveMode,
 		b.label AS attrLabel,
@@ -275,14 +275,14 @@
 		`ci_entity_id`,
 		`attr_id`,
 		`attr_name`,
-		`value`,
+		`value_hash`,
 		`transaction_id`,
 		`savemode`
 		)
 		VALUES
 		<choose>
-			<when test="valueList != null and valueList.size() >0">
-				<foreach collection="valueList" item="item" separator=",">
+			<when test="valueHashList != null and valueHashList.size() >0">
+				<foreach collection="valueHashList" item="item" separator=",">
 					(
 					#{ciEntityId},
 					#{attrId},

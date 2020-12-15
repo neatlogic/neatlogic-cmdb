@@ -25,14 +25,8 @@ public class CheckboxPropHandler implements IPropertyHandler {
 
     @Override
     public SearchExpression[] getSupportExpression() {
-        return new SearchExpression[] {SearchExpression.EQ, SearchExpression.LI, SearchExpression.NE,
+        return new SearchExpression[] {SearchExpression.EQ, SearchExpression.NE, SearchExpression.LI,
             SearchExpression.NL, SearchExpression.NOTNULL, SearchExpression.NULL};
-    }
-
-    @Override
-    public List<String> getDisplayValue(List<String> valueList) {
-        // TODO Auto-generated method stub
-        return null;
     }
 
     @Override

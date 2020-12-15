@@ -251,7 +251,8 @@ public class BatchImportHandler {
                             }
                         }
                         if (CollectionUtils.isNotEmpty(lostColumns)) {
-                            error = "<b class=\"text-danger\">导入模版缺少：" + Arrays.toString(lostColumns.toArray()) + "</b></br>";
+                            error = "<b class=\"text-danger\">导入模版缺少：" + Arrays.toString(lostColumns.toArray())
+                                + "</b></br>";
                             totalCount = sheet.getPhysicalNumberOfRows() - 1;
                             failedCount = totalCount;
                         }
@@ -342,14 +343,14 @@ public class BatchImportHandler {
                                                     AttrEntityTransactionVo attrEntity = new AttrEntityTransactionVo();
                                                     attrEntity.setAttrId(attr.getId());
                                                     attrEntity.setAttrName(attr.getName());
-                                                    attrEntity.setActualValueList(valueList);
+                                                    attrEntity.setValueList(valueList);
                                                     /**
                                                      * 没有取到值且没有采集到异常，说明单元格内容为空 如果是【只添加】，那所有必填属性都不能为空
                                                      * 如果是【只更新】且【全局更新】：所有必填属性不能为空 如果是【添加&更新】，没有ID的，必填属性不能为空；
                                                      * 有ID的，且选择了【全局更新】，则必填属性不能为空
                                                      */
                                                     if (Objects.equals(attr.getIsRequired(), 1)
-                                                        && CollectionUtils.isEmpty(attrEntity.getActualValueList())
+                                                        && CollectionUtils.isEmpty(attrEntity.getValueList())
                                                         && MapUtils.isEmpty(errorMsgMap)) {
                                                         checkAttrIsRequired(errorMsgMap, ciEntityId,
                                                             ciEntityTransactionVo, ci, attr);

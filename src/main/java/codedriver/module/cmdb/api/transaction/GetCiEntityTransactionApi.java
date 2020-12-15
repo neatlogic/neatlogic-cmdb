@@ -110,7 +110,7 @@ public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
                             dataObj.put("saveMode", attrEntityTransactionVo.getSaveMode());
                             dataObj.put("propId", attrEntityTransactionVo.getPropId());
                             dataObj.put("propHandler", attrEntityTransactionVo.getPropHandler());
-                            dataObj.put("newValueList", attrEntityTransactionVo.getActualValueList());
+                            dataObj.put("newValueList", attrEntityTransactionVo.getValueList());
                             if (oldAttrEntityData != null
                                 && oldAttrEntityData.containsKey("attr_" + attrEntityTransactionVo.getAttrId())) {
                                 dataObj.put("oldValueList",

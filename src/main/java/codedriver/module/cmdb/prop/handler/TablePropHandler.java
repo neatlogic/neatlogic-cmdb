@@ -22,11 +22,12 @@ public class TablePropHandler implements IPropertyHandler {
 
     @Override
     public SearchExpression[] getSupportExpression() {
-        return new SearchExpression[] {SearchExpression.NOTNULL, SearchExpression.NULL};
+        return new SearchExpression[] {SearchExpression.LI, SearchExpression.NL, SearchExpression.NOTNULL,
+            SearchExpression.NULL};
     }
 
     @Override
-    public List<String> getDisplayValue(List<String> valueList) {
+    public List<String> getDisplayValueList(List<String> valueList) {
         // TODO Auto-generated method stub
         return null;
     }
