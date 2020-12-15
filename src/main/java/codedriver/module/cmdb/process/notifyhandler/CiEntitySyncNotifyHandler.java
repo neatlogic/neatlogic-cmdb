@@ -2,6 +2,8 @@ package codedriver.module.cmdb.process.notifyhandler;
 
 import java.util.List;
 
+import codedriver.framework.notify.core.NotifyHandlerType;
+import codedriver.framework.notify.dto.NotifyTriggerTemplateVo;
 import codedriver.framework.notify.dto.NotifyTriggerVo;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +23,11 @@ public class CiEntitySyncNotifyHandler extends NotifyPolicyHandlerBase {
     @Override
     protected List<NotifyTriggerVo> myNotifyTriggerList() {
         // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    protected List<NotifyTriggerTemplateVo> myNotifyTriggerTemplateList(NotifyHandlerType type) {
         return null;
     }
 
