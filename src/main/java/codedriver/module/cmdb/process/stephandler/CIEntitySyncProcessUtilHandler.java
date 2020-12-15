@@ -98,7 +98,7 @@ public class CIEntitySyncProcessUtilHandler extends ProcessStepUtilHandlerBase {
 
         /** 授权 **/
         JSONArray authorityArray = new JSONArray();
-        ProcessTaskOperationType[] stepActions = {ProcessTaskOperationType.VIEW, ProcessTaskOperationType.TRANSFERCURRENTSTEP};
+        ProcessTaskOperationType[] stepActions = {ProcessTaskOperationType.STEP_VIEW, ProcessTaskOperationType.STEP_TRANSFER};
         for (ProcessTaskOperationType stepAction : stepActions) {
             authorityArray.add(new JSONObject() {
                 {
@@ -128,8 +128,8 @@ public class CIEntitySyncProcessUtilHandler extends ProcessStepUtilHandlerBase {
 
         /** 按钮映射 **/
         JSONArray customButtonArray = new JSONArray();
-        ProcessTaskOperationType[] stepButtons = {ProcessTaskOperationType.COMPLETE, ProcessTaskOperationType.BACK,
-            ProcessTaskOperationType.TRANSFER, ProcessTaskOperationType.START};
+        ProcessTaskOperationType[] stepButtons = {ProcessTaskOperationType.STEP_COMPLETE, ProcessTaskOperationType.STEP_BACK,
+            ProcessTaskOperationType.TASK_TRANSFER, ProcessTaskOperationType.STEP_START};
         for (ProcessTaskOperationType stepButton : stepButtons) {
             customButtonArray.add(new JSONObject() {
                 {
