@@ -73,6 +73,9 @@ public class CIEntitySyncProcessUtilHandler extends ProcessStepUtilHandlerBase {
                 }
                 processStepVo.setWorkerPolicyList(workerPolicyList);
             }
+            //保存回复模版ID
+            Long commentTemplateId = workerPolicyConfig.getLong("commentTemplateId");
+            processStepVo.setCommentTemplateId(commentTemplateId);
         }
         /**
          * FIXME 设置CMDB节点设置
