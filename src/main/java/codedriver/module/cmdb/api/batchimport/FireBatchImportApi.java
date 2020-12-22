@@ -11,6 +11,7 @@ import codedriver.framework.file.dto.FileVo;
 import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.cmdb.auth.label.CIENTITY_BATCH_IMPORT;
 import codedriver.module.cmdb.dao.mapper.batchimport.ImportMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.exception.ci.CiNotFoundException;
@@ -22,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-@AuthAction(name = "CIENTITY_BATCH_IMPORT")
+@AuthAction(action = CIENTITY_BATCH_IMPORT.class)
 @Service
 @OperationType(type = OperationTypeEnum.OPERATE)
 @Transactional
