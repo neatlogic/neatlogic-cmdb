@@ -12,6 +12,7 @@ public interface AttrEntityContentMapper {
 
     public String getAttrEntityContentByHash(String hash);
 
-    public int insertAttrEntityContent(@Param("hash") String hash, @Param("content") String content);
+    public int insertAttrEntityContent(@Param("hash") String hash, @Param("valueHash") String valueHash,
+        @Param("content") String content);
 
 }

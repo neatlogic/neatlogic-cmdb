@@ -28,14 +28,8 @@ public class DatePropHandler implements IPropertyHandler {
 
     @Override
     public SearchExpression[] getSupportExpression() {
-        return new SearchExpression[] {SearchExpression.EQ, SearchExpression.NE, SearchExpression.NOTNULL,
-            SearchExpression.NULL};
-    }
-
-    @Override
-    public List<String> getDisplayValue(List<String> valueList) {
-        // TODO Auto-generated method stub
-        return null;
+        return new SearchExpression[] {SearchExpression.EQ, SearchExpression.NE, SearchExpression.LI,
+            SearchExpression.NL, SearchExpression.NOTNULL, SearchExpression.NULL};
     }
 
     @Override
@@ -48,7 +42,7 @@ public class DatePropHandler implements IPropertyHandler {
         if (CollectionUtils.isNotEmpty(values) && MapUtils.isNotEmpty(config)) {
             String format = config.getString("format");
             SimpleDateFormat sdf = new SimpleDateFormat(format);
-            if(Objects.equals(values.get(0).length(),format.length())){
+            if (Objects.equals(values.get(0).length(), format.length())) {
                 try {
                     sdf.setLenient(false);
                     sdf.parse(values.get(0));
@@ -56,7 +50,7 @@ public class DatePropHandler implements IPropertyHandler {
                 } catch (ParseException e) {
                     throw new RuntimeException("时间不符合格式：" + format);
                 }
-            }else{
+            } else {
                 throw new RuntimeException("时间不符合格式：" + format);
             }
         }

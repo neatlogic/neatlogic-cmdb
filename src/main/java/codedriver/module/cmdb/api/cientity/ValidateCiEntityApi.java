@@ -1,10 +1,20 @@
 package codedriver.module.cmdb.api.cientity;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.stream.Collectors;
-
+import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.constvalue.RelActionType;
+import codedriver.framework.cmdb.constvalue.RelDirectionType;
+import codedriver.framework.cmdb.constvalue.TransactionActionType;
+import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.reminder.core.OperationTypeEnum;
+import codedriver.framework.restful.annotation.*;
+import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.cmdb.auth.label.CIENTITY_MODIFY;
+import codedriver.module.cmdb.dto.transaction.AttrEntityTransactionVo;
+import codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo;
+import codedriver.module.cmdb.dto.transaction.RelEntityTransactionVo;
+import codedriver.module.cmdb.service.cientity.CiEntityService;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.slf4j.Logger;
@@ -12,26 +22,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-
-import codedriver.framework.cmdb.constvalue.RelActionType;
-import codedriver.framework.cmdb.constvalue.RelDirectionType;
-import codedriver.framework.cmdb.constvalue.TransactionActionType;
-import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.reminder.core.OperationTypeEnum;
-import codedriver.framework.restful.annotation.Description;
-import codedriver.framework.restful.annotation.Input;
-import codedriver.framework.restful.annotation.OperationType;
-import codedriver.framework.restful.annotation.Output;
-import codedriver.framework.restful.annotation.Param;
-import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.dto.transaction.AttrEntityTransactionVo;
-import codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo;
-import codedriver.module.cmdb.dto.transaction.RelEntityTransactionVo;
-import codedriver.module.cmdb.service.cientity.CiEntityService;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
+@AuthAction(action = CIENTITY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.OPERATE)
 public class ValidateCiEntityApi extends PrivateApiComponentBase {
     static Logger logger = LoggerFactory.getLogger(ValidateCiEntityApi.class);
@@ -90,7 +87,7 @@ public class ValidateCiEntityApi extends PrivateApiComponentBase {
                     JSONObject attrDataObj = attrObj.getJSONObject(key);
                     JSONArray valueObjList = attrDataObj.getJSONArray("valueList");
                     attrEntityVo
-                        .setActualValueList(valueObjList.stream().map(v -> v.toString()).collect(Collectors.toList()));
+                        .setValueList(valueObjList.stream().map(v -> v.toString()).collect(Collectors.toList()));
                     attrEntityList.add(attrEntityVo);
                 }
             }

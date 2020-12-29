@@ -29,12 +29,6 @@ public class TextareaPropHandler implements IPropertyHandler {
     }
 
     @Override
-    public List<String> getDisplayValue(List<String> valueList) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
     public Object getActualValue(List<String> values, JSONObject config) {
         JSONArray array = new JSONArray();
         if (CollectionUtils.isNotEmpty(values)) {

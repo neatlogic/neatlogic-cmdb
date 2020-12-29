@@ -24,20 +24,14 @@ public class TextPropHandler implements IPropertyHandler {
 
     @Override
     public SearchExpression[] getSupportExpression() {
-        return new SearchExpression[] {SearchExpression.EQ, SearchExpression.LI, SearchExpression.NE,
+        return new SearchExpression[] {SearchExpression.EQ, SearchExpression.NE, SearchExpression.LI,
             SearchExpression.NL, SearchExpression.NOTNULL, SearchExpression.NULL};
-    }
-
-    @Override
-    public List<String> getDisplayValue(List<String> valueList) {
-        // TODO Auto-generated method stub
-        return null;
     }
 
     @Override
     public Object getActualValue(List<String> values, JSONObject config) {
         JSONArray array = new JSONArray();
-        if(CollectionUtils.isNotEmpty(values)){
+        if (CollectionUtils.isNotEmpty(values)) {
             array.add(values.get(0));
         }
         return array;

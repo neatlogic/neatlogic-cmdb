@@ -1,6 +1,7 @@
 package codedriver.module.cmdb.dto.cientity;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -32,6 +33,8 @@ import codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo;
 public class CiEntityVo extends BasePageVo {
     @JSONField(serialize = false)
     private transient String keyword;
+    @JSONField(serialize = false) // 根据空格拆开关键字
+    private transient List<String> keywordList;
     @EntityField(name = "id", type = ApiParamType.LONG)
     @ESKey(type = ESKeyType.PKEY, name = "id")
     private Long id;
@@ -74,7 +77,6 @@ public class CiEntityVo extends BasePageVo {
     // @EntityField(name = "属性过滤器列表", type = ApiParamType.JSONARRAY)
     @JSONField(serialize = false)
     private transient List<AttrFilterVo> attrFilterList;
-    // @EntityField(name = "关系过滤器列表", type = ApiParamType.JSONARRAY)
     @JSONField(serialize = false)
     private transient List<RelFilterVo> relFilterList;
     @JSONField(serialize = false)
@@ -293,7 +295,7 @@ public class CiEntityVo extends BasePageVo {
                     JSONObject attrData = getAttrEntityData();
                     if (attrData != null && attrData.containsKey("attr_" + attrEntityVo.getAttrId())) {
                         return attrData.getJSONObject("attr_" + attrEntityVo.getAttrId()).getJSONArray("valueList")
-                            .stream().map(v -> v.toString()).collect(Collectors.joining("_"));
+                                .stream().map(Object::toString).collect(Collectors.joining("_"));
                     }
                 }
             }
@@ -317,7 +319,7 @@ public class CiEntityVo extends BasePageVo {
         this.relIdList = relIdList;
     }
 
-    private static final String regex = "\\{([^\\}]+?)\\}";
+    private static final String regex = "\\{([^}]+?)}";
 
     public JSONObject getAttrEntityData() {
         String keyprefix = "attr_";
@@ -344,15 +346,15 @@ public class CiEntityVo extends BasePageVo {
                             for (AttrEntityVo attrentity : this.attrEntityList) {
                                 // 跳过自己或expression类的属性
                                 if (attrentity.getAttrId().equals(attrEntityVo.getAttrId())
-                                    || attrentity.getAttrType().equals(AttrType.EXPRESSION.getValue())) {
+                                        || attrentity.getAttrType().equals(AttrType.EXPRESSION.getValue())) {
                                     continue;
                                 }
                                 // 用唯一标识或名称都可以匹配
                                 if (k.equalsIgnoreCase(attrentity.getAttrName())
-                                    || k.equalsIgnoreCase(attrentity.getAttrLabel())) {
-                                    if (CollectionUtils.isNotEmpty(attrentity.getActualValueList())) {
+                                        || k.equalsIgnoreCase(attrentity.getAttrLabel())) {
+                                    if (CollectionUtils.isNotEmpty(attrentity.getValueList())) {
                                         v = v.replace("{" + k + "}",
-                                            attrentity.getActualValueList().stream().collect(Collectors.joining("_")));
+                                                String.join("_", attrentity.getValueList()));
                                     } else {
                                         v = v.replace("{" + k + "}", "");
                                     }
@@ -366,10 +368,10 @@ public class CiEntityVo extends BasePageVo {
                     attrObj.put("valueList", vl);
                 } else if (attrEntityVo.getAttrType().equals(AttrType.PROPERTY.getValue())) {
                     attrObj.put("handler", attrEntityVo.getPropHandler());
-                    attrObj.put("valueList", attrEntityVo.getActualValueList());
+                    attrObj.put("valueList", attrEntityVo.getValueList());
                     attrObj.put("propId", attrEntityVo.getPropId());
                 } else if (attrEntityVo.getAttrType().equals(AttrType.CUSTOM.getValue())) {
-                    attrObj.put("valueList", attrEntityVo.getActualValueList());
+                    attrObj.put("valueList", attrEntityVo.getValueList());
                 }
 
                 attrEntityData.put(keyprefix + attrEntityVo.getAttrId(), attrObj);
@@ -468,11 +470,8 @@ public class CiEntityVo extends BasePageVo {
         if (!(other instanceof CiEntityVo)) {
             return false;
         }
-        final CiEntityVo ciEntityVo = (CiEntityVo)other;
-        if (getId().equals(ciEntityVo.getId())) {
-            return true;
-        }
-        return false;
+        final CiEntityVo ciEntityVo = (CiEntityVo) other;
+        return getId().equals(ciEntityVo.getId());
     }
 
     public String getCiIcon() {
@@ -490,5 +489,14 @@ public class CiEntityVo extends BasePageVo {
     public void setCiLabel(String ciLabel) {
         this.ciLabel = ciLabel;
     }
+
+    public List<String> getKeywordList() {
+        if (StringUtils.isNotBlank(keyword)) {
+            return Arrays.asList(keyword.split("\\s+"));
+        } else {
+            return null;
+        }
+    }
+
 
 }

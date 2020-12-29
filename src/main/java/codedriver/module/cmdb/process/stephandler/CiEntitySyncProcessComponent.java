@@ -1,9 +1,11 @@
 package codedriver.module.cmdb.process.stephandler;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
@@ -20,6 +22,7 @@ import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.asynchronization.thread.CodeDriverThread;
 import codedriver.framework.asynchronization.threadpool.CachedThreadPool;
+import codedriver.framework.cmdb.constvalue.EditModeType;
 import codedriver.framework.cmdb.constvalue.RelActionType;
 import codedriver.framework.cmdb.constvalue.RelDirectionType;
 import codedriver.framework.cmdb.constvalue.TransactionActionType;
@@ -102,7 +105,7 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
             processTaskMapper.getProcessTaskStepBaseInfoById(currentProcessTaskStepVo.getId());
         String stepConfig = selectContentByHashMapper.getProcessTaskStepConfigByHash(processTaskStepVo.getConfigHash());
         // 获取参数
-        JSONArray syncCiEntityList = new JSONArray();
+        Map<Long, JSONArray> syncCiEntityMap = new HashMap<>();
         try {
             JSONObject stepConfigObj = JSONObject.parseObject(stepConfig);
             currentProcessTaskStepVo.setParamObj(stepConfigObj);
@@ -120,8 +123,9 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
                             for (int dindex = 0; dindex < dataList.size(); dindex++) {
                                 JSONObject dataObj = dataList.getJSONObject(dindex);
                                 JSONArray entityObjList = dataObj.getJSONArray("entityList");
-                                if (CollectionUtils.isNotEmpty(entityObjList)) {
-                                    syncCiEntityList.addAll(entityObjList);
+                                Long ciId = dataObj.getLong("ciId");
+                                if (ciId != null && CollectionUtils.isNotEmpty(entityObjList)) {
+                                    syncCiEntityMap.put(ciId, entityObjList);
                                 }
                             }
                         }
@@ -137,11 +141,11 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
         JSONArray transactionList = new JSONArray();
         // 审计详情
         JSONArray auditList = new JSONArray();
-        if (CollectionUtils.isNotEmpty(syncCiEntityList)) {
+        if (MapUtils.isNotEmpty(syncCiEntityMap)) {
             CountDownLatch countDownLatch = new CountDownLatch(1);
             // 为了隔离配置项保存和流程的事务，所以需要另起线程执行
             CachedThreadPool
-                .execute(new CiEntitySyncThread(syncCiEntityList, auditList, transactionGroupVo, countDownLatch));
+                .execute(new CiEntitySyncThread(syncCiEntityMap, auditList, transactionGroupVo, countDownLatch));
             try {
                 countDownLatch.await();
             } catch (InterruptedException e) {
@@ -167,14 +171,14 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
     }
 
     private class CiEntitySyncThread extends CodeDriverThread {
-        private JSONArray ciEntitySyncList;
+        private Map<Long, JSONArray> ciEntitySyncMap;
         private JSONArray auditList;
         private TransactionGroupVo transactionGroupVo;
         private CountDownLatch countDownLatch;
 
-        public CiEntitySyncThread(JSONArray _ciEntitySyncList, JSONArray _auditList,
+        public CiEntitySyncThread(Map<Long, JSONArray> _ciEntitySyncMap, JSONArray _auditList,
             TransactionGroupVo _transactionGroupVo, CountDownLatch _countDownLatch) {
-            ciEntitySyncList = _ciEntitySyncList;
+            ciEntitySyncMap = _ciEntitySyncMap;
             auditList = _auditList;
             transactionGroupVo = _transactionGroupVo;
             countDownLatch = _countDownLatch;
@@ -184,110 +188,113 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
         protected void execute() {
             try {
                 List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
-
-                for (int entityIndex = 0; entityIndex < ciEntitySyncList.size(); entityIndex++) {
-                    JSONObject auditObj = new JSONObject();
-                    JSONObject ciEntityObj = ciEntitySyncList.getJSONObject(entityIndex);
-                    try {
-                        if ("delete".equalsIgnoreCase(ciEntityObj.getString("form_actiontype"))
-                            && ciEntityObj.getLong("id") != null) {
-                            // 删除操作
-                            ciEntityService.deleteCiEntity(ciEntityObj.getLong("id"));
-                            continue;
-                        }
-
-                        Long ciId = ciEntityObj.getLong("ciId");
-                        Long id = ciEntityObj.getLong("id");
-                        String uuid = ciEntityObj.getString("uuid");
-                        CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
-                        ciEntityTransactionVo.setCiId(ciId);
-                        ciEntityTransactionVo.setCiEntityId(id);
-                        ciEntityTransactionVo.setCiEntityUuid(uuid);
-
-                        if (id == null) {
-                            ciEntityTransactionVo.setTransactionMode(TransactionActionType.INSERT);
-                        } else {
-                            ciEntityTransactionVo.setTransactionMode(TransactionActionType.UPDATE);
-                        }
-                        // 解析属性数据
-                        JSONObject attrObj = ciEntityObj.getJSONObject("attrEntityData");
-                        if (MapUtils.isNotEmpty(attrObj)) {
-                            List<AttrEntityTransactionVo> attrEntityList = new ArrayList<>();
-                            Iterator<String> keys = attrObj.keySet().iterator();
-                            while (keys.hasNext()) {
-                                String key = keys.next();
-                                Long attrId = null;
-                                try {
-                                    attrId = Long.parseLong(key.replace("attr_", ""));
-                                } catch (Exception ex) {
-                                    logger.error(ex.getMessage(), ex);
-                                }
-                                if (attrId != null) {
-                                    AttrEntityTransactionVo attrEntityVo = new AttrEntityTransactionVo();
-                                    attrEntityVo.setAttrId(attrId);
-                                    JSONObject attrDataObj = attrObj.getJSONObject(key);
-                                    JSONArray valueObjList = attrDataObj.getJSONArray("valueList");
-                                    attrEntityVo.setActualValueList(
-                                        valueObjList.stream().map(v -> v.toString()).collect(Collectors.toList()));
-                                    attrEntityList.add(attrEntityVo);
-                                }
+                Iterator<Long> cikeys = ciEntitySyncMap.keySet().iterator();
+                while (cikeys.hasNext()) {
+                    Long ciId = cikeys.next();
+                    JSONArray ciEntitySyncList = ciEntitySyncMap.get(ciId);
+                    for (int entityIndex = 0; entityIndex < ciEntitySyncList.size(); entityIndex++) {
+                        JSONObject auditObj = new JSONObject();
+                        JSONObject ciEntityObj = ciEntitySyncList.getJSONObject(entityIndex);
+                        try {
+                            if ("delete".equalsIgnoreCase(ciEntityObj.getString("form_actiontype"))
+                                && ciEntityObj.getLong("id") != null) {
+                                // 删除操作
+                                ciEntityService.deleteCiEntity(ciEntityObj.getLong("id"));
+                                continue;
                             }
-                            ciEntityTransactionVo.setAttrEntityTransactionList(attrEntityList);
-                        }
-                        // 解析关系数据
-                        JSONObject relObj = ciEntityObj.getJSONObject("relEntityData");
-                        if (MapUtils.isNotEmpty(relObj)) {
-                            List<RelEntityTransactionVo> relEntityList = new ArrayList<>();
-                            Iterator<String> keys = relObj.keySet().iterator();
-                            while (keys.hasNext()) {
-                                String key = keys.next();
-                                JSONArray relDataList = relObj.getJSONArray(key);
 
-                                if (key.startsWith("relfrom_")) {// 当前配置项处于from位置
-                                    if (CollectionUtils.isNotEmpty(relDataList)) {
-                                        for (int i = 0; i < relDataList.size(); i++) {
-                                            JSONObject relEntityObj = relDataList.getJSONObject(i);
-                                            RelEntityTransactionVo relEntityVo = new RelEntityTransactionVo();
-                                            relEntityVo.setRelId(Long.parseLong(key.replace("relfrom_", "")));
-                                            relEntityVo.setToCiEntityId(relEntityObj.getLong("ciEntityId"));
-                                            relEntityVo.setDirection(RelDirectionType.FROM.getValue());
-                                            relEntityVo.setFromCiEntityId(ciEntityTransactionVo.getCiEntityId());
-                                            relEntityVo.setAction(RelActionType.INSERT.getValue());// 默认是添加关系
-                                            relEntityList.add(relEntityVo);
-                                        }
+                            Long id = ciEntityObj.getLong("id");
+                            String uuid = ciEntityObj.getString("uuid");
+                            CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
+                            ciEntityTransactionVo.setCiId(ciId);
+                            ciEntityTransactionVo.setCiEntityId(id);
+                            ciEntityTransactionVo.setCiEntityUuid(uuid);
+
+                            if (id == null) {
+                                ciEntityTransactionVo.setTransactionMode(TransactionActionType.INSERT);
+                            } else {
+                                ciEntityTransactionVo.setTransactionMode(TransactionActionType.UPDATE);
+                            }
+                            // 解析属性数据
+                            JSONObject attrObj = ciEntityObj.getJSONObject("attrEntityData");
+                            if (MapUtils.isNotEmpty(attrObj)) {
+                                List<AttrEntityTransactionVo> attrEntityList = new ArrayList<>();
+                                Iterator<String> keys = attrObj.keySet().iterator();
+                                while (keys.hasNext()) {
+                                    String key = keys.next();
+                                    Long attrId = null;
+                                    try {
+                                        attrId = Long.parseLong(key.replace("attr_", ""));
+                                    } catch (Exception ex) {
+                                        logger.error(ex.getMessage(), ex);
                                     }
-                                } else if (key.startsWith("relto_")) {// 当前配置项处于to位置
-                                    if (CollectionUtils.isNotEmpty(relDataList)) {
-                                        for (int i = 0; i < relDataList.size(); i++) {
-                                            JSONObject relEntityObj = relDataList.getJSONObject(i);
-                                            RelEntityTransactionVo relEntityVo = new RelEntityTransactionVo();
-                                            relEntityVo.setRelId(Long.parseLong(key.replace("relto_", "")));
-                                            relEntityVo.setFromCiEntityId(relEntityObj.getLong("ciEntityId"));
-                                            relEntityVo.setDirection(RelDirectionType.TO.getValue());
-                                            relEntityVo.setToCiEntityId(ciEntityTransactionVo.getCiEntityId());
-                                            relEntityVo.setAction(RelActionType.INSERT.getValue());// 默认是添加关系
-                                            relEntityList.add(relEntityVo);
-                                        }
+                                    if (attrId != null) {
+                                        AttrEntityTransactionVo attrEntityVo = new AttrEntityTransactionVo();
+                                        attrEntityVo.setAttrId(attrId);
+                                        JSONObject attrDataObj = attrObj.getJSONObject(key);
+                                        JSONArray valueObjList = attrDataObj.getJSONArray("valueList");
+                                        attrEntityVo.setValueList(
+                                            valueObjList.stream().map(v -> v.toString()).collect(Collectors.toList()));
+                                        attrEntityList.add(attrEntityVo);
                                     }
                                 }
+                                ciEntityTransactionVo.setAttrEntityTransactionList(attrEntityList);
                             }
-                            ciEntityTransactionVo.setRelEntityTransactionList(relEntityList);
-                        }
+                            // 解析关系数据
+                            JSONObject relObj = ciEntityObj.getJSONObject("relEntityData");
+                            if (MapUtils.isNotEmpty(relObj)) {
+                                List<RelEntityTransactionVo> relEntityList = new ArrayList<>();
+                                Iterator<String> keys = relObj.keySet().iterator();
+                                while (keys.hasNext()) {
+                                    String key = keys.next();
+                                    JSONArray relDataList = relObj.getJSONArray(key);
 
-                        Long transactionId = ciEntityService.saveCiEntity(ciEntityTransactionVo);
-                        transactionGroupVo.addTransactionId(transactionId);
-                        auditObj.put("status", "success");
-                        auditObj.put("transactionId", transactionId);
-                        auditObj.put("ciEntityId", ciEntityTransactionVo.getCiEntityId());
-                    } catch (Exception ex) {
-                        auditObj.put("error", ex.getMessage());
-                        auditObj.put("status", "failed");
-                    } finally {
-                        auditObj.put("originalData", ciEntityObj);
-                        auditList.add(auditObj);
+                                    if (key.startsWith("relfrom_")) {// 当前配置项处于from位置
+                                        if (CollectionUtils.isNotEmpty(relDataList)) {
+                                            for (int i = 0; i < relDataList.size(); i++) {
+                                                JSONObject relEntityObj = relDataList.getJSONObject(i);
+                                                RelEntityTransactionVo relEntityVo = new RelEntityTransactionVo();
+                                                relEntityVo.setRelId(Long.parseLong(key.replace("relfrom_", "")));
+                                                relEntityVo.setToCiEntityId(relEntityObj.getLong("ciEntityId"));
+                                                relEntityVo.setDirection(RelDirectionType.FROM.getValue());
+                                                relEntityVo.setFromCiEntityId(ciEntityTransactionVo.getCiEntityId());
+                                                relEntityVo.setAction(RelActionType.INSERT.getValue());// 默认是添加关系
+                                                relEntityList.add(relEntityVo);
+                                            }
+                                        }
+                                    } else if (key.startsWith("relto_")) {// 当前配置项处于to位置
+                                        if (CollectionUtils.isNotEmpty(relDataList)) {
+                                            for (int i = 0; i < relDataList.size(); i++) {
+                                                JSONObject relEntityObj = relDataList.getJSONObject(i);
+                                                RelEntityTransactionVo relEntityVo = new RelEntityTransactionVo();
+                                                relEntityVo.setRelId(Long.parseLong(key.replace("relto_", "")));
+                                                relEntityVo.setFromCiEntityId(relEntityObj.getLong("ciEntityId"));
+                                                relEntityVo.setDirection(RelDirectionType.TO.getValue());
+                                                relEntityVo.setToCiEntityId(ciEntityTransactionVo.getCiEntityId());
+                                                relEntityVo.setAction(RelActionType.INSERT.getValue());// 默认是添加关系
+                                                relEntityList.add(relEntityVo);
+                                            }
+                                        }
+                                    }
+                                }
+                                ciEntityTransactionVo.setRelEntityTransactionList(relEntityList);
+                            }
+                            // 因为不一定编辑所有属性，所以需要切换成局部更新模式
+                            ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
+                            Long transactionId = ciEntityService.saveCiEntity(ciEntityTransactionVo);
+                            transactionGroupVo.addTransactionId(transactionId);
+                            auditObj.put("status", "success");
+                            auditObj.put("transactionId", transactionId);
+                            auditObj.put("ciEntityId", ciEntityTransactionVo.getCiEntityId());
+                        } catch (Exception ex) {
+                            auditObj.put("error", ex.getMessage());
+                            auditObj.put("status", "failed");
+                        } finally {
+                            auditObj.put("originalData", ciEntityObj);
+                            auditList.add(auditObj);
+                        }
                     }
                 }
-
             } finally {
                 countDownLatch.countDown();
             }

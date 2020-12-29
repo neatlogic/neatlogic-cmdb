@@ -32,18 +32,12 @@ public class UrlPropHandler implements IPropertyHandler {
     }
 
     @Override
-    public List<String> getDisplayValue(List<String> valueList) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
     public Object getActualValue(List<String> values, JSONObject config) {
         JSONArray array = new JSONArray();
         if (CollectionUtils.isNotEmpty(values)) {
-            if(pattern.matcher(values.get(0)).matches()){
+            if (pattern.matcher(values.get(0)).matches()) {
                 array.add(values.get(0));
-            }else {
+            } else {
                 throw new RuntimeException(values.get(0) + "不符合URL格式");
             }
         }

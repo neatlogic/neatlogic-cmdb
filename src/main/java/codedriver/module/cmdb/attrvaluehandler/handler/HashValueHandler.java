@@ -6,13 +6,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
 import codedriver.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
+import codedriver.framework.cmdb.prop.core.IPropertyHandler;
+import codedriver.framework.cmdb.prop.core.PropertyHandlerFactory;
 import codedriver.module.cmdb.dao.mapper.cientity.AttrEntityContentMapper;
 
 /**
  * @Author:chenqiwei
  * @Time:Sep 1, 2020
  * @ClassName: HashValueHandler
- * @Description: 返回超长文本内容
+ * @Description: 把属性内容转换成hash
  */
 @Service
 public class HashValueHandler implements IAttrValueHandler {
@@ -26,13 +28,24 @@ public class HashValueHandler implements IAttrValueHandler {
     }
 
     @Override
-    public String getTransferedValue(String value) {
+    public String getTransferedValue(String propHandler, String value) {
         if (StringUtils.isNotBlank(value)) {
             String hash = DigestUtils.md5DigestAsHex(value.getBytes());
+            String valueHash = "";
             if (attrEntityContentMapper.checkAttrEntityHashIsExists(hash) <= 0) {
-                attrEntityContentMapper.insertAttrEntityContent(hash, value);
+                if (StringUtils.isNotBlank(propHandler)) {
+                    IPropertyHandler handler = PropertyHandlerFactory.getHandler(propHandler);
+                    if (handler != null) {
+                        valueHash = handler.getValueHash(value);
+                    }
+                }
+                if (StringUtils.isBlank(valueHash)) {
+                    // valuehash不区分大小写
+                    valueHash = DigestUtils.md5DigestAsHex(value.toLowerCase().getBytes());
+                }
+                attrEntityContentMapper.insertAttrEntityContent(hash, valueHash, value);
             }
-            return "{hash}" + hash;
+            return hash;
         }
         return "";
     }

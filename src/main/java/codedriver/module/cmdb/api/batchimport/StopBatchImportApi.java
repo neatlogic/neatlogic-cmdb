@@ -5,11 +5,12 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.cmdb.auth.label.CIENTITY_BATCH_IMPORT;
 import codedriver.module.cmdb.plugin.BatchImportHandler;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
-@AuthAction(name = "CIENTITY_BATCH_IMPORT")
+@AuthAction(action = CIENTITY_BATCH_IMPORT.class)
 @Service
 @OperationType(type = OperationTypeEnum.OPERATE)
 public class StopBatchImportApi extends PrivateApiComponentBase {

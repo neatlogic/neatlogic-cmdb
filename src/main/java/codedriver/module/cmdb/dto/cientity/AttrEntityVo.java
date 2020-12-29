@@ -37,10 +37,12 @@ public class AttrEntityVo {
     private String attrExpression;
     @JSONField(serialize = false) // 原始值，可以是任何类型，后面在拆解到valueList里
     private transient Object value;
-    @EntityField(name = "入库值列表", type = ApiParamType.JSONARRAY)
+    @EntityField(name = "值数据列表", type = ApiParamType.JSONARRAY)
     private List<String> valueList;
-    @EntityField(name = "真实值列表", type = ApiParamType.JSONARRAY)
-    private List<String> actualValueList;
+    @EntityField(name = "值hash列表", type = ApiParamType.JSONARRAY)
+    private List<String> valueHashList;
+    // @EntityField(name = "真实值列表", type = ApiParamType.JSONARRAY)
+    // private List<String> actualValueList;
     @EntityField(name = "生效事务id", type = ApiParamType.LONG)
     private Long transactionId;
     @EntityField(name = "输入方式", type = ApiParamType.STRING)
@@ -60,7 +62,8 @@ public class AttrEntityVo {
         this.ciEntityId = attrEntityTransactionVo.getCiEntityId();
         this.attrId = attrEntityTransactionVo.getAttrId();
         this.attrName = attrEntityTransactionVo.getAttrName();
-        this.actualValueList = attrEntityTransactionVo.getActualValueList().stream().collect(Collectors.toList());
+        this.valueList = attrEntityTransactionVo.getValueList();
+        this.propHandler = attrEntityTransactionVo.getPropHandler();
         this.transactionId = attrEntityTransactionVo.getTransactionId();
     }
 
@@ -134,10 +137,10 @@ public class AttrEntityVo {
         if (getAttrId() != null) {
             key += getAttrId() + "_";
         }
-        if (CollectionUtils.isNotEmpty(getActualValueList())) {
-            key += getActualValueList().size() + "_";
+        if (CollectionUtils.isNotEmpty(getValueList())) {
+            key += getValueList().size() + "_";
             // 根据内容排序生成新数组
-            List<String> sortedList = getActualValueList().stream().sorted().collect(Collectors.toList());;
+            List<String> sortedList = getValueList().stream().sorted().collect(Collectors.toList());;
             key += sortedList.stream().collect(Collectors.joining(","));
         }
         return key.hashCode();
@@ -157,12 +160,11 @@ public class AttrEntityVo {
         final AttrEntityVo attr = (AttrEntityVo)other;
         try {
             if (getAttrId().equals(attr.getAttrId())) {
-                if (CollectionUtils.isNotEmpty(getActualValueList())
-                    && CollectionUtils.isNotEmpty(attr.getActualValueList())) {
-                    if (this.getActualValueList().size() == attr.getActualValueList().size()) {
-                        for (String v : this.getActualValueList()) {
+                if (CollectionUtils.isNotEmpty(getValueList()) && CollectionUtils.isNotEmpty(attr.getValueList())) {
+                    if (this.getValueList().size() == attr.getValueList().size()) {
+                        for (String v : this.getValueList()) {
                             boolean isExists = false;
-                            for (String v2 : attr.getActualValueList()) {
+                            for (String v2 : attr.getValueList()) {
                                 if (v.equals(v2)) {
                                     isExists = true;
                                     break;
@@ -179,8 +181,8 @@ public class AttrEntityVo {
                     } else {
                         return false;
                     }
-                } else if (CollectionUtils.isEmpty(this.getActualValueList())
-                    && CollectionUtils.isEmpty(attr.getActualValueList())) {
+                } else if (CollectionUtils.isEmpty(this.getValueList())
+                    && CollectionUtils.isEmpty(attr.getValueList())) {
                     return true;
                 } else {
                     return false;
@@ -194,8 +196,8 @@ public class AttrEntityVo {
     }
 
     public List<String> getValueList() {
-        if (CollectionUtils.isEmpty(this.valueList) && CollectionUtils.isNotEmpty(this.actualValueList)) {
-            valueList = AttrValueUtil.getTransferValueList(this.actualValueList);
+        if (CollectionUtils.isEmpty(this.valueList) && CollectionUtils.isNotEmpty(this.valueHashList)) {
+            valueList = AttrValueUtil.getValueList(this.valueHashList);
         }
         return valueList;
     }
@@ -205,21 +207,6 @@ public class AttrEntityVo {
             this.valueList = _valueList.stream().distinct().collect(Collectors.toList());
         } else {
             this.valueList = _valueList;
-        }
-    }
-
-    public List<String> getActualValueList() {
-        if (CollectionUtils.isEmpty(this.actualValueList) && CollectionUtils.isNotEmpty(this.valueList)) {
-            this.actualValueList = AttrValueUtil.getActualValueList(valueList);
-        }
-        return this.actualValueList;
-    }
-
-    public void setActualValueList(List<String> _actualValueList) {
-        if (CollectionUtils.isNotEmpty(_actualValueList)) {
-            this.actualValueList = _actualValueList.stream().distinct().collect(Collectors.toList());
-        } else {
-            this.actualValueList = _actualValueList;
         }
     }
 
@@ -277,6 +264,17 @@ public class AttrEntityVo {
 
     public void setTransactionId(Long transactionId) {
         this.transactionId = transactionId;
+    }
+
+    public List<String> getValueHashList() {
+        if (CollectionUtils.isEmpty(valueHashList) && CollectionUtils.isNotEmpty(valueList)) {
+            valueHashList = AttrValueUtil.getHashList(propHandler, valueList);
+        }
+        return valueHashList;
+    }
+
+    public void setValueHashList(List<String> valueHashList) {
+        this.valueHashList = valueHashList;
     }
 
 }
