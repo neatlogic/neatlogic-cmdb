@@ -2,8 +2,8 @@ package codedriver.module.cmdb.enums;
 
 public enum BatchImportStatus {
 	RUNNING("running", "执行中"), SUCCEED("succeed", "已成功"), FAILED("failed", "已失败"), STOPPED("stopped", "已停止");
-	private String type;
-	private String text;
+	private final String type;
+	private final String text;
 
 	private BatchImportStatus(String _type, String _text) {
 		this.type = _type;

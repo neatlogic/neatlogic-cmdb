@@ -1,12 +1,5 @@
 package codedriver.module.cmdb.dto.cientity;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.apache.commons.collections4.CollectionUtils;
-
-import com.alibaba.fastjson.annotation.JSONField;
-
 import codedriver.framework.cmdb.attrvaluehandler.core.AttrValueUtil;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.elasticsearch.annotation.ESKey;
@@ -14,6 +7,13 @@ import codedriver.framework.elasticsearch.constvalue.ESKeyType;
 import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.HtmlUtil;
 import codedriver.module.cmdb.dto.transaction.AttrEntityTransactionVo;
+import com.alibaba.fastjson.annotation.JSONField;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.DigestUtils;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class AttrEntityVo {
     @EntityField(name = "id", type = ApiParamType.LONG)
@@ -41,8 +41,10 @@ public class AttrEntityVo {
     private List<String> valueList;
     @EntityField(name = "值hash列表", type = ApiParamType.JSONARRAY)
     private List<String> valueHashList;
-    // @EntityField(name = "真实值列表", type = ApiParamType.JSONARRAY)
-    // private List<String> actualValueList;
+    @JSONField(serialize = false)
+    private transient String valueStr;//值字符串类型，如果是多值，则使用,分隔
+    @JSONField(serialize = false)
+    private transient String valueStrHash;//valueStr的hash值
     @EntityField(name = "生效事务id", type = ApiParamType.LONG)
     private Long transactionId;
     @EntityField(name = "输入方式", type = ApiParamType.STRING)
@@ -140,7 +142,8 @@ public class AttrEntityVo {
         if (CollectionUtils.isNotEmpty(getValueList())) {
             key += getValueList().size() + "_";
             // 根据内容排序生成新数组
-            List<String> sortedList = getValueList().stream().sorted().collect(Collectors.toList());;
+            List<String> sortedList = getValueList().stream().sorted().collect(Collectors.toList());
+            ;
             key += sortedList.stream().collect(Collectors.joining(","));
         }
         return key.hashCode();
@@ -157,7 +160,7 @@ public class AttrEntityVo {
         if (!(other instanceof AttrEntityVo)) {
             return false;
         }
-        final AttrEntityVo attr = (AttrEntityVo)other;
+        final AttrEntityVo attr = (AttrEntityVo) other;
         try {
             if (getAttrId().equals(attr.getAttrId())) {
                 if (CollectionUtils.isNotEmpty(getValueList()) && CollectionUtils.isNotEmpty(attr.getValueList())) {
@@ -182,7 +185,7 @@ public class AttrEntityVo {
                         return false;
                     }
                 } else if (CollectionUtils.isEmpty(this.getValueList())
-                    && CollectionUtils.isEmpty(attr.getValueList())) {
+                        && CollectionUtils.isEmpty(attr.getValueList())) {
                     return true;
                 } else {
                     return false;
@@ -277,4 +280,20 @@ public class AttrEntityVo {
         this.valueHashList = valueHashList;
     }
 
+    public String getValueStr() {
+        if (StringUtils.isBlank(valueStr)) {
+            List<String> valueList = this.getValueList();
+            if (CollectionUtils.isNotEmpty(valueList)) {
+                valueStr = String.join(",", valueList);
+            }
+        }
+        return valueStr;
+    }
+
+    public String getValueStrHash() {
+        if (StringUtils.isNotBlank(this.getValueStr())) {
+            valueStrHash = DigestUtils.md5DigestAsHex(this.getValueStr().getBytes());
+        }
+        return valueStrHash;
+    }
 }

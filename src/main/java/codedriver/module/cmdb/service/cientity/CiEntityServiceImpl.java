@@ -1,27 +1,6 @@
 package codedriver.module.cmdb.service.cientity;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.alibaba.fastjson.JSON;
-
-import codedriver.framework.cmdb.constvalue.AttrType;
-import codedriver.framework.cmdb.constvalue.EditModeType;
-import codedriver.framework.cmdb.constvalue.RelActionType;
-import codedriver.framework.cmdb.constvalue.RelDirectionType;
-import codedriver.framework.cmdb.constvalue.RelRuleType;
-import codedriver.framework.cmdb.constvalue.SaveModeType;
-import codedriver.framework.cmdb.constvalue.TransactionActionType;
-import codedriver.framework.cmdb.constvalue.TransactionStatus;
+import codedriver.framework.cmdb.constvalue.*;
 import codedriver.framework.cmdb.validator.core.IValidator;
 import codedriver.framework.cmdb.validator.core.ValidatorFactory;
 import codedriver.framework.common.util.PageUtil;
@@ -38,17 +17,20 @@ import codedriver.module.cmdb.dto.ci.RelVo;
 import codedriver.module.cmdb.dto.cientity.AttrEntityVo;
 import codedriver.module.cmdb.dto.cientity.CiEntityVo;
 import codedriver.module.cmdb.dto.cientity.RelEntityVo;
-import codedriver.module.cmdb.dto.transaction.AttrEntityTransactionVo;
-import codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo;
-import codedriver.module.cmdb.dto.transaction.RelEntityTransactionVo;
-import codedriver.module.cmdb.dto.transaction.TransactionGroupVo;
-import codedriver.module.cmdb.dto.transaction.TransactionVo;
-import codedriver.module.cmdb.exception.cientity.AttrEntityDuplicateException;
-import codedriver.module.cmdb.exception.cientity.AttrEntityNotFoundException;
-import codedriver.module.cmdb.exception.cientity.CiEntityIsLockedException;
-import codedriver.module.cmdb.exception.cientity.CiEntityNotFoundException;
-import codedriver.module.cmdb.exception.cientity.RelEntityMutipleException;
-import codedriver.module.cmdb.exception.cientity.RelEntityNotFoundException;
+import codedriver.module.cmdb.dto.transaction.*;
+import codedriver.module.cmdb.exception.cientity.*;
+import com.alibaba.fastjson.JSON;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class CiEntityServiceImpl implements CiEntityService {
@@ -252,17 +234,18 @@ public class CiEntityServiceImpl implements CiEntityService {
         }
     }
 
-    private void createCiEntityName(CiEntityTransactionVo ciEntityTransactionVo) {
+    @Override
+    public void createCiEntityName(CiEntityTransactionVo ciEntityTransactionVo) {
         CiEntityVo ciEntityVo = new CiEntityVo(ciEntityTransactionVo);
         ciEntityVo.setAttrEntityList(new ArrayList<>());
         List<AttrEntityVo> attrEntityList =
-            attrEntityMapper.getAttrEntityByCiEntityId(ciEntityTransactionVo.getCiEntityId());
+                attrEntityMapper.getAttrEntityByCiEntityId(ciEntityTransactionVo.getCiEntityId());
         if (CollectionUtils.isNotEmpty(attrEntityList)) {
             for (AttrEntityTransactionVo entity : ciEntityTransactionVo.getAttrEntityTransactionList()) {
                 AttrEntityVo oldEntity = null;
                 Optional<AttrEntityVo> optionAttrEntity =
-                    attrEntityList.stream().filter(e -> e.getAttrId().equals(entity.getAttrId())).findFirst();
-                if (optionAttrEntity != null && optionAttrEntity.isPresent()) {
+                        attrEntityList.stream().filter(e -> e.getAttrId().equals(entity.getAttrId())).findFirst();
+                if (optionAttrEntity.isPresent()) {
                     oldEntity = optionAttrEntity.get();
                 }
                 AttrEntityVo newEntity = new AttrEntityVo(entity);
@@ -278,7 +261,8 @@ public class CiEntityServiceImpl implements CiEntityService {
         ciEntityTransactionVo.setName(ciEntityVo.getName());
     }
 
-    private void createSnapshot(CiEntityTransactionVo ciEntityTransactionVo) {
+    @Override
+    public void createSnapshot(CiEntityTransactionVo ciEntityTransactionVo) {
         CiEntityVo ciEntityVo = new CiEntityVo(ciEntityTransactionVo);
         ciEntityVo.setAttrEntityList(attrEntityMapper.getAttrEntityByCiEntityId(ciEntityTransactionVo.getCiEntityId()));
         ciEntityVo.setRelEntityList(relEntityMapper.getRelEntityByCiEntityId(ciEntityTransactionVo.getCiEntityId()));
@@ -307,8 +291,9 @@ public class CiEntityServiceImpl implements CiEntityService {
                 for (AttrVo attrVo : attrList) {
                     if (attrVo.getId().equals(attrEntityVo.getAttrId())) {
                         isExists = true;
-                        // 补充attrName
+                        // 补充attrName和attrLabel
                         attrEntityVo.setAttrName(attrVo.getName());
+                        attrEntityVo.setAttrLabel(attrVo.getLabel());
                         // 补充属性处理器信息（后面需要用处理器根据原始value生成值hash）
                         attrEntityVo.setPropHandler(attrVo.getPropHandler());
                         break;
@@ -564,48 +549,17 @@ public class CiEntityServiceImpl implements CiEntityService {
      * @param @return
      * @return Long 配置项id
      */
-    private Long commitTransaction(TransactionVo transactionVo) {
+    @Override
+    public Long commitTransaction(TransactionVo transactionVo) {
         CiEntityTransactionVo ciEntityTransactionVo = transactionVo.getCiEntityTransactionVo();
         // 删除配置项
         if (ciEntityTransactionVo.getAction().equals(TransactionActionType.DELETE.getValue())) {
             ciEntityMapper.deleteCiEntityById(ciEntityTransactionVo.getCiEntityId());
-
-            /*暂时不使用ES做搜索辅助
-            List<Long> changeCiEntityIdList =
-                relEntityMapper.getFromToCiEntityIdByCiEntityId(ciEntityTransactionVo.getCiEntityId());
-            changeCiEntityIdList.remove(ciEntityTransactionVo.getCiEntityId());
-            
-            // 处理es索引
-            if (CollectionUtils.isNotEmpty(changeCiEntityIdList)) {
-                CachedThreadPool.execute(new CodeDriverThread(
-                    "ELASTICSEARCH-DOCUMENT-DELETE-CIENTITY:" + ciEntityTransactionVo.getCiEntityId()) {
-                    @Override
-                    protected void execute() { // 删除索引
-                        try {
-                            ElasticSearchHandlerFactory.getHandler("cientity")
-                                .delete(ciEntityTransactionVo.getCiEntityId().toString());
-                        } catch (Exception ex) {
-                            logger.error(ex.getMessage(), ex);
-                        }
-                        // 更新受影响配置项索引
-                        if (CollectionUtils.isNotEmpty(changeCiEntityIdList)) {
-                            for (Long ciEntityId : changeCiEntityIdList) {
-                                try {
-                                    this.setThreadName("ELASTICSEARCH-DOCUMENT-SAVE-" + ciEntityId);
-                                    ElasticSearchHandlerFactory.getHandler("cientity").save(ciEntityId);
-                                } catch (Exception ex) {
-                                    logger.error(ex.getMessage(), ex);
-                                }
-                            }
-                        }
-                    }
-                });
-            }*/
             return null;
         } else {
             // 写入属性
             List<AttrEntityTransactionVo> attrEntityTransactionList =
-                ciEntityTransactionVo.getAttrEntityTransactionList();
+                    ciEntityTransactionVo.getAttrEntityTransactionList();
             if (CollectionUtils.isNotEmpty(attrEntityTransactionList)) {
                 for (AttrEntityTransactionVo attrEntityTransactionVo : attrEntityTransactionList) {
                     AttrEntityVo attrEntityVo = new AttrEntityVo(attrEntityTransactionVo);

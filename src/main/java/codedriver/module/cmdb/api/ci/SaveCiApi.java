@@ -9,6 +9,7 @@ import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CI_MODIFY;
+import codedriver.module.cmdb.cischema.CiSchemaHandler;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dto.ci.AttrVo;
@@ -50,13 +51,13 @@ public class SaveCiApi extends PrivateApiComponentBase {
     }
 
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "id，不提供代表新增模型"),
-        @Param(name = "name", type = ApiParamType.STRING, xss = true, isRequired = true, maxLength = 50, desc = "英文名称"),
-        @Param(name = "label", type = ApiParamType.STRING, desc = "中文名称", xss = true, maxLength = 100,
-            isRequired = true),
-        @Param(name = "description", type = ApiParamType.STRING, desc = "备注", maxLength = 500, xss = true),
-        @Param(name = "icon", type = ApiParamType.STRING, desc = "图标"),
-        @Param(name = "typeId", type = ApiParamType.LONG, desc = "类型id", isRequired = true),
-        @Param(name = "isMenu", type = ApiParamType.INTEGER, desc = "是否在菜单显示")})
+            @Param(name = "name", type = ApiParamType.STRING, xss = true, isRequired = true, maxLength = 50, desc = "英文名称"),
+            @Param(name = "label", type = ApiParamType.STRING, desc = "中文名称", xss = true, maxLength = 100,
+                    isRequired = true),
+            @Param(name = "description", type = ApiParamType.STRING, desc = "备注", maxLength = 500, xss = true),
+            @Param(name = "icon", type = ApiParamType.STRING, desc = "图标"),
+            @Param(name = "typeId", type = ApiParamType.LONG, desc = "类型id", isRequired = true),
+            @Param(name = "isMenu", type = ApiParamType.INTEGER, desc = "是否在菜单显示")})
     @Output({@Param(name = "id", type = ApiParamType.STRING, desc = "模型id")})
     @Description(desc = "保存模型接口")
     @Override
@@ -88,6 +89,8 @@ public class SaveCiApi extends PrivateApiComponentBase {
             attrVo.setIsPrivate(1);
             attrVo.setCiId(ciVo.getId());
             attrMapper.insertAttr(attrVo);
+            //初始化CISCHEMA
+            CiSchemaHandler.initCiSchema(ciVo);
         } else {
             // 编辑模型除了管理员权限还要看具体的模型授权
             if (!hasAuth) {

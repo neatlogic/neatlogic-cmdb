@@ -44,48 +44,50 @@
 
 	<select id="getRelEntityByCiEntityId" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.cientity.RelEntityVo">
 		SELECT
-		a.`id`,
-		a.`rel_id` AS relId,
-		a.`transaction_id` AS transactionId,
-		a.`from_cientity_id` AS fromCiEntityId,
-		a.`to_cientity_id` AS toCiEntityId,
-		b.`name` AS fromCiEntityName,
-		c.`name` AS toCiEntityName,
-		d.`from_ci_id` AS fromCiId,
-		d.`to_ci_id` AS toCiId,
-		d.`type_id` AS relTypeId,
-		e.`name` AS relTypeName,
-		'from' AS direction
-		FROM
-		`cmdb_relentity` a
-		JOIN `cmdb_cientity` b ON a.`from_cientity_id` = b.`id`
-		JOIN `cmdb_cientity` c ON a.`to_cientity_id` = c.`id`
-		JOIN `cmdb_rel` d ON a.rel_id = d.id
-		JOIN `cmdb_reltype` e ON d.type_id = e.id
-		WHERE a.from_cientity_id = #{value}
-		UNION
-		SELECT
-		a.`id`,
-		a.`rel_id` AS relId,
-		a.`transaction_id` AS transactionId,
-		a.`from_cientity_id` AS fromCiEntityId,
-		a.`to_cientity_id` AS toCiEntityId,
-		b.`name` AS fromCiEntityName,
-		c.`name` AS toCiEntityName,
-		d.`from_ci_id` AS fromCiId,
-		d.`to_ci_id` AS toCiId,
-		d.`type_id` AS relTypeId,
-		e.`name` AS relTypeName,
-		'to' AS direction
-		FROM
-		`cmdb_relentity` a
-		JOIN
-		`cmdb_cientity` b ON a.`from_cientity_id` = b.`id`
-		JOIN `cmdb_cientity` c ON a.`to_cientity_id` = c.`id`
-		JOIN `cmdb_rel` d ON a.rel_id = d.id
-		JOIN `cmdb_reltype` e ON d.type_id = e.id
-		WHERE a.to_cientity_id = #{value}
-		ORDER BY id
+            a.`id`,
+            a.`rel_id`           AS relId,
+            a.`transaction_id`   AS transactionId,
+            a.`from_cientity_id` AS fromCiEntityId,
+            a.`to_cientity_id`   AS toCiEntityId,
+            b.`name`             AS fromCiEntityName,
+            c.`name`             AS toCiEntityName,
+            d.`from_ci_id`       AS fromCiId,
+            d.`to_ci_id`         AS toCiId,
+            d.`type_id`          AS relTypeId,
+            e.`name`             AS relTypeName,
+            d.`to_name`          AS relName,
+            d.`to_label`         AS relLabel,
+            'from'               AS direction
+        FROM `cmdb_relentity` a
+                 JOIN `cmdb_cientity` b ON a.`from_cientity_id` = b.`id`
+                 JOIN `cmdb_cientity` c ON a.`to_cientity_id` = c.`id`
+                 JOIN `cmdb_rel` d ON a.rel_id = d.id
+                 JOIN `cmdb_reltype` e ON d.type_id = e.id
+        WHERE a.from_cientity_id = #{value}
+        UNION
+        SELECT
+            a.`id`,
+            a.`rel_id`           AS relId,
+            a.`transaction_id`   AS transactionId,
+            a.`from_cientity_id` AS fromCiEntityId,
+            a.`to_cientity_id`   AS toCiEntityId,
+            b.`name`             AS fromCiEntityName,
+            c.`name`             AS toCiEntityName,
+            d.`from_ci_id`       AS fromCiId,
+            d.`to_ci_id`         AS toCiId,
+            d.`type_id`          AS relTypeId,
+            e.`name`             AS relTypeName,
+            d.`from_name`        AS relName,
+            d.`from_label`       AS relLabel,
+            'to'                 AS direction
+        FROM `cmdb_relentity` a
+                 JOIN
+             `cmdb_cientity` b ON a.`from_cientity_id` = b.`id`
+                 JOIN `cmdb_cientity` c ON a.`to_cientity_id` = c.`id`
+                 JOIN `cmdb_rel` d ON a.rel_id = d.id
+                 JOIN `cmdb_reltype` e ON d.type_id = e.id
+        WHERE a.to_cientity_id = #{value}
+        ORDER BY id
 	</select>
 
 	<select id="getFromToCiEntityIdByCiEntityIdList" resultType="java.lang.Long">

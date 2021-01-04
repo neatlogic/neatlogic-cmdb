@@ -166,24 +166,21 @@
 
 
 	<select id="getAttrEntityTransactionByTransactionIdAndCiEntityId" resultMap="attrEntityTransactionMap">
-		SELECT
-		a.`id`,
-		a.`ci_entity_id` AS ciEntityId,
-		a.`attr_id` AS attrId,
-		a.`attr_name` AS attrName,
-		a.`value_hash` as valueHash,
-		a.`transaction_id` AS transactionId,
-		a.`savemode` AS saveMode,
-		b.label AS attrLabel,
-		c.id AS propId,
-		c.handler AS propHandler
-		FROM
-		`cmdb_attrentity_transaction` a JOIN `cmdb_attr` b ON a.attr_id = b.id
-		LEFT JOIN `cmdb_prop` c ON b.`prop_id` = c.`id`
-		WHERE
-		transaction_id = #{transactionId}
-		AND
-		ci_entity_id = #{ciEntityId}
+		SELECT a.`id`,
+			   a.`ci_entity_id`                AS ciEntityId,
+			   a.`attr_id`                     AS attrId,
+			   a.`attr_name`                   AS attrName,
+			   a.`value_hash`                  as valueHash,
+			   a.`transaction_id`              AS transactionId,
+			   a.`savemode`                    AS saveMode,
+			   IFNULL(b.label, a.`attr_label`) AS attrLabel,
+			   c.id                            AS propId,
+			   c.handler                       AS propHandler
+		FROM `cmdb_attrentity_transaction` a
+				 LEFT JOIN `cmdb_attr` b ON a.attr_id = b.id
+				 LEFT JOIN `cmdb_prop` c ON b.`prop_id` = c.`id`
+		WHERE transaction_id = #{transactionId}
+		  AND ci_entity_id = #{ciEntityId}
 		ORDER BY id
 	</select>
 
@@ -275,18 +272,20 @@
 		`ci_entity_id`,
 		`attr_id`,
 		`attr_name`,
+		`attr_label`,
 		`value_hash`,
 		`transaction_id`,
 		`savemode`
 		)
 		VALUES
 		<choose>
-			<when test="valueHashList != null and valueHashList.size() >0">
+			<when test="valueHashList != null and valueHashList.size() > 0">
 				<foreach collection="valueHashList" item="item" separator=",">
 					(
 					#{ciEntityId},
 					#{attrId},
 					#{attrName},
+					#{attrLabel},
 					#{item},
 					#{transactionId},
 					#{saveMode}
@@ -298,6 +297,7 @@
 				#{ciEntityId},
 				#{attrId},
 				#{attrName},
+				#{attrLabel},
 				'',<!-- 用于表示删除配置项属性值 -->
 				#{transactionId},
 				#{saveMode}

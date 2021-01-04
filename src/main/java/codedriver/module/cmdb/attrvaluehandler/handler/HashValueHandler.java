@@ -35,9 +35,7 @@ public class HashValueHandler implements IAttrValueHandler {
             if (attrEntityContentMapper.checkAttrEntityHashIsExists(hash) <= 0) {
                 if (StringUtils.isNotBlank(propHandler)) {
                     IPropertyHandler handler = PropertyHandlerFactory.getHandler(propHandler);
-                    if (handler != null) {
-                        valueHash = handler.getValueHash(value);
-                    }
+                    valueHash = handler.getValueHash(value);
                 }
                 if (StringUtils.isBlank(valueHash)) {
                     // valuehash不区分大小写

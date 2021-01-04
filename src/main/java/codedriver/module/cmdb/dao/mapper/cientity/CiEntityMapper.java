@@ -1,41 +1,37 @@
 package codedriver.module.cmdb.dao.mapper.cientity;
 
-import java.util.List;
-
-import org.apache.ibatis.annotations.Param;
-
 import codedriver.framework.elasticsearch.annotation.ESParam;
 import codedriver.framework.elasticsearch.annotation.ESSearch;
 import codedriver.module.cmdb.dto.cientity.CiEntityVo;
+import org.apache.ibatis.annotations.Param;
 
-/**
- * 
- * @Author:chenqiwei
- * @Time:Aug 15, 2020
- */
+import java.util.List;
+
 public interface CiEntityMapper {
-    public List<Long> getCiEntityIdByCiId(Long ciId);
+    List<Long> getCiEntityIdByCiId(Long ciId);
 
-    public List<Long> getCiEntityIdByGroupIdList(@Param("groupIdList") List<Long> groupIdList,
-        @Param("ciEntityIdList") List<Long> ciEntityIdList, @Param("typeList") List<String> typeList);
+    List<CiEntityVo> getCiEntityByAttrId(Long attrId);
 
-    public CiEntityVo getCiEntityById(Long id);
+    List<Long> getCiEntityIdByGroupIdList(@Param("groupIdList") List<Long> groupIdList,
+                                          @Param("ciEntityIdList") List<Long> ciEntityIdList, @Param("typeList") List<String> typeList);
 
-    public List<Long> searchCiEntityId(CiEntityVo ciEntityVo);
+    CiEntityVo getCiEntityById(Long id);
 
-    public int searchCiEntityIdCount(CiEntityVo ciEntityVo);
+    List<Long> searchCiEntityId(CiEntityVo ciEntityVo);
 
-    public List<CiEntityVo> searchCiEntityByIdList(@Param("idList") List<Long> idList);
+    int searchCiEntityIdCount(CiEntityVo ciEntityVo);
 
-    public Long getIdByCiIdAndName(@Param("ciId") Long ciId,@Param("name") String name);
+    List<CiEntityVo> searchCiEntityByIdList(@Param("idList") List<Long> idList);
+
+    Long getIdByCiIdAndName(@Param("ciId") Long ciId, @Param("name") String name);
 
     @ESSearch
-    public int insertCiEntity(@ESParam("cientity") CiEntityVo ciEntityVo);
+    int insertCiEntity(@ESParam("cientity") CiEntityVo ciEntityVo);
 
-    public int updateCiEntityLockById(CiEntityVo ciEntityVo);
+    int updateCiEntityLockById(CiEntityVo ciEntityVo);
 
-    public int deleteCiEntityByCiId(Long ciId);
+    int deleteCiEntityByCiId(Long ciId);
 
-    public int deleteCiEntityById(Long ciEntityId);
+    int deleteCiEntityById(Long ciEntityId);
 
 }

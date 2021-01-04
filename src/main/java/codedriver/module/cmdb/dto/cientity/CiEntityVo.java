@@ -1,25 +1,5 @@
 package codedriver.module.cmdb.dto.cientity;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
-
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.annotation.JSONField;
-
 import codedriver.framework.cmdb.constvalue.AttrType;
 import codedriver.framework.cmdb.constvalue.EditModeType;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -29,6 +9,17 @@ import codedriver.framework.elasticsearch.constvalue.ESKeyType;
 import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.SnowflakeUtil;
 import codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.annotation.JSONField;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class CiEntityVo extends BasePageVo {
     @JSONField(serialize = false)
@@ -331,6 +322,7 @@ public class CiEntityVo extends BasePageVo {
                 JSONObject attrObj = new JSONObject();
                 attrObj.put("type", attrEntityVo.getAttrType());
                 attrObj.put("name", attrEntityVo.getAttrName());
+                attrObj.put("label", attrEntityVo.getAttrLabel());//需要保存label信息，当属性被删除后可以使用
                 if (attrEntityVo.getAttrType().equals(AttrType.EXPRESSION.getValue())) {
                     String v = "";
                     if (StringUtils.isNotBlank(attrEntityVo.getAttrExpression())) {
@@ -388,8 +380,13 @@ public class CiEntityVo extends BasePageVo {
             for (RelEntityVo relEntityVo : this.relEntityList) {
                 String keyprefix = "rel" + relEntityVo.getDirection() + "_";
                 if (!relEntityData.containsKey(keyprefix + relEntityVo.getRelId())) {
-                    relEntityData.put(keyprefix + relEntityVo.getRelId(), new JSONArray());
+                    JSONObject dataObj = new JSONObject();
+                    dataObj.put("valueList", new JSONArray());
+                    relEntityData.put(keyprefix + relEntityVo.getRelId(), dataObj);
                 }
+                JSONObject dataObj = relEntityData.getJSONObject(keyprefix + relEntityVo.getRelId());
+                dataObj.put("name", relEntityVo.getRelName());
+                dataObj.put("label", relEntityVo.getRelLabel());
                 JSONObject targetObj = new JSONObject();
                 if (relEntityVo.getDirection().equals("from")) {
                     targetObj.put("ciId", relEntityVo.getToCiId());
@@ -400,7 +397,7 @@ public class CiEntityVo extends BasePageVo {
                     targetObj.put("ciEntityId", relEntityVo.getFromCiEntityId());
                     targetObj.put("ciEntityName", relEntityVo.getFromCiEntityName());
                 }
-                relEntityData.getJSONArray(keyprefix + relEntityVo.getRelId()).add(targetObj);
+                dataObj.getJSONArray("valueList").add(targetObj);
             }
         }
         return relEntityData;

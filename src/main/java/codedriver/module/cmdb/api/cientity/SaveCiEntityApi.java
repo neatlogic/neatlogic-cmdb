@@ -27,7 +27,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -95,9 +94,7 @@ public class SaveCiEntityApi extends PrivateApiComponentBase {
         JSONObject attrObj = jsonObj.getJSONObject("attrEntityData");
         if (MapUtils.isNotEmpty(attrObj)) {
             List<AttrEntityTransactionVo> attrEntityList = new ArrayList<>();
-            Iterator<String> keys = attrObj.keySet().iterator();
-            while (keys.hasNext()) {
-                String key = keys.next();
+            for (String key : attrObj.keySet()) {
                 Long attrId = null;
                 try {
                     attrId = Long.parseLong(key.replace("attr_", ""));
@@ -119,9 +116,7 @@ public class SaveCiEntityApi extends PrivateApiComponentBase {
         JSONObject relObj = jsonObj.getJSONObject("relEntityData");
         if (MapUtils.isNotEmpty(relObj)) {
             List<RelEntityTransactionVo> relEntityList = new ArrayList<>();
-            Iterator<String> keys = relObj.keySet().iterator();
-            while (keys.hasNext()) {
-                String key = keys.next();
+            for (String key : relObj.keySet()) {
                 JSONArray relDataList = relObj.getJSONArray(key);
 
                 if (key.startsWith("relfrom_")) {// 当前配置项处于from位置

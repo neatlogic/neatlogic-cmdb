@@ -50,7 +50,7 @@ public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
     }
 
     @Input({@Param(name = "transactionId", type = ApiParamType.LONG, desc = "事务id"),
-        @Param(name = "transactionIdList", type = ApiParamType.JSONARRAY, desc = "事务id列表")})
+            @Param(name = "transactionIdList", type = ApiParamType.JSONARRAY, desc = "事务id列表")})
     @Output({@Param(explode = CiEntityTransactionVo.class)})
     @Description(desc = "获取配置项事务详细信息接口")
     @Override
@@ -64,7 +64,7 @@ public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
 
         if (transactionId != null) {
             CiEntityTransactionVo ciEntityTransactionVo =
-                transactionMapper.getCiEntityTransactionByTransactionId(transactionId);
+                    transactionMapper.getCiEntityTransactionByTransactionId(transactionId);
             if (ciEntityTransactionVo != null) {
                 ciEntityTransactionList.add(ciEntityTransactionVo);
             }
@@ -82,16 +82,16 @@ public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
             for (CiEntityTransactionVo ciEntityTransactionVo : ciEntityTransactionList) {
                 if (ciEntityTransactionVo != null) {
                     List<AttrEntityTransactionVo> attrEntityTransactionList =
-                        transactionMapper.getAttrEntityTransactionByTransactionIdAndCiEntityId(transactionId,
-                            ciEntityTransactionVo.getCiEntityId());
+                            transactionMapper.getAttrEntityTransactionByTransactionIdAndCiEntityId(transactionId,
+                                    ciEntityTransactionVo.getCiEntityId());
                     List<RelEntityTransactionVo> relEntityTransactionList =
-                        transactionMapper.getRelEntityTransactionByTransactionIdAndCiEntityId(transactionId,
-                            ciEntityTransactionVo.getCiEntityId());
+                            transactionMapper.getRelEntityTransactionByTransactionIdAndCiEntityId(transactionId,
+                                    ciEntityTransactionVo.getCiEntityId());
                     if (CollectionUtils.isNotEmpty(attrEntityTransactionList)
-                        || CollectionUtils.isNotEmpty(relEntityTransactionList)) {
+                            || CollectionUtils.isNotEmpty(relEntityTransactionList)) {
 
                         String snapshot =
-                            ciEntitySnapshotMapper.getSnapshotContentByHash(ciEntityTransactionVo.getSnapshotHash());
+                                ciEntitySnapshotMapper.getSnapshotContentByHash(ciEntityTransactionVo.getSnapshotHash());
                         JSONObject oldAttrEntityData = null;
                         JSONObject oldRelEntityData = null;
                         if (StringUtils.isNotBlank(snapshot)) {
@@ -109,21 +109,21 @@ public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
                             dataObj.put("propHandler", attrEntityTransactionVo.getPropHandler());
                             dataObj.put("newValueList", attrEntityTransactionVo.getValueList());
                             if (oldAttrEntityData != null
-                                && oldAttrEntityData.containsKey("attr_" + attrEntityTransactionVo.getAttrId())) {
+                                    && oldAttrEntityData.containsKey("attr_" + attrEntityTransactionVo.getAttrId())) {
                                 dataObj.put("oldValueList",
-                                    oldAttrEntityData.getJSONObject("attr_" + attrEntityTransactionVo.getAttrId())
-                                        .getJSONArray("valueList"));
+                                        oldAttrEntityData.getJSONObject("attr_" + attrEntityTransactionVo.getAttrId())
+                                                .getJSONArray("valueList"));
                             }
                             dataList.add(dataObj);
                         }
                         if (CollectionUtils.isNotEmpty(relEntityTransactionList)) {
                             Map<String, List<RelEntityTransactionVo>> relGroupMap = relEntityTransactionList.stream()
-                                .collect(Collectors.groupingBy(e -> getRelGroupKey(e)));
+                                    .collect(Collectors.groupingBy(GetCiEntityTransactionApi::getRelGroupKey));
                             Iterator<String> keyit = relGroupMap.keySet().iterator();
                             while (keyit.hasNext()) {
                                 String key = keyit.next();
                                 String[] keys = key.split("#");
-                                Long relId = Long.parseLong(keys[0]);
+                                long relId = Long.parseLong(keys[0]);
                                 String direction = keys[1];
                                 String endName = keys[2];
                                 String relName = keys[3];
@@ -155,9 +155,9 @@ public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
                                 dataObj.put("type", "rel");
                                 dataObj.put("newValueList", newValueList);
                                 if (oldRelEntityData != null
-                                    && oldRelEntityData.containsKey("rel" + direction + "_" + relId)) {
+                                        && oldRelEntityData.containsKey("rel" + direction + "_" + relId)) {
                                     dataObj.put("oldValueList",
-                                        oldRelEntityData.getJSONArray("rel" + direction + "_" + relId));
+                                            oldRelEntityData.getJSONArray("rel" + direction + "_" + relId));
                                 }
                                 dataList.add(dataObj);
                             }
@@ -172,10 +172,10 @@ public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
     private static String getRelGroupKey(RelEntityTransactionVo relEntityTransactionVo) {
         if (relEntityTransactionVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
             return relEntityTransactionVo.getRelId() + "#" + relEntityTransactionVo.getDirection() + "#"
-                + relEntityTransactionVo.getToLabel() + "#" + relEntityTransactionVo.getTypeId();
+                    + relEntityTransactionVo.getToLabel() + "#" + relEntityTransactionVo.getTypeId();
         } else {
             return relEntityTransactionVo.getRelId() + "#" + relEntityTransactionVo.getDirection() + "#"
-                + relEntityTransactionVo.getFromLabel() + "#" + relEntityTransactionVo.getTypeId();
+                    + relEntityTransactionVo.getFromLabel() + "#" + relEntityTransactionVo.getTypeId();
         }
     }
 }
