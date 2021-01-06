@@ -10,7 +10,6 @@ import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CI_MODIFY;
-import codedriver.module.cmdb.cischema.CiSchemaHandler;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.AttrEntityMapper;
@@ -80,9 +79,6 @@ public class DeleteAttrApi extends PrivateApiComponentBase {
             }
         }
         attrService.deleteAttrById(attrVo);
-
-        //删除视图数据
-        CiSchemaHandler.deleteAttr(attrVo);
         return null;
     }
 

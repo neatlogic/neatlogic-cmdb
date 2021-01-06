@@ -106,7 +106,7 @@ public class SaveCiEntityApi extends PrivateApiComponentBase {
                     attrEntityVo.setAttrId(attrId);
                     JSONObject attrDataObj = attrObj.getJSONObject(key);
                     JSONArray valueObjList = attrDataObj.getJSONArray("valueList");
-                    attrEntityVo.setValueList(valueObjList.stream().map(v -> v.toString()).collect(Collectors.toList()));
+                    attrEntityVo.setValueList(valueObjList.stream().map(Object::toString).collect(Collectors.toList()));
                     attrEntityList.add(attrEntityVo);
                 }
             }

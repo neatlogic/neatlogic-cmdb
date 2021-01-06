@@ -48,12 +48,29 @@ public class RelEntityTransactionVo {
 
     }
 
+    public RelEntityTransactionVo(RelEntityTransactionVo relEntityVo) {
+        this.relId = relEntityVo.getRelId();
+        this.direction = relEntityVo.getDirection();
+        this.toCiEntityId = relEntityVo.getToCiEntityId();
+        this.fromCiEntityId = relEntityVo.getFromCiEntityId();
+        this.transactionId = relEntityVo.getTransactionId();
+        this.fromCiId = relEntityVo.getFromCiId();
+        this.toCiId = relEntityVo.getToCiId();
+        this.action = relEntityVo.getAction();
+        this.fromCiEntityName = relEntityVo.getFromCiEntityName();
+        this.toCiEntityName = relEntityVo.getToCiEntityName();
+    }
+
     public RelEntityTransactionVo(RelEntityVo relEntityVo) {
         this.relId = relEntityVo.getRelId();
         this.direction = relEntityVo.getDirection();
         this.toCiEntityId = relEntityVo.getToCiEntityId();
         this.fromCiEntityId = relEntityVo.getFromCiEntityId();
         this.transactionId = relEntityVo.getTransactionId();
+        this.fromCiId = relEntityVo.getFromCiId();
+        this.toCiId = relEntityVo.getToCiId();
+        this.fromCiEntityName = relEntityVo.getFromCiEntityName();
+        this.toCiEntityName = relEntityVo.getToCiEntityName();
     }
 
     public RelEntityTransactionVo(RelEntityVo relEntityVo, RelActionType action) {
@@ -62,6 +79,10 @@ public class RelEntityTransactionVo {
         this.toCiEntityId = relEntityVo.getToCiEntityId();
         this.fromCiEntityId = relEntityVo.getFromCiEntityId();
         this.transactionId = relEntityVo.getTransactionId();
+        this.fromCiId = relEntityVo.getFromCiId();
+        this.toCiId = relEntityVo.getToCiId();
+        this.fromCiEntityName = relEntityVo.getFromCiEntityName();
+        this.toCiEntityName = relEntityVo.getToCiEntityName();
         this.action = action.getValue();
     }
 

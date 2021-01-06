@@ -90,6 +90,7 @@ public class SaveAttrApi extends PrivateApiComponentBase {
         }
         if (attrId == null) {
             attrMapper.insertAttr(attrVo);
+            //更新视图表
             CiSchemaHandler.insertAttr(attrVo);
         } else {
             if (attrMapper.getAttrById(attrId) == null) {

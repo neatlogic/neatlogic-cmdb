@@ -23,7 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -72,9 +71,7 @@ public class ValidateCiEntityApi extends PrivateApiComponentBase {
         JSONObject attrObj = jsonObj.getJSONObject("attrEntityData");
         if (MapUtils.isNotEmpty(attrObj)) {
             List<AttrEntityTransactionVo> attrEntityList = new ArrayList<>();
-            Iterator<String> keys = attrObj.keySet().iterator();
-            while (keys.hasNext()) {
-                String key = keys.next();
+            for (String key : attrObj.keySet()) {
                 Long attrId = null;
                 try {
                     attrId = Long.parseLong(key.replace("attr_", ""));
@@ -87,7 +84,7 @@ public class ValidateCiEntityApi extends PrivateApiComponentBase {
                     JSONObject attrDataObj = attrObj.getJSONObject(key);
                     JSONArray valueObjList = attrDataObj.getJSONArray("valueList");
                     attrEntityVo
-                        .setValueList(valueObjList.stream().map(v -> v.toString()).collect(Collectors.toList()));
+                            .setValueList(valueObjList.stream().map(v -> v.toString()).collect(Collectors.toList()));
                     attrEntityList.add(attrEntityVo);
                 }
             }
@@ -97,10 +94,9 @@ public class ValidateCiEntityApi extends PrivateApiComponentBase {
         JSONObject relObj = jsonObj.getJSONObject("relEntityData");
         if (MapUtils.isNotEmpty(relObj)) {
             List<RelEntityTransactionVo> relEntityList = new ArrayList<>();
-            Iterator<String> keys = relObj.keySet().iterator();
-            while (keys.hasNext()) {
-                String key = keys.next();
-                JSONArray relDataList = relObj.getJSONArray(key);
+            for (String key : relObj.keySet()) {
+                JSONObject obj = relObj.getJSONObject(key);
+                JSONArray relDataList = obj.getJSONArray("valueList");
 
                 if (key.startsWith("relfrom_")) {// 当前配置项处于from位置
                     if (CollectionUtils.isNotEmpty(relDataList)) {

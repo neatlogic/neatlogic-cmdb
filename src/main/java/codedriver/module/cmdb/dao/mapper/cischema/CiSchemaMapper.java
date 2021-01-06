@@ -32,6 +32,10 @@ public interface CiSchemaMapper {
 
     void deleteRelSchema(@Param("tableName") String tableName);
 
+    void deleteCiEntityById(@Param("tableName") String tableName, @Param("ciEntityId") Long ciEntityId);
+
+    void deleteCiEntityRelByCiEntityId(@Param("tableName") String tableName, @Param("ciEntityId") Long ciEntityId);
+
     void deleteSchemaAuditById(Long auditId);
 
 }

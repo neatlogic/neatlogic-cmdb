@@ -156,8 +156,8 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
                 if (!canEdit || !canDelete || !canTransaction) {
                     if (CollectionUtils.isNotEmpty(ciEntityVo.getGroupIdList())) {
                         hasAuthCiEntityIdList = CiAuthChecker.isInGroup(
-                            ciEntityList.stream().map(entity -> entity.getId()).collect(Collectors.toList()),
-                            GroupType.MATAIN);
+                                ciEntityList.stream().map(CiEntityVo::getId).collect(Collectors.toList()),
+                                GroupType.MATAIN);
                     }
                 }
             }

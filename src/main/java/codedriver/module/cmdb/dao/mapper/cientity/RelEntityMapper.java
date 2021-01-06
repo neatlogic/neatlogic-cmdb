@@ -1,49 +1,52 @@
 package codedriver.module.cmdb.dao.mapper.cientity;
 
-import java.util.List;
-
-import org.apache.ibatis.annotations.Param;
-
 import codedriver.framework.elasticsearch.annotation.ESParam;
 import codedriver.framework.elasticsearch.annotation.ESSearch;
 import codedriver.module.cmdb.dto.cientity.RelEntityVo;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
- * 
- * @Author:chenqiwei
- * @Time:Aug 15, 2020
+ *
  */
 public interface RelEntityMapper {
-    public int checkRelEntityIsExists(RelEntityVo relEntityVo);
+    List<RelEntityVo> getRelEntityByRelId(Long relId);
 
-    public List<RelEntityVo> getRelEntityByCiEntityId(Long ciEntityId);
+    int checkRelEntityIsExists(RelEntityVo relEntityVo);
 
-    public List<RelEntityVo> searchRelEntityByCiEntityIdList(@Param("idList") List<Long> idList,
-        @Param("relIdList") List<Long> relIdList);
+    List<RelEntityVo> getRelEntityByFromCiIdAndRelId(@Param("relId") Long relId, @Param("fromCiId") Long fromCiId);
 
-    public List<RelEntityVo> getRelEntityByFromCiEntityIdAndRelId(@Param("fromCiEntityId") Long fromCiEntityId,
-        @Param("relId") Long relId);
+    List<RelEntityVo> getRelEntityByToCiIdAndRelId(@Param("relId") Long relId, @Param("toCiId") Long toCiId);
 
-    public List<RelEntityVo> getRelEntityByToCiEntityIdAndRelId(@Param("toCiEntityId") Long toCiEntityId,
-        @Param("relId") Long relId);
+    List<RelEntityVo> getRelEntityByCiEntityId(Long ciEntityId);
 
-    public List<Long> getFromToCiEntityIdByCiEntityIdList(@Param("idList") List<Long> idList);
+    List<RelEntityVo> searchRelEntityByCiEntityIdList(@Param("idList") List<Long> idList,
+                                                      @Param("relIdList") List<Long> relIdList);
 
-    public List<Long> getFromToCiEntityIdByCiEntityId(Long ciEntityId);
+    List<RelEntityVo> getRelEntityByFromCiEntityIdAndRelId(@Param("fromCiEntityId") Long fromCiEntityId,
+                                                           @Param("relId") Long relId);
 
-    @ESSearch
-    public int insertRelEntity(@ESParam("cientity") RelEntityVo relEntityVo);
+    List<RelEntityVo> getRelEntityByToCiEntityIdAndRelId(@Param("toCiEntityId") Long toCiEntityId,
+                                                         @Param("relId") Long relId);
 
-    @ESSearch
-    public int deleteRelEntityByFromCiEntityIdAndRelId(
-        @Param("fromCiEntityId") @ESParam("cientity") Long fromCiEntityId, @Param("relId") Long relId);
+    List<Long> getFromToCiEntityIdByCiEntityIdList(@Param("idList") List<Long> idList);
 
-    @ESSearch
-    public int deleteRelEntityByToCiEntityIdAndRelId(@Param("toCiEntityId") @ESParam("cientity") Long toCiEntityId,
-        @Param("relId") Long relId);
+    List<Long> getFromToCiEntityIdByCiEntityId(Long ciEntityId);
 
     @ESSearch
-    public int deleteRelEntityByRelIdFromCiEntityIdToCiEntityId(@Param("relId") Long relId,
-        @Param("fromCiEntityId") @ESParam("cientity") Long fromCiEntityId,
-        @Param("toCiEntityId") @ESParam("cientity") Long toCiEntityId);
+    int insertRelEntity(@ESParam("cientity") RelEntityVo relEntityVo);
+
+    @ESSearch
+    int deleteRelEntityByFromCiEntityIdAndRelId(
+            @Param("fromCiEntityId") @ESParam("cientity") Long fromCiEntityId, @Param("relId") Long relId);
+
+    @ESSearch
+    int deleteRelEntityByToCiEntityIdAndRelId(@Param("toCiEntityId") @ESParam("cientity") Long toCiEntityId,
+                                              @Param("relId") Long relId);
+
+    @ESSearch
+    int deleteRelEntityByRelIdFromCiEntityIdToCiEntityId(@Param("relId") Long relId,
+                                                         @Param("fromCiEntityId") @ESParam("cientity") Long fromCiEntityId,
+                                                         @Param("toCiEntityId") @ESParam("cientity") Long toCiEntityId);
 }

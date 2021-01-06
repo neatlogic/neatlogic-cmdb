@@ -313,11 +313,11 @@ public class CiEntityVo extends BasePageVo {
     private static final String regex = "\\{([^}]+?)}";
 
     public JSONObject getAttrEntityData() {
+        if (attrEntityData == null) {
+            attrEntityData = new JSONObject();
+        }
         String keyprefix = "attr_";
         if (MapUtils.isEmpty(attrEntityData) && CollectionUtils.isNotEmpty(this.attrEntityList)) {
-            if (attrEntityData == null) {
-                attrEntityData = new JSONObject();
-            }
             for (AttrEntityVo attrEntityVo : this.attrEntityList) {
                 JSONObject attrObj = new JSONObject();
                 attrObj.put("type", attrEntityVo.getAttrType());
@@ -373,10 +373,10 @@ public class CiEntityVo extends BasePageVo {
     }
 
     public JSONObject getRelEntityData() {
+        if (relEntityData == null) {
+            relEntityData = new JSONObject();
+        }
         if (MapUtils.isEmpty(relEntityData) && CollectionUtils.isNotEmpty(this.relEntityList)) {
-            if (relEntityData == null) {
-                relEntityData = new JSONObject();
-            }
             for (RelEntityVo relEntityVo : this.relEntityList) {
                 String keyprefix = "rel" + relEntityVo.getDirection() + "_";
                 if (!relEntityData.containsKey(keyprefix + relEntityVo.getRelId())) {

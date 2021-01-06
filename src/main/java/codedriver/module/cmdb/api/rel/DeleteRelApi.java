@@ -10,6 +10,9 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CI_MODIFY;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
+import codedriver.module.cmdb.dto.ci.RelVo;
+import codedriver.module.cmdb.exception.rel.RelNotFoundException;
+import codedriver.module.cmdb.service.rel.RelService;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,6 +21,9 @@ import org.springframework.stereotype.Service;
 @AuthAction(action = CI_MODIFY.class)
 @OperationType(type = OperationTypeEnum.DELETE)
 public class DeleteRelApi extends PrivateApiComponentBase {
+
+    @Autowired
+    private RelService relService;
 
     @Autowired
     private RelMapper relMapper;
@@ -42,7 +48,11 @@ public class DeleteRelApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long relId = jsonObj.getLong("id");
-        relMapper.deleteRelById(relId);
+        RelVo relVo = relMapper.getRelById(relId);
+        if (relVo == null) {
+            throw new RelNotFoundException(relId);
+        }
+        relService.deleteRelById(relVo);
         return null;
     }
 

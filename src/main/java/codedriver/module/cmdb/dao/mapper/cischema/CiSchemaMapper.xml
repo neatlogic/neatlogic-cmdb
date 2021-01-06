@@ -30,22 +30,18 @@
 
     <insert id="replaceSchemaAudit" parameterType="codedriver.module.cmdb.dto.schema.SchemaAuditVo">
         REPLACE
-        INTO cmdb_schema_audit (`target_id`,
+        INTO cmdb_schema_audit (`lcd`,
+                                `target_id`,
                                 `target_type`,
                                 `action`,
                                 `data`,
-                                `server_id`,
-                                `lcd`)
-        VALUES (
+                                `server_id`)
+        VALUES (NOW(3),
         #{targetId},
         #{targetType},
         #{action},
         #{dataStr},
-        #{serverId},
-        NOW
-        (
-        3
-        )
+        #{serverId}
         )
     </insert>
 
@@ -120,6 +116,19 @@
             )
         </foreach>
     </insert>
+
+    <delete id="deleteCiEntityById">
+        DELETE
+        FROM ${tableName}
+        WHERE id = #{ciEntityId}
+    </delete>
+
+    <delete id="deleteCiEntityRelByCiEntityId">
+        DELETE
+        FROM ${tableName}
+        WHERE from_cientity_id = #{ciEntityId}
+           OR to_cientity_id = #{ciEntityId}
+    </delete>
 
     <delete id="deleteSchemaAuditById" parameterType="java.lang.Long">
         DELETE

@@ -41,24 +41,21 @@
             resultType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
         SELECT a.`id`,
                a.`ci_id`     AS ciId,
+               a.`name`      AS name,
                b.`name`      AS ciName,
-               b.`icon`
-                             AS ciIcon,
+               b.`icon`      AS ciIcon,
                b.`label`     AS ciLabel,
                b.`type_id`   AS typeId,
-               c.`name`      AS
-                                typeName,
+               c.`name`      AS typeName,
                a.`fcu`,
                a.`fcd`,
                a.`lcu`,
                a.`lcd`,
                a.`status`,
-               a.`is_locked` AS
-                                isLocked
+               a.`is_locked` AS isLocked
         FROM `cmdb_cientity` a
                  JOIN `cmdb_ci` b ON a.ci_id = b.id
-                 JOIN
-             `cmdb_citype` c ON b.type_id = c.id
+                 JOIN `cmdb_citype` c ON b.type_id = c.id
         WHERE a.id = #{value}
     </select>
 

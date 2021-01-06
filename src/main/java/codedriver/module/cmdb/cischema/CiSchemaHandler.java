@@ -2,6 +2,7 @@ package codedriver.module.cmdb.cischema;
 
 import codedriver.framework.asynchronization.thread.CodeDriverThread;
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
+import codedriver.framework.asynchronization.threadpool.CachedThreadPool;
 import codedriver.framework.batch.BatchJob;
 import codedriver.framework.batch.BatchRunner;
 import codedriver.framework.common.config.Config;
@@ -11,6 +12,7 @@ import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.cischema.CiSchemaMapper;
 import codedriver.module.cmdb.dto.ci.AttrVo;
 import codedriver.module.cmdb.dto.ci.CiVo;
+import codedriver.module.cmdb.dto.ci.RelVo;
 import codedriver.module.cmdb.dto.cientity.AttrEntityVo;
 import codedriver.module.cmdb.dto.cientity.CiEntityVo;
 import codedriver.module.cmdb.dto.cientity.RelEntityVo;
@@ -45,7 +47,7 @@ public class CiSchemaHandler {
     public static void notifyWorker() {
         synchronized (lock) {
             currentTenantUuid = TenantContext.get().getTenantUuid();
-            lock.notify();
+            lock.notifyAll();
         }
     }
 
@@ -55,7 +57,6 @@ public class CiSchemaHandler {
         schemaHandlerThread = new CodeDriverThread() {
             @Override
             protected void execute() {
-
                 while (true) {
                     if (StringUtils.isNotBlank(currentTenantUuid)) {
                         //切换租户数据库
@@ -68,12 +69,22 @@ public class CiSchemaHandler {
                                 if (auditVo.getTargetType().equals(SchemaTargetType.CI.toString())) {
                                     if (auditVo.getAction().equals(SchemaActionType.INSERT.toString())) {
                                         doInitCiSchema(auditVo);
+                                    } else if (auditVo.getAction().equals(SchemaActionType.DELETE.toString())) {
+                                        doDeleteCiSchema(auditVo);
                                     }
                                 } else if (auditVo.getTargetType().equals(SchemaTargetType.ATTR.toString())) {
                                     if (auditVo.getAction().equals(SchemaActionType.INSERT.toString())) {
                                         doInsertAttr(auditVo);
                                     } else if (auditVo.getAction().equals(SchemaActionType.DELETE.toString())) {
                                         doDeleteAttr(auditVo);
+                                    }
+                                } else if (auditVo.getTargetType().equals(SchemaTargetType.CIENTITY.toString())) {
+                                    if (auditVo.getAction().equals(SchemaActionType.UPDATE.toString())) {
+                                        doUpdateCiEntity(auditVo);
+                                    } else if (auditVo.getAction().equals(SchemaActionType.DELETE.toString())) {
+                                        doDeleteCiEntity(auditVo);
+                                    } else if (auditVo.getAction().equals(SchemaActionType.INSERT.toString())) {
+                                        doInsertCiEntity(auditVo);
                                     }
                                 }
                                 ciSchemaMapper.deleteSchemaAuditById(auditVo.getId());
@@ -116,6 +127,49 @@ public class CiSchemaHandler {
         ciMapper = _ciMapper;
     }
 
+    public static void insertCiEntity(CiEntityVo ciEntityVo) {
+        SchemaAuditVo auditVo = new SchemaAuditVo();
+        auditVo.setTargetType(SchemaTargetType.CIENTITY.toString());
+        auditVo.setAction(SchemaActionType.INSERT.toString());
+        auditVo.setTargetId(ciEntityVo.getId());
+        saveAudit(auditVo);
+    }
+
+    public static void updateCiEntity(CiEntityVo ciEntityVo) {
+        SchemaAuditVo auditVo = new SchemaAuditVo();
+        auditVo.setTargetType(SchemaTargetType.CIENTITY.toString());
+        auditVo.setAction(SchemaActionType.UPDATE.toString());
+        auditVo.setTargetId(ciEntityVo.getId());
+        saveAudit(auditVo);
+    }
+
+    public static void deleteCiEntity(CiEntityVo ciEntityVo) {
+        SchemaAuditVo auditVo = new SchemaAuditVo();
+        auditVo.setTargetType(SchemaTargetType.CIENTITY.toString());
+        auditVo.setAction(SchemaActionType.DELETE.toString());
+        auditVo.setTargetId(ciEntityVo.getId());
+        auditVo.setDataStr(JSONObject.toJSONString(ciEntityVo));
+        saveAudit(auditVo);
+    }
+
+    public static void deleteCi(CiVo ciVo) {
+        SchemaAuditVo auditVo = new SchemaAuditVo();
+        auditVo.setTargetType(SchemaTargetType.CI.toString());
+        auditVo.setAction(SchemaActionType.DELETE.toString());
+        auditVo.setTargetId(ciVo.getId());
+        auditVo.setDataStr(JSONObject.toJSONString(ciVo));
+        saveAudit(auditVo);
+    }
+
+    public static void deleteRel(RelVo relVo) {
+        SchemaAuditVo auditVo = new SchemaAuditVo();
+        auditVo.setTargetType(SchemaTargetType.REL.toString());
+        auditVo.setAction(SchemaActionType.DELETE.toString());
+        auditVo.setTargetId(relVo.getId());
+        auditVo.setDataStr(JSONObject.toJSONString(relVo));
+        saveAudit(auditVo);
+    }
+
     public static void deleteAttr(AttrVo attrVo) {
         SchemaAuditVo auditVo = new SchemaAuditVo();
         auditVo.setTargetType(SchemaTargetType.ATTR.toString());
@@ -156,6 +210,7 @@ public class CiSchemaHandler {
         saveAudit(auditVo);
     }
 
+
     private static void saveAudit(SchemaAuditVo auditVo) {
         if (!TransactionSynchronizationManager.isSynchronizationActive()) {
             ciSchemaMapper.replaceSchemaAudit(auditVo);
@@ -168,11 +223,17 @@ public class CiSchemaHandler {
                 TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
                     @Override
                     public void afterCommit() {
+                        //新起线程执行，避免当前线程事务没提交完毕导致更新视图不及时
                         List<SchemaAuditVo> schemaAuditList = SCHEMAAUDIT_THREADLOCAL.get();
-                        for (SchemaAuditVo audit : schemaAuditList) {
-                            ciSchemaMapper.replaceSchemaAudit(audit);
-                        }
-                        notifyWorker();
+                        CachedThreadPool.execute(new CodeDriverThread() {
+                            @Override
+                            protected void execute() {
+                                for (SchemaAuditVo audit : schemaAuditList) {
+                                    ciSchemaMapper.replaceSchemaAudit(audit);
+                                }
+                                notifyWorker();
+                            }
+                        });
                     }
 
                     @Override
@@ -202,6 +263,63 @@ public class CiSchemaHandler {
         }
     }
 
+    private static void doInsertCiEntity(SchemaAuditVo auditVo) {
+        if (auditVo != null) {
+            final String SCHEMA_DB_NAME = "codedriver_" + TenantContext.get().getTenantUuid() + "_olap";
+            final String CI_SCHEMA_NAME_PREFIX = SCHEMA_DB_NAME + ".cmdb_ci_";
+            final String REL_SCHEMA_NAME_PREFIX = SCHEMA_DB_NAME + ".cmdb_rel_";
+            Long ciEntityId = auditVo.getTargetId();
+            CiEntityVo ciEntity = ciEntityService.getCiEntityDetailById(ciEntityId);
+            if (ciEntity != null) {
+                CiVo ciVo = ciMapper.getCiById(ciEntity.getCiId());
+                List<RelEntityVo> relEntityList = ciEntity.getRelEntityList();
+                ciSchemaMapper.insertCiEntity(CI_SCHEMA_NAME_PREFIX + ciVo.getName(), ciEntity);
+
+                if (CollectionUtils.isNotEmpty(relEntityList)) {
+                    ciSchemaMapper.insertRelEntity(REL_SCHEMA_NAME_PREFIX + ciVo.getName(), ciEntity);
+                }
+            }
+        }
+    }
+
+    private static void doUpdateCiEntity(SchemaAuditVo auditVo) {
+        if (auditVo != null) {
+            final String SCHEMA_DB_NAME = "codedriver_" + TenantContext.get().getTenantUuid() + "_olap";
+            final String CI_SCHEMA_NAME_PREFIX = SCHEMA_DB_NAME + ".cmdb_ci_";
+            final String REL_SCHEMA_NAME_PREFIX = SCHEMA_DB_NAME + ".cmdb_rel_";
+            Long ciEntityId = auditVo.getTargetId();
+            CiEntityVo ciEntity = ciEntityService.getCiEntityDetailById(ciEntityId);
+            if (ciEntity != null) {
+                CiVo ciVo = ciMapper.getCiById(ciEntity.getCiId());
+                //先清空数据
+                ciSchemaMapper.deleteCiEntityById(CI_SCHEMA_NAME_PREFIX + ciVo.getName(), ciEntityId);
+                ciSchemaMapper.deleteCiEntityRelByCiEntityId(REL_SCHEMA_NAME_PREFIX + ciVo.getName(), ciEntityId);
+
+                List<RelEntityVo> relEntityList = ciEntity.getRelEntityList();
+                ciSchemaMapper.insertCiEntity(CI_SCHEMA_NAME_PREFIX + ciVo.getName(), ciEntity);
+
+                if (CollectionUtils.isNotEmpty(relEntityList)) {
+                    ciSchemaMapper.insertRelEntity(REL_SCHEMA_NAME_PREFIX + ciVo.getName(), ciEntity);
+                }
+            }
+        }
+    }
+
+    private static void doDeleteCiEntity(SchemaAuditVo auditVo) {
+        if (auditVo != null && auditVo.getData() != null) {
+            Long ciEntityId = auditVo.getTargetId();
+            CiEntityVo ciEntityVo = JSONObject.toJavaObject(auditVo.getData(), CiEntityVo.class);
+            if (ciEntityVo != null && ciEntityVo.getCiId() != null) {
+                final String SCHEMA_DB_NAME = "codedriver_" + TenantContext.get().getTenantUuid() + "_olap";
+                final String CI_SCHEMA_NAME_PREFIX = SCHEMA_DB_NAME + ".cmdb_ci_";
+                final String REL_SCHEMA_NAME_PREFIX = SCHEMA_DB_NAME + ".cmdb_rel_";
+                CiVo ciVo = ciMapper.getCiById(ciEntityVo.getCiId());
+                ciSchemaMapper.deleteCiEntityById(CI_SCHEMA_NAME_PREFIX + ciVo.getName(), ciEntityId);
+                ciSchemaMapper.deleteCiEntityRelByCiEntityId(REL_SCHEMA_NAME_PREFIX + ciVo.getName(), ciEntityId);
+            }
+        }
+    }
+
     private static void doInsertAttr(SchemaAuditVo auditVo) {
         if (auditVo != null && auditVo.getData() != null) {
             AttrVo attrVo = JSONObject.toJavaObject(auditVo.getData(), AttrVo.class);
@@ -216,9 +334,36 @@ public class CiSchemaHandler {
                 }
             }
         }
-
     }
 
+    /*
+     * @Description: 删除配置项模型，相关表会被删除
+     * @Author: chenqiwei
+     * @Date: 2021/1/5 5:03 下午
+     * @Params: [auditVo]
+     * @Returns: void
+     **/
+    private static void doDeleteCiSchema(SchemaAuditVo auditVo) {
+        if (auditVo != null && auditVo.getData() != null) {
+            CiVo ciVo = JSONObject.toJavaObject(auditVo.getData(), CiVo.class);
+            if (ciVo != null) {
+                final String SCHEMA_DB_NAME = "codedriver_" + TenantContext.get().getTenantUuid() + "_olap";
+                final String CI_SCHEMA_NAME_PREFIX = SCHEMA_DB_NAME + ".cmdb_ci_";
+                final String REL_SCHEMA_NAME_PREFIX = SCHEMA_DB_NAME + ".cmdb_rel_";
+
+                ciSchemaMapper.deleteCiSchema(CI_SCHEMA_NAME_PREFIX + ciVo.getName());
+                ciSchemaMapper.deleteRelSchema(REL_SCHEMA_NAME_PREFIX + ciVo.getName());
+            }
+        }
+    }
+
+    /*
+     * @Description: 初始化整个模型，数据会删除并重新导入
+     * @Author: chenqiwei
+     * @Date: 2021/1/5 5:04 下午
+     * @Params: [auditVo]
+     * @Returns: void
+     **/
     private static void doInitCiSchema(SchemaAuditVo auditVo) {
         if (auditVo != null) {
             CiVo ciVo = ciMapper.getCiById(auditVo.getTargetId());

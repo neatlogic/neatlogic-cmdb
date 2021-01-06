@@ -8,6 +8,8 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface CiEntityMapper {
+
+
     List<Long> getCiEntityIdByCiId(Long ciId);
 
     List<CiEntityVo> getCiEntityByAttrId(Long attrId);

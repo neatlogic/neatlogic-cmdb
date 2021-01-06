@@ -1,41 +1,40 @@
 package codedriver.module.cmdb.dao.mapper.ci;
 
-import java.util.List;
-
-import org.apache.ibatis.annotations.Param;
-
 import codedriver.module.cmdb.dto.ci.RelGroupVo;
 import codedriver.module.cmdb.dto.ci.RelVo;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 public interface RelMapper {
-    public List<RelVo> getAllRelList();
+    RelVo getRelBaseInfoById(Long relId);
 
-    public List<RelGroupVo> getRelGroupByCiId(Long ciId);
+    List<RelVo> getAllRelList();
 
-    public List<RelVo> getRelByCiIdList(@Param("ciIdList") List<Long> ciIdList);
+    List<RelGroupVo> getRelGroupByCiId(Long ciId);
 
-    public int checkRelGroupNameIsExists(RelGroupVo relGroupVo);
+    List<RelVo> getRelByCiIdList(@Param("ciIdList") List<Long> ciIdList);
 
-    public int checkRelByFromToName(RelVo relVo);
+    int checkRelGroupNameIsExists(RelGroupVo relGroupVo);
 
-    public int checkRelByFromToLabel(RelVo relVo);
+    int checkRelByFromToName(RelVo relVo);
 
-    public RelVo getRelById(Long id);
+    int checkRelByFromToLabel(RelVo relVo);
 
-    public RelGroupVo getRelGroupById(Long relGroupId);
+    RelVo getRelById(Long id);
 
-    public List<RelVo> getRelByCiId(Long ciId);
+    RelGroupVo getRelGroupById(Long relGroupId);
 
-    public List<RelVo> getRelByCiIdAndShowType(@Param("ciId") Long ciId,@Param("list") List<String> showType);
+    List<RelVo> getRelByCiId(Long ciId);
 
-    public int updateRel(RelVo relVo);
+    int updateRel(RelVo relVo);
 
-    public int updateRelGroup(RelGroupVo relGroupVo);
+    int updateRelGroup(RelGroupVo relGroupVo);
 
-    public int insertRel(RelVo relVo);
+    int insertRel(RelVo relVo);
 
-    public int insertRelGroup(RelGroupVo relGroupVo);
+    int insertRelGroup(RelGroupVo relGroupVo);
 
-    public int deleteRelById(Long relId);
+    int deleteRelById(Long relId);
 
 }
