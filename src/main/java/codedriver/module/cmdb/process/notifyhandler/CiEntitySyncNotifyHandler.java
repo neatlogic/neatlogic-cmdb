@@ -2,6 +2,7 @@ package codedriver.module.cmdb.process.notifyhandler;
 
 import java.util.List;
 
+import codedriver.framework.auth.core.AuthFactory;
 import codedriver.framework.notify.core.NotifyHandlerType;
 import codedriver.framework.notify.dto.NotifyTriggerTemplateVo;
 import codedriver.framework.notify.dto.NotifyTriggerVo;
@@ -49,4 +50,8 @@ public class CiEntitySyncNotifyHandler extends NotifyPolicyHandlerBase {
 
     }
 
+    @Override
+    public String getAuthName() {
+        return AuthFactory.getAuthInstance("CIENTITY_MODIFY").getAuthName();
+    }
 }
