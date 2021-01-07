@@ -6,8 +6,10 @@ import codedriver.framework.exception.core.ApiRuntimeException;
 import codedriver.framework.reminder.core.OperationTypeEnum;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntitySnapshotMapper;
 import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
+import codedriver.module.cmdb.dto.ci.RelVo;
 import codedriver.module.cmdb.dto.transaction.AttrEntityTransactionVo;
 import codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.module.cmdb.dto.transaction.RelEntityTransactionVo;
@@ -19,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -33,6 +34,9 @@ public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
 
     @Autowired
     private CiEntitySnapshotMapper ciEntitySnapshotMapper;
+
+    @Autowired
+    private RelMapper relMapper;
 
     @Override
     public String getToken() {
@@ -49,12 +53,14 @@ public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "transactionId", type = ApiParamType.LONG, desc = "事务id"),
-        @Param(name = "transactionIdList", type = ApiParamType.JSONARRAY, desc = "事务id列表")})
+    @Input({@Param(name = "ciEntityId", isRequired = true, type = ApiParamType.LONG, desc = "配置项id"),
+            @Param(name = "transactionId", type = ApiParamType.LONG, desc = "事务id"),
+            @Param(name = "transactionIdList", type = ApiParamType.JSONARRAY, desc = "事务id列表")})
     @Output({@Param(explode = CiEntityTransactionVo.class)})
     @Description(desc = "获取配置项事务详细信息接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
+        Long ciEntityId = jsonObj.getLong("ciEntityId");
         Long transactionId = jsonObj.getLong("transactionId");
         JSONArray transactionIdList = jsonObj.getJSONArray("transactionIdList");
         if (transactionId == null && CollectionUtils.isEmpty(transactionIdList)) {
@@ -64,7 +70,7 @@ public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
 
         if (transactionId != null) {
             CiEntityTransactionVo ciEntityTransactionVo =
-                transactionMapper.getCiEntityTransactionByTransactionId(transactionId);
+                    transactionMapper.getCiEntityTransactionByTransactionIdAndCiEntityId(transactionId, ciEntityId);
             if (ciEntityTransactionVo != null) {
                 ciEntityTransactionList.add(ciEntityTransactionVo);
             }
@@ -74,7 +80,7 @@ public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
                 tidList.add(transactionIdList.getLong(i));
             }
             if (CollectionUtils.isNotEmpty(tidList)) {
-                ciEntityTransactionList.addAll(transactionMapper.getCiEntityTransactionByTransactionIdList(tidList));
+                ciEntityTransactionList.addAll(transactionMapper.getCiEntityTransactionByTransactionIdList(tidList, ciEntityId));
             }
         }
         JSONArray dataList = new JSONArray();
@@ -82,16 +88,16 @@ public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
             for (CiEntityTransactionVo ciEntityTransactionVo : ciEntityTransactionList) {
                 if (ciEntityTransactionVo != null) {
                     List<AttrEntityTransactionVo> attrEntityTransactionList =
-                        transactionMapper.getAttrEntityTransactionByTransactionIdAndCiEntityId(transactionId,
-                            ciEntityTransactionVo.getCiEntityId());
+                            transactionMapper.getAttrEntityTransactionByTransactionIdAndCiEntityId(transactionId,
+                                    ciEntityTransactionVo.getCiEntityId());
                     List<RelEntityTransactionVo> relEntityTransactionList =
-                        transactionMapper.getRelEntityTransactionByTransactionIdAndCiEntityId(transactionId,
-                            ciEntityTransactionVo.getCiEntityId());
+                            transactionMapper.getRelEntityTransactionByTransactionIdAndCiEntityId(transactionId,
+                                    ciEntityTransactionVo.getCiEntityId());
                     if (CollectionUtils.isNotEmpty(attrEntityTransactionList)
-                        || CollectionUtils.isNotEmpty(relEntityTransactionList)) {
+                            || CollectionUtils.isNotEmpty(relEntityTransactionList)) {
 
                         String snapshot =
-                            ciEntitySnapshotMapper.getSnapshotContentByHash(ciEntityTransactionVo.getSnapshotHash());
+                                ciEntitySnapshotMapper.getSnapshotContentByHash(ciEntityTransactionVo.getSnapshotHash());
                         JSONObject oldAttrEntityData = null;
                         JSONObject oldRelEntityData = null;
                         if (StringUtils.isNotBlank(snapshot)) {
@@ -109,26 +115,26 @@ public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
                             dataObj.put("propHandler", attrEntityTransactionVo.getPropHandler());
                             dataObj.put("newValueList", attrEntityTransactionVo.getValueList());
                             if (oldAttrEntityData != null
-                                && oldAttrEntityData.containsKey("attr_" + attrEntityTransactionVo.getAttrId())) {
+                                    && oldAttrEntityData.containsKey("attr_" + attrEntityTransactionVo.getAttrId())) {
                                 dataObj.put("oldValueList",
-                                    oldAttrEntityData.getJSONObject("attr_" + attrEntityTransactionVo.getAttrId())
-                                        .getJSONArray("valueList"));
+                                        oldAttrEntityData.getJSONObject("attr_" + attrEntityTransactionVo.getAttrId())
+                                                .getJSONArray("valueList"));
                             }
                             dataList.add(dataObj);
                         }
                         if (CollectionUtils.isNotEmpty(relEntityTransactionList)) {
                             Map<String, List<RelEntityTransactionVo>> relGroupMap = relEntityTransactionList.stream()
-                                .collect(Collectors.groupingBy(e -> getRelGroupKey(e)));
-                            Iterator<String> keyit = relGroupMap.keySet().iterator();
-                            while (keyit.hasNext()) {
-                                String key = keyit.next();
+                                    .collect(Collectors.groupingBy(GetCiEntityTransactionApi::getRelGroupKey));
+                            for (String key : relGroupMap.keySet()) {
                                 String[] keys = key.split("#");
-                                Long relId = Long.parseLong(keys[0]);
-                                String direction = keys[1];
-                                String endName = keys[2];
-                                String relName = keys[3];
+                                long relId = Long.parseLong(keys[0].trim());
+                                String direction = keys[1].trim();
+                                String endName = keys[2].trim();
+                                String relName = keys[3].trim();
                                 List<RelEntityTransactionVo> relList = relGroupMap.get(key);
                                 JSONArray newValueList = new JSONArray();
+                                JSONObject dataObj = new JSONObject();
+
                                 for (RelEntityTransactionVo relEntity : relList) {
                                     JSONObject vObj = new JSONObject();
                                     if (direction.equals(RelDirectionType.FROM.getValue())) {
@@ -138,6 +144,17 @@ public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
                                         vObj.put("action", relEntity.getAction());
                                         vObj.put("actionText", relEntity.getActionText());
                                         newValueList.add(vObj);
+                                        /*由于对端模型id是从关系表中获取，所以如果关系删除，则模型id也会删除，所以需要先看relId是否存在，
+                                        如果relId不存在，是关系删除的场景，如果relId存在且ciId不存在，才是模型删除的场景
+                                         */
+                                        RelVo relVo = relMapper.getRelBaseInfoById(relEntity.getRelId());
+                                        if (relVo == null) {
+                                            dataObj.put("relDeleted", true);
+                                        } else if (relEntity.getToCiId() == null) {
+                                            dataObj.put("ciDeleted", true);
+                                        } else if (relEntity.getToCiEntityId() == null) {
+                                            dataObj.put("ciEntityDeleted", true);
+                                        }
                                     } else if (direction.equals(RelDirectionType.TO.getValue())) {
                                         vObj.put("ciEntityName", relEntity.getFromCiEntityName());
                                         vObj.put("ciEntityId", relEntity.getFromCiEntityId());
@@ -145,19 +162,26 @@ public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
                                         vObj.put("action", relEntity.getAction());
                                         vObj.put("actionText", relEntity.getActionText());
                                         newValueList.add(vObj);
+                                        RelVo relVo = relMapper.getRelBaseInfoById(relEntity.getRelId());
+                                        if (relVo == null) {
+                                            dataObj.put("relDeleted", true);
+                                        } else if (relEntity.getFromCiId() == null) {
+                                            dataObj.put("ciDeleted", true);
+                                        } else if (relEntity.getFromCiEntityId() == null) {
+                                            dataObj.put("ciEntityDeleted", true);
+                                        }
                                     }
                                 }
 
-                                JSONObject dataObj = new JSONObject();
                                 dataObj.put("id", "rel" + direction + "_" + relId);
                                 dataObj.put("relName", relName);
                                 dataObj.put("endName", endName);
                                 dataObj.put("type", "rel");
                                 dataObj.put("newValueList", newValueList);
                                 if (oldRelEntityData != null
-                                    && oldRelEntityData.containsKey("rel" + direction + "_" + relId)) {
+                                        && oldRelEntityData.containsKey("rel" + direction + "_" + relId)) {
                                     dataObj.put("oldValueList",
-                                        oldRelEntityData.getJSONArray("rel" + direction + "_" + relId));
+                                            oldRelEntityData.getJSONObject("rel" + direction + "_" + relId).getJSONArray("valueList"));
                                 }
                                 dataList.add(dataObj);
                             }
@@ -170,12 +194,13 @@ public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
     }
 
     private static String getRelGroupKey(RelEntityTransactionVo relEntityTransactionVo) {
+        //如果值为空则使用空格作占位符
         if (relEntityTransactionVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
-            return relEntityTransactionVo.getRelId() + "#" + relEntityTransactionVo.getDirection() + "#"
-                + relEntityTransactionVo.getToLabel() + "#" + relEntityTransactionVo.getTypeId();
+            return (relEntityTransactionVo.getRelId() != null ? relEntityTransactionVo.getRelId() : " ") + "#" + (relEntityTransactionVo.getDirection() != null ? relEntityTransactionVo.getDirection() : " ") + "#"
+                    + (relEntityTransactionVo.getToLabel() != null ? relEntityTransactionVo.getToLabel() : " ") + "#" + (relEntityTransactionVo.getTypeId() != null ? relEntityTransactionVo.getTypeId() : " ");
         } else {
-            return relEntityTransactionVo.getRelId() + "#" + relEntityTransactionVo.getDirection() + "#"
-                + relEntityTransactionVo.getFromLabel() + "#" + relEntityTransactionVo.getTypeId();
+            return (relEntityTransactionVo.getRelId() != null ? relEntityTransactionVo.getRelId() : " ") + "#" + (relEntityTransactionVo.getDirection() != null ? relEntityTransactionVo.getDirection() : " ") + "#"
+                    + (relEntityTransactionVo.getFromLabel() != null ? relEntityTransactionVo.getFromLabel() : " ") + "#" + (relEntityTransactionVo.getTypeId() != null ? relEntityTransactionVo.getTypeId() : " ");
         }
     }
 }

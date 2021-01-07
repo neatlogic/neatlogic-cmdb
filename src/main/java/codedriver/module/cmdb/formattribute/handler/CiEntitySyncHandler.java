@@ -1,13 +1,11 @@
 package codedriver.module.cmdb.formattribute.handler;
 
-import org.springframework.stereotype.Component;
-
-import com.alibaba.fastjson.JSONObject;
-
 import codedriver.framework.common.constvalue.ParamType;
 import codedriver.framework.process.dto.AttributeDataVo;
 import codedriver.framework.process.exception.form.AttributeValidException;
 import codedriver.framework.process.formattribute.core.FormHandlerBase;
+import com.alibaba.fastjson.JSONObject;
+import org.springframework.stereotype.Component;
 
 @Component
 public class CiEntitySyncHandler extends FormHandlerBase {

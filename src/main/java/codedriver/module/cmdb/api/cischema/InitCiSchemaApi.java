@@ -1,4 +1,4 @@
-package codedriver.module.cmdb.api.rel;
+package codedriver.module.cmdb.api.cischema;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -9,33 +9,32 @@ import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CI_MODIFY;
-import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
-import codedriver.module.cmdb.dto.ci.RelVo;
-import codedriver.module.cmdb.exception.rel.RelNotFoundException;
-import codedriver.module.cmdb.service.rel.RelService;
+import codedriver.module.cmdb.cischema.CiSchemaHandler;
+import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
+import codedriver.module.cmdb.dto.ci.CiVo;
+import codedriver.module.cmdb.exception.ci.CiNotFoundException;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @AuthAction(action = CI_MODIFY.class)
-@OperationType(type = OperationTypeEnum.DELETE)
-public class DeleteRelApi extends PrivateApiComponentBase {
+@OperationType(type = OperationTypeEnum.OPERATE)
+@Transactional
+public class InitCiSchemaApi extends PrivateApiComponentBase {
 
     @Autowired
-    private RelService relService;
-
-    @Autowired
-    private RelMapper relMapper;
+    private CiMapper ciMapper;
 
     @Override
     public String getToken() {
-        return "/cmdb/rel/delete";
+        return "/cmdb/cischema/init";
     }
 
     @Override
     public String getName() {
-        return "删除模型关系";
+        return "重建模型视图";
     }
 
     @Override
@@ -43,16 +42,19 @@ public class DeleteRelApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "关系id")})
-    @Description(desc = "删除模型关系接口")
+    @Input({
+            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "模型id")
+    })
+    @Description(desc = "重建模型视图表接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        Long relId = jsonObj.getLong("id");
-        RelVo relVo = relMapper.getRelById(relId);
-        if (relVo == null) {
-            throw new RelNotFoundException(relId);
+        Long ciId = jsonObj.getLong("id");
+        CiVo ciVo = ciMapper.getCiById(jsonObj.getLong("id"));
+        if (ciVo != null) {
+            CiSchemaHandler.initCiSchema(ciVo);
+        } else {
+            throw new CiNotFoundException(ciId);
         }
-        relService.deleteRelById(relVo);
         return null;
     }
 

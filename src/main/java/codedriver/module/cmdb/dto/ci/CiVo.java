@@ -1,19 +1,18 @@
 package codedriver.module.cmdb.dto.ci;
 
-import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
-
-import com.alibaba.fastjson.annotation.JSONField;
-
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.SnowflakeUtil;
+import com.alibaba.fastjson.annotation.JSONField;
+
+import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
- * 
- * @Author:chenqiwei
- * @Time:Aug 15, 2020
+ * @Author: chenqiwei
+ * @Time: Aug 15, 2020
  * @ClassName: CiVo
  * @Description: TODO
  */
@@ -47,6 +46,19 @@ public class CiVo implements Serializable {
     private List<CiAuthVo> authList;
     @EntityField(name = "当前用户权限情况", type = ApiParamType.JSONOBJECT)
     private Map<String, Boolean> authData;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CiVo ciVo = (CiVo) o;
+        return Objects.equals(getId(), ciVo.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId());
+    }
 
     public Long getId() {
         if (id == null) {

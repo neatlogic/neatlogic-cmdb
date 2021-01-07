@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.cmdb.dao.mapper.cischema.CiSchemaMapper">
+    <select id="getLatestSchemaAudit" parameterType="java.lang.Integer"
+            resultType="codedriver.module.cmdb.dto.schema.SchemaAuditVo">
+        SELECT id,
+               `target_id`   as targetId,
+               `target_type` as targetType,
+               `action`,
+               `lcd`,
+               `server_id`   as serverId,
+               `data`        as dataStr
+        FROM `cmdb_schema_audit`
+        WHERE server_id = #{value}
+          AND is_failed = 0
+        ORDER BY lcd LIMIT 1
+    </select>
+
+    <select id="checkDatabaseIsExists" parameterType="java.lang.String" resultType="int">
+        SELECT COUNT(1)
+        FROM information_schema.`SCHEMATA`
+        WHERE schema_name = #{value}
+    </select>
+
+    <update id="updateSchemaAuditIsFailed" parameterType="java.lang.Long">
+        UPDATE cmdb_schema_audit
+        SET is_failed = 1
+        WHERE id = #{value}
+    </update>
+
+    <insert id="replaceSchemaAudit" parameterType="codedriver.module.cmdb.dto.schema.SchemaAuditVo">
+        REPLACE
+        INTO cmdb_schema_audit (`lcd`,
+                                `target_id`,
+                                `target_type`,
+                                `action`,
+                                `data`,
+                                `server_id`)
+        VALUES (NOW(3),
+        #{targetId},
+        #{targetType},
+        #{action},
+        #{dataStr},
+        #{serverId}
+        )
+    </insert>
+
+    <insert id="insertAttr">
+        ALTER TABLE ${tableName}
+            ADD COLUMN ${attrVo.name} LONGTEXT NULL COMMENT '${attrVo.label}值散列码',
+        ADD COLUMN ${attrVo.name}_hash CHAR (32) NULL COMMENT '${attrVo.label}',
+            ADD KEY index_${attrVo.name}_hash (${attrVo.name}_hash),
+            ADD FULLTEXT INDEX fullindex_${attrVo.name} (${attrVo.name}) /*!50100 WITH PARSER `ngram` */;
+    </insert>
+
+    <insert id="insertCiSchema">
+        CREATE TABLE ${tableName} (
+        `id` bigint(20) NOT NULL COMMENT 'id',
+        <foreach collection="attrList" item="item" index="index">
+            ${item.name} longtext COMMENT '${item.label}',
+            ${item.name}_hash char(32) COMMENT '${item.label}值散列码',
+            KEY index_${item.name}_hash (${item.name}_hash),
+            FULLTEXT KEY fullindex_${item.name} (${item.name}) /*!50100 WITH PARSER `ngram` */,
+        </foreach>
+        PRIMARY KEY (`id`)
+        ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4
+    </insert>
+
+    <insert id="insertRelSchema" parameterType="java.lang.String">
+        CREATE TABLE ${tableName}
+        (
+            `rel_id`           BIGINT(20) NOT NULL,
+            `from_cientity_id` BIGINT(20) NOT NULL,
+            `to_cientity_id`   BIGINT(20) NOT NULL,
+            `direction`        ENUM('from','to') DEFAULT NULL,
+            KEY                `idx_rel_id` (`rel_id`),
+            KEY                `idx_from_cientity_id` (`from_cientity_id`),
+            KEY                `idx_to_cientity_id` (`to_cientity_id`)
+        ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4
+    </insert>
+
+    <insert id="insertCiEntity">
+        INSERT INTO ${tableName} (
+        `id`
+        <if test="ciEntityVo.attrEntityList != null and ciEntityVo.attrEntityList.size() > 0">
+            ,
+            <foreach collection="ciEntityVo.attrEntityList" item="attrEntity" separator="," index="index">
+                `${attrEntity.attrName}`,
+                `${attrEntity.attrName}_hash`
+            </foreach>
+        </if>
+        ) VALUES (
+        #{ciEntityVo.id}
+        <if test="ciEntityVo.attrEntityList != null and ciEntityVo.attrEntityList.size() > 0">
+            ,
+            <foreach collection="ciEntityVo.attrEntityList" item="attrEntity" separator="," index="index">
+                #{attrEntity.valueStr},
+                #{attrEntity.valueStrHash}
+            </foreach>
+        </if>
+        )
+    </insert>
+
+    <insert id="insertRelEntity">
+        INSERT INTO ${tableName} (`rel_id`,
+        `from_cientity_id`,
+        `to_cientity_id`,
+        `direction`)
+        VALUES
+        <foreach collection="ciEntityVo.relEntityList" item="relEntity" separator="," index="index">
+            (
+            #{relEntity.relId},
+            #{relEntity.fromCiEntityId},
+            #{relEntity.toCiEntityId},
+            #{relEntity.direction}
+            )
+        </foreach>
+    </insert>
+
+    <delete id="deleteCiEntityById">
+        DELETE
+        FROM ${tableName}
+        WHERE id = #{ciEntityId}
+    </delete>
+
+    <delete id="deleteCiEntityRelByCiEntityId">
+        DELETE
+        FROM ${tableName}
+        WHERE from_cientity_id = #{ciEntityId}
+           OR to_cientity_id = #{ciEntityId}
+    </delete>
+
+    <delete id="deleteSchemaAuditById" parameterType="java.lang.Long">
+        DELETE
+        FROM cmdb_schema_audit
+        WHERE id = #{value}
+    </delete>
+
+    <delete id="deleteCiSchema">
+        DROP TABLE IF EXISTS ${tableName}
+    </delete>
+
+    <delete id="deleteRelSchema">
+        DROP TABLE IF EXISTS ${tableName}
+    </delete>
+
+    <delete id="deleteAttr">
+        ALTER TABLE ${tableName}
+        DROP
+        COLUMN `${attrName}_hash`,
+        DROP
+        COLUMN `${attrName}`
+    </delete>
+
+</mapper>

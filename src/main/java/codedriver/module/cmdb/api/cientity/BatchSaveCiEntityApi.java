@@ -103,7 +103,7 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
             if (id != null) {
                 if (!hasAuth) {
                     hasAuth = CiAuthChecker.builder().hasCiEntityUpdatePrivilege(ciId).isInGroup(id, GroupType.MATAIN)
-                        .check();
+                            .check();
                 }
                 ciEntityTransactionVo = new CiEntityTransactionVo();
                 ciEntityTransactionVo.setCiEntityId(id);
@@ -144,7 +144,7 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
                         JSONObject attrDataObj = attrObj.getJSONObject(key);
                         JSONArray valueObjList = attrDataObj.getJSONArray("valueList");
                         attrEntityVo
-                            .setValueList(valueObjList.stream().map(v -> v.toString()).collect(Collectors.toList()));
+                                .setValueList(valueObjList.stream().map(Object::toString).collect(Collectors.toList()));
                         attrEntityList.add(attrEntityVo);
                     }
                 }
@@ -154,10 +154,9 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
             JSONObject relObj = ciEntityObj.getJSONObject("relEntityData");
             if (MapUtils.isNotEmpty(relObj)) {
                 List<RelEntityTransactionVo> relEntityList = new ArrayList<>();
-                Iterator<String> keys = relObj.keySet().iterator();
-                while (keys.hasNext()) {
-                    String key = keys.next();
-                    JSONArray relDataList = relObj.getJSONArray(key);
+                for (String key : relObj.keySet()) {
+                    JSONObject obj = relObj.getJSONObject(key);
+                    JSONArray relDataList = obj.getJSONArray("valueList");
 
                     if (key.startsWith("relfrom_")) {// 当前配置项处于from位置
                         if (CollectionUtils.isNotEmpty(relDataList)) {
@@ -169,12 +168,12 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
                                     relEntityVo.setToCiEntityId(relEntityObj.getLong("ciEntityId"));
                                 } else if (StringUtils.isNotBlank(relEntityObj.getString("ciEntityUuid"))) {
                                     CiEntityTransactionVo tmpVo =
-                                        ciEntityTransactionMap.get(relEntityObj.getString("ciEntityUuid"));
+                                            ciEntityTransactionMap.get(relEntityObj.getString("ciEntityUuid"));
                                     if (tmpVo != null) {
                                         relEntityVo.setToCiEntityId(tmpVo.getCiEntityId());
                                     } else {
                                         throw new ApiRuntimeException(
-                                            "找不到" + relEntityObj.getString("ciEntityUuid") + "的新配置项");
+                                                "找不到" + relEntityObj.getString("ciEntityUuid") + "的新配置项");
                                     }
                                 }
                                 relEntityVo.setDirection(RelDirectionType.FROM.getValue());
@@ -193,12 +192,12 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
                                     relEntityVo.setFromCiEntityId(relEntityObj.getLong("ciEntityId"));
                                 } else if (StringUtils.isNotBlank(relEntityObj.getString("ciEntityUuid"))) {
                                     CiEntityTransactionVo tmpVo =
-                                        ciEntityTransactionMap.get(relEntityObj.getString("ciEntityUuid"));
+                                            ciEntityTransactionMap.get(relEntityObj.getString("ciEntityUuid"));
                                     if (tmpVo != null) {
                                         relEntityVo.setFromCiEntityId(tmpVo.getCiEntityId());
                                     } else {
                                         throw new ApiRuntimeException(
-                                            "找不到" + relEntityObj.getString("ciEntityUuid") + "的新配置项");
+                                                "找不到" + relEntityObj.getString("ciEntityUuid") + "的新配置项");
                                     }
                                 }
                                 relEntityVo.setDirection(RelDirectionType.TO.getValue());

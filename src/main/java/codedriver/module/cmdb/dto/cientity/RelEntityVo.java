@@ -1,23 +1,22 @@
 package codedriver.module.cmdb.dto.cientity;
 
-import org.apache.commons.lang3.StringUtils;
-
-import com.google.common.base.Objects;
-
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.elasticsearch.annotation.ESKey;
 import codedriver.framework.elasticsearch.constvalue.ESKeyType;
 import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.SnowflakeUtil;
 import codedriver.module.cmdb.dto.transaction.RelEntityTransactionVo;
+import com.google.common.base.Objects;
 
 public class RelEntityVo {
     @EntityField(name = "id", type = ApiParamType.LONG)
     private Long id;
     @EntityField(name = "关系id", type = ApiParamType.LONG)
     private Long relId;
-    @EntityField(name = "关系唯一标识", type = ApiParamType.STRING)
+    @EntityField(name = "关系对端唯一标识", type = ApiParamType.STRING)
     private String relName;
+    @EntityField(name = "关系对端名称", type = ApiParamType.STRING)
+    private String relLabel;
     @EntityField(name = "关系类型id", type = ApiParamType.LONG)
     private Long relTypeId;
     @EntityField(name = "关系类型名称", type = ApiParamType.STRING)
@@ -141,10 +140,10 @@ public class RelEntityVo {
         if (!(other instanceof RelEntityVo)) {
             return false;
         }
-        final RelEntityVo rel = (RelEntityVo)other;
+        final RelEntityVo rel = (RelEntityVo) other;
         if (Objects.equal(getRelId(), rel.getRelId()) && Objects.equal(getFromCiEntityId(), rel.getFromCiEntityId())
-            && Objects.equal(getToCiEntityId(), rel.getToCiEntityId())
-        /* && Objects.equal(getDirection(), rel.getDirection())*/) {
+                && Objects.equal(getToCiEntityId(), rel.getToCiEntityId())
+            /* && Objects.equal(getDirection(), rel.getDirection())*/) {
             return true;
         } else {
             return false;
@@ -189,5 +188,21 @@ public class RelEntityVo {
 
     public void setRelTypeName(String relTypeName) {
         this.relTypeName = relTypeName;
+    }
+
+    public String getRelName() {
+        return relName;
+    }
+
+    public void setRelName(String relName) {
+        this.relName = relName;
+    }
+
+    public String getRelLabel() {
+        return relLabel;
+    }
+
+    public void setRelLabel(String relLabel) {
+        this.relLabel = relLabel;
     }
 }

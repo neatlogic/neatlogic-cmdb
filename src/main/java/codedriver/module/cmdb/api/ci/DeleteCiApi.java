@@ -67,7 +67,7 @@ public class DeleteCiApi extends PrivateApiComponentBase {
         List<CiVo> fromCiList = ciMapper.getCiByToCiId(ciId);
         if (CollectionUtils.isNotEmpty(fromCiList)) {
             throw new CiHasRelException(
-                fromCiList.stream().map(cientity -> cientity.getLabel()).collect(Collectors.joining("、")));
+                    fromCiList.stream().map(CiVo::getLabel).collect(Collectors.joining("、")));
         }
         // 删除配置项信息
         ciService.deleteCi(ciId);

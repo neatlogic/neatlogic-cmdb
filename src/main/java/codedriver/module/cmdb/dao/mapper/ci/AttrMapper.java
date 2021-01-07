@@ -1,35 +1,28 @@
 package codedriver.module.cmdb.dao.mapper.ci;
 
-import java.util.List;
-
+import codedriver.module.cmdb.dto.ci.AttrVo;
 import org.apache.ibatis.annotations.Param;
 
-import codedriver.module.cmdb.dto.ci.AttrVo;
+import java.util.List;
 
-/**
- * @Author:chenqiwei
- * @Time:Aug 15, 2020
- * @ClassName: AttrMapper
- */
 public interface AttrMapper {
 
-    public List<String> getAttrGroupByCiId(Long ciId);
+    List<String> getAttrGroupByCiId(Long ciId);
 
-    public AttrVo getAttrById(Long attrId);
+    AttrVo getAttrById(Long attrId);
 
-    public List<AttrVo> getAttrByCiId(Long ciId);
+    List<AttrVo> getAttrByCiId(Long ciId);
 
-    public List<AttrVo> getAttrByCiIdList(@Param("ciIdList") List<Long> ciIdList);
+    List<AttrVo> getAttrByCiIdList(@Param("ciIdList") List<Long> ciIdList);
 
-    public List<AttrVo> getAttrByCiIdAndShowType(@Param("ciId") Long ciId,@Param("list") List<String> showType);
 
-    public int checkAttrNameIsRepeat(AttrVo attrVo);
+    int checkAttrNameIsRepeat(AttrVo attrVo);
 
-    public int updateAttr(AttrVo attrVo);
+    int updateAttr(AttrVo attrVo);
 
-    public int insertAttr(AttrVo attrVo);
+    int insertAttr(AttrVo attrVo);
 
-    public int deleteAttrById(Long attrId);
+    int deleteAttrById(Long attrId);
 
-    public int deleteAttrByCiId(Long ciId);
+    int deleteAttrByCiId(Long ciId);
 }
