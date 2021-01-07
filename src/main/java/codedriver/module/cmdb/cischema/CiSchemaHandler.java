@@ -2,11 +2,12 @@ package codedriver.module.cmdb.cischema;
 
 import codedriver.framework.asynchronization.thread.CodeDriverThread;
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
-import codedriver.framework.asynchronization.threadpool.CachedThreadPool;
 import codedriver.framework.batch.BatchJob;
 import codedriver.framework.batch.BatchRunner;
 import codedriver.framework.common.config.Config;
 import codedriver.framework.exception.olap.OlapDataBaseNotFoundExceptionException;
+import codedriver.framework.transaction.core.AfterTransactionJob;
+import codedriver.framework.transaction.core.ICommitted;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.cischema.CiSchemaMapper;
@@ -25,11 +26,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -212,6 +210,16 @@ public class CiSchemaHandler {
 
 
     private static void saveAudit(SchemaAuditVo auditVo) {
+        AfterTransactionJob<SchemaAuditVo> committer = new AfterTransactionJob<>();
+        committer.execute(auditVo, new ICommitted<SchemaAuditVo>() {
+            @Override
+            public void execute(SchemaAuditVo schemaAuditVo) {
+                ciSchemaMapper.replaceSchemaAudit(schemaAuditVo);
+                notifyWorker();
+            }
+        });
+
+        /*
         if (!TransactionSynchronizationManager.isSynchronizationActive()) {
             ciSchemaMapper.replaceSchemaAudit(auditVo);
             notifyWorker();
@@ -243,7 +251,7 @@ public class CiSchemaHandler {
                 });
             }
             schemaAuditList.add(auditVo);
-        }
+        }*/
     }
 
 
