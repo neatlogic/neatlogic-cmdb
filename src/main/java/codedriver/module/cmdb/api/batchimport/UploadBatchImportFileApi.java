@@ -14,7 +14,7 @@ import codedriver.framework.file.core.MinioFileSystemHandler;
 import codedriver.framework.file.dao.mapper.FileMapper;
 import codedriver.framework.file.dto.FileTypeVo;
 import codedriver.framework.file.dto.FileVo;
-import codedriver.framework.reminder.core.OperationTypeEnum;
+import codedriver.framework.restful.core.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
 import codedriver.module.cmdb.auth.label.CIENTITY_BATCH_IMPORT;
