@@ -4,7 +4,7 @@ import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.cmdb.constvalue.RelDirectionType;
 import codedriver.framework.cmdb.constvalue.ShowType;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.restful.core.constvalue.OperationTypeEnum;
+import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.dao.mapper.ci.CiViewMapper;

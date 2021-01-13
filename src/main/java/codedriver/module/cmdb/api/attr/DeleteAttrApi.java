@@ -3,7 +3,7 @@ package codedriver.module.cmdb.api.attr;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.constvalue.AttrType;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.restful.core.constvalue.OperationTypeEnum;
+import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;

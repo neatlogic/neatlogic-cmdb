@@ -2,7 +2,7 @@ package codedriver.module.cmdb.api.batchimport;
 
 import codedriver.framework.cmdb.constvalue.RelRuleType;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.restful.core.constvalue.OperationTypeEnum;
+import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
 import codedriver.module.cmdb.dto.ci.AttrVo;
