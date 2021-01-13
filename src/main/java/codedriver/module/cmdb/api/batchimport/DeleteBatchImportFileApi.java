@@ -13,7 +13,7 @@ import codedriver.framework.file.core.FileTypeHandlerFactory;
 import codedriver.framework.file.core.IFileTypeHandler;
 import codedriver.framework.file.dao.mapper.FileMapper;
 import codedriver.framework.file.dto.FileVo;
-import codedriver.framework.reminder.core.OperationTypeEnum;
+import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CIENTITY_BATCH_IMPORT;
