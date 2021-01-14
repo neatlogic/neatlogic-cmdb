@@ -8,7 +8,7 @@ import codedriver.framework.exception.file.ExcelFormatIllegalException;
 import codedriver.framework.exception.file.ExcelNameIllegalException;
 import codedriver.framework.exception.file.FileNotUploadException;
 import codedriver.framework.file.dto.FileVo;
-import codedriver.framework.reminder.core.OperationTypeEnum;
+import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CIENTITY_BATCH_IMPORT;
