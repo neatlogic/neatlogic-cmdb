@@ -5,10 +5,10 @@ import codedriver.module.cmdb.dto.cientity.CiEntityVo;
 import codedriver.module.cmdb.dto.schema.SchemaAuditVo;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.List;
-
 public interface CiSchemaMapper {
     SchemaAuditVo getLatestSchemaAudit(Integer serverId);
+
+    int checkTableIsExists(@Param("dbName") String dbName, @Param("tableName") String tableName);
 
     int checkDatabaseIsExists(String databaseName);
 
@@ -16,7 +16,7 @@ public interface CiSchemaMapper {
 
     void insertAttr(@Param("tableName") String tableName, @Param("attrVo") AttrVo attrVo);
 
-    void insertCiSchema(@Param("tableName") String tableName, @Param("attrList") List<AttrVo> attrList);
+    void insertCiSchema(@Param("tableName") String tableName);
 
     void insertRelSchema(@Param("tableName") String tableName);
 

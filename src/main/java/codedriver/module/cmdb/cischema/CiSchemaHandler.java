@@ -5,7 +5,7 @@ import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.batch.BatchJob;
 import codedriver.framework.batch.BatchRunner;
 import codedriver.framework.common.config.Config;
-import codedriver.framework.exception.olap.OlapDataBaseNotFoundExceptionException;
+import codedriver.framework.exception.database.DataBaseNotFoundException;
 import codedriver.framework.transaction.core.AfterTransactionJob;
 import codedriver.framework.transaction.core.ICommitted;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
@@ -260,12 +260,12 @@ public class CiSchemaHandler {
             AttrVo attrVo = JSONObject.toJavaObject(auditVo.getData(), AttrVo.class);
             if (attrVo != null) {
                 CiVo ciVo = ciMapper.getCiById(attrVo.getCiId());
-                final String SCHEMA_DB_NAME = "codedriver_" + TenantContext.get().getTenantUuid() + "_olap";
+                final String SCHEMA_DB_NAME = "codedriver_" + TenantContext.get().getTenantUuid() + "_data";
                 final String CI_SCHEMA_NAME_PREFIX = SCHEMA_DB_NAME + ".cmdb_ci_";
                 if (ciSchemaMapper.checkDatabaseIsExists(SCHEMA_DB_NAME) > 0) {
                     ciSchemaMapper.deleteAttr(CI_SCHEMA_NAME_PREFIX + ciVo.getName(), attrVo.getName());
                 } else {
-                    throw new OlapDataBaseNotFoundExceptionException();
+                    throw new DataBaseNotFoundException();
                 }
             }
         }
@@ -273,7 +273,7 @@ public class CiSchemaHandler {
 
     private static void doInsertCiEntity(SchemaAuditVo auditVo) {
         if (auditVo != null) {
-            final String SCHEMA_DB_NAME = "codedriver_" + TenantContext.get().getTenantUuid() + "_olap";
+            final String SCHEMA_DB_NAME = "codedriver_" + TenantContext.get().getTenantUuid() + "_data";
             final String CI_SCHEMA_NAME_PREFIX = SCHEMA_DB_NAME + ".cmdb_ci_";
             final String REL_SCHEMA_NAME_PREFIX = SCHEMA_DB_NAME + ".cmdb_rel_";
             Long ciEntityId = auditVo.getTargetId();
@@ -292,7 +292,7 @@ public class CiSchemaHandler {
 
     private static void doUpdateCiEntity(SchemaAuditVo auditVo) {
         if (auditVo != null) {
-            final String SCHEMA_DB_NAME = "codedriver_" + TenantContext.get().getTenantUuid() + "_olap";
+            final String SCHEMA_DB_NAME = "codedriver_" + TenantContext.get().getTenantUuid() + "_data";
             final String CI_SCHEMA_NAME_PREFIX = SCHEMA_DB_NAME + ".cmdb_ci_";
             final String REL_SCHEMA_NAME_PREFIX = SCHEMA_DB_NAME + ".cmdb_rel_";
             Long ciEntityId = auditVo.getTargetId();
@@ -318,7 +318,7 @@ public class CiSchemaHandler {
             Long ciEntityId = auditVo.getTargetId();
             CiEntityVo ciEntityVo = JSONObject.toJavaObject(auditVo.getData(), CiEntityVo.class);
             if (ciEntityVo != null && ciEntityVo.getCiId() != null) {
-                final String SCHEMA_DB_NAME = "codedriver_" + TenantContext.get().getTenantUuid() + "_olap";
+                final String SCHEMA_DB_NAME = "codedriver_" + TenantContext.get().getTenantUuid() + "_data";
                 final String CI_SCHEMA_NAME_PREFIX = SCHEMA_DB_NAME + ".cmdb_ci_";
                 final String REL_SCHEMA_NAME_PREFIX = SCHEMA_DB_NAME + ".cmdb_rel_";
                 CiVo ciVo = ciMapper.getCiById(ciEntityVo.getCiId());
@@ -333,12 +333,12 @@ public class CiSchemaHandler {
             AttrVo attrVo = JSONObject.toJavaObject(auditVo.getData(), AttrVo.class);
             if (attrVo != null) {
                 CiVo ciVo = ciMapper.getCiById(attrVo.getCiId());
-                final String SCHEMA_DB_NAME = "codedriver_" + TenantContext.get().getTenantUuid() + "_olap";
+                final String SCHEMA_DB_NAME = "codedriver_" + TenantContext.get().getTenantUuid() + "_data";
                 final String CI_SCHEMA_NAME_PREFIX = SCHEMA_DB_NAME + ".cmdb_ci_";
                 if (ciSchemaMapper.checkDatabaseIsExists(SCHEMA_DB_NAME) > 0) {
                     ciSchemaMapper.insertAttr(CI_SCHEMA_NAME_PREFIX + ciVo.getName(), attrVo);
                 } else {
-                    throw new OlapDataBaseNotFoundExceptionException();
+                    throw new DataBaseNotFoundException();
                 }
             }
         }
@@ -355,7 +355,7 @@ public class CiSchemaHandler {
         if (auditVo != null && auditVo.getData() != null) {
             CiVo ciVo = JSONObject.toJavaObject(auditVo.getData(), CiVo.class);
             if (ciVo != null) {
-                final String SCHEMA_DB_NAME = "codedriver_" + TenantContext.get().getTenantUuid() + "_olap";
+                final String SCHEMA_DB_NAME = "codedriver_" + TenantContext.get().getTenantUuid() + "_data";
                 final String CI_SCHEMA_NAME_PREFIX = SCHEMA_DB_NAME + ".cmdb_ci_";
                 final String REL_SCHEMA_NAME_PREFIX = SCHEMA_DB_NAME + ".cmdb_rel_";
 
@@ -376,7 +376,7 @@ public class CiSchemaHandler {
         if (auditVo != null) {
             CiVo ciVo = ciMapper.getCiById(auditVo.getTargetId());
             if (ciVo != null) {
-                final String SCHEMA_DB_NAME = "codedriver_" + TenantContext.get().getTenantUuid() + "_olap";
+                final String SCHEMA_DB_NAME = "codedriver_" + TenantContext.get().getTenantUuid() + "_data";
                 final String CI_SCHEMA_NAME_PREFIX = SCHEMA_DB_NAME + ".cmdb_ci_";
                 final String REL_SCHEMA_NAME_PREFIX = SCHEMA_DB_NAME + ".cmdb_rel_";
                 if (ciSchemaMapper.checkDatabaseIsExists(SCHEMA_DB_NAME) > 0) {
@@ -385,7 +385,7 @@ public class CiSchemaHandler {
                     ciSchemaMapper.deleteRelSchema(REL_SCHEMA_NAME_PREFIX + ciVo.getName());
                     //创建新表
                     List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
-                    ciSchemaMapper.insertCiSchema(CI_SCHEMA_NAME_PREFIX + ciVo.getName(), attrList);
+                    ciSchemaMapper.insertCiSchema(CI_SCHEMA_NAME_PREFIX + ciVo.getName());
                     ciSchemaMapper.insertRelSchema(REL_SCHEMA_NAME_PREFIX + ciVo.getName());
 
                     //同步数据，1000条数据一个循环
@@ -414,7 +414,7 @@ public class CiSchemaHandler {
                     }
 
                 } else {
-                    throw new OlapDataBaseNotFoundExceptionException();
+                    throw new DataBaseNotFoundException();
                 }
             }
         }

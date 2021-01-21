@@ -1,17 +1,19 @@
 package codedriver.module.cmdb.dot;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
+import java.util.Objects;
 
 public class Node {
-    private Map<String, String> propMap = new HashMap<>();
-    private String id;
+    private final Map<String, String> propMap;
+    private final String id;
 
     private Node(Builder builder) {
         this.id = builder.id;
+        propMap = new HashMap<>();
         propMap.put("id", builder.id);
         if (StringUtils.isNotBlank(builder.label)) {
             propMap.put("label", builder.label);
@@ -20,7 +22,7 @@ public class Node {
             propMap.put("tooltip", builder.tooltip);
         }
         if (StringUtils.isNotBlank(builder.className)) {
-           propMap.put("class", builder.className);
+            propMap.put("class", builder.className);
         }
         if (StringUtils.isNotBlank(builder.fontColor)) {
             propMap.put("fontcolor", builder.fontColor);
@@ -28,6 +30,23 @@ public class Node {
         if (StringUtils.isNotBlank(builder.image)) {
             propMap.put("image", builder.image);
         }
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Node node = (Node) o;
+        return id.equals(node.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 
     public String toString() {
@@ -40,7 +59,7 @@ public class Node {
             }
             String value = propMap.get(key);
             propString += key + "=" + (value.startsWith("<") ? "" : "\"") + propMap.get(key)
-                + (value.startsWith("<") ? "" : "\"");
+                    + (value.startsWith("<") ? "" : "\"");
         }
         // lobelloc控制label位置
         return "\"" + this.id + "\"[shape=\"none\"," + propString + ",labelloc=\"b\"]";

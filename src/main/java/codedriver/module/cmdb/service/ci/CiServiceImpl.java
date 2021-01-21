@@ -1,17 +1,20 @@
 package codedriver.module.cmdb.service.ci;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.batch.BatchJob;
 import codedriver.framework.batch.BatchRunner;
 import codedriver.framework.cmdb.constvalue.RelActionType;
 import codedriver.framework.cmdb.constvalue.RelDirectionType;
 import codedriver.framework.cmdb.constvalue.TransactionActionType;
 import codedriver.framework.cmdb.constvalue.TransactionStatus;
-import codedriver.module.cmdb.cischema.CiSchemaHandler;
+import codedriver.framework.exception.database.DataBaseNotFoundException;
+import codedriver.framework.exception.database.TableIsExistsException;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper;
+import codedriver.module.cmdb.dao.mapper.cischema.CiSchemaMapper;
 import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import codedriver.module.cmdb.dto.ci.AttrVo;
 import codedriver.module.cmdb.dto.ci.CiVo;
@@ -56,12 +59,24 @@ public class CiServiceImpl implements CiService {
     private RelService relService;
 
     @Autowired
+    private CiSchemaMapper ciSchemaMapper;
+
+    @Autowired
     private CiEntityService ciEntityService;
 
     @Override
-    public int saveCi(CiVo ciVo) {
-        // TODO Auto-generated method stub
-        return 0;
+    public void insertCi(CiVo ciVo) {
+        ciMapper.insertCi(ciVo);
+        //创建新表
+        if (ciSchemaMapper.checkDatabaseIsExists(TenantContext.get().getDataDbName()) > 0) {
+            if (ciSchemaMapper.checkTableIsExists(TenantContext.get().getDataDbName(), "cmdb_cientity_" + ciVo.getName().toLowerCase()) <= 0) {
+                ciSchemaMapper.insertCiSchema(TenantContext.get().getDataDbName() + ".`cmdb_cientity_" + ciVo.getName().toLowerCase() + "`");
+            } else {
+                throw new TableIsExistsException(ciVo.getName().toLowerCase());
+            }
+        } else {
+            throw new DataBaseNotFoundException();
+        }
     }
 
     @Override
@@ -164,8 +179,7 @@ public class CiServiceImpl implements CiService {
         // 删除模型相关信息
         ciMapper.deleteCiById(ciId);
         //删除视图
-        CiSchemaHandler.deleteCi(ciVo);
-
+        ciSchemaMapper.deleteCiSchema(TenantContext.get().getDataDbName() + ".`cmdb_cientity_" + ciVo.getName().toLowerCase() + "`");
         return 1;
     }
 

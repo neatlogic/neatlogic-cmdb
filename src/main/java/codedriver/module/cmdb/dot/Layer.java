@@ -1,19 +1,15 @@
 package codedriver.module.cmdb.dot;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 public class Layer {
-    List<Node> nodeList;
-    private String id;
-    private Map<String, String> propMap = new HashMap<>();
+    private final List<Node> nodeList;
+    private final String id;
+    private final Map<String, String> propMap = new HashMap<>();
 
     private Layer(Builder builder) {
         nodeList = builder.nodeList;
@@ -23,7 +19,7 @@ public class Layer {
             propMap.put("label", builder.label);
         }
         if (StringUtils.isNotBlank(builder.className)) {
-           propMap.put("class", builder.className);
+            propMap.put("class", builder.className);
         }
         if (StringUtils.isNotBlank(builder.tooltip)) {
             propMap.put("tooltip", builder.tooltip);
@@ -56,8 +52,8 @@ public class Layer {
     }
 
     public static class Builder {
-        private List<Node> nodeList = new ArrayList<>();
-        private String id;
+        private final List<Node> nodeList = new ArrayList<>();
+        private final String id;
         private String label;
         private String className = "layer";
         private String tooltip;
