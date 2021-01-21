@@ -18,11 +18,11 @@ import codedriver.framework.process.dto.ProcessStepVo;
 import codedriver.framework.process.dto.ProcessStepWorkerPolicyVo;
 import codedriver.framework.process.dto.ProcessTaskStepVo;
 import codedriver.framework.process.operationauth.core.IOperationAuthHandlerType;
-import codedriver.framework.process.stephandler.core.ProcessStepUtilHandlerBase;
+import codedriver.framework.process.stephandler.core.ProcessStepInternalHandlerBase;
 import codedriver.module.cmdb.process.notifyhandler.CiEntitySyncNotifyHandler;
 
 @Service
-public class CIEntitySyncProcessUtilHandler extends ProcessStepUtilHandlerBase {
+public class CIEntitySyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
 
     @Override
     public String getHandler() {
