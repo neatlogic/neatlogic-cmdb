@@ -16,6 +16,13 @@
         ORDER BY lcd LIMIT 1
     </select>
 
+    <select id="checkTableIsExists" resultType="int">
+        select count(1)
+        from information_schema.`TABLES`
+        where table_schema = #{dbName}
+          and table_name = #{tableName}
+    </select>
+
     <select id="checkDatabaseIsExists" parameterType="java.lang.String" resultType="int">
         SELECT COUNT(1)
         FROM information_schema.`SCHEMATA`
@@ -54,15 +61,10 @@
     </insert>
 
     <insert id="insertCiSchema">
-        CREATE TABLE ${tableName} (
-        `id` bigint(20) NOT NULL COMMENT 'id',
-        <foreach collection="attrList" item="item" index="index">
-            ${item.name} longtext COMMENT '${item.label}',
-            ${item.name}_hash char(32) COMMENT '${item.label}值散列码',
-            KEY index_${item.name}_hash (${item.name}_hash),
-            FULLTEXT KEY fullindex_${item.name} (${item.name}) /*!50100 WITH PARSER `ngram` */,
-        </foreach>
-        PRIMARY KEY (`id`)
+        CREATE TABLE ${tableName}
+        (
+            `id` bigint(20) NOT NULL COMMENT 'id',
+            PRIMARY KEY (`id`)
         ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4
     </insert>
 

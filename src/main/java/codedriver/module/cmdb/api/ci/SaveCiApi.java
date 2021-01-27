@@ -2,22 +2,18 @@ package codedriver.module.cmdb.api.ci;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.auth.core.AuthActionChecker;
-import codedriver.framework.cmdb.constvalue.AttrType;
-import codedriver.framework.cmdb.constvalue.InputType;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.*;
+import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CI_MODIFY;
-import codedriver.module.cmdb.cischema.CiSchemaHandler;
-import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
-import codedriver.module.cmdb.dto.ci.AttrVo;
 import codedriver.module.cmdb.dto.ci.CiVo;
 import codedriver.module.cmdb.exception.ci.CiAuthException;
 import codedriver.module.cmdb.exception.ci.CiLabelIsExistsException;
 import codedriver.module.cmdb.exception.ci.CiNameIsExistsException;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
+import codedriver.module.cmdb.service.ci.CiService;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,9 +26,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class SaveCiApi extends PrivateApiComponentBase {
 
     @Autowired
-    private CiMapper ciMapper;
+    private CiService ciService;
+
     @Autowired
-    private AttrMapper attrMapper;
+    private CiMapper ciMapper;
 
     @Override
     public String getToken() {
@@ -76,9 +73,9 @@ public class SaveCiApi extends PrivateApiComponentBase {
                 // 添加模型需要管理员权限
                 throw new CiAuthException();
             }
-            ciMapper.insertCi(ciVo);
+            ciService.insertCi(ciVo);
             // 新增模型必须要添加一个name属性
-            AttrVo attrVo = new AttrVo();
+            /*AttrVo attrVo = new AttrVo();
             attrVo.setName("name");
             attrVo.setLabel("名称");
             attrVo.setType(AttrType.CUSTOM.getValue());
@@ -88,9 +85,9 @@ public class SaveCiApi extends PrivateApiComponentBase {
             // 私有属性，不允许用户删除
             attrVo.setIsPrivate(1);
             attrVo.setCiId(ciVo.getId());
-            attrMapper.insertAttr(attrVo);
+            attrMapper.insertAttr(attrVo);*/
             //初始化CISCHEMA
-            CiSchemaHandler.initCiSchema(ciVo);
+            //CiSchemaHandler.initCiSchema(ciVo);
         } else {
             // 编辑模型除了管理员权限还要看具体的模型授权
             if (!hasAuth) {

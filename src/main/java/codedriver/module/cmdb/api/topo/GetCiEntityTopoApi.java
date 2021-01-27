@@ -1,42 +1,31 @@
 package codedriver.module.cmdb.api.topo;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import codedriver.framework.cmdb.constvalue.RelDirectionType;
+import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.restful.annotation.*;
+import codedriver.framework.restful.constvalue.OperationTypeEnum;
+import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.framework.util.Md5Util;
+import codedriver.module.cmdb.dao.mapper.ci.CiTypeMapper;
+import codedriver.module.cmdb.dao.mapper.cientity.AttrEntityMapper;
+import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
+import codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper;
+import codedriver.module.cmdb.dot.*;
+import codedriver.module.cmdb.dto.ci.CiTypeVo;
+import codedriver.module.cmdb.dto.cientity.AttrEntityVo;
+import codedriver.module.cmdb.dto.cientity.CiEntityVo;
+import codedriver.module.cmdb.dto.cientity.RelEntityVo;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.alibaba.fastjson.JSONObject;
-
-import codedriver.framework.cmdb.constvalue.RelDirectionType;
-import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.restful.constvalue.OperationTypeEnum;
-import codedriver.framework.restful.annotation.Description;
-import codedriver.framework.restful.annotation.Input;
-import codedriver.framework.restful.annotation.OperationType;
-import codedriver.framework.restful.annotation.Output;
-import codedriver.framework.restful.annotation.Param;
-import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.dao.mapper.ci.CiTypeMapper;
-import codedriver.module.cmdb.dao.mapper.cientity.AttrEntityMapper;
-import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
-import codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper;
-import codedriver.module.cmdb.dot.Graphviz;
-import codedriver.module.cmdb.dot.Layer;
-import codedriver.module.cmdb.dot.Link;
-import codedriver.module.cmdb.dot.Node;
-import codedriver.module.cmdb.dto.ci.CiTypeVo;
-import codedriver.module.cmdb.dto.cientity.AttrEntityVo;
-import codedriver.module.cmdb.dto.cientity.CiEntityVo;
-import codedriver.module.cmdb.dto.cientity.RelEntityVo;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -72,7 +61,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
     }
 
     @Input({@Param(name = "ciEntityId", type = ApiParamType.LONG, isRequired = true, desc = "配置项id"),
-        @Param(name = "level", type = ApiParamType.INTEGER, desc = "自动展开关系层数，默认是1")})
+            @Param(name = "level", type = ApiParamType.INTEGER, desc = "自动展开关系层数，默认是1")})
     @Output({@Param(name = "topo", type = ApiParamType.STRING)})
     @Description(desc = "获取配置项拓扑接口")
     @Override
@@ -85,6 +74,12 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
         Set<RelEntityVo> relEntitySet = new HashSet<>();
 
         Long ciEntityId = jsonObj.getLong("ciEntityId");
+        //分组属性
+        List<String> clusterAttrList = new ArrayList<>();
+        clusterAttrList.add("tomcat#port");
+        clusterAttrList.add("hardware#brand");
+        clusterAttrList.add("system#env");
+        Map<String, Cluster.Builder> clusterMap = new HashMap<>();
         // 先搜索出所有层次，因为需要按照层次顺序展示
         List<CiTypeVo> ciTypeList = ciTypeMapper.searchCiType(null);
         Integer level = jsonObj.getInteger("level");
@@ -97,17 +92,18 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
         ciEntityIdList.add(ciEntityId);
         for (int l = 0; l <= level; l++) {
             if (!ciEntityIdList.isEmpty()) {
-                List<Long> tmpList = ciEntityIdList.stream().collect(Collectors.toList());
+                List<Long> tmpList = new ArrayList<>(ciEntityIdList);
                 // 获取当前层次配置项详细信息
                 List<CiEntityVo> ciEntityList = ciEntityMapper.searchCiEntityByIdList(tmpList);
-                List<AttrEntityVo> attrEntityList = attrEntityMapper.searchAttrEntityByCiEntityIdList(tmpList, null);
                 if (CollectionUtils.isEmpty(ciEntityList)) {
                     // 如果找不到配置项，则退出循环
                     break;
                 }
+                List<AttrEntityVo> attrEntityList = attrEntityMapper.searchAttrEntityByCiEntityIdList(tmpList, null);
+
                 for (CiEntityVo entity : ciEntityList) {
                     entity.setAttrEntityList(attrEntityList.stream()
-                        .filter(attr -> attr.getCiEntityId().equals(entity.getId())).collect(Collectors.toList()));
+                            .filter(attr -> attr.getCiEntityId().equals(entity.getId())).collect(Collectors.toList()));
                     ciEntitySet.add(entity);
                     ciTypeIdSet.add(entity.getTypeId());
                 }
@@ -142,12 +138,10 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                 if (ciTypeIdSet.contains(ciTypeVo.getId())) {
                     Layer.Builder lb = new Layer.Builder("CiType" + ciTypeVo.getId());
                     lb.withLabel(ciTypeVo.getName());
-                    Iterator<CiEntityVo> itCiEntity = ciEntitySet.iterator();
-                    while (itCiEntity.hasNext()) {
-                        CiEntityVo ciEntityVo = itCiEntity.next();
+                    for (CiEntityVo ciEntityVo : ciEntitySet) {
                         if (ciEntityVo.getTypeId().equals(ciTypeVo.getId())) {
                             Node.Builder nb =
-                                new Node.Builder("CiEntity_" + ciEntityVo.getCiId() + "_" + ciEntityVo.getId());// 必须按照这个格式写，前端会通过下划线来提取ciid和cientityid
+                                    new Node.Builder("CiEntity_" + ciEntityVo.getCiId() + "_" + ciEntityVo.getId());// 必须按照这个格式写，前端会通过下划线来提取ciid和cientityid
                             nb.withTooltip(ciEntityVo.getName());
                             nb.withLabel(ciEntityVo.getName());
                             nb.withImage(ciEntityVo.getCiIcon());
@@ -157,31 +151,63 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                             } else {
                                 nb.withClass("cinode normalnode");
                             }
-                            lb.addNode(nb.build());
+                            Node node = nb.build();
+                            lb.addNode(node);
+
+
+                            //根据分组属性计算分组
+                            if (CollectionUtils.isNotEmpty(clusterAttrList)) {
+                                for (String clusterAttr : clusterAttrList) {
+                                    if (clusterAttr.contains(ciEntityVo.getCiName() + "#")) {
+                                        String attrname = clusterAttr.split("#")[1];
+                                        for (AttrEntityVo attrEntityVo : ciEntityVo.getAttrEntityList()) {
+                                            if (attrEntityVo.getAttrName().equals(attrname)) {
+                                                String valueMd5 = Md5Util.encryptMD5(attrEntityVo.getValueStr());
+                                                if (!clusterMap.containsKey(valueMd5)) {
+                                                    clusterMap.put(valueMd5, new Cluster.Builder("cluster_" + valueMd5).withLabel(attrEntityVo.getAttrLabel() + ":" + attrEntityVo.getValueStr()));
+                                                }
+                                                clusterMap.get(valueMd5).addNode(node);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
                         }
                     }
                     gb.addLayer(lb.build());
                 }
             }
             if (!relEntitySet.isEmpty()) {
-                Iterator<RelEntityVo> itRelEntity = relEntitySet.iterator();
-                while (itRelEntity.hasNext()) {
-                    RelEntityVo relEntityVo = itRelEntity.next();
+                for (RelEntityVo relEntityVo : relEntitySet) {
                     if (ciEntitySet.contains(new CiEntityVo(relEntityVo.getFromCiEntityId()))
-                        && ciEntitySet.contains(new CiEntityVo(relEntityVo.getToCiEntityId()))) {
+                            && ciEntitySet.contains(new CiEntityVo(relEntityVo.getToCiEntityId()))) {
                         Link.Builder lb = new Link.Builder(
-                            "CiEntity_" + relEntityVo.getFromCiId() + "_" + relEntityVo.getFromCiEntityId(),
-                            "CiEntity_" + relEntityVo.getToCiId() + "_" + relEntityVo.getToCiEntityId());
+                                "CiEntity_" + relEntityVo.getFromCiId() + "_" + relEntityVo.getFromCiEntityId(),
+                                "CiEntity_" + relEntityVo.getToCiId() + "_" + relEntityVo.getToCiEntityId());
                         lb.withLabel(relEntityVo.getRelTypeName());
                         lb.setFontSize(9);
                         gb.addLink(lb.build());
                     }
                 }
             }
+
+            //测试分组代码
+            if (MapUtils.isNotEmpty(clusterMap)) {
+                for (String key : clusterMap.keySet()) {
+                    Cluster.Builder cb = clusterMap.get(key);
+                    cb.withStyle("filled");
+                    Cluster c = cb.build();
+                    gb.addCluster(cb.build());
+                }
+            }
+
+
             String dot = gb.build().toString();
             if (logger.isDebugEnabled()) {
                 logger.debug(dot);
             }
+            System.out.println(dot);
             return dot;
         }
         return "";

@@ -22,6 +22,8 @@ public class CiVo implements Serializable {
     private transient String keyword;
     @EntityField(name = "id", type = ApiParamType.LONG)
     private Long id;
+    @EntityField(name = "父亲模型id", type = ApiParamType.LONG)
+    private Long parentCiId;
     @EntityField(name = "唯一标识，不能重复", type = ApiParamType.STRING)
     private String name;
     @EntityField(name = "名称，不能重复", type = ApiParamType.STRING)
