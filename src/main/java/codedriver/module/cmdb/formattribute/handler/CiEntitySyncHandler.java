@@ -7,6 +7,8 @@ import codedriver.framework.process.formattribute.core.FormHandlerBase;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class CiEntitySyncHandler extends FormHandlerBase {
 
@@ -27,6 +29,11 @@ public class CiEntitySyncHandler extends FormHandlerBase {
         } else {
             return "";
         }
+    }
+
+    @Override
+    public Object textConversionValue(List<String> values, JSONObject config) {
+        return null;
     }
 
     @Override
