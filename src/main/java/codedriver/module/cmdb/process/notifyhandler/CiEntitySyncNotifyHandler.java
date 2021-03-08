@@ -3,9 +3,13 @@ package codedriver.module.cmdb.process.notifyhandler;
 import java.util.List;
 
 import codedriver.framework.auth.core.AuthFactory;
+import codedriver.framework.notify.core.INotifyPolicyHandlerGroup;
 import codedriver.framework.notify.core.NotifyHandlerType;
 import codedriver.framework.notify.dto.NotifyTriggerTemplateVo;
 import codedriver.framework.notify.dto.NotifyTriggerVo;
+import codedriver.framework.process.constvalue.ProcessNotifyPolicyHandlerGroup;
+import codedriver.framework.process.constvalue.ProcessStepHandlerType;
+import codedriver.module.cmdb.process.stephandler.CmdbProcessStepHandlerType;
 import org.springframework.stereotype.Component;
 
 import com.alibaba.fastjson.JSONObject;
@@ -18,7 +22,7 @@ public class CiEntitySyncNotifyHandler extends NotifyPolicyHandlerBase {
 
     @Override
     public String getName() {
-        return "配置项同步";
+        return CmdbProcessStepHandlerType.CIENTITYSYNC.getName();
     }
 
     @Override
@@ -53,5 +57,10 @@ public class CiEntitySyncNotifyHandler extends NotifyPolicyHandlerBase {
     @Override
     public String getAuthName() {
         return AuthFactory.getAuthInstance("CIENTITY_MODIFY").getAuthName();
+    }
+
+    @Override
+    public INotifyPolicyHandlerGroup getGroup() {
+        return ProcessNotifyPolicyHandlerGroup.TASKSTEP;
     }
 }
