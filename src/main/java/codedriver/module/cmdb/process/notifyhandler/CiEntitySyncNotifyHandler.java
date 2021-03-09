@@ -7,8 +7,7 @@ import codedriver.framework.notify.core.INotifyPolicyHandlerGroup;
 import codedriver.framework.notify.core.NotifyHandlerType;
 import codedriver.framework.notify.dto.NotifyTriggerTemplateVo;
 import codedriver.framework.notify.dto.NotifyTriggerVo;
-import codedriver.framework.process.constvalue.ProcessNotifyPolicyHandlerGroup;
-import codedriver.framework.process.constvalue.ProcessStepHandlerType;
+import codedriver.framework.process.notify.constvalue.ProcessNotifyPolicyHandlerGroup;
 import codedriver.module.cmdb.process.stephandler.CmdbProcessStepHandlerType;
 import org.springframework.stereotype.Component;
 
