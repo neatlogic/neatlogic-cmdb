@@ -1,9 +1,10 @@
 package codedriver.module.cmdb.formattribute.handler;
 
 import codedriver.framework.common.constvalue.ParamType;
-import codedriver.framework.process.dto.AttributeDataVo;
-import codedriver.framework.process.exception.form.AttributeValidException;
-import codedriver.framework.process.formattribute.core.FormHandlerBase;
+import codedriver.framework.form.constvalue.FormConditionModel;
+import codedriver.framework.form.dto.AttributeDataVo;
+import codedriver.framework.form.exception.AttributeValidException;
+import codedriver.framework.form.attribute.core.FormHandlerBase;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Component;
 
@@ -102,7 +103,7 @@ public class CiEntitySyncHandler extends FormHandlerBase {
     }
 
     @Override
-    public String getHandlerType(String model) {
+    public String getHandlerType(FormConditionModel model) {
         return null;
     }
 
