@@ -43,17 +43,18 @@ public class SaveCiApi extends PrivateApiComponentBase {
 
     @Override
     public String getConfig() {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "id，不提供代表新增模型"),
-            @Param(name = "name", type = ApiParamType.STRING, xss = true, isRequired = true, maxLength = 50, desc = "英文名称"),
+            //name不能大于25个字符，因为mysql表名最长64字符，需要给属性名留下位置
+            @Param(name = "name", type = ApiParamType.STRING, xss = true, isRequired = true, maxLength = 25, desc = "英文名称"),
             @Param(name = "label", type = ApiParamType.STRING, desc = "中文名称", xss = true, maxLength = 100,
                     isRequired = true),
             @Param(name = "description", type = ApiParamType.STRING, desc = "备注", maxLength = 500, xss = true),
             @Param(name = "icon", type = ApiParamType.STRING, desc = "图标"),
             @Param(name = "typeId", type = ApiParamType.LONG, desc = "类型id", isRequired = true),
+            @Param(name = "parentCiId", type = ApiParamType.LONG, desc = "父配置项id"),
             @Param(name = "isMenu", type = ApiParamType.INTEGER, desc = "是否在菜单显示")})
     @Output({@Param(name = "id", type = ApiParamType.STRING, desc = "模型id")})
     @Description(desc = "保存模型接口")

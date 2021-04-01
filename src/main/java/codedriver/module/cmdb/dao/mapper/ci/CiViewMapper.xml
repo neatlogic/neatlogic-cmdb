@@ -2,86 +2,88 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.ci.CiViewMapper">
 
-	<select id="getCiViewByCiId" parameterType="codedriver.module.cmdb.dto.ci.CiViewVo" resultType="codedriver.module.cmdb.dto.ci.CiViewVo">
-		SELECT * FROM (
-		SELECT
-		attr.id AS itemId,
-		attr.`name` as itemName,
-		attr.`label` AS itemLabel,
-		'attr' AS type,
-		show_type AS showType,
-		v.sort
-		FROM
-		cmdb_attr attr
-		LEFT JOIN cmdb_view v
-		ON attr.`ci_id` = v.`ci_id`
-		AND attr.`id` = v.`item_id`
-		AND v.`type` = 'attr'
-		WHERE attr.`ci_id` = #{ciId}
-		UNION
-		SELECT
-		rel.id AS itemId,
-		rel.to_name AS itemName,
-		rel.to_label AS itemLabel,<!-- 当前模型作为上游时需要显示下游目标名称 -->
-		'relfrom' AS type,
-		show_type AS showType,
-		v.sort
-		FROM
-		cmdb_rel rel
-		LEFT JOIN cmdb_view v
-		ON rel.from_ci_id = v.`ci_id`
-		AND rel.id = v.`item_id`
-		AND v.`type` = 'relfrom'
-		WHERE rel.from_ci_id = #{ciId}
-		UNION
-		SELECT
-		rel.id AS itemId,
-		rel.from_name AS itemName,
-		rel.from_label AS itemLabel,<!-- 当前模型作为下游时需要显示上游目标名称 -->
-		'relto' AS type,
-		v.show_type AS showType,
-		v.sort
-		FROM
-		cmdb_rel rel
-		LEFT JOIN cmdb_view v
-		ON rel.to_ci_id = v.`ci_id`
-		AND rel.id = v.`item_id`
-		AND v.`type` = 'relto'
-		WHERE rel.to_ci_id = #{ciId}
-		) t
-		<where>
-			<if test="showTypeList != null and showTypeList.size() > 0">
-				(t.showType IN
-				<foreach collection="showTypeList" item="item" open="(" separator="," close=")">
-					#{item}
-				</foreach>
-				OR t.showType is NULL
-				)
-			</if>
-		</where>
-		ORDER BY sort,type,itemId
-		<!-- 按照sort,type,itemId进行排序，当sort为空时，得到的是自然顺序 -->
-	</select>
+    <select id="getCiViewByCiId" parameterType="codedriver.module.cmdb.dto.ci.CiViewVo"
+            resultType="codedriver.module.cmdb.dto.ci.CiViewVo">
+        SELECT * FROM (
+        SELECT
+        attr.id AS itemId,
+        attr.`name` as itemName,
+        attr.`label` AS itemLabel,
+        'attr' AS type,
+        show_type AS showType,
+        v.sort
+        FROM
+        cmdb_ci ci JOIN
+        cmdb_attr attr ON ci.id = attr.ci_id
+        LEFT JOIN cmdb_view v
+        ON attr.`id` = v.`item_id`
+        AND v.`type` = 'attr'
+        WHERE
+        ci.lft &lt;= ( SELECT lft FROM `cmdb_ci` WHERE id = #{ciId} )
+        AND ci.rht &gt;= ( SELECT rht FROM `cmdb_ci` WHERE id = #{ciId} )
+        UNION
+        SELECT
+        rel.id AS itemId,
+        rel.to_name AS itemName,
+        rel.to_label AS itemLabel,<!-- 当前模型作为上游时需要显示下游目标名称 -->
+        'relfrom' AS type,
+        show_type AS showType,
+        v.sort
+        FROM
+        cmdb_rel rel
+        JOIN cmdb_ci ci ON rel.from_ci_id = ci.id
+        LEFT JOIN cmdb_view v
+        ON rel.id = v.`item_id`
+        AND v.`type` = 'relfrom'
+        WHERE ci.lft &lt;= ( SELECT lft FROM `cmdb_ci` WHERE id = #{ciId} )
+        AND ci.rht &gt;= ( SELECT rht FROM `cmdb_ci` WHERE id = #{ciId} )
+        UNION
+        SELECT
+        rel.id AS itemId,
+        rel.from_name AS itemName,
+        rel.from_label AS itemLabel,<!-- 当前模型作为下游时需要显示上游目标名称 -->
+        'relto' AS type,
+        v.show_type AS showType,
+        v.sort
+        FROM
+        cmdb_rel rel
+        JOIN cmdb_ci ci ON rel.to_ci_id = ci.id
+        LEFT JOIN cmdb_view v
+        ON rel.id = v.`item_id`
+        AND v.`type` = 'relto'
+        WHERE ci.lft &lt;= ( SELECT lft FROM `cmdb_ci` WHERE id = #{ciId} )
+        AND ci.rht &gt;= ( SELECT rht FROM `cmdb_ci` WHERE id = #{ciId} )
+        ) t
+        <where>
+            <if test="showTypeList != null and showTypeList.size() > 0">
+                (t.showType IN
+                <foreach collection="showTypeList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+                OR t.showType is NULL
+                )
+            </if>
+        </where>
+        ORDER BY sort,type,itemId
+        <!-- 按照sort,type,itemId进行排序，当sort为空时，得到的是自然顺序 -->
+    </select>
 
-	<insert id="insertCiView" parameterType="codedriver.module.cmdb.dto.ci.CiViewVo">
-		INSERT INTO `cmdb_view` (
-		`ci_id`,
-		`item_id`,
-		`type`,
-		`sort`,
-		`show_type`
-		)
-		VALUES
-		(
-		#{ciId},
-		#{itemId},
-		#{type},
-		#{sort},
-		#{showType}
-		)
-	</insert>
+    <insert id="insertCiView" parameterType="codedriver.module.cmdb.dto.ci.CiViewVo">
+        INSERT INTO `cmdb_view` (`ci_id`,
+                                 `item_id`,
+                                 `type`,
+                                 `sort`,
+                                 `show_type`)
+        VALUES (#{ciId},
+                #{itemId},
+                #{type},
+                #{sort},
+                #{showType})
+    </insert>
 
-	<delete id="deleteCiViewByCiId" parameterType="java.lang.Long">
-		DELETE FROM cmdb_view WHERE ci_id = #{value}
-	</delete>
+    <delete id="deleteCiViewByCiId" parameterType="java.lang.Long">
+        DELETE
+        FROM cmdb_view
+        WHERE ci_id = #{value}
+    </delete>
 </mapper>

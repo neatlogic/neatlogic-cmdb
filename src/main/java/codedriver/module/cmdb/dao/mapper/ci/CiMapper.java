@@ -1,37 +1,42 @@
 package codedriver.module.cmdb.dao.mapper.ci;
 
-import java.util.List;
-
-import org.apache.ibatis.annotations.Param;
-
 import codedriver.module.cmdb.dto.ci.CiTypeVo;
 import codedriver.module.cmdb.dto.ci.CiVo;
+import org.apache.ibatis.annotations.Param;
 
-/**
- * 
- * @Author:chenqiwei
- * @Time:Aug 15, 2020
- * @ClassName: CiMapper
- * @Description: TODO
- */
+import java.util.List;
+
+/*
+ * @Description:
+ * @Author: chenqiwei
+ * @Date: 2021/3/20 3:04 下午
+ * @Params: * @param null:
+ * @Returns: * @return: null
+ **/
 public interface CiMapper {
-    public List<CiVo> getAllCi();
 
-    public List<CiVo> getCiByToCiId(Long ciId);
+    List<CiVo> getUpwardCiListByLR(@Param("lft") Integer lft, @Param("rht") Integer rht);
 
-    public List<CiVo> getCiByIdList(@Param("ciIdList") List<Long> ciIds);
+    List<CiVo> getDownwardCiListByLR(@Param("lft") Integer lft, @Param("rht") Integer rht);
 
-    public int checkCiNameIsExists(CiVo ciVo);
 
-    public int checkCiLabelIsExists(CiVo ciVo);
+    List<CiVo> getAllCi();
 
-    public List<CiTypeVo> searchCiTypeCi(CiVo ciVo);
+    List<CiVo> getCiByToCiId(Long ciId);
 
-    public CiVo getCiById(Long ciId);
+    List<CiVo> getCiByIdList(@Param("ciIdList") List<Long> ciIds);
 
-    public int updateCi(CiVo ciVo);
+    int checkCiNameIsExists(CiVo ciVo);
 
-    public int insertCi(CiVo ciVo);
+    int checkCiLabelIsExists(CiVo ciVo);
 
-    public int deleteCiById(Long ciId);
+    List<CiTypeVo> searchCiTypeCi(CiVo ciVo);
+
+    CiVo getCiById(Long ciId);
+
+    int updateCi(CiVo ciVo);
+
+    int insertCi(CiVo ciVo);
+
+    int deleteCiById(Long ciId);
 }

@@ -1,21 +1,19 @@
+/*
+ * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+ */
+
 package codedriver.module.cmdb.dto.ci;
-
-import java.io.Serializable;
-
-import org.apache.commons.lang3.StringUtils;
 
 import codedriver.framework.cmdb.constvalue.InputType;
 import codedriver.framework.cmdb.constvalue.RelRuleType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.SnowflakeUtil;
+import org.apache.commons.lang3.StringUtils;
 
-/**
- * @Author:chenqiwei
- * @Time:Aug 17, 2020
- * @ClassName: RelVo
- * @Description: TODO
- */
+import java.io.Serializable;
+
 public class RelVo implements Serializable {
     private static final long serialVersionUID = 4262674515934863987L;
     @EntityField(name = "id", type = ApiParamType.LONG)
@@ -53,6 +51,8 @@ public class RelVo implements Serializable {
     private String fromGroupName;
     @EntityField(name = "来源端是否唯一", type = ApiParamType.INTEGER)
     private Integer fromIsUnique;
+    @EntityField(name = "来源端是否必填", type = ApiParamType.INTEGER)
+    private Integer fromIsRequired;
     @EntityField(name = "来源端是否允许添加新配置项", type = ApiParamType.BOOLEAN)
     private Boolean fromAllowInsert;
 
@@ -80,8 +80,13 @@ public class RelVo implements Serializable {
     private String toGroupName;
     @EntityField(name = "目标端是否唯一", type = ApiParamType.INTEGER)
     private Integer toIsUnique;
+    @EntityField(name = "目标端是否必填", type = ApiParamType.INTEGER)
+    private Integer toIsRequired;
     @EntityField(name = "目标端是否允许添加新配置项", type = ApiParamType.BOOLEAN)
     private Boolean toAllowInsert;
+
+    @EntityField(name = "是否继承属性", type = ApiParamType.INTEGER)
+    private Integer isExtended;
 
     public Long getId() {
         if (id == null) {
@@ -332,4 +337,27 @@ public class RelVo implements Serializable {
         this.toAllowInsert = toAllowInsert;
     }
 
+    public Integer getIsExtended() {
+        return isExtended;
+    }
+
+    public void setIsExtended(Integer isExtended) {
+        this.isExtended = isExtended;
+    }
+
+    public Integer getFromIsRequired() {
+        return fromIsRequired;
+    }
+
+    public void setFromIsRequired(Integer fromIsRequired) {
+        this.fromIsRequired = fromIsRequired;
+    }
+
+    public Integer getToIsRequired() {
+        return toIsRequired;
+    }
+
+    public void setToIsRequired(Integer toIsRequired) {
+        this.toIsRequired = toIsRequired;
+    }
 }

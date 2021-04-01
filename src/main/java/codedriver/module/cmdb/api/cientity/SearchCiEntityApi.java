@@ -54,18 +54,17 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
 
     @Override
     public String getConfig() {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
-        @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "关键字"),
-        @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "需要查询的配置项id列表）"),
-        @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "是否需要操作列，如果需要则根据用户权限返回操作列"),
-        @Param(name = "needCheck", type = ApiParamType.BOOLEAN, desc = "是否需要复选列")})
+            @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "关键字"),
+            @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "需要查询的配置项id列表）"),
+            @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "是否需要操作列，如果需要则根据用户权限返回操作列"),
+            @Param(name = "needCheck", type = ApiParamType.BOOLEAN, desc = "是否需要复选列")})
     @Output({@Param(explode = BasePageVo.class),
-        @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = CiEntityVo[].class),
-        @Param(name = "theadList", type = ApiParamType.JSONARRAY, desc = "表头信息")})
+            @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = CiEntityVo[].class),
+            @Param(name = "theadList", type = ApiParamType.JSONARRAY, desc = "表头信息")})
     @Description(desc = "查询配置项接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
@@ -141,7 +140,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
                 ElasticSearchHandlerFactory.getHandler("cientity");
             ciEntityList = handler.search(ciEntityVo);
         } else {*/
-            ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
+        ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
         //}
         JSONArray tbodyList = new JSONArray();
         if (CollectionUtils.isNotEmpty(ciEntityList)) {
@@ -151,7 +150,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
                 canEdit = !canEdit ? CiAuthChecker.hasCiEntityUpdatePrivilege(ciEntityVo.getCiId()) : canEdit;
                 canDelete = !canDelete ? CiAuthChecker.hasCiEntityDeletePrivilege(ciEntityVo.getCiId()) : canDelete;
                 canTransaction =
-                    !canTransaction ? CiAuthChecker.hasTransactionPrivilege(ciEntityVo.getCiId()) : canTransaction;
+                        !canTransaction ? CiAuthChecker.hasTransactionPrivilege(ciEntityVo.getCiId()) : canTransaction;
                 // 任意权限缺失，都需要检查是否在运维群组
                 if (!canEdit || !canDelete || !canTransaction) {
                     if (CollectionUtils.isNotEmpty(ciEntityVo.getGroupIdList())) {

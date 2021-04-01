@@ -21,14 +21,12 @@ public interface CiEntityService {
     public Long saveCiEntity(CiEntityTransactionVo ciEntityTransactionVo);
 
     /**
-     * @param @param  ciEntityId
-     * @param @return
-     * @return CiEntityVo
-     * @Author: chenqiwei
-     * @Time: 2020年11月11日
-     * @Description: 获取配置项详细信息
+     * 获取单个配置项详细信息
+     *
+     * @param ciEntityId 配置项id
+     * @return ciEntityVo
      */
-    public CiEntityVo getCiEntityDetailById(Long ciEntityId);
+    CiEntityVo getCiEntityById(Long ciEntityId);
 
     void createCiEntityName(CiEntityTransactionVo ciEntityTransactionVo);
 

@@ -141,13 +141,9 @@ public class RelEntityVo {
             return false;
         }
         final RelEntityVo rel = (RelEntityVo) other;
-        if (Objects.equal(getRelId(), rel.getRelId()) && Objects.equal(getFromCiEntityId(), rel.getFromCiEntityId())
-                && Objects.equal(getToCiEntityId(), rel.getToCiEntityId())
-            /* && Objects.equal(getDirection(), rel.getDirection())*/) {
-            return true;
-        } else {
-            return false;
-        }
+        /* && Objects.equal(getDirection(), rel.getDirection())*/
+        return Objects.equal(getRelId(), rel.getRelId()) && Objects.equal(getFromCiEntityId(), rel.getFromCiEntityId())
+                && Objects.equal(getToCiEntityId(), rel.getToCiEntityId());
     }
 
     public Long getToCiId() {

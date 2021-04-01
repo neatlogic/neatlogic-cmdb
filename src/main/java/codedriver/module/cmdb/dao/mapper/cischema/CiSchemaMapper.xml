@@ -13,7 +13,8 @@
         FROM `cmdb_schema_audit`
         WHERE server_id = #{value}
           AND is_failed = 0
-        ORDER BY lcd LIMIT 1
+        ORDER BY lcd
+        LIMIT 1
     </select>
 
     <select id="checkTableIsExists" resultType="int">
@@ -37,35 +38,70 @@
 
     <insert id="replaceSchemaAudit" parameterType="codedriver.module.cmdb.dto.schema.SchemaAuditVo">
         REPLACE
-        INTO cmdb_schema_audit (`lcd`,
-                                `target_id`,
-                                `target_type`,
-                                `action`,
-                                `data`,
-                                `server_id`)
+            INTO cmdb_schema_audit (`lcd`,
+                                    `target_id`,
+                                    `target_type`,
+                                    `action`,
+                                    `data`,
+                                    `server_id`)
         VALUES (NOW(3),
-        #{targetId},
-        #{targetType},
-        #{action},
-        #{dataStr},
-        #{serverId}
-        )
+                #{targetId},
+                #{targetType},
+                #{action},
+                #{dataStr},
+                #{serverId})
     </insert>
 
-    <insert id="insertAttr">
+    <!-- <insert id="insertAttrSchema">
+         CREATE TABLE IF NOT EXISTS ${tableName}(
+         `id` BIGINT ( 20 ) NOT NULL COMMENT 'id',
+         `cientity_id` BIGINT ( 20 ) NOT NULL COMMENT '配置项id',
+         PRIMARY KEY ( `id` ),
+         KEY `index_cientity_id` ( `cientity_id` ),
+         <foreach collection="columnList" item="column" separator=",">
+             `${column.name}` ${column.jdbcType} NULL COMMENT '${column.label}',
+             `${column.name}_hash` CHAR(32) NULL COMMENT '${column.label}值散列码',
+             <if test="column.needIndex">
+                 FULLTEXT INDEX `fullindex_${column.name}` (`${column.name}`) /*!50100 WITH PARSER `ngram` */,
+             </if>
+             KEY `index_${column.name}_hash` (`${column.name}_hash`)
+         </foreach>
+         )ENGINE = INNODB DEFAULT CHARSET = utf8mb4
+     </insert>-->
+
+    <insert id="insertAttrToCiSchema">
         ALTER TABLE ${tableName}
-            ADD COLUMN ${attrVo.name} LONGTEXT NULL COMMENT '${attrVo.label}值散列码',
-        ADD COLUMN ${attrVo.name}_hash CHAR (32) NULL COMMENT '${attrVo.label}',
-            ADD KEY index_${attrVo.name}_hash (${attrVo.name}_hash),
-            ADD FULLTEXT INDEX fullindex_${attrVo.name} (${attrVo.name}) /*!50100 WITH PARSER `ngram` */;
+            ADD COLUMN `${attrVo.id}`      TEXT     NULL COMMENT '${attrVo.label}',
+            ADD COLUMN `${attrVo.id}_hash` CHAR(32) NULL COMMENT '${attrVo.label}值散列码',
+            ADD KEY `index_${attrVo.id}_hash` (`${attrVo.id}_hash`),
+            ADD FULLTEXT INDEX `fullindex_${attrVo.id}` (`${attrVo.id}`) /*!50100 WITH PARSER `ngram` */;
     </insert>
 
     <insert id="insertCiSchema">
-        CREATE TABLE ${tableName}
+        CREATE TABLE IF NOT EXISTS ${tableName}
         (
-            `id` bigint(20) NOT NULL COMMENT 'id',
-            PRIMARY KEY (`id`)
-        ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4
+            `cientity_id` bigint(20) NOT NULL COMMENT '配置项id',
+            PRIMARY KEY (`cientity_id`)
+        ) ENGINE = INNODB
+          DEFAULT CHARSET = utf8mb4
+    </insert>
+
+    <insert id="insertCiAttrSchema">
+        CREATE TABLE IF NOT EXISTS ${tableName}
+        (
+            `id`                 bigint(20) NOT NULL COMMENT 'id',
+            `cientity_id`        bigint(20) NOT NULL COMMENT '配置项id',
+            `target_cientity_id` bigint(20) NOT NULL COMMENT '目标配置项id',
+            `attr_id`            bigint(32) NOT NULL COMMENT '属性id',
+            `ci_id`              bigint(20) NOT NULL COMMENT '模型id',
+            `target_ci_id`       bigint(20) NOT NULL COMMENT '目标模型id',
+            PRIMARY KEY (`id`),
+            KEY `idx_cientity_id` (`cientity_id`) USING BTREE,
+            KEY `idx_target_cientity_id` (`target_cientity_id`) USING BTREE,
+            KEY `idx_target_ic_id` (`target_ci_id`) USING BTREE,
+            KEY `idx_ci_id` (`ci_id`) USING BTREE
+        ) ENGINE = InnoDB
+          DEFAULT CHARSET = utf8mb4;
     </insert>
 
     <insert id="insertRelSchema" parameterType="java.lang.String">
@@ -74,11 +110,12 @@
             `rel_id`           BIGINT(20) NOT NULL,
             `from_cientity_id` BIGINT(20) NOT NULL,
             `to_cientity_id`   BIGINT(20) NOT NULL,
-            `direction`        ENUM('from','to') DEFAULT NULL,
-            KEY                `idx_rel_id` (`rel_id`),
-            KEY                `idx_from_cientity_id` (`from_cientity_id`),
-            KEY                `idx_to_cientity_id` (`to_cientity_id`)
-        ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4
+            `direction`        ENUM ('from','to') DEFAULT NULL,
+            KEY `idx_rel_id` (`rel_id`),
+            KEY `idx_from_cientity_id` (`from_cientity_id`),
+            KEY `idx_to_cientity_id` (`to_cientity_id`)
+        ) ENGINE = INNODB
+          DEFAULT CHARSET = utf8mb4
     </insert>
 
     <insert id="insertCiEntity">
@@ -138,7 +175,7 @@
         WHERE id = #{value}
     </delete>
 
-    <delete id="deleteCiSchema">
+    <delete id="deleteSchema">
         DROP TABLE IF EXISTS ${tableName}
     </delete>
 
@@ -148,10 +185,10 @@
 
     <delete id="deleteAttr">
         ALTER TABLE ${tableName}
-        DROP
-        COLUMN `${attrName}_hash`,
-        DROP
-        COLUMN `${attrName}`
+            DROP
+                COLUMN `${attrName}_hash`,
+            DROP
+                COLUMN `${attrName}`
     </delete>
 
 </mapper>

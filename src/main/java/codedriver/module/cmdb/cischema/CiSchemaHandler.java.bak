@@ -31,6 +31,7 @@ import javax.annotation.PostConstruct;
 import java.util.List;
 
 @Service
+@Deprecated
 public class CiSchemaHandler {
     private static final ThreadLocal<List<SchemaAuditVo>> SCHEMAAUDIT_THREADLOCAL = new ThreadLocal<>();
     private static CiSchemaMapper ciSchemaMapper;

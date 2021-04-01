@@ -1,170 +1,236 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.ci.CiMapper">
-	<cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
+    <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000"
+           size="100"></cache>
 
-	<select id="getAllCi" resultType="codedriver.module.cmdb.dto.ci.CiVo">
-		SELECT
-		a.`id`,
-		a.`name`,
-		a.`label`,
-		a.`description`,
-		a.`icon`,
-		a.`type_id` AS typeId,
-		a.`is_private` AS isPrivate,
-		a.`is_menu` AS isMenu
-		FROM
-		`cmdb_ci` a
-		ORDER BY `name`
-	</select>
+    <select id="getDownwardCiListByLR" resultType="codedriver.module.cmdb.dto.ci.CiVo" useCache="true">
+        SELECT a.`id`,
+               a.`name`,
+               a.`label`,
+               a.`description`,
+               a.`icon`,
+               a.`parent_ci_id` AS parentCiId,
+               a.`type_id`      AS typeId,
+               a.`is_private`   AS isPrivate,
+               a.`is_menu`      AS isMenu,
+               a.`is_abstract`  AS isAbstract,
+               a.`lft`          AS lft,
+               a.`rht`          AS rht
+        FROM `cmdb_ci` a
+        WHERE a.lft &gt;= #{lft}
+          AND a.rht &lt;= #{rht}
+        ORDER BY lft
+    </select>
 
-	<select id="getCiByToCiId" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.CiVo">
-		SELECT
-		a.`id`,
-		a.`name`,
-		a.`label`,
-		a.`description`,
-		a.`icon`,
-		a.`type_id` AS typeId,
-		a.`is_private` AS isPrivate,
-		a.`is_menu` AS isMenu
-		FROM
-		`cmdb_ci` a JOIN `cmdb_rel` b ON a.id = b.from_ci_id
-		WHERE b.to_ci_id = #{value} and a.id != #{value}
-	</select>
+    <select id="getUpwardCiListByLR" resultType="codedriver.module.cmdb.dto.ci.CiVo" useCache="true">
+        SELECT a.`id`,
+               a.`name`,
+               a.`label`,
+               a.`description`,
+               a.`icon`,
+               a.`parent_ci_id` AS parentCiId,
+               a.`type_id`      AS typeId,
+               a.`is_private`   AS isPrivate,
+               a.`is_menu`      AS isMenu,
+               a.`is_abstract`  AS isAbstract,
+               a.`lft`          AS lft,
+               a.`rht`          AS rht
+        FROM `cmdb_ci` a
+        WHERE a.lft &lt;= #{lft}
+          AND a.rht &gt;= #{rht}
+        ORDER BY lft
+    </select>
 
-	<select id="checkCiNameIsExists" parameterType="codedriver.module.cmdb.dto.ci.CiVo" resultType="int">
-		SELECT COUNT(1) FROM cmdb_ci WHERE name = #{name} AND id != #{id}
-	</select>
+    <select id="getAllCi" resultType="codedriver.module.cmdb.dto.ci.CiVo" useCache="true">
+        SELECT a.`id`,
+               a.`name`,
+               a.`label`,
+               a.`description`,
+               a.`icon`,
+               a.`parent_ci_id` AS parentCiId,
+               a.`type_id`      AS typeId,
+               a.`is_private`   AS isPrivate,
+               a.`is_menu`      AS isMenu,
+               a.`is_abstract`  AS isAbstract,
+               a.`lft`          AS lft,
+               a.`rht`          AS rht
+        FROM `cmdb_ci` a
+        ORDER BY `name`
+    </select>
 
-	<select id="checkCiLabelIsExists" parameterType="codedriver.module.cmdb.dto.ci.CiVo" resultType="int">
-		SELECT COUNT(1) FROM cmdb_ci WHERE label = #{label} AND id != #{id}
-	</select>
+    <select id="getCiByToCiId" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.CiVo"
+            useCache="false">
+        SELECT a.`id`,
+               a.`name`,
+               a.`label`,
+               a.`description`,
+               a.`icon`,
+               a.`type_id`      AS typeId,
+               a.`is_private`   AS isPrivate,
+               a.`is_menu`      AS isMenu,
+               a.`parent_ci_id` AS parentCiId,
+               a.`is_abstract`  AS isAbstract
+        FROM `cmdb_ci` a
+                 JOIN `cmdb_rel` b ON a.id = b.from_ci_id
+        WHERE b.to_ci_id = #{value}
+          and a.id != #{value}
+    </select>
 
-	<resultMap id="ciTypeMap" type="codedriver.module.cmdb.dto.ci.CiTypeVo">
-		<result column="ciTypeId" property="id" />
-		<result column="ciTypeName" property="name" />
-		<result column="ciTypeIsMenu" property="isMenu" />
-		<collection property="ciList" ofType="codedriver.module.cmdb.dto.ci.CiVo">
-			<id column="id" property="id" />
-			<result column="name" property="name" />
-			<result column="label" property="label" />
-			<result column="description" property="description" />
-			<result column="icon" property="icon" />
-			<result column="ciIsMenu" property="isMenu" />
-			<result column="typeId" property="typeId" />
-		</collection>
-	</resultMap>
+    <select id="checkCiNameIsExists" parameterType="codedriver.module.cmdb.dto.ci.CiVo" resultType="int"
+            useCache="false">
+        SELECT COUNT(1)
+        FROM cmdb_ci
+        WHERE name = #{name}
+          AND id != #{id}
+    </select>
 
-	<select id="searchCiTypeCi" parameterType="codedriver.module.cmdb.dto.ci.CiVo" resultMap="ciTypeMap" useCache="false">
-		SELECT
-		b.`id`,
-		b.`name`,
-		b.`label`,
-		b.`description`,
-		b.`icon`,
-		b.`is_private` AS isPrivate,
-		b.`is_menu` AS ciIsMenu,
-		b.`type_id` AS typeId,
-		a.`id` AS ciTypeId,
-		a.`name` AS ciTypeName,
-		a.`is_menu` AS ciTypeIsMenu
-		FROM
-		`cmdb_citype` a LEFT JOIN `cmdb_ci` b ON a.id = b.type_id
-		<where>
-			<if test="keyword != null and keyword !=''">
-				AND (b.name LIKE CONCAT('%', #{keyword}, '%') OR b.label LIKE CONCAT('%', #{keyword}, '%'))
-			</if>
-			<if test="typeId != null">
-				AND a.id = #{typeId}
-			</if>
-		</where>
-		ORDER BY a.sort
-	</select>
+    <select id="checkCiLabelIsExists" parameterType="codedriver.module.cmdb.dto.ci.CiVo" resultType="int"
+            useCache="false">
+        SELECT COUNT(1)
+        FROM cmdb_ci
+        WHERE label = #{label}
+          AND id != #{id}
+    </select>
 
-	<select id="getCiByIdList" resultType="codedriver.module.cmdb.dto.ci.CiVo" useCache="true">
-		SELECT
-		`id`,
-		`name`,
-		`label`,
-		`description`,
-		`icon`,
-		`type_id` AS typeId,
-		`is_private` AS isPrivate,
-		`is_menu` AS isMenu
-		FROM
-		`cmdb_ci`
-		WHERE id IN
-		<foreach collection="ciIdList" item="item" open="(" separator="," close=")">
-			#{item}
-		</foreach>
-	</select>
+    <resultMap id="ciTypeMap" type="codedriver.module.cmdb.dto.ci.CiTypeVo">
+        <result column="ciTypeId" property="id"/>
+        <result column="ciTypeName" property="name"/>
+        <result column="ciTypeIsMenu" property="isMenu"/>
+        <collection property="ciList" ofType="codedriver.module.cmdb.dto.ci.CiVo">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+            <result column="label" property="label"/>
+            <result column="description" property="description"/>
+            <result column="icon" property="icon"/>
+            <result column="ciIsMenu" property="isMenu"/>
+            <result column="typeId" property="typeId"/>
+            <result column="parentCiId" property="parentCiId"/>
+            <result column="isAbstract" property="isAbstract"/>
+        </collection>
+    </resultMap>
 
-	<select id="getCiById" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.CiVo" useCache="true">
-		SELECT
-		`id`,
-		`name`,
-		`label`,
-		`description`,
-		`icon`,
-		`type_id` AS typeId,
-		`is_private` AS isPrivate,
-		`is_menu` AS isMenu
-		FROM
-		`cmdb_ci`
-		WHERE id= #{value}
-	</select>
+    <select id="searchCiTypeCi" parameterType="codedriver.module.cmdb.dto.ci.CiVo" resultMap="ciTypeMap"
+            useCache="false">
+        SELECT
+        b.`id`,
+        b.`name`,
+        b.`label`,
+        b.`description`,
+        b.`icon`,
+        b.`is_private` AS isPrivate,
+        b.`is_menu` AS ciIsMenu,
+        b.`type_id` AS typeId,
+        b.`parent_ci_id` AS parentCiId,
+        b.`is_abstract` AS isAbstract,
+        a.`id` AS ciTypeId,
+        a.`name` AS ciTypeName,
+        a.`is_menu` AS ciTypeIsMenu
+        FROM
+        `cmdb_citype` a LEFT JOIN `cmdb_ci` b ON a.id = b.type_id
+        <where>
+            <if test="keyword != null and keyword !=''">
+                AND (b.name LIKE CONCAT('%', #{keyword}, '%') OR b.label LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="typeId != null">
+                AND a.id = #{typeId}
+            </if>
+        </where>
+        ORDER BY a.sort
+    </select>
 
-	<update id="updateCi" parameterType="codedriver.module.cmdb.dto.ci.CiVo">
-		UPDATE
-		`cmdb_ci`
-		SET
-		`name` = #{name},
-		`label` = #{label},
-		`description` = #{description},
-		`icon` = #{icon},
-		`type_id` = #{typeId},
-		`is_private` = #{isPrivate},
-		`is_menu` = #{isMenu}
-		WHERE `id` = #{id}
-	</update>
+    <select id="getCiByIdList" resultType="codedriver.module.cmdb.dto.ci.CiVo" useCache="true">
+        SELECT
+        `id`,
+        `name`,
+        `label`,
+        `description`,
+        `icon`,
+        `type_id` AS typeId,
+        `is_private` AS isPrivate,
+        `is_menu` AS isMenu,
+        `is_abstract` AS isAbstract
+        FROM
+        `cmdb_ci`
+        WHERE id IN
+        <foreach collection="ciIdList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
 
-	<insert id="insertCi" parameterType="codedriver.module.cmdb.dto.ci.CiVo">
-		INSERT INTO `cmdb_ci` (
-		`id`,
-		`name`,
-		`label`,
-		`description`,
-		`icon`,
-		`type_id`,
-		`is_private`,
-		`is_menu`
-		)
-		VALUES
-		(
-		#{id},
-		#{name},
-		#{label},
-		#{description},
-		#{icon},
-		#{typeId},
-		#{isPrivate},
-		#{isMenu}
-		)
-	</insert>
+    <select id="getCiById" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.CiVo"
+            useCache="true">
+        SELECT `id`,
+               `name`,
+               `label`,
+               `description`,
+               `icon`,
+               `type_id`      AS typeId,
+               `is_private`   AS isPrivate,
+               `is_menu`      AS isMenu,
+               `parent_ci_id` AS parentCiId,
+               `is_abstract`  AS isAbstract,
+               `lft`          AS lft,
+               `rht`          AS rht
+        FROM `cmdb_ci`
+        WHERE id = #{value}
+    </select>
 
-	<delete id="deleteCiById" parameterType="java.lang.Long">
-		DELETE a,b,c,d,e,f,g
-		FROM
-		cmdb_ci a
-		LEFT JOIN cmdb_attr b ON a.`id` = b.`ci_id`
-		LEFT JOIN cmdb_rel c ON a.`id` = c.`from_ci_id`
-		LEFT JOIN cmdb_rel d ON a.`id` = d.`to_ci_id`
-		LEFT JOIN cmdb_ci_auth e ON a.id = e.`ci_id`
-		LEFT JOIN cmdb_relgroup f ON a.id = f.`ci_id`
-		LEFT JOIN cmdb_view g ON a.id = g.`ci_id`
-		WHERE a.id = #{value}
-	</delete>
+    <update id="updateCi" parameterType="codedriver.module.cmdb.dto.ci.CiVo">
+        UPDATE
+            `cmdb_ci`
+        SET `name`         = #{name},
+            `label`        = #{label},
+            `description`  = #{description},
+            `icon`         = #{icon},
+            `type_id`      = #{typeId},
+            `is_private`   = #{isPrivate},
+            `is_menu`      = #{isMenu},
+            `parent_ci_id` = #{parentCiId},
+            `is_abstract`  = #{isAbstract}
+        WHERE `id` = #{id}
+    </update>
+
+    <insert id="insertCi" parameterType="codedriver.module.cmdb.dto.ci.CiVo">
+        INSERT INTO `cmdb_ci` (`id`,
+                               `name`,
+                               `label`,
+                               `description`,
+                               `icon`,
+                               `type_id`,
+                               `is_private`,
+                               `is_menu`,
+                               `is_abstract`,
+                               `parent_ci_id`,
+                               `lft`,
+                               `rht`)
+        VALUES (#{id},
+                #{name},
+                #{label},
+                #{description},
+                #{icon},
+                #{typeId},
+                #{isPrivate},
+                #{isMenu},
+                #{isAbstract},
+                #{parentCiId},
+                #{lft},
+                #{rht})
+    </insert>
+
+    <delete id="deleteCiById" parameterType="java.lang.Long">
+        DELETE a,b,c,d,e,f,g
+        FROM
+            cmdb_ci a
+            LEFT JOIN cmdb_attr b
+        ON a.`id` = b.`ci_id`
+            LEFT JOIN cmdb_rel c ON a.`id` = c.`from_ci_id`
+            LEFT JOIN cmdb_rel d ON a.`id` = d.`to_ci_id`
+            LEFT JOIN cmdb_ci_auth e ON a.id = e.`ci_id`
+            LEFT JOIN cmdb_relgroup f ON a.id = f.`ci_id`
+            LEFT JOIN cmdb_view g ON a.id = g.`ci_id`
+        WHERE a.id = #{value}
+    </delete>
 
 
 </mapper>

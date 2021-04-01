@@ -1,6 +1,283 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper">
+    <!--为了方便使用缓存，ciEntity,attrEntity,relEntity等操作全部汇集再这里-->
+    <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000"
+           size="100"></cache>
+
+    <select id="getAttrEntityByAttrIdAndFromCiEntityId" resultType="codedriver.module.cmdb.dto.cientity.AttrEntityVo"
+            useCache="false">
+        SELECT id,
+               from_cientity_id AS fromCiEntityId,
+               to_cientity_id   AS toCiEntityId,
+               attr_id          AS attrId,
+               from_ci_id       AS fromCiId,
+               to_ci_id         AS toCiId
+        FROM `cmdb_attrentity`
+        WHERE attr_id = #{attrId}
+          AND from_cientity_id = #{fromCiEntityId}
+    </select>
+
+    <select id="getCiEntityCountByAttrIdAndValue" resultType="int" useCache="false">
+        SELECT count(id)
+        FROM ${attr.ciTableName}
+        WHERE id != #{ciEntityId}
+          AND ${attrId} = #{value}
+    </select>
+
+    <select id="getAttrEntityCountByAttrIdAndValue" resultType="int" useCache="false">
+        SELECT count(id) FROM cmdb_attrentity WHERE attr_id = #{attrId} AND from_cientity_id != #{ciEntityId} AND
+        to_cientity_id IN
+        <foreach collection="toCiEntityIdList" item="value" open="(" close=")" separator=",">
+            #{value}
+        </foreach>
+    </select>
+
+    <select id="getCiEntityBaseInfoByIdList" resultType="codedriver.module.cmdb.dto.cientity.CiEntityVo"
+            useCache="false">
+        SELECT id,
+        ci_id AS ciId,
+        `name`,
+        `status`,
+        fcu,
+        fcd,
+        lcu,
+        lcd
+        FROM cmdb_cientity
+        WHERE id IN
+        <foreach collection="ciEntityIdList" item="value" open="(" close=")" separator=",">
+            #{value}
+        </foreach>
+    </select>
+
+    <select id="getCiEntityBaseInfoById" parameterType="java.lang.Long"
+            resultType="codedriver.module.cmdb.dto.cientity.CiEntityVo" useCache="true">
+        SELECT id,
+               ci_id AS ciId,
+               `name`,
+               `status`,
+               fcu,
+               fcd,
+               lcu,
+               lcd
+        FROM cmdb_cientity
+        WHERE id = #{value}
+    </select>
+
+    <sql id="ciEntityColumnSql">
+        <foreach collection="attrList" item="attr">
+            <choose>
+                <when test="attr.needTargetCi == true ">
+                    `cmdb_attrentity_${attr.id}`.`to_cientity_id` AS `attr_${attr.id}`,
+                </when>
+                <otherwise>
+                    ${attr.ciTableName}.`${attr.id}` AS `attr_${attr.id}`,
+                </otherwise>
+            </choose>
+        </foreach>
+        <foreach collection="relList" item="rel">
+            <choose>
+                <when test="rel.direction == 'from'">
+                    `cmdb_relrentity_${rel.id}`.to_cientity_id AS `rel_${rel.id}`,
+                    (SELECT `name` FROM cmdb_cientity WHERE id = `cmdb_relrentity_${rel.id}`.to_cientity_id) AS
+                    `rel_from_${rel.id}#name`,
+                </when>
+                <otherwise>
+                    `cmdb_relrentity_${rel.id}`.from_cientity_id AS `rel_${rel.id}`,
+                    (SELECT `name` FROM cmdb_cientity WHERE id = `cmdb_relrentity_${rel.id}`.from_cientity_id) AS
+                    `rel_to_${rel.id}#name`,
+                </otherwise>
+            </choose>
+        </foreach>
+        `ci_base`.`id` AS `id`,
+        `ci_base`.`name` AS `name`,
+        `ci_base`.`status` AS `status`,
+        `ci_base`.`fcd` AS `fcd`,
+        `ci_base`.`fcu` AS `fcu`,
+        `ci_base`.`lcd` AS `lcd`,
+        `ci_base`.`lcu` AS `lcu`
+    </sql>
+
+    <sql id="ciEntityJoinSql">
+        <foreach collection="ciList" item="ci">
+            JOIN ${ci.ciTableName} ON `ci_base`.id = ${ci.ciTableName}.cientity_id
+        </foreach>
+        <foreach collection="attrList" item="attr">
+            <choose>
+                <when test="attr.needTargetCi == true">
+                    LEFT JOIN `cmdb_attrentity` `cmdb_attrentity_${attr.id}` ON `ci_base`.id =
+                    `cmdb_attrentity_${attr.id}`.from_cientity_id AND `cmdb_attrentity_${attr.id}`.attr_id = #{attr.id}
+                </when>
+            </choose>
+        </foreach>
+        <foreach collection="relList" item="rel">
+            <choose>
+                <when test="rel.direction=='from'">
+                    LEFT JOIN `cmdb_relentity` `cmdb_relrentity_${rel.id}` ON `ci_base`.id =
+                    `cmdb_relrentity_${rel.id}`.from_cientity_id
+                    AND `cmdb_relrentity_${rel.id}`.rel_id = #{rel.id}
+                </when>
+                <otherwise>
+                    LEFT JOIN `cmdb_relentity` `cmdb_relrentity_${rel.id}` ON `ci_base`.id =
+                    `cmdb_relrentity_${rel.id}`.to_cientity_id
+                    AND `cmdb_relrentity_${rel.id}`.rel_id = #{rel.id}
+                </otherwise>
+            </choose>
+        </foreach>
+    </sql>
+
+    <select id="getCiEntityById" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo"
+            resultType="java.util.HashMap" useCache="false">
+        SELECT
+        <include refid="ciEntityColumnSql"></include>
+        FROM cmdb_cientity `ci_base`
+        <include refid="ciEntityJoinSql"></include>
+        WHERE ci_base.id = #{id}
+    </select>
+
+    <select id="getCiEntityCountByCiId" parameterType="java.lang.Long" resultType="int" useCache="false">
+        SELECT COUNT(id)
+        FROM cmdb_cientity
+        WHERE ci_id = #{value}
+    </select>
+
+    <select id="searchCiEntityId" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo"
+            resultType="java.lang.Long" useCache="true">
+        SELECT
+        DISTINCT ci_base.id
+        FROM cmdb_cientity `ci_base`
+        <foreach collection="ciList" item="ci">
+            JOIN ${ci.ciTableName} ON `ci_base`.id = ${ci.ciTableName}.cientity_id
+        </foreach>
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="searchCiEntity" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo"
+            resultType="java.util.HashMap" useCache="true">
+        SELECT
+        <include refid="ciEntityColumnSql"></include>
+        FROM cmdb_cientity `ci_base`
+        <include refid="ciEntityJoinSql"></include>
+        WHERE ci_base.id IN
+        <foreach collection="idList" item="id" open="(" close=")" separator=",">#{id}</foreach>
+    </select>
+
+
+    <update id="updateCiEntityBaseInfo" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
+        UPDATE `cmdb_cientity`
+        SET name = #{name},
+            lcu  = #{lcu},
+            lcd  = NOW(3)
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateCiEntity" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
+        UPDATE ${ciTableName}
+        SET
+        <foreach collection="attrEntityList" item="attr">
+            <if test="attr.fromCiId == ciId">
+                `${attr.attrId}` = #{attr.value},
+                `${attr.attrId}_hash` = #{attr.value,typeHandler=Md5Handler},
+            </if>
+        </foreach>
+        cientity_id = #{id}
+        WHERE
+        cientity_id = #{id}
+    </update>
+
+    <insert id="insertCiEntity" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
+        INSERT INTO ${ciTableName} (
+        <foreach collection="attrEntityList" item="attr">
+            <if test="attr.fromCiId == ciId">
+                `${attr.attrId}`,
+                `${attr.attrId}_hash`,
+            </if>
+        </foreach>
+        cientity_id)
+        VALUES (
+        <foreach collection="attrEntityList" item="attr">
+            <if test="attr.fromCiId == ciId">
+                #{attr.value},
+                #{attr.value,typeHandler=Md5Handler},
+            </if>
+        </foreach>
+        #{id})
+    </insert>
+
+    <insert id="insertAttrEntity" parameterType="codedriver.module.cmdb.dto.cientity.AttrEntityVo">
+        INSERT IGNORE INTO `cmdb_attrentity` (
+        `from_cientity_id`,
+        `from_ci_id`,
+        `attr_id`,
+        `to_cientity_id`,
+        `to_ci_id`,
+        `transaction_id`
+        )
+        VALUES
+        <foreach collection="valueList" item="item" separator=",">
+            (
+            #{fromCiEntityId},
+            #{fromCiId},
+            #{attrId},
+            #{toCiEntityId},
+            #{toCiId},
+            #{transactionId}
+            )
+        </foreach>
+    </insert>
+
+    <insert id="insertCiEntityBaseInfo" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
+        INSERT INTO `cmdb_cientity` (`id`,
+                                     `ci_id`,
+                                     `name`,
+                                     `fcu`,
+                                     `fcd`,
+                                     `status`,
+                                     `is_locked`)
+        VALUES (#{id},
+                #{ciId},
+                #{name},
+                #{fcu},
+                NOW(3),
+                #{status},
+                #{isLocked})
+    </insert>
+
+    <delete id="deleteAttrEntityByFromCiEntityIdAndAttrId">
+        DELETE
+        FROM cmdb_attrentity
+        WHERE from_cientity_id = #{fromCiEntityId}
+          AND attr_id = #{attrId}
+    </delete>
+
+    <delete id="deleteCiEntity" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
+        DELETE
+        FROM ${ciTableName}
+        WHERE cientity_id = #{id}
+    </delete>
+
+    <delete id="deleteCiEntityBaseInfo" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
+        DELETE
+            a,b,c,d,e
+        FROM cmdb_cientity a
+                 LEFT JOIN cmdb_attrentity b
+                           ON a.id =
+                              b.`from_cientity_id`
+                 LEFT JOIN cmdb_relentity c
+                           ON a.id =
+                              c.`from_cientity_id`
+                 LEFT JOIN cmdb_relentity d
+                           ON a.id =
+                              c.`to_cientity_id`
+                 LEFT JOIN cmdb_cientity_group e
+                           ON a.id =
+                              e.ci_entity_id
+        WHERE a.id =
+              #{id}
+    </delete>
+
+    <!-- old-->
+
     <select id="getCiEntityByAttrId" parameterType="java.lang.Long"
             resultType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
         SELECT DISTINCT a.`id`,
@@ -37,7 +314,7 @@
         </foreach>
     </select>
 
-    <select id="getCiEntityById" parameterType="java.lang.Long"
+    <!--<select id="getCiEntityById" parameterType="java.lang.Long"
             resultType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
         SELECT a.`id`,
                a.`ci_id`     AS ciId,
@@ -57,7 +334,7 @@
                  JOIN `cmdb_ci` b ON a.ci_id = b.id
                  JOIN `cmdb_citype` c ON b.type_id = c.id
         WHERE a.id = #{value}
-    </select>
+    </select>-->
 
     <sql id="searchCiEntityIdCondition">
         FROM (SELECT id FROM cmdb_cientity WHERE ci_id = #{ciId}
@@ -336,7 +613,7 @@
         ORDER BY a.id DESC
     </select>
 
-    <select id="searchCiEntityId" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo"
+    <!--<select id="searchCiEntityId" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo"
             resultType="java.lang.Long">
         SELECT distinct(cientity.id)
         <include refid="searchCiEntityIdCondition"></include>
@@ -344,7 +621,7 @@
         <if test="needPage == true">
             LIMIT #{startNum}, #{pageSize}
         </if>
-    </select>
+    </select>-->
 
     <select id="searchCiEntityIdCount"
             parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo"
@@ -364,7 +641,8 @@
         SELECT `id`
         from `cmdb_cientity`
         where `ci_id` = #{ciId}
-          and `name` = #{name} limit 1
+          and `name` = #{name}
+        limit 1
     </select>
 
     <update id="updateCiEntityLockById"
@@ -375,65 +653,24 @@
         WHERE `id` = #{id}
     </update>
 
-    <insert id="insertCiEntity"
-            parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
-        INSERT INTO `cmdb_cientity` (`id`,
-                                     `ci_id`,
-                                     `name`,
-                                     `fcu`,
-                                     `fcd`,
-                                     `status`,
-                                     `is_locked`)
-        VALUES (#{id},
-                #{ciId},
-                #{name},
-                #{fcu},
-                NOW(3),
-                #{status},
-                #{isLocked})
-    </insert>
-
-    <delete id="deleteCiEntityById" parameterType="java.lang.Long">
-        DELETE
-        a,b,c,d,e
-		FROM
-		cmdb_cientity a
-		LEFT JOIN cmdb_attrentity b
-		ON a.id =
-		b.`ci_entity_id`
-		LEFT JOIN cmdb_relentity c
-		ON a.id =
-		c.`from_cientity_id`
-		LEFT JOIN cmdb_relentity d
-		ON a.id =
-		c.`to_cientity_id`
-		LEFT JOIN cmdb_cientity_group e
-		ON a.id =
-		e.ci_entity_id
-		WHERE
-		a.id =
-        #{value}
-    </delete>
 
     <delete id="deleteCiEntityByCiId" parameterType="java.lang.Long">
         DELETE
-        a,b,c,d,e
-		FROM
-		cmdb_cientity a
-		LEFT JOIN cmdb_attrentity b
-		ON a.id =
-		b.`ci_entity_id`
-		LEFT JOIN cmdb_relentity c
-		ON a.id =
-		c.`from_cientity_id`
-		LEFT JOIN cmdb_relentity d
-		ON a.id =
-		c.`to_cientity_id`
-		LEFT JOIN cmdb_cientity_group e
-		ON a.id =
-		e.ci_entity_id
-		WHERE
-		a.ci_id =
-        #{value}
+            a,b,c,d,e
+        FROM cmdb_cientity a
+                 LEFT JOIN cmdb_attrentity b
+                           ON a.id =
+                              b.`ci_entity_id`
+                 LEFT JOIN cmdb_relentity c
+                           ON a.id =
+                              c.`from_cientity_id`
+                 LEFT JOIN cmdb_relentity d
+                           ON a.id =
+                              c.`to_cientity_id`
+                 LEFT JOIN cmdb_cientity_group e
+                           ON a.id =
+                              e.ci_entity_id
+        WHERE a.ci_id =
+              #{value}
     </delete>
 </mapper>

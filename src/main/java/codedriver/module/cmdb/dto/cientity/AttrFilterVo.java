@@ -1,11 +1,11 @@
 package codedriver.module.cmdb.dto.cientity;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.DigestUtils;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class AttrFilterVo {
     private Long attrId;
@@ -13,7 +13,6 @@ public class AttrFilterVo {
     private String expressionName; // 表达式名称
     private String expression;// 用户sql查询的表达式
     private List<String> valueList;
-    @SuppressWarnings("unused")
     private List<String> valueHashList;
 
     public List<String> getValueHashList() {

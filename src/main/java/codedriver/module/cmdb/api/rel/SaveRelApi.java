@@ -46,14 +46,16 @@ public class SaveRelApi extends PrivateApiComponentBase {
                     maxLength = 200),
             @Param(name = "fromTypeId", type = ApiParamType.LONG, desc = "来源类型id"),
             @Param(name = "fromGroupId", type = ApiParamType.LONG, desc = "来源分组id"),
-            @Param(name = "fromRule", type = ApiParamType.ENUM, rule = "1:N,1:1,0:1,0:N", isRequired = true, desc = "来源规则"),
+            @Param(name = "fromRule", type = ApiParamType.ENUM, rule = "O,N", isRequired = true, desc = "来源规则"),
             @Param(name = "fromIsUnique", type = ApiParamType.INTEGER, isRequired = true, desc = "上游端是否唯一"),
+            @Param(name = "fromIsRequired", type = ApiParamType.INTEGER, isRequired = true, desc = "上游端是否必填"),
             @Param(name = "toLabel", type = ApiParamType.STRING, isRequired = true, xss = true, desc = "目标标签",
                     maxLength = 200),
             @Param(name = "toTypeId", type = ApiParamType.LONG, desc = "目标类型id"),
             @Param(name = "toGroupId", type = ApiParamType.LONG, desc = "目标分组id"),
-            @Param(name = "toRule", type = ApiParamType.ENUM, rule = "1:N,1:1,0:1,0:N", isRequired = true, desc = "目标规则"),
-            @Param(name = "toIsUnique", type = ApiParamType.INTEGER, isRequired = true, desc = "下游端是否唯一")})
+            @Param(name = "toRule", type = ApiParamType.ENUM, rule = "O,N", isRequired = true, desc = "目标规则"),
+            @Param(name = "toIsUnique", type = ApiParamType.INTEGER, isRequired = true, desc = "下游端是否唯一"),
+            @Param(name = "toIsRequired", type = ApiParamType.INTEGER, isRequired = true, desc = "下游端是否必填")})
     @Description(desc = "保存模型关系接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {

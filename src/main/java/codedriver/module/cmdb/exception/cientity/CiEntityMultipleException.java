@@ -7,11 +7,9 @@ package codedriver.module.cmdb.exception.cientity;
 
 import codedriver.framework.exception.core.ApiRuntimeException;
 
-import java.util.List;
-
-public class AttrEntityDuplicateException extends ApiRuntimeException {
-    public AttrEntityDuplicateException(String label, List<String> valueList) {
-        super("属性 " + label + " 值等于 " + String.join(",", valueList) + " 的配置项已存在");
+public class CiEntityMultipleException extends ApiRuntimeException {
+    public CiEntityMultipleException(Long ciEntityId) {
+        super("配置项：" + ciEntityId + " 存在多条数据");
     }
 
 }

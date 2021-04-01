@@ -14,9 +14,13 @@ public interface CiSchemaMapper {
 
     void updateSchemaAuditIsFailed(Long auditId);
 
-    void insertAttr(@Param("tableName") String tableName, @Param("attrVo") AttrVo attrVo);
+    //void insertAttrSchema(@Param("tableName") String tableName, @Param("columnList") List<AttrVo.Column> columnList);
+
+    void insertAttrToCiSchema(@Param("tableName") String tableName, @Param("attrVo") AttrVo attrVo);
 
     void insertCiSchema(@Param("tableName") String tableName);
+
+    void insertCiAttrSchema(@Param("tableName") String tableName);
 
     void insertRelSchema(@Param("tableName") String tableName);
 
@@ -28,7 +32,7 @@ public interface CiSchemaMapper {
 
     void deleteAttr(@Param("tableName") String tableName, @Param("attrName") String attrName);
 
-    void deleteCiSchema(@Param("tableName") String tableName);
+    void deleteSchema(@Param("tableName") String tableName);
 
     void deleteRelSchema(@Param("tableName") String tableName);
 

@@ -1,351 +1,352 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.ci.RelMapper">
-	<cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
-	<select id="getAllRelList" resultType="codedriver.module.cmdb.dto.ci.RelVo" useCache="true">
-		SELECT
-		`id`,
-		`type_id` AS typeId,
-		(SELECT name FROM cmdb_reltype cr WHERE cr.id = `type_id`) AS typeText,
-		`input_type` AS inputType,
-		`from_ci_id` AS fromCiId,
-		`from_name` AS fromName,
-		`from_label` AS fromLabel,
-		`from_rule` AS fromRule,
-		`from_group_id` AS fromGroupId,
-		`from_is_unique` AS fromIsUnique,
-		`to_ci_id` AS toCiId,
-		`to_name` AS toName,
-		`to_label` AS toLabel,
-		`to_rule` AS toRule,
-		`to_group_id` AS toGroupId,
-		`to_is_unique` AS toIsUnique
-		FROM
-		`cmdb_rel`
-	</select>
+    <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
+    <select id="getAllRelList" resultType="codedriver.module.cmdb.dto.ci.RelVo" useCache="true">
+        SELECT `id`,
+               `type_id`                                                  AS typeId,
+               (SELECT name FROM cmdb_reltype cr WHERE cr.id = `type_id`) AS typeText,
+               `input_type`                                               AS inputType,
+               `from_ci_id`                                               AS fromCiId,
+               `from_name`                                                AS fromName,
+               `from_label`                                               AS fromLabel,
+               `from_rule`                                                AS fromRule,
+               `from_group_id`                                            AS fromGroupId,
+               `from_is_unique`                                           AS fromIsUnique,
+               `from_is_required`                                         AS fromIsRequired,
+               `to_ci_id`                                                 AS toCiId,
+               `to_name`                                                  AS toName,
+               `to_label`                                                 AS toLabel,
+               `to_rule`                                                  AS toRule,
+               `to_group_id`                                              AS toGroupId,
+               `to_is_unique`                                             AS toIsUnique,
+               `to_is_required`                                           AS toIsRequired
+        FROM `cmdb_rel`
+    </select>
 
-	<select id="checkRelGroupNameIsExists" parameterType="codedriver.module.cmdb.dto.ci.RelGroupVo" resultType="int">
-		SELECT
-		COUNT(1)
-		FROM
-		`cmdb_relgroup`
-		WHERE ci_id = #{ciId} AND name = #{name}
-	</select>
+    <select id="checkRelGroupNameIsExists" parameterType="codedriver.module.cmdb.dto.ci.RelGroupVo" resultType="int">
+        SELECT COUNT(1)
+        FROM `cmdb_relgroup`
+        WHERE ci_id = #{ciId}
+          AND name = #{name}
+    </select>
 
-	<select id="getRelGroupByCiId" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.RelGroupVo" useCache="false">
-		SELECT
-		`id`,
-		`ci_id` AS ciId,
-		`name`
-		FROM
-		`cmdb_relgroup`
-		WHERE ci_id = #{value}
-		ORDER BY id
-	</select>
+    <select id="getRelGroupByCiId" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.RelGroupVo"
+            useCache="false">
+        SELECT `id`,
+               `ci_id` AS ciId,
+               `name`
+        FROM `cmdb_relgroup`
+        WHERE ci_id = #{value}
+        ORDER BY id
+    </select>
 
-	<select id="getRelGroupById" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.RelGroupVo" useCache="false">
-		SELECT
-		`id`,
-		`ci_id` AS ciId,
-		`name`
-		FROM
-		`cmdb_relgroup`
-		WHERE id = #{value}
-	</select>
+    <select id="getRelGroupById" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.RelGroupVo"
+            useCache="false">
+        SELECT `id`,
+               `ci_id` AS ciId,
+               `name`
+        FROM `cmdb_relgroup`
+        WHERE id = #{value}
+    </select>
 
-	<select id="checkRelByFromToName" parameterType="codedriver.module.cmdb.dto.ci.RelVo" resultType="int">
-		SELECT COUNT(1)
-		FROM cmdb_rel
-		WHERE from_name = #{fromName}
-		  AND to_name = #{toName}
-		  AND id != #{id}
-	</select>
+    <select id="checkRelByFromToName" parameterType="codedriver.module.cmdb.dto.ci.RelVo" resultType="int">
+        SELECT COUNT(1)
+        FROM cmdb_rel
+        WHERE from_name = #{fromName}
+          AND to_name = #{toName}
+          AND id != #{id}
+    </select>
 
-	<select id="checkRelByFromToLabel" parameterType="codedriver.module.cmdb.dto.ci.RelVo" resultType="int">
-		SELECT COUNT(1)
-		FROM cmdb_rel
-		WHERE from_label = #{fromLabel}
-		  AND to_label = #{toLabel}
-		  AND id != #{id}
-	</select>
+    <select id="checkRelByFromToLabel" parameterType="codedriver.module.cmdb.dto.ci.RelVo" resultType="int">
+        SELECT COUNT(1)
+        FROM cmdb_rel
+        WHERE from_label = #{fromLabel}
+          AND to_label = #{toLabel}
+          AND id != #{id}
+    </select>
 
-	<select id="getRelBaseInfoById" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.RelVo"
-			useCache="true">
-		select id
-		from cmdb_rel
-		WHERE id = #{value}
-	</select>
+    <select id="getRelBaseInfoById" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.RelVo"
+            useCache="true">
+        select id
+        from cmdb_rel
+        WHERE id = #{value}
+    </select>
 
-	<select id="getRelById" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.RelVo"
-			useCache="false">
-		SELECT a.`id`,
-			   a.`type_id`                                                  AS typeId,
-			   (SELECT name FROM cmdb_reltype cr WHERE cr.id = a.`type_id`) AS typeText,
-			   a.`input_type`                                               AS inputType,
-			   a.`from_ci_id`                                               AS fromCiId,
-			   f.icon                                                       AS fromCiIcon,
-			   f.name                                                       AS fromCiName,
-		f.label AS fromCiLabel,
-		a.`from_name` AS fromName,
-		a.`from_label` AS fromLabel,
-		a.`from_rule` AS fromRule,
-		a.`from_group_id` AS fromGroupId,
-		a.`from_is_unique` AS fromIsUnique,
-		(SELECT name FROM cmdb_relgroup g WHERE g.id = a.`from_group_id`) AS fromGroupName,
-		a.`to_ci_id` AS toCiId,
-		t.icon AS toCiIcon,
-		t.name AS toCiName,
-		t.label AS toCiLabel,
-		a.`to_name` AS toName,
-		a.`to_label` AS toLabel,
-		a.`to_rule` AS toRule,
-		a.`to_group_id` AS toGroupId,
-		a.`to_is_unique` AS toIsUnique,
-		(SELECT name FROM cmdb_relgroup g WHERE g.id = a.`to_group_id`) AS toGroupName
-		FROM
-		`cmdb_rel` a
-		JOIN cmdb_ci f ON a.from_ci_id = f.id
-		JOIN cmdb_ci t ON a.to_ci_id = t.id
-		WHERE
-		a.id = #{value}
-	</select>
+    <select id="getRelById" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.RelVo"
+            useCache="false">
+        SELECT a.`id`,
+               a.`type_id`                                                       AS typeId,
+               (SELECT name FROM cmdb_reltype cr WHERE cr.id = a.`type_id`)      AS typeText,
+               a.`input_type`                                                    AS inputType,
+               a.`from_ci_id`                                                    AS fromCiId,
+               f.icon                                                            AS fromCiIcon,
+               f.name                                                            AS fromCiName,
+               f.label                                                           AS fromCiLabel,
+               a.`from_name`                                                     AS fromName,
+               a.`from_label`                                                    AS fromLabel,
+               a.`from_rule`                                                     AS fromRule,
+               a.`from_group_id`                                                 AS fromGroupId,
+               a.`from_is_unique`                                                AS fromIsUnique,
+               a.`from_is_required`                                              AS fromIsRequired,
+               (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`from_group_id`) AS fromGroupName,
+               a.`to_ci_id`                                                      AS toCiId,
+               t.icon                                                            AS toCiIcon,
+               t.name                                                            AS toCiName,
+               t.label                                                           AS toCiLabel,
+               a.`to_name`                                                       AS toName,
+               a.`to_label`                                                      AS toLabel,
+               a.`to_rule`                                                       AS toRule,
+               a.`to_group_id`                                                   AS toGroupId,
+               a.`to_is_unique`                                                  AS toIsUnique,
+               a.`to_is_required`                                                AS toIsRequired,
+               (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`to_group_id`)   AS toGroupName
+        FROM `cmdb_rel` a
+                 JOIN cmdb_ci f ON a.from_ci_id = f.id
+                 JOIN cmdb_ci t ON a.to_ci_id = t.id
+        WHERE a.id = #{value}
+    </select>
 
-	<select id="getRelByCiIdList" resultType="codedriver.module.cmdb.dto.ci.RelVo" useCache="true">
-		SELECT
-		a.`id`,
-		a.`type_id` AS typeId,
-		(SELECT name FROM cmdb_reltype cr WHERE cr.id = a.`type_id`) AS typeText,
-		a.`input_type` AS inputType,
-		a.`from_ci_id` AS fromCiId,
-		f.icon AS fromCiIcon,
-		f.name AS fromCiName,
-		f.label AS fromCiLabel,
-		a.`from_name` AS fromName,
-		a.`from_label` AS fromLabel,
-		a.`from_rule` AS fromRule,
-		a.`from_group_id` AS fromGroupId,
-		a.`from_is_unique` AS fromIsUnique,
-		(SELECT name FROM cmdb_relgroup g WHERE g.id = a.`from_group_id`) AS fromGroupName,
-		a.`to_ci_id` AS toCiId,
-		t.icon AS toCiIcon,
-		t.name AS toCiName,
-		t.label AS toCiLabel,
-		a.`to_name` AS toName,
-		a.`to_label` AS toLabel,
-		a.`to_rule` AS toRule,
-		a.`to_group_id` AS toGroupId,
-		a.`to_is_unique` AS toIsUnique,
-		(SELECT name FROM cmdb_relgroup g WHERE g.id = a.`to_group_id`) AS toGroupName,
-		'from' AS direction,
-		cview.sort
-		FROM
-		`cmdb_rel` a
-		JOIN cmdb_ci f ON a.from_ci_id = f.id
-		JOIN cmdb_ci t ON a.to_ci_id = t.id
-		LEFT JOIN
-		cmdb_view cview ON cview.item_id = a.id AND cview.`type` = 'relfrom'
-		WHERE
-		a.from_ci_id IN
-		<foreach collection="ciIdList" item="item" open="(" separator="," close=")">
-			#{item}
-		</foreach>
-		UNION
-		SELECT
-		a.`id`,
-		a.`type_id` AS
-		typeId,
-		(SELECT name FROM cmdb_reltype cr WHERE cr.id = a.`type_id`) AS typeText,
-		a.`input_type` AS inputType,
-		a.`from_ci_id` AS fromCiId,
-		f.icon AS fromCiIcon,
-		f.name AS fromCiName,
-		f.label AS fromCiLabel,
-		a.`from_name` AS fromName,
-		a.`from_label` AS fromLabel,
-		a.`from_rule` AS fromRule,
-		a.`from_group_id` AS fromGroupId,
-		a.`from_is_unique` AS fromIsUnique,
-		(SELECT name FROM cmdb_relgroup g WHERE g.id = a.`from_group_id`) AS fromGroupName,
-		a.`to_ci_id` AS toCiId,
-		t.icon AS toCiIcon,
-		t.name AS toCiName,
-		t.label AS toCiLabel,
-		a.`to_name` AS toName,
-		a.`to_label` AS toLabel,
-		a.`to_rule` AS toRule,
-		a.`to_group_id` AS toGroupId,
-		a.`to_is_unique` AS toIsUnique,
-		(SELECT name FROM cmdb_relgroup g WHERE g.id = a.`to_group_id`) AS toGroupName,
-		'to' AS direction,
-		cview.sort
-		FROM
-		`cmdb_rel` a
-		JOIN cmdb_ci f ON a.from_ci_id = f.id
-		JOIN cmdb_ci t ON a.to_ci_id = t.id
-		LEFT JOIN cmdb_view cview
-		ON cview.item_id = a.id AND cview.`type` = 'relto'
-		WHERE
-		a.to_ci_id IN
-		<foreach collection="ciIdList" item="item" open="(" separator="," close=")">
-			#{item}
-		</foreach>
-		ORDER BY sort ASC, id ASC
-	</select>
+    <select id="getRelByCiIdList" resultType="codedriver.module.cmdb.dto.ci.RelVo" useCache="true">
+        SELECT
+        a.`id`,
+        a.`type_id` AS typeId,
+        (SELECT name FROM cmdb_reltype cr WHERE cr.id = a.`type_id`) AS typeText,
+        a.`input_type` AS inputType,
+        a.`from_ci_id` AS fromCiId,
+        f.icon AS fromCiIcon,
+        f.name AS fromCiName,
+        f.label AS fromCiLabel,
+        a.`from_name` AS fromName,
+        a.`from_label` AS fromLabel,
+        a.`from_rule` AS fromRule,
+        a.`from_group_id` AS fromGroupId,
+        a.`from_is_unique` AS fromIsUnique,
+        a.`from_is_required` AS fromIsRequired,
+        (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`from_group_id`) AS fromGroupName,
+        a.`to_ci_id` AS toCiId,
+        t.icon AS toCiIcon,
+        t.name AS toCiName,
+        t.label AS toCiLabel,
+        a.`to_name` AS toName,
+        a.`to_label` AS toLabel,
+        a.`to_rule` AS toRule,
+        a.`to_group_id` AS toGroupId,
+        a.`to_is_unique` AS toIsUnique,
+        a.`to_is_required` AS toIsRequired,
+        (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`to_group_id`) AS toGroupName,
+        'from' AS direction,
+        cview.sort
+        FROM
+        `cmdb_rel` a
+        JOIN cmdb_ci f ON a.from_ci_id = f.id
+        JOIN cmdb_ci t ON a.to_ci_id = t.id
+        LEFT JOIN
+        cmdb_view cview ON cview.item_id = a.id AND cview.`type` = 'relfrom'
+        WHERE
+        a.from_ci_id IN
+        <foreach collection="ciIdList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        UNION
+        SELECT
+        a.`id`,
+        a.`type_id` AS
+        typeId,
+        (SELECT name FROM cmdb_reltype cr WHERE cr.id = a.`type_id`) AS typeText,
+        a.`input_type` AS inputType,
+        a.`from_ci_id` AS fromCiId,
+        f.icon AS fromCiIcon,
+        f.name AS fromCiName,
+        f.label AS fromCiLabel,
+        a.`from_name` AS fromName,
+        a.`from_label` AS fromLabel,
+        a.`from_rule` AS fromRule,
+        a.`from_group_id` AS fromGroupId,
+        a.`from_is_unique` AS fromIsUnique,
+        a.`from_is_required` AS fromIsRequired,
+        (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`from_group_id`) AS fromGroupName,
+        a.`to_ci_id` AS toCiId,
+        t.icon AS toCiIcon,
+        t.name AS toCiName,
+        t.label AS toCiLabel,
+        a.`to_name` AS toName,
+        a.`to_label` AS toLabel,
+        a.`to_rule` AS toRule,
+        a.`to_group_id` AS toGroupId,
+        a.`to_is_unique` AS toIsUnique,
+        a.`to_is_required` AS toIsRequired,
+        (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`to_group_id`) AS toGroupName,
+        'to' AS direction,
+        cview.sort
+        FROM
+        `cmdb_rel` a
+        JOIN cmdb_ci f ON a.from_ci_id = f.id
+        JOIN cmdb_ci t ON a.to_ci_id = t.id
+        LEFT JOIN cmdb_view cview
+        ON cview.item_id = a.id AND cview.`type` = 'relto'
+        WHERE
+        a.to_ci_id IN
+        <foreach collection="ciIdList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        ORDER BY sort ASC, id ASC
+    </select>
 
-	<select id="getRelByCiId" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.RelVo" useCache="false">
-		SELECT
-		a.`id`,
-		a.`type_id` AS typeId,
-		(SELECT name FROM cmdb_reltype cr WHERE cr.id = a.`type_id`) AS typeText,
-		a.`input_type` AS inputType,
-		a.`from_ci_id` AS fromCiId,
-		f.icon AS fromCiIcon,
-		f.name AS fromCiName,
-		f.label AS fromCiLabel,
-		a.`from_name` AS fromName,
-		a.`from_label` AS fromLabel,
-		a.`from_rule` AS fromRule,
-		a.`from_group_id` AS fromGroupId,
-		a.`from_is_unique` AS fromIsUnique,
-		(SELECT name FROM cmdb_relgroup g WHERE g.id = a.`from_group_id`) AS fromGroupName,
-		a.`to_ci_id` AS toCiId,
-		t.icon AS toCiIcon,
-		t.name AS toCiName,
-		t.label AS toCiLabel,
-		a.`to_name` AS toName,
-		a.`to_label` AS toLabel,
-		a.`to_rule` AS toRule,
-		a.`to_group_id` AS toGroupId,
-		a.`to_is_unique` AS toIsUnique,
-		(SELECT name FROM cmdb_relgroup g WHERE g.id = a.`to_group_id`) AS toGroupName,
-		'from' AS direction,
-		cview.sort
-		FROM
-		`cmdb_rel` a
-		JOIN cmdb_ci f ON a.from_ci_id = f.id
-		JOIN cmdb_ci t ON a.to_ci_id = t.id
-		LEFT JOIN
-		cmdb_view cview ON cview.item_id = a.id AND cview.`type` = 'relfrom'
-		WHERE
-		a.from_ci_id = #{value}
-		UNION
-		SELECT
-		a.`id`,
-		a.`type_id` AS typeId,
-		(SELECT name FROM cmdb_reltype cr WHERE cr.id = a.`type_id`) AS typeText,
-		a.`input_type` AS inputType,
-		a.`from_ci_id` AS fromCiId,
-		f.icon AS fromCiIcon,
-		f.name AS fromCiName,
-		f.label AS fromCiLabel,
-		a.`from_name` AS fromName,
-		a.`from_label` AS fromLabel,
-		a.`from_rule` AS fromRule,
-		a.`from_group_id` AS fromGroupId,
-		a.`from_is_unique` AS fromIsUnique,
-		(SELECT name FROM cmdb_relgroup g WHERE g.id = a.`from_group_id`) AS fromGroupName,
-		a.`to_ci_id` AS toCiId,
-		t.icon AS toCiIcon,
-		t.name AS toCiName,
-		t.label AS toCiLabel,
-		a.`to_name` AS toName,
-		a.`to_label` AS toLabel,
-		a.`to_rule` AS toRule,
-		a.`to_group_id` AS toGroupId,
-		a.`to_is_unique` AS toIsUnique,
-		(SELECT name FROM cmdb_relgroup g WHERE g.id = a.`to_group_id`) AS toGroupName,
-		'to' AS direction,
-		cview.sort
-		FROM
-		`cmdb_rel` a
-		JOIN cmdb_ci f ON a.from_ci_id = f.id
-		JOIN cmdb_ci t ON a.to_ci_id = t.id
-		LEFT JOIN cmdb_view cview
-		ON
-		cview.item_id = a.id AND cview.`type` = 'relto'
-		WHERE
-		a.to_ci_id = #{value}
-		ORDER BY sort ASC, id ASC
-	</select>
+    <select id="getRelByCiId" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.RelVo"
+            useCache="false">
+        SELECT a.`id`,
+               a.`type_id`                                                       AS typeId,
+               (SELECT name FROM cmdb_reltype cr WHERE cr.id = a.`type_id`)      AS typeText,
+               a.`input_type`                                                    AS inputType,
+               if(f.id = #{value}, 0, 1)                                         AS isExtended,
+               f.id                                                              AS fromCiId,
+               f.icon                                                            AS fromCiIcon,
+               f.name                                                            AS fromCiName,
+               f.label                                                           AS fromCiLabel,
+               a.`from_name`                                                     AS fromName,
+               a.`from_label`                                                    AS fromLabel,
+               a.`from_rule`                                                     AS fromRule,
+               a.`from_group_id`                                                 AS fromGroupId,
+               a.`from_is_unique`                                                AS fromIsUnique,
+               a.`from_is_required`                                              AS fromIsRequired,
+               (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`from_group_id`) AS fromGroupName,
+               t.id                                                              AS toCiId,
+               t.icon                                                            AS toCiIcon,
+               t.name                                                            AS toCiName,
+               t.label                                                           AS toCiLabel,
+               a.`to_name`                                                       AS toName,
+               a.`to_label`                                                      AS toLabel,
+               a.`to_rule`                                                       AS toRule,
+               a.`to_group_id`                                                   AS toGroupId,
+               a.`to_is_unique`                                                  AS toIsUnique,
+               a.`to_is_required`                                                AS toIsRequired,
+               (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`to_group_id`)   AS toGroupName,
+               'from'                                                            AS direction,
+               cview.sort
+        FROM `cmdb_rel` a
+                 JOIN cmdb_ci f ON a.from_ci_id = f.id
+                 JOIN cmdb_ci t ON a.to_ci_id = t.id
+                 LEFT JOIN
+             cmdb_view cview ON cview.item_id = a.id AND cview.`type` = 'relfrom'
+        WHERE f.lft &lt;= (select lft from cmdb_ci where id = #{value})
+          AND f.rht &gt;= (select rht from cmdb_ci where id = #{value})
+        UNION
+        SELECT a.`id`,
+               a.`type_id`                                                       AS typeId,
+               (SELECT name FROM cmdb_reltype cr WHERE cr.id = a.`type_id`)      AS typeText,
+               a.`input_type`                                                    AS inputType,
+               if(t.id = #{value}, 0, 1)                                         AS isExtended,
+               f.id                                                              AS fromCiId,
+               f.icon                                                            AS fromCiIcon,
+               f.name                                                            AS fromCiName,
+               f.label                                                           AS fromCiLabel,
+               a.`from_name`                                                     AS fromName,
+               a.`from_label`                                                    AS fromLabel,
+               a.`from_rule`                                                     AS fromRule,
+               a.`from_group_id`                                                 AS fromGroupId,
+               a.`from_is_unique`                                                AS fromIsUnique,
+               a.`from_is_required`                                              AS fromIsRequired,
+               (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`from_group_id`) AS fromGroupName,
+               t.id                                                              AS toCiId,
+               t.icon                                                            AS toCiIcon,
+               t.name                                                            AS toCiName,
+               t.label                                                           AS toCiLabel,
+               a.`to_name`                                                       AS toName,
+               a.`to_label`                                                      AS toLabel,
+               a.`to_rule`                                                       AS toRule,
+               a.`to_group_id`                                                   AS toGroupId,
+               a.`to_is_unique`                                                  AS toIsUnique,
+               a.`to_is_required`                                                AS toIsRequired,
+               (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`to_group_id`)   AS toGroupName,
+               'to'                                                              AS direction,
+               cview.sort
+        FROM `cmdb_rel` a
+                 JOIN cmdb_ci f ON a.from_ci_id = f.id
+                 JOIN cmdb_ci t ON a.to_ci_id = t.id
+                 LEFT JOIN cmdb_view cview
+                           ON
+                               cview.item_id = a.id AND cview.`type` = 'relto'
+        WHERE t.lft &lt;= (select lft from cmdb_ci where id = #{value})
+          and t.rht &gt;= (select rht from cmdb_ci where id = #{value})
+        ORDER BY sort, id
+    </select>
 
-	<update id="updateRel" parameterType="codedriver.module.cmdb.dto.ci.RelVo">
-		UPDATE
-		`cmdb_rel`
-		SET
-		`type_id` = #{typeId},
-		`input_type` = #{inputType},
-		`from_ci_id` = #{fromCiId},
-		`from_name` = #{fromName},
-		`from_label` = #{fromLabel},
-		`from_rule` = #{fromRule},
-		`from_group_id` = #{fromGroupId},
-		`from_is_unique` = #{fromIsUnique},
-		`to_ci_id` = #{toCiId},
-		`to_name` = #{toName},
-		`to_label` = #{toLabel},
-		`to_rule` = #{toRule},
-		`to_group_id` = #{toGroupId},
-		`to_is_unique` = #{toIsUnique}
-		WHERE `id` = #{id}
-	</update>
+    <update id="updateRel" parameterType="codedriver.module.cmdb.dto.ci.RelVo">
+        UPDATE
+            `cmdb_rel`
+        SET `type_id`          = #{typeId},
+            `input_type`       = #{inputType},
+            `from_ci_id`       = #{fromCiId},
+            `from_name`        = #{fromName},
+            `from_label`       = #{fromLabel},
+            `from_rule`        = #{fromRule},
+            `from_group_id`    = #{fromGroupId},
+            `from_is_unique`   = #{fromIsUnique},
+            `from_is_required` = #{fromIsRequired},
+            `to_ci_id`         = #{toCiId},
+            `to_name`          = #{toName},
+            `to_label`         = #{toLabel},
+            `to_rule`          = #{toRule},
+            `to_group_id`      = #{toGroupId},
+            `to_is_unique`     = #{toIsUnique},
+            `to_is_required`   = #{toIsRequired}
+        WHERE `id` = #{id}
+    </update>
 
-	<update id="updateRelGroup" parameterType="codedriver.module.cmdb.dto.ci.RelGroupVo">
-		UPDATE
-		`cmdb_relgroup`
-		SET
-		`name` = #{name}
-		WHERE `id` = #{id}
-	</update>
+    <update id="updateRelGroup" parameterType="codedriver.module.cmdb.dto.ci.RelGroupVo">
+        UPDATE
+            `cmdb_relgroup`
+        SET `name` = #{name}
+        WHERE `id` = #{id}
+    </update>
 
-	<insert id="insertRelGroup" parameterType="codedriver.module.cmdb.dto.ci.RelGroupVo">
-		INSERT INTO `cmdb_relgroup` (`id`, `ci_id`, `name`)
-		VALUES
-		(#{id}, #{ciId}, #{name})
-	</insert>
+    <insert id="insertRelGroup" parameterType="codedriver.module.cmdb.dto.ci.RelGroupVo">
+        INSERT INTO `cmdb_relgroup` (`id`, `ci_id`, `name`)
+        VALUES (#{id}, #{ciId}, #{name})
+    </insert>
 
-	<insert id="insertRel" parameterType="codedriver.module.cmdb.dto.ci.RelVo">
-		INSERT INTO `cmdb_rel` (
-		`id`,
-		`type_id`,
-		`input_type`,
-		`from_ci_id`,
-		`from_name`,
-		`from_label`,
-		`from_rule`,
-		`from_group_id`,
-		`from_is_unique`,
-		`to_ci_id`,
-		`to_name`,
-		`to_label`,
-		`to_rule`,
-		`to_group_id`,
-		`to_is_unique`
-		)
-		VALUES
-		(
-		#{id},
-		#{typeId},
-		#{inputType},
-		#{fromCiId},
-		#{fromName},
-		#{fromLabel},
-		#{fromRule},
-		#{fromGroupId},
-		#{fromIsUnique},
-		#{toCiId},
-		#{toName},
-		#{toLabel},
-		#{toRule},
-		#{toGroupId},
-		#{toIsUnique}
-		)
-	</insert>
+    <insert id="insertRel" parameterType="codedriver.module.cmdb.dto.ci.RelVo">
+        INSERT INTO `cmdb_rel` (`id`,
+                                `type_id`,
+                                `input_type`,
+                                `from_ci_id`,
+                                `from_name`,
+                                `from_label`,
+                                `from_rule`,
+                                `from_group_id`,
+                                `from_is_unique`,
+                                `from_is_required`,
+                                `to_ci_id`,
+                                `to_name`,
+                                `to_label`,
+                                `to_rule`,
+                                `to_group_id`,
+                                `to_is_unique`,
+                                `to_is_required`)
+        VALUES (#{id},
+                #{typeId},
+                #{inputType},
+                #{fromCiId},
+                #{fromName},
+                #{fromLabel},
+                #{fromRule},
+                #{fromGroupId},
+                #{fromIsUnique},
+                #{fromIsRequired},
+                #{toCiId},
+                #{toName},
+                #{toLabel},
+                #{toRule},
+                #{toGroupId},
+                #{toIsUnique},
+                #{toIsRequired})
+    </insert>
 
-	<delete id="deleteRelById" parameterType="java.lang.Long">
-		DELETE
-		FROM
-		`cmdb_rel`
-		WHERE `id` = #{value}
-	</delete>
+    <delete id="deleteRelById" parameterType="java.lang.Long">
+        DELETE
+        FROM `cmdb_rel`
+        WHERE `id` = #{value}
+    </delete>
 
 </mapper>

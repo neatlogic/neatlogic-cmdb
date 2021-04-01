@@ -1,21 +1,28 @@
 package codedriver.module.cmdb.dto.transaction;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-
-import com.alibaba.fastjson.annotation.JSONField;
-
 import codedriver.framework.cmdb.constvalue.EditModeType;
+import codedriver.framework.cmdb.constvalue.RelActionType;
+import codedriver.framework.cmdb.constvalue.RelDirectionType;
 import codedriver.framework.cmdb.constvalue.TransactionActionType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.SnowflakeUtil;
 import codedriver.module.cmdb.dto.cientity.CiEntityVo;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.annotation.JSONField;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class CiEntityTransactionVo {
+    static Logger logger = LoggerFactory.getLogger(CiEntityTransactionVo.class);
     @JSONField(serialize = false)
     private transient String ciEntityUuid;// 批量添加时的临时ID，由前端生成
     @EntityField(name = "id", type = ApiParamType.LONG)
@@ -26,10 +33,6 @@ public class CiEntityTransactionVo {
     private Long ciEntityId;
     @EntityField(name = "配置项名称", type = ApiParamType.STRING)
     private String name;
-    @EntityField(name = "属性定义id", type = ApiParamType.LONG)
-    private Long propId;
-    @EntityField(name = "属性定义处理器", type = ApiParamType.STRING)
-    private String propHandler;
     @EntityField(name = "事务id", type = ApiParamType.LONG)
     private Long transactionId;
     @JSONField(serialize = false)
@@ -40,12 +43,20 @@ public class CiEntityTransactionVo {
     private String action;
     @EntityField(name = "操作文本", type = ApiParamType.STRING)
     private String actionText;
-    @EntityField(name = "属性修改信息", type = ApiParamType.JSONARRAY)
-    private List<AttrEntityTransactionVo> attrEntityTransactionList;
-    @EntityField(name = "关系修改信息", type = ApiParamType.JSONARRAY)
-    private List<RelEntityTransactionVo> relEntityTransactionList;
+    @EntityField(name = "属性对象，以'attr_'+attrId为key", type = ApiParamType.JSONOBJECT)
+    private JSONObject attrEntityData;
+    @EntityField(name = "关系对象，以'relfrom_'+relId或'relto_'+relId为key", type = ApiParamType.JSONOBJECT)
+    private JSONObject relEntityData;
     @JSONField(serialize = false)
-    private transient String snapshotHash;// 修改前的快照
+    private transient List<AttrEntityTransactionVo> attrEntityTransactionList;
+    @JSONField(serialize = false)
+    private transient List<RelEntityTransactionVo> relEntityTransactionList;
+    @JSONField(serialize = false)
+    private transient String snapshot;// 修改前的快照
+    @JSONField(serialize = false)
+    private transient String content;//修改内容
+    @JSONField(serialize = false)
+    private transient CiEntityVo oldCiEntityVo;//就配置项信息
 
     public CiEntityTransactionVo() {
 
@@ -67,6 +78,14 @@ public class CiEntityTransactionVo {
             }
         }
         return null;
+    }
+
+    public CiEntityVo getOldCiEntityVo() {
+        return oldCiEntityVo;
+    }
+
+    public void setOldCiEntityVo(CiEntityVo oldCiEntityVo) {
+        this.oldCiEntityVo = oldCiEntityVo;
     }
 
     @JSONField(serialize = false)
@@ -131,19 +150,94 @@ public class CiEntityTransactionVo {
     }
 
     public List<AttrEntityTransactionVo> getAttrEntityTransactionList() {
+        if (CollectionUtils.isEmpty(attrEntityTransactionList) && MapUtils.isNotEmpty(attrEntityData)) {
+            attrEntityTransactionList = new ArrayList<>();
+            for (String key : attrEntityData.keySet()) {
+                Long attrId = null;
+                try {
+                    attrId = Long.parseLong(key.replace("attr_", ""));
+                } catch (Exception ex) {
+                    logger.error(ex.getMessage(), ex);
+                }
+                if (attrId != null) {
+                    AttrEntityTransactionVo attrEntityVo = new AttrEntityTransactionVo();
+                    attrEntityVo.setAttrId(attrId);
+                    JSONObject attrDataObj = attrEntityData.getJSONObject(key);
+                    JSONArray valueObjList = attrDataObj.getJSONArray("valueList");
+                    attrEntityVo.setValueList(valueObjList.stream().map(Object::toString).collect(Collectors.toList()));
+                    attrEntityTransactionList.add(attrEntityVo);
+                }
+            }
+        }
         return attrEntityTransactionList;
     }
 
-    public void setAttrEntityTransactionList(List<AttrEntityTransactionVo> attrEntityTransactionList) {
-        this.attrEntityTransactionList = attrEntityTransactionList;
-    }
 
     public List<RelEntityTransactionVo> getRelEntityTransactionList() {
+        if (relEntityTransactionList == null) {
+            relEntityTransactionList = new ArrayList<>();
+        }
+        if (CollectionUtils.isEmpty(relEntityTransactionList) && MapUtils.isNotEmpty(relEntityData)) {
+            for (String key : relEntityData.keySet()) {
+                JSONArray relDataList = relEntityData.getJSONArray(key);
+                if (key.startsWith("relfrom_")) {// 当前配置项处于from位置
+                    if (CollectionUtils.isNotEmpty(relDataList)) {
+                        for (int i = 0; i < relDataList.size(); i++) {
+                            JSONObject relEntityObj = relDataList.getJSONObject(i);
+                            RelEntityTransactionVo relEntityVo = new RelEntityTransactionVo();
+                            relEntityVo.setRelId(Long.parseLong(key.replace("relfrom_", "")));
+                            relEntityVo.setToCiEntityId(relEntityObj.getLong("ciEntityId"));
+                            relEntityVo.setDirection(RelDirectionType.FROM.getValue());
+                            relEntityVo.setFromCiEntityId(this.getCiEntityId());
+                            relEntityVo.setAction(RelActionType.INSERT.getValue());// 默认是添加关系
+                            relEntityTransactionList.add(relEntityVo);
+                        }
+                    }
+                } else if (key.startsWith("relto_")) {// 当前配置项处于to位置
+                    if (CollectionUtils.isNotEmpty(relDataList)) {
+                        for (int i = 0; i < relDataList.size(); i++) {
+                            JSONObject relEntityObj = relDataList.getJSONObject(i);
+                            RelEntityTransactionVo relEntityVo = new RelEntityTransactionVo();
+                            relEntityVo.setRelId(Long.parseLong(key.replace("relto_", "")));
+                            relEntityVo.setFromCiEntityId(relEntityObj.getLong("ciEntityId"));
+                            relEntityVo.setDirection(RelDirectionType.TO.getValue());
+                            relEntityVo.setToCiEntityId(this.getCiEntityId());
+                            relEntityVo.setAction(RelActionType.INSERT.getValue());// 默认是添加关系
+                            relEntityTransactionList.add(relEntityVo);
+                        }
+                    }
+                }
+            }
+        }
         return relEntityTransactionList;
     }
 
-    public void setRelEntityTransactionList(List<RelEntityTransactionVo> relEntityTransactionList) {
-        this.relEntityTransactionList = relEntityTransactionList;
+    /**
+     * 数据库写入时通过此方法取得json值
+     *
+     * @return json
+     */
+    @JSONField(serialize = false)
+    public String getContent() {
+        if (StringUtils.isBlank(content)) {
+            JSONObject jsonObj = new JSONObject();
+            jsonObj.put("attrEntityData", this.getAttrEntityData());
+            jsonObj.put("relEntityData", this.getRelEntityData());
+            content = jsonObj.toJSONString();
+        }
+        return content;
+    }
+
+    public void setContent(String content) {
+        if (StringUtils.isNotBlank(content)) {
+            try {
+                JSONObject jsonObj = JSONObject.parseObject(content);
+                this.attrEntityData = jsonObj.getJSONObject("attrEntityData");
+                this.relEntityData = jsonObj.getJSONObject("relEntityData");
+            } catch (Exception ignored) {
+
+            }
+        }
     }
 
     public String getEditMode() {
@@ -165,28 +259,13 @@ public class CiEntityTransactionVo {
         this.actionText = actionText;
     }
 
-    public Long getPropId() {
-        return propId;
+
+    public String getSnapshot() {
+        return snapshot;
     }
 
-    public void setPropId(Long propId) {
-        this.propId = propId;
-    }
-
-    public String getPropHandler() {
-        return propHandler;
-    }
-
-    public void setPropHandler(String propHandler) {
-        this.propHandler = propHandler;
-    }
-
-    public String getSnapshotHash() {
-        return snapshotHash;
-    }
-
-    public void setSnapshotHash(String snapshotHash) {
-        this.snapshotHash = snapshotHash;
+    public void setSnapshot(String snapshot) {
+        this.snapshot = snapshot;
     }
 
     public String getName() {
@@ -213,4 +292,19 @@ public class CiEntityTransactionVo {
         this.transactionMode = transactionMode;
     }
 
+    public JSONObject getAttrEntityData() {
+        return attrEntityData;
+    }
+
+    public void setAttrEntityData(JSONObject attrEntityData) {
+        this.attrEntityData = attrEntityData;
+    }
+
+    public JSONObject getRelEntityData() {
+        return relEntityData;
+    }
+
+    public void setRelEntityData(JSONObject relEntityData) {
+        this.relEntityData = relEntityData;
+    }
 }

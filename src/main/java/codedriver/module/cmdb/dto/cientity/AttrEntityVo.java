@@ -1,12 +1,13 @@
 package codedriver.module.cmdb.dto.cientity;
 
-import codedriver.framework.cmdb.attrvaluehandler.core.AttrValueUtil;
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
+import codedriver.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.elasticsearch.annotation.ESKey;
-import codedriver.framework.elasticsearch.constvalue.ESKeyType;
 import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.HtmlUtil;
+import codedriver.module.cmdb.dto.ci.AttrVo;
 import codedriver.module.cmdb.dto.transaction.AttrEntityTransactionVo;
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.annotation.JSONField;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -19,7 +20,6 @@ public class AttrEntityVo {
     @EntityField(name = "id", type = ApiParamType.LONG)
     private Long id;// 由于需要在SQL批量写入，所以这里使用数据库自增id
     @EntityField(name = "配置项id", type = ApiParamType.LONG)
-    @ESKey(type = ESKeyType.PKEY, name = "id")
     private Long ciEntityId;
     @EntityField(name = "属性id", type = ApiParamType.LONG)
     private Long attrId;
@@ -29,18 +29,14 @@ public class AttrEntityVo {
     private String attrLabel;
     @EntityField(name = "属性类型", type = ApiParamType.STRING)
     private String attrType;
-    @EntityField(name = "属性定义id", type = ApiParamType.LONG)
-    private Long propId;
-    @EntityField(name = "属性定义处理器", type = ApiParamType.STRING)
-    private String propHandler;
     @EntityField(name = "属性表达式", type = ApiParamType.STRING)
     private String attrExpression;
-    @JSONField(serialize = false) // 原始值，可以是任何类型，后面在拆解到valueList里
-    private transient Object value;
+    @EntityField(name = "属性配置", type = ApiParamType.JSONOBJECT)
+    private JSONObject attrConfig;
     @EntityField(name = "值数据列表", type = ApiParamType.JSONARRAY)
     private List<String> valueList;
-    @EntityField(name = "值hash列表", type = ApiParamType.JSONARRAY)
-    private List<String> valueHashList;
+    @EntityField(name = "显示值列表", type = ApiParamType.JSONARRAY)
+    private List<String> actualValueList;
     @JSONField(serialize = false)
     private transient String valueStr;//值字符串类型，如果是多值，则使用,分隔
     @JSONField(serialize = false)
@@ -55,6 +51,14 @@ public class AttrEntityVo {
     private String status;
     @EntityField(name = "数据源头", type = ApiParamType.STRING)
     private String source;
+    @EntityField(name = "所属配置型id", type = ApiParamType.LONG)
+    private Long fromCiEntityId;
+    @EntityField(name = "引用配置型id", type = ApiParamType.LONG)
+    private Long toCiEntityId;
+    @EntityField(name = "所属配置型模型id", type = ApiParamType.LONG)
+    private Long fromCiId;
+    @EntityField(name = "引用配置型模型id", type = ApiParamType.LONG)
+    private Long toCiId;
 
     public AttrEntityVo() {
 
@@ -64,9 +68,14 @@ public class AttrEntityVo {
         this.ciEntityId = attrEntityTransactionVo.getCiEntityId();
         this.attrId = attrEntityTransactionVo.getAttrId();
         this.attrName = attrEntityTransactionVo.getAttrName();
+        this.attrLabel = attrEntityTransactionVo.getAttrLabel();
+        this.attrType = attrEntityTransactionVo.getAttrType();
         this.valueList = attrEntityTransactionVo.getValueList();
-        this.propHandler = attrEntityTransactionVo.getPropHandler();
         this.transactionId = attrEntityTransactionVo.getTransactionId();
+        AttrVo attr = attrEntityTransactionVo.getAttr();
+        this.fromCiId = attr.getCiId();
+        this.toCiId = attr.getTargetCiId();
+        this.fromCiEntityId = attrEntityTransactionVo.getCiEntityId();
     }
 
     public Long getId() {
@@ -143,8 +152,7 @@ public class AttrEntityVo {
             key += getValueList().size() + "_";
             // 根据内容排序生成新数组
             List<String> sortedList = getValueList().stream().sorted().collect(Collectors.toList());
-            ;
-            key += sortedList.stream().collect(Collectors.joining(","));
+            key += String.join(",", sortedList);
         }
         return key.hashCode();
     }
@@ -168,10 +176,10 @@ public class AttrEntityVo {
                         for (String v : this.getValueList()) {
                             boolean isExists = false;
                             for (String v2 : attr.getValueList()) {
-                                if (v.equals(v2)) {
+                                if (v.equalsIgnoreCase(v2)) {
                                     isExists = true;
                                     break;
-                                } else if (HtmlUtil.encodeHtml(v).equals(v2)) {// 如果xss处理过的，尝试比较转义后的值
+                                } else if (HtmlUtil.encodeHtml(v).equalsIgnoreCase(v2)) {// 如果xss处理过的，尝试比较转义后的值
                                     isExists = true;
                                     break;
                                 }
@@ -184,11 +192,9 @@ public class AttrEntityVo {
                     } else {
                         return false;
                     }
-                } else if (CollectionUtils.isEmpty(this.getValueList())
-                        && CollectionUtils.isEmpty(attr.getValueList())) {
-                    return true;
                 } else {
-                    return false;
+                    return CollectionUtils.isEmpty(this.getValueList())
+                            && CollectionUtils.isEmpty(attr.getValueList());
                 }
             } else {
                 return false;
@@ -199,9 +205,6 @@ public class AttrEntityVo {
     }
 
     public List<String> getValueList() {
-        if (CollectionUtils.isEmpty(this.valueList) && CollectionUtils.isNotEmpty(this.valueHashList)) {
-            valueList = AttrValueUtil.getValueList(this.valueHashList);
-        }
         return valueList;
     }
 
@@ -213,13 +216,34 @@ public class AttrEntityVo {
         }
     }
 
-    public Object getValue() {
-        return value;
+    public List<String> getActualValueList() {
+        if (CollectionUtils.isEmpty(actualValueList) && CollectionUtils.isNotEmpty(valueList)) {
+            actualValueList = valueList.stream().map(v -> AttrValueHandlerFactory.getHandler(this.getAttrType()).getActualValue(attrConfig, v)).collect(Collectors.toList());
+        }
+        return actualValueList;
     }
 
-    public void setValue(Object value) {
-        this.value = value;
+    public void setActualValueList(List<String> _actualValueList) {
+        if (CollectionUtils.isNotEmpty(_actualValueList)) {
+            this.actualValueList = _actualValueList.stream().distinct().collect(Collectors.toList());
+        } else {
+            this.actualValueList = _actualValueList;
+        }
     }
+
+
+    /**
+     * 写入数据库时通过这个属性取值，只对非引用性属性有效
+     *
+     * @return 值
+     */
+    public String getValue() {
+        if (CollectionUtils.isNotEmpty(valueList)) {
+            return valueList.get(0);
+        }
+        return null;
+    }
+
 
     public String getAttrType() {
         return attrType;
@@ -229,21 +253,14 @@ public class AttrEntityVo {
         this.attrType = attrType;
     }
 
-    public String getPropHandler() {
-        return propHandler;
+    public JSONObject getAttrConfig() {
+        return attrConfig;
     }
 
-    public void setPropHandler(String propHandler) {
-        this.propHandler = propHandler;
+    public void setAttrConfig(JSONObject attrConfig) {
+        this.attrConfig = attrConfig;
     }
 
-    public Long getPropId() {
-        return propId;
-    }
-
-    public void setPropId(Long propId) {
-        this.propId = propId;
-    }
 
     public String getAttrExpression() {
         return attrExpression;
@@ -269,16 +286,6 @@ public class AttrEntityVo {
         this.transactionId = transactionId;
     }
 
-    public List<String> getValueHashList() {
-        if (CollectionUtils.isEmpty(valueHashList) && CollectionUtils.isNotEmpty(valueList)) {
-            valueHashList = AttrValueUtil.getHashList(propHandler, valueList);
-        }
-        return valueHashList;
-    }
-
-    public void setValueHashList(List<String> valueHashList) {
-        this.valueHashList = valueHashList;
-    }
 
     public String getValueStr() {
         if (StringUtils.isBlank(valueStr)) {
@@ -295,5 +302,55 @@ public class AttrEntityVo {
             valueStrHash = DigestUtils.md5DigestAsHex(this.getValueStr().getBytes());
         }
         return valueStrHash;
+    }
+
+    public void setValueStr(String valueStr) {
+        this.valueStr = valueStr;
+    }
+
+    public void setValueStrHash(String valueStrHash) {
+        this.valueStrHash = valueStrHash;
+    }
+
+    public Long getFromCiEntityId() {
+        return fromCiEntityId;
+    }
+
+    public void setFromCiEntityId(Long fromCiEntityId) {
+        this.fromCiEntityId = fromCiEntityId;
+    }
+
+    public Long getToCiEntityId() {
+        return toCiEntityId;
+    }
+
+    public void setToCiEntityId(Long toCiEntityId) {
+        this.toCiEntityId = toCiEntityId;
+    }
+
+    public Long getFromCiId() {
+        return fromCiId;
+    }
+
+    public void setFromCiId(Long fromCiId) {
+        this.fromCiId = fromCiId;
+    }
+
+    public Long getToCiId() {
+        return toCiId;
+    }
+
+    public void setToCiId(Long toCiId) {
+        this.toCiId = toCiId;
+    }
+
+    /**
+     * 获取表名
+     *
+     * @return 表名
+     */
+    @JSONField(serialize = false)
+    public String getCiTableName() {
+        return TenantContext.get().getDataDbName() + ".`cmdb_" + this.getFromCiId() + "`";
     }
 }

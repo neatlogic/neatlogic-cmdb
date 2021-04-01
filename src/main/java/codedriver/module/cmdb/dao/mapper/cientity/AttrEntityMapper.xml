@@ -2,18 +2,19 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.cientity.AttrEntityMapper">
 
+
+	<!--old-->
+
 	<resultMap id="attrEntityMap" type="codedriver.module.cmdb.dto.cientity.AttrEntityVo">
-		<id property="attrId" column="attrId" />
-		<id property="ciEntityId" column="ciEntityId" />
-		<result property="transactionId" column="transactionId" />
-		<result property="attrName" column="attrName" />
-		<result property="attrLabel" column="attrLabel" />
-		<result property="attrType" column="attrType" />
-		<result property="attrExpression" column="attrExpression" />
-		<result property="propId" column="propId" />
-		<result property="propHandler" column="propHandler" />
-		<collection property="valueHashList" ofType="java.lang.String">
-			<result column="valueHash" />
+		<id property="attrId" column="attrId"/>
+		<id property="ciEntityId" column="ciEntityId"/>
+		<result property="transactionId" column="transactionId"/>
+		<result property="attrName" column="attrName"/>
+		<result property="attrLabel" column="attrLabel"/>
+		<result property="attrType" column="attrType"/>
+		<result property="attrExpression" column="attrExpression"/>
+		<collection property="valueList" ofType="java.lang.String">
+			<result column="valueHash"/>
 		</collection>
 	</resultMap>
 

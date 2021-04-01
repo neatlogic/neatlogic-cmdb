@@ -1,19 +1,17 @@
+/*
+ * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+ */
+
 package codedriver.module.cmdb.dto.ci;
-
-import java.util.List;
-
-import com.alibaba.fastjson.annotation.JSONField;
 
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.SnowflakeUtil;
+import com.alibaba.fastjson.annotation.JSONField;
 
-/**
- * @Author:chenqiwei
- * @Time:Aug 18, 2020
- * @ClassName: CiTypeVo
- * @Description: TODO
- */
+import java.util.List;
+
 public class CiTypeVo {
     @JSONField(serialize = false)
     private transient String keyword;
@@ -31,12 +29,22 @@ public class CiTypeVo {
     private List<CiVo> ciList;
     @EntityField(name = "模型数量", type = ApiParamType.INTEGER)
     private int ciCount;
+    @EntityField(name = "是否在拓扑图中显示", type = ApiParamType.INTEGER)
+    private Integer isShowInTopo;
 
     public Long getId() {
         if (id == null) {
             id = SnowflakeUtil.uniqueLong();
         }
         return id;
+    }
+
+    public Integer getIsShowInTopo() {
+        return isShowInTopo;
+    }
+
+    public void setIsShowInTopo(Integer isShowInTopo) {
+        this.isShowInTopo = isShowInTopo;
     }
 
     public void setId(Long id) {

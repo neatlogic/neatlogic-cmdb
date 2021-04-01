@@ -1,21 +1,24 @@
 package codedriver.module.cmdb.dto.ci;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.SnowflakeUtil;
 import com.alibaba.fastjson.annotation.JSONField;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-/**
+/*
+ * @Description: 模型实体
  * @Author: chenqiwei
- * @Time: Aug 15, 2020
- * @ClassName: CiVo
- * @Description: TODO
- */
+ * @Date: 2021/3/16 5:08 下午
+ * @Params: * @param null:
+ * @Returns: * @return: null
+ **/
 public class CiVo implements Serializable {
     private static final long serialVersionUID = -312040937798083138L;
     @JSONField(serialize = false)
@@ -24,6 +27,10 @@ public class CiVo implements Serializable {
     private Long id;
     @EntityField(name = "父亲模型id", type = ApiParamType.LONG)
     private Long parentCiId;
+    @JSONField(serialize = false)
+    private transient CiVo parentCi;
+    @EntityField(name = "名字表达式", type = ApiParamType.STRING)
+    private String nameExpression;
     @EntityField(name = "唯一标识，不能重复", type = ApiParamType.STRING)
     private String name;
     @EntityField(name = "名称，不能重复", type = ApiParamType.STRING)
@@ -40,6 +47,8 @@ public class CiVo implements Serializable {
     private Integer isPrivate = 0;
     @EntityField(name = "是否在菜单中显示，0:不显示，1:显示", type = ApiParamType.INTEGER)
     private Integer isMenu = 0;
+    @EntityField(name = "是否抽象模型，0:不是，1:是", type = ApiParamType.INTEGER)
+    private Integer isAbstract = 0;
     @EntityField(name = "属性定义列表", type = ApiParamType.JSONARRAY)
     private List<AttrVo> attrList;
     @EntityField(name = "关系定义列表", type = ApiParamType.JSONARRAY)
@@ -48,6 +57,12 @@ public class CiVo implements Serializable {
     private List<CiAuthVo> authList;
     @EntityField(name = "当前用户权限情况", type = ApiParamType.JSONOBJECT)
     private Map<String, Boolean> authData;
+    @EntityField(name = "子模型列表", type = ApiParamType.JSONARRAY)
+    private List<CiVo> children;
+    @EntityField(name = "左编码", type = ApiParamType.INTEGER)
+    private Integer lft;
+    @EntityField(name = "右编码", type = ApiParamType.INTEGER)
+    private Integer rht;
 
     @Override
     public boolean equals(Object o) {
@@ -62,11 +77,51 @@ public class CiVo implements Serializable {
         return Objects.hash(getId());
     }
 
+    public CiVo getParentCi() {
+        return parentCi;
+    }
+
+    public void setParentCi(CiVo parentCi) {
+        this.parentCi = parentCi;
+    }
+
     public Long getId() {
         if (id == null) {
             id = SnowflakeUtil.uniqueLong();
         }
         return id;
+    }
+
+    public String getNameExpression() {
+        return nameExpression;
+    }
+
+    public void setNameExpression(String nameExpression) {
+        this.nameExpression = nameExpression;
+    }
+
+    public Integer getIsAbstract() {
+        return isAbstract;
+    }
+
+    public void setIsAbstract(Integer isAbstract) {
+        this.isAbstract = isAbstract;
+    }
+
+    public Integer getLft() {
+        return lft;
+    }
+
+    public void setLft(Integer lft) {
+        this.lft = lft;
+    }
+
+    public Integer getRht() {
+        return rht;
+    }
+
+    public void setRht(Integer rht) {
+        this.rht = rht;
     }
 
     public void setId(Long id) {
@@ -176,5 +231,42 @@ public class CiVo implements Serializable {
     public void setAuthData(Map<String, Boolean> authData) {
         this.authData = authData;
     }
+
+    public Long getParentCiId() {
+        return parentCiId;
+    }
+
+    public void setParentCiId(Long parentCiId) {
+        this.parentCiId = parentCiId;
+    }
+
+    public List<CiVo> getChildren() {
+        return children;
+    }
+
+    public void setChildren(List<CiVo> children) {
+        this.children = children;
+    }
+
+    public void addChild(CiVo ciVo) {
+        if (ciVo != null) {
+            if (this.children == null) {
+                this.children = new ArrayList<>();
+            }
+            this.children.add(ciVo);
+            ciVo.setParentCi(this);
+        }
+    }
+
+    /**
+     * 获取表名
+     *
+     * @return 表名
+     */
+    @JSONField(serialize = false)
+    public String getCiTableName() {
+        return TenantContext.get().getDataDbName() + ".`cmdb_" + this.getId() + "`";
+    }
+
 
 }

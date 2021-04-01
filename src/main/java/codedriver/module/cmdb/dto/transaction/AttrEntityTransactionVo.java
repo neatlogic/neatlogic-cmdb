@@ -1,18 +1,23 @@
+/*
+ * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+ */
+
 package codedriver.module.cmdb.dto.transaction;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.apache.commons.collections4.CollectionUtils;
-
-import codedriver.framework.cmdb.attrvaluehandler.core.AttrValueUtil;
 import codedriver.framework.cmdb.constvalue.SaveModeType;
 import codedriver.framework.cmdb.constvalue.TransactionActionType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.HtmlUtil;
+import codedriver.module.cmdb.dto.ci.AttrVo;
 import codedriver.module.cmdb.dto.cientity.AttrEntityVo;
+import com.alibaba.fastjson.annotation.JSONField;
+import org.apache.commons.collections4.CollectionUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class AttrEntityTransactionVo {
     @EntityField(name = "id", type = ApiParamType.LONG)
@@ -25,10 +30,8 @@ public class AttrEntityTransactionVo {
     private String attrName;
     @EntityField(name = "属性标签", type = ApiParamType.STRING)
     private String attrLabel;
-    @EntityField(name = "属性定义id", type = ApiParamType.LONG)
-    private Long propId;
-    @EntityField(name = "属性定义处理器", type = ApiParamType.STRING)
-    private String propHandler;
+    @EntityField(name = "属性类型", type = ApiParamType.STRING)
+    private String attrType;
     @EntityField(name = "事务id", type = ApiParamType.LONG)
     private Long transactionId;
     @EntityField(name = "值数据列表", type = ApiParamType.JSONARRAY)
@@ -39,6 +42,8 @@ public class AttrEntityTransactionVo {
     private String saveMode = SaveModeType.REPLACE.getValue();
     @EntityField(name = "操作", type = ApiParamType.ENUM, member = TransactionActionType.class)
     private String action;
+    @JSONField(serialize = false)
+    private transient AttrVo attr;//属性定义
 
     public AttrEntityTransactionVo() {
 
@@ -48,7 +53,7 @@ public class AttrEntityTransactionVo {
         ciEntityId = attrEntityVo.getCiEntityId();
         attrId = attrEntityVo.getAttrId();
         attrName = attrEntityVo.getAttrName();
-        valueList = attrEntityVo.getValueList().stream().collect(Collectors.toList());
+        valueList = new ArrayList<>(attrEntityVo.getValueList());
         transactionId = attrEntityVo.getTransactionId();
     }
 
@@ -61,10 +66,26 @@ public class AttrEntityTransactionVo {
         if (CollectionUtils.isNotEmpty(getValueList())) {
             key += getValueList().size() + "_";
             // 根据内容排序生成新数组
-            List<String> sortedList = getValueList().stream().sorted().collect(Collectors.toList());;
-            key += sortedList.stream().collect(Collectors.joining(","));
+            List<String> sortedList = getValueList().stream().sorted().collect(Collectors.toList());
+            key += String.join(",", sortedList);
         }
         return key.hashCode();
+    }
+
+    public AttrVo getAttr() {
+        return attr;
+    }
+
+    public void setAttr(AttrVo attr) {
+        this.attr = attr;
+    }
+
+    public String getAttrType() {
+        return attrType;
+    }
+
+    public void setAttrType(String attrType) {
+        this.attrType = attrType;
     }
 
     @Override
@@ -78,7 +99,7 @@ public class AttrEntityTransactionVo {
         if (!(other instanceof AttrEntityTransactionVo)) {
             return false;
         }
-        final AttrEntityTransactionVo attr = (AttrEntityTransactionVo)other;
+        final AttrEntityTransactionVo attr = (AttrEntityTransactionVo) other;
         try {
             if (getAttrId().equals(attr.getAttrId())) {
                 if (CollectionUtils.isNotEmpty(getValueList()) && CollectionUtils.isNotEmpty(attr.getValueList())) {
@@ -102,12 +123,8 @@ public class AttrEntityTransactionVo {
                     } else {
                         return false;
                     }
-                } else if (CollectionUtils.isEmpty(this.getValueList())
-                    && CollectionUtils.isEmpty(attr.getValueList())) {
-                    return true;
-                } else {
-                    return false;
-                }
+                } else return CollectionUtils.isEmpty(this.getValueList())
+                        && CollectionUtils.isEmpty(attr.getValueList());
             } else {
                 return false;
             }
@@ -117,9 +134,6 @@ public class AttrEntityTransactionVo {
     }
 
     public void addValue(String v) {
-        if (CollectionUtils.isEmpty(valueList) && CollectionUtils.isNotEmpty(valueHashList)) {
-            valueList = AttrValueUtil.getValueList(valueHashList);
-        }
         if (valueList == null) {
             valueList = new ArrayList<>();
         }
@@ -192,26 +206,8 @@ public class AttrEntityTransactionVo {
         this.attrLabel = attrLabel;
     }
 
-    public Long getPropId() {
-        return propId;
-    }
-
-    public void setPropId(Long propId) {
-        this.propId = propId;
-    }
-
-    public String getPropHandler() {
-        return propHandler;
-    }
-
-    public void setPropHandler(String propHandler) {
-        this.propHandler = propHandler;
-    }
 
     public List<String> getValueList() {
-        if (CollectionUtils.isEmpty(valueList) && CollectionUtils.isNotEmpty(valueHashList)) {
-            valueList = AttrValueUtil.getValueList(valueHashList);
-        }
         return valueList;
     }
 
@@ -224,14 +220,10 @@ public class AttrEntityTransactionVo {
     }
 
     public List<String> getValueHashList() {
-        if (CollectionUtils.isEmpty(valueHashList) && CollectionUtils.isNotEmpty(valueList)) {
-            valueHashList = AttrValueUtil.getHashList(propHandler, valueList);
-        }
         return valueHashList;
     }
 
     public void setValueHashList(List<String> valueHashList) {
         this.valueHashList = valueHashList;
     }
-
 }

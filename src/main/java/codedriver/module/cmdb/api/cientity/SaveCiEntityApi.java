@@ -3,38 +3,24 @@ package codedriver.module.cmdb.api.cientity;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.cmdb.constvalue.GroupType;
-import codedriver.framework.cmdb.constvalue.RelActionType;
-import codedriver.framework.cmdb.constvalue.RelDirectionType;
 import codedriver.framework.cmdb.constvalue.TransactionActionType;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.*;
+import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CIENTITY_MODIFY;
-import codedriver.module.cmdb.dto.transaction.AttrEntityTransactionVo;
 import codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo;
-import codedriver.module.cmdb.dto.transaction.RelEntityTransactionVo;
 import codedriver.module.cmdb.exception.cientity.CiEntityAuthException;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @AuthAction(action = CIENTITY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveCiEntityApi extends PrivateApiComponentBase {
-    static Logger logger = LoggerFactory.getLogger(SaveCiEntityApi.class);
 
     @Autowired
     private CiEntityService ciEntityService;
@@ -51,14 +37,13 @@ public class SaveCiEntityApi extends PrivateApiComponentBase {
 
     @Override
     public String getConfig() {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
-        @Param(name = "id", type = ApiParamType.LONG, desc = "配置项id，不存在代表添加"),
-        @Param(name = "attrEntityData", type = ApiParamType.JSONOBJECT, desc = "属性数据"),
-        @Param(name = "relEntityData", type = ApiParamType.JSONOBJECT, desc = "关系数据")})
+            @Param(name = "id", type = ApiParamType.LONG, desc = "配置项id，不存在代表添加"),
+            @Param(name = "attrEntityData", type = ApiParamType.JSONOBJECT, desc = "属性数据"),
+            @Param(name = "relEntityData", type = ApiParamType.JSONOBJECT, desc = "关系数据")})
     @Output({@Param(name = "id", type = ApiParamType.LONG, desc = "配置项id")})
     @Description(desc = "保存配置项接口")
     @Override
@@ -74,7 +59,7 @@ public class SaveCiEntityApi extends PrivateApiComponentBase {
         if (id != null) {
             if (!hasAuth) {
                 hasAuth =
-                    CiAuthChecker.builder().hasCiEntityUpdatePrivilege(ciId).isInGroup(id, GroupType.MATAIN).check();
+                        CiAuthChecker.builder().hasCiEntityUpdatePrivilege(ciId).isInGroup(id, GroupType.MATAIN).check();
             }
             ciEntityTransactionVo.setCiEntityId(id);
             ciEntityTransactionVo.setTransactionMode(TransactionActionType.UPDATE);
@@ -90,65 +75,13 @@ public class SaveCiEntityApi extends PrivateApiComponentBase {
         }
 
         ciEntityTransactionVo.setCiId(ciId);
-        // 解析属性数据
-        JSONObject attrObj = jsonObj.getJSONObject("attrEntityData");
-        if (MapUtils.isNotEmpty(attrObj)) {
-            List<AttrEntityTransactionVo> attrEntityList = new ArrayList<>();
-            for (String key : attrObj.keySet()) {
-                Long attrId = null;
-                try {
-                    attrId = Long.parseLong(key.replace("attr_", ""));
-                } catch (Exception ex) {
-                    logger.error(ex.getMessage(), ex);
-                }
-                if (attrId != null) {
-                    AttrEntityTransactionVo attrEntityVo = new AttrEntityTransactionVo();
-                    attrEntityVo.setAttrId(attrId);
-                    JSONObject attrDataObj = attrObj.getJSONObject(key);
-                    JSONArray valueObjList = attrDataObj.getJSONArray("valueList");
-                    attrEntityVo.setValueList(valueObjList.stream().map(Object::toString).collect(Collectors.toList()));
-                    attrEntityList.add(attrEntityVo);
-                }
-            }
-            ciEntityTransactionVo.setAttrEntityTransactionList(attrEntityList);
-        }
-        // 解析关系数据
-        JSONObject relObj = jsonObj.getJSONObject("relEntityData");
-        if (MapUtils.isNotEmpty(relObj)) {
-            List<RelEntityTransactionVo> relEntityList = new ArrayList<>();
-            for (String key : relObj.keySet()) {
-                JSONArray relDataList = relObj.getJSONArray(key);
 
-                if (key.startsWith("relfrom_")) {// 当前配置项处于from位置
-                    if (CollectionUtils.isNotEmpty(relDataList)) {
-                        for (int i = 0; i < relDataList.size(); i++) {
-                            JSONObject relEntityObj = relDataList.getJSONObject(i);
-                            RelEntityTransactionVo relEntityVo = new RelEntityTransactionVo();
-                            relEntityVo.setRelId(Long.parseLong(key.replace("relfrom_", "")));
-                            relEntityVo.setToCiEntityId(relEntityObj.getLong("ciEntityId"));
-                            relEntityVo.setDirection(RelDirectionType.FROM.getValue());
-                            relEntityVo.setFromCiEntityId(ciEntityTransactionVo.getCiEntityId());
-                            relEntityVo.setAction(RelActionType.INSERT.getValue());// 默认是添加关系
-                            relEntityList.add(relEntityVo);
-                        }
-                    }
-                } else if (key.startsWith("relto_")) {// 当前配置项处于to位置
-                    if (CollectionUtils.isNotEmpty(relDataList)) {
-                        for (int i = 0; i < relDataList.size(); i++) {
-                            JSONObject relEntityObj = relDataList.getJSONObject(i);
-                            RelEntityTransactionVo relEntityVo = new RelEntityTransactionVo();
-                            relEntityVo.setRelId(Long.parseLong(key.replace("relto_", "")));
-                            relEntityVo.setFromCiEntityId(relEntityObj.getLong("ciEntityId"));
-                            relEntityVo.setDirection(RelDirectionType.TO.getValue());
-                            relEntityVo.setToCiEntityId(ciEntityTransactionVo.getCiEntityId());
-                            relEntityVo.setAction(RelActionType.INSERT.getValue());// 默认是添加关系
-                            relEntityList.add(relEntityVo);
-                        }
-                    }
-                }
-            }
-            ciEntityTransactionVo.setRelEntityTransactionList(relEntityList);
-        }
+        JSONObject attrObj = jsonObj.getJSONObject("attrEntityData");
+        ciEntityTransactionVo.setAttrEntityData(attrObj);
+
+        JSONObject relObj = jsonObj.getJSONObject("relEntityData");
+        ciEntityTransactionVo.setRelEntityData(relObj);
+
 
         Long transactionId = ciEntityService.saveCiEntity(ciEntityTransactionVo);
         JSONObject returnObj = new JSONObject();

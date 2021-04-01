@@ -1,9 +1,12 @@
 package codedriver.module.cmdb.prop.handler;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
+import codedriver.framework.cmdb.constvalue.SearchExpression;
+import codedriver.framework.cmdb.prop.core.IPropertyHandler;
+import codedriver.framework.common.dto.ValueTextVo;
+import codedriver.framework.matrix.dao.mapper.MatrixDataMapper;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -11,13 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.DigestUtils;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-
-import codedriver.framework.cmdb.constvalue.SearchExpression;
-import codedriver.framework.cmdb.prop.core.IPropertyHandler;
-import codedriver.framework.common.dto.ValueTextVo;
-import codedriver.framework.matrix.dao.mapper.MatrixDataMapper;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 @Component
 public class SelectPropHandler implements IPropertyHandler {
@@ -91,7 +90,7 @@ public class SelectPropHandler implements IPropertyHandler {
                 String textKey = config.getString("textKey");
                 String valueKey = config.getString("valueKey");
                 List<ValueTextVo> data =
-                    matrixDataMapper.getDynamicTableCellDataMap(matrixUuid, textKey, valueKey, values);
+                        matrixDataMapper.getDynamicTableCellDataMap(matrixUuid, textKey, valueKey, values, TenantContext.get().getTenantUuid());
                 if (CollectionUtils.isNotEmpty(data)) {
                     for (ValueTextVo vo : data) {
                         JSONObject obj = new JSONObject();

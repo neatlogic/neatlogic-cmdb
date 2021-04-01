@@ -5,7 +5,6 @@ import codedriver.framework.batch.BatchRunner;
 import codedriver.framework.cmdb.constvalue.RelActionType;
 import codedriver.framework.cmdb.constvalue.TransactionActionType;
 import codedriver.framework.cmdb.constvalue.TransactionStatus;
-import codedriver.module.cmdb.cischema.CiSchemaHandler;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.AttrEntityMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
@@ -126,7 +125,7 @@ public class RelServiceImpl implements RelService {
         //删除模型关系
         relMapper.deleteRelById(relVo.getId());
         //删除视图数据
-        CiSchemaHandler.deleteRel(relVo);
+        //CiSchemaHandler.deleteRel(relVo);
     }
 
 

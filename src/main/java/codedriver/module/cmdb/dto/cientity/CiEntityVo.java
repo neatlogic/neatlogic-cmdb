@@ -1,13 +1,19 @@
 package codedriver.module.cmdb.dto.cientity;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
+import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.cmdb.constvalue.AttrType;
 import codedriver.framework.cmdb.constvalue.EditModeType;
+import codedriver.framework.cmdb.constvalue.RelDirectionType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.elasticsearch.annotation.ESKey;
 import codedriver.framework.elasticsearch.constvalue.ESKeyType;
 import codedriver.framework.restful.annotation.EntityField;
 import codedriver.framework.util.SnowflakeUtil;
+import codedriver.module.cmdb.dto.ci.AttrVo;
+import codedriver.module.cmdb.dto.ci.CiVo;
+import codedriver.module.cmdb.dto.ci.RelVo;
 import codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -70,6 +76,12 @@ public class CiEntityVo extends BasePageVo {
     private transient List<AttrFilterVo> attrFilterList;
     @JSONField(serialize = false)
     private transient List<RelFilterVo> relFilterList;
+    @JSONField(serialize = false)//当前配置项所涉及的所有模型，包括自己
+    private transient List<CiVo> ciList;
+    @JSONField(serialize = false)//当前配置项包含的所有属性
+    private transient List<AttrVo> attrList;
+    @JSONField(serialize = false)//当前配置项包含的所有关系
+    private transient List<RelVo> relList;
     @JSONField(serialize = false)
     private transient String inputType;// 更新时设置输入方式
     @JSONField(serialize = false)
@@ -86,6 +98,8 @@ public class CiEntityVo extends BasePageVo {
     private transient List<Long> idList;// 需要查询的id列表
     @EntityField(name = "当前用户权限情况", type = ApiParamType.JSONOBJECT)
     private Map<String, Boolean> authData;
+    @JSONField(serialize = false)//动态属性
+    private transient Map<String, Object> attrEntityMap;
 
     public CiEntityVo() {
 
@@ -101,7 +115,18 @@ public class CiEntityVo extends BasePageVo {
         this.name = ciEntityTransactionVo.getName();
     }
 
+    /**
+     * 获取表名
+     *
+     * @return 表名
+     */
     @JSONField(serialize = false)
+    public String getCiTableName() {
+        return TenantContext.get().getDataDbName() + ".`cmdb_" + this.getCiId() + "`";
+    }
+
+    @JSONField(serialize = false)
+    @Deprecated
     public AttrEntityVo getAttrEntityByAttrId(Long attrId) {
         if (CollectionUtils.isNotEmpty(this.attrEntityList)) {
             for (AttrEntityVo attrEntityVo : this.attrEntityList) {
@@ -115,6 +140,7 @@ public class CiEntityVo extends BasePageVo {
     }
 
     @JSONField(serialize = false)
+    @Deprecated
     public RelEntityVo getRelEntityByRelId(Long relId) {
         if (CollectionUtils.isNotEmpty(this.relEntityList)) {
             for (RelEntityVo relEntityVo : this.relEntityList) {
@@ -145,7 +171,18 @@ public class CiEntityVo extends BasePageVo {
         this.ciId = ciId;
     }
 
+    public List<CiVo> getCiList() {
+        return ciList;
+    }
+
+    public void setCiList(List<CiVo> ciList) {
+        this.ciList = ciList;
+    }
+
     public String getFcu() {
+        if (StringUtils.isBlank(fcu)) {
+            return UserContext.get().getUserUuid(true);
+        }
         return fcu;
     }
 
@@ -162,6 +199,9 @@ public class CiEntityVo extends BasePageVo {
     }
 
     public String getLcu() {
+        if (StringUtils.isBlank(lcu)) {
+            return UserContext.get().getUserUuid(true);
+        }
         return lcu;
     }
 
@@ -219,16 +259,8 @@ public class CiEntityVo extends BasePageVo {
         }
     }
 
-    public List<AttrEntityVo> getAttrEntityList() {
-        return attrEntityList;
-    }
-
     public void setAttrEntityList(List<AttrEntityVo> attrEntityList) {
         this.attrEntityList = attrEntityList;
-    }
-
-    public List<RelEntityVo> getRelEntityList() {
-        return relEntityList;
     }
 
     public void setRelEntityList(List<RelEntityVo> relEntityList) {
@@ -279,18 +311,48 @@ public class CiEntityVo extends BasePageVo {
         this.name = name;
     }
 
-    public String getName() {
-        if (StringUtils.isBlank(name) && CollectionUtils.isNotEmpty(attrEntityList)) {
-            for (AttrEntityVo attrEntityVo : attrEntityList) {
-                if ("name".equals(attrEntityVo.getAttrName())) {
-                    JSONObject attrData = getAttrEntityData();
-                    if (attrData != null && attrData.containsKey("attr_" + attrEntityVo.getAttrId())) {
-                        return attrData.getJSONObject("attr_" + attrEntityVo.getAttrId()).getJSONArray("valueList")
-                                .stream().map(Object::toString).collect(Collectors.joining("_"));
+    public String getName(String nameExpression) {
+        if (CollectionUtils.isNotEmpty(attrEntityList)) {
+            if (StringUtils.isBlank(nameExpression)) {
+                for (AttrEntityVo attrEntityVo : attrEntityList) {
+                    if ("name".equals(attrEntityVo.getAttrName())) {
+                        JSONObject attrData = getAttrEntityData();
+                        if (attrData != null && attrData.containsKey("attr_" + attrEntityVo.getAttrId())) {
+                            return attrData.getJSONObject("attr_" + attrEntityVo.getAttrId()).getJSONArray("valueList")
+                                    .stream().map(Object::toString).collect(Collectors.joining("_"));
+                        }
                     }
                 }
+            } else {
+                String regex = "\\{([^}]+?)}";
+                Matcher matcher = Pattern.compile(regex).matcher(nameExpression);
+                Set<String> labelSet = new HashSet<>();
+                while (matcher.find()) {
+                    labelSet.add(matcher.group(1));
+                }
+                String ciEntityName = nameExpression;
+                if (!labelSet.isEmpty()) {
+                    for (AttrEntityVo attrEntityVo : attrEntityList) {
+                        if (labelSet.contains(attrEntityVo.getAttrName())) {
+                            StringBuilder value = new StringBuilder();
+                            for (String v : attrEntityVo.getActualValueList()) {
+                                if (!value.toString().equals("")) {
+                                    value.append(";");
+                                }
+                                value.append(v);
+                            }
+                            ciEntityName = ciEntityName.replace("{" + attrEntityVo.getAttrName() + "}", value.toString());
+                            labelSet.remove(attrEntityVo.getAttrName());
+                        }
+                    }
+                }
+                return ciEntityName;
             }
         }
+        return "";
+    }
+
+    public String getName() {
         return name;
     }
 
@@ -312,7 +374,97 @@ public class CiEntityVo extends BasePageVo {
 
     private static final String regex = "\\{([^}]+?)}";
 
+    /**
+     * 添加一个属性数据值
+     *
+     * @param attrId      属性id
+     * @param value       属性值
+     * @param actualValue 真实属性值（如果是下拉换成真实的应用值）
+     */
+    public void addAttrEntityDataValue(Long attrId, String value, String actualValue) {
+        if (StringUtils.isNotBlank(value) && attrEntityData.containsKey("attr_" + attrId)) {
+            JSONObject attrObj = attrEntityData.getJSONObject("attr_" + attrId);
+            JSONArray valueList = attrObj.getJSONArray("valueList");
+            JSONArray actualValueList = attrObj.getJSONArray("actualValueList");
+            if (!valueList.contains(value)) {
+                valueList.add(value);
+                actualValueList.add(actualValue);
+            }
+        }
+    }
+
+
+    /**
+     * 检查是否有数据项
+     *
+     * @param attrId 属性id
+     * @return true/false
+     */
+    public boolean hasAttrEntityData(Long attrId) {
+        return attrEntityData != null && attrEntityData.containsKey("attr_" + attrId);
+    }
+
+    /**
+     * 根据属性id获取属性值
+     *
+     * @param attrId 属性id
+     * @return 包含数据的json
+     */
+    public JSONObject getAttrEntityDataByAttrId(Long attrId) {
+        if (attrEntityData != null) {
+            return attrEntityData.getJSONObject("attr_" + attrId);
+        }
+        return null;
+    }
+
+    /**
+     * 添加一个属性数据项
+     *
+     * @param attrId  属性id
+     * @param attrObj 属性数据项
+     */
+    public void addAttrEntityData(Long attrId, JSONObject attrObj) {
+        if (attrEntityData == null) {
+            attrEntityData = new JSONObject();
+        }
+        attrEntityData.put("attr_" + attrId, attrObj);
+    }
+
     public JSONObject getAttrEntityData() {
+        return attrEntityData;
+    }
+
+    public List<AttrEntityVo> getAttrEntityList() {
+        if (attrEntityList == null) {
+            attrEntityList = new ArrayList<>();
+        }
+        if (CollectionUtils.isEmpty(attrEntityList) && MapUtils.isNotEmpty(attrEntityData)) {
+            for (String key : attrEntityData.keySet()) {
+                AttrEntityVo attrEntityVo = new AttrEntityVo();
+                JSONObject attrEntityObj = attrEntityData.getJSONObject(key);
+                attrEntityVo.setAttrId(Long.parseLong(key.replace("attr_", "")));
+                attrEntityVo.setAttrType(attrEntityObj.getString("type"));
+                attrEntityVo.setAttrName(attrEntityObj.getString("name"));
+                attrEntityVo.setAttrLabel(attrEntityObj.getString("label"));
+                List<String> valueList = new ArrayList<>();
+                for (int i = 0; i < attrEntityObj.getJSONArray("valueList").size(); i++) {
+                    valueList.add(attrEntityObj.getJSONArray("valueList").getString(i));
+                }
+                attrEntityVo.setValueList(valueList);
+
+                List<String> actualValueList = new ArrayList<>();
+                for (int i = 0; i < attrEntityObj.getJSONArray("actualValueList").size(); i++) {
+                    actualValueList.add(attrEntityObj.getJSONArray("actualValueList").getString(i));
+                }
+                attrEntityVo.setActualValueList(actualValueList);
+                attrEntityList.add(attrEntityVo);
+            }
+        }
+        return attrEntityList;
+    }
+
+    @Deprecated
+    public JSONObject getAttrEntityData_bak() {
         if (attrEntityData == null) {
             attrEntityData = new JSONObject();
         }
@@ -359,9 +511,7 @@ public class CiEntityVo extends BasePageVo {
                     vl.add(v);
                     attrObj.put("valueList", vl);
                 } else if (attrEntityVo.getAttrType().equals(AttrType.PROPERTY.getValue())) {
-                    attrObj.put("handler", attrEntityVo.getPropHandler());
                     attrObj.put("valueList", attrEntityVo.getValueList());
-                    attrObj.put("propId", attrEntityVo.getPropId());
                 } else if (attrEntityVo.getAttrType().equals(AttrType.CUSTOM.getValue())) {
                     attrObj.put("valueList", attrEntityVo.getValueList());
                 }
@@ -372,7 +522,97 @@ public class CiEntityVo extends BasePageVo {
         return attrEntityData;
     }
 
+    public List<RelEntityVo> getRelEntityList() {
+        if (relEntityList == null) {
+            relEntityList = new ArrayList<>();
+        }
+        if (CollectionUtils.isEmpty(relEntityList) && MapUtils.isNotEmpty(relEntityData)) {
+            for (String key : relEntityData.keySet()) {
+                JSONObject relEntityObj = relEntityData.getJSONObject(key);
+                JSONArray valueList = relEntityObj.getJSONArray("valueList");
+                for (int i = 0; i < valueList.size(); i++) {
+                    JSONObject valueObj = valueList.getJSONObject(i);
+                    RelEntityVo relEntityVo = new RelEntityVo();
+                    relEntityVo.setRelId(relEntityObj.getLong("relId"));
+                    relEntityVo.setDirection(relEntityObj.getString("direction"));
+                    relEntityVo.setRelName(relEntityObj.getString("name"));
+                    relEntityVo.setRelLabel(relEntityObj.getString("label"));
+                    if (relEntityVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
+                        relEntityVo.setToCiId(valueObj.getLong("ciId"));
+                        relEntityVo.setToCiEntityId(valueObj.getLong("ciEntityId"));
+                        relEntityVo.setToCiEntityName(valueObj.getString("ciEntityName"));
+                    } else {
+                        relEntityVo.setFromCiId(valueObj.getLong("ciId"));
+                        relEntityVo.setFromCiEntityId(valueObj.getLong("ciEntityId"));
+                        relEntityVo.setFromCiEntityName(valueObj.getString("ciEntityName"));
+                    }
+                    relEntityList.add(relEntityVo);
+                }
+            }
+        }
+        return relEntityList;
+    }
+
+    /**
+     * 添加一个关系数据值
+     *
+     * @param relId     关系id
+     * @param direction 方向
+     * @param valueObj  关系值
+     */
+    public void addRelEntityDataValue(Long relId, String direction, JSONObject valueObj) {
+        if (MapUtils.isNotEmpty(valueObj) && relEntityData.containsKey("rel" + direction + "_" + relId)) {
+            JSONObject relObj = relEntityData.getJSONObject("rel" + direction + "_" + relId);
+            JSONArray valueList = relObj.getJSONArray("valueList");
+            if (!valueList.contains(valueObj)) {
+                valueList.add(valueObj);
+            }
+        }
+    }
+
+    /**
+     * 检查是否有数据项
+     *
+     * @param relId 关系id
+     * @return true/false
+     */
+    public boolean hasRelEntityData(Long relId, String direction) {
+        return relEntityData != null && relEntityData.containsKey("rel" + direction + "_" + relId);
+    }
+
+    /**
+     * 根据关系id获取属性值
+     *
+     * @param relId 关系id
+     * @return 包含数据的json
+     */
+    public JSONObject getRelEntityDataByRelId(Long relId, String direction) {
+        if (relEntityData != null) {
+            return relEntityData.getJSONObject("rel" + direction + "_" + relId);
+        }
+        return null;
+    }
+
+    /**
+     * 添加一个属性数据项
+     *
+     * @param relId  关系id
+     * @param relObj 关系数据项
+     */
+    public void addRelEntityData(Long relId, String direction, JSONObject relObj) {
+        if (relEntityData == null) {
+            attrEntityData = new JSONObject();
+        }
+        attrEntityData.put("rel" + direction + "_" + relId, relObj);
+    }
+
+
     public JSONObject getRelEntityData() {
+        return relEntityData;
+    }
+
+    @Deprecated
+    public JSONObject getRelEntityData_old() {
         if (relEntityData == null) {
             relEntityData = new JSONObject();
         }
@@ -487,13 +727,27 @@ public class CiEntityVo extends BasePageVo {
         this.ciLabel = ciLabel;
     }
 
-    public List<String> getKeywordList() {
-        if (StringUtils.isNotBlank(keyword)) {
-            return Arrays.asList(keyword.split("\\s+"));
-        } else {
-            return null;
-        }
+    public Map<String, Object> getAttrEntityMap() {
+        return attrEntityMap;
     }
 
+    public void setAttrEntityMap(Map<String, Object> attrEntityMap) {
+        this.attrEntityMap = attrEntityMap;
+    }
 
+    public List<AttrVo> getAttrList() {
+        return attrList;
+    }
+
+    public void setAttrList(List<AttrVo> attrList) {
+        this.attrList = attrList;
+    }
+
+    public List<RelVo> getRelList() {
+        return relList;
+    }
+
+    public void setRelList(List<RelVo> relList) {
+        this.relList = relList;
+    }
 }

@@ -1,30 +1,13 @@
+/*
+ * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+ */
+
 package codedriver.module.cmdb.process.stephandler;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.stream.Collectors;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.asynchronization.thread.CodeDriverThread;
 import codedriver.framework.asynchronization.threadpool.CachedThreadPool;
 import codedriver.framework.cmdb.constvalue.EditModeType;
-import codedriver.framework.cmdb.constvalue.RelActionType;
-import codedriver.framework.cmdb.constvalue.RelDirectionType;
 import codedriver.framework.cmdb.constvalue.TransactionActionType;
 import codedriver.framework.process.constvalue.ProcessStepMode;
 import codedriver.framework.process.dao.mapper.ProcessTaskStepDataMapper;
@@ -35,18 +18,21 @@ import codedriver.framework.process.dto.ProcessTaskStepWorkerVo;
 import codedriver.framework.process.exception.core.ProcessTaskException;
 import codedriver.framework.process.stephandler.core.ProcessStepHandlerBase;
 import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
-import codedriver.module.cmdb.dto.transaction.AttrEntityTransactionVo;
 import codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo;
-import codedriver.module.cmdb.dto.transaction.RelEntityTransactionVo;
 import codedriver.module.cmdb.dto.transaction.TransactionGroupVo;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-/**
- * @Author:chenqiwei
- * @Time:2020年11月10日
- * @ClassName: CiEntitySyncProcessComponent
- * @Description: 同步配置项数据流程组件
- */
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
+
 @Service
 public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
     static Logger logger = LoggerFactory.getLogger(CiEntitySyncProcessComponent.class);
@@ -102,7 +88,7 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
     @Override
     protected int myActive(ProcessTaskStepVo currentProcessTaskStepVo) throws ProcessTaskException {
         ProcessTaskStepVo processTaskStepVo =
-            processTaskMapper.getProcessTaskStepBaseInfoById(currentProcessTaskStepVo.getId());
+                processTaskMapper.getProcessTaskStepBaseInfoById(currentProcessTaskStepVo.getId());
         String stepConfig = selectContentByHashMapper.getProcessTaskStepConfigByHash(processTaskStepVo.getConfigHash());
         // 获取参数
         Map<Long, JSONArray> syncCiEntityMap = new HashMap<>();
@@ -117,7 +103,7 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
                         p.setProcessTaskId(currentProcessTaskStepVo.getProcessTaskId());
                         p.setAttributeUuid(handlerList.getString(hindex));
                         ProcessTaskFormAttributeDataVo processTaskFormAttributeDataVo =
-                            processTaskMapper.getProcessTaskFormAttributeDataByProcessTaskIdAndAttributeUuid(p);
+                                processTaskMapper.getProcessTaskFormAttributeDataByProcessTaskIdAndAttributeUuid(p);
                         if (processTaskFormAttributeDataVo != null) {
                             JSONArray dataList = JSONArray.parseArray(processTaskFormAttributeDataVo.getData());
                             for (int dindex = 0; dindex < dataList.size(); dindex++) {
@@ -145,7 +131,7 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
             CountDownLatch countDownLatch = new CountDownLatch(1);
             // 为了隔离配置项保存和流程的事务，所以需要另起线程执行
             CachedThreadPool
-                .execute(new CiEntitySyncThread(syncCiEntityMap, auditList, transactionGroupVo, countDownLatch));
+                    .execute(new CiEntitySyncThread(syncCiEntityMap, auditList, transactionGroupVo, countDownLatch));
             try {
                 countDownLatch.await();
             } catch (InterruptedException e) {
@@ -171,13 +157,13 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
     }
 
     private class CiEntitySyncThread extends CodeDriverThread {
-        private Map<Long, JSONArray> ciEntitySyncMap;
-        private JSONArray auditList;
-        private TransactionGroupVo transactionGroupVo;
-        private CountDownLatch countDownLatch;
+        private final Map<Long, JSONArray> ciEntitySyncMap;
+        private final JSONArray auditList;
+        private final TransactionGroupVo transactionGroupVo;
+        private final CountDownLatch countDownLatch;
 
         public CiEntitySyncThread(Map<Long, JSONArray> _ciEntitySyncMap, JSONArray _auditList,
-            TransactionGroupVo _transactionGroupVo, CountDownLatch _countDownLatch) {
+                                  TransactionGroupVo _transactionGroupVo, CountDownLatch _countDownLatch) {
             ciEntitySyncMap = _ciEntitySyncMap;
             auditList = _auditList;
             transactionGroupVo = _transactionGroupVo;
@@ -197,7 +183,7 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
                         JSONObject ciEntityObj = ciEntitySyncList.getJSONObject(entityIndex);
                         try {
                             if ("delete".equalsIgnoreCase(ciEntityObj.getString("form_actiontype"))
-                                && ciEntityObj.getLong("id") != null) {
+                                    && ciEntityObj.getLong("id") != null) {
                                 // 删除操作
                                 ciEntityService.deleteCiEntity(ciEntityObj.getLong("id"));
                                 continue;
@@ -217,68 +203,10 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
                             }
                             // 解析属性数据
                             JSONObject attrObj = ciEntityObj.getJSONObject("attrEntityData");
-                            if (MapUtils.isNotEmpty(attrObj)) {
-                                List<AttrEntityTransactionVo> attrEntityList = new ArrayList<>();
-                                Iterator<String> keys = attrObj.keySet().iterator();
-                                while (keys.hasNext()) {
-                                    String key = keys.next();
-                                    Long attrId = null;
-                                    try {
-                                        attrId = Long.parseLong(key.replace("attr_", ""));
-                                    } catch (Exception ex) {
-                                        logger.error(ex.getMessage(), ex);
-                                    }
-                                    if (attrId != null) {
-                                        AttrEntityTransactionVo attrEntityVo = new AttrEntityTransactionVo();
-                                        attrEntityVo.setAttrId(attrId);
-                                        JSONObject attrDataObj = attrObj.getJSONObject(key);
-                                        JSONArray valueObjList = attrDataObj.getJSONArray("valueList");
-                                        attrEntityVo.setValueList(
-                                            valueObjList.stream().map(v -> v.toString()).collect(Collectors.toList()));
-                                        attrEntityList.add(attrEntityVo);
-                                    }
-                                }
-                                ciEntityTransactionVo.setAttrEntityTransactionList(attrEntityList);
-                            }
+                            ciEntityTransactionVo.setAttrEntityData(attrObj);
                             // 解析关系数据
                             JSONObject relObj = ciEntityObj.getJSONObject("relEntityData");
-                            if (MapUtils.isNotEmpty(relObj)) {
-                                List<RelEntityTransactionVo> relEntityList = new ArrayList<>();
-                                Iterator<String> keys = relObj.keySet().iterator();
-                                while (keys.hasNext()) {
-                                    String key = keys.next();
-                                    JSONArray relDataList = relObj.getJSONArray(key);
-
-                                    if (key.startsWith("relfrom_")) {// 当前配置项处于from位置
-                                        if (CollectionUtils.isNotEmpty(relDataList)) {
-                                            for (int i = 0; i < relDataList.size(); i++) {
-                                                JSONObject relEntityObj = relDataList.getJSONObject(i);
-                                                RelEntityTransactionVo relEntityVo = new RelEntityTransactionVo();
-                                                relEntityVo.setRelId(Long.parseLong(key.replace("relfrom_", "")));
-                                                relEntityVo.setToCiEntityId(relEntityObj.getLong("ciEntityId"));
-                                                relEntityVo.setDirection(RelDirectionType.FROM.getValue());
-                                                relEntityVo.setFromCiEntityId(ciEntityTransactionVo.getCiEntityId());
-                                                relEntityVo.setAction(RelActionType.INSERT.getValue());// 默认是添加关系
-                                                relEntityList.add(relEntityVo);
-                                            }
-                                        }
-                                    } else if (key.startsWith("relto_")) {// 当前配置项处于to位置
-                                        if (CollectionUtils.isNotEmpty(relDataList)) {
-                                            for (int i = 0; i < relDataList.size(); i++) {
-                                                JSONObject relEntityObj = relDataList.getJSONObject(i);
-                                                RelEntityTransactionVo relEntityVo = new RelEntityTransactionVo();
-                                                relEntityVo.setRelId(Long.parseLong(key.replace("relto_", "")));
-                                                relEntityVo.setFromCiEntityId(relEntityObj.getLong("ciEntityId"));
-                                                relEntityVo.setDirection(RelDirectionType.TO.getValue());
-                                                relEntityVo.setToCiEntityId(ciEntityTransactionVo.getCiEntityId());
-                                                relEntityVo.setAction(RelActionType.INSERT.getValue());// 默认是添加关系
-                                                relEntityList.add(relEntityVo);
-                                            }
-                                        }
-                                    }
-                                }
-                                ciEntityTransactionVo.setRelEntityTransactionList(relEntityList);
-                            }
+                            ciEntityTransactionVo.setRelEntityData(relObj);
                             // 因为不一定编辑所有属性，所以需要切换成局部更新模式
                             ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
                             Long transactionId = ciEntityService.saveCiEntity(ciEntityTransactionVo);
@@ -304,19 +232,19 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
 
     @Override
     protected int myTransfer(ProcessTaskStepVo currentProcessTaskStepVo, List<ProcessTaskStepWorkerVo> workerList)
-        throws ProcessTaskException {
+            throws ProcessTaskException {
         return 1;
     }
 
     @Override
     protected int myAssign(ProcessTaskStepVo currentProcessTaskStepVo, Set<ProcessTaskStepWorkerVo> workerSet)
-        throws ProcessTaskException {
+            throws ProcessTaskException {
         return defaultAssign(currentProcessTaskStepVo, workerSet);
     }
 
     @Override
     protected Set<ProcessTaskStepVo> myGetNext(ProcessTaskStepVo currentProcessTaskStepVo,
-        List<ProcessTaskStepVo> nextStepList, Long nextStepId) throws ProcessTaskException {
+                                               List<ProcessTaskStepVo> nextStepList, Long nextStepId) throws ProcessTaskException {
         Set<ProcessTaskStepVo> nextStepSet = new HashSet<>();
         if (nextStepList.size() == 1) {
             nextStepSet.add(nextStepList.get(0));
@@ -332,6 +260,11 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
             }
         }
         return nextStepSet;
+    }
+
+    @Override
+    protected int myRedo(ProcessTaskStepVo currentProcessTaskStepVo) throws ProcessTaskException {
+        return 0;
     }
 
     @Override

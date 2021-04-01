@@ -1,9 +1,8 @@
 package codedriver.module.cmdb.api.batchimport;
 
-import codedriver.framework.cmdb.constvalue.RelRuleType;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.*;
+import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
 import codedriver.module.cmdb.dto.ci.AttrVo;
 import codedriver.module.cmdb.dto.ci.CiVo;
@@ -74,10 +73,10 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
             JSONArray relIdArray = paramObj.getJSONArray("relIdList");
             List<Long> attrIdList = null;
             List<Long> relIdList = null;
-            if(CollectionUtils.isNotEmpty(attrIdArray)){
+            if (CollectionUtils.isNotEmpty(attrIdArray)) {
                 attrIdList = attrIdArray.toJavaList(Long.class);
             }
-            if(CollectionUtils.isNotEmpty(relIdArray)){
+            if (CollectionUtils.isNotEmpty(relIdArray)) {
                 relIdList = relIdArray.toJavaList(Long.class);
             }
 
@@ -86,7 +85,7 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
             }
 
             CiVo ciVo = ciService.getCiById(ciId);
-            if(ciVo == null){
+            if (ciVo == null) {
                 throw new CiNotFoundException(ciId);
             }
 
@@ -132,7 +131,7 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
             idcell.setCellValue("id");
             i++;
             /** 属性 */
-            if(CollectionUtils.isNotEmpty(ciVo.getAttrList()) && CollectionUtils.isNotEmpty(attrIdList)){
+            if (CollectionUtils.isNotEmpty(ciVo.getAttrList()) && CollectionUtils.isNotEmpty(attrIdList)) {
                 for (AttrVo attr : ciVo.getAttrList()) {
                     if (attrIdList.contains(attr.getId())) {
                         String label = attr.getLabel();
@@ -159,22 +158,22 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
                     }
                 }
             }
-            /** 关系 */
-            if(CollectionUtils.isNotEmpty(ciVo.getRelList()) && CollectionUtils.isNotEmpty(relIdList)){
+            /* 关系 */
+            if (CollectionUtils.isNotEmpty(ciVo.getRelList()) && CollectionUtils.isNotEmpty(relIdList)) {
                 for (RelVo rel : ciVo.getRelList()) {
                     if (relIdList.contains(rel.getId())) {
-                        if(rel.getFromCiId().equals(ciVo.getId())){ //当前CI处于from
+                        if (rel.getFromCiId().equals(ciVo.getId())) { //当前CI处于from
                             String label = rel.getToLabel();
-                            if(rel.getToRule().equals(RelRuleType.OO.getValue()) || rel.getToRule().equals(RelRuleType.ON.getValue())){
+                            if (rel.getToIsRequired().equals(1)) {
                                 label = label + "[(必填)]";
                             }
                             HSSFCell cell = row.createCell(i);
                             cell.setCellStyle(style);
                             cell.setCellValue(label);
                             i++;
-                        }else if(rel.getToCiId().equals(ciVo.getId())){//当前CI处于to
+                        } else if (rel.getToCiId().equals(ciVo.getId())) {//当前CI处于to
                             String label = rel.getFromLabel();
-                            if(rel.getFromRule().equals(RelRuleType.OO.getValue()) || rel.getFromRule().equals(RelRuleType.ON.getValue())){
+                            if (rel.getFromIsRequired().equals(1)) {
                                 label = label + "[(必填)]";
                             }
                             HSSFCell cell = row.createCell(i);

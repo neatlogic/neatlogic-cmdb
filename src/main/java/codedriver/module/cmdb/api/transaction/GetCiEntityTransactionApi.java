@@ -87,104 +87,90 @@ public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
         if (CollectionUtils.isNotEmpty(ciEntityTransactionList)) {
             for (CiEntityTransactionVo ciEntityTransactionVo : ciEntityTransactionList) {
                 if (ciEntityTransactionVo != null) {
-                    List<AttrEntityTransactionVo> attrEntityTransactionList =
-                            transactionMapper.getAttrEntityTransactionByTransactionIdAndCiEntityId(transactionId,
-                                    ciEntityTransactionVo.getCiEntityId());
-                    List<RelEntityTransactionVo> relEntityTransactionList =
-                            transactionMapper.getRelEntityTransactionByTransactionIdAndCiEntityId(transactionId,
-                                    ciEntityTransactionVo.getCiEntityId());
-                    if (CollectionUtils.isNotEmpty(attrEntityTransactionList)
-                            || CollectionUtils.isNotEmpty(relEntityTransactionList)) {
-
-                        String snapshot =
-                                ciEntitySnapshotMapper.getSnapshotContentByHash(ciEntityTransactionVo.getSnapshotHash());
-                        JSONObject oldAttrEntityData = null;
-                        JSONObject oldRelEntityData = null;
-                        if (StringUtils.isNotBlank(snapshot)) {
-                            JSONObject oldCiEntityObj = JSONObject.parseObject(snapshot);
-                            oldAttrEntityData = oldCiEntityObj.getJSONObject("attrEntityData");
-                            oldRelEntityData = oldCiEntityObj.getJSONObject("relEntityData");
+                    JSONObject oldAttrEntityData = null;
+                    JSONObject oldRelEntityData = null;
+                    if (StringUtils.isNotBlank(ciEntityTransactionVo.getSnapshot())) {
+                        JSONObject oldCiEntityObj = JSONObject.parseObject(ciEntityTransactionVo.getSnapshot());
+                        oldAttrEntityData = oldCiEntityObj.getJSONObject("attrEntityData");
+                        oldRelEntityData = oldCiEntityObj.getJSONObject("relEntityData");
+                    }
+                    for (AttrEntityTransactionVo attrEntityTransactionVo : ciEntityTransactionVo.getAttrEntityTransactionList()) {
+                        JSONObject dataObj = new JSONObject();
+                        dataObj.put("id", "attr_" + attrEntityTransactionVo.getAttrId());
+                        dataObj.put("label", attrEntityTransactionVo.getAttrLabel());
+                        dataObj.put("type", "attr");
+                        dataObj.put("saveMode", attrEntityTransactionVo.getSaveMode());
+                        dataObj.put("newValueList", attrEntityTransactionVo.getValueList());
+                        if (oldAttrEntityData != null
+                                && oldAttrEntityData.containsKey("attr_" + attrEntityTransactionVo.getAttrId())) {
+                            dataObj.put("oldValueList",
+                                    oldAttrEntityData.getJSONObject("attr_" + attrEntityTransactionVo.getAttrId())
+                                            .getJSONArray("valueList"));
                         }
-                        for (AttrEntityTransactionVo attrEntityTransactionVo : attrEntityTransactionList) {
+                        dataList.add(dataObj);
+                    }
+                    if (CollectionUtils.isNotEmpty(ciEntityTransactionVo.getRelEntityTransactionList())) {
+                        Map<String, List<RelEntityTransactionVo>> relGroupMap = ciEntityTransactionVo.getRelEntityTransactionList().stream()
+                                .collect(Collectors.groupingBy(GetCiEntityTransactionApi::getRelGroupKey));
+                        for (String key : relGroupMap.keySet()) {
+                            String[] keys = key.split("#");
+                            long relId = Long.parseLong(keys[0].trim());
+                            String direction = keys[1].trim();
+                            String endName = keys[2].trim();
+                            String relName = keys[3].trim();
+                            List<RelEntityTransactionVo> relList = relGroupMap.get(key);
+                            JSONArray newValueList = new JSONArray();
                             JSONObject dataObj = new JSONObject();
-                            dataObj.put("id", "attr_" + attrEntityTransactionVo.getAttrId());
-                            dataObj.put("label", attrEntityTransactionVo.getAttrLabel());
-                            dataObj.put("type", "attr");
-                            dataObj.put("saveMode", attrEntityTransactionVo.getSaveMode());
-                            dataObj.put("propId", attrEntityTransactionVo.getPropId());
-                            dataObj.put("propHandler", attrEntityTransactionVo.getPropHandler());
-                            dataObj.put("newValueList", attrEntityTransactionVo.getValueList());
-                            if (oldAttrEntityData != null
-                                    && oldAttrEntityData.containsKey("attr_" + attrEntityTransactionVo.getAttrId())) {
-                                dataObj.put("oldValueList",
-                                        oldAttrEntityData.getJSONObject("attr_" + attrEntityTransactionVo.getAttrId())
-                                                .getJSONArray("valueList"));
-                            }
-                            dataList.add(dataObj);
-                        }
-                        if (CollectionUtils.isNotEmpty(relEntityTransactionList)) {
-                            Map<String, List<RelEntityTransactionVo>> relGroupMap = relEntityTransactionList.stream()
-                                    .collect(Collectors.groupingBy(GetCiEntityTransactionApi::getRelGroupKey));
-                            for (String key : relGroupMap.keySet()) {
-                                String[] keys = key.split("#");
-                                long relId = Long.parseLong(keys[0].trim());
-                                String direction = keys[1].trim();
-                                String endName = keys[2].trim();
-                                String relName = keys[3].trim();
-                                List<RelEntityTransactionVo> relList = relGroupMap.get(key);
-                                JSONArray newValueList = new JSONArray();
-                                JSONObject dataObj = new JSONObject();
 
-                                for (RelEntityTransactionVo relEntity : relList) {
-                                    JSONObject vObj = new JSONObject();
-                                    if (direction.equals(RelDirectionType.FROM.getValue())) {
-                                        vObj.put("ciEntityName", relEntity.getToCiEntityName());
-                                        vObj.put("ciEntityId", relEntity.getToCiEntityId());
-                                        vObj.put("ciId", relEntity.getToCiId());
-                                        vObj.put("action", relEntity.getAction());
-                                        vObj.put("actionText", relEntity.getActionText());
-                                        newValueList.add(vObj);
+                            for (RelEntityTransactionVo relEntity : relList) {
+                                JSONObject vObj = new JSONObject();
+                                if (direction.equals(RelDirectionType.FROM.getValue())) {
+                                    vObj.put("ciEntityName", relEntity.getToCiEntityName());
+                                    vObj.put("ciEntityId", relEntity.getToCiEntityId());
+                                    vObj.put("ciId", relEntity.getToCiId());
+                                    vObj.put("action", relEntity.getAction());
+                                    vObj.put("actionText", relEntity.getActionText());
+                                    newValueList.add(vObj);
                                         /*由于对端模型id是从关系表中获取，所以如果关系删除，则模型id也会删除，所以需要先看relId是否存在，
                                         如果relId不存在，是关系删除的场景，如果relId存在且ciId不存在，才是模型删除的场景
                                          */
-                                        RelVo relVo = relMapper.getRelBaseInfoById(relEntity.getRelId());
-                                        if (relVo == null) {
-                                            dataObj.put("relDeleted", true);
-                                        } else if (relEntity.getToCiId() == null) {
-                                            dataObj.put("ciDeleted", true);
-                                        } else if (relEntity.getToCiEntityId() == null) {
-                                            dataObj.put("ciEntityDeleted", true);
-                                        }
-                                    } else if (direction.equals(RelDirectionType.TO.getValue())) {
-                                        vObj.put("ciEntityName", relEntity.getFromCiEntityName());
-                                        vObj.put("ciEntityId", relEntity.getFromCiEntityId());
-                                        vObj.put("ciId", relEntity.getFromCiId());
-                                        vObj.put("action", relEntity.getAction());
-                                        vObj.put("actionText", relEntity.getActionText());
-                                        newValueList.add(vObj);
-                                        RelVo relVo = relMapper.getRelBaseInfoById(relEntity.getRelId());
-                                        if (relVo == null) {
-                                            dataObj.put("relDeleted", true);
-                                        } else if (relEntity.getFromCiId() == null) {
-                                            dataObj.put("ciDeleted", true);
-                                        } else if (relEntity.getFromCiEntityId() == null) {
-                                            dataObj.put("ciEntityDeleted", true);
-                                        }
+                                    RelVo relVo = relMapper.getRelBaseInfoById(relEntity.getRelId());
+                                    if (relVo == null) {
+                                        dataObj.put("relDeleted", true);
+                                    } else if (relEntity.getToCiId() == null) {
+                                        dataObj.put("ciDeleted", true);
+                                    } else if (relEntity.getToCiEntityId() == null) {
+                                        dataObj.put("ciEntityDeleted", true);
+                                    }
+                                } else if (direction.equals(RelDirectionType.TO.getValue())) {
+                                    vObj.put("ciEntityName", relEntity.getFromCiEntityName());
+                                    vObj.put("ciEntityId", relEntity.getFromCiEntityId());
+                                    vObj.put("ciId", relEntity.getFromCiId());
+                                    vObj.put("action", relEntity.getAction());
+                                    vObj.put("actionText", relEntity.getActionText());
+                                    newValueList.add(vObj);
+                                    RelVo relVo = relMapper.getRelBaseInfoById(relEntity.getRelId());
+                                    if (relVo == null) {
+                                        dataObj.put("relDeleted", true);
+                                    } else if (relEntity.getFromCiId() == null) {
+                                        dataObj.put("ciDeleted", true);
+                                    } else if (relEntity.getFromCiEntityId() == null) {
+                                        dataObj.put("ciEntityDeleted", true);
                                     }
                                 }
-
-                                dataObj.put("id", "rel" + direction + "_" + relId);
-                                dataObj.put("relName", relName);
-                                dataObj.put("endName", endName);
-                                dataObj.put("type", "rel");
-                                dataObj.put("newValueList", newValueList);
-                                if (oldRelEntityData != null
-                                        && oldRelEntityData.containsKey("rel" + direction + "_" + relId)) {
-                                    dataObj.put("oldValueList",
-                                            oldRelEntityData.getJSONObject("rel" + direction + "_" + relId).getJSONArray("valueList"));
-                                }
-                                dataList.add(dataObj);
                             }
+
+                            dataObj.put("id", "rel" + direction + "_" + relId);
+                            dataObj.put("relName", relName);
+                            dataObj.put("endName", endName);
+                            dataObj.put("type", "rel");
+                            dataObj.put("newValueList", newValueList);
+                            if (oldRelEntityData != null
+                                    && oldRelEntityData.containsKey("rel" + direction + "_" + relId)) {
+                                dataObj.put("oldValueList",
+                                        oldRelEntityData.getJSONObject("rel" + direction + "_" + relId).getJSONArray("valueList"));
+                            }
+                            dataList.add(dataObj);
                         }
                     }
                 }
