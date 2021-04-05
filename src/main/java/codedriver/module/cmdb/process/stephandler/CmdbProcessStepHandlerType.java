@@ -1,6 +1,6 @@
 package codedriver.module.cmdb.process.stephandler;
 
-import codedriver.framework.process.constvalue.IProcessStepHandlerType;
+import codedriver.framework.process.stephandler.core.IProcessStepHandlerType;
 
 public enum CmdbProcessStepHandlerType implements IProcessStepHandlerType {
     CIENTITYSYNC("cientitysync", "process", "配置项同步");
@@ -21,33 +21,6 @@ public enum CmdbProcessStepHandlerType implements IProcessStepHandlerType {
 
     public String getName() {
         return name;
-    }
-
-    public static String getHandler(String _handler) {
-        for (CmdbProcessStepHandlerType s : CmdbProcessStepHandlerType.values()) {
-            if (s.getHandler().equals(_handler)) {
-                return s.getHandler();
-            }
-        }
-        return null;
-    }
-
-    public static String getName(String _handler) {
-        for (CmdbProcessStepHandlerType s : CmdbProcessStepHandlerType.values()) {
-            if (s.getHandler().equals(_handler)) {
-                return s.getName();
-            }
-        }
-        return "";
-    }
-
-    public static String getType(String _handler) {
-        for (CmdbProcessStepHandlerType s : CmdbProcessStepHandlerType.values()) {
-            if (s.getHandler().equals(_handler)) {
-                return s.getType();
-            }
-        }
-        return "";
     }
 
     public String getType() {
