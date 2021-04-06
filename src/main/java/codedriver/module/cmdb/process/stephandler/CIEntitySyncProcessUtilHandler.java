@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.alibaba.fastjson.JSONPath;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -52,6 +53,19 @@ public class CIEntitySyncProcessUtilHandler extends ProcessStepInternalHandlerBa
                 processStepVo.setNotifyPolicyId(policyId);
             }
         }
+
+        /** 组装动作列表 **/
+        JSONArray actionList = (JSONArray) JSONPath.read(stepConfigObj.toJSONString(), "actionConfig.actionList");
+        if(CollectionUtils.isNotEmpty(actionList)){
+            for (int i = 0; i < actionList.size(); i++) {
+                JSONObject ationObj = actionList.getJSONObject(i);
+                String integrationUuid = ationObj.getString("integrationUuid");
+                if(StringUtils.isNotBlank(integrationUuid)) {
+                    processStepVo.getIntegrationUuidList().add(integrationUuid);
+                }
+            }
+        }
+
         /** 组装分配策略 **/
         JSONObject workerPolicyConfig = stepConfigObj.getJSONObject("workerPolicyConfig");
         if (MapUtils.isNotEmpty(workerPolicyConfig)) {
