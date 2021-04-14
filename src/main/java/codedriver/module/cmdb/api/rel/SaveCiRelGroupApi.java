@@ -1,3 +1,8 @@
+/*
+ * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+ */
+
 package codedriver.module.cmdb.api.rel;
 
 import codedriver.framework.auth.core.AuthAction;
@@ -7,7 +12,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CI_MODIFY;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
-import codedriver.module.cmdb.dto.ci.RelGroupVo;
+import codedriver.framework.cmdb.dto.ci.RelGroupVo;
 import codedriver.module.cmdb.exception.rel.RelGroupNameIsExistsException;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;

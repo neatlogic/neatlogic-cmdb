@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.ci.CiViewMapper">
 
-    <select id="getCiViewByCiId" parameterType="codedriver.module.cmdb.dto.ci.CiViewVo"
-            resultType="codedriver.module.cmdb.dto.ci.CiViewVo">
+    <select id="getCiViewByCiId" parameterType="codedriver.framework.cmdb.dto.ci.CiViewVo"
+            resultType="codedriver.framework.cmdb.dto.ci.CiViewVo">
         SELECT * FROM (
         SELECT
         attr.id AS itemId,
@@ -68,7 +73,7 @@
         <!-- 按照sort,type,itemId进行排序，当sort为空时，得到的是自然顺序 -->
     </select>
 
-    <insert id="insertCiView" parameterType="codedriver.module.cmdb.dto.ci.CiViewVo">
+    <insert id="insertCiView" parameterType="codedriver.framework.cmdb.dto.ci.CiViewVo">
         INSERT INTO `cmdb_view` (`ci_id`,
                                  `item_id`,
                                  `type`,

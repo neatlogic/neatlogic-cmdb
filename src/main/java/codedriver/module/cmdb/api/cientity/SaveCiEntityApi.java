@@ -1,6 +1,10 @@
+/*
+ * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+ */
+
 package codedriver.module.cmdb.api.cientity;
 
-import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.cmdb.constvalue.GroupType;
 import codedriver.framework.cmdb.constvalue.TransactionActionType;
@@ -8,8 +12,7 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.auth.label.CIENTITY_MODIFY;
-import codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo;
+import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.module.cmdb.exception.cientity.CiEntityAuthException;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
@@ -18,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-@AuthAction(action = CIENTITY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveCiEntityApi extends PrivateApiComponentBase {
 
@@ -59,7 +61,7 @@ public class SaveCiEntityApi extends PrivateApiComponentBase {
         if (id != null) {
             if (!hasAuth) {
                 hasAuth =
-                        CiAuthChecker.builder().hasCiEntityUpdatePrivilege(ciId).isInGroup(id, GroupType.MATAIN).check();
+                        CiAuthChecker.chain().hasCiEntityUpdatePrivilege(ciId).isInGroup(id, GroupType.MATAIN).check();
             }
             ciEntityTransactionVo.setCiEntityId(id);
             ciEntityTransactionVo.setTransactionMode(TransactionActionType.UPDATE);

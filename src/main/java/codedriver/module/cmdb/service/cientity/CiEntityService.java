@@ -1,24 +1,36 @@
+/*
+ * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+ */
+
 package codedriver.module.cmdb.service.cientity;
 
-import codedriver.module.cmdb.dto.cientity.CiEntityVo;
-import codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo;
+import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 public interface CiEntityService {
-    public List<CiEntityVo> searchCiEntity(CiEntityVo ciEntityVo);
+    /**
+     * 根据配置项id列表返回配置项
+     *
+     * @param ciId           模型id
+     * @param ciEntityIdList 配置项id列表
+     * @return 配置项列表
+     */
+    List<CiEntityVo> getCiEntityByIdList(Long ciId, List<Long> ciEntityIdList);
+
+    List<CiEntityVo> searchCiEntity(CiEntityVo ciEntityVo);
 
     /**
-     * @param @param  ciEntityTransactionVo
-     * @param @return
-     * @return Long 事务id
-     * @Author: chenqiwei
-     * @Time: 2020年11月17日
-     * @Description: 保存配置项
+     * 保存配置项
+     *
+     * @param ciEntityTransactionVo 配置项事务
+     * @return 事务id
      */
     @Transactional
-    public Long saveCiEntity(CiEntityTransactionVo ciEntityTransactionVo);
+    Long saveCiEntity(CiEntityTransactionVo ciEntityTransactionVo);
 
     /**
      * 获取单个配置项详细信息
@@ -32,48 +44,45 @@ public interface CiEntityService {
 
     void createSnapshot(CiEntityTransactionVo ciEntityTransactionVo);
 
-
-    public Long commitTransaction(Long transactionId);
-
-    /*
-     * @Description: 删除整个配置项
-     * @Author: chenqiwei
-     * @Date: 2021/1/5 3:50 下午
-     * @Params: [ciEntityId]
-     * @Returns: java.lang.Long
-     **/
-    public Long deleteCiEntity(Long ciEntityId);
+    /**
+     * 提交事务
+     *
+     * @param transactionId 事务id
+     * @return 配置项id
+     */
+    Long commitTransaction(Long transactionId);
 
     /**
-     * @param @param  ciEntityIdList
-     * @param @param  ciEntityVo
-     * @param @return
-     * @return List<CiEntityVo>
-     * @Author: chenqiwei
-     * @Time: 2020年11月11日
-     * @Description: 根据配置项id和视图配置查询配置项
+     * 删除整个配置项
+     *
+     * @param ciEntityId 配置项id
+     * @return 事务id
      */
-    public List<CiEntityVo> searchCiEntityByIds(List<Long> ciEntityIdList, CiEntityVo ciEntityVo);
+    Long deleteCiEntity(Long ciEntityId);
 
     /**
-     * @param @param  ciEntityTransactionVo
-     * @param @param  action
-     * @param @return
-     * @return boolean
-     * @Author: chenqiwei
-     * @Time: 2020年11月17日
-     * @Description: 验证配置项是否合法
+     * 根据配置项id和视图配置查询配置项
+     *
+     * @param ciEntityIdList 配置项id列表
+     * @param ciEntityVo     配置项
+     * @return 配置项列表
      */
-    public boolean validateCiEntity(CiEntityTransactionVo ciEntityTransactionVo);
+    List<CiEntityVo> searchCiEntityByIds(List<Long> ciEntityIdList, CiEntityVo ciEntityVo);
 
     /**
-     * @param @param  ciEntityTransactionList
-     * @param @return
-     * @return Long 事务组id
-     * @Author: chenqiwei
-     * @Time: 2020年11月17日
-     * @Description: 批量保存多个配置项
+     * 验证配置项是否合法
+     *
+     * @param ciEntityTransactionVo 事务
+     * @return 是否合法
      */
-    public Long saveCiEntity(List<CiEntityTransactionVo> ciEntityTransactionList);
+    boolean validateCiEntity(CiEntityTransactionVo ciEntityTransactionVo);
+
+    /**
+     * 批量保存多个配置项
+     *
+     * @param ciEntityTransactionList 事务列表
+     * @return 事务组id
+     */
+    Long saveCiEntity(List<CiEntityTransactionVo> ciEntityTransactionList);
 
 }

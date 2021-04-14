@@ -1,9 +1,14 @@
+/*
+ * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+ */
+
 package codedriver.module.cmdb.dao.mapper.transaction;
 
-import codedriver.module.cmdb.dto.transaction.AttrEntityTransactionVo;
-import codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo;
-import codedriver.module.cmdb.dto.transaction.RelEntityTransactionVo;
-import codedriver.module.cmdb.dto.transaction.TransactionVo;
+import codedriver.framework.cmdb.dto.transaction.AttrEntityTransactionVo;
+import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
+import codedriver.framework.cmdb.dto.transaction.RelEntityTransactionVo;
+import codedriver.framework.cmdb.dto.transaction.TransactionVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;

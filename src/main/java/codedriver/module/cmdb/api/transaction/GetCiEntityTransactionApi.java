@@ -1,3 +1,8 @@
+/*
+ * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+ */
+
 package codedriver.module.cmdb.api.transaction;
 
 import codedriver.framework.cmdb.constvalue.RelDirectionType;
@@ -9,10 +14,10 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntitySnapshotMapper;
 import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
-import codedriver.module.cmdb.dto.ci.RelVo;
-import codedriver.module.cmdb.dto.transaction.AttrEntityTransactionVo;
-import codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo;
-import codedriver.module.cmdb.dto.transaction.RelEntityTransactionVo;
+import codedriver.framework.cmdb.dto.ci.RelVo;
+import codedriver.framework.cmdb.dto.transaction.AttrEntityTransactionVo;
+import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
+import codedriver.framework.cmdb.dto.transaction.RelEntityTransactionVo;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;

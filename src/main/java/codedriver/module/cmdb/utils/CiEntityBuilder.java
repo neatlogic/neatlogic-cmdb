@@ -7,11 +7,12 @@ package codedriver.module.cmdb.utils;
 
 import codedriver.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
 import codedriver.framework.cmdb.constvalue.RelDirectionType;
-import codedriver.module.cmdb.dto.ci.AttrVo;
-import codedriver.module.cmdb.dto.ci.CiVo;
-import codedriver.module.cmdb.dto.ci.RelVo;
-import codedriver.module.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.cmdb.dto.ci.AttrVo;
+import codedriver.framework.cmdb.dto.ci.CiVo;
+import codedriver.framework.cmdb.dto.ci.RelVo;
+import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.module.cmdb.exception.cientity.CiEntityMultipleException;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -21,7 +22,7 @@ public class CiEntityBuilder {
     private final List<Map<String, Object>> resultList;
     private Map<Long, AttrVo> attrMap;
     private Map<Long, RelVo> relMap;
-    private CiVo ciVo;
+    private final CiVo ciVo;
 
     private CiEntityBuilder(Builder builder) {
         resultList = builder.resultList;
@@ -46,7 +47,7 @@ public class CiEntityBuilder {
         Map<Long, CiEntityVo> ciEntityMap = new LinkedHashMap<>();
         if (CollectionUtils.isNotEmpty(resultList)) {
             for (Map<String, Object> result : resultList) {
-                CiEntityVo ciEntityVo = null;
+                CiEntityVo ciEntityVo;
 
                 Long id = result.get("id") != null ? Long.valueOf(String.valueOf(result.get("id"))) : null;
                 String name = result.get("name") != null ? String.valueOf(result.get("name")) : null;
@@ -83,20 +84,31 @@ public class CiEntityBuilder {
                             AttrVo attrVo = attrMap.get(attrId);
                             if (!ciEntityVo.hasAttrEntityData(attrId)) {
                                 if (attrVo != null) {
-                                    JSONObject attrObj = new JSONObject();
-                                    attrObj.put("type", attrVo.getType());
-                                    attrObj.put("name", attrVo.getName());
-                                    attrObj.put("label", attrVo.getLabel());
-                                    attrObj.put("valueList", new ArrayList<String>() {{
-                                        this.add(value);
-                                    }});
-                                    attrObj.put("actualValueList", new ArrayList<String>() {{
-                                        this.add(AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValue(attrVo.getConfig(), value));
-                                    }});
-                                    ciEntityVo.addAttrEntityData(attrId, attrObj);
+                                    ciEntityVo.addAttrEntityData(attrId, buildAttrObj(attrVo, value));
                                 }
                             } else {
-                                ciEntityVo.addAttrEntityDataValue(attrId, value, AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValue(attrVo.getConfig(), value));
+                                JSONArray valueList = new JSONArray();
+                                valueList.add(value);
+                                JSONArray actualValueList = AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValueList(attrVo, valueList);
+                                ciEntityVo.addAttrEntityDataValue(attrId, valueList, actualValueList);
+                            }
+                        }
+                    } else if (key.startsWith("rel_")) {
+                        if (!key.contains("#")) {
+                            String[] ks = key.split("_");
+                            Long relId = Long.parseLong(ks[2]);
+                            String direction = ks[1];
+                            RelVo relVo = relMap.get(relId);
+                            if (!ciEntityVo.hasRelEntityData(relId, direction)) {
+                                if (relVo != null) {
+                                    ciEntityVo.addRelEntityData(relId, direction, buildRelObj(relVo, direction, result, key));
+                                }
+                            } else {
+                                JSONObject valueDataObj = new JSONObject();
+                                valueDataObj.put("ciId", direction.equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiId() : relVo.getFromCiId());
+                                valueDataObj.put("ciEntityId", result.get(key));
+                                valueDataObj.put("ciEntityName", result.get(key + "#name"));
+                                ciEntityVo.addRelEntityDataValue(relId, direction, valueDataObj);
                             }
                         }
                     }
@@ -150,21 +162,13 @@ public class CiEntityBuilder {
                             AttrVo attrVo = attrMap.get(attrId);
                             if (!ciEntityVo.hasAttrEntityData(attrId)) {
                                 if (attrVo != null) {
-                                    JSONObject attrObj = new JSONObject();
-                                    attrObj.put("type", attrVo.getType());
-                                    attrObj.put("name", attrVo.getName());
-                                    attrObj.put("label", attrVo.getLabel());
-                                    attrObj.put("config", attrVo.getConfig());
-                                    attrObj.put("valueList", new ArrayList<String>() {{
-                                        this.add(value);
-                                    }});
-                                    attrObj.put("actualValueList", new ArrayList<String>() {{
-                                        this.add(AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValue(attrVo.getConfig(), value));
-                                    }});
-                                    ciEntityVo.addAttrEntityData(attrId, attrObj);
+                                    ciEntityVo.addAttrEntityData(attrId, buildAttrObj(attrVo, value));
                                 }
                             } else {
-                                ciEntityVo.addAttrEntityDataValue(attrId, value, AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValue(attrVo.getConfig(), value));
+                                JSONArray valueList = new JSONArray();
+                                valueList.add(value);
+                                JSONArray actualValueList = AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValueList(attrVo, valueList);
+                                ciEntityVo.addAttrEntityDataValue(attrId, valueList, actualValueList);
                             }
                         }
                     } else if (key.startsWith("rel_")) {
@@ -175,21 +179,7 @@ public class CiEntityBuilder {
                             RelVo relVo = relMap.get(relId);
                             if (!ciEntityVo.hasRelEntityData(relId, direction)) {
                                 if (relVo != null) {
-                                    JSONObject relObj = new JSONObject();
-                                    relObj.put("name", direction.equals(RelDirectionType.FROM.getValue()) ? relVo.getToName() : relVo.getFromName());
-                                    relObj.put("label", direction.equals(RelDirectionType.FROM.getValue()) ? relVo.getToLabel() : relVo.getFromLabel());
-                                    relObj.put("relId", relId);
-                                    relObj.put("direction", direction);
-                                    JSONObject valueDataObj = new JSONObject();
-                                    valueDataObj.put("ciId", direction.equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiId() : relVo.getFromCiId());
-                                    valueDataObj.put("ciEntityId", result.get(key));
-                                    valueDataObj.put("ciEntityName", result.get(key + "#name"));
-
-                                    relObj.put("valueList", new ArrayList<JSONObject>() {{
-                                        this.add(valueDataObj);
-                                    }});
-
-                                    ciEntityVo.addRelEntityData(relId, direction, relObj);
+                                    ciEntityVo.addRelEntityData(relId, direction, buildRelObj(relVo, direction, result, key));
                                 }
                             } else {
                                 JSONObject valueDataObj = new JSONObject();
@@ -223,5 +213,35 @@ public class CiEntityBuilder {
         public CiEntityBuilder build() {
             return new CiEntityBuilder(this);
         }
+    }
+
+    private JSONObject buildAttrObj(AttrVo attrVo, String value) {
+        JSONObject attrObj = new JSONObject();
+        attrObj.put("type", attrVo.getType());
+        attrObj.put("name", attrVo.getName());
+        attrObj.put("label", attrVo.getLabel());
+        attrObj.put("config", attrVo.getConfig());
+        attrObj.put("targetCiId", attrVo.getTargetCiId());
+        JSONArray valueList = new JSONArray();
+        valueList.add(value);
+        attrObj.put("valueList", valueList);
+        attrObj.put("actualValueList", AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValueList(attrVo, valueList));
+        return attrObj;
+    }
+
+    private JSONObject buildRelObj(RelVo relVo, String direction, Map<String, Object> result, String key) {
+        JSONObject relObj = new JSONObject();
+        relObj.put("name", direction.equals(RelDirectionType.FROM.getValue()) ? relVo.getToName() : relVo.getFromName());
+        relObj.put("label", direction.equals(RelDirectionType.FROM.getValue()) ? relVo.getToLabel() : relVo.getFromLabel());
+        relObj.put("relId", relVo.getId());
+        relObj.put("direction", direction);
+        JSONObject valueDataObj = new JSONObject();
+        valueDataObj.put("ciId", direction.equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiId() : relVo.getFromCiId());
+        valueDataObj.put("ciEntityId", result.get(key));
+        valueDataObj.put("ciEntityName", result.get(key + "#name"));
+        relObj.put("valueList", new ArrayList<JSONObject>() {{
+            this.add(valueDataObj);
+        }});
+        return relObj;
     }
 }

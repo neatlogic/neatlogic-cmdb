@@ -5,10 +5,10 @@
 
 package codedriver.module.cmdb.utils;
 
-import codedriver.module.cmdb.dto.ci.AttrVo;
-import codedriver.module.cmdb.dto.ci.CiVo;
-import codedriver.module.cmdb.dto.cientity.AttrFilterVo;
-import codedriver.module.cmdb.dto.cientity.RelFilterVo;
+import codedriver.framework.cmdb.dto.ci.AttrVo;
+import codedriver.framework.cmdb.dto.ci.CiVo;
+import codedriver.framework.cmdb.dto.cientity.AttrFilterVo;
+import codedriver.framework.cmdb.dto.cientity.RelFilterVo;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;

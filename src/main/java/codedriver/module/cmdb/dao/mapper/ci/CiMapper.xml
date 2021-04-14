@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.ci.CiMapper">
     <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000"
            size="100"></cache>
 
-    <select id="getDownwardCiListByLR" resultType="codedriver.module.cmdb.dto.ci.CiVo" useCache="true">
+    <select id="getDownwardCiListByLR" resultType="codedriver.framework.cmdb.dto.ci.CiVo" useCache="true">
         SELECT a.`id`,
                a.`name`,
                a.`label`,
@@ -23,7 +28,7 @@
         ORDER BY lft
     </select>
 
-    <select id="getUpwardCiListByLR" resultType="codedriver.module.cmdb.dto.ci.CiVo" useCache="true">
+    <select id="getUpwardCiListByLR" resultType="codedriver.framework.cmdb.dto.ci.CiVo" useCache="true">
         SELECT a.`id`,
                a.`name`,
                a.`label`,
@@ -42,7 +47,7 @@
         ORDER BY lft
     </select>
 
-    <select id="getAllCi" resultType="codedriver.module.cmdb.dto.ci.CiVo" useCache="true">
+    <select id="getAllCi" resultType="codedriver.framework.cmdb.dto.ci.CiVo" useCache="true">
         SELECT a.`id`,
                a.`name`,
                a.`label`,
@@ -59,7 +64,7 @@
         ORDER BY `name`
     </select>
 
-    <select id="getCiByToCiId" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.CiVo"
+    <select id="getCiByToCiId" parameterType="java.lang.Long" resultType="codedriver.framework.cmdb.dto.ci.CiVo"
             useCache="false">
         SELECT a.`id`,
                a.`name`,
@@ -77,7 +82,7 @@
           and a.id != #{value}
     </select>
 
-    <select id="checkCiNameIsExists" parameterType="codedriver.module.cmdb.dto.ci.CiVo" resultType="int"
+    <select id="checkCiNameIsExists" parameterType="codedriver.framework.cmdb.dto.ci.CiVo" resultType="int"
             useCache="false">
         SELECT COUNT(1)
         FROM cmdb_ci
@@ -85,7 +90,7 @@
           AND id != #{id}
     </select>
 
-    <select id="checkCiLabelIsExists" parameterType="codedriver.module.cmdb.dto.ci.CiVo" resultType="int"
+    <select id="checkCiLabelIsExists" parameterType="codedriver.framework.cmdb.dto.ci.CiVo" resultType="int"
             useCache="false">
         SELECT COUNT(1)
         FROM cmdb_ci
@@ -93,11 +98,11 @@
           AND id != #{id}
     </select>
 
-    <resultMap id="ciTypeMap" type="codedriver.module.cmdb.dto.ci.CiTypeVo">
+    <resultMap id="ciTypeMap" type="codedriver.framework.cmdb.dto.ci.CiTypeVo">
         <result column="ciTypeId" property="id"/>
         <result column="ciTypeName" property="name"/>
         <result column="ciTypeIsMenu" property="isMenu"/>
-        <collection property="ciList" ofType="codedriver.module.cmdb.dto.ci.CiVo">
+        <collection property="ciList" ofType="codedriver.framework.cmdb.dto.ci.CiVo">
             <id column="id" property="id"/>
             <result column="name" property="name"/>
             <result column="label" property="label"/>
@@ -110,7 +115,7 @@
         </collection>
     </resultMap>
 
-    <select id="searchCiTypeCi" parameterType="codedriver.module.cmdb.dto.ci.CiVo" resultMap="ciTypeMap"
+    <select id="searchCiTypeCi" parameterType="codedriver.framework.cmdb.dto.ci.CiVo" resultMap="ciTypeMap"
             useCache="false">
         SELECT
         b.`id`,
@@ -139,7 +144,7 @@
         ORDER BY a.sort
     </select>
 
-    <select id="getCiByIdList" resultType="codedriver.module.cmdb.dto.ci.CiVo" useCache="true">
+    <select id="getCiByIdList" resultType="codedriver.framework.cmdb.dto.ci.CiVo" useCache="true">
         SELECT
         `id`,
         `name`,
@@ -158,7 +163,7 @@
         </foreach>
     </select>
 
-    <select id="getCiById" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.CiVo"
+    <select id="getCiById" parameterType="java.lang.Long" resultType="codedriver.framework.cmdb.dto.ci.CiVo"
             useCache="true">
         SELECT `id`,
                `name`,
@@ -176,7 +181,7 @@
         WHERE id = #{value}
     </select>
 
-    <update id="updateCi" parameterType="codedriver.module.cmdb.dto.ci.CiVo">
+    <update id="updateCi" parameterType="codedriver.framework.cmdb.dto.ci.CiVo">
         UPDATE
             `cmdb_ci`
         SET `name`         = #{name},
@@ -191,7 +196,7 @@
         WHERE `id` = #{id}
     </update>
 
-    <insert id="insertCi" parameterType="codedriver.module.cmdb.dto.ci.CiVo">
+    <insert id="insertCi" parameterType="codedriver.framework.cmdb.dto.ci.CiVo">
         INSERT INTO `cmdb_ci` (`id`,
                                `name`,
                                `label`,

@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper">
     <!--为了方便使用缓存，ciEntity,attrEntity,relEntity等操作全部汇集再这里-->
     <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000"
            size="100"></cache>
 
-    <select id="getAttrEntityByAttrIdAndFromCiEntityId" resultType="codedriver.module.cmdb.dto.cientity.AttrEntityVo"
+    <select id="getAttrEntityByAttrIdAndFromCiEntityId" resultType="codedriver.framework.cmdb.dto.cientity.AttrEntityVo"
             useCache="false">
         SELECT id,
                from_cientity_id AS fromCiEntityId,
@@ -33,7 +38,7 @@
         </foreach>
     </select>
 
-    <select id="getCiEntityBaseInfoByIdList" resultType="codedriver.module.cmdb.dto.cientity.CiEntityVo"
+    <select id="getCiEntityBaseInfoByIdList" resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
             useCache="false">
         SELECT id,
         ci_id AS ciId,
@@ -51,7 +56,7 @@
     </select>
 
     <select id="getCiEntityBaseInfoById" parameterType="java.lang.Long"
-            resultType="codedriver.module.cmdb.dto.cientity.CiEntityVo" useCache="true">
+            resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo" useCache="true">
         SELECT id,
                ci_id AS ciId,
                `name`,
@@ -103,12 +108,10 @@
             JOIN ${ci.ciTableName} ON `ci_base`.id = ${ci.ciTableName}.cientity_id
         </foreach>
         <foreach collection="attrList" item="attr">
-            <choose>
-                <when test="attr.needTargetCi == true">
-                    LEFT JOIN `cmdb_attrentity` `cmdb_attrentity_${attr.id}` ON `ci_base`.id =
-                    `cmdb_attrentity_${attr.id}`.from_cientity_id AND `cmdb_attrentity_${attr.id}`.attr_id = #{attr.id}
-                </when>
-            </choose>
+            <if test="attr.needTargetCi == true">
+                LEFT JOIN `cmdb_attrentity` `cmdb_attrentity_${attr.id}` ON `ci_base`.id =
+                `cmdb_attrentity_${attr.id}`.from_cientity_id AND `cmdb_attrentity_${attr.id}`.attr_id = #{attr.id}
+            </if>
         </foreach>
         <foreach collection="relList" item="rel">
             <choose>
@@ -126,7 +129,33 @@
         </foreach>
     </sql>
 
-    <select id="getCiEntityById" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo"
+    <sql id="ciEntityConditionSql">
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND `ci_base`.`name` LIKE CONCAT('%',#{keyword},'%')
+            </if>
+            <if test="attrFilterList != null and attrFilterList.size() > 0">
+                <foreach collection="attrFilterList" item="attrFilter">
+                    <if test="attrFilter.valueList != null and attrFilter.valueList.size() > 0">
+                        <choose>
+                            <when test="attrFilter.needTargetCi == true">
+                                AND `cmdb_attrentity_${attrFilter.attrId}`.to_cientity_id IN
+                                <foreach collection="attrFilter.valueList" item="value" separator="," open="("
+                                         close=")">#{value}
+                                </foreach>
+                            </when>
+                            <otherwise>
+                                AND ${attrFilter.ciTableName}.`${attrFilter.attrId}` LIKE
+                                CONCAT('%',#{attrFilter.value},'%')
+                            </otherwise>
+                        </choose>
+                    </if>
+                </foreach>
+            </if>
+        </where>
+    </sql>
+
+    <select id="getCiEntityById" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
             resultType="java.util.HashMap" useCache="false">
         SELECT
         <include refid="ciEntityColumnSql"></include>
@@ -141,18 +170,17 @@
         WHERE ci_id = #{value}
     </select>
 
-    <select id="searchCiEntityId" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo"
+    <select id="searchCiEntityId" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
             resultType="java.lang.Long" useCache="true">
         SELECT
         DISTINCT ci_base.id
         FROM cmdb_cientity `ci_base`
-        <foreach collection="ciList" item="ci">
-            JOIN ${ci.ciTableName} ON `ci_base`.id = ${ci.ciTableName}.cientity_id
-        </foreach>
+        <include refid="ciEntityJoinSql"></include>
+        <include refid="ciEntityConditionSql"></include>
         LIMIT #{startNum}, #{pageSize}
     </select>
 
-    <select id="searchCiEntity" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo"
+    <select id="searchCiEntity" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
             resultType="java.util.HashMap" useCache="true">
         SELECT
         <include refid="ciEntityColumnSql"></include>
@@ -163,7 +191,7 @@
     </select>
 
 
-    <update id="updateCiEntityBaseInfo" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
+    <update id="updateCiEntityBaseInfo" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
         UPDATE `cmdb_cientity`
         SET name = #{name},
             lcu  = #{lcu},
@@ -171,11 +199,11 @@
         WHERE id = #{id}
     </update>
 
-    <update id="updateCiEntity" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
+    <update id="updateCiEntity" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
         UPDATE ${ciTableName}
         SET
         <foreach collection="attrEntityList" item="attr">
-            <if test="attr.fromCiId == ciId">
+            <if test="attr.isNeedTargetCi == false and attr.fromCiId == ciId">
                 `${attr.attrId}` = #{attr.value},
                 `${attr.attrId}_hash` = #{attr.value,typeHandler=Md5Handler},
             </if>
@@ -185,10 +213,10 @@
         cientity_id = #{id}
     </update>
 
-    <insert id="insertCiEntity" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
+    <insert id="insertCiEntity" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
         INSERT INTO ${ciTableName} (
         <foreach collection="attrEntityList" item="attr">
-            <if test="attr.fromCiId == ciId">
+            <if test="attr.isNeedTargetCi == false and attr.fromCiId == ciId">
                 `${attr.attrId}`,
                 `${attr.attrId}_hash`,
             </if>
@@ -196,7 +224,7 @@
         cientity_id)
         VALUES (
         <foreach collection="attrEntityList" item="attr">
-            <if test="attr.fromCiId == ciId">
+            <if test="attr.isNeedTargetCi == false and attr.fromCiId == ciId">
                 #{attr.value},
                 #{attr.value,typeHandler=Md5Handler},
             </if>
@@ -204,7 +232,7 @@
         #{id})
     </insert>
 
-    <insert id="insertAttrEntity" parameterType="codedriver.module.cmdb.dto.cientity.AttrEntityVo">
+    <insert id="insertAttrEntity" parameterType="codedriver.framework.cmdb.dto.cientity.AttrEntityVo">
         INSERT IGNORE INTO `cmdb_attrentity` (
         `from_cientity_id`,
         `from_ci_id`,
@@ -219,14 +247,14 @@
             #{fromCiEntityId},
             #{fromCiId},
             #{attrId},
-            #{toCiEntityId},
+            #{item},
             #{toCiId},
             #{transactionId}
             )
         </foreach>
     </insert>
 
-    <insert id="insertCiEntityBaseInfo" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
+    <insert id="insertCiEntityBaseInfo" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
         INSERT INTO `cmdb_cientity` (`id`,
                                      `ci_id`,
                                      `name`,
@@ -250,13 +278,13 @@
           AND attr_id = #{attrId}
     </delete>
 
-    <delete id="deleteCiEntity" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
+    <delete id="deleteCiEntity" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
         DELETE
         FROM ${ciTableName}
         WHERE cientity_id = #{id}
     </delete>
 
-    <delete id="deleteCiEntityBaseInfo" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
+    <delete id="deleteCiEntityBaseInfo" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
         DELETE
             a,b,c,d,e
         FROM cmdb_cientity a
@@ -279,7 +307,7 @@
     <!-- old-->
 
     <select id="getCiEntityByAttrId" parameterType="java.lang.Long"
-            resultType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
+            resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
         SELECT DISTINCT a.`id`,
                         a.`ci_id` AS ciId
         FROM `cmdb_cientity` a
@@ -315,7 +343,7 @@
     </select>
 
     <!--<select id="getCiEntityById" parameterType="java.lang.Long"
-            resultType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
+            resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
         SELECT a.`id`,
                a.`ci_id`     AS ciId,
                a.`name`      AS name,
@@ -587,7 +615,7 @@
     </sql>
 
     <select id="searchCiEntityByIdList"
-            resultType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
+            resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
         SELECT
         a.`id`,
         a.`ci_id` AS ciId,
@@ -613,7 +641,7 @@
         ORDER BY a.id DESC
     </select>
 
-    <!--<select id="searchCiEntityId" parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo"
+    <!--<select id="searchCiEntityId" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
             resultType="java.lang.Long">
         SELECT distinct(cientity.id)
         <include refid="searchCiEntityIdCondition"></include>
@@ -624,7 +652,7 @@
     </select>-->
 
     <select id="searchCiEntityIdCount"
-            parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo"
+            parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
             resultType="int">
         SELECT COUNT(distinct cientity.id)
         <include refid="searchCiEntityIdCondition"></include>
@@ -646,7 +674,7 @@
     </select>
 
     <update id="updateCiEntityLockById"
-            parameterType="codedriver.module.cmdb.dto.cientity.CiEntityVo">
+            parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
         UPDATE
             `cmdb_cientity`
         SET `is_locked` = #{isLocked}

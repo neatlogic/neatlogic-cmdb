@@ -1,8 +1,13 @@
+/*
+ * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+ */
+
 package codedriver.module.cmdb.dao.mapper.cischema;
 
-import codedriver.module.cmdb.dto.ci.AttrVo;
-import codedriver.module.cmdb.dto.cientity.CiEntityVo;
-import codedriver.module.cmdb.dto.schema.SchemaAuditVo;
+import codedriver.framework.cmdb.dto.ci.AttrVo;
+import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.cmdb.dto.schema.SchemaAuditVo;
 import org.apache.ibatis.annotations.Param;
 
 public interface CiSchemaMapper {

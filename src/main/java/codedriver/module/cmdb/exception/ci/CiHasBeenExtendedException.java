@@ -6,7 +6,7 @@
 package codedriver.module.cmdb.exception.ci;
 
 import codedriver.framework.exception.core.ApiRuntimeException;
-import codedriver.module.cmdb.dto.ci.CiVo;
+import codedriver.framework.cmdb.dto.ci.CiVo;
 
 import java.util.List;
 import java.util.stream.Collectors;

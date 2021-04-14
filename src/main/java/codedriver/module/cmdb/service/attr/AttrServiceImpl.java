@@ -1,3 +1,8 @@
+/*
+ * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+ */
+
 package codedriver.module.cmdb.service.attr;
 
 import codedriver.framework.batch.BatchRunner;
@@ -10,15 +15,16 @@ import codedriver.module.cmdb.dao.mapper.cientity.AttrEntityMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import codedriver.module.cmdb.dao.mapper.cischema.CiSchemaMapper;
 import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
-import codedriver.module.cmdb.dto.ci.AttrVo;
-import codedriver.module.cmdb.dto.ci.CiVo;
-import codedriver.module.cmdb.dto.cientity.AttrEntityVo;
-import codedriver.module.cmdb.dto.cientity.CiEntityVo;
-import codedriver.module.cmdb.dto.transaction.AttrEntityTransactionVo;
-import codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo;
-import codedriver.module.cmdb.dto.transaction.TransactionGroupVo;
-import codedriver.module.cmdb.dto.transaction.TransactionVo;
-import codedriver.module.cmdb.enums.AttrType;
+import codedriver.framework.cmdb.dto.ci.AttrVo;
+import codedriver.framework.cmdb.dto.ci.CiVo;
+import codedriver.framework.cmdb.dto.cientity.AttrEntityVo;
+import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.cmdb.dto.transaction.AttrEntityTransactionVo;
+import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
+import codedriver.framework.cmdb.dto.transaction.TransactionGroupVo;
+import codedriver.framework.cmdb.dto.transaction.TransactionVo;
+import codedriver.framework.cmdb.enums.AttrType;
+import codedriver.module.cmdb.exception.attr.AttrDeleteDeniedException;
 import codedriver.module.cmdb.exception.attr.AttrNotFoundException;
 import codedriver.module.cmdb.exception.attr.InsertAttrToSchemaException;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
@@ -76,7 +82,7 @@ public class AttrServiceImpl implements AttrService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)//创建schema抛出的是exception，要额外声明事务回滚异常类型
+    @Transactional
     public void updateAttr(AttrVo attrVo) {
         if (attrMapper.getAttrById(attrVo.getId()) == null) {
             throw new AttrNotFoundException(attrVo.getId());
@@ -86,9 +92,23 @@ public class AttrServiceImpl implements AttrService {
 
     @Override
     @Transactional
-    public void deleteAttrById(AttrVo attrVo) {
+    public void deleteAttrById(Long attrId) {
+        AttrVo attrVo = attrMapper.getAttrById(attrId);
+        if (attrVo == null) {
+            throw new AttrNotFoundException(attrId);
+        }
+        if (attrVo.getIsPrivate() != null && attrVo.getIsPrivate().equals(1)) {
+            throw new AttrDeleteDeniedException();
+        }
+        CiVo ciVo = ciMapper.getCiById(attrVo.getCiId());
+        //FIXME 检查是否被名字表达式引用
+
+
         //删除所有attrEntity属性值，需要生成事务
-        List<CiEntityVo> ciEntityList = ciEntityMapper.getCiEntityByAttrId(attrVo.getId());
+        CiEntityVo ciEntityVo = new CiEntityVo();
+        ciEntityVo.setCiId(attrVo.getCiId());
+        ciEntityVo.setPageSize(500);
+        List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
         BatchRunner<CiEntityVo> runner = new BatchRunner<>();
         TransactionGroupVo transactionGroupVo = new TransactionGroupVo();
         //并发清理配置项数据，最高并发10个线程

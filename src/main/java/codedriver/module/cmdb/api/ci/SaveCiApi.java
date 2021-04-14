@@ -1,3 +1,8 @@
+/*
+ * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+ */
+
 package codedriver.module.cmdb.api.ci;
 
 import codedriver.framework.auth.core.AuthAction;
@@ -8,7 +13,7 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CI_MODIFY;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
-import codedriver.module.cmdb.dto.ci.CiVo;
+import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.module.cmdb.exception.ci.CiAuthException;
 import codedriver.module.cmdb.exception.ci.CiLabelIsExistsException;
 import codedriver.module.cmdb.exception.ci.CiNameIsExistsException;

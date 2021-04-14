@@ -1,18 +1,19 @@
+/*
+ * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+ */
+
 package codedriver.module.cmdb.validator.handler;
 
-import java.util.List;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
+import codedriver.framework.cmdb.validator.core.ValidatorBase;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-
-import codedriver.framework.cmdb.exception.validator.AttrInValidatedException;
-import codedriver.framework.cmdb.validator.core.ValidatorBase;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Component
 public class RegexValidator extends ValidatorBase {
@@ -29,18 +30,18 @@ public class RegexValidator extends ValidatorBase {
         itemObj.put("name", "config_regex");
         itemObj.put("type", "text");
         itemObj.put("label", "正则表达式");
-        itemObj.put("validateList", new String[] {"required"});
+        itemObj.put("validateList", new String[]{"required"});
         itemList.add(itemObj);
         return itemList;
     }
 
     @Override
-    protected boolean myValid(List<String> valueList, JSONObject config) {
+    protected boolean myValid(JSONArray valueList, JSONObject config) {
         if (CollectionUtils.isNotEmpty(valueList) && config != null && config.containsKey("regex")) {
             String regex = config.getString("regex");
             if (StringUtils.isNotBlank(regex)) {
                 Pattern pattern = Pattern.compile(regex);
-                return pattern.matcher(valueList.stream().collect(Collectors.joining(","))).matches();
+                return pattern.matcher(valueList.stream().map(Object::toString).collect(Collectors.joining(","))).matches();
             }
         }
         return false;

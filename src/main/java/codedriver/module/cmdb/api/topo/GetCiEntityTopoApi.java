@@ -1,3 +1,8 @@
+/*
+ * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+ */
+
 package codedriver.module.cmdb.api.topo;
 
 import codedriver.framework.cmdb.constvalue.RelDirectionType;
@@ -11,10 +16,10 @@ import codedriver.module.cmdb.dao.mapper.cientity.AttrEntityMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper;
 import codedriver.module.cmdb.dot.*;
-import codedriver.module.cmdb.dto.ci.CiTypeVo;
-import codedriver.module.cmdb.dto.cientity.AttrEntityVo;
-import codedriver.module.cmdb.dto.cientity.CiEntityVo;
-import codedriver.module.cmdb.dto.cientity.RelEntityVo;
+import codedriver.framework.cmdb.dto.ci.CiTypeVo;
+import codedriver.framework.cmdb.dto.cientity.AttrEntityVo;
+import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.cmdb.dto.cientity.RelEntityVo;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -25,7 +30,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -101,12 +105,12 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                 }
                 List<AttrEntityVo> attrEntityList = attrEntityMapper.searchAttrEntityByCiEntityIdList(tmpList, null);
 
-                for (CiEntityVo entity : ciEntityList) {
+               /* for (CiEntityVo entity : ciEntityList) {
                     entity.setAttrEntityList(attrEntityList.stream()
                             .filter(attr -> attr.getCiEntityId().equals(entity.getId())).collect(Collectors.toList()));
                     ciEntitySet.add(entity);
                     ciTypeIdSet.add(entity.getTypeId());
-                }
+                }*/
                 // 获取当前层次配置项所有关系(包括上下游)
                 List<RelEntityVo> relEntityList = relEntityMapper.searchRelEntityByCiEntityIdList(tmpList, null);
                 ciEntityIdList.clear();// 清空查询列表，为下一层搜索做准备

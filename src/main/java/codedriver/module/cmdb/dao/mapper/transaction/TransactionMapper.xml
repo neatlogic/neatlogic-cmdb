@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper">
     <select id="getCiEntityTransactionByTransactionIdList"
-            resultType="codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo">
+            resultType="codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo">
         SELECT
         `id`,
         `ci_id` AS ciId,
@@ -11,7 +16,8 @@
         `action`,
         `transaction_id` AS transactionId,
         `snapshot` AS snapshot,
-        `content` AS content
+        `content` AS content,
+        `edit_mode` AS editMode
         FROM
         `cmdb_cientity_transaction`
         WHERE ci_entity_id = #{ciEntityId} AND transaction_id IN
@@ -20,7 +26,8 @@
         </foreach>
     </select>
 
-    <insert id="insertCiEntityTransaction" parameterType="codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo">
+    <insert id="insertCiEntityTransaction"
+            parameterType="codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo">
         INSERT INTO `cmdb_cientity_transaction` (`id`,
                                                  `ci_id`,
                                                  `ci_entity_id`,
@@ -28,7 +35,8 @@
                                                  `action`,
                                                  `transaction_id`,
                                                  `content`,
-                                                 `snapshot`)
+                                                 `snapshot`,
+                                                 `edit_mode`)
         VALUES (#{id},
                 #{ciId},
                 #{ciEntityId},
@@ -36,12 +44,13 @@
                 #{action},
                 #{transactionId},
                 #{content},
-                #{snapshot})
+                #{snapshot},
+                #{editMode})
     </insert>
 
 
     <!--old-->
-    <resultMap id="transactionDetailMap" type="codedriver.module.cmdb.dto.transaction.TransactionVo">
+    <resultMap id="transactionDetailMap" type="codedriver.framework.cmdb.dto.transaction.TransactionVo">
         <id property="id" column="id"/>
         <result property="ciId" column="ciId"/>
         <result property="status" column="status"/>
@@ -58,10 +67,11 @@
         <result property="commitTime" column="commitTime"/>
         <result property="error" column="error"/>
         <association property="ciEntityTransactionVo"
-                     javaType="codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo">
+                     javaType="codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo">
             <id property="ciEntityId" column="ciEntityId"/>
             <result property="ciId" column="ciId"/>
             <result property="action" column="action"/>
+            <result property="editMode" column="editMode"/>
             <result property="snapshot" column="snapshot"/>
             <result property="content" column="content"/>
         </association>
@@ -89,6 +99,7 @@
                error,
                b.action                                                  AS action,
                b.ci_entity_id                                            AS ciEntityId,
+               b.edit_mode                                               AS editMode,
                b.snapshot                                                AS snapshot,
                b.content                                                 AS content
         FROM cmdb_transaction a
@@ -111,7 +122,7 @@
         </where>
     </sql>
 
-    <select id="searchTransaction" parameterType="codedriver.module.cmdb.dto.transaction.TransactionVo"
+    <select id="searchTransaction" parameterType="codedriver.framework.cmdb.dto.transaction.TransactionVo"
             resultMap="transactionDetailMap">
         SELECT
         a.id,
@@ -146,7 +157,7 @@
         </if>
     </select>
 
-    <select id="searchTransactionCount" parameterType="codedriver.module.cmdb.dto.transaction.TransactionVo"
+    <select id="searchTransactionCount" parameterType="codedriver.framework.cmdb.dto.transaction.TransactionVo"
             resultType="int">
         SELECT
         COUNT(1)
@@ -157,7 +168,7 @@
         <include refid="searchTransactionCondition"></include>
     </select>
 
-    <resultMap id="attrEntityTransactionMap" type="codedriver.module.cmdb.dto.transaction.AttrEntityTransactionVo">
+    <resultMap id="attrEntityTransactionMap" type="codedriver.framework.cmdb.dto.transaction.AttrEntityTransactionVo">
         <id property="attrId" column="attrId"/>
         <result property="ciEntityId" column="ciEntityId"/>
         <result property="attrLabel" column="attrLabel"/>
@@ -168,7 +179,7 @@
     </resultMap>
 
     <select id="getRelEntityTransactionByTransactionIdAndCiEntityId"
-            resultType="codedriver.module.cmdb.dto.transaction.RelEntityTransactionVo">
+            resultType="codedriver.framework.cmdb.dto.transaction.RelEntityTransactionVo">
         SELECT a.`id`,
                a.`rel_id`                               AS relId,
                a.`transaction_id`                       AS transactionId,
@@ -235,7 +246,7 @@
 
 
     <select id="getCiEntityTransactionByTransactionIdAndCiEntityId"
-            resultType="codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo">
+            resultType="codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo">
         SELECT `id`,
                `ci_id`          AS ciId,
                `ci_entity_id`   AS ciEntityId,
@@ -248,7 +259,7 @@
           AND ci_entity_id = #{ciEntityId}
     </select>
 
-    <update id="updateTransactionStatus" parameterType="codedriver.module.cmdb.dto.transaction.TransactionVo">
+    <update id="updateTransactionStatus" parameterType="codedriver.framework.cmdb.dto.transaction.TransactionVo">
         UPDATE
             `cmdb_transaction`
         SET `status`      = #{status},
@@ -266,7 +277,7 @@
     </insert>
 
     <insert id="insertRelEntityTransaction"
-            parameterType="codedriver.module.cmdb.dto.transaction.RelEntityTransactionVo">
+            parameterType="codedriver.framework.cmdb.dto.transaction.RelEntityTransactionVo">
         INSERT INTO `cmdb_relentity_transaction` (`id`,
                                                   `rel_id`,
                                                   `from_cientity_id`,
@@ -286,7 +297,7 @@
     </insert>
 
     <insert id="insertAttrEntityTransaction"
-            parameterType="codedriver.module.cmdb.dto.transaction.AttrEntityTransactionVo">
+            parameterType="codedriver.framework.cmdb.dto.transaction.AttrEntityTransactionVo">
         INSERT INTO `cmdb_attrentity_transaction` (
         `ci_entity_id`,
         `attr_id`,
@@ -326,7 +337,7 @@
     </insert>
 
 
-    <insert id="insertTransaction" parameterType="codedriver.module.cmdb.dto.transaction.TransactionVo">
+    <insert id="insertTransaction" parameterType="codedriver.framework.cmdb.dto.transaction.TransactionVo">
         INSERT INTO `cmdb_transaction` (`ci_id`,
         `id`,
         `status`,

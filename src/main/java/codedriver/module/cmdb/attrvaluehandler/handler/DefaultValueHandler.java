@@ -6,18 +6,14 @@
 package codedriver.module.cmdb.attrvaluehandler.handler;
 
 import codedriver.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
-import codedriver.module.cmdb.service.cientity.CiEntityService;
-import com.alibaba.fastjson.JSONObject;
+import codedriver.framework.cmdb.dto.ci.AttrVo;
+import com.alibaba.fastjson.JSONArray;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.Resource;
 
 
 @Service
 public class DefaultValueHandler implements IAttrValueHandler {
 
-    @Resource
-    private CiEntityService ciEntityService;
 
     @Override
     public String getType() {
@@ -25,7 +21,10 @@ public class DefaultValueHandler implements IAttrValueHandler {
     }
 
     @Override
-    public String getActualValue(JSONObject config, String value) {
-        return value;
+    public JSONArray getActualValueList(AttrVo attrVo, JSONArray valueList) {
+        JSONArray returnValueList = new JSONArray();
+        returnValueList.addAll(valueList);
+        return returnValueList;
     }
+
 }

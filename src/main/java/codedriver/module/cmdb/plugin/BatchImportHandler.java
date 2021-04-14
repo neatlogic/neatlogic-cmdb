@@ -1,3 +1,8 @@
+/*
+ * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+ */
+
 package codedriver.module.cmdb.plugin;
 
 import codedriver.framework.asynchronization.thread.CodeDriverThread;
@@ -9,18 +14,19 @@ import codedriver.framework.common.util.FileUtil;
 import codedriver.framework.file.dto.FileVo;
 import codedriver.module.cmdb.dao.mapper.batchimport.ImportMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
-import codedriver.module.cmdb.dto.batchimport.ImportAuditVo;
-import codedriver.module.cmdb.dto.ci.AttrVo;
-import codedriver.module.cmdb.dto.ci.CiVo;
-import codedriver.module.cmdb.dto.ci.RelVo;
-import codedriver.module.cmdb.dto.cientity.CiEntityVo;
-import codedriver.module.cmdb.dto.transaction.AttrEntityTransactionVo;
-import codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo;
-import codedriver.module.cmdb.dto.transaction.RelEntityTransactionVo;
-import codedriver.module.cmdb.enums.BatchImportStatus;
+import codedriver.framework.cmdb.dto.batchimport.ImportAuditVo;
+import codedriver.framework.cmdb.dto.ci.AttrVo;
+import codedriver.framework.cmdb.dto.ci.CiVo;
+import codedriver.framework.cmdb.dto.ci.RelVo;
+import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.cmdb.dto.transaction.AttrEntityTransactionVo;
+import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
+import codedriver.framework.cmdb.dto.transaction.RelEntityTransactionVo;
+import codedriver.framework.cmdb.enums.BatchImportStatus;
 import codedriver.module.cmdb.exception.ci.CiNotFoundException;
 import codedriver.module.cmdb.service.ci.CiService;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
+import com.alibaba.fastjson.JSONArray;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -290,7 +296,7 @@ public class BatchImportHandler {
                                                         continue;
                                                     }*/
 
-                                                    List<String> valueList = new ArrayList<>();
+                                                    JSONArray valueList = new JSONArray();
                                                    /* if (StringUtils.isNotBlank(content)
                                                             && attr.getType().equals(AttrType.PROPERTY.getValue())
                                                             && StringUtils.isNotBlank(attr.getPropHandler())) {

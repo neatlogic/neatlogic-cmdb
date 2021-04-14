@@ -6,13 +6,18 @@
 package codedriver.module.cmdb.attrvaluehandler.handler;
 
 import codedriver.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
-import codedriver.module.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.cmdb.dto.ci.AttrVo;
+import codedriver.framework.cmdb.dto.cientity.AttrEntityVo;
+import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
+import java.util.Map;
 
 
 @Service
@@ -26,20 +31,34 @@ public class SelectValueHandler implements IAttrValueHandler {
         return "select";
     }
 
+
     @Override
-    public String getActualValue(JSONObject config, String value) {
-        if (config != null && config.containsKey("textKey") && StringUtils.isNotBlank(value) && StringUtils.isNumeric(value)) {
-            Long ciEntityId = Long.parseLong(value);
-            Long attrId = config.getLong("textKey");
-            CiEntityVo ciEntityVo = ciEntityService.getCiEntityById(ciEntityId);
-            if (ciEntityVo != null) {
-                if (ciEntityVo.hasAttrEntityData(attrId)) {
-                    JSONObject attrObj = ciEntityVo.getAttrEntityDataByAttrId(attrId);
-                    //默认只取第一个值
-                    return attrObj.getJSONArray("actualValueList").getString(0);
+    public JSONArray getActualValueList(AttrVo attrVo, JSONArray valueList) {
+        JSONObject config = attrVo.getConfig();
+        JSONArray actualValueList = new JSONArray();
+        Map<Long, CiEntityVo> ciEntityCachedMap = new HashMap<>();
+        for (int i = 0; i < valueList.size(); i++) {
+            String value = valueList.getString(i);
+            if (config != null && config.containsKey("textKey") && StringUtils.isNotBlank(value) && StringUtils.isNumeric(value)) {
+                Long ciEntityId = Long.parseLong(value);
+                Long attrId = config.getLong("textKey");
+                CiEntityVo ciEntityVo = ciEntityCachedMap.get(ciEntityId);
+                if (ciEntityVo == null) {
+                    ciEntityVo = ciEntityService.getCiEntityById(ciEntityId);
+
+                }
+                if (ciEntityVo != null) {
+                    ciEntityCachedMap.put(ciEntityId, ciEntityVo);
+                    if (ciEntityVo.hasAttrEntityData(attrId)) {
+                        AttrEntityVo attrEntityVo = ciEntityVo.getAttrEntityByAttrId(attrId);
+                        //默认只取第一个值
+                        if (attrEntityVo != null) {
+                            actualValueList.add(attrEntityVo.getActualValueList().get(0).toString());
+                        }
+                    }
                 }
             }
         }
-        return null;
+        return actualValueList;
     }
 }

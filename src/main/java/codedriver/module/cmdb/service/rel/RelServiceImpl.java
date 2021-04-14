@@ -1,3 +1,8 @@
+/*
+ * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+ */
+
 package codedriver.module.cmdb.service.rel;
 
 import codedriver.framework.batch.BatchJob;
@@ -10,12 +15,12 @@ import codedriver.module.cmdb.dao.mapper.cientity.AttrEntityMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper;
 import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
-import codedriver.module.cmdb.dto.ci.RelVo;
-import codedriver.module.cmdb.dto.cientity.RelEntityVo;
-import codedriver.module.cmdb.dto.transaction.CiEntityTransactionVo;
-import codedriver.module.cmdb.dto.transaction.RelEntityTransactionVo;
-import codedriver.module.cmdb.dto.transaction.TransactionGroupVo;
-import codedriver.module.cmdb.dto.transaction.TransactionVo;
+import codedriver.framework.cmdb.dto.ci.RelVo;
+import codedriver.framework.cmdb.dto.cientity.RelEntityVo;
+import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
+import codedriver.framework.cmdb.dto.transaction.RelEntityTransactionVo;
+import codedriver.framework.cmdb.dto.transaction.TransactionGroupVo;
+import codedriver.framework.cmdb.dto.transaction.TransactionVo;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

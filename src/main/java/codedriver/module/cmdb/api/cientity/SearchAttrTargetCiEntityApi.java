@@ -14,26 +14,28 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiViewMapper;
-import codedriver.module.cmdb.dto.ci.AttrVo;
-import codedriver.module.cmdb.dto.ci.CiVo;
-import codedriver.module.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.cmdb.dto.ci.AttrVo;
+import codedriver.framework.cmdb.dto.cientity.AttrFilterVo;
+import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.module.cmdb.exception.attr.AttrNotFoundException;
 import codedriver.module.cmdb.exception.attr.AttrTargetCiIdNotFoundException;
-import codedriver.module.cmdb.exception.ci.CiNotFoundException;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class SearchAttrTargetCiEntityApi extends PrivateApiComponentBase {
 
-    @Autowired
-    private CiEntityService ciEntityService;
 
     @Autowired
     private CiViewMapper ciViewMapper;
@@ -46,6 +48,9 @@ public class SearchAttrTargetCiEntityApi extends PrivateApiComponentBase {
 
     @Resource
     private AttrMapper attrMapper;
+
+    @Resource
+    private CiEntityService ciEntityService;
 
     @Override
     public String getToken() {
@@ -63,31 +68,71 @@ public class SearchAttrTargetCiEntityApi extends PrivateApiComponentBase {
     }
 
     @Input({@Param(name = "attrId", type = ApiParamType.LONG, isRequired = true, desc = "属性id"),
-            @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "关键字")})
+            @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "关键字"),
+            @Param(name = "valueList", type = ApiParamType.JSONARRAY, desc = "选中值列表")})
     @Output({@Param(explode = BasePageVo.class),
             @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = CiEntityVo[].class),
             @Param(name = "theadList", type = ApiParamType.JSONARRAY, desc = "表头信息")})
-    @Description(desc = "查询配置项接口")
+    @Description(desc = "查询属性目标配置项")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long attrId = jsonObj.getLong("attrId");
+        String keyword = jsonObj.getString("keyword");
+        JSONArray valueList = jsonObj.getJSONArray("valueList");
         AttrVo attrVo = attrMapper.getAttrById(attrId);
         if (attrVo == null) {
             throw new AttrNotFoundException(attrId);
         }
 
         if (attrVo.getTargetCiId() == null) {
-            throw new AttrTargetCiIdNotFoundException(attrVo.getName());
+            throw new AttrTargetCiIdNotFoundException(attrVo.getLabel());
         }
 
-        CiVo ciVo = ciMapper.getCiById(attrVo.getTargetCiId());
-        if (ciVo == null) {
-            throw new CiNotFoundException(attrVo.getTargetCiId());
+        Long textKey = null;
+        if (MapUtils.isNotEmpty(attrVo.getConfig())) {
+            textKey = attrVo.getConfig().getLong("textKey");
         }
-        List<CiVo> ciList = ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht());
 
+        CiEntityVo ciEntityVo = new CiEntityVo();
+        ciEntityVo.setCiId(attrVo.getTargetCiId());
+        if (CollectionUtils.isNotEmpty(valueList)) {
+            List<Long> idList = new ArrayList<>();
+            for (int i = 0; i < valueList.size(); i++) {
+                try {
+                    idList.add(valueList.getLong(i));
+                } catch (Exception ignored) {
 
-        return null;
+                }
+            }
+            if (CollectionUtils.isNotEmpty(idList)) {
+                ciEntityVo.setIdList(idList);
+            }
+        }
+        if (StringUtils.isNotBlank(keyword)) {
+            if (textKey != null) {
+                AttrFilterVo attrFilterVo = new AttrFilterVo();
+                attrFilterVo.setAttrId(textKey);
+                attrFilterVo.setValueList(new ArrayList<String>() {{
+                    this.add(keyword);
+                }});
+                ciEntityVo.addAttrFilter(attrFilterVo);
+            } else {
+                ciEntityVo.setKeyword(keyword);
+            }
+        }
+        List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
+        JSONArray jsonList = new JSONArray();
+        for (CiEntityVo ciEntity : ciEntityList) {
+            JSONObject obj = new JSONObject();
+            obj.put("id", ciEntity.getId());
+            if (textKey != null) {
+                obj.put("name", ciEntity.getAttrEntityValueByAttrId(textKey));
+            } else {
+                obj.put("name", StringUtils.isNotBlank(ciEntity.getName()) ? ciEntity.getName() : "-");
+            }
+            jsonList.add(obj);
+        }
+        return jsonList;
     }
 
 }

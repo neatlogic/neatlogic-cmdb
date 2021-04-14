@@ -10,8 +10,8 @@ import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.dto.ci.AttrTypeVo;
-import codedriver.module.cmdb.enums.AttrType;
+import codedriver.framework.cmdb.dto.ci.AttrTypeVo;
+import codedriver.framework.cmdb.enums.AttrType;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 

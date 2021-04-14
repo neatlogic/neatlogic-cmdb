@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.ci.RelMapper">
     <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
-    <select id="getAllRelList" resultType="codedriver.module.cmdb.dto.ci.RelVo" useCache="true">
+    <select id="getAllRelList" resultType="codedriver.framework.cmdb.dto.ci.RelVo" useCache="true">
         SELECT `id`,
                `type_id`                                                  AS typeId,
                (SELECT name FROM cmdb_reltype cr WHERE cr.id = `type_id`) AS typeText,
@@ -24,14 +29,15 @@
         FROM `cmdb_rel`
     </select>
 
-    <select id="checkRelGroupNameIsExists" parameterType="codedriver.module.cmdb.dto.ci.RelGroupVo" resultType="int">
+    <select id="checkRelGroupNameIsExists" parameterType="codedriver.framework.cmdb.dto.ci.RelGroupVo" resultType="int">
         SELECT COUNT(1)
         FROM `cmdb_relgroup`
         WHERE ci_id = #{ciId}
           AND name = #{name}
     </select>
 
-    <select id="getRelGroupByCiId" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.RelGroupVo"
+    <select id="getRelGroupByCiId" parameterType="java.lang.Long"
+            resultType="codedriver.framework.cmdb.dto.ci.RelGroupVo"
             useCache="false">
         SELECT `id`,
                `ci_id` AS ciId,
@@ -41,7 +47,7 @@
         ORDER BY id
     </select>
 
-    <select id="getRelGroupById" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.RelGroupVo"
+    <select id="getRelGroupById" parameterType="java.lang.Long" resultType="codedriver.framework.cmdb.dto.ci.RelGroupVo"
             useCache="false">
         SELECT `id`,
                `ci_id` AS ciId,
@@ -50,7 +56,7 @@
         WHERE id = #{value}
     </select>
 
-    <select id="checkRelByFromToName" parameterType="codedriver.module.cmdb.dto.ci.RelVo" resultType="int">
+    <select id="checkRelByFromToName" parameterType="codedriver.framework.cmdb.dto.ci.RelVo" resultType="int">
         SELECT COUNT(1)
         FROM cmdb_rel
         WHERE from_name = #{fromName}
@@ -58,7 +64,7 @@
           AND id != #{id}
     </select>
 
-    <select id="checkRelByFromToLabel" parameterType="codedriver.module.cmdb.dto.ci.RelVo" resultType="int">
+    <select id="checkRelByFromToLabel" parameterType="codedriver.framework.cmdb.dto.ci.RelVo" resultType="int">
         SELECT COUNT(1)
         FROM cmdb_rel
         WHERE from_label = #{fromLabel}
@@ -66,14 +72,14 @@
           AND id != #{id}
     </select>
 
-    <select id="getRelBaseInfoById" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.RelVo"
+    <select id="getRelBaseInfoById" parameterType="java.lang.Long" resultType="codedriver.framework.cmdb.dto.ci.RelVo"
             useCache="true">
         select id
         from cmdb_rel
         WHERE id = #{value}
     </select>
 
-    <select id="getRelById" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.RelVo"
+    <select id="getRelById" parameterType="java.lang.Long" resultType="codedriver.framework.cmdb.dto.ci.RelVo"
             useCache="false">
         SELECT a.`id`,
                a.`type_id`                                                       AS typeId,
@@ -107,7 +113,7 @@
         WHERE a.id = #{value}
     </select>
 
-    <select id="getRelByCiIdList" resultType="codedriver.module.cmdb.dto.ci.RelVo" useCache="true">
+    <select id="getRelByCiIdList" resultType="codedriver.framework.cmdb.dto.ci.RelVo" useCache="true">
         SELECT
         a.`id`,
         a.`type_id` AS typeId,
@@ -193,7 +199,7 @@
         ORDER BY sort ASC, id ASC
     </select>
 
-    <select id="getRelByCiId" parameterType="java.lang.Long" resultType="codedriver.module.cmdb.dto.ci.RelVo"
+    <select id="getRelByCiId" parameterType="java.lang.Long" resultType="codedriver.framework.cmdb.dto.ci.RelVo"
             useCache="false">
         SELECT a.`id`,
                a.`type_id`                                                       AS typeId,
@@ -272,7 +278,7 @@
         ORDER BY sort, id
     </select>
 
-    <update id="updateRel" parameterType="codedriver.module.cmdb.dto.ci.RelVo">
+    <update id="updateRel" parameterType="codedriver.framework.cmdb.dto.ci.RelVo">
         UPDATE
             `cmdb_rel`
         SET `type_id`          = #{typeId},
@@ -294,19 +300,19 @@
         WHERE `id` = #{id}
     </update>
 
-    <update id="updateRelGroup" parameterType="codedriver.module.cmdb.dto.ci.RelGroupVo">
+    <update id="updateRelGroup" parameterType="codedriver.framework.cmdb.dto.ci.RelGroupVo">
         UPDATE
             `cmdb_relgroup`
         SET `name` = #{name}
         WHERE `id` = #{id}
     </update>
 
-    <insert id="insertRelGroup" parameterType="codedriver.module.cmdb.dto.ci.RelGroupVo">
+    <insert id="insertRelGroup" parameterType="codedriver.framework.cmdb.dto.ci.RelGroupVo">
         INSERT INTO `cmdb_relgroup` (`id`, `ci_id`, `name`)
         VALUES (#{id}, #{ciId}, #{name})
     </insert>
 
-    <insert id="insertRel" parameterType="codedriver.module.cmdb.dto.ci.RelVo">
+    <insert id="insertRel" parameterType="codedriver.framework.cmdb.dto.ci.RelVo">
         INSERT INTO `cmdb_rel` (`id`,
                                 `type_id`,
                                 `input_type`,

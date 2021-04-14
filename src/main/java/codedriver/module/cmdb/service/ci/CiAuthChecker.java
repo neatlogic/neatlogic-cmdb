@@ -1,11 +1,9 @@
+/*
+ * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+ */
+
 package codedriver.module.cmdb.service.ci;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.cmdb.constvalue.CiAuthType;
@@ -14,7 +12,13 @@ import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiAuthMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import codedriver.module.cmdb.dao.mapper.group.GroupMapper;
-import codedriver.module.cmdb.dto.ci.CiAuthVo;
+import codedriver.framework.cmdb.dto.ci.CiAuthVo;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class CiAuthChecker {
@@ -80,42 +84,42 @@ public class CiAuthChecker {
         return false;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static Chain chain() {
+        return new Chain();
     }
 
-    public static class Builder {
+    public static class Chain {
         private boolean hasAuth = false;
 
-        public Builder hasCiManagePrivilege(Long ciId) {
+        public Chain hasCiManagePrivilege(Long ciId) {
             if (!hasAuth) {
                 hasAuth = CiAuthChecker.hasCiManagePrivilege(ciId);
             }
             return this;
         }
 
-        public Builder hasCiEntityUpdatePrivilege(Long ciId) {
+        public Chain hasCiEntityUpdatePrivilege(Long ciId) {
             if (!hasAuth) {
                 hasAuth = CiAuthChecker.hasCiEntityUpdatePrivilege(ciId);
             }
             return this;
         }
 
-        public Builder hasCiEntityQueryPrivilege(Long ciId) {
+        public Chain hasCiEntityQueryPrivilege(Long ciId) {
             if (!hasAuth) {
                 hasAuth = CiAuthChecker.hasCiEntityQueryPrivilege(ciId);
             }
             return this;
         }
 
-        public Builder hasCiEntityQueryPrivilege(Long ciId, Long ciEntityId) {
+        public Chain hasCiEntityQueryPrivilege(Long ciId, Long ciEntityId) {
             if (!hasAuth) {
                 hasAuth = CiAuthChecker.hasCiEntityQueryPrivilege(ciId, ciEntityId);
             }
             return this;
         }
 
-        public Builder isInGroup(Long ciEntityId, GroupType... groupType) {
+        public Chain isInGroup(Long ciEntityId, GroupType... groupType) {
             if (!hasAuth) {
                 hasAuth = CiAuthChecker.isInGroup(ciEntityId, groupType);
             }
@@ -165,7 +169,6 @@ public class CiAuthChecker {
     }
 
     public static boolean isInGroup(Long ciEntityId, GroupType... groupType) {
-        @SuppressWarnings("serial")
         List<Long> returnList = isInGroup(new ArrayList<Long>() {
             {
                 this.add(ciEntityId);

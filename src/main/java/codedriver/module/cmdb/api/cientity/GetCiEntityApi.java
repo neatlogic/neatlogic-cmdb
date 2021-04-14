@@ -12,7 +12,7 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.module.cmdb.exception.cientity.CiEntityAuthException;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
@@ -60,7 +60,7 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
             boolean canEdit = AuthActionChecker.check("CI_MODIFY", "CIENTITY_MODIFY");
             if (needAction) {
                 if (!canEdit) {
-                    canEdit = CiAuthChecker.builder().hasCiManagePrivilege(ciEntityVo.getId())
+                    canEdit = CiAuthChecker.chain().hasCiManagePrivilege(ciEntityVo.getId())
                             .hasCiEntityUpdatePrivilege(ciEntityVo.getId()).isInGroup(ciEntityVo.getId(), GroupType.MATAIN)
                             .check();
                 }
@@ -75,7 +75,7 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
             }
             if (!canEdit) {// 没有维护权限的情况下，判断是否拥有查看权限
                 boolean canView =
-                        CiAuthChecker.builder().hasCiEntityQueryPrivilege(ciEntityVo.getId(), ciEntityVo.getId())
+                        CiAuthChecker.chain().hasCiEntityQueryPrivilege(ciEntityVo.getId(), ciEntityVo.getId())
                                 .isInGroup(ciEntityVo.getId(), GroupType.READONLY).check();
                 if (!canView) {
                     throw new CiEntityAuthException(ciEntityVo.getCiLabel(), "查看");
