@@ -16,7 +16,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CI_MODIFY;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
 import codedriver.framework.cmdb.dto.ci.RelVo;
-import codedriver.module.cmdb.exception.ci.RelIsExistsException;
+import codedriver.framework.cmdb.exception.ci.RelIsExistsException;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

@@ -170,13 +170,14 @@
                `label`,
                `description`,
                `icon`,
-               `type_id`      AS typeId,
-               `is_private`   AS isPrivate,
-               `is_menu`      AS isMenu,
-               `parent_ci_id` AS parentCiId,
-               `is_abstract`  AS isAbstract,
-               `lft`          AS lft,
-               `rht`          AS rht
+               `type_id`         AS typeId,
+               `is_private`      AS isPrivate,
+               `is_menu`         AS isMenu,
+               `parent_ci_id`    AS parentCiId,
+               `is_abstract`     AS isAbstract,
+               `name_expression` AS nameExpression,
+               `lft`             AS lft,
+               `rht`             AS rht
         FROM `cmdb_ci`
         WHERE id = #{value}
     </select>
@@ -184,15 +185,16 @@
     <update id="updateCi" parameterType="codedriver.framework.cmdb.dto.ci.CiVo">
         UPDATE
             `cmdb_ci`
-        SET `name`         = #{name},
-            `label`        = #{label},
-            `description`  = #{description},
-            `icon`         = #{icon},
-            `type_id`      = #{typeId},
-            `is_private`   = #{isPrivate},
-            `is_menu`      = #{isMenu},
-            `parent_ci_id` = #{parentCiId},
-            `is_abstract`  = #{isAbstract}
+        SET `name`            = #{name},
+            `label`           = #{label},
+            `description`     = #{description},
+            `icon`            = #{icon},
+            `type_id`         = #{typeId},
+            `is_private`      = #{isPrivate},
+            `is_menu`         = #{isMenu},
+            `parent_ci_id`    = #{parentCiId},
+            `name_expression` = #{nameExpression},
+            `is_abstract`     = #{isAbstract}
         WHERE `id` = #{id}
     </update>
 
@@ -207,6 +209,7 @@
                                `is_menu`,
                                `is_abstract`,
                                `parent_ci_id`,
+                               `name_expression`,
                                `lft`,
                                `rht`)
         VALUES (#{id},
@@ -219,6 +222,7 @@
                 #{isMenu},
                 #{isAbstract},
                 #{parentCiId},
+                #{nameExpression},
                 #{lft},
                 #{rht})
     </insert>

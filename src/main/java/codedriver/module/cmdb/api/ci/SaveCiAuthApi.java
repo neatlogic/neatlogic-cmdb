@@ -17,7 +17,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CI_MODIFY;
 import codedriver.module.cmdb.dao.mapper.ci.CiAuthMapper;
 import codedriver.framework.cmdb.dto.ci.CiAuthVo;
-import codedriver.module.cmdb.exception.ci.CiAuthInvalidException;
+import codedriver.framework.cmdb.exception.ci.CiAuthInvalidException;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;

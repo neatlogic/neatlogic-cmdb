@@ -7,8 +7,8 @@ package codedriver.module.cmdb.api.cientity;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.auth.core.AuthActionChecker;
-import codedriver.framework.cmdb.constvalue.GroupType;
-import codedriver.framework.cmdb.constvalue.TransactionActionType;
+import codedriver.framework.cmdb.enums.GroupType;
+import codedriver.framework.cmdb.enums.TransactionActionType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.exception.core.ApiRuntimeException;
 import codedriver.framework.restful.annotation.*;
@@ -18,7 +18,7 @@ import codedriver.module.cmdb.auth.label.CIENTITY_MODIFY;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
-import codedriver.module.cmdb.exception.cientity.CiEntityAuthException;
+import codedriver.framework.cmdb.exception.cientity.CiEntityAuthException;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import com.alibaba.fastjson.JSONArray;
@@ -142,7 +142,7 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
                                 JSONObject valueObj = valueList.getJSONObject(i);
                                 String attrCiEntityUuid = valueObj.getString("uuid");
                                 Long attrCiEntityId = valueObj.getLong("id");
-                                if (id == null && StringUtils.isNotBlank(attrCiEntityUuid)) {
+                                if (attrCiEntityId == null && StringUtils.isNotBlank(attrCiEntityUuid)) {
                                     CiEntityTransactionVo tmpVo = ciEntityTransactionMap.get(attrCiEntityUuid);
                                     if (tmpVo != null) {
                                         //替换掉原来的ciEntityUuid为新的ciEntityId
@@ -150,7 +150,7 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
                                     } else {
                                         throw new ApiRuntimeException("找不到" + attrCiEntityUuid + "的新配置项");
                                     }
-                                } else if (id != null) {
+                                } else if (attrCiEntityId != null) {
                                     valueList.set(i, attrCiEntityId);
                                 } else {
                                     valueList.remove(i);
@@ -180,7 +180,6 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
                                     throw new ApiRuntimeException("找不到" + relEntityObj.getString("ciEntityUuid") + "的新配置项");
                                 }
                             }
-
                         }
                     }
                 }

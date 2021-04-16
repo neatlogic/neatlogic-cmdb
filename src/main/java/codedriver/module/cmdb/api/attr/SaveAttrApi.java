@@ -12,7 +12,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.prop.PropMapper;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
-import codedriver.module.cmdb.exception.attr.AttrNameRepeatException;
+import codedriver.framework.cmdb.exception.attr.AttrNameRepeatException;
 import codedriver.module.cmdb.service.attr.AttrService;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;

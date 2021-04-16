@@ -6,14 +6,14 @@
 package codedriver.module.cmdb.api.cientity;
 
 import codedriver.framework.auth.core.AuthActionChecker;
-import codedriver.framework.cmdb.constvalue.GroupType;
-import codedriver.framework.cmdb.constvalue.TransactionActionType;
+import codedriver.framework.cmdb.enums.GroupType;
+import codedriver.framework.cmdb.enums.TransactionActionType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
-import codedriver.module.cmdb.exception.cientity.CiEntityAuthException;
+import codedriver.framework.cmdb.exception.cientity.CiEntityAuthException;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import com.alibaba.fastjson.JSONObject;

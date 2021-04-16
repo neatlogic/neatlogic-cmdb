@@ -7,8 +7,8 @@ package codedriver.module.cmdb.api.cientity;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthActionChecker;
-import codedriver.framework.cmdb.constvalue.GroupType;
-import codedriver.framework.cmdb.constvalue.ShowType;
+import codedriver.framework.cmdb.enums.GroupType;
+import codedriver.framework.cmdb.enums.ShowType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.dao.mapper.TeamMapper;
@@ -170,6 +170,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
                 JSONObject entityObj = new JSONObject();
                 entityObj.put("id", entity.getId());
                 entityObj.put("name", entity.getName());
+                entityObj.put("ciId", entity.getCiId());
                 entityObj.put("attrEntityData", entity.getAttrEntityData());
                 entityObj.put("relEntityData", entity.getRelEntityData());
                 if (needAction) {
@@ -194,11 +195,9 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
                     }
                     entityObj.put("actionData", actionData);
                 }
-
                 tbodyList.add(entityObj);
             }
         }
-
         JSONObject returnObj = new JSONObject();
         returnObj.put("pageSize", ciEntityVo.getPageSize());
         returnObj.put("pageCount", ciEntityVo.getPageCount());

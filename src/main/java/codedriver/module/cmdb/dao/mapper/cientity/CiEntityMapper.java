@@ -83,6 +83,7 @@ public interface CiEntityMapper {
 
     void deleteCiEntity(CiEntityVo ciEntityVo);
 
+    void deleteAttrEntityByAttrId(Long attrId);
     //old
 
     List<Long> getCiEntityIdByCiId(Long ciId);

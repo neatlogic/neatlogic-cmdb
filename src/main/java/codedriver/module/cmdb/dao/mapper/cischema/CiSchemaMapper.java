@@ -35,7 +35,7 @@ public interface CiSchemaMapper {
 
     void replaceSchemaAudit(SchemaAuditVo schemaAuditvo);
 
-    void deleteAttr(@Param("tableName") String tableName, @Param("attrName") String attrName);
+    void deleteAttrFromCiSchema(@Param("tableName") String tableName, @Param("attrVo") AttrVo attrVo);
 
     void deleteSchema(@Param("tableName") String tableName);
 

@@ -6,12 +6,12 @@
 package codedriver.module.cmdb.utils;
 
 import codedriver.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
-import codedriver.framework.cmdb.constvalue.RelDirectionType;
+import codedriver.framework.cmdb.enums.RelDirectionType;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.ci.RelVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
-import codedriver.module.cmdb.exception.cientity.CiEntityMultipleException;
+import codedriver.framework.cmdb.exception.cientity.CiEntityMultipleException;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -93,11 +93,11 @@ public class CiEntityBuilder {
                                 ciEntityVo.addAttrEntityDataValue(attrId, valueList, actualValueList);
                             }
                         }
-                    } else if (key.startsWith("rel_")) {
+                    } else if (key.startsWith("rel")) {//字段名范例：relfrom_12313131323或relto_131231231313
                         if (!key.contains("#")) {
                             String[] ks = key.split("_");
-                            Long relId = Long.parseLong(ks[2]);
-                            String direction = ks[1];
+                            String direction = ks[0].replace("rel", "");
+                            Long relId = Long.parseLong(ks[1]);
                             RelVo relVo = relMap.get(relId);
                             if (!ciEntityVo.hasRelEntityData(relId, direction)) {
                                 if (relVo != null) {
@@ -171,11 +171,11 @@ public class CiEntityBuilder {
                                 ciEntityVo.addAttrEntityDataValue(attrId, valueList, actualValueList);
                             }
                         }
-                    } else if (key.startsWith("rel_")) {
+                    } else if (key.startsWith("rel")) {//字段名范例：relfrom_12313131323或relto_131231231313
                         if (!key.contains("#")) {
                             String[] ks = key.split("_");
-                            Long relId = Long.parseLong(ks[2]);
-                            String direction = ks[1];
+                            Long relId = Long.parseLong(ks[1]);
+                            String direction = ks[0].replace("rel", "");
                             RelVo relVo = relMap.get(relId);
                             if (!ciEntityVo.hasRelEntityData(relId, direction)) {
                                 if (relVo != null) {
@@ -220,7 +220,7 @@ public class CiEntityBuilder {
         attrObj.put("type", attrVo.getType());
         attrObj.put("name", attrVo.getName());
         attrObj.put("label", attrVo.getLabel());
-        attrObj.put("config", attrVo.getConfig());
+        attrObj.put("config", attrVo.getConfig(true));//克隆一个config对象，避免json序列化出错
         attrObj.put("targetCiId", attrVo.getTargetCiId());
         JSONArray valueList = new JSONArray();
         valueList.add(value);

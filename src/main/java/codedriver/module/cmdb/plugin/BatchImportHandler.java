@@ -6,10 +6,10 @@
 package codedriver.module.cmdb.plugin;
 
 import codedriver.framework.asynchronization.thread.CodeDriverThread;
-import codedriver.framework.cmdb.constvalue.EditModeType;
-import codedriver.framework.cmdb.constvalue.RelActionType;
-import codedriver.framework.cmdb.constvalue.RelDirectionType;
-import codedriver.framework.cmdb.constvalue.TransactionActionType;
+import codedriver.framework.cmdb.enums.EditModeType;
+import codedriver.framework.cmdb.enums.RelActionType;
+import codedriver.framework.cmdb.enums.RelDirectionType;
+import codedriver.framework.cmdb.enums.TransactionActionType;
 import codedriver.framework.common.util.FileUtil;
 import codedriver.framework.file.dto.FileVo;
 import codedriver.module.cmdb.dao.mapper.batchimport.ImportMapper;
@@ -23,7 +23,7 @@ import codedriver.framework.cmdb.dto.transaction.AttrEntityTransactionVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.cmdb.dto.transaction.RelEntityTransactionVo;
 import codedriver.framework.cmdb.enums.BatchImportStatus;
-import codedriver.module.cmdb.exception.ci.CiNotFoundException;
+import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.module.cmdb.service.ci.CiService;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import com.alibaba.fastjson.JSONArray;

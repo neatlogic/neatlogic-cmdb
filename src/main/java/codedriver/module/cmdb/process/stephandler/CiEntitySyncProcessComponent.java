@@ -7,8 +7,8 @@ package codedriver.module.cmdb.process.stephandler;
 
 import codedriver.framework.asynchronization.thread.CodeDriverThread;
 import codedriver.framework.asynchronization.threadpool.CachedThreadPool;
-import codedriver.framework.cmdb.constvalue.EditModeType;
-import codedriver.framework.cmdb.constvalue.TransactionActionType;
+import codedriver.framework.cmdb.enums.EditModeType;
+import codedriver.framework.cmdb.enums.TransactionActionType;
 import codedriver.framework.process.constvalue.ProcessStepMode;
 import codedriver.framework.process.dao.mapper.ProcessTaskStepDataMapper;
 import codedriver.framework.process.dto.ProcessTaskFormAttributeDataVo;

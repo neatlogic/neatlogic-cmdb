@@ -31,6 +31,40 @@ public class SelectValueHandler implements IAttrValueHandler {
         return "select";
     }
 
+    @Override
+    public String getName() {
+        return "下拉框";
+    }
+
+    @Override
+    public String getIcon() {
+        return "ts-list";
+    }
+
+    @Override
+    public boolean isCanSearch() {
+        return true;
+    }
+
+    @Override
+    public boolean isSimple() {
+        return true;
+    }
+
+    @Override
+    public boolean isNeedTargetCi() {
+        return true;
+    }
+
+    @Override
+    public boolean isNeedConfig() {
+        return true;
+    }
+
+    @Override
+    public boolean isNeedWholeRow() {
+        return false;
+    }
 
     @Override
     public JSONArray getActualValueList(AttrVo attrVo, JSONArray valueList) {

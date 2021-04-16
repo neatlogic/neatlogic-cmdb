@@ -57,29 +57,11 @@
                 #{serverId})
     </insert>
 
-    <!-- <insert id="insertAttrSchema">
-         CREATE TABLE IF NOT EXISTS ${tableName}(
-         `id` BIGINT ( 20 ) NOT NULL COMMENT 'id',
-         `cientity_id` BIGINT ( 20 ) NOT NULL COMMENT '配置项id',
-         PRIMARY KEY ( `id` ),
-         KEY `index_cientity_id` ( `cientity_id` ),
-         <foreach collection="columnList" item="column" separator=",">
-             `${column.name}` ${column.jdbcType} NULL COMMENT '${column.label}',
-             `${column.name}_hash` CHAR(32) NULL COMMENT '${column.label}值散列码',
-             <if test="column.needIndex">
-                 FULLTEXT INDEX `fullindex_${column.name}` (`${column.name}`) /*!50100 WITH PARSER `ngram` */,
-             </if>
-             KEY `index_${column.name}_hash` (`${column.name}_hash`)
-         </foreach>
-         )ENGINE = INNODB DEFAULT CHARSET = utf8mb4
-     </insert>-->
-
     <insert id="insertAttrToCiSchema">
         ALTER TABLE ${tableName}
             ADD COLUMN `${attrVo.id}`      TEXT     NULL COMMENT '${attrVo.label}',
             ADD COLUMN `${attrVo.id}_hash` CHAR(32) NULL COMMENT '${attrVo.label}值散列码',
-            ADD KEY `index_${attrVo.id}_hash` (`${attrVo.id}_hash`),
-            ADD FULLTEXT INDEX `fullindex_${attrVo.id}` (`${attrVo.id}`) /*!50100 WITH PARSER `ngram` */;
+            ADD KEY `index_${attrVo.id}_hash` (`${attrVo.id}_hash`);
     </insert>
 
     <insert id="insertCiSchema">
@@ -161,6 +143,15 @@
         </foreach>
     </insert>
 
+
+    <delete id="deleteAttrFromCiSchema">
+        ALTER TABLE ${tableName}
+            DROP
+                COLUMN `${attrVo.id}_hash`,
+            DROP
+                COLUMN `${attrVo.id}`
+    </delete>
+
     <delete id="deleteCiEntityById">
         DELETE
         FROM ${tableName}
@@ -188,12 +179,5 @@
         DROP TABLE IF EXISTS ${tableName}
     </delete>
 
-    <delete id="deleteAttr">
-        ALTER TABLE ${tableName}
-            DROP
-                COLUMN `${attrName}_hash`,
-            DROP
-                COLUMN `${attrName}`
-    </delete>
 
 </mapper>

@@ -12,7 +12,7 @@ import codedriver.framework.restful.core.privateapi.PrivateBinaryStreamApiCompon
 import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.ci.RelVo;
-import codedriver.module.cmdb.exception.ci.CiNotFoundException;
+import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.module.cmdb.service.ci.CiService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;

@@ -6,8 +6,8 @@
 package codedriver.module.cmdb.api.rel;
 
 import codedriver.framework.auth.core.AuthActionChecker;
-import codedriver.framework.cmdb.constvalue.RelDirectionType;
-import codedriver.framework.cmdb.constvalue.ShowType;
+import codedriver.framework.cmdb.enums.RelDirectionType;
+import codedriver.framework.cmdb.enums.ShowType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.*;

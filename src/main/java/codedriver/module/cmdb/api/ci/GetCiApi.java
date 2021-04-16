@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.fastjson.JSONObject;
 
 import codedriver.framework.auth.core.AuthActionChecker;
-import codedriver.framework.cmdb.constvalue.CiAuthType;
+import codedriver.framework.cmdb.enums.CiAuthType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
@@ -26,7 +26,7 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.framework.cmdb.dto.ci.CiVo;
-import codedriver.module.cmdb.exception.ci.CiNotFoundException;
+import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 
 @Service

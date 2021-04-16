@@ -5,7 +5,7 @@
 
 package codedriver.module.cmdb.api.topo;
 
-import codedriver.framework.cmdb.constvalue.RelDirectionType;
+import codedriver.framework.cmdb.enums.RelDirectionType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;

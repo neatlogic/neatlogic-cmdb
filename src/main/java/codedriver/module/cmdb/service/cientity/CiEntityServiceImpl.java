@@ -6,7 +6,17 @@
 package codedriver.module.cmdb.service.cientity;
 
 import codedriver.framework.batch.BatchRunner;
-import codedriver.framework.cmdb.constvalue.*;
+import codedriver.framework.cmdb.dto.ci.AttrVo;
+import codedriver.framework.cmdb.dto.ci.CiVo;
+import codedriver.framework.cmdb.dto.ci.RelVo;
+import codedriver.framework.cmdb.dto.cientity.AttrEntityVo;
+import codedriver.framework.cmdb.dto.cientity.AttrFilterVo;
+import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.cmdb.dto.cientity.RelEntityVo;
+import codedriver.framework.cmdb.dto.transaction.*;
+import codedriver.framework.cmdb.enums.*;
+import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
+import codedriver.framework.cmdb.exception.cientity.*;
 import codedriver.framework.cmdb.validator.core.IValidator;
 import codedriver.framework.cmdb.validator.core.ValidatorFactory;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
@@ -16,16 +26,6 @@ import codedriver.module.cmdb.dao.mapper.cientity.AttrEntityMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper;
 import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
-import codedriver.framework.cmdb.dto.ci.AttrVo;
-import codedriver.framework.cmdb.dto.ci.CiVo;
-import codedriver.framework.cmdb.dto.ci.RelVo;
-import codedriver.framework.cmdb.dto.cientity.AttrEntityVo;
-import codedriver.framework.cmdb.dto.cientity.AttrFilterVo;
-import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
-import codedriver.framework.cmdb.dto.cientity.RelEntityVo;
-import codedriver.framework.cmdb.dto.transaction.*;
-import codedriver.module.cmdb.exception.ci.CiNotFoundException;
-import codedriver.module.cmdb.exception.cientity.*;
 import codedriver.module.cmdb.utils.CiEntityBuilder;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -151,6 +151,8 @@ public class CiEntityServiceImpl implements CiEntityService {
             }
         }
         if (CollectionUtils.isEmpty(ciEntityVo.getIdList())) {
+            int rowNum = ciEntityMapper.searchCiEntityIdCount(ciEntityVo);
+            ciEntityVo.setRowNum(rowNum);
             List<Long> ciEntityIdList = ciEntityMapper.searchCiEntityId(ciEntityVo);
             if (CollectionUtils.isNotEmpty(ciEntityIdList)) {
                 ciEntityVo.setIdList(ciEntityIdList);
@@ -158,6 +160,7 @@ public class CiEntityServiceImpl implements CiEntityService {
         }
         if (CollectionUtils.isNotEmpty(ciEntityVo.getIdList())) {
             List<Map<String, Object>> resultList = ciEntityMapper.searchCiEntity(ciEntityVo);
+            ciEntityVo.setIdList(null);//清除id列表，避免ciEntityVo重用时数据没法更新
             return new CiEntityBuilder.Builder(resultList, ciVo, attrList, relList).build().getCiEntityList();
         }
         return new ArrayList<>();
@@ -662,13 +665,13 @@ public class CiEntityServiceImpl implements CiEntityService {
 
         if (MapUtils.isNotEmpty(ciEntityTransactionVo.getRelEntityData())) {
             //补充cientity名称
-            for (String key : ciEntityTransactionVo.getRelEntityData().keySet()) {
-                JSONArray dataList = ciEntityTransactionVo.getRelEntityData().getJSONArray(key);
+            /*for (String key : ciEntityTransactionVo.getRelEntityData().keySet()) {
+                JSONArray dataList = ciEntityTransactionVo.getRelEntityData().getJSONObject(key).getJSONArray("valueList");
                 for (int i = 0; i < dataList.size(); i++) {
                     JSONObject dataObj = dataList.getJSONObject(i);
                     dataObj.put("ciEntityName", ciEntityMapper.getCiEntityBaseInfoById(dataObj.getLong("ciEntityId")));
                 }
-            }
+            }*/
             hasChange = true;
         }
         return hasChange;

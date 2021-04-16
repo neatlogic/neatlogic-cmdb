@@ -83,14 +83,14 @@
         <foreach collection="relList" item="rel">
             <choose>
                 <when test="rel.direction == 'from'">
-                    `cmdb_relrentity_${rel.id}`.to_cientity_id AS `rel_${rel.id}`,
+                    `cmdb_relrentity_${rel.id}`.to_cientity_id AS `relfrom_${rel.id}`,
                     (SELECT `name` FROM cmdb_cientity WHERE id = `cmdb_relrentity_${rel.id}`.to_cientity_id) AS
-                    `rel_from_${rel.id}#name`,
+                    `relfrom_${rel.id}#name`,
                 </when>
                 <otherwise>
-                    `cmdb_relrentity_${rel.id}`.from_cientity_id AS `rel_${rel.id}`,
+                    `cmdb_relrentity_${rel.id}`.from_cientity_id AS `relto_${rel.id}`,
                     (SELECT `name` FROM cmdb_cientity WHERE id = `cmdb_relrentity_${rel.id}`.from_cientity_id) AS
-                    `rel_to_${rel.id}#name`,
+                    `relto_${rel.id}#name`,
                 </otherwise>
             </choose>
         </foreach>
@@ -177,6 +177,7 @@
         FROM cmdb_cientity `ci_base`
         <include refid="ciEntityJoinSql"></include>
         <include refid="ciEntityConditionSql"></include>
+        ORDER BY ci_base.id DESC
         LIMIT #{startNum}, #{pageSize}
     </select>
 
@@ -188,6 +189,7 @@
         <include refid="ciEntityJoinSql"></include>
         WHERE ci_base.id IN
         <foreach collection="idList" item="id" open="(" close=")" separator=",">#{id}</foreach>
+        ORDER BY ci_base.id DESC
     </select>
 
 
@@ -282,6 +284,12 @@
         DELETE
         FROM ${ciTableName}
         WHERE cientity_id = #{id}
+    </delete>
+
+    <delete id="deleteAttrEntityByAttrId" parameterType="java.lang.Long">
+        DELETE
+        FROM cmdb_attrentity
+        WHERE attr_id = #{value}
     </delete>
 
     <delete id="deleteCiEntityBaseInfo" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">

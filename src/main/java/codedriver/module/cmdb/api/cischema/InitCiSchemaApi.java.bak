@@ -12,7 +12,7 @@ import codedriver.module.cmdb.auth.label.CI_MODIFY;
 import codedriver.module.cmdb.cischema.CiSchemaHandler;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.framework.cmdb.dto.ci.CiVo;
-import codedriver.module.cmdb.exception.ci.CiNotFoundException;
+import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

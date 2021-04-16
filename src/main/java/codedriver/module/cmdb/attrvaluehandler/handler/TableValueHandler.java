@@ -31,6 +31,40 @@ public class TableValueHandler implements IAttrValueHandler {
         return "table";
     }
 
+    @Override
+    public String getName() {
+        return "表格";
+    }
+
+    @Override
+    public String getIcon() {
+        return "ts-tablechart";
+    }
+
+    @Override
+    public boolean isCanSearch() {
+        return true;
+    }
+
+    @Override
+    public boolean isSimple() {
+        return false;
+    }
+
+    @Override
+    public boolean isNeedTargetCi() {
+        return true;
+    }
+
+    @Override
+    public boolean isNeedConfig() {
+        return true;
+    }
+
+    @Override
+    public boolean isNeedWholeRow() {
+        return true;
+    }
 
     @Override
     public JSONArray getActualValueList(AttrVo attrVo, JSONArray valueList) {

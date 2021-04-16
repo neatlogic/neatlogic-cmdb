@@ -5,7 +5,7 @@
 
 package codedriver.module.cmdb.api.transaction;
 
-import codedriver.framework.cmdb.constvalue.RelDirectionType;
+import codedriver.framework.cmdb.enums.RelDirectionType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.exception.core.ApiRuntimeException;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;

@@ -200,7 +200,7 @@
     </select>
 
     <select id="getRelByCiId" parameterType="java.lang.Long" resultType="codedriver.framework.cmdb.dto.ci.RelVo"
-            useCache="false">
+            useCache="true">
         SELECT a.`id`,
                a.`type_id`                                                       AS typeId,
                (SELECT name FROM cmdb_reltype cr WHERE cr.id = a.`type_id`)      AS typeText,

@@ -8,7 +8,7 @@
 <mapper namespace="codedriver.module.cmdb.dao.mapper.ci.AttrMapper">
     <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
     <select id="getAttrById" parameterType="java.lang.Long" resultType="codedriver.framework.cmdb.dto.ci.AttrVo"
-            useCache="true">
+            useCache="false">
         SELECT `id`,
                `ci_id`                                                       AS ciId,
                `type`,
@@ -36,7 +36,7 @@
     </select>
 
     <select id="getAttrByCiId" parameterType="java.lang.Long" resultType="codedriver.framework.cmdb.dto.ci.AttrVo"
-            useCache="false">
+            useCache="true">
         SELECT
         ci.`id` AS ciId,
         ci.`name` AS ciName,

@@ -6,8 +6,8 @@
 package codedriver.module.cmdb.service.ci;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
-import codedriver.framework.cmdb.constvalue.CiAuthType;
-import codedriver.framework.cmdb.constvalue.GroupType;
+import codedriver.framework.cmdb.enums.CiAuthType;
+import codedriver.framework.cmdb.enums.GroupType;
 import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiAuthMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;

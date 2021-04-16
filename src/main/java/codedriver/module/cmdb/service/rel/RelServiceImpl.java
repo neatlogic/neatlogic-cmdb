@@ -7,9 +7,9 @@ package codedriver.module.cmdb.service.rel;
 
 import codedriver.framework.batch.BatchJob;
 import codedriver.framework.batch.BatchRunner;
-import codedriver.framework.cmdb.constvalue.RelActionType;
-import codedriver.framework.cmdb.constvalue.TransactionActionType;
-import codedriver.framework.cmdb.constvalue.TransactionStatus;
+import codedriver.framework.cmdb.enums.RelActionType;
+import codedriver.framework.cmdb.enums.TransactionActionType;
+import codedriver.framework.cmdb.enums.TransactionStatus;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.AttrEntityMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;

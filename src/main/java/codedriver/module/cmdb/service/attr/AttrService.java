@@ -12,5 +12,5 @@ public interface AttrService {
 
     void updateAttr(AttrVo attrVo);
 
-    void deleteAttrById(Long attrId);
+    void deleteAttr(AttrVo attrVo);
 }
