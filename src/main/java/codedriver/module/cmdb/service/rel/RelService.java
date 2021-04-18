@@ -8,5 +8,5 @@ package codedriver.module.cmdb.service.rel;
 import codedriver.framework.cmdb.dto.ci.RelVo;
 
 public interface RelService {
-    void deleteRelById(RelVo relVo);
+    void deleteRel(RelVo relVo);
 }

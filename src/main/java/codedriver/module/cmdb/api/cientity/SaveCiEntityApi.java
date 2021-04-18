@@ -64,16 +64,18 @@ public class SaveCiEntityApi extends PrivateApiComponentBase {
                         CiAuthChecker.chain().hasCiEntityUpdatePrivilege(ciId).isInGroup(id, GroupType.MATAIN).check();
             }
             ciEntityTransactionVo.setCiEntityId(id);
-            ciEntityTransactionVo.setTransactionMode(TransactionActionType.UPDATE);
+            ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
+            // ciEntityTransactionVo.setTransactionMode(TransactionActionType.UPDATE);
         } else {
             if (!hasAuth) {
                 hasAuth = CiAuthChecker.hasCiEntityInsertPrivilege(ciId);
             }
-            ciEntityTransactionVo.setTransactionMode(TransactionActionType.INSERT);
+            ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
+            //ciEntityTransactionVo.setTransactionMode(TransactionActionType.INSERT);
         }
 
         if (!hasAuth) {
-            throw new CiEntityAuthException(ciEntityTransactionVo.getTransactionMode().getText());
+            throw new CiEntityAuthException(ciEntityTransactionVo.getActionText());
         }
 
         ciEntityTransactionVo.setCiId(ciId);

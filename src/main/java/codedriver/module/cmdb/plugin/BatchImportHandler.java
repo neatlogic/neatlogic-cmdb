@@ -437,8 +437,7 @@ public class BatchImportHandler {
                                             /** 没有采集到异常才执行保存，保存过程中发生异常再put到errMsgMap中 */
                                             if (action.equals("append") && ciEntityId == null) {
                                                 if (MapUtils.isEmpty(errorMsgMap)) {
-                                                    ciEntityTransactionVo
-                                                            .setTransactionMode(TransactionActionType.INSERT);
+                                                    ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
                                                     ciEntityService.saveCiEntity(ciEntityTransactionVo);
                                                     successCount += 1;
                                                 } else {
@@ -451,8 +450,7 @@ public class BatchImportHandler {
                                                     throw new RuntimeException("配置项：" + ciEntityId + "不存在");
                                                 }
                                                 if (MapUtils.isEmpty(errorMsgMap)) {
-                                                    ciEntityTransactionVo
-                                                            .setTransactionMode(TransactionActionType.UPDATE);
+                                                    ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
                                                     ciEntityService.saveCiEntity(ciEntityTransactionVo);
                                                     successCount += 1;
                                                 } else {
@@ -465,8 +463,7 @@ public class BatchImportHandler {
                                                         throw new RuntimeException("配置项：" + ciEntityId + "不存在");
                                                     }
                                                     if (MapUtils.isEmpty(errorMsgMap)) {
-                                                        ciEntityTransactionVo
-                                                                .setTransactionMode(TransactionActionType.UPDATE);
+                                                        ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
                                                         ciEntityService.saveCiEntity(ciEntityTransactionVo);
                                                         successCount += 1;
                                                     } else {
@@ -474,8 +471,7 @@ public class BatchImportHandler {
                                                     }
                                                 } else {
                                                     if (MapUtils.isEmpty(errorMsgMap)) {
-                                                        ciEntityTransactionVo
-                                                                .setTransactionMode(TransactionActionType.INSERT);
+                                                        ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
                                                         ciEntityService.saveCiEntity(ciEntityTransactionVo);
                                                         successCount += 1;
                                                     } else {

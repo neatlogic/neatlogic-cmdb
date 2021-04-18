@@ -108,14 +108,14 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
                 }
                 ciEntityTransactionVo = new CiEntityTransactionVo();
                 ciEntityTransactionVo.setCiEntityId(id);
-                ciEntityTransactionVo.setTransactionMode(TransactionActionType.UPDATE);
+                ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
             } else if (StringUtils.isNotBlank(uuid)) {
                 if (!hasAuth) {
                     hasAuth = CiAuthChecker.hasCiEntityInsertPrivilege(ciId);
                 }
                 ciEntityTransactionVo = ciEntityTransactionMap.get(uuid);
                 ciEntityTransactionVo.setCiEntityUuid(uuid);
-                ciEntityTransactionVo.setTransactionMode(TransactionActionType.INSERT);
+                ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
             } else {
                 throw new ApiRuntimeException("数据不合法，缺少id或uuid");
             }

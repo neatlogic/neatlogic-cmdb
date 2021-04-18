@@ -16,7 +16,7 @@ import java.util.List;
  *
  */
 public interface RelEntityMapper {
-    List<RelEntityVo> getRelEntityByRelId(Long relId);
+    List<RelEntityVo> getRelEntityByRelId(RelEntityVo relEntityVo);
 
     int checkRelEntityIsExists(RelEntityVo relEntityVo);
 

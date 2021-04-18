@@ -37,7 +37,7 @@
           AND c.ci_id = #{toCiId}
     </select>
 
-    <select id="getRelEntityByRelId" parameterType="java.lang.Long"
+    <select id="getRelEntityByRelId" parameterType="codedriver.framework.cmdb.dto.cientity.RelEntityVo"
             resultType="codedriver.framework.cmdb.dto.cientity.RelEntityVo">
         SELECT rel_id           AS relId,
                b.ci_id          AS fromCiId,
@@ -49,7 +49,8 @@
         FROM cmdb_relentity a
                  JOIN cmdb_cientity b ON a.from_cientity_id = b.id
                  JOIN cmdb_cientity c ON a.to_cientity_id = c.id
-        WHERE rel_id = #{value}
+        WHERE rel_id = #{relId}
+        LIMIT #{startNum}, #{pageSize}
     </select>
 
 

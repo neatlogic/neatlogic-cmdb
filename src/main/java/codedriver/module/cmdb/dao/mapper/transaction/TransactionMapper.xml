@@ -26,6 +26,13 @@
         </foreach>
     </select>
 
+    <update id="updateCiEntityTransactionContent"
+            parameterType="codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo">
+        UPDATE `cmdb_cientity_transaction`
+        SET content = #{content,typeHandler=compressHandler}
+        WHERE id = #{id}
+    </update>
+
     <insert id="insertCiEntityTransaction"
             parameterType="codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo">
         INSERT INTO `cmdb_cientity_transaction` (`id`,
@@ -43,8 +50,8 @@
                 #{name},
                 #{action},
                 #{transactionId},
-                #{content},
-                #{snapshot},
+                #{content,typeHandler=compressHandler},
+                #{snapshot,typeHandler=compressHandler},
                 #{editMode})
     </insert>
 
@@ -244,6 +251,21 @@
         ORDER BY id
     </select>
 
+    <select id="getCiEntityTransactionByTransactionGroupIdAndCiEntityId"
+            resultType="codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo">
+        SELECT a.`id`,
+               a.`ci_id`          AS ciId,
+               a.`ci_entity_id`   AS ciEntityId,
+               a.`name`           AS `name`,
+               a.`action`,
+               a.`transaction_id` AS transactionId,
+               a.`snapshot`       AS `snapshot`,
+               a.`content`        AS content
+        FROM `cmdb_cientity_transaction` a
+                 JOIN `cmdb_transactiongroup` b ON a.transaction_id = b.transaction_id
+        WHERE b.id = #{transactionGroupId}
+          AND a.ci_entity_id = #{ciEntityId}
+    </select>
 
     <select id="getCiEntityTransactionByTransactionIdAndCiEntityId"
             resultType="codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo">
@@ -253,7 +275,8 @@
                `name`           AS name,
                `action`,
                `transaction_id` AS transactionId,
-               `snapshot_hash`  AS snapshotHash
+               `snapshot`       AS snapshot,
+               `content`        AS content
         FROM `cmdb_cientity_transaction`
         WHERE transaction_id = #{transactionId}
           AND ci_entity_id = #{ciEntityId}
@@ -296,45 +319,45 @@
                 #{action})
     </insert>
 
-    <insert id="insertAttrEntityTransaction"
-            parameterType="codedriver.framework.cmdb.dto.transaction.AttrEntityTransactionVo">
-        INSERT INTO `cmdb_attrentity_transaction` (
-        `ci_entity_id`,
-        `attr_id`,
-        `attr_name`,
-        `attr_label`,
-        `value_hash`,
-        `transaction_id`,
-        `savemode`
-        )
-        VALUES
-        <choose>
-            <when test="valueHashList != null and valueHashList.size() > 0">
-                <foreach collection="valueHashList" item="item" separator=",">
-                    (
-                    #{ciEntityId},
-                    #{attrId},
-                    #{attrName},
-                    #{attrLabel},
-                    #{item},
-                    #{transactionId},
-                    #{saveMode}
-                    )
-                </foreach>
-            </when>
-            <otherwise>
-                (
-                #{ciEntityId},
-                #{attrId},
-                #{attrName},
-                #{attrLabel},
-                '',<!-- 用于表示删除配置项属性值 -->
-                #{transactionId},
-                #{saveMode}
-                )
-            </otherwise>
+    <!-- <insert id="insertAttrEntityTransaction"
+             parameterType="codedriver.framework.cmdb.dto.transaction.AttrEntityTransactionVo">
+         INSERT INTO `cmdb_attrentity_transaction` (
+         `ci_entity_id`,
+         `attr_id`,
+         `attr_name`,
+         `attr_label`,
+         `value_hash`,
+         `transaction_id`,
+         `savemode`
+         )
+         VALUES
+         <choose>
+             <when test="valueHashList != null and valueHashList.size() > 0">
+                 <foreach collection="valueHashList" item="item" separator=",">
+                     (
+                     #{ciEntityId},
+                     #{attrId},
+                     #{attrName},
+                     #{attrLabel},
+                     #{item},
+                     #{transactionId},
+                     #{saveMode}
+                     )
+                 </foreach>
+             </when>
+             <otherwise>
+                 (
+                 #{ciEntityId},
+                 #{attrId},
+                 #{attrName},
+                 #{attrLabel},
+                 '',
+    #{transactionId},
+    #{saveMode}
+    )
+</otherwise>
         </choose>
-    </insert>
+        </insert>-->
 
 
     <insert id="insertTransaction" parameterType="codedriver.framework.cmdb.dto.transaction.TransactionVo">

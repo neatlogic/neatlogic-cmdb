@@ -15,36 +15,35 @@ import java.util.List;
 
 public interface TransactionMapper {
 
-    public TransactionVo getTransactionById(Long transactionId);
+    TransactionVo getTransactionById(Long transactionId);
 
-    public List<TransactionVo> searchTransaction(TransactionVo transactionVo);
+    List<TransactionVo> searchTransaction(TransactionVo transactionVo);
 
-    public int searchTransactionCount(TransactionVo transactionVo);
+    int searchTransactionCount(TransactionVo transactionVo);
 
-    public List<CiEntityTransactionVo>
-    getCiEntityTransactionByTransactionIdList(@Param("transactionIdList") List<Long> transactionIdList, @Param("ciEntityId") Long ciEntityId);
+    List<CiEntityTransactionVo> getCiEntityTransactionByTransactionIdList(@Param("transactionIdList") List<Long> transactionIdList, @Param("ciEntityId") Long ciEntityId);
 
-    public List<AttrEntityTransactionVo> getAttrEntityTransactionByTransactionIdAndCiEntityId(
-            @Param("transactionId") Long transactionId, @Param("ciEntityId") Long ciEntityId);
+    List<AttrEntityTransactionVo> getAttrEntityTransactionByTransactionIdAndCiEntityId(@Param("transactionId") Long transactionId, @Param("ciEntityId") Long ciEntityId);
 
-    public List<RelEntityTransactionVo> getRelEntityTransactionByTransactionIdAndCiEntityId(
-            @Param("transactionId") Long transactionId, @Param("ciEntityId") Long ciEntityId);
+    List<RelEntityTransactionVo> getRelEntityTransactionByTransactionIdAndCiEntityId(@Param("transactionId") Long transactionId, @Param("ciEntityId") Long ciEntityId);
 
-    public CiEntityTransactionVo getCiEntityTransactionByTransactionIdAndCiEntityId(
-            @Param("transactionId") Long transactionId, @Param("ciEntityId") Long ciEntityId);
+    CiEntityTransactionVo getCiEntityTransactionByTransactionGroupIdAndCiEntityId(@Param("transactionGroupId") Long transactionGroupId, @Param("ciEntityId") Long ciEntityId);
 
-    public int updateTransactionStatus(TransactionVo transactionVo);
+    CiEntityTransactionVo getCiEntityTransactionByTransactionIdAndCiEntityId(@Param("transactionId") Long transactionId, @Param("ciEntityId") Long ciEntityId);
 
-    public int insertRelEntityTransaction(RelEntityTransactionVo relEntityTransactionVo);
+    int updateTransactionStatus(TransactionVo transactionVo);
 
-    public int insertAttrEntityTransaction(AttrEntityTransactionVo attrEntityTransactionVo);
+    void updateCiEntityTransactionContent(CiEntityTransactionVo ciEntityTransactionVo);
 
-    public int insertCiEntityTransaction(CiEntityTransactionVo ciEntityTransactionVo);
+    int insertRelEntityTransaction(RelEntityTransactionVo relEntityTransactionVo);
 
-    public int insertTransactionGroup(@Param("transactionGroupId") Long transactionGroupId,
-                                      @Param("transactionId") Long transactionId);
+    // int insertAttrEntityTransaction(AttrEntityTransactionVo attrEntityTransactionVo);
 
-    public int insertTransaction(TransactionVo transactionVo);
+    int insertCiEntityTransaction(CiEntityTransactionVo ciEntityTransactionVo);
 
-    public int deleteTransactionByCiId(Long ciId);
+    int insertTransactionGroup(@Param("transactionGroupId") Long transactionGroupId, @Param("transactionId") Long transactionId);
+
+    int insertTransaction(TransactionVo transactionVo);
+
+    int deleteTransactionByCiId(Long ciId);
 }

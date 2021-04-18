@@ -236,7 +236,6 @@ public class CiEntityServiceImpl implements CiEntityService {
         TransactionVo transactionVo = new TransactionVo();
         transactionVo.setCiId(ciEntityTransactionVo.getCiId());
 
-        ciEntityTransactionVo.setAction(ciEntityTransactionVo.getTransactionMode().getValue());
         ciEntityTransactionVo.setTransactionId(transactionVo.getId());
 
         transactionVo.setCiEntityTransactionVo(ciEntityTransactionVo);
@@ -277,8 +276,7 @@ public class CiEntityServiceImpl implements CiEntityService {
      * @return 事务id
      */
     private Long saveCiEntity(CiEntityTransactionVo ciEntityTransactionVo, TransactionGroupVo transactionGroupVo) {
-        TransactionActionType action = ciEntityTransactionVo.getTransactionMode();
-        if (action.equals(TransactionActionType.UPDATE)) {
+        if (ciEntityTransactionVo.getAction().equals(TransactionActionType.UPDATE.getValue())) {
             CiEntityVo oldCiEntityVo = this.getCiEntityById(ciEntityTransactionVo.getCiEntityId());
             ciEntityTransactionVo.setOldCiEntityVo(oldCiEntityVo);
             // 正在编辑中的配置项，在事务提交或删除前不允许再次修改
@@ -290,7 +288,6 @@ public class CiEntityServiceImpl implements CiEntityService {
         TransactionVo transactionVo = new TransactionVo();
         transactionVo.setCiId(ciEntityTransactionVo.getCiId());
 
-        ciEntityTransactionVo.setAction(action.getValue());
         ciEntityTransactionVo.setTransactionId(transactionVo.getId());
 
         transactionVo.setCiEntityTransactionVo(ciEntityTransactionVo);
@@ -402,6 +399,11 @@ public class CiEntityServiceImpl implements CiEntityService {
      * 如果是replace模式，直接用新值进行校验。
      * 如果是Merge模式，则需要先把新值和旧值合并后再进行校验。
      * 2、如果是普通属性值，只有单值的可能，不管什么模式只需要使用新值进行校验即可。
+     * <p>
+     * 记录属性是新增、编辑或删除：
+     * 1、如果整个attr_xxxx在snapshot中不存在，代表添加了新属性，如果attr_xxxx的valueList在snapshot中为空，代表属性添加了值。
+     * 2、如果snapshot本身已存在attr_xxx和valueList，代表编辑。
+     * 3、如果修改模式是Partial，attr_xxx为空，代表删除整个属性，如果只是valueList清空，代表属性删除了值，其他不提供的代表不动。
      *
      * @param ciEntityTransactionVo 配置项事务实体
      * @return true:验证成功 false:验证失败
@@ -660,7 +662,7 @@ public class CiEntityServiceImpl implements CiEntityService {
         //补充待删除关系进事务里
         for (RelEntityVo relEntityVo : needDeleteRelEntityList) {
             Long targetId = relEntityVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? relEntityVo.getToCiEntityId() : relEntityVo.getFromCiEntityId();
-            ciEntityTransactionVo.addRelEntityData(relEntityVo.getRelId(), relEntityVo.getDirection(), targetId, RelActionType.DELETE);
+            ciEntityTransactionVo.addRelEntityData(relEntityVo.getRelId(), relEntityVo.getDirection(), targetId, RelActionType.DELETE.getValue());
         }
 
         if (MapUtils.isNotEmpty(ciEntityTransactionVo.getRelEntityData())) {
@@ -745,7 +747,6 @@ public class CiEntityServiceImpl implements CiEntityService {
             1、如果是引用类型，并且是replace模式，需要先清空原来的值在写入。
              */
             CiEntityVo ciEntityVo = new CiEntityVo(ciEntityTransactionVo);
-
             for (AttrEntityTransactionVo attrEntityTransactionVo :
                     ciEntityTransactionVo.getAttrEntityTransactionList()) {
                 AttrEntityVo attrEntityVo = new AttrEntityVo(attrEntityTransactionVo);
@@ -773,7 +774,7 @@ public class CiEntityServiceImpl implements CiEntityService {
             List<RelEntityTransactionVo> relEntityTransactionList = ciEntityTransactionVo.getRelEntityTransactionList();
             if (CollectionUtils.isNotEmpty(relEntityTransactionList)) {
                 //记录对端配置项的事务，如果同一个配置项则不需要添加多个事务
-                Map<Long, Long> ciEntityTransactionMap = new HashMap<>();
+                Map<Long, CiEntityTransactionVo> ciEntityTransactionMap = new HashMap<>();
                 for (RelEntityTransactionVo relEntityTransactionVo : relEntityTransactionList) {
                     //如果不是自己引用自己，则需要补充对端配置项事务，此块需要在真正删除数据前处理
                     if (!relEntityTransactionVo.getFromCiEntityId().equals(relEntityTransactionVo.getToCiEntityId())) {
@@ -791,24 +792,20 @@ public class CiEntityServiceImpl implements CiEntityService {
                             TransactionVo toTransactionVo = new TransactionVo();
                             toTransactionVo.setCiId(ciId);
                             toTransactionVo.setStatus(TransactionStatus.COMMITED.getValue());
-
+                            transactionMapper.insertTransaction(toTransactionVo);
+                            transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), toTransactionVo.getId());
                             CiEntityTransactionVo endCiEntityTransactionVo = new CiEntityTransactionVo();
                             endCiEntityTransactionVo.setCiEntityId(ciEntityId);
                             endCiEntityTransactionVo.setCiId(ciId);
                             endCiEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
                             endCiEntityTransactionVo.setTransactionId(toTransactionVo.getId());
+                            endCiEntityTransactionVo.setOldCiEntityVo(this.getCiEntityById(ciEntityId));
                             createSnapshot(endCiEntityTransactionVo);
-
-                            transactionMapper.insertTransaction(toTransactionVo);
-                            transactionMapper.insertCiEntityTransaction(endCiEntityTransactionVo);
-                            transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), toTransactionVo.getId());
-
-                            ciEntityTransactionMap.put(endCiEntityTransactionVo.getCiEntityId(), toTransactionVo.getId());
+                            ciEntityTransactionMap.put(endCiEntityTransactionVo.getCiEntityId(), endCiEntityTransactionVo);
                         }
-
-                        RelEntityTransactionVo endRelEntityVo = new RelEntityTransactionVo(relEntityTransactionVo);
-                        endRelEntityVo.setTransactionId(ciEntityTransactionMap.get(ciEntityId));
-                        transactionMapper.insertRelEntityTransaction(endRelEntityVo);
+                        CiEntityTransactionVo endCiEntityTransactionVo = ciEntityTransactionMap.get(ciEntityId);
+                        //补充关系修改信息
+                        endCiEntityTransactionVo.addRelEntityData(relEntityTransactionVo.getRelId(), relEntityTransactionVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? RelDirectionType.TO.getValue() : RelDirectionType.FROM.getValue(), ciEntityId, relEntityTransactionVo.getAction());
                     }
 
                     if (relEntityTransactionVo.getAction().equals(RelActionType.DELETE.getValue())) {
@@ -820,6 +817,10 @@ public class CiEntityServiceImpl implements CiEntityService {
                             relEntityMapper.insertRelEntity(newRelEntityVo);
                         }
                     }
+                }
+                //所有事务信息补充完毕后才能写入，因为对端配置项有可能被引用多次
+                for (Long ciEntityId : ciEntityTransactionMap.keySet()) {
+                    transactionMapper.insertCiEntityTransaction(ciEntityTransactionMap.get(ciEntityId));
                 }
             }
 

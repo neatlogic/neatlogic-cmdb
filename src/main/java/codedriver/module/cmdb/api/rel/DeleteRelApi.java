@@ -6,17 +6,22 @@
 package codedriver.module.cmdb.api.rel;
 
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.auth.core.AuthActionChecker;
+import codedriver.framework.cmdb.dto.ci.CiVo;
+import codedriver.framework.cmdb.dto.ci.RelVo;
+import codedriver.framework.cmdb.exception.ci.CiAuthException;
+import codedriver.framework.cmdb.exception.rel.RelNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Param;
+import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CI_MODIFY;
+import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
-import codedriver.framework.cmdb.dto.ci.RelVo;
-import codedriver.framework.cmdb.exception.rel.RelNotFoundException;
+import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.service.rel.RelService;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +37,9 @@ public class DeleteRelApi extends PrivateApiComponentBase {
 
     @Autowired
     private RelMapper relMapper;
+
+    @Autowired
+    private CiMapper ciMapper;
 
     @Override
     public String getToken() {
@@ -57,7 +65,19 @@ public class DeleteRelApi extends PrivateApiComponentBase {
         if (relVo == null) {
             throw new RelNotFoundException(relId);
         }
-        relService.deleteRelById(relVo);
+        boolean hasAuth = AuthActionChecker.check("CI_MODIFY");
+        if (!hasAuth) {
+            if (!CiAuthChecker.hasCiManagePrivilege(relVo.getFromCiId())) {
+                CiVo ciVo = ciMapper.getCiById(relVo.getFromCiId());
+                throw new CiAuthException(ciVo.getLabel());
+            }
+            if (!CiAuthChecker.hasCiManagePrivilege(relVo.getToCiId())) {
+                CiVo ciVo = ciMapper.getCiById(relVo.getToCiId());
+                throw new CiAuthException(ciVo.getLabel());
+            }
+            hasAuth = true;
+        }
+        relService.deleteRel(relVo);
         return null;
     }
 

@@ -6,12 +6,13 @@
 package codedriver.module.cmdb.service.ci;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
-import codedriver.framework.batch.BatchJob;
-import codedriver.framework.batch.BatchRunner;
-import codedriver.framework.cmdb.enums.RelActionType;
-import codedriver.framework.cmdb.enums.RelDirectionType;
-import codedriver.framework.cmdb.enums.TransactionActionType;
-import codedriver.framework.cmdb.enums.TransactionStatus;
+import codedriver.framework.cmdb.dto.ci.AttrVo;
+import codedriver.framework.cmdb.dto.ci.CiVo;
+import codedriver.framework.cmdb.dto.ci.RelVo;
+import codedriver.framework.cmdb.exception.ci.CiHasBeenExtendedException;
+import codedriver.framework.cmdb.exception.ci.CiHasRelException;
+import codedriver.framework.cmdb.exception.ci.CiIsNotEmptyException;
+import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.exception.database.DataBaseNotFoundException;
 import codedriver.framework.lrcode.LRCodeManager;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
@@ -21,18 +22,6 @@ import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper;
 import codedriver.module.cmdb.dao.mapper.cischema.CiSchemaMapper;
 import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
-import codedriver.framework.cmdb.dto.ci.AttrVo;
-import codedriver.framework.cmdb.dto.ci.CiVo;
-import codedriver.framework.cmdb.dto.ci.RelVo;
-import codedriver.framework.cmdb.dto.cientity.RelEntityVo;
-import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
-import codedriver.framework.cmdb.dto.transaction.RelEntityTransactionVo;
-import codedriver.framework.cmdb.dto.transaction.TransactionGroupVo;
-import codedriver.framework.cmdb.dto.transaction.TransactionVo;
-import codedriver.framework.cmdb.exception.ci.CiHasBeenExtendedException;
-import codedriver.framework.cmdb.exception.ci.CiHasRelException;
-import codedriver.framework.cmdb.exception.ci.CiIsNotEmptyException;
-import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import codedriver.module.cmdb.service.rel.RelService;
 import org.apache.commons.collections4.CollectionUtils;
@@ -130,109 +119,6 @@ public class CiServiceImpl implements CiService {
         return 0;
     }
 
-    @Deprecated
-    public int deleteCi_bak(Long ciId) {
-        CiVo ciVo = ciMapper.getCiById(ciId);
-        //补充受影响配置项的事务信息
-        List<RelVo> relList = relMapper.getRelByCiId(ciId);
-        for (RelVo relVo : relList) {
-            if (relVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
-                List<RelEntityVo> relEntityList = relEntityMapper.getRelEntityByFromCiIdAndRelId(relVo.getId(), ciId);
-                BatchRunner<RelEntityVo> runner = new BatchRunner<>();
-                TransactionGroupVo transactionGroupVo = new TransactionGroupVo();
-                //并发清理配置项数据，最高并发10个线程
-                int parallel = 10;
-                runner.execute(relEntityList, parallel, new BatchJob<RelEntityVo>() {
-                    @Override
-                    public void execute(RelEntityVo item) {
-                        if (item != null) {
-                            //写入事务
-                            TransactionVo transactionVo = new TransactionVo();
-                            transactionMapper.insertTransaction(transactionVo);
-                            //写入事务分组
-                            transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), transactionVo.getId());
-
-                            //写入目标端配置项事务
-                            CiEntityTransactionVo toCiEntityTransactionVo = new CiEntityTransactionVo();
-                            toCiEntityTransactionVo.setCiEntityId(item.getToCiEntityId());
-                            toCiEntityTransactionVo.setCiId(item.getToCiId());
-                            toCiEntityTransactionVo.setTransactionMode(TransactionActionType.UPDATE);
-                            toCiEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
-                            toCiEntityTransactionVo.setTransactionId(transactionVo.getId());
-
-                            // 保存快照
-                            ciEntityService.createSnapshot(toCiEntityTransactionVo);
-
-                            RelEntityTransactionVo relEntityVo = new RelEntityTransactionVo(item, RelActionType.DELETE);
-                            relEntityVo.setTransactionId(transactionVo.getId());
-
-                            //写入配置项事务
-                            transactionMapper.insertCiEntityTransaction(toCiEntityTransactionVo);
-                            // 写入属性事务
-                            transactionMapper.insertRelEntityTransaction(relEntityVo);
-
-                            //真正修改数据
-                            relEntityMapper.deleteRelEntityByRelIdFromCiEntityIdToCiEntityId(item.getRelId(),
-                                    item.getFromCiEntityId(), item.getToCiEntityId());
-                            transactionVo.setStatus(TransactionStatus.COMMITED.getValue());
-                            transactionMapper.updateTransactionStatus(transactionVo);
-                        }
-                    }
-                });
-            } else if (relVo.getDirection().equals(RelDirectionType.TO.getValue())) {
-                List<RelEntityVo> relEntityList = relEntityMapper.getRelEntityByToCiIdAndRelId(relVo.getId(), ciId);
-                BatchRunner<RelEntityVo> runner = new BatchRunner<>();
-                TransactionGroupVo transactionGroupVo = new TransactionGroupVo();
-                //并发清理配置项数据，最高并发10个线程
-                int parallel = 10;
-                runner.execute(relEntityList, parallel, new BatchJob<RelEntityVo>() {
-                    @Override
-                    public void execute(RelEntityVo item) {
-                        if (item != null) {
-                            //写入事务
-                            TransactionVo transactionVo = new TransactionVo();
-                            transactionVo.setStatus(TransactionStatus.COMMITED.getValue());
-                            transactionMapper.insertTransaction(transactionVo);
-                            //写入事务分组
-                            transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), transactionVo.getId());
-
-                            //写入来源端配置项事务
-                            CiEntityTransactionVo toCiEntityTransactionVo = new CiEntityTransactionVo();
-                            toCiEntityTransactionVo.setCiEntityId(item.getFromCiEntityId());
-                            toCiEntityTransactionVo.setCiId(item.getFromCiId());
-                            toCiEntityTransactionVo.setTransactionMode(TransactionActionType.UPDATE);
-                            toCiEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
-                            toCiEntityTransactionVo.setTransactionId(transactionVo.getId());
-
-                            // 保存快照
-                            ciEntityService.createSnapshot(toCiEntityTransactionVo);
-
-                            RelEntityTransactionVo relEntityVo = new RelEntityTransactionVo(item, RelActionType.DELETE);
-                            relEntityVo.setTransactionId(transactionVo.getId());
-
-                            //写入配置项事务
-                            transactionMapper.insertCiEntityTransaction(toCiEntityTransactionVo);
-                            // 写入属性事务
-                            transactionMapper.insertRelEntityTransaction(relEntityVo);
-
-                            //真正修改数据
-                            relEntityMapper.deleteRelEntityByRelIdFromCiEntityIdToCiEntityId(item.getRelId(),
-                                    item.getFromCiEntityId(), item.getToCiEntityId());
-                        }
-                    }
-                });
-            }
-        }
-        // 删除配置项相关信息
-        ciEntityMapper.deleteCiEntityByCiId(ciId);
-        // 删除事务相关信息
-        transactionMapper.deleteTransactionByCiId(ciId);
-        // 删除模型相关信息
-        ciMapper.deleteCiById(ciId);
-        //删除视图
-        ciSchemaMapper.deleteSchema(TenantContext.get().getDataDbName() + ".`cmdb_cientity_" + ciVo.getName().toLowerCase() + "`");
-        return 1;
-    }
 
     @Override
     public CiVo getCiById(Long id) {

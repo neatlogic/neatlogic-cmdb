@@ -197,9 +197,9 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
                             ciEntityTransactionVo.setCiEntityUuid(uuid);
 
                             if (id == null) {
-                                ciEntityTransactionVo.setTransactionMode(TransactionActionType.INSERT);
+                                ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
                             } else {
-                                ciEntityTransactionVo.setTransactionMode(TransactionActionType.UPDATE);
+                                ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
                             }
                             // 解析属性数据
                             JSONObject attrObj = ciEntityObj.getJSONObject("attrEntityData");
