@@ -5,30 +5,30 @@
 
 package codedriver.module.cmdb.api.transaction;
 
-import codedriver.framework.cmdb.enums.RelDirectionType;
-import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.exception.core.ApiRuntimeException;
-import codedriver.framework.restful.constvalue.OperationTypeEnum;
-import codedriver.framework.restful.annotation.*;
-import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
-import codedriver.module.cmdb.dao.mapper.cientity.CiEntitySnapshotMapper;
-import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
-import codedriver.framework.cmdb.dto.ci.RelVo;
-import codedriver.framework.cmdb.dto.transaction.AttrEntityTransactionVo;
+import codedriver.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
+import codedriver.framework.cmdb.dto.ci.AttrVo;
+import codedriver.framework.cmdb.dto.ci.CiViewVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.cmdb.dto.transaction.RelEntityTransactionVo;
+import codedriver.framework.cmdb.enums.RelDirectionType;
+import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.restful.annotation.*;
+import codedriver.framework.restful.constvalue.OperationTypeEnum;
+import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
+import codedriver.module.cmdb.dao.mapper.ci.CiViewMapper;
+import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
+import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import javax.annotation.Resource;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service
 @OperationType(type = OperationTypeEnum.SEARCH)
@@ -37,11 +37,15 @@ public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
     @Autowired
     private TransactionMapper transactionMapper;
 
-    @Autowired
-    private CiEntitySnapshotMapper ciEntitySnapshotMapper;
+    @Resource
+    private AttrMapper attrMapper;
 
     @Autowired
     private RelMapper relMapper;
+
+
+    @Autowired
+    private CiViewMapper ciViewMapper;
 
     @Override
     public String getToken() {
@@ -58,130 +62,104 @@ public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciEntityId", isRequired = true, type = ApiParamType.LONG, desc = "配置项id"),
-            @Param(name = "transactionId", type = ApiParamType.LONG, desc = "事务id"),
-            @Param(name = "transactionIdList", type = ApiParamType.JSONARRAY, desc = "事务id列表")})
+    @Input({
+            @Param(name = "ciId", isRequired = true, type = ApiParamType.LONG, desc = "模型id"),
+            @Param(name = "ciEntityId", isRequired = true, type = ApiParamType.LONG, desc = "配置项id"),
+            @Param(name = "transactionId", isRequired = true, type = ApiParamType.LONG, desc = "事务id")})
     @Output({@Param(explode = CiEntityTransactionVo.class)})
     @Description(desc = "获取配置项事务详细信息接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciEntityId = jsonObj.getLong("ciEntityId");
         Long transactionId = jsonObj.getLong("transactionId");
-        JSONArray transactionIdList = jsonObj.getJSONArray("transactionIdList");
-        if (transactionId == null && CollectionUtils.isEmpty(transactionIdList)) {
-            throw new ApiRuntimeException("请提供参数transactionId或transactionIdList");
-        }
-        List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
+        Long ciId = jsonObj.getLong("ciId");
+        CiViewVo ciViewVo = new CiViewVo();
+        ciViewVo.setCiId(ciId);
+        List<AttrVo> attrList = attrMapper.getAttrByCiId(ciId);
 
-        if (transactionId != null) {
-            CiEntityTransactionVo ciEntityTransactionVo =
-                    transactionMapper.getCiEntityTransactionByTransactionIdAndCiEntityId(transactionId, ciEntityId);
-            if (ciEntityTransactionVo != null) {
-                ciEntityTransactionList.add(ciEntityTransactionVo);
-            }
-        } else if (CollectionUtils.isNotEmpty(transactionIdList)) {
-            List<Long> tidList = new ArrayList<>();
-            for (int i = 0; i < transactionIdList.size(); i++) {
-                tidList.add(transactionIdList.getLong(i));
-            }
-            if (CollectionUtils.isNotEmpty(tidList)) {
-                ciEntityTransactionList.addAll(transactionMapper.getCiEntityTransactionByTransactionIdList(tidList, ciEntityId));
-            }
-        }
+        CiEntityTransactionVo ciEntityTransactionVo =
+                transactionMapper.getCiEntityTransactionByTransactionIdAndCiEntityId(transactionId, ciEntityId);
         JSONArray dataList = new JSONArray();
-        if (CollectionUtils.isNotEmpty(ciEntityTransactionList)) {
-            for (CiEntityTransactionVo ciEntityTransactionVo : ciEntityTransactionList) {
-                if (ciEntityTransactionVo != null) {
-                    JSONObject oldAttrEntityData = null;
-                    JSONObject oldRelEntityData = null;
-                    if (StringUtils.isNotBlank(ciEntityTransactionVo.getSnapshot())) {
-                        JSONObject oldCiEntityObj = JSONObject.parseObject(ciEntityTransactionVo.getSnapshot());
-                        oldAttrEntityData = oldCiEntityObj.getJSONObject("attrEntityData");
-                        oldRelEntityData = oldCiEntityObj.getJSONObject("relEntityData");
-                    }
-                    for (AttrEntityTransactionVo attrEntityTransactionVo : ciEntityTransactionVo.getAttrEntityTransactionList()) {
-                        JSONObject dataObj = new JSONObject();
-                        dataObj.put("id", "attr_" + attrEntityTransactionVo.getAttrId());
-                        dataObj.put("label", attrEntityTransactionVo.getAttrLabel());
-                        dataObj.put("type", "attr");
-                        dataObj.put("saveMode", attrEntityTransactionVo.getSaveMode());
-                        dataObj.put("newValueList", attrEntityTransactionVo.getValueList());
-                        if (oldAttrEntityData != null
-                                && oldAttrEntityData.containsKey("attr_" + attrEntityTransactionVo.getAttrId())) {
-                            dataObj.put("oldValueList",
-                                    oldAttrEntityData.getJSONObject("attr_" + attrEntityTransactionVo.getAttrId())
-                                            .getJSONArray("valueList"));
-                        }
-                        dataList.add(dataObj);
-                    }
-                    if (CollectionUtils.isNotEmpty(ciEntityTransactionVo.getRelEntityTransactionList())) {
-                        Map<String, List<RelEntityTransactionVo>> relGroupMap = ciEntityTransactionVo.getRelEntityTransactionList().stream()
-                                .collect(Collectors.groupingBy(GetCiEntityTransactionApi::getRelGroupKey));
-                        for (String key : relGroupMap.keySet()) {
-                            String[] keys = key.split("#");
-                            long relId = Long.parseLong(keys[0].trim());
-                            String direction = keys[1].trim();
-                            String endName = keys[2].trim();
-                            String relName = keys[3].trim();
-                            List<RelEntityTransactionVo> relList = relGroupMap.get(key);
-                            JSONArray newValueList = new JSONArray();
-                            JSONObject dataObj = new JSONObject();
+        if (MapUtils.isNotEmpty(ciEntityTransactionVo.getAttrEntityData())) {
+            JSONObject oldAttrEntityData = null;
+            if (StringUtils.isNotBlank(ciEntityTransactionVo.getSnapshot())) {
+                JSONObject oldCiEntityObj = JSONObject.parseObject(ciEntityTransactionVo.getSnapshot());
+                oldAttrEntityData = oldCiEntityObj.getJSONObject("attrEntityData");
 
-                            for (RelEntityTransactionVo relEntity : relList) {
-                                JSONObject vObj = new JSONObject();
-                                if (direction.equals(RelDirectionType.FROM.getValue())) {
-                                    vObj.put("ciEntityName", relEntity.getToCiEntityName());
-                                    vObj.put("ciEntityId", relEntity.getToCiEntityId());
-                                    vObj.put("ciId", relEntity.getToCiId());
-                                    vObj.put("action", relEntity.getAction());
-                                    vObj.put("actionText", relEntity.getActionText());
-                                    newValueList.add(vObj);
-                                        /*由于对端模型id是从关系表中获取，所以如果关系删除，则模型id也会删除，所以需要先看relId是否存在，
-                                        如果relId不存在，是关系删除的场景，如果relId存在且ciId不存在，才是模型删除的场景
-                                         */
-                                    RelVo relVo = relMapper.getRelBaseInfoById(relEntity.getRelId());
-                                    if (relVo == null) {
-                                        dataObj.put("relDeleted", true);
-                                    } else if (relEntity.getToCiId() == null) {
-                                        dataObj.put("ciDeleted", true);
-                                    } else if (relEntity.getToCiEntityId() == null) {
-                                        dataObj.put("ciEntityDeleted", true);
-                                    }
-                                } else if (direction.equals(RelDirectionType.TO.getValue())) {
-                                    vObj.put("ciEntityName", relEntity.getFromCiEntityName());
-                                    vObj.put("ciEntityId", relEntity.getFromCiEntityId());
-                                    vObj.put("ciId", relEntity.getFromCiId());
-                                    vObj.put("action", relEntity.getAction());
-                                    vObj.put("actionText", relEntity.getActionText());
-                                    newValueList.add(vObj);
-                                    RelVo relVo = relMapper.getRelBaseInfoById(relEntity.getRelId());
-                                    if (relVo == null) {
-                                        dataObj.put("relDeleted", true);
-                                    } else if (relEntity.getFromCiId() == null) {
-                                        dataObj.put("ciDeleted", true);
-                                    } else if (relEntity.getFromCiEntityId() == null) {
-                                        dataObj.put("ciEntityDeleted", true);
-                                    }
-                                }
-                            }
+            }
+            for (String key : ciEntityTransactionVo.getAttrEntityData().keySet()) {
+                JSONObject dataObj = new JSONObject();
+                JSONObject attrObj = ciEntityTransactionVo.getAttrEntityData().getJSONObject(key);
+                Long attrId = Long.parseLong(key.replace("attr_", ""));
 
-                            dataObj.put("id", "rel" + direction + "_" + relId);
-                            dataObj.put("relName", relName);
-                            dataObj.put("endName", endName);
-                            dataObj.put("type", "rel");
-                            dataObj.put("newValueList", newValueList);
-                            if (oldRelEntityData != null
-                                    && oldRelEntityData.containsKey("rel" + direction + "_" + relId)) {
-                                dataObj.put("oldValueList",
-                                        oldRelEntityData.getJSONObject("rel" + direction + "_" + relId).getJSONArray("valueList"));
-                            }
-                            dataList.add(dataObj);
-                        }
+                Optional<AttrVo> filterAttr = attrList.stream().filter(attr -> attr.getId().equals(attrId)).findFirst();
+                if (filterAttr.isPresent()) {
+                    AttrVo attrVo = filterAttr.get();
+                    dataObj.put("newValue", buildAttrObj(attrVo, attrObj.getJSONArray("valueList")));
+                    if (MapUtils.isNotEmpty(oldAttrEntityData) && oldAttrEntityData.containsKey(key)) {
+                        dataObj.put("oldValue", buildAttrObj(attrVo, oldAttrEntityData.getJSONObject(key).getJSONArray("valueList")));
+                    }
+                    //如果整个newValueList都不存在表示原来使用的属性已经删除，这时候就不需要再显示新旧值了
+                } else {
+                    //如果属性已删除，尝试使用snapshot数据还原原来的值
+                    if (MapUtils.isNotEmpty(oldAttrEntityData) && oldAttrEntityData.containsKey(key)) {
+                        AttrVo attrVo = JSONObject.toJavaObject(oldAttrEntityData.getJSONObject(key), AttrVo.class);
+                        dataObj.put("oldValue", buildAttrObj(attrVo, oldAttrEntityData.getJSONObject(key).getJSONArray("valueList")));
+                    }
+                    dataObj.put("action", "delattr");
+                }
+                dataObj.put("id", attrId);
+                dataObj.put("name", attrObj.getString("name"));
+                dataObj.put("label", attrObj.getString("label"));
+                dataObj.put("type", "attr");
+                dataList.add(dataObj);
+            }
+        }
+
+        if (MapUtils.isNotEmpty(ciEntityTransactionVo.getRelEntityData())) {
+            JSONObject oldRelEntityData = null;
+            if (StringUtils.isNotBlank(ciEntityTransactionVo.getSnapshot())) {
+                JSONObject oldCiEntityObj = JSONObject.parseObject(ciEntityTransactionVo.getSnapshot());
+                oldRelEntityData = oldCiEntityObj.getJSONObject("relEntityData");
+            }
+            for (String key : ciEntityTransactionVo.getRelEntityData().keySet()) {
+                JSONObject dataObj = new JSONObject();
+                JSONObject relObj = ciEntityTransactionVo.getRelEntityData().getJSONObject(key);
+                Long relId = Long.parseLong(key.split("_")[1]);
+                dataObj.put("id", relId);
+                dataObj.put("name", relObj.getString("name"));
+                dataObj.put("label", relObj.getString("label"));
+                dataObj.put("direction", relObj.getString("direction"));
+                dataObj.put("type", "rel");
+                JSONArray newValueList = new JSONArray();
+                //因为关系的修改只有insert和delete两种，显示对比时需要去掉删除的目标
+                for (int i = 0; i < relObj.getJSONArray("valueList").size(); i++) {
+                    JSONObject valueObj = relObj.getJSONArray("valueList").getJSONObject(i);
+                    if (!valueObj.containsKey("action") || !valueObj.getString("action").equals("delete")) {
+                        newValueList.add(valueObj);
                     }
                 }
+                dataObj.put("newValue", newValueList);
+                if (MapUtils.isNotEmpty(oldRelEntityData) && oldRelEntityData.containsKey(key)) {
+                    dataObj.put("oldValue", oldRelEntityData.getJSONObject(key).getJSONArray("valueList"));
+                }
+                dataList.add(dataObj);
             }
         }
+
         return dataList;
+    }
+
+    private JSONObject buildAttrObj(AttrVo attrVo, JSONArray valueList) {
+        JSONObject attrObj = new JSONObject();
+        attrObj.put("type", attrVo.getType());
+        attrObj.put("name", attrVo.getName());
+        attrObj.put("label", attrVo.getLabel());
+        attrObj.put("config", attrVo.getConfig(true));//克隆一个config对象，避免json序列化出错
+        attrObj.put("targetCiId", attrVo.getTargetCiId());
+        attrObj.put("valueList", valueList);
+        attrObj.put("actualValueList", AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValueList(attrVo, valueList));
+        return attrObj;
     }
 
     private static String getRelGroupKey(RelEntityTransactionVo relEntityTransactionVo) {

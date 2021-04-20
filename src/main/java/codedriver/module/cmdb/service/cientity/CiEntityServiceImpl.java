@@ -661,8 +661,15 @@ public class CiEntityServiceImpl implements CiEntityService {
 
         //补充待删除关系进事务里
         for (RelEntityVo relEntityVo : needDeleteRelEntityList) {
-            Long targetId = relEntityVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? relEntityVo.getToCiEntityId() : relEntityVo.getFromCiEntityId();
-            ciEntityTransactionVo.addRelEntityData(relEntityVo.getRelId(), relEntityVo.getDirection(), targetId, RelActionType.DELETE.getValue());
+            Long targetCiId, targetCiEntityId;
+            if (relEntityVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
+                targetCiEntityId = relEntityVo.getToCiEntityId();
+                targetCiId = relEntityVo.getToCiId();
+            } else {
+                targetCiEntityId = relEntityVo.getFromCiEntityId();
+                targetCiId = relEntityVo.getFromCiId();
+            }
+            ciEntityTransactionVo.addRelEntityData(relEntityVo.getRelId(), relEntityVo.getDirection(), targetCiId, targetCiEntityId, RelActionType.DELETE.getValue());
         }
 
         if (MapUtils.isNotEmpty(ciEntityTransactionVo.getRelEntityData())) {
@@ -805,7 +812,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                         }
                         CiEntityTransactionVo endCiEntityTransactionVo = ciEntityTransactionMap.get(ciEntityId);
                         //补充关系修改信息
-                        endCiEntityTransactionVo.addRelEntityData(relEntityTransactionVo.getRelId(), relEntityTransactionVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? RelDirectionType.TO.getValue() : RelDirectionType.FROM.getValue(), ciEntityId, relEntityTransactionVo.getAction());
+                        endCiEntityTransactionVo.addRelEntityData(relEntityTransactionVo.getRelId(), relEntityTransactionVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? RelDirectionType.TO.getValue() : RelDirectionType.FROM.getValue(), ciId, ciEntityId, relEntityTransactionVo.getAction());
                     }
 
                     if (relEntityTransactionVo.getAction().equals(RelActionType.DELETE.getValue())) {
