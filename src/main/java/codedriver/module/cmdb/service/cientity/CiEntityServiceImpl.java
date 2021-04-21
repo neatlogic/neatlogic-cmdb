@@ -225,7 +225,83 @@ public class CiEntityServiceImpl implements CiEntityService {
         transactionMapper.insertTransaction(transactionVo);
         // 写入配置项事务
         transactionMapper.insertCiEntityTransaction(ciEntityTransactionVo);
-        commitTransaction(transactionVo, new TransactionGroupVo());
+        TransactionGroupVo transactionGroupVo = new TransactionGroupVo();
+        commitTransaction(transactionVo, transactionGroupVo);
+
+//        //补充引用了当前配置项的修改事务数据
+//        List<RelEntityVo> relEntityList = relEntityMapper.getRelEntityByCiEntityId(ciEntityId);
+//        BatchRunner<RelEntityVo> runner = new BatchRunner<>();
+//
+//        //并发清理配置项数据，最高并发5个线程
+//        if (CollectionUtils.isNotEmpty(relEntityList)) {
+//            int parallel = 5;
+//            BatchRunner.State state = runner.execute(relEntityList, parallel, item -> {
+//                if (item != null) {
+//                    //检查当前配置项在当前事务组下是否已经存在事务，如果已经存在则无需创建新的事务
+//                    CiEntityTransactionVo fromCiEntityTransactionVo = transactionMapper.getCiEntityTransactionByTransactionGroupIdAndCiEntityId(transactionGroupVo.getId(), item.getFromCiEntityId());
+//                    if (fromCiEntityTransactionVo == null) {
+//                        //写入事务
+//                        TransactionVo fromTransactionVo = new TransactionVo();
+//                        fromTransactionVo.setCiId(item.getFromCiId());
+//                        fromTransactionVo.setStatus(TransactionStatus.COMMITED.getValue());
+//                        transactionMapper.insertTransaction(fromTransactionVo);
+//                        //写入事务分组
+//                        transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), fromTransactionVo.getId());
+//                        //写入来源端配置项事务
+//                        fromCiEntityTransactionVo = new CiEntityTransactionVo();
+//                        fromCiEntityTransactionVo.setCiEntityId(item.getFromCiEntityId());
+//                        fromCiEntityTransactionVo.setCiId(item.getFromCiId());
+//                        fromCiEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
+//                        fromCiEntityTransactionVo.setTransactionId(fromTransactionVo.getId());
+//                        fromCiEntityTransactionVo.setOldCiEntityVo(this.getCiEntityById(item.getFromCiEntityId()));
+//                        // 创建快照快照
+//                        this.createSnapshot(fromCiEntityTransactionVo);
+//                        //补充关系删除事务数据
+//                        fromCiEntityTransactionVo.addRelEntityData(item.getRelId(), RelDirectionType.TO.getValue(), item.getToCiId(), item.getToCiEntityId(), TransactionActionType.DELETE.getValue());
+//
+//                        //写入配置项事务
+//                        transactionMapper.insertCiEntityTransaction(fromCiEntityTransactionVo);
+//                    } else {
+//                        //补充关系删除事务数据到同一个配置项的事务数据中
+//                        fromCiEntityTransactionVo.addRelEntityData(item.getRelId(), RelDirectionType.TO.getValue(), item.getToCiId(), item.getToCiEntityId(), TransactionActionType.DELETE.getValue());
+//                        transactionMapper.updateCiEntityTransactionContent(fromCiEntityTransactionVo);
+//                    }
+//
+//                    //针对目标配置项重新做一遍以上逻辑
+//                    CiEntityTransactionVo toCiEntityTransactionVo = transactionMapper.getCiEntityTransactionByTransactionGroupIdAndCiEntityId(transactionGroupVo.getId(), item.getToCiEntityId());
+//                    if (toCiEntityTransactionVo == null) {
+//                        //写入目标端配置项事务
+//                        //写入事务
+//                        TransactionVo toTransactionVo = new TransactionVo();
+//                        toTransactionVo.setCiId(item.getToCiId());
+//                        toTransactionVo.setStatus(TransactionStatus.COMMITED.getValue());
+//                        transactionMapper.insertTransaction(toTransactionVo);
+//                        //写入事务分组
+//                        transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), toTransactionVo.getId());
+//
+//                        toCiEntityTransactionVo = new CiEntityTransactionVo();
+//                        toCiEntityTransactionVo.setCiEntityId(item.getToCiEntityId());
+//                        toCiEntityTransactionVo.setCiId(item.getToCiId());
+//                        toCiEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
+//                        toCiEntityTransactionVo.setTransactionId(toTransactionVo.getId());
+//                        toCiEntityTransactionVo.setOldCiEntityVo(this.getCiEntityById(item.getToCiEntityId()));
+//
+//                        // 创建快照
+//                        this.createSnapshot(toCiEntityTransactionVo);
+//                        //补充事务删除数据
+//                        toCiEntityTransactionVo.addRelEntityData(item.getRelId(), RelDirectionType.FROM.getValue(), item.getFromCiId(), item.getFromCiEntityId(), TransactionActionType.DELETE.getValue());
+//
+//                        transactionMapper.insertCiEntityTransaction(toCiEntityTransactionVo);
+//                    } else {
+//                        toCiEntityTransactionVo.addRelEntityData(item.getRelId(), RelDirectionType.FROM.getValue(), item.getFromCiId(), item.getFromCiEntityId(), TransactionActionType.DELETE.getValue());
+//                        transactionMapper.updateCiEntityTransactionContent(toCiEntityTransactionVo);
+//                    }
+//                    //正式删除关系数据
+//                    relEntityMapper.deleteRelEntityByRelIdFromCiEntityIdToCiEntityId(item.getRelId(),
+//                            item.getFromCiEntityId(), item.getToCiEntityId());
+//                }
+//            });
+        //       }
 
         return transactionVo.getId();
 
@@ -247,6 +323,9 @@ public class CiEntityServiceImpl implements CiEntityService {
     @Transactional
     public Long saveCiEntity(List<CiEntityTransactionVo> ciEntityTransactionList) {
         TransactionGroupVo transactionGroupVo = new TransactionGroupVo();
+        for (CiEntityTransactionVo ciEntityTransactionVo : ciEntityTransactionList) {
+            transactionGroupVo.addExclude(ciEntityTransactionVo.getCiEntityId());
+        }
         if (CollectionUtils.isNotEmpty(ciEntityTransactionList)) {
             for (CiEntityTransactionVo ciEntityTransactionVo : ciEntityTransactionList) {
                 Long transactionId = saveCiEntity(ciEntityTransactionVo, transactionGroupVo);
@@ -457,6 +536,10 @@ public class CiEntityServiceImpl implements CiEntityService {
                     ciEntityTransactionVo.removeRelEntityData(relVo.getId(), relVo.getDirection());
                 } else {
                     //补充关系基本信息
+                    String direction = relVo.getDirection();
+                    relEntityData.put("name", direction.equals(RelDirectionType.FROM.getValue()) ? relVo.getToName() : relVo.getFromName());
+                    relEntityData.put("label", direction.equals(RelDirectionType.FROM.getValue()) ? relVo.getToLabel() : relVo.getFromLabel());
+                    relEntityData.put("direction", direction);
                     relEntityData.put("fromCiId", relVo.getFromCiId());
                     relEntityData.put("toCiId", relVo.getToCiId());
                 }
@@ -698,19 +781,17 @@ public class CiEntityServiceImpl implements CiEntityService {
      */
     private Long commitTransaction(TransactionVo transactionVo, TransactionGroupVo transactionGroupVo) {
         CiEntityTransactionVo ciEntityTransactionVo = transactionVo.getCiEntityTransactionVo();
-
         if (ciEntityTransactionVo.getAction().equals(TransactionActionType.DELETE.getValue())) { // 删除配置项
             //补充对端配置项事务信息
             List<RelEntityVo> relEntityList = relEntityMapper.getRelEntityByCiEntityId(ciEntityTransactionVo.getCiEntityId());
             BatchRunner<RelEntityVo> runner = new BatchRunner<>();
-            int parallel = 10;
+            int parallel = 5;
             //记录对端配置项的事务，如果同一个配置项则不需要添加多个事务
-            Map<Long, Long> ciEntityTransactionMap = new HashMap<>();
+            Set<Long> ciEntityTransactionSet = new HashSet<>();
             runner.execute(relEntityList, parallel, item -> {
                 //如果不是自己引用自己，则需要补充对端配置项事务，此块需要在真正删除数据前处理
                 if (!item.getFromCiEntityId().equals(item.getToCiEntityId())) {
                     Long ciEntityId = null, ciId = null;
-
                     if (item.getDirection().equals(RelDirectionType.FROM.getValue())) {
                         ciEntityId = item.getToCiEntityId();
                         ciId = item.getToCiId();
@@ -719,7 +800,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                         ciId = item.getFromCiId();
                     }
 
-                    if (!ciEntityTransactionMap.containsKey(ciEntityId)) {
+                    if (!ciEntityTransactionSet.contains(ciEntityId) && !transactionGroupVo.isExclude(ciEntityId)) {
                         TransactionVo toTransactionVo = new TransactionVo();
                         toTransactionVo.setCiId(ciId);
                         toTransactionVo.setStatus(TransactionStatus.COMMITED.getValue());
@@ -729,22 +810,24 @@ public class CiEntityServiceImpl implements CiEntityService {
                         endCiEntityTransactionVo.setCiId(ciId);
                         endCiEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
                         endCiEntityTransactionVo.setTransactionId(toTransactionVo.getId());
+                        endCiEntityTransactionVo.setOldCiEntityVo(this.getCiEntityById(ciEntityId));
                         createSnapshot(endCiEntityTransactionVo);
+                        //补充关系删除事务数据
+                        endCiEntityTransactionVo.addRelEntityData(item.getRelId(), item.getDirection(), ciId, ciEntityId, TransactionActionType.DELETE.getValue());
 
                         transactionMapper.insertTransaction(toTransactionVo);
                         transactionMapper.insertCiEntityTransaction(endCiEntityTransactionVo);
                         transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), toTransactionVo.getId());
 
-                        ciEntityTransactionMap.put(endCiEntityTransactionVo.getCiEntityId(), toTransactionVo.getId());
-                    }
+                        //正式删除关系数据
+                        relEntityMapper.deleteRelEntityByRelIdFromCiEntityIdToCiEntityId(item.getRelId(),
+                                item.getFromCiEntityId(), item.getToCiEntityId());
 
-                    RelEntityTransactionVo endRelEntityVo = new RelEntityTransactionVo(item, RelActionType.DELETE);
-                    endRelEntityVo.setTransactionId(ciEntityTransactionMap.get(ciEntityId));
-                    transactionMapper.insertRelEntityTransaction(endRelEntityVo);
+                        ciEntityTransactionSet.add(ciEntityId);
+                    }
                 }
             });
             this.deleteCiEntity(new CiEntityVo(ciEntityTransactionVo));
-
             transactionVo.setStatus(TransactionStatus.COMMITED.getValue());
             transactionMapper.updateTransactionStatus(transactionVo);
             return null;
@@ -795,7 +878,8 @@ public class CiEntityServiceImpl implements CiEntityService {
                             ciId = relEntityTransactionVo.getFromCiId();
                         }
 
-                        if (!ciEntityTransactionMap.containsKey(ciEntityId)) {
+                        //排除掉当前事务的cientityId，不然有可能会重复插入事务
+                        if (!transactionGroupVo.isExclude(ciEntityId) && !ciEntityTransactionMap.containsKey(ciEntityId)) {
                             TransactionVo toTransactionVo = new TransactionVo();
                             toTransactionVo.setCiId(ciId);
                             toTransactionVo.setStatus(TransactionStatus.COMMITED.getValue());
@@ -810,9 +894,12 @@ public class CiEntityServiceImpl implements CiEntityService {
                             createSnapshot(endCiEntityTransactionVo);
                             ciEntityTransactionMap.put(endCiEntityTransactionVo.getCiEntityId(), endCiEntityTransactionVo);
                         }
-                        CiEntityTransactionVo endCiEntityTransactionVo = ciEntityTransactionMap.get(ciEntityId);
-                        //补充关系修改信息
-                        endCiEntityTransactionVo.addRelEntityData(relEntityTransactionVo.getRelId(), relEntityTransactionVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? RelDirectionType.TO.getValue() : RelDirectionType.FROM.getValue(), ciId, ciEntityId, relEntityTransactionVo.getAction());
+
+                        if (ciEntityTransactionMap.containsKey(ciEntityId)) {
+                            CiEntityTransactionVo endCiEntityTransactionVo = ciEntityTransactionMap.get(ciEntityId);
+                            //补充关系修改信息
+                            endCiEntityTransactionVo.addRelEntityData(relEntityTransactionVo.getRelId(), relEntityTransactionVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? RelDirectionType.TO.getValue() : RelDirectionType.FROM.getValue(), ciId, ciEntityId, relEntityTransactionVo.getAction());
+                        }
                     }
 
                     if (relEntityTransactionVo.getAction().equals(RelActionType.DELETE.getValue())) {

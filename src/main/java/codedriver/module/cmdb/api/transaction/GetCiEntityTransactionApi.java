@@ -8,6 +8,7 @@ package codedriver.module.cmdb.api.transaction;
 import codedriver.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.CiViewVo;
+import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.cmdb.dto.transaction.RelEntityTransactionVo;
 import codedriver.framework.cmdb.enums.RelDirectionType;
@@ -16,8 +17,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
-import codedriver.module.cmdb.dao.mapper.ci.CiViewMapper;
-import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
+import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -41,11 +41,8 @@ public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
     private AttrMapper attrMapper;
 
     @Autowired
-    private RelMapper relMapper;
+    private CiEntityMapper ciEntityMapper;
 
-
-    @Autowired
-    private CiViewMapper ciViewMapper;
 
     @Override
     public String getToken() {
@@ -136,12 +133,27 @@ public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
                 for (int i = 0; i < relObj.getJSONArray("valueList").size(); i++) {
                     JSONObject valueObj = relObj.getJSONArray("valueList").getJSONObject(i);
                     if (!valueObj.containsKey("action") || !valueObj.getString("action").equals("delete")) {
+                        //补充ciEntityName
+                        CiEntityVo ciEntityVo = ciEntityMapper.getCiEntityBaseInfoById(valueObj.getLong("ciEntityId"));
+                        if (ciEntityVo != null) {
+                            valueObj.put("ciEntityName", ciEntityVo.getName());
+                        }
                         newValueList.add(valueObj);
                     }
+
                 }
                 dataObj.put("newValue", newValueList);
                 if (MapUtils.isNotEmpty(oldRelEntityData) && oldRelEntityData.containsKey(key)) {
-                    dataObj.put("oldValue", oldRelEntityData.getJSONObject(key).getJSONArray("valueList"));
+                    //补充ciEntityName
+                    JSONArray oldValueList = oldRelEntityData.getJSONObject(key).getJSONArray("valueList");
+                    for (int i = 0; i < oldValueList.size(); i++) {
+                        JSONObject valueObj = oldValueList.getJSONObject(i);
+                        CiEntityVo ciEntityVo = ciEntityMapper.getCiEntityBaseInfoById(valueObj.getLong("ciEntityId"));
+                        if (ciEntityVo != null) {
+                            valueObj.put("ciEntityName", ciEntityVo.getName());
+                        }
+                    }
+                    dataObj.put("oldValue", oldValueList);
                 }
                 dataList.add(dataObj);
             }

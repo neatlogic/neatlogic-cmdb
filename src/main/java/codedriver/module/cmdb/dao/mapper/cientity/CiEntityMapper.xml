@@ -24,10 +24,10 @@
     </select>
 
     <select id="getCiEntityCountByAttrIdAndValue" resultType="int" useCache="false">
-        SELECT count(id)
-        FROM ${attr.ciTableName}
-        WHERE id != #{ciEntityId}
-          AND ${attrId} = #{value}
+        SELECT count(cientity_id)
+        FROM ${attrVo.ciTableName}
+        WHERE cientity_id != #{ciEntityId}
+          AND `${attrVo.id}_hash` = #{value,typeHandler=Md5Handler}
     </select>
 
     <select id="getAttrEntityCountByAttrIdAndValue" resultType="int" useCache="false">
