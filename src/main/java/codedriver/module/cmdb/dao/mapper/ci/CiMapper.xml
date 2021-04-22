@@ -102,6 +102,7 @@
         <result column="ciTypeId" property="id"/>
         <result column="ciTypeName" property="name"/>
         <result column="ciTypeIsMenu" property="isMenu"/>
+        <result column="ciTypeIsShowInTopo" property="isShowInTopo"/>
         <collection property="ciList" ofType="codedriver.framework.cmdb.dto.ci.CiVo">
             <id column="id" property="id"/>
             <result column="name" property="name"/>
@@ -130,10 +131,14 @@
         b.`is_abstract` AS isAbstract,
         a.`id` AS ciTypeId,
         a.`name` AS ciTypeName,
-        a.`is_menu` AS ciTypeIsMenu
+        a.`is_menu` AS ciTypeIsMenu,
+        a.`is_showintopo` AS ciTypeIsShowInTopo
         FROM
         `cmdb_citype` a LEFT JOIN `cmdb_ci` b ON a.id = b.type_id
         <where>
+            <if test="isTypeShowInTopo != null">
+                AND a.is_showintopo = #{isTypeShowInTopo}
+            </if>
             <if test="keyword != null and keyword !=''">
                 AND (b.name LIKE CONCAT('%', #{keyword}, '%') OR b.label LIKE CONCAT('%', #{keyword}, '%'))
             </if>

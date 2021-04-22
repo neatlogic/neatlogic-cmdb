@@ -11,13 +11,6 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
-/*
- * @Description:
- * @Author: chenqiwei
- * @Date: 2021/3/20 3:04 下午
- * @Params: * @param null:
- * @Returns: * @return: null
- **/
 public interface CiMapper {
 
     List<CiVo> getUpwardCiListByLR(@Param("lft") Integer lft, @Param("rht") Integer rht);

@@ -101,6 +101,7 @@ public class GetCiTopoApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         CiVo ci = JSONObject.toJavaObject(jsonObj, CiVo.class);
+        ci.setIsTypeShowInTopo(1);
         List<CiTypeVo> ciTypeList = ciMapper.searchCiTypeCi(ci);
         List<RelVo> relList = relMapper.getAllRelList();
         Graphviz.Builder gb = new Graphviz.Builder();

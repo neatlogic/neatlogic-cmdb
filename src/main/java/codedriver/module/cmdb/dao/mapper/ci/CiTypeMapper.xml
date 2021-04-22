@@ -26,6 +26,7 @@
         `name`,
         `sort`,
         `is_menu` AS isMenu,
+        `is_showintopo` AS isShowInTopo,
         `icon`,
         (SELECT
         COUNT(1)
@@ -45,8 +46,9 @@
         SELECT `id`,
                `name`,
                `sort`,
-               `is_menu` AS isMenu,
-               `icon`
+               `is_menu`       AS isMenu,
+               `icon`,
+               `is_showintopo` AS isShowInTopo
         FROM `cmdb_citype`
         WHERE id = #{value}
     </select>
@@ -54,10 +56,11 @@
     <update id="updateCiType" parameterType="codedriver.framework.cmdb.dto.ci.CiTypeVo">
         UPDATE
             `cmdb_citype`
-        SET `name`    = #{name},
-            `sort`    = #{sort},
-            `is_menu` = #{isMenu},
-            `icon`    = #{icon}
+        SET `name`          = #{name},
+            `sort`          = #{sort},
+            `is_menu`       = #{isMenu},
+            `icon`          = #{icon},
+            `is_showintopo` = #{isShowInTopo}
         WHERE `id` = #{id}
     </update>
 
@@ -66,12 +69,14 @@
                                    `name`,
                                    `sort`,
                                    `is_menu`,
-                                   `icon`)
+                                   `icon`,
+                                   `is_showintopo`)
         VALUES (#{id},
                 #{name},
                 #{sort},
                 #{isMenu},
-                #{icon})
+                #{icon},
+                #{isShowInTopo})
     </insert>
 
     <delete id="deleteCiTypeById" parameterType="java.lang.Long">
