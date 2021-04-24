@@ -5,6 +5,10 @@
 
 package codedriver.module.cmdb.api.topo;
 
+import codedriver.framework.cmdb.dto.ci.CiTypeVo;
+import codedriver.framework.cmdb.dto.cientity.AttrEntityVo;
+import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.cmdb.dto.cientity.RelEntityVo;
 import codedriver.framework.cmdb.enums.RelDirectionType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
@@ -12,14 +16,9 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.Md5Util;
 import codedriver.module.cmdb.dao.mapper.ci.CiTypeMapper;
-import codedriver.module.cmdb.dao.mapper.cientity.AttrEntityMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
-import codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper;
 import codedriver.module.cmdb.dot.*;
-import codedriver.framework.cmdb.dto.ci.CiTypeVo;
-import codedriver.framework.cmdb.dto.cientity.AttrEntityVo;
-import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
-import codedriver.framework.cmdb.dto.cientity.RelEntityVo;
+import codedriver.module.cmdb.service.cientity.CiEntityService;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -29,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.*;
 
 @Service
@@ -37,13 +37,11 @@ import java.util.*;
 public class GetCiEntityTopoApi extends PrivateApiComponentBase {
     static Logger logger = LoggerFactory.getLogger(GetCiEntityTopoApi.class);
 
-    @Autowired
-    private RelEntityMapper relEntityMapper;
 
     @Autowired
-    private AttrEntityMapper attrEntityMapper;
+    private CiEntityService ciEntityService;
 
-    @Autowired
+    @Resource
     private CiEntityMapper ciEntityMapper;
 
     @Autowired
@@ -64,7 +62,8 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciEntityId", type = ApiParamType.LONG, isRequired = true, desc = "配置项id"),
+    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
+            @Param(name = "ciEntityId", type = ApiParamType.LONG, isRequired = true, desc = "配置项id"),
             @Param(name = "level", type = ApiParamType.INTEGER, desc = "自动展开关系层数，默认是1")})
     @Output({@Param(name = "topo", type = ApiParamType.STRING)})
     @Description(desc = "获取配置项拓扑接口")
@@ -85,7 +84,9 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
         clusterAttrList.add("system#env");
         Map<String, Cluster.Builder> clusterMap = new HashMap<>();
         // 先搜索出所有层次，因为需要按照层次顺序展示
-        List<CiTypeVo> ciTypeList = ciTypeMapper.searchCiType(null);
+        CiTypeVo pCiTypeVo = new CiTypeVo();
+        pCiTypeVo.setIsShowInTopo(1);
+        List<CiTypeVo> ciTypeList = ciTypeMapper.searchCiType(pCiTypeVo);
         Integer level = jsonObj.getInteger("level");
         if (level == null) {
             level = 1;
@@ -96,36 +97,41 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
         ciEntityIdList.add(ciEntityId);
         for (int l = 0; l <= level; l++) {
             if (!ciEntityIdList.isEmpty()) {
-                List<Long> tmpList = new ArrayList<>(ciEntityIdList);
-                // 获取当前层次配置项详细信息
-                List<CiEntityVo> ciEntityList = ciEntityMapper.searchCiEntityByIdList(tmpList);
-                if (CollectionUtils.isEmpty(ciEntityList)) {
-                    // 如果找不到配置项，则退出循环
+                //需要按照模型分组搜索
+                List<CiEntityVo> ciEntityBaseList = ciEntityMapper.getCiEntityBaseInfoByIdList(new ArrayList<>(ciEntityIdList));
+                if (CollectionUtils.isEmpty(ciEntityBaseList)) {
                     break;
                 }
-                List<AttrEntityVo> attrEntityList = attrEntityMapper.searchAttrEntityByCiEntityIdList(tmpList, null);
-
-               /* for (CiEntityVo entity : ciEntityList) {
-                    entity.setAttrEntityList(attrEntityList.stream()
-                            .filter(attr -> attr.getCiEntityId().equals(entity.getId())).collect(Collectors.toList()));
-                    ciEntitySet.add(entity);
-                    ciTypeIdSet.add(entity.getTypeId());
-                }*/
-                // 获取当前层次配置项所有关系(包括上下游)
-                List<RelEntityVo> relEntityList = relEntityMapper.searchRelEntityByCiEntityIdList(tmpList, null);
-                ciEntityIdList.clear();// 清空查询列表，为下一层搜索做准备
-                for (RelEntityVo relEntityVo : relEntityList) {
-                    relEntitySet.add(relEntityVo);
-                    // 检查关系中的对端配置项是否已经存在，不存在可进入下一次搜索
-                    if (relEntityVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
-                        // 不存在的配置项可以进入下一次检索
-                        if (!ciEntitySet.contains(new CiEntityVo(relEntityVo.getToCiEntityId()))) {
-                            ciEntityIdList.add(relEntityVo.getToCiEntityId());
-                        }
-                    } else if (relEntityVo.getDirection().equals(RelDirectionType.TO.getValue())) {
-                        // 不存在的配置项可以进入下一次检索
-                        if (!ciEntitySet.contains(new CiEntityVo(relEntityVo.getFromCiEntityId()))) {
-                            ciEntityIdList.add(relEntityVo.getFromCiEntityId());
+                Map<Long, List<Long>> ciCiEntityIdMap = new HashMap<>();
+                for (CiEntityVo ciEntityBaseVo : ciEntityBaseList) {
+                    if (!ciCiEntityIdMap.containsKey(ciEntityBaseVo.getCiId())) {
+                        ciCiEntityIdMap.put(ciEntityBaseVo.getCiId(), new ArrayList<>());
+                    }
+                    ciCiEntityIdMap.get(ciEntityBaseVo.getCiId()).add(ciEntityBaseVo.getId());
+                }
+                for (Long ciId : ciCiEntityIdMap.keySet()) {
+                    // 获取当前层次配置项详细信息
+                    CiEntityVo pCiEntityVo = new CiEntityVo();
+                    pCiEntityVo.setIdList(ciCiEntityIdMap.get(ciId));
+                    pCiEntityVo.setCiId(ciId);
+                    List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(pCiEntityVo);
+                    if (CollectionUtils.isEmpty(ciEntityList)) {
+                        // 如果找不到配置项，则退出循环
+                        break;
+                    }
+                    // 获取当前层次配置项所有关系(包括上下游)
+                    ciEntityIdList.clear();// 清空查询列表，为下一层搜索做准备
+                    for (CiEntityVo ciEntityVo : ciEntityList) {
+                        ciEntitySet.add(ciEntityVo);
+                        ciTypeIdSet.add(ciEntityVo.getTypeId());
+                        for (RelEntityVo relEntityVo : ciEntityVo.getRelEntityList()) {
+                            relEntitySet.add(relEntityVo);
+                            // 检查关系中的对端配置项是否已经存在，不存在可进入下一次搜索
+                            if (relEntityVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
+                                ciEntityIdList.add(relEntityVo.getToCiEntityId());
+                            } else if (relEntityVo.getDirection().equals(RelDirectionType.TO.getValue())) {
+                                ciEntityIdList.add(relEntityVo.getFromCiEntityId());
+                            }
                         }
                     }
                 }
@@ -201,7 +207,6 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                 for (String key : clusterMap.keySet()) {
                     Cluster.Builder cb = clusterMap.get(key);
                     cb.withStyle("filled");
-                    Cluster c = cb.build();
                     gb.addCluster(cb.build());
                 }
             }

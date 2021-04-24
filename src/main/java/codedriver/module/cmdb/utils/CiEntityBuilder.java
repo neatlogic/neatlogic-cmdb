@@ -56,6 +56,10 @@ public class CiEntityBuilder {
                 Date fcd = result.get("fcd") != null ? (Date) (result.get("fcd")) : null;
                 String lcu = result.get("lcu") != null ? String.valueOf(result.get("lcu")) : null;
                 Date lcd = result.get("lcd") != null ? (Date) (result.get("lcd")) : null;
+                Long typeId = result.get("typeId") != null ? Long.valueOf(String.valueOf(result.get("typeId"))) : null;
+                String ciName = result.get("ciName") != null ? String.valueOf(result.get("ciName")) : null;
+                String ciIcon = result.get("ciIcon") != null ? String.valueOf(result.get("ciIcon")) : null;
+                String ciLabel = result.get("ciLabel") != null ? String.valueOf(result.get("ciLabel")) : null;
 
                 if (!ciEntityMap.containsKey(id)) {
                     ciEntityVo = new CiEntityVo();
@@ -65,6 +69,10 @@ public class CiEntityBuilder {
                     ciEntityVo.setId(id);
                     ciEntityVo.setName(name);
                     ciEntityVo.setStatus(status);
+                    ciEntityVo.setTypeId(typeId);
+                    ciEntityVo.setCiName(ciName);
+                    ciEntityVo.setCiLabel(ciLabel);
+                    ciEntityVo.setCiIcon(ciIcon);
                     ciEntityVo.setFcu(fcu);
                     ciEntityVo.setFcd(fcd);
                     ciEntityVo.setLcu(lcu);
@@ -133,7 +141,10 @@ public class CiEntityBuilder {
                 Date fcd = result.get("fcd") != null ? (Date) result.get("fcd") : null;
                 String lcu = result.get("lcu") != null ? String.valueOf(result.get("lcu")) : null;
                 Date lcd = result.get("lcd") != null ? (Date) result.get("lcd") : null;
-
+                Long typeId = result.get("typeId") != null ? Long.valueOf(String.valueOf(result.get("typeId"))) : null;
+                String ciName = result.get("ciName") != null ? String.valueOf(result.get("ciName")) : null;
+                String ciIcon = result.get("ciIcon") != null ? String.valueOf(result.get("ciIcon")) : null;
+                String ciLabel = result.get("ciLabel") != null ? String.valueOf(result.get("ciLabel")) : null;
 
                 if (ciEntityVo == null) {
                     ciEntityVo = new CiEntityVo();
@@ -143,6 +154,10 @@ public class CiEntityBuilder {
                     ciEntityVo.setId(id);
                     ciEntityVo.setName(name);
                     ciEntityVo.setStatus(status);
+                    ciEntityVo.setTypeId(typeId);
+                    ciEntityVo.setCiName(ciName);
+                    ciEntityVo.setCiLabel(ciLabel);
+                    ciEntityVo.setCiIcon(ciIcon);
                     ciEntityVo.setFcu(fcu);
                     ciEntityVo.setFcd(fcd);
                     ciEntityVo.setLcu(lcu);
@@ -236,7 +251,7 @@ public class CiEntityBuilder {
         relObj.put("relId", relVo.getId());
         relObj.put("direction", direction);
         JSONObject valueDataObj = new JSONObject();
-        valueDataObj.put("ciId", direction.equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiId() : relVo.getFromCiId());
+        valueDataObj.put("ciId", result.get(key + "#ciId"));
         valueDataObj.put("ciEntityId", result.get(key));
         valueDataObj.put("ciEntityName", result.get(key + "#name"));
         relObj.put("valueList", new ArrayList<JSONObject>() {{

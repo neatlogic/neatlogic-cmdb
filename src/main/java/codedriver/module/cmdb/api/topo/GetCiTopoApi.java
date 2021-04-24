@@ -118,6 +118,12 @@ public class GetCiTopoApi extends PrivateApiComponentBase {
                     nb.withClass("cinode normalnode");
                     lb.addNode(nb.build());
                     ciIdSet.add(ciVo.getId());
+                    //为继承关系添加关联
+                    if (ciVo.getParentCiId() != null) {
+                        Link.Builder linkBuilder = new Link.Builder("Ci_" + ciVo.getId(), "Ci_" + ciVo.getParentCiId());
+                        linkBuilder.setStyle("dashed");
+                        gb.addLink(linkBuilder.build());
+                    }
                 }
                 gb.addLayer(lb.build());
             }
@@ -133,6 +139,7 @@ public class GetCiTopoApi extends PrivateApiComponentBase {
             }
         }
         String dot = gb.build().toString();
+        System.out.println(dot);
         if (logger.isDebugEnabled()) {
             logger.debug(dot);
         }

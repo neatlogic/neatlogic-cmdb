@@ -38,6 +38,9 @@
             <if test="keyword != null and keyword != ''">
                 AND name LIKE CONCAT('%', #{keyword}, '%')
             </if>
+            <if test="isShowInTopo != null">
+                AND `is_showintopo` = #{isShowInTopo}
+            </if>
         </where>
         ORDER BY sort
     </select>

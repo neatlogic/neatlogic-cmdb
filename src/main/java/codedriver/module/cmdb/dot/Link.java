@@ -1,15 +1,20 @@
+/*
+ * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+ */
+
 package codedriver.module.cmdb.dot;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-
 public class Link {
-    private String from;
-    private String to;
-    private Map<String, Object> propMap = new HashMap<>();
+    private final String from;
+    private final String to;
+    private final Map<String, Object> propMap = new HashMap<>();
 
     private Link(Builder builder) {
         this.from = builder.from;
@@ -32,6 +37,9 @@ public class Link {
         if (builder.fontsize != null) {
             propMap.put("fontsize", builder.fontsize);
         }
+        if (builder.style != null) {
+            propMap.put("style", builder.style);
+        }
     }
 
     public String toString() {
@@ -52,14 +60,15 @@ public class Link {
     }
 
     public static class Builder {
-        private String from;
-        private String to;
+        private final String from;
+        private final String to;
         private String tailLabel;
         private String headLabel;
         private String label;
         private Integer labelDistance;
         private Double fontsize;
         private String fontcolor;
+        private String style;
 
         public Builder(String _from, String _to) {
             this.from = _from;
@@ -93,6 +102,11 @@ public class Link {
 
         public Builder setFontColor(String _fontcolor) {
             this.fontcolor = _fontcolor;
+            return this;
+        }
+
+        public Builder setStyle(String _style) {
+            this.style = _style;
             return this;
         }
 

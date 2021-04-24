@@ -86,11 +86,15 @@
                     `cmdb_relrentity_${rel.id}`.to_cientity_id AS `relfrom_${rel.id}`,
                     (SELECT `name` FROM cmdb_cientity WHERE id = `cmdb_relrentity_${rel.id}`.to_cientity_id) AS
                     `relfrom_${rel.id}#name`,
+                    (SELECT `ci_id` FROM cmdb_cientity WHERE id = `cmdb_relrentity_${rel.id}`.to_cientity_id) AS
+                    `relfrom_${rel.id}#ciId`,
                 </when>
                 <otherwise>
                     `cmdb_relrentity_${rel.id}`.from_cientity_id AS `relto_${rel.id}`,
                     (SELECT `name` FROM cmdb_cientity WHERE id = `cmdb_relrentity_${rel.id}`.from_cientity_id) AS
                     `relto_${rel.id}#name`,
+                    (SELECT `ci_id` FROM cmdb_cientity WHERE id = `cmdb_relrentity_${rel.id}`.from_cientity_id) AS
+                    `relto_${rel.id}#ciId`,
                 </otherwise>
             </choose>
         </foreach>
@@ -100,7 +104,11 @@
         `ci_base`.`fcd` AS `fcd`,
         `ci_base`.`fcu` AS `fcu`,
         `ci_base`.`lcd` AS `lcd`,
-        `ci_base`.`lcu` AS `lcu`
+        `ci_base`.`lcu` AS `lcu`,
+        `ci`.`type_id` AS `typeId`,
+        `ci`.`name` AS `ciName`,
+        `ci`.`icon` AS `ciIcon`,
+        `ci`.`label` AS `ciLabel`
     </sql>
 
     <sql id="ciEntityJoinSql">
@@ -159,7 +167,7 @@
             resultType="java.util.HashMap" useCache="false">
         SELECT
         <include refid="ciEntityColumnSql"></include>
-        FROM cmdb_cientity `ci_base`
+        FROM cmdb_cientity `ci_base` JOIN cmdb_ci `ci` ON ci_base.ci_id = ci.id
         <include refid="ciEntityJoinSql"></include>
         WHERE ci_base.id = #{id}
     </select>
@@ -174,7 +182,7 @@
             resultType="java.lang.Long" useCache="true">
         SELECT
         DISTINCT ci_base.id
-        FROM cmdb_cientity `ci_base`
+        FROM cmdb_cientity `ci_base` JOIN cmdb_ci `ci` ON ci_base.ci_id = ci.id
         <include refid="ciEntityJoinSql"></include>
         <include refid="ciEntityConditionSql"></include>
         ORDER BY ci_base.id DESC
@@ -185,7 +193,7 @@
             resultType="java.util.HashMap" useCache="true">
         SELECT
         <include refid="ciEntityColumnSql"></include>
-        FROM cmdb_cientity `ci_base`
+        FROM cmdb_cientity `ci_base` JOIN cmdb_ci `ci` ON ci_base.ci_id = ci.id
         <include refid="ciEntityJoinSql"></include>
         WHERE ci_base.id IN
         <foreach collection="idList" item="id" open="(" close=")" separator=",">#{id}</foreach>
