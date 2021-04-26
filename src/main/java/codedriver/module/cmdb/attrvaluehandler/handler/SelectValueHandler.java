@@ -9,6 +9,7 @@ import codedriver.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.cientity.AttrEntityVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.cmdb.enums.SearchExpression;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -94,5 +95,11 @@ public class SelectValueHandler implements IAttrValueHandler {
             }
         }
         return actualValueList;
+    }
+
+    @Override
+    public SearchExpression[] getSupportExpression() {
+        return new SearchExpression[]{SearchExpression.EQ, SearchExpression.NE, SearchExpression.LI,
+                SearchExpression.NL, SearchExpression.NOTNULL, SearchExpression.NULL};
     }
 }

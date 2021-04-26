@@ -6,6 +6,7 @@
 package codedriver.module.cmdb.attrvaluehandler.handler;
 
 import codedriver.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
+import codedriver.framework.cmdb.enums.SearchExpression;
 import org.springframework.stereotype.Service;
 
 
@@ -50,5 +51,11 @@ public class TextareaValueHandler implements IAttrValueHandler {
     @Override
     public boolean isNeedWholeRow() {
         return true;
+    }
+
+    @Override
+    public SearchExpression[] getSupportExpression() {
+        return new SearchExpression[]{SearchExpression.LI, SearchExpression.NL, SearchExpression.NOTNULL,
+                SearchExpression.NULL};
     }
 }

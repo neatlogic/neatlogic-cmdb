@@ -153,8 +153,31 @@
                                 </foreach>
                             </when>
                             <otherwise>
-                                AND ${attrFilter.ciTableName}.`${attrFilter.attrId}` LIKE
-                                CONCAT('%',#{attrFilter.value},'%')
+                                AND
+                                <choose>
+                                    <when test="attrFilter.expression == 'equal'">
+                                        ${attrFilter.ciTableName}.`${attrFilter.attrId}` = #{attrFilter.value}
+                                    </when>
+                                    <when test="attrFilter.expression == 'notequal'">
+                                        ${attrFilter.ciTableName}.`${attrFilter.attrId}` != #{attrFilter.value}
+                                    </when>
+                                    <when test="attrFilter.expression == 'like'">
+                                        ${attrFilter.ciTableName}.`${attrFilter.attrId}` LIKE
+                                        CONCAT('%',#{attrFilter.value},'%')
+                                    </when>
+                                    <when test="attrFilter.expression == 'notlike'">
+                                        ${attrFilter.ciTableName}.`${attrFilter.attrId}` NOT LIKE
+                                        CONCAT('%',#{attrFilter.value},'%')
+                                    </when>
+                                    <when test="attrFilter.expression == 'is-null'">
+                                        (${attrFilter.ciTableName}.`${attrFilter.attrId}` IS NULL OR
+                                        ${attrFilter.ciTableName}.`${attrFilter.attrId}` = '')
+                                    </when>
+                                    <when test="attrFilter.expression == 'is-not-null'">
+                                        (${attrFilter.ciTableName}.`${attrFilter.attrId}` IS NOT NULL AND
+                                        ${attrFilter.ciTableName}.`${attrFilter.attrId}` != '')
+                                    </when>
+                                </choose>
                             </otherwise>
                         </choose>
                     </if>
@@ -187,6 +210,15 @@
         <include refid="ciEntityConditionSql"></include>
         ORDER BY ci_base.id DESC
         LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="searchCiEntityIdCount" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
+            resultType="int">
+        SELECT
+        COUNT(DISTINCT ci_base.id)
+        FROM cmdb_cientity `ci_base` JOIN cmdb_ci `ci` ON ci_base.ci_id = ci.id
+        <include refid="ciEntityJoinSql"></include>
+        <include refid="ciEntityConditionSql"></include>
     </select>
 
     <select id="searchCiEntity" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
@@ -667,12 +699,6 @@
         </if>
     </select>-->
 
-    <select id="searchCiEntityIdCount"
-            parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
-            resultType="int">
-        SELECT COUNT(distinct cientity.id)
-        <include refid="searchCiEntityIdCondition"></include>
-    </select>
 
     <select id="getCiEntityIdByCiId" parameterType="java.lang.Long"
             resultType="java.lang.Long">

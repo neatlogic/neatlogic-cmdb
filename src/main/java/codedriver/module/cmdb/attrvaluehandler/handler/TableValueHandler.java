@@ -8,6 +8,7 @@ package codedriver.module.cmdb.attrvaluehandler.handler;
 import codedriver.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.cmdb.enums.SearchExpression;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -64,6 +65,12 @@ public class TableValueHandler implements IAttrValueHandler {
     @Override
     public boolean isNeedWholeRow() {
         return true;
+    }
+
+    @Override
+    public SearchExpression[] getSupportExpression() {
+        return new SearchExpression[]{SearchExpression.LI, SearchExpression.NL, SearchExpression.NOTNULL,
+                SearchExpression.NULL};
     }
 
     @Override

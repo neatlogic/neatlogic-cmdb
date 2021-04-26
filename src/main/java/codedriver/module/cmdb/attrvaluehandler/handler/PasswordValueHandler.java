@@ -6,6 +6,7 @@
 package codedriver.module.cmdb.attrvaluehandler.handler;
 
 import codedriver.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
+import codedriver.framework.cmdb.enums.SearchExpression;
 import org.springframework.stereotype.Service;
 
 
@@ -52,4 +53,8 @@ public class PasswordValueHandler implements IAttrValueHandler {
         return false;
     }
 
+    @Override
+    public SearchExpression[] getSupportExpression() {
+        return new SearchExpression[]{SearchExpression.NOTNULL, SearchExpression.NULL};
+    }
 }

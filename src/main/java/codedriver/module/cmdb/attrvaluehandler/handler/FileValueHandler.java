@@ -7,6 +7,7 @@ package codedriver.module.cmdb.attrvaluehandler.handler;
 
 import codedriver.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
+import codedriver.framework.cmdb.enums.SearchExpression;
 import com.alibaba.fastjson.JSONArray;
 import org.springframework.stereotype.Service;
 
@@ -59,4 +60,8 @@ public class FileValueHandler implements IAttrValueHandler {
         return false;
     }
 
+    @Override
+    public SearchExpression[] getSupportExpression() {
+        return new SearchExpression[]{SearchExpression.NOTNULL, SearchExpression.NULL};
+    }
 }
