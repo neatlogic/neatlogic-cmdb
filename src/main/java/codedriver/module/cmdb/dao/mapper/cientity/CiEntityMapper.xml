@@ -151,10 +151,27 @@
                     <if test="(attrFilter.valueList != null and attrFilter.valueList.size() > 0) or attrFilter.expression == 'is-null' or attrFilter.expression == 'is-not-null'">
                         <choose>
                             <when test="attrFilter.needTargetCi == true">
-                                AND `cmdb_attrentity_${attrFilter.attrId}`.to_cientity_id IN
-                                <foreach collection="attrFilter.valueList" item="value" separator="," open="("
-                                         close=")">#{value}
-                                </foreach>
+                                AND
+                                <choose>
+                                    <when test="attrFilter.expression == 'like'">
+                                        `cmdb_attrentity_${attrFilter.attrId}`.to_cientity_id IN
+                                        <foreach collection="attrFilter.valueList" item="value" separator="," open="("
+                                                 close=")">#{value}
+                                        </foreach>
+                                    </when>
+                                    <when test="attrFilter.expression == 'notlike'">
+                                        `cmdb_attrentity_${attrFilter.attrId}`.to_cientity_id NOT IN
+                                        <foreach collection="attrFilter.valueList" item="value" separator="," open="("
+                                                 close=")">#{value}
+                                        </foreach>
+                                    </when>
+                                    <when test="attrFilter.expression == 'is-null'">
+                                        `cmdb_attrentity_${attrFilter.attrId}`.to_cientity_id IS NULL
+                                    </when>
+                                    <when test="attrFilter.expression == 'is-not-null'">
+                                        `cmdb_attrentity_${attrFilter.attrId}`.to_cientity_id IS NOT NULL
+                                    </when>
+                                </choose>
                             </when>
                             <otherwise>
                                 AND

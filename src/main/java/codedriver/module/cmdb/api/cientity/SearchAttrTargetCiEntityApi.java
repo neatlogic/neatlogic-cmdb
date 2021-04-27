@@ -5,6 +5,7 @@
 
 package codedriver.module.cmdb.api.cientity;
 
+import codedriver.framework.cmdb.enums.SearchExpression;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.dao.mapper.TeamMapper;
@@ -115,6 +116,7 @@ public class SearchAttrTargetCiEntityApi extends PrivateApiComponentBase {
                 attrFilterVo.setValueList(new ArrayList<String>() {{
                     this.add(keyword);
                 }});
+                attrFilterVo.setExpression(SearchExpression.LI.getExpression());
                 ciEntityVo.addAttrFilter(attrFilterVo);
             } else {
                 ciEntityVo.setKeyword(keyword);
