@@ -139,23 +139,15 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
         }
 
         List<CiEntityVo> ciEntityList = new ArrayList<>();
-       /* if (CollectionUtils.isNotEmpty(ciEntityVo.getAttrFilterList())
-            || CollectionUtils.isNotEmpty(ciEntityVo.getAttrFilterList())) {
-            IElasticSearchHandler<CiEntityVo, List<CiEntityVo>> handler =
-                ElasticSearchHandlerFactory.getHandler("cientity");
-            ciEntityList = handler.search(ciEntityVo);
-        } else {*/
         ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
-        //}
         JSONArray tbodyList = new JSONArray();
         if (CollectionUtils.isNotEmpty(ciEntityList)) {
             boolean canEdit = hasManageAuth, canDelete = hasManageAuth, canTransaction = hasManageAuth;
             List<Long> hasAuthCiEntityIdList = new ArrayList<>();
             if (needAction) {
-                canEdit = !canEdit ? CiAuthChecker.hasCiEntityUpdatePrivilege(ciEntityVo.getCiId()) : canEdit;
-                canDelete = !canDelete ? CiAuthChecker.hasCiEntityDeletePrivilege(ciEntityVo.getCiId()) : canDelete;
-                canTransaction =
-                        !canTransaction ? CiAuthChecker.hasTransactionPrivilege(ciEntityVo.getCiId()) : canTransaction;
+                canEdit = canEdit || CiAuthChecker.hasCiEntityUpdatePrivilege(ciEntityVo.getCiId());
+                canDelete = canDelete || CiAuthChecker.hasCiEntityDeletePrivilege(ciEntityVo.getCiId());
+                canTransaction = canTransaction || CiAuthChecker.hasTransactionPrivilege(ciEntityVo.getCiId());
                 // 任意权限缺失，都需要检查是否在运维群组
                 if (!canEdit || !canDelete || !canTransaction) {
                     if (CollectionUtils.isNotEmpty(ciEntityVo.getGroupIdList())) {

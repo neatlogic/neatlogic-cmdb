@@ -9,10 +9,7 @@ import codedriver.framework.batch.BatchRunner;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.ci.RelVo;
-import codedriver.framework.cmdb.dto.cientity.AttrEntityVo;
-import codedriver.framework.cmdb.dto.cientity.AttrFilterVo;
-import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
-import codedriver.framework.cmdb.dto.cientity.RelEntityVo;
+import codedriver.framework.cmdb.dto.cientity.*;
 import codedriver.framework.cmdb.dto.transaction.*;
 import codedriver.framework.cmdb.enums.*;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
@@ -147,6 +144,22 @@ public class CiEntityServiceImpl implements CiEntityService {
                 }
                 if (!isExists) {
                     itAttrFilter.remove();
+                }
+            }
+        }
+        if (CollectionUtils.isNotEmpty(ciEntityVo.getRelFilterList())) {
+            Iterator<RelFilterVo> itRelFilter = ciEntityVo.getRelFilterList().iterator();
+            while (itRelFilter.hasNext()) {
+                RelFilterVo relFilterVo = itRelFilter.next();
+                boolean isExists = false;
+                for (RelVo relVo : relList) {
+                    if (relVo.getId().equals(relFilterVo.getRelId())) {
+                        isExists = true;
+                        break;
+                    }
+                }
+                if (!isExists) {
+                    itRelFilter.remove();
                 }
             }
         }
