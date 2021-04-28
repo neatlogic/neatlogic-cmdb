@@ -111,21 +111,31 @@ public class GetCiTopoApi extends PrivateApiComponentBase {
                 Layer.Builder lb = new Layer.Builder("CiType" + ciTypeVo.getId());
                 lb.withLabel(ciTypeVo.getName());
                 for (CiVo ciVo : ciTypeVo.getCiList()) {
-                    Node.Builder nb = new Node.Builder("Ci_" + ciVo.getId());
-                    nb.withTooltip(ciVo.getLabel() + "(" + ciVo.getName() + ")");
-                    nb.withLabel(ciVo.getLabel());
-                    nb.withImage(ciVo.getIcon());
-                    nb.withClass("cinode normalnode");
-                    lb.addNode(nb.build());
-                    ciIdSet.add(ciVo.getId());
-                    //为继承关系添加关联
-                    if (ciVo.getParentCiId() != null) {
-                        Link.Builder linkBuilder = new Link.Builder("Ci_" + ciVo.getId(), "Ci_" + ciVo.getParentCiId());
-                        linkBuilder.setStyle("dashed");
-                        gb.addLink(linkBuilder.build());
+                    if (ciVo.getIsAbstract().equals(0)) {
+                        Node.Builder nb = new Node.Builder("Ci_" + ciVo.getId());
+                        nb.withTooltip(ciVo.getLabel() + "(" + ciVo.getName() + ")");
+                        nb.withLabel(ciVo.getLabel());
+                        nb.withImage(ciVo.getIcon());
+                        nb.withClass("cinode normalnode");
+                        lb.addNode(nb.build());
+                        ciIdSet.add(ciVo.getId());
                     }
                 }
                 gb.addLayer(lb.build());
+            }
+        }
+        //为继承关系添加关联
+        for (CiTypeVo ciTypeVo : ciTypeList) {
+            if (CollectionUtils.isNotEmpty(ciTypeVo.getCiList())) {
+                for (CiVo ciVo : ciTypeVo.getCiList()) {
+                    if (ciVo.getParentCiId() != null) {
+                        if (ciIdSet.contains(ciVo.getParentCiId()) && ciIdSet.contains(ciVo.getId())) {
+                            Link.Builder linkBuilder = new Link.Builder("Ci_" + ciVo.getId(), "Ci_" + ciVo.getParentCiId());
+                            linkBuilder.setStyle("dashed");
+                            gb.addLink(linkBuilder.build());
+                        }
+                    }
+                }
             }
         }
         if (CollectionUtils.isNotEmpty(relList)) {
