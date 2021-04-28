@@ -147,7 +147,6 @@ public class GetCiTopoApi extends PrivateApiComponentBase {
             }
         }
         String dot = gb.build().toString();
-        System.out.println(dot);
         if (logger.isDebugEnabled()) {
             logger.debug(dot);
         }
