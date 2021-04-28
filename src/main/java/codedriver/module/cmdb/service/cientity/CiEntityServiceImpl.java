@@ -423,7 +423,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                     ciEntityName = attrEntityTransactionVo.getValueList().getString(0);
                 }
             }
-            if (!hasFound) {
+            if (!hasFound && oldCiEntityVo != null) {
                 for (AttrEntityVo attrEntityVo : oldCiEntityVo.getAttrEntityList()) {
                     if (attrEntityVo.getAttrName().equals("name")) {
                         hasFound = true;
