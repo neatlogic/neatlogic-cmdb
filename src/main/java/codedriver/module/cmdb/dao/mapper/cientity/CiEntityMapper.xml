@@ -83,22 +83,14 @@
         <foreach collection="relList" item="rel">
             <choose>
                 <when test="rel.direction == 'from'">
-                    `cmdb_relrentity_${rel.id}_${rel.direction}`.to_cientity_id AS `relfrom_${rel.id}`,
-                    (SELECT `name` FROM cmdb_cientity WHERE id =
-                    `cmdb_relrentity_${rel.id}_${rel.direction}`.to_cientity_id) AS
-                    `relfrom_${rel.id}#name`,
-                    (SELECT `ci_id` FROM cmdb_cientity WHERE id =
-                    `cmdb_relrentity_${rel.id}_${rel.direction}`.to_cientity_id) AS
-                    `relfrom_${rel.id}#ciId`,
+                    `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id AS `relfrom_${rel.id}`,
+                    `cmdb_rel_cientity_${rel.id}_${rel.direction}`.name AS `relfrom_${rel.id}#name`,
+                    `cmdb_rel_cientity_${rel.id}_${rel.direction}`.ci_id AS `relfrom_${rel.id}#ciId`,
                 </when>
                 <otherwise>
-                    `cmdb_relrentity_${rel.id}_${rel.direction}`.from_cientity_id AS `relto_${rel.id}`,
-                    (SELECT `name` FROM cmdb_cientity WHERE id =
-                    `cmdb_relrentity_${rel.id}_${rel.direction}`.from_cientity_id) AS
-                    `relto_${rel.id}#name`,
-                    (SELECT `ci_id` FROM cmdb_cientity WHERE id =
-                    `cmdb_relrentity_${rel.id}_${rel.direction}`.from_cientity_id) AS
-                    `relto_${rel.id}#ciId`,
+                    `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id AS `relto_${rel.id}`,
+                    `cmdb_rel_cientity_${rel.id}_${rel.direction}`.name AS `relto_${rel.id}#name`,
+                    `cmdb_rel_cientity_${rel.id}_${rel.direction}`.ci_id AS `relto_${rel.id}#ciId`,
                 </otherwise>
             </choose>
         </foreach>
@@ -123,19 +115,28 @@
             <if test="attr.needTargetCi == true">
                 LEFT JOIN `cmdb_attrentity` `cmdb_attrentity_${attr.id}` ON `ci_base`.id =
                 `cmdb_attrentity_${attr.id}`.from_cientity_id AND `cmdb_attrentity_${attr.id}`.attr_id = #{attr.id}
+                LEFT JOIN `cmdb_cientity` `cmdb_attr_cientity_${attr.id}` ON `cmdb_attrentity_${attr.id}`.to_cientity_id
+                =
+                `cmdb_attr_cientity_${attr.id}`.id
             </if>
         </foreach>
         <foreach collection="relList" item="rel">
             <choose>
                 <when test="rel.direction=='from'">
-                    LEFT JOIN `cmdb_relentity` `cmdb_relrentity_${rel.id}_${rel.direction}` ON `ci_base`.id =
-                    `cmdb_relrentity_${rel.id}_${rel.direction}`.from_cientity_id
-                    AND `cmdb_relrentity_${rel.id}_${rel.direction}`.rel_id = #{rel.id}
+                    LEFT JOIN `cmdb_relentity` `cmdb_relentity_${rel.id}_${rel.direction}` ON `ci_base`.id =
+                    `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
+                    AND `cmdb_relentity_${rel.id}_${rel.direction}`.rel_id = #{rel.id}
+                    LEFT JOIN `cmdb_cientity` `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
+                    `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
+                    `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
                 </when>
                 <otherwise>
-                    LEFT JOIN `cmdb_relentity` `cmdb_relrentity_${rel.id}_${rel.direction}` ON `ci_base`.id =
-                    `cmdb_relrentity_${rel.id}_${rel.direction}`.to_cientity_id
-                    AND `cmdb_relrentity_${rel.id}_${rel.direction}`.rel_id = #{rel.id}
+                    LEFT JOIN `cmdb_relentity` `cmdb_relentity_${rel.id}_${rel.direction}` ON `ci_base`.id =
+                    `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
+                    AND `cmdb_relentity_${rel.id}_${rel.direction}`.rel_id = #{rel.id}
+                    LEFT JOIN `cmdb_cientity` `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
+                    `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
+                    `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
                 </otherwise>
             </choose>
         </foreach>
@@ -144,7 +145,21 @@
     <sql id="ciEntityConditionSql">
         <where>
             <if test="keyword != null and keyword != ''">
-                AND `ci_base`.`name` LIKE CONCAT('%',#{keyword},'%')
+                AND (`ci_base`.`name` LIKE CONCAT('%',#{keyword},'%')
+                <foreach collection="attrList" item="attr">
+                    <choose>
+                        <when test="attr.needTargetCi == false ">
+                            OR ${attr.ciTableName}.`${attr.id}` LIKE CONCAT('%',#{keyword},'%')
+                        </when>
+                        <otherwise><!--后续看情况优化成匹配所有列-->
+                            OR `cmdb_attr_cientity_${attr.id}`.name LIKE CONCAT('%',#{keyword},'%')
+                        </otherwise>
+                    </choose>
+                </foreach>
+                <foreach collection="relList" item="rel">
+                    OR `cmdb_rel_cientity_${rel.id}_${rel.direction}`.name LIKE CONCAT('%',#{keyword},'%')
+                </foreach>
+                )
             </if>
             <if test="attrFilterList != null and attrFilterList.size() > 0">
                 <foreach collection="attrFilterList" item="attrFilter">
@@ -212,14 +227,14 @@
                             <when test="relFilter.expression == 'like'">
                                 <choose>
                                     <when test="relFilter.direction=='from'">
-                                        `cmdb_relrentity_${relFilter.relId}_${relFilter.direction}`.to_cientity_id
+                                        `cmdb_relentity_${relFilter.relId}_${relFilter.direction}`.to_cientity_id
                                         IN
                                         <foreach collection="relFilter.valueList" item="value" separator="," open="("
                                                  close=")">#{value}
                                         </foreach>
                                     </when>
                                     <otherwise>
-                                        `cmdb_relrentity_${relFilter.relId}_${relFilter.direction}`.from_cientity_id
+                                        `cmdb_relentity_${relFilter.relId}_${relFilter.direction}`.from_cientity_id
                                         IN
                                         <foreach collection="relFilter.valueList" item="value" separator="," open="("
                                                  close=")">#{value}
@@ -230,14 +245,14 @@
                             <when test="relFilter.expression == 'notlike'">
                                 <choose>
                                     <when test="relFilter.direction=='from'">
-                                        `cmdb_relrentity_${relFilter.relId}_${relFilter.direction}`.to_cientity_id
+                                        `cmdb_relentity_${relFilter.relId}_${relFilter.direction}`.to_cientity_id
                                         NOT IN
                                         <foreach collection="relFilter.valueList" item="value" separator="," open="("
                                                  close=")">#{value}
                                         </foreach>
                                     </when>
                                     <otherwise>
-                                        `cmdb_relrentity_${relFilter.relId}_${relFilter.direction}`.from_cientity_id
+                                        `cmdb_relentity_${relFilter.relId}_${relFilter.direction}`.from_cientity_id
                                         NOT IN
                                         <foreach collection="relFilter.valueList" item="value" separator="," open="("
                                                  close=")">#{value}
@@ -248,11 +263,11 @@
                             <when test="relFilter.expression == 'is-null'">
                                 <choose>
                                     <when test="relFilter.direction=='from'">
-                                        `cmdb_relrentity_${relFilter.relId}_${relFilter.direction}`.to_cientity_id IS
+                                        `cmdb_relentity_${relFilter.relId}_${relFilter.direction}`.to_cientity_id IS
                                         NULL
                                     </when>
                                     <otherwise>
-                                        `cmdb_relrentity_${relFilter.relId}_${relFilter.direction}`.from_cientity_id IS
+                                        `cmdb_relentity_${relFilter.relId}_${relFilter.direction}`.from_cientity_id IS
                                         NULL
                                     </otherwise>
                                 </choose>
@@ -260,12 +275,12 @@
                             <when test="relFilter.expression == 'is-not-null'">
                                 <choose>
                                     <when test="relFilter.direction=='from'">
-                                        `cmdb_relrentity_${relFilter.relId}_${relFilter.direction}`.to_cientity_id IS
+                                        `cmdb_relentity_${relFilter.relId}_${relFilter.direction}`.to_cientity_id IS
                                         NOT
                                         NULL
                                     </when>
                                     <otherwise>
-                                        `cmdb_relrentity_${relFilter.relId}_${relFilter.direction}`.from_cientity_id IS
+                                        `cmdb_relentity_${relFilter.relId}_${relFilter.direction}`.from_cientity_id IS
                                         NOT
                                         NULL
                                     </otherwise>
