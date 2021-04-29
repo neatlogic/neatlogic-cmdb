@@ -19,11 +19,13 @@ import codedriver.framework.cmdb.exception.reltype.RelTypeIsInUsedException;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @AuthAction(action = RELTYPE_MODIFY.class)
 @OperationType(type = OperationTypeEnum.DELETE)
-public class DeleteRelTypeListApi extends PrivateApiComponentBase {
+@Transactional
+public class DeleteRelTypeApi extends PrivateApiComponentBase {
 
     @Autowired
     private RelTypeMapper relTypeMapper;
