@@ -10,6 +10,20 @@
     <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000"
            size="100"></cache>
 
+    <select id="getCiEntityBaseInfoByName" resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
+        SELECT id,
+               ci_id AS ciId,
+               `name`,
+               `status`,
+               fcu,
+               fcd,
+               lcu,
+               lcd
+        FROM cmdb_cientity
+        WHERE ci_id = #{ciId}
+          AND name = #{ciEntityName}
+    </select>
+
     <select id="getAttrEntityByAttrIdAndFromCiEntityId" resultType="codedriver.framework.cmdb.dto.cientity.AttrEntityVo"
             useCache="false">
         SELECT id,

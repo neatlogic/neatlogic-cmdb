@@ -7,6 +7,7 @@ package codedriver.module.cmdb.service.cientity;
 
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
+import codedriver.framework.cmdb.dto.transaction.TransactionGroupVo;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -40,6 +41,16 @@ public interface CiEntityService {
      */
     CiEntityVo getCiEntityById(Long ciEntityId);
 
+    /**
+     * 保存配置项
+     *
+     * @param ciEntityTransactionVo 配置项事务
+     * @param transactionGroupVo    配置项事务组
+     * @return 事务id
+     */
+    @Transactional
+    Long saveCiEntity(CiEntityTransactionVo ciEntityTransactionVo, TransactionGroupVo transactionGroupVo);
+
     void createCiEntityName(CiEntityTransactionVo ciEntityTransactionVo);
 
     void createSnapshot(CiEntityTransactionVo ciEntityTransactionVo);
@@ -60,14 +71,6 @@ public interface CiEntityService {
      */
     Long deleteCiEntity(Long ciEntityId);
 
-    /**
-     * 根据配置项id和视图配置查询配置项
-     *
-     * @param ciEntityIdList 配置项id列表
-     * @param ciEntityVo     配置项
-     * @return 配置项列表
-     */
-    List<CiEntityVo> searchCiEntityByIds(List<Long> ciEntityIdList, CiEntityVo ciEntityVo);
 
     /**
      * 验证配置项是否合法

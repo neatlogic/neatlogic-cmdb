@@ -23,6 +23,14 @@ public interface CiEntityMapper {
     CiEntityVo getCiEntityBaseInfoById(Long ciEntityId);
 
     /**
+     * 根据配置项名称获取配置项
+     *
+     * @param ciEntityName 配置项名称
+     * @return 配置项列表
+     */
+    List<CiEntityVo> getCiEntityBaseInfoByName(@Param("ciId") Long ciId, @Param("ciEntityName") String ciEntityName);
+
+    /**
      * 根据id列表返回多个配置项基本信息
      *
      * @param ciEntityIdList 配置项id列表

@@ -6,20 +6,19 @@
 package codedriver.module.cmdb.api.batchimport;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
-import codedriver.framework.asynchronization.threadpool.CommonThreadPool;
+import codedriver.framework.asynchronization.threadpool.CachedThreadPool;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.exception.file.ExcelFormatIllegalException;
 import codedriver.framework.exception.file.ExcelNameIllegalException;
 import codedriver.framework.exception.file.FileNotUploadException;
 import codedriver.framework.file.dto.FileVo;
-import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.*;
+import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CIENTITY_BATCH_IMPORT;
 import codedriver.module.cmdb.dao.mapper.batchimport.ImportMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
-import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.module.cmdb.plugin.BatchImportHandler;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,45 +55,38 @@ public class FireBatchImportApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "checkProp", type = ApiParamType.ENUM, rule = "0,1", desc = "是否严格校验属性"),
             @Param(name = "action", type = ApiParamType.ENUM, rule = "append,update,all", isRequired = true, desc = "append:只添加;update:只更新;all:添加&更新"),
-            @Param(name = "editMode", type = ApiParamType.ENUM, rule = "0,1",isRequired = true, desc = "是否全局更新")
+            @Param(name = "editMode", type = ApiParamType.ENUM, rule = "global,partial", isRequired = true, desc = "编辑模式")
     })
     @Output({})
     @Description(desc = "发起批量导入")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         String userUuid = UserContext.get().getUserUuid();
-        Integer checkProp = paramObj.getInteger("checkProp");
         String action = paramObj.getString("action");
-        int editMode = paramObj.getIntValue("editMode");
-        boolean isCheckProp = false;
-        if(checkProp.intValue() == 1){
-            isCheckProp = true;
-        }
+        String editMode = paramObj.getString("editMode");
         List<FileVo> fileList = importMapper.getCmdbImportFileList(userUuid);
         if (fileList.size() > 0) {
             for (FileVo fileVo : fileList) {
                 if (!fileVo.getName().endsWith(".xls") && !fileVo.getName().endsWith(".xlsx")) {
                     throw new ExcelFormatIllegalException(".xls或.xlsx");
                 }
-                if (fileVo.getName().indexOf("_") > -1) {
+                if (fileVo.getName().contains("_")) {
                     Long ciId = null;
-
-                    ciId = Long.parseLong(fileVo.getName().split("_")[0].trim());
+                    try {
+                        ciId = Long.parseLong(fileVo.getName().split("_")[0].trim());
+                    } catch (Exception ignored) {
+                    }
 
                     if (ciId == null) {
                         throw new ExcelNameIllegalException("“ciId_名称”，e.g.:29_应用子系统");
                     }
-                    if(ciMapper.getCiById(ciId) == null){
-                        throw new CiNotFoundException(ciId);
-                    }
-                    CommonThreadPool.execute(new BatchImportHandler.Importer(ciId, action,editMode, fileVo, userUuid, isCheckProp));
-                }else {
+                    CachedThreadPool.execute(new BatchImportHandler.Importer(ciId, action, editMode, fileVo, userUuid));
+                } else {
                     throw new ExcelNameIllegalException("“ciId_名称”，e.g.:29_应用子系统");
                 }
             }
-        }else{
+        } else {
             throw new FileNotUploadException();
         }
         return null;
