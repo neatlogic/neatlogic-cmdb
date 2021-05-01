@@ -15,6 +15,9 @@ public interface CiService {
     void insertCi(CiVo ciVo);
 
     @Transactional
+    void updateCi(CiVo ciVo);
+
+    @Transactional
     public int deleteCi(Long ciId);
 
     public CiVo getCiById(Long id);

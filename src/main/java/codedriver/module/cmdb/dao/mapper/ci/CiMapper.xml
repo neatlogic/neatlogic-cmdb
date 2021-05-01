@@ -199,7 +199,9 @@
             `is_menu`         = #{isMenu},
             `parent_ci_id`    = #{parentCiId},
             `name_expression` = #{nameExpression},
-            `is_abstract`     = #{isAbstract}
+            `is_abstract`     = #{isAbstract},
+            `lft`             = #{lft},
+            `rht`             = #{rht}
         WHERE `id` = #{id}
     </update>
 

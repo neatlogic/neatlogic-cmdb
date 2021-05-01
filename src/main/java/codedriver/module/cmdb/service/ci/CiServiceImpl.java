@@ -9,12 +9,10 @@ import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.ci.RelVo;
-import codedriver.framework.cmdb.exception.ci.CiHasBeenExtendedException;
-import codedriver.framework.cmdb.exception.ci.CiHasRelException;
-import codedriver.framework.cmdb.exception.ci.CiIsNotEmptyException;
-import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
+import codedriver.framework.cmdb.exception.ci.*;
 import codedriver.framework.exception.database.DataBaseNotFoundException;
 import codedriver.framework.lrcode.LRCodeManager;
+import codedriver.framework.transaction.core.EscapeTransactionJob;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
@@ -69,20 +67,54 @@ public class CiServiceImpl implements CiService {
     @Override
     @Transactional
     public void insertCi(CiVo ciVo) {
+        if (ciMapper.checkCiNameIsExists(ciVo) > 0) {
+            throw new CiNameIsExistsException(ciVo.getName());
+        }
+        if (ciMapper.checkCiLabelIsExists(ciVo) > 0) {
+            throw new CiLabelIsExistsException(ciVo.getLabel());
+        }
         int lft = LRCodeManager.beforeAddTreeNode("cmdb_ci", "id", "parent_ci_id", ciVo.getParentCiId());
         ciVo.setLft(lft);
         ciVo.setRht(lft + 1);
         ciMapper.insertCi(ciVo);
 
-        //创建新表
-        if (ciSchemaMapper.checkDatabaseIsExists(TenantContext.get().getDataDbName()) > 0) {
-            //创建配置项表
-            ciSchemaMapper.insertCiSchema(ciVo.getCiTableName());
-            //创建配置项复杂属性表（不一定会用，先创建）
-            //ciSchemaMapper.insertCiAttrSchema(ciVo.getAttrTableName());
-        } else {
-            throw new DataBaseNotFoundException();
+        EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
+            if (ciSchemaMapper.checkDatabaseIsExists(TenantContext.get().getDataDbName()) > 0) {
+                //创建配置项表
+                ciSchemaMapper.insertCiSchema(ciVo.getCiTableName());
+            } else {
+                throw new DataBaseNotFoundException();
+            }
+        }).execute();
+        if (!s.isSucceed()) {
+            throw new CreateCiSchemaException(ciVo.getName());
         }
+    }
+
+    @Override
+    @Transactional
+    public void updateCi(CiVo ciVo) {
+        CiVo checkCiVo = ciMapper.getCiById(ciVo.getId());
+        if (checkCiVo == null) {
+            throw new CiNotFoundException(ciVo.getId());
+        }
+        if (!checkCiVo.getParentCiId().equals(ciVo.getParentCiId())) {
+            //如果继承发生改变需要检查是否有配置项数据，有数据不允许变更
+            int ciEntityCount = ciEntityMapper.getDownwardCiEntityCountByLR(ciVo.getLft(), ciVo.getRht());
+            if (ciEntityCount > 0) {
+                throw new CiParentCanNotBeChangedException(ciVo.getName(), ciEntityCount);
+            }
+        }
+        if (ciMapper.checkCiNameIsExists(ciVo) > 0) {
+            throw new CiNameIsExistsException(ciVo.getName());
+        }
+        if (ciMapper.checkCiLabelIsExists(ciVo) > 0) {
+            throw new CiLabelIsExistsException(ciVo.getLabel());
+        }
+        int lft = LRCodeManager.beforeAddTreeNode("cmdb_ci", "id", "parent_ci_id", ciVo.getParentCiId());
+        ciVo.setLft(lft);
+        ciVo.setRht(lft + 1);
+        ciMapper.updateCi(ciVo);
     }
 
     @Override
@@ -102,8 +134,8 @@ public class CiServiceImpl implements CiService {
             throw new CiHasRelException(
                     fromCiList.stream().map(CiVo::getLabel).collect(Collectors.joining("、")));
         }
-        //检查模型是否有数据
-        int ciEntityCount = ciEntityMapper.getCiEntityCountByCiId(ciId);
+        //检查模型以及子模型是否有数据
+        int ciEntityCount = ciEntityMapper.getDownwardCiEntityCountByLR(ciVo.getLft(), ciVo.getRht());
         if (ciEntityCount > 0) {
             throw new CiIsNotEmptyException(ciId, ciEntityCount);
         }

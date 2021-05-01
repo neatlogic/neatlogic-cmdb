@@ -15,6 +15,15 @@ import java.util.Map;
 
 public interface CiEntityMapper {
     /**
+     * 获取当前模型以及所有子模型的配置项数量
+     *
+     * @param lft 模型左编码
+     * @param rht 模型右编码
+     * @return 配置项数量
+     */
+    int getDownwardCiEntityCountByLR(@Param("lft") Integer lft, @Param("rht") Integer rht);
+
+    /**
      * 获取配置项基本信息
      *
      * @param ciEntityId 配置项id
@@ -67,7 +76,6 @@ public interface CiEntityMapper {
      */
     List<AttrEntityVo> getAttrEntityByAttrIdAndFromCiEntityId(@Param("fromCiEntityId") Long fromCiEntityId, @Param("attrId") Long attrId);
 
-    int getCiEntityCountByCiId(Long ciId);
 
     List<Map<String, Object>> searchCiEntity(CiEntityVo ciEntityVo);
 

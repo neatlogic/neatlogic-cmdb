@@ -7,27 +7,23 @@ package codedriver.module.cmdb.api.ci;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.auth.core.AuthActionChecker;
+import codedriver.framework.cmdb.dto.ci.CiVo;
+import codedriver.framework.cmdb.exception.ci.CiAuthException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CI_MODIFY;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
-import codedriver.framework.cmdb.dto.ci.CiVo;
-import codedriver.framework.cmdb.exception.ci.CiAuthException;
-import codedriver.framework.cmdb.exception.ci.CiLabelIsExistsException;
-import codedriver.framework.cmdb.exception.ci.CiNameIsExistsException;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.service.ci.CiService;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @AuthAction(action = CI_MODIFY.class)
 @OperationType(type = OperationTypeEnum.CREATE)
-@Transactional
 public class SaveCiApi extends PrivateApiComponentBase {
 
     @Autowired
@@ -67,12 +63,6 @@ public class SaveCiApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         boolean hasAuth = AuthActionChecker.check("CI_MODIFY");
         CiVo ciVo = JSONObject.toJavaObject(jsonObj, CiVo.class);
-        if (ciMapper.checkCiNameIsExists(ciVo) > 0) {
-            throw new CiNameIsExistsException(ciVo.getName());
-        }
-        if (ciMapper.checkCiLabelIsExists(ciVo) > 0) {
-            throw new CiLabelIsExistsException(ciVo.getLabel());
-        }
         Long ciId = jsonObj.getLong("id");
         if (ciId == null) {
             if (!hasAuth) {
@@ -80,20 +70,6 @@ public class SaveCiApi extends PrivateApiComponentBase {
                 throw new CiAuthException();
             }
             ciService.insertCi(ciVo);
-            // 新增模型必须要添加一个name属性
-            /*AttrVo attrVo = new AttrVo();
-            attrVo.setName("name");
-            attrVo.setLabel("名称");
-            attrVo.setType(AttrType.CUSTOM.getValue());
-            attrVo.setIsRequired(1);
-            attrVo.setIsUnique(1);
-            attrVo.setInputType(InputType.MT.getValue());
-            // 私有属性，不允许用户删除
-            attrVo.setIsPrivate(1);
-            attrVo.setCiId(ciVo.getId());
-            attrMapper.insertAttr(attrVo);*/
-            //初始化CISCHEMA
-            //CiSchemaHandler.initCiSchema(ciVo);
         } else {
             // 编辑模型除了管理员权限还要看具体的模型授权
             if (!hasAuth) {
@@ -102,7 +78,7 @@ public class SaveCiApi extends PrivateApiComponentBase {
             if (!hasAuth) {
                 throw new CiAuthException();
             }
-            ciMapper.updateCi(ciVo);
+            ciService.updateCi(ciVo);
         }
         return ciVo.getId();
     }

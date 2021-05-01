@@ -10,6 +10,14 @@
     <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000"
            size="100"></cache>
 
+    <select id="getDownwardCiEntityCountByLR" resultType="int">
+        SELECT count(1)
+        FROM `cmdb_cientity` a
+                 JOIN `cmdb_ci` b ON a.ci_id = b.id
+        WHERE b.lft &gt;= #{lft}
+          AND b.rht &lt;= #{rht}
+    </select>
+
     <select id="getCiEntityBaseInfoByName" resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
         SELECT id,
                ci_id AS ciId,
@@ -316,11 +324,6 @@
         WHERE ci_base.id = #{id}
     </select>
 
-    <select id="getCiEntityCountByCiId" parameterType="java.lang.Long" resultType="int" useCache="false">
-        SELECT COUNT(id)
-        FROM cmdb_cientity
-        WHERE ci_id = #{value}
-    </select>
 
     <select id="searchCiEntityId" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
             resultType="java.lang.Long" useCache="true">

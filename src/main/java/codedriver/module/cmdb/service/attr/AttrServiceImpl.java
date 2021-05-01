@@ -18,6 +18,7 @@ import codedriver.framework.cmdb.enums.EditModeType;
 import codedriver.framework.cmdb.enums.TransactionActionType;
 import codedriver.framework.cmdb.enums.TransactionStatus;
 import codedriver.framework.cmdb.exception.attr.AttrIsInvokedByExpressionException;
+import codedriver.framework.cmdb.exception.attr.AttrNameRepeatException;
 import codedriver.framework.cmdb.exception.attr.AttrNotFoundException;
 import codedriver.framework.cmdb.exception.attr.InsertAttrToSchemaException;
 import codedriver.framework.transaction.core.EscapeTransactionJob;
@@ -60,6 +61,9 @@ public class AttrServiceImpl implements AttrService {
     @Override
     @Transactional
     public void insertAttr(AttrVo attrVo) {
+        if (attrMapper.checkAttrNameIsRepeat(attrVo) > 0) {
+            throw new AttrNameRepeatException(attrVo.getName());
+        }
         attrMapper.insertAttr(attrVo);
         CiVo ciVo = ciMapper.getCiById(attrVo.getCiId());
         //把模型信息设进去为了可以生成属性表名

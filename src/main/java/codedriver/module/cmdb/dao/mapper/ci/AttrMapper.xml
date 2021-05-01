@@ -63,51 +63,13 @@
         JOIN `cmdb_attr` attr ON ci.id = attr.ci_id
         LEFT JOIN cmdb_validator cv ON attr.`validator_id` = cv.id
         LEFT JOIN cmdb_view cview ON attr.id = cview.item_id
-        AND cview.type = 'attr'
+        AND cview.type = 'attr' AND cview.ci_id = #{value}
         WHERE
         ci.lft &lt;= ( SELECT lft FROM `cmdb_ci` WHERE id = #{value} )
         AND ci.rht &gt;= ( SELECT rht FROM `cmdb_ci` WHERE id = #{value} )
         ORDER BY
         sort,
         id<!-- 按照视图设置的排序 -->
-    </select>
-
-    <!--old-->
-
-    <select id="getAttrByCiIdList" resultType="codedriver.framework.cmdb.dto.ci.AttrVo"
-            useCache="false"><!-- 引用了prop数据，所以不能用cache -->
-        SELECT
-        attr.`id`,
-        attr.`ci_id` AS ciId,
-        attr.`type`,
-        attr.`target_ci_id` AS targetCiId,
-        attr.`name`,
-        attr.`label`,
-        attr.`description`,
-        attr.`validator_id` AS validatorId,
-        cv.`name` AS validatorName,
-        cv.`handler` AS validatorHandler,
-        attr.`is_required` AS isRequired,
-        attr.`is_unique` AS isUnique,
-        attr.`input_type` AS inputType,
-        attr.`group_name` AS groupName,
-        attr.`is_private` AS isPrivate,
-        cview.sort
-        FROM
-        `cmdb_attr` attr
-        LEFT JOIN cmdb_validator cv ON
-        attr.`validator_id` = cv.id
-        LEFT JOIN cmdb_view cview ON
-        attr.id = cview.item_id
-        and cview.type = 'attr'
-        WHERE
-        attr.ci_id IN
-        <foreach collection="ciIdList" item="item" open="(" separator="," close=")">
-            #{item}
-        </foreach>
-        ORDER BY
-        sort ,
-        attr.id <!-- 现按照视图设置的排序 -->
     </select>
 
     <select id="checkAttrNameIsRepeat" parameterType="codedriver.framework.cmdb.dto.ci.AttrVo" resultType="int">
@@ -117,6 +79,7 @@
           AND `ci_id` = #{ciId}
           AND `id` != #{id}
     </select>
+
 
     <update id="updateAttr" parameterType="codedriver.framework.cmdb.dto.ci.AttrVo">
         UPDATE

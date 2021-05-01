@@ -7,7 +7,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.ci.RelMapper">
     <!-- <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>-->
-    <select id="getAllRelList" resultType="codedriver.framework.cmdb.dto.ci.RelVo" useCache="true">
+    <select id="getAllRelList" resultType="codedriver.framework.cmdb.dto.ci.RelVo" useCache="false">
         SELECT `id`,
                `type_id`                                                  AS typeId,
                (SELECT name FROM cmdb_reltype cr WHERE cr.id = `type_id`) AS typeText,
@@ -113,92 +113,6 @@
         WHERE a.id = #{value}
     </select>
 
-    <select id="getRelByCiIdList" resultType="codedriver.framework.cmdb.dto.ci.RelVo" useCache="true">
-        SELECT
-        a.`id`,
-        a.`type_id` AS typeId,
-        (SELECT name FROM cmdb_reltype cr WHERE cr.id = a.`type_id`) AS typeText,
-        a.`input_type` AS inputType,
-        a.`from_ci_id` AS fromCiId,
-        f.icon AS fromCiIcon,
-        f.name AS fromCiName,
-        f.label AS fromCiLabel,
-        a.`from_name` AS fromName,
-        a.`from_label` AS fromLabel,
-        a.`from_rule` AS fromRule,
-        a.`from_group_id` AS fromGroupId,
-        a.`from_is_unique` AS fromIsUnique,
-        a.`from_is_required` AS fromIsRequired,
-        (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`from_group_id`) AS fromGroupName,
-        a.`to_ci_id` AS toCiId,
-        t.icon AS toCiIcon,
-        t.name AS toCiName,
-        t.label AS toCiLabel,
-        a.`to_name` AS toName,
-        a.`to_label` AS toLabel,
-        a.`to_rule` AS toRule,
-        a.`to_group_id` AS toGroupId,
-        a.`to_is_unique` AS toIsUnique,
-        a.`to_is_required` AS toIsRequired,
-        (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`to_group_id`) AS toGroupName,
-        'from' AS direction,
-        cview.sort
-        FROM
-        `cmdb_rel` a
-        JOIN cmdb_ci f ON a.from_ci_id = f.id
-        JOIN cmdb_ci t ON a.to_ci_id = t.id
-        LEFT JOIN
-        cmdb_view cview ON cview.item_id = a.id AND cview.`type` = 'relfrom'
-        WHERE
-        a.from_ci_id IN
-        <foreach collection="ciIdList" item="item" open="(" separator="," close=")">
-            #{item}
-        </foreach>
-        UNION
-        SELECT
-        a.`id`,
-        a.`type_id` AS
-        typeId,
-        (SELECT name FROM cmdb_reltype cr WHERE cr.id = a.`type_id`) AS typeText,
-        a.`input_type` AS inputType,
-        a.`from_ci_id` AS fromCiId,
-        f.icon AS fromCiIcon,
-        f.name AS fromCiName,
-        f.label AS fromCiLabel,
-        a.`from_name` AS fromName,
-        a.`from_label` AS fromLabel,
-        a.`from_rule` AS fromRule,
-        a.`from_group_id` AS fromGroupId,
-        a.`from_is_unique` AS fromIsUnique,
-        a.`from_is_required` AS fromIsRequired,
-        (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`from_group_id`) AS fromGroupName,
-        a.`to_ci_id` AS toCiId,
-        t.icon AS toCiIcon,
-        t.name AS toCiName,
-        t.label AS toCiLabel,
-        a.`to_name` AS toName,
-        a.`to_label` AS toLabel,
-        a.`to_rule` AS toRule,
-        a.`to_group_id` AS toGroupId,
-        a.`to_is_unique` AS toIsUnique,
-        a.`to_is_required` AS toIsRequired,
-        (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`to_group_id`) AS toGroupName,
-        'to' AS direction,
-        cview.sort
-        FROM
-        `cmdb_rel` a
-        JOIN cmdb_ci f ON a.from_ci_id = f.id
-        JOIN cmdb_ci t ON a.to_ci_id = t.id
-        LEFT JOIN cmdb_view cview
-        ON cview.item_id = a.id AND cview.`type` = 'relto'
-        WHERE
-        a.to_ci_id IN
-        <foreach collection="ciIdList" item="item" open="(" separator="," close=")">
-            #{item}
-        </foreach>
-        ORDER BY sort ASC, id ASC
-    </select>
-
     <select id="getRelByCiId" parameterType="java.lang.Long" resultType="codedriver.framework.cmdb.dto.ci.RelVo"
             useCache="true">
         SELECT a.`id`,
@@ -234,7 +148,7 @@
                  JOIN cmdb_ci f ON a.from_ci_id = f.id
                  JOIN cmdb_ci t ON a.to_ci_id = t.id
                  LEFT JOIN
-             cmdb_view cview ON cview.item_id = a.id AND cview.`type` = 'relfrom'
+             cmdb_view cview ON cview.item_id = a.id AND cview.ci_id = #{value} AND cview.`type` = 'relfrom'
         WHERE f.lft &lt;= (select lft from cmdb_ci where id = #{value})
           AND f.rht &gt;= (select rht from cmdb_ci where id = #{value})
         UNION
@@ -272,7 +186,7 @@
                  JOIN cmdb_ci t ON a.to_ci_id = t.id
                  LEFT JOIN cmdb_view cview
                            ON
-                               cview.item_id = a.id AND cview.`type` = 'relto'
+                                   cview.item_id = a.id AND cview.ci_id = #{value} AND cview.`type` = 'relto'
         WHERE t.lft &lt;= (select lft from cmdb_ci where id = #{value})
           and t.rht &gt;= (select rht from cmdb_ci where id = #{value})
         ORDER BY sort, id

@@ -15,6 +15,7 @@ import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.cmdb.dto.transaction.TransactionGroupVo;
 import codedriver.framework.cmdb.enums.BatchImportStatus;
 import codedriver.framework.cmdb.enums.EditModeType;
+import codedriver.framework.cmdb.enums.RelDirectionType;
 import codedriver.framework.cmdb.enums.TransactionActionType;
 import codedriver.framework.cmdb.exception.ci.CiIsAbstractedException;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
@@ -275,7 +276,7 @@ public class BatchImportHandler {
                                                         for (String c : content.split(",")) {
                                                             if (StringUtils.isNotBlank(c)) {
                                                                 c = c.trim();
-                                                                List<CiEntityVo> targetCiEntityList = ciEntityMapper.getCiEntityBaseInfoByName(ciId, c);
+                                                                List<CiEntityVo> targetCiEntityList = ciEntityMapper.getCiEntityBaseInfoByName(attr.getTargetCiId(), c);
                                                                 if (CollectionUtils.isNotEmpty(targetCiEntityList)) {
                                                                     valueList.addAll(targetCiEntityList.stream().map(CiEntityVo::getId).distinct().collect(Collectors.toList()));
                                                                 } else {
@@ -293,7 +294,7 @@ public class BatchImportHandler {
                                                     for (String c : content.split(",")) {
                                                         if (StringUtils.isNotBlank(c)) {
                                                             c = c.trim();
-                                                            List<CiEntityVo> targetCiEntityList = ciEntityMapper.getCiEntityBaseInfoByName(ciId, c);
+                                                            List<CiEntityVo> targetCiEntityList = ciEntityMapper.getCiEntityBaseInfoByName(rel.getDirection().equals(RelDirectionType.FROM.getValue()) ? rel.getToCiId() : rel.getFromCiId(), c);
                                                             if (CollectionUtils.isNotEmpty(targetCiEntityList)) {
                                                                 for (CiEntityVo entity : targetCiEntityList) {
                                                                     ciEntityTransactionVo.addRelEntityData(rel.getId(), rel.getDirection(), ciId, entity.getId());
