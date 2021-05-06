@@ -2,16 +2,16 @@ package codedriver.module.cmdb.auth.label;
 
 import codedriver.framework.auth.core.AuthBase;
 
-public class CIENTITY_BATCH_IMPORT extends AuthBase {
+public class CMDB_BASE extends AuthBase {
 
 	@Override
 	public String getAuthDisplayName() {
-		return "批量导入配置项权限";
+		return "配置管理基础权限";
 	}
 
 	@Override
 	public String getAuthIntroduction() {
-		return "批量导入配置项";
+		return "查看配置";
 	}
 
 	@Override
@@ -21,6 +21,6 @@ public class CIENTITY_BATCH_IMPORT extends AuthBase {
 
 	@Override
 	public Integer sort() {
-		return 3;
+		return 1;
 	}
 }

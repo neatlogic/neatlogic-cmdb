@@ -18,4 +18,9 @@ public class RELTYPE_MODIFY extends AuthBase {
 	public String getAuthGroup() {
 		return "cmdb";
 	}
+
+	@Override
+	public Integer sort() {
+		return 6;
+	}
 }

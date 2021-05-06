@@ -18,4 +18,9 @@ public class CIENTITY_MODIFY extends AuthBase {
     public String getAuthGroup() {
         return "cmdb";
     }
+
+    @Override
+    public Integer sort() {
+        return 4;
+    }
 }

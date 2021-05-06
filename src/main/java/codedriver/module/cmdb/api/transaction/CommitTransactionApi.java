@@ -7,11 +7,11 @@ package codedriver.module.cmdb.api.transaction;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.auth.core.AuthActionChecker;
-import codedriver.framework.auth.label.NO_AUTH;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import codedriver.framework.cmdb.dto.transaction.TransactionVo;
 import codedriver.framework.cmdb.exception.transaction.TransactionAuthException;
@@ -25,7 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
-@AuthAction(action = NO_AUTH.class)
+@AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class CommitTransactionApi extends PrivateApiComponentBase {
 
