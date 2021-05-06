@@ -102,4 +102,9 @@ public class SelectValueHandler implements IAttrValueHandler {
         return new SearchExpression[]{SearchExpression.LI,
                 SearchExpression.NL, SearchExpression.NOTNULL, SearchExpression.NULL};
     }
+
+    @Override
+    public int getSort() {
+        return 3;
+    }
 }

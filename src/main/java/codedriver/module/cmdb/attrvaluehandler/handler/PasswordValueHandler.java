@@ -57,4 +57,9 @@ public class PasswordValueHandler implements IAttrValueHandler {
     public SearchExpression[] getSupportExpression() {
         return new SearchExpression[]{SearchExpression.NOTNULL, SearchExpression.NULL};
     }
+
+    @Override
+    public int getSort() {
+        return 5;
+    }
 }

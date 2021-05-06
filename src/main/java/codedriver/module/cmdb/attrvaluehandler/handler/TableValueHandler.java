@@ -74,6 +74,11 @@ public class TableValueHandler implements IAttrValueHandler {
     }
 
     @Override
+    public int getSort() {
+        return 7;
+    }
+
+    @Override
     public JSONArray getActualValueList(AttrVo attrVo, JSONArray valueList) {
         JSONArray returnList = new JSONArray();
         JSONObject config = attrVo.getConfig();

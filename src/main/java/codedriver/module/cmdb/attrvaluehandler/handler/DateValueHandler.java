@@ -59,4 +59,9 @@ public class DateValueHandler implements IAttrValueHandler {
                 SearchExpression.NL, SearchExpression.NOTNULL, SearchExpression.NULL};
     }
 
+    @Override
+    public int getSort() {
+        return 4;
+    }
+
 }

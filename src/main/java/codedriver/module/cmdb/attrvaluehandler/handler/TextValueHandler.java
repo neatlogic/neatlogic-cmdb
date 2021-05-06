@@ -60,5 +60,10 @@ public class TextValueHandler implements IAttrValueHandler {
 
     }
 
+    @Override
+    public int getSort() {
+        return 1;
+    }
+
 
 }

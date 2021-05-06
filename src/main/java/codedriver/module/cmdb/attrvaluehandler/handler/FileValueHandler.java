@@ -64,4 +64,9 @@ public class FileValueHandler implements IAttrValueHandler {
     public SearchExpression[] getSupportExpression() {
         return new SearchExpression[]{SearchExpression.NOTNULL, SearchExpression.NULL};
     }
+
+    @Override
+    public int getSort() {
+        return 6;
+    }
 }
