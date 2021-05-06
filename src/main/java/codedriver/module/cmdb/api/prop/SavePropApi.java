@@ -10,7 +10,7 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.auth.label.PROP_MODIFY;
+import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.prop.PropMapper;
 import codedriver.framework.cmdb.dto.prop.PropVo;
 import codedriver.framework.cmdb.exception.prop.PropLabelIsExistsException;
@@ -20,7 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-@AuthAction(action = PROP_MODIFY.class)
+@AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SavePropApi extends PrivateApiComponentBase {
 

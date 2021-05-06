@@ -12,12 +12,16 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CIENTITY_MODIFY;
+import codedriver.module.cmdb.auth.label.CI_MODIFY;
+import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
+@AuthAction(action = CMDB_BASE.class)
+@AuthAction(action = CI_MODIFY.class)
 @AuthAction(action = CIENTITY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.OPERATE)
 public class ValidateCiEntityApi extends PrivateApiComponentBase {
@@ -37,7 +41,6 @@ public class ValidateCiEntityApi extends PrivateApiComponentBase {
 
     @Override
     public String getConfig() {
-        // TODO Auto-generated method stub
         return null;
     }
 

@@ -5,14 +5,22 @@
 
 package codedriver.module.cmdb.api.cientity;
 
+import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.cmdb.exception.cientity.CiEntityAuthException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.module.cmdb.auth.label.CIENTITY_MODIFY;
+import codedriver.module.cmdb.auth.label.CI_MODIFY;
+import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
+import codedriver.module.cmdb.service.group.GroupService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,12 +29,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@AuthAction(action = CMDB_BASE.class)
+@AuthAction(action = CI_MODIFY.class)
+@AuthAction(action = CIENTITY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 @Transactional
 public class GetCiEntityListApi extends PrivateApiComponentBase {
 
     @Resource
     private CiEntityService ciEntityService;
+
+    @Resource
+    private GroupService groupService;
 
     @Override
     public String getToken() {
@@ -55,7 +69,18 @@ public class GetCiEntityListApi extends PrivateApiComponentBase {
         for (int i = 0; i < ids.size(); i++) {
             idList.add(ids.getLong(i));
         }
-        return ciEntityService.getCiEntityByIdList(ciId, idList);
+        boolean needGroup = !CiAuthChecker.chain().checkCiEntityQueryPrivilege(ciId).check();
+        if (needGroup) {
+            List<Long> groupIdList = groupService.getCurrentUserGroupIdList();
+            if (CollectionUtils.isNotEmpty(groupIdList)) {
+                return ciEntityService.getCiEntityByIdList(ciId, idList, groupIdList);
+            } else {
+                throw new CiEntityAuthException("查看");
+            }
+        } else {
+            return ciEntityService.getCiEntityByIdList(ciId, idList);
+        }
+
     }
 
 }

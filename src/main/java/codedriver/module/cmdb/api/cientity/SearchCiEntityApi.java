@@ -5,22 +5,24 @@
 
 package codedriver.module.cmdb.api.cientity;
 
-import codedriver.framework.asynchronization.threadlocal.UserContext;
-import codedriver.framework.auth.core.AuthActionChecker;
-import codedriver.framework.cmdb.enums.GroupType;
-import codedriver.framework.cmdb.enums.ShowType;
-import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.common.dto.BasePageVo;
-import codedriver.framework.dao.mapper.TeamMapper;
-import codedriver.framework.restful.constvalue.OperationTypeEnum;
-import codedriver.framework.restful.annotation.*;
-import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.dao.mapper.ci.CiViewMapper;
-import codedriver.module.cmdb.dao.mapper.group.GroupMapper;
+import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.ci.CiViewVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.cmdb.enums.GroupType;
+import codedriver.framework.cmdb.enums.ShowType;
+import codedriver.framework.cmdb.exception.cientity.CiEntityAuthException;
+import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.common.dto.BasePageVo;
+import codedriver.framework.restful.annotation.*;
+import codedriver.framework.restful.constvalue.OperationTypeEnum;
+import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.cmdb.auth.label.CIENTITY_MODIFY;
+import codedriver.module.cmdb.auth.label.CI_MODIFY;
+import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.module.cmdb.dao.mapper.ci.CiViewMapper;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
+import codedriver.module.cmdb.service.group.GroupService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -32,6 +34,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@AuthAction(action = CMDB_BASE.class)
+@AuthAction(action = CI_MODIFY.class)
+@AuthAction(action = CIENTITY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class SearchCiEntityApi extends PrivateApiComponentBase {
 
@@ -41,11 +46,9 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
     @Autowired
     private CiViewMapper ciViewMapper;
 
-    @Autowired
-    private TeamMapper teamMapper;
 
     @Autowired
-    private GroupMapper groupMapper;
+    private GroupService groupService;
 
     @Override
     public String getToken() {
@@ -74,10 +77,13 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         CiEntityVo ciEntityVo = JSONObject.toJavaObject(jsonObj, CiEntityVo.class);
-        boolean hasManageAuth = AuthActionChecker.check("CI_MODIFY", "CIENTITY_MODIFY");
-        if (!hasManageAuth) {
-            // 拥有模型管理权限查询所有配置项
-            hasManageAuth = CiAuthChecker.hasCiManagePrivilege(ciEntityVo.getCiId());
+        if (!CiAuthChecker.chain().checkCiEntityQueryPrivilege(ciEntityVo.getCiId()).check()) {
+            List<Long> groupIdList = groupService.getCurrentUserGroupIdList();
+            if (CollectionUtils.isNotEmpty(groupIdList)) {
+                ciEntityVo.setGroupIdList(groupIdList);
+            } else {
+                throw new CiEntityAuthException("查看");
+            }
         }
 
         boolean needAction = jsonObj.getBooleanValue("needAction");
@@ -129,31 +135,22 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
         ciEntityVo.setAttrIdList(attrIdList);
         ciEntityVo.setRelIdList(relIdList);
 
-        if (!hasManageAuth && !CiAuthChecker.hasCiEntityQueryPrivilege(ciEntityVo.getCiId())) {
-            // 没有模型维护权限并且没有配置项查询权限，则需要通过消费组或维护组进行过滤
-            String userUuid = UserContext.get().getUserUuid(true);
-            List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(userUuid);
-            List<String> roleUuidList = UserContext.get().getRoleUuidList();
-            List<Long> groupIdList = groupMapper.getGroupIdByUserUuid(userUuid, teamUuidList, roleUuidList);
-            ciEntityVo.setGroupIdList(groupIdList);
-        }
 
-        List<CiEntityVo> ciEntityList = new ArrayList<>();
+        List<CiEntityVo> ciEntityList;
         ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
         JSONArray tbodyList = new JSONArray();
         if (CollectionUtils.isNotEmpty(ciEntityList)) {
-            boolean canEdit = hasManageAuth, canDelete = hasManageAuth, canTransaction = hasManageAuth;
+            boolean canEdit = false, canDelete = false;
             List<Long> hasAuthCiEntityIdList = new ArrayList<>();
             if (needAction) {
-                canEdit = canEdit || CiAuthChecker.hasCiEntityUpdatePrivilege(ciEntityVo.getCiId());
-                canDelete = canDelete || CiAuthChecker.hasCiEntityDeletePrivilege(ciEntityVo.getCiId());
-                canTransaction = canTransaction || CiAuthChecker.hasTransactionPrivilege(ciEntityVo.getCiId());
+                canEdit = CiAuthChecker.chain().checkCiEntityUpdatePrivilege(ciEntityVo.getCiId()).check();
+                canDelete = CiAuthChecker.chain().checkCiEntityDeletePrivilege(ciEntityVo.getCiId()).check();
                 // 任意权限缺失，都需要检查是否在运维群组
-                if (!canEdit || !canDelete || !canTransaction) {
+                if (!canEdit || !canDelete) {
                     if (CollectionUtils.isNotEmpty(ciEntityVo.getGroupIdList())) {
                         hasAuthCiEntityIdList = CiAuthChecker.isInGroup(
                                 ciEntityList.stream().map(CiEntityVo::getId).collect(Collectors.toList()),
-                                GroupType.MATAIN);
+                                GroupType.MAINTAIN);
                     }
                 }
             }
@@ -167,24 +164,8 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
                 entityObj.put("relEntityData", entity.getRelEntityData());
                 if (needAction) {
                     JSONObject actionData = new JSONObject();
-                    if (canEdit) {
-                        actionData.put("canEdit", true);
-                    } else {
-                        // 如果模型没有权限，则根据是否在运维群组授权
-                        actionData.put("canEdit", hasAuthCiEntityIdList.contains(entity.getId()));
-                    }
-                    if (canDelete) {
-                        actionData.put("canDelete", true);
-                    } else {
-                        // 如果模型没有权限，则根据是否在运维群组授权
-                        actionData.put("canDelete", hasAuthCiEntityIdList.contains(entity.getId()));
-                    }
-                    if (canTransaction) {
-                        actionData.put("canTransaction", true);
-                    } else {
-                        // 如果模型没有权限，则根据是否在运维群组授权
-                        actionData.put("canTransaction", hasAuthCiEntityIdList.contains(entity.getId()));
-                    }
+                    actionData.put("canEdit", canEdit || hasAuthCiEntityIdList.contains(entity.getId()));
+                    actionData.put("canDelete", canDelete || hasAuthCiEntityIdList.contains(entity.getId()));
                     entityObj.put("actionData", actionData);
                 }
                 tbodyList.add(entityObj);

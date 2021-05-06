@@ -162,6 +162,12 @@
                 </otherwise>
             </choose>
         </foreach>
+        <if test="groupIdList != null and groupIdList.size() > 0">
+            JOIN `cmdb_cientity_group` `ccg` ON `ci_base`.id = `ccg`.ci_entity_id AND `ccg`.group_id IN
+            <foreach collection="groupIdList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
     </sql>
 
     <sql id="ciEntityConditionSql">

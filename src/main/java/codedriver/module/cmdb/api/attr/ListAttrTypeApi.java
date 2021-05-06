@@ -5,6 +5,7 @@
 
 package codedriver.module.cmdb.api.attr;
 
+import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
 import codedriver.framework.cmdb.dto.ci.AttrTypeVo;
 import codedriver.framework.restful.annotation.OperationType;
@@ -12,10 +13,12 @@ import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
 @Service
+@AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ListAttrTypeApi extends PrivateApiComponentBase {
     @Override

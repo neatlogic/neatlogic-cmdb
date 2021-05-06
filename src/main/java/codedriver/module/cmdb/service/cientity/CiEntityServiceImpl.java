@@ -6,6 +6,8 @@
 package codedriver.module.cmdb.service.cientity;
 
 import codedriver.framework.batch.BatchRunner;
+import codedriver.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
+import codedriver.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.ci.RelVo;
@@ -91,6 +93,11 @@ public class CiEntityServiceImpl implements CiEntityService {
 
     @Override
     public List<CiEntityVo> getCiEntityByIdList(Long ciId, List<Long> ciEntityIdList) {
+        return getCiEntityByIdList(ciId, ciEntityIdList, null);
+    }
+
+    @Override
+    public List<CiEntityVo> getCiEntityByIdList(Long ciId, List<Long> ciEntityIdList, List<Long> groupIdList) {
         CiVo ciVo = ciMapper.getCiById(ciId);
         if (ciVo == null) {
             throw new CiNotFoundException(ciId);
@@ -102,6 +109,7 @@ public class CiEntityServiceImpl implements CiEntityService {
         ciEntityVo.setCiList(ciList);
         ciEntityVo.setAttrList(attrList);
         ciEntityVo.setRelList(relList);
+        ciEntityVo.setGroupIdList(groupIdList);
         if (CollectionUtils.isNotEmpty(ciEntityIdList)) {
             ciEntityVo.setIdList(ciEntityIdList);
             List<Map<String, Object>> resultList = ciEntityMapper.searchCiEntity(ciEntityVo);
@@ -322,7 +330,6 @@ public class CiEntityServiceImpl implements CiEntityService {
             if (!hasFound && oldCiEntityVo != null) {
                 for (AttrEntityVo attrEntityVo : oldCiEntityVo.getAttrEntityList()) {
                     if (attrEntityVo.getAttrName().equals("name")) {
-                        hasFound = true;
                         ciEntityName = attrEntityVo.getValueList().getString(0);
                     }
                 }
@@ -426,6 +433,9 @@ public class CiEntityServiceImpl implements CiEntityService {
                 } else {
                     //修正属性基本信息，多余属性不要
                     JSONArray valueList = attrEntityData.getJSONArray("valueList");
+                    //进行必要的值转换，例如密码转换成密文
+                    IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
+                    handler.transferValueListToSave(valueList);
                     attrEntityData.clear();
                     attrEntityData.put("valueList", valueList);
                     attrEntityData.put("label", attrVo.getLabel());
@@ -462,14 +472,14 @@ public class CiEntityServiceImpl implements CiEntityService {
             if (attrVo.getIsRequired().equals(1)) {
                 if (ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
                     if (attrEntityTransactionVo == null) {
-                        throw new AttrEntityNotFoundException(attrVo.getLabel());
+                        throw new AttrEntityValueEmptyException(attrVo.getLabel());
                     } else if (attrEntityTransactionVo.getSaveMode().equals(SaveModeType.REPLACE.getValue())
                             && CollectionUtils.isEmpty(attrEntityTransactionVo.getValueList())) {
-                        throw new AttrEntityNotFoundException(attrVo.getLabel());
+                        throw new AttrEntityValueEmptyException(attrVo.getLabel());
                     } else if (attrEntityTransactionVo.getSaveMode().equals(SaveModeType.MERGE.getValue()) && attrVo.isNeedTargetCi() && CollectionUtils.isEmpty(attrEntityTransactionVo.getValueList())) {
                         List<AttrEntityVo> oldList = ciEntityMapper.getAttrEntityByAttrIdAndFromCiEntityId(ciEntityTransactionVo.getCiEntityId(), attrVo.getId());
                         if (CollectionUtils.isEmpty(oldList)) {
-                            throw new AttrEntityNotFoundException(attrVo.getLabel());
+                            throw new AttrEntityValueEmptyException(attrVo.getLabel());
                         }
                     }
                 }

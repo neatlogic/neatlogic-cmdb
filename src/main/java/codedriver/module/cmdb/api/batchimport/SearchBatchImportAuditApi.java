@@ -5,14 +5,16 @@
 
 package codedriver.module.cmdb.api.batchimport;
 
+import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.dto.batchimport.ImportAuditVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.common.util.PageUtil;
-import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.*;
+import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.batchimport.ImportMapper;
-import codedriver.framework.cmdb.dto.batchimport.ImportAuditVo;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
@@ -22,6 +24,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
+@AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class SearchBatchImportAuditApi extends PrivateApiComponentBase {
 

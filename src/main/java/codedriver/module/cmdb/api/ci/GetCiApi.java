@@ -5,31 +5,27 @@
 
 package codedriver.module.cmdb.api.ci;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.dto.ci.CiVo;
+import codedriver.framework.cmdb.enums.CiAuthType;
+import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
+import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.restful.annotation.*;
+import codedriver.framework.restful.constvalue.OperationTypeEnum;
+import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
+import codedriver.module.cmdb.service.ci.CiAuthChecker;
+import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.alibaba.fastjson.JSONObject;
-
-import codedriver.framework.auth.core.AuthActionChecker;
-import codedriver.framework.cmdb.enums.CiAuthType;
-import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.restful.constvalue.OperationTypeEnum;
-import codedriver.framework.restful.annotation.Description;
-import codedriver.framework.restful.annotation.Input;
-import codedriver.framework.restful.annotation.OperationType;
-import codedriver.framework.restful.annotation.Output;
-import codedriver.framework.restful.annotation.Param;
-import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
-import codedriver.framework.cmdb.dto.ci.CiVo;
-import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
-import codedriver.module.cmdb.service.ci.CiAuthChecker;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
+@AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 @Transactional // 需要启用事务，以便查询权限时激活一级缓存
 public class GetCiApi extends PrivateApiComponentBase {
@@ -54,7 +50,7 @@ public class GetCiApi extends PrivateApiComponentBase {
     }
 
     @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
-        @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "是否需要操作，需要的话会进行权限校验")})
+            @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "是否需要操作，需要的话会进行权限校验")})
     @Output({@Param(explode = CiVo.class)})
     @Description(desc = "获取模型信息接口")
     @Override
@@ -66,14 +62,11 @@ public class GetCiApi extends PrivateApiComponentBase {
         }
         boolean needAction = jsonObj.getBooleanValue("needAction");
         if (needAction) {
-            boolean hasAuth = AuthActionChecker.check("CI_MODIFY");
             Map<String, Boolean> authData = new HashMap<>();
-            boolean hasCiManageAuth = hasAuth, hasCiEntityInsertAuth = hasAuth;
-            if (!hasCiManageAuth) {
-                hasCiEntityInsertAuth = hasCiManageAuth = CiAuthChecker.hasCiManagePrivilege(ciId);
-            }
+            boolean hasCiManageAuth, hasCiEntityInsertAuth;
+            hasCiEntityInsertAuth = hasCiManageAuth = CiAuthChecker.chain().checkCiManagePrivilege(ciId).check();
             if (!hasCiEntityInsertAuth) {
-                hasCiEntityInsertAuth = CiAuthChecker.hasCiEntityInsertPrivilege(ciId);
+                hasCiEntityInsertAuth = CiAuthChecker.chain().checkCiEntityInsertPrivilege(ciId).check();
             }
             authData.put(CiAuthType.CIMANAGE.getValue(), hasCiManageAuth);
             authData.put(CiAuthType.CIENTITYINSERT.getValue(), hasCiEntityInsertAuth);

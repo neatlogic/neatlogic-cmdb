@@ -5,15 +5,19 @@
 
 package codedriver.module.cmdb.api.cientity;
 
-import codedriver.framework.auth.core.AuthActionChecker;
+import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.enums.CiAuthType;
 import codedriver.framework.cmdb.enums.GroupType;
+import codedriver.framework.cmdb.exception.cientity.CiEntityAuthException;
+import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
-import codedriver.framework.cmdb.exception.cientity.CiEntityAuthException;
+import codedriver.module.cmdb.auth.label.CIENTITY_MODIFY;
+import codedriver.module.cmdb.auth.label.CI_MODIFY;
+import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import com.alibaba.fastjson.JSONObject;
@@ -24,6 +28,9 @@ import javax.annotation.Resource;
 import java.util.HashMap;
 
 @Service
+@AuthAction(action = CMDB_BASE.class)
+@AuthAction(action = CI_MODIFY.class)
+@AuthAction(action = CIENTITY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 @Transactional
 public class GetCiEntityApi extends PrivateApiComponentBase {
@@ -55,31 +62,21 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
         Long id = jsonObj.getLong("id");
         boolean needAction = jsonObj.getBooleanValue("needAction");
         CiEntityVo ciEntityVo = ciEntityService.getCiEntityById(id);
-        if (ciEntityVo != null) {
+        if (ciEntityVo == null) {
+            throw new CiEntityNotFoundException(id);
+        }
+        if (!CiAuthChecker.chain().checkCiEntityQueryPrivilege(ciEntityVo.getCiId()).checkIsInGroup(ciEntityVo.getId(), GroupType.READONLY).check()) {
+            throw new CiEntityAuthException(ciEntityVo.getCiLabel(), "查看");
+        }
 
-            boolean canEdit = AuthActionChecker.check("CI_MODIFY", "CIENTITY_MODIFY");
-            if (needAction) {
-                if (!canEdit) {
-                    canEdit = CiAuthChecker.chain().hasCiManagePrivilege(ciEntityVo.getId())
-                            .hasCiEntityUpdatePrivilege(ciEntityVo.getId()).isInGroup(ciEntityVo.getId(), GroupType.MATAIN)
-                            .check();
-                }
-
-                if (canEdit) {
-                    ciEntityVo.setAuthData(new HashMap<String, Boolean>() {
-                        {
-                            this.put(CiAuthType.CIENTITYUPDATE.getValue(), true);
-                        }
-                    });
-                }
-            }
-            if (!canEdit) {// 没有维护权限的情况下，判断是否拥有查看权限
-                boolean canView =
-                        CiAuthChecker.chain().hasCiEntityQueryPrivilege(ciEntityVo.getId(), ciEntityVo.getId())
-                                .isInGroup(ciEntityVo.getId(), GroupType.READONLY).check();
-                if (!canView) {
-                    throw new CiEntityAuthException(ciEntityVo.getCiLabel(), "查看");
-                }
+        if (needAction) {
+            if (CiAuthChecker.chain().checkCiEntityUpdatePrivilege(ciEntityVo.getId()).checkIsInGroup(ciEntityVo.getId(), GroupType.MAINTAIN)
+                    .check()) {
+                ciEntityVo.setAuthData(new HashMap<String, Boolean>() {
+                    {
+                        this.put(CiAuthType.CIENTITYUPDATE.getValue(), true);
+                    }
+                });
             }
         }
         return ciEntityVo;

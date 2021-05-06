@@ -7,6 +7,8 @@ package codedriver.module.cmdb.attrvaluehandler.handler;
 
 import codedriver.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
 import codedriver.framework.cmdb.enums.SearchExpression;
+import codedriver.framework.common.util.RC4Util;
+import com.alibaba.fastjson.JSONArray;
 import org.springframework.stereotype.Service;
 
 
@@ -61,5 +63,29 @@ public class PasswordValueHandler implements IAttrValueHandler {
     @Override
     public int getSort() {
         return 5;
+    }
+
+    public void transferValueListToSave(JSONArray valueList) {
+        for (int i = 0; i < valueList.size(); i++) {
+            String value = valueList.getString(i);
+            if (!value.startsWith("RC4:")) {
+                valueList.set(i, "RC4:" + RC4Util.encrypt(value));
+            }
+        }
+    }
+
+    /**
+     * 将值转换成显示的形式
+     *
+     * @param valueList 数据库的数据
+     * @return 用于显示数据
+     */
+    public void transferValueListToDisplay(JSONArray valueList) {
+        for (int i = 0; i < valueList.size(); i++) {
+            String value = valueList.getString(i);
+            if (value.startsWith("RC4:")) {
+                valueList.set(i, RC4Util.encrypt(value.substring(4)));
+            }
+        }
     }
 }

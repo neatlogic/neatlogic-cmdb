@@ -6,13 +6,14 @@
 package codedriver.module.cmdb.service.ci;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
+import codedriver.framework.auth.core.AuthActionChecker;
+import codedriver.framework.cmdb.dto.ci.CiAuthVo;
 import codedriver.framework.cmdb.enums.CiAuthType;
 import codedriver.framework.cmdb.enums.GroupType;
 import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiAuthMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import codedriver.module.cmdb.dao.mapper.group.GroupMapper;
-import codedriver.framework.cmdb.dto.ci.CiAuthVo;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,12 +42,6 @@ public class CiAuthChecker {
         instance = this;
     }
 
-    /**
-     * 判断模型管理权限
-     */
-    public static boolean hasCiManagePrivilege(Long ciId) {
-        return hasCiPrivilege(ciId, CiAuthType.CIMANAGE);
-    }
 
     private static boolean hasCiPrivilege(Long ciId, CiAuthType... auths) {
         if (ciId != null) {
@@ -91,35 +86,75 @@ public class CiAuthChecker {
     public static class Chain {
         private boolean hasAuth = false;
 
-        public Chain hasCiManagePrivilege(Long ciId) {
+        public Chain checkCiManagePrivilege() {
             if (!hasAuth) {
-                hasAuth = CiAuthChecker.hasCiManagePrivilege(ciId);
+                hasAuth = AuthActionChecker.check("CI_MODIFY");
             }
             return this;
         }
 
-        public Chain hasCiEntityUpdatePrivilege(Long ciId) {
+        public Chain checkCiManagePrivilege(Long ciId) {
             if (!hasAuth) {
-                hasAuth = CiAuthChecker.hasCiEntityUpdatePrivilege(ciId);
+                hasAuth = AuthActionChecker.check("CI_MODIFY");
+                if (!hasAuth) {
+                    hasAuth = CiAuthChecker.hasCiPrivilege(ciId, CiAuthType.CIMANAGE);
+                }
             }
             return this;
         }
 
-        public Chain hasCiEntityQueryPrivilege(Long ciId) {
+        public Chain checkCiEntityUpdatePrivilege(Long ciId) {
             if (!hasAuth) {
-                hasAuth = CiAuthChecker.hasCiEntityQueryPrivilege(ciId);
+                hasAuth = AuthActionChecker.check("CI_MODIFY", "CiENTITY_MODIFY");
+                if (!hasAuth) {
+                    hasAuth = CiAuthChecker.hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYUPDATE);
+                }
             }
             return this;
         }
 
-        public Chain hasCiEntityQueryPrivilege(Long ciId, Long ciEntityId) {
+        public Chain checkCiEntityInsertPrivilege(Long ciId) {
             if (!hasAuth) {
-                hasAuth = CiAuthChecker.hasCiEntityQueryPrivilege(ciId, ciEntityId);
+                hasAuth = AuthActionChecker.check("CI_MODIFY", "CiENTITY_MODIFY");
+                if (!hasAuth) {
+                    hasAuth = CiAuthChecker.hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYINSERT);
+                }
             }
             return this;
         }
 
-        public Chain isInGroup(Long ciEntityId, GroupType... groupType) {
+        public Chain checkCiEntityDeletePrivilege(Long ciId) {
+            if (!hasAuth) {
+                hasAuth = AuthActionChecker.check("CI_MODIFY", "CiENTITY_MODIFY");
+                if (!hasAuth) {
+                    hasAuth = CiAuthChecker.hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYDELETE);
+                }
+            }
+            return this;
+        }
+
+        public Chain checkCiEntityQueryPrivilege(Long ciId) {
+            if (!hasAuth) {
+                hasAuth = AuthActionChecker.check("CI_MODIFY", "CiENTITY_MODIFY");
+                if (!hasAuth) {
+                    hasAuth = CiAuthChecker.hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYUPDATE, CiAuthType.CIENTITYDELETE, CiAuthType.CIENTITYQUERY);
+                }
+            }
+            return this;
+        }
+
+        public Chain checkViewPasswordPrivilege(Long ciId) {
+            if (!hasAuth) {
+                hasAuth = AuthActionChecker.check("CI_MODIFY", "CiENTITY_MODIFY");
+                if (!hasAuth) {
+                    hasAuth = CiAuthChecker.hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYUPDATE, CiAuthType.CIENTITYINSERT, CiAuthType.PASSWORDVIEW);
+                }
+            }
+            return this;
+        }
+
+
+        public Chain checkIsInGroup(Long ciEntityId, GroupType... groupType) {
             if (!hasAuth) {
                 hasAuth = CiAuthChecker.isInGroup(ciEntityId, groupType);
             }
@@ -132,43 +167,8 @@ public class CiAuthChecker {
 
     }
 
-    public static boolean hasPasswordPrivilege(Long ciEntityId) {
-        // FIXME 补充权限校验
-        return false;
-    }
 
-    public static boolean hasCiEntityQueryPrivilege(Long ciId) {
-        return hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYDELETE, CiAuthType.CIENTITYQUERY,
-            CiAuthType.CIENTITYQUERY);
-    }
-
-    public static boolean hasCiEntityQueryPrivilege(Long ciId, Long ciEntityId) {
-        if (hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYDELETE, CiAuthType.CIENTITYQUERY,
-            CiAuthType.CIENTITYQUERY)) {
-            return true;
-        } else {
-            // FIXME 补充维护群组判断
-        }
-        return false;
-    }
-
-    public static boolean hasCiEntityInsertPrivilege(Long ciId) {
-        return hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYINSERT);
-    }
-
-    public static boolean hasCiEntityUpdatePrivilege(Long ciId) {
-        return hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYUPDATE);
-    }
-
-    public static boolean hasCiEntityDeletePrivilege(Long ciId) {
-        return hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYDELETE);
-    }
-
-    public static boolean hasTransactionPrivilege(Long ciId) {
-        return hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.TRANSACTIONMANAGE);
-    }
-
-    public static boolean isInGroup(Long ciEntityId, GroupType... groupType) {
+    private static boolean isInGroup(Long ciEntityId, GroupType... groupType) {
         List<Long> returnList = isInGroup(new ArrayList<Long>() {
             {
                 this.add(ciEntityId);
@@ -188,7 +188,7 @@ public class CiAuthChecker {
             groupTypeList.add(g.getValue());
         }
         if (CollectionUtils.isNotEmpty(groupIdList) && CollectionUtils.isNotEmpty(ciEntityIdList)
-            && CollectionUtils.isNotEmpty(groupTypeList)) {
+                && CollectionUtils.isNotEmpty(groupTypeList)) {
             return instance.ciEntityMapper.getCiEntityIdByGroupIdList(groupIdList, ciEntityIdList, groupTypeList);
         } else {
             return new ArrayList<>();

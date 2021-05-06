@@ -5,28 +5,28 @@
 
 package codedriver.module.cmdb.api.cientity;
 
-import codedriver.framework.cmdb.enums.SearchExpression;
-import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.common.dto.BasePageVo;
-import codedriver.framework.dao.mapper.TeamMapper;
-import codedriver.framework.restful.annotation.*;
-import codedriver.framework.restful.constvalue.OperationTypeEnum;
-import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
-import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
-import codedriver.module.cmdb.dao.mapper.ci.CiViewMapper;
+import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.cientity.AttrFilterVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.cmdb.enums.SearchExpression;
 import codedriver.framework.cmdb.exception.attr.AttrNotFoundException;
 import codedriver.framework.cmdb.exception.attr.AttrTargetCiIdNotFoundException;
+import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.common.dto.BasePageVo;
+import codedriver.framework.restful.annotation.*;
+import codedriver.framework.restful.constvalue.OperationTypeEnum;
+import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.cmdb.auth.label.CIENTITY_MODIFY;
+import codedriver.module.cmdb.auth.label.CI_MODIFY;
+import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -34,18 +34,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@AuthAction(action = CMDB_BASE.class)
+@AuthAction(action = CI_MODIFY.class)
+@AuthAction(action = CIENTITY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class SearchAttrTargetCiEntityApi extends PrivateApiComponentBase {
 
-
-    @Autowired
-    private CiViewMapper ciViewMapper;
-
-    @Autowired
-    private TeamMapper teamMapper;
-
-    @Resource
-    private CiMapper ciMapper;
 
     @Resource
     private AttrMapper attrMapper;

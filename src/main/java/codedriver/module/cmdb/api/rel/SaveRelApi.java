@@ -6,17 +6,19 @@
 package codedriver.module.cmdb.api.rel;
 
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.dto.ci.RelVo;
+import codedriver.framework.cmdb.exception.ci.CiAuthException;
+import codedriver.framework.cmdb.exception.ci.RelIsExistsException;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Param;
+import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CI_MODIFY;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
-import codedriver.framework.cmdb.dto.ci.RelVo;
-import codedriver.framework.cmdb.exception.ci.RelIsExistsException;
+import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -71,6 +73,12 @@ public class SaveRelApi extends PrivateApiComponentBase {
         }
         if (relMapper.checkRelByFromToLabel(relVo) > 0) {
             throw new RelIsExistsException(relVo.getFromLabel(), relVo.getToLabel());
+        }
+        if (!CiAuthChecker.chain().checkCiManagePrivilege(relVo.getFromCiId()).check()) {
+            throw new CiAuthException(relVo.getFromLabel());
+        }
+        if (!CiAuthChecker.chain().checkCiManagePrivilege(relVo.getToCiId()).check()) {
+            throw new CiAuthException(relVo.getToLabel());
         }
         if (id == null) {
             relMapper.insertRel(relVo);

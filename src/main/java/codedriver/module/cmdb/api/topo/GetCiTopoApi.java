@@ -5,16 +5,18 @@
 
 package codedriver.module.cmdb.api.topo;
 
+import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.dto.ci.CiTypeVo;
+import codedriver.framework.cmdb.dto.ci.CiVo;
+import codedriver.framework.cmdb.dto.ci.RelVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
 import codedriver.module.cmdb.dot.*;
-import codedriver.framework.cmdb.dto.ci.CiTypeVo;
-import codedriver.framework.cmdb.dto.ci.CiVo;
-import codedriver.framework.cmdb.dto.ci.RelVo;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -26,6 +28,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 @Service
+@AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class GetCiTopoApi extends PrivateApiComponentBase {
     static Logger logger = LoggerFactory.getLogger(GetCiTopoApi.class);

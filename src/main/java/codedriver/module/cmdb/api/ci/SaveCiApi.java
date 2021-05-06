@@ -6,7 +6,6 @@
 package codedriver.module.cmdb.api.ci;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.exception.ci.CiAuthException;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -14,7 +13,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CI_MODIFY;
-import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
+import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.service.ci.CiService;
 import com.alibaba.fastjson.JSONObject;
@@ -22,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
+@AuthAction(action = CMDB_BASE.class)
 @AuthAction(action = CI_MODIFY.class)
 @OperationType(type = OperationTypeEnum.CREATE)
 public class SaveCiApi extends PrivateApiComponentBase {
@@ -29,8 +29,6 @@ public class SaveCiApi extends PrivateApiComponentBase {
     @Autowired
     private CiService ciService;
 
-    @Autowired
-    private CiMapper ciMapper;
 
     @Override
     public String getToken() {
@@ -61,21 +59,15 @@ public class SaveCiApi extends PrivateApiComponentBase {
     @Description(desc = "保存模型接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        boolean hasAuth = AuthActionChecker.check("CI_MODIFY");
         CiVo ciVo = JSONObject.toJavaObject(jsonObj, CiVo.class);
         Long ciId = jsonObj.getLong("id");
         if (ciId == null) {
-            if (!hasAuth) {
-                // 添加模型需要管理员权限
+            if (!CiAuthChecker.chain().checkCiManagePrivilege().check()) {
                 throw new CiAuthException();
             }
             ciService.insertCi(ciVo);
         } else {
-            // 编辑模型除了管理员权限还要看具体的模型授权
-            if (!hasAuth) {
-                hasAuth = CiAuthChecker.hasCiManagePrivilege(ciId);
-            }
-            if (!hasAuth) {
+            if (!CiAuthChecker.chain().checkCiManagePrivilege(ciId).check()) {
                 throw new CiAuthException();
             }
             ciService.updateCi(ciVo);

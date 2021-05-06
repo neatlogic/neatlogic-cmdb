@@ -5,15 +5,19 @@
 
 package codedriver.module.cmdb.api.attr;
 
+import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.dto.ci.AttrVo;
+import codedriver.framework.cmdb.exception.attr.AttrNameRepeatException;
+import codedriver.framework.cmdb.exception.ci.CiAuthException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.cmdb.auth.label.CI_MODIFY;
+import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
-import codedriver.module.cmdb.dao.mapper.prop.PropMapper;
-import codedriver.framework.cmdb.dto.ci.AttrVo;
-import codedriver.framework.cmdb.exception.attr.AttrNameRepeatException;
 import codedriver.module.cmdb.service.attr.AttrService;
+import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,14 +27,14 @@ import javax.annotation.Resource;
 
 @Service
 @Transactional
+@AuthAction(action = CMDB_BASE.class)
+@AuthAction(action = CI_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveAttrApi extends PrivateApiComponentBase {
 
     @Autowired
     private AttrMapper attrMapper;
 
-    @Autowired
-    private PropMapper propMapper;
 
     @Resource
     private AttrService attrService;
@@ -72,6 +76,9 @@ public class SaveAttrApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         AttrVo attrVo = JSONObject.toJavaObject(jsonObj, AttrVo.class);
         Long attrId = jsonObj.getLong("id");
+        if (!CiAuthChecker.chain().checkCiManagePrivilege(attrVo.getCiId()).check()) {
+            throw new CiAuthException();
+        }
         //校验name是否重复
         if (attrMapper.checkAttrNameIsRepeat(attrVo) > 0) {
             throw new AttrNameRepeatException(attrVo.getName());

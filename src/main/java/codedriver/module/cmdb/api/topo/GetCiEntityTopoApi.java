@@ -5,6 +5,7 @@
 
 package codedriver.module.cmdb.api.topo;
 
+import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.ci.CiTypeVo;
 import codedriver.framework.cmdb.dto.cientity.AttrEntityVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
@@ -15,6 +16,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.Md5Util;
+import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.CiTypeMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import codedriver.module.cmdb.dot.*;
@@ -33,6 +35,7 @@ import java.util.*;
 
 @Service
 @Transactional
+@AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class GetCiEntityTopoApi extends PrivateApiComponentBase {
     static Logger logger = LoggerFactory.getLogger(GetCiEntityTopoApi.class);

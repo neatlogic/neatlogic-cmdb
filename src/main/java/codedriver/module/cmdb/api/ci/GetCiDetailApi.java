@@ -5,13 +5,15 @@
 
 package codedriver.module.cmdb.api.ci;
 
-import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.restful.constvalue.OperationTypeEnum;
-import codedriver.framework.restful.annotation.*;
-import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
+import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
+import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.restful.annotation.*;
+import codedriver.framework.restful.constvalue.OperationTypeEnum;
+import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.service.ci.CiService;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 @Transactional // 需要启用事务，以便查询权限时激活一级缓存
 public class GetCiDetailApi extends PrivateApiComponentBase {
@@ -54,7 +57,6 @@ public class GetCiDetailApi extends PrivateApiComponentBase {
         if(ciMapper.getCiById(ciId) == null){
             throw new CiNotFoundException(ciId);
         }
-        CiVo ci = ciService.getCiById(ciId);
-        return ci;
+        return ciService.getCiById(ciId);
     }
 }

@@ -6,19 +6,20 @@
 package codedriver.module.cmdb.api.cientity;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.auth.core.AuthActionChecker;
+import codedriver.framework.cmdb.dto.ci.CiVo;
+import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.cmdb.enums.GroupType;
 import codedriver.framework.cmdb.enums.TransactionActionType;
+import codedriver.framework.cmdb.exception.cientity.CiEntityAuthException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.exception.core.ApiRuntimeException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CIENTITY_MODIFY;
+import codedriver.module.cmdb.auth.label.CI_MODIFY;
+import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
-import codedriver.framework.cmdb.dto.ci.CiVo;
-import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
-import codedriver.framework.cmdb.exception.cientity.CiEntityAuthException;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import com.alibaba.fastjson.JSONArray;
@@ -26,8 +27,6 @@ import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,11 +37,13 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@AuthAction(action = CMDB_BASE.class)
+@AuthAction(action = CI_MODIFY.class)
 @AuthAction(action = CIENTITY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 @Transactional
 public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
-    static Logger logger = LoggerFactory.getLogger(BatchSaveCiEntityApi.class);
+    //static Logger logger = LoggerFactory.getLogger(BatchSaveCiEntityApi.class);
 
     @Autowired
     private CiEntityService ciEntityService;
@@ -72,7 +73,6 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONArray ciEntityObjList = jsonObj.getJSONArray("ciEntityList");
-        boolean hasAuth = AuthActionChecker.check("CI_MODIFY", "CIENTITY_MODIFY");
         List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
         Map<String, CiEntityTransactionVo> ciEntityTransactionMap = new HashMap<>();
         // 先给所有没有id的ciEntity分配新的id
@@ -95,23 +95,20 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
             Long id = ciEntityObj.getLong("id");
             String uuid = ciEntityObj.getString("uuid");
 
-            if (!hasAuth) {
-                // 拥有模型管理权限允许添加或修改配置项
-                hasAuth = CiAuthChecker.hasCiManagePrivilege(ciId);
-            }
             TransactionActionType mode = TransactionActionType.INSERT;
-            CiEntityTransactionVo ciEntityTransactionVo = null;
+            CiEntityTransactionVo ciEntityTransactionVo;
             if (id != null) {
-                if (!hasAuth) {
-                    hasAuth = CiAuthChecker.chain().hasCiEntityUpdatePrivilege(ciId).isInGroup(id, GroupType.MATAIN)
-                            .check();
+                if (!CiAuthChecker.chain().checkCiEntityUpdatePrivilege(ciId).checkIsInGroup(id, GroupType.MAINTAIN).check()) {
+                    CiVo ciVo = ciMapper.getCiById(ciId);
+                    throw new CiEntityAuthException(ciVo.getLabel(), mode.getText());
                 }
                 ciEntityTransactionVo = new CiEntityTransactionVo();
                 ciEntityTransactionVo.setCiEntityId(id);
                 ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
             } else if (StringUtils.isNotBlank(uuid)) {
-                if (!hasAuth) {
-                    hasAuth = CiAuthChecker.hasCiEntityInsertPrivilege(ciId);
+                if (!CiAuthChecker.chain().checkCiEntityInsertPrivilege(ciId).check()) {
+                    CiVo ciVo = ciMapper.getCiById(ciId);
+                    throw new CiEntityAuthException(ciVo.getLabel(), mode.getText());
                 }
                 ciEntityTransactionVo = ciEntityTransactionMap.get(uuid);
                 ciEntityTransactionVo.setCiEntityUuid(uuid);
@@ -120,10 +117,6 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
                 throw new ApiRuntimeException("数据不合法，缺少id或uuid");
             }
 
-            if (!hasAuth) {
-                CiVo ciVo = ciMapper.getCiById(ciId);
-                throw new CiEntityAuthException(ciVo.getLabel(), mode.getText());
-            }
 
             ciEntityTransactionVo.setCiId(ciId);
             // 解析属性数据

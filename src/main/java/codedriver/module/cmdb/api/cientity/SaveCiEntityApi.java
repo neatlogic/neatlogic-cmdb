@@ -5,15 +5,18 @@
 
 package codedriver.module.cmdb.api.cientity;
 
-import codedriver.framework.auth.core.AuthActionChecker;
+import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.cmdb.enums.GroupType;
 import codedriver.framework.cmdb.enums.TransactionActionType;
+import codedriver.framework.cmdb.exception.cientity.CiEntityAuthException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
-import codedriver.framework.cmdb.exception.cientity.CiEntityAuthException;
+import codedriver.module.cmdb.auth.label.CIENTITY_MODIFY;
+import codedriver.module.cmdb.auth.label.CI_MODIFY;
+import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import com.alibaba.fastjson.JSONObject;
@@ -21,6 +24,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
+@AuthAction(action = CMDB_BASE.class)
+@AuthAction(action = CI_MODIFY.class)
+@AuthAction(action = CIENTITY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveCiEntityApi extends PrivateApiComponentBase {
 
@@ -52,31 +58,20 @@ public class SaveCiEntityApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("ciId");
         Long id = jsonObj.getLong("id");
-        boolean hasAuth = AuthActionChecker.check("CI_MODIFY", "CIENTITY_MODIFY");
-        if (!hasAuth) {
-            // 拥有模型管理权限允许添加或修改配置项
-            hasAuth = CiAuthChecker.hasCiManagePrivilege(ciId);
-        }
         CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
         if (id != null) {
-            if (!hasAuth) {
-                hasAuth =
-                        CiAuthChecker.chain().hasCiEntityUpdatePrivilege(ciId).isInGroup(id, GroupType.MATAIN).check();
+            if (!CiAuthChecker.chain().checkCiEntityUpdatePrivilege(ciId).checkIsInGroup(id, GroupType.MAINTAIN).check()) {
+                throw new CiEntityAuthException(TransactionActionType.UPDATE.getText());
             }
             ciEntityTransactionVo.setCiEntityId(id);
             ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
-            // ciEntityTransactionVo.setTransactionMode(TransactionActionType.UPDATE);
         } else {
-            if (!hasAuth) {
-                hasAuth = CiAuthChecker.hasCiEntityInsertPrivilege(ciId);
+            if (!CiAuthChecker.chain().checkCiEntityInsertPrivilege(ciId).check()) {
+                throw new CiEntityAuthException(TransactionActionType.INSERT.getText());
             }
             ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
-            //ciEntityTransactionVo.setTransactionMode(TransactionActionType.INSERT);
         }
 
-        if (!hasAuth) {
-            throw new CiEntityAuthException(ciEntityTransactionVo.getActionText());
-        }
 
         ciEntityTransactionVo.setCiId(ciId);
 

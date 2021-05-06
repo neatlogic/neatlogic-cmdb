@@ -6,7 +6,6 @@
 package codedriver.module.cmdb.api.rel;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.ci.RelVo;
 import codedriver.framework.cmdb.exception.ci.CiAuthException;
@@ -65,17 +64,13 @@ public class DeleteRelApi extends PrivateApiComponentBase {
         if (relVo == null) {
             throw new RelNotFoundException(relId);
         }
-        boolean hasAuth = AuthActionChecker.check("CI_MODIFY");
-        if (!hasAuth) {
-            if (!CiAuthChecker.hasCiManagePrivilege(relVo.getFromCiId())) {
-                CiVo ciVo = ciMapper.getCiById(relVo.getFromCiId());
-                throw new CiAuthException(ciVo.getLabel());
-            }
-            if (!CiAuthChecker.hasCiManagePrivilege(relVo.getToCiId())) {
-                CiVo ciVo = ciMapper.getCiById(relVo.getToCiId());
-                throw new CiAuthException(ciVo.getLabel());
-            }
-            hasAuth = true;
+        if (!CiAuthChecker.chain().checkCiManagePrivilege(relVo.getFromCiId()).check()) {
+            CiVo ciVo = ciMapper.getCiById(relVo.getFromCiId());
+            throw new CiAuthException(ciVo.getLabel());
+        }
+        if (!CiAuthChecker.chain().checkCiManagePrivilege(relVo.getToCiId()).check()) {
+            CiVo ciVo = ciMapper.getCiById(relVo.getToCiId());
+            throw new CiAuthException(ciVo.getLabel());
         }
         relService.deleteRel(relVo);
         return null;

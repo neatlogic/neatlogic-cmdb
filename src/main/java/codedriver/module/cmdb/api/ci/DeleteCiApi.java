@@ -6,15 +6,15 @@
 package codedriver.module.cmdb.api.ci;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.auth.core.AuthActionChecker;
+import codedriver.framework.cmdb.dto.ci.CiVo;
+import codedriver.framework.cmdb.exception.ci.CiAuthException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CI_MODIFY;
+import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
-import codedriver.framework.cmdb.dto.ci.CiVo;
-import codedriver.framework.cmdb.exception.ci.CiAuthException;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.service.ci.CiService;
 import com.alibaba.fastjson.JSONObject;
@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@AuthAction(action = CMDB_BASE.class)
 @AuthAction(action = CI_MODIFY.class)
 @OperationType(type = OperationTypeEnum.DELETE)
 @Transactional
@@ -56,12 +57,9 @@ public class DeleteCiApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("id");
-        boolean hasAuth = AuthActionChecker.check("CI_MODIFY");
+        boolean hasAuth = CiAuthChecker.chain().checkCiManagePrivilege(ciId).check();
         if (!hasAuth) {
-            hasAuth = CiAuthChecker.hasCiManagePrivilege(ciId);
-            if (!hasAuth) {
-                throw new CiAuthException();
-            }
+            throw new CiAuthException();
         }
 
         // 删除配置项信息
