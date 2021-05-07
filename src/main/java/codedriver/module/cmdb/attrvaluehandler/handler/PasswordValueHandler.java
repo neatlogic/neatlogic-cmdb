@@ -84,7 +84,7 @@ public class PasswordValueHandler implements IAttrValueHandler {
         for (int i = 0; i < valueList.size(); i++) {
             String value = valueList.getString(i);
             if (value.startsWith("RC4:")) {
-                valueList.set(i, RC4Util.encrypt(value.substring(4)));
+                valueList.set(i, RC4Util.decrypt(value.substring(4)));
             }
         }
     }

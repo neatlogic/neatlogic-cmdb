@@ -16,7 +16,7 @@ public class CMDB_BASE extends AuthBase {
 
     @Override
     public String getAuthIntroduction() {
-        return "查看配置";
+        return "拥有此权限才能使用配置管理功能";
     }
 
     @Override

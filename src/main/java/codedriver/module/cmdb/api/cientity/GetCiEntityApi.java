@@ -70,14 +70,14 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
         }
 
         if (needAction) {
-            if (CiAuthChecker.chain().checkCiEntityUpdatePrivilege(ciEntityVo.getId()).checkIsInGroup(ciEntityVo.getId(), GroupType.MAINTAIN)
-                    .check()) {
-                ciEntityVo.setAuthData(new HashMap<String, Boolean>() {
-                    {
-                        this.put(CiAuthType.CIENTITYUPDATE.getValue(), true);
-                    }
-                });
-            }
+            ciEntityVo.setAuthData(new HashMap<String, Boolean>() {
+                {
+                    this.put(CiAuthType.CIENTITYUPDATE.getValue(), CiAuthChecker.chain().checkCiEntityUpdatePrivilege(ciEntityVo.getCiId()).checkIsInGroup(ciEntityVo.getId(), GroupType.MAINTAIN)
+                            .check());
+                    this.put(CiAuthType.PASSWORDVIEW.getValue(), CiAuthChecker.chain().checkViewPasswordPrivilege(ciEntityVo.getCiId()).checkIsInGroup(ciEntityVo.getId(), GroupType.READONLY, GroupType.MAINTAIN)
+                            .check());
+                }
+            });
         }
         return ciEntityVo;
     }

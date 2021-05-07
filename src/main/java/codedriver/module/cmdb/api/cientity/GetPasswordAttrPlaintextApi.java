@@ -55,7 +55,7 @@ public class GetPasswordAttrPlaintextApi extends PrivateApiComponentBase {
     @Override
     @Input({@Param(name = "ciEntityId", type = ApiParamType.LONG, isRequired = true, desc = "配置项id"),
             @Param(name = "attrId", type = ApiParamType.LONG, isRequired = true, desc = "属性id")})
-    @Output({@Param(name = "id", type = ApiParamType.STRING, desc = "密码明文")})
+    @Output({@Param(type = ApiParamType.STRING, desc = "密码明文")})
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciEntityId = jsonObj.getLong("ciEntityId");
         Long attrId = jsonObj.getLong("attrId");

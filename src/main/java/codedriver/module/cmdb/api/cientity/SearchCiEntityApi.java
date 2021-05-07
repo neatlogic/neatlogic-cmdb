@@ -8,6 +8,7 @@ package codedriver.module.cmdb.api.cientity;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.ci.CiViewVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.cmdb.enums.CiAuthType;
 import codedriver.framework.cmdb.enums.GroupType;
 import codedriver.framework.cmdb.enums.ShowType;
 import codedriver.framework.cmdb.exception.cientity.CiEntityAuthException;
@@ -140,17 +141,18 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
         ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
         JSONArray tbodyList = new JSONArray();
         if (CollectionUtils.isNotEmpty(ciEntityList)) {
-            boolean canEdit = false, canDelete = false;
-            List<Long> hasAuthCiEntityIdList = new ArrayList<>();
+            boolean canEdit = false, canDelete = false, canViewPassword = false;
+            List<Long> hasMaintainCiEntityIdList = new ArrayList<>();
+            List<Long> hasReadCiEntityIdList = new ArrayList<>();
             if (needAction) {
                 canEdit = CiAuthChecker.chain().checkCiEntityUpdatePrivilege(ciEntityVo.getCiId()).check();
                 canDelete = CiAuthChecker.chain().checkCiEntityDeletePrivilege(ciEntityVo.getCiId()).check();
+                canViewPassword = CiAuthChecker.chain().checkViewPasswordPrivilege(ciEntityVo.getCiId()).check();
                 // 任意权限缺失，都需要检查是否在运维群组
                 if (!canEdit || !canDelete) {
                     if (CollectionUtils.isNotEmpty(ciEntityVo.getGroupIdList())) {
-                        hasAuthCiEntityIdList = CiAuthChecker.isInGroup(
-                                ciEntityList.stream().map(CiEntityVo::getId).collect(Collectors.toList()),
-                                GroupType.MAINTAIN);
+                        hasMaintainCiEntityIdList = CiAuthChecker.isInGroup(ciEntityList.stream().map(CiEntityVo::getId).collect(Collectors.toList()), GroupType.MAINTAIN);
+                        hasReadCiEntityIdList = CiAuthChecker.isInGroup(ciEntityList.stream().map(CiEntityVo::getId).collect(Collectors.toList()), GroupType.READONLY);
                     }
                 }
             }
@@ -164,9 +166,10 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
                 entityObj.put("relEntityData", entity.getRelEntityData());
                 if (needAction) {
                     JSONObject actionData = new JSONObject();
-                    actionData.put("canEdit", canEdit || hasAuthCiEntityIdList.contains(entity.getId()));
-                    actionData.put("canDelete", canDelete || hasAuthCiEntityIdList.contains(entity.getId()));
-                    entityObj.put("actionData", actionData);
+                    actionData.put(CiAuthType.CIENTITYUPDATE.getValue(), canEdit || hasMaintainCiEntityIdList.contains(entity.getId()));
+                    actionData.put(CiAuthType.CIENTITYDELETE.getValue(), canDelete || hasMaintainCiEntityIdList.contains(entity.getId()));
+                    actionData.put(CiAuthType.PASSWORDVIEW.getValue(), canViewPassword || hasMaintainCiEntityIdList.contains(entity.getId()) || hasReadCiEntityIdList.contains(entity.getId()));
+                    entityObj.put("authData", actionData);
                 }
                 tbodyList.add(entityObj);
             }

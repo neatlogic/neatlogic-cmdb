@@ -92,7 +92,7 @@ public class CiEntityBuilder {
                             AttrVo attrVo = attrMap.get(attrId);
                             if (!ciEntityVo.hasAttrEntityData(attrId)) {
                                 if (attrVo != null) {
-                                    ciEntityVo.addAttrEntityData(attrId, buildAttrObj(attrVo, value));
+                                    ciEntityVo.addAttrEntityData(attrId, buildAttrObj(ciEntityVo.getId(), attrVo, value));
                                 }
                             } else {
                                 JSONArray valueList = new JSONArray();
@@ -109,7 +109,7 @@ public class CiEntityBuilder {
                             RelVo relVo = relMap.get(relId);
                             if (!ciEntityVo.hasRelEntityData(relId, direction)) {
                                 if (relVo != null) {
-                                    ciEntityVo.addRelEntityData(relId, direction, buildRelObj(relVo, direction, result, key));
+                                    ciEntityVo.addRelEntityData(relId, direction, buildRelObj(ciEntityVo.getId(), relVo, direction, result, key));
                                 }
                             } else {
                                 JSONObject valueDataObj = new JSONObject();
@@ -177,7 +177,7 @@ public class CiEntityBuilder {
                             AttrVo attrVo = attrMap.get(attrId);
                             if (!ciEntityVo.hasAttrEntityData(attrId)) {
                                 if (attrVo != null) {
-                                    ciEntityVo.addAttrEntityData(attrId, buildAttrObj(attrVo, value));
+                                    ciEntityVo.addAttrEntityData(attrId, buildAttrObj(ciEntityVo.getId(), attrVo, value));
                                 }
                             } else {
                                 JSONArray valueList = new JSONArray();
@@ -194,7 +194,7 @@ public class CiEntityBuilder {
                             RelVo relVo = relMap.get(relId);
                             if (!ciEntityVo.hasRelEntityData(relId, direction)) {
                                 if (relVo != null) {
-                                    ciEntityVo.addRelEntityData(relId, direction, buildRelObj(relVo, direction, result, key));
+                                    ciEntityVo.addRelEntityData(relId, direction, buildRelObj(ciEntityVo.getId(), relVo, direction, result, key));
                                 }
                             } else {
                                 JSONObject valueDataObj = new JSONObject();
@@ -230,8 +230,10 @@ public class CiEntityBuilder {
         }
     }
 
-    private JSONObject buildAttrObj(AttrVo attrVo, String value) {
+    private JSONObject buildAttrObj(Long ciEntityId, AttrVo attrVo, String value) {
         JSONObject attrObj = new JSONObject();
+        attrObj.put("ciEntityId", ciEntityId);
+        attrObj.put("attrId", attrVo.getId());
         attrObj.put("type", attrVo.getType());
         attrObj.put("name", attrVo.getName());
         attrObj.put("label", attrVo.getLabel());
@@ -244,8 +246,9 @@ public class CiEntityBuilder {
         return attrObj;
     }
 
-    private JSONObject buildRelObj(RelVo relVo, String direction, Map<String, Object> result, String key) {
+    private JSONObject buildRelObj(Long ciEntityId, RelVo relVo, String direction, Map<String, Object> result, String key) {
         JSONObject relObj = new JSONObject();
+        relObj.put("ciEntityId", ciEntityId);
         relObj.put("name", direction.equals(RelDirectionType.FROM.getValue()) ? relVo.getToName() : relVo.getFromName());
         relObj.put("label", direction.equals(RelDirectionType.FROM.getValue()) ? relVo.getToLabel() : relVo.getFromLabel());
         relObj.put("relId", relVo.getId());
