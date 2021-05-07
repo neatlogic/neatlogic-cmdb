@@ -20,7 +20,7 @@ public class CIENTITY_MODIFY extends AuthBase {
     }
 
     @Override
-    public Integer sort() {
+    public Integer getSort() {
         return 4;
     }
 }

@@ -20,7 +20,7 @@ public class CMDB_BASE extends AuthBase {
 	}
 
 	@Override
-	public Integer sort() {
+	public Integer getSort() {
 		return 1;
 	}
 }
