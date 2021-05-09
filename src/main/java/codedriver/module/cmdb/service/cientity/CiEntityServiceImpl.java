@@ -67,28 +67,31 @@ public class CiEntityServiceImpl implements CiEntityService {
 
 
     @Override
-    public CiEntityVo getCiEntityById(Long ciEntityId) {
-        CiEntityVo ciEntityBaseVo = ciEntityMapper.getCiEntityBaseInfoById(ciEntityId);
-        if (ciEntityBaseVo != null) {
-            CiVo ciVo = ciMapper.getCiById(ciEntityBaseVo.getCiId());
-            if (ciVo == null) {
-                throw new CiNotFoundException(ciEntityBaseVo.getCiId());
-            }
-            List<CiVo> ciList = ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht());
-            List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
-            List<RelVo> relList = relMapper.getRelByCiId(ciVo.getId());
-            CiEntityVo ciEntityVo = new CiEntityVo();
-            ciEntityVo.setId(ciEntityId);
-            ciEntityVo.setCiId(ciVo.getId());
-            ciEntityVo.setCiLabel(ciVo.getLabel());
-            ciEntityVo.setCiName(ciVo.getName());
-            ciEntityVo.setCiList(ciList);
-            ciEntityVo.setAttrList(attrList);
-            ciEntityVo.setRelList(relList);
-            List<Map<String, Object>> resultList = ciEntityMapper.getCiEntityById(ciEntityVo);
-            return new CiEntityBuilder.Builder(resultList, ciVo, attrList, relList).build().getCiEntity();
+    public CiEntityVo getCiEntityById(Long ciId, Long ciEntityId) {
+        CiVo ciVo = ciMapper.getCiById(ciId);
+        if (ciVo == null) {
+            throw new CiNotFoundException(ciId);
         }
-        return null;
+        CiEntityVo ciEntityVo = new CiEntityVo();
+        List<CiVo> ciList;
+        if (ciVo.getIsVirtual().equals(0)) {
+            ciList = ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht());
+        } else {
+            ciList = new ArrayList<>();
+            ciList.add(ciVo);
+        }
+        List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
+        List<RelVo> relList = relMapper.getRelByCiId(ciVo.getId());
+        ciEntityVo.setCiList(ciList);
+        ciEntityVo.setId(ciEntityId);
+        ciEntityVo.setCiId(ciVo.getId());
+        ciEntityVo.setCiLabel(ciVo.getLabel());
+        ciEntityVo.setCiName(ciVo.getName());
+
+        ciEntityVo.setAttrList(attrList);
+        ciEntityVo.setRelList(relList);
+        List<Map<String, Object>> resultList = ciEntityMapper.getCiEntityById(ciEntityVo);
+        return new CiEntityBuilder.Builder(resultList, ciVo, attrList, relList).build().getCiEntity();
     }
 
     @Override
@@ -188,11 +191,13 @@ public class CiEntityServiceImpl implements CiEntityService {
     @Transactional
     @Override
     public Long deleteCiEntity(Long ciEntityId) {
-        CiEntityVo oldCiEntityVo = this.getCiEntityById(ciEntityId);
-
-        if (oldCiEntityVo == null) {
+        CiEntityVo baseCiEntityVo = this.ciEntityMapper.getCiEntityBaseInfoById(ciEntityId);
+        if (baseCiEntityVo == null) {
             throw new CiEntityNotFoundException(ciEntityId);
-        } else if (oldCiEntityVo.getIsLocked().equals(1)) {
+        }
+        CiEntityVo oldCiEntityVo = this.getCiEntityById(baseCiEntityVo.getCiId(), ciEntityId);
+
+        if (oldCiEntityVo.getIsLocked().equals(1)) {
             // 正在编辑中的配置项，在事务提交或删除前不允许再次修改
             throw new CiEntityIsLockedException(ciEntityId);
         }
@@ -271,7 +276,7 @@ public class CiEntityServiceImpl implements CiEntityService {
     @Override
     public Long saveCiEntity(CiEntityTransactionVo ciEntityTransactionVo, TransactionGroupVo transactionGroupVo) {
         if (ciEntityTransactionVo.getAction().equals(TransactionActionType.UPDATE.getValue())) {
-            CiEntityVo oldCiEntityVo = this.getCiEntityById(ciEntityTransactionVo.getCiEntityId());
+            CiEntityVo oldCiEntityVo = this.getCiEntityById(ciEntityTransactionVo.getCiId(), ciEntityTransactionVo.getCiEntityId());
             ciEntityTransactionVo.setOldCiEntityVo(oldCiEntityVo);
             // 正在编辑中的配置项，在事务提交或删除前不允许再次修改
             if (oldCiEntityVo == null) {
@@ -411,7 +416,7 @@ public class CiEntityServiceImpl implements CiEntityService {
         List<RelEntityVo> oldRelEntityList = null;
         if (oldEntity == null) {
             //如果是单纯校验可能会没有旧配置项信息
-            oldEntity = this.getCiEntityById(ciEntityTransactionVo.getCiEntityId());
+            oldEntity = this.getCiEntityById(ciEntityTransactionVo.getCiId(), ciEntityTransactionVo.getCiEntityId());
         }
         if (oldEntity != null) {
             oldAttrEntityList = oldEntity.getAttrEntityList();
@@ -729,7 +734,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                         endCiEntityTransactionVo.setCiId(ciId);
                         endCiEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
                         endCiEntityTransactionVo.setTransactionId(toTransactionVo.getId());
-                        endCiEntityTransactionVo.setOldCiEntityVo(this.getCiEntityById(ciEntityId));
+                        endCiEntityTransactionVo.setOldCiEntityVo(this.getCiEntityById(ciId, ciEntityId));
                         createSnapshot(endCiEntityTransactionVo);
                         //补充关系删除事务数据
                         endCiEntityTransactionVo.addRelEntityData(item.getRelId(), item.getDirection(), ciId, ciEntityId, TransactionActionType.DELETE.getValue());
@@ -809,7 +814,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                             endCiEntityTransactionVo.setCiId(ciId);
                             endCiEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
                             endCiEntityTransactionVo.setTransactionId(toTransactionVo.getId());
-                            endCiEntityTransactionVo.setOldCiEntityVo(this.getCiEntityById(ciEntityId));
+                            endCiEntityTransactionVo.setOldCiEntityVo(this.getCiEntityById(ciId, ciEntityId));
                             createSnapshot(endCiEntityTransactionVo);
                             ciEntityTransactionMap.put(endCiEntityTransactionVo.getCiEntityId(), endCiEntityTransactionVo);
                         }

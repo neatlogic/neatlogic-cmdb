@@ -73,7 +73,7 @@ public class RelServiceImpl implements RelService {
                         fromCiEntityTransactionVo.setCiId(item.getFromCiId());
                         fromCiEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
                         fromCiEntityTransactionVo.setTransactionId(fromTransactionVo.getId());
-                        fromCiEntityTransactionVo.setOldCiEntityVo(ciEntityService.getCiEntityById(item.getFromCiEntityId()));
+                        fromCiEntityTransactionVo.setOldCiEntityVo(ciEntityService.getCiEntityById(item.getFromCiId(), item.getFromCiEntityId()));
                         // 创建快照快照
                         ciEntityService.createSnapshot(fromCiEntityTransactionVo);
                         //补充关系删除事务数据
@@ -104,7 +104,7 @@ public class RelServiceImpl implements RelService {
                         toCiEntityTransactionVo.setCiId(item.getToCiId());
                         toCiEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
                         toCiEntityTransactionVo.setTransactionId(toTransactionVo.getId());
-                        toCiEntityTransactionVo.setOldCiEntityVo(ciEntityService.getCiEntityById(item.getToCiEntityId()));
+                        toCiEntityTransactionVo.setOldCiEntityVo(ciEntityService.getCiEntityById(item.getToCiId(), item.getToCiEntityId()));
 
                         // 创建快照
                         ciEntityService.createSnapshot(toCiEntityTransactionVo);

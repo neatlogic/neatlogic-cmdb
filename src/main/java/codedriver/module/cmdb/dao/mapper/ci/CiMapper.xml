@@ -20,6 +20,7 @@
                a.`is_private`   AS isPrivate,
                a.`is_menu`      AS isMenu,
                a.`is_abstract`  AS isAbstract,
+               a.`is_virtual`   AS isVirtual,
                a.`lft`          AS lft,
                a.`rht`          AS rht
         FROM `cmdb_ci` a
@@ -39,6 +40,7 @@
                a.`is_private`   AS isPrivate,
                a.`is_menu`      AS isMenu,
                a.`is_abstract`  AS isAbstract,
+               a.`is_virtual`   AS isVirtual,
                a.`lft`          AS lft,
                a.`rht`          AS rht
         FROM `cmdb_ci` a
@@ -58,6 +60,7 @@
                a.`is_private`   AS isPrivate,
                a.`is_menu`      AS isMenu,
                a.`is_abstract`  AS isAbstract,
+               a.`is_virtual`   AS isVirtual,
                a.`lft`          AS lft,
                a.`rht`          AS rht
         FROM `cmdb_ci` a
@@ -75,7 +78,8 @@
                a.`is_private`   AS isPrivate,
                a.`is_menu`      AS isMenu,
                a.`parent_ci_id` AS parentCiId,
-               a.`is_abstract`  AS isAbstract
+               a.`is_abstract`  AS isAbstract,
+               a.`is_virtual`   AS isVirtual
         FROM `cmdb_ci` a
                  JOIN `cmdb_rel` b ON a.id = b.from_ci_id
         WHERE b.to_ci_id = #{value}
@@ -113,6 +117,7 @@
             <result column="typeId" property="typeId"/>
             <result column="parentCiId" property="parentCiId"/>
             <result column="isAbstract" property="isAbstract"/>
+            <result column="isVirtual" property="isVirtual"/>
         </collection>
     </resultMap>
 
@@ -129,6 +134,7 @@
         b.`type_id` AS typeId,
         b.`parent_ci_id` AS parentCiId,
         b.`is_abstract` AS isAbstract,
+        b.`is_virtual` AS isVirtual,
         a.`id` AS ciTypeId,
         a.`name` AS ciTypeName,
         a.`is_menu` AS ciTypeIsMenu,
@@ -159,7 +165,8 @@
         `type_id` AS typeId,
         `is_private` AS isPrivate,
         `is_menu` AS isMenu,
-        `is_abstract` AS isAbstract
+        `is_abstract` AS isAbstract,
+        `is_virtual` AS isVirtual
         FROM
         `cmdb_ci`
         WHERE id IN
@@ -180,6 +187,7 @@
                `is_menu`         AS isMenu,
                `parent_ci_id`    AS parentCiId,
                `is_abstract`     AS isAbstract,
+               `is_virtual`      AS isVirtual,
                `name_expression` AS nameExpression,
                `lft`             AS lft,
                `rht`             AS rht
@@ -200,6 +208,7 @@
             `parent_ci_id`    = #{parentCiId},
             `name_expression` = #{nameExpression},
             `is_abstract`     = #{isAbstract},
+            `is_virtual`      = #{isVirtual},
             `lft`             = #{lft},
             `rht`             = #{rht}
         WHERE `id` = #{id}
@@ -215,6 +224,7 @@
                                `is_private`,
                                `is_menu`,
                                `is_abstract`,
+                               `is_virtual`,
                                `parent_ci_id`,
                                `name_expression`,
                                `lft`,
@@ -228,6 +238,7 @@
                 #{isPrivate},
                 #{isMenu},
                 #{isAbstract},
+                #{isVirtual},
                 #{parentCiId},
                 #{nameExpression},
                 #{lft},

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<view>
+    <cis>
+        <ci id="user">
+            <attrs>
+                <attr column="user_id" label="用户id"></attr>
+                <attr column="user_name" label="用户名"></attr>
+                <attr column="email" label="邮件"></attr>
+                <attr column="phone" label="电话"></attr>
+                <attr column="pinyin" label="拼音"></attr>
+            </attrs>
+            <sql>
+                SELECT
+                ${database}.`user`.`id` AS `cientity_id`,
+                ${database}.`user`.`uuid` AS `uuid`,
+                ${database}.`user`.`user_id` AS `user_id`,
+                md5( ${database}.`user`.`user_id` ) AS `user_id_hash`,
+                ${database}.`user`.`user_name` AS `user_name`,
+                ${database}.`user`.`email` AS `email`,
+                ${database}.`user`.`phone` AS `phone`,
+                ${database}.`user`.`pinyin` AS `pinyin`,
+                ${database}.`user`.`is_active` AS `is_active`,
+                ${database}.`user`.`user_info` AS `user_info`,
+                ${database}.`user`.`vip_level` AS `vip_level`,
+                ${database}.`user`.`is_delete` AS `is_delete`
+                FROM
+                ${database}.`user`
+            </sql>
+        </ci>
+
+        <ci>
+            SELECT
+            ${database}.`team`.`id` AS `id`,
+            ${database}.`team`.`uuid` AS `uuid`,
+            ${database}.`team`.`name` AS `name`,
+            ${database}.`team`.`description` AS `description`,
+            ${database}.`team`.`parent_uuid` AS `parent_uuid`,
+            ${database}.`team`.`lft` AS `lft`,
+            ${database}.`team`.`rht` AS `rht`,
+            ${database}.`team`.`level` AS `level`
+            FROM
+            ${database}.`team`
+        </ci>
+    </cis>
+    <rels>
+        <rel id="">
+
+            <sql>
+                select
+                `u`.`id` AS `from_cientity_id`,
+                `t`.`id` AS `to_cientity_id` from
+                `codedriver_techsure`.`user` `u`
+                JOIN `codedriver_techsure`.`user_team` `ut` ON `u`.`uuid` = `ut`.`user_uuid`
+                JOIN `codedriver_techsure`.`team` `t` ON `t`.`uuid` = `ut`.`team_uuid`
+            </sql>
+        </rel>
+    </rels>
+</view>

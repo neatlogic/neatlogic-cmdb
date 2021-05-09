@@ -8,9 +8,11 @@ package codedriver.module.cmdb.api.cientity;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
 import codedriver.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
+import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.cientity.AttrEntityVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.enums.GroupType;
+import codedriver.framework.cmdb.exception.attr.AttrNotFoundException;
 import codedriver.framework.cmdb.exception.ci.CiAuthException;
 import codedriver.framework.cmdb.exception.cientity.AttrEntityNotFoundException;
 import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
@@ -21,9 +23,8 @@ import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.auth.label.CIENTITY_MODIFY;
-import codedriver.module.cmdb.auth.label.CI_MODIFY;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import com.alibaba.fastjson.JSONObject;
@@ -34,13 +35,14 @@ import javax.annotation.Resource;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
-@AuthAction(action = CI_MODIFY.class)
-@AuthAction(action = CIENTITY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class GetPasswordAttrPlaintextApi extends PrivateApiComponentBase {
 
     @Resource
     private CiEntityService ciEntityService;
+
+    @Resource
+    private AttrMapper attrMapper;
 
     @Override
     public String getName() {
@@ -59,7 +61,11 @@ public class GetPasswordAttrPlaintextApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciEntityId = jsonObj.getLong("ciEntityId");
         Long attrId = jsonObj.getLong("attrId");
-        CiEntityVo ciEntityVo = ciEntityService.getCiEntityById(ciEntityId);
+        AttrVo attrVo = attrMapper.getAttrById(attrId);
+        if (attrVo == null) {
+            throw new AttrNotFoundException(attrId);
+        }
+        CiEntityVo ciEntityVo = ciEntityService.getCiEntityById(attrVo.getCiId(), ciEntityId);
         if (ciEntityVo == null) {
             throw new CiEntityNotFoundException(ciEntityId);
         }

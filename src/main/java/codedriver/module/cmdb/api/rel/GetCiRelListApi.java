@@ -7,36 +7,40 @@ package codedriver.module.cmdb.api.rel;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.ci.CiViewVo;
+import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.ci.RelVo;
 import codedriver.framework.cmdb.enums.RelDirectionType;
 import codedriver.framework.cmdb.enums.ShowType;
+import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiViewMapper;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import javax.annotation.Resource;
+import java.util.*;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class GetCiRelListApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private RelMapper relMapper;
 
-    @Autowired
+    @Resource
     private CiViewMapper ciViewMapper;
+
+    @Resource
+    private CiMapper ciMapper;
 
     @Override
     public String getToken() {
@@ -78,12 +82,37 @@ public class GetCiRelListApi extends PrivateApiComponentBase {
             }
             relList.removeIf(rel -> !relSet.contains(rel.getId()));
         }
+        Map<Long, CiVo> checkCiMap = new HashMap<>();
         if (needAction) {
             for (RelVo relVo : relList) {
                 if (relVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
-                    relVo.setToAllowInsert(CiAuthChecker.chain().checkCiEntityInsertPrivilege(relVo.getToCiId()).check());
+                    CiVo ciVo = checkCiMap.get(relVo.getToCiId());
+                    if (ciVo == null) {
+                        ciVo = ciMapper.getCiById(relVo.getToCiId());
+                        if (ciVo == null) {
+                            throw new CiNotFoundException(relVo.getToCiId());
+                        }
+                        checkCiMap.put(relVo.getToCiId(), ciVo);
+                    }
+                    if (ciVo.getIsVirtual().equals(1)) {
+                        relVo.setToAllowInsert(false);
+                    } else {
+                        relVo.setToAllowInsert(CiAuthChecker.chain().checkCiEntityInsertPrivilege(relVo.getToCiId()).check());
+                    }
                 } else {
-                    relVo.setFromAllowInsert(CiAuthChecker.chain().checkCiEntityInsertPrivilege(relVo.getFromCiId()).check());
+                    CiVo ciVo = checkCiMap.get(relVo.getFromCiId());
+                    if (ciVo == null) {
+                        ciVo = ciMapper.getCiById(relVo.getFromCiId());
+                        if (ciVo == null) {
+                            throw new CiNotFoundException(relVo.getFromCiId());
+                        }
+                        checkCiMap.put(relVo.getFromCiId(), ciVo);
+                    }
+                    if (ciVo.getIsVirtual().equals(1)) {
+                        relVo.setFromAllowInsert(false);
+                    } else {
+                        relVo.setFromAllowInsert(CiAuthChecker.chain().checkCiEntityInsertPrivilege(relVo.getFromCiId()).check());
+                    }
                 }
             }
         }

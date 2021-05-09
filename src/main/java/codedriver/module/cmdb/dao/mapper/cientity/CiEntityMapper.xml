@@ -118,11 +118,12 @@
         </foreach>
         `ci_base`.`id` AS `id`,
         `ci_base`.`name` AS `name`,
+        <!--由于虚拟模型产生的视图没有以下字段，所以暂时先注释
         `ci_base`.`status` AS `status`,
         `ci_base`.`fcd` AS `fcd`,
         `ci_base`.`fcu` AS `fcu`,
         `ci_base`.`lcd` AS `lcd`,
-        `ci_base`.`lcu` AS `lcu`,
+        `ci_base`.`lcu` AS `lcu`,-->
         `ci`.`type_id` AS `typeId`,
         `ci`.`name` AS `ciName`,
         `ci`.`icon` AS `ciIcon`,
@@ -131,7 +132,14 @@
 
     <sql id="ciEntityJoinSql">
         <foreach collection="ciList" item="ci">
-            JOIN ${ci.ciTableName} ON `ci_base`.id = ${ci.ciTableName}.cientity_id
+            <choose>
+                <when test="ci.isVirtual == 0">
+                    JOIN ${ci.ciTableName} ON `ci_base`.id = ${ci.ciTableName}.cientity_id
+                </when>
+                <otherwise>
+                    JOIN ${ci.ciTableName} ON `ci_base`.id = ${ci.ciTableName}.id
+                </otherwise>
+            </choose>
         </foreach>
         <foreach collection="attrList" item="attr">
             <if test="attr.needTargetCi == true">
@@ -148,17 +156,35 @@
                     LEFT JOIN `cmdb_relentity` `cmdb_relentity_${rel.id}_${rel.direction}` ON `ci_base`.id =
                     `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
                     AND `cmdb_relentity_${rel.id}_${rel.direction}`.rel_id = #{rel.id}
-                    LEFT JOIN `cmdb_cientity` `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
-                    `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
-                    `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
+                    <choose>
+                        <when test="rel.toIsVirtual == 0">
+                            LEFT JOIN `cmdb_cientity` `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
+                            `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
+                            `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
+                        </when>
+                        <otherwise>
+                            LEFT JOIN ${rel.toCiTableName} `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
+                            `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
+                            `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
+                        </otherwise>
+                    </choose>
                 </when>
                 <otherwise>
                     LEFT JOIN `cmdb_relentity` `cmdb_relentity_${rel.id}_${rel.direction}` ON `ci_base`.id =
                     `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
                     AND `cmdb_relentity_${rel.id}_${rel.direction}`.rel_id = #{rel.id}
-                    LEFT JOIN `cmdb_cientity` `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
-                    `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
-                    `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
+                    <choose>
+                        <when test="rel.fromIsVirtual == 0">
+                            LEFT JOIN `cmdb_cientity` `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
+                            `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
+                            `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
+                        </when>
+                        <otherwise>
+                            LEFT JOIN ${rel.fromCiTableName} `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
+                            `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
+                            `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
+                        </otherwise>
+                    </choose>
                 </otherwise>
             </choose>
         </foreach>
@@ -321,11 +347,32 @@
         </where>
     </sql>
 
+    <sql id="ciEntityDriverSql">
+        <choose>
+            <when test="ciList.size > 1">
+                FROM cmdb_cientity `ci_base` JOIN cmdb_ci `ci` ON ci_base.ci_id = ci.id
+            </when>
+            <when test="ciList.size == 1">
+                <foreach collection="ciList" item="ci">
+                    <choose>
+                        <when test="ci.isVirtual == 1">
+                            <!--虚拟模型没有实体表，所以驱动表要换成对应的模型视图-->
+                            FROM ${ci.ciTableName} `ci_base` JOIN cmdb_ci `ci` ON ci_base.ci_id = ci.id
+                        </when>
+                        <otherwise>
+                            FROM cmdb_cientity `ci_base` JOIN cmdb_ci `ci` ON ci_base.ci_id = ci.id
+                        </otherwise>
+                    </choose>
+                </foreach>
+            </when>
+        </choose>
+    </sql>
+
     <select id="getCiEntityById" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
             resultType="java.util.HashMap" useCache="false">
         SELECT
         <include refid="ciEntityColumnSql"></include>
-        FROM cmdb_cientity `ci_base` JOIN cmdb_ci `ci` ON ci_base.ci_id = ci.id
+        <include refid="ciEntityDriverSql"></include>
         <include refid="ciEntityJoinSql"></include>
         WHERE ci_base.id = #{id}
     </select>
@@ -335,7 +382,7 @@
             resultType="java.lang.Long" useCache="true">
         SELECT
         DISTINCT ci_base.id
-        FROM cmdb_cientity `ci_base` JOIN cmdb_ci `ci` ON ci_base.ci_id = ci.id
+        <include refid="ciEntityDriverSql"></include>
         <include refid="ciEntityJoinSql"></include>
         <include refid="ciEntityConditionSql"></include>
         ORDER BY ci_base.id DESC
@@ -346,7 +393,7 @@
             resultType="int">
         SELECT
         COUNT(DISTINCT ci_base.id)
-        FROM cmdb_cientity `ci_base` JOIN cmdb_ci `ci` ON ci_base.ci_id = ci.id
+        <include refid="ciEntityDriverSql"></include>
         <include refid="ciEntityJoinSql"></include>
         <include refid="ciEntityConditionSql"></include>
     </select>
@@ -355,7 +402,7 @@
             resultType="java.util.HashMap" useCache="true">
         SELECT
         <include refid="ciEntityColumnSql"></include>
-        FROM cmdb_cientity `ci_base` JOIN cmdb_ci `ci` ON ci_base.ci_id = ci.id
+        <include refid="ciEntityDriverSql"></include>
         <include refid="ciEntityJoinSql"></include>
         WHERE ci_base.id IN
         <foreach collection="idList" item="id" open="(" close=")" separator=",">#{id}</foreach>

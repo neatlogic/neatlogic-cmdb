@@ -75,15 +75,15 @@ public class SelectValueHandler implements IAttrValueHandler {
         for (int i = 0; i < valueList.size(); i++) {
             String value = valueList.getString(i);
             if (config != null && config.containsKey("textKey") && StringUtils.isNotBlank(value) && StringUtils.isNumeric(value)) {
-                Long ciEntityId = Long.parseLong(value);
+                Long tmpCiEntityId = Long.parseLong(value);
                 Long attrId = config.getLong("textKey");
-                CiEntityVo ciEntityVo = ciEntityCachedMap.get(ciEntityId);
+                CiEntityVo ciEntityVo = ciEntityCachedMap.get(tmpCiEntityId);
                 if (ciEntityVo == null) {
-                    ciEntityVo = ciEntityService.getCiEntityById(ciEntityId);
+                    ciEntityVo = ciEntityService.getCiEntityById(attrVo.getTargetCiId(), tmpCiEntityId);
 
                 }
                 if (ciEntityVo != null) {
-                    ciEntityCachedMap.put(ciEntityId, ciEntityVo);
+                    ciEntityCachedMap.put(tmpCiEntityId, ciEntityVo);
                     if (ciEntityVo.hasAttrEntityData(attrId)) {
                         AttrEntityVo attrEntityVo = ciEntityVo.getAttrEntityByAttrId(attrId);
                         //默认只取第一个值

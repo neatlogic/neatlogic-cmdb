@@ -53,17 +53,19 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "配置项id"),
+    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
+            @Param(name = "ciEntityId", type = ApiParamType.LONG, isRequired = true, desc = "配置项id"),
             @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "是否需要操作列，如果需要检查操作权限，会根据结果返回action列")})
     @Output({@Param(explode = CiEntityVo.class)})
     @Description(desc = "获取配置项详细信息接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        Long id = jsonObj.getLong("id");
+        Long ciEntityId = jsonObj.getLong("ciEntityId");
+        Long ciId = jsonObj.getLong("ciId");
         boolean needAction = jsonObj.getBooleanValue("needAction");
-        CiEntityVo ciEntityVo = ciEntityService.getCiEntityById(id);
+        CiEntityVo ciEntityVo = ciEntityService.getCiEntityById(ciId, ciEntityId);
         if (ciEntityVo == null) {
-            throw new CiEntityNotFoundException(id);
+            throw new CiEntityNotFoundException(ciEntityId);
         }
         if (!CiAuthChecker.chain().checkCiEntityQueryPrivilege(ciEntityVo.getCiId()).checkIsInGroup(ciEntityVo.getId(), GroupType.READONLY).check()) {
             throw new CiEntityAuthException(ciEntityVo.getCiLabel(), "查看");

@@ -47,9 +47,10 @@ public interface CiEntityService {
      * 获取单个配置项详细信息
      *
      * @param ciEntityId 配置项id
+     * @param ciId       模型id
      * @return ciEntityVo
      */
-    CiEntityVo getCiEntityById(Long ciEntityId);
+    CiEntityVo getCiEntityById(Long ciId, Long ciEntityId);
 
     /**
      * 保存配置项
