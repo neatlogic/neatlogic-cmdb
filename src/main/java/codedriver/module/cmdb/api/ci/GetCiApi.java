@@ -63,9 +63,9 @@ public class GetCiApi extends PrivateApiComponentBase {
         boolean needAction = jsonObj.getBooleanValue("needAction");
         if (needAction) {
             Map<String, Boolean> authData = new HashMap<>();
-            boolean hasCiManageAuth, hasCiEntityInsertAuth;
-            hasCiEntityInsertAuth = hasCiManageAuth = CiAuthChecker.chain().checkCiManagePrivilege(ciId).check();
-            if (!hasCiEntityInsertAuth) {
+            boolean hasCiManageAuth, hasCiEntityInsertAuth = false;
+            hasCiManageAuth = CiAuthChecker.chain().checkCiManagePrivilege(ciId).check();
+            if (ciVo.getIsVirtual().equals(0)) {
                 hasCiEntityInsertAuth = CiAuthChecker.chain().checkCiEntityInsertPrivilege(ciId).check();
             }
             authData.put(CiAuthType.CIMANAGE.getValue(), hasCiManageAuth);

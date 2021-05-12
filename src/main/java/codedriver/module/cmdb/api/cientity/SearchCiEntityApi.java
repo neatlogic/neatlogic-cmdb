@@ -7,6 +7,7 @@ package codedriver.module.cmdb.api.cientity;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.ci.CiViewVo;
+import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.enums.CiAuthType;
 import codedriver.framework.cmdb.enums.GroupType;
@@ -20,6 +21,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CIENTITY_MODIFY;
 import codedriver.module.cmdb.auth.label.CI_MODIFY;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiViewMapper;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
@@ -27,9 +29,9 @@ import codedriver.module.cmdb.service.group.GroupService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,14 +43,16 @@ import java.util.stream.Collectors;
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class SearchCiEntityApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private CiEntityService ciEntityService;
 
-    @Autowired
+    @Resource
     private CiViewMapper ciViewMapper;
 
+    @Resource
+    private CiMapper ciMapper;
 
-    @Autowired
+    @Resource
     private GroupService groupService;
 
     @Override
@@ -138,13 +142,14 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
 
 
         List<CiEntityVo> ciEntityList;
+        CiVo ciVo = ciMapper.getCiById(ciEntityVo.getCiId());
         ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
         JSONArray tbodyList = new JSONArray();
         if (CollectionUtils.isNotEmpty(ciEntityList)) {
             boolean canEdit = false, canDelete = false, canViewPassword = false;
             List<Long> hasMaintainCiEntityIdList = new ArrayList<>();
             List<Long> hasReadCiEntityIdList = new ArrayList<>();
-            if (needAction) {
+            if (needAction && ciVo.getIsVirtual().equals(0)) {
                 canEdit = CiAuthChecker.chain().checkCiEntityUpdatePrivilege(ciEntityVo.getCiId()).check();
                 canDelete = CiAuthChecker.chain().checkCiEntityDeletePrivilege(ciEntityVo.getCiId()).check();
                 canViewPassword = CiAuthChecker.chain().checkViewPasswordPrivilege(ciEntityVo.getCiId()).check();
@@ -164,7 +169,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
                 entityObj.put("ciId", entity.getCiId());
                 entityObj.put("attrEntityData", entity.getAttrEntityData());
                 entityObj.put("relEntityData", entity.getRelEntityData());
-                if (needAction) {
+                if (needAction && ciVo.getIsVirtual().equals(0)) {
                     JSONObject actionData = new JSONObject();
                     actionData.put(CiAuthType.CIENTITYUPDATE.getValue(), canEdit || hasMaintainCiEntityIdList.contains(entity.getId()));
                     actionData.put(CiAuthType.CIENTITYDELETE.getValue(), canDelete || hasMaintainCiEntityIdList.contains(entity.getId()));

@@ -16,7 +16,6 @@ import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.auth.label.CI_MODIFY;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.CiAuthMapper;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
@@ -30,8 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
-@AuthAction(action = CI_MODIFY.class)
-@OperationType(type = OperationTypeEnum.CREATE)
+@OperationType(type = OperationTypeEnum.UPDATE)
 @Transactional
 public class SaveCiAuthApi extends PrivateApiComponentBase {
 

@@ -5,6 +5,7 @@
 
 package codedriver.module.cmdb.service.cientity;
 
+import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.cmdb.dto.transaction.TransactionGroupVo;
@@ -63,6 +64,13 @@ public interface CiEntityService {
     Long saveCiEntity(CiEntityTransactionVo ciEntityTransactionVo, TransactionGroupVo transactionGroupVo);
 
     void createCiEntityName(CiEntityTransactionVo ciEntityTransactionVo);
+
+    /**
+     * 根据模型名字表达式修改配置项名称
+     *
+     * @param ciVo 模型
+     */
+    void updateCiEntityName(CiVo ciVo);
 
     void createSnapshot(CiEntityTransactionVo ciEntityTransactionVo);
 

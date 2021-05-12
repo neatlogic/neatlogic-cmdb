@@ -17,7 +17,7 @@ import codedriver.framework.cmdb.dto.transaction.TransactionVo;
 import codedriver.framework.cmdb.enums.EditModeType;
 import codedriver.framework.cmdb.enums.TransactionActionType;
 import codedriver.framework.cmdb.enums.TransactionStatus;
-import codedriver.framework.cmdb.exception.attr.AttrIsInvokedByExpressionException;
+import codedriver.framework.cmdb.exception.attr.AttrIsUsedNameExpressionException;
 import codedriver.framework.cmdb.exception.attr.AttrNameRepeatException;
 import codedriver.framework.cmdb.exception.attr.AttrNotFoundException;
 import codedriver.framework.cmdb.exception.attr.InsertAttrToSchemaException;
@@ -29,7 +29,6 @@ import codedriver.module.cmdb.dao.mapper.cischema.CiSchemaMapper;
 import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -108,8 +107,16 @@ public class AttrServiceImpl implements AttrService {
     public void deleteAttr(AttrVo attrVo) {
         CiVo attrCi = ciMapper.getCiById(attrVo.getCiId());
         //检查是否被名字表达式引用
-        if (StringUtils.isNotBlank(attrCi.getNameExpression()) && (attrCi.getNameExpression().contains("{" + attrVo.getName() + "}") || attrCi.getNameExpression().contains("{" + attrVo.getLabel() + "}"))) {
-            throw new AttrIsInvokedByExpressionException();
+        List<Long> ciIdList = ciMapper.getCiNameExpressionCiIdByAttrId(attrVo.getId());
+        if (CollectionUtils.isNotEmpty(ciIdList)) {
+            for (Long ciId : ciIdList) {
+                if (ciId.equals(attrVo.getCiId())) {
+                    throw new AttrIsUsedNameExpressionException(attrVo.getName());
+                } else {
+                    CiVo ciVo = ciMapper.getCiById(ciId);
+                    throw new AttrIsUsedNameExpressionException(ciVo.getLabel(), attrVo.getName());
+                }
+            }
         }
 
         //所有操作确认无误后再异步补充其他配置项的删除事务数据
@@ -158,6 +165,7 @@ public class AttrServiceImpl implements AttrService {
 
         //删除引用属性数据
         ciEntityMapper.deleteAttrEntityByAttrId(attrVo.getId());
+
         //删除模型属性
         attrMapper.deleteAttrById(attrVo.getId());
 
@@ -166,6 +174,7 @@ public class AttrServiceImpl implements AttrService {
         if (!attrVo.isNeedTargetCi()) {
             ciSchemaMapper.deleteAttrFromCiSchema(attrCi.getCiTableName(), attrVo);
         }
+
 
     }
 

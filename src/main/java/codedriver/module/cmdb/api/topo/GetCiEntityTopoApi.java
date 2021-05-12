@@ -216,7 +216,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
             if (logger.isDebugEnabled()) {
                 logger.debug(dot);
             }
-            System.out.println(dot);
+            //System.out.println(dot);
             return dot;
         }
         return "";

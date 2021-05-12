@@ -6,7 +6,8 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.ci.AttrMapper">
-    <!-- <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>-->
+    <cache-ref namespace="codedriver.module.cmdb.dao.mapper.ci.CiMapper"/>
+    <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
     <select id="getAttrById" parameterType="java.lang.Long" resultType="codedriver.framework.cmdb.dto.ci.AttrVo"
             useCache="false">
         SELECT `id`,
@@ -57,7 +58,7 @@
         attr.`group_name` AS groupName,
         attr.`is_private` AS isPrivate,
         if(ci.id = #{value},0,1) AS `isExtended`,
-        cview.sort
+        IFNULL(cview.sort, 99999) sort
         FROM
         `cmdb_ci` ci
         JOIN `cmdb_attr` attr ON ci.id = attr.ci_id
@@ -131,15 +132,12 @@
     </insert>
 
     <delete id="deleteAttrById" parameterType="java.lang.Long">
-        DELETE
-        FROM `cmdb_attr`
-        WHERE id = #{value}
+        DELETE a,b,c
+        FROM `cmdb_attr` a
+                 LEFT JOIN `cmdb_ci_unique` b ON a.id = b.attr_id
+                 LEFT JOIN `cmdb_ci_nameexpression` c ON a.id = c.attr_id
+        WHERE a.id = #{value}
     </delete>
 
-    <delete id="deleteAttrByCiId" parameterType="java.lang.Long">
-        DELETE
-        FROM `cmdb_attr`
-        WHERE ci_id = #{value}
-    </delete>
 
 </mapper>

@@ -351,7 +351,7 @@ public class CiEntityServiceImpl implements CiEntityService {
             while (labels.hasNext()) {
                 String label = labels.next();
                 for (AttrEntityTransactionVo attrEntityTransactionVo : ciEntityTransactionVo.getAttrEntityTransactionList()) {
-                    if (attrEntityTransactionVo.getAttrName().equals(label) || attrEntityTransactionVo.getAttrLabel().equals(label)) {
+                    if (attrEntityTransactionVo.getAttrName().equals(label)) {
                         ciEntityName = ciEntityName.replace("{" + label + "}", attrEntityTransactionVo.getValueList().getString(0));
                         labels.remove();
                     }
@@ -361,16 +361,37 @@ public class CiEntityServiceImpl implements CiEntityService {
             while (labels.hasNext()) {
                 String label = labels.next();
                 for (AttrEntityVo attrEntityVo : oldCiEntityVo.getAttrEntityList()) {
-                    if (attrEntityVo.getAttrName().equals(label) || attrEntityVo.getAttrLabel().equals(label)) {
+                    if (attrEntityVo.getAttrName().equals(label)) {
                         ciEntityName = ciEntityName.replace("{" + label + "}", attrEntityVo.getValueList().getString(0));
                         labels.remove();
                     }
                 }
             }
-
-
         }
         ciEntityTransactionVo.setName(ciEntityName);
+    }
+
+    @Override
+    public void updateCiEntityName(CiVo ciVo) {
+        CiEntityVo pCiEntityVo = new CiEntityVo();
+        pCiEntityVo.setCiId(ciVo.getId());
+        pCiEntityVo.setPageSize(100);
+        pCiEntityVo.setCurrentPage(1);
+        List<CiEntityVo> ciEntityList = searchCiEntity(pCiEntityVo);
+        while (CollectionUtils.isNotEmpty(ciEntityList)) {
+            for (CiEntityVo ciEntityVo : ciEntityList) {
+                String ciEntityName = ciVo.getNameExpression();
+                for (AttrEntityVo attrEntityVo : ciEntityVo.getAttrEntityList()) {
+                    if (attrEntityVo.getAttrType().equals("text")) {
+                        ciEntityName = ciEntityName.replace("{" + attrEntityVo.getAttrName() + "}", attrEntityVo.getValueList().getString(0));
+                    }
+                }
+                ciEntityVo.setName(ciEntityName);
+                ciEntityMapper.updateCiEntityBaseInfo(ciEntityVo);
+            }
+            pCiEntityVo.setCurrentPage(pCiEntityVo.getCurrentPage() + 1);
+            ciEntityList = searchCiEntity(pCiEntityVo);
+        }
     }
 
     @Override
@@ -642,7 +663,7 @@ public class CiEntityServiceImpl implements CiEntityService {
             }
         }
 
-        List<RelEntityTransactionVo> newRelEntityTransactionList = ciEntityTransactionVo.getRelEntityTransactionList();
+        // List<RelEntityTransactionVo> newRelEntityTransactionList = ciEntityTransactionVo.getRelEntityTransactionList();
 
 
         // 全局修改模式下，事务中不包含的关系代表要删除

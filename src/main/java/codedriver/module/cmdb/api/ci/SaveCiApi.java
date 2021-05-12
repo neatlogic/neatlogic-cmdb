@@ -8,26 +8,36 @@ package codedriver.module.cmdb.api.ci;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.exception.ci.CiAuthException;
+import codedriver.framework.cmdb.exception.ci.VirtualCiSettingFileNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.common.util.FileUtil;
+import codedriver.framework.file.dao.mapper.FileMapper;
+import codedriver.framework.file.dto.FileVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.auth.label.CI_MODIFY;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.service.ci.CiService;
 import com.alibaba.fastjson.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
-@AuthAction(action = CI_MODIFY.class)
 @OperationType(type = OperationTypeEnum.CREATE)
 public class SaveCiApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private CiService ciService;
+
+    @Resource
+    private FileMapper fileMapper;
 
 
     @Override
@@ -64,6 +74,17 @@ public class SaveCiApi extends PrivateApiComponentBase {
         if (ciId == null) {
             if (!CiAuthChecker.chain().checkCiManagePrivilege().check()) {
                 throw new CiAuthException();
+            }
+            if (Objects.equals(ciVo.getIsVirtual(), 1) && ciVo.getFileId() != null) {
+                FileVo fileVo = fileMapper.getFileById(ciVo.getFileId());
+                if (fileVo == null) {
+                    throw new VirtualCiSettingFileNotFoundException();
+                }
+                String xml = IOUtils.toString(FileUtil.getData(fileVo.getPath()), StandardCharsets.UTF_8);
+                if (StringUtils.isBlank(xml)) {
+                    throw new VirtualCiSettingFileNotFoundException();
+                }
+                ciVo.setViewXml(xml);
             }
             ciService.insertCi(ciVo);
         } else {

@@ -6,6 +6,7 @@
 package codedriver.module.cmdb.api.cientity;
 
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.enums.CiAuthType;
 import codedriver.framework.cmdb.enums.GroupType;
@@ -15,9 +16,8 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.auth.label.CIENTITY_MODIFY;
-import codedriver.module.cmdb.auth.label.CI_MODIFY;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import com.alibaba.fastjson.JSONObject;
@@ -29,14 +29,15 @@ import java.util.HashMap;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
-@AuthAction(action = CI_MODIFY.class)
-@AuthAction(action = CIENTITY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 @Transactional
 public class GetCiEntityApi extends PrivateApiComponentBase {
 
     @Resource
     private CiEntityService ciEntityService;
+
+    @Resource
+    private CiMapper ciMapper;
 
     @Override
     public String getToken() {
@@ -63,15 +64,17 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
         Long ciEntityId = jsonObj.getLong("ciEntityId");
         Long ciId = jsonObj.getLong("ciId");
         boolean needAction = jsonObj.getBooleanValue("needAction");
+        CiVo ciVo = ciMapper.getCiById(ciId);
         CiEntityVo ciEntityVo = ciEntityService.getCiEntityById(ciId, ciEntityId);
         if (ciEntityVo == null) {
             throw new CiEntityNotFoundException(ciEntityId);
         }
+        ciEntityVo.setIsVirtual(ciVo.getIsVirtual());
         if (!CiAuthChecker.chain().checkCiEntityQueryPrivilege(ciEntityVo.getCiId()).checkIsInGroup(ciEntityVo.getId(), GroupType.READONLY).check()) {
             throw new CiEntityAuthException(ciEntityVo.getCiLabel(), "查看");
         }
 
-        if (needAction) {
+        if (needAction && ciVo.getIsVirtual().equals(0)) {
             ciEntityVo.setAuthData(new HashMap<String, Boolean>() {
                 {
                     this.put(CiAuthType.CIENTITYUPDATE.getValue(), CiAuthChecker.chain().checkCiEntityUpdatePrivilege(ciEntityVo.getCiId()).checkIsInGroup(ciEntityVo.getId(), GroupType.MAINTAIN)

@@ -26,5 +26,4 @@ public interface AttrMapper {
 
     int deleteAttrById(Long attrId);
 
-    int deleteAttrByCiId(Long ciId);
 }

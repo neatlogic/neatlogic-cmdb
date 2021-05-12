@@ -9,17 +9,25 @@ import org.springframework.transaction.annotation.Transactional;
 
 import codedriver.framework.cmdb.dto.ci.CiVo;
 
+import java.util.List;
+
 public interface CiService {
+    CiVo getCiById(Long id);
 
     @Transactional
     void insertCi(CiVo ciVo);
 
     @Transactional
+    void updateCiUnique(Long ciId, List<Long> attrIdList);
+
+    @Transactional
+    void updateCiNameExpression(Long ciId, String nameExpression);
+
+    @Transactional
     void updateCi(CiVo ciVo);
 
     @Transactional
-    public int deleteCi(Long ciId);
+    int deleteCi(Long ciId);
 
-    public CiVo getCiById(Long id);
 
 }

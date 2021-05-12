@@ -6,28 +6,36 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.cischema.CiSchemaMapper">
-    <select id="getLatestSchemaAudit" parameterType="java.lang.Integer"
-            resultType="codedriver.framework.cmdb.dto.schema.SchemaAuditVo">
-        SELECT id,
-               `target_id`   as targetId,
-               `target_type` as targetType,
-               `action`,
-               `lcd`,
-               `server_id`   as serverId,
-               `data`        as dataStr
-        FROM `cmdb_schema_audit`
-        WHERE server_id = #{value}
-          AND is_failed = 0
-        ORDER BY lcd
-        LIMIT 1
-    </select>
-
-    <select id="checkTableIsExists" resultType="int">
+    <!-- <select id="getLatestSchemaAudit" parameterType="java.lang.Integer"
+             resultType="codedriver.framework.cmdb.dto.schema.SchemaAuditVo">
+         SELECT id,
+                `target_id`   as targetId,
+                `target_type` as targetType,
+                `action`,
+                `lcd`,
+                `server_id`   as serverId,
+                `data`        as dataStr
+         FROM `cmdb_schema_audit`
+         WHERE server_id = #{value}
+           AND is_failed = 0
+         ORDER BY lcd
+         LIMIT 1
+     </select>
+ -->
+    <!--<select id="checkTableIsExists" resultType="int">
         select count(1)
         from information_schema.`TABLES`
         where table_schema = #{dbName}
           and table_name = #{tableName}
+    </select>-->
+
+    <select id="testCiViewSql" parameterType="java.lang.String" resultType="java.util.Map">
+        ${value}
     </select>
+
+    <insert id="insertCiView" parameterType="java.lang.String">
+        ${value}
+    </insert>
 
     <select id="checkDatabaseIsExists" parameterType="java.lang.String" resultType="int">
         SELECT COUNT(1)
@@ -41,6 +49,7 @@
         WHERE id = #{value}
     </update>
 
+    <!--
     <insert id="replaceSchemaAudit" parameterType="codedriver.framework.cmdb.dto.schema.SchemaAuditVo">
         REPLACE
             INTO cmdb_schema_audit (`lcd`,
@@ -56,7 +65,7 @@
                 #{dataStr},
                 #{serverId})
     </insert>
-
+-->
     <insert id="insertAttrToCiSchema">
         ALTER TABLE ${tableName}
             ADD COLUMN `${attrVo.id}`      TEXT     NULL COMMENT '${attrVo.label}',
@@ -73,6 +82,7 @@
           DEFAULT CHARSET = utf8mb4
     </insert>
 
+    <!--
     <insert id="insertCiAttrSchema">
         CREATE TABLE IF NOT EXISTS ${tableName}
         (
@@ -90,7 +100,8 @@
         ) ENGINE = InnoDB
           DEFAULT CHARSET = utf8mb4;
     </insert>
-
+-->
+    <!--
     <insert id="insertRelSchema" parameterType="java.lang.String">
         CREATE TABLE ${tableName}
         (
@@ -104,29 +115,31 @@
         ) ENGINE = INNODB
           DEFAULT CHARSET = utf8mb4
     </insert>
-
-    <insert id="insertCiEntity">
-        INSERT INTO ${tableName} (
-        `id`
-        <if test="ciEntityVo.attrEntityList != null and ciEntityVo.attrEntityList.size() > 0">
-            ,
-            <foreach collection="ciEntityVo.attrEntityList" item="attrEntity" separator="," index="index">
-                `${attrEntity.attrName}`,
-                `${attrEntity.attrName}_hash`
-            </foreach>
-        </if>
-        ) VALUES (
-        #{ciEntityVo.id}
-        <if test="ciEntityVo.attrEntityList != null and ciEntityVo.attrEntityList.size() > 0">
-            ,
-            <foreach collection="ciEntityVo.attrEntityList" item="attrEntity" separator="," index="index">
-                #{attrEntity.valueStr},
-                #{attrEntity.valueStrHash}
-            </foreach>
-        </if>
-        )
-    </insert>
-
+    -->
+    <!--
+        <insert id="insertCiEntity">
+            INSERT INTO ${tableName} (
+            `id`
+            <if test="ciEntityVo.attrEntityList != null and ciEntityVo.attrEntityList.size() > 0">
+                ,
+                <foreach collection="ciEntityVo.attrEntityList" item="attrEntity" separator="," index="index">
+                    `${attrEntity.attrName}`,
+                    `${attrEntity.attrName}_hash`
+                </foreach>
+            </if>
+            ) VALUES (
+            #{ciEntityVo.id}
+            <if test="ciEntityVo.attrEntityList != null and ciEntityVo.attrEntityList.size() > 0">
+                ,
+                <foreach collection="ciEntityVo.attrEntityList" item="attrEntity" separator="," index="index">
+                    #{attrEntity.valueStr},
+                    #{attrEntity.valueStrHash}
+                </foreach>
+            </if>
+            )
+        </insert>
+    -->
+    <!--
     <insert id="insertRelEntity">
         INSERT INTO ${tableName} (`rel_id`,
         `from_cientity_id`,
@@ -142,7 +155,7 @@
             )
         </foreach>
     </insert>
-
+-->
 
     <delete id="deleteAttrFromCiSchema">
         ALTER TABLE ${tableName}
@@ -152,32 +165,40 @@
                 COLUMN `${attrVo.id}`
     </delete>
 
-    <delete id="deleteCiEntityById">
+    <!--<delete id="deleteCiEntityById">
         DELETE
         FROM ${tableName}
         WHERE id = #{ciEntityId}
-    </delete>
+    </delete>-->
 
+    <!--
     <delete id="deleteCiEntityRelByCiEntityId">
         DELETE
         FROM ${tableName}
         WHERE from_cientity_id = #{ciEntityId}
            OR to_cientity_id = #{ciEntityId}
     </delete>
+    -->
 
+    <!--
     <delete id="deleteSchemaAuditById" parameterType="java.lang.Long">
         DELETE
         FROM cmdb_schema_audit
         WHERE id = #{value}
     </delete>
+    -->
 
     <delete id="deleteSchema">
         DROP TABLE IF EXISTS ${tableName}
     </delete>
 
-    <delete id="deleteRelSchema">
-        DROP TABLE IF EXISTS ${tableName}
+    <delete id="deleteView">
+        DROP VIEW IF EXISTS ${tableName}
     </delete>
+
+    <!-- <delete id="deleteRelSchema">
+         DROP TABLE IF EXISTS ${tableName}
+     </delete>-->
 
 
 </mapper>

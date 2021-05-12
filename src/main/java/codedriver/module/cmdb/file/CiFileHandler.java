@@ -5,45 +5,48 @@
 
 package codedriver.module.cmdb.file;
 
+import codedriver.framework.cmdb.exception.ci.CiViewSqlIrregularException;
+import codedriver.framework.common.util.FileUtil;
 import codedriver.framework.file.core.FileTypeHandlerBase;
 import codedriver.framework.file.dto.FileVo;
-import codedriver.module.cmdb.dao.mapper.batchimport.ImportMapper;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.commons.io.IOUtils;
+import org.dom4j.DocumentHelper;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
+
 @Component
-public class CmdbFileHandler extends FileTypeHandlerBase {
-    @Autowired
-    private ImportMapper importMapper;
+public class CiFileHandler extends FileTypeHandlerBase {
 
     @Override
     public boolean valid(String userUuid, FileVo fileVo, JSONObject jsonObj) {
-        if (fileVo != null && StringUtils.isNotBlank(userUuid)) {
-            return fileVo.getUserUuid().equals(userUuid);
-        }
-        return false;
-    }
-
-    @Override
-    public String getDisplayName() {
-        return "配置管理附件";
-    }
-
-    @Override
-    protected boolean myDeleteFile(Long fileId) {
-        importMapper.deleteCmdbImportFile(fileId);
         return true;
     }
 
     @Override
+    public String getDisplayName() {
+        return "虚拟模型配置文件";
+    }
+
+    @Override
+    protected boolean myDeleteFile(Long fileId) {
+        return false;
+    }
+
+    @Override
     public void afterUpload(FileVo fileVo, JSONObject jsonObj) {
+        try {
+            String xml = IOUtils.toString(FileUtil.getData(fileVo.getPath()), StandardCharsets.UTF_8);
+            DocumentHelper.parseText(xml);
+        } catch (Exception e) {
+            throw new CiViewSqlIrregularException();
+        }
     }
 
     @Override
     public String getName() {
-        return "CMDB";
+        return "CI";
     }
 
 }
