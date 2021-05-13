@@ -185,10 +185,4 @@ public class CIEntitySyncProcessUtilHandler extends ProcessStepInternalHandlerBa
         return resultObj;
     }
 
-    @Override
-    protected IOperationAuthHandlerType MyOperationAuthHandlerType() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
 }
