@@ -8,12 +8,23 @@ package codedriver.module.cmdb.attrvaluehandler.handler;
 import codedriver.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.enums.SearchExpression;
+import codedriver.framework.file.dao.mapper.FileMapper;
+import codedriver.framework.file.dto.FileVo;
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Service
 public class FileValueHandler implements IAttrValueHandler {
+
+    @Resource
+    private FileMapper fileMapper;
 
     @Override
     public String getType() {
@@ -52,8 +63,23 @@ public class FileValueHandler implements IAttrValueHandler {
 
     @Override
     public JSONArray getActualValueList(AttrVo attrVo, JSONArray valueList) {
-
-        return null;
+        List<Long> idList = new ArrayList<>();
+        JSONArray returnList = new JSONArray();
+        for (int i = 0; i < valueList.size(); i++) {
+            idList.add(valueList.getLong(i));
+        }
+        if (CollectionUtils.isNotEmpty(idList)) {
+            List<FileVo> fileList = fileMapper.getFileListByIdList(idList);
+            if (CollectionUtils.isNotEmpty(fileList)) {
+                for (FileVo fileVo : fileList) {
+                    JSONObject fileObj = new JSONObject();
+                    fileObj.put("id", fileVo.getId());
+                    fileObj.put("name", fileVo.getName());
+                    returnList.add(fileObj);
+                }
+            }
+        }
+        return returnList;
     }
 
     @Override

@@ -96,7 +96,12 @@ public class CiEntityBuilder {
                                 }
                             } else {
                                 JSONArray valueList = new JSONArray();
-                                valueList.add(value);
+                                //例如附件型参数有可能是个数组，所以先尝试做转换，不行再当字符串处理
+                                try {
+                                    valueList = JSONArray.parseArray(value);
+                                } catch (Exception ignored) {
+                                    valueList.add(value);
+                                }
                                 JSONArray actualValueList = AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValueList(attrVo, valueList);
                                 ciEntityVo.addAttrEntityDataValue(attrId, valueList, actualValueList);
                             }
@@ -181,7 +186,12 @@ public class CiEntityBuilder {
                                 }
                             } else {
                                 JSONArray valueList = new JSONArray();
-                                valueList.add(value);
+                                //例如附件型参数有可能是个数组，所以先尝试做转换，不行再当字符串处理
+                                try {
+                                    valueList = JSONArray.parseArray(value);
+                                } catch (Exception ignored) {
+                                    valueList.add(value);
+                                }
                                 JSONArray actualValueList = AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValueList(attrVo, valueList);
                                 ciEntityVo.addAttrEntityDataValue(attrId, valueList, actualValueList);
                             }
@@ -240,7 +250,12 @@ public class CiEntityBuilder {
         attrObj.put("config", attrVo.getConfig(true));//克隆一个config对象，避免json序列化出错
         attrObj.put("targetCiId", attrVo.getTargetCiId());
         JSONArray valueList = new JSONArray();
-        valueList.add(value);
+        try {
+            //例如附件型参数有可能是个数组，所以先尝试做转换，不行再当字符串处理
+            valueList = JSONArray.parseArray(value);
+        } catch (Exception ignored) {
+            valueList.add(value);
+        }
         attrObj.put("valueList", valueList);
         attrObj.put("actualValueList", AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValueList(attrVo, valueList));
         return attrObj;
