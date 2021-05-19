@@ -44,6 +44,8 @@ public interface CiEntityService {
     @Transactional
     Long saveCiEntity(CiEntityTransactionVo ciEntityTransactionVo);
 
+    CiEntityVo getCiEntityBaseInfoById(Long ciEntityId);
+
     /**
      * 获取单个配置项详细信息
      *

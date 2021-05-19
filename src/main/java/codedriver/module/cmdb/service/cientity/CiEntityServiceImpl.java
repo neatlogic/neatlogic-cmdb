@@ -65,6 +65,11 @@ public class CiEntityServiceImpl implements CiEntityService {
     @Autowired
     private RelMapper relMapper;
 
+    @Override
+    public CiEntityVo getCiEntityBaseInfoById(Long ciEntityId) {
+        return ciEntityMapper.getCiEntityBaseInfoById(ciEntityId);
+    }
+
 
     @Override
     public CiEntityVo getCiEntityById(Long ciId, Long ciEntityId) {
@@ -188,6 +193,12 @@ public class CiEntityServiceImpl implements CiEntityService {
     }
 
 
+    /**
+     * 删除配置项
+     *
+     * @param ciEntityId 配置项id
+     * @return 事务id
+     */
     @Transactional
     @Override
     public Long deleteCiEntity(Long ciEntityId) {

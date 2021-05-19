@@ -13,13 +13,11 @@ import codedriver.framework.cmdb.dto.ci.RelVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.cmdb.dto.transaction.TransactionGroupVo;
-import codedriver.framework.cmdb.enums.BatchImportStatus;
-import codedriver.framework.cmdb.enums.EditModeType;
-import codedriver.framework.cmdb.enums.RelDirectionType;
-import codedriver.framework.cmdb.enums.TransactionActionType;
+import codedriver.framework.cmdb.enums.*;
 import codedriver.framework.cmdb.exception.ci.CiIsAbstractedException;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
+import codedriver.framework.cmdb.threadlocal.InputFromContext;
 import codedriver.framework.common.util.FileUtil;
 import codedriver.framework.file.dto.FileVo;
 import codedriver.module.cmdb.dao.mapper.batchimport.ImportMapper;
@@ -127,6 +125,7 @@ public class BatchImportHandler {
 
         @Override
         public void execute() {
+            InputFromContext.init(InputFrom.IMPORT);
             ImportAuditVo importAuditVo = new ImportAuditVo();
             importAuditVo.setCiId(ciId);
             importAuditVo.setImportUser(importUser);

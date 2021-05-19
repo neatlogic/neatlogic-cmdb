@@ -9,8 +9,10 @@ import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.cmdb.enums.GroupType;
+import codedriver.framework.cmdb.enums.InputFrom;
 import codedriver.framework.cmdb.enums.TransactionActionType;
 import codedriver.framework.cmdb.exception.cientity.CiEntityAuthException;
+import codedriver.framework.cmdb.threadlocal.InputFromContext;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.exception.core.ApiRuntimeException;
 import codedriver.framework.restful.annotation.*;
@@ -72,6 +74,8 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
     @Example(example = "{\"ciEntityList\":[{\"attrEntityData\":{\"attr_323010784722944\":{\"valueList\":[\"测试环境\"],\"name\":\"label\",\"label\":\"显示名\",\"type\":\"text\",\"saveMode\":\"merge\"},\"attr_323010700836864\":{\"valueList\":[\"stg33\"],\"name\":\"name\",\"label\":\"唯一标识\",\"type\":\"text\"}},\"ciId\":323010541453312,\"ciLabel\":\"环境\",\"ciName\":\"env\",\"fcd\":1617187647522,\"fcu\":\"20f2fbfe97cf11ea94ff005056c00001\",\"id\":330340423237635,\"isLocked\":0,\"lcd\":1617273899288,\"lcu\":\"20f2fbfe97cf11ea94ff005056c00001\",\"uuid\":\"3e3e74b1947b400aa34d7c6964f79168\"}]}")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
+        InputFromContext.init(InputFrom.ITSM);
+        
         JSONArray ciEntityObjList = jsonObj.getJSONArray("ciEntityList");
         List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
         Map<String, CiEntityTransactionVo> ciEntityTransactionMap = new HashMap<>();

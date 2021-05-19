@@ -5,9 +5,11 @@
 
 package codedriver.module.cmdb.process.stephandler;
 
-import codedriver.framework.asynchronization.thread.CodeDriverThread;
-import codedriver.framework.asynchronization.threadpool.CachedThreadPool;
+import codedriver.framework.cmdb.threadlocal.InputFromContext;
+import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
+import codedriver.framework.cmdb.dto.transaction.TransactionGroupVo;
 import codedriver.framework.cmdb.enums.EditModeType;
+import codedriver.framework.cmdb.enums.InputFrom;
 import codedriver.framework.cmdb.enums.TransactionActionType;
 import codedriver.framework.process.constvalue.ProcessStepMode;
 import codedriver.framework.process.dao.mapper.ProcessTaskStepDataMapper;
@@ -17,9 +19,8 @@ import codedriver.framework.process.dto.ProcessTaskStepVo;
 import codedriver.framework.process.dto.ProcessTaskStepWorkerVo;
 import codedriver.framework.process.exception.core.ProcessTaskException;
 import codedriver.framework.process.stephandler.core.ProcessStepHandlerBase;
+import codedriver.framework.transaction.core.EscapeTransactionJob;
 import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
-import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
-import codedriver.framework.cmdb.dto.transaction.TransactionGroupVo;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -31,7 +32,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
 
 @Service
 public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
@@ -62,7 +62,6 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
         return ProcessStepMode.AT;
     }
 
-    @SuppressWarnings("serial")
     @Override
     public JSONObject getChartConfig() {
         return new JSONObject() {
@@ -86,7 +85,7 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
     }
 
     @Override
-    protected int myActive(ProcessTaskStepVo currentProcessTaskStepVo) throws ProcessTaskException {
+    protected int myActive(ProcessTaskStepVo currentProcessTaskStepVo) {
         ProcessTaskStepVo processTaskStepVo =
                 processTaskMapper.getProcessTaskStepBaseInfoById(currentProcessTaskStepVo.getId());
         String stepConfig = selectContentByHashMapper.getProcessTaskStepConfigByHash(processTaskStepVo.getConfigHash());
@@ -122,25 +121,74 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
             logger.error("hash为" + processTaskStepVo.getConfigHash() + "的processtask_step_config内容不是合法的JSON格式", ex);
         }
 
-        // 获取表单数据，写入CMDB
-        TransactionGroupVo transactionGroupVo = new TransactionGroupVo();
-        JSONArray transactionList = new JSONArray();
         // 审计详情
         JSONArray auditList = new JSONArray();
         if (MapUtils.isNotEmpty(syncCiEntityMap)) {
-            CountDownLatch countDownLatch = new CountDownLatch(1);
-            // 为了隔离配置项保存和流程的事务，所以需要另起线程执行
-            CachedThreadPool
-                    .execute(new CiEntitySyncThread(syncCiEntityMap, auditList, transactionGroupVo, countDownLatch));
-            try {
-                countDownLatch.await();
-            } catch (InterruptedException e) {
-            }
-            if (CollectionUtils.isNotEmpty(transactionGroupVo.getTransactionIdList())) {
-                for (Long transactionId : transactionGroupVo.getTransactionIdList()) {
-                    transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), transactionId);
+            EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
+                // 获取表单数据，写入CMDB
+                InputFromContext.init(InputFrom.ITSM);
+                TransactionGroupVo transactionGroupVo = new TransactionGroupVo();
+                for (Long ciId : syncCiEntityMap.keySet()) {
+                    JSONArray ciEntitySyncList = syncCiEntityMap.get(ciId);
+                    for (int entityIndex = 0; entityIndex < ciEntitySyncList.size(); entityIndex++) {
+                        JSONObject auditObj = new JSONObject();
+                        JSONObject ciEntityObj = ciEntitySyncList.getJSONObject(entityIndex);
+                        try {
+                            if ("delete".equalsIgnoreCase(ciEntityObj.getString("form_actiontype"))
+                                    && ciEntityObj.getLong("id") != null) {
+                                // 删除操作
+                                auditObj.put("ciEntityName", ciEntityService.getCiEntityBaseInfoById(ciEntityObj.getLong("id")).getName());
+                                auditObj.put("ciEntityId", ciEntityObj.getLong("id"));
+                                auditObj.put("ciId", ciId);
+                                auditObj.put("action", TransactionActionType.DELETE.getValue());
+                                Long transactionId = ciEntityService.deleteCiEntity(ciEntityObj.getLong("id"));
+                                auditObj.put("status", "success");
+                                auditObj.put("transactionId", transactionId);
+                            } else {
+                                Long id = ciEntityObj.getLong("id");
+                                String uuid = ciEntityObj.getString("uuid");
+                                CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
+                                ciEntityTransactionVo.setCiId(ciId);
+                                ciEntityTransactionVo.setCiEntityId(id);
+                                ciEntityTransactionVo.setCiEntityUuid(uuid);
+
+                                if (id == null) {
+                                    ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
+                                } else {
+                                    ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
+                                }
+                                // 解析属性数据
+                                JSONObject attrObj = ciEntityObj.getJSONObject("attrEntityData");
+                                ciEntityTransactionVo.setAttrEntityData(attrObj);
+                                // 解析关系数据
+                                JSONObject relObj = ciEntityObj.getJSONObject("relEntityData");
+                                ciEntityTransactionVo.setRelEntityData(relObj);
+                                // 因为不一定编辑所有属性，所以需要切换成局部更新模式
+                                ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
+                                auditObj.put("ciEntityName", ciEntityService.getCiEntityBaseInfoById(ciEntityTransactionVo.getCiEntityId()).getName());
+                                auditObj.put("action", ciEntityTransactionVo.getAction());
+                                auditObj.put("ciEntityId", ciEntityTransactionVo.getCiEntityId());
+                                auditObj.put("ciId", ciId);
+                                Long transactionId = ciEntityService.saveCiEntity(ciEntityTransactionVo, transactionGroupVo);
+                                transactionGroupVo.addTransactionId(transactionId);
+                                auditObj.put("status", "success");
+                                auditObj.put("transactionId", transactionId);
+                            }
+                        } catch (Exception ex) {
+                            auditObj.put("error", ex.getMessage());
+                            auditObj.put("status", "failed");
+                        } finally {
+                            auditObj.put("originalData", ciEntityObj);
+                            auditList.add(auditObj);
+                        }
+                    }
                 }
-            }
+                if (CollectionUtils.isNotEmpty(transactionGroupVo.getTransactionIdList())) {
+                    for (Long transactionId : transactionGroupVo.getTransactionIdList()) {
+                        transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), transactionId);
+                    }
+                }
+            }).execute();
             if (CollectionUtils.isNotEmpty(auditList)) {
                 JSONObject auditData = new JSONObject();
                 auditData.put("ciEntityList", auditList);
@@ -156,83 +204,9 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
         return 0;
     }
 
-    private class CiEntitySyncThread extends CodeDriverThread {
-        private final Map<Long, JSONArray> ciEntitySyncMap;
-        private final JSONArray auditList;
-        private final TransactionGroupVo transactionGroupVo;
-        private final CountDownLatch countDownLatch;
-
-        public CiEntitySyncThread(Map<Long, JSONArray> _ciEntitySyncMap, JSONArray _auditList,
-                                  TransactionGroupVo _transactionGroupVo, CountDownLatch _countDownLatch) {
-            ciEntitySyncMap = _ciEntitySyncMap;
-            auditList = _auditList;
-            transactionGroupVo = _transactionGroupVo;
-            countDownLatch = _countDownLatch;
-        }
-
-        @Override
-        protected void execute() {
-            try {
-                List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
-                Iterator<Long> cikeys = ciEntitySyncMap.keySet().iterator();
-                while (cikeys.hasNext()) {
-                    Long ciId = cikeys.next();
-                    JSONArray ciEntitySyncList = ciEntitySyncMap.get(ciId);
-                    for (int entityIndex = 0; entityIndex < ciEntitySyncList.size(); entityIndex++) {
-                        JSONObject auditObj = new JSONObject();
-                        JSONObject ciEntityObj = ciEntitySyncList.getJSONObject(entityIndex);
-                        try {
-                            if ("delete".equalsIgnoreCase(ciEntityObj.getString("form_actiontype"))
-                                    && ciEntityObj.getLong("id") != null) {
-                                // 删除操作
-                                ciEntityService.deleteCiEntity(ciEntityObj.getLong("id"));
-                                continue;
-                            }
-
-                            Long id = ciEntityObj.getLong("id");
-                            String uuid = ciEntityObj.getString("uuid");
-                            CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
-                            ciEntityTransactionVo.setCiId(ciId);
-                            ciEntityTransactionVo.setCiEntityId(id);
-                            ciEntityTransactionVo.setCiEntityUuid(uuid);
-
-                            if (id == null) {
-                                ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
-                            } else {
-                                ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
-                            }
-                            // 解析属性数据
-                            JSONObject attrObj = ciEntityObj.getJSONObject("attrEntityData");
-                            ciEntityTransactionVo.setAttrEntityData(attrObj);
-                            // 解析关系数据
-                            JSONObject relObj = ciEntityObj.getJSONObject("relEntityData");
-                            ciEntityTransactionVo.setRelEntityData(relObj);
-                            // 因为不一定编辑所有属性，所以需要切换成局部更新模式
-                            ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
-                            Long transactionId = ciEntityService.saveCiEntity(ciEntityTransactionVo);
-                            transactionGroupVo.addTransactionId(transactionId);
-                            auditObj.put("status", "success");
-                            auditObj.put("transactionId", transactionId);
-                            auditObj.put("ciEntityId", ciEntityTransactionVo.getCiEntityId());
-                        } catch (Exception ex) {
-                            auditObj.put("error", ex.getMessage());
-                            auditObj.put("status", "failed");
-                        } finally {
-                            auditObj.put("originalData", ciEntityObj);
-                            auditList.add(auditObj);
-                        }
-                    }
-                }
-            } finally {
-                countDownLatch.countDown();
-            }
-        }
-
-    }
 
     @Override
-    protected int myTransfer(ProcessTaskStepVo currentProcessTaskStepVo, List<ProcessTaskStepWorkerVo> workerList)
-            throws ProcessTaskException {
+    protected int myTransfer(ProcessTaskStepVo currentProcessTaskStepVo, List<ProcessTaskStepWorkerVo> workerList) {
         return 1;
     }
 
@@ -263,7 +237,7 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
     }
 
     @Override
-    protected int myRedo(ProcessTaskStepVo currentProcessTaskStepVo) throws ProcessTaskException {
+    protected int myRedo(ProcessTaskStepVo currentProcessTaskStepVo) {
         return 0;
     }
 
@@ -278,7 +252,7 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
     }
 
     @Override
-    protected int myStartProcess(ProcessTaskStepVo currentProcessTaskStepVo) throws ProcessTaskException {
+    protected int myStartProcess(ProcessTaskStepVo currentProcessTaskStepVo) {
         return 0;
     }
 
@@ -288,7 +262,7 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
     }
 
     @Override
-    protected int myHandle(ProcessTaskStepVo currentProcessTaskStepVo) throws ProcessTaskException {
+    protected int myHandle(ProcessTaskStepVo currentProcessTaskStepVo) {
         currentProcessTaskStepVo.setIsAllDone(true);
         return 0;
     }
@@ -304,7 +278,7 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
     }
 
     @Override
-    protected int myRetreat(ProcessTaskStepVo currentProcessTaskStepVo) throws ProcessTaskException {
+    protected int myRetreat(ProcessTaskStepVo currentProcessTaskStepVo) {
         return 1;
     }
 
@@ -314,7 +288,7 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
     }
 
     @Override
-    protected int myBack(ProcessTaskStepVo currentProcessTaskStepVo) throws ProcessTaskException {
+    protected int myBack(ProcessTaskStepVo currentProcessTaskStepVo) {
         return 0;
     }
 
@@ -329,12 +303,12 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
     }
 
     @Override
-    protected int mySaveDraft(ProcessTaskStepVo currentProcessTaskStepVo) throws ProcessTaskException {
+    protected int mySaveDraft(ProcessTaskStepVo currentProcessTaskStepVo) {
         return 1;
     }
 
     @Override
-    protected int myPause(ProcessTaskStepVo currentProcessTaskStepVo) throws ProcessTaskException {
+    protected int myPause(ProcessTaskStepVo currentProcessTaskStepVo) {
         return 0;
     }
 
