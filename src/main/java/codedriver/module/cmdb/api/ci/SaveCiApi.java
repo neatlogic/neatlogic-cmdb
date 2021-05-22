@@ -71,20 +71,20 @@ public class SaveCiApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         CiVo ciVo = JSONObject.toJavaObject(jsonObj, CiVo.class);
         Long ciId = jsonObj.getLong("id");
+        if (Objects.equals(ciVo.getIsVirtual(), 1) && ciVo.getFileId() != null) {
+            FileVo fileVo = fileMapper.getFileById(ciVo.getFileId());
+            if (fileVo == null) {
+                throw new VirtualCiSettingFileNotFoundException();
+            }
+            String xml = IOUtils.toString(FileUtil.getData(fileVo.getPath()), StandardCharsets.UTF_8);
+            if (StringUtils.isBlank(xml)) {
+                throw new VirtualCiSettingFileNotFoundException();
+            }
+            ciVo.setViewXml(xml);
+        }
         if (ciId == null) {
             if (!CiAuthChecker.chain().checkCiManagePrivilege().check()) {
                 throw new CiAuthException();
-            }
-            if (Objects.equals(ciVo.getIsVirtual(), 1) && ciVo.getFileId() != null) {
-                FileVo fileVo = fileMapper.getFileById(ciVo.getFileId());
-                if (fileVo == null) {
-                    throw new VirtualCiSettingFileNotFoundException();
-                }
-                String xml = IOUtils.toString(FileUtil.getData(fileVo.getPath()), StandardCharsets.UTF_8);
-                if (StringUtils.isBlank(xml)) {
-                    throw new VirtualCiSettingFileNotFoundException();
-                }
-                ciVo.setViewXml(xml);
             }
             ciService.insertCi(ciVo);
         } else {

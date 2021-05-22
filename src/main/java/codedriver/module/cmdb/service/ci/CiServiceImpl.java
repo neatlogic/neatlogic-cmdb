@@ -23,7 +23,7 @@ import codedriver.module.cmdb.dao.mapper.cischema.CiSchemaMapper;
 import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import codedriver.module.cmdb.service.rel.RelService;
-import codedriver.module.cmdb.utils.ViewSqlBuilder;
+import codedriver.module.cmdb.utils.VirtualCiSqlBuilder;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -84,48 +84,72 @@ public class CiServiceImpl implements CiService {
         ciMapper.insertCi(ciVo);
 
         if (Objects.equals(ciVo.getIsVirtual(), 1)) {
-            ViewSqlBuilder viewBuilder = new ViewSqlBuilder(ciVo.getViewXml());
-            viewBuilder.setCiId(ciVo.getId());
-            if (viewBuilder.valid()) {
-                //测试一下语句是否能正常执行
-                try {
-                    ciSchemaMapper.testCiViewSql(viewBuilder.getTestSql());
-                } catch (Exception ex) {
-                    throw new CiViewSqlIrregularException(ex);
-                }
-                List<AttrVo> attrList = viewBuilder.getAttrList();
-                if (CollectionUtils.isNotEmpty(attrList)) {
-                    Map<String, Long> attrIdMap = new HashMap<>();
-                    for (AttrVo attrVo : attrList) {
-                        attrVo.setCiId(ciVo.getId());
-                        attrMapper.insertAttr(attrVo);
-                        attrIdMap.put(attrVo.getName(), attrVo.getId());
-                    }
-                    viewBuilder.setAttrIdMap(attrIdMap);
-                    EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
-                        if (ciSchemaMapper.checkDatabaseIsExists(TenantContext.get().getDataDbName()) > 0) {
-                            //创建配置项表
-                            ciSchemaMapper.insertCiView(viewBuilder.getCreateViewSql());
-                        } else {
-                            throw new DataBaseNotFoundException();
-                        }
-                    }).execute();
-                    if (!s.isSucceed()) {
-                        throw new CreateCiSchemaException(ciVo.getName(), true);
-                    }
-                }
-            }
-        } else {
-            EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
-                if (ciSchemaMapper.checkDatabaseIsExists(TenantContext.get().getDataDbName()) > 0) {
-                    //创建配置项表
-                    ciSchemaMapper.insertCiSchema(ciVo.getCiTableName());
-                } else {
-                    throw new DataBaseNotFoundException();
-                }
-            }).execute();
+            buildCiView(ciVo);
+        } else if (Objects.equals(ciVo.getIsVirtual(), 0)) {
+            EscapeTransactionJob.State s = buildCiSchema(ciVo);
             if (!s.isSucceed()) {
                 throw new CreateCiSchemaException(ciVo.getName());
+            }
+        }
+    }
+
+    private EscapeTransactionJob.State buildCiSchema(CiVo ciVo) {
+        return new EscapeTransactionJob(() -> {
+            if (ciSchemaMapper.checkSchemaIsExists(TenantContext.get().getDataDbName()) > 0) {
+                if (ciSchemaMapper.checkTableIsExists(TenantContext.get().getDataDbName(), "cmdb_" + ciVo.getId()) <= 0) {
+                    //创建配置项表
+                    ciSchemaMapper.insertCiTable(ciVo.getCiTableName());
+                } else {
+                    //如果已存在但没有数据，重建表
+                    if (ciSchemaMapper.checkTableHasData(ciVo.getCiTableName()) <= 0) {
+                        ciSchemaMapper.deleteCiTable(ciVo.getCiTableName());
+                        ciSchemaMapper.insertCiTable(ciVo.getCiTableName());
+                        List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
+                        for (AttrVo attrVo : attrList) {
+                            //这里的attrlist包含了所有集成模型的属性，不是自己模型的属性就不要添加
+                            if (attrVo.getCiId().equals(ciVo.getId()) && attrVo.getTargetCiId() == null) {
+                                ciSchemaMapper.insertAttrToCiTable(ciVo.getCiTableName(), attrVo);
+                            }
+                        }
+                    }
+                }
+            } else {
+                throw new DataBaseNotFoundException();
+            }
+        }).execute();
+    }
+
+    private void buildCiView(CiVo ciVo) {
+        VirtualCiSqlBuilder viewBuilder = new VirtualCiSqlBuilder(ciVo.getViewXml());
+        viewBuilder.setCiId(ciVo.getId());
+
+        if (viewBuilder.valid()) {
+            //测试一下语句是否能正常执行
+            try {
+                ciSchemaMapper.testCiViewSql(viewBuilder.getTestSql());
+            } catch (Exception ex) {
+                throw new CiViewSqlIrregularException(ex);
+            }
+            List<AttrVo> attrList = viewBuilder.getAttrList();
+            if (CollectionUtils.isNotEmpty(attrList)) {
+                Map<String, Long> attrIdMap = new HashMap<>();
+                for (AttrVo attrVo : attrList) {
+                    attrVo.setCiId(ciVo.getId());
+                    attrMapper.insertAttr(attrVo);
+                    attrIdMap.put(attrVo.getName(), attrVo.getId());
+                }
+                viewBuilder.setAttrIdMap(attrIdMap);
+                EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
+                    if (ciSchemaMapper.checkSchemaIsExists(TenantContext.get().getDataDbName()) > 0) {
+                        //创建配置项表
+                        ciSchemaMapper.insertCiView(viewBuilder.getCreateViewSql());
+                    } else {
+                        throw new DataBaseNotFoundException();
+                    }
+                }).execute();
+                if (!s.isSucceed()) {
+                    throw new CreateCiSchemaException(ciVo.getName(), true);
+                }
             }
         }
     }
@@ -205,6 +229,14 @@ public class CiServiceImpl implements CiService {
         if (ciMapper.checkCiLabelIsExists(ciVo) > 0) {
             throw new CiLabelIsExistsException(ciVo.getLabel());
         }
+        if (Objects.equals(ciVo.getIsVirtual(), 1)) {
+            buildCiView(ciVo);
+        } else if (Objects.equals(ciVo.getIsVirtual(), 0)) {
+            EscapeTransactionJob.State s = buildCiSchema(ciVo);
+            if (!s.isSucceed()) {
+                throw new CreateCiSchemaException(ciVo.getName());
+            }
+        }
         int lft = LRCodeManager.beforeAddTreeNode("cmdb_ci", "id", "parent_ci_id", ciVo.getParentCiId());
         ciVo.setLft(lft);
         ciVo.setRht(lft + 1);
@@ -236,13 +268,14 @@ public class CiServiceImpl implements CiService {
 
         if (StringUtils.isNotBlank(ciVo.getCiTableName())) {
             if (ciVo.getIsVirtual().equals(0)) {
-                ciSchemaMapper.deleteSchema(ciVo.getCiTableName());
+                ciSchemaMapper.deleteCiTable(ciVo.getCiTableName());
             } else {
-                ciSchemaMapper.deleteView(ciVo.getCiTableName());
+                ciSchemaMapper.deleteCiView(ciVo.getCiTableName());
             }
         }
 
-        //清楚模型数据
+        //清除模型数据
+        LRCodeManager.beforeDeleteTreeNode("cmdb_ci", "id", "parent_ci_id", ciId);
         ciMapper.deleteCiById(ciId);
         return 0;
     }
@@ -251,8 +284,27 @@ public class CiServiceImpl implements CiService {
     @Override
     public CiVo getCiById(Long id) {
         CiVo ciVo = ciMapper.getCiById(id);
+        if (ciVo.getIsVirtual().equals(0)) {
+            ciVo.setUpwardCiList(ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht()));
+        }
         List<AttrVo> attrList = attrMapper.getAttrByCiId(id);
         List<RelVo> relList = relMapper.getRelByCiId(id);
+        ciVo.setRelList(relList);
+        ciVo.setAttrList(attrList);
+        return ciVo;
+    }
+
+    @Override
+    public CiVo getCiByName(String ciName) {
+        CiVo ciVo = ciMapper.getCiByName(ciName);
+        if (ciVo == null) {
+            throw new CiNotFoundException(ciName);
+        }
+        if (ciVo.getIsVirtual().equals(0)) {
+            ciVo.setUpwardCiList(ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht()));
+        }
+        List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
+        List<RelVo> relList = relMapper.getRelByCiId(ciVo.getId());
         ciVo.setRelList(relList);
         ciVo.setAttrList(attrList);
         return ciVo;

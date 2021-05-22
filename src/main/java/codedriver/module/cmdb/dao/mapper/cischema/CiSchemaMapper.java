@@ -16,16 +16,19 @@ public interface CiSchemaMapper {
 
     //int checkTableIsExists(@Param("dbName") String dbName, @Param("tableName") String tableName);
 
-    int checkDatabaseIsExists(String databaseName);
+    int checkSchemaIsExists(String databaseName);
 
+    int checkTableIsExists(@Param("schemaName") String schemaName, @Param("tableName") String tableName);
+
+    int checkTableHasData(String tableName);
     //void updateSchemaAuditIsFailed(Long auditId);
 
     //void insertAttrSchema(@Param("tableName") String tableName, @Param("columnList") List<AttrVo.Column> columnList);
     List<Map<String, String>> testCiViewSql(String sql);
 
-    void insertAttrToCiSchema(@Param("tableName") String tableName, @Param("attrVo") AttrVo attrVo);
+    void insertAttrToCiTable(@Param("tableName") String tableName, @Param("attrVo") AttrVo attrVo);
 
-    void insertCiSchema(@Param("tableName") String tableName);
+    void insertCiTable(@Param("tableName") String tableName);
 
     void insertCiView(String sql);
 
@@ -39,11 +42,11 @@ public interface CiSchemaMapper {
 
     //void replaceSchemaAudit(SchemaAuditVo schemaAuditvo);
 
-    void deleteAttrFromCiSchema(@Param("tableName") String tableName, @Param("attrVo") AttrVo attrVo);
+    void deleteAttrFromCiTable(@Param("tableName") String tableName, @Param("attrVo") AttrVo attrVo);
 
-    void deleteSchema(@Param("tableName") String tableName);
+    void deleteCiTable(@Param("tableName") String tableName);
 
-    void deleteView(@Param("tableName") String tableName);
+    void deleteCiView(@Param("tableName") String tableName);
     //void deleteRelSchema(@Param("tableName") String tableName);
 
     //void deleteCiEntityById(@Param("tableName") String tableName, @Param("ciEntityId") Long ciEntityId);

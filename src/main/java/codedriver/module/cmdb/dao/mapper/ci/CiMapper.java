@@ -33,6 +33,8 @@ public interface CiMapper {
 
     CiVo getCiById(Long ciId);
 
+    CiVo getCiByName(String ciName);
+
     int updateCi(CiVo ciVo);
 
     int updateCiNameExpression(@Param("ciId") Long ciId, @Param("nameExpression") String nameExpression);

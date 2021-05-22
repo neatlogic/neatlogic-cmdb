@@ -6,38 +6,24 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.cischema.CiSchemaMapper">
-    <!-- <select id="getLatestSchemaAudit" parameterType="java.lang.Integer"
-             resultType="codedriver.framework.cmdb.dto.schema.SchemaAuditVo">
-         SELECT id,
-                `target_id`   as targetId,
-                `target_type` as targetType,
-                `action`,
-                `lcd`,
-                `server_id`   as serverId,
-                `data`        as dataStr
-         FROM `cmdb_schema_audit`
-         WHERE server_id = #{value}
-           AND is_failed = 0
-         ORDER BY lcd
-         LIMIT 1
-     </select>
- -->
-    <!--<select id="checkTableIsExists" resultType="int">
-        select count(1)
-        from information_schema.`TABLES`
-        where table_schema = #{dbName}
-          and table_name = #{tableName}
-    </select>-->
-
     <select id="testCiViewSql" parameterType="java.lang.String" resultType="java.util.Map">
         ${value}
     </select>
 
-    <insert id="insertCiView" parameterType="java.lang.String">
-        ${value}
-    </insert>
+    <select id="checkTableHasData" parameterType="java.lang.String" resultType="int">
+        SELECT COUNT(1)
+        FROM ${value}
+        LIMIT 1
+    </select>
 
-    <select id="checkDatabaseIsExists" parameterType="java.lang.String" resultType="int">
+    <select id="checkTableIsExists" resultType="int">
+        select count(1)
+        from information_schema.tables a
+        where a.TABLE_SCHEMA = #{schemaName}
+          and a.TABLE_NAME = #{tableName}
+    </select>
+
+    <select id="checkSchemaIsExists" parameterType="java.lang.String" resultType="int">
         SELECT COUNT(1)
         FROM information_schema.`SCHEMATA`
         WHERE schema_name = #{value}
@@ -49,31 +35,18 @@
         WHERE id = #{value}
     </update>
 
-    <!--
-    <insert id="replaceSchemaAudit" parameterType="codedriver.framework.cmdb.dto.schema.SchemaAuditVo">
-        REPLACE
-            INTO cmdb_schema_audit (`lcd`,
-                                    `target_id`,
-                                    `target_type`,
-                                    `action`,
-                                    `data`,
-                                    `server_id`)
-        VALUES (NOW(3),
-                #{targetId},
-                #{targetType},
-                #{action},
-                #{dataStr},
-                #{serverId})
+    <insert id="insertCiView" parameterType="java.lang.String">
+        ${value}
     </insert>
--->
-    <insert id="insertAttrToCiSchema">
+
+    <insert id="insertAttrToCiTable">
         ALTER TABLE ${tableName}
             ADD COLUMN `${attrVo.id}`      TEXT     NULL COMMENT '${attrVo.label}',
             ADD COLUMN `${attrVo.id}_hash` CHAR(32) NULL COMMENT '${attrVo.label}值散列码',
             ADD KEY `index_${attrVo.id}_hash` (`${attrVo.id}_hash`);
     </insert>
 
-    <insert id="insertCiSchema">
+    <insert id="insertCiTable">
         CREATE TABLE IF NOT EXISTS ${tableName}
         (
             `cientity_id` bigint(20) NOT NULL COMMENT '配置项id',
@@ -82,82 +55,8 @@
           DEFAULT CHARSET = utf8mb4
     </insert>
 
-    <!--
-    <insert id="insertCiAttrSchema">
-        CREATE TABLE IF NOT EXISTS ${tableName}
-        (
-            `id`                 bigint(20) NOT NULL COMMENT 'id',
-            `cientity_id`        bigint(20) NOT NULL COMMENT '配置项id',
-            `target_cientity_id` bigint(20) NOT NULL COMMENT '目标配置项id',
-            `attr_id`            bigint(32) NOT NULL COMMENT '属性id',
-            `ci_id`              bigint(20) NOT NULL COMMENT '模型id',
-            `target_ci_id`       bigint(20) NOT NULL COMMENT '目标模型id',
-            PRIMARY KEY (`id`),
-            KEY `idx_cientity_id` (`cientity_id`) USING BTREE,
-            KEY `idx_target_cientity_id` (`target_cientity_id`) USING BTREE,
-            KEY `idx_target_ic_id` (`target_ci_id`) USING BTREE,
-            KEY `idx_ci_id` (`ci_id`) USING BTREE
-        ) ENGINE = InnoDB
-          DEFAULT CHARSET = utf8mb4;
-    </insert>
--->
-    <!--
-    <insert id="insertRelSchema" parameterType="java.lang.String">
-        CREATE TABLE ${tableName}
-        (
-            `rel_id`           BIGINT(20) NOT NULL,
-            `from_cientity_id` BIGINT(20) NOT NULL,
-            `to_cientity_id`   BIGINT(20) NOT NULL,
-            `direction`        ENUM ('from','to') DEFAULT NULL,
-            KEY `idx_rel_id` (`rel_id`),
-            KEY `idx_from_cientity_id` (`from_cientity_id`),
-            KEY `idx_to_cientity_id` (`to_cientity_id`)
-        ) ENGINE = INNODB
-          DEFAULT CHARSET = utf8mb4
-    </insert>
-    -->
-    <!--
-        <insert id="insertCiEntity">
-            INSERT INTO ${tableName} (
-            `id`
-            <if test="ciEntityVo.attrEntityList != null and ciEntityVo.attrEntityList.size() > 0">
-                ,
-                <foreach collection="ciEntityVo.attrEntityList" item="attrEntity" separator="," index="index">
-                    `${attrEntity.attrName}`,
-                    `${attrEntity.attrName}_hash`
-                </foreach>
-            </if>
-            ) VALUES (
-            #{ciEntityVo.id}
-            <if test="ciEntityVo.attrEntityList != null and ciEntityVo.attrEntityList.size() > 0">
-                ,
-                <foreach collection="ciEntityVo.attrEntityList" item="attrEntity" separator="," index="index">
-                    #{attrEntity.valueStr},
-                    #{attrEntity.valueStrHash}
-                </foreach>
-            </if>
-            )
-        </insert>
-    -->
-    <!--
-    <insert id="insertRelEntity">
-        INSERT INTO ${tableName} (`rel_id`,
-        `from_cientity_id`,
-        `to_cientity_id`,
-        `direction`)
-        VALUES
-        <foreach collection="ciEntityVo.relEntityList" item="relEntity" separator="," index="index">
-            (
-            #{relEntity.relId},
-            #{relEntity.fromCiEntityId},
-            #{relEntity.toCiEntityId},
-            #{relEntity.direction}
-            )
-        </foreach>
-    </insert>
--->
 
-    <delete id="deleteAttrFromCiSchema">
+    <delete id="deleteAttrFromCiTable">
         ALTER TABLE ${tableName}
             DROP
                 COLUMN `${attrVo.id}_hash`,
@@ -165,40 +64,13 @@
                 COLUMN `${attrVo.id}`
     </delete>
 
-    <!--<delete id="deleteCiEntityById">
-        DELETE
-        FROM ${tableName}
-        WHERE id = #{ciEntityId}
-    </delete>-->
-
-    <!--
-    <delete id="deleteCiEntityRelByCiEntityId">
-        DELETE
-        FROM ${tableName}
-        WHERE from_cientity_id = #{ciEntityId}
-           OR to_cientity_id = #{ciEntityId}
-    </delete>
-    -->
-
-    <!--
-    <delete id="deleteSchemaAuditById" parameterType="java.lang.Long">
-        DELETE
-        FROM cmdb_schema_audit
-        WHERE id = #{value}
-    </delete>
-    -->
-
-    <delete id="deleteSchema">
+    <delete id="deleteCiTable">
         DROP TABLE IF EXISTS ${tableName}
     </delete>
 
-    <delete id="deleteView">
+    <delete id="deleteCiView">
         DROP VIEW IF EXISTS ${tableName}
     </delete>
-
-    <!-- <delete id="deleteRelSchema">
-         DROP TABLE IF EXISTS ${tableName}
-     </delete>-->
 
 
 </mapper>

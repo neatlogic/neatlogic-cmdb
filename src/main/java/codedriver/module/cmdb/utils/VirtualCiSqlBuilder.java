@@ -28,7 +28,7 @@ import org.dom4j.Element;
 
 import java.util.*;
 
-public class ViewSqlBuilder {
+public class VirtualCiSqlBuilder {
 
     private final String sql;
     private Long ciId;
@@ -37,7 +37,7 @@ public class ViewSqlBuilder {
     private final String dataSchema = TenantContext.get().getDataDbName();
     private final String schema = TenantContext.get().getDbName();
 
-    public ViewSqlBuilder(String xml) {
+    public VirtualCiSqlBuilder(String xml) {
         try {
             Document document = DocumentHelper.parseText(xml);
             Element root = document.getRootElement();
@@ -194,7 +194,7 @@ public class ViewSqlBuilder {
             Select selectStatement = (Select) stmt;
             fillUpSchema(selectStatement.getSelectBody());
             fillUpAlias(selectStatement.getSelectBody());
-            return "CREATE VIEW " + dataSchema + ".cmdb_" + ciId + " AS " + stmt;
+            return "CREATE OR REPLACE VIEW " + dataSchema + ".cmdb_" + ciId + " AS " + stmt;
 
         } catch (ApiRuntimeException ex) {
             throw ex;
@@ -301,7 +301,7 @@ public class ViewSqlBuilder {
                 "        </sql>\n" +
                 "</ci>\n" +
                 "\n";
-        ViewSqlBuilder viewBuilder = new ViewSqlBuilder(xml);
+        VirtualCiSqlBuilder viewBuilder = new VirtualCiSqlBuilder(xml);
         viewBuilder.valid();
     }
 

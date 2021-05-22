@@ -16,7 +16,7 @@
                a.`description`,
                a.`icon`,
                a.`parent_ci_id` AS parentCiId,
-               a.`type_id`      AS typeId,
+               a.`type_id` AS typeId,
                a.`is_private`   AS isPrivate,
                a.`is_menu`      AS isMenu,
                a.`is_abstract`  AS isAbstract,
@@ -230,6 +230,29 @@
         FROM `cmdb_ci` a
                  LEFT JOIN `cmdb_ci_unique` b ON a.id = b.ci_id
         WHERE id = #{value}
+    </select>
+
+    <select id="getCiByName" parameterType="java.lang.String" resultMap="ciResultMap"
+            useCache="true">
+        SELECT a.`id`,
+               a.`name`,
+               a.`label`,
+               a.`description`,
+               a.`icon`,
+               a.`type_id`         AS typeId,
+               a.`is_private`      AS isPrivate,
+               a.`is_menu`         AS isMenu,
+               a.`parent_ci_id`    AS parentCiId,
+               a.`is_abstract`     AS isAbstract,
+               a.`is_virtual`      AS isVirtual,
+               a.`file_id`         AS fileId,
+               a.`name_expression` AS nameExpression,
+               a.`lft`             AS lft,
+               a.`rht`             AS rht,
+               b.`attr_id`         AS uniqueAttrId
+        FROM `cmdb_ci` a
+                 LEFT JOIN `cmdb_ci_unique` b ON a.id = b.ci_id
+        WHERE name = #{value}
     </select>
 
     <update id="updateCiNameExpression">

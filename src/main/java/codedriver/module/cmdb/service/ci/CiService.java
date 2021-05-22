@@ -30,4 +30,5 @@ public interface CiService {
     int deleteCi(Long ciId);
 
 
+    CiVo getCiByName(String ciName);
 }
