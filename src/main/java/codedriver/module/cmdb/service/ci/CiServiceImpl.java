@@ -216,12 +216,14 @@ public class CiServiceImpl implements CiService {
         if (checkCiVo == null) {
             throw new CiNotFoundException(ciVo.getId());
         }
+        boolean needRebuildLRCode = false;
         if (!Objects.equals(checkCiVo.getParentCiId(), ciVo.getParentCiId())) {
             //如果继承发生改变需要检查是否有配置项数据，有数据不允许变更
             int ciEntityCount = ciEntityMapper.getDownwardCiEntityCountByLR(ciVo.getLft(), ciVo.getRht());
             if (ciEntityCount > 0) {
                 throw new CiParentCanNotBeChangedException(ciVo.getName(), ciEntityCount);
             }
+            needRebuildLRCode = true;
         }
         if (ciMapper.checkCiNameIsExists(ciVo) > 0) {
             throw new CiNameIsExistsException(ciVo.getName());
@@ -237,9 +239,9 @@ public class CiServiceImpl implements CiService {
                 throw new CreateCiSchemaException(ciVo.getName());
             }
         }
-        int lft = LRCodeManager.beforeAddTreeNode("cmdb_ci", "id", "parent_ci_id", ciVo.getParentCiId());
-        ciVo.setLft(lft);
-        ciVo.setRht(lft + 1);
+        if (needRebuildLRCode) {
+            LRCodeManager.rebuildLeftRightCode("cmdb_ci", "id", "parent_ci_id");
+        }
         ciMapper.updateCi(ciVo);
     }
 

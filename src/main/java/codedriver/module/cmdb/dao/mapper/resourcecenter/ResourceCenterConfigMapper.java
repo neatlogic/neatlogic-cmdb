@@ -11,5 +11,7 @@ import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 public interface ResourceCenterConfigMapper {
     ResourceCenterConfigVo getResourceCenterConfig();
 
+    void updateResourceEntity(ResourceEntityVo resourceEntityVo);
+
     void insertResourceEntity(ResourceEntityVo resourceEntityVo);
 }

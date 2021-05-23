@@ -14,6 +14,15 @@
         WHERE id = 1
     </select>
 
+    <update id="updateResourceEntity"
+            parameterType="codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
+        UPDATE cmdb_resourcecenter_entity
+        SET `status`    = #{status},
+            `error`     = #{error},
+            `init_time` = NOW(3)
+        WHERE `name` = #{name}
+    </update>
+
     <insert id="insertResourceEntity"
             parameterType="codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
         INSERT INTO cmdb_resourcecenter_entity (`name`, `label`, `status`, `error`, `init_time`)
