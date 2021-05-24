@@ -14,7 +14,7 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.RESOURCECENTER_MODIFY;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceCenterConfigMapper;
-import codedriver.module.cmdb.utils.ResourceCenterViewBuilder;
+import codedriver.module.cmdb.utils.ResourceEntityViewBuilder;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,7 +53,7 @@ public class InitResourceCenterApi extends PrivateApiComponentBase {
         if (configVo == null) {
             throw new ResourceCenterConfigNotFoundException();
         }
-        ResourceCenterViewBuilder builder = new ResourceCenterViewBuilder(configVo.getConfig());
+        ResourceEntityViewBuilder builder = new ResourceEntityViewBuilder(configVo.getConfig());
         builder.buildView();
         return null;
     }

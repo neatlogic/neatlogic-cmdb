@@ -19,7 +19,7 @@ import codedriver.framework.cmdb.exception.attr.AttrNotFoundException;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterConfigIrregularException;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceCenterConfigMapper;
-import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceViewMapper;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import codedriver.module.cmdb.service.ci.CiService;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
@@ -43,21 +43,21 @@ import java.lang.reflect.Field;
 import java.util.*;
 
 @Component
-public class ResourceCenterViewBuilder {
-    private final static Logger logger = LoggerFactory.getLogger(ResourceCenterViewBuilder.class);
+public class ResourceEntityViewBuilder {
+    private final static Logger logger = LoggerFactory.getLogger(ResourceEntityViewBuilder.class);
 
 
     private List<ResourceEntityVo> resourceEntityList;
     private final Map<String, CiVo> ciMap = new HashMap<>();
     private static ResourceCenterConfigMapper resourceCenterConfigMapper;
     private static CiService ciService;
-    private static ResourceViewMapper resourceViewMapper;
+    private static ResourceEntityMapper resourceEntityMapper;
 
 
     @Autowired
-    public ResourceCenterViewBuilder(ResourceCenterConfigMapper _resourceCenterConfigMapper, CiService _ciService, ResourceViewMapper _resourceViewMapper) {
+    public ResourceEntityViewBuilder(ResourceCenterConfigMapper _resourceCenterConfigMapper, CiService _ciService, ResourceEntityMapper _resourceEntityMapper) {
         resourceCenterConfigMapper = _resourceCenterConfigMapper;
-        resourceViewMapper = _resourceViewMapper;
+        resourceEntityMapper = _resourceEntityMapper;
         ciService = _ciService;
     }
 
@@ -87,10 +87,12 @@ public class ResourceCenterViewBuilder {
         return returnList;
     }
 
-    public ResourceCenterViewBuilder(String xml) {
+    public ResourceEntityViewBuilder(String xml) {
         try {
             Map<String, List<Element>> elementMap = new HashMap<>();
             resourceEntityList = findResourceEntity();
+            List<ResourceEntityVo> oldResourceEntityList = resourceEntityMapper.getAllResourceEntity();
+            oldResourceEntityList.removeAll(resourceEntityList);
             if (CollectionUtils.isNotEmpty(resourceEntityList)) {
                 Document document = DocumentHelper.parseText(xml);
                 Element root = document.getRootElement();
@@ -112,9 +114,9 @@ public class ResourceCenterViewBuilder {
                                                 elementMap.put(resourceEntityVo.getName() + "_attr", getAllChildElement(resourceElement, "attr"));
                                             }
                                             List<Element> attrElementList = elementMap.get(resourceEntityVo.getName() + "_attr");
-                                            Optional<Element> op = attrElementList.stream().filter(e -> e.attributeValue("field").equalsIgnoreCase(attr.getField())).findFirst();
-                                            if (op.isPresent()) {
-                                                Element attrElement = op.get();
+                                            Optional<Element> attrOp = attrElementList.stream().filter(e -> e.attributeValue("field").equalsIgnoreCase(attr.getField())).findFirst();
+                                            if (attrOp.isPresent()) {
+                                                Element attrElement = attrOp.get();
                                                 String attrName = attrElement.attributeValue("attr");
                                                 String attrCiName = attrElement.attributeValue("ci");
                                                 CiVo attrCiVo = null;
@@ -133,7 +135,7 @@ public class ResourceCenterViewBuilder {
                                                     } else {
                                                         attr.setCiName(attrCiName);
                                                         attr.setCiId(attrCiVo.getId());
-                                                        attr.setTableAlias("target_cientity_" + attrCiName);
+                                                        attr.setTableAlias("target_cientity_" + attrCiName.toLowerCase(Locale.ROOT));
                                                     }
 
                                                     if (!attrName.startsWith("_")) {
@@ -148,7 +150,7 @@ public class ResourceCenterViewBuilder {
                                                         attr.setAttr("_id");
                                                         attr.setCiId(attrCiVo.getId());
                                                         attr.setCiName(attrCiName);
-                                                        attr.setTableAlias("target_cientity_" + attrCiName);
+                                                        attr.setTableAlias("target_cientity_" + attrCiName.toLowerCase(Locale.ROOT));
                                                     } else {
                                                         throw new ResourceCenterConfigIrregularException(resourceEntityVo.getName(), "attr", attr.getField(), "ci");
                                                     }
@@ -156,7 +158,32 @@ public class ResourceCenterViewBuilder {
                                                     throw new ResourceCenterConfigIrregularException(resourceEntityVo.getName(), "attr", attr.getField(), "attr");
                                                 }
                                             } else {
-                                                throw new ResourceCenterConfigIrregularException(resourceEntityVo.getName(), "attr", attr.getField());
+                                                if (!elementMap.containsKey(resourceEntityVo.getName() + "_rel")) {
+                                                    elementMap.put(resourceEntityVo.getName() + "_rel", getAllChildElement(resourceElement, "rel"));
+                                                }
+                                                List<Element> relElementList = elementMap.get(resourceEntityVo.getName() + "_rel");
+                                                Optional<Element> relOp = relElementList.stream().filter(e -> e.attributeValue("field").equalsIgnoreCase(attr.getField())).findFirst();
+                                                if (relOp.isPresent()) {
+                                                    Element attrElement = relOp.get();
+                                                    String attrCiName = attrElement.attributeValue("ci");
+                                                    CiVo attrCiVo = null;
+                                                    if (StringUtils.isNotBlank(attrCiName)) {
+                                                        attrCiVo = getCiByName(attrCiName);
+                                                        if (attrCiVo == null) {
+                                                            throw new CiNotFoundException(attrCiName);
+                                                        }
+                                                    }
+                                                    if (attrCiVo != null) {
+                                                        attr.setAttr("_id");
+                                                        attr.setCiId(attrCiVo.getId());
+                                                        attr.setCiName(attrCiName);
+                                                        attr.setTableAlias("target_cientity_" + attrCiName.toLowerCase(Locale.ROOT));
+                                                    } else {
+                                                        throw new ResourceCenterConfigIrregularException(resourceEntityVo.getName(), "rel", attr.getField(), "ci");
+                                                    }
+                                                } else {
+                                                    throw new ResourceCenterConfigIrregularException(resourceEntityVo.getName(), "attr或rel", attr.getField());
+                                                }
                                             }
                                         }
                                         //分析连接查询
@@ -175,6 +202,24 @@ public class ResourceCenterViewBuilder {
                                                         ResourceEntityJoinVo joinVo = new ResourceEntityJoinVo(JoinType.ATTR);
                                                         joinVo.setCi(joinCiVo);
                                                         joinVo.setField(attrFieldName);
+                                                        resourceEntityVo.addJoin(joinVo);
+                                                    }
+                                                }
+                                            }
+
+                                            List<Element> relElementList = joinElement.elements("rel");
+                                            if (CollectionUtils.isNotEmpty(relElementList)) {
+                                                for (Element relElement : relElementList) {
+                                                    String relCiName = relElement.attributeValue("ci");
+                                                    String relFieldName = relElement.attributeValue("field");
+                                                    if (StringUtils.isNotBlank(relCiName)) {
+                                                        CiVo joinCiVo = getCiByName(relCiName);
+                                                        if (joinCiVo == null) {
+                                                            throw new CiNotFoundException(relCiName);
+                                                        }
+                                                        ResourceEntityJoinVo joinVo = new ResourceEntityJoinVo(JoinType.REL);
+                                                        joinVo.setCi(joinCiVo);
+                                                        joinVo.setField(relFieldName);
                                                         resourceEntityVo.addJoin(joinVo);
                                                     }
                                                 }
@@ -199,6 +244,13 @@ public class ResourceCenterViewBuilder {
                     }
                 }
             }
+
+            if (CollectionUtils.isNotEmpty(oldResourceEntityList)) {
+                for (ResourceEntityVo entity : oldResourceEntityList) {
+                    resourceEntityMapper.deleteResourceEntityByName(entity.getName());
+                    resourceEntityMapper.deleteResourceEntityView(TenantContext.get().getDataDbName() + "." + entity.getName());
+                }
+            }
         } catch (DocumentException e) {
             throw new ResourceCenterConfigIrregularException(e);
         }
@@ -220,7 +272,7 @@ public class ResourceCenterViewBuilder {
                     plainSelect.addJoins(new Join()
                             .withRightItem(new SubSelect()
                                     .withSelectBody(buildSubSelectForCi(resourceEntity.getCi()).getSelectBody())
-                                    .withAlias(new Alias(resourceEntity.getName())))
+                                    .withAlias(new Alias(resourceEntity.getName().toLowerCase(Locale.ROOT))))
                             .withOnExpression(new EqualsTo().withLeftExpression(new Column()
                                     .withTable(new Table("ci_base"))
                                     .withColumnName("id"))
@@ -236,7 +288,7 @@ public class ResourceCenterViewBuilder {
                             } else if (entityAttr.getAttrId() != null) {
                                 selectItem.setExpression(new Column(entityAttr.getTableAlias() + ".`" + entityAttr.getAttrId() + "`"));
                             }
-                            selectItem.setAlias(new Alias(entityAttr.getField()));
+                            selectItem.setAlias(new Alias(entityAttr.getField().toLowerCase(Locale.ROOT)));
                             plainSelect.addSelectItems(selectItem);
                         }
                     }
@@ -245,33 +297,56 @@ public class ResourceCenterViewBuilder {
                         List<Join> joinList = new ArrayList<>();
                         for (ResourceEntityJoinVo entityJoin : resourceEntity.getJoinList()) {
                             if (entityJoin.getJoinType() == JoinType.ATTR) {
-
                                 plainSelect.addJoins(new Join()
                                         //.withLeft(true)
                                         .withRightItem(new Table()
                                                 .withName("cmdb_attrentity")
                                                 .withSchemaName(TenantContext.get().getDbName())
-                                                .withAlias(new Alias("cmdb_attrentity_" + entityJoin.getField())))
+                                                .withAlias(new Alias("cmdb_attrentity_" + entityJoin.getField().toLowerCase(Locale.ROOT))))
                                         .withOnExpression(new EqualsTo()
                                                 .withLeftExpression(new Column()
                                                         .withTable(new Table("ci_base"))
                                                         .withColumnName("id"))
                                                 .withRightExpression(new Column()
-                                                        .withTable(new Table("cmdb_attrentity_" + entityJoin.getField()))
+                                                        .withTable(new Table("cmdb_attrentity_" + entityJoin.getField().toLowerCase(Locale.ROOT)))
                                                         .withColumnName("from_cientity_id"))));
-
                                 plainSelect.addJoins(new Join()
                                         //.withLeft(true)
                                         .withRightItem(new SubSelect()
                                                 .withSelectBody(buildSubSelectForCi(entityJoin.getCi()).getSelectBody())
-                                                .withAlias(new Alias("target_cientity_" + entityJoin.getCi().getName()))
+                                                .withAlias(new Alias("target_cientity_" + entityJoin.getCi().getName().toLowerCase(Locale.ROOT)))
                                         ).withOnExpression(new EqualsTo()
                                                 .withLeftExpression(new Column()
                                                         .withTable(new Table("cmdb_attrentity_" + entityJoin.getField()))
                                                         .withColumnName("to_cientity_id"))
                                                 .withRightExpression(new Column()
-                                                        .withTable(new Table("target_cientity_" + entityJoin.getCi().getName()))
-                                                        .withColumnName(entityJoin.getCi().getIsVirtual().equals(0) ? "cientity_id" : "id"))));
+                                                        .withTable(new Table("target_cientity_" + entityJoin.getCi().getName().toLowerCase(Locale.ROOT)))
+                                                        .withColumnName("id"))));
+                            } else if (entityJoin.getJoinType() == JoinType.REL) {
+                                plainSelect.addJoins(new Join()
+                                        .withRightItem(new Table()
+                                                .withName("cmdb_relentity")
+                                                .withSchemaName(TenantContext.get().getDbName())
+                                                .withAlias(new Alias("cmdb_relentity_" + entityJoin.getField().toLowerCase(Locale.ROOT))))
+                                        .withOnExpression(new EqualsTo()
+                                                .withLeftExpression(new Column()
+                                                        .withTable(new Table("ci_base"))
+                                                        .withColumnName("id"))
+                                                .withRightExpression(new Column()
+                                                        .withTable(new Table("cmdb_relentity_" + entityJoin.getField().toLowerCase(Locale.ROOT)))
+                                                        .withColumnName("from_cientity_id"))));
+
+                                plainSelect.addJoins(new Join()
+                                        .withRightItem(new SubSelect()
+                                                .withSelectBody(buildSubSelectForCi(entityJoin.getCi()).getSelectBody())
+                                                .withAlias(new Alias("target_cientity_" + entityJoin.getCi().getName().toLowerCase(Locale.ROOT)))
+                                        ).withOnExpression(new EqualsTo()
+                                                .withLeftExpression(new Column()
+                                                        .withTable(new Table("cmdb_relentity_" + entityJoin.getField().toLowerCase(Locale.ROOT)))
+                                                        .withColumnName("to_cientity_id"))
+                                                .withRightExpression(new Column()
+                                                        .withTable(new Table("target_cientity_" + entityJoin.getCi().getName().toLowerCase(Locale.ROOT)))
+                                                        .withColumnName("id"))));
                             }
                         }
                         if (CollectionUtils.isNotEmpty(joinList)) {
@@ -284,7 +359,7 @@ public class ResourceCenterViewBuilder {
                         if (logger.isDebugEnabled()) {
                             logger.debug(sql);
                         }
-                        resourceViewMapper.insertResourceEntityView(sql);
+                        resourceEntityMapper.insertResourceEntityView(sql);
                         resourceEntity.setError("");
                         resourceEntity.setStatus(Status.READY.getValue());
                     } catch (Exception ex) {
