@@ -86,7 +86,7 @@ public class CiEntityBuilder {
                     if (key.startsWith("attr_")) {
                         Long attrId = Long.parseLong(key.substring(5));
 
-                        String value = result.get(key).toString();
+                        Object value = result.get(key);
                         //处理属性
                         if (key.startsWith("attr_")) {
                             AttrVo attrVo = attrMap.get(attrId);
@@ -98,7 +98,7 @@ public class CiEntityBuilder {
                                 JSONArray valueList = new JSONArray();
                                 //例如附件型参数有可能是个数组，所以先尝试做转换，不行再当字符串处理
                                 try {
-                                    valueList = JSONArray.parseArray(value);
+                                    valueList = JSONArray.parseArray(value.toString());
                                 } catch (Exception ignored) {
                                     valueList.add(value);
                                 }
@@ -176,7 +176,7 @@ public class CiEntityBuilder {
                 for (String key : result.keySet()) {
                     if (key.startsWith("attr_")) {
                         Long attrId = Long.parseLong(key.substring(5));
-                        String value = result.get(key).toString();
+                        Object value = result.get(key);
                         //处理属性
                         if (key.startsWith("attr_")) {
                             AttrVo attrVo = attrMap.get(attrId);
@@ -188,7 +188,7 @@ public class CiEntityBuilder {
                                 JSONArray valueList = new JSONArray();
                                 //例如附件型参数有可能是个数组，所以先尝试做转换，不行再当字符串处理
                                 try {
-                                    valueList = JSONArray.parseArray(value);
+                                    valueList = JSONArray.parseArray(value.toString());
                                 } catch (Exception ignored) {
                                     valueList.add(value);
                                 }
@@ -240,7 +240,7 @@ public class CiEntityBuilder {
         }
     }
 
-    private JSONObject buildAttrObj(Long ciEntityId, AttrVo attrVo, String value) {
+    private JSONObject buildAttrObj(Long ciEntityId, AttrVo attrVo, Object value) {
         JSONObject attrObj = new JSONObject();
         attrObj.put("ciEntityId", ciEntityId);
         attrObj.put("attrId", attrVo.getId());
@@ -252,7 +252,7 @@ public class CiEntityBuilder {
         JSONArray valueList = new JSONArray();
         try {
             //例如附件型参数有可能是个数组，所以先尝试做转换，不行再当字符串处理
-            valueList = JSONArray.parseArray(value);
+            valueList = JSONArray.parseArray(value.toString());
         } catch (Exception ignored) {
             valueList.add(value);
         }

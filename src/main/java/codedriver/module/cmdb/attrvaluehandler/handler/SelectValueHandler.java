@@ -13,7 +13,6 @@ import codedriver.framework.cmdb.enums.SearchExpression;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -73,17 +72,16 @@ public class SelectValueHandler implements IAttrValueHandler {
         JSONArray actualValueList = new JSONArray();
         Map<Long, CiEntityVo> ciEntityCachedMap = new HashMap<>();
         for (int i = 0; i < valueList.size(); i++) {
-            String value = valueList.getString(i);
-            if (config != null && config.containsKey("textKey") && StringUtils.isNotBlank(value) && StringUtils.isNumeric(value)) {
-                Long tmpCiEntityId = Long.parseLong(value);
+            Long value = valueList.getLong(i);
+            if (config != null && config.containsKey("textKey") && value != null) {
                 Long attrId = config.getLong("textKey");
-                CiEntityVo ciEntityVo = ciEntityCachedMap.get(tmpCiEntityId);
+                CiEntityVo ciEntityVo = ciEntityCachedMap.get(value);
                 if (ciEntityVo == null) {
-                    ciEntityVo = ciEntityService.getCiEntityById(attrVo.getTargetCiId(), tmpCiEntityId);
+                    ciEntityVo = ciEntityService.getCiEntityById(attrVo.getTargetCiId(), value);
 
                 }
                 if (ciEntityVo != null) {
-                    ciEntityCachedMap.put(tmpCiEntityId, ciEntityVo);
+                    ciEntityCachedMap.put(value, ciEntityVo);
                     if (ciEntityVo.hasAttrEntityData(attrId)) {
                         AttrEntityVo attrEntityVo = ciEntityVo.getAttrEntityByAttrId(attrId);
                         //默认只取第一个值
