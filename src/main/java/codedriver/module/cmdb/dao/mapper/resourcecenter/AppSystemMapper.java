@@ -5,5 +5,10 @@
 
 package codedriver.module.cmdb.dao.mapper.resourcecenter;
 
+import codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemVo;
+
+import java.util.List;
+
 public interface AppSystemMapper {
+    List<AppSystemVo> searchAppSystem(AppSystemVo appSystemVo);
 }

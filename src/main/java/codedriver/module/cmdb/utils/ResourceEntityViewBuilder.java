@@ -354,7 +354,6 @@ public class ResourceEntityViewBuilder {
                         }
                     }
                     try {
-                        System.out.println(select);
                         String sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + "." + resourceEntity.getName() + " AS " + select;
                         if (logger.isDebugEnabled()) {
                             logger.debug(sql);
