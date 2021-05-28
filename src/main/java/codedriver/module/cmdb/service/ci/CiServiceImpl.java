@@ -12,6 +12,7 @@ import codedriver.framework.cmdb.dto.ci.RelVo;
 import codedriver.framework.cmdb.exception.ci.*;
 import codedriver.framework.exception.database.DataBaseNotFoundException;
 import codedriver.framework.lrcode.LRCodeManager;
+import codedriver.framework.lrcode.constvalue.MoveType;
 import codedriver.framework.transaction.core.AfterTransactionJob;
 import codedriver.framework.transaction.core.EscapeTransactionJob;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
@@ -216,14 +217,13 @@ public class CiServiceImpl implements CiService {
         if (checkCiVo == null) {
             throw new CiNotFoundException(ciVo.getId());
         }
-        boolean needRebuildLRCode = false;
         if (!Objects.equals(checkCiVo.getParentCiId(), ciVo.getParentCiId())) {
             //如果继承发生改变需要检查是否有配置项数据，有数据不允许变更
             int ciEntityCount = ciEntityMapper.getDownwardCiEntityCountByLR(ciVo.getLft(), ciVo.getRht());
             if (ciEntityCount > 0) {
                 throw new CiParentCanNotBeChangedException(ciVo.getName(), ciEntityCount);
             }
-            needRebuildLRCode = true;
+            LRCodeManager.moveTreeNode("cmdb_ci", "id", "parent_ci_id", ciVo.getId(), MoveType.INNER, ciVo.getParentCiId());
         }
         if (ciMapper.checkCiNameIsExists(ciVo) > 0) {
             throw new CiNameIsExistsException(ciVo.getName());
@@ -238,9 +238,6 @@ public class CiServiceImpl implements CiService {
             if (!s.isSucceed()) {
                 throw new CreateCiSchemaException(ciVo.getName());
             }
-        }
-        if (needRebuildLRCode) {
-            LRCodeManager.rebuildLeftRightCode("cmdb_ci", "id", "parent_ci_id");
         }
         ciMapper.updateCi(ciVo);
     }
