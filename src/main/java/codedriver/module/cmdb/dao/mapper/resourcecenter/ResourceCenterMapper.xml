@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright(c) 2021 TechSureCo.,Ltd.AllRightsReserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper">
+    <sql id="resource_dbinstance_from_where">
+        FROM ${schemaName}.`resource_dbinstance` a
+        LEFT JOIN ${schemaName}.`resource_dbinstance_bg` b on b.`db_instance_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_dbinstance_ip` c on c.`db_instance_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_dbinstance_netarea` d on d.`db_instance_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_dbinstance_owner` e on e.`db_instance_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_dbinstance_status` f on f.`db_instance_id` = a.`id`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND a.`name` LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+    </sql>
+    <sql id="resource_dbinstance_select_count">
+        SELECT COUNT(1) AS `count`
+        <include refid="resource_dbinstance_from_where"/>
+    </sql>
+    <sql id="resource_dbinstance_select_list">
+        SELECT a.`id`, a.`maintenance_window`, a.`name`, a.`description`, a.`port`, c.`ip`
+        <include refid="resource_dbinstance_from_where"/>
+    </sql>
+
+    <sql id="resource_appinstance_from_where">
+        FROM ${schemaName}.`resource_appinstance` a
+        LEFT JOIN ${schemaName}.`resource_appinstance_bg` b ON b.`app_instance_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_appinstance_ip` c ON c.`app_instance_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_appinstance_netarea` d ON d.`app_instance_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_appinstance_owner` e ON e.`app_instance_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_appinstance_status` f ON f.`app_instance_id` = a.`id`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND a.`name` LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+    </sql>
+    <sql id="resource_appinstance_select_count">
+        SELECT COUNT(1)  AS `count`
+        <include refid="resource_appinstance_from_where"/>
+    </sql>
+    <sql id="resource_appinstance_select_list">
+        SELECT a.`id`, a.`maintenance_window`, a.`name`, a.`description`, a.`port`, c.`ip`
+        <include refid="resource_appinstance_from_where"/>
+    </sql>
+
+    <select id="getResourceCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo" resultType="int">
+        SELECT SUM(uniontemp.`count`) FROM (
+        <include refid="resource_appinstance_select_count"/>
+        UNION ALL
+        <include refid="resource_dbinstance_select_count"/>
+        ) uniontemp
+    </select>
+
+    <resultMap id="resourceCenterMap" type="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="status" property="status"/>
+        <result column="statusName" property="statusName"/>
+        <result column="maintenance_window" property="maintenanceWindow"/>
+        <result column="description" property="description"/>
+        <result column="ip" property="ip"/>
+        <result column="port" property="port"/>
+    </resultMap>
+
+    <select id="getResourceList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo" resultMap="resourceCenterMap">
+        <include refid="resource_appinstance_select_list"/>
+        UNION ALL
+        <include refid="resource_dbinstance_select_list"/>
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="getTagNameListByResourceId" parameterType="java.lang.Long" resultType="java.lang.String">
+        SELECT `name`
+        FROM `cmdb_resourcecenter_tag` a
+        JOIN `cmdb_resourcecenter_resource_tag` b ON b.`tag_id` = a.`id` AND b.`resource_id` = #{value}
+    </select>
+
+    <select id="getAccountCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.AccountVo" resultType="int">
+        SELECT COUNT(1) FROM `cmdb_resourcecenter_account`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` like concat('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="getAccountListForSelect" parameterType="codedriver.framework.cmdb.dto.resourcecenter.AccountVo" resultType="codedriver.framework.cmdb.dto.resourcecenter.AccountVo">
+        SELECT `id`, `name` FROM `cmdb_resourcecenter_account`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` like concat('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="getTagCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.TagVo" resultType="int">
+        SELECT COUNT(1) FROM `cmdb_resourcecenter_tag`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` like concat('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="getTagListForSelect" parameterType="codedriver.framework.cmdb.dto.resourcecenter.TagVo" resultType="codedriver.framework.cmdb.dto.resourcecenter.TagVo">
+        SELECT `id`, `name` FROM `cmdb_resourcecenter_tag`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` like concat('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
+</mapper>
