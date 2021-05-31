@@ -269,6 +269,7 @@ public class ResourceEntityViewBuilder {
                     SelectBody selectBody = select.getSelectBody();
                     PlainSelect plainSelect = (PlainSelect) selectBody;
 
+
                     plainSelect.addJoins(new Join()
                             .withRightItem(new SubSelect()
                                     .withSelectBody(buildSubSelectForCi(resourceEntity.getCi()).getSelectBody())
@@ -384,11 +385,27 @@ public class ResourceEntityViewBuilder {
             PlainSelect plainSelect = (PlainSelect) selectBody;
             plainSelect.addSelectItems(new SelectExpressionItem(new Column("id").withTable(new Table("ci_base"))));
             plainSelect.addSelectItems(new SelectExpressionItem(new Column("name").withTable(new Table("ci_base"))));
+            plainSelect.addSelectItems(new SelectExpressionItem(new Column("id").withTable(new Table("ci_info").withAlias(new Alias("typeId")))));
+            plainSelect.addSelectItems(new SelectExpressionItem(new Column("name").withTable(new Table("ci_info").withAlias(new Alias("typeName")))));
             for (AttrVo attrVo : ciVo.getAttrList()) {
                 if (attrVo.getTargetCiId() == null) {
                     plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getId() + "`").withTable(new Table("cmdb_" + attrVo.getCiId()))));
                 }
             }
+
+            plainSelect.addJoins(new Join()
+                    .withRightItem(new Table()
+                            .withName("cmdb_ci")
+                            .withAlias(new Alias("ci_info"))
+                            .withSchemaName(TenantContext.get().getDbName()))
+                    .withOnExpression(new EqualsTo()
+                            .withLeftExpression(new Column()
+                                    .withTable(new Table("ci_base"))
+                                    .withColumnName("ci_id"))
+                            .withRightExpression(new Column()
+                                    .withTable(new Table("ci_info"))
+                                    .withColumnName("id"))));
+
             //生成主SQL，需要join所有父模型数据表
             for (CiVo ci : ciVo.getUpwardCiList()) {
                 plainSelect.addJoins(new Join()
