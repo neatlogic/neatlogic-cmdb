@@ -383,10 +383,11 @@ public class ResourceEntityViewBuilder {
             Select select = SelectUtils.buildSelectFromTableAndSelectItems(mainTable);
             SelectBody selectBody = select.getSelectBody();
             PlainSelect plainSelect = (PlainSelect) selectBody;
+            //内置属性统一在这里添加
             plainSelect.addSelectItems(new SelectExpressionItem(new Column("id").withTable(new Table("ci_base"))));
             plainSelect.addSelectItems(new SelectExpressionItem(new Column("name").withTable(new Table("ci_base"))));
-            plainSelect.addSelectItems(new SelectExpressionItem(new Column("id").withTable(new Table("ci_info").withAlias(new Alias("typeId")))));
-            plainSelect.addSelectItems(new SelectExpressionItem(new Column("name").withTable(new Table("ci_info").withAlias(new Alias("typeName")))));
+            plainSelect.addSelectItems(new SelectExpressionItem(new Column("id").withTable(new Table("ci_info"))).withAlias(new Alias("typeId")));
+            plainSelect.addSelectItems(new SelectExpressionItem(new Column("name").withTable(new Table("ci_info"))).withAlias(new Alias("typeName")));
             for (AttrVo attrVo : ciVo.getAttrList()) {
                 if (attrVo.getTargetCiId() == null) {
                     plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getId() + "`").withTable(new Table("cmdb_" + attrVo.getCiId()))));
