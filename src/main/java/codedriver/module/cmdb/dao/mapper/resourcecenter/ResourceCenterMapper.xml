@@ -13,6 +13,10 @@
         LEFT JOIN ${schemaName}.`resource_dbinstance_netarea` d on d.`db_instance_id` = a.`id`
         LEFT JOIN ${schemaName}.`resource_dbinstance_owner` e on e.`db_instance_id` = a.`id`
         LEFT JOIN ${schemaName}.`resource_dbinstance_status` f on f.`db_instance_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_dbinstance_datacenter` g on g.`db_instance_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_dbinstance_env` h on h.`db_instance_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_dbinstance_appmodule` i on i.`db_instance_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_dbinstance_appsystem` j on j.`db_instance_id` = a.`id`
         <where>
             <if test="keyword != null and keyword != ''">
                 AND a.`name` LIKE CONCAT('%', #{keyword}, '%')
@@ -35,6 +39,10 @@
         LEFT JOIN ${schemaName}.`resource_appinstance_netarea` d ON d.`app_instance_id` = a.`id`
         LEFT JOIN ${schemaName}.`resource_appinstance_owner` e ON e.`app_instance_id` = a.`id`
         LEFT JOIN ${schemaName}.`resource_appinstance_status` f ON f.`app_instance_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_appinstance_datacenter` g on g.`app_instance_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_appinstance_env` h on h.`app_instance_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_appinstance_appmodule` i on i.`app_instance_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_appinstance_appsystem` j on j.`app_instance_id` = a.`id`
         <where>
             <if test="keyword != null and keyword != ''">
                 AND a.`name` LIKE CONCAT('%', #{keyword}, '%')
