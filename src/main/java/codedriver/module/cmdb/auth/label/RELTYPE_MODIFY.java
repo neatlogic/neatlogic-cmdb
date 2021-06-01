@@ -12,28 +12,28 @@ import java.util.List;
 
 public class RELTYPE_MODIFY extends AuthBase {
 
-	@Override
-	public String getAuthDisplayName() {
-		return "关系类型修改权限";
-	}
+    @Override
+    public String getAuthDisplayName() {
+        return "关系类型修改权限";
+    }
 
-	@Override
-	public String getAuthIntroduction() {
-		return "对关系类型进行添加、修改和删除";
-	}
+    @Override
+    public String getAuthIntroduction() {
+        return "对关系类型进行添加、修改和删除";
+    }
 
-	@Override
-	public String getAuthGroup() {
-		return "cmdb";
-	}
+    @Override
+    public String getAuthGroup() {
+        return "cmdb";
+    }
 
-	@Override
-	public Integer getSort() {
-		return 6;
-	}
+    @Override
+    public Integer getSort() {
+        return 6;
+    }
 
-	@Override
-	public List<Class<? extends AuthBase>> getIncludeAuths() {
-		return Collections.singletonList(CMDB_BASE.class);
-	}
+    @Override
+    public List<Class<? extends AuthBase>> getIncludeAuths() {
+        return Collections.singletonList(CMDB_BASE.class);
+    }
 }
