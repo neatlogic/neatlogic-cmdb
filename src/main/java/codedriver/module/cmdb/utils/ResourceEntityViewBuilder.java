@@ -13,6 +13,7 @@ import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityAttrVo;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityJoinVo;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
+import codedriver.framework.cmdb.enums.RelDirectionType;
 import codedriver.framework.cmdb.enums.resourcecenter.JoinType;
 import codedriver.framework.cmdb.enums.resourcecenter.Status;
 import codedriver.framework.cmdb.exception.attr.AttrNotFoundException;
@@ -212,6 +213,7 @@ public class ResourceEntityViewBuilder {
                                                 for (Element relElement : relElementList) {
                                                     String relCiName = relElement.attributeValue("ci");
                                                     String relFieldName = relElement.attributeValue("field");
+                                                    String relDirection = relElement.attributeValue("direction");
                                                     if (StringUtils.isNotBlank(relCiName)) {
                                                         CiVo joinCiVo = getCiByName(relCiName);
                                                         if (joinCiVo == null) {
@@ -220,6 +222,7 @@ public class ResourceEntityViewBuilder {
                                                         ResourceEntityJoinVo joinVo = new ResourceEntityJoinVo(JoinType.REL);
                                                         joinVo.setCi(joinCiVo);
                                                         joinVo.setField(relFieldName);
+                                                        joinVo.setDirection(relDirection);
                                                         resourceEntityVo.addJoin(joinVo);
                                                     }
                                                 }
@@ -335,7 +338,7 @@ public class ResourceEntityViewBuilder {
                                                         .withColumnName("id"))
                                                 .withRightExpression(new Column()
                                                         .withTable(new Table("cmdb_relentity_" + entityJoin.getField().toLowerCase(Locale.ROOT)))
-                                                        .withColumnName("from_cientity_id"))));
+                                                        .withColumnName(entityJoin.getDirection().equals(RelDirectionType.FROM.getValue()) ? "from_cientity_id" : "to_cientity_id"))));
 
                                 plainSelect.addJoins(new Join()
                                         .withRightItem(new SubSelect()
@@ -344,7 +347,7 @@ public class ResourceEntityViewBuilder {
                                         ).withOnExpression(new EqualsTo()
                                                 .withLeftExpression(new Column()
                                                         .withTable(new Table("cmdb_relentity_" + entityJoin.getField().toLowerCase(Locale.ROOT)))
-                                                        .withColumnName("to_cientity_id"))
+                                                        .withColumnName(entityJoin.getDirection().equals(RelDirectionType.FROM.getValue()) ? "to_cientity_id" : "from_cientity_id"))
                                                 .withRightExpression(new Column()
                                                         .withTable(new Table("target_cientity_" + entityJoin.getCi().getName().toLowerCase(Locale.ROOT)))
                                                         .withColumnName("id"))));

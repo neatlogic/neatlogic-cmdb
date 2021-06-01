@@ -14,4 +14,5 @@ public interface ResourceCenterConfigMapper {
     void updateResourceEntity(ResourceEntityVo resourceEntityVo);
 
     void insertResourceEntity(ResourceEntityVo resourceEntityVo);
+
 }

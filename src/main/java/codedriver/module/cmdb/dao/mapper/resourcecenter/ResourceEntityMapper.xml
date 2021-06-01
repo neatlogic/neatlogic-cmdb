@@ -16,6 +16,19 @@
         ${value}
     </insert>
 
+
+    <insert id="insertResourceEntityAttr"
+            parameterType="codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityAttrVo">
+        INSERT INTO cmdb_resourcecenter_field (`entity_name`, `field_name`, `ci_id`, `attr_id`)
+        VALUES (#{entity}, #{field}, #{ciId}, #{attrId})
+    </insert>
+
+    <delete id="deleteResourceEntityAttrByEntity" parameterType="java.lang.String">
+        DELETE
+        FROM cmdb_resourcecenter_field
+        WHERE entity_name = #{value}
+    </delete>
+
     <delete id="deleteResourceEntityByName" parameterType="java.lang.String">
         DELETE
         FROM cmdb_resourcecenter_entity

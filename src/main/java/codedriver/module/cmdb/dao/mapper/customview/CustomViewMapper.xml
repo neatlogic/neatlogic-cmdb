@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.cmdb.dao.mapper.customview.CustomViewMapper">
+    <insert id="insertCustomView" parameterType="codedriver.framework.cmdb.dto.customview.CustomViewVo">
+        INSERT INTO cmdb_custom_view (id, name, is_private, owner_uuid, config)
+        VALUES (#{id}, #{name}, #{isPrivate}, #{ownerUuid}, #{configStr})
+    </insert>
+
+    <insert id="insertCustomViewCi" parameterType="codedriver.framework.cmdb.dto.customview.CustomViewCiVo">
+        INSERT INTO cmdb_custom_view_ci(id, uuid, customview_id, ci_id, is_start, is_showtopo)
+        VALUES (#{id}, #{uuid}, #{customViewId}, #{ciId}, #{isStart}, #{isShowTopo})
+    </insert>
+
+</mapper>
