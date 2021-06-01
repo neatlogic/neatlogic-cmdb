@@ -222,7 +222,9 @@ public class ResourceEntityViewBuilder {
                                                         ResourceEntityJoinVo joinVo = new ResourceEntityJoinVo(JoinType.REL);
                                                         joinVo.setCi(joinCiVo);
                                                         joinVo.setField(relFieldName);
-                                                        joinVo.setDirection(relDirection);
+                                                        if (StringUtils.isNotBlank(relDirection)) {
+                                                            joinVo.setDirection(relDirection);
+                                                        }
                                                         resourceEntityVo.addJoin(joinVo);
                                                     }
                                                 }
