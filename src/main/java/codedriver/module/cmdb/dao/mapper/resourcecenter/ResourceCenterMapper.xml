@@ -10,10 +10,10 @@
         FROM ${schemaName}.`resource_dbinstance` a
         LEFT JOIN ${schemaName}.`resource_dbinstance_bg` b on b.`db_instance_id` = a.`id`
         LEFT JOIN ${schemaName}.`resource_dbinstance_ip` c on c.`db_instance_id` = a.`id`
-        /*LEFT JOIN ${schemaName}.`resource_dbinstance_netarea` d on d.`db_instance_id` = a.`id`*/
+        LEFT JOIN ${schemaName}.`resource_dbinstance_netarea` d on d.`db_instance_id` = a.`id`
         LEFT JOIN ${schemaName}.`resource_dbinstance_owner` e on e.`db_instance_id` = a.`id`
-        /*LEFT JOIN ${schemaName}.`resource_dbinstance_status` f on f.`db_instance_id` = a.`id`*/
-        /*LEFT JOIN ${schemaName}.`resource_dbinstance_datacenter` g on g.`db_instance_id` = a.`id`*/
+        LEFT JOIN ${schemaName}.`resource_dbinstance_status` f on f.`db_instance_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_dbinstance_datacenter` g on g.`db_instance_id` = a.`id`
         LEFT JOIN ${schemaName}.`resource_dbinstance_env` h on h.`db_instance_id` = a.`id`
         LEFT JOIN ${schemaName}.`resource_dbinstance_appmodule` i on i.`db_instance_id` = a.`id`
         LEFT JOIN ${schemaName}.`resource_appsystem_appmodule` j on j.`app_module_id` = i.`app_module_id`
@@ -43,10 +43,10 @@
         FROM ${schemaName}.`resource_appinstance` a
         LEFT JOIN ${schemaName}.`resource_appinstance_bg` b ON b.`app_instance_id` = a.`id`
         LEFT JOIN ${schemaName}.`resource_appinstance_ip` c ON c.`app_instance_id` = a.`id`
-        /*LEFT JOIN ${schemaName}.`resource_appinstance_netarea` d ON d.`app_instance_id` = a.`id`*/
+        LEFT JOIN ${schemaName}.`resource_appinstance_netarea` d ON d.`app_instance_id` = a.`id`
         LEFT JOIN ${schemaName}.`resource_appinstance_owner` e ON e.`app_instance_id` = a.`id`
-        /*LEFT JOIN ${schemaName}.`resource_appinstance_status` f ON f.`app_instance_id` = a.`id`*/
-        /*LEFT JOIN ${schemaName}.`resource_appinstance_datacenter` g on g.`app_instance_id` = a.`id`*/
+        LEFT JOIN ${schemaName}.`resource_appinstance_status` f ON f.`app_instance_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_appinstance_datacenter` g on g.`app_instance_id` = a.`id`
         LEFT JOIN ${schemaName}.`resource_appinstance_env` h on h.`app_instance_id` = a.`id`
         LEFT JOIN ${schemaName}.`resource_appinstance_appmodule` i on i.`app_instance_id` = a.`id`
         LEFT JOIN ${schemaName}.`resource_appsystem_appmodule` j on j.`app_module_id` = i.`app_module_id`
