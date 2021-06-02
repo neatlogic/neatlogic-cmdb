@@ -13,21 +13,25 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class GetAttrApi extends PrivateApiComponentBase {
+public class GetAttrListApi extends PrivateApiComponentBase {
 
     @Autowired
     private AttrMapper attrMapper;
 
     @Override
     public String getToken() {
-        return "/cmdb/attr/get";
+        return "/cmdb/attr/getlist";
     }
 
     @Override
@@ -40,11 +44,16 @@ public class GetAttrApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "属性id")})
-    @Output({@Param(explode = AttrVo.class)})
+    @Input({@Param(name = "idList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "属性id列表")})
+    @Output({@Param(explode = AttrVo[].class)})
     @Description(desc = "获取属性详细信息接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        return attrMapper.getAttrById(jsonObj.getLong("id"));
+        JSONArray idList = jsonObj.getJSONArray("idList");
+        List<Long> attrIdList = new ArrayList<>();
+        for (int i = 0; i < idList.size(); i++) {
+            attrIdList.add(idList.getLong(i));
+        }
+        return attrMapper.getAttrByIdList(attrIdList);
     }
 }

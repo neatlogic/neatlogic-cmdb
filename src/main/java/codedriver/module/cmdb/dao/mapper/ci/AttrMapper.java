@@ -6,6 +6,7 @@
 package codedriver.module.cmdb.dao.mapper.ci;
 
 import codedriver.framework.cmdb.dto.ci.AttrVo;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -14,6 +15,8 @@ public interface AttrMapper {
     List<String> getAttrGroupByCiId(Long ciId);
 
     AttrVo getAttrById(Long attrId);
+
+    List<AttrVo> getAttrByIdList(@Param("attrIdList") List<Long> attrIdList);
 
     List<AttrVo> getAttrByCiId(Long ciId);
 

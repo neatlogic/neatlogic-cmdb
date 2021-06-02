@@ -57,7 +57,6 @@ public class SaveCustomViewApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "视图id，不提供代表新增"),
             @Param(name = "name", type = ApiParamType.STRING, isRequired = true, xss = true, desc = "名称"),
-            @Param(name = "startCi", type = ApiParamType.STRING, isRequired = true, desc = "起始模型uuid"),
             @Param(name = "config", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "拓扑图配置")})
     @Description(desc = "保存自定义视图接口")
     @Override
@@ -166,12 +165,12 @@ public class SaveCustomViewApi extends PrivateApiComponentBase {
             }
         }
         CustomViewBuilder builder = new CustomViewBuilder(customViewVo);
-        builder.buildView();
-       /* if (id == null) {
+
+        if (id == null) {
             customViewService.insertCustomView(customViewVo);
         } else {
             customViewService.updateCustomView(customViewVo);
-        }*/
+        }
         return null;
     }
 

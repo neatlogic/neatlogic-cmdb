@@ -29,6 +29,28 @@
         WHERE id = #{value}
     </select>
 
+    <select id="getAttrByIdList" resultType="codedriver.framework.cmdb.dto.ci.AttrVo"
+            useCache="false">
+        SELECT `id`,
+        `ci_id` AS ciId,
+        `type`,
+        `target_ci_id` AS targetCiId,
+        `name`,
+        `label`,
+        `description`,
+        `validator_id` AS validatorId,
+        (SELECT name FROM cmdb_validator x WHERE x.id = validator_id) AS validatorName,
+        `is_required` AS isRequired,
+        `is_unique` AS isUnique,
+        `input_type` AS inputType,
+        `group_name` AS groupName,
+        `is_private` AS isPrivate,
+        `config` AS configStr
+        FROM `cmdb_attr`
+        WHERE id IN
+        <foreach collection="attrIdList" item="item" open="(" close=")" separator=",">#{item}</foreach>
+    </select>
+
     <select id="getAttrGroupByCiId" parameterType="java.lang.Long" resultType="java.lang.String" useCache="true">
         SELECT DISTINCT group_name
         FROM cmdb_attr

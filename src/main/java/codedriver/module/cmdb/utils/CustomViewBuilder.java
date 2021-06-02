@@ -17,6 +17,7 @@ import codedriver.framework.cmdb.exception.attr.AttrNotFoundException;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.cmdb.exception.rel.RelNotFoundException;
 import codedriver.module.cmdb.service.ci.CiService;
+import codedriver.module.cmdb.service.customview.CustomViewService;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
@@ -26,6 +27,8 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.util.SelectUtils;
 import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -35,16 +38,18 @@ import java.util.Map;
 
 @Component
 public class CustomViewBuilder {
+    private final static Logger logger = LoggerFactory.getLogger(CustomViewBuilder.class);
 
     private final String dataSchema = TenantContext.get().getDataDbName();
     private final String schema = TenantContext.get().getDbName();
     private static CiService ciService;
-    private static Map<String, CustomViewLinkVo> relMap = new HashMap<>();
+    private static CustomViewService customViewService;
     private CustomViewVo customViewVo;
 
     @Autowired
-    public CustomViewBuilder(CiService _ciService) {
+    public CustomViewBuilder(CiService _ciService, CustomViewService _customViewService) {
         ciService = _ciService;
+        customViewService = _customViewService;
     }
 
     public CustomViewBuilder(CustomViewVo _customViewVo) {
@@ -94,7 +99,7 @@ public class CustomViewBuilder {
             PlainSelect plainSelect = (PlainSelect) selectBody;
             plainSelect.addSelectItems(new SelectExpressionItem(new Column("id").withTable(new Table("ci_base"))));
             for (CustomViewAttrVo attrVo : customViewVo.getAttrList()) {
-                plainSelect.addSelectItems(new SelectExpressionItem(new Column(attrVo.getUuid())));
+                plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getUuid() + "`")));
             }
 
             for (int i = 0; i < customViewVo.getCiList().size(); i++) {
@@ -181,6 +186,15 @@ public class CustomViewBuilder {
                     }
                 }
             }
+            try {
+                String sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + ".customview_" + customViewVo.getId() + " AS " + select;
+                if (logger.isDebugEnabled()) {
+                    logger.debug(sql);
+                }
+                customViewService.buildCustomView(sql);
+            } catch (Exception ignored) {
+            } finally {
+            }
             System.out.println(select);
         }
     }
@@ -202,17 +216,17 @@ public class CustomViewBuilder {
                 if (attrVo.getTargetCiId() == null) {
                     plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getId() + "`")
                             .withTable(new Table("cmdb_" + attrVo.getCiId())))
-                            .withAlias(new Alias(viewAttrVo.getUuid())));
+                            .withAlias(new Alias("`" + viewAttrVo.getUuid() + "`")));
                     plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getId() + "_hash`")
                             .withTable(new Table("cmdb_" + attrVo.getCiId())))
-                            .withAlias(new Alias(viewAttrVo.getUuid() + "_hash")));
+                            .withAlias(new Alias("`" + viewAttrVo.getUuid() + "_hash`")));
                 } else {
                     plainSelect.addSelectItems(new SelectExpressionItem(new Column("name")
                             .withTable(new Table("attr_cientity_" + viewAttrVo.getUuid())))
-                            .withAlias(new Alias(viewAttrVo.getUuid())));
+                            .withAlias(new Alias("`" + viewAttrVo.getUuid() + "`")));
                     plainSelect.addSelectItems(new SelectExpressionItem(new Column("id")
                             .withTable(new Table("attr_cientity_" + viewAttrVo.getUuid())))
-                            .withAlias(new Alias(viewAttrVo.getUuid() + "_hash")));
+                            .withAlias(new Alias("`" + viewAttrVo.getUuid() + "_hash`")));
 
                     plainSelect.addJoins(new Join()
                             .withLeft(true)

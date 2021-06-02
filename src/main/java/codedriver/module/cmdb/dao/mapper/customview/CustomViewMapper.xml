@@ -6,14 +6,50 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.customview.CustomViewMapper">
+    <update id="updateCustomView" parameterType="codedriver.framework.cmdb.dto.customview.CustomViewVo">
+        UPDATE cmdb_custom_view
+        SET name   = #{name},
+            config = #{configStr,typeHandler=CompressHandler}
+        WHERE id = #{value}
+    </update>
+
     <insert id="insertCustomView" parameterType="codedriver.framework.cmdb.dto.customview.CustomViewVo">
         INSERT INTO cmdb_custom_view (id, name, is_private, owner_uuid, config)
-        VALUES (#{id}, #{name}, #{isPrivate}, #{ownerUuid}, #{configStr})
+        VALUES (#{id}, #{name}, #{isPrivate}, #{ownerUuid}, #{configStr,typeHandler=CompressHandler})
     </insert>
 
     <insert id="insertCustomViewCi" parameterType="codedriver.framework.cmdb.dto.customview.CustomViewCiVo">
-        INSERT INTO cmdb_custom_view_ci(id, uuid, customview_id, ci_id, is_start, is_showtopo)
-        VALUES (#{id}, #{uuid}, #{customViewId}, #{ciId}, #{isStart}, #{isShowTopo})
+        INSERT INTO cmdb_customview_ci (customview_id, uuid, ci_id, sort, is_hidden)
+        VALUES (#{customViewId}, #{uuid}, #{ciId}, #{sort}, #{isHidden})
     </insert>
 
+    <insert id="insertCustomViewAttr" parameterType="codedriver.framework.cmdb.dto.customview.CustomViewAttrVo">
+        INSERT INTO cmdb_customview_attr
+        (customview_id,
+         customview_ci_uuid,
+         uuid, attr_id,
+         alias,
+         sort,
+         is_hidden,
+         `condition`)
+        VALUES (#{customviewId},
+                #{customViewCiUuid},
+                #{uuid},
+                #{attrId},
+                #{alias},
+                #{sort},
+                #{isHidden},
+                #{conditionStr})
+    </insert>
+
+
+    <insert id="buildCustomView" parameterType="java.lang.String">
+        ${value}
+    </insert>
+
+    <delete id="deleteCustomViewCiByCustomViewId" parameterType="java.lang.Long">
+        DELETE
+        FROM cmdb_customview_ci
+        WHERE customview_id = #{value}
+    </delete>
 </mapper>
