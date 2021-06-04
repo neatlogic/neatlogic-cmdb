@@ -26,6 +26,7 @@ import java.util.Set;
 
 /**
  * 校验资源信息合法性接口
+ *
  * @author linbq
  * @since 2021/6/3 11:41
  **/
@@ -41,6 +42,7 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
     public String getToken() {
         return "resourcecenter/resource/check/api";
     }
+
     @Override
     public String getName() {
         return "校验资源信息合法性";
@@ -68,37 +70,37 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
         String executeUser = jsonObj.getString("executeUser");
         String protocol = jsonObj.getString("protocol");
         List<Long> accountIdList = resourceCenterMapper.getAccountIdListByAccountAndProtocol(executeUser, protocol);
-        if(CollectionUtils.isEmpty(accountIdList)){
+        if (CollectionUtils.isEmpty(accountIdList)) {
             resultSet.add("'" + protocol + "'协议中不存在'" + executeUser + "'");
             return resultSet;
         }
         List<Long> tagList = jsonObj.getJSONArray("tagList").toJavaList(Long.class);
-        if(CollectionUtils.isNotEmpty(tagList)){
+        if (CollectionUtils.isNotEmpty(tagList)) {
             List<Long> resourceIdList = resourceCenterMapper.getNoCorrespondingAccountResourceIdListByTagListAndAccountIdAndProtocol(tagList, executeUser, protocol);
-            for(Long resourecId : resourceIdList){
+            for (Long resourecId : resourceIdList) {
                 ResourceVo searchVo = new ResourceVo();
                 searchVo.setId(resourecId);
                 ResourceVo resourceVo = resourceCenterMapper.getResourceIpPortById(searchVo);
-                if(resourceVo != null){
+                if (resourceVo != null) {
                     resultSet.add(resourceVo.getIp() + ":" + resourceVo.getPort() + "未找到" + executeUser + "执行用户");
                 }
             }
         }
         List<ResourceVo> selectNodeList = jsonObj.getJSONArray("selectNodeList").toJavaList(ResourceVo.class);
-        for(ResourceVo resourceVo : selectNodeList){
+        for (ResourceVo resourceVo : selectNodeList) {
             Long resourceId = resourceCenterMapper.checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol(resourceVo.getId(), executeUser, protocol);
-            if(resourceId == null){
+            if (resourceId == null) {
                 resultSet.add(resourceVo.getIp() + ":" + resourceVo.getPort() + "未找到" + executeUser + "执行用户");
             }
         }
         List<ResourceVo> inputNodeList = jsonObj.getJSONArray("inputNodeList").toJavaList(ResourceVo.class);
-        for(ResourceVo resourceVo : inputNodeList){
+        for (ResourceVo resourceVo : inputNodeList) {
             Long resourceId = resourceCenterMapper.getResourceIdByIpAndPort(resourceVo);
-            if(resourceId == null){
+            if (resourceId == null) {
                 resultSet.add(resourceVo.getIp() + ":" + resourceVo.getPort() + "未在系统中找到对应目标");
             } else {
                 resourceId = resourceCenterMapper.checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol(resourceVo.getId(), executeUser, protocol);
-                if(resourceId == null){
+                if (resourceId == null) {
                     resultSet.add(resourceVo.getIp() + ":" + resourceVo.getPort() + "未找到" + executeUser + "执行用户");
                 }
             }
