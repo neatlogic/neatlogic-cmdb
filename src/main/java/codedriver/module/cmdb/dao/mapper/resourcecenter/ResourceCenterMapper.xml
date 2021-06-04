@@ -24,6 +24,17 @@
             </if>
         </where>
     </sql>
+    <sql id="resource_dbinstance_from_where_ip_port">
+        FROM ${schemaName}.`resource_dbinstance` a
+        LEFT JOIN ${schemaName}.`resource_dbinstance_ip` b on b.`db_instance_id` = a.`id`
+        where a.`port` = #{port}
+        and b.`ip` = #{ip}
+    </sql>
+    <sql id="resource_dbinstance_from_where_id">
+        FROM ${schemaName}.`resource_dbinstance` a
+        LEFT JOIN ${schemaName}.`resource_dbinstance_ip` b on b.`db_instance_id` = a.`id`
+        where a.`id` = #{id}
+    </sql>
     <sql id="resource_dbinstance_select_count">
         SELECT COUNT(1) AS `count`
         <include refid="resource_dbinstance_from_where"/>
@@ -38,7 +49,14 @@
         l.`id` AS `app_system_id`, l.`name` AS app_system_name
         <include refid="resource_dbinstance_from_where"/>
     </sql>
-
+    <sql id="resource_dbinstance_select_id">
+        SELECT a.`id`
+        <include refid="resource_dbinstance_from_where_ip_port"/>
+    </sql>
+    <sql id="resource_dbinstance_select_ip_port">
+        SELECT a.`id`, a.`port`, b.`ip`
+        <include refid="resource_dbinstance_from_where_id"/>
+    </sql>
     <sql id="resource_appinstance_from_where">
         FROM ${schemaName}.`resource_appinstance` a
         LEFT JOIN ${schemaName}.`resource_appinstance_bg` b ON b.`app_instance_id` = a.`id`
@@ -57,6 +75,17 @@
             </if>
         </where>
     </sql>
+    <sql id="resource_appinstance_from_where_ip_port">
+        FROM ${schemaName}.`resource_appinstance` a
+        LEFT JOIN ${schemaName}.`resource_appinstance_ip` b on b.`app_instance_id` = a.`id`
+        where a.`port` = #{port}
+        and b.`ip` = #{ip}
+    </sql>
+    <sql id="resource_appinstance_from_where_id">
+        FROM ${schemaName}.`resource_appinstance` a
+        LEFT JOIN ${schemaName}.`resource_appinstance_ip` b on b.`app_instance_id` = a.`id`
+        where a.`id` = #{id}
+    </sql>
     <sql id="resource_appinstance_select_count">
         SELECT COUNT(1)  AS `count`
         <include refid="resource_appinstance_from_where"/>
@@ -71,7 +100,14 @@
         l.`id` AS `app_system_id`, l.`name` AS app_system_name
         <include refid="resource_appinstance_from_where"/>
     </sql>
-
+    <sql id="resource_appinstance_select_id">
+        SELECT a.`id`
+        <include refid="resource_appinstance_from_where_ip_port"/>
+    </sql>
+    <sql id="resource_appinstance_select_ip_port">
+        SELECT a.`id`, a.`port`, b.`ip`
+        <include refid="resource_appinstance_from_where_id"/>
+    </sql>
     <select id="getResourceCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo" resultType="int">
         SELECT SUM(uniontemp.`count`) FROM (
         <include refid="resource_appinstance_select_count"/>
@@ -111,6 +147,20 @@
         UNION ALL
         <include refid="resource_dbinstance_select_list"/>
         LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="getResourceIdByIpAndPort" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo" resultType="java.lang.Long">
+        <include refid="resource_appinstance_select_id"/>
+        UNION ALL
+        <include refid="resource_dbinstance_select_id"/>
+        LIMIT 1
+    </select>
+
+    <select id="getResourceIpPortById" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo" resultMap="resourceCenterMap">
+        <include refid="resource_appinstance_select_ip_port"/>
+        UNION ALL
+        <include refid="resource_dbinstance_select_ip_port"/>
+        LIMIT 1
     </select>
 
     <select id="getTagNameListByResourceId" parameterType="java.lang.Long" resultType="java.lang.String">
@@ -153,5 +203,30 @@
                 `name` like concat('%', #{keyword}, '%')
             </if>
         </where>
+    </select>
+
+    <select id="getAccountIdListByAccountAndProtocol" resultType="java.lang.Long">
+        SELECT `id` FROM `cmdb_resourcecenter_account`
+        where `account` = #{account} and `protocol` = #{protocol}
+    </select>
+
+    <select id="getNoCorrespondingAccountResourceIdListByTagListAndAccountIdAndProtocol" resultType="java.lang.Long">
+        SELECT a.`resource_id` FROM `cmdb_resourcecenter_resource_tag` a
+        WHERE a.`tag_id` IN 
+        <foreach collection="tagList" item="tagId" open="(" separator="," close=")">
+            #{tagId}
+        </foreach>
+          AND NOT EXISTS (
+            SELECT b.`resource_id` FROM `cmdb_resourcecenter_resource_account` b
+            JOIN `cmdb_resourcecenter_account` c on c.`id` = b.`account_id` and c.`account` = #{account} and c.`protocol` = #{protocol}
+            WHERE b.`resource_id` = a.`resource_id`
+        )
+    </select>
+
+    <select id="checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol" resultType="java.lang.Long">
+        SELECT b.`resource_id` FROM `cmdb_resourcecenter_resource_account` b
+        JOIN `cmdb_resourcecenter_account` c on c.`id` = b.`account_id` and c.`account` = #{account} and c.`protocol` = #{protocol}
+        WHERE b.`resource_id` = #{resourceId}
+        LIMIT 1
     </select>
 </mapper>
