@@ -259,6 +259,17 @@ public class CiServiceImpl implements CiService {
             throw new CiHasRelException(
                     fromCiList.stream().map(CiVo::getLabel).collect(Collectors.joining("、")));
         }
+        List<CiVo> toCiList = ciMapper.getCiByFromCiId(ciId);
+        if (CollectionUtils.isNotEmpty(toCiList)) {
+            throw new CiHasRelException(
+                    toCiList.stream().map(CiVo::getLabel).collect(Collectors.joining("、")));
+        }
+        //检查是否被属性引用
+        List<CiVo> attrCiList = ciMapper.getCiByTargetCiId(ciId);
+        if (CollectionUtils.isNotEmpty(attrCiList)) {
+            throw new CiHasAttrException(
+                    attrCiList.stream().map(CiVo::getLabel).collect(Collectors.joining("、")));
+        }
         //检查模型以及子模型是否有数据
         int ciEntityCount = ciEntityMapper.getDownwardCiEntityCountByLR(ciVo.getLft(), ciVo.getRht());
         if (ciEntityCount > 0) {

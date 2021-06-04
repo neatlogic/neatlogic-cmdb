@@ -78,7 +78,6 @@ public class SelectValueHandler implements IAttrValueHandler {
                 CiEntityVo ciEntityVo = ciEntityCachedMap.get(value);
                 if (ciEntityVo == null) {
                     ciEntityVo = ciEntityService.getCiEntityById(attrVo.getTargetCiId(), value);
-
                 }
                 if (ciEntityVo != null) {
                     ciEntityCachedMap.put(value, ciEntityVo);

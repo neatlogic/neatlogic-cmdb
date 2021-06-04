@@ -21,6 +21,10 @@ public interface CiMapper {
 
     List<CiVo> getAllCi();
 
+    List<CiVo> getCiByTargetCiId(Long ciId);
+
+    List<CiVo> getCiByFromCiId(Long ciId);
+
     List<CiVo> getCiByToCiId(Long ciId);
 
     List<CiVo> getCiByIdList(@Param("ciIdList") List<Long> ciIds);

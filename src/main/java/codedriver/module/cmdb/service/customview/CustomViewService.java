@@ -8,7 +8,15 @@ package codedriver.module.cmdb.service.customview;
 import codedriver.framework.cmdb.dto.customview.CustomViewVo;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 public interface CustomViewService {
+
+    void updateCustomViewActive(CustomViewVo customViewVo);
+
+    CustomViewVo getCustomViewById(Long id);
+
+    List<CustomViewVo> searchCustomView(CustomViewVo customViewVo);
 
     @Transactional
     void insertCustomView(CustomViewVo customViewVo);

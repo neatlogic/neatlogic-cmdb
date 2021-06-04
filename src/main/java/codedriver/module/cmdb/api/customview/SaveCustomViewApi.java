@@ -5,6 +5,7 @@
 
 package codedriver.module.cmdb.api.customview;
 
+import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.customview.*;
 import codedriver.framework.cmdb.enums.customview.RelType;
@@ -17,7 +18,6 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.service.customview.CustomViewService;
-import codedriver.module.cmdb.utils.CustomViewBuilder;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -164,11 +164,12 @@ public class SaveCustomViewApi extends PrivateApiComponentBase {
                 linkList.add(customViewLinkVo);
             }
         }
-        CustomViewBuilder builder = new CustomViewBuilder(customViewVo);
 
         if (id == null) {
+            customViewVo.setFcu(UserContext.get().getUserUuid());
             customViewService.insertCustomView(customViewVo);
         } else {
+            customViewVo.setLcu(UserContext.get().getUserUuid());
             customViewService.updateCustomView(customViewVo);
         }
         return null;

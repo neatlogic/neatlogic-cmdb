@@ -6,16 +6,113 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.customview.CustomViewMapper">
+    <resultMap id="customViewMap" type="codedriver.framework.cmdb.dto.customview.CustomViewVo">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="isPrivate" column="isPrivate"/>
+        <result property="isActive" column="isActive"/>
+        <result property="fcu" column="fcu"/>
+        <result property="fcd" column="fcd"/>
+        <result property="lcu" column="lcu"/>
+        <result property="lcd" column="lcd"/>
+        <result property="configStr" column="configStr" typeHandler="CompressHandler"/>
+        <collection property="authList" ofType="codedriver.framework.cmdb.dto.customview.CustomViewAuthVo">
+            <id property="authUuid" column="authUuid"/>
+            <result property="authType" column="authType"/>
+        </collection>
+        <collection property="tagList" ofType="codedriver.framework.cmdb.dto.tag.TagVo">
+            <id property="id" column="tagId"/>
+            <result property="name" column="tagName"/>
+        </collection>
+    </resultMap>
+
+    <select id="getCustomViewById" parameterType="java.lang.Long" resultMap="customViewMap">
+        SELECT a.id,
+               a.name,
+               a.is_private AS isPrivate,
+               a.is_active  AS isActive,
+               a.fcu,
+               a.fcd,
+               a.lcu,
+               a.lcd,
+               a.config     AS configStr,
+               b.auth_type  AS authType,
+               b.auth_uuid  AS authUuid,
+               d.id         AS tagId,
+               d.name       AS tagName
+        FROM cmdb_customview a
+                 LEFT JOIN cmdb_customview_auth b ON a.id = b.customview_id
+                 LEFT JOIN cmdb_customview_tag c ON a.id = c.customview_id
+                 LEFT JOIN cmdb_tag d ON c.tag_id = d.id
+        WHERE a.id = #{value}
+    </select>
+
+
+    <sql id="searchCustomViewSql">
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND cc.name LIKE CONCAT('%',#{keyword},'%')
+            </if>
+            <if test="isPrivate != null">
+                AND cc.is_private = #{isPrivate}
+            </if>
+            <if test="tagId != null">
+                AND cct.tag_id = #{tagId}
+            </if>
+        </where>
+    </sql>
+
+    <select id="searchCustomView" parameterType="codedriver.framework.cmdb.dto.customview.CustomViewVo"
+            resultMap="customViewMap">
+        SELECT
+        a.id,
+        a.name,
+        a.is_private AS isPrivate,
+        a.is_active AS isActive,
+        a.fcu,
+        a.fcd,
+        a.lcu,
+        a.lcd,
+        a.config AS configStr
+        FROM (
+        SELECT
+        DISTINCT cc.*
+        FROM cmdb_customview cc LEFT JOIN cmdb_customview_tag cct ON cc.id = cct.customview_id
+        <include refid="searchCustomViewSql"></include>
+        ORDER BY id desc
+        LIMIT #{startNum},#{pageSize}
+        ) a
+        LEFT JOIN cmdb_customview_auth b ON a.id = b.customview_id
+        LEFT JOIN cmdb_customview_tag c ON a.id = c.customview_id
+        LEFT JOIN cmdb_tag d ON c.tag_id = d.id
+        ORDER BY a.id desc
+    </select>
+
+    <select id="searchCustomViewCount" parameterType="codedriver.framework.cmdb.dto.customview.CustomViewVo"
+            resultType="int">
+        SELECT
+        COUNT(DISTINCT cc.id)
+        FROM cmdb_customview cc LEFT JOIN cmdb_customview_tag cct ON cc.id = cct.customview_id
+        <include refid="searchCustomViewSql"></include>
+    </select>
+
     <update id="updateCustomView" parameterType="codedriver.framework.cmdb.dto.customview.CustomViewVo">
-        UPDATE cmdb_custom_view
-        SET name   = #{name},
-            config = #{configStr,typeHandler=CompressHandler}
+        UPDATE cmdb_customview
+        SET name      = #{name},
+            is_active = #{isActive},
+            config    = #{configStr,typeHandler=CompressHandler}
         WHERE id = #{value}
     </update>
 
+    <update id="updateCustomViewActive" parameterType="codedriver.framework.cmdb.dto.customview.CustomViewVo">
+        UPDATE cmdb_customview
+        SET is_active = #{isActive}
+        WHERE id = #{id}
+    </update>
+
     <insert id="insertCustomView" parameterType="codedriver.framework.cmdb.dto.customview.CustomViewVo">
-        INSERT INTO cmdb_custom_view (id, name, is_private, owner_uuid, config)
-        VALUES (#{id}, #{name}, #{isPrivate}, #{ownerUuid}, #{configStr,typeHandler=CompressHandler})
+        INSERT INTO cmdb_customview (id, name, is_private, is_active, owner_uuid, config)
+        VALUES (#{id}, #{name}, #{isPrivate}, #{isActive}, #{ownerUuid}, #{configStr,typeHandler=CompressHandler})
     </insert>
 
     <insert id="insertCustomViewCi" parameterType="codedriver.framework.cmdb.dto.customview.CustomViewCiVo">
@@ -32,7 +129,7 @@
          sort,
          is_hidden,
          `condition`)
-        VALUES (#{customviewId},
+        VALUES (#{customViewId},
                 #{customViewCiUuid},
                 #{uuid},
                 #{attrId},
@@ -40,6 +137,28 @@
                 #{sort},
                 #{isHidden},
                 #{conditionStr})
+    </insert>
+
+    <insert id="insertCustomViewLink" parameterType="codedriver.framework.cmdb.dto.customview.CustomViewLinkVo">
+        INSERT
+        INTO cmdb_customview_rel (customview_id,
+                                  uuid,
+                                  from_uuid,
+                                  to_uuid,
+                                  from_type,
+                                  to_type,
+                                  join_type,
+                                  from_ci_uuid,
+                                  to_ci_uuid)
+        VALUES (#{customViewId},
+                #{uuid},
+                #{fromUuid},
+                #{toUuid},
+                #{fromType},
+                #{toType},
+                #{joinType},
+                #{fromCustomViewCiUuid},
+                #{toCustomViewCiUuid})
     </insert>
 
 
@@ -50,6 +169,12 @@
     <delete id="deleteCustomViewCiByCustomViewId" parameterType="java.lang.Long">
         DELETE
         FROM cmdb_customview_ci
+        WHERE customview_id = #{value}
+    </delete>
+
+    <delete id="deleteCustomViewLinkByCustomViewId" parameterType="java.lang.Long">
+        DELETE
+        FROM cmdb_customview_link
         WHERE customview_id = #{value}
     </delete>
 </mapper>
