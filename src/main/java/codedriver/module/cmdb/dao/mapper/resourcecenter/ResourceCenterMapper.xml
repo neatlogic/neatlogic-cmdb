@@ -36,14 +36,14 @@
         where a.`id` = #{id}
     </sql>
     <sql id="resource_dbinstance_select_count">
-        SELECT COUNT(1) AS `count`
+        SELECT COUNT(DISTINCT a.`id`) AS `count`
         <include refid="resource_dbinstance_from_where"/>
     </sql>
     <sql id="resource_dbinstance_select_list">
         SELECT a.`id`, a.`name`, a.`type_id`, a.`type_name`, a.`maintenance_window`, a.`description`, a.`port`,
-        b.`bg_id`, b.`bg_name`,
+        b.`bg_id`, b.`bg_name`, b.`bg_uuid`,
         c.`ip`,
-        e.`user_id`, e.`user_name`,
+        e.`user_id`, e.`user_name`, e.`user_uuid`,
         h.`env_id`, h.`env_name`,
         i.`app_module_id`, i.`app_module_name`,
         l.`id` AS `app_system_id`, l.`name` AS app_system_name
@@ -87,14 +87,14 @@
         where a.`id` = #{id}
     </sql>
     <sql id="resource_appinstance_select_count">
-        SELECT COUNT(1)  AS `count`
+        SELECT COUNT(DISTINCT a.`id`)  AS `count`
         <include refid="resource_appinstance_from_where"/>
     </sql>
     <sql id="resource_appinstance_select_list">
         SELECT a.`id`, a.`name`, a.`type_id`, a.`type_name`, a.`maintenance_window`, a.`description`, a.`port`,
-        b.`bg_id`, b.`bg_name`,
+        b.`bg_id`, b.`bg_name`, b.`bg_uuid`,
         c.`ip`,
-        e.`user_id`, e.`user_name`,
+        e.`user_id`, e.`user_name`, e.`user_uuid`,
         h.`env_id`, h.`env_name`,
         i.`app_module_id`, i.`app_module_name`,
         l.`id` AS `app_system_id`, l.`name` AS app_system_name
@@ -134,10 +134,12 @@
         <result column="app_system_name" property="appSystemName"/>
         <collection property="bgList" ofType="codedriver.framework.cmdb.dto.resourcecenter.BgVo">
             <id column="bg_id" property="bgId"/>
+            <result column="bg_uuid" property="uuid"/>
             <result column="bg_name" property="bgName"/>
         </collection>
         <collection property="ownerList" ofType="codedriver.framework.cmdb.dto.resourcecenter.OwnerVo">
             <id column="user_id" property="userId"/>
+            <result column="user_uuid" property="uuid"/>
             <result column="user_name" property="userName"/>
         </collection>
     </resultMap>

@@ -40,7 +40,7 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "resourcecenter/resource/check/api";
+        return "resourcecenter/resource/check";
     }
 
     @Override
