@@ -8,6 +8,7 @@ package codedriver.module.cmdb.dao.mapper.resourcecenter;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.dto.resourcecenter.TagVo;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -20,6 +21,10 @@ public interface ResourceCenterMapper {
 
     List<ResourceVo> getResourceList(ResourceVo searchVo);
 
+    Long getResourceIdByIpAndPort(ResourceVo resourceVo);
+
+    ResourceVo getResourceIpPortById(ResourceVo resourceVo);
+
     List<String> getTagNameListByResourceId(Long resourceId);
 
     int getAccountCount(AccountVo searchVo);
@@ -29,4 +34,10 @@ public interface ResourceCenterMapper {
     int getTagCount(TagVo searchVo);
 
     List<TagVo> getTagListForSelect(TagVo searchVo);
+
+    List<Long> getAccountIdListByAccountAndProtocol(@Param("account") String account, @Param("protocol")String protocol);
+
+    List<Long> getNoCorrespondingAccountResourceIdListByTagListAndAccountIdAndProtocol(@Param("tagList") List<Long> tagList, @Param("account") String account, @Param("protocol")String protocol);
+
+    Long checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol(@Param("resourceId") Long resourceId, @Param("account") String account, @Param("protocol")String protocol);
 }
