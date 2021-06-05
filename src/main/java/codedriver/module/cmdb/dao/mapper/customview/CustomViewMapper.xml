@@ -101,7 +101,7 @@
         SET name      = #{name},
             is_active = #{isActive},
             config    = #{configStr,typeHandler=CompressHandler}
-        WHERE id = #{value}
+        WHERE id = #{id}
     </update>
 
     <update id="updateCustomViewActive" parameterType="codedriver.framework.cmdb.dto.customview.CustomViewVo">
@@ -124,7 +124,8 @@
         INSERT INTO cmdb_customview_attr
         (customview_id,
          customview_ci_uuid,
-         uuid, attr_id,
+         uuid,
+         attr_id,
          alias,
          sort,
          is_hidden,
@@ -141,15 +142,15 @@
 
     <insert id="insertCustomViewLink" parameterType="codedriver.framework.cmdb.dto.customview.CustomViewLinkVo">
         INSERT
-        INTO cmdb_customview_rel (customview_id,
-                                  uuid,
-                                  from_uuid,
-                                  to_uuid,
-                                  from_type,
-                                  to_type,
-                                  join_type,
-                                  from_ci_uuid,
-                                  to_ci_uuid)
+        INTO cmdb_customview_link (customview_id,
+                                   uuid,
+                                   from_uuid,
+                                   to_uuid,
+                                   from_type,
+                                   to_type,
+                                   join_type,
+                                   from_ci_uuid,
+                                   to_ci_uuid)
         VALUES (#{customViewId},
                 #{uuid},
                 #{fromUuid},
@@ -169,6 +170,12 @@
     <delete id="deleteCustomViewCiByCustomViewId" parameterType="java.lang.Long">
         DELETE
         FROM cmdb_customview_ci
+        WHERE customview_id = #{value}
+    </delete>
+
+    <delete id="deleteCustomViewAttrByCustomViewId" parameterType="java.lang.Long">
+        DELETE
+        FROM cmdb_customview_attr
         WHERE customview_id = #{value}
     </delete>
 

@@ -33,6 +33,8 @@ public interface CustomViewMapper {
 
     void deleteCustomViewCiByCustomViewId(Long customViewId);
 
+    void deleteCustomViewAttrByCustomViewId(Long customViewId);
+
     void deleteCustomViewLinkByCustomViewId(Long customViewId);
 
     void buildCustomView(String sql);

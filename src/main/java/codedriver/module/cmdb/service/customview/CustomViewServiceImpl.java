@@ -57,6 +57,7 @@ public class CustomViewServiceImpl implements CustomViewService {
     public void updateCustomView(CustomViewVo customViewVo) {
         customViewMapper.updateCustomView(customViewVo);
         customViewMapper.deleteCustomViewCiByCustomViewId(customViewVo.getId());
+        customViewMapper.deleteCustomViewAttrByCustomViewId(customViewVo.getId());
         customViewMapper.deleteCustomViewLinkByCustomViewId(customViewVo.getId());
         saveCustomView(customViewVo);
     }
