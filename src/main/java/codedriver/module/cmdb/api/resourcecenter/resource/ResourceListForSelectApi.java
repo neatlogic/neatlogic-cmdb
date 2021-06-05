@@ -5,6 +5,7 @@
 
 package codedriver.module.cmdb.api.resourcecenter.resource;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -17,6 +18,7 @@ import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -25,6 +27,7 @@ import java.util.List;
 
 /**
  * 查询资源中心数据列表(下拉框专用)接口
+ *
  * @author linbq
  * @since 2021/5/27 16:14
  **/
@@ -62,18 +65,22 @@ public class ResourceListForSelectApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONObject resultObj = new JSONObject();
-        int pageCount = 0;
+        List<ResourceVo> resourceVoList = null;
         ResourceVo searchVo = JSON.toJavaObject(jsonObj, ResourceVo.class);
         int rowNum = resourceCenterMapper.getResourceCount(searchVo);
         if (rowNum > 0) {
-            pageCount = PageUtil.getPageCount(rowNum, searchVo.getPageSize());
-            List<ResourceVo> resourceVoList = resourceCenterMapper.getResourceList(searchVo);
-            resultObj.put("tbodyList", resourceVoList);
-        } else {
-            resultObj.put("tbodyList", new ArrayList<>());
+            searchVo.setRowNum(rowNum);
+            List<Long> idList = resourceCenterMapper.getResourceIdList(searchVo);
+            if (CollectionUtils.isNotEmpty(idList)) {
+                resourceVoList = resourceCenterMapper.getResourceListByIdList(idList, TenantContext.get().getDataDbName());
+            }
         }
+        if (resourceVoList == null) {
+            resourceVoList = new ArrayList<>();
+        }
+        resultObj.put("tbodyList", resourceVoList);
         resultObj.put("rowNum", rowNum);
-        resultObj.put("pageCount", pageCount);
+        resultObj.put("pageCount", searchVo.getPageCount());
         resultObj.put("currentPage", searchVo.getCurrentPage());
         resultObj.put("pageSize", searchVo.getPageSize());
         return resultObj;

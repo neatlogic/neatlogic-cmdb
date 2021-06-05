@@ -5,6 +5,7 @@
 
 package codedriver.module.cmdb.api.resourcecenter.resource;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.enums.resourcecenter.Protocol;
@@ -78,9 +79,7 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
         if (CollectionUtils.isNotEmpty(tagList)) {
             List<Long> resourceIdList = resourceCenterMapper.getNoCorrespondingAccountResourceIdListByTagListAndAccountIdAndProtocol(tagList, executeUser, protocol);
             for (Long resourecId : resourceIdList) {
-                ResourceVo searchVo = new ResourceVo();
-                searchVo.setId(resourecId);
-                ResourceVo resourceVo = resourceCenterMapper.getResourceIpPortById(searchVo);
+                ResourceVo resourceVo = resourceCenterMapper.getResourceIpPortById(resourecId, TenantContext.get().getDataDbName());
                 if (resourceVo != null) {
                     resultSet.add(resourceVo.getIp() + ":" + resourceVo.getPort() + "未找到" + executeUser + "执行用户");
                 }
