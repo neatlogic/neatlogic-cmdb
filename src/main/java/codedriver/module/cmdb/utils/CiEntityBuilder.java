@@ -6,11 +6,11 @@
 package codedriver.module.cmdb.utils;
 
 import codedriver.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
-import codedriver.framework.cmdb.enums.RelDirectionType;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.ci.RelVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.cmdb.enums.RelDirectionType;
 import codedriver.framework.cmdb.exception.cientity.CiEntityMultipleException;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -102,8 +102,9 @@ public class CiEntityBuilder {
                                 } catch (Exception ignored) {
                                     valueList.add(value);
                                 }
-                                JSONArray actualValueList = AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValueList(attrVo, valueList);
-                                ciEntityVo.addAttrEntityDataValue(attrId, valueList, actualValueList);
+                                //JSONArray actualValueList = AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValueList(attrVo, valueList);
+                                //ciEntityVo.addAttrEntityDataValue(attrId, valueList, actualValueList);
+                                ciEntityVo.addAttrEntityDataValue(attrId, valueList);
                             }
                         }
                     } else if (key.startsWith("rel")) {//字段名范例：relfrom_12313131323或relto_131231231313
@@ -130,7 +131,16 @@ public class CiEntityBuilder {
         }
         List<CiEntityVo> ciEntityList = new ArrayList<>();
         for (Long key : ciEntityMap.keySet()) {
-            ciEntityList.add(ciEntityMap.get(key));
+            CiEntityVo ciEntityVo = ciEntityMap.get(key);
+            JSONObject attrObj = ciEntityVo.getAttrEntityData();
+            for (String attrKey : attrObj.keySet()) {
+                Long attrId = Long.parseLong(attrKey.replace("attr_", ""));
+                AttrVo attrVo = attrMap.get(attrId);
+                JSONArray valueList = attrObj.getJSONObject(attrKey).getJSONArray("valueList");
+                JSONArray actualValueList = AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValueList(attrVo, valueList);
+                attrObj.getJSONObject(attrKey).put("actualValueList", actualValueList);
+            }
+            ciEntityList.add(ciEntityVo);
         }
         return ciEntityList;
     }
@@ -192,8 +202,9 @@ public class CiEntityBuilder {
                                 } catch (Exception ignored) {
                                     valueList.add(value);
                                 }
-                                JSONArray actualValueList = AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValueList(attrVo, valueList);
-                                ciEntityVo.addAttrEntityDataValue(attrId, valueList, actualValueList);
+                                //JSONArray actualValueList = AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValueList(attrVo, valueList);
+                                //ciEntityVo.addAttrEntityDataValue(attrId, valueList, actualValueList);
+                                ciEntityVo.addAttrEntityDataValue(attrId, valueList);
                             }
                         }
                     } else if (key.startsWith("rel")) {//字段名范例：relfrom_12313131323或relto_131231231313
@@ -216,6 +227,16 @@ public class CiEntityBuilder {
                         }
                     }
                 }
+            }
+        }
+        if (ciEntityVo != null) {
+            JSONObject attrObj = ciEntityVo.getAttrEntityData();
+            for (String attrKey : attrObj.keySet()) {
+                Long attrId = Long.parseLong(attrKey.replace("attr_", ""));
+                AttrVo attrVo = attrMap.get(attrId);
+                JSONArray valueList = attrObj.getJSONObject(attrKey).getJSONArray("valueList");
+                JSONArray actualValueList = AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValueList(attrVo, valueList);
+                attrObj.getJSONObject(attrKey).put("actualValueList", actualValueList);
             }
         }
         return ciEntityVo;
@@ -257,7 +278,7 @@ public class CiEntityBuilder {
             valueList.add(value);
         }
         attrObj.put("valueList", valueList);
-        attrObj.put("actualValueList", AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValueList(attrVo, valueList));
+        //attrObj.put("actualValueList", AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValueList(attrVo, valueList));
         return attrObj;
     }
 
