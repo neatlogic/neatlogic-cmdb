@@ -19,11 +19,13 @@ import java.util.List;
 public interface ResourceCenterMapper {
     int getResourceCount(ResourceVo searchVo);
 
-    List<ResourceVo> getResourceList(ResourceVo searchVo);
+    List<Long> getResourceIdList(ResourceVo searchVo);
+
+    List<ResourceVo> getResourceListByIdList(@Param("idList") List<Long> idList, @Param("schemaName") String schemaName);
 
     Long getResourceIdByIpAndPort(ResourceVo resourceVo);
 
-    ResourceVo getResourceIpPortById(ResourceVo resourceVo);
+    ResourceVo getResourceIpPortById(@Param("id") Long id, @Param("schemaName") String schemaName);
 
     List<String> getTagNameListByResourceId(Long resourceId);
 

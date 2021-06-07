@@ -6,7 +6,7 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper">
-    <sql id="resource_dbinstance_from_where">
+    <sql id="resource_dbinstance_from_join">
         FROM ${schemaName}.`resource_dbinstance` a
         LEFT JOIN ${schemaName}.`resource_dbinstance_bg` b on b.`db_instance_id` = a.`id`
         LEFT JOIN ${schemaName}.`resource_dbinstance_ip` c on c.`db_instance_id` = a.`id`
@@ -18,11 +18,19 @@
         LEFT JOIN ${schemaName}.`resource_dbinstance_appmodule` i on i.`db_instance_id` = a.`id`
         LEFT JOIN ${schemaName}.`resource_appsystem_appmodule` j on j.`app_module_id` = i.`app_module_id`
         LEFT JOIN ${schemaName}.`resource_appsystem` l on l.`id` = j.`app_system_id`
+    </sql>
+    <sql id="resource_dbinstance_where">
         <where>
             <if test="keyword != null and keyword != ''">
                 AND a.`name` LIKE CONCAT('%', #{keyword}, '%')
             </if>
         </where>
+    </sql>
+    <sql id="resource_dbinstance_where_idList">
+        WHERE a.`id` IN
+        <foreach collection="idList" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
     </sql>
     <sql id="resource_dbinstance_from_where_ip_port">
         FROM ${schemaName}.`resource_dbinstance` a
@@ -35,10 +43,6 @@
         LEFT JOIN ${schemaName}.`resource_dbinstance_ip` b on b.`db_instance_id` = a.`id`
         where a.`id` = #{id}
     </sql>
-    <sql id="resource_dbinstance_select_count">
-        SELECT COUNT(DISTINCT a.`id`) AS `count`
-        <include refid="resource_dbinstance_from_where"/>
-    </sql>
     <sql id="resource_dbinstance_select_list">
         SELECT a.`id`, a.`name`, a.`type_id`, a.`type_name`, a.`maintenance_window`, a.`description`, a.`port`,
         b.`bg_id`, b.`bg_name`, b.`bg_uuid`,
@@ -47,17 +51,8 @@
         h.`env_id`, h.`env_name`,
         i.`app_module_id`, i.`app_module_name`,
         l.`id` AS `app_system_id`, l.`name` AS app_system_name
-        <include refid="resource_dbinstance_from_where"/>
     </sql>
-    <sql id="resource_dbinstance_select_id">
-        SELECT a.`id`
-        <include refid="resource_dbinstance_from_where_ip_port"/>
-    </sql>
-    <sql id="resource_dbinstance_select_ip_port">
-        SELECT a.`id`, a.`port`, b.`ip`
-        <include refid="resource_dbinstance_from_where_id"/>
-    </sql>
-    <sql id="resource_appinstance_from_where">
+    <sql id="resource_appinstance_from_join">
         FROM ${schemaName}.`resource_appinstance` a
         LEFT JOIN ${schemaName}.`resource_appinstance_bg` b ON b.`app_instance_id` = a.`id`
         LEFT JOIN ${schemaName}.`resource_appinstance_ip` c ON c.`app_instance_id` = a.`id`
@@ -69,11 +64,19 @@
         LEFT JOIN ${schemaName}.`resource_appinstance_appmodule` i on i.`app_instance_id` = a.`id`
         LEFT JOIN ${schemaName}.`resource_appsystem_appmodule` j on j.`app_module_id` = i.`app_module_id`
         LEFT JOIN ${schemaName}.`resource_appsystem` l on l.`id` = j.`app_system_id`
+    </sql>
+    <sql id="resource_appinstance_where">
         <where>
             <if test="keyword != null and keyword != ''">
                 AND a.`name` LIKE CONCAT('%', #{keyword}, '%')
             </if>
         </where>
+    </sql>
+    <sql id="resource_appinstance_where_idList">
+        WHERE a.`id` IN
+        <foreach collection="idList" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
     </sql>
     <sql id="resource_appinstance_from_where_ip_port">
         FROM ${schemaName}.`resource_appinstance` a
@@ -86,10 +89,6 @@
         LEFT JOIN ${schemaName}.`resource_appinstance_ip` b on b.`app_instance_id` = a.`id`
         where a.`id` = #{id}
     </sql>
-    <sql id="resource_appinstance_select_count">
-        SELECT COUNT(DISTINCT a.`id`)  AS `count`
-        <include refid="resource_appinstance_from_where"/>
-    </sql>
     <sql id="resource_appinstance_select_list">
         SELECT a.`id`, a.`name`, a.`type_id`, a.`type_name`, a.`maintenance_window`, a.`description`, a.`port`,
         b.`bg_id`, b.`bg_name`, b.`bg_uuid`,
@@ -98,22 +97,27 @@
         h.`env_id`, h.`env_name`,
         i.`app_module_id`, i.`app_module_name`,
         l.`id` AS `app_system_id`, l.`name` AS app_system_name
-        <include refid="resource_appinstance_from_where"/>
-    </sql>
-    <sql id="resource_appinstance_select_id">
-        SELECT a.`id`
-        <include refid="resource_appinstance_from_where_ip_port"/>
-    </sql>
-    <sql id="resource_appinstance_select_ip_port">
-        SELECT a.`id`, a.`port`, b.`ip`
-        <include refid="resource_appinstance_from_where_id"/>
     </sql>
     <select id="getResourceCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo" resultType="int">
         SELECT SUM(uniontemp.`count`) FROM (
-        <include refid="resource_appinstance_select_count"/>
-        UNION ALL
-        <include refid="resource_dbinstance_select_count"/>
+            SELECT COUNT(DISTINCT a.`id`)  AS `count`
+            <include refid="resource_appinstance_from_join"/>
+            <include refid="resource_appinstance_where"/>
+            UNION ALL
+            SELECT COUNT(DISTINCT a.`id`) AS `count`
+            <include refid="resource_dbinstance_from_join"/>
+            <include refid="resource_dbinstance_where"/>
         ) uniontemp
+    </select>
+    <select id="getResourceIdList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo" resultType="java.lang.Long">
+        SELECT DISTINCT a.`id`
+        <include refid="resource_appinstance_from_join"/>
+        <include refid="resource_appinstance_where"/>
+        UNION ALL
+        SELECT DISTINCT a.`id`
+        <include refid="resource_dbinstance_from_join"/>
+        <include refid="resource_dbinstance_where"/>
+        LIMIT #{startNum}, #{pageSize}
     </select>
 
     <resultMap id="resourceCenterMap" type="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
@@ -144,24 +148,31 @@
         </collection>
     </resultMap>
 
-    <select id="getResourceList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo" resultMap="resourceCenterMap">
+    <select id="getResourceListByIdList" resultMap="resourceCenterMap">
         <include refid="resource_appinstance_select_list"/>
+        <include refid="resource_appinstance_from_join"/>
+        <include refid="resource_appinstance_where_idList"/>
         UNION ALL
         <include refid="resource_dbinstance_select_list"/>
-        LIMIT #{startNum}, #{pageSize}
+        <include refid="resource_dbinstance_from_join"/>
+        <include refid="resource_dbinstance_where_idList"/>
     </select>
 
     <select id="getResourceIdByIpAndPort" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo" resultType="java.lang.Long">
-        <include refid="resource_appinstance_select_id"/>
+        SELECT a.`id`
+        <include refid="resource_appinstance_from_where_ip_port"/>
         UNION ALL
-        <include refid="resource_dbinstance_select_id"/>
+        SELECT a.`id`
+        <include refid="resource_dbinstance_from_where_ip_port"/>
         LIMIT 1
     </select>
 
-    <select id="getResourceIpPortById" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo" resultMap="resourceCenterMap">
-        <include refid="resource_appinstance_select_ip_port"/>
+    <select id="getResourceIpPortById" resultMap="resourceCenterMap">
+        SELECT a.`id`, a.`port`, b.`ip`
+        <include refid="resource_appinstance_from_where_id"/>
         UNION ALL
-        <include refid="resource_dbinstance_select_ip_port"/>
+        SELECT a.`id`, a.`port`, b.`ip`
+        <include refid="resource_dbinstance_from_where_id"/>
         LIMIT 1
     </select>
 
