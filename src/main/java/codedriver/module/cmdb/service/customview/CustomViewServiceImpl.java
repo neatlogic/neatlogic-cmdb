@@ -9,9 +9,11 @@ import codedriver.framework.cmdb.dto.customview.CustomViewAttrVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewCiVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewLinkVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewVo;
+import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.cmdb.exception.customview.CreateCustomViewFailedException;
 import codedriver.framework.transaction.core.EscapeTransactionJob;
 import codedriver.module.cmdb.dao.mapper.customview.CustomViewMapper;
+import codedriver.module.cmdb.dao.mapper.tag.CmdbTagMapper;
 import codedriver.module.cmdb.utils.CustomViewBuilder;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,9 @@ import java.util.List;
 public class CustomViewServiceImpl implements CustomViewService {
     @Resource
     private CustomViewMapper customViewMapper;
+
+    @Resource
+    private CmdbTagMapper cmdbTagMapper;
 
     @Override
     public void updateCustomViewActive(CustomViewVo customViewVo) {
@@ -59,6 +64,7 @@ public class CustomViewServiceImpl implements CustomViewService {
         customViewMapper.deleteCustomViewCiByCustomViewId(customViewVo.getId());
         customViewMapper.deleteCustomViewAttrByCustomViewId(customViewVo.getId());
         customViewMapper.deleteCustomViewLinkByCustomViewId(customViewVo.getId());
+        customViewMapper.deleteCustomViewTagByCustomViewId(customViewVo.getId());
         saveCustomView(customViewVo);
     }
 
@@ -78,6 +84,13 @@ public class CustomViewServiceImpl implements CustomViewService {
             for (CustomViewLinkVo customViewLinkVo : customViewVo.getLinkList()) {
                 customViewLinkVo.setCustomViewId(customViewVo.getId());
                 customViewMapper.insertCustomViewLink(customViewLinkVo);
+            }
+        }
+
+        if (CollectionUtils.isNotEmpty(customViewVo.getTagList())) {
+            for (TagVo tagVo : customViewVo.getTagList()) {
+                cmdbTagMapper.insertCmdbTag(tagVo);
+                customViewMapper.insertCustomViewTag(customViewVo.getId(), tagVo.getId());
             }
         }
 

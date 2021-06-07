@@ -10,10 +10,7 @@ import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.customview.*;
 import codedriver.framework.cmdb.enums.customview.RelType;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.restful.annotation.Description;
-import codedriver.framework.restful.annotation.Input;
-import codedriver.framework.restful.annotation.OperationType;
-import codedriver.framework.restful.annotation.Param;
+import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
@@ -58,12 +55,13 @@ public class SaveCustomViewApi extends PrivateApiComponentBase {
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "视图id，不提供代表新增"),
             @Param(name = "name", type = ApiParamType.STRING, isRequired = true, xss = true, desc = "名称"),
             @Param(name = "config", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "拓扑图配置")})
+    @Output({@Param(name = "Return", type = ApiParamType.LONG, desc = "视图id")})
     @Description(desc = "保存自定义视图接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");
-        String name = jsonObj.getString("name");
         JSONObject config = jsonObj.getJSONObject("config");
+        CustomViewVo customViewVo = JSONObject.toJavaObject(jsonObj, CustomViewVo.class);
 
         JSONArray nodes = config.getJSONArray("nodes");
         Map<String, JSONObject> ciNodeMap = new HashMap<>();
@@ -72,15 +70,12 @@ public class SaveCustomViewApi extends PrivateApiComponentBase {
         Map<String, CustomViewAttrVo> attrMap = new HashMap<>();
         Map<String, CustomViewRelVo> relMap = new HashMap<>();
         Map<String, CustomViewCiVo> ciMap = new HashMap<>();
-        CustomViewVo customViewVo = new CustomViewVo();
+
         List<CustomViewCiVo> ciList = new ArrayList<>();
         List<CustomViewLinkVo> linkList = new ArrayList<>();
         customViewVo.setCiList(ciList);
         customViewVo.setLinkList(linkList);
 
-        customViewVo.setId(id);
-        customViewVo.setName(name);
-        customViewVo.setConfig(config);
         for (int i = 0; i < nodes.size(); i++) {
             JSONObject nodeObj = nodes.getJSONObject(i);
             switch (nodeObj.getString("type")) {
@@ -172,7 +167,7 @@ public class SaveCustomViewApi extends PrivateApiComponentBase {
             customViewVo.setLcu(UserContext.get().getUserUuid());
             customViewService.updateCustomView(customViewVo);
         }
-        return null;
+        return customViewVo.getId();
     }
 
 }

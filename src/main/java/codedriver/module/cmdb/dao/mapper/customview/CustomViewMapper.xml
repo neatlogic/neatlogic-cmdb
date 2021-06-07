@@ -73,7 +73,11 @@
         a.fcd,
         a.lcu,
         a.lcd,
-        a.config AS configStr
+        a.config AS configStr,
+        b.auth_type AS authType,
+        b.auth_uuid AS authUuid,
+        d.id AS tagId,
+        d.name AS tagName
         FROM (
         SELECT
         DISTINCT cc.*
@@ -111,8 +115,8 @@
     </update>
 
     <insert id="insertCustomView" parameterType="codedriver.framework.cmdb.dto.customview.CustomViewVo">
-        INSERT INTO cmdb_customview (id, name, is_private, is_active, owner_uuid, config)
-        VALUES (#{id}, #{name}, #{isPrivate}, #{isActive}, #{ownerUuid}, #{configStr,typeHandler=CompressHandler})
+        INSERT INTO cmdb_customview (id, name, is_private, is_active, fcu, fcd, config)
+        VALUES (#{id}, #{name}, #{isPrivate}, #{isActive}, #{fcu}, NOW(), #{configStr,typeHandler=CompressHandler})
     </insert>
 
     <insert id="insertCustomViewCi" parameterType="codedriver.framework.cmdb.dto.customview.CustomViewCiVo">
@@ -166,6 +170,17 @@
     <insert id="buildCustomView" parameterType="java.lang.String">
         ${value}
     </insert>
+
+    <insert id="insertCustomViewTag">
+        INSERT INTO cmdb_customview_tag (customview_id, tag_id)
+        VALUES (#{customViewId}, #{tagId})
+    </insert>
+
+    <delete id="deleteCustomViewTagByCustomViewId" parameterType="java.lang.Long">
+        DELETE
+        FROM cmdb_customview_tag
+        WHERE customview_id = #{value}
+    </delete>
 
     <delete id="deleteCustomViewCiByCustomViewId" parameterType="java.lang.Long">
         DELETE

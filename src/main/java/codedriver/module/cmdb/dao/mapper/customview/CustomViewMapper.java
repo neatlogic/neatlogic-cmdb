@@ -9,6 +9,7 @@ import codedriver.framework.cmdb.dto.customview.CustomViewAttrVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewCiVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewLinkVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewVo;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -31,11 +32,15 @@ public interface CustomViewMapper {
 
     void insertCustomViewLink(CustomViewLinkVo customViewLinkVo);
 
+    void insertCustomViewTag(@Param("customViewId") Long customViewId, @Param("tagId") Long tagId);
+
     void deleteCustomViewCiByCustomViewId(Long customViewId);
 
     void deleteCustomViewAttrByCustomViewId(Long customViewId);
 
     void deleteCustomViewLinkByCustomViewId(Long customViewId);
+
+    void deleteCustomViewTagByCustomViewId(Long customViewId);
 
     void buildCustomView(String sql);
 }
