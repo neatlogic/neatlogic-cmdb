@@ -19,9 +19,11 @@ import codedriver.framework.cmdb.exception.rel.RelNotFoundException;
 import codedriver.module.cmdb.service.ci.CiService;
 import codedriver.module.cmdb.service.customview.CustomViewService;
 import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
@@ -100,6 +102,7 @@ public class CustomViewBuilder {
             plainSelect.addSelectItems(new SelectExpressionItem(new Column("id").withTable(new Table("ci_base"))));
             for (CustomViewAttrVo attrVo : customViewVo.getAttrList()) {
                 plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getUuid() + "`")));
+                plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getUuid() + "_hash`")));
             }
 
             for (int i = 0; i < customViewVo.getCiList().size(); i++) {
@@ -186,16 +189,11 @@ public class CustomViewBuilder {
                     }
                 }
             }
-            try {
-                String sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + ".customview_" + customViewVo.getId() + " AS " + select;
-                if (logger.isDebugEnabled()) {
-                    logger.debug(sql);
-                }
-                customViewService.buildCustomView(sql);
-            } catch (Exception ignored) {
-            } finally {
+            String sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + ".customview_" + customViewVo.getId() + " AS " + select;
+            if (logger.isDebugEnabled()) {
+                logger.debug(sql);
             }
-            System.out.println(select);
+            customViewService.buildCustomView(sql);
         }
     }
 
@@ -224,9 +222,14 @@ public class CustomViewBuilder {
                     plainSelect.addSelectItems(new SelectExpressionItem(new Column("name")
                             .withTable(new Table("attr_cientity_" + viewAttrVo.getUuid())))
                             .withAlias(new Alias("`" + viewAttrVo.getUuid() + "`")));
-                    plainSelect.addSelectItems(new SelectExpressionItem(new Column("id")
-                            .withTable(new Table("attr_cientity_" + viewAttrVo.getUuid())))
-                            .withAlias(new Alias("`" + viewAttrVo.getUuid() + "_hash`")));
+                    Function function = new Function();
+                    function.setName("md5");
+                    ExpressionList expressionList = new ExpressionList();
+                    expressionList.addExpressions(new Column("id")
+                            .withTable(new Table("attr_cientity_" + viewAttrVo.getUuid())));
+                    function.setParameters(expressionList);
+                    plainSelect.addSelectItems(new SelectExpressionItem(function).withAlias(new Alias("`" + viewAttrVo.getUuid() + "_hash`")));
+
 
                     plainSelect.addJoins(new Join()
                             .withLeft(true)

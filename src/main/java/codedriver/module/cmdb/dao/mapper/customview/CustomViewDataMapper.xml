@@ -29,10 +29,10 @@
                         AND
                         <choose>
                             <when test="attrFilter.expression == 'equal'">
-                                `${attrFilter.attrUuid}` = #{attrFilter.value}
+                                `${attrFilter.attrUuid}_hash` = #{attrFilter.value,typeHandler=Md5Handler}
                             </when>
                             <when test="attrFilter.expression == 'notequal'">
-                                `${attrFilter.attrUuid}` != #{attrFilter.value}
+                                `${attrFilter.attrUuid}_hash` != #{attrFilter.value,typeHandler=Md5Handler}
                             </when>
                             <when test="attrFilter.expression == 'like'">
                                 `${attrFilter.attrUuid}` LIKE
