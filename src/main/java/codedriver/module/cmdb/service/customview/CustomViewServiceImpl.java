@@ -40,6 +40,7 @@ public class CustomViewServiceImpl implements CustomViewService {
         return customViewMapper.getCustomViewById(id);
     }
 
+
     @Override
     public List<CustomViewVo> searchCustomView(CustomViewVo customViewVo) {
         List<CustomViewVo> customViewList = customViewMapper.searchCustomView(customViewVo);
