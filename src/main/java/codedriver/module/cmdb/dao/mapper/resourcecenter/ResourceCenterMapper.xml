@@ -191,6 +191,57 @@
         </where>
     </select>
 
+    <select id="searchAccountCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.AccountVo" resultType="int">
+        SELECT COUNT(1) FROM `cmdb_resourcecenter_account`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and `name` like concat('%', #{keyword}, '%')
+            </if>
+            <if test="protocol != null and protocol != ''">
+                and `protocol` = #{protocol}
+            </if>
+        </where>
+    </select>
+
+    <resultMap id="accountMap" type="codedriver.framework.cmdb.dto.resourcecenter.AccountVo">
+        <result column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="account" property="account"/>
+        <result column="protocol" property="protocol"/>
+        <result column="assetsCount" property="assetsCount"/>
+        <result column="lcu" property="lcu"/>
+        <result column="lcd" property="lcd"/>
+        <association property="lcuVo" javaType="codedriver.framework.dto.UserVo">
+            <result property="uuid" column="lcu"/>
+            <result property="userName" column="userName"/>
+        </association>
+    </resultMap>
+
+    <select id="searchAccount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.AccountVo" resultMap="accountMap">
+        SELECT
+        a.`id`,
+        a.`name`,
+        a.`account`,
+        a.`protocol`,
+        (select count(1) from `cmdb_resourcecenter_resource_account` where `account_id` = a.`id`) as assetsCount,
+        a.`lcu`,
+        (select `user_name` from `user` where `uuid` = a.`lcu`) as userName,
+        a.`lcd`
+        FROM `cmdb_resourcecenter_account` a
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and a.`name` like concat('%', #{keyword}, '%')
+            </if>
+            <if test="protocol != null and protocol != ''">
+                and a.`protocol` = #{protocol}
+            </if>
+        </where>
+        order by a.`lcd` desc
+        <if test="needPage == true">
+            limit #{startNum}, #{pageSize}
+        </if>
+    </select>
+
     <select id="getAccountListForSelect" parameterType="codedriver.framework.cmdb.dto.resourcecenter.AccountVo" resultType="codedriver.framework.cmdb.dto.resourcecenter.AccountVo">
         SELECT `id`, `name` FROM `cmdb_resourcecenter_account`
         <where>

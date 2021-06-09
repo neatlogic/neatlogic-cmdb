@@ -31,6 +31,10 @@ public interface ResourceCenterMapper {
 
     int getAccountCount(AccountVo searchVo);
 
+    int searchAccountCount(AccountVo searchVo);
+
+    List<AccountVo> searchAccount(AccountVo searchVo);
+
     List<AccountVo> getAccountListForSelect(AccountVo searchVo);
 
     int getTagCount(TagVo searchVo);
