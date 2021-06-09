@@ -6,7 +6,7 @@
 package codedriver.module.cmdb.api.resourcecenter.tag;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.dto.resourcecenter.TagVo;
+import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.common.util.PageUtil;
