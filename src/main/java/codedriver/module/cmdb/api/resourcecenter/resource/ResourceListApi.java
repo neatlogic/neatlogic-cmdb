@@ -7,13 +7,17 @@ package codedriver.module.cmdb.api.resourcecenter.resource;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.dto.ci.CiVo;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
+import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -23,6 +27,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 查询资源中心数据列表接口
@@ -36,6 +41,9 @@ public class ResourceListApi extends PrivateApiComponentBase {
 
     @Resource
     private ResourceCenterMapper resourceCenterMapper;
+
+    @Resource
+    private CiMapper ciMapper;
 
     @Override
     public String getToken() {
@@ -53,7 +61,9 @@ public class ResourceListApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "模糊搜索")
+            @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "模糊搜索"),
+            @Param(name = "viewName", type = ApiParamType.STRING, desc = "视图名"),
+            @Param(name = "typeId", type = ApiParamType.LONG, desc = "类型id")
     })
     @Output({
             @Param(explode = BasePageVo.class),
@@ -64,7 +74,19 @@ public class ResourceListApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONObject resultObj = new JSONObject();
         List<ResourceVo> resourceVoList = null;
-        ResourceVo searchVo = JSON.toJavaObject(jsonObj, ResourceVo.class);
+        ResourceSearchVo searchVo = JSON.toJavaObject(jsonObj, ResourceSearchVo.class);
+        Long typeId = searchVo.getTypeId();
+        if(typeId != null) {
+            CiVo ciVo = ciMapper.getCiById(typeId);
+            if(ciVo == null){
+                throw new CiNotFoundException(typeId);
+            }
+            List<CiVo> ciList = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
+            if(CollectionUtils.isNotEmpty(ciList)){
+                List<Long> typeIdList = ciList.stream().map(CiVo::getId).collect(Collectors.toList());
+                searchVo.setTypeIdList(typeIdList);
+            }
+        }
         int rowNum = resourceCenterMapper.getResourceCount(searchVo);
         if (rowNum > 0) {
             searchVo.setRowNum(rowNum);

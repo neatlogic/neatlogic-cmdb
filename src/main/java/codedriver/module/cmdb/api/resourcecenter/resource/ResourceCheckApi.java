@@ -7,6 +7,7 @@ package codedriver.module.cmdb.api.resourcecenter.resource;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.enums.resourcecenter.Protocol;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -92,15 +93,15 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
                 resultSet.add(resourceVo.getIp() + ":" + resourceVo.getPort() + "未找到" + executeUser + "执行用户");
             }
         }
-        List<ResourceVo> inputNodeList = jsonObj.getJSONArray("inputNodeList").toJavaList(ResourceVo.class);
-        for (ResourceVo resourceVo : inputNodeList) {
-            Long resourceId = resourceCenterMapper.getResourceIdByIpAndPort(resourceVo);
+        List<ResourceSearchVo> inputNodeList = jsonObj.getJSONArray("inputNodeList").toJavaList(ResourceSearchVo.class);
+        for (ResourceSearchVo searchVo : inputNodeList) {
+            Long resourceId = resourceCenterMapper.getResourceIdByIpAndPort(searchVo);
             if (resourceId == null) {
-                resultSet.add(resourceVo.getIp() + ":" + resourceVo.getPort() + "未在系统中找到对应目标");
+                resultSet.add(searchVo.getIp() + ":" + searchVo.getPort() + "未在系统中找到对应目标");
             } else {
-                resourceId = resourceCenterMapper.checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol(resourceVo.getId(), executeUser, protocol);
+                resourceId = resourceCenterMapper.checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol(resourceId, executeUser, protocol);
                 if (resourceId == null) {
-                    resultSet.add(resourceVo.getIp() + ":" + resourceVo.getPort() + "未找到" + executeUser + "执行用户");
+                    resultSet.add(searchVo.getIp() + ":" + searchVo.getPort() + "未找到" + executeUser + "执行用户");
                 }
             }
         }
