@@ -24,6 +24,12 @@
             <if test="keyword != null and keyword != ''">
                 AND a.`name` LIKE CONCAT('%', #{keyword}, '%')
             </if>
+            <if test="typeIdList != null and typeIdList.size() > 0">
+                AND a.`type_id` IN
+                <foreach collection="typeIdList" item="typeId" open="(" separator="," close=")">
+                    #{typeId}
+                </foreach>
+            </if>
         </where>
     </sql>
     <sql id="resource_dbinstance_where_idList">
@@ -71,6 +77,12 @@
                 AND a.`name` LIKE CONCAT('%', #{keyword}, '%')
             </if>
         </where>
+        <if test="typeIdList != null and typeIdList.size() > 0">
+            AND a.`type_id` IN
+            <foreach collection="typeIdList" item="typeId" open="(" separator="," close=")">
+                #{typeId}
+            </foreach>
+        </if>
     </sql>
     <sql id="resource_appinstance_where_idList">
         WHERE a.`id` IN
@@ -98,7 +110,43 @@
         i.`app_module_id`, i.`app_module_name`,
         l.`id` AS `app_system_id`, l.`name` AS app_system_name
     </sql>
-    <select id="getResourceCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo" resultType="int">
+
+    <select id="getResourceCount2" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="int">
+        SELECT SUM(uniontemp.`count`) FROM (
+        <if test="viewName == null or viewName == '' or viewName == 'resource_appinstance'">
+        SELECT COUNT(DISTINCT a.`id`)  AS `count`
+        <include refid="resource_appinstance_from_join"/>
+        <include refid="resource_appinstance_where"/>
+        </if>
+        <if test="viewName == null or viewName == ''">
+        UNION ALL
+        </if>
+        <if test="viewName == null or viewName == '' or viewName == 'resource_dbinstance'">
+        SELECT COUNT(DISTINCT a.`id`) AS `count`
+        <include refid="resource_dbinstance_from_join"/>
+        <include refid="resource_dbinstance_where"/>
+        </if>
+        ) uniontemp
+    </select>
+
+    <select id="getResourceIdList2" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
+        <if test="viewName == null or viewName == '' or viewName == 'resource_appinstance'">
+        SELECT DISTINCT a.`id`
+        <include refid="resource_appinstance_from_join"/>
+        <include refid="resource_appinstance_where"/>
+        </if>
+        <if test="viewName == null or viewName == ''">
+        UNION ALL
+        </if>
+        <if test="viewName == null or viewName == '' or viewName == 'resource_appinstance'">
+        SELECT DISTINCT a.`id`
+        <include refid="resource_dbinstance_from_join"/>
+        <include refid="resource_dbinstance_where"/>
+        </if>
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="getResourceCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="int">
         SELECT SUM(uniontemp.`count`) FROM (
             SELECT COUNT(DISTINCT a.`id`)  AS `count`
             <include refid="resource_appinstance_from_join"/>
@@ -109,7 +157,7 @@
             <include refid="resource_dbinstance_where"/>
         ) uniontemp
     </select>
-    <select id="getResourceIdList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo" resultType="java.lang.Long">
+    <select id="getResourceIdList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
         SELECT DISTINCT a.`id`
         <include refid="resource_appinstance_from_join"/>
         <include refid="resource_appinstance_where"/>
@@ -158,7 +206,7 @@
         <include refid="resource_dbinstance_where_idList"/>
     </select>
 
-    <select id="getResourceIdByIpAndPort" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo" resultType="java.lang.Long">
+    <select id="getResourceIdByIpAndPort" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
         SELECT a.`id`
         <include refid="resource_appinstance_from_where_ip_port"/>
         UNION ALL

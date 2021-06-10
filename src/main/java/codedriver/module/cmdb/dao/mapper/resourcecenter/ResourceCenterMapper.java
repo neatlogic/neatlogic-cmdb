@@ -6,6 +6,7 @@
 package codedriver.module.cmdb.dao.mapper.resourcecenter;
 
 import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.dto.tag.TagVo;
 import org.apache.ibatis.annotations.Param;
@@ -17,13 +18,18 @@ import java.util.List;
  * @since 2021/5/27 16:34
  **/
 public interface ResourceCenterMapper {
-    int getResourceCount(ResourceVo searchVo);
 
-    List<Long> getResourceIdList(ResourceVo searchVo);
+    int getResourceCount2(ResourceSearchVo searchVo);
+
+    List<Long> getResourceIdList2(ResourceSearchVo searchVo);
+
+    int getResourceCount(ResourceSearchVo searchVo);
+
+    List<Long> getResourceIdList(ResourceSearchVo searchVo);
 
     List<ResourceVo> getResourceListByIdList(@Param("idList") List<Long> idList, @Param("schemaName") String schemaName);
 
-    Long getResourceIdByIpAndPort(ResourceVo resourceVo);
+    Long getResourceIdByIpAndPort(ResourceSearchVo searchVo);
 
     ResourceVo getResourceIpPortById(@Param("id") Long id, @Param("schemaName") String schemaName);
 
