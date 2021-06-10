@@ -31,6 +31,12 @@ public interface ResourceCenterMapper {
 
     int getAccountCount(AccountVo searchVo);
 
+    AccountVo getAccountById(Long id);
+
+    int checkAccountNameIsRepeats(AccountVo vo);
+
+    int checkAccountHasBeenReferredById(Long id);
+
     int searchAccountCount(AccountVo searchVo);
 
     List<AccountVo> searchAccount(AccountVo searchVo);
@@ -46,4 +52,10 @@ public interface ResourceCenterMapper {
     List<Long> getNoCorrespondingAccountResourceIdListByTagListAndAccountIdAndProtocol(@Param("tagList") List<Long> tagList, @Param("account") String account, @Param("protocol") String protocol);
 
     Long checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol(@Param("resourceId") Long resourceId, @Param("account") String account, @Param("protocol") String protocol);
+
+    int updateAccount(AccountVo vo);
+
+    int insertAccount(AccountVo vo);
+
+    int deleteAccountById(Long id);
 }
