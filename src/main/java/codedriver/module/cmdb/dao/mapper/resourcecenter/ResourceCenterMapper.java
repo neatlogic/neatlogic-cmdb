@@ -19,10 +19,6 @@ import java.util.List;
  **/
 public interface ResourceCenterMapper {
 
-    int getResourceCount2(ResourceSearchVo searchVo);
-
-    List<Long> getResourceIdList2(ResourceSearchVo searchVo);
-
     int getResourceCount(ResourceSearchVo searchVo);
 
     List<Long> getResourceIdList(ResourceSearchVo searchVo);

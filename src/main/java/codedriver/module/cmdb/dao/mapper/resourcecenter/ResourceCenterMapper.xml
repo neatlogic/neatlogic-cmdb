@@ -111,7 +111,7 @@
         l.`id` AS `app_system_id`, l.`name` AS app_system_name
     </sql>
 
-    <select id="getResourceCount2" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="int">
+    <select id="getResourceCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="int">
         SELECT SUM(uniontemp.`count`) FROM (
         <if test="viewName == null or viewName == '' or viewName == 'resource_appinstance'">
         SELECT COUNT(DISTINCT a.`id`)  AS `count`
@@ -129,7 +129,7 @@
         ) uniontemp
     </select>
 
-    <select id="getResourceIdList2" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
+    <select id="getResourceIdList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
         <if test="viewName == null or viewName == '' or viewName == 'resource_appinstance'">
         SELECT DISTINCT a.`id`
         <include refid="resource_appinstance_from_join"/>
@@ -143,28 +143,6 @@
         <include refid="resource_dbinstance_from_join"/>
         <include refid="resource_dbinstance_where"/>
         </if>
-        LIMIT #{startNum}, #{pageSize}
-    </select>
-
-    <select id="getResourceCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="int">
-        SELECT SUM(uniontemp.`count`) FROM (
-            SELECT COUNT(DISTINCT a.`id`)  AS `count`
-            <include refid="resource_appinstance_from_join"/>
-            <include refid="resource_appinstance_where"/>
-            UNION ALL
-            SELECT COUNT(DISTINCT a.`id`) AS `count`
-            <include refid="resource_dbinstance_from_join"/>
-            <include refid="resource_dbinstance_where"/>
-        ) uniontemp
-    </select>
-    <select id="getResourceIdList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
-        SELECT DISTINCT a.`id`
-        <include refid="resource_appinstance_from_join"/>
-        <include refid="resource_appinstance_where"/>
-        UNION ALL
-        SELECT DISTINCT a.`id`
-        <include refid="resource_dbinstance_from_join"/>
-        <include refid="resource_dbinstance_where"/>
         LIMIT #{startNum}, #{pageSize}
     </select>
 
