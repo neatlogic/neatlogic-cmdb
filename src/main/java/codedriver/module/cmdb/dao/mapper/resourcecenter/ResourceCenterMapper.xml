@@ -138,7 +138,7 @@
         <if test="viewName == null or viewName == ''">
         UNION ALL
         </if>
-        <if test="viewName == null or viewName == '' or viewName == 'resource_appinstance'">
+        <if test="viewName == null or viewName == '' or viewName == 'resource_dbinstance'">
         SELECT DISTINCT a.`id`
         <include refid="resource_dbinstance_from_join"/>
         <include refid="resource_dbinstance_where"/>
