@@ -31,9 +31,11 @@ public interface ResourceCenterMapper {
 
     int getAccountCount(AccountVo searchVo);
 
-    int checkAccountIsExistsById(Long id);
+    AccountVo getAccountById(Long id);
 
     int checkAccountNameIsRepeats(AccountVo vo);
+
+    int checkAccountHasBeenReferredById(Long id);
 
     int searchAccountCount(AccountVo searchVo);
 
@@ -54,4 +56,6 @@ public interface ResourceCenterMapper {
     int updateAccount(AccountVo vo);
 
     int insertAccount(AccountVo vo);
+
+    int deleteAccountById(Long id);
 }
