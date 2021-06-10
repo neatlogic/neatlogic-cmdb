@@ -12,7 +12,7 @@
         id,
         <if test="fieldList != null and fieldList.size() > 0">
             <foreach collection="fieldList" item="field" separator=",">
-                ${field}
+                GROUP_CONCAT(distinct ${field}) AS ${field}
             </foreach>
         </if>
         FROM ${viewName}
@@ -25,7 +25,7 @@
             </if>
             <if test="attrFilterList != null and attrFilterList.size() > 0">
                 <foreach collection="attrFilterList" item="attrFilter">
-                    <if test="(attrFilter.valueList != null and attrFilter.valueList.size() > 0) or attrFilter.expression == 'is-null' or attrFilter.expression == 'is-not-null'">
+                    <if test="(attrFilter.value != null and attrFilter.value != '') or attrFilter.expression == 'is-null' or attrFilter.expression == 'is-not-null'">
                         AND
                         <choose>
                             <when test="attrFilter.expression == 'equal'">
@@ -55,6 +55,7 @@
                 </foreach>
             </if>
         </where>
+        GROUP BY id
         LIMIT #{startNum}, #{pageSizePlus}
     </select>
 </mapper>
