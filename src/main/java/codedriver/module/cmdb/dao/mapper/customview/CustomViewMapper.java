@@ -18,6 +18,8 @@ public interface CustomViewMapper {
 
     List<CustomViewVo> searchCustomView(CustomViewVo customViewVo);
 
+    List<CustomViewAttrVo> getCustomViewAttrByCustomViewId(Long customViewId);
+
     int searchCustomViewCount(CustomViewVo customViewVo);
 
     void updateCustomView(CustomViewVo customViewVo);

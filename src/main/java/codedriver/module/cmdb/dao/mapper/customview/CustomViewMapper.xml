@@ -6,6 +6,7 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.customview.CustomViewMapper">
+
     <resultMap id="customViewMap" type="codedriver.framework.cmdb.dto.customview.CustomViewVo">
         <id property="id" column="id"/>
         <result property="name" column="name"/>
@@ -25,6 +26,46 @@
             <result property="name" column="tagName"/>
         </collection>
     </resultMap>
+
+    <resultMap id="customViewAttrMap" type="codedriver.framework.cmdb.dto.customview.CustomViewAttrVo">
+        <id property="uuid" column="uuid"/>
+        <result property="customViewCiUuid" column="customViewCiUuid"/>
+        <result property="customViewId" column="customViewId"/>
+        <result property="attrId" column="attrId"/>
+        <result property="alias" column="alias"/>
+        <result property="sort" column="sort"/>
+        <result property="isHidden" column="isHidden"/>
+        <result property="conditionStr" column="conditionStr"/>
+        <association property="attrVo" javaType="codedriver.framework.cmdb.dto.ci.AttrVo">
+            <id property="id" column="attrId"/>
+            <result property="name" column="attrName"/>
+            <result property="label" column="attrLabel"/>
+            <result property="type" column="attrType"/>
+            <result property="targetCiId" column="targetCiId"/>
+            <result property="configStr" column="configStr"/>
+        </association>
+    </resultMap>
+
+    <select id="getCustomViewAttrByCustomViewId" parameterType="java.lang.Long" resultMap="customViewAttrMap">
+        SELECT a.customview_id      AS customViewId,
+               a.customview_ci_uuid AS customViewCiUuid,
+               a.uuid,
+               a.attr_id            AS attrId,
+               a.alias,
+               a.sort,
+               a.is_hidden          AS isHidden,
+               a.`condition`        AS conditionStr,
+               b.`name`             AS attrName,
+               b.`label`            AS attrLabel,
+               b.`ci_id`            AS ciId,
+               b.`type`             AS attrType,
+               b.`target_ci_id`     AS targetCiId,
+               b.`config`           AS configStr
+        FROM `cmdb_customview_attr` a
+                 JOIN `cmdb_attr` b ON a.attr_id = b.id
+        WHERE a.customview_id = #{value}
+        ORDER BY a.sort
+    </select>
 
     <select id="getCustomViewById" parameterType="java.lang.Long" resultMap="customViewMap">
         SELECT a.id,

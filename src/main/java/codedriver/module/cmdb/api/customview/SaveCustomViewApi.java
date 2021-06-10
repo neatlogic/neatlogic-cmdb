@@ -75,7 +75,6 @@ public class SaveCustomViewApi extends PrivateApiComponentBase {
         List<CustomViewLinkVo> linkList = new ArrayList<>();
         customViewVo.setCiList(ciList);
         customViewVo.setLinkList(linkList);
-
         for (int i = 0; i < nodes.size(); i++) {
             JSONObject nodeObj = nodes.getJSONObject(i);
             switch (nodeObj.getString("type")) {

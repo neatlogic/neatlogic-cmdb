@@ -57,6 +57,7 @@ public class ToggleActivePublicCustomViewApi extends PrivateApiComponentBase {
         if (customViewVo.getIsPrivate().equals(1)) {
             throw new CustomViewIsPrivateException(customViewVo);
         }
+        customViewVo.setIsActive(paramObj.getInteger("isActive"));
         customViewService.updateCustomViewActive(customViewVo);
         return null;
     }

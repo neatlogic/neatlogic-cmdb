@@ -178,7 +178,7 @@
 
     <select id="getTagNameListByResourceId" parameterType="java.lang.Long" resultType="java.lang.String">
         SELECT `name`
-        FROM `cmdb_resourcecenter_tag` a
+        FROM `cmdb_tag` a
         JOIN `cmdb_resourcecenter_resource_tag` b ON b.`tag_id` = a.`id` AND b.`resource_id` = #{value}
     </select>
 
@@ -259,8 +259,8 @@
         </where>
     </select>
 
-    <select id="getTagCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.TagVo" resultType="int">
-        SELECT COUNT(1) FROM `cmdb_resourcecenter_tag`
+    <select id="getTagCount" parameterType="codedriver.framework.cmdb.dto.tag.TagVo" resultType="int">
+        SELECT COUNT(1) FROM `cmdb_tag`
         <where>
             <if test="keyword != null and keyword != ''">
                 `name` like concat('%', #{keyword}, '%')
@@ -268,8 +268,8 @@
         </where>
     </select>
 
-    <select id="getTagListForSelect" parameterType="codedriver.framework.cmdb.dto.resourcecenter.TagVo" resultType="codedriver.framework.cmdb.dto.resourcecenter.TagVo">
-        SELECT `id`, `name` FROM `cmdb_resourcecenter_tag`
+    <select id="getTagListForSelect" parameterType="codedriver.framework.cmdb.dto.tag.TagVo" resultType="codedriver.framework.cmdb.dto.tag.TagVo">
+        SELECT `id`, `name` FROM `cmdb_tag`
         <where>
             <if test="keyword != null and keyword != ''">
                 `name` like concat('%', #{keyword}, '%')

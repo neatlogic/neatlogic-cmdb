@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.cmdb.dao.mapper.customview.CustomViewDataMapper">
+    <select id="searchCustomViewData" parameterType="codedriver.framework.cmdb.dto.customview.CustomViewConditionVo"
+            resultType="java.util.Map">
+        SELECT
+        id,
+        <if test="fieldList != null and fieldList.size() > 0">
+            <foreach collection="fieldList" item="field" separator=",">
+                ${field}
+            </foreach>
+        </if>
+        FROM ${viewName}
+        <where>
+            <if test="keyword != null and keyword != '' and fieldList != null and fieldList.size() > 0">
+                AND
+                <foreach collection="fieldList" item="field" separator="OR" open="(" close=")">
+                    ${field} LIKE CONCAT('%', #{keyword},'%')
+                </foreach>
+            </if>
+            <if test="attrFilterList != null and attrFilterList.size() > 0">
+                <foreach collection="attrFilterList" item="attrFilter">
+                    <if test="(attrFilter.valueList != null and attrFilter.valueList.size() > 0) or attrFilter.expression == 'is-null' or attrFilter.expression == 'is-not-null'">
+                        AND
+                        <choose>
+                            <when test="attrFilter.expression == 'equal'">
+                                `${attrFilter.attrUuid}_hash` = #{attrFilter.value,typeHandler=Md5Handler}
+                            </when>
+                            <when test="attrFilter.expression == 'notequal'">
+                                `${attrFilter.attrUuid}_hash` != #{attrFilter.value,typeHandler=Md5Handler}
+                            </when>
+                            <when test="attrFilter.expression == 'like'">
+                                `${attrFilter.attrUuid}` LIKE
+                                CONCAT('%',#{attrFilter.value},'%')
+                            </when>
+                            <when test="attrFilter.expression == 'notlike'">
+                                `${attrFilter.attrUuid}` NOT LIKE
+                                CONCAT('%',#{attrFilter.value},'%')
+                            </when>
+                            <when test="attrFilter.expression == 'is-null'">
+                                (`${attrFilter.attrUuid}` IS NULL OR
+                                `${attrFilter.attrUuid}` = '')
+                            </when>
+                            <when test="attrFilter.expression == 'is-not-null'">
+                                (`${attrFilter.attrUuid}` IS NOT NULL AND
+                                `${attrFilter.attrUuid}` != '')
+                            </when>
+                        </choose>
+                    </if>
+                </foreach>
+            </if>
+        </where>
+        LIMIT #{startNum}, #{pageSizePlus}
+    </select>
+</mapper>
+
