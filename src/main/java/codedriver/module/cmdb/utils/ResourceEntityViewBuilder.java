@@ -476,30 +476,14 @@ public class ResourceEntityViewBuilder {
         classList = ref.getTypesAnnotatedWith(ResourceTypes.class, true);
         for (Class<?> c : classList) {
             ResourceTypes resourceTypes = c.getAnnotation(ResourceTypes.class);
-            if(resourceTypes != null){
-//                Set<ResourceEntityAttrVo> attrList = null;
-                for(ResourceType rt : resourceTypes.value()){
+            if (resourceTypes != null) {
+                for (ResourceType rt : resourceTypes.value()) {
                     ResourceEntityVo resourceEntityVo = new ResourceEntityVo();
                     resourceEntityVo.setName(rt.name());
                     resourceEntityVo.setLabel(rt.label());
-//                    if(attrList == null){
-//                        attrList = new HashSet<>();
-//                        for (Field field : c.getDeclaredFields()) {
-//                            ResourceField rf = field.getAnnotation(ResourceField.class);
-//                            if(rf != null){
-//                                if (StringUtils.isNotBlank(rf.name())) {
-//                                    ResourceEntityAttrVo attr = new ResourceEntityAttrVo();
-//                                    attr.setField(rf.name());
-//                                    attrList.add(attr);
-////                                    resourceEntityVo.addAttr(attr);
-//                                }
-//                            }
-//                        }
-//                    }
-//                    resourceEntityVo.setAttrList(attrList);
                     for (Field field : c.getDeclaredFields()) {
                         ResourceField rf = field.getAnnotation(ResourceField.class);
-                        if(rf != null){
+                        if (rf != null) {
                             if (StringUtils.isNotBlank(rf.name())) {
                                 ResourceEntityAttrVo attr = new ResourceEntityAttrVo();
                                 attr.setField(rf.name());

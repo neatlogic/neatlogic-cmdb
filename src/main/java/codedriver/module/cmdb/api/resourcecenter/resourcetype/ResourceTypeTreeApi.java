@@ -63,16 +63,6 @@ public class ResourceTypeTreeApi extends PrivateApiComponentBase {
                 }
             }
         }
-//        Set<Class<? extends ResourceEntityBaseVo>> classSet = reflections.getSubTypesOf(ResourceEntityBaseVo.class);
-//        for (Class<? extends ResourceEntityBaseVo> c : classSet) {
-//            ResourceType resourceType = c.getAnnotation(ResourceType.class);
-//            if(resourceType != null) {
-//                String ciName = resourceType.ciName();
-//                if(StringUtils.isNotBlank(ciName)){
-//                    resourceTypeList.add(new ResourceTypeVo(resourceType.name(), resourceType.label(), ciName));
-//                }
-//            }
-//        }
     }
 
     @Resource
