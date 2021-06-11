@@ -59,6 +59,7 @@ public class AccountSaveApi extends PrivateApiComponentBase {
             @Param(name = "account", type = ApiParamType.STRING, maxLength = 50, isRequired = true, desc = "用户名"),
             @Param(name = "password", type = ApiParamType.STRING, maxLength = 50, isRequired = true, desc = "密码"),
             @Param(name = "protocol", type = ApiParamType.STRING, isRequired = true, desc = "协议"),
+            @Param(name = "port", type = ApiParamType.INTEGER, isRequired = true, desc = "端口"),
     })
     @Output({
     })

@@ -49,6 +49,18 @@ public interface ResourceCenterMapper {
 
     List<TagVo> getTagListForSelect(TagVo searchVo);
 
+    List<TagVo> searchTag(TagVo vo);
+
+    int searchTagCount(TagVo vo);
+
+    int checkTagNameIsRepeats(TagVo vo);
+
+    int checkTagIsExistsById(Long id);
+
+    TagVo getTagById(Long id);
+
+    int checkTagHasBeenReferredById(Long id);
+
     List<Long> getAccountIdListByAccountAndProtocol(@Param("account") String account, @Param("protocol") String protocol);
 
     List<Long> getNoCorrespondingAccountResourceIdListByTagListAndAccountIdAndProtocol(@Param("tagList") List<Long> tagList, @Param("account") String account, @Param("protocol") String protocol);
@@ -57,7 +69,13 @@ public interface ResourceCenterMapper {
 
     int updateAccount(AccountVo vo);
 
+    int updateTag(TagVo vo);
+
     int insertAccount(AccountVo vo);
+
+    int insertTag(TagVo vo);
+
+    int deleteTagById(Long id);
 
     int deleteAccountById(Long id);
 }

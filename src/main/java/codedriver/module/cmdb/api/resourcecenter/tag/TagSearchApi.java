@@ -3,11 +3,11 @@
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
-package codedriver.module.cmdb.api.resourcecenter.account;
+package codedriver.module.cmdb.api.resourcecenter.tag;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.auth.core.AuthActionChecker;
-import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
+import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.common.util.PageUtil;
@@ -16,7 +16,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
-import codedriver.module.cmdb.auth.label.RESOURCECENTER_ACCOUNT_MODIFY;
+import codedriver.module.cmdb.auth.label.RESOURCECENTER_TAG_MODIFY;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -29,19 +29,19 @@ import java.util.List;
 @Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class AccountSearchApi extends PrivateApiComponentBase {
+public class TagSearchApi extends PrivateApiComponentBase {
 
     @Resource
     private ResourceCenterMapper resourceCenterMapper;
 
     @Override
     public String getToken() {
-        return "resourcecenter/account/search";
+        return "resourcecenter/tag/search";
     }
 
     @Override
     public String getName() {
-        return "查询资源中心账号";
+        return "查询资源中心标签";
     }
 
     @Override
@@ -50,45 +50,43 @@ public class AccountSearchApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "protocol", type = ApiParamType.STRING, desc = "协议"),
             @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "关键词"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
             @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true")
     })
     @Output({
-            @Param(name = "tbodyList", explode = AccountVo[].class, desc = "账号列表"),
+            @Param(name = "tbodyList", explode = TagVo[].class, desc = "标签列表"),
             @Param(explode = BasePageVo.class),
     })
-    @Description(desc = "查询资源中心账号")
+    @Description(desc = "查询资源中心标签")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONObject resultObj = new JSONObject();
-        AccountVo searchVo = JSON.toJavaObject(paramObj, AccountVo.class);
-        List<AccountVo> accountVoList = resourceCenterMapper.searchAccount(searchVo);
-        resultObj.put("tbodyList", accountVoList);
-        if (CollectionUtils.isNotEmpty(accountVoList)) {
-            Boolean hasAuth = AuthActionChecker.check(RESOURCECENTER_ACCOUNT_MODIFY.class.getSimpleName());
-            accountVoList.stream().forEach(o -> {
+        TagVo tagVo = JSON.toJavaObject(paramObj, TagVo.class);
+        List<TagVo> tagList = resourceCenterMapper.searchTag(tagVo);
+        resultObj.put("tbodyList", tagList);
+        if (CollectionUtils.isNotEmpty(tagList)) {
+            Boolean hasAuth = AuthActionChecker.check(RESOURCECENTER_TAG_MODIFY.class.getSimpleName());
+            tagList.stream().forEach(o -> {
                 OperateVo delete = new OperateVo("delete", "删除");
                 if (hasAuth) {
                     if (o.getAssetsCount() > 0) {
                         delete.setDisabled(1);
-                        delete.setDisabledReason("当前账号已被引用，不可删除");
+                        delete.setDisabledReason("当前标签已被引用，不可删除");
                     }
-                    o.getOperateList().add(delete);
                 } else {
                     delete.setDisabled(1);
                     delete.setDisabledReason("无权限，请联系管理员");
                 }
             });
         }
-        int rowNum = resourceCenterMapper.searchAccountCount(searchVo);
-        searchVo.setRowNum(rowNum);
+        int rowNum = resourceCenterMapper.searchTagCount(tagVo);
+        tagVo.setRowNum(rowNum);
         resultObj.put("rowNum", rowNum);
-        resultObj.put("pageCount", PageUtil.getPageCount(rowNum, searchVo.getPageSize()));
-        resultObj.put("currentPage", searchVo.getCurrentPage());
-        resultObj.put("pageSize", searchVo.getPageSize());
+        resultObj.put("pageCount", PageUtil.getPageCount(rowNum, tagVo.getPageSize()));
+        resultObj.put("currentPage", tagVo.getCurrentPage());
+        resultObj.put("pageSize", tagVo.getPageSize());
         return resultObj;
     }
 
