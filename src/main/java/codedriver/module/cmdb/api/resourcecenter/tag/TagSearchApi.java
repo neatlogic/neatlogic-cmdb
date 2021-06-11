@@ -56,8 +56,8 @@ public class TagSearchApi extends PrivateApiComponentBase {
             @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true")
     })
     @Output({
+            @Param(name = "tbodyList", explode = TagVo[].class, desc = "标签列表"),
             @Param(explode = BasePageVo.class),
-            @Param(name = "tbodyList", explode = TagVo[].class, desc = "标签列表")
     })
     @Description(desc = "查询资源中心标签")
     @Override

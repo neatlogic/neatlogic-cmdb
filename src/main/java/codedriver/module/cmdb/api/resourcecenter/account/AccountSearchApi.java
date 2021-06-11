@@ -10,6 +10,7 @@ import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BaseEditorVo;
+import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.common.util.PageUtil;
 import codedriver.framework.dto.OperateVo;
 import codedriver.framework.restful.annotation.*;
@@ -57,9 +58,8 @@ public class AccountSearchApi extends PrivateApiComponentBase {
             @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true")
     })
     @Output({
-            @Param(explode = BaseEditorVo.class),
             @Param(name = "tbodyList", explode = AccountVo[].class, desc = "账号列表"),
-            @Param(name = "operateList", explode = OperateVo[].class, desc = "操作列表")
+            @Param(explode = BasePageVo.class),
     })
     @Description(desc = "查询资源中心账号")
     @Override
