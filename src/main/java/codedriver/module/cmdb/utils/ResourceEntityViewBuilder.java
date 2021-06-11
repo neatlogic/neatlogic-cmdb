@@ -8,6 +8,7 @@ package codedriver.module.cmdb.utils;
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.cmdb.annotation.ResourceField;
 import codedriver.framework.cmdb.annotation.ResourceType;
+import codedriver.framework.cmdb.annotation.ResourceTypes;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityAttrVo;
@@ -471,6 +472,44 @@ public class ResourceEntityViewBuilder {
                 }
             }
             resourceEntityList.add(resourceEntityVo);
+        }
+        classList = ref.getTypesAnnotatedWith(ResourceTypes.class, true);
+        for (Class<?> c : classList) {
+            ResourceTypes resourceTypes = c.getAnnotation(ResourceTypes.class);
+            if(resourceTypes != null){
+//                Set<ResourceEntityAttrVo> attrList = null;
+                for(ResourceType rt : resourceTypes.value()){
+                    ResourceEntityVo resourceEntityVo = new ResourceEntityVo();
+                    resourceEntityVo.setName(rt.name());
+                    resourceEntityVo.setLabel(rt.label());
+//                    if(attrList == null){
+//                        attrList = new HashSet<>();
+//                        for (Field field : c.getDeclaredFields()) {
+//                            ResourceField rf = field.getAnnotation(ResourceField.class);
+//                            if(rf != null){
+//                                if (StringUtils.isNotBlank(rf.name())) {
+//                                    ResourceEntityAttrVo attr = new ResourceEntityAttrVo();
+//                                    attr.setField(rf.name());
+//                                    attrList.add(attr);
+////                                    resourceEntityVo.addAttr(attr);
+//                                }
+//                            }
+//                        }
+//                    }
+//                    resourceEntityVo.setAttrList(attrList);
+                    for (Field field : c.getDeclaredFields()) {
+                        ResourceField rf = field.getAnnotation(ResourceField.class);
+                        if(rf != null){
+                            if (StringUtils.isNotBlank(rf.name())) {
+                                ResourceEntityAttrVo attr = new ResourceEntityAttrVo();
+                                attr.setField(rf.name());
+                                resourceEntityVo.addAttr(attr);
+                            }
+                        }
+                    }
+                    resourceEntityList.add(resourceEntityVo);
+                }
+            }
         }
         return resourceEntityList;
     }

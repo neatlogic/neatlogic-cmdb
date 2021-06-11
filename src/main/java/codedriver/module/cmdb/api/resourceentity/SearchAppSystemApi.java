@@ -42,6 +42,7 @@ public class SearchAppSystemApi extends PrivateApiComponentBase {
 
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        return appSystemMapper.searchAppSystem(new AppSystemVo());
+//        return appSystemMapper.searchAppSystem(new AppSystemVo());
+        return null;
     }
 }

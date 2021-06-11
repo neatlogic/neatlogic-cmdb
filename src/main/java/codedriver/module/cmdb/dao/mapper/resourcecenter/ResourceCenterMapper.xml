@@ -6,18 +6,18 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper">
-    <sql id="resource_dbinstance_from_join">
+    <!--<sql id="resource_dbinstance_from_join">
         FROM ${schemaName}.`resource_dbinstance` a
-        LEFT JOIN ${schemaName}.`resource_dbinstance_bg` b on b.`db_instance_id` = a.`id`
-        LEFT JOIN ${schemaName}.`resource_dbinstance_ip` c on c.`db_instance_id` = a.`id`
-        LEFT JOIN ${schemaName}.`resource_dbinstance_netarea` d on d.`db_instance_id` = a.`id`
-        LEFT JOIN ${schemaName}.`resource_dbinstance_owner` e on e.`db_instance_id` = a.`id`
-        LEFT JOIN ${schemaName}.`resource_dbinstance_status` f on f.`db_instance_id` = a.`id`
-        LEFT JOIN ${schemaName}.`resource_dbinstance_datacenter` g on g.`db_instance_id` = a.`id`
-        LEFT JOIN ${schemaName}.`resource_dbinstance_env` h on h.`db_instance_id` = a.`id`
-        LEFT JOIN ${schemaName}.`resource_dbinstance_appmodule` i on i.`db_instance_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_dbinstance_bg` b on b.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_dbinstance_ip` c on c.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_dbinstance_netarea` d on d.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_dbinstance_owner` e on e.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_dbinstance_status` f on f.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_dbinstance_datacenter` g on g.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_dbinstance_env` h on h.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_dbinstance_appmodule` i on i.`resource_id` = a.`id`
         LEFT JOIN ${schemaName}.`resource_appsystem_appmodule` j on j.`app_module_id` = i.`app_module_id`
-        LEFT JOIN ${schemaName}.`resource_appsystem` l on l.`id` = j.`app_system_id`
+        LEFT JOIN ${schemaName}.`resource_appsystem` l on l.`id` = j.`resource_id`
     </sql>
     <sql id="resource_dbinstance_where">
         <where>
@@ -40,13 +40,13 @@
     </sql>
     <sql id="resource_dbinstance_from_where_ip_port">
         FROM ${schemaName}.`resource_dbinstance` a
-        LEFT JOIN ${schemaName}.`resource_dbinstance_ip` b on b.`db_instance_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_dbinstance_ip` b on b.`resource_id` = a.`id`
         where a.`port` = #{port}
         and b.`ip` = #{ip}
     </sql>
     <sql id="resource_dbinstance_from_where_id">
         FROM ${schemaName}.`resource_dbinstance` a
-        LEFT JOIN ${schemaName}.`resource_dbinstance_ip` b on b.`db_instance_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_dbinstance_ip` b on b.`resource_id` = a.`id`
         where a.`id` = #{id}
     </sql>
     <sql id="resource_dbinstance_select_list">
@@ -60,29 +60,29 @@
     </sql>
     <sql id="resource_appinstance_from_join">
         FROM ${schemaName}.`resource_appinstance` a
-        LEFT JOIN ${schemaName}.`resource_appinstance_bg` b ON b.`app_instance_id` = a.`id`
-        LEFT JOIN ${schemaName}.`resource_appinstance_ip` c ON c.`app_instance_id` = a.`id`
-        LEFT JOIN ${schemaName}.`resource_appinstance_netarea` d ON d.`app_instance_id` = a.`id`
-        LEFT JOIN ${schemaName}.`resource_appinstance_owner` e ON e.`app_instance_id` = a.`id`
-        LEFT JOIN ${schemaName}.`resource_appinstance_status` f ON f.`app_instance_id` = a.`id`
-        LEFT JOIN ${schemaName}.`resource_appinstance_datacenter` g on g.`app_instance_id` = a.`id`
-        LEFT JOIN ${schemaName}.`resource_appinstance_env` h on h.`app_instance_id` = a.`id`
-        LEFT JOIN ${schemaName}.`resource_appinstance_appmodule` i on i.`app_instance_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_appinstance_bg` b ON b.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_appinstance_ip` c ON c.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_appinstance_netarea` d ON d.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_appinstance_owner` e ON e.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_appinstance_status` f ON f.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_appinstance_datacenter` g on g.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_appinstance_env` h on h.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_appinstance_appmodule` i on i.`resource_id` = a.`id`
         LEFT JOIN ${schemaName}.`resource_appsystem_appmodule` j on j.`app_module_id` = i.`app_module_id`
-        LEFT JOIN ${schemaName}.`resource_appsystem` l on l.`id` = j.`app_system_id`
+        LEFT JOIN ${schemaName}.`resource_appsystem` l on l.`id` = j.`resource_id`
     </sql>
     <sql id="resource_appinstance_where">
         <where>
             <if test="keyword != null and keyword != ''">
                 AND a.`name` LIKE CONCAT('%', #{keyword}, '%')
             </if>
+            <if test="typeIdList != null and typeIdList.size() > 0">
+                AND a.`type_id` IN
+                <foreach collection="typeIdList" item="typeId" open="(" separator="," close=")">
+                    #{typeId}
+                </foreach>
+            </if>
         </where>
-        <if test="typeIdList != null and typeIdList.size() > 0">
-            AND a.`type_id` IN
-            <foreach collection="typeIdList" item="typeId" open="(" separator="," close=")">
-                #{typeId}
-            </foreach>
-        </if>
     </sql>
     <sql id="resource_appinstance_where_idList">
         WHERE a.`id` IN
@@ -92,13 +92,13 @@
     </sql>
     <sql id="resource_appinstance_from_where_ip_port">
         FROM ${schemaName}.`resource_appinstance` a
-        LEFT JOIN ${schemaName}.`resource_appinstance_ip` b on b.`app_instance_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_appinstance_ip` b on b.`resource_id` = a.`id`
         where a.`port` = #{port}
         and b.`ip` = #{ip}
     </sql>
     <sql id="resource_appinstance_from_where_id">
         FROM ${schemaName}.`resource_appinstance` a
-        LEFT JOIN ${schemaName}.`resource_appinstance_ip` b on b.`app_instance_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_appinstance_ip` b on b.`resource_id` = a.`id`
         where a.`id` = #{id}
     </sql>
     <sql id="resource_appinstance_select_list">
@@ -146,6 +146,73 @@
         LIMIT #{startNum}, #{pageSize}
     </select>
 
+    <select id="getResourceListByIdList" resultMap="resourceCenterMap">
+        <include refid="resource_appinstance_select_list"/>
+        <include refid="resource_appinstance_from_join"/>
+        <include refid="resource_appinstance_where_idList"/>
+        UNION ALL
+        <include refid="resource_dbinstance_select_list"/>
+        <include refid="resource_dbinstance_from_join"/>
+        <include refid="resource_dbinstance_where_idList"/>
+    </select>
+
+    <select id="getResourceIdByIpAndPort" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
+        SELECT a.`id`
+        <include refid="resource_appinstance_from_where_ip_port"/>
+        UNION ALL
+        SELECT a.`id`
+        <include refid="resource_dbinstance_from_where_ip_port"/>
+        LIMIT 1
+    </select>
+
+    <select id="getResourceIpPortById" resultMap="resourceCenterMap">
+        SELECT a.`id`, a.`port`, b.`ip`
+        <include refid="resource_appinstance_from_where_id"/>
+        UNION ALL
+        SELECT a.`id`, a.`port`, b.`ip`
+        <include refid="resource_dbinstance_from_where_id"/>
+        LIMIT 1
+    </select>-->
+    <sql id="resource_ipobject_from_join">
+        FROM ${schemaName}.`resource_ipobject` a
+        LEFT JOIN ${schemaName}.`resource_ipobject_bg` b ON b.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_ip` c ON c.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_netarea` d ON d.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_owner` e ON e.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_status` f ON f.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_datacenter` g on g.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_env` h on h.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_appmodule` i on i.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_appsystem_appmodule` j on j.`app_module_id` = i.`app_module_id`
+        LEFT JOIN ${schemaName}.`resource_appsystem` l on l.`id` = j.`resource_id`
+        LEFT JOIN ${schemaName}.`resource_softwareservice` m ON m.`id` = a.`id`
+    </sql>
+    <sql id="resource_ipobject_where">
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND a.`name` LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+            <if test="typeIdList != null and typeIdList.size() > 0">
+                AND a.`type_id` IN
+                <foreach collection="typeIdList" item="typeId" open="(" separator="," close=")">
+                    #{typeId}
+                </foreach>
+            </if>
+        </where>
+    </sql>
+    <select id="getResourceCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="int">
+        SELECT COUNT(DISTINCT a.`id`)
+        <include refid="resource_ipobject_from_join"/>
+        <include refid="resource_ipobject_where"/>
+    </select>
+
+    <select id="getResourceIdList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
+        SELECT DISTINCT a.`id`
+        <include refid="resource_ipobject_from_join"/>
+        <include refid="resource_ipobject_where"/>
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
     <resultMap id="resourceCenterMap" type="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
         <id column="id" property="id"/>
         <result column="name" property="name"/>
@@ -175,30 +242,35 @@
     </resultMap>
 
     <select id="getResourceListByIdList" resultMap="resourceCenterMap">
-        <include refid="resource_appinstance_select_list"/>
-        <include refid="resource_appinstance_from_join"/>
-        <include refid="resource_appinstance_where_idList"/>
-        UNION ALL
-        <include refid="resource_dbinstance_select_list"/>
-        <include refid="resource_dbinstance_from_join"/>
-        <include refid="resource_dbinstance_where_idList"/>
+        SELECT a.`id`, a.`name`, a.`type_id`, a.`type_name`, a.`maintenance_window`, a.`description`,
+        b.`bg_id`, b.`bg_name`, b.`bg_uuid`,
+        c.`ip`,
+        e.`user_id`, e.`user_name`, e.`user_uuid`,
+        h.`env_id`, h.`env_name`,
+        i.`app_module_id`, i.`app_module_name`,
+        l.`id` AS `app_system_id`, l.`name` AS app_system_name,
+        m.`port`
+        <include refid="resource_ipobject_from_join"/>
+        WHERE a.`id` IN
+        <foreach collection="idList" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
     </select>
-
     <select id="getResourceIdByIpAndPort" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
         SELECT a.`id`
-        <include refid="resource_appinstance_from_where_ip_port"/>
-        UNION ALL
-        SELECT a.`id`
-        <include refid="resource_dbinstance_from_where_ip_port"/>
+        FROM ${schemaName}.`resource_ipobject` a
+        LEFT JOIN ${schemaName}.`resource_softwareservice` b on b.`id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_ip` c on c.`resource_id` = a.`id`
+        where b.`port` = #{port}
+          and c.`ip` = #{ip}
         LIMIT 1
     </select>
-
     <select id="getResourceIpPortById" resultMap="resourceCenterMap">
-        SELECT a.`id`, a.`port`, b.`ip`
-        <include refid="resource_appinstance_from_where_id"/>
-        UNION ALL
-        SELECT a.`id`, a.`port`, b.`ip`
-        <include refid="resource_dbinstance_from_where_id"/>
+        SELECT a.`id`, b.`port`, c.`ip`
+        FROM ${schemaName}.`resource_ipobject` a
+        LEFT JOIN ${schemaName}.`resource_softwareservice` b on b.`id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_ip` c on c.`resource_id` = a.`id`
+        where a.`id` = #{id}
         LIMIT 1
     </select>
 
