@@ -321,6 +321,50 @@
         </where>
     </select>
 
+    <select id="checkTagNameIsRepeats" parameterType="codedriver.framework.cmdb.dto.tag.TagVo" resultType="int">
+        select count(1) from `cmdb_resourcecenter_tag` where `name` = #{name} and `id` != #{id}
+    </select>
+
+    <select id="checkTagIsExistsById" parameterType="java.lang.Long" resultType="int">
+        select count(1) from `cmdb_resourcecenter_tag` where `id` = #{value}
+    </select>
+
+    <select id="searchTagCount" parameterType="codedriver.framework.cmdb.dto.tag.TagVo" resultType="int">
+        select count(1)
+        from `cmdb_resourcecenter_tag`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` like concat('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="searchTag" parameterType="codedriver.framework.cmdb.dto.tag.TagVo" resultType="codedriver.framework.cmdb.dto.tag.TagVo">
+        select
+        `id`,
+        `name`,
+        `description`,
+        (select count(1) from `cmdb_resourcecenter_resource_tag` where `tag_id` = `id`) as assetsCount
+        from `cmdb_resourcecenter_tag`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` like concat('%', #{keyword}, '%')
+            </if>
+        </where>
+        order by `id` desc
+        <if test="needPage == true">
+            limit #{startNum}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="getTagById" parameterType="java.lang.Long" resultType="codedriver.framework.cmdb.dto.tag.TagVo">
+        select `id`,`name`,`description` from `cmdb_resourcecenter_tag` where `id` = #{value}
+    </select>
+
+    <select id="checkTagHasBeenReferredById" parameterType="java.lang.Long" resultType="int">
+        select count(1) from `cmdb_resourcecenter_resource_tag` where `tag_id` = #{value}
+    </select>
+
     <select id="getAccountIdListByAccountAndProtocol" resultType="java.lang.Long">
         SELECT `id` FROM `cmdb_resourcecenter_account`
         where `account` = #{account} and `protocol` = #{protocol}
@@ -357,6 +401,13 @@
         where `id` = #{id}
     </update>
 
+    <update id="updateTag" parameterType="codedriver.framework.cmdb.dto.tag.TagVo">
+        update `cmdb_resourcecenter_tag` set
+        `name` = #{name},
+        `description` = #{description}
+        where `id` = #{id}
+    </update>
+
     <insert id="insertAccount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.AccountVo">
         insert into `cmdb_resourcecenter_account` (
         `id`,
@@ -382,9 +433,27 @@
         )
     </insert>
 
+    <insert id="insertTag" parameterType="codedriver.framework.cmdb.dto.tag.TagVo">
+        insert into `cmdb_resourcecenter_tag` (
+        `id`,
+        `name`,
+        `description`
+        ) values (
+        #{id},
+        #{name},
+        #{description}
+        )
+    </insert>
+
     <delete id="deleteAccountById" parameterType="java.lang.Long">
         delete
         from `cmdb_resourcecenter_account`
+        where `id` = #{value}
+    </delete>
+
+    <delete id="deleteTagById" parameterType="java.lang.Long">
+        delete
+        from `cmdb_resourcecenter_tag`
         where `id` = #{value}
     </delete>
 </mapper>
