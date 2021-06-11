@@ -7,9 +7,9 @@ package codedriver.module.cmdb.api.resourcecenter.resourcetype;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.annotation.ResourceType;
+import codedriver.framework.cmdb.annotation.ResourceTypes;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceTypeVo;
-import codedriver.framework.cmdb.dto.resourcecenter.entity.ResourceEntityBaseVo;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -20,6 +20,8 @@ import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.reflections.Reflections;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.scanners.TypeAnnotationsScanner;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -38,14 +40,26 @@ public class ResourceTypeTreeApi extends PrivateApiComponentBase {
     private static List<ResourceTypeVo> resourceTypeList = new ArrayList<>();
 
     static {
-        Reflections reflections = new Reflections("codedriver.framework.cmdb.dto.resourcecenter.entity");
-        Set<Class<? extends ResourceEntityBaseVo>> classSet = reflections.getSubTypesOf(ResourceEntityBaseVo.class);
-        for (Class<? extends ResourceEntityBaseVo> c : classSet) {
+        Reflections reflections = new Reflections("codedriver.framework.cmdb.dto.resourcecenter.entity", new TypeAnnotationsScanner(), new SubTypesScanner());
+        Set<Class<?>> classList = reflections.getTypesAnnotatedWith(ResourceType.class, true);
+        for (Class<?> c : classList) {
             ResourceType resourceType = c.getAnnotation(ResourceType.class);
-            if(resourceType != null) {
+            if (resourceType != null) {
                 String ciName = resourceType.ciName();
-                if(StringUtils.isNotBlank(ciName)){
+                if (StringUtils.isNotBlank(ciName)) {
                     resourceTypeList.add(new ResourceTypeVo(resourceType.name(), resourceType.label(), ciName));
+                }
+            }
+        }
+        classList = reflections.getTypesAnnotatedWith(ResourceTypes.class, true);
+        for (Class<?> c : classList) {
+            ResourceTypes resourceTypes = c.getAnnotation(ResourceTypes.class);
+            if (resourceTypes != null) {
+                for (ResourceType resourceType : resourceTypes.value()) {
+                    String ciName = resourceType.ciName();
+                    if (StringUtils.isNotBlank(ciName)) {
+                        resourceTypeList.add(new ResourceTypeVo(resourceType.name(), resourceType.label(), ciName));
+                    }
                 }
             }
         }

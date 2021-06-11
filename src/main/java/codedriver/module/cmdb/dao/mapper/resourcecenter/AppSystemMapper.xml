@@ -6,40 +6,40 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.resourcecenter.AppSystemMapper">
-    <resultMap id="appSystemMap" type="codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemVo">
-        <id property="id" column="id"/>
-        <result property="name" column="name"/>
-        <result property="description" column="description"/>
-        <result property="maintenanceWindow" column="maintenanceWindow"/>
-        <collection property="ownerList" ofType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemOwnerVo">
-            <id property="userId" column="userId"/>
-            <result property="userName" column="userName"/>
-        </collection>
-        <collection property="bgList" ofType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemBgVo">
-            <id property="bgId" column="bgId"/>
-            <result property="bgName" column="bgName"/>
-        </collection>
-    </resultMap>
+<!--    <resultMap id="appSystemMap" type="codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemVo">-->
+<!--        <id property="id" column="id"/>-->
+<!--        <result property="name" column="name"/>-->
+<!--        <result property="description" column="description"/>-->
+<!--        <result property="maintenanceWindow" column="maintenanceWindow"/>-->
+<!--        <collection property="ownerList" ofType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemOwnerVo">-->
+<!--            <id property="userId" column="userId"/>-->
+<!--            <result property="userName" column="userName"/>-->
+<!--        </collection>-->
+<!--        <collection property="bgList" ofType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemBgVo">-->
+<!--            <id property="bgId" column="bgId"/>-->
+<!--            <result property="bgName" column="bgName"/>-->
+<!--        </collection>-->
+<!--    </resultMap>-->
 
-    <select id="searchAppSystem" parameterType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemVo"
-            resultMap="appSystemMap">
-        SELECT
-        a.id,
-        a.name,
-        a.description,
-        a.maintenance_window AS maintenanceWindow,
-        b.user_id AS userId,
-        b.user_name AS userName,
-        c.bg_id AS bgName,
-        c.bg_name as bgName
-        FROM ${schemaName}.resource_appsystem a
-        LEFT JOIN ${schemaName}.resource_appsystem_owner b
-        ON a.id = b.app_system_id
-        LEFT JOIN ${schemaName}.resource_appsystem_bg c ON a.id = c.app_system_id
-        <where>
-            <if test="name != null and name != ''">
-                AND name LIKE CONCAT('%',#{name},'%')
-            </if>
-        </where>
-    </select>
+<!--    <select id="searchAppSystem" parameterType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemVo"-->
+<!--            resultMap="appSystemMap">-->
+<!--        SELECT-->
+<!--        a.id,-->
+<!--        a.name,-->
+<!--        a.description,-->
+<!--        a.maintenance_window AS maintenanceWindow,-->
+<!--        b.user_id AS userId,-->
+<!--        b.user_name AS userName,-->
+<!--        c.bg_id AS bgName,-->
+<!--        c.bg_name as bgName-->
+<!--        FROM ${schemaName}.resource_appsystem a-->
+<!--        LEFT JOIN ${schemaName}.resource_appsystem_owner b-->
+<!--        ON a.id = b.app_system_id-->
+<!--        LEFT JOIN ${schemaName}.resource_appsystem_bg c ON a.id = c.app_system_id-->
+<!--        <where>-->
+<!--            <if test="name != null and name != ''">-->
+<!--                AND name LIKE CONCAT('%',#{name},'%')-->
+<!--            </if>-->
+<!--        </where>-->
+<!--    </select>-->
 </mapper>
