@@ -70,13 +70,16 @@ public class AccountSearchApi extends PrivateApiComponentBase {
         if (CollectionUtils.isNotEmpty(accountVoList)) {
             Boolean hasAuth = AuthActionChecker.check(RESOURCECENTER_ACCOUNT_MODIFY.class.getSimpleName());
             accountVoList.stream().forEach(o -> {
+                OperateVo delete = new OperateVo("delete", "删除");
                 if (hasAuth) {
-                    OperateVo delete = new OperateVo("delete", "删除");
                     if (o.getAssetsCount() > 0) {
                         delete.setDisabled(1);
                         delete.setDisabledReason("当前账号已被引用，不可删除");
                     }
                     o.getOperateList().add(delete);
+                } else {
+                    delete.setDisabled(1);
+                    delete.setDisabledReason("无权限，请联系管理员");
                 }
             });
         }

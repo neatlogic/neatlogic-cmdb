@@ -224,6 +224,7 @@
         `account`,
         `password`,
         `protocol`,
+        `port`,
         `fcu`,
         `fcd`,
         `lcu`,
@@ -260,6 +261,7 @@
         <result column="name" property="name"/>
         <result column="account" property="account"/>
         <result column="protocol" property="protocol"/>
+        <result column="port" property="port"/>
         <result column="assetsCount" property="assetsCount"/>
         <result column="lcu" property="lcu"/>
         <result column="lcd" property="lcd"/>
@@ -275,6 +277,7 @@
         a.`name`,
         a.`account`,
         a.`protocol`,
+        a.`port`,
         (select count(1) from `cmdb_resourcecenter_resource_account` where `account_id` = a.`id`) as assetsCount,
         a.`lcu`,
         (select `user_name` from `user` where `uuid` = a.`lcu`) as userName,
@@ -396,6 +399,7 @@
         `account` = #{account},
         `password` = #{password},
         `protocol` = #{protocol},
+        `port` = #{port},
         `lcu` = #{lcu},
         `lcd` = now(3)
         where `id` = #{id}
@@ -415,6 +419,7 @@
         `account`,
         `password`,
         `protocol`,
+        `port`,
         `lcu`,
         `lcd`,
         `fcu`,
@@ -426,6 +431,7 @@
         #{account},
         #{password},
         #{protocol},
+        #{port},
         #{lcu},
         now(3),
         #{fcu},
