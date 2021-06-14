@@ -7,6 +7,20 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.customview.CustomViewMapper">
 
+    <select id="getCustomViewAttrByUuid" parameterType="java.lang.String"
+            resultType="codedriver.framework.cmdb.dto.customview.CustomViewAttrVo">
+        SELECT customview_id      AS customViewId,
+               customview_ci_uuid AS customViewCiUuid,
+               uuid,
+               attr_id            AS attrId,
+               alias,
+               sort,
+               is_hidden          AS isHidden,
+               `condition`        AS conditionStr
+        FROM `cmdb_customview_attr`
+        WHERE uuid = #{value}
+    </select>
+
     <resultMap id="customViewMap" type="codedriver.framework.cmdb.dto.customview.CustomViewVo">
         <id property="id" column="id"/>
         <result property="name" column="name"/>

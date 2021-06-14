@@ -130,7 +130,7 @@ public class CustomViewBuilder {
                             Join join = new Join();
                             joinMap.put(linkVo.getToCustomViewCiUuid(), new JoinWrapper(join, joinMap.size()));
 
-                            if (linkVo.getJoinType().equals(JoinType.LEFTJOIN.getValue())) {
+                            if (linkVo.getJoinType().equalsIgnoreCase(JoinType.LEFTJOIN.getValue())) {
                                 join.withLeft(true);
                             }
                             join.withRightItem(new SubSelect()
@@ -162,7 +162,7 @@ public class CustomViewBuilder {
                         CustomViewRelVo customViewRelVo = customViewVo.getCustomCiByUuid(linkVo.getFromCustomViewCiUuid()).getRelByUuid(linkVo.getFromUuid());
                         if (customViewRelVo != null) {
                             Join join = new Join();
-                            if (linkVo.getJoinType().equals(JoinType.LEFTJOIN.getValue())) {
+                            if (linkVo.getJoinType().equalsIgnoreCase(JoinType.LEFTJOIN.getValue())) {
                                 join.withLeft(true);
                             }
                             join.withRightItem(new Table().withName("cmdb_relentity")
@@ -188,7 +188,7 @@ public class CustomViewBuilder {
                                 Join join2 = new Join();
                                 joinMap.put(linkVo.getToCustomViewCiUuid(), new JoinWrapper(join2, joinMap.size()));
 
-                                if (linkVo.getJoinType().equals(JoinType.LEFTJOIN.getValue())) {
+                                if (linkVo.getJoinType().equalsIgnoreCase(JoinType.LEFTJOIN.getValue())) {
                                     join2.withLeft(true);
                                 }
                                 join2.withRightItem(new SubSelect()

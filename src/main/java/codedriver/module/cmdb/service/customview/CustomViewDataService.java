@@ -6,9 +6,16 @@
 package codedriver.module.cmdb.service.customview;
 
 import codedriver.framework.cmdb.dto.customview.CustomViewConditionVo;
+import codedriver.framework.cmdb.dto.customview.CustomViewDataGroupVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewDataVo;
+
+import java.util.List;
+import java.util.Map;
 
 public interface CustomViewDataService {
     CustomViewDataVo getCustomViewData(CustomViewConditionVo customViewConditionVo);
 
+    List<Map<String, Object>> searchCustomViewData(CustomViewConditionVo customViewConditionVo);
+
+    List<CustomViewDataGroupVo> searchCustomViewDataGroup(CustomViewConditionVo customViewConditionVo);
 }

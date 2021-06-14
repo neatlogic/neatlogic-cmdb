@@ -5,17 +5,16 @@
 
 package codedriver.module.cmdb.service.customview;
 
-import codedriver.framework.cmdb.dto.customview.CustomViewAttrVo;
-import codedriver.framework.cmdb.dto.customview.CustomViewConditionVo;
-import codedriver.framework.cmdb.dto.customview.CustomViewDataVo;
-import codedriver.framework.cmdb.dto.customview.CustomViewVo;
+import codedriver.framework.cmdb.dto.customview.*;
 import codedriver.framework.cmdb.exception.customview.CustomViewNotFoundException;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.customview.CustomViewDataMapper;
 import codedriver.module.cmdb.dao.mapper.customview.CustomViewMapper;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -46,6 +45,44 @@ public class CustomViewDataServiceImpl implements CustomViewDataService {
         customViewDataVo.setCustomViewId(customViewVo.getId());
         customViewDataVo.setCustomViewName(customViewVo.getName());
         return customViewDataVo;
+    }
+
+    @Override
+    public List<Map<String, Object>> searchCustomViewData(CustomViewConditionVo customViewConditionVo) {
+        List<CustomViewAttrVo> customViewAttrList = customViewMapper.getCustomViewAttrByCustomViewId(customViewConditionVo.getCustomViewId());
+        customViewConditionVo.setFieldList(customViewAttrList.stream().map(CustomViewAttrVo::getUuid).collect(Collectors.toList()));
+        List<Map<String, Object>> dataList = customViewDataMapper.searchCustomViewData(customViewConditionVo);
+        if (CollectionUtils.isNotEmpty(customViewConditionVo.getValueFilterList())) {
+
+            for (Map<String, Object> data : dataList) {
+                //必须要复制一份，否则序列化成json会出错
+                List<CustomViewValueFilterVo> filterList = new ArrayList<>();
+                for (CustomViewValueFilterVo filterVo : customViewConditionVo.getValueFilterList()) {
+                    filterList.add(new CustomViewValueFilterVo(filterVo.getUuid(), filterVo.getValue()));
+                }
+                data.put("_filterList", filterList);
+            }
+        }
+        return dataList;
+    }
+
+    @Override
+    public List<CustomViewDataGroupVo> searchCustomViewDataGroup(CustomViewConditionVo customViewConditionVo) {
+        CustomViewAttrVo customViewAttrVo = customViewMapper.getCustomViewAttrByUuid(customViewConditionVo.getGroupBy());
+        List<CustomViewAttrVo> customViewAttrList = customViewMapper.getCustomViewAttrByCustomViewId(customViewConditionVo.getCustomViewId());
+        customViewConditionVo.setFieldList(customViewAttrList.stream().map(CustomViewAttrVo::getUuid).collect(Collectors.toList()));
+        List<CustomViewDataGroupVo> groupList = customViewDataMapper.searchCustomViewDataGroup(customViewConditionVo);
+        for (CustomViewDataGroupVo customViewDataGroupVo : groupList) {
+            customViewDataGroupVo.setAttrAlias(customViewAttrVo.getAlias());
+            customViewDataGroupVo.setAttrUuid(customViewAttrVo.getUuid());
+            if (CollectionUtils.isNotEmpty(customViewConditionVo.getValueFilterList())) {
+                //必须要复制一份，否则序列化成json会出错
+                for (CustomViewValueFilterVo filterVo : customViewConditionVo.getValueFilterList()) {
+                    customViewDataGroupVo.addValueFilter(new CustomViewValueFilterVo(filterVo.getUuid(), filterVo.getValue()));
+                }
+            }
+        }
+        return groupList;
     }
 
 }

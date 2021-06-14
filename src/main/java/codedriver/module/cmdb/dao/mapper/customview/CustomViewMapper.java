@@ -14,6 +14,8 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface CustomViewMapper {
+    CustomViewAttrVo getCustomViewAttrByUuid(String uuid);
+
     CustomViewVo getCustomViewById(Long customViewId);
 
     List<CustomViewVo> searchCustomView(CustomViewVo customViewVo);

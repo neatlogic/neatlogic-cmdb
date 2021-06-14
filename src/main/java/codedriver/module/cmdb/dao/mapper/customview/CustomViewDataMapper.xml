@@ -6,13 +6,43 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.customview.CustomViewDataMapper">
-    <select id="searchCustomViewData" parameterType="codedriver.framework.cmdb.dto.customview.CustomViewConditionVo"
-            resultType="java.util.Map">
+    <select id="searchCustomViewDataGroup"
+            parameterType="codedriver.framework.cmdb.dto.customview.CustomViewConditionVo"
+            resultType="codedriver.framework.cmdb.dto.customview.CustomViewDataGroupVo">
+        SELECT DISTINCT (CASE
+        WHEN ${groupBy} IS NULL THEN '【空值】'
+        WHEN ${groupBy} = '' THEN '【空值】'
+        ELSE ${groupBy} END) AS `value`,
+        (CASE
+        WHEN `${groupBy}_hash` IS NULL THEN 'isnull'
+        ELSE `${groupBy}_hash` END) AS valueHash,
+        count((CASE
+        WHEN ${groupBy} IS NULL THEN '【空值】'
+        WHEN ${groupBy} = '' THEN '【空值】'
+        ELSE ${groupBy} END)) AS `count`
+        FROM
+        (<include refid="searchCustomViewDataSql"/>) t
+        <where>
+            <if test="valueFilterList != null and valueFilterList.size() > 0">
+                <foreach collection="valueFilterList" item="valueFilter">
+                    <if test="valueFilter.value != null and valueFilter.value != ''">
+                        AND `${valueFilter.uuid}_hash` = #{valueFilter.value}
+                    </if>
+                </foreach>
+            </if>
+        </where>
+        GROUP BY
+        `value`
+        LIMIT #{startNum}, #{pageSizePlus}
+    </select>
+
+    <sql id="searchCustomViewDataSql">
         SELECT
         id,
         <if test="fieldList != null and fieldList.size() > 0">
             <foreach collection="fieldList" item="field" separator=",">
-                GROUP_CONCAT(distinct ${field}) AS ${field}
+                GROUP_CONCAT(distinct ${field}) AS `${field}`,
+                MD5(GROUP_CONCAT(distinct ${field})) AS `${field}_hash`
             </foreach>
         </if>
         FROM ${viewName}
@@ -56,7 +86,25 @@
             </if>
         </where>
         GROUP BY id
-        LIMIT #{startNum}, #{pageSizePlus}
+    </sql>
+
+    <select id="searchCustomViewData" parameterType="codedriver.framework.cmdb.dto.customview.CustomViewConditionVo"
+            resultType="java.util.Map">
+        SELECT * FROM (
+        <include refid="searchCustomViewDataSql"></include>
+        ) t
+        <where>
+            <if test="valueFilterList != null and valueFilterList.size() > 0">
+                <foreach collection="valueFilterList" item="valueFilter">
+                    <if test="valueFilter.value != null and valueFilter.value != ''">
+                        AND `${valueFilter.uuid}_hash` = #{valueFilter.value}
+                    </if>
+                </foreach>
+            </if>
+        </where>
+        LIMIT
+        #{startNum},
+        #{pageSizePlus}
     </select>
 </mapper>
 
