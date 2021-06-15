@@ -21,7 +21,7 @@
         cmdb_ci ci JOIN
         cmdb_attr attr ON ci.id = attr.ci_id
         LEFT JOIN cmdb_view v
-        ON attr.`id` = v.`item_id`
+        ON attr.`id` = v.`item_id` AND attr.`ci_id` = v.`ci_id`
         AND v.`type` = 'attr'
         WHERE
         ci.lft &lt;= ( SELECT lft FROM `cmdb_ci` WHERE id = #{ciId} )
