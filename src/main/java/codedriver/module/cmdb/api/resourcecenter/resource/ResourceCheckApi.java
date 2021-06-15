@@ -95,7 +95,7 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
         }
         List<ResourceSearchVo> inputNodeList = jsonObj.getJSONArray("inputNodeList").toJavaList(ResourceSearchVo.class);
         for (ResourceSearchVo searchVo : inputNodeList) {
-            Long resourceId = resourceCenterMapper.getResourceIdByIpAndPort(searchVo);
+            Long resourceId = resourceCenterMapper.getResourceIdByIpAndPortAndName(searchVo);
             if (resourceId == null) {
                 resultSet.add(searchVo.getIp() + ":" + searchVo.getPort() + "未在系统中找到对应目标");
             } else {
