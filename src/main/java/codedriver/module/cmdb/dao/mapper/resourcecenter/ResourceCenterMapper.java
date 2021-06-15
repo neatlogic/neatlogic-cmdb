@@ -25,7 +25,7 @@ public interface ResourceCenterMapper {
 
     List<ResourceVo> getResourceListByIdList(@Param("idList") List<Long> idList, @Param("schemaName") String schemaName);
 
-    Long getResourceIdByIpAndPort(ResourceSearchVo searchVo);
+    Long getResourceIdByIpAndPortAndName(ResourceSearchVo searchVo);
 
     ResourceVo getResourceIpPortById(@Param("id") Long id, @Param("schemaName") String schemaName);
 

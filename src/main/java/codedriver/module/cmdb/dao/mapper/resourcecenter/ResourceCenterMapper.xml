@@ -256,13 +256,18 @@
             #{id}
         </foreach>
     </select>
-    <select id="getResourceIdByIpAndPort" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
+    <select id="getResourceIdByIpAndPortAndName" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
         SELECT a.`id`
         FROM ${schemaName}.`resource_ipobject` a
         LEFT JOIN ${schemaName}.`resource_softwareservice` b on b.`id` = a.`id`
         LEFT JOIN ${schemaName}.`resource_ipobject_ip` c on c.`resource_id` = a.`id`
-        where b.`port` = #{port}
-          and c.`ip` = #{ip}
+        WHERE c.`ip` = #{ip}
+          <if test="port != null and port != ''">
+              AND b.`port` = #{port}
+          </if>
+          <if test="name != null and name != ''">
+              and a.`name` = #{name}
+          </if>
         LIMIT 1
     </select>
     <select id="getResourceIpPortById" resultMap="resourceCenterMap">
