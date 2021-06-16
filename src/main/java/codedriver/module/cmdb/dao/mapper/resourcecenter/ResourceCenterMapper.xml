@@ -476,7 +476,9 @@
         `account` = #{account},
         `password` = #{password},
         `protocol` = #{protocol},
-        `port` = #{port},
+        <if test="port != null">
+            `port` = #{port},
+        </if>
         `lcu` = #{lcu},
         `lcd` = now(3)
         where `id` = #{id}
@@ -496,7 +498,9 @@
         `account`,
         `password`,
         `protocol`,
-        `port`,
+        <if test="port != null">
+            `port`,
+        </if>
         `lcu`,
         `lcd`,
         `fcu`,
@@ -508,7 +512,9 @@
         #{account},
         #{password},
         #{protocol},
-        #{port},
+        <if test="port != null">
+            #{port},
+        </if>
         #{lcu},
         now(3),
         #{fcu},
