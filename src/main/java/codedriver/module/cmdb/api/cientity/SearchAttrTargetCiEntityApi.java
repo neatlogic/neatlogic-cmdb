@@ -64,7 +64,7 @@ public class SearchAttrTargetCiEntityApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "attrId", type = ApiParamType.LONG, isRequired = true, desc = "属性id"),
             @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "关键字"),
-            @Param(name = "valueList", type = ApiParamType.JSONARRAY, desc = "选中值列表")})
+            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "选中值列表")})
     @Output({@Param(explode = BasePageVo.class),
             @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = CiEntityVo[].class),
             @Param(name = "theadList", type = ApiParamType.JSONARRAY, desc = "表头信息")})
@@ -73,7 +73,7 @@ public class SearchAttrTargetCiEntityApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long attrId = jsonObj.getLong("attrId");
         String keyword = jsonObj.getString("keyword");
-        JSONArray valueList = jsonObj.getJSONArray("valueList");
+        JSONArray defaultValue = jsonObj.getJSONArray("defaultValue");
         AttrVo attrVo = attrMapper.getAttrById(attrId);
         if (attrVo == null) {
             throw new AttrNotFoundException(attrId);
@@ -90,11 +90,11 @@ public class SearchAttrTargetCiEntityApi extends PrivateApiComponentBase {
 
         CiEntityVo ciEntityVo = new CiEntityVo();
         ciEntityVo.setCiId(attrVo.getTargetCiId());
-        if (CollectionUtils.isNotEmpty(valueList)) {
+        if (CollectionUtils.isNotEmpty(defaultValue)) {
             List<Long> idList = new ArrayList<>();
-            for (int i = 0; i < valueList.size(); i++) {
+            for (int i = 0; i < defaultValue.size(); i++) {
                 try {
-                    idList.add(valueList.getLong(i));
+                    idList.add(defaultValue.getLong(i));
                 } catch (Exception ignored) {
 
                 }
