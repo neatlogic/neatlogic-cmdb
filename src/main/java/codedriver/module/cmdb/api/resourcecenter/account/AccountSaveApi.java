@@ -10,6 +10,7 @@ import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
 import codedriver.framework.cmdb.enums.resourcecenter.Protocol;
 import codedriver.framework.cmdb.exception.resourcecenter.ProtocolNotFoundException;
+import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterAccountLostPortException;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterAccountNameRepeatsException;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterAccountNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -59,7 +60,7 @@ public class AccountSaveApi extends PrivateApiComponentBase {
             @Param(name = "account", type = ApiParamType.STRING, maxLength = 50, isRequired = true, desc = "用户名"),
             @Param(name = "password", type = ApiParamType.STRING, maxLength = 50, isRequired = true, desc = "密码"),
             @Param(name = "protocol", type = ApiParamType.STRING, isRequired = true, desc = "协议"),
-            @Param(name = "port", type = ApiParamType.INTEGER, isRequired = true, desc = "端口"),
+            @Param(name = "port", type = ApiParamType.INTEGER, desc = "端口"),
     })
     @Output({
     })
@@ -71,8 +72,12 @@ public class AccountSaveApi extends PrivateApiComponentBase {
         if (resourceCenterMapper.checkAccountNameIsRepeats(vo) > 0) {
             throw new ResourceCenterAccountNameRepeatsException(vo.getName());
         }
-        if (Protocol.getProtocol(vo.getProtocol()) == null) {
+        Protocol protocol = Protocol.getProtocol(vo.getProtocol());
+        if (protocol == null) {
             throw new ProtocolNotFoundException(vo.getProtocol());
+        }
+        if (Protocol.SSH.equals(protocol) && vo.getPort() == null) {
+            throw new ResourceCenterAccountLostPortException();
         }
         vo.setLcu(UserContext.get().getUserUuid());
         if (id != null) {
