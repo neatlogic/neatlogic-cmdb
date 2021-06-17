@@ -22,7 +22,7 @@ import javax.annotation.Resource;
 @Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class getCustomViewApi extends PrivateApiComponentBase {
+public class GetCustomViewApi extends PrivateApiComponentBase {
 
     @Resource
     private CustomViewService customViewService;

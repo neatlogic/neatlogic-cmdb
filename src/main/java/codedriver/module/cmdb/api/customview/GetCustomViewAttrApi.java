@@ -21,7 +21,7 @@ import javax.annotation.Resource;
 @Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class getCustomViewAttrApi extends PrivateApiComponentBase {
+public class GetCustomViewAttrApi extends PrivateApiComponentBase {
 
     @Resource
     private CustomViewMapper customViewMapper;
