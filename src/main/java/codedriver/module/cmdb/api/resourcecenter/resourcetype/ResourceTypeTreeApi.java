@@ -47,7 +47,7 @@ public class ResourceTypeTreeApi extends PrivateApiComponentBase {
             if (resourceType != null) {
                 String ciName = resourceType.ciName();
                 if (StringUtils.isNotBlank(ciName)) {
-                    resourceTypeList.add(new ResourceTypeVo(resourceType.name(), resourceType.label(), ciName));
+                    resourceTypeList.add(new ResourceTypeVo(resourceType.label(), ciName));
                 }
             }
         }
@@ -58,7 +58,7 @@ public class ResourceTypeTreeApi extends PrivateApiComponentBase {
                 for (ResourceType resourceType : resourceTypes.value()) {
                     String ciName = resourceType.ciName();
                     if (StringUtils.isNotBlank(ciName)) {
-                        resourceTypeList.add(new ResourceTypeVo(resourceType.name(), resourceType.label(), ciName));
+                        resourceTypeList.add(new ResourceTypeVo(resourceType.label(), ciName));
                     }
                 }
             }
@@ -92,14 +92,12 @@ public class ResourceTypeTreeApi extends PrivateApiComponentBase {
         List<ResourceTypeVo> resultList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(resourceTypeList)) {
             List<CiVo> ciVoList = new ArrayList<>();
-            Map<String, String> typeNameMap = new HashMap<>();
             for(ResourceTypeVo type : resourceTypeList){
-                CiVo ciVo = ciMapper.getCiByName(type.getCiName());
+                CiVo ciVo = ciMapper.getCiByName(type.getName());
                 if(ciVo == null){
-                    throw new CiNotFoundException(type.getCiName());
+                    throw new CiNotFoundException(type.getName());
                 }
                 ciVoList.add(ciVo);
-                typeNameMap.put(type.getCiName(), type.getName());
             }
             ciVoList.sort(Comparator.comparing(CiVo::getLft));
             for(CiVo ciVo : ciVoList){
@@ -108,13 +106,13 @@ public class ResourceTypeTreeApi extends PrivateApiComponentBase {
                 List<ResourceTypeVo> resourceTypeVoList = new ArrayList<>(size);
                 Map<Long, ResourceTypeVo> resourceTypeMap = new HashMap<>(size);
                 for (CiVo ci : ciList) {
-                    ResourceTypeVo resourceTypeVo = new ResourceTypeVo(ci.getId(), ci.getParentCiId(), typeNameMap.get(ciVo.getName()), ci.getLabel(), ci.getName());
-                    resourceTypeMap.put(resourceTypeVo.getCiId(), resourceTypeVo);
+                    ResourceTypeVo resourceTypeVo = new ResourceTypeVo(ci.getId(), ci.getParentCiId(), ci.getLabel(), ci.getName());
+                    resourceTypeMap.put(resourceTypeVo.getId(), resourceTypeVo);
                     resourceTypeVoList.add(resourceTypeVo);
                 }
                 for (ResourceTypeVo resourceType : resourceTypeVoList) {
-                    if (resourceType.getParentCiId() != null) {
-                        ResourceTypeVo parentResourceType = resourceTypeMap.get(resourceType.getParentCiId());
+                    if (resourceType.getParentId() != null) {
+                        ResourceTypeVo parentResourceType = resourceTypeMap.get(resourceType.getParentId());
                         if (parentResourceType != null) {
                             parentResourceType.addChild(resourceType);
                         } else {

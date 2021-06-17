@@ -7,7 +7,9 @@ package codedriver.module.cmdb.dao.mapper.resourcecenter;
 
 import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceTypeVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
+import codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnviromentVo;
 import codedriver.framework.cmdb.dto.tag.TagVo;
 import org.apache.ibatis.annotations.Param;
 
@@ -66,6 +68,18 @@ public interface ResourceCenterMapper {
     List<Long> getNoCorrespondingAccountResourceIdListByTagListAndAccountIdAndProtocol(@Param("tagList") List<Long> tagList, @Param("account") String account, @Param("protocol") String protocol);
 
     Long checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol(@Param("resourceId") Long resourceId, @Param("account") String account, @Param("protocol") String protocol);
+
+    int getAppModuleCount(ResourceSearchVo searchVo);
+
+    List<Long> getAppModuleIdList(ResourceSearchVo searchVo);
+
+    List<ResourceVo> getAppModuleListByIdList(@Param("idList") List<Long> idList, @Param("schemaName") String schemaName);
+
+    int checkAppModuleIsExists(@Param("id") Long id, @Param("schemaName") String schemaName);
+
+    List<AppEnviromentVo> getEnvironmentListByAppModuleId(@Param("appModuleId") Long appModuleId, @Param("schemaName") String schemaName);
+
+    List<ResourceTypeVo> getResourceTypeListByAppModuleIdAndEnvId(@Param("appModuleId") Long appModuleId, @Param("envId") Long envId, @Param("schemaName") String schemaName);
 
     int updateAccount(AccountVo vo);
 
