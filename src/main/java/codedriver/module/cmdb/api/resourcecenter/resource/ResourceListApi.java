@@ -62,7 +62,6 @@ public class ResourceListApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "模糊搜索"),
-            @Param(name = "viewName", type = ApiParamType.STRING, desc = "视图名"),
             @Param(name = "typeId", type = ApiParamType.LONG, desc = "类型id")
     })
     @Output({

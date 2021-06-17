@@ -470,6 +470,61 @@
         LIMIT 1
     </select>
 
+    <select id="getAppModuleCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="int">
+        SELECT COUNT(DISTINCT a.`id`) FROM ${schemaName}.`resource_appmodule` a
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND a.`name` LIKE concat('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="getAppModuleIdList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
+        SELECT DISTINCT a.`id` FROM ${schemaName}.`resource_appmodule` a
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND a.`name` LIKE concat('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="getAppModuleListByIdList" parameterType="java.util.List" resultMap="resourceCenterMap">
+        SELECT
+               a.`id`, a.`name`, a.`maintenance_window`, a.`description`,
+               b.`user_id`, b.`user_name`, b.`user_uuid`,
+               c.`bg_id`, c.`bg_name`, c.`bg_uuid`,
+               e.`id` AS `app_system_id`, e.`name` AS app_system_name
+        FROM ${schemaName}.`resource_appmodule` a
+        LEFT JOIN ${schemaName}.`resource_ipobject_owner` b ON b.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_bg` c ON c.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_appsystem_appmodule` d on d.`app_module_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_appsystem` e on e.`id` = d.`resource_id`
+        WHERE a.`id` IN
+        <foreach collection="idList" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="checkAppModuleIsExists" resultType="int">
+        SELECT COUNT(1) FROM ${schemaName}.`resource_appmodule` WHERE `id` = #{id}
+    </select>
+
+    <select id="getEnvironmentListByAppModuleId" resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnviromentVo">
+        SELECT DISTINCT a.`env_id` AS envId, a.`env_name` AS envName
+        FROM ${schemaName}.`resource_ipobject_env` a
+        JOIN ${schemaName}.`resource_ipobject_appmodule` b ON b.`resource_id`=a.`resource_id` AND b.`app_module_id` = #{appModuleId}
+    </select>
+
+    <select id="getResourceTypeListByAppModuleIdAndEnvId" resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceTypeVo">
+        SELECT DISTINCT
+            a.`type_id` AS id,
+            a.`type_name` AS `name`,
+            a.`type_label` AS label
+        FROM ${schemaName}.`resource_ipobject` a
+        JOIN ${schemaName}.`resource_ipobject_env` b ON b.`resource_id` = a.`id` AND b.`env_id` = #{envId}
+        JOIN ${schemaName}.`resource_ipobject_appmodule` c ON c.`resource_id`=a.`id` AND c.`app_module_id` = #{appModuleId}
+    </select>
+
     <update id="updateAccount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.AccountVo">
         update `cmdb_resourcecenter_account` set
         `name` = #{name},
