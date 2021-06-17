@@ -36,7 +36,7 @@ public class CustomViewDataServiceImpl implements CustomViewDataService {
         if (customViewVo == null) {
             throw new CustomViewNotFoundException(customViewConditionVo.getCustomViewId());
         }
-        List<CustomViewAttrVo> customViewAttrList = customViewMapper.getCustomViewAttrByCustomViewId(customViewConditionVo.getCustomViewId());
+        List<CustomViewAttrVo> customViewAttrList = customViewMapper.getCustomViewAttrByCustomViewId(new CustomViewAttrVo(customViewConditionVo.getCustomViewId()));
         customViewConditionVo.setFieldList(customViewAttrList.stream().map(CustomViewAttrVo::getUuid).collect(Collectors.toList()));
         CustomViewDataVo customViewDataVo = new CustomViewDataVo();
         customViewDataVo.setAttrList(customViewAttrList);
@@ -49,11 +49,10 @@ public class CustomViewDataServiceImpl implements CustomViewDataService {
 
     @Override
     public List<Map<String, Object>> searchCustomViewData(CustomViewConditionVo customViewConditionVo) {
-        List<CustomViewAttrVo> customViewAttrList = customViewMapper.getCustomViewAttrByCustomViewId(customViewConditionVo.getCustomViewId());
+        List<CustomViewAttrVo> customViewAttrList = customViewMapper.getCustomViewAttrByCustomViewId(new CustomViewAttrVo(customViewConditionVo.getCustomViewId()));
         customViewConditionVo.setFieldList(customViewAttrList.stream().map(CustomViewAttrVo::getUuid).collect(Collectors.toList()));
         List<Map<String, Object>> dataList = customViewDataMapper.searchCustomViewData(customViewConditionVo);
         if (CollectionUtils.isNotEmpty(customViewConditionVo.getValueFilterList())) {
-
             for (Map<String, Object> data : dataList) {
                 //必须要复制一份，否则序列化成json会出错
                 List<CustomViewValueFilterVo> filterList = new ArrayList<>();
@@ -67,9 +66,14 @@ public class CustomViewDataServiceImpl implements CustomViewDataService {
     }
 
     @Override
+    public List<Map<String, Long>> getCustomViewCiEntityIdById(CustomViewConditionVo customViewConditionVo) {
+        return customViewDataMapper.getCustomViewCiEntityIdById(customViewConditionVo);
+    }
+
+    @Override
     public List<CustomViewDataGroupVo> searchCustomViewDataGroup(CustomViewConditionVo customViewConditionVo) {
         CustomViewAttrVo customViewAttrVo = customViewMapper.getCustomViewAttrByUuid(customViewConditionVo.getGroupBy());
-        List<CustomViewAttrVo> customViewAttrList = customViewMapper.getCustomViewAttrByCustomViewId(customViewConditionVo.getCustomViewId());
+        List<CustomViewAttrVo> customViewAttrList = customViewMapper.getCustomViewAttrByCustomViewId(new CustomViewAttrVo(customViewConditionVo.getCustomViewId()));
         customViewConditionVo.setFieldList(customViewAttrList.stream().map(CustomViewAttrVo::getUuid).collect(Collectors.toList()));
         List<CustomViewDataGroupVo> groupList = customViewDataMapper.searchCustomViewDataGroup(customViewConditionVo);
         for (CustomViewDataGroupVo customViewDataGroupVo : groupList) {

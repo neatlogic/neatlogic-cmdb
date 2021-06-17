@@ -16,6 +16,8 @@ public interface CustomViewService {
 
     CustomViewVo getCustomViewById(Long id);
 
+    CustomViewVo getCustomViewDetailById(Long id);
+
     List<CustomViewVo> searchCustomView(CustomViewVo customViewVo);
 
     @Transactional

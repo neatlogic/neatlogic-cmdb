@@ -96,7 +96,13 @@ public class CustomViewBuilder {
             Select select = SelectUtils.buildSelectFromTableAndSelectItems(mainTable);
             SelectBody selectBody = select.getSelectBody();
             PlainSelect plainSelect = (PlainSelect) selectBody;
-            plainSelect.addSelectItems(new SelectExpressionItem(new Column("id").withTable(new Table("ci_base"))));
+            plainSelect.addSelectItems(new SelectExpressionItem(new Column("id")
+                    .withTable(new Table("ci_base"))));
+            for (CustomViewCiVo ciVo : customViewVo.getCiList()) {
+                plainSelect.addSelectItems(new SelectExpressionItem(new Column("`id`")
+                        .withTable(new Table("ci_" + ciVo.getUuid())))
+                        .withAlias(new Alias("`" + ciVo.getUuid() + "_id`")));
+            }
             for (CustomViewAttrVo attrVo : customViewVo.getAttrList()) {
                 plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getUuid() + "`")));
                 plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getUuid() + "_hash`")));

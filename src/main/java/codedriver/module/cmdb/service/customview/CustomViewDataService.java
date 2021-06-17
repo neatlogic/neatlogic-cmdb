@@ -17,5 +17,8 @@ public interface CustomViewDataService {
 
     List<Map<String, Object>> searchCustomViewData(CustomViewConditionVo customViewConditionVo);
 
+
+    List<Map<String, Long>> getCustomViewCiEntityIdById(CustomViewConditionVo customViewConditionVo);
+
     List<CustomViewDataGroupVo> searchCustomViewDataGroup(CustomViewConditionVo customViewConditionVo);
 }

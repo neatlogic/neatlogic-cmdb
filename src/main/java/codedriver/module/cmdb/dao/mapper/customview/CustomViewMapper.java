@@ -5,10 +5,7 @@
 
 package codedriver.module.cmdb.dao.mapper.customview;
 
-import codedriver.framework.cmdb.dto.customview.CustomViewAttrVo;
-import codedriver.framework.cmdb.dto.customview.CustomViewCiVo;
-import codedriver.framework.cmdb.dto.customview.CustomViewLinkVo;
-import codedriver.framework.cmdb.dto.customview.CustomViewVo;
+import codedriver.framework.cmdb.dto.customview.*;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -20,13 +17,19 @@ public interface CustomViewMapper {
 
     List<CustomViewVo> searchCustomView(CustomViewVo customViewVo);
 
-    List<CustomViewAttrVo> getCustomViewAttrByCustomViewId(Long customViewId);
+    List<CustomViewCiVo> getCustomViewCiByCustomViewId(Long customViewId);
+
+    List<CustomViewAttrVo> getCustomViewAttrByCustomViewId(CustomViewAttrVo customViewAttrVo);
+
+    List<CustomViewLinkVo> getCustomViewLinkByCustomViewId(Long customViewId);
 
     int searchCustomViewCount(CustomViewVo customViewVo);
 
     void updateCustomView(CustomViewVo customViewVo);
 
     void updateCustomViewActive(CustomViewVo customViewVo);
+
+    void insertCustomViewRel(CustomViewRelVo customViewRelVo);
 
     void insertCustomView(CustomViewVo customViewVo);
 
@@ -45,6 +48,8 @@ public interface CustomViewMapper {
     void deleteCustomViewLinkByCustomViewId(Long customViewId);
 
     void deleteCustomViewTagByCustomViewId(Long customViewId);
+
+    void deleteCustomViewRelByCustomViewId(Long customViewId);
 
     void buildCustomView(String sql);
 }

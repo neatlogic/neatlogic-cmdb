@@ -53,7 +53,10 @@ public class SaveCustomViewApi extends PrivateApiComponentBase {
     }
 
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "视图id，不提供代表新增"),
-            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, xss = true, desc = "名称"),
+            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, xss = true, maxLength = 50, desc = "名称"),
+            @Param(name = "icon", type = ApiParamType.STRING, desc = "图标"),
+            @Param(name = "isActive", type = ApiParamType.INTEGER, isRequired = true, desc = "是否激活"),
+            @Param(name = "isPrivate", type = ApiParamType.INTEGER, isRequired = true, desc = "是否私有视图"),
             @Param(name = "config", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "拓扑图配置")})
     @Output({@Param(name = "Return", type = ApiParamType.LONG, desc = "视图id")})
     @Description(desc = "保存自定义视图接口")

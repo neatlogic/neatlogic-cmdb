@@ -5,10 +5,7 @@
 
 package codedriver.module.cmdb.service.customview;
 
-import codedriver.framework.cmdb.dto.customview.CustomViewAttrVo;
-import codedriver.framework.cmdb.dto.customview.CustomViewCiVo;
-import codedriver.framework.cmdb.dto.customview.CustomViewLinkVo;
-import codedriver.framework.cmdb.dto.customview.CustomViewVo;
+import codedriver.framework.cmdb.dto.customview.*;
 import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.cmdb.exception.customview.CreateCustomViewFailedException;
 import codedriver.framework.transaction.core.EscapeTransactionJob;
@@ -40,6 +37,14 @@ public class CustomViewServiceImpl implements CustomViewService {
         return customViewMapper.getCustomViewById(id);
     }
 
+    @Override
+    public CustomViewVo getCustomViewDetailById(Long id) {
+        CustomViewVo customViewVo = customViewMapper.getCustomViewById(id);
+        customViewVo.setLinkList(customViewMapper.getCustomViewLinkByCustomViewId(id));
+        customViewVo.setCiList(customViewMapper.getCustomViewCiByCustomViewId(id));
+        return customViewVo;
+    }
+
 
     @Override
     public List<CustomViewVo> searchCustomView(CustomViewVo customViewVo) {
@@ -64,6 +69,7 @@ public class CustomViewServiceImpl implements CustomViewService {
         customViewMapper.updateCustomView(customViewVo);
         customViewMapper.deleteCustomViewCiByCustomViewId(customViewVo.getId());
         customViewMapper.deleteCustomViewAttrByCustomViewId(customViewVo.getId());
+        customViewMapper.deleteCustomViewRelByCustomViewId(customViewVo.getId());
         customViewMapper.deleteCustomViewLinkByCustomViewId(customViewVo.getId());
         customViewMapper.deleteCustomViewTagByCustomViewId(customViewVo.getId());
         saveCustomView(customViewVo);
@@ -74,10 +80,19 @@ public class CustomViewServiceImpl implements CustomViewService {
             for (CustomViewCiVo customViewCiVo : customViewVo.getCiList()) {
                 customViewCiVo.setCustomViewId(customViewVo.getId());
                 customViewMapper.insertCustomViewCi(customViewCiVo);
-                for (CustomViewAttrVo customViewAttrVo : customViewCiVo.getAttrList()) {
-                    customViewAttrVo.setCustomViewId(customViewVo.getId());
-                    customViewAttrVo.setCustomViewCiUuid(customViewCiVo.getUuid());
-                    customViewMapper.insertCustomViewAttr(customViewAttrVo);
+                if (CollectionUtils.isNotEmpty(customViewCiVo.getAttrList())) {
+                    for (CustomViewAttrVo customViewAttrVo : customViewCiVo.getAttrList()) {
+                        customViewAttrVo.setCustomViewId(customViewVo.getId());
+                        customViewAttrVo.setCustomViewCiUuid(customViewCiVo.getUuid());
+                        customViewMapper.insertCustomViewAttr(customViewAttrVo);
+                    }
+                }
+                if (CollectionUtils.isNotEmpty(customViewCiVo.getRelList())) {
+                    for (CustomViewRelVo customViewRelVo : customViewCiVo.getRelList()) {
+                        customViewRelVo.setCustomViewId(customViewVo.getId());
+                        customViewRelVo.setCustomViewCiUuid(customViewCiVo.getUuid());
+                        customViewMapper.insertCustomViewRel(customViewRelVo);
+                    }
                 }
             }
         }

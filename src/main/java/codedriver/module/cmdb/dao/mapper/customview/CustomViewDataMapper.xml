@@ -25,8 +25,11 @@
         <where>
             <if test="valueFilterList != null and valueFilterList.size() > 0">
                 <foreach collection="valueFilterList" item="valueFilter">
-                    <if test="valueFilter.value != null and valueFilter.value != ''">
+                    <if test="valueFilter.value != null and valueFilter.value != '' and valueFilter.value != 'isnull'">
                         AND `${valueFilter.uuid}_hash` = #{valueFilter.value}
+                    </if>
+                    <if test="valueFilter.value == 'isnull'">
+                        AND `${valueFilter.uuid}_hash` IS NULL
                     </if>
                 </foreach>
             </if>
@@ -96,8 +99,11 @@
         <where>
             <if test="valueFilterList != null and valueFilterList.size() > 0">
                 <foreach collection="valueFilterList" item="valueFilter">
-                    <if test="valueFilter.value != null and valueFilter.value != ''">
+                    <if test="valueFilter.value != null and valueFilter.value != '' and valueFilter.value != 'isnull'">
                         AND `${valueFilter.uuid}_hash` = #{valueFilter.value}
+                    </if>
+                    <if test="valueFilter.value == 'isnull'">
+                        AND `${valueFilter.uuid}_hash` IS NULL
                     </if>
                 </foreach>
             </if>
@@ -105,6 +111,17 @@
         LIMIT
         #{startNum},
         #{pageSizePlus}
+    </select>
+
+    <select id="getCustomViewCiEntityIdById"
+            parameterType="codedriver.framework.cmdb.dto.customview.CustomViewConditionVo"
+            resultType="java.util.Map">
+        SELECT DISTINCT id,
+        <foreach collection="fieldList" item="field" separator=","><!--customview ci uuid-->
+            `${field}_id`
+        </foreach>
+        FROM ${viewName}
+        WHERE id = #{ciEntityId}
     </select>
 </mapper>
 
