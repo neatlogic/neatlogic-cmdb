@@ -70,6 +70,7 @@ public class TagSearchApi extends PrivateApiComponentBase {
             Boolean hasAuth = AuthActionChecker.check(RESOURCECENTER_TAG_MODIFY.class.getSimpleName());
             tagList.stream().forEach(o -> {
                 OperateVo delete = new OperateVo("delete", "删除");
+                o.getOperateList().add(delete);
                 if (hasAuth) {
                     if (o.getAssetsCount() > 0) {
                         delete.setDisabled(1);
