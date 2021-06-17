@@ -50,7 +50,7 @@ public class EnvironmentListApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true,desc = "应用模块id")
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "应用模块id")
     })
     @Output({
             @Param(name = "tbodyList", explode = AppEnviromentVo[].class, desc = "资源环境列表")
@@ -60,7 +60,7 @@ public class EnvironmentListApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         String schemaName = TenantContext.get().getDataDbName();
         Long appModuleId = paramObj.getLong("appModuleId");
-        if(resourceCenterMapper.checkAppModuleIsExists(appModuleId, schemaName) == 0){
+        if (resourceCenterMapper.checkAppModuleIsExists(appModuleId, schemaName) == 0) {
             throw new AppModuleNotFoundException(appModuleId);
         }
         List<AppEnviromentVo> enviromentList = resourceCenterMapper.getEnvironmentListByAppModuleId(appModuleId, schemaName);

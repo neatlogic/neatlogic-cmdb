@@ -54,8 +54,8 @@ public class AppModuleResourceListApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true,desc = "应用模块id"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true,desc = "环境id")
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "应用模块id"),
+            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境id")
     })
     @Output({
             @Param(name = "resourceTypeList", type = ApiParamType.JSONARRAY, desc = "资源类型列表"),
@@ -67,16 +67,16 @@ public class AppModuleResourceListApi extends PrivateApiComponentBase {
         JSONArray tableList = new JSONArray();
         String schemaName = TenantContext.get().getDataDbName();
         Long appModuleId = paramObj.getLong("appModuleId");
-        if(resourceCenterMapper.checkAppModuleIsExists(appModuleId, schemaName) == 0){
+        if (resourceCenterMapper.checkAppModuleIsExists(appModuleId, schemaName) == 0) {
             throw new AppModuleNotFoundException(appModuleId);
         }
         Long envId = paramObj.getLong("envId");
         List<ResourceTypeVo> resourceTypeList = resourceCenterMapper.getResourceTypeListByAppModuleIdAndEnvId(appModuleId, envId, schemaName);
-        if(CollectionUtils.isNotEmpty(resourceTypeList)){
+        if (CollectionUtils.isNotEmpty(resourceTypeList)) {
             ResourceSearchVo searchVo = new ResourceSearchVo();
             searchVo.setAppModuleId(appModuleId);
             searchVo.setEnvId(envId);
-            for(ResourceTypeVo resourceTypeVo : resourceTypeList){
+            for (ResourceTypeVo resourceTypeVo : resourceTypeList) {
                 List<ResourceVo> resourceVoList = null;
                 searchVo.setTypeId(resourceTypeVo.getId());
                 int rowNum = resourceCenterMapper.getResourceCount(searchVo);
@@ -85,13 +85,13 @@ public class AppModuleResourceListApi extends PrivateApiComponentBase {
                     List<Long> idList = resourceCenterMapper.getResourceIdList(searchVo);
                     if (CollectionUtils.isNotEmpty(idList)) {
                         resourceVoList = resourceCenterMapper.getResourceListByIdList(idList, TenantContext.get().getDataDbName());
-                        for(ResourceVo resourceVo : resourceVoList){
+                        for (ResourceVo resourceVo : resourceVoList) {
                             List<String> tagNameList = resourceCenterMapper.getTagNameListByResourceId(resourceVo.getId());
                             resourceVo.setTagList(tagNameList);
                         }
                     }
                 }
-                if(resourceVoList == null){
+                if (resourceVoList == null) {
                     resourceVoList = new ArrayList<>();
                 }
                 JSONObject tableObj = new JSONObject();
