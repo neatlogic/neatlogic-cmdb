@@ -42,7 +42,7 @@ public class getCustomViewAttrApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long id = paramObj.getLong("id");
-        return customViewMapper.getCustomViewAttrByCustomViewId(id);
+        return customViewMapper.getCustomViewAttrByCustomViewId(new CustomViewAttrVo(id));
     }
 
     @Override
