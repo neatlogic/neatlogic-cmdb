@@ -190,7 +190,7 @@
     <sql id="resource_ipobject_where">
         <where>
             <if test="keyword != null and keyword != ''">
-                AND a.`name` LIKE CONCAT('%', #{keyword}, '%')
+                AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR c.`ip` LIKE CONCAT('%', #{keyword}, '%'))
             </if>
             <if test="typeIdList != null and typeIdList.size() > 0">
                 AND a.`type_id` IN
@@ -218,11 +218,18 @@
         <result column="name" property="name"/>
         <result column="type_id" property="typeId"/>
         <result column="type_name" property="typeName"/>
+        <result column="type_label" property="typeLabel"/>
         <result column="maintenance_window" property="maintenanceWindow"/>
         <result column="description" property="description"/>
         <result column="port" property="port"/>
         <result column="ip_id" property="ipId"/>
         <result column="ip" property="ip"/>
+        <result column="netarea_id" property="netAreaId"/>
+        <result column="netarea_name" property="netAreaName"/>
+        <result column="status_id" property="statusId"/>
+        <result column="status_name" property="statusName"/>
+        <result column="datacenter_id" property="dataCenterId"/>
+        <result column="datacenter_name" property="dataCenterName"/>
         <result column="env_id" property="envId"/>
         <result column="env_name" property="envName"/>
         <result column="app_module_id" property="appModuleId"/>
@@ -242,10 +249,13 @@
     </resultMap>
 
     <select id="getResourceListByIdList" resultMap="resourceCenterMap">
-        SELECT a.`id`, a.`name`, a.`type_id`, a.`type_name`, a.`maintenance_window`, a.`description`,
+        SELECT a.`id`, a.`name`, a.`type_id`, a.`type_name`, a.`type_label`, a.`maintenance_window`, a.`description`,
         b.`bg_id`, b.`bg_name`, b.`bg_uuid`,
-        c.`ip`,
+        c.`ip_id`, c.`ip`,
+        d.`netarea_id`, d.`netarea_name`,
         e.`user_id`, e.`user_name`, e.`user_uuid`,
+        f.`status_id`, f.`status_name`,
+        g.`datacenter_id`, g.`datacenter_name`,
         h.`env_id`, h.`env_name`,
         i.`app_module_id`, i.`app_module_name`,
         l.`id` AS `app_system_id`, l.`name` AS app_system_name,
