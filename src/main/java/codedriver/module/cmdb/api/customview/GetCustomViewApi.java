@@ -37,6 +37,7 @@ public class GetCustomViewApi extends PrivateApiComponentBase {
         return null;
     }
 
+
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "视图id", isRequired = true)})
     @Output({@Param(explode = CustomViewVo.class)})
     @Description(desc = "获取自定义视图接口")

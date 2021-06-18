@@ -64,7 +64,8 @@
 
     <select id="getCustomViewAttrByCustomViewId"
             parameterType="codedriver.framework.cmdb.dto.customview.CustomViewAttrVo" resultMap="customViewAttrMap">
-        SELECT a.customview_id AS customViewId,
+        SELECT
+        a.customview_id AS customViewId,
         a.customview_ci_uuid AS customViewCiUuid,
         a.uuid,
         a.attr_id AS attrId,
@@ -114,7 +115,9 @@
         <id property="uuid" column="uuid"/>
         <result property="customViewId" column="customViewId"/>
         <result property="sort" column="sort"/>
+        <result property="ciId" column="ciId"/>
         <result property="isHidden" column="isHidden"/>
+        <result property="alias" column="alias"/>
         <collection property="attrList" ofType="codedriver.framework.cmdb.dto.customview.CustomViewAttrVo">
             <id property="uuid" column="attrUuid"/>
             <result property="alias" column="attrAlias"/>
@@ -139,6 +142,7 @@
                a.ci_id              AS ciId,
                a.`sort`,
                a.is_hidden          AS isHidden,
+               a.alias              AS alias,
                b.alias              AS attrAlias,
                b.attr_id            AS attrId,
                b.`condition`        AS conditionStr,
@@ -278,8 +282,8 @@
     </insert>
 
     <insert id="insertCustomViewCi" parameterType="codedriver.framework.cmdb.dto.customview.CustomViewCiVo">
-        INSERT INTO cmdb_customview_ci (customview_id, uuid, ci_id, sort, is_hidden)
-        VALUES (#{customViewId}, #{uuid}, #{ciId}, #{sort}, #{isHidden})
+        INSERT INTO cmdb_customview_ci (customview_id, uuid, ci_id, sort, is_hidden, alias)
+        VALUES (#{customViewId}, #{uuid}, #{ciId}, #{sort}, #{isHidden}, #{alias})
     </insert>
 
     <insert id="insertCustomViewAttr" parameterType="codedriver.framework.cmdb.dto.customview.CustomViewAttrVo">

@@ -22,7 +22,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -54,7 +53,7 @@ public class GetCustomViewDataApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, desc = "视图id", isRequired = true),
+            @Param(name = "customViewId", type = ApiParamType.LONG, desc = "视图id", isRequired = true),
             @Param(name = "ciEntityId", type = ApiParamType.LONG, isRequired = true, desc = "配置项id"),
     })
     @Output({@Param(explode = CustomViewVo.class)})
@@ -62,9 +61,8 @@ public class GetCustomViewDataApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         CustomViewConditionVo customViewConditionVo = JSONObject.toJavaObject(paramObj, CustomViewConditionVo.class);
-        customViewConditionVo.setCustomViewId(paramObj.getLong("id"));
-        Map<String, List<String>> columnMap = new HashMap<>();
-        Map<String, List<Map<String, String>>> resultListMap = new HashMap<>();
+        //Map<String, List<String>> columnMap = new HashMap<>();
+        //Map<String, List<Map<String, String>>> resultListMap = new HashMap<>();
         CustomViewVo customViewVo = customViewService.getCustomViewDetailById(customViewConditionVo.getCustomViewId());
         customViewConditionVo.setFieldList(customViewVo.getCiList().stream().map(CustomViewCiVo::getUuid).collect(Collectors.toList()));
         if (CollectionUtils.isNotEmpty(customViewConditionVo.getFieldList())) {
@@ -81,6 +79,9 @@ public class GetCustomViewDataApi extends PrivateApiComponentBase {
         } else {
             throw new CustomViewCiNotFoundException();
         }
+        //清空不需要返回的信息
+        customViewVo.setConfig(null);
+        customViewVo.setConfigStr(null);
         return customViewVo;
     }
 
