@@ -13,6 +13,7 @@ import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
+import codedriver.framework.dto.UserVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -123,6 +124,8 @@ public class ResourceListApi extends PrivateApiComponentBase {
                     for (ResourceVo resourceVo : resourceVoList) {
                         List<String> tagNameList = resourceCenterMapper.getTagNameListByResourceId(resourceVo.getId());
                         resourceVo.setTagList(tagNameList);
+                        resourceVo.setFcuVo(new UserVo(resourceVo.getFcu()));
+                        resourceVo.setLcuVo(new UserVo(resourceVo.getLcu()));
                     }
                 }
             }
