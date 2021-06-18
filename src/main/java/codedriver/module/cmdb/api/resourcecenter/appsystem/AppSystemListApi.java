@@ -3,16 +3,19 @@
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
-package codedriver.module.cmdb.api.resourcecenter.appmodule;
+package codedriver.module.cmdb.api.resourcecenter.appsystem;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
+import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
+import codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnviromentVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -25,23 +28,24 @@ import java.util.List;
 
 /**
  * @author linbq
- * @since 2021/6/16 15:04
+ * @since 2021/6/18 15:31
  **/
 @Service
+@AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class AppModuleListApi extends PrivateApiComponentBase {
+public class AppSystemListApi extends PrivateApiComponentBase {
 
     @Resource
     private ResourceCenterMapper resourceCenterMapper;
 
     @Override
     public String getToken() {
-        return "resourcecenter/appmodule/list";
+        return "resourcecenter/appsystem/list";
     }
 
     @Override
     public String getName() {
-        return "查询资源中应用模块列表";
+        return "查询资源中心应用系统列表";
     }
 
     @Override
@@ -54,20 +58,20 @@ public class AppModuleListApi extends PrivateApiComponentBase {
     })
     @Output({
             @Param(explode = BasePageVo.class),
-            @Param(name = "tbodyList", explode = ResourceVo[].class, desc = "应用模块列表")
+            @Param(name = "tbodyList", explode = ResourceVo[].class, desc = "应用系统列表")
     })
-    @Description(desc = "查询资源中应用模块列表")
+    @Description(desc = "查询资源中心应用系统列表")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONObject resultObj = new JSONObject();
         List<ResourceVo> resourceVoList = null;
         ResourceSearchVo searchVo = JSON.toJavaObject(paramObj, ResourceSearchVo.class);
-        int rowNum = resourceCenterMapper.getAppModuleCount(searchVo);
+        int rowNum = resourceCenterMapper.getAppSystemCount(searchVo);
         if (rowNum > 0) {
             searchVo.setRowNum(rowNum);
-            List<Long> idList = resourceCenterMapper.getAppModuleIdList(searchVo);
+            List<Long> idList = resourceCenterMapper.getAppSystemIdList(searchVo);
             if (CollectionUtils.isNotEmpty(idList)) {
-                resourceVoList = resourceCenterMapper.getAppModuleListByIdList(idList, TenantContext.get().getDataDbName());
+                resourceVoList = resourceCenterMapper.getAppSystemListByIdList(idList, TenantContext.get().getDataDbName());
             }
         }
         if (resourceVoList == null) {
