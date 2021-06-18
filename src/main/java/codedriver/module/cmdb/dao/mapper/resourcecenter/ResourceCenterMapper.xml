@@ -198,6 +198,36 @@
                     #{typeId}
                 </foreach>
             </if>
+            <if test="statusIdList != null and statusIdList.size() > 0">
+                AND f.`status_id` IN
+                <foreach collection="statusIdList" item="statusId" open="(" separator="," close=")">
+                    #{statusId}
+                </foreach>
+            </if>
+            <if test="envIdList != null and envIdList.size() > 0">
+                AND h.`env_id` IN
+                <foreach collection="envIdList" item="envId" open="(" separator="," close=")">
+                    #{envId}
+                </foreach>
+            </if>
+            <if test="appSystemIdList != null and appSystemIdList.size() > 0">
+                AND l.`id` IN
+                <foreach collection="appSystemIdList" item="appSystemId" open="(" separator="," close=")">
+                    #{appSystemId}
+                </foreach>
+            </if>
+            <if test="appModuleIdList != null and appModuleIdList.size() > 0">
+                AND i.`app_module_id` IN
+                <foreach collection="appModuleIdList" item="appModuleId" open="(" separator="," close=")">
+                    #{appModuleId}
+                </foreach>
+            </if>
+            <if test="idList != null and idList.size() > 0">
+                AND a.`id` IN
+                <foreach collection="idList" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
         </where>
     </sql>
     <select id="getResourceCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="int">
@@ -515,6 +545,34 @@
         </foreach>
     </select>
 
+    <select id="getAppSystemCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="int">
+        SELECT COUNT(DISTINCT a.`id`) FROM ${schemaName}.`resource_appsystem` a
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND a.`name` LIKE concat('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="getAppSystemIdList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
+        SELECT DISTINCT a.`id` FROM ${schemaName}.`resource_appsystem` a
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND a.`name` LIKE concat('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="getAppSystemListByIdList" parameterType="java.util.List" resultMap="resourceCenterMap">
+        SELECT
+               a.`id`, a.`name`, a.`maintenance_window`, a.`description`
+        FROM ${schemaName}.`resource_appsystem` a
+        WHERE a.`id` IN
+        <foreach collection="idList" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
     <select id="checkAppModuleIsExists" resultType="int">
         SELECT COUNT(1) FROM ${schemaName}.`resource_appmodule` WHERE `id` = #{id}
     </select>
@@ -522,7 +580,9 @@
     <select id="getEnvironmentListByAppModuleId" resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnviromentVo">
         SELECT DISTINCT a.`env_id` AS envId, a.`env_name` AS envName
         FROM ${schemaName}.`resource_ipobject_env` a
+        <if test="appModuleId != null">
         JOIN ${schemaName}.`resource_ipobject_appmodule` b ON b.`resource_id`=a.`resource_id` AND b.`app_module_id` = #{appModuleId}
+        </if>
     </select>
 
     <select id="getResourceTypeListByAppModuleIdAndEnvId" resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceTypeVo">
@@ -533,6 +593,36 @@
         FROM ${schemaName}.`resource_ipobject` a
         JOIN ${schemaName}.`resource_ipobject_env` b ON b.`resource_id` = a.`id` AND b.`env_id` = #{envId}
         JOIN ${schemaName}.`resource_ipobject_appmodule` c ON c.`resource_id`=a.`id` AND c.`app_module_id` = #{appModuleId}
+    </select>
+    <select id="getResourceTypeList" parameterType="java.lang.String" resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceTypeVo">
+        SELECT DISTINCT
+            a.`type_id` AS id,
+            a.`type_name` AS `name`,
+            a.`type_label` AS label
+        FROM ${schemaName}.`resource_ipobject` a
+    </select>
+
+    <select id="getStatusList" parameterType="java.lang.String" resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.StatusVo">
+        SELECT DISTINCT `status_id` AS statusId, `status_name` AS statusName FROM ${schemaName}.`resource_ipobject_status`
+    </select>
+
+    <select id="getResourceIdListByProtocolList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
+        SELECT DISTINCT b.`resource_id`
+        FROM `cmdb_resourcecenter_account` a
+        JOIN `cmdb_resourcecenter_resource_account` b ON b.`account_id` = a.`id`
+        WHERE a.`protocol` IN
+        <foreach collection="protocolList" item="protocol" open="(" separator="," close=")">
+            #{protocol}
+        </foreach>
+    </select>
+
+    <select id="getResourceIdListByTagIdList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
+        SELECT DISTINCT a.`resource_id`
+        FROM `cmdb_resourcecenter_resource_tag` a
+        WHERE a.`tag_id` IN
+        <foreach collection="tagIdList" item="tagId" open="(" separator="," close=")">
+            #{tagId}
+        </foreach>
     </select>
 
     <update id="updateAccount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.AccountVo">

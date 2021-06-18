@@ -16,7 +16,6 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import com.alibaba.fastjson.JSONObject;
-import com.google.protobuf.Api;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -50,7 +49,7 @@ public class EnvironmentListApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "应用模块id")
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "应用模块id")
     })
     @Output({
             @Param(name = "tbodyList", explode = AppEnviromentVo[].class, desc = "资源环境列表")
@@ -60,8 +59,10 @@ public class EnvironmentListApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         String schemaName = TenantContext.get().getDataDbName();
         Long appModuleId = paramObj.getLong("appModuleId");
-        if (resourceCenterMapper.checkAppModuleIsExists(appModuleId, schemaName) == 0) {
-            throw new AppModuleNotFoundException(appModuleId);
+        if (appModuleId != null) {
+            if (resourceCenterMapper.checkAppModuleIsExists(appModuleId, schemaName) == 0) {
+                throw new AppModuleNotFoundException(appModuleId);
+            }
         }
         List<AppEnviromentVo> enviromentList = resourceCenterMapper.getEnvironmentListByAppModuleId(appModuleId, schemaName);
         JSONObject resultObj = new JSONObject();
