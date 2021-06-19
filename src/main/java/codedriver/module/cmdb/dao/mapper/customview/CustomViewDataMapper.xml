@@ -44,8 +44,8 @@
         id,
         <if test="fieldList != null and fieldList.size() > 0">
             <foreach collection="fieldList" item="field" separator=",">
-                GROUP_CONCAT(distinct ${field}) AS `${field}`,
-                MD5(GROUP_CONCAT(distinct ${field})) AS `${field}_hash`
+                GROUP_CONCAT(distinct ${field.name}) AS `${field.name}`,
+                MD5(GROUP_CONCAT(distinct ${field.name})) AS `${field.name}_hash`
             </foreach>
         </if>
         FROM ${viewName}
@@ -53,7 +53,9 @@
             <if test="keyword != null and keyword != '' and fieldList != null and fieldList.size() > 0">
                 AND
                 <foreach collection="fieldList" item="field" separator="OR" open="(" close=")">
-                    ${field} LIKE CONCAT('%', #{keyword},'%')
+                    <if test="field.type == 'attr'">
+                        ${field.name} LIKE CONCAT('%', #{keyword},'%')
+                    </if>
                 </foreach>
             </if>
             <if test="attrFilterList != null and attrFilterList.size() > 0">
@@ -113,15 +115,42 @@
         #{pageSizePlus}
     </select>
 
-    <select id="getCustomViewCiEntityIdById"
+    <select id="getCustomViewCiEntityById"
             parameterType="codedriver.framework.cmdb.dto.customview.CustomViewConditionVo"
             resultType="java.util.Map">
-        SELECT DISTINCT id,
-        <foreach collection="fieldList" item="field" separator=","><!--customview ci uuid-->
-            `${field}_id`
+        SELECT DISTINCT id
+        <foreach collection="fieldList" item="field" separator="," open=",">
+            <choose>
+                <when test="field.type == 'id'">
+                    `${field.name}_id`
+                </when>
+                <when test="field.type == 'name'">
+                    `${field.name}_name`
+                </when>
+            </choose><!--customview ci uuid-->
         </foreach>
         FROM ${viewName}
-        WHERE id = #{ciEntityId}
+        WHERE
+        id = #{ciEntityId}
+    </select>
+
+    <select id="searchCustomViewCiEntity"
+            parameterType="codedriver.framework.cmdb.dto.customview.CustomViewConditionVo"
+            resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
+        SELECT DISTINCT id,name
+        FROM ${viewName}
+        <where>
+            <if test="keyword != null and keyword != '' and fieldList != null and fieldList.size() > 0">
+                <foreach collection="fieldList" item="field" separator="OR" open="AND (" close=")">
+                    <if test="field.type == 'attr'">
+                        ${field.name} LIKE CONCAT('%', #{keyword},'%')
+                    </if>
+                </foreach>
+            </if>
+        </where>
+        LIMIT
+        #{startNum},
+        #{pageSizePlus}
     </select>
 </mapper>
 

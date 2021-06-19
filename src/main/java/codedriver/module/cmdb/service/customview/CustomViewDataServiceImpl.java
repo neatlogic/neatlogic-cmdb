@@ -5,6 +5,7 @@
 
 package codedriver.module.cmdb.service.customview;
 
+import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.customview.*;
 import codedriver.framework.cmdb.exception.customview.CustomViewNotFoundException;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
@@ -37,7 +38,7 @@ public class CustomViewDataServiceImpl implements CustomViewDataService {
             throw new CustomViewNotFoundException(customViewConditionVo.getCustomViewId());
         }
         List<CustomViewAttrVo> customViewAttrList = customViewMapper.getCustomViewAttrByCustomViewId(new CustomViewAttrVo(customViewConditionVo.getCustomViewId()));
-        customViewConditionVo.setFieldList(customViewAttrList.stream().map(CustomViewAttrVo::getUuid).collect(Collectors.toList()));
+        customViewConditionVo.setFieldList(customViewAttrList.stream().map(ci -> new CustomViewConditionFieldVo(ci.getUuid(), "id")).collect(Collectors.toList()));
         CustomViewDataVo customViewDataVo = new CustomViewDataVo();
         customViewDataVo.setAttrList(customViewAttrList);
         List<Map<String, Object>> dataList = customViewDataMapper.searchCustomViewData(customViewConditionVo);
@@ -50,7 +51,7 @@ public class CustomViewDataServiceImpl implements CustomViewDataService {
     @Override
     public List<Map<String, Object>> searchCustomViewData(CustomViewConditionVo customViewConditionVo) {
         List<CustomViewAttrVo> customViewAttrList = customViewMapper.getCustomViewAttrByCustomViewId(new CustomViewAttrVo(customViewConditionVo.getCustomViewId()));
-        customViewConditionVo.setFieldList(customViewAttrList.stream().map(CustomViewAttrVo::getUuid).collect(Collectors.toList()));
+        customViewConditionVo.setFieldList(customViewAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "attr")).collect(Collectors.toList()));
         List<Map<String, Object>> dataList = customViewDataMapper.searchCustomViewData(customViewConditionVo);
         if (CollectionUtils.isNotEmpty(customViewConditionVo.getValueFilterList())) {
             for (Map<String, Object> data : dataList) {
@@ -67,14 +68,19 @@ public class CustomViewDataServiceImpl implements CustomViewDataService {
 
     @Override
     public List<Map<String, Long>> getCustomViewCiEntityIdById(CustomViewConditionVo customViewConditionVo) {
-        return customViewDataMapper.getCustomViewCiEntityIdById(customViewConditionVo);
+        return customViewDataMapper.getCustomViewCiEntityById(customViewConditionVo);
+    }
+
+    @Override
+    public List<CiEntityVo> searchCustomViewCiEntity(CustomViewConditionVo customViewConditionVo) {
+        return customViewDataMapper.searchCustomViewCiEntity(customViewConditionVo);
     }
 
     @Override
     public List<CustomViewDataGroupVo> searchCustomViewDataGroup(CustomViewConditionVo customViewConditionVo) {
         CustomViewAttrVo customViewAttrVo = customViewMapper.getCustomViewAttrByUuid(customViewConditionVo.getGroupBy());
         List<CustomViewAttrVo> customViewAttrList = customViewMapper.getCustomViewAttrByCustomViewId(new CustomViewAttrVo(customViewConditionVo.getCustomViewId()));
-        customViewConditionVo.setFieldList(customViewAttrList.stream().map(CustomViewAttrVo::getUuid).collect(Collectors.toList()));
+        customViewConditionVo.setFieldList(customViewAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "attr")).collect(Collectors.toList()));
         List<CustomViewDataGroupVo> groupList = customViewDataMapper.searchCustomViewDataGroup(customViewConditionVo);
         for (CustomViewDataGroupVo customViewDataGroupVo : groupList) {
             customViewDataGroupVo.setAttrAlias(customViewAttrVo.getAlias());

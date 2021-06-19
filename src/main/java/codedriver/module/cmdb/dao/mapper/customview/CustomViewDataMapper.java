@@ -5,6 +5,7 @@
 
 package codedriver.module.cmdb.dao.mapper.customview;
 
+import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewConditionVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewDataGroupVo;
 
@@ -16,5 +17,7 @@ public interface CustomViewDataMapper {
 
     List<CustomViewDataGroupVo> searchCustomViewDataGroup(CustomViewConditionVo customViewConditionVo);
 
-    List<Map<String, Long>> getCustomViewCiEntityIdById(CustomViewConditionVo customViewConditionVo);
+    List<Map<String, Long>> getCustomViewCiEntityById(CustomViewConditionVo customViewConditionVo);
+
+    List<CiEntityVo> searchCustomViewCiEntity(CustomViewConditionVo customViewConditionVo);
 }

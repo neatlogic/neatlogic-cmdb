@@ -7,6 +7,7 @@ package codedriver.module.cmdb.api.customview;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.customview.CustomViewCiVo;
+import codedriver.framework.cmdb.dto.customview.CustomViewConditionFieldVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewConditionVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewVo;
 import codedriver.framework.cmdb.exception.customview.CustomViewCiNotFoundException;
@@ -64,7 +65,7 @@ public class GetCustomViewDataApi extends PrivateApiComponentBase {
         //Map<String, List<String>> columnMap = new HashMap<>();
         //Map<String, List<Map<String, String>>> resultListMap = new HashMap<>();
         CustomViewVo customViewVo = customViewService.getCustomViewDetailById(customViewConditionVo.getCustomViewId());
-        customViewConditionVo.setFieldList(customViewVo.getCiList().stream().map(CustomViewCiVo::getUuid).collect(Collectors.toList()));
+        customViewConditionVo.setFieldList(customViewVo.getCiList().stream().map(ci -> new CustomViewConditionFieldVo(ci.getUuid(), "id")).collect(Collectors.toList()));
         if (CollectionUtils.isNotEmpty(customViewConditionVo.getFieldList())) {
             List<Map<String, Long>> resultList = customViewDataService.getCustomViewCiEntityIdById(customViewConditionVo);
             for (Map<String, Long> result : resultList) {
@@ -72,7 +73,7 @@ public class GetCustomViewDataApi extends PrivateApiComponentBase {
                     String ciUuid = key.replace("_id", "");
                     CustomViewCiVo ciVo = customViewVo.getCustomCiByUuid(ciUuid);
                     if (ciVo != null) {
-                        ciVo.addCiEntityId(result.get(key));
+                        ciVo.addCiEntity(result.get(key), null);
                     }
                 }
             }

@@ -5,6 +5,7 @@
 
 package codedriver.module.cmdb.service.customview;
 
+import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewConditionVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewDataGroupVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewDataVo;
@@ -19,6 +20,8 @@ public interface CustomViewDataService {
 
 
     List<Map<String, Long>> getCustomViewCiEntityIdById(CustomViewConditionVo customViewConditionVo);
+
+    List<CiEntityVo> searchCustomViewCiEntity(CustomViewConditionVo customViewConditionVo);
 
     List<CustomViewDataGroupVo> searchCustomViewDataGroup(CustomViewConditionVo customViewConditionVo);
 }
