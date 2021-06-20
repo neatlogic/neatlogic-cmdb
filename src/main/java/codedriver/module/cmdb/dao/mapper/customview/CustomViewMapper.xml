@@ -219,6 +219,7 @@
     <select id="getCustomViewLinkByCustomViewId" parameterType="java.lang.Long"
             resultType="codedriver.framework.cmdb.dto.customview.CustomViewLinkVo">
         SELECT `customview_id` AS customViewId,
+               `name`,
                `uuid`,
                `from_uuid`     AS fromUuid,
                `to_uuid`       AS toUuid,
@@ -309,6 +310,7 @@
     <insert id="insertCustomViewLink" parameterType="codedriver.framework.cmdb.dto.customview.CustomViewLinkVo">
         INSERT
         INTO cmdb_customview_link (customview_id,
+                                   `name`,
                                    uuid,
                                    from_uuid,
                                    to_uuid,
@@ -318,6 +320,7 @@
                                    from_ci_uuid,
                                    to_ci_uuid)
         VALUES (#{customViewId},
+                #{name},
                 #{uuid},
                 #{fromUuid},
                 #{toUuid},

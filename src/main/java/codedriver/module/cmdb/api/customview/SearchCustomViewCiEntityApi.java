@@ -7,8 +7,6 @@ package codedriver.module.cmdb.api.customview;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
-import codedriver.framework.cmdb.dto.customview.CustomViewAttrVo;
-import codedriver.framework.cmdb.dto.customview.CustomViewConditionFieldVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewConditionVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
@@ -16,14 +14,12 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
-import codedriver.module.cmdb.dao.mapper.customview.CustomViewMapper;
 import codedriver.module.cmdb.service.customview.CustomViewDataService;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
@@ -33,8 +29,6 @@ public class SearchCustomViewCiEntityApi extends PrivateApiComponentBase {
     @Resource
     private CustomViewDataService customViewDataService;
 
-    @Resource
-    private CustomViewMapper customViewMapper;
 
     @Override
     public String getName() {
@@ -59,8 +53,6 @@ public class SearchCustomViewCiEntityApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         CustomViewConditionVo customViewConditionVo = JSONObject.toJavaObject(paramObj, CustomViewConditionVo.class);
-        List<CustomViewAttrVo> customViewAttrList = customViewMapper.getCustomViewAttrByCustomViewId(new CustomViewAttrVo(customViewConditionVo.getCustomViewId()));
-        customViewConditionVo.setFieldList(customViewAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "attr")).collect(Collectors.toList()));
         List<CiEntityVo> ciEntityList = customViewDataService.searchCustomViewCiEntity(customViewConditionVo);
         JSONObject returnObj = new JSONObject();
         returnObj.put("pageSize", customViewConditionVo.getPageSize());

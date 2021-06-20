@@ -6,11 +6,8 @@
 package codedriver.module.cmdb.api.customview;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.dto.customview.CustomViewCiVo;
-import codedriver.framework.cmdb.dto.customview.CustomViewConditionFieldVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewConditionVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewVo;
-import codedriver.framework.cmdb.exception.customview.CustomViewCiNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -19,18 +16,14 @@ import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.service.customview.CustomViewDataService;
 import codedriver.module.cmdb.service.customview.CustomViewService;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class GetCustomViewDataApi extends PrivateApiComponentBase {
+public class GetCustomViewCiEntityApi extends PrivateApiComponentBase {
 
     @Resource
     private CustomViewDataService customViewDataService;
@@ -62,28 +55,7 @@ public class GetCustomViewDataApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         CustomViewConditionVo customViewConditionVo = JSONObject.toJavaObject(paramObj, CustomViewConditionVo.class);
-        //Map<String, List<String>> columnMap = new HashMap<>();
-        //Map<String, List<Map<String, String>>> resultListMap = new HashMap<>();
-        CustomViewVo customViewVo = customViewService.getCustomViewDetailById(customViewConditionVo.getCustomViewId());
-        customViewConditionVo.setFieldList(customViewVo.getCiList().stream().map(ci -> new CustomViewConditionFieldVo(ci.getUuid(), "id")).collect(Collectors.toList()));
-        if (CollectionUtils.isNotEmpty(customViewConditionVo.getFieldList())) {
-            List<Map<String, Long>> resultList = customViewDataService.getCustomViewCiEntityIdById(customViewConditionVo);
-            for (Map<String, Long> result : resultList) {
-                for (String key : result.keySet()) {
-                    String ciUuid = key.replace("_id", "");
-                    CustomViewCiVo ciVo = customViewVo.getCustomCiByUuid(ciUuid);
-                    if (ciVo != null) {
-                        ciVo.addCiEntity(result.get(key), null);
-                    }
-                }
-            }
-        } else {
-            throw new CustomViewCiNotFoundException();
-        }
-        //清空不需要返回的信息
-        customViewVo.setConfig(null);
-        customViewVo.setConfigStr(null);
-        return customViewVo;
+        return customViewDataService.getCustomViewCiEntityById(customViewConditionVo);
     }
 
 

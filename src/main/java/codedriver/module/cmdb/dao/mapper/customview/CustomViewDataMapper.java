@@ -17,7 +17,7 @@ public interface CustomViewDataMapper {
 
     List<CustomViewDataGroupVo> searchCustomViewDataGroup(CustomViewConditionVo customViewConditionVo);
 
-    List<Map<String, Long>> getCustomViewCiEntityById(CustomViewConditionVo customViewConditionVo);
+    List<Map<String, Object>> getCustomViewCiEntityById(CustomViewConditionVo customViewConditionVo);
 
     List<CiEntityVo> searchCustomViewCiEntity(CustomViewConditionVo customViewConditionVo);
 }

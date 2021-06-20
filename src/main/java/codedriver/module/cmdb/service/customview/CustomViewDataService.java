@@ -9,6 +9,7 @@ import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewConditionVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewDataGroupVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewDataVo;
+import codedriver.framework.cmdb.dto.customview.CustomViewVo;
 
 import java.util.List;
 import java.util.Map;
@@ -19,7 +20,7 @@ public interface CustomViewDataService {
     List<Map<String, Object>> searchCustomViewData(CustomViewConditionVo customViewConditionVo);
 
 
-    List<Map<String, Long>> getCustomViewCiEntityIdById(CustomViewConditionVo customViewConditionVo);
+    CustomViewVo getCustomViewCiEntityById(CustomViewConditionVo customViewConditionVo);
 
     List<CiEntityVo> searchCustomViewCiEntity(CustomViewConditionVo customViewConditionVo);
 

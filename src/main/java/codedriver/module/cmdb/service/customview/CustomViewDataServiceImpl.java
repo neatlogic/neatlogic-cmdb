@@ -8,7 +8,6 @@ package codedriver.module.cmdb.service.customview;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.customview.*;
 import codedriver.framework.cmdb.exception.customview.CustomViewNotFoundException;
-import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.customview.CustomViewDataMapper;
 import codedriver.module.cmdb.dao.mapper.customview.CustomViewMapper;
 import org.apache.commons.collections4.CollectionUtils;
@@ -29,7 +28,7 @@ public class CustomViewDataServiceImpl implements CustomViewDataService {
     private CustomViewMapper customViewMapper;
 
     @Resource
-    private AttrMapper attrMapper;
+    private CustomViewService customViewService;
 
     @Override
     public CustomViewDataVo getCustomViewData(CustomViewConditionVo customViewConditionVo) {
@@ -67,12 +66,39 @@ public class CustomViewDataServiceImpl implements CustomViewDataService {
     }
 
     @Override
-    public List<Map<String, Long>> getCustomViewCiEntityIdById(CustomViewConditionVo customViewConditionVo) {
-        return customViewDataMapper.getCustomViewCiEntityById(customViewConditionVo);
+    public CustomViewVo getCustomViewCiEntityById(CustomViewConditionVo customViewConditionVo) {
+        CustomViewVo customViewVo = customViewService.getCustomViewDetailById(customViewConditionVo.getCustomViewId());
+        if (customViewVo == null) {
+            throw new CustomViewNotFoundException(customViewConditionVo.getCustomViewId());
+        }
+        List<CustomViewConditionFieldVo> fieldList = new ArrayList<>();
+        fieldList.addAll(customViewVo.getCiList().stream().map(ci -> new CustomViewConditionFieldVo(ci.getUuid(), "id")).collect(Collectors.toList()));
+        fieldList.addAll(customViewVo.getCiList().stream().map(ci -> new CustomViewConditionFieldVo(ci.getUuid(), "name")).collect(Collectors.toList()));
+        customViewConditionVo.setFieldList(fieldList);
+        if (CollectionUtils.isNotEmpty(customViewConditionVo.getFieldList())) {
+            List<Map<String, Object>> resultList = customViewDataMapper.getCustomViewCiEntityById(customViewConditionVo);
+            for (Map<String, Object> result : resultList) {
+                for (String key : result.keySet()) {
+                    if (key.contains("_id")) {
+                        String ciUuid = key.replace("_id", "");
+                        CustomViewCiVo ciVo = customViewVo.getCustomCiByUuid(ciUuid);
+                        if (ciVo != null) {
+                            ciVo.addCiEntity((Long) result.get(key), (String) result.get(ciUuid + "_name"));
+                        }
+                    }
+                }
+            }
+        }
+        //清空不需要返回的信息
+        customViewVo.setConfig(null);
+        customViewVo.setConfigStr(null);
+        return customViewVo;
     }
 
     @Override
     public List<CiEntityVo> searchCustomViewCiEntity(CustomViewConditionVo customViewConditionVo) {
+        List<CustomViewAttrVo> customViewAttrList = customViewMapper.getCustomViewAttrByCustomViewId(new CustomViewAttrVo(customViewConditionVo.getCustomViewId()));
+        customViewConditionVo.setFieldList(customViewAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "attr")).collect(Collectors.toList()));
         return customViewDataMapper.searchCustomViewCiEntity(customViewConditionVo);
     }
 

@@ -62,16 +62,19 @@
 
     <select id="getCiEntityBaseInfoByIdList" resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
             useCache="false">
-        SELECT id,
-        ci_id AS ciId,
-        `name`,
-        `status`,
-        fcu,
-        fcd,
-        lcu,
-        lcd
-        FROM cmdb_cientity
-        WHERE id IN
+        SELECT
+        a.id,
+        a.ci_id AS ciId,
+        a.`name`,
+        a.`status`,
+        b.type_id AS typeId,
+        b.icon AS ciIcon,
+        a.fcu,
+        a.fcd,
+        a.lcu,
+        a.lcd
+        FROM cmdb_cientity a JOIN cmdb_ci b ON a.ci_id = b.id
+        WHERE a.id IN
         <foreach collection="ciEntityIdList" item="value" open="(" close=")" separator=",">
             #{value}
         </foreach>
