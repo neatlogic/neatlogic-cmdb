@@ -442,16 +442,16 @@
     </select>
 
     <select id="checkTagNameIsRepeats" parameterType="codedriver.framework.cmdb.dto.tag.TagVo" resultType="int">
-        select count(1) from `cmdb_resourcecenter_tag` where `name` = #{name} and `id` != #{id}
+        select count(1) from `cmdb_tag` where `name` = #{name} and `id` != #{id}
     </select>
 
     <select id="checkTagIsExistsById" parameterType="java.lang.Long" resultType="int">
-        select count(1) from `cmdb_resourcecenter_tag` where `id` = #{value}
+        select count(1) from `cmdb_tag` where `id` = #{value}
     </select>
 
     <select id="searchTagCount" parameterType="codedriver.framework.cmdb.dto.tag.TagVo" resultType="int">
         select count(1)
-        from `cmdb_resourcecenter_tag`
+        from `cmdb_tag`
         <where>
             <if test="keyword != null and keyword != ''">
                 `name` like concat('%', #{keyword}, '%')
@@ -465,7 +465,7 @@
         `name`,
         `description`,
         (select count(1) from `cmdb_resourcecenter_resource_tag` where `tag_id` = `id`) as assetsCount
-        from `cmdb_resourcecenter_tag`
+        from `cmdb_tag`
         <where>
             <if test="keyword != null and keyword != ''">
                 `name` like concat('%', #{keyword}, '%')
@@ -478,7 +478,7 @@
     </select>
 
     <select id="getTagById" parameterType="java.lang.Long" resultType="codedriver.framework.cmdb.dto.tag.TagVo">
-        select `id`,`name`,`description` from `cmdb_resourcecenter_tag` where `id` = #{value}
+        select `id`,`name`,`description` from `cmdb_tag` where `id` = #{value}
     </select>
 
     <select id="checkTagHasBeenReferredById" parameterType="java.lang.Long" resultType="int">
@@ -640,7 +640,7 @@
     </update>
 
     <update id="updateTag" parameterType="codedriver.framework.cmdb.dto.tag.TagVo">
-        update `cmdb_resourcecenter_tag` set
+        update `cmdb_tag` set
         `name` = #{name},
         `description` = #{description}
         where `id` = #{id}
@@ -678,7 +678,7 @@
     </insert>
 
     <insert id="insertTag" parameterType="codedriver.framework.cmdb.dto.tag.TagVo">
-        insert into `cmdb_resourcecenter_tag` (
+        insert into `cmdb_tag` (
         `id`,
         `name`,
         `description`
@@ -697,7 +697,7 @@
 
     <delete id="deleteTagById" parameterType="java.lang.Long">
         delete
-        from `cmdb_resourcecenter_tag`
+        from `cmdb_tag`
         where `id` = #{value}
     </delete>
 </mapper>
