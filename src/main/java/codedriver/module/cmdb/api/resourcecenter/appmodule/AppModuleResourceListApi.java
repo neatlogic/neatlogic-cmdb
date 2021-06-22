@@ -91,6 +91,7 @@ public class AppModuleResourceListApi extends PrivateApiComponentBase {
                     resourceVoList = new ArrayList<>();
                 }
                 JSONObject tableObj = new JSONObject();
+                tableObj.put("type", resourceTypeVo);
                 tableObj.put("tbodyList", resourceVoList);
                 tableObj.put("rowNum", rowNum);
                 tableObj.put("pageCount", searchVo.getPageCount());
@@ -100,7 +101,7 @@ public class AppModuleResourceListApi extends PrivateApiComponentBase {
             }
         }
         JSONObject resultObj = new JSONObject();
-        resultObj.put("resourceTypeList", resourceTypeList);
+//        resultObj.put("resourceTypeList", resourceTypeList);
         resultObj.put("tableList", tableList);
         return resultObj;
     }
