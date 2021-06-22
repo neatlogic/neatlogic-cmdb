@@ -18,6 +18,7 @@ import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -82,7 +83,11 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
             for (Long resourecId : resourceIdList) {
                 ResourceVo resourceVo = resourceCenterMapper.getResourceIpPortById(resourecId, TenantContext.get().getDataDbName());
                 if (resourceVo != null) {
-                    resultSet.add(resourceVo.getIp() + ":" + resourceVo.getPort() + "未找到" + executeUser + "执行用户");
+                    String resourceInfo = resourceVo.getIp();
+                    if (resourceVo.getPort() != null) {
+                        resourceInfo += ":" + resourceVo.getPort();
+                    }
+                    resultSet.add(resourceInfo + "未找到" + executeUser + "执行用户");
                 }
             }
         }
@@ -90,18 +95,29 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
         for (ResourceVo resourceVo : selectNodeList) {
             Long resourceId = resourceCenterMapper.checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol(resourceVo.getId(), executeUser, protocol);
             if (resourceId == null) {
-                resultSet.add(resourceVo.getIp() + ":" + resourceVo.getPort() + "未找到" + executeUser + "执行用户");
+                String resourceInfo = resourceVo.getIp();
+                if (resourceVo.getPort() != null) {
+                    resourceInfo += ":" + resourceVo.getPort();
+                }
+                resultSet.add(resourceInfo + "未找到" + executeUser + "执行用户");
             }
         }
         List<ResourceSearchVo> inputNodeList = jsonObj.getJSONArray("inputNodeList").toJavaList(ResourceSearchVo.class);
         for (ResourceSearchVo searchVo : inputNodeList) {
+            String resourceInfo = searchVo.getIp();
+            if (StringUtils.isNotBlank(searchVo.getPort())) {
+                resourceInfo += ":" + searchVo.getPort();
+                if (StringUtils.isNotBlank(searchVo.getName())) {
+                    resourceInfo += "/" + searchVo.getName();
+                }
+            }
             Long resourceId = resourceCenterMapper.getResourceIdByIpAndPortAndName(searchVo);
             if (resourceId == null) {
-                resultSet.add(searchVo.getIp() + ":" + searchVo.getPort() + "未在系统中找到对应目标");
+                resultSet.add(resourceInfo + "未在系统中找到对应目标");
             } else {
                 resourceId = resourceCenterMapper.checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol(resourceId, executeUser, protocol);
                 if (resourceId == null) {
-                    resultSet.add(searchVo.getIp() + ":" + searchVo.getPort() + "未找到" + executeUser + "执行用户");
+                    resultSet.add(resourceInfo + "未找到" + executeUser + "执行用户");
                 }
             }
         }
