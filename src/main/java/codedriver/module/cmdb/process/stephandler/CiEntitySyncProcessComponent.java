@@ -5,12 +5,13 @@
 
 package codedriver.module.cmdb.process.stephandler;
 
-import codedriver.framework.cmdb.threadlocal.InputFromContext;
+import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.cmdb.dto.transaction.TransactionGroupVo;
 import codedriver.framework.cmdb.enums.EditModeType;
 import codedriver.framework.cmdb.enums.InputFrom;
 import codedriver.framework.cmdb.enums.TransactionActionType;
+import codedriver.framework.cmdb.threadlocal.InputFromContext;
 import codedriver.framework.process.constvalue.ProcessStepMode;
 import codedriver.framework.process.dao.mapper.ProcessTaskStepDataMapper;
 import codedriver.framework.process.dto.ProcessTaskFormAttributeDataVo;
@@ -165,7 +166,12 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
                                 ciEntityTransactionVo.setRelEntityData(relObj);
                                 // 因为不一定编辑所有属性，所以需要切换成局部更新模式
                                 ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
-                                auditObj.put("ciEntityName", ciEntityService.getCiEntityBaseInfoById(ciEntityTransactionVo.getCiEntityId()).getName());
+                                CiEntityVo oldCiEntityVo = ciEntityService.getCiEntityBaseInfoById(ciEntityTransactionVo.getCiEntityId());
+                                if (oldCiEntityVo != null) {
+                                    auditObj.put("ciEntityName", oldCiEntityVo.getName());
+                                } else {
+                                    auditObj.put("ciEntityName", "新配置项");
+                                }
                                 auditObj.put("action", ciEntityTransactionVo.getAction());
                                 auditObj.put("ciEntityId", ciEntityTransactionVo.getCiEntityId());
                                 auditObj.put("ciId", ciId);
