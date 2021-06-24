@@ -58,7 +58,7 @@ public class AppModuleResourceListApi extends PrivateApiComponentBase {
             @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境id")
     })
     @Output({
-            @Param(name = "resourceTypeList", type = ApiParamType.JSONARRAY, desc = "资源类型列表"),
+            //@Param(name = "resourceTypeList", type = ApiParamType.JSONARRAY, desc = "资源类型列表"),
             @Param(name = "tableList", type = ApiParamType.JSONARRAY, desc = "资源环境列表")
     })
     @Description(desc = "查询资源环境列表")

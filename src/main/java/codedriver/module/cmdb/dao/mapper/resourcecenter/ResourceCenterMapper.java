@@ -5,10 +5,7 @@
 
 package codedriver.module.cmdb.dao.mapper.resourcecenter;
 
-import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
-import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
-import codedriver.framework.cmdb.dto.resourcecenter.ResourceTypeVo;
-import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
+import codedriver.framework.cmdb.dto.resourcecenter.*;
 import codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnviromentVo;
 import codedriver.framework.cmdb.dto.resourcecenter.entity.StatusVo;
 import codedriver.framework.cmdb.dto.tag.TagVo;
@@ -31,6 +28,10 @@ public interface ResourceCenterMapper {
     Long getResourceIdByIpAndPortAndName(ResourceSearchVo searchVo);
 
     ResourceVo getResourceIpPortById(@Param("id") Long id, @Param("schemaName") String schemaName);
+
+    int checkResourceIsExists(@Param("id") Long id, @Param("schemaName") String schemaName);
+
+    List<Long> checkResourceIdListIsExists(@Param("idList") List<Long> idList, @Param("schemaName") String schemaName);
 
     List<String> getTagNameListByResourceId(Long resourceId);
 
@@ -96,6 +97,10 @@ public interface ResourceCenterMapper {
 
     List<Long> getResourceIdListByTagIdList(ResourceSearchVo searchVo);
 
+    List<Long> checkAccountIdListIsExists(List<Long> idList);
+
+    List<TagVo> getTagListByTagNameList(List<String> tagNameList);
+
     int updateAccount(AccountVo vo);
 
     int updateTag(TagVo vo);
@@ -104,7 +109,19 @@ public interface ResourceCenterMapper {
 
     int insertTag(TagVo vo);
 
+    int insertIgnoreResourceAccount(List<ResourceAccountVo> resourceAccountVoList);
+
+    int insertIgnoreResourceTag(List<ResourceTagVo> resourceTagVoList);
+
     int deleteTagById(Long id);
 
     int deleteAccountById(Long id);
+
+    int deleteResourceAccountByResourceId(Long resourceId);
+
+    int deleteResourceAccountByResourceIdListAndAccountIdList(@Param("resourceIdList") List<Long> resourceIdList, @Param("accountIdList") List<Long> accountIdList);
+
+    int deleteResourceTagByResourceId(Long resourceId);
+
+    int deleteResourceTagByResourceIdAndTagIdList(@Param("resourceIdList") List<Long> resourceIdList, @Param("tagIdList") List<Long> tagIdList);
 }

@@ -319,6 +319,21 @@
         LIMIT 1
     </select>
 
+    <select id="checkResourceIsExists" resultType="int">
+        SELECT COUNT(DISTINCT a.`id`)
+        FROM ${schemaName}.`resource_ipobject` a
+        where a.`id` = #{id}
+    </select>
+
+    <select id="checkResourceIdListIsExists" resultType="java.lang.Long">
+        SELECT a.`id`
+        FROM ${schemaName}.`resource_ipobject` a
+        WHERE a.`id` IN
+        <foreach collection="idList" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
     <select id="getTagNameListByResourceId" parameterType="java.lang.Long" resultType="java.lang.String">
         SELECT `name`
         FROM `cmdb_tag` a
@@ -625,6 +640,27 @@
         </foreach>
     </select>
 
+    <select id="checkAccountIdListIsExists" parameterType="java.util.List" resultType="java.lang.Long">
+        SELECT `id`
+        FROM `cmdb_resourcecenter_account`
+        WHERE `id` IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getTagListByTagNameList" parameterType="java.util.List" resultType="codedriver.framework.cmdb.dto.tag.TagVo">
+        SELECT
+            `id`,
+            `name`,
+            `description`
+        FROM `cmdb_tag`
+        WHERE `name` IN
+        <foreach collection="list" item="name" open="(" separator="," close=")">
+            #{name}
+        </foreach>
+    </select>
+
     <update id="updateAccount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.AccountVo">
         update `cmdb_resourcecenter_account` set
         `name` = #{name},
@@ -689,6 +725,20 @@
         )
     </insert>
 
+    <insert id="insertIgnoreResourceAccount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceAccountVo">
+        INSERT IGNORE INTO `cmdb_resourcecenter_resource_account` (`resource_id`, `account_id`) VALUES
+        <foreach collection="list" item="resourceAccount" separator=",">
+            (#{resourceAccount.resourceId}, #{resourceAccount.accountId})
+        </foreach>
+    </insert>
+
+    <insert id="insertIgnoreResourceTag" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceTagVo">
+        INSERT IGNORE INTO `cmdb_resourcecenter_resource_tag` (`resource_id`, `tag_id`) VALUES
+        <foreach collection="list" item="resourceTag" separator=",">
+            (#{resourceTag.resourceId}, #{resourceTag.tagId})
+        </foreach>
+    </insert>
+
     <delete id="deleteAccountById" parameterType="java.lang.Long">
         delete
         from `cmdb_resourcecenter_account`
@@ -699,5 +749,39 @@
         delete
         from `cmdb_tag`
         where `id` = #{value}
+    </delete>
+
+    <delete id="deleteResourceAccountByResourceId" parameterType="java.lang.Long">
+        DELETE FROM `cmdb_resourcecenter_resource_account`
+        WHERE `resource_id` = #{value}
+    </delete>
+
+    <delete id="deleteResourceAccountByResourceIdListAndAccountIdList">
+        DELETE FROM `cmdb_resourcecenter_resource_account`
+        WHERE `resource_id` IN
+        <foreach collection="resourceIdList" item="resourceId" open="(" separator="," close=")">
+            #{resourceId}
+        </foreach>
+          AND `account_id` IN
+        <foreach collection="accountIdList" item="accountId" open="(" separator="," close=")">
+            #{accountId}
+        </foreach>
+    </delete>
+
+    <delete id="deleteResourceTagByResourceId" parameterType="java.lang.Long">
+        DELETE FROM `cmdb_resourcecenter_resource_tag`
+        WHERE `resource_id` = #{value}
+    </delete>
+
+    <delete id="deleteResourceTagByResourceIdAndTagIdList">
+        DELETE FROM `cmdb_resourcecenter_resource_tag`
+        WHERE `resource_id` IN
+        <foreach collection="resourceIdList" item="resourceId" open="(" separator="," close=")">
+            #{resourceId}
+        </foreach>
+        AND `tag_id` IN
+        <foreach collection="tagIdList" item="tagId" open="(" separator="," close=")">
+            #{tagId}
+        </foreach>
     </delete>
 </mapper>
