@@ -10,6 +10,39 @@
     <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000"
            size="100"></cache>
 
+    <sql id="searchCiEntityBaseInfoSql">
+        <where>
+            <if test="ciId != null">
+                ci_id = #{ciId}
+            </if>
+            <if test="ciEntityIdStart != null">
+                id &gt; #{ciEntityIdStart}
+            </if>
+        </where>
+    </sql>
+
+    <select id="searchCiEntityBaseInfo" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
+            resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
+        SELECT
+        id,
+        ci_id AS ciId,
+        `name`,
+        `status`
+        FROM cmdb_cientity
+        <include refid="searchCiEntityBaseInfoSql"></include>
+        ORDER BY id
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="searchCiEntityBaseInfoCount" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
+            resultType="int">
+        SELECT
+        COUNT(*)
+        FROM cmdb_cientity
+        <include refid="searchCiEntityBaseInfoSql"></include>
+    </select>
+
+
     <select id="getDownwardCiEntityCountByLR" resultType="int">
         SELECT count(1)
         FROM `cmdb_cientity` a
@@ -59,6 +92,7 @@
             #{value}
         </foreach>
     </select>
+
 
     <select id="getCiEntityBaseInfoByIdList" resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
             useCache="false">
@@ -393,7 +427,7 @@
     </select>
 
     <select id="searchCiEntityIdCount" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
-            resultType="int">
+            resultType="int" useCache="true">
         SELECT
         COUNT(DISTINCT ci_base.id)
         <include refid="ciEntityDriverSql"></include>

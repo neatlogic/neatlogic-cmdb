@@ -34,6 +34,11 @@ public class TextValueHandler implements IAttrValueHandler {
     }
 
     @Override
+    public boolean isCanInput() {
+        return true;
+    }
+
+    @Override
     public boolean isSimple() {
         return true;
     }

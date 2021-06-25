@@ -6,8 +6,29 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.ci.CiMapper">
-    <!--<cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000"
-           size="100"></cache>-->
+    <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000"
+           size="100"></cache>
+    <select id="getCiBaseInfoByCiEntityIdList" resultType="codedriver.framework.cmdb.dto.ci.CiVo">
+        SELECT
+        DISTINCT
+        a.`id`,
+        a.`name`,
+        a.`label`,
+        a.`description`,
+        a.`icon`,
+        a.`type_id` AS typeId,
+        a.`is_private` AS isPrivate,
+        a.`is_menu` AS isMenu,
+        a.`parent_ci_id` AS parentCiId,
+        a.`is_abstract` AS isAbstract,
+        a.`is_virtual` AS isVirtual,
+        a.`file_id` AS fileId
+        FROM cmdb_cientity b JOIN cmdb_ci a ON b.ci_id = a.id
+        WHERE b.id IN
+        <foreach collection="ciEntityIdList" item="value" open="(" close=")" separator=",">
+            #{value}
+        </foreach>
+    </select>
 
     <select id="getDownwardCiListByLR" resultType="codedriver.framework.cmdb.dto.ci.CiVo" useCache="true">
         SELECT a.`id`,

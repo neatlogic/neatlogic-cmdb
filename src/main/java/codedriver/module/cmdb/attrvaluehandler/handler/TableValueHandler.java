@@ -48,6 +48,11 @@ public class TableValueHandler implements IAttrValueHandler {
     }
 
     @Override
+    public boolean isCanInput() {
+        return true;
+    }
+
+    @Override
     public boolean isSimple() {
         return false;
     }

@@ -15,6 +15,22 @@ import java.util.Map;
 
 public interface CiEntityMapper {
     /**
+     * 搜索配置项基本信息数量，只支持条件ci_id
+     *
+     * @param ciEntityVo 配置项信息
+     * @return 条目数量
+     */
+    int searchCiEntityBaseInfoCount(CiEntityVo ciEntityVo);
+
+    /**
+     * 搜索配置项基本信息数量，只支持条件ci_id
+     *
+     * @param ciEntityVo 配置项信息
+     * @return 配置项基本信息列表
+     */
+    List<CiEntityVo> searchCiEntityBaseInfo(CiEntityVo ciEntityVo);
+
+    /**
      * 获取当前模型以及所有子模型的配置项数量
      *
      * @param lft 模型左编码

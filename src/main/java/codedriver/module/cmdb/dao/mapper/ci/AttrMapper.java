@@ -5,12 +5,16 @@
 
 package codedriver.module.cmdb.dao.mapper.ci;
 
+import codedriver.framework.cmdb.dto.attrexpression.AttrExpressionRelVo;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
 public interface AttrMapper {
+    List<AttrExpressionRelVo> getExpressionAttrByValueAttrIdList(@Param("valueCiId") Long valueCiId, @Param("valueAttrIdList") List<Long> valueAttrIdList);
+
+    List<AttrVo> getExpressionAttrByValueAttrId(Long valueAttrId);
 
     List<String> getAttrGroupByCiId(Long ciId);
 
@@ -27,6 +31,12 @@ public interface AttrMapper {
 
     int insertAttr(AttrVo attrVo);
 
+    int insertAttrExpressionRel(@Param("expressionCiId") Long expressionCiId, @Param("expressionAttrId") Long expressionAttrId, @Param("valueCiId") Long valueCiId, @Param("valueAttrId") Long valueAttrId);
+
     int deleteAttrById(Long attrId);
+
+    int deleteAttrExpressionRelByValueAttrId(Long valueAttrId);
+
+    int deleteAttrExpressionRelByExpressionAttrId(Long expressionAttrId);
 
 }

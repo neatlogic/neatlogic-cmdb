@@ -76,6 +76,8 @@ public interface CiEntityService {
 
     void createSnapshot(CiEntityTransactionVo ciEntityTransactionVo);
 
+    void updateCiEntity(CiEntityVo ciEntityVo);
+
     /**
      * 提交事务
      *
@@ -83,6 +85,8 @@ public interface CiEntityService {
      * @return 配置项id
      */
     Long commitTransaction(Long transactionId);
+
+    List<CiEntityVo> searchCiEntityBaseInfo(CiEntityVo ciEntityVo);
 
     /**
      * 删除整个配置项

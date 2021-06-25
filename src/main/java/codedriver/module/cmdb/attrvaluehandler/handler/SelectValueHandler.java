@@ -47,6 +47,11 @@ public class SelectValueHandler implements IAttrValueHandler {
     }
 
     @Override
+    public boolean isCanInput() {
+        return true;
+    }
+
+    @Override
     public boolean isSimple() {
         return true;
     }

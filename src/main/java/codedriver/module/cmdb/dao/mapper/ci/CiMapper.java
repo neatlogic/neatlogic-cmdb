@@ -12,6 +12,7 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface CiMapper {
+    List<CiVo> getCiBaseInfoByCiEntityIdList(@Param("ciEntityIdList") List<Long> ciEntityIdList);
 
     List<CiVo> getUpwardCiListByLR(@Param("lft") Integer lft, @Param("rht") Integer rht);
 

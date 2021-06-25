@@ -68,6 +68,7 @@ public class AttrServiceImpl implements AttrService {
         //把模型信息设进去为了可以生成属性表名
         attrVo.setCiVo(ciVo);
         IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
+        handler.afterInsert(attrVo);
         if (!handler.isNeedTargetCi()) {
             //由于以下操作是DDL操作，所以需要使用EscapeTransactionJob避开当前事务，否则在进行DDL操作之前事务就会提交，如果DDL出错，则上面的事务就无法回滚了
             EscapeTransactionJob.State s = new EscapeTransactionJob(() -> ciSchemaMapper.insertAttrToCiTable(ciVo.getCiTableName(), attrVo)).execute();
@@ -88,6 +89,7 @@ public class AttrServiceImpl implements AttrService {
         //把模型信息设进去为了可以生成属性表名
         attrVo.setCiVo(ciVo);
         IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
+        handler.afterUpdate(attrVo);
         if (!handler.isNeedTargetCi()) {
             //由于以下操作是DDL操作，所以需要使用EscapeTransactionJob避开当前事务
             EscapeTransactionJob.State s = new EscapeTransactionJob(() -> ciSchemaMapper.insertAttrToCiTable(ciVo.getCiTableName(), attrVo)).execute();
@@ -106,8 +108,19 @@ public class AttrServiceImpl implements AttrService {
     @Transactional
     public void deleteAttr(AttrVo attrVo) {
         CiVo attrCi = ciMapper.getCiById(attrVo.getCiId());
-        //检查是否被名字表达式引用
-        List<Long> ciIdList = ciMapper.getCiNameExpressionCiIdByAttrId(attrVo.getId());
+        //检查是否被表达式属性引用
+        List<AttrVo> attrList = attrMapper.getExpressionAttrByValueAttrId(attrVo.getId());
+        if (CollectionUtils.isNotEmpty(attrList)) {
+            for (AttrVo eAttrVo : attrList) {
+                if (eAttrVo.getCiId().equals(attrVo.getCiId())) {
+                    throw new AttrIsUsedNameExpressionException(attrVo.getName());
+                } else {
+                    CiVo ciVo = ciMapper.getCiById(eAttrVo.getCiId());
+                    throw new AttrIsUsedNameExpressionException(ciVo.getLabel(), attrVo.getName());
+                }
+            }
+        }
+        /*List<Long> ciIdList = ciMapper.getCiNameExpressionCiIdByAttrId(attrVo.getId());
         if (CollectionUtils.isNotEmpty(ciIdList)) {
             for (Long ciId : ciIdList) {
                 if (ciId.equals(attrVo.getCiId())) {
@@ -117,7 +130,7 @@ public class AttrServiceImpl implements AttrService {
                     throw new AttrIsUsedNameExpressionException(ciVo.getLabel(), attrVo.getName());
                 }
             }
-        }
+        }*/
 
         //所有操作确认无误后再异步补充其他配置项的删除事务数据
         List<CiVo> ciList = ciMapper.getDownwardCiListByLR(attrCi.getLft(), attrCi.getRht());
@@ -168,6 +181,10 @@ public class AttrServiceImpl implements AttrService {
 
         //删除模型属性
         attrMapper.deleteAttrById(attrVo.getId());
+
+        //某些类型的属性可能有删除后续操作
+        IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
+        handler.afterDelete(attrVo);
 
         //物理删除字段
         //由于以上事务中的dml操作包含了以下ddl操作的表，如果使用 EscapeTransactionJob会导致事务等待产生死锁，所以这里不再使用EscapeTransactionJob去保证事务一致性。即使ddl删除字段失败，以上事务也会提交

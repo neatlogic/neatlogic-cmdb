@@ -12,27 +12,23 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
-/**
- * @Author: chenqiwei
- * @Time: Aug 15, 2020
- */
 public interface AttrEntityMapper {
 
-    public AttrEntityVo getAttrEntityByCiEntityIdAndAttrId(@Param("ciEntityId") Long ciEntityId,
-                                                           @Param("attrId") Long attrId);
+    AttrEntityVo getAttrEntityByCiEntityIdAndAttrId(@Param("ciEntityId") Long ciEntityId,
+                                                    @Param("attrId") Long attrId);
 
-    public List<AttrEntityVo> getAttrEntityByAttrIdAndValue(AttrEntityVo attrEntityVo);
+    List<AttrEntityVo> getAttrEntityByAttrIdAndValue(AttrEntityVo attrEntityVo);
 
 
-    public List<AttrEntityVo> getAttrEntityByCiEntityId(Long ciEntityId);
+    List<AttrEntityVo> getAttrEntityByCiEntityId(Long ciEntityId);
 
-    public List<AttrEntityVo> searchAttrEntityByCiEntityIdList(@Param("idList") List<Long> idList,
-                                                               @Param("attrIdList") List<Long> attrIdList);
-
-    @ESSearch
-    public int insertAttrEntity(@ESParam("cientity") AttrEntityVo attrEntityVo);
+    List<AttrEntityVo> searchAttrEntityByCiEntityIdList(@Param("idList") List<Long> idList,
+                                                        @Param("attrIdList") List<Long> attrIdList);
 
     @ESSearch
-    public int deleteAttrEntity(@ESParam("cientity") AttrEntityVo attrEntityVo);
+    int insertAttrEntity(@ESParam("cientity") AttrEntityVo attrEntityVo);
+
+    @ESSearch
+    int deleteAttrEntity(@ESParam("cientity") AttrEntityVo attrEntityVo);
 
 }

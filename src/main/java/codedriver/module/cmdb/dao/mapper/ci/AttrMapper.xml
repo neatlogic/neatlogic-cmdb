@@ -6,10 +6,49 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.ci.AttrMapper">
-    <!-- <cache-ref namespace="codedriver.module.cmdb.dao.mapper.ci.CiMapper"/>
-     <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>-->
+    <cache-ref namespace="codedriver.module.cmdb.dao.mapper.ci.CiMapper"/>
+    <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
+    <select id="getExpressionAttrByValueAttrId" parameterType="java.lang.Long"
+            resultType="codedriver.framework.cmdb.dto.ci.AttrVo">
+        SELECT a.`id`,
+               a.`ci_id`                                                       AS ciId,
+               a.`type`,
+               a.`target_ci_id`                                                AS targetCiId,
+               a.`name`,
+               a.`label`,
+               a.`description`,
+               a.`validator_id`                                                AS validatorId,
+               (SELECT name FROM cmdb_validator x WHERE x.id = a.validator_id) AS validatorName,
+               a.`is_required`                                                 AS isRequired,
+               a.`is_unique`                                                   AS isUnique,
+               a.`input_type`                                                  AS inputType,
+               a.`group_name`                                                  AS groupName,
+               a.`is_private`                                                  AS isPrivate,
+               a.`config`                                                      AS configStr
+        FROM `cmdb_attr` a
+                 JOIN cmdb_attrexpression_rel b ON a.id = b.expression_attr_id
+        WHERE b.value_attr_id = #{value}
+    </select>
+
+    <select id="getExpressionAttrByValueAttrIdList" parameterType="java.lang.Long"
+            resultType="codedriver.framework.cmdb.dto.attrexpression.AttrExpressionRelVo" useCache="true">
+        SELECT DISTINCT
+        a.expression_ci_id AS expressionCiId,
+        a.expression_attr_id AS expressAttrId,
+        a.value_ci_id AS valueCiId,
+        a.value_attr_id AS valueAttrId
+        FROM
+        cmdb_attrexpression_rel a
+        WHERE
+        a.value_ci_id = #{valueCiId} AND
+        a.value_attr_id in
+        <foreach collection="valueAttrIdList" item="attrId" open="(" close=")" separator=",">
+            #{attrId}
+        </foreach>
+    </select>
+
     <select id="getAttrById" parameterType="java.lang.Long" resultType="codedriver.framework.cmdb.dto.ci.AttrVo"
-            useCache="false">
+            useCache="true">
         SELECT `id`,
                `ci_id`                                                       AS ciId,
                `type`,
@@ -30,7 +69,7 @@
     </select>
 
     <select id="getAttrByIdList" resultType="codedriver.framework.cmdb.dto.ci.AttrVo"
-            useCache="false">
+            useCache="true">
         SELECT `id`,
         `ci_id` AS ciId,
         `type`,
@@ -79,7 +118,7 @@
         attr.`input_type` AS inputType,
         attr.`group_name` AS groupName,
         attr.`is_private` AS isPrivate,
-        if(ci.id = #{value},0,1) AS `isExtended`,
+        if(ci.id = #{value}, 0, 1) AS `isExtended`,
         IFNULL(cview.sort, 99999) sort
         FROM
         `cmdb_ci` ci
@@ -122,6 +161,17 @@
         WHERE id = #{id}
     </update>
 
+    <insert id="insertAttrExpressionRel">
+        INSERT IGNORE INTO cmdb_attrexpression_rel (expression_ci_id,
+                                                    expression_attr_id,
+                                                    value_attr_id,
+                                                    value_ci_id)
+        VALUES (#{expressionCiId},
+                #{expressionAttrId},
+                #{valueAttrId},
+                #{valueCiId})
+    </insert>
+
     <insert id="insertAttr" parameterType="codedriver.framework.cmdb.dto.ci.AttrVo">
         INSERT INTO `cmdb_attr` (`id`,
                                  `ci_id`,
@@ -152,6 +202,18 @@
                 #{groupName},
                 #{isPrivate})
     </insert>
+
+    <delete id="deleteAttrExpressionRelByExpressionAttrId" parameterType="java.lang.Long">
+        DELETE
+        FROM cmdb_attrexpression_rel
+        WHERE expression_attr_id = #{value}
+    </delete>
+
+    <delete id="deleteAttrExpressionRelByValueAttrId" parameterType="java.lang.Long">
+        DELETE
+        FROM cmdb_attrexpression_rel
+        WHERE value_attr_id = #{value}
+    </delete>
 
     <delete id="deleteAttrById" parameterType="java.lang.Long">
         DELETE a,b,c
