@@ -21,6 +21,9 @@ public interface CiService {
     void updateCiUnique(Long ciId, List<Long> attrIdList);
 
     @Transactional
+    void updateCiNameAttrId(CiVo ciVo);
+
+    @Transactional
     void updateCiNameExpression(Long ciId, String nameExpression);
 
     @Transactional

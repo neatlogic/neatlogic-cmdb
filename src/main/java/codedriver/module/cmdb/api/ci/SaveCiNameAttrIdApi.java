@@ -26,7 +26,7 @@ import org.springframework.stereotype.Service;
 @Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
-public class SaveCiNameExpressionApi extends PrivateApiComponentBase {
+public class SaveCiNameAttrIdApi extends PrivateApiComponentBase {
 
     @Autowired
     private CiService ciService;
@@ -34,12 +34,12 @@ public class SaveCiNameExpressionApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "/cmdb/ci/nameexpression/save";
+        return "/cmdb/ci/savenameattr";
     }
 
     @Override
     public String getName() {
-        return "保存模型名称表达式";
+        return "保存模型名称属性";
     }
 
     @Override
@@ -48,13 +48,13 @@ public class SaveCiNameExpressionApi extends PrivateApiComponentBase {
     }
 
     @Input({@Param(name = "ciId", isRequired = true, type = ApiParamType.LONG, desc = "模型id"),
-            @Param(name = "nameExpression", type = ApiParamType.STRING, xss = true, desc = "名称表达式")
+            @Param(name = "attrId", type = ApiParamType.LONG, isRequired = true, desc = "属性id")
     })
-    @Description(desc = "保存模型名称表达式接口")
+    @Description(desc = "保存模型名称属性接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("ciId");
-        String nameExpression = jsonObj.getString("nameExpression");
+        Long attrId = jsonObj.getLong("attrId");
         CiVo ciVo = ciService.getCiById(ciId);
         if (ciVo == null) {
             throw new CiNotFoundException(ciId);
@@ -62,7 +62,8 @@ public class SaveCiNameExpressionApi extends PrivateApiComponentBase {
             if (!CiAuthChecker.chain().checkCiManagePrivilege(ciId).check()) {
                 throw new CiAuthException();
             }
-            ciService.updateCiNameExpression(ciId, nameExpression);
+            ciVo.setNameAttrId(attrId);
+            ciService.updateCiNameAttrId(ciVo);
         }
         return null;
     }

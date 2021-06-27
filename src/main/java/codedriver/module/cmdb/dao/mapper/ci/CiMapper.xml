@@ -72,11 +72,11 @@
         ORDER BY lft
     </select>
 
-    <select id="getCiNameExpressionCiIdByAttrId" parameterType="java.lang.Long" resultType="java.lang.Long">
+    <!--<select id="getCiNameExpressionCiIdByAttrId" parameterType="java.lang.Long" resultType="java.lang.Long">
         SELECT ci_id
         FROM cmdb_ci_nameexpression
         WHERE attr_id = #{value}
-    </select>
+    </select>-->
 
     <select id="getAllCi" resultType="codedriver.framework.cmdb.dto.ci.CiVo" useCache="true">
         SELECT a.`id`,
@@ -261,7 +261,7 @@
         <result column="isAbstract" property="isAbstract"></result>
         <result column="isVirtual" property="isVirtual"></result>
         <result column="fileId" property="fileId"></result>
-        <result column="nameExpression" property="nameExpression"></result>
+        <result column="nameAttrId" property="nameAttrId"></result>
         <result column="lft" property="lft"></result>
         <result column="rht" property="rht"></result>
         <collection property="uniqueAttrIdList" ofType="java.lang.Long">
@@ -270,23 +270,23 @@
     </resultMap>
 
     <select id="getCiById" parameterType="java.lang.Long" resultMap="ciResultMap"
-            useCache="false">
+            useCache="true">
         SELECT a.`id`,
                a.`name`,
                a.`label`,
                a.`description`,
                a.`icon`,
-               a.`type_id`         AS typeId,
-               a.`is_private`      AS isPrivate,
-               a.`is_menu`         AS isMenu,
-               a.`parent_ci_id`    AS parentCiId,
-               a.`is_abstract`     AS isAbstract,
-               a.`is_virtual`      AS isVirtual,
-               a.`file_id`         AS fileId,
-               a.`name_expression` AS nameExpression,
-               a.`lft`             AS lft,
-               a.`rht`             AS rht,
-               b.`attr_id`         AS uniqueAttrId
+               a.`type_id`      AS typeId,
+               a.`is_private`   AS isPrivate,
+               a.`is_menu`      AS isMenu,
+               a.`parent_ci_id` AS parentCiId,
+               a.`is_abstract`  AS isAbstract,
+               a.`is_virtual`   AS isVirtual,
+               a.`file_id`      AS fileId,
+               a.`name_attr_id` AS nameAttrId,
+               a.`lft`          AS lft,
+               a.`rht`          AS rht,
+               b.`attr_id`      AS uniqueAttrId
         FROM `cmdb_ci` a
                  LEFT JOIN `cmdb_ci_unique` b ON a.id = b.ci_id
         WHERE id = #{value}
@@ -299,27 +299,34 @@
                a.`label`,
                a.`description`,
                a.`icon`,
-               a.`type_id`         AS typeId,
-               a.`is_private`      AS isPrivate,
-               a.`is_menu`         AS isMenu,
-               a.`parent_ci_id`    AS parentCiId,
-               a.`is_abstract`     AS isAbstract,
-               a.`is_virtual`      AS isVirtual,
-               a.`file_id`         AS fileId,
-               a.`name_expression` AS nameExpression,
-               a.`lft`             AS lft,
-               a.`rht`             AS rht,
-               b.`attr_id`         AS uniqueAttrId
+               a.`type_id`      AS typeId,
+               a.`is_private`   AS isPrivate,
+               a.`is_menu`      AS isMenu,
+               a.`parent_ci_id` AS parentCiId,
+               a.`is_abstract`  AS isAbstract,
+               a.`is_virtual`   AS isVirtual,
+               a.`file_id`      AS fileId,
+               a.`name_attr_id` AS nameAttrId,
+               a.`lft`          AS lft,
+               a.`rht`          AS rht,
+               b.`attr_id`      AS uniqueAttrId
         FROM `cmdb_ci` a
                  LEFT JOIN `cmdb_ci_unique` b ON a.id = b.ci_id
         WHERE name = #{value}
     </select>
 
-    <update id="updateCiNameExpression">
+    <!-- <update id="updateCiNameExpression">
+         UPDATE
+             `cmdb_ci`
+         SET `name_expression` = #{nameExpression}
+         WHERE id = #{ciId}
+     </update>-->
+
+    <update id="updateCiNameAttrId" parameterType="codedriver.framework.cmdb.dto.ci.CiVo">
         UPDATE
             `cmdb_ci`
-        SET `name_expression` = #{nameExpression}
-        WHERE id = #{ciId}
+        SET name_attr_id = #{nameAttrId}
+        WHERE id = #{id}
     </update>
 
     <update id="updateCi" parameterType="codedriver.framework.cmdb.dto.ci.CiVo">
@@ -350,7 +357,7 @@
                                `is_abstract`,
                                `is_virtual`,
                                `parent_ci_id`,
-                               `name_expression`,
+                               `name_attr_id`,
                                `file_id`,
                                `lft`,
                                `rht`)
@@ -365,7 +372,7 @@
                 #{isAbstract},
                 #{isVirtual},
                 #{parentCiId},
-                #{nameExpression},
+                #{nameAttrId},
                 #{fileId},
                 #{lft},
                 #{rht})
@@ -376,17 +383,17 @@
         VALUES (#{ciId}, #{attrId})
     </insert>
 
-    <insert id="insertCiNameExpression">
+    <!--<insert id="insertCiNameExpression">
         INSERT INTO cmdb_ci_nameexpression (ci_id, attr_id)
         VALUES (#{ciId}, #{attrId})
-    </insert>
+    </insert>-->
 
 
-    <delete id="deleteCiNameExpressionByCiId" parameterType="java.lang.Long">
-        DELETE
-        FROM cmdb_ci_nameexpression
-        WHERE ci_id = #{value}
-    </delete>
+    <!-- <delete id="deleteCiNameExpressionByCiId" parameterType="java.lang.Long">
+         DELETE
+         FROM cmdb_ci_nameexpression
+         WHERE ci_id = #{value}
+     </delete>-->
 
     <delete id="deleteCiById" parameterType="java.lang.Long">
         DELETE a,b,c,d,e,f,g,h,i
@@ -400,7 +407,6 @@
             LEFT JOIN `cmdb_relgroup` f ON a.id = f.`ci_id`
             LEFT JOIN `cmdb_view` g ON a.id = g.`ci_id`
             LEFT JOIN `cmdb_ci_unique` h ON a.id = h.`ci_id`
-            LEFT JOIN `cmdb_ci_nameexpression` i ON a.id = i.`ci_id`
         WHERE a.id = #{value}
     </delete>
 

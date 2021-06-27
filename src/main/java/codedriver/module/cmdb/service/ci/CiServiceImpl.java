@@ -33,9 +33,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -172,11 +173,22 @@ public class CiServiceImpl implements CiService {
 
     @Override
     @Transactional
+    public void updateCiNameAttrId(CiVo ciVo) {
+        ciMapper.updateCiNameAttrId(ciVo);
+        AfterTransactionJob<CiVo> job = new AfterTransactionJob<>();
+        job.execute(ciVo, dataCiVo -> {
+            Thread.currentThread().setName("UPDATE-CIENTITY-NAME-" + dataCiVo.getId());
+            ciEntityService.updateCiEntityName(dataCiVo);
+        });
+    }
+
+    @Override
+    @Transactional
     public void updateCiNameExpression(Long ciId, String nameExpression) {
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciId);
         CiVo ciVo = ciMapper.getCiById(ciId);
-        ciMapper.deleteCiNameExpressionByCiId(ciId);
-        if (!nameExpression.equals(ciVo.getNameExpression())) {
+        //ciMapper.deleteCiNameExpressionByCiId(ciId);
+       /* if (!nameExpression.equals(ciVo.getNameExpression())) {
             if (StringUtils.isNotEmpty(nameExpression)) {
                 //检查表达式中所有属性是否存在当前模型的属性列表里
                 String regex = "\\{([^}]+?)}";
@@ -206,7 +218,7 @@ public class CiServiceImpl implements CiService {
                 Thread.currentThread().setName("UPDATE-CIENTITY-NAME-" + dataCiVo.getId());
                 ciEntityService.updateCiEntityName(dataCiVo);
             });
-        }
+        }*/
 
     }
 

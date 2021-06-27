@@ -18,7 +18,7 @@ public interface CiMapper {
 
     List<CiVo> getDownwardCiListByLR(@Param("lft") Integer lft, @Param("rht") Integer rht);
 
-    List<Long> getCiNameExpressionCiIdByAttrId(Long attrId);
+    //List<Long> getCiNameExpressionCiIdByAttrId(Long attrId);
 
     List<CiVo> getAllCi();
 
@@ -40,19 +40,20 @@ public interface CiMapper {
 
     CiVo getCiByName(String ciName);
 
-    int updateCi(CiVo ciVo);
+    void updateCi(CiVo ciVo);
 
-    int updateCiNameExpression(@Param("ciId") Long ciId, @Param("nameExpression") String nameExpression);
+    void updateCiNameAttrId(CiVo ciVo);
+    // int updateCiNameExpression(@Param("ciId") Long ciId, @Param("nameExpression") String nameExpression);
 
-    int insertCi(CiVo ciVo);
+    void insertCi(CiVo ciVo);
 
-    int insertCiUnique(@Param("ciId") Long ciId, @Param("attrId") Long attrId);
+    void insertCiUnique(@Param("ciId") Long ciId, @Param("attrId") Long attrId);
 
-    int insertCiNameExpression(@Param("ciId") Long ciId, @Param("attrId") Long attrId);
+    //int insertCiNameExpression(@Param("ciId") Long ciId, @Param("attrId") Long attrId);
 
-    int deleteCiById(Long ciId);
+    void deleteCiById(Long ciId);
 
-    int deleteCiUniqueByCiId(Long ciId);
+    void deleteCiUniqueByCiId(Long ciId);
 
-    int deleteCiNameExpressionByCiId(Long ciId);
+    //int deleteCiNameExpressionByCiId(Long ciId);
 }

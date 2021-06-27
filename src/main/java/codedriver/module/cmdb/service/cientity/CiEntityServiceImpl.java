@@ -405,10 +405,11 @@ public class CiEntityServiceImpl implements CiEntityService {
         List<CiEntityVo> ciEntityList = searchCiEntity(pCiEntityVo);
         while (CollectionUtils.isNotEmpty(ciEntityList)) {
             for (CiEntityVo ciEntityVo : ciEntityList) {
-                String ciEntityName = ciVo.getNameExpression();
+                String ciEntityName = "";
                 for (AttrEntityVo attrEntityVo : ciEntityVo.getAttrEntityList()) {
-                    if (attrEntityVo.getAttrType().equals("text")) {
-                        ciEntityName = ciEntityName.replace("{" + attrEntityVo.getAttrName() + "}", attrEntityVo.getValueList().getString(0));
+                    if (attrEntityVo.getAttrId().equals(ciVo.getNameAttrId())) {
+                        ciEntityName = attrEntityVo.getActualValueList().stream().map(Object::toString).collect(Collectors.joining(","));
+                        break;
                     }
                 }
                 ciEntityVo.setName(ciEntityName);
