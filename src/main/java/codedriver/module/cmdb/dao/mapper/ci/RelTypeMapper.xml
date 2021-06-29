@@ -22,10 +22,6 @@
     <select id="getRelTypeById" parameterType="java.lang.Long" resultType="codedriver.framework.cmdb.dto.ci.RelTypeVo">
         SELECT `id`,
                `name`,
-               `from_cnname` as fromCnName,
-               `to_cnname`   as toCnName,
-               `from_enname` as fromEnName,
-               `to_enname`   as toEnName,
                `description`
         FROM `cmdb_reltype`
         WHERE id = #{value}
@@ -34,10 +30,6 @@
     <select id="getAllRelType" resultType="codedriver.framework.cmdb.dto.ci.RelTypeVo">
         SELECT `id`,
                `name`,
-               `from_cnname`                                                as fromCnName,
-               `to_cnname`                                                  as toCnName,
-               `from_enname`                                                as fromEnName,
-               `to_enname`                                                  as toEnName,
                `description`,
                (SELECT COUNT(1) FROM cmdb_rel rel WHERE rel.type_id = a.id) AS invokeCount
         FROM `cmdb_reltype` a
@@ -46,17 +38,13 @@
 
     <insert id="insertRelType" parameterType="codedriver.framework.cmdb.dto.ci.RelTypeVo">
         INSERT INTO cmdb_reltype
-            (id, name, from_cnname, to_cnname, from_enname, to_enname, description)
-        VALUES (#{id}, #{name}, #{fromCnName}, #{toCnName}, #{fromEnName}, #{toEnName}, #{description})
+            (id, name, description)
+        VALUES (#{id}, #{name}, #{description})
     </insert>
 
     <update id="updateRelType" parameterType="codedriver.framework.cmdb.dto.ci.RelTypeVo">
         UPDATE cmdb_reltype
         SET name=#{name},
-            from_cnname = #{fromCnName},
-            to_cnname = #{toCnName},
-            from_enname = #{fromEnName},
-            to_enname = #{toEnName},
             description = #{description}
         WHERE id = #{id}
     </update>
