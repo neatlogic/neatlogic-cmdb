@@ -162,6 +162,7 @@
         `ci_base`.`lcd` AS `lcd`,
         `ci_base`.`lcu` AS `lcu`,-->
         `ci`.`type_id` AS `typeId`,
+        (SELECT name FROM cmdb_citype WHERE id = `ci`.`type_id`) AS `typeName`,
         `ci`.`name` AS `ciName`,
         `ci`.`icon` AS `ciIcon`,
         `ci`.`label` AS `ciLabel`

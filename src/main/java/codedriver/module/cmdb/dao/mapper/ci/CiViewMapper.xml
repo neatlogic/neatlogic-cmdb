@@ -8,6 +8,18 @@
 <mapper namespace="codedriver.module.cmdb.dao.mapper.ci.CiViewMapper">
     <cache-ref namespace="codedriver.module.cmdb.dao.mapper.ci.CiMapper"/>
     <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
+
+    <select id="getCiViewConstByCiId" parameterType="java.lang.Long"
+            resultType="codedriver.framework.cmdb.dto.view.ViewConstVo">
+        SELECT id
+             , name
+             , label
+             , IFNULL(cview.sort, 999999) AS `sort`
+        FROM cmdb_viewconst a
+                 LEFT JOIN cmdb_view cview ON a.id = cview.item_id AND cview.type = 'const' AND cview.ci_id = #{ciId}
+        ORDER BY sort
+    </select>
+
     <select id="getCiViewByCiId" parameterType="codedriver.framework.cmdb.dto.ci.CiViewVo"
             resultType="codedriver.framework.cmdb.dto.ci.CiViewVo">
         SELECT * FROM (
@@ -61,6 +73,19 @@
         AND v.ci_id = #{ciId}
         WHERE ci.lft &lt;= ( SELECT lft FROM `cmdb_ci` WHERE id = #{ciId} )
         AND ci.rht &gt;= ( SELECT rht FROM `cmdb_ci` WHERE id = #{ciId} )
+        UNION
+        SELECT
+        const.id AS itemId,
+        const.name AS itemName,
+        const.label AS itemLabel,
+        'const' AS type,
+        v.show_type AS showType,
+        IFNULL(v.sort, 999999) as sort
+        FROM cmdb_viewconst const
+        LEFT JOIN cmdb_view v
+        ON const.id = v.`item_id`
+        AND v.`type` = 'const'
+        AND v.ci_id = #{ciId}
         ) t
         <where>
             <if test="showTypeList != null and showTypeList.size() > 0">

@@ -6,10 +6,12 @@
 package codedriver.module.cmdb.dao.mapper.ci;
 
 import codedriver.framework.cmdb.dto.ci.CiViewVo;
+import codedriver.framework.cmdb.dto.view.ViewConstVo;
 
 import java.util.List;
 
 public interface CiViewMapper {
+    List<ViewConstVo> getCiViewConstByCiId(Long ciId);
 
     List<CiViewVo> getCiViewByCiId(CiViewVo ciViewVo);
 

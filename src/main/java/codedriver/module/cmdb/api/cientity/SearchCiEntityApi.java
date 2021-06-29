@@ -115,15 +115,23 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
             for (CiViewVo ciview : ciViewList) {
                 JSONObject headObj = new JSONObject();
                 headObj.put("title", ciview.getItemLabel());
-                if (ciview.getType().equals("attr")) {
-                    attrIdList.add(ciview.getItemId());
-                    headObj.put("key", "attr_" + ciview.getItemId());
-                } else if (ciview.getType().equals("relfrom")) {
-                    relIdList.add(ciview.getItemId());
-                    headObj.put("key", "relfrom_" + ciview.getItemId());
-                } else {
-                    relIdList.add(ciview.getItemId());
-                    headObj.put("key", "relto_" + ciview.getItemId());
+                switch (ciview.getType()) {
+                    case "attr":
+                        attrIdList.add(ciview.getItemId());
+                        headObj.put("key", "attr_" + ciview.getItemId());
+                        break;
+                    case "relfrom":
+                        relIdList.add(ciview.getItemId());
+                        headObj.put("key", "relfrom_" + ciview.getItemId());
+                        break;
+                    case "relto":
+                        relIdList.add(ciview.getItemId());
+                        headObj.put("key", "relto_" + ciview.getItemId());
+                        break;
+                    case "const":
+                        //固化属性需要特殊处理
+                        headObj.put("key", "const_" + ciview.getItemName().replace("_", ""));
+                        break;
                 }
                 theadList.add(headObj);
             }
@@ -167,6 +175,10 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
                 entityObj.put("id", entity.getId());
                 entityObj.put("name", entity.getName());
                 entityObj.put("ciId", entity.getCiId());
+                entityObj.put("ciName", entity.getCiName());
+                entityObj.put("ciLabel", entity.getCiLabel());
+                entityObj.put("type", entity.getTypeId());
+                entityObj.put("typeName", entity.getTypeName());
                 entityObj.put("attrEntityData", entity.getAttrEntityData());
                 entityObj.put("relEntityData", entity.getRelEntityData());
                 if (needAction && ciVo.getIsVirtual().equals(0)) {

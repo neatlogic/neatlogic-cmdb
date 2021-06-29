@@ -57,6 +57,7 @@ public class CiEntityBuilder {
                 String lcu = result.get("lcu") != null ? String.valueOf(result.get("lcu")) : null;
                 Date lcd = result.get("lcd") != null ? (Date) (result.get("lcd")) : null;
                 Long typeId = result.get("typeId") != null ? Long.valueOf(String.valueOf(result.get("typeId"))) : null;
+                String typeName = result.get("typeName") != null ? String.valueOf(result.get("typeName")) : null;
                 String ciName = result.get("ciName") != null ? String.valueOf(result.get("ciName")) : null;
                 String ciIcon = result.get("ciIcon") != null ? String.valueOf(result.get("ciIcon")) : null;
                 String ciLabel = result.get("ciLabel") != null ? String.valueOf(result.get("ciLabel")) : null;
@@ -70,6 +71,7 @@ public class CiEntityBuilder {
                     ciEntityVo.setName(name);
                     ciEntityVo.setStatus(status);
                     ciEntityVo.setTypeId(typeId);
+                    ciEntityVo.setTypeName(typeName);
                     ciEntityVo.setCiName(ciName);
                     ciEntityVo.setCiLabel(ciLabel);
                     ciEntityVo.setCiIcon(ciIcon);
@@ -157,6 +159,7 @@ public class CiEntityBuilder {
                 String lcu = result.get("lcu") != null ? String.valueOf(result.get("lcu")) : null;
                 Date lcd = result.get("lcd") != null ? (Date) result.get("lcd") : null;
                 Long typeId = result.get("typeId") != null ? Long.valueOf(String.valueOf(result.get("typeId"))) : null;
+                String typeName = result.get("typeName") != null ? String.valueOf(result.get("typeName")) : null;
                 String ciName = result.get("ciName") != null ? String.valueOf(result.get("ciName")) : null;
                 String ciIcon = result.get("ciIcon") != null ? String.valueOf(result.get("ciIcon")) : null;
                 String ciLabel = result.get("ciLabel") != null ? String.valueOf(result.get("ciLabel")) : null;
@@ -170,6 +173,7 @@ public class CiEntityBuilder {
                     ciEntityVo.setName(name);
                     ciEntityVo.setStatus(status);
                     ciEntityVo.setTypeId(typeId);
+                    ciEntityVo.setTypeName(typeName);
                     ciEntityVo.setCiName(ciName);
                     ciEntityVo.setCiLabel(ciLabel);
                     ciEntityVo.setCiIcon(ciIcon);
