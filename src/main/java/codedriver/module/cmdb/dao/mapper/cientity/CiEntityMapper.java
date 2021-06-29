@@ -92,6 +92,22 @@ public interface CiEntityMapper {
      */
     List<AttrEntityVo> getAttrEntityByAttrIdAndFromCiEntityId(@Param("fromCiEntityId") Long fromCiEntityId, @Param("attrId") Long attrId);
 
+    /**
+     * 返回来源配置项引用的所有目标配置项基本信息
+     *
+     * @param fromCiEntityId 来源配置项id
+     * @param attrId         属性id
+     * @return 配置项列表
+     */
+    List<CiEntityVo> getCiEntityBaseInfoByAttrIdAndFromCiEntityId(@Param("fromCiEntityId") Long fromCiEntityId, @Param("attrId") Long attrId);
+
+    /**
+     * 查询使用了当前配置项的属性列表（删除配置项时用）
+     *
+     * @param toCiEntityId 配置项id
+     * @return 属性列表
+     */
+    List<AttrVo> getAttrListByToCiEntityId(Long toCiEntityId);
 
     List<Map<String, Object>> searchCiEntity(CiEntityVo ciEntityVo);
 

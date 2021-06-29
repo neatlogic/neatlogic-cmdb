@@ -67,12 +67,14 @@ public interface CiEntityService {
 
     void createCiEntityName(CiEntityTransactionVo ciEntityTransactionVo);
 
+    void updateCiEntityName(CiEntityVo ciEntityVo);
+
     /**
      * 根据模型名字表达式修改配置项名称
      *
      * @param ciVo 模型
      */
-    void updateCiEntityName(CiVo ciVo);
+    void updateCiEntityNameForCi(CiVo ciVo);
 
     void createSnapshot(CiEntityTransactionVo ciEntityTransactionVo);
 

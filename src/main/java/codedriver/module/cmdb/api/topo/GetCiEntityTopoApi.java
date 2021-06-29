@@ -23,6 +23,7 @@ import codedriver.module.cmdb.service.cientity.CiEntityService;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -152,8 +153,12 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                         if (ciEntityVo.getTypeId().equals(ciTypeVo.getId())) {
                             Node.Builder nb =
                                     new Node.Builder("CiEntity_" + ciEntityVo.getCiId() + "_" + ciEntityVo.getId());// 必须按照这个格式写，前端会通过下划线来提取ciid和cientityid
-                            nb.withTooltip(ciEntityVo.getName());
-                            nb.withLabel(ciEntityVo.getName());
+                            if (StringUtils.isNotBlank(ciEntityVo.getName())) {
+                                nb.withTooltip(ciEntityVo.getName());
+                                nb.withLabel(ciEntityVo.getName());
+                            } else {
+                                nb.withLabel("-");
+                            }
                             nb.withImage(ciEntityVo.getCiIcon());
                             if (ciEntityId.equals(ciEntityVo.getId())) {
                                 nb.withFontColor("red");

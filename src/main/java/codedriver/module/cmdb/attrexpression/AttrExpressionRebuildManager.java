@@ -10,6 +10,7 @@ import codedriver.framework.asynchronization.threadpool.CachedThreadPool;
 import codedriver.framework.cmdb.dto.attrexpression.AttrExpressionRelVo;
 import codedriver.framework.cmdb.dto.attrexpression.RebuildAuditVo;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
+import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.AttrEntityVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.cientity.RelEntityVo;
@@ -17,6 +18,7 @@ import codedriver.framework.cmdb.enums.RelDirectionType;
 import codedriver.framework.transaction.core.AfterTransactionJob;
 import codedriver.framework.util.SnowflakeUtil;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
+import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.AttrExpressionRebuildAuditMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
@@ -30,7 +32,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
@@ -43,12 +47,14 @@ public class AttrExpressionRebuildManager {
     private static RelEntityMapper relEntityMapper;
     private static AttrExpressionRebuildAuditMapper attrExpressionRebuildAuditMapper;
     private static AttrMapper attrMapper;
+    private static CiMapper ciMapper;
     private static CiEntityService ciEntityService;
 
     @Autowired
-    public AttrExpressionRebuildManager(RelEntityMapper _relEntityMapper, AttrMapper _attrMapper, CiEntityService _ciEntityService, AttrExpressionRebuildAuditMapper _attrExpressionRebuildAuditMapper) {
+    public AttrExpressionRebuildManager(RelEntityMapper _relEntityMapper, AttrMapper _attrMapper, CiMapper _ciMapper, CiEntityService _ciEntityService, AttrExpressionRebuildAuditMapper _attrExpressionRebuildAuditMapper) {
         relEntityMapper = _relEntityMapper;
         attrMapper = _attrMapper;
+        ciMapper = _ciMapper;
         ciEntityService = _ciEntityService;
         attrExpressionRebuildAuditMapper = _attrExpressionRebuildAuditMapper;
     }
@@ -220,6 +226,7 @@ public class AttrExpressionRebuildManager {
             }
             if (CollectionUtils.isNotEmpty(expressionAttrList)) {
                 CiEntityVo newCiEntityVo = ciEntityService.getCiEntityById(ciEntityVo.getCiId(), ciEntityVo.getId());
+                CiVo ciVo = ciMapper.getCiById(ciEntityVo.getCiId());
                 CiEntityVo saveCiEntityVo = new CiEntityVo();
                 saveCiEntityVo.setCiId(newCiEntityVo.getCiId());
                 saveCiEntityVo.setId(newCiEntityVo.getId());
@@ -312,9 +319,14 @@ public class AttrExpressionRebuildManager {
                         attrEntityObj.put("ciId", attrVo.getCiId());
                         attrEntityObj.put("type", attrVo.getType());
                         attrEntityObj.put("valueList", new JSONArray() {{
-                            this.add(expressionValue);
+                            this.add(expressionValue.toString());
                         }});
                         saveCiEntityVo.addAttrEntityData(attrVo.getId(), attrEntityObj);
+                        //更新配置项名称
+                        if (ciVo.getNameAttrId().equals(attrVo.getId())) {
+                            saveCiEntityVo.setName(expressionValue.toString());
+                            ciEntityService.updateCiEntityName(saveCiEntityVo);
+                        }
                     }
                 }
                 ciEntityService.updateCiEntity(saveCiEntityVo);

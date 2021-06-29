@@ -178,7 +178,7 @@ public class CiServiceImpl implements CiService {
         AfterTransactionJob<CiVo> job = new AfterTransactionJob<>();
         job.execute(ciVo, dataCiVo -> {
             Thread.currentThread().setName("UPDATE-CIENTITY-NAME-" + dataCiVo.getId());
-            ciEntityService.updateCiEntityName(dataCiVo);
+            ciEntityService.updateCiEntityNameForCi(dataCiVo);
         });
     }
 

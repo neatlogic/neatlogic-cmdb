@@ -65,8 +65,38 @@
           AND name = #{ciEntityName}
     </select>
 
+    <select id="getCiEntityBaseInfoByAttrIdAndFromCiEntityId"
+            resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
+            useCache="true">
+        SELECT a.id,
+               a.ci_id AS ciId,
+               a.`name`,
+               a.`status`,
+               a.fcu,
+               a.fcd,
+               a.lcu,
+               a.lcd
+        FROM cmdb_cientity a
+                 JOIN `cmdb_attrentity` b ON a.ci_id = b.to_cientity_id
+        WHERE b.attr_id = #{attrId}
+          AND b.from_cientity_id = #{fromCiEntityId}
+    </select>
+
+    <select id="getAttrListByToCiEntityId" parameterType="java.lang.Long"
+            resultType="codedriver.framework.cmdb.dto.ci.AttrVo" useCache="true">
+        SELECT a.label AS ciLabel,
+               a.name  AS ciName,
+               b.id    AS id,
+               b.name  AS name,
+               b.label AS label
+        FROM cmdb_ci a
+                 JOIN cmdb_attr b ON a.id = b.ci_id
+                 JOIN cmdb_attrentity c ON b.id = c.attr_id
+        WHERE c.to_cientity_id = #{value}
+    </select>
+
     <select id="getAttrEntityByAttrIdAndFromCiEntityId" resultType="codedriver.framework.cmdb.dto.cientity.AttrEntityVo"
-            useCache="false">
+            useCache="true">
         SELECT id,
                from_cientity_id AS fromCiEntityId,
                to_cientity_id   AS toCiEntityId,

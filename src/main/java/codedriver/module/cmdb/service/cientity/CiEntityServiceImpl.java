@@ -226,6 +226,11 @@ public class CiEntityServiceImpl implements CiEntityService {
             // 正在编辑中的配置项，在事务提交或删除前不允许再次修改
             throw new CiEntityIsLockedException(ciEntityId);
         }
+        //如果作为属性被引用，则不能删除
+        List<AttrVo> attrList = ciEntityMapper.getAttrListByToCiEntityId(ciEntityId);
+        if (CollectionUtils.isNotEmpty(attrList)) {
+            throw new CiEntityIsInUsedException(attrList);
+        }
 
         TransactionVo transactionVo = new TransactionVo();
         transactionVo.setCiId(oldCiEntityVo.getCiId());
@@ -397,7 +402,12 @@ public class CiEntityServiceImpl implements CiEntityService {
     }
 
     @Override
-    public void updateCiEntityName(CiVo ciVo) {
+    public void updateCiEntityName(CiEntityVo ciEntityVo) {
+        ciEntityMapper.updateCiEntityBaseInfo(ciEntityVo);
+    }
+
+    @Override
+    public void updateCiEntityNameForCi(CiVo ciVo) {
         CiEntityVo pCiEntityVo = new CiEntityVo();
         pCiEntityVo.setCiId(ciVo.getId());
         pCiEntityVo.setPageSize(100);
@@ -813,6 +823,7 @@ public class CiEntityServiceImpl implements CiEntityService {
             写入属性信息
             1、如果是引用类型，并且是replace模式，需要先清空原来的值在写入。
              */
+            CiVo ciVo = ciMapper.getCiById(ciEntityTransactionVo.getCiId());
             CiEntityVo ciEntityVo = new CiEntityVo(ciEntityTransactionVo);
             for (AttrEntityTransactionVo attrEntityTransactionVo :
                     ciEntityTransactionVo.getAttrEntityTransactionList()) {
@@ -824,6 +835,27 @@ public class CiEntityServiceImpl implements CiEntityService {
                     if (CollectionUtils.isNotEmpty(attrEntityVo.getValueList())) {
                         ciEntityMapper.insertAttrEntity(attrEntityVo);
                     }
+                    //更新配置项名称
+                    if (ciVo.getNameAttrId().equals(attrEntityVo.getAttrId())) {
+                        List<CiEntityVo> invokeCiEntityList = ciEntityMapper.getCiEntityBaseInfoByAttrIdAndFromCiEntityId(ciEntityVo.getId(), attrEntityVo.getAttrId());
+                        if (CollectionUtils.isNotEmpty(invokeCiEntityList)) {
+                            ciEntityVo.setName(invokeCiEntityList.stream().map(CiEntityVo::getName).collect(Collectors.joining(",")));
+                        } else {
+                            ciEntityVo.setName("");
+                        }
+                        updateCiEntityName(ciEntityVo);
+                    }
+                } else {
+                    //更新配置项名称
+                    if (ciVo.getNameAttrId().equals(attrEntityVo.getAttrId())) {
+                        List<CiEntityVo> invokeCiEntityList = ciEntityMapper.getCiEntityBaseInfoByAttrIdAndFromCiEntityId(ciEntityVo.getId(), attrEntityVo.getAttrId());
+                        if (CollectionUtils.isNotEmpty(invokeCiEntityList)) {
+                            ciEntityVo.setName(invokeCiEntityList.stream().map(CiEntityVo::getName).collect(Collectors.joining(",")));
+                        } else {
+                            ciEntityVo.setName("");
+                        }
+                        updateCiEntityName(ciEntityVo);
+                    }
                 }
             }
 
@@ -834,6 +866,14 @@ public class CiEntityServiceImpl implements CiEntityService {
                 this.insertCiEntity(ciEntityVo);
             } else if (ciEntityTransactionVo.getAction().equals(TransactionActionType.UPDATE.getValue())) {
                 this.updateCiEntity(ciEntityVo);
+            }
+            //更新配置项名称
+            for (AttrEntityVo attrEntityVo : ciEntityVo.getAttrEntityList()) {
+                if (attrEntityVo.getAttrId().equals(ciVo.getNameAttrId()) && !attrEntityVo.isNeedTargetCi()) {
+                    ciEntityVo.setName(attrEntityVo.getValue());
+                    updateCiEntityName(ciEntityVo);
+                    break;
+                }
             }
             /*
             写入关系信息
