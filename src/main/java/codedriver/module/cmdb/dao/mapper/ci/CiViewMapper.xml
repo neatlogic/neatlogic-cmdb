@@ -6,7 +6,8 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.ci.CiViewMapper">
-
+    <cache-ref namespace="codedriver.module.cmdb.dao.mapper.ci.CiMapper"/>
+    <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
     <select id="getCiViewByCiId" parameterType="codedriver.framework.cmdb.dto.ci.CiViewVo"
             resultType="codedriver.framework.cmdb.dto.ci.CiViewVo">
         SELECT * FROM (
@@ -16,12 +17,12 @@
         attr.`label` AS itemLabel,
         'attr' AS type,
         show_type AS showType,
-        v.sort
+        IFNULL(v.sort, 999999) as sort
         FROM
         cmdb_ci ci JOIN
         cmdb_attr attr ON ci.id = attr.ci_id
         LEFT JOIN cmdb_view v
-        ON attr.`id` = v.`item_id` AND attr.`ci_id` = v.`ci_id`
+        ON attr.`id` = v.`item_id` AND v.`ci_id` = #{ciId}
         AND v.`type` = 'attr'
         WHERE
         ci.lft &lt;= ( SELECT lft FROM `cmdb_ci` WHERE id = #{ciId} )
@@ -33,13 +34,14 @@
         rel.to_label AS itemLabel,<!-- 当前模型作为上游时需要显示下游目标名称 -->
         'relfrom' AS type,
         show_type AS showType,
-        v.sort
+        IFNULL(v.sort, 999999) as sort
         FROM
         cmdb_rel rel
         JOIN cmdb_ci ci ON rel.from_ci_id = ci.id
         LEFT JOIN cmdb_view v
         ON rel.id = v.`item_id`
         AND v.`type` = 'relfrom'
+        AND v.ci_id = #{ciId}
         WHERE ci.lft &lt;= ( SELECT lft FROM `cmdb_ci` WHERE id = #{ciId} )
         AND ci.rht &gt;= ( SELECT rht FROM `cmdb_ci` WHERE id = #{ciId} )
         UNION
@@ -49,13 +51,14 @@
         rel.from_label AS itemLabel,<!-- 当前模型作为下游时需要显示上游目标名称 -->
         'relto' AS type,
         v.show_type AS showType,
-        v.sort
+        IFNULL(v.sort, 999999) as sort
         FROM
         cmdb_rel rel
         JOIN cmdb_ci ci ON rel.to_ci_id = ci.id
         LEFT JOIN cmdb_view v
         ON rel.id = v.`item_id`
         AND v.`type` = 'relto'
+        AND v.ci_id = #{ciId}
         WHERE ci.lft &lt;= ( SELECT lft FROM `cmdb_ci` WHERE id = #{ciId} )
         AND ci.rht &gt;= ( SELECT rht FROM `cmdb_ci` WHERE id = #{ciId} )
         ) t

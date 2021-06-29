@@ -13,7 +13,8 @@
                ci_id             AS ciId,
                cientity_id       AS ciEntityId,
                attr_id           AS attrId,
-               cientity_id_start AS ciEntityIdStart
+               cientity_id_start AS ciEntityIdStart,
+               type              AS `type`
         FROM cmdb_attrexpression_rebuild_audit
         WHERE server_id = #{value}
     </select>
@@ -33,12 +34,14 @@
          cientity_id,
          attr_id,
          cientity_id_start,
+         type,
          server_id)
         VALUES (#{id},
                 #{ciId},
                 #{ciEntityId},
                 #{attrIds},
                 #{ciEntityIdStart},
+                #{type},
                 #{serverId})
     </insert>
 

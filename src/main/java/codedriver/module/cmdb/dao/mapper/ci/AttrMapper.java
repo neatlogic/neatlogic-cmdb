@@ -14,6 +14,8 @@ import java.util.List;
 public interface AttrMapper {
     List<AttrExpressionRelVo> getExpressionAttrByValueAttrIdList(@Param("valueCiId") Long valueCiId, @Param("valueAttrIdList") List<Long> valueAttrIdList);
 
+    List<Long> getExpressionCiIdByValueCiId(Long valueCiId);
+
     List<AttrVo> getExpressionAttrByValueAttrId(Long valueAttrId);
 
     List<String> getAttrGroupByCiId(Long ciId);

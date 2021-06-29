@@ -11,7 +11,6 @@ import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.RelVo;
 import codedriver.framework.cmdb.enums.RelDirectionType;
 import codedriver.framework.cmdb.enums.SearchExpression;
-import codedriver.framework.transaction.core.AfterTransactionJob;
 import codedriver.module.cmdb.attrexpression.AttrExpressionRebuildManager;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
@@ -122,8 +121,7 @@ public class ExpressionValueHandler implements IAttrValueHandler {
             RebuildAuditVo rebuildAuditVo = new RebuildAuditVo();
             rebuildAuditVo.setCiId(attrVo.getCiId());
             rebuildAuditVo.setAttrIds(attrVo.getId().toString());
-            AfterTransactionJob<RebuildAuditVo> job = new AfterTransactionJob<>();
-            job.execute(rebuildAuditVo, AttrExpressionRebuildManager::rebuild);
+            AttrExpressionRebuildManager.rebuild(rebuildAuditVo);
         }
     }
 

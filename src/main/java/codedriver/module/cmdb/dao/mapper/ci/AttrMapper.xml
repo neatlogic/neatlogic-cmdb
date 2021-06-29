@@ -8,6 +8,14 @@
 <mapper namespace="codedriver.module.cmdb.dao.mapper.ci.AttrMapper">
     <cache-ref namespace="codedriver.module.cmdb.dao.mapper.ci.CiMapper"/>
     <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
+
+    <select id="getExpressionCiIdByValueCiId" parameterType="java.lang.Long"
+            resultType="java.lang.Long">
+        SELECT DISTINCT expression_ci_id
+        FROM cmdb_attrexpression_rel
+        WHERE value_ci_id = #{value}
+    </select>
+
     <select id="getExpressionAttrByValueAttrId" parameterType="java.lang.Long"
             resultType="codedriver.framework.cmdb.dto.ci.AttrVo">
         SELECT a.`id`,
@@ -119,7 +127,7 @@
         attr.`group_name` AS groupName,
         attr.`is_private` AS isPrivate,
         if(ci.id = #{value}, 0, 1) AS `isExtended`,
-        IFNULL(cview.sort, 99999) sort
+        IFNULL(cview.sort, 999999) AS `sort`
         FROM
         `cmdb_ci` ci
         JOIN `cmdb_attr` attr ON ci.id = attr.ci_id

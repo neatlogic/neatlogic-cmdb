@@ -800,7 +800,11 @@ public class CiEntityServiceImpl implements CiEntityService {
                     }
                 }
             });
-            this.deleteCiEntity(new CiEntityVo(ciEntityTransactionVo));
+            CiEntityVo deleteCiEntityVo = new CiEntityVo(ciEntityTransactionVo);
+            //删除之前找到所有关联配置项，可能需要更新他们的表达式属性
+            this.updateInvokedExpressionAttr(deleteCiEntityVo);
+
+            this.deleteCiEntity(deleteCiEntityVo);
             transactionVo.setStatus(TransactionStatus.COMMITED.getValue());
             transactionMapper.updateTransactionStatus(transactionVo);
             return null;
@@ -892,11 +896,11 @@ public class CiEntityServiceImpl implements CiEntityService {
             }
 
             //重新计算所有表达式属性的值
-            updateExpressionAttr(ciEntityVo);
+            AttrExpressionRebuildManager.rebuild(new RebuildAuditVo(ciEntityVo, RebuildAuditVo.Type.INVOKE));
 
             //重新计算引用了当前配置项的所有表达式属性的值
             if (ciEntityTransactionVo.getAction().equals(TransactionActionType.UPDATE.getValue())) {
-                updateInvokeExpressionAttr(ciEntityVo);
+                AttrExpressionRebuildManager.rebuild(new RebuildAuditVo(ciEntityVo, RebuildAuditVo.Type.INVOKED));
             }
 
             // 解除配置项修改锁定
@@ -910,20 +914,34 @@ public class CiEntityServiceImpl implements CiEntityService {
     }
 
     /**
-     * 更新所有关联配置项的表达式属性
-     * 1、根据修改属性找出所有关联的属性列表。
-     * 2、找到当前配置项的上下游所有配置项，如果这些配置项有第一步找到属性值，则更新
+     * 更新所有关联了当前配置配置项的表达式属性，一般用在删除
+     * 1、先判断当前配置项模型是否有被表达式属性引用。
+     * 2、如果有则查出所有关联配置项放入重建记录里。
      *
      * @param ciEntityVo 配置项信息
      */
-    private void updateInvokeExpressionAttr(CiEntityVo ciEntityVo) {
-        RebuildAuditVo rebuildAuditVo = new RebuildAuditVo(ciEntityVo);
-        rebuildAuditVo.setCiEntityVo(ciEntityVo);
-        attrExpressionRebuildAuditMapper.insertAttrExpressionRebuildAudit(rebuildAuditVo);
-        //确保事务提交后再放入队列
-        AfterTransactionJob<RebuildAuditVo> job = new AfterTransactionJob<>();
-        job.execute(rebuildAuditVo, AttrExpressionRebuildManager::rebuild);
+    private void updateInvokedExpressionAttr(CiEntityVo ciEntityVo) {
+        List<Long> ciIdList = attrMapper.getExpressionCiIdByValueCiId(ciEntityVo.getCiId());
+        if (CollectionUtils.isNotEmpty(ciIdList)) {
+            List<RelEntityVo> relEntityList = relEntityMapper.getRelEntityByCiEntityId(ciEntityVo.getId());
+            //排除掉没有表达式属性的模型
+            relEntityList.removeIf(rel -> !ciIdList.contains(rel.getFromCiId()) && !ciIdList.contains(rel.getToCiId()));
+            //排除掉自我引用
+            relEntityList.removeIf(rel -> rel.getFromCiEntityId().equals(ciEntityVo.getId()) && rel.getToCiEntityId().equals(ciEntityVo.getId()));
+            if (CollectionUtils.isNotEmpty(relEntityList)) {
+                List<RebuildAuditVo> auditList = new ArrayList<>();
+                for (RelEntityVo relEntityVo : relEntityList) {
+                    RebuildAuditVo rebuildAuditVo = new RebuildAuditVo();
+                    rebuildAuditVo.setCiId(relEntityVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? relEntityVo.getToCiId() : relEntityVo.getFromCiId());
+                    rebuildAuditVo.setCiEntityId(relEntityVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? relEntityVo.getToCiEntityId() : relEntityVo.getFromCiEntityId());
+                    rebuildAuditVo.setType(RebuildAuditVo.Type.INVOKE.getValue());
+                    auditList.add(rebuildAuditVo);
+                }
+                AttrExpressionRebuildManager.rebuild(auditList);
+            }
+        }
     }
+
 
     /**
      * 更新所有表达式属性
@@ -934,63 +952,7 @@ public class CiEntityServiceImpl implements CiEntityService {
         AfterTransactionJob<CiEntityVo> job = new AfterTransactionJob<>();
         job.execute(ciEntityVo, pCiEntityVo -> {
             Thread.currentThread().setName("UPDATE-CIENTITY-ATTR-EXPRESSION-" + pCiEntityVo.getId());
-            List<AttrVo> expressionList = attrMapper.getAttrByCiId(ciEntityVo.getCiId());
-            List<AttrVo> expressionAttrList = expressionList.stream().filter(attr -> attr.getType().equals(EXPRESSION_TYPE)).collect(Collectors.toList());
-            if (CollectionUtils.isNotEmpty(expressionAttrList)) {
-                CiEntityVo newCiEntityVo = this.getCiEntityById(pCiEntityVo.getCiId(), pCiEntityVo.getId());
-                CiEntityVo saveCiEntityVo = new CiEntityVo();
-                saveCiEntityVo.setCiId(newCiEntityVo.getCiId());
-                saveCiEntityVo.setId(newCiEntityVo.getId());
-                for (AttrVo attrVo : expressionAttrList) {
-                    StringBuilder expressionValue = new StringBuilder();
-                    if (attrVo.getConfig().containsKey("expression") && attrVo.getConfig().get("expression") instanceof JSONArray) {
-                        for (int i = 0; i < attrVo.getConfig().getJSONArray("expression").size(); i++) {
-                            String expression = attrVo.getConfig().getJSONArray("expression").getString(i);
-                            if (expression.startsWith("{") && expression.endsWith("}")) {
-                                expression = expression.substring(1, expression.length() - 1);
-                                if (expression.contains(".")) {
-                                    //关系属性
-                                    Long relId = Long.parseLong(expression.split("\\.")[0]);
-                                    Long attrId = Long.parseLong(expression.split("\\.")[1]);
-                                    List<RelEntityVo> relEntityList = newCiEntityVo.getRelEntityByRelId(relId);
-                                    if (CollectionUtils.isNotEmpty(relEntityList)) {
-                                        RelEntityVo rel = relEntityList.get(0);
-                                        CiEntityVo relCiEntityVo;
-                                        if (rel.getDirection().equals(RelDirectionType.FROM.getValue())) {
-                                            relCiEntityVo = this.getCiEntityById(rel.getToCiId(), rel.getToCiEntityId());
-                                        } else {
-                                            relCiEntityVo = this.getCiEntityById(rel.getFromCiId(), rel.getFromCiEntityId());
-                                        }
-                                        if (relCiEntityVo != null) {
-                                            AttrEntityVo attrEntityVo = relCiEntityVo.getAttrEntityByAttrId(attrId);
-                                            if (attrEntityVo != null) {
-                                                expressionValue.append(attrEntityVo.getActualValueList().stream().map(Object::toString).collect(Collectors.joining(",")));
-                                            }
-                                        }
-                                    }
-                                } else {
-                                    //自己的属性
-                                    Long attrId = Long.parseLong(expression);
-                                    AttrEntityVo attrEntityVo = newCiEntityVo.getAttrEntityByAttrId(attrId);
-                                    if (attrEntityVo != null) {
-                                        expressionValue.append(attrEntityVo.getActualValueList().stream().map(Object::toString).collect(Collectors.joining(",")));
-                                    }
-                                }
-                            } else {
-                                expressionValue.append(expression);
-                            }
-                        }
-                        JSONObject attrEntityObj = new JSONObject();
-                        attrEntityObj.put("ciId", attrVo.getCiId());
-                        attrEntityObj.put("type", attrVo.getType());
-                        attrEntityObj.put("valueList", new JSONArray() {{
-                            this.add(expressionValue);
-                        }});
-                        saveCiEntityVo.addAttrEntityData(attrVo.getId(), attrEntityObj);
-                    }
-                }
-                this.updateCiEntity(saveCiEntityVo);
-            }
+
         });
     }
 
