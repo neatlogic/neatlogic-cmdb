@@ -323,7 +323,7 @@ public class AttrExpressionRebuildManager {
                         }});
                         saveCiEntityVo.addAttrEntityData(attrVo.getId(), attrEntityObj);
                         //更新配置项名称
-                        if (ciVo.getNameAttrId().equals(attrVo.getId())) {
+                        if (ciVo.getNameAttrId() != null && ciVo.getNameAttrId().equals(attrVo.getId())) {
                             saveCiEntityVo.setName(expressionValue.toString());
                             ciEntityService.updateCiEntityName(saveCiEntityVo);
                         }

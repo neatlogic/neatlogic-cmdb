@@ -408,25 +408,27 @@ public class CiEntityServiceImpl implements CiEntityService {
 
     @Override
     public void updateCiEntityNameForCi(CiVo ciVo) {
-        CiEntityVo pCiEntityVo = new CiEntityVo();
-        pCiEntityVo.setCiId(ciVo.getId());
-        pCiEntityVo.setPageSize(100);
-        pCiEntityVo.setCurrentPage(1);
-        List<CiEntityVo> ciEntityList = searchCiEntity(pCiEntityVo);
-        while (CollectionUtils.isNotEmpty(ciEntityList)) {
-            for (CiEntityVo ciEntityVo : ciEntityList) {
-                String ciEntityName = "";
-                for (AttrEntityVo attrEntityVo : ciEntityVo.getAttrEntityList()) {
-                    if (attrEntityVo.getAttrId().equals(ciVo.getNameAttrId())) {
-                        ciEntityName = attrEntityVo.getActualValueList().stream().map(Object::toString).collect(Collectors.joining(","));
-                        break;
+        if (ciVo.getNameAttrId() != null) {
+            CiEntityVo pCiEntityVo = new CiEntityVo();
+            pCiEntityVo.setCiId(ciVo.getId());
+            pCiEntityVo.setPageSize(100);
+            pCiEntityVo.setCurrentPage(1);
+            List<CiEntityVo> ciEntityList = searchCiEntity(pCiEntityVo);
+            while (CollectionUtils.isNotEmpty(ciEntityList)) {
+                for (CiEntityVo ciEntityVo : ciEntityList) {
+                    String ciEntityName = "";
+                    for (AttrEntityVo attrEntityVo : ciEntityVo.getAttrEntityList()) {
+                        if (attrEntityVo.getAttrId().equals(ciVo.getNameAttrId())) {
+                            ciEntityName = attrEntityVo.getActualValueList().stream().map(Object::toString).collect(Collectors.joining(","));
+                            break;
+                        }
                     }
+                    ciEntityVo.setName(ciEntityName);
+                    ciEntityMapper.updateCiEntityBaseInfo(ciEntityVo);
                 }
-                ciEntityVo.setName(ciEntityName);
-                ciEntityMapper.updateCiEntityBaseInfo(ciEntityVo);
+                pCiEntityVo.setCurrentPage(pCiEntityVo.getCurrentPage() + 1);
+                ciEntityList = searchCiEntity(pCiEntityVo);
             }
-            pCiEntityVo.setCurrentPage(pCiEntityVo.getCurrentPage() + 1);
-            ciEntityList = searchCiEntity(pCiEntityVo);
         }
     }
 
@@ -847,7 +849,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                     }
                 } else {
                     //更新配置项名称
-                    if (ciVo.getNameAttrId().equals(attrEntityVo.getAttrId())) {
+                    if (ciVo.getNameAttrId() != null && ciVo.getNameAttrId().equals(attrEntityVo.getAttrId())) {
                         List<CiEntityVo> invokeCiEntityList = ciEntityMapper.getCiEntityBaseInfoByAttrIdAndFromCiEntityId(ciEntityVo.getId(), attrEntityVo.getAttrId());
                         if (CollectionUtils.isNotEmpty(invokeCiEntityList)) {
                             ciEntityVo.setName(invokeCiEntityList.stream().map(CiEntityVo::getName).collect(Collectors.joining(",")));
@@ -868,11 +870,13 @@ public class CiEntityServiceImpl implements CiEntityService {
                 this.updateCiEntity(ciEntityVo);
             }
             //更新配置项名称
-            for (AttrEntityVo attrEntityVo : ciEntityVo.getAttrEntityList()) {
-                if (attrEntityVo.getAttrId().equals(ciVo.getNameAttrId()) && !attrEntityVo.isNeedTargetCi()) {
-                    ciEntityVo.setName(attrEntityVo.getValue());
-                    updateCiEntityName(ciEntityVo);
-                    break;
+            if (ciVo.getNameAttrId() != null) {
+                for (AttrEntityVo attrEntityVo : ciEntityVo.getAttrEntityList()) {
+                    if (attrEntityVo.getAttrId().equals(ciVo.getNameAttrId()) && !attrEntityVo.isNeedTargetCi()) {
+                        ciEntityVo.setName(attrEntityVo.getValue());
+                        updateCiEntityName(ciEntityVo);
+                        break;
+                    }
                 }
             }
             /*
