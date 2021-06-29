@@ -451,7 +451,13 @@
         SELECT `id`, `name` FROM `cmdb_tag`
         <where>
             <if test="keyword != null and keyword != ''">
-                `name` like concat('%', #{keyword}, '%')
+                and `name` like concat('%', #{keyword}, '%')
+            </if>
+            <if test="defaultValue != null and defaultValue.size() > 0">
+                and `id` in
+                <foreach collection="defaultValue" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
         </where>
     </select>

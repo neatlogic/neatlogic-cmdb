@@ -25,6 +25,7 @@ import java.util.List;
 
 /**
  * 查询资源中心标签列表（下拉列表专用）接口
+ *
  * @author linbq
  * @since 2021/5/30 14:42
  **/
@@ -52,7 +53,8 @@ public class TagListForSelectApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "keyword", type = ApiParamType.STRING, desc = "模糊搜索")
+            @Param(name = "keyword", type = ApiParamType.STRING, desc = "模糊搜索"),
+            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "用于回显的标签ID列表"),
     })
     @Output({
             @Param(explode = BasePageVo.class),
