@@ -334,8 +334,8 @@
         </foreach>
     </select>
 
-    <select id="getTagNameListByResourceId" parameterType="java.lang.Long" resultType="java.lang.String">
-        SELECT `name`
+    <select id="getTagListByResourceId" parameterType="java.lang.Long" resultType="codedriver.framework.cmdb.dto.tag.TagVo">
+        SELECT a.`id`, a.`name`
         FROM `cmdb_tag` a
         JOIN `cmdb_resourcecenter_resource_tag` b ON b.`tag_id` = a.`id` AND b.`resource_id` = #{value}
     </select>

@@ -33,7 +33,7 @@ public interface ResourceCenterMapper {
 
     List<Long> checkResourceIdListIsExists(@Param("idList") List<Long> idList, @Param("schemaName") String schemaName);
 
-    List<String> getTagNameListByResourceId(Long resourceId);
+    List<TagVo> getTagListByResourceId(Long resourceId);
 
     int getAccountCount(AccountVo searchVo);
 
