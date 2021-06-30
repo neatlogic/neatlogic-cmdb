@@ -52,6 +52,11 @@ public class FileValueHandler implements IAttrValueHandler {
     }
 
     @Override
+    public boolean isCanImport() {
+        return false;
+    }
+
+    @Override
     public boolean isSimple() {
         return false;
     }

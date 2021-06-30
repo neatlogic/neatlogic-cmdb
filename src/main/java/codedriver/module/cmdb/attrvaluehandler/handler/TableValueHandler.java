@@ -53,6 +53,11 @@ public class TableValueHandler implements IAttrValueHandler {
     }
 
     @Override
+    public boolean isCanImport() {
+        return false;
+    }
+
+    @Override
     public boolean isSimple() {
         return false;
     }

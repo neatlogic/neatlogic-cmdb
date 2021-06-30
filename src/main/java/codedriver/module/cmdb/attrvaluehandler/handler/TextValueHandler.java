@@ -39,6 +39,11 @@ public class TextValueHandler implements IAttrValueHandler {
     }
 
     @Override
+    public boolean isCanImport() {
+        return true;
+    }
+
+    @Override
     public boolean isSimple() {
         return true;
     }

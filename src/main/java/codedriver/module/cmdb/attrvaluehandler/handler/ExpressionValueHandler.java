@@ -58,6 +58,11 @@ public class ExpressionValueHandler implements IAttrValueHandler {
     }
 
     @Override
+    public boolean isCanImport() {
+        return false;
+    }
+
+    @Override
     public boolean isSimple() {
         return true;
     }

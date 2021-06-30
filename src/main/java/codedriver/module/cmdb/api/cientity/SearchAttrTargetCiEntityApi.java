@@ -7,9 +7,7 @@ package codedriver.module.cmdb.api.cientity;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
-import codedriver.framework.cmdb.dto.cientity.AttrFilterVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
-import codedriver.framework.cmdb.enums.SearchExpression;
 import codedriver.framework.cmdb.exception.attr.AttrNotFoundException;
 import codedriver.framework.cmdb.exception.attr.AttrTargetCiIdNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -25,7 +23,6 @@ import codedriver.module.cmdb.service.cientity.CiEntityService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -83,10 +80,6 @@ public class SearchAttrTargetCiEntityApi extends PrivateApiComponentBase {
             throw new AttrTargetCiIdNotFoundException(attrVo.getLabel());
         }
 
-        Long textKey = null;
-        if (MapUtils.isNotEmpty(attrVo.getConfig())) {
-            textKey = attrVo.getConfig().getLong("textKey");
-        }
 
         CiEntityVo ciEntityVo = new CiEntityVo();
         ciEntityVo.setCiId(attrVo.getTargetCiId());
@@ -104,28 +97,14 @@ public class SearchAttrTargetCiEntityApi extends PrivateApiComponentBase {
             }
         }
         if (StringUtils.isNotBlank(keyword)) {
-            if (textKey != null) {
-                AttrFilterVo attrFilterVo = new AttrFilterVo();
-                attrFilterVo.setAttrId(textKey);
-                attrFilterVo.setValueList(new ArrayList<String>() {{
-                    this.add(keyword);
-                }});
-                attrFilterVo.setExpression(SearchExpression.LI.getExpression());
-                ciEntityVo.addAttrFilter(attrFilterVo);
-            } else {
-                ciEntityVo.setKeyword(keyword);
-            }
+            ciEntityVo.setName(keyword);
         }
         List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
         JSONArray jsonList = new JSONArray();
         for (CiEntityVo ciEntity : ciEntityList) {
             JSONObject obj = new JSONObject();
             obj.put("id", ciEntity.getId());
-            if (textKey != null) {
-                obj.put("name", ciEntity.getAttrEntityValueByAttrId(textKey));
-            } else {
-                obj.put("name", StringUtils.isNotBlank(ciEntity.getName()) ? ciEntity.getName() : "-");
-            }
+            obj.put("name", StringUtils.isNotBlank(ciEntity.getName()) ? ciEntity.getName() : "-");
             jsonList.add(obj);
         }
         return jsonList;

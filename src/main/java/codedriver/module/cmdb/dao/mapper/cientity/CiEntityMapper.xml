@@ -266,6 +266,9 @@
 
     <sql id="ciEntityConditionSql">
         <where>
+            <if test="name != null and name != ''">
+                AND `ci_base`.`name` LIKE CONCAT('%',#{name},'%')
+            </if>
             <if test="keyword != null and keyword != ''">
                 AND (`ci_base`.`name` LIKE CONCAT('%',#{keyword},'%')
                 <foreach collection="attrList" item="attr">

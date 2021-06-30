@@ -39,6 +39,11 @@ public class DateValueHandler implements IAttrValueHandler {
     }
 
     @Override
+    public boolean isCanImport() {
+        return true;
+    }
+
+    @Override
     public boolean isSimple() {
         return true;
     }

@@ -154,15 +154,15 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                             Node.Builder nb =
                                     new Node.Builder("CiEntity_" + ciEntityVo.getCiId() + "_" + ciEntityVo.getId());// 必须按照这个格式写，前端会通过下划线来提取ciid和cientityid
                             if (StringUtils.isNotBlank(ciEntityVo.getName())) {
-                                nb.withTooltip(ciEntityVo.getName());
-                                nb.withLabel(ciEntityVo.getName());
+                                nb.withTooltip(ciEntityVo.getName())
+                                        .withLabel(ciEntityVo.getName());
                             } else {
                                 nb.withLabel("-");
                             }
                             nb.withImage(ciEntityVo.getCiIcon());
                             if (ciEntityId.equals(ciEntityVo.getId())) {
-                                nb.withFontColor("red");
-                                nb.withClass("cinode corenode");
+                                nb.withFontColor("red")
+                                        .withClass("cinode corenode");
                             } else {
                                 nb.withClass("cinode normalnode");
                             }

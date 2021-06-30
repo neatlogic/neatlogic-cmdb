@@ -52,6 +52,11 @@ public class SelectValueHandler implements IAttrValueHandler {
     }
 
     @Override
+    public boolean isCanImport() {
+        return true;
+    }
+
+    @Override
     public boolean isSimple() {
         return true;
     }
@@ -73,6 +78,23 @@ public class SelectValueHandler implements IAttrValueHandler {
 
     @Override
     public JSONArray getActualValueList(AttrVo attrVo, JSONArray valueList) {
+        JSONArray actualValueList = new JSONArray();
+        Map<Long, CiEntityVo> ciEntityCachedMap = new HashMap<>();
+        for (int i = 0; i < valueList.size(); i++) {
+            Long value = valueList.getLong(i);
+            CiEntityVo ciEntityVo = ciEntityCachedMap.get(value);
+            if (ciEntityVo == null) {
+                ciEntityVo = ciEntityService.getCiEntityBaseInfoById(value);
+            }
+            if (ciEntityVo != null) {
+                ciEntityCachedMap.put(value, ciEntityVo);
+                actualValueList.add(ciEntityVo.getName());
+            }
+        }
+        return actualValueList;
+    }
+
+    public JSONArray getActualValueList_Bak(AttrVo attrVo, JSONArray valueList) {
         JSONObject config = attrVo.getConfig();
         JSONArray actualValueList = new JSONArray();
         Map<Long, CiEntityVo> ciEntityCachedMap = new HashMap<>();

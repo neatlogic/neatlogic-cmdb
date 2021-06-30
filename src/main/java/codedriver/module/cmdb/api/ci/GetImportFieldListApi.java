@@ -16,6 +16,7 @@ import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.service.ci.CiService;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 @Transactional // 需要启用事务，以便查询权限时激活一级缓存
-public class GetCiDetailApi extends PrivateApiComponentBase {
+public class GetImportFieldListApi extends PrivateApiComponentBase {
 
     @Autowired
     private CiService ciService;
@@ -35,12 +36,12 @@ public class GetCiDetailApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "/cmdb/ci/detail/get";
+        return "/cmdb/ci/import/listfield";
     }
 
     @Override
     public String getName() {
-        return "获取模型属性与关系信息";
+        return "获取可导入的属性和关系列表";
     }
 
     @Override
@@ -50,13 +51,17 @@ public class GetCiDetailApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "模型id")})
     @Output({@Param(explode = CiVo.class)})
-    @Description(desc = "获取模型属性与关系信息")
+    @Description(desc = "获取可导入的属性和关系列表接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("id");
-        if(ciMapper.getCiById(ciId) == null){
+        CiVo ciVo = ciService.getCiById(ciId);
+        if (ciVo == null) {
             throw new CiNotFoundException(ciId);
         }
-        return ciService.getCiById(ciId);
+        if (CollectionUtils.isNotEmpty(ciVo.getAttrList())) {
+            ciVo.getAttrList().removeIf(attrVo -> !attrVo.getCanImport());
+        }
+        return ciVo;
     }
 }

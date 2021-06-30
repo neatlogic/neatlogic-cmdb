@@ -41,8 +41,9 @@
 
     <sql id="searchCustomViewDataSql">
         SELECT
-        id,
+        id
         <if test="fieldList != null and fieldList.size() > 0">
+            ,
             <foreach collection="fieldList" item="field" separator=",">
                 GROUP_CONCAT(distinct ${field.name}) AS `${field.name}`,
                 MD5(GROUP_CONCAT(distinct ${field.name})) AS `${field.name}_hash`
