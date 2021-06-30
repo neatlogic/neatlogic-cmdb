@@ -838,7 +838,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                         ciEntityMapper.insertAttrEntity(attrEntityVo);
                     }
                     //更新配置项名称
-                    if (ciVo.getNameAttrId().equals(attrEntityVo.getAttrId())) {
+                    if (Objects.equals(ciVo.getNameAttrId(), attrEntityVo.getAttrId())) {
                         List<CiEntityVo> invokeCiEntityList = ciEntityMapper.getCiEntityBaseInfoByAttrIdAndFromCiEntityId(ciEntityVo.getId(), attrEntityVo.getAttrId());
                         if (CollectionUtils.isNotEmpty(invokeCiEntityList)) {
                             ciEntityVo.setName(invokeCiEntityList.stream().map(CiEntityVo::getName).collect(Collectors.joining(",")));
