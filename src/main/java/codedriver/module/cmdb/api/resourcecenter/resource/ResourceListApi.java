@@ -10,6 +10,7 @@ import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
+import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
@@ -122,8 +123,11 @@ public class ResourceListApi extends PrivateApiComponentBase {
                 if (CollectionUtils.isNotEmpty(idList)) {
                     resourceVoList = resourceCenterMapper.getResourceListByIdList(idList, TenantContext.get().getDataDbName());
                     for (ResourceVo resourceVo : resourceVoList) {
-                        List<String> tagNameList = resourceCenterMapper.getTagNameListByResourceId(resourceVo.getId());
-                        resourceVo.setTagList(tagNameList);
+                        List<TagVo> tagList = resourceCenterMapper.getTagListByResourceId(resourceVo.getId());
+                        if (CollectionUtils.isNotEmpty(tagList)) {
+                            resourceVo.setTagIdList(tagList.stream().map(TagVo::getId).collect(Collectors.toList()));
+                            resourceVo.setTagList(tagList.stream().map(TagVo::getName).collect(Collectors.toList()));
+                        }
                         resourceVo.setFcuVo(new UserVo(resourceVo.getFcu()));
                         resourceVo.setLcuVo(new UserVo(resourceVo.getLcu()));
                     }
