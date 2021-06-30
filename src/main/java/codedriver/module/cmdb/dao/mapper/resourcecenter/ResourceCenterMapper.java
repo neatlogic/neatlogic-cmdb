@@ -101,6 +101,8 @@ public interface ResourceCenterMapper {
 
     List<TagVo> getTagListByTagNameList(List<String> tagNameList);
 
+    List<Long> checkTagIdExistsByTagIdList(List<Long> tagIdList);
+
     int updateAccount(AccountVo vo);
 
     int updateTag(TagVo vo);
