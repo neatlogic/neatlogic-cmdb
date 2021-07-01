@@ -8,7 +8,7 @@ package codedriver.module.cmdb.api.resourcecenter.resource;
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceTagVo;
-import codedriver.framework.cmdb.dto.tag.TagVo;
+import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterTagNotFoundException;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.exception.type.ParamNotExistsException;
@@ -29,7 +29,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author linbq
@@ -60,7 +59,7 @@ public class ResourceTagBatchAddApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "resourceIdList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "资源id列表"),
-            @Param(name = "tagList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "标签列表")
+            @Param(name = "tagIdList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "标签ID列表")
     })
     @Description(desc = "批量添加资源标签")
     @Override
@@ -69,9 +68,9 @@ public class ResourceTagBatchAddApi extends PrivateApiComponentBase {
         if (CollectionUtils.isEmpty(resourceIdArray)) {
             throw new ParamNotExistsException("resourceIdList");
         }
-        JSONArray tagArray = paramObj.getJSONArray("tagList");
+        JSONArray tagArray = paramObj.getJSONArray("tagIdList");
         if (CollectionUtils.isEmpty(tagArray)) {
-            throw new ParamNotExistsException("tagList");
+            throw new ParamNotExistsException("tagIdList");
         }
 
         String schemaName = TenantContext.get().getDataDbName();
@@ -89,17 +88,11 @@ public class ResourceTagBatchAddApi extends PrivateApiComponentBase {
                 throw new ResourceNotFoundException(stringBuilder.toString());
             }
         }
-        List<String> tagList = tagArray.toJavaList(String.class);
-        List<TagVo> existTagList = resourceCenterMapper.getTagListByTagNameList(tagList);
-        List<Long> tagIdList = existTagList.stream().map(TagVo::getId).collect(Collectors.toList());
-        if (tagList.size() > existTagList.size()) {
-            List<String> existTagNameList = existTagList.stream().map(TagVo::getName).collect(Collectors.toList());
-            tagList.removeAll(existTagNameList);
-            for (String tagName : tagList) {
-                TagVo tagVo = new TagVo(tagName);
-                resourceCenterMapper.insertTag(tagVo);
-                tagIdList.add(tagVo.getId());
-            }
+        List<Long> tagList = tagArray.toJavaList(Long.class);
+        List<Long> tagIdList = resourceCenterMapper.checkTagIdExistsByTagIdList(tagList);
+        tagList.removeAll(tagIdList);
+        if (CollectionUtils.isNotEmpty(tagList)) {
+            throw new ResourceCenterTagNotFoundException(tagList);
         }
 
         List<ResourceTagVo> resourceTagVoList = new ArrayList<>();
