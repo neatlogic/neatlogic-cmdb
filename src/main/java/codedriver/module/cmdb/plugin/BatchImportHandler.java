@@ -379,7 +379,7 @@ public class BatchImportHandler {
                     }
                 }
             } catch (Exception e) {
-                importAuditVo.setError((("".equals(importAuditVo.getError()) || importAuditVo.getError() == null) ? ""
+                importAuditVo.setError((StringUtils.isBlank(importAuditVo.getError()) ? ""
                         : importAuditVo.getError() + "<br>") + e.getMessage());
                 logger.error(e.getMessage(), e);
             } finally {

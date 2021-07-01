@@ -33,8 +33,8 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
@@ -157,9 +157,9 @@ public class AttrExpressionRebuildManager {
         @Override
         protected void execute() {
             //有配置项id的说明需要更新关联配置项的属性
-            if (rebuildAuditVo.getCiId() != null && rebuildAuditVo.getCiEntityId() != null && rebuildAuditVo.getType().equals(RebuildAuditVo.Type.INVOKED.getValue()) && StringUtils.isNotBlank(rebuildAuditVo.getAttrIds())) {
+            if (rebuildAuditVo.getCiId() != null && rebuildAuditVo.getCiEntityId() != null && rebuildAuditVo.getType().equals(RebuildAuditVo.Type.INVOKED.getValue()) && CollectionUtils.isNotEmpty(rebuildAuditVo.getAttrIdList())) {
                 //根据修改的配置项找到会影响的模型属性列表
-                List<AttrExpressionRelVo> expressionAttrList = attrMapper.getExpressionAttrByValueAttrIdList(rebuildAuditVo.getCiId(), Arrays.stream(rebuildAuditVo.getAttrIds().split(",")).map(Long::parseLong).collect(Collectors.toList()));
+                List<AttrExpressionRelVo> expressionAttrList = attrMapper.getExpressionAttrByValueAttrIdList(rebuildAuditVo.getCiId(), rebuildAuditVo.getAttrIdList());
                 if (CollectionUtils.isNotEmpty(expressionAttrList)) {
                     //查找当前配置项所关联的配置项，看是否在受影响模型列表里
                     List<RelEntityVo> relEntityList = relEntityMapper.getRelEntityByCiEntityId(rebuildAuditVo.getCiEntityId());
@@ -191,7 +191,15 @@ public class AttrExpressionRebuildManager {
                     }
                 }
             } else if (rebuildAuditVo.getCiId() != null && rebuildAuditVo.getCiEntityId() != null && rebuildAuditVo.getType().equals(RebuildAuditVo.Type.INVOKE.getValue())) {
-                updateExpressionAttr(new CiEntityVo(rebuildAuditVo.getCiId(), rebuildAuditVo.getCiEntityId()));
+                if (CollectionUtils.isNotEmpty(rebuildAuditVo.getAttrIdList())) {
+                    //如果修改的属性中没有表达式属性，则不做任何修改
+                    List<AttrExpressionRelVo> attrList = attrMapper.getExpressionAttrByValueAttrIdList(rebuildAuditVo.getCiId(), rebuildAuditVo.getAttrIdList());
+                    if (CollectionUtils.isNotEmpty(attrList) && attrList.stream().anyMatch(attr -> attr.getExpressionCiId().equals(rebuildAuditVo.getCiId()))) {
+                        updateExpressionAttr(new CiEntityVo(rebuildAuditVo.getCiId(), rebuildAuditVo.getCiEntityId()));
+                    }
+                } else {
+                    updateExpressionAttr(new CiEntityVo(rebuildAuditVo.getCiId(), rebuildAuditVo.getCiEntityId()));
+                }
             } else if (rebuildAuditVo.getCiId() != null && rebuildAuditVo.getCiEntityId() == null && StringUtils.isNotBlank(rebuildAuditVo.getAttrIds())) {
                 //没有配置项信息的则是因为表达式发生了修改，所以需要更新模型下所有配置项信息
                 CiEntityVo ciEntityVo = new CiEntityVo();
@@ -202,7 +210,7 @@ public class AttrExpressionRebuildManager {
                 List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntityBaseInfo(ciEntityVo);
                 while (CollectionUtils.isNotEmpty(ciEntityList)) {
                     for (CiEntityVo ciEntity : ciEntityList) {
-                        updateExpressionAttr(ciEntity, Arrays.stream(rebuildAuditVo.getAttrIds().split(",")).map(Long::parseLong).collect(Collectors.toList()));
+                        updateExpressionAttr(ciEntity, rebuildAuditVo.getAttrIdList());
                         //更新修改进度
                         rebuildAuditVo.setCiEntityIdStart(ciEntity.getId());
                         attrExpressionRebuildAuditMapper.updateAttrExpressionRebuildAuditCiEntityIdStartById(rebuildAuditVo);
@@ -323,7 +331,7 @@ public class AttrExpressionRebuildManager {
                         }});
                         saveCiEntityVo.addAttrEntityData(attrVo.getId(), attrEntityObj);
                         //更新配置项名称
-                        if (ciVo.getNameAttrId() != null && ciVo.getNameAttrId().equals(attrVo.getId())) {
+                        if (Objects.equals(ciVo.getNameAttrId(), attrVo.getId())) {
                             saveCiEntityVo.setName(expressionValue.toString());
                             ciEntityService.updateCiEntityName(saveCiEntityVo);
                         }

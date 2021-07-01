@@ -65,8 +65,6 @@ public interface CiEntityService {
     @Transactional
     Long saveCiEntity(CiEntityTransactionVo ciEntityTransactionVo, TransactionGroupVo transactionGroupVo);
 
-    void createCiEntityName(CiEntityTransactionVo ciEntityTransactionVo);
-
     void updateCiEntityName(CiEntityVo ciEntityVo);
 
     /**

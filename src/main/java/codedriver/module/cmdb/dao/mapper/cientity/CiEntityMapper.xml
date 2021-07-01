@@ -293,13 +293,13 @@
                             <when test="attrFilter.needTargetCi == true">
                                 AND
                                 <choose>
-                                    <when test="attrFilter.expression == 'like'">
+                                    <when test="attrFilter.expression == 'like' or attrFilter.expression == 'equal'">
                                         `cmdb_attrentity_${attrFilter.attrId}`.to_cientity_id IN
                                         <foreach collection="attrFilter.valueList" item="value" separator="," open="("
                                                  close=")">#{value}
                                         </foreach>
                                     </when>
-                                    <when test="attrFilter.expression == 'notlike'">
+                                    <when test="attrFilter.expression == 'notlike' or attrFilter.expression == 'notequal'">
                                         `cmdb_attrentity_${attrFilter.attrId}`.to_cientity_id NOT IN
                                         <foreach collection="attrFilter.valueList" item="value" separator="," open="("
                                                  close=")">#{value}
@@ -317,10 +317,12 @@
                                 AND
                                 <choose>
                                     <when test="attrFilter.expression == 'equal'">
-                                        ${attrFilter.ciTableName}.`${attrFilter.attrId}` = #{attrFilter.value}
+                                        ${attrFilter.ciTableName}.`${attrFilter.attrId}_hash` =
+                                        #{attrFilter.value,typeHandler=Md5Handler}
                                     </when>
                                     <when test="attrFilter.expression == 'notequal'">
-                                        ${attrFilter.ciTableName}.`${attrFilter.attrId}` != #{attrFilter.value}
+                                        ${attrFilter.ciTableName}.`${attrFilter.attrId}_hash` !=
+                                        #{attrFilter.value,typeHandler=Md5Handler}
                                     </when>
                                     <when test="attrFilter.expression == 'like'">
                                         ${attrFilter.ciTableName}.`${attrFilter.attrId}` LIKE
@@ -483,9 +485,14 @@
 
     <update id="updateCiEntityBaseInfo" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
         UPDATE `cmdb_cientity`
-        SET name = #{name},
-            lcu  = #{lcu},
-            lcd  = NOW(3)
+        SET lcu = #{lcu},
+            lcd = NOW(3)
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateCiEntityName" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
+        UPDATE `cmdb_cientity`
+        SET name = #{name}
         WHERE id = #{id}
     </update>
 

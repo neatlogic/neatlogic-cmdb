@@ -119,6 +119,8 @@ public interface CiEntityMapper {
 
     void updateCiEntityBaseInfo(CiEntityVo ciEntityVo);
 
+    void updateCiEntityName(CiEntityVo ciEntityVo);
+
     void updateCiEntity(CiEntityVo ciEntityVo);
 
     void insertCiEntity(CiEntityVo ciEntityVo);

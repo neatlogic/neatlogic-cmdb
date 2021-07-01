@@ -16,6 +16,7 @@ import codedriver.framework.cmdb.dto.cientity.*;
 import codedriver.framework.cmdb.dto.transaction.*;
 import codedriver.framework.cmdb.enums.*;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
+import codedriver.framework.cmdb.exception.ci.CiUniqueRuleException;
 import codedriver.framework.cmdb.exception.cientity.*;
 import codedriver.framework.cmdb.validator.core.IValidator;
 import codedriver.framework.cmdb.validator.core.ValidatorFactory;
@@ -326,7 +327,7 @@ public class CiEntityServiceImpl implements CiEntityService {
 
         if (hasChange) {
             // 计算新的配置项名称
-            createCiEntityName(ciEntityTransactionVo);
+            // createCiEntityName(ciEntityTransactionVo);
 
             // 保存快照
             createSnapshot(ciEntityTransactionVo);
@@ -349,8 +350,8 @@ public class CiEntityServiceImpl implements CiEntityService {
      *
      * @param ciEntityTransactionVo 事务
      */
-    @Override
-    public void createCiEntityName(CiEntityTransactionVo ciEntityTransactionVo) {
+    @Deprecated
+    private void createCiEntityName(CiEntityTransactionVo ciEntityTransactionVo) {
         CiVo ciVo = ciMapper.getCiById(ciEntityTransactionVo.getCiId());
         CiEntityVo oldCiEntityVo = ciEntityTransactionVo.getOldCiEntityVo();
         boolean hasFound = false;
@@ -403,7 +404,7 @@ public class CiEntityServiceImpl implements CiEntityService {
 
     @Override
     public void updateCiEntityName(CiEntityVo ciEntityVo) {
-        ciEntityMapper.updateCiEntityBaseInfo(ciEntityVo);
+        ciEntityMapper.updateCiEntityName(ciEntityVo);
     }
 
     @Override
@@ -424,7 +425,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                         }
                     }
                     ciEntityVo.setName(ciEntityName);
-                    ciEntityMapper.updateCiEntityBaseInfo(ciEntityVo);
+                    ciEntityMapper.updateCiEntityName(ciEntityVo);
                 }
                 pCiEntityVo.setCurrentPage(pCiEntityVo.getCurrentPage() + 1);
                 ciEntityList = searchCiEntity(pCiEntityVo);
@@ -459,6 +460,9 @@ public class CiEntityServiceImpl implements CiEntityService {
      * 如果是Merge模式，则需要先把新值和旧值合并后再进行校验。
      * 2、如果是普通属性值，只有单值的可能，不管什么模式只需要使用新值进行校验即可。
      * <p>
+     * 检查唯一规则：
+     * 1、如果唯一规则包含引用值，
+     * <p>
      * 记录属性是新增、编辑或删除：
      * 1、如果整个attr_xxxx在snapshot中不存在，代表添加了新属性，如果attr_xxxx的valueList在snapshot中为空，代表属性添加了值。
      * 2、如果snapshot本身已存在attr_xxx和valueList，代表编辑。
@@ -470,6 +474,7 @@ public class CiEntityServiceImpl implements CiEntityService {
     private boolean validateCiEntityTransaction(CiEntityTransactionVo ciEntityTransactionVo) {
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciEntityTransactionVo.getCiId());
         List<RelVo> relList = relMapper.getRelByCiId(ciEntityTransactionVo.getCiId());
+        CiVo ciVo = ciMapper.getCiById(ciEntityTransactionVo.getCiId());
         CiEntityVo oldEntity = ciEntityTransactionVo.getOldCiEntityVo();
         List<AttrEntityVo> oldAttrEntityList = null;
         List<RelEntityVo> oldRelEntityList = null;
@@ -687,6 +692,41 @@ public class CiEntityServiceImpl implements CiEntityService {
             }
         }
 
+        //校验唯一规则
+        if (CollectionUtils.isNotEmpty(ciVo.getUniqueAttrIdList())) {
+            CiEntityVo ciEntityConditionVo = new CiEntityVo();
+            ciEntityConditionVo.setCiId(ciEntityTransactionVo.getCiId());
+            for (Long attrId : ciVo.getUniqueAttrIdList()) {
+                AttrEntityTransactionVo attrEntityTransactionVo = ciEntityTransactionVo.getAttrEntityTransactionByAttrId(attrId);
+                if (attrEntityTransactionVo != null) {
+                    AttrFilterVo filterVo = new AttrFilterVo();
+                    filterVo.setAttrId(attrId);
+                    filterVo.setExpression(SearchExpression.EQ.getExpression());
+                    filterVo.setValueList(attrEntityTransactionVo.getValueList().stream().map(Object::toString).collect(Collectors.toList()));
+                    ciEntityConditionVo.addAttrFilter(filterVo);
+                } else {
+                    if (oldEntity != null) {
+                        AttrEntityVo attrEntityVo = oldEntity.getAttrEntityByAttrId(attrId);
+                        if (attrEntityVo != null) {
+                            AttrFilterVo filterVo = new AttrFilterVo();
+                            filterVo.setAttrId(attrId);
+                            filterVo.setExpression(SearchExpression.EQ.getExpression());
+                            filterVo.setValueList(attrEntityVo.getValueList().stream().map(Object::toString).collect(Collectors.toList()));
+                            ciEntityConditionVo.addAttrFilter(filterVo);
+                        }
+                    }//新值没有修改
+                }
+            }
+            if (CollectionUtils.isNotEmpty(ciEntityConditionVo.getAttrFilterList())) {
+                List<CiEntityVo> checkList = this.searchCiEntity(ciEntityConditionVo);
+                for (CiEntityVo checkCiEntity : checkList) {
+                    if (!checkCiEntity.getId().equals(ciEntityTransactionVo.getCiEntityId())) {
+                        throw new CiUniqueRuleException();
+                    }
+                }
+            }
+        }
+
         // 去掉没变化的属性修改
         boolean hasChange = false;
         if (CollectionUtils.isNotEmpty(ciEntityTransactionVo.getAttrEntityTransactionList())) {
@@ -849,13 +889,8 @@ public class CiEntityServiceImpl implements CiEntityService {
                     }
                 } else {
                     //更新配置项名称
-                    if (ciVo.getNameAttrId() != null && ciVo.getNameAttrId().equals(attrEntityVo.getAttrId())) {
-                        List<CiEntityVo> invokeCiEntityList = ciEntityMapper.getCiEntityBaseInfoByAttrIdAndFromCiEntityId(ciEntityVo.getId(), attrEntityVo.getAttrId());
-                        if (CollectionUtils.isNotEmpty(invokeCiEntityList)) {
-                            ciEntityVo.setName(invokeCiEntityList.stream().map(CiEntityVo::getName).collect(Collectors.joining(",")));
-                        } else {
-                            ciEntityVo.setName("");
-                        }
+                    if (Objects.equals(ciVo.getNameAttrId(), attrEntityVo.getAttrId())) {
+                        ciEntityVo.setName(attrEntityVo.getValue());
                         updateCiEntityName(ciEntityVo);
                     }
                 }
@@ -868,16 +903,6 @@ public class CiEntityServiceImpl implements CiEntityService {
                 this.insertCiEntity(ciEntityVo);
             } else if (ciEntityTransactionVo.getAction().equals(TransactionActionType.UPDATE.getValue())) {
                 this.updateCiEntity(ciEntityVo);
-            }
-            //更新配置项名称
-            if (ciVo.getNameAttrId() != null) {
-                for (AttrEntityVo attrEntityVo : ciEntityVo.getAttrEntityList()) {
-                    if (attrEntityVo.getAttrId().equals(ciVo.getNameAttrId()) && !attrEntityVo.isNeedTargetCi()) {
-                        ciEntityVo.setName(attrEntityVo.getValue());
-                        updateCiEntityName(ciEntityVo);
-                        break;
-                    }
-                }
             }
             /*
             写入关系信息
