@@ -51,7 +51,15 @@
           AND b.rht &lt;= #{rht}
     </select>
 
-    <select id="getCiEntityBaseInfoByName" resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
+    <select id="getVirtualCiEntityBaseInfoByName" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
+            resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
+        SELECT id, `name`
+        FROM ${ciTableName}
+        WHERE name = #{name}
+    </select>
+
+    <select id="getCiEntityBaseInfoByName" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
+            resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
         SELECT id,
                ci_id AS ciId,
                `name`,
@@ -62,7 +70,7 @@
                lcd
         FROM cmdb_cientity
         WHERE ci_id = #{ciId}
-          AND name = #{ciEntityName}
+          AND name = #{name}
     </select>
 
     <select id="getCiEntityBaseInfoByAttrIdAndFromCiEntityId"

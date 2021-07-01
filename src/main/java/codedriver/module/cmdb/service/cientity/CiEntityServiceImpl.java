@@ -75,7 +75,6 @@ public class CiEntityServiceImpl implements CiEntityService {
         return ciEntityMapper.getCiEntityBaseInfoById(ciEntityId);
     }
 
-
     @Override
     public CiEntityVo getCiEntityById(Long ciId, Long ciEntityId) {
         CiVo ciVo = ciMapper.getCiById(ciId);

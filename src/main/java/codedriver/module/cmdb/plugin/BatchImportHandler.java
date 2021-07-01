@@ -21,6 +21,7 @@ import codedriver.framework.cmdb.threadlocal.InputFromContext;
 import codedriver.framework.common.util.FileUtil;
 import codedriver.framework.file.dto.FileVo;
 import codedriver.module.cmdb.dao.mapper.batchimport.ImportMapper;
+import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import codedriver.module.cmdb.service.ci.CiService;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
@@ -54,6 +55,13 @@ public class BatchImportHandler {
     private static CiService ciService;
 
     private static CiEntityService ciEntityService;
+
+    private static CiMapper ciMapper;
+
+    @Autowired
+    private void setCiMapper(CiMapper _ciMapper) {
+        ciMapper = _ciMapper;
+    }
 
     @Autowired
     public void setImportMapper(ImportMapper _importMapper) {
@@ -108,12 +116,29 @@ public class BatchImportHandler {
         }
     }
 
+
     public static class Importer extends CodeDriverThread {
         private final Long ciId;
         private final String editMode;
         private final FileVo fileVo;
         private final String importUser;
         private final String action;
+        private final Map<Long, CiVo> ciMap = new HashMap<>();
+
+        private List<CiEntityVo> getCiEntityBaseInfoByName(Long ciId, String name) {
+            if (!ciMap.containsKey(ciId)) {
+                ciMap.put(ciId, ciMapper.getCiById(ciId));
+            }
+            CiVo ciVo = ciMap.get(ciId);
+            CiEntityVo ciEntityVo = new CiEntityVo();
+            ciEntityVo.setCiId(ciId);
+            ciEntityVo.setName(name);
+            if (ciVo.getIsVirtual().equals(0)) {
+                return ciEntityMapper.getCiEntityBaseInfoByName(ciEntityVo);
+            } else {
+                return ciEntityMapper.getVirtualCiEntityBaseInfoByName(ciEntityVo);
+            }
+        }
 
         public Importer(Long ciId, String action, String editMode, FileVo fileVo, String importUser) {
             this.ciId = ciId;
@@ -275,7 +300,7 @@ public class BatchImportHandler {
                                                         for (String c : content.split(",")) {
                                                             if (StringUtils.isNotBlank(c)) {
                                                                 c = c.trim();
-                                                                List<CiEntityVo> targetCiEntityList = ciEntityMapper.getCiEntityBaseInfoByName(attr.getTargetCiId(), c);
+                                                                List<CiEntityVo> targetCiEntityList = getCiEntityBaseInfoByName(attr.getTargetCiId(), c);
                                                                 if (CollectionUtils.isNotEmpty(targetCiEntityList)) {
                                                                     valueList.addAll(targetCiEntityList.stream().map(CiEntityVo::getId).distinct().collect(Collectors.toList()));
                                                                 } else {
@@ -293,7 +318,7 @@ public class BatchImportHandler {
                                                     for (String c : content.split(",")) {
                                                         if (StringUtils.isNotBlank(c)) {
                                                             c = c.trim();
-                                                            List<CiEntityVo> targetCiEntityList = ciEntityMapper.getCiEntityBaseInfoByName(rel.getDirection().equals(RelDirectionType.FROM.getValue()) ? rel.getToCiId() : rel.getFromCiId(), c);
+                                                            List<CiEntityVo> targetCiEntityList = getCiEntityBaseInfoByName(rel.getDirection().equals(RelDirectionType.FROM.getValue()) ? rel.getToCiId() : rel.getFromCiId(), c);
                                                             if (CollectionUtils.isNotEmpty(targetCiEntityList)) {
                                                                 for (CiEntityVo entity : targetCiEntityList) {
                                                                     ciEntityTransactionVo.addRelEntityData(rel.getId(), rel.getDirection(), ciId, entity.getId());

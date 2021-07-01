@@ -50,10 +50,18 @@ public interface CiEntityMapper {
     /**
      * 根据配置项名称获取配置项
      *
-     * @param ciEntityName 配置项名称
+     * @param ciEntityVo 配置项名称
      * @return 配置项列表
      */
-    List<CiEntityVo> getCiEntityBaseInfoByName(@Param("ciId") Long ciId, @Param("ciEntityName") String ciEntityName);
+    List<CiEntityVo> getCiEntityBaseInfoByName(CiEntityVo ciEntityVo);
+
+    /**
+     * 根据配置项名称获取虚拟模型配置项
+     *
+     * @param ciEntityVo
+     * @return 配置项列表
+     */
+    List<CiEntityVo> getVirtualCiEntityBaseInfoByName(CiEntityVo ciEntityVo);
 
     /**
      * 根据id列表返回多个配置项基本信息
