@@ -16,31 +16,41 @@
         b.`size`
         FROM
         `cmdb_import_file` a JOIN `file` b ON a.`file_id` = b.`id`
-        WHERE
-        1=1
-        <if test="value != null and value != ''">
-            AND b.`user_uuid` = #{VALUE}
-        </if>
+        <where>
+            <if test="value != null and value != ''">
+                AND b.`user_uuid` = #{VALUE}
+            </if>
+        </where>
     </select>
 
+    <sql id="searchImportAuditCondition">
+        <where>
+            <if test="ciId != null">
+                and `ci_id` = #{ciId}
+            </if>
+            <if test="importUser != null and importUser != ''">
+                and `import_user` = #{importUser}
+            </if>
+            <if test="idList != null and idList.size() > 0">
+                and id IN
+                <foreach collection="idList" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </sql>
+
     <select id="searchImportAuditCount" parameterType="codedriver.framework.cmdb.dto.batchimport.ImportAuditVo"
-            resultType="int" useCache="false">
+            resultType="int">
         SELECT
-        COUNT(a.`id`)
+        COUNT(1)
         FROM `cmdb_import_audit` a
-        WHERE 1=1
-        <if test="ciId != null">
-            and `ci_id` = #{ciId}
-        </if>
-        <if test="importUser != null and importUser != ''">
-            and `import_user` = #{importUser}
-        </if>
+        <include refid="searchImportAuditCondition"></include>
     </select>
 
     <select id="searchImportAudit" parameterType="codedriver.framework.cmdb.dto.batchimport.ImportAuditVo"
-            resultType="codedriver.framework.cmdb.dto.batchimport.ImportAuditVo" useCache="false">
-        SELECT
-        `id`,
+            resultType="codedriver.framework.cmdb.dto.batchimport.ImportAuditVo">
+        SELECT `id`,
         `import_user` as importUser,
         (select `user_name` from `user` where `uuid` = a.`import_user`) as `importUserName`,
         `import_date` as `importDate`,
@@ -51,16 +61,9 @@
         `failed_count` as `failedCount`,
         `status`,
         `error`
-        FROM
-        `cmdb_import_audit` a
-        WHERE 1=1
-        <if test="ciId != null">
-            and `ci_id` = #{ciId}
-        </if>
-        <if test="importUser != null and importUser != ''">
-            and `import_user` = #{importUser}
-        </if>
-        order by `import_date` desc
+        FROM `cmdb_import_audit` a
+        <include refid="searchImportAuditCondition"></include>
+        order by id desc
         <if test="needPage">
             limit #{startNum}, #{pageSize}
         </if>
@@ -88,8 +91,8 @@
             `success_count` = #{successCount},
             `failed_count`  = #{failedCount},
             `total_count`   = #{totalCount},
-            `status`        = 1,
-            `error`         = #{error}
+            `status`        = #{status},
+            `error`         = #{error,typeHandler=CompressHandler}
         WHERE `id` = #{id}
     </update>
 
@@ -98,7 +101,7 @@
         SET `success_count` = #{successCount},
             `failed_count`  = #{failedCount},
             `total_count`   = #{totalCount},
-            `error`         = #{error}
+            `error`         = #{error,typeHandler=CompressHandler}
         WHERE `id` = #{id}
     </update>
 
@@ -106,7 +109,7 @@
         UPDATE cmdb_import_audit
         SET `finish_date` = NOW(3),
             `status`      = #{status},
-            `error`       = #{error}
+            `error`       = #{error,typeHandler=CompressHandler}
         WHERE `id` = #{id}
     </update>
 
@@ -123,6 +126,7 @@
          `action`,
          `file_id`,
          `ci_id`,
+         `status`,
          `server_id`)
         VALUES (#{id},
                 #{importUser},
@@ -130,6 +134,7 @@
                 #{action},
                 #{fileId},
                 #{ciId},
+                #{status},
                 #{serverId})
     </insert>
 

@@ -12,24 +12,24 @@ import java.util.List;
 
 public interface ImportMapper {
 
-    public List<FileVo> getCmdbImportFileList(String userUuid);
+    List<FileVo> getCmdbImportFileList(String userUuid);
 
-    public int searchImportAuditCount(ImportAuditVo vo);
+    int searchImportAuditCount(ImportAuditVo vo);
 
-    public List<ImportAuditVo> searchImportAudit(ImportAuditVo vo);
+    List<ImportAuditVo> searchImportAudit(ImportAuditVo vo);
 
-    public ImportAuditVo getImportAuditById(Long id);
+    ImportAuditVo getImportAuditById(Long id);
 
-    public int updateImportAudit(ImportAuditVo vo);
+    int updateImportAudit(ImportAuditVo vo);
 
-    public int updateImportAuditTemporary(ImportAuditVo vo);
+    int updateImportAuditTemporary(ImportAuditVo vo);
 
-    public int updateImportAuditStatus(ImportAuditVo vo);
+    int updateImportAuditStatus(ImportAuditVo vo);
 
-    public int insertCmdbImportFile(FileVo fileVo);
+    int insertCmdbImportFile(FileVo fileVo);
 
-    public int insertImportAudit(ImportAuditVo vo);
+    int insertImportAudit(ImportAuditVo vo);
 
-    public void deleteCmdbImportFile(Long fileId);
+    void deleteCmdbImportFile(Long fileId);
 
 }

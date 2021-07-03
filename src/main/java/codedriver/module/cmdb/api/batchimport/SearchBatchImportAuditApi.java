@@ -9,15 +9,12 @@ import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.batchimport.ImportAuditVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
-import codedriver.framework.common.util.PageUtil;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.batchimport.ImportMapper;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -68,16 +65,16 @@ public class SearchBatchImportAuditApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONObject returnObj = new JSONObject();
-        ImportAuditVo vo = JSON.parseObject(paramObj.toJSONString(), new TypeReference<ImportAuditVo>(){});
-        if(vo.getNeedPage()){
-            int rowNum = importMapper.searchImportAuditCount(vo);
-            returnObj.put("pageSize", vo.getPageSize());
-            returnObj.put("currentPage", vo.getCurrentPage());
+        ImportAuditVo importAuditVo = JSONObject.toJavaObject(paramObj, ImportAuditVo.class);
+        if (importAuditVo.getNeedPage()) {
+            int rowNum = importMapper.searchImportAuditCount(importAuditVo);
+            returnObj.put("pageSize", importAuditVo.getPageSize());
+            returnObj.put("currentPage", importAuditVo.getCurrentPage());
             returnObj.put("rowNum", rowNum);
-            returnObj.put("pageCount", PageUtil.getPageCount(rowNum, vo.getPageSize()));
+            returnObj.put("pageCount", importAuditVo.getPageCount());
         }
-        List<ImportAuditVo> list = importMapper.searchImportAudit(vo);
-        returnObj.put("tbodyList",list);
+        List<ImportAuditVo> list = importMapper.searchImportAudit(importAuditVo);
+        returnObj.put("tbodyList", list);
         return returnObj;
     }
 }

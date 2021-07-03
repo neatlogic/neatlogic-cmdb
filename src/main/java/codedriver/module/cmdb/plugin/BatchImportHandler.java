@@ -15,7 +15,9 @@ import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.cmdb.dto.transaction.TransactionGroupVo;
 import codedriver.framework.cmdb.enums.*;
 import codedriver.framework.cmdb.exception.ci.CiIsAbstractedException;
+import codedriver.framework.cmdb.exception.ci.CiIsVirtualException;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
+import codedriver.framework.cmdb.exception.ci.CiWithoutAttrRelException;
 import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.cmdb.threadlocal.InputFromContext;
 import codedriver.framework.common.util.FileUtil;
@@ -156,6 +158,7 @@ public class BatchImportHandler {
             importAuditVo.setImportUser(importUser);
             importAuditVo.setAction(action);
             importAuditVo.setFileId(fileVo.getId());
+            importAuditVo.setStatus(ImportStatus.RUNNING.getValue());
             importMapper.insertImportAudit(importAuditVo);
 
             importMap.put(importAuditVo.getId(), BatchImportStatus.RUNNING.getValue());
@@ -175,8 +178,11 @@ public class BatchImportHandler {
                 if (ciVo.getIsAbstract().equals(1)) {
                     throw new CiIsAbstractedException(ciVo.getName());
                 }
+                if (ciVo.getIsVirtual().equals(1)) {
+                    throw new CiIsVirtualException(ciVo.getName());
+                }
                 if (CollectionUtils.isEmpty(ciVo.getAttrList()) && CollectionUtils.isEmpty(ciVo.getRelList())) {
-                    throw new RuntimeException("ID为：" + ciVo.getId() + "的配置项类型没有配置属性信息或关系信息");
+                    throw new CiWithoutAttrRelException(ciVo.getName());
                 }
 
                 try {
@@ -425,6 +431,11 @@ public class BatchImportHandler {
                     importAuditVo.setError((("".equals(importAuditVo.getError()) || importAuditVo.getError() == null)
                             ? "" : importAuditVo.getError() + "<br>") + "<b class=\"text-danger\">导入已停止</b>。");
                 }
+                if (failedCount > 0) {
+                    importAuditVo.setStatus(ImportStatus.FAILED.getValue());
+                } else {
+                    importAuditVo.setStatus(ImportStatus.SUCCESS.getValue());
+                }
                 importAuditVo.setSuccessCount(successCount);
                 importAuditVo.setFailedCount(failedCount);
                 importAuditVo.setTotalCount(totalCount);
@@ -435,17 +446,6 @@ public class BatchImportHandler {
         }
     }
 
-    public static ImportAuditVo getStatusById(Long id) {
-        ImportAuditVo importAuditVo = importMapper.getImportAuditById(id);
-        if (importAuditVo.getStatus() == 0 && importMap.get(id) == null) {
-            importAuditVo.setStatus(-1);
-            importAuditVo
-                    .setError((StringUtils.isNotBlank(importAuditVo.getError()) ? "" : importAuditVo.getError() + "<br>")
-                            + "<b class=\"text-danger\">发生异常，导入中断</b>。");
-            importMapper.updateImportAuditStatus(importAuditVo);
-        }
-        return importAuditVo;
-    }
 
     public static void stopImportById(Long id) {
         importMap.replace(id, BatchImportStatus.STOPPED.getValue());

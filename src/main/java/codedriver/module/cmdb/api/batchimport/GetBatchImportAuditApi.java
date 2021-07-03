@@ -6,29 +6,33 @@
 package codedriver.module.cmdb.api.batchimport;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.restful.constvalue.OperationTypeEnum;
-import codedriver.framework.restful.annotation.*;
-import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.auth.label.CIENTITY_BATCH_IMPORT;
 import codedriver.framework.cmdb.dto.batchimport.ImportAuditVo;
-import codedriver.module.cmdb.plugin.BatchImportHandler;
+import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.restful.annotation.*;
+import codedriver.framework.restful.constvalue.OperationTypeEnum;
+import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.module.cmdb.dao.mapper.batchimport.ImportMapper;
 import com.alibaba.fastjson.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-@AuthAction(action = CIENTITY_BATCH_IMPORT.class)
 @Service
+@AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class GetImportStatusApi extends PrivateApiComponentBase {
+public class GetBatchImportAuditApi extends PrivateApiComponentBase {
+
+    @Autowired
+    private ImportMapper importMapper;
 
     @Override
     public String getToken() {
-        return "/cmdb/import/status/get";
+        return "/cmdb/import/audit/get";
     }
 
     @Override
     public String getName() {
-        return "获取导入状态";
+        return "获取单个配置项导入日志";
     }
 
     @Override
@@ -36,12 +40,11 @@ public class GetImportStatusApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "日志ID")})
+    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "id", isRequired = true)})
     @Output({@Param(explode = ImportAuditVo.class)})
-    @Description(desc = "获取导入状态")
+    @Description(desc = "获取单个配置项导入日志接口")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        Long id = paramObj.getLong("id");
-        return BatchImportHandler.getStatusById(id);
+        return importMapper.getImportAuditById(paramObj.getLong("id"));
     }
 }
