@@ -167,12 +167,24 @@
             <if test="keyword != null and keyword != ''">
                 AND cc.name LIKE CONCAT('%',#{keyword},'%')
             </if>
-            <if test="isPrivate != null">
-                AND cc.is_private = #{isPrivate}
-            </if>
             <if test="tagId != null">
                 AND cct.tag_id = #{tagId}
             </if>
+            <choose>
+                <when test="isPrivate == 0">
+                    AND cc.is_private = 0
+                </when>
+                <otherwise>
+                    <choose>
+                        <when test="isAdmin == true">
+                            AND (cc.is_private = 0 OR (cc.is_private = 1 AND cc.fcu = #{fcu}))
+                        </when>
+                        <otherwise>
+                            AND cc.is_private = 1 AND cc.fcu = #{fcu}
+                        </otherwise>
+                    </choose>
+                </otherwise>
+            </choose>
         </where>
     </sql>
 

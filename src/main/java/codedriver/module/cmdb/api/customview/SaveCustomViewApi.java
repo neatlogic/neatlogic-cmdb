@@ -7,13 +7,17 @@ package codedriver.module.cmdb.api.customview;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.cmdb.dto.customview.*;
 import codedriver.framework.cmdb.enums.customview.RelType;
+import codedriver.framework.cmdb.exception.customview.CustomViewCiNotFoundException;
+import codedriver.framework.cmdb.exception.customview.CustomViewPrivilegeException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.module.cmdb.auth.label.CUSTOMVIEW_MODIFY;
 import codedriver.module.cmdb.service.customview.CustomViewService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -62,7 +66,24 @@ public class SaveCustomViewApi extends PrivateApiComponentBase {
     @Description(desc = "保存自定义视图接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
+        int isPrivate = jsonObj.getIntValue("isPrivate");
+        if (isPrivate == 0) {
+            if (!AuthActionChecker.check(CUSTOMVIEW_MODIFY.class.getSimpleName())) {
+                throw new CustomViewPrivilegeException(CustomViewPrivilegeException.Action.SAVE);
+            }
+        }
         Long id = jsonObj.getLong("id");
+        if (id != null) {
+            CustomViewVo checkView = customViewService.getCustomViewById(id);
+            if (checkView == null) {
+                throw new CustomViewCiNotFoundException();
+            }
+            if (isPrivate == 1) {
+                if (!checkView.getFcu().equalsIgnoreCase(UserContext.get().getUserUuid(true))) {
+                    throw new CustomViewPrivilegeException(CustomViewPrivilegeException.Action.SAVE);
+                }
+            }
+        }
         JSONObject config = jsonObj.getJSONObject("config");
         CustomViewVo customViewVo = JSONObject.toJavaObject(jsonObj, CustomViewVo.class);
 
@@ -163,10 +184,10 @@ public class SaveCustomViewApi extends PrivateApiComponentBase {
         }
 
         if (id == null) {
-            customViewVo.setFcu(UserContext.get().getUserUuid());
+            customViewVo.setFcu(UserContext.get().getUserUuid(true));
             customViewService.insertCustomView(customViewVo);
         } else {
-            customViewVo.setLcu(UserContext.get().getUserUuid());
+            customViewVo.setLcu(UserContext.get().getUserUuid(true));
             customViewService.updateCustomView(customViewVo);
         }
         return customViewVo.getId();

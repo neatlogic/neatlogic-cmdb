@@ -5,7 +5,9 @@
 
 package codedriver.module.cmdb.api.customview;
 
+import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewVo;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -24,14 +26,14 @@ import java.util.List;
 @Service
 @AuthAction(action = CUSTOMVIEW_MODIFY.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class SearchPublicCustomViewApi extends PrivateApiComponentBase {
+public class SearchCustomViewApi extends PrivateApiComponentBase {
 
     @Resource
     private CustomViewService customViewService;
 
     @Override
     public String getName() {
-        return "查询公共自定义视图";
+        return "查询自定义视图";
     }
 
     @Override
@@ -54,11 +56,15 @@ public class SearchPublicCustomViewApi extends PrivateApiComponentBase {
     @Output({@Param(explode = BasePageVo.class),
             @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = CiEntityVo[].class),
             @Param(name = "theadList", type = ApiParamType.JSONARRAY, desc = "表头信息")})
-    @Description(desc = "查询公共自定义视图接口")
+    @Description(desc = "根据用户权限查询查询自定义视图，包括用户的个人视图和公共视图")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         CustomViewVo customViewVo = JSONObject.toJavaObject(paramObj, CustomViewVo.class);
-        customViewVo.setIsPrivate(0);
+        customViewVo.setFcu(UserContext.get().getUserUuid(true));
+        if (AuthActionChecker.check(CUSTOMVIEW_MODIFY.class.getSimpleName())) {
+            customViewVo.setAdmin(true);
+        }
+
         List<CustomViewVo> viewList = customViewService.searchCustomView(customViewVo);
         JSONObject returnObj = new JSONObject();
         returnObj.put("pageSize", customViewVo.getPageSize());
@@ -71,6 +77,6 @@ public class SearchPublicCustomViewApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "/cmdb/customview/public/search";
+        return "/cmdb/customview/search";
     }
 }
