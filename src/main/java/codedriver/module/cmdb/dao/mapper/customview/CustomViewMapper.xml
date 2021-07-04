@@ -382,4 +382,14 @@
         FROM cmdb_customview_link
         WHERE customview_id = #{value}
     </delete>
+
+    <delete id="deleteCustomViewById" parameterType="java.lang.Long">
+        DELETE
+        FROM cmdb_customview
+        WHERE id = #{value}
+    </delete>
+
+    <delete id="dropCustomView" parameterType="java.lang.String">
+        DROP VIEW IF EXISTS ${value}
+    </delete>
 </mapper>

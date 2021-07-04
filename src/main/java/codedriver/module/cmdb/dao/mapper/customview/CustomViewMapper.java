@@ -51,5 +51,9 @@ public interface CustomViewMapper {
 
     void deleteCustomViewRelByCustomViewId(Long customViewId);
 
+    void deleteCustomViewById(Long customViewId);
+
     void buildCustomView(String sql);
+
+    void dropCustomView(String viewName);
 }

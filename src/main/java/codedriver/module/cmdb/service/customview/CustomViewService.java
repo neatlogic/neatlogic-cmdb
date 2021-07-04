@@ -27,4 +27,7 @@ public interface CustomViewService {
     void updateCustomView(CustomViewVo customViewVo);
 
     void buildCustomView(String sql);
+
+    @Transactional
+    void deleteCustomView(Long id);
 }

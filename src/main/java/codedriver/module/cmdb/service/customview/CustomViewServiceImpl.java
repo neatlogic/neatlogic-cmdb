@@ -5,9 +5,11 @@
 
 package codedriver.module.cmdb.service.customview;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.cmdb.dto.customview.*;
 import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.cmdb.exception.customview.CreateCustomViewFailedException;
+import codedriver.framework.cmdb.exception.customview.DeleteCustomViewFailedException;
 import codedriver.framework.transaction.core.EscapeTransactionJob;
 import codedriver.module.cmdb.dao.mapper.customview.CustomViewMapper;
 import codedriver.module.cmdb.dao.mapper.tag.CmdbTagMapper;
@@ -121,6 +123,23 @@ public class CustomViewServiceImpl implements CustomViewService {
 
     public void buildCustomView(String sql) {
         customViewMapper.buildCustomView(sql);
+    }
+
+    @Override
+    @Transactional
+    public void deleteCustomView(Long id) {
+        customViewMapper.deleteCustomViewCiByCustomViewId(id);
+        customViewMapper.deleteCustomViewAttrByCustomViewId(id);
+        customViewMapper.deleteCustomViewRelByCustomViewId(id);
+        customViewMapper.deleteCustomViewLinkByCustomViewId(id);
+        customViewMapper.deleteCustomViewTagByCustomViewId(id);
+        customViewMapper.deleteCustomViewById(id);
+        EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
+            customViewMapper.dropCustomView(TenantContext.get().getDataDbName() + ".`customview_" + id + "`");
+        }).execute();
+        if (!s.isSucceed()) {
+            throw new DeleteCustomViewFailedException(s.getError());
+        }
     }
 
 
