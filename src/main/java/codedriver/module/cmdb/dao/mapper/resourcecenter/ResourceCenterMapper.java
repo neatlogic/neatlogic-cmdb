@@ -39,6 +39,8 @@ public interface ResourceCenterMapper {
 
     AccountVo getAccountById(Long id);
 
+    List<AccountVo> getAccountListByIdList(List<Long> accountIdList);
+
     int checkAccountNameIsRepeats(AccountVo vo);
 
     int checkAccountHasBeenReferredById(Long id);
@@ -102,6 +104,8 @@ public interface ResourceCenterMapper {
     List<TagVo> getTagListByTagNameList(List<String> tagNameList);
 
     List<Long> checkTagIdExistsByTagIdList(List<Long> tagIdList);
+
+    List<Long> getAccountIdListByResourceId(Long id);
 
     int updateAccount(AccountVo vo);
 

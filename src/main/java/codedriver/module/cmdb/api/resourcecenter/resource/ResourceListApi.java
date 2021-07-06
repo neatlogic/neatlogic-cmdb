@@ -8,6 +8,7 @@ package codedriver.module.cmdb.api.resourcecenter.resource;
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.ci.CiVo;
+import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.dto.tag.TagVo;
@@ -127,6 +128,11 @@ public class ResourceListApi extends PrivateApiComponentBase {
                         if (CollectionUtils.isNotEmpty(tagList)) {
                             resourceVo.setTagIdList(tagList.stream().map(TagVo::getId).collect(Collectors.toList()));
                             resourceVo.setTagList(tagList.stream().map(TagVo::getName).collect(Collectors.toList()));
+                        }
+                        List<Long> accountIdList = resourceCenterMapper.getAccountIdListByResourceId(resourceVo.getId());
+                        if (CollectionUtils.isNotEmpty(accountIdList)) {
+                            List<AccountVo> accountVoList = resourceCenterMapper.getAccountListByIdList(accountIdList);
+                            resourceVo.setAccountList(accountVoList);
                         }
                         resourceVo.setFcuVo(new UserVo(resourceVo.getFcu()));
                         resourceVo.setLcuVo(new UserVo(resourceVo.getLcu()));
