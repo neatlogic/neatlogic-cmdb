@@ -11,6 +11,7 @@ import codedriver.framework.cmdb.dto.resourcecenter.entity.StatusVo;
 import codedriver.framework.cmdb.dto.tag.TagVo;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -38,6 +39,8 @@ public interface ResourceCenterMapper {
     int getAccountCount(AccountVo searchVo);
 
     AccountVo getAccountById(Long id);
+
+    List<AccountVo> getAccountListByIdList(List<Long> accountIdList);
 
     int checkAccountNameIsRepeats(AccountVo vo);
 
@@ -101,7 +104,13 @@ public interface ResourceCenterMapper {
 
     List<TagVo> getTagListByTagNameList(List<String> tagNameList);
 
+    List<TagVo> getTagListByIdList(List<Long> idList);
+
     List<Long> checkTagIdExistsByTagIdList(List<Long> tagIdList);
+
+    List<ResourceAccountVo> getResourceAccountListByResourceIdList(List<Long> resourceIdList);
+
+    List<ResourceTagVo> getResourceTagListByResourceIdList(List<Long> resourceIdList);
 
     int updateAccount(AccountVo vo);
 

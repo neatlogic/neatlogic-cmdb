@@ -365,6 +365,25 @@
         where `id` = #{value}
     </select>
 
+    <select id="getAccountListByIdList" parameterType="java.lang.Long" resultType="codedriver.framework.cmdb.dto.resourcecenter.AccountVo">
+        SELECT
+        `id`,
+        `name`,
+        `account`,
+        `password`,
+        `protocol`,
+        `port`,
+        `fcu`,
+        `fcd`,
+        `lcu`,
+        `lcd`
+        FROM `cmdb_resourcecenter_account`
+        WHERE `id` IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
     <select id="checkAccountNameIsRepeats" parameterType="codedriver.framework.cmdb.dto.resourcecenter.AccountVo" resultType="int">
         SELECT COUNT(1) FROM `cmdb_resourcecenter_account` WHERE `name` = #{name} and `id` != #{id}
     </select>
@@ -666,12 +685,45 @@
             #{name}
         </foreach>
     </select>
+    <select id="getTagListByIdList" parameterType="java.util.List" resultType="codedriver.framework.cmdb.dto.tag.TagVo">
+        SELECT
+            `id`,
+            `name`,
+            `description`
+        FROM `cmdb_tag`
+        WHERE `id` IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
 
     <select id="checkTagIdExistsByTagIdList" parameterType="java.util.List" resultType="java.lang.Long">
         select `id` from `cmdb_tag`
         where `id` in
         <foreach collection="list" item="item" open="(" separator="," close=")">
             #{item}
+        </foreach>
+    </select>
+
+    <select id="getResourceAccountListByResourceIdList" parameterType="java.util.List" resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceAccountVo">
+        SELECT
+               `resource_id` AS resourceId,
+               `account_id` AS accountId
+        FROM `cmdb_resourcecenter_resource_account`
+        WHERE `resource_id` in
+        <foreach collection="list" item="resourceId" open="(" separator="," close=")">
+             #{resourceId}
+        </foreach>
+    </select>
+
+    <select id="getResourceTagListByResourceIdList" parameterType="java.util.List" resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceTagVo">
+        SELECT
+               `resource_id` AS resourceId,
+               `tag_id` AS tagId
+        FROM `cmdb_resourcecenter_resource_tag`
+        WHERE `resource_id` in
+        <foreach collection="list" item="resourceId" open="(" separator="," close=")">
+             #{resourceId}
         </foreach>
     </select>
 

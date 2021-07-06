@@ -8,8 +8,7 @@ package codedriver.module.cmdb.api.resourcecenter.resource;
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.ci.CiVo;
-import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
-import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
+import codedriver.framework.cmdb.dto.resourcecenter.*;
 import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -28,8 +27,7 @@ import org.apache.commons.collections4.ListUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -121,12 +119,35 @@ public class ResourceListApi extends PrivateApiComponentBase {
                 searchVo.setRowNum(rowNum);
                 List<Long> idList = resourceCenterMapper.getResourceIdList(searchVo);
                 if (CollectionUtils.isNotEmpty(idList)) {
+                    Map<Long, List<AccountVo>> resourceAccountVoMap = new HashMap<>();
+                    List<ResourceAccountVo> resourceAccountVoList = resourceCenterMapper.getResourceAccountListByResourceIdList(idList);
+                    if (CollectionUtils.isNotEmpty(resourceAccountVoList)) {
+                        Set<Long> accountIdSet = resourceAccountVoList.stream().map(ResourceAccountVo::getAccountId).collect(Collectors.toSet());
+                        List<AccountVo> accountList = resourceCenterMapper.getAccountListByIdList(new ArrayList<>(accountIdSet));
+                        Map<Long, AccountVo> accountMap = accountList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
+                        for (ResourceAccountVo resourceAccountVo : resourceAccountVoList) {
+                            resourceAccountVoMap.computeIfAbsent(resourceAccountVo.getResourceId(), k -> new ArrayList<>()).add(accountMap.get(resourceAccountVo.getAccountId()));
+                        }
+                    }
+                    Map<Long, List<TagVo>> resourceTagVoMap = new HashMap<>();
+                    List<ResourceTagVo> resourceTagVoList = resourceCenterMapper.getResourceTagListByResourceIdList(idList);
+                    if (CollectionUtils.isNotEmpty(resourceTagVoList)) {
+                        Set<Long> tagIdSet = resourceTagVoList.stream().map(ResourceTagVo::getTagId).collect(Collectors.toSet());
+                        List<TagVo> tagList = resourceCenterMapper.getTagListByIdList(new ArrayList<>(tagIdSet));
+                        Map<Long, TagVo> tagMap = tagList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
+                        for (ResourceTagVo resourceTagVo : resourceTagVoList) {
+                            resourceTagVoMap.computeIfAbsent(resourceTagVo.getResourceId(), k -> new ArrayList<>()).add(tagMap.get(resourceTagVo.getTagId()));
+                        }
+                    }
                     resourceVoList = resourceCenterMapper.getResourceListByIdList(idList, TenantContext.get().getDataDbName());
                     for (ResourceVo resourceVo : resourceVoList) {
-                        List<TagVo> tagList = resourceCenterMapper.getTagListByResourceId(resourceVo.getId());
-                        if (CollectionUtils.isNotEmpty(tagList)) {
-                            resourceVo.setTagIdList(tagList.stream().map(TagVo::getId).collect(Collectors.toList()));
-                            resourceVo.setTagList(tagList.stream().map(TagVo::getName).collect(Collectors.toList()));
+                        List<TagVo> tagVoList = resourceTagVoMap.get(resourceVo.getId());
+                        if (CollectionUtils.isNotEmpty(tagVoList)) {
+                            resourceVo.setTagList(tagVoList.stream().map(TagVo::getName).collect(Collectors.toList()));
+                        }
+                        List<AccountVo> accountVoList = resourceAccountVoMap.get(resourceVo.getId());
+                        if (CollectionUtils.isNotEmpty(accountVoList)) {
+                            resourceVo.setAccountList(accountVoList);
                         }
                         resourceVo.setFcuVo(new UserVo(resourceVo.getFcu()));
                         resourceVo.setLcuVo(new UserVo(resourceVo.getLcu()));
