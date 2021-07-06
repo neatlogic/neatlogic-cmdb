@@ -62,6 +62,11 @@ public class ResourceListApi extends PrivateApiComponentBase {
         return null;
     }
 
+    @Override
+    public boolean disableReturnCircularReferenceDetect() {
+        return true;
+    }
+
     @Input({
             @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "模糊搜索"),
             @Param(name = "typeId", type = ApiParamType.LONG, desc = "类型id"),
