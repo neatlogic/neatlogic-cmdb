@@ -441,6 +441,12 @@
             <if test="protocol != null and protocol != ''">
                 and a.`protocol` = #{protocol}
             </if>
+            <if test="defaultValue != null and defaultValue.size() > 0">
+                and a.`id` in
+                <foreach collection="defaultValue" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
         </where>
         order by a.`lcd` desc
         <if test="needPage == true">
