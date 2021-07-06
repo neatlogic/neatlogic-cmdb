@@ -11,6 +11,7 @@ import codedriver.framework.cmdb.dto.resourcecenter.entity.StatusVo;
 import codedriver.framework.cmdb.dto.tag.TagVo;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -103,9 +104,13 @@ public interface ResourceCenterMapper {
 
     List<TagVo> getTagListByTagNameList(List<String> tagNameList);
 
+    List<TagVo> getTagListByIdList(List<Long> idList);
+
     List<Long> checkTagIdExistsByTagIdList(List<Long> tagIdList);
 
-    List<Long> getAccountIdListByResourceId(Long id);
+    List<ResourceAccountVo> getResourceAccountListByResourceIdList(List<Long> resourceIdList);
+
+    List<ResourceTagVo> getResourceTagListByResourceIdList(List<Long> resourceIdList);
 
     int updateAccount(AccountVo vo);
 
