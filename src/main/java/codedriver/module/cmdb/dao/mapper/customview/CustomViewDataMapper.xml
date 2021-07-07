@@ -13,7 +13,7 @@
         WHEN ${groupBy} IS NULL THEN '【空值】'
         WHEN ${groupBy} = '' THEN '【空值】'
         ELSE ${groupBy} END) AS `value`,
-        (CASE
+        ANY_VALUE(CASE
         WHEN `${groupBy}_hash` IS NULL THEN 'isnull'
         ELSE `${groupBy}_hash` END) AS valueHash,
         count((CASE
