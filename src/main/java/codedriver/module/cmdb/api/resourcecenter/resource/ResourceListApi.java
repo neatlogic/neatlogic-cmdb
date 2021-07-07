@@ -76,7 +76,10 @@ public class ResourceListApi extends PrivateApiComponentBase {
             @Param(name = "appSystemIdList", type = ApiParamType.JSONARRAY, desc = "应用系统id列表"),
             @Param(name = "appModuleIdList", type = ApiParamType.JSONARRAY, desc = "应用模块id列表"),
             @Param(name = "typeIdList", type = ApiParamType.JSONARRAY, desc = "资源类型id列表"),
-            @Param(name = "tagIdList", type = ApiParamType.JSONARRAY, desc = "标签id列表")
+            @Param(name = "tagIdList", type = ApiParamType.JSONARRAY, desc = "标签id列表"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
+            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true")
     })
     @Output({
             @Param(explode = BasePageVo.class),

@@ -56,6 +56,8 @@ public interface ResourceCenterMapper {
 
     List<TagVo> getTagListForSelect(TagVo searchVo);
 
+    List<String> getTagNameListForSelect(TagVo searchVo);
+
     List<TagVo> searchTag(TagVo vo);
 
     int searchTagCount(TagVo vo);
