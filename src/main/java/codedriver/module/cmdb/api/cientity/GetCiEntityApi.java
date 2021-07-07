@@ -74,7 +74,7 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
             throw new CiEntityAuthException(ciEntityVo.getCiLabel(), "查看");
         }
 
-        if (needAction && ciVo.getIsVirtual().equals(0)) {
+        if (needAction && ciVo.getIsVirtual().equals(0) && ciVo.getIsAbstract().equals(0)) {
             ciEntityVo.setAuthData(new HashMap<String, Boolean>() {
                 {
                     this.put(CiAuthType.CIENTITYUPDATE.getValue(), CiAuthChecker.chain().checkCiEntityUpdatePrivilege(ciEntityVo.getCiId()).checkIsInGroup(ciEntityVo.getId(), GroupType.MAINTAIN)

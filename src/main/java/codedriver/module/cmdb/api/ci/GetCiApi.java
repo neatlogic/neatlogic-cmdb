@@ -65,7 +65,7 @@ public class GetCiApi extends PrivateApiComponentBase {
             Map<String, Boolean> authData = new HashMap<>();
             boolean hasCiManageAuth, hasCiEntityInsertAuth = false;
             hasCiManageAuth = CiAuthChecker.chain().checkCiManagePrivilege(ciId).check();
-            if (ciVo.getIsVirtual().equals(0)) {
+            if (ciVo.getIsVirtual().equals(0) && ciVo.getIsAbstract().equals(0)) {
                 hasCiEntityInsertAuth = CiAuthChecker.chain().checkCiEntityInsertPrivilege(ciId).check();
             }
             authData.put(CiAuthType.CIMANAGE.getValue(), hasCiManageAuth);

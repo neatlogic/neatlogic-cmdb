@@ -157,7 +157,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
             boolean canEdit = false, canDelete = false, canViewPassword = false;
             List<Long> hasMaintainCiEntityIdList = new ArrayList<>();
             List<Long> hasReadCiEntityIdList = new ArrayList<>();
-            if (needAction && ciVo.getIsVirtual().equals(0)) {
+            if (needAction && ciVo.getIsVirtual().equals(0) && ciVo.getIsAbstract().equals(0)) {
                 canEdit = CiAuthChecker.chain().checkCiEntityUpdatePrivilege(ciEntityVo.getCiId()).check();
                 canDelete = CiAuthChecker.chain().checkCiEntityDeletePrivilege(ciEntityVo.getCiId()).check();
                 canViewPassword = CiAuthChecker.chain().checkViewPasswordPrivilege(ciEntityVo.getCiId()).check();
