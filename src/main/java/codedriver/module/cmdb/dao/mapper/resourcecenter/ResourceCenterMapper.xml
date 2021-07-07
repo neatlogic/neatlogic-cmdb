@@ -485,6 +485,18 @@
                 </foreach>
             </if>
         </where>
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="getTagNameListForSelect" parameterType="codedriver.framework.cmdb.dto.tag.TagVo" resultType="java.lang.String">
+        SELECT `name` FROM `cmdb_tag`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and `name` like concat('%', #{keyword}, '%')
+            </if>
+        </where>
+        ORDER BY `name`
+        LIMIT #{startNum}, #{pageSize}
     </select>
 
     <select id="checkTagNameIsRepeats" parameterType="codedriver.framework.cmdb.dto.tag.TagVo" resultType="int">
