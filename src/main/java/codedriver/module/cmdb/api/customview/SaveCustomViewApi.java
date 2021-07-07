@@ -182,15 +182,18 @@ public class SaveCustomViewApi extends PrivateApiComponentBase {
                 linkList.add(customViewLinkVo);
             }
         }
-
-        if (id == null) {
-            customViewVo.setFcu(UserContext.get().getUserUuid(true));
-            customViewService.insertCustomView(customViewVo);
+        if (customViewVo.valid()) {
+            if (id == null) {
+                customViewVo.setFcu(UserContext.get().getUserUuid(true));
+                customViewService.insertCustomView(customViewVo);
+            } else {
+                customViewVo.setLcu(UserContext.get().getUserUuid(true));
+                customViewService.updateCustomView(customViewVo);
+            }
+            return customViewVo.getId();
         } else {
-            customViewVo.setLcu(UserContext.get().getUserUuid(true));
-            customViewService.updateCustomView(customViewVo);
+            return null;
         }
-        return customViewVo.getId();
     }
 
 }

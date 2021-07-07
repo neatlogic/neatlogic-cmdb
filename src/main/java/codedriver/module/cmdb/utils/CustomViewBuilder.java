@@ -119,139 +119,143 @@ public class CustomViewBuilder {
                         .withRightExpression(new Column()
                                 .withTable(new Table("ci_" + startCustomViewCiVo.getUuid()))
                                 .withColumnName("id"))));
-        if (CollectionUtils.isNotEmpty(customViewVo.getAttrList())) {
-            for (CustomViewAttrVo attrVo : customViewVo.getAttrList()) {
-                plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getUuid() + "`")));
-                plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getUuid() + "_hash`")));
-            }
+        for (CustomViewAttrVo attrVo : customViewVo.getAttrList()) {
+            plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getUuid() + "`")));
+            plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getUuid() + "_hash`")));
+        }
 
-            //记录哪些表已经创建，如果已经创建则可以直接join
-            Map<String, JoinWrapper> joinMap = new HashMap<>();
-            //记录是否已经产生过join
-            Set<String> linkSet = new HashSet<>();
-            //先创建驱动表
+        //记录哪些表已经创建，如果已经创建则可以直接join
+        Map<String, JoinWrapper> joinMap = new HashMap<>();
+        //记录是否已经产生过join
+        Set<String> linkSet = new HashSet<>();
+        //先创建驱动表
 
 
-            List<CustomViewLinkVo> linkList = customViewVo.getLinkListByFromCustomCiUuid(startCustomViewCiVo.getUuid());
-            while (CollectionUtils.isNotEmpty(linkList)) {
-                Set<CustomViewLinkVo> nextLinkList = new HashSet<>();
-                for (CustomViewLinkVo linkVo : linkList) {
-                    CustomViewCiVo customViewCiVo = customViewVo.getCustomCiByUuid(linkVo.getToCustomViewCiUuid());
-                    if (linkVo.getFromType().equals(RelType.ATTR.getValue()) && linkVo.getToType().equals(RelType.ATTR.getValue())) {
+        List<CustomViewLinkVo> linkList = customViewVo.getLinkListByFromCustomCiUuid(startCustomViewCiVo.getUuid());
+        while (CollectionUtils.isNotEmpty(linkList)) {
+            Set<CustomViewLinkVo> nextLinkList = new HashSet<>();
+            for (CustomViewLinkVo linkVo : linkList) {
+                CustomViewCiVo customViewCiVo = customViewVo.getCustomCiByUuid(linkVo.getToCustomViewCiUuid());
+                if (linkVo.getFromType().equals(RelType.ATTR.getValue()) && linkVo.getToType().equals(RelType.ATTR.getValue())) {
+                    if (!joinMap.containsKey(linkVo.getToCustomViewCiUuid())) {
+                        Join join = new Join();
+                        joinMap.put(linkVo.getToCustomViewCiUuid(), new JoinWrapper(join, joinMap.size()));
+
+                        if (linkVo.getJoinType().equalsIgnoreCase(JoinType.LEFTJOIN.getValue())) {
+                            join.withLeft(true);
+                        } else if (linkVo.getJoinType().equalsIgnoreCase(JoinType.RIGHTJOIN.getValue())) {
+                            join.withRight(true);
+                        }
+                        join.withRightItem(new SubSelect()
+                                .withSelectBody(buildSubSelectForCi(customViewCiVo).getSelectBody())
+                                .withAlias(new Alias("ci_" + customViewCiVo.getUuid())))
+                                .withOnExpression(new EqualsTo()
+                                        .withLeftExpression(new Column()
+                                                .withTable(new Table("ci_" + linkVo.getFromCustomViewCiUuid()))
+                                                .withColumnName(linkVo.getFromUuid() + "_hash"))
+                                        .withRightExpression(new Column().withTable(new Table("ci_" + linkVo.getToCustomViewCiUuid()))
+                                                .withColumnName(linkVo.getToUuid() + "_hash")));
+                        plainSelect.addJoins(join);
+                    } else {
+                        JoinWrapper toJoinWrapper = joinMap.get(linkVo.getToCustomViewCiUuid());
+                        JoinWrapper fromJoinWrapper = joinMap.get(linkVo.getFromCustomViewCiUuid());
+                        Join join = (fromJoinWrapper != null && toJoinWrapper.getIndex() < fromJoinWrapper.getIndex()) ? fromJoinWrapper.getJoin() : toJoinWrapper.getJoin();
+                        Expression oldExpression = join.getOnExpression();
+                        join.withOnExpression(new AndExpression()
+                                .withLeftExpression(oldExpression)
+                                .withRightExpression(new EqualsTo()
+                                        .withLeftExpression(new Column()
+                                                .withTable(new Table("ci_" + linkVo.getFromCustomViewCiUuid()))
+                                                .withColumnName(linkVo.getFromUuid() + "_hash"))
+                                        .withRightExpression(new Column().withTable(new Table("ci_" + linkVo.getToCustomViewCiUuid()))
+                                                .withColumnName(linkVo.getToUuid() + "_hash"))));
+
+                    }
+                } else if (linkVo.getFromType().equals(RelType.REL.getValue()) && linkVo.getToType().equals(RelType.CI.getValue())) {
+                    CustomViewRelVo customViewRelVo = customViewVo.getCustomCiByUuid(linkVo.getFromCustomViewCiUuid()).getRelByUuid(linkVo.getFromUuid());
+                    if (customViewRelVo != null) {
+                        Join join = new Join();
+                        if (linkVo.getJoinType().equalsIgnoreCase(JoinType.LEFTJOIN.getValue())) {
+                            join.withLeft(true);
+                        } else if (linkVo.getJoinType().equalsIgnoreCase(JoinType.RIGHTJOIN.getValue())) {
+                            join.withRight(true);
+                        }
+                        join.withRightItem(new Table().withName("cmdb_relentity")
+                                .withSchemaName(TenantContext.get().getDbName())
+                                .withAlias(new Alias("rel_" + linkVo.getUuid())))
+                                .withOnExpression(new AndExpression()
+                                        .withLeftExpression(new EqualsTo()
+                                                .withLeftExpression(new Column()
+                                                        .withTable(new Table("ci_" + linkVo.getFromCustomViewCiUuid()))
+                                                        .withColumnName("id"))
+                                                .withRightExpression(new Column()
+                                                        .withTable(new Table("rel_" + linkVo.getUuid()))
+                                                        .withColumnName(customViewRelVo.getRelVo().getDirection().equals(RelDirectionType.FROM.getValue()) ? "from_cientity_id" : "to_cientity_id")))
+                                        .withRightExpression(new EqualsTo()
+                                                .withLeftExpression(new Column()
+                                                        .withTable(new Table("rel_" + linkVo.getUuid()))
+                                                        .withColumnName("rel_id"))
+                                                .withRightExpression(new LongValue(customViewRelVo.getRelVo().getId()))));
+                        plainSelect.addJoins(join);
+
                         if (!joinMap.containsKey(linkVo.getToCustomViewCiUuid())) {
-                            Join join = new Join();
-                            joinMap.put(linkVo.getToCustomViewCiUuid(), new JoinWrapper(join, joinMap.size()));
+                            //关联目标模型
+                            Join join2 = new Join();
+                            joinMap.put(linkVo.getToCustomViewCiUuid(), new JoinWrapper(join2, joinMap.size()));
 
                             if (linkVo.getJoinType().equalsIgnoreCase(JoinType.LEFTJOIN.getValue())) {
-                                join.withLeft(true);
+                                join2.withLeft(true);
+                            } else if (linkVo.getJoinType().equalsIgnoreCase(JoinType.RIGHTJOIN.getValue())) {
+                                join2.withRight(true);
                             }
-                            join.withRightItem(new SubSelect()
+                            join2.withRightItem(new SubSelect()
                                     .withSelectBody(buildSubSelectForCi(customViewCiVo).getSelectBody())
                                     .withAlias(new Alias("ci_" + customViewCiVo.getUuid())))
                                     .withOnExpression(new EqualsTo()
                                             .withLeftExpression(new Column()
-                                                    .withTable(new Table("ci_" + linkVo.getFromCustomViewCiUuid()))
-                                                    .withColumnName(linkVo.getFromUuid() + "_hash"))
-                                            .withRightExpression(new Column().withTable(new Table("ci_" + linkVo.getToCustomViewCiUuid()))
-                                                    .withColumnName(linkVo.getToUuid() + "_hash")));
-                            plainSelect.addJoins(join);
+                                                    .withTable(new Table("rel_" + linkVo.getUuid()))
+                                                    .withColumnName(customViewRelVo.getRelVo().getDirection().equals(RelDirectionType.FROM.getValue()) ? "to_cientity_id" : "from_cientity_id"))
+                                            .withRightExpression(new Column().withTable(new Table("ci_" + customViewCiVo.getUuid()))
+                                                    .withColumnName("id")));
+                            plainSelect.addJoins(join2);
                         } else {
                             JoinWrapper toJoinWrapper = joinMap.get(linkVo.getToCustomViewCiUuid());
                             JoinWrapper fromJoinWrapper = joinMap.get(linkVo.getFromCustomViewCiUuid());
-                            Join join = (fromJoinWrapper != null && toJoinWrapper.getIndex() < fromJoinWrapper.getIndex()) ? fromJoinWrapper.getJoin() : toJoinWrapper.getJoin();
-                            Expression oldExpression = join.getOnExpression();
-                            join.withOnExpression(new AndExpression()
+                            Join join2 = (fromJoinWrapper != null && toJoinWrapper.getIndex() < fromJoinWrapper.getIndex()) ? fromJoinWrapper.getJoin() : toJoinWrapper.getJoin();
+                            Expression oldExpression = join2.getOnExpression();
+                            join2.withOnExpression(new AndExpression()
                                     .withLeftExpression(oldExpression)
                                     .withRightExpression(new EqualsTo()
                                             .withLeftExpression(new Column()
-                                                    .withTable(new Table("ci_" + linkVo.getFromCustomViewCiUuid()))
-                                                    .withColumnName(linkVo.getFromUuid() + "_hash"))
-                                            .withRightExpression(new Column().withTable(new Table("ci_" + linkVo.getToCustomViewCiUuid()))
-                                                    .withColumnName(linkVo.getToUuid() + "_hash"))));
-
-                        }
-                    } else if (linkVo.getFromType().equals(RelType.REL.getValue()) && linkVo.getToType().equals(RelType.CI.getValue())) {
-                        CustomViewRelVo customViewRelVo = customViewVo.getCustomCiByUuid(linkVo.getFromCustomViewCiUuid()).getRelByUuid(linkVo.getFromUuid());
-                        if (customViewRelVo != null) {
-                            Join join = new Join();
-                            if (linkVo.getJoinType().equalsIgnoreCase(JoinType.LEFTJOIN.getValue())) {
-                                join.withLeft(true);
-                            }
-                            join.withRightItem(new Table().withName("cmdb_relentity")
-                                    .withSchemaName(TenantContext.get().getDbName())
-                                    .withAlias(new Alias("rel_" + linkVo.getUuid())))
-                                    .withOnExpression(new AndExpression()
-                                            .withLeftExpression(new EqualsTo()
-                                                    .withLeftExpression(new Column()
-                                                            .withTable(new Table("ci_" + linkVo.getFromCustomViewCiUuid()))
-                                                            .withColumnName("id"))
-                                                    .withRightExpression(new Column()
-                                                            .withTable(new Table("rel_" + linkVo.getUuid()))
-                                                            .withColumnName(customViewRelVo.getRelVo().getDirection().equals(RelDirectionType.FROM.getValue()) ? "from_cientity_id" : "to_cientity_id")))
-                                            .withRightExpression(new EqualsTo()
-                                                    .withLeftExpression(new Column()
-                                                            .withTable(new Table("rel_" + linkVo.getUuid()))
-                                                            .withColumnName("rel_id"))
-                                                    .withRightExpression(new LongValue(customViewRelVo.getRelVo().getId()))));
-                            plainSelect.addJoins(join);
-
-                            if (!joinMap.containsKey(linkVo.getToCustomViewCiUuid())) {
-                                //关联目标模型
-                                Join join2 = new Join();
-                                joinMap.put(linkVo.getToCustomViewCiUuid(), new JoinWrapper(join2, joinMap.size()));
-
-                                if (linkVo.getJoinType().equalsIgnoreCase(JoinType.LEFTJOIN.getValue())) {
-                                    join2.withLeft(true);
-                                }
-                                join2.withRightItem(new SubSelect()
-                                        .withSelectBody(buildSubSelectForCi(customViewCiVo).getSelectBody())
-                                        .withAlias(new Alias("ci_" + customViewCiVo.getUuid())))
-                                        .withOnExpression(new EqualsTo()
-                                                .withLeftExpression(new Column()
-                                                        .withTable(new Table("rel_" + linkVo.getUuid()))
-                                                        .withColumnName(customViewRelVo.getRelVo().getDirection().equals(RelDirectionType.FROM.getValue()) ? "to_cientity_id" : "from_cientity_id"))
-                                                .withRightExpression(new Column().withTable(new Table("ci_" + customViewCiVo.getUuid()))
-                                                        .withColumnName("id")));
-                                plainSelect.addJoins(join2);
-                            } else {
-                                JoinWrapper toJoinWrapper = joinMap.get(linkVo.getToCustomViewCiUuid());
-                                JoinWrapper fromJoinWrapper = joinMap.get(linkVo.getFromCustomViewCiUuid());
-                                Join join2 = (fromJoinWrapper != null && toJoinWrapper.getIndex() < fromJoinWrapper.getIndex()) ? fromJoinWrapper.getJoin() : toJoinWrapper.getJoin();
-                                Expression oldExpression = join2.getOnExpression();
-                                join2.withOnExpression(new AndExpression()
-                                        .withLeftExpression(oldExpression)
-                                        .withRightExpression(new EqualsTo()
-                                                .withLeftExpression(new Column()
-                                                        .withTable(new Table("rel_" + linkVo.getUuid()))
-                                                        .withColumnName(customViewRelVo.getRelVo().getDirection().equals(RelDirectionType.FROM.getValue()) ? "to_cientity_id" : "from_cientity_id"))
-                                                .withRightExpression(new Column().withTable(new Table("ci_" + customViewCiVo.getUuid()))
-                                                        .withColumnName("id"))));
-                            }
+                                                    .withTable(new Table("rel_" + linkVo.getUuid()))
+                                                    .withColumnName(customViewRelVo.getRelVo().getDirection().equals(RelDirectionType.FROM.getValue()) ? "to_cientity_id" : "from_cientity_id"))
+                                            .withRightExpression(new Column().withTable(new Table("ci_" + customViewCiVo.getUuid()))
+                                                    .withColumnName("id"))));
                         }
                     }
-
-                    linkSet.add(linkVo.getFromUuid() + "-" + linkVo.getToUuid());
-
-                    //获取下一个节点的关系列表
-                    CustomViewCiVo toCustomViewCiVo = customViewVo.getCustomCiByUuid(linkVo.getToCustomViewCiUuid());
-                    nextLinkList.addAll(customViewVo.getLinkListByFromCustomCiUuid(toCustomViewCiVo.getUuid()));
-
                 }
-                //排除已经处理过的关系
-                nextLinkList.removeIf(link -> linkSet.contains(link.getFromUuid() + "-" + link.getToUuid()));
-                linkList = new ArrayList<>(nextLinkList);
+
+                linkSet.add(linkVo.getFromUuid() + "-" + linkVo.getToUuid());
+
+                //获取下一个节点的关系列表
+                CustomViewCiVo toCustomViewCiVo = customViewVo.getCustomCiByUuid(linkVo.getToCustomViewCiUuid());
+                nextLinkList.addAll(customViewVo.getLinkListByFromCustomCiUuid(toCustomViewCiVo.getUuid()));
+
             }
+            //排除已经处理过的关系
+            nextLinkList.removeIf(link -> linkSet.contains(link.getFromUuid() + "-" + link.getToUuid()));
+            linkList = new ArrayList<>(nextLinkList);
+        }
             /*
             GroupByElement groupBy = new GroupByElement();
             groupBy.addGroupByExpression(new Column("id").withTable(new Table("ci_base")));
             plainSelect.setGroupByElement(groupBy);
             */
-        }
         String sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + ".customview_" + customViewVo.getId() + " AS " + select;
         if (logger.isDebugEnabled()) {
             logger.debug(sql);
         }
-        //System.out.println(select);
+        //System.out.println(sql);
         customViewService.buildCustomView(sql);
     }
 

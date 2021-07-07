@@ -12,22 +12,25 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class TestMongodbApi extends PrivateApiComponentBase {
+public class TestQueryMongodbApi extends PrivateApiComponentBase {
     @Autowired
     private MongoTemplate mongoTemplate;
 
     @Override
     public String getToken() {
-        return "/cmdb/mongodb/test";
+        return "/cmdb/mongodb/query";
     }
 
     @Override
@@ -40,16 +43,15 @@ public class TestMongodbApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "json", type = ApiParamType.JSONARRAY)
-    })
+    @Input({@Param(name = "key", type = ApiParamType.STRING), @Param(name = "value", type = ApiParamType.STRING)})
     @Output({@Param(explode = AttrVo.class)})
     @Description(desc = "mongo测试接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        JSONArray jsonList = jsonObj.getJSONArray("json");
-        for (int i = 0; i < jsonList.size(); i++) {
-            mongoTemplate.insert(jsonList.getJSONObject(i), "process");
-        }
-        return null;
+        Query query = new Query();
+        Criteria criteria = Criteria.where(jsonObj.getString("key")).in(jsonObj.getString("value"));
+        query.addCriteria(criteria);
+        List<JSONObject> result = mongoTemplate.find(query, JSONObject.class, "process");
+        return result;
     }
 }
