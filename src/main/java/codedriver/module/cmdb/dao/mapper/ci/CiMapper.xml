@@ -224,7 +224,7 @@
                 AND a.id = #{typeId}
             </if>
         </where>
-        ORDER BY a.sort
+        ORDER BY a.sort,b.lft
     </select>
 
     <select id="getCiByIdList" resultType="codedriver.framework.cmdb.dto.ci.CiVo" useCache="true">
