@@ -193,6 +193,7 @@
         </foreach>
         `ci_base`.`id` AS `id`,
         `ci_base`.`name` AS `name`,
+        `ci_base`.`ci_id` AS ciId,
         <!--由于虚拟模型产生的视图没有以下字段，所以暂时先注释
         `ci_base`.`status` AS `status`,
         `ci_base`.`fcd` AS `fcd`,

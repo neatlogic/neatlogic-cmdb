@@ -61,12 +61,12 @@ public class CiEntityBuilder {
                 String ciName = result.get("ciName") != null ? String.valueOf(result.get("ciName")) : null;
                 String ciIcon = result.get("ciIcon") != null ? String.valueOf(result.get("ciIcon")) : null;
                 String ciLabel = result.get("ciLabel") != null ? String.valueOf(result.get("ciLabel")) : null;
-
+                Long ciId = result.get("ciId") != null ? Long.valueOf(String.valueOf(result.get("ciId"))) : null;
                 if (!ciEntityMap.containsKey(id)) {
                     ciEntityVo = new CiEntityVo();
-                    ciEntityVo.setCiId(ciVo.getId());
-                    ciEntityVo.setCiLabel(ciVo.getLabel());
-                    ciEntityVo.setCiName(ciVo.getName());
+                    ciEntityVo.setCiId(ciId);
+                    ciEntityVo.setCiLabel(ciLabel);
+                    ciEntityVo.setCiName(ciName);
                     ciEntityVo.setId(id);
                     ciEntityVo.setName(name);
                     ciEntityVo.setStatus(status);
@@ -163,12 +163,13 @@ public class CiEntityBuilder {
                 String ciName = result.get("ciName") != null ? String.valueOf(result.get("ciName")) : null;
                 String ciIcon = result.get("ciIcon") != null ? String.valueOf(result.get("ciIcon")) : null;
                 String ciLabel = result.get("ciLabel") != null ? String.valueOf(result.get("ciLabel")) : null;
+                Long ciId = result.get("ciId") != null ? Long.valueOf(String.valueOf(result.get("ciId"))) : null;
 
                 if (ciEntityVo == null) {
                     ciEntityVo = new CiEntityVo();
-                    ciEntityVo.setCiId(ciVo.getId());
-                    ciEntityVo.setCiLabel(ciVo.getLabel());
-                    ciEntityVo.setCiName(ciVo.getName());
+                    ciEntityVo.setCiId(ciId);
+                    ciEntityVo.setCiLabel(ciLabel);
+                    ciEntityVo.setCiName(ciName);
                     ciEntityVo.setId(id);
                     ciEntityVo.setName(name);
                     ciEntityVo.setStatus(status);
