@@ -147,7 +147,7 @@ public class AppModuleResourceListApi extends PrivateApiComponentBase {
                 tableObj.put("tbodyList", tbodyList);
                 tableObj.put("type", resourceTypeVo);
                 tableObj.put("rowNum", searchVo.getRowNum());
-                tableObj.put("pageCount", PageUtil.getPageCount(searchVo.getRowNum(), pageSize));
+                tableObj.put("pageCount", PageUtil.getPageCount(searchVo.getRowNum(), searchVo.getPageSize()));
                 tableObj.put("currentPage", searchVo.getCurrentPage());
                 tableObj.put("pageSize", searchVo.getPageSize());
                 tableList.add(tableObj);
