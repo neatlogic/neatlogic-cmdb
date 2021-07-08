@@ -1,26 +1,22 @@
 /*
- * Copyright(c) 2021. TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
 package codedriver.module.cmdb.api.resourcecenter.tag;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.common.util.PageUtil;
-import codedriver.framework.dto.OperateVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
-import codedriver.module.cmdb.auth.label.RESOURCECENTER_TAG_MODIFY;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -66,7 +62,7 @@ public class TagSearchApi extends PrivateApiComponentBase {
         TagVo tagVo = JSON.toJavaObject(paramObj, TagVo.class);
         List<TagVo> tagList = resourceCenterMapper.searchTag(tagVo);
         resultObj.put("tbodyList", tagList);
-        if (CollectionUtils.isNotEmpty(tagList)) {
+        /*if (CollectionUtils.isNotEmpty(tagList)) {
             Boolean hasAuth = AuthActionChecker.check(RESOURCECENTER_TAG_MODIFY.class.getSimpleName());
             tagList.stream().forEach(o -> {
                 OperateVo delete = new OperateVo("delete", "删除");
@@ -81,7 +77,7 @@ public class TagSearchApi extends PrivateApiComponentBase {
                     delete.setDisabledReason("无权限，请联系管理员");
                 }
             });
-        }
+        }*/
         int rowNum = resourceCenterMapper.searchTagCount(tagVo);
         tagVo.setRowNum(rowNum);
         resultObj.put("rowNum", rowNum);
