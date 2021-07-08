@@ -295,6 +295,9 @@
             <if test="name != null and name != ''">
                 AND `ci_base`.`name` LIKE CONCAT('%',#{name},'%')
             </if>
+            <if test="filterCiId != null">
+                AND `ci_base`.ci_id = #{filterCiId}
+            </if>
             <if test="keyword != null and keyword != ''">
                 AND (`ci_base`.`name` LIKE CONCAT('%',#{keyword},'%')
                 <foreach collection="attrList" item="attr">
