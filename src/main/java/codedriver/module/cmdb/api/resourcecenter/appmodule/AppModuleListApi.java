@@ -10,6 +10,7 @@ import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
+import codedriver.framework.dto.UserVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -17,6 +18,7 @@ import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -50,7 +52,10 @@ public class AppModuleListApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "keyword", type = ApiParamType.STRING, desc = "模糊搜索")
+            @Param(name = "keyword", type = ApiParamType.STRING, desc = "模糊搜索"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
+            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true")
     })
     @Output({
             @Param(explode = BasePageVo.class),
@@ -68,6 +73,14 @@ public class AppModuleListApi extends PrivateApiComponentBase {
             List<Long> idList = resourceCenterMapper.getAppModuleIdList(searchVo);
             if (CollectionUtils.isNotEmpty(idList)) {
                 resourceVoList = resourceCenterMapper.getAppModuleListByIdList(idList, TenantContext.get().getDataDbName());
+                for (ResourceVo resourceVo : resourceVoList) {
+                    if (StringUtils.isNotBlank(resourceVo.getFcu())) {
+                        resourceVo.setFcuVo(new UserVo(resourceVo.getFcu()));
+                    }
+                    if (StringUtils.isNotBlank(resourceVo.getLcu())) {
+                        resourceVo.setLcuVo(new UserVo(resourceVo.getLcu()));
+                    }
+                }
             }
         }
         if (resourceVoList == null) {

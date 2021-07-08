@@ -24,6 +24,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -157,8 +158,12 @@ public class ResourceListApi extends PrivateApiComponentBase {
                         if (CollectionUtils.isNotEmpty(accountVoList)) {
                             resourceVo.setAccountList(accountVoList);
                         }
-                        resourceVo.setFcuVo(new UserVo(resourceVo.getFcu()));
-                        resourceVo.setLcuVo(new UserVo(resourceVo.getLcu()));
+                        if (StringUtils.isNotBlank(resourceVo.getFcu())) {
+                            resourceVo.setFcuVo(new UserVo(resourceVo.getFcu()));
+                        }
+                        if (StringUtils.isNotBlank(resourceVo.getLcu())) {
+                            resourceVo.setLcuVo(new UserVo(resourceVo.getLcu()));
+                        }
                     }
                 }
             }
