@@ -72,6 +72,14 @@ public interface CiEntityMapper {
     List<CiEntityVo> getCiEntityBaseInfoByIdList(@Param("ciEntityIdList") List<Long> ciEntityIdList);
 
     /**
+     * 根据id列表返回多个虚拟配置项基本信息
+     *
+     * @param ciEntityVo 条件
+     * @return 多个配置项
+     */
+    List<CiEntityVo> getVirtualCiEntityBaseInfoByIdList(CiEntityVo ciEntityVo);
+
+    /**
      * 返回除ciEntityId外所有引用了目标配置项的配置项数量
      *
      * @param ciEntityId       配置项id
