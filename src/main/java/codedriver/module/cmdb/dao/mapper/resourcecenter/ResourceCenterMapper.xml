@@ -266,6 +266,8 @@
         <result column="app_module_name" property="appModuleName"/>
         <result column="app_system_id" property="appSystemId"/>
         <result column="app_system_name" property="appSystemName"/>
+        <result column="cluster_id" property="clusterId"/>
+        <result column="cluster_name" property="clusterName"/>
         <collection property="bgList" ofType="codedriver.framework.cmdb.dto.resourcecenter.BgVo">
             <id column="bg_id" property="bgId"/>
             <result column="bg_uuid" property="uuid"/>
@@ -296,6 +298,332 @@
             #{id}
         </foreach>
     </select>
+
+    <select id="getOsResourceCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="int">
+        SELECT COUNT(DISTINCT a.`id`)
+        FROM ${schemaName}.`resource_os` a
+        LEFT JOIN ${schemaName}.`resource_ipobject_env` h on h.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_appmodule` i on i.`resource_id` = a.`id`
+        WHERE a.`type_id` = #{typeId}
+          AND h.`env_id` = #{envId}
+          AND i.`app_module_id` = #{appModuleId}
+    </select>
+
+    <select id="getOsResourceIdList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
+        SELECT DISTINCT a.`id`
+        FROM ${schemaName}.`resource_os` a
+        LEFT JOIN ${schemaName}.`resource_ipobject_env` h on h.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_appmodule` i on i.`resource_id` = a.`id`
+        WHERE a.`type_id` = #{typeId}
+          AND h.`env_id` = #{envId}
+          AND i.`app_module_id` = #{appModuleId}
+            LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="getOsResourceListByIdList" resultMap="resourceCenterMap">
+        SELECT a.`id`, a.`name`, a.`type_id`, a.`type_name`, a.`type_label`, a.`maintenance_window`, a.`description`,
+        b.`bg_id`, b.`bg_name`, b.`bg_uuid`,
+        c.`ip_id`, c.`ip`,
+        d.`netarea_id`, d.`netarea_name`,
+        e.`user_id`, e.`user_name`, e.`user_uuid`,
+        f.`status_id`, f.`status_name`,
+        g.`datacenter_id`, g.`datacenter_name`,
+        h.`env_id`, h.`env_name`,
+        n.`cluster_id`,
+        n.`cluster_name`
+        FROM ${schemaName}.`resource_os` a
+        LEFT JOIN ${schemaName}.`resource_ipobject_bg` b ON b.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_ip` c ON c.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_netarea` d ON d.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_owner` e ON e.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_status` f ON f.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_datacenter` g on g.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_env` h on h.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_os_oscluster` n ON n.`resource_id` = a.`id`
+        WHERE a.`id` IN
+        <foreach collection="idList" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getStorageResourceCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="int">
+        SELECT COUNT(DISTINCT a.`id`)
+        FROM ${schemaName}.`resource_storage` a
+        LEFT JOIN ${schemaName}.`resource_ipobject_env` h on h.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_appmodule` i on i.`resource_id` = a.`id`
+        WHERE a.`type_id` = #{typeId}
+          AND h.`env_id` = #{envId}
+          AND i.`app_module_id` = #{appModuleId}
+    </select>
+
+    <select id="getStorageResourceIdList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
+        SELECT DISTINCT a.`id`
+        FROM ${schemaName}.`resource_storage` a
+        LEFT JOIN ${schemaName}.`resource_ipobject_env` h on h.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_appmodule` i on i.`resource_id` = a.`id`
+        WHERE a.`type_id` = #{typeId}
+          AND h.`env_id` = #{envId}
+          AND i.`app_module_id` = #{appModuleId}
+            LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="getStorageResourceListByIdList" resultMap="resourceCenterMap">
+        SELECT a.`id`, a.`name`, a.`type_id`, a.`type_name`, a.`type_label`, a.`maintenance_window`, a.`description`,
+        b.`bg_id`, b.`bg_name`, b.`bg_uuid`,
+        c.`ip_id`, c.`ip`,
+        d.`netarea_id`, d.`netarea_name`,
+        e.`user_id`, e.`user_name`, e.`user_uuid`,
+        f.`status_id`, f.`status_name`,
+        g.`datacenter_id`, g.`datacenter_name`,
+        h.`env_id`, h.`env_name`
+        FROM ${schemaName}.`resource_storage` a
+        LEFT JOIN ${schemaName}.`resource_ipobject_bg` b ON b.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_ip` c ON c.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_netarea` d ON d.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_owner` e ON e.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_status` f ON f.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_datacenter` g on g.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_env` h on h.`resource_id` = a.`id`
+        WHERE a.`id` IN
+        <foreach collection="idList" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getNetDevResourceCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="int">
+        SELECT COUNT(DISTINCT a.`id`)
+        FROM ${schemaName}.`resource_netdev` a
+        LEFT JOIN ${schemaName}.`resource_ipobject_env` h on h.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_appmodule` i on i.`resource_id` = a.`id`
+        WHERE a.`type_id` = #{typeId}
+          AND h.`env_id` = #{envId}
+          AND i.`app_module_id` = #{appModuleId}
+    </select>
+
+    <select id="getNetDevResourceIdList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
+        SELECT DISTINCT a.`id`
+        FROM ${schemaName}.`resource_netdev` a
+        LEFT JOIN ${schemaName}.`resource_ipobject_env` h on h.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_appmodule` i on i.`resource_id` = a.`id`
+        WHERE a.`type_id` = #{typeId}
+          AND h.`env_id` = #{envId}
+          AND i.`app_module_id` = #{appModuleId}
+            LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="getNetDevResourceListByIdList" resultMap="resourceCenterMap">
+        SELECT a.`id`, a.`name`, a.`type_id`, a.`type_name`, a.`type_label`, a.`maintenance_window`, a.`description`,
+        b.`bg_id`, b.`bg_name`, b.`bg_uuid`,
+        c.`ip_id`, c.`ip`,
+        d.`netarea_id`, d.`netarea_name`,
+        e.`user_id`, e.`user_name`, e.`user_uuid`,
+        f.`status_id`, f.`status_name`,
+        g.`datacenter_id`, g.`datacenter_name`,
+        h.`env_id`, h.`env_name`
+        FROM ${schemaName}.`resource_netdev` a
+        LEFT JOIN ${schemaName}.`resource_ipobject_bg` b ON b.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_ip` c ON c.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_netarea` d ON d.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_owner` e ON e.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_status` f ON f.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_datacenter` g on g.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_env` h on h.`resource_id` = a.`id`
+        WHERE a.`id` IN
+        <foreach collection="idList" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getAppInstanceResourceCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="int">
+        SELECT COUNT(DISTINCT a.`id`)
+        FROM ${schemaName}.`resource_appinstance` a
+        LEFT JOIN ${schemaName}.`resource_ipobject_env` h on h.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_appmodule` i on i.`resource_id` = a.`id`
+        WHERE a.`type_id` = #{typeId}
+          AND h.`env_id` = #{envId}
+          AND i.`app_module_id` = #{appModuleId}
+    </select>
+
+    <select id="getAppInstanceResourceIdList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
+        SELECT DISTINCT a.`id`
+        FROM ${schemaName}.`resource_appinstance` a
+        LEFT JOIN ${schemaName}.`resource_ipobject_env` h on h.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_appmodule` i on i.`resource_id` = a.`id`
+        WHERE a.`type_id` = #{typeId}
+          AND h.`env_id` = #{envId}
+          AND i.`app_module_id` = #{appModuleId}
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="getAppInstanceResourceListByIdList" resultMap="resourceCenterMap">
+        SELECT a.`id`, a.`name`, a.`type_id`, a.`type_name`, a.`type_label`, a.`maintenance_window`, a.`description`,
+        b.`bg_id`, b.`bg_name`, b.`bg_uuid`,
+        c.`ip_id`, c.`ip`,
+        d.`netarea_id`, d.`netarea_name`,
+        e.`user_id`, e.`user_name`, e.`user_uuid`,
+        f.`status_id`, f.`status_name`,
+        g.`datacenter_id`, g.`datacenter_name`,
+        h.`env_id`, h.`env_name`,
+        m.`port`,
+        n.`cluster_id`,
+        n.`cluster_name`
+        FROM ${schemaName}.`resource_appinstance` a
+        LEFT JOIN ${schemaName}.`resource_ipobject_bg` b ON b.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_ip` c ON c.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_netarea` d ON d.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_owner` e ON e.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_status` f ON f.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_datacenter` g on g.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_env` h on h.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_softwareservice` m ON m.`id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_appinstance_appinstancecluster` n ON n.`resource_id` = a.`id`
+        WHERE a.`id` IN
+        <foreach collection="idList" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getDbInstanceResourceCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="int">
+        SELECT COUNT(DISTINCT a.`id`)
+        FROM ${schemaName}.`resource_dbinstance` a
+        LEFT JOIN ${schemaName}.`resource_ipobject_env` h on h.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_appmodule` i on i.`resource_id` = a.`id`
+        WHERE a.`type_id` = #{typeId}
+          AND h.`env_id` = #{envId}
+          AND i.`app_module_id` = #{appModuleId}
+    </select>
+
+    <select id="getDbInstanceResourceIdList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
+        SELECT DISTINCT a.`id`
+        FROM ${schemaName}.`resource_dbinstance` a
+        LEFT JOIN ${schemaName}.`resource_ipobject_env` h on h.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_appmodule` i on i.`resource_id` = a.`id`
+        WHERE a.`type_id` = #{typeId}
+          AND h.`env_id` = #{envId}
+          AND i.`app_module_id` = #{appModuleId}
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="getDbInstanceResourceListByIdList" resultMap="resourceCenterMap">
+        SELECT a.`id`, a.`name`, a.`type_id`, a.`type_name`, a.`type_label`, a.`maintenance_window`, a.`description`,
+        b.`bg_id`, b.`bg_name`, b.`bg_uuid`,
+        c.`ip_id`, c.`ip`,
+        d.`netarea_id`, d.`netarea_name`,
+        e.`user_id`, e.`user_name`, e.`user_uuid`,
+        f.`status_id`, f.`status_name`,
+        g.`datacenter_id`, g.`datacenter_name`,
+        h.`env_id`, h.`env_name`,
+        m.`port`,
+        n.`cluster_id`,
+        n.`cluster_name`
+        FROM ${schemaName}.`resource_dbinstance` a
+        LEFT JOIN ${schemaName}.`resource_ipobject_bg` b ON b.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_ip` c ON c.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_netarea` d ON d.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_owner` e ON e.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_status` f ON f.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_datacenter` g on g.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_env` h on h.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_softwareservice` m ON m.`id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_dbinstance_dbcluster` n ON n.`resource_id` = a.`id`
+        WHERE a.`id` IN
+        <foreach collection="idList" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getAppInstanceClusterResourceCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="int">
+        SELECT COUNT(DISTINCT a.`id`)
+        FROM ${schemaName}.`resource_appinstance_cluster` a
+        LEFT JOIN ${schemaName}.`resource_ipobject_env` h on h.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_appmodule` i on i.`resource_id` = a.`id`
+        WHERE a.`type_id` = #{typeId}
+          AND h.`env_id` = #{envId}
+          AND i.`app_module_id` = #{appModuleId}
+    </select>
+
+    <select id="getAppInstanceClusterResourceIdList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
+        SELECT DISTINCT a.`id`
+        FROM ${schemaName}.`resource_appinstance_cluster` a
+        LEFT JOIN ${schemaName}.`resource_ipobject_env` h on h.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_appmodule` i on i.`resource_id` = a.`id`
+        WHERE a.`type_id` = #{typeId}
+          AND h.`env_id` = #{envId}
+          AND i.`app_module_id` = #{appModuleId}
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="getAppInstanceClusterResourceListByIdList" resultMap="resourceCenterMap">
+        SELECT a.`id`, a.`name`, a.`type_id`, a.`type_name`, a.`type_label`, a.`maintenance_window`, a.`description`,
+        b.`bg_id`, b.`bg_name`, b.`bg_uuid`,
+        c.`ip_id`, c.`ip`,
+        d.`netarea_id`, d.`netarea_name`,
+        e.`user_id`, e.`user_name`, e.`user_uuid`,
+        f.`status_id`, f.`status_name`,
+        g.`datacenter_id`, g.`datacenter_name`,
+        h.`env_id`, h.`env_name`,
+        m.`port`
+        FROM ${schemaName}.`resource_appinstance_cluster` a
+        LEFT JOIN ${schemaName}.`resource_ipobject_bg` b ON b.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_ip` c ON c.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_netarea` d ON d.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_owner` e ON e.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_status` f ON f.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_datacenter` g on g.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_env` h on h.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_softwareservice` m ON m.`id` = a.`id`
+        WHERE a.`id` IN
+        <foreach collection="idList" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getDbInstanceClusterResourceCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="int">
+        SELECT COUNT(DISTINCT a.`id`)
+        FROM ${schemaName}.`resource_db_cluster` a
+        LEFT JOIN ${schemaName}.`resource_ipobject_env` h on h.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_appmodule` i on i.`resource_id` = a.`id`
+        WHERE a.`type_id` = #{typeId}
+          AND h.`env_id` = #{envId}
+          AND i.`app_module_id` = #{appModuleId}
+    </select>
+
+    <select id="getDbInstanceClusterResourceIdList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
+        SELECT DISTINCT a.`id`
+        FROM ${schemaName}.`resource_db_cluster` a
+        LEFT JOIN ${schemaName}.`resource_ipobject_env` h on h.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_appmodule` i on i.`resource_id` = a.`id`
+        WHERE a.`type_id` = #{typeId}
+          AND h.`env_id` = #{envId}
+          AND i.`app_module_id` = #{appModuleId}
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="getDbInstanceClusterResourceListByIdList" resultMap="resourceCenterMap">
+        SELECT a.`id`, a.`name`, a.`type_id`, a.`type_name`, a.`type_label`, a.`maintenance_window`, a.`description`,
+        b.`bg_id`, b.`bg_name`, b.`bg_uuid`,
+        c.`ip_id`, c.`ip`,
+        d.`netarea_id`, d.`netarea_name`,
+        e.`user_id`, e.`user_name`, e.`user_uuid`,
+        f.`status_id`, f.`status_name`,
+        g.`datacenter_id`, g.`datacenter_name`,
+        h.`env_id`, h.`env_name`,
+        m.`port`
+        FROM ${schemaName}.`resource_db_cluster` a
+        LEFT JOIN ${schemaName}.`resource_ipobject_bg` b ON b.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_ip` c ON c.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_netarea` d ON d.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_owner` e ON e.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_status` f ON f.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_datacenter` g on g.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_ipobject_env` h on h.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_softwareservice` m ON m.`id` = a.`id`
+        WHERE a.`id` IN
+        <foreach collection="idList" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
     <select id="getResourceIdByIpAndPortAndName" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
         SELECT a.`id`
         FROM ${schemaName}.`resource_ipobject` a
@@ -593,8 +921,8 @@
                c.`bg_id`, c.`bg_name`, c.`bg_uuid`,
                e.`id` AS `app_system_id`, e.`name` AS app_system_name
         FROM ${schemaName}.`resource_appmodule` a
-        LEFT JOIN ${schemaName}.`resource_ipobject_owner` b ON b.`resource_id` = a.`id`
-        LEFT JOIN ${schemaName}.`resource_ipobject_bg` c ON c.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_appmodule_owner` b ON b.`resource_id` = a.`id`
+        LEFT JOIN ${schemaName}.`resource_appmodule_bg` c ON c.`resource_id` = a.`id`
         LEFT JOIN ${schemaName}.`resource_appsystem_appmodule` d on d.`app_module_id` = a.`id`
         LEFT JOIN ${schemaName}.`resource_appsystem` e on e.`id` = d.`resource_id`
         WHERE a.`id` IN
