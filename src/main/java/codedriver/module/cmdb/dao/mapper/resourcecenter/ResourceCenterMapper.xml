@@ -268,6 +268,7 @@
         <result column="app_system_name" property="appSystemName"/>
         <result column="cluster_id" property="clusterId"/>
         <result column="cluster_name" property="clusterName"/>
+        <result column="cluster_type_id" property="clusterTypeId"/>
         <collection property="bgList" ofType="codedriver.framework.cmdb.dto.resourcecenter.BgVo">
             <id column="bg_id" property="bgId"/>
             <result column="bg_uuid" property="uuid"/>
@@ -330,6 +331,7 @@
         g.`datacenter_id`, g.`datacenter_name`,
         h.`env_id`, h.`env_name`,
         n.`cluster_id`,
+        n.`cluster_type_id`,
         n.`cluster_name`
         FROM ${schemaName}.`resource_os` a
         LEFT JOIN ${schemaName}.`resource_ipobject_bg` b ON b.`resource_id` = a.`id`
@@ -466,6 +468,7 @@
         h.`env_id`, h.`env_name`,
         m.`port`,
         n.`cluster_id`,
+        n.`cluster_type_id`,
         n.`cluster_name`
         FROM ${schemaName}.`resource_appinstance` a
         LEFT JOIN ${schemaName}.`resource_ipobject_bg` b ON b.`resource_id` = a.`id`
@@ -515,6 +518,7 @@
         h.`env_id`, h.`env_name`,
         m.`port`,
         n.`cluster_id`,
+        n.`cluster_type_id`,
         n.`cluster_name`
         FROM ${schemaName}.`resource_dbinstance` a
         LEFT JOIN ${schemaName}.`resource_ipobject_bg` b ON b.`resource_id` = a.`id`
