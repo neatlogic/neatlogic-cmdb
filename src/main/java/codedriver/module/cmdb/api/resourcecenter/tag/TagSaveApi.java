@@ -6,6 +6,7 @@
 package codedriver.module.cmdb.api.resourcecenter.tag;
 
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterTagNameRepeatsException;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterTagNotFoundException;
@@ -16,7 +17,6 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.IValid;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.RESOURCECENTER_TAG_MODIFY;
-import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
