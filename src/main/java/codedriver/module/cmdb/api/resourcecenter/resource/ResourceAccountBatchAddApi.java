@@ -8,7 +8,9 @@ package codedriver.module.cmdb.api.resourcecenter.resource;
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
+import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceAccountVo;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterAccountNotFoundException;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -27,8 +29,7 @@ import org.apache.commons.collections4.ListUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author linbq
@@ -64,6 +65,7 @@ public class ResourceAccountBatchAddApi extends PrivateApiComponentBase {
     @Description(desc = "批量添加资源账号")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
+        List<String> resultList = new ArrayList<>();
         JSONArray resourceIdArray = paramObj.getJSONArray("resourceIdList");
         if (CollectionUtils.isEmpty(resourceIdArray)) {
             throw new ParamNotExistsException("resourceIdList");
@@ -75,7 +77,13 @@ public class ResourceAccountBatchAddApi extends PrivateApiComponentBase {
 
         String schemaName = TenantContext.get().getDataDbName();
         List<Long> resourceIdList = resourceIdArray.toJavaList(Long.class);
-        List<Long> existResourceIdList = resourceCenterMapper.checkResourceIdListIsExists(resourceIdList, schemaName);
+        Map<Long, ResourceVo> resourceVoMap = new HashMap<>();
+        List<Long> existResourceIdList = new ArrayList<>();
+        List<ResourceVo> resourceVoList = resourceCenterMapper.getResourceListByIdList(resourceIdList, schemaName);
+        for (ResourceVo resourceVo : resourceVoList) {
+            resourceVoMap.put(resourceVo.getId(), resourceVo);
+            existResourceIdList.add(resourceVo.getId());
+        }
         if (resourceIdList.size() > existResourceIdList.size()) {
             List<Long> notFoundIdList = ListUtils.removeAll(resourceIdList, existResourceIdList);
             if (CollectionUtils.isNotEmpty(notFoundIdList)) {
@@ -90,7 +98,22 @@ public class ResourceAccountBatchAddApi extends PrivateApiComponentBase {
         }
 
         List<Long> accountIdList = accountIdArray.toJavaList(Long.class);
-        List<Long> existAccountIdList = resourceCenterMapper.checkAccountIdListIsExists(accountIdList);
+        Map<String, AccountVo> accountVoMap = new HashMap<>();
+        List<Long> existAccountIdList = new ArrayList<>();
+        Set<Long> excludeAccountIdSet = new HashSet<>();
+        List<AccountVo> accountVoList = resourceCenterMapper.getAccountListByIdList(accountIdList);
+        for (AccountVo accountVo : accountVoList) {
+            existAccountIdList.add(accountVo.getId());
+            String key = accountVo.getProtocol() + "#" + accountVo.getAccount();
+            AccountVo account = accountVoMap.get(key);
+            if (account == null) {
+                accountVoMap.put(key, accountVo);
+            } else {
+                resultList.add("选中项中\"" + accountVo.getName() + "（" + accountVo.getProtocol() + "/" + accountVo.getAccount() + "）\"与\"" + account.getName() + "（" + account.getProtocol() + "/" + account.getAccount() + "）\"的协议相同且用户名相同，同一资产不可绑定多个协议相同且用户名相同的账号");
+                excludeAccountIdSet.add(accountVo.getId());
+                excludeAccountIdSet.add(account.getId());
+            }
+        }
         if (accountIdList.size() > existAccountIdList.size()) {
             List<Long> notFoundIdList = ListUtils.removeAll(accountIdList, existAccountIdList);
             if (CollectionUtils.isNotEmpty(notFoundIdList)) {
@@ -106,8 +129,16 @@ public class ResourceAccountBatchAddApi extends PrivateApiComponentBase {
 
         List<ResourceAccountVo> resourceAccountVoList = new ArrayList<>();
         for (Long resourceId : resourceIdList) {
-            for (Long accountId : accountIdList) {
-                resourceAccountVoList.add(new ResourceAccountVo(resourceId, accountId));
+            for (AccountVo accountVo : accountVoList) {
+                if (excludeAccountIdSet.contains(accountVo.getId())) {
+                    continue;
+                }
+                if (resourceCenterMapper.checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol(resourceId, accountVo.getAccount(), accountVo.getProtocol()) != null) {
+                    ResourceVo resourecVo = resourceVoMap.get(resourceId);
+                    resultList.add(resourecVo.getName() + "（" + resourecVo.getIp() + "）'已绑定账号\"" + accountVo.getName() + "（" + accountVo.getProtocol() + "/" + accountVo.getAccount() + "）\"，同一资产不可绑定多个协议相同且用户名相同的账号");
+                    continue;
+                }
+                resourceAccountVoList.add(new ResourceAccountVo(resourceId, accountVo.getId()));
                 if (resourceAccountVoList.size() > 100) {
                     resourceCenterMapper.insertIgnoreResourceAccount(resourceAccountVoList);
                     resourceAccountVoList.clear();
@@ -117,6 +148,6 @@ public class ResourceAccountBatchAddApi extends PrivateApiComponentBase {
         if (CollectionUtils.isNotEmpty(resourceAccountVoList)) {
             resourceCenterMapper.insertIgnoreResourceAccount(resourceAccountVoList);
         }
-        return null;
+        return resultList;
     }
 }

@@ -8,6 +8,7 @@ package codedriver.module.cmdb.api.resourcecenter.resource;
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
+import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceAccountVo;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterAccountNotFoundException;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceNotFoundException;
@@ -27,8 +28,7 @@ import org.apache.commons.collections4.ListUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author linbq
@@ -64,6 +64,7 @@ public class ResourceAccountSaveApi extends PrivateApiComponentBase {
     @Description(desc = "保存资源账号")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
+        List<String> resultList = new ArrayList<>();
         JSONArray accountIdArray = paramObj.getJSONArray("accountIdList");
         if (CollectionUtils.isEmpty(accountIdArray)) {
             throw new ParamNotExistsException("accountIdList");
@@ -74,7 +75,22 @@ public class ResourceAccountSaveApi extends PrivateApiComponentBase {
             throw new ResourceNotFoundException(resourceId);
         }
         List<Long> accountIdList = accountIdArray.toJavaList(Long.class);
-        List<Long> existAccountIdList = resourceCenterMapper.checkAccountIdListIsExists(accountIdList);
+        Map<String, AccountVo> accountVoMap = new HashMap<>();
+        List<Long> existAccountIdList = new ArrayList<>();
+        Set<Long> excludeAccountIdSet = new HashSet<>();
+        List<AccountVo> accountVoList = resourceCenterMapper.getAccountListByIdList(accountIdList);
+        for (AccountVo accountVo : accountVoList) {
+            existAccountIdList.add(accountVo.getId());
+            String key = accountVo.getProtocol() + "#" + accountVo.getAccount();
+            AccountVo account = accountVoMap.get(key);
+            if (account == null) {
+                accountVoMap.put(key, accountVo);
+            } else {
+                resultList.add("选中项中\"" + accountVo.getName() + "（" + accountVo.getProtocol() + "/" + accountVo.getAccount() + "）\"与\"" + account.getName() + "（" + account.getProtocol() + "/" + account.getAccount() + "）\"的协议相同且用户名相同，同一资产不可绑定多个协议相同且用户名相同的账号");
+                excludeAccountIdSet.add(accountVo.getId());
+                excludeAccountIdSet.add(account.getId());
+            }
+        }
         if (accountIdList.size() > existAccountIdList.size()) {
             List<Long> notFoundIdList = ListUtils.removeAll(accountIdList, existAccountIdList);
             if (CollectionUtils.isNotEmpty(notFoundIdList)) {
@@ -87,7 +103,9 @@ public class ResourceAccountSaveApi extends PrivateApiComponentBase {
                 throw new ResourceCenterAccountNotFoundException(stringBuilder.toString());
             }
         }
+
         resourceCenterMapper.deleteResourceAccountByResourceId(resourceId);
+        accountIdList.removeAll(excludeAccountIdSet);
         List<ResourceAccountVo> resourceAccountVoList = new ArrayList<>();
         for (Long accountId : accountIdList) {
             resourceAccountVoList.add(new ResourceAccountVo(resourceId, accountId));
@@ -99,6 +117,6 @@ public class ResourceAccountSaveApi extends PrivateApiComponentBase {
         if (CollectionUtils.isNotEmpty(resourceAccountVoList)) {
             resourceCenterMapper.insertIgnoreResourceAccount(resourceAccountVoList);
         }
-        return null;
+        return resultList;
     }
 }
