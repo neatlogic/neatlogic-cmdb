@@ -87,11 +87,8 @@ public class ResourceTagBatchDeleteApi extends PrivateApiComponentBase {
                 throw new ResourceNotFoundException(stringBuilder.toString());
             }
         }
-        List<String> tagList = tagArray.toJavaList(String.class);
-        List<TagVo> existTagList = resourceCenterMapper.getTagListByTagNameList(tagList);
-        List<Long> tagIdList = existTagList.stream().map(TagVo::getId).collect(Collectors.toList());
-
-        resourceCenterMapper.deleteResourceTagByResourceIdAndTagIdList(resourceIdList, tagIdList);
+        List<Long> tagList = tagArray.toJavaList(Long.class);
+        resourceCenterMapper.deleteResourceTagByResourceIdAndTagIdList(resourceIdList, tagList);
         return null;
     }
 }
