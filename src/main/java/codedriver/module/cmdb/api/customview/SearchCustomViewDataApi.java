@@ -7,7 +7,6 @@ package codedriver.module.cmdb.api.customview;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.customview.CustomViewConditionVo;
-import codedriver.framework.cmdb.dto.customview.CustomViewVo;
 import codedriver.framework.cmdb.enums.customview.SearchMode;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
@@ -47,17 +46,22 @@ public class SearchCustomViewDataApi extends PrivateApiComponentBase {
             @Param(name = "searchMode", type = ApiParamType.ENUM, rule = "normal,group", isRequired = true, desc = "搜索模式：normal或group"),
             @Param(name = "groupBy", type = ApiParamType.STRING, desc = "分组属性的uuid")
     })
-    @Output({@Param(explode = CustomViewVo.class)})
+    @Output({@Param(name = "dataList", type = ApiParamType.JSONARRAY, desc = "结果集"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页大小")})
     @Description(desc = "获取自定义视图数据接口")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         CustomViewConditionVo customViewConditionVo = JSONObject.toJavaObject(paramObj, CustomViewConditionVo.class);
         customViewConditionVo.setCustomViewId(paramObj.getLong("id"));
+        JSONObject returnObj = new JSONObject();
         if (customViewConditionVo.getSearchMode().equals(SearchMode.NORMAL.getValue())) {
-            return customViewDataService.searchCustomViewData(customViewConditionVo);
+            returnObj.put("dataList", customViewDataService.searchCustomViewData(customViewConditionVo));
         } else {
-            return customViewDataService.searchCustomViewDataGroup(customViewConditionVo);
+            returnObj.put("dataList", customViewDataService.searchCustomViewDataGroup(customViewConditionVo));
         }
+        returnObj.put("pageSize", customViewConditionVo.getPageSize());
+        returnObj.put("currentPage", customViewConditionVo.getCurrentPage());
+        return returnObj;
     }
 
 

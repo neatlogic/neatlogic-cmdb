@@ -20,6 +20,8 @@ import codedriver.framework.cmdb.exception.ci.CiUniqueRuleException;
 import codedriver.framework.cmdb.exception.cientity.*;
 import codedriver.framework.cmdb.validator.core.IValidator;
 import codedriver.framework.cmdb.validator.core.ValidatorFactory;
+import codedriver.framework.mq.core.ITopic;
+import codedriver.framework.mq.core.TopicFactory;
 import codedriver.framework.transaction.core.AfterTransactionJob;
 import codedriver.module.cmdb.attrexpression.AttrExpressionRebuildManager;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
@@ -858,6 +860,12 @@ public class CiEntityServiceImpl implements CiEntityService {
             this.deleteCiEntity(deleteCiEntityVo);
             transactionVo.setStatus(TransactionStatus.COMMITED.getValue());
             transactionMapper.updateTransactionStatus(transactionVo);
+
+            //发送消息到消息队列
+            ITopic<CiEntityTransactionVo> topic = TopicFactory.getTopic("cmdb/cientity/delete");
+            if (topic != null) {
+                topic.send(ciEntityTransactionVo);
+            }
             return null;
         } else {
             /*
