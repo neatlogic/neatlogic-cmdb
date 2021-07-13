@@ -65,7 +65,8 @@ public class ResourceAccountBatchAddApi extends PrivateApiComponentBase {
     @Description(desc = "批量添加资源账号")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        List<String> resultList = new ArrayList<>();
+        int successCount = 0;
+        List<String> failureReasonList = new ArrayList<>();
         JSONArray resourceIdArray = paramObj.getJSONArray("resourceIdList");
         if (CollectionUtils.isEmpty(resourceIdArray)) {
             throw new ParamNotExistsException("resourceIdList");
@@ -109,7 +110,7 @@ public class ResourceAccountBatchAddApi extends PrivateApiComponentBase {
             if (account == null) {
                 accountVoMap.put(key, accountVo);
             } else {
-                resultList.add("选中项中\"" + accountVo.getName() + "（" + accountVo.getProtocol() + "/" + accountVo.getAccount() + "）\"与\"" + account.getName() + "（" + account.getProtocol() + "/" + account.getAccount() + "）\"的协议相同且用户名相同，同一资产不可绑定多个协议相同且用户名相同的账号");
+                failureReasonList.add("选中项中\"" + accountVo.getName() + "（" + accountVo.getProtocol() + "/" + accountVo.getAccount() + "）\"与\"" + account.getName() + "（" + account.getProtocol() + "/" + account.getAccount() + "）\"的协议相同且用户名相同，同一资产不可绑定多个协议相同且用户名相同的账号");
                 excludeAccountIdSet.add(accountVo.getId());
                 excludeAccountIdSet.add(account.getId());
             }
@@ -135,10 +136,11 @@ public class ResourceAccountBatchAddApi extends PrivateApiComponentBase {
                 }
                 if (resourceCenterMapper.checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol(resourceId, accountVo.getAccount(), accountVo.getProtocol()) != null) {
                     ResourceVo resourecVo = resourceVoMap.get(resourceId);
-                    resultList.add(resourecVo.getName() + "（" + resourecVo.getIp() + "）'已绑定账号\"" + accountVo.getName() + "（" + accountVo.getProtocol() + "/" + accountVo.getAccount() + "）\"，同一资产不可绑定多个协议相同且用户名相同的账号");
+                    failureReasonList.add(resourecVo.getName() + "（" + resourecVo.getIp() + "）'已绑定账号\"" + accountVo.getName() + "（" + accountVo.getProtocol() + "/" + accountVo.getAccount() + "）\"，同一资产不可绑定多个协议相同且用户名相同的账号");
                     continue;
                 }
                 resourceAccountVoList.add(new ResourceAccountVo(resourceId, accountVo.getId()));
+                successCount++;
                 if (resourceAccountVoList.size() > 100) {
                     resourceCenterMapper.insertIgnoreResourceAccount(resourceAccountVoList);
                     resourceAccountVoList.clear();
@@ -148,6 +150,10 @@ public class ResourceAccountBatchAddApi extends PrivateApiComponentBase {
         if (CollectionUtils.isNotEmpty(resourceAccountVoList)) {
             resourceCenterMapper.insertIgnoreResourceAccount(resourceAccountVoList);
         }
-        return resultList;
+        JSONObject resultObj = new JSONObject();
+        resultObj.put("successCount", successCount);
+        resultObj.put("failureCount", failureReasonList.size());
+        resultObj.put("failureReasonList", failureReasonList);
+        return resultObj;
     }
 }
