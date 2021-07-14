@@ -15,6 +15,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -63,30 +64,41 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
             @Param(name = "inputNodeList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "输入节点列表")
     })
     @Output({
-            @Param(name = "Return", type = ApiParamType.JSONARRAY, desc = "校验不成功节点列表")
+            @Param(name = "count", type = ApiParamType.INTEGER, desc = "校验不成功个数"),
+            @Param(name = "list", type = ApiParamType.JSONARRAY, desc = "校验不成功列表")
     })
     @Description(desc = "校验资源信息合法性")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        Set<String> resultSet = new HashSet<>();
+        JSONArray resultArray = new JSONArray();
+        JSONObject resultObj = new JSONObject();
+        resultObj.put("list", resultArray);
         String executeUser = jsonObj.getString("executeUser");
         String protocol = jsonObj.getString("protocol");
         List<Long> accountIdList = resourceCenterMapper.getAccountIdListByAccountAndProtocol(executeUser, protocol);
         if (CollectionUtils.isEmpty(accountIdList)) {
-            resultSet.add("'" + protocol + "'协议中不存在'" + executeUser + "'");
-            return resultSet;
+            JSONObject executeUserIsNotFoundInProtocolObj = new JSONObject();
+            executeUserIsNotFoundInProtocolObj.put("type", "executeUserIsNotFoundInProtocol");
+            executeUserIsNotFoundInProtocolObj.put("protocol", protocol);
+            executeUserIsNotFoundInProtocolObj.put("executeUser", executeUser);
+            resultArray.add(executeUserIsNotFoundInProtocolObj);
+            resultObj.put("count", 1);
+            return resultObj;
         }
+        List<ResourceVo> executeUserIsNotFoundInResourceList = new ArrayList<>();
+        JSONObject executeUserIsNotFoundInResourceObj = new JSONObject();
+        executeUserIsNotFoundInResourceObj.put("type", "executeUserIsNotFoundInResource");
+        executeUserIsNotFoundInResourceObj.put("executeUser", executeUser);
+        executeUserIsNotFoundInResourceObj.put("list", executeUserIsNotFoundInResourceList);
+        resultArray.add(executeUserIsNotFoundInResourceObj);
+        String schemaName = TenantContext.get().getDataDbName();
         List<Long> tagList = jsonObj.getJSONArray("tagList").toJavaList(Long.class);
         if (CollectionUtils.isNotEmpty(tagList)) {
             List<Long> resourceIdList = resourceCenterMapper.getNoCorrespondingAccountResourceIdListByTagListAndAccountIdAndProtocol(tagList, executeUser, protocol);
             for (Long resourecId : resourceIdList) {
-                ResourceVo resourceVo = resourceCenterMapper.getResourceIpPortById(resourecId, TenantContext.get().getDataDbName());
+                ResourceVo resourceVo = resourceCenterMapper.getResourceIpPortById(resourecId, schemaName);
                 if (resourceVo != null) {
-                    String resourceInfo = resourceVo.getIp();
-                    if (resourceVo.getPort() != null) {
-                        resourceInfo += ":" + resourceVo.getPort();
-                    }
-                    resultSet.add(resourceInfo + "未找到" + executeUser + "执行用户");
+                    executeUserIsNotFoundInResourceList.add(resourceVo);
                 }
             }
         }
@@ -94,32 +106,30 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
         for (ResourceVo resourceVo : selectNodeList) {
             Long resourceId = resourceCenterMapper.checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol(resourceVo.getId(), executeUser, protocol);
             if (resourceId == null) {
-                String resourceInfo = resourceVo.getIp();
-                if (resourceVo.getPort() != null) {
-                    resourceInfo += ":" + resourceVo.getPort();
-                }
-                resultSet.add(resourceInfo + "未找到" + executeUser + "执行用户");
+                executeUserIsNotFoundInResourceList.add(resourceVo);
             }
         }
+        List<ResourceSearchVo> resourceIsNotFoundList = new ArrayList<>();
+        JSONObject resourceIsNotFoundObj = new JSONObject();
+        resourceIsNotFoundObj.put("type", "resourceIsNotFound");
+        resourceIsNotFoundObj.put("list", resourceIsNotFoundList);
+        resultArray.add(resourceIsNotFoundObj);
         List<ResourceSearchVo> inputNodeList = jsonObj.getJSONArray("inputNodeList").toJavaList(ResourceSearchVo.class);
         for (ResourceSearchVo searchVo : inputNodeList) {
-            String resourceInfo = searchVo.getIp();
-            if (StringUtils.isNotBlank(searchVo.getPort())) {
-                resourceInfo += ":" + searchVo.getPort();
-                if (StringUtils.isNotBlank(searchVo.getName())) {
-                    resourceInfo += "/" + searchVo.getName();
-                }
-            }
             Long resourceId = resourceCenterMapper.getResourceIdByIpAndPortAndName(searchVo);
             if (resourceId == null) {
-                resultSet.add(resourceInfo + "未在系统中找到对应目标");
+                resourceIsNotFoundList.add(searchVo);
             } else {
                 resourceId = resourceCenterMapper.checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol(resourceId, executeUser, protocol);
                 if (resourceId == null) {
-                    resultSet.add(resourceInfo + "未找到" + executeUser + "执行用户");
+                    ResourceVo resourceVo = resourceCenterMapper.getResourceIpPortById(resourceId, schemaName);
+                    executeUserIsNotFoundInResourceList.add(resourceVo);
                 }
             }
         }
-        return resultSet;
+        int count = executeUserIsNotFoundInResourceList.size();
+        count += resourceIsNotFoundList.size();
+        resultObj.put("count", count);
+        return resultObj;
     }
 }
