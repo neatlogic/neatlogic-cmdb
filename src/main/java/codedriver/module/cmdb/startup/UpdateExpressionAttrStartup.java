@@ -32,12 +32,17 @@ public class UpdateExpressionAttrStartup implements IStartup {
     }
 
     @Override
-    public void execute() {
+    public void executeForTenant() {
         List<RebuildAuditVo> auditList = attrExpressionRebuildAuditMapper.getAttrExpressionRebuildAuditByServerId(Config.SCHEDULE_SERVER_ID);
         if (CollectionUtils.isNotEmpty(auditList)) {
             for (RebuildAuditVo audit : auditList) {
                 AttrExpressionRebuildManager.rebuild(audit);
             }
         }
+    }
+
+    @Override
+    public void executeForOnce() {
+
     }
 }
