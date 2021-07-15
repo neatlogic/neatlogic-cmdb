@@ -134,9 +134,11 @@ public class ResourceAccountBatchAddApi extends PrivateApiComponentBase {
                 if (excludeAccountIdSet.contains(accountVo.getId())) {
                     continue;
                 }
-                if (resourceCenterMapper.checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol(resourceId, accountVo.getAccount(), accountVo.getProtocol()) != null) {
+                Long accountId = resourceCenterMapper.checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol(resourceId, accountVo.getAccount(), accountVo.getProtocol());
+                if (accountId != null) {
                     ResourceVo resourecVo = resourceVoMap.get(resourceId);
-                    failureReasonList.add(resourecVo.getName() + "（" + resourecVo.getIp() + "）'已绑定账号\"" + accountVo.getName() + "（" + accountVo.getProtocol() + "/" + accountVo.getAccount() + "）\"，同一资产不可绑定多个协议相同且用户名相同的账号");
+                    AccountVo account = resourceCenterMapper.getAccountById(accountId);
+                    failureReasonList.add(resourecVo.getName() + "（" + resourecVo.getIp() + "）'已绑定账号\"" + account.getName() + "（" + account.getProtocol() + "/" + account.getAccount() + "）\"，同一资产不可绑定多个协议相同且用户名相同的账号");
                     continue;
                 }
                 resourceAccountVoList.add(new ResourceAccountVo(resourceId, accountVo.getId()));

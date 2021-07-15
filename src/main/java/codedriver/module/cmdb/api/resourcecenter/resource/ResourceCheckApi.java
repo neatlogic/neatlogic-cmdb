@@ -104,8 +104,8 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
         }
         List<ResourceVo> selectNodeList = jsonObj.getJSONArray("selectNodeList").toJavaList(ResourceVo.class);
         for (ResourceVo resourceVo : selectNodeList) {
-            Long resourceId = resourceCenterMapper.checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol(resourceVo.getId(), executeUser, protocol);
-            if (resourceId == null) {
+            Long accountId = resourceCenterMapper.checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol(resourceVo.getId(), executeUser, protocol);
+            if (accountId == null) {
                 executeUserIsNotFoundInResourceList.add(resourceVo);
             }
         }
@@ -120,8 +120,8 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
             if (resourceId == null) {
                 resourceIsNotFoundList.add(searchVo);
             } else {
-                resourceId = resourceCenterMapper.checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol(resourceId, executeUser, protocol);
-                if (resourceId == null) {
+                Long accountId = resourceCenterMapper.checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol(resourceId, executeUser, protocol);
+                if (accountId == null) {
                     ResourceVo resourceVo = resourceCenterMapper.getResourceIpPortById(resourceId, schemaName);
                     executeUserIsNotFoundInResourceList.add(resourceVo);
                 }
