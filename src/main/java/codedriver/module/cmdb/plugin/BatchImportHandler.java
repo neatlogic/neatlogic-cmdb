@@ -21,6 +21,7 @@ import codedriver.framework.cmdb.exception.ci.CiWithoutAttrRelException;
 import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.cmdb.threadlocal.InputFromContext;
 import codedriver.framework.common.util.FileUtil;
+import codedriver.framework.exception.core.ApiRuntimeException;
 import codedriver.framework.file.dto.FileVo;
 import codedriver.module.cmdb.dao.mapper.batchimport.ImportMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
@@ -358,11 +359,17 @@ public class BatchImportHandler {
                                             } else {
                                                 throw new RuntimeException("请正确填写模版与选择导入模式，【只添加】不需要填写ID；【只更新】必须填写ID");
                                             }
+                                        } catch (ApiRuntimeException e) {
+                                            failedCount += 1;
+                                            rowError.put(r, e.getMessage(true));
                                         } catch (Exception e) {
                                             failedCount += 1;
                                             rowError.put(r, e.getMessage());
                                         }
                                     }
+                                } catch (ApiRuntimeException e) {
+                                    failedCount += 1;
+                                    rowError.put(r, e.getMessage(true));
                                 } catch (Exception e) {
                                     failedCount += 1;
                                     rowError.put(r, e.getMessage());
@@ -394,15 +401,6 @@ public class BatchImportHandler {
                                     importAuditVo.setError(StringUtils.isNotBlank(error) ? error : null);
                                     importMapper.updateImportAuditTemporary(importAuditVo);
 
-                                    // if (failedCount == 1) {
-                                    // importAuditVo.setError(err);
-                                    // } else if(failedCount > 1){
-                                    // importAuditVo.setError(importAuditVo.getError() + "<br>" + err);
-                                    // }
-                                    // importAuditVo.setSuccessCount(successCount);
-                                    // importAuditVo.setFailedCount(failedCount);
-                                    // importAuditVo.setTotalCount(totalCount);
-                                    // importMapper.updateImportAuditTemporary(importAuditVo);
                                 }
                             }
                             break;
@@ -411,7 +409,7 @@ public class BatchImportHandler {
                 }
             } catch (Exception e) {
                 importAuditVo.setError((StringUtils.isBlank(importAuditVo.getError()) ? ""
-                        : importAuditVo.getError() + "<br>") + e.getMessage());
+                        : importAuditVo.getError() + "<br>") + (e instanceof ApiRuntimeException ? ((ApiRuntimeException) e).getMessage(true) : e.getMessage()));
                 logger.error(e.getMessage(), e);
             } finally {
                 try {
