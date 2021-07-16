@@ -10,6 +10,7 @@ import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.cmdb.dto.ci.CiAuthVo;
 import codedriver.framework.cmdb.enums.CiAuthType;
 import codedriver.framework.cmdb.enums.GroupType;
+import codedriver.framework.common.constvalue.UserType;
 import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiAuthMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
@@ -42,39 +43,48 @@ public class CiAuthChecker {
         instance = this;
     }
 
-
-    private static boolean hasCiPrivilege(Long ciId, CiAuthType... auths) {
-        if (ciId != null) {
-            String userUuid = UserContext.get().getUserUuid(true);
-            List<String> teamUuidList = null;
-            List<String> roleUuidList = UserContext.get().getRoleUuidList();
-            List<CiAuthVo> authList = instance.ciAuthMapper.getCiAuthByCiId(ciId);
-            for (CiAuthVo ciAuthVo : authList) {
-                for (CiAuthType auth : auths) {
-                    if (ciAuthVo.getAction().equals(auth.getValue())) {
-                        switch (ciAuthVo.getAuthType()) {
-                            case "user":
-                                if (userUuid.equals(ciAuthVo.getAuthUuid())) {
-                                    return true;
-                                }
-                                break;
-                            case "team":
-                                if (teamUuidList == null) {
-                                    teamUuidList = instance.teamMapper.getTeamUuidListByUserUuid(userUuid);
-                                }
-                                if (teamUuidList.contains(ciAuthVo.getAuthUuid())) {
-                                    return true;
-                                }
-                                break;
-                            case "role":
-                                if (roleUuidList.contains(ciAuthVo.getAuthUuid())) {
-                                    return true;
-                                }
-                                break;
-                        }
+    public static boolean hasPrivilege(List<CiAuthVo> authList, CiAuthType... auths) {
+        String userUuid = UserContext.get().getUserUuid(true);
+        List<String> teamUuidList = null;
+        List<String> roleUuidList = UserContext.get().getRoleUuidList();
+        for (CiAuthVo ciAuthVo : authList) {
+            for (CiAuthType auth : auths) {
+                if (ciAuthVo.getAction().equals(auth.getValue())) {
+                    switch (ciAuthVo.getAuthType()) {
+                        case "common":
+                            if (ciAuthVo.getAuthUuid().equals(UserType.ALL.getValue())) {
+                                return true;
+                            }
+                            break;
+                        case "user":
+                            if (userUuid.equals(ciAuthVo.getAuthUuid())) {
+                                return true;
+                            }
+                            break;
+                        case "team":
+                            if (teamUuidList == null) {
+                                teamUuidList = instance.teamMapper.getTeamUuidListByUserUuid(userUuid);
+                            }
+                            if (teamUuidList.contains(ciAuthVo.getAuthUuid())) {
+                                return true;
+                            }
+                            break;
+                        case "role":
+                            if (roleUuidList.contains(ciAuthVo.getAuthUuid())) {
+                                return true;
+                            }
+                            break;
                     }
                 }
             }
+        }
+        return false;
+    }
+
+    private static boolean hasCiPrivilege(Long ciId, CiAuthType... auths) {
+        if (ciId != null) {
+            List<CiAuthVo> authList = instance.ciAuthMapper.getCiAuthByCiId(ciId);
+            return hasPrivilege(authList, auths);
         }
         return false;
     }
@@ -105,7 +115,7 @@ public class CiAuthChecker {
 
         public Chain checkCiEntityUpdatePrivilege(Long ciId) {
             if (!hasAuth) {
-                hasAuth = AuthActionChecker.check("CI_MODIFY", "CiENTITY_MODIFY");
+                hasAuth = AuthActionChecker.check("CI_MODIFY", "CIENTITY_MODIFY");
                 if (!hasAuth) {
                     hasAuth = CiAuthChecker.hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYUPDATE);
                 }
@@ -115,7 +125,7 @@ public class CiAuthChecker {
 
         public Chain checkCiEntityInsertPrivilege(Long ciId) {
             if (!hasAuth) {
-                hasAuth = AuthActionChecker.check("CI_MODIFY", "CiENTITY_MODIFY");
+                hasAuth = AuthActionChecker.check("CI_MODIFY", "CIENTITY_MODIFY");
                 if (!hasAuth) {
                     hasAuth = CiAuthChecker.hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYINSERT);
                 }
@@ -125,7 +135,7 @@ public class CiAuthChecker {
 
         public Chain checkCiEntityDeletePrivilege(Long ciId) {
             if (!hasAuth) {
-                hasAuth = AuthActionChecker.check("CI_MODIFY", "CiENTITY_MODIFY");
+                hasAuth = AuthActionChecker.check("CI_MODIFY", "CIENTITY_MODIFY");
                 if (!hasAuth) {
                     hasAuth = CiAuthChecker.hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYDELETE);
                 }
@@ -135,9 +145,9 @@ public class CiAuthChecker {
 
         public Chain checkCiEntityQueryPrivilege(Long ciId) {
             if (!hasAuth) {
-                hasAuth = AuthActionChecker.check("CI_MODIFY", "CiENTITY_MODIFY");
+                hasAuth = AuthActionChecker.check("CI_MODIFY", "CIENTITY_MODIFY");
                 if (!hasAuth) {
-                    hasAuth = CiAuthChecker.hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYUPDATE, CiAuthType.CIENTITYDELETE, CiAuthType.CIENTITYQUERY);
+                    hasAuth = CiAuthChecker.hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYUPDATE, CiAuthType.CIENTITYDELETE, CiAuthType.TRANSACTIONMANAGE, CiAuthType.CIENTITYQUERY);
                 }
             }
             return this;
@@ -145,7 +155,7 @@ public class CiAuthChecker {
 
         public Chain checkViewPasswordPrivilege(Long ciId) {
             if (!hasAuth) {
-                hasAuth = AuthActionChecker.check("CI_MODIFY", "CiENTITY_MODIFY");
+                hasAuth = AuthActionChecker.check("CI_MODIFY", "CIENTITY_MODIFY");
                 if (!hasAuth) {
                     hasAuth = CiAuthChecker.hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYUPDATE, CiAuthType.CIENTITYINSERT, CiAuthType.PASSWORDVIEW);
                 }

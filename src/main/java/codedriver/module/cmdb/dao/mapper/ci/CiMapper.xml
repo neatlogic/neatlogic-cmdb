@@ -173,7 +173,7 @@
     </select>
 
     <resultMap id="ciTypeMap" type="codedriver.framework.cmdb.dto.ci.CiTypeVo">
-        <result column="ciTypeId" property="id"/>
+        <id column="ciTypeId" property="id"/>
         <result column="ciTypeName" property="name"/>
         <result column="ciTypeIsMenu" property="isMenu"/>
         <result column="ciTypeIsShowInTopo" property="isShowInTopo"/>
@@ -189,6 +189,12 @@
             <result column="isAbstract" property="isAbstract"/>
             <result column="isVirtual" property="isVirtual"/>
             <result column="fileId" property="fileId"/>
+            <collection property="authList" ofType="codedriver.framework.cmdb.dto.ci.CiAuthVo">
+                <result column="authCiId" property="ciId"/>
+                <result column="authType" property="authType"/>
+                <result column="authAction" property="action"/>
+                <result column="authUuid" property="authUuid"/>
+            </collection>
         </collection>
     </resultMap>
 
@@ -210,9 +216,13 @@
         a.`id` AS ciTypeId,
         a.`name` AS ciTypeName,
         a.`is_menu` AS ciTypeIsMenu,
-        a.`is_showintopo` AS ciTypeIsShowInTopo
+        a.`is_showintopo` AS ciTypeIsShowInTopo,
+        c.ci_id AS authCiId,
+        c.auth_type AS authType,
+        c.action AS authAction,
+        c.auth_uuid AS authUuid
         FROM
-        `cmdb_citype` a LEFT JOIN `cmdb_ci` b ON a.id = b.type_id
+        `cmdb_citype` a LEFT JOIN `cmdb_ci` b ON a.id = b.type_id LEFT JOIN `cmdb_ci_auth` c ON b.id = c.ci_id
         <where>
             <if test="isTypeShowInTopo != null">
                 AND a.is_showintopo = #{isTypeShowInTopo}
@@ -396,7 +406,7 @@
      </delete>-->
 
     <delete id="deleteCiById" parameterType="java.lang.Long">
-        DELETE a,b,c,d,e,f,g,h,i
+        DELETE a,b,c,d,e,f,g,h
         FROM
             `cmdb_ci` a
             LEFT JOIN `cmdb_attr` b
