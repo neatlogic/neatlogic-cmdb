@@ -81,6 +81,7 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
                             .check());
                     this.put(CiAuthType.PASSWORDVIEW.getValue(), CiAuthChecker.chain().checkViewPasswordPrivilege(ciEntityVo.getCiId()).checkIsInGroup(ciEntityVo.getId(), GroupType.READONLY, GroupType.MAINTAIN)
                             .check());
+                    this.put(CiAuthType.TRANSACTIONMANAGE.getValue(), CiAuthChecker.chain().checkCiEntityTransactionPrivilege(ciEntityVo.getCiId()).checkIsInGroup(ciEntityVo.getId(), GroupType.MAINTAIN).check());
                 }
             });
         }

@@ -15,6 +15,7 @@ import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.auth.label.CUSTOMVIEW_MODIFY;
 import codedriver.module.cmdb.service.customview.CustomViewService;
 import com.alibaba.fastjson.JSONObject;
@@ -24,7 +25,7 @@ import javax.annotation.Resource;
 import java.util.List;
 
 @Service
-@AuthAction(action = CUSTOMVIEW_MODIFY.class)
+@AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class SearchCustomViewApi extends PrivateApiComponentBase {
 

@@ -69,16 +69,19 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciEntityList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "配置项数据")})
+    @Input({@Param(name = "ciEntityList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "配置项数据"),
+            @Param(name = "needCommit", type = ApiParamType.BOOLEAN, isRequired = true, desc = "是否需要提交")})
     @Description(desc = "批量保存配置项接口")
     @Example(example = "{\"ciEntityList\":[{\"attrEntityData\":{\"attr_323010784722944\":{\"valueList\":[\"测试环境\"],\"name\":\"label\",\"label\":\"显示名\",\"type\":\"text\",\"saveMode\":\"merge\"},\"attr_323010700836864\":{\"valueList\":[\"stg33\"],\"name\":\"name\",\"label\":\"唯一标识\",\"type\":\"text\"}},\"ciId\":323010541453312,\"ciLabel\":\"环境\",\"ciName\":\"env\",\"fcd\":1617187647522,\"fcu\":\"20f2fbfe97cf11ea94ff005056c00001\",\"id\":330340423237635,\"isLocked\":0,\"lcd\":1617273899288,\"lcu\":\"20f2fbfe97cf11ea94ff005056c00001\",\"uuid\":\"3e3e74b1947b400aa34d7c6964f79168\"}]}")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         InputFromContext.init(InputFrom.ITSM);
-        
+        boolean needCommit = jsonObj.getBooleanValue("needCommit");
         JSONArray ciEntityObjList = jsonObj.getJSONArray("ciEntityList");
         List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
         Map<String, CiEntityTransactionVo> ciEntityTransactionMap = new HashMap<>();
+        //任意一个模型数据不能提交，则全部不能提交，保证数据一致性。
+        boolean allowCommit = true;
         // 先给所有没有id的ciEntity分配新的id
         for (int ciindex = 0; ciindex < ciEntityObjList.size(); ciindex++) {
             JSONObject ciEntityObj = ciEntityObjList.getJSONObject(ciindex);
@@ -109,6 +112,9 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
                 ciEntityTransactionVo = new CiEntityTransactionVo();
                 ciEntityTransactionVo.setCiEntityId(id);
                 ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
+                if (!CiAuthChecker.chain().checkCiEntityTransactionPrivilege(ciId).checkIsInGroup(id, GroupType.MAINTAIN).check()) {
+                    allowCommit = false;
+                }
             } else if (StringUtils.isNotBlank(uuid)) {
                 if (!CiAuthChecker.chain().checkCiEntityInsertPrivilege(ciId).check()) {
                     CiVo ciVo = ciMapper.getCiById(ciId);
@@ -117,6 +123,9 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
                 ciEntityTransactionVo = ciEntityTransactionMap.get(uuid);
                 ciEntityTransactionVo.setCiEntityUuid(uuid);
                 ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
+                if (!CiAuthChecker.chain().checkCiEntityTransactionPrivilege(ciId).checkIsInGroup(id, GroupType.MAINTAIN).check()) {
+                    allowCommit = false;
+                }
             } else {
                 throw new ApiRuntimeException("数据不合法，缺少id或uuid");
             }
@@ -185,9 +194,17 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
             ciEntityTransactionList.add(ciEntityTransactionVo);
         }
         if (CollectionUtils.isNotEmpty(ciEntityTransactionList)) {
+            for (CiEntityTransactionVo t : ciEntityTransactionList) {
+                if (allowCommit) {
+                    t.setAllowCommit(needCommit);
+                } else {
+                    t.setAllowCommit(false);
+                }
+            }
             Long transactionGroupId = ciEntityService.saveCiEntity(ciEntityTransactionList);
             JSONObject returnObj = new JSONObject();
             returnObj.put("transactionGroupId", transactionGroupId);
+            returnObj.put("committed", allowCommit);
             return returnObj;
         }
         return null;

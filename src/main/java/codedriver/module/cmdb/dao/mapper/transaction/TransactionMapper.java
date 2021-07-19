@@ -5,7 +5,6 @@
 
 package codedriver.module.cmdb.dao.mapper.transaction;
 
-import codedriver.framework.cmdb.dto.transaction.AttrEntityTransactionVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.cmdb.dto.transaction.RelEntityTransactionVo;
 import codedriver.framework.cmdb.dto.transaction.TransactionVo;
@@ -23,9 +22,9 @@ public interface TransactionMapper {
 
     List<CiEntityTransactionVo> getCiEntityTransactionByTransactionIdList(@Param("transactionIdList") List<Long> transactionIdList, @Param("ciEntityId") Long ciEntityId);
 
-    List<AttrEntityTransactionVo> getAttrEntityTransactionByTransactionIdAndCiEntityId(@Param("transactionId") Long transactionId, @Param("ciEntityId") Long ciEntityId);
+    //List<AttrEntityTransactionVo> getAttrEntityTransactionByTransactionIdAndCiEntityId(@Param("transactionId") Long transactionId, @Param("ciEntityId") Long ciEntityId);
 
-    List<RelEntityTransactionVo> getRelEntityTransactionByTransactionIdAndCiEntityId(@Param("transactionId") Long transactionId, @Param("ciEntityId") Long ciEntityId);
+    //List<RelEntityTransactionVo> getRelEntityTransactionByTransactionIdAndCiEntityId(@Param("transactionId") Long transactionId, @Param("ciEntityId") Long ciEntityId);
 
     CiEntityTransactionVo getCiEntityTransactionByTransactionGroupIdAndCiEntityId(@Param("transactionGroupId") Long transactionGroupId, @Param("ciEntityId") Long ciEntityId);
 
@@ -46,4 +45,6 @@ public interface TransactionMapper {
     int insertTransaction(TransactionVo transactionVo);
 
     int deleteTransactionByCiId(Long ciId);
+
+    int deleteTransactionById(Long id);
 }

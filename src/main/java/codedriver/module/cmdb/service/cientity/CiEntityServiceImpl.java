@@ -20,6 +20,7 @@ import codedriver.framework.cmdb.exception.ci.CiUniqueRuleException;
 import codedriver.framework.cmdb.exception.cientity.*;
 import codedriver.framework.cmdb.validator.core.IValidator;
 import codedriver.framework.cmdb.validator.core.ValidatorFactory;
+import codedriver.framework.exception.core.ApiRuntimeException;
 import codedriver.framework.mq.core.ITopic;
 import codedriver.framework.mq.core.TopicFactory;
 import codedriver.framework.transaction.core.AfterTransactionJob;
@@ -338,7 +339,9 @@ public class CiEntityServiceImpl implements CiEntityService {
             // 写入配置项事务
             transactionMapper.insertCiEntityTransaction(ciEntityTransactionVo);
             //提交事务
-            commitTransaction(transactionVo, transactionGroupVo);
+            if (ciEntityTransactionVo.isAllowCommit()) {
+                commitTransaction(transactionVo, transactionGroupVo);
+            }
             return transactionVo.getId();
         } else {
             // 没有任何变化则返回零
@@ -1086,9 +1089,20 @@ public class CiEntityServiceImpl implements CiEntityService {
         TransactionVo transactionVo = transactionMapper.getTransactionById(transactionId);
         if (transactionVo != null) {
             CiEntityTransactionVo ciEntityTransactionVo = transactionVo.getCiEntityTransactionVo();
-            boolean hasChange = validateCiEntityTransaction(ciEntityTransactionVo);
-            if (hasChange) {
-                return this.commitTransaction(transactionVo, new TransactionGroupVo());
+            try {
+                boolean hasChange = validateCiEntityTransaction(ciEntityTransactionVo);
+                if (hasChange) {
+                    return this.commitTransaction(transactionVo, new TransactionGroupVo());
+                }
+            } catch (Exception ex) {
+                AfterTransactionJob<TransactionVo> job = new AfterTransactionJob<>();
+                job.execute(transactionVo, t -> {
+                }, t -> {
+                    t.setError(ex instanceof ApiRuntimeException ? ((ApiRuntimeException) ex).getMessage(true) : ex.getMessage());
+                    t.setStatus(TransactionStatus.UNCOMMIT.getValue());
+                    transactionMapper.updateTransactionStatus(t);
+                });
+                throw ex;
             }
         }
         return null;

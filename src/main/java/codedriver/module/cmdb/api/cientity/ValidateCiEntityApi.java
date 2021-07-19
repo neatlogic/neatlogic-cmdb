@@ -7,6 +7,7 @@ package codedriver.module.cmdb.api.cientity;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
+import codedriver.framework.cmdb.enums.TransactionActionType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -66,6 +67,11 @@ public class ValidateCiEntityApi extends PrivateApiComponentBase {
         // 解析关系数据
         JSONObject relObj = jsonObj.getJSONObject("relEntityData");
         ciEntityTransactionVo.setRelEntityData(relObj);
+        if (id == null) {
+            ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
+        } else {
+            ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
+        }
         boolean hasChange = ciEntityService.validateCiEntity(ciEntityTransactionVo);
         JSONObject returnObj = new JSONObject();
         returnObj.put("hasChange", hasChange);

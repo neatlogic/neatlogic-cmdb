@@ -123,6 +123,22 @@ public class CiAuthChecker {
             return this;
         }
 
+        /**
+         * 检查是否有管理事务权限
+         *
+         * @param ciId
+         * @return
+         */
+        public Chain checkCiEntityTransactionPrivilege(Long ciId) {
+            if (!hasAuth) {
+                hasAuth = AuthActionChecker.check("CI_MODIFY", "CIENTITY_MODIFY");
+                if (!hasAuth) {
+                    hasAuth = CiAuthChecker.hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.TRANSACTIONMANAGE);
+                }
+            }
+            return this;
+        }
+
         public Chain checkCiEntityInsertPrivilege(Long ciId) {
             if (!hasAuth) {
                 hasAuth = AuthActionChecker.check("CI_MODIFY", "CIENTITY_MODIFY");
