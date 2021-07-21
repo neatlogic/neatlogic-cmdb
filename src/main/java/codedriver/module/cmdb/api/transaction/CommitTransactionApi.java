@@ -9,6 +9,7 @@ import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.transaction.TransactionGroupVo;
 import codedriver.framework.cmdb.dto.transaction.TransactionStatusVo;
 import codedriver.framework.cmdb.dto.transaction.TransactionVo;
+import codedriver.framework.cmdb.exception.transaction.TransactionNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -62,8 +63,17 @@ public class CommitTransactionApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long transactionId = jsonObj.getLong("id");
         TransactionGroupVo transactionGroup = transactionMapper.getTransactionGroupByTransactionId(transactionId);
-        List<TransactionVo> transactionList = transactionMapper.getTransactionByGroupId(transactionGroup.getId());
-        transactionGroup.setTransactionList(transactionList);
+        if (transactionGroup != null) {
+            List<TransactionVo> transactionList = transactionMapper.getTransactionByGroupId(transactionGroup.getId());
+            transactionGroup.setTransactionList(transactionList);
+        } else {
+            TransactionVo transactionVo = transactionMapper.getTransactionById(transactionId);
+            if (transactionVo == null) {
+                throw new TransactionNotFoundException(transactionId);
+            }
+            transactionGroup = new TransactionGroupVo();
+            transactionGroup.addTransaction(transactionVo);
+        }
         ciEntityService.commitTransactionGroup(transactionGroup);
         return null;
     }
