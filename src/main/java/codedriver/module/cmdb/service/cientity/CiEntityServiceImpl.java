@@ -529,7 +529,7 @@ public class CiEntityServiceImpl implements CiEntityService {
             for (RelVo relVo : relList) {
                 JSONObject relEntityData = ciEntityTransactionVo.getRelEntityDataByRelIdAndDirection(relVo.getId(), relVo.getDirection());
                 if (relEntityData != null) {
-                    if (relEntityData.containsKey("valueList") || CollectionUtils.isEmpty(relEntityData.getJSONArray("valueList"))) {
+                    if (!relEntityData.containsKey("valueList") || CollectionUtils.isEmpty(relEntityData.getJSONArray("valueList"))) {
                         ciEntityTransactionVo.removeRelEntityData(relVo.getId(), relVo.getDirection());
                     } else {
                         //补充关系基本信息
