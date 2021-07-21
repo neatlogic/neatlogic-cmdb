@@ -282,6 +282,7 @@ public class BatchImportHandler {
                                     if (row != null) {
                                         Long ciEntityId = null;// 记录下表格中的ciEntityId，用于判断配置项是否存在
                                         CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
+                                        ciEntityTransactionVo.setAllowCommit(true);
                                         ciEntityTransactionVo.setCiId(ciId);
                                         ciEntityTransactionVo.setEditMode(editMode);
                                         for (Integer index : cellIndex) {
