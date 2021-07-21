@@ -9,6 +9,7 @@ import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.cmdb.dto.transaction.TransactionGroupVo;
+import codedriver.framework.cmdb.dto.transaction.TransactionStatusVo;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -79,12 +80,12 @@ public interface CiEntityService {
     void updateCiEntity(CiEntityVo ciEntityVo);
 
     /**
-     * 提交事务
+     * 提交事务组
      *
-     * @param transactionId 事务id
-     * @return 配置项id
+     * @param transactionGroupVo 事务组（包含事务对象列表）
+     * @return 状态
      */
-    Long commitTransaction(Long transactionId);
+    List<TransactionStatusVo> commitTransactionGroup(TransactionGroupVo transactionGroupVo);
 
     List<CiEntityVo> searchCiEntityBaseInfo(CiEntityVo ciEntityVo);
 

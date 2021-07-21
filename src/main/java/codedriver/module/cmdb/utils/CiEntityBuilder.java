@@ -15,6 +15,7 @@ import codedriver.framework.cmdb.exception.cientity.CiEntityMultipleException;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 
@@ -227,6 +228,9 @@ public class CiEntityBuilder {
                                 valueDataObj.put("ciId", direction.equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiId() : relVo.getFromCiId());
                                 valueDataObj.put("ciEntityId", result.get(key));
                                 valueDataObj.put("ciEntityName", result.get(key + "#name"));
+                                if (StringUtils.isBlank(valueDataObj.getString("ciEntityName"))) {
+                                    valueDataObj.put("ciEntityName", "无名配置项");
+                                }
                                 ciEntityVo.addRelEntityDataValue(relId, direction, valueDataObj);
                             }
                         }
@@ -298,6 +302,9 @@ public class CiEntityBuilder {
         valueDataObj.put("ciId", result.get(key + "#ciId"));
         valueDataObj.put("ciEntityId", result.get(key));
         valueDataObj.put("ciEntityName", result.get(key + "#name"));
+        if (StringUtils.isBlank(valueDataObj.getString("ciEntityName"))) {
+            valueDataObj.put("ciEntityName", "无名配置项");
+        }
         relObj.put("valueList", new ArrayList<JSONObject>() {{
             this.add(valueDataObj);
         }});

@@ -6,6 +6,7 @@
 package codedriver.module.cmdb.api.transaction;
 
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.dto.transaction.TransactionGroupVo;
 import codedriver.framework.cmdb.dto.transaction.TransactionVo;
 import codedriver.framework.cmdb.enums.GroupType;
 import codedriver.framework.cmdb.enums.TransactionStatus;
@@ -26,12 +27,15 @@ import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.DELETE)
+@Transactional
 public class DeleteTransactionApi extends PrivateApiComponentBase {
 
     @Autowired
@@ -64,14 +68,17 @@ public class DeleteTransactionApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long transactionId = jsonObj.getLong("id");
-        TransactionVo transactionVo = transactionMapper.getTransactionById(transactionId);
-        if (transactionVo.getStatus().equals(TransactionStatus.COMMITED.getValue())) {
-            throw new TransactionStatusIrregularException();
+        TransactionGroupVo transactionGroup = transactionMapper.getTransactionGroupByTransactionId(transactionId);
+        List<TransactionVo> transactionList = transactionMapper.getTransactionByGroupId(transactionGroup.getId());
+        for (TransactionVo transactionVo : transactionList) {
+            if (transactionVo.getStatus().equals(TransactionStatus.COMMITED.getValue())) {
+                throw new TransactionStatusIrregularException();
+            }
+            if (!CiAuthChecker.chain().checkCiEntityTransactionPrivilege(transactionVo.getCiId()).checkIsInGroup(transactionVo.getCiEntityId(), GroupType.MAINTAIN).check()) {
+                throw new TransactionAuthException();
+            }
+            transactionMapper.deleteTransactionById(transactionVo.getId());
         }
-        if (!CiAuthChecker.chain().checkCiEntityTransactionPrivilege(transactionVo.getCiId()).checkIsInGroup(transactionVo.getCiEntityId(), GroupType.MAINTAIN).check()) {
-            throw new TransactionAuthException();
-        }
-        transactionMapper.deleteTransactionById(transactionId);
         return null;
     }
 

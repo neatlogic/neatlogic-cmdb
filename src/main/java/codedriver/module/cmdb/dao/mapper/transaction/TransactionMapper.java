@@ -7,12 +7,16 @@ package codedriver.module.cmdb.dao.mapper.transaction;
 
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.cmdb.dto.transaction.RelEntityTransactionVo;
+import codedriver.framework.cmdb.dto.transaction.TransactionGroupVo;
 import codedriver.framework.cmdb.dto.transaction.TransactionVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
 public interface TransactionMapper {
+    List<TransactionVo> getTransactionByGroupId(Long transactionGroupId);
+
+    TransactionGroupVo getTransactionGroupByTransactionId(Long transactionId);
 
     TransactionVo getTransactionById(Long transactionId);
 

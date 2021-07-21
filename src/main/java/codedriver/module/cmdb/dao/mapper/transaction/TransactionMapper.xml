@@ -22,7 +22,7 @@
         `cmdb_cientity_transaction`
         WHERE ci_entity_id = #{ciEntityId} AND transaction_id IN
         <foreach collection="transactionIdList" item="item" open="(" separator="," close=")">
-            #{item}
+        #{item}
         </foreach>
     </select>
 
@@ -73,6 +73,7 @@
         <result property="expireTime" column="expireTime"/>
         <result property="createTime" column="createTime"/>
         <result property="commitTime" column="commitTime"/>
+        <result property="brotherTransactionCount" column="brotherTransactionCount"/>
         <result property="error" column="error" typeHandler="CompressHandler"/>
         <association property="ciEntityTransactionVo"
                      javaType="codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo">
@@ -86,6 +87,33 @@
             <result property="content" column="content" typeHandler="compressHandler"/>
         </association>
     </resultMap>
+
+    <select id="getTransactionByGroupId" parameterType="java.lang.Long" resultMap="transactionDetailMap">
+        SELECT a.id,
+               a.ci_id                                                   AS ciId,
+               a.`status`,
+               create_user                                               AS createUser,
+               (SELECT user_name FROM user u WHERE u.uuid = create_user) AS createUserName,
+               commit_user                                               AS commitUser,
+               (SELECT user_name FROM user u WHERE u.uuid = commit_user) AS commitUserName,
+               input_from                                                AS inputFrom,
+               source,
+               expire_time                                               AS expireTime,
+               create_time                                               AS createTime,
+               commit_time                                               AS commitTime,
+               error,
+               b.action                                                  AS action,
+               b.transaction_id                                          AS ciEntityTransactionId,
+               b.ci_entity_id                                            AS ciEntityId,
+               b.edit_mode                                               AS editMode,
+               b.snapshot                                                AS snapshot,
+               b.content                                                 AS content
+        FROM cmdb_transaction a
+                 JOIN cmdb_cientity_transaction b ON a.id = b.`transaction_id`
+                 JOIN cmdb_transactiongroup c ON a.id = c.transaction_id
+        WHERE c.id = #{value}
+        ORDER BY a.id
+    </select>
 
     <select id="getTransactionById" parameterType="java.lang.Long" resultMap="transactionDetailMap">
         SELECT a.id,
@@ -168,7 +196,9 @@
         b.transaction_id AS ciEntityTransactionId,
         b.snapshot,
         b.content,
-        c.name AS ciEntityName
+        c.name AS ciEntityName,
+        (Select count(ct.transaction_id) FROM cmdb_transactiongroup ct join cmdb_transactiongroup ct2 on ct.id = ct2.id
+        where ct2.transaction_id = a.id) AS brotherTransactionCount
         FROM
         cmdb_transaction a
         JOIN cmdb_cientity_transaction b
@@ -268,6 +298,14 @@
            AND ci_entity_id = #{ciEntityId}
          ORDER BY id
      </select>-->
+
+    <select id="getTransactionGroupByTransactionId" parameterType="java.lang.Long"
+            resultType="codedriver.framework.cmdb.dto.transaction.TransactionGroupVo">
+        SELECT id
+        FROM cmdb_transactiongroup
+        WHERE transaction_id = #{vakue}
+    </select>
+
 
     <select id="getCiEntityTransactionByTransactionGroupIdAndCiEntityId"
             resultType="codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo">

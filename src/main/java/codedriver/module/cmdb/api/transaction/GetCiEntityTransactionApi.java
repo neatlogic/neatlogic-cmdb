@@ -141,11 +141,11 @@ public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
                         if (ciEntityVo != null) {
                             valueObj.put("ciEntityName", ciEntityVo.getName());
                         }
-                        newValueList.add(valueObj);
+                        valueObj.put("action", "insert");
                     }
-
+                    newValueList.add(valueObj);
                 }
-                dataObj.put("newValue", newValueList);
+
                 if (MapUtils.isNotEmpty(oldRelEntityData) && oldRelEntityData.containsKey(key)) {
                     //补充ciEntityName
                     JSONArray oldValueList = oldRelEntityData.getJSONObject(key).getJSONArray("valueList");
@@ -155,14 +155,39 @@ public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
                         if (ciEntityVo != null) {
                             valueObj.put("ciEntityName", ciEntityVo.getName());
                         }
+                        //补充原来的值
+                        boolean isExists = false;
+                        for (int j = 0; j < newValueList.size(); j++) {
+                            JSONObject newV = newValueList.getJSONObject(j);
+                            if (newV.getLong("ciEntityId").equals(valueObj.getLong("ciEntityId"))) {
+                                isExists = true;
+                                break;
+                            }
+                        }
+                        if (!isExists) {
+                            newValueList.add(valueObj);
+                        }
                     }
                     dataObj.put("oldValue", oldValueList);
                 }
+                //清除删除信息
+                for (int j = newValueList.size() - 1; j >= 0; j--) {
+                    JSONObject newV = newValueList.getJSONObject(j);
+                    if (newV.containsKey("action") && newV.getString("action").equals("delete")) {
+                        newValueList.remove(j);
+                    }
+                }
+                dataObj.put("newValue", newValueList);
                 dataList.add(dataObj);
             }
         }
 
         return dataList;
+    }
+
+    @Override
+    public boolean disableReturnCircularReferenceDetect() {
+        return true;
     }
 
     private JSONObject buildAttrObj(AttrVo attrVo, JSONArray valueList) {

@@ -18,6 +18,9 @@ import codedriver.framework.cmdb.enums.*;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.cmdb.exception.ci.CiUniqueRuleException;
 import codedriver.framework.cmdb.exception.cientity.*;
+import codedriver.framework.cmdb.exception.transaction.TransactionAuthException;
+import codedriver.framework.cmdb.exception.transaction.TransactionStatusIrregularException;
+import codedriver.framework.cmdb.threadlocal.InputFromContext;
 import codedriver.framework.cmdb.validator.core.IValidator;
 import codedriver.framework.cmdb.validator.core.ValidatorFactory;
 import codedriver.framework.exception.core.ApiRuntimeException;
@@ -32,6 +35,7 @@ import codedriver.module.cmdb.dao.mapper.cientity.AttrExpressionRebuildAuditMapp
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper;
 import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
+import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.utils.CiEntityBuilder;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -321,7 +325,7 @@ public class CiEntityServiceImpl implements CiEntityService {
 
         TransactionVo transactionVo = new TransactionVo();
         transactionVo.setCiId(ciEntityTransactionVo.getCiId());
-
+        transactionVo.setInputFrom(InputFromContext.get().getInputFrom());
         ciEntityTransactionVo.setTransactionId(transactionVo.getId());
 
         transactionVo.setCiEntityTransactionVo(ciEntityTransactionVo);
@@ -524,16 +528,18 @@ public class CiEntityServiceImpl implements CiEntityService {
         if (MapUtils.isNotEmpty(ciEntityTransactionVo.getRelEntityData())) {
             for (RelVo relVo : relList) {
                 JSONObject relEntityData = ciEntityTransactionVo.getRelEntityDataByRelIdAndDirection(relVo.getId(), relVo.getDirection());
-                if (relEntityData == null) {
-                    ciEntityTransactionVo.removeRelEntityData(relVo.getId(), relVo.getDirection());
-                } else {
-                    //补充关系基本信息
-                    String direction = relVo.getDirection();
-                    relEntityData.put("name", direction.equals(RelDirectionType.FROM.getValue()) ? relVo.getToName() : relVo.getFromName());
-                    relEntityData.put("label", direction.equals(RelDirectionType.FROM.getValue()) ? relVo.getToLabel() : relVo.getFromLabel());
-                    relEntityData.put("direction", direction);
-                    relEntityData.put("fromCiId", relVo.getFromCiId());
-                    relEntityData.put("toCiId", relVo.getToCiId());
+                if (relEntityData != null) {
+                    if (relEntityData.containsKey("valueList") || CollectionUtils.isEmpty(relEntityData.getJSONArray("valueList"))) {
+                        ciEntityTransactionVo.removeRelEntityData(relVo.getId(), relVo.getDirection());
+                    } else {
+                        //补充关系基本信息
+                        String direction = relVo.getDirection();
+                        relEntityData.put("name", direction.equals(RelDirectionType.FROM.getValue()) ? relVo.getToName() : relVo.getFromName());
+                        relEntityData.put("label", direction.equals(RelDirectionType.FROM.getValue()) ? relVo.getToLabel() : relVo.getFromLabel());
+                        relEntityData.put("direction", direction);
+                        relEntityData.put("fromCiId", relVo.getFromCiId());
+                        relEntityData.put("toCiId", relVo.getToCiId());
+                    }
                 }
             }
         }
@@ -800,6 +806,352 @@ public class CiEntityServiceImpl implements CiEntityService {
 
 
     /**
+     * 验证事务是否能提交
+     * 1、如果是删除，直接通过。
+     * 2、如果是修改，判断配置项是否已经被删除。
+     * <p>
+     * 属性必填校验：
+     * 1、删除的属性才需要校验属性是否必填。
+     * <p>
+     * 检查属性是否唯一：
+     * 1、如果是引用值，则存在多值的可能性，需要根据保存模式来组装数据进行校验。
+     * 如果是replace模式，直接用新值进行校验。
+     * 如果是Merge模式，则需要先把新值和旧值合并后再进行校验。
+     * 2、如果是普通属性值，只有单值的可能，不管什么模式只需要使用新值进行校验即可。
+     * <p>
+     * 检查唯一规则：
+     * 1、如果唯一规则包含引用值，
+     * <p>
+     * 记录属性是新增、编辑或删除：
+     * 1、如果整个attr_xxxx在snapshot中不存在，代表添加了新属性，如果attr_xxxx的valueList在snapshot中为空，代表属性添加了值。
+     * 2、如果snapshot本身已存在attr_xxx和valueList，代表编辑。
+     * 3、如果修改模式是Partial，attr_xxx为空，代表删除整个属性，如果只是valueList清空，代表属性删除了值，其他不提供的代表不动。
+     *
+     * @param ciEntityTransactionVo 配置项事务实体
+     * @return true:验证成功 false:验证失败
+     */
+    private boolean validateCiEntityTransactionForCommit(CiEntityTransactionVo ciEntityTransactionVo) {
+        if (ciEntityTransactionVo.getAction().equals(TransactionActionType.DELETE.getValue())) {
+            return true;
+        } else {
+            List<AttrVo> attrList = attrMapper.getAttrByCiId(ciEntityTransactionVo.getCiId());
+            List<RelVo> relList = relMapper.getRelByCiId(ciEntityTransactionVo.getCiId());
+            CiVo ciVo = ciMapper.getCiById(ciEntityTransactionVo.getCiId());
+
+            if (ciEntityTransactionVo.getAction().equals(TransactionActionType.INSERT.getValue()) || ciEntityTransactionVo.getAction().equals(TransactionActionType.RECOVER.getValue())) {
+                //新增配置项需要全面校验属性
+                for (AttrVo attrVo : attrList) {
+                    if (!attrVo.getType().equals(EXPRESSION_TYPE)) {
+                        AttrEntityTransactionVo attrEntityTransactionVo =
+                                ciEntityTransactionVo.getAttrEntityTransactionByAttrId(attrVo.getId());
+                        /* 属性必填校验： */
+                        if (attrVo.getIsRequired().equals(1)) {
+                            if (attrEntityTransactionVo == null || CollectionUtils.isEmpty(attrEntityTransactionVo.getValueList())) {
+                                throw new AttrEntityValueEmptyException(attrVo.getLabel());
+                            }
+                        }
+                        /* 检查属性是否唯一： */
+                        if (attrVo.getIsUnique().equals(1)) {
+                            if (attrEntityTransactionVo != null
+                                    && CollectionUtils.isNotEmpty(attrEntityTransactionVo.getValueList())) {
+                                if (attrVo.isNeedTargetCi()) {
+                                    List<Long> toCiEntityIdList = new ArrayList<>();
+                                    for (int i = 0; i < attrEntityTransactionVo.getValueList().size(); i++) {
+                                        Long tmpId = attrEntityTransactionVo.getValueList().getLong(i);
+                                        if (tmpId != null) {
+                                            toCiEntityIdList.add(tmpId);
+                                        }
+                                    }
+                                    //检查新值是否被别的配置项引用
+                                    int attrEntityCount = ciEntityMapper.getAttrEntityCountByAttrIdAndValue(ciEntityTransactionVo.getCiEntityId(), attrVo.getId(), toCiEntityIdList);
+                                    if (attrEntityCount > 0) {
+                                        List<CiEntityVo> toCiEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(toCiEntityIdList);
+                                        throw new AttrEntityDuplicateException(attrVo.getLabel(), toCiEntityList.stream().map(CiEntityVo::getName).collect(Collectors.toList()));
+                                    }
+                                } else {
+                                    //检查配置项表对应字段是否已被其他配置项使用
+                                    int count = ciEntityMapper.getCiEntityCountByAttrIdAndValue(ciEntityTransactionVo.getCiEntityId(), attrVo, attrEntityTransactionVo.getValueList().getString(0));
+                                    if (count > 0) {
+                                        throw new AttrEntityDuplicateException(attrVo.getLabel(), attrEntityTransactionVo.getValueList());
+                                    }
+                                }
+                            }
+                        }
+
+                        /*  调用校验器校验数据合法性，只有非引用型属性才需要 */
+                        if (attrEntityTransactionVo != null && CollectionUtils.isNotEmpty(attrEntityTransactionVo.getValueList())
+                                && StringUtils.isNotBlank(attrVo.getValidatorHandler()) && !attrVo.isNeedTargetCi()) {
+                            IValidator validator = ValidatorFactory.getValidator(attrVo.getValidatorHandler());
+                            if (validator != null) {
+                                validator.valid(attrVo.getLabel(), attrEntityTransactionVo.getValueList(),
+                                        attrVo.getValidatorId());
+                            }
+                        }
+                    }
+                }
+
+                // 校验关系信息
+                for (RelVo relVo : relList) {
+                    // 判断当前配置项处于from位置的规则
+                    List<RelEntityTransactionVo> fromRelEntityTransactionList =
+                            ciEntityTransactionVo.getRelEntityTransactionByRelIdAndDirection(relVo.getId(), RelDirectionType.FROM.getValue());
+                    // 判断当前配置项处于to位置的规则
+                    List<RelEntityTransactionVo> toRelEntityTransactionList =
+                            ciEntityTransactionVo.getRelEntityTransactionByRelIdAndDirection(relVo.getId(), RelDirectionType.TO.getValue());
+
+                    // 标记当前模型是在关系的上端或者下端
+                    boolean isFrom = false;
+                    boolean isTo = false;
+                    if (relVo.getFromCiId().equals(ciEntityTransactionVo.getCiId())) {
+                        isFrom = true;
+                    }
+                    if (relVo.getToCiId().equals(ciEntityTransactionVo.getCiId())) {
+                        isTo = true;
+                    }
+
+
+                    if (CollectionUtils.isEmpty(fromRelEntityTransactionList)) {
+                        if (isFrom && relVo.getToIsRequired().equals(1)) {
+                            throw new RelEntityNotFoundException(relVo.getToLabel());
+                        }
+                    } else if (fromRelEntityTransactionList.size() > 1) {
+                        // 检查关系是否允许重复
+                        if (RelRuleType.O.getValue().equals(relVo.getToRule())) {
+                            throw new RelEntityMutipleException(relVo.getToLabel());
+                        }
+                    }
+
+                    if (CollectionUtils.isEmpty(toRelEntityTransactionList)) {
+                        if (isTo && relVo.getFromIsRequired().equals(1)) {
+                            throw new RelEntityNotFoundException(relVo.getFromLabel());
+                        }
+                    } else if (toRelEntityTransactionList.size() > 1) {
+                        // 检查关系是否允许重复
+                        if (RelRuleType.O.getValue().equals(relVo.getFromRule())) {
+                            throw new RelEntityMutipleException(relVo.getFromLabel());
+                        }
+                    }
+                }
+                //校验唯一规则
+                if (CollectionUtils.isNotEmpty(ciVo.getUniqueAttrIdList())) {
+                    CiEntityVo ciEntityConditionVo = new CiEntityVo();
+                    ciEntityConditionVo.setCiId(ciEntityTransactionVo.getCiId());
+                    for (Long attrId : ciVo.getUniqueAttrIdList()) {
+                        AttrEntityTransactionVo attrEntityTransactionVo = ciEntityTransactionVo.getAttrEntityTransactionByAttrId(attrId);
+                        if (attrEntityTransactionVo != null) {
+                            AttrFilterVo filterVo = new AttrFilterVo();
+                            filterVo.setAttrId(attrId);
+                            filterVo.setExpression(SearchExpression.EQ.getExpression());
+                            filterVo.setValueList(attrEntityTransactionVo.getValueList().stream().map(Object::toString).collect(Collectors.toList()));
+                            ciEntityConditionVo.addAttrFilter(filterVo);
+                        }
+                    }
+                    if (CollectionUtils.isNotEmpty(ciEntityConditionVo.getAttrFilterList())) {
+                        List<CiEntityVo> checkList = this.searchCiEntity(ciEntityConditionVo);
+                        for (CiEntityVo checkCiEntity : checkList) {
+                            if (!checkCiEntity.getId().equals(ciEntityTransactionVo.getCiEntityId())) {
+                                throw new CiUniqueRuleException();
+                            }
+                        }
+                    }
+                }
+            } else if (ciEntityTransactionVo.getAction().equals(TransactionActionType.UPDATE.getValue())) {
+                CiEntityVo oldEntity = this.getCiEntityById(ciEntityTransactionVo.getCiId(), ciEntityTransactionVo.getCiEntityId());
+                if (oldEntity == null) {
+                    throw new CiEntityNotFoundException(ciEntityTransactionVo.getCiEntityId());
+                }
+                for (AttrVo attrVo : attrList) {
+                    if (!attrVo.getType().equals(EXPRESSION_TYPE)) {
+                        AttrEntityTransactionVo attrEntityTransactionVo =
+                                ciEntityTransactionVo.getAttrEntityTransactionByAttrId(attrVo.getId());
+                        if (attrEntityTransactionVo != null) {
+                            //属性是否需要删除
+                            boolean isDelete = CollectionUtils.isEmpty(attrEntityTransactionVo.getValueList()) || (attrEntityTransactionVo.getValueList().size() == 1 && StringUtils.isBlank(attrEntityTransactionVo.getValueList().getString(0)));
+                            /*检查必填属性：*/
+                            if (attrVo.getIsRequired().equals(1) && isDelete) {
+                                throw new AttrEntityValueEmptyException(attrVo.getLabel());
+                            }
+
+                            /* 检查属性是否唯一： */
+                            if (!isDelete && attrVo.getIsUnique().equals(1)) {
+                                if (attrVo.isNeedTargetCi()) {
+                                    List<Long> toCiEntityIdList = new ArrayList<>();
+                                    for (int i = 0; i < attrEntityTransactionVo.getValueList().size(); i++) {
+                                        Long tmpId = attrEntityTransactionVo.getValueList().getLong(i);
+                                        if (tmpId != null) {
+                                            toCiEntityIdList.add(tmpId);
+                                        }
+                                    }
+                                    if (attrEntityTransactionVo.getSaveMode().equals(SaveModeType.MERGE.getValue())) {
+                                        //合并新老值
+                                        List<AttrEntityVo> oldList = ciEntityMapper.getAttrEntityByAttrIdAndFromCiEntityId(ciEntityTransactionVo.getCiEntityId(), attrVo.getId());
+                                        for (AttrEntityVo attrEntityVo : oldList) {
+                                            if (!toCiEntityIdList.contains(attrEntityVo.getToCiEntityId())) {
+                                                toCiEntityIdList.add(attrEntityVo.getToCiEntityId());
+                                            }
+                                        }
+                                    }
+                                    //检查新值是否被别的配置项引用
+                                    int attrEntityCount = ciEntityMapper.getAttrEntityCountByAttrIdAndValue(ciEntityTransactionVo.getCiEntityId(), attrVo.getId(), toCiEntityIdList);
+                                    if (attrEntityCount > 0) {
+                                        List<CiEntityVo> toCiEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(toCiEntityIdList);
+                                        throw new AttrEntityDuplicateException(attrVo.getLabel(), toCiEntityList.stream().map(CiEntityVo::getName).collect(Collectors.toList()));
+                                    }
+                                } else {
+                                    //检查配置项表对应字段是否已被其他配置项使用
+                                    int count = ciEntityMapper.getCiEntityCountByAttrIdAndValue(ciEntityTransactionVo.getCiEntityId(), attrVo, attrEntityTransactionVo.getValueList().getString(0));
+                                    if (count > 0) {
+                                        throw new AttrEntityDuplicateException(attrVo.getLabel(), attrEntityTransactionVo.getValueList());
+                                    }
+                                }
+                            }
+
+                            /*  调用校验器校验数据合法性，只有非引用型属性才需要 */
+                            if (CollectionUtils.isNotEmpty(attrEntityTransactionVo.getValueList())
+                                    && StringUtils.isNotBlank(attrVo.getValidatorHandler()) && !attrVo.isNeedTargetCi()) {
+                                IValidator validator = ValidatorFactory.getValidator(attrVo.getValidatorHandler());
+                                if (validator != null) {
+                                    validator.valid(attrVo.getLabel(), attrEntityTransactionVo.getValueList(),
+                                            attrVo.getValidatorId());
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // 校验关系信息
+                for (RelVo relVo : relList) {
+                    // 判断当前配置项处于from位置的规则
+                    List<RelEntityTransactionVo> fromRelEntityTransactionList =
+                            ciEntityTransactionVo.getRelEntityTransactionByRelIdAndDirection(relVo.getId(), RelDirectionType.FROM.getValue());
+                    // 判断当前配置项处于to位置的规则
+                    List<RelEntityTransactionVo> toRelEntityTransactionList =
+                            ciEntityTransactionVo.getRelEntityTransactionByRelIdAndDirection(relVo.getId(), RelDirectionType.TO.getValue());
+
+                    // 标记当前模型是在关系的上端或者下端
+                    boolean isFrom = false;
+                    boolean isTo = false;
+                    if (relVo.getFromCiId().equals(ciEntityTransactionVo.getCiId())) {
+                        isFrom = true;
+                    }
+                    if (relVo.getToCiId().equals(ciEntityTransactionVo.getCiId())) {
+                        isTo = true;
+                    }
+
+
+                    if (CollectionUtils.isNotEmpty(fromRelEntityTransactionList)) {
+                        //判断关系必填
+                        if (isFrom && relVo.getToIsRequired().equals(1)) {
+                            List<RelEntityTransactionVo> delEntityList = fromRelEntityTransactionList.stream().filter(r -> r.getAction().equals(RelActionType.DELETE.getValue())).collect(Collectors.toList());
+                            if (CollectionUtils.isNotEmpty(delEntityList)) {
+                                //如果关系早已经被清空，则不需要再做必填校验
+                                if (CollectionUtils.isNotEmpty(oldEntity.getRelEntityByRelIdAndDirection(relVo.getId(), RelDirectionType.FROM.getValue()))) {
+                                    for (RelEntityTransactionVo relEntity : delEntityList) {
+                                        oldEntity.removeRelEntityData(relEntity.getRelId(), RelDirectionType.FROM.getValue(), relEntity.getToCiEntityId());
+                                    }
+                                }
+                                if (CollectionUtils.isEmpty(oldEntity.getRelEntityByRelIdAndDirection(relVo.getId(), RelDirectionType.FROM.getValue()))) {
+                                    throw new RelEntityNotFoundException(relVo.getToLabel());
+                                }
+                            }
+                        }
+                        //判断关系多选
+                        if (RelRuleType.O.getValue().equals(relVo.getToRule())) {
+                            List<RelEntityTransactionVo> insertEntityList = fromRelEntityTransactionList.stream().filter(r -> r.getAction().equals(RelActionType.INSERT.getValue())).collect(Collectors.toList());
+                            if (CollectionUtils.isNotEmpty(insertEntityList)) {
+                                if (insertEntityList.size() > 1) {
+                                    throw new RelEntityMutipleException(relVo.getToLabel());
+                                } else {
+                                    if (CollectionUtils.isNotEmpty(oldEntity.getRelEntityByRelIdAndDirection(relVo.getId(), RelDirectionType.FROM.getValue()))) {
+                                        for (RelEntityTransactionVo relEntity : insertEntityList) {
+                                            oldEntity.removeRelEntityData(relEntity.getRelId(), RelDirectionType.FROM.getValue(), relEntity.getToCiEntityId());
+                                        }
+                                    }
+                                    if (CollectionUtils.isNotEmpty(oldEntity.getRelEntityByRelIdAndDirection(relVo.getId(), RelDirectionType.FROM.getValue()))) {
+                                        throw new RelEntityMutipleException(relVo.getToLabel());
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (CollectionUtils.isNotEmpty(toRelEntityTransactionList)) {
+                        //判断关系必填
+                        if (isTo && relVo.getFromIsRequired().equals(1)) {
+                            List<RelEntityTransactionVo> delEntityList = toRelEntityTransactionList.stream().filter(r -> r.getAction().equals(RelActionType.DELETE.getValue())).collect(Collectors.toList());
+                            if (CollectionUtils.isNotEmpty(delEntityList)) {
+                                //如果关系早已经被清空，则不需要再做必填校验
+                                if (CollectionUtils.isNotEmpty(oldEntity.getRelEntityByRelIdAndDirection(relVo.getId(), RelDirectionType.TO.getValue()))) {
+                                    for (RelEntityTransactionVo relEntity : delEntityList) {
+                                        oldEntity.removeRelEntityData(relEntity.getRelId(), RelDirectionType.TO.getValue(), relEntity.getFromCiEntityId());
+                                    }
+                                }
+                                if (CollectionUtils.isEmpty(oldEntity.getRelEntityByRelIdAndDirection(relVo.getId(), RelDirectionType.TO.getValue()))) {
+                                    throw new RelEntityNotFoundException(relVo.getFromLabel());
+                                }
+                            }
+                        }
+
+                        //判断关系多选
+                        if (RelRuleType.O.getValue().equals(relVo.getFromRule())) {
+                            List<RelEntityTransactionVo> insertEntityList = toRelEntityTransactionList.stream().filter(r -> r.getAction().equals(RelActionType.INSERT.getValue())).collect(Collectors.toList());
+                            if (CollectionUtils.isNotEmpty(insertEntityList)) {
+                                if (insertEntityList.size() > 1) {
+                                    throw new RelEntityMutipleException(relVo.getFromLabel());
+                                } else {
+                                    if (CollectionUtils.isNotEmpty(oldEntity.getRelEntityByRelIdAndDirection(relVo.getId(), RelDirectionType.TO.getValue()))) {
+                                        for (RelEntityTransactionVo relEntity : insertEntityList) {
+                                            oldEntity.removeRelEntityData(relEntity.getRelId(), RelDirectionType.TO.getValue(), relEntity.getFromCiEntityId());
+                                        }
+                                    }
+                                    if (CollectionUtils.isNotEmpty(oldEntity.getRelEntityByRelIdAndDirection(relVo.getId(), RelDirectionType.TO.getValue()))) {
+                                        throw new RelEntityMutipleException(relVo.getToLabel());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                //校验唯一规则
+                if (CollectionUtils.isNotEmpty(ciVo.getUniqueAttrIdList())) {
+                    CiEntityVo ciEntityConditionVo = new CiEntityVo();
+                    ciEntityConditionVo.setCiId(ciEntityTransactionVo.getCiId());
+                    for (Long attrId : ciVo.getUniqueAttrIdList()) {
+                        AttrEntityTransactionVo attrEntityTransactionVo = ciEntityTransactionVo.getAttrEntityTransactionByAttrId(attrId);
+                        if (attrEntityTransactionVo != null) {
+                            AttrFilterVo filterVo = new AttrFilterVo();
+                            filterVo.setAttrId(attrId);
+                            filterVo.setExpression(SearchExpression.EQ.getExpression());
+                            filterVo.setValueList(attrEntityTransactionVo.getValueList().stream().map(Object::toString).collect(Collectors.toList()));
+                            ciEntityConditionVo.addAttrFilter(filterVo);
+                        } else {
+                            AttrEntityVo attrEntityVo = oldEntity.getAttrEntityByAttrId(attrId);
+                            if (attrEntityVo != null) {
+                                AttrFilterVo filterVo = new AttrFilterVo();
+                                filterVo.setAttrId(attrId);
+                                filterVo.setExpression(SearchExpression.EQ.getExpression());
+                                filterVo.setValueList(attrEntityVo.getValueList().stream().map(Object::toString).collect(Collectors.toList()));
+                                ciEntityConditionVo.addAttrFilter(filterVo);
+                            }
+                        }
+                    }
+                    if (CollectionUtils.isNotEmpty(ciEntityConditionVo.getAttrFilterList())) {
+                        List<CiEntityVo> checkList = this.searchCiEntity(ciEntityConditionVo);
+                        for (CiEntityVo checkCiEntity : checkList) {
+                            if (!checkCiEntity.getId().equals(ciEntityTransactionVo.getCiEntityId())) {
+                                throw new CiUniqueRuleException();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+
+    /**
      * 提交事务 修改规则:
      * editMode针对单次修改。editMode=Global下，提供属性或关系代表修改，不提供代表删除；editMode=Partial下，提供属性或关系代表修改，不提供代表不修改
      * saveMode针对单个属性或关系，saveMode=replace，代表覆盖，最后结果是修改或删除；saveMode=merge，代表合并，最后结果是添加新成员或维持不变。
@@ -832,6 +1184,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                     if (!ciEntityTransactionSet.contains(ciEntityId) && !transactionGroupVo.isExclude(ciEntityId)) {
                         TransactionVo toTransactionVo = new TransactionVo();
                         toTransactionVo.setCiId(ciId);
+                        toTransactionVo.setInputFrom(transactionVo.getInputFrom());
                         toTransactionVo.setStatus(TransactionStatus.COMMITED.getValue());
 
                         CiEntityTransactionVo endCiEntityTransactionVo = new CiEntityTransactionVo();
@@ -924,20 +1277,25 @@ public class CiEntityServiceImpl implements CiEntityService {
                 for (RelEntityTransactionVo relEntityTransactionVo : relEntityTransactionList) {
                     //如果不是自己引用自己，则需要补充对端配置项事务，此块需要在真正删除数据前处理
                     if (!relEntityTransactionVo.getFromCiEntityId().equals(relEntityTransactionVo.getToCiEntityId())) {
-                        Long ciEntityId = null, ciId = null;
+                        Long ciEntityId = null, ciId = null, sourceCiEntityId = null, sourceCiId = null;
 
                         if (relEntityTransactionVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
                             ciEntityId = relEntityTransactionVo.getToCiEntityId();
                             ciId = relEntityTransactionVo.getToCiId();
+                            sourceCiEntityId = relEntityTransactionVo.getFromCiEntityId();
+                            sourceCiId = relEntityTransactionVo.getFromCiId();
                         } else if (relEntityTransactionVo.getDirection().equals(RelDirectionType.TO.getValue())) {
                             ciEntityId = relEntityTransactionVo.getFromCiEntityId();
                             ciId = relEntityTransactionVo.getFromCiId();
+                            sourceCiEntityId = relEntityTransactionVo.getToCiEntityId();
+                            sourceCiId = relEntityTransactionVo.getToCiId();
                         }
 
                         //排除掉当前事务的cientityId，不然有可能会重复插入事务
                         if (!transactionGroupVo.isExclude(ciEntityId) && !ciEntityTransactionMap.containsKey(ciEntityId)) {
                             TransactionVo toTransactionVo = new TransactionVo();
                             toTransactionVo.setCiId(ciId);
+                            toTransactionVo.setInputFrom(transactionVo.getInputFrom());
                             toTransactionVo.setStatus(TransactionStatus.COMMITED.getValue());
                             transactionMapper.insertTransaction(toTransactionVo);
                             transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), toTransactionVo.getId());
@@ -954,7 +1312,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                         if (ciEntityTransactionMap.containsKey(ciEntityId)) {
                             CiEntityTransactionVo endCiEntityTransactionVo = ciEntityTransactionMap.get(ciEntityId);
                             //补充关系修改信息
-                            endCiEntityTransactionVo.addRelEntityData(relEntityTransactionVo.getRelId(), relEntityTransactionVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? RelDirectionType.TO.getValue() : RelDirectionType.FROM.getValue(), ciId, ciEntityId, relEntityTransactionVo.getAction());
+                            endCiEntityTransactionVo.addRelEntityData(relEntityTransactionVo.getRelId(), relEntityTransactionVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? RelDirectionType.TO.getValue() : RelDirectionType.FROM.getValue(), sourceCiId, sourceCiEntityId, relEntityTransactionVo.getAction());
                         }
                     }
 
@@ -1085,14 +1443,23 @@ public class CiEntityServiceImpl implements CiEntityService {
      * 提交事务，返回配置项id
      */
     @Override
-    public Long commitTransaction(Long transactionId) {
-        TransactionVo transactionVo = transactionMapper.getTransactionById(transactionId);
-        if (transactionVo != null) {
-            CiEntityTransactionVo ciEntityTransactionVo = transactionVo.getCiEntityTransactionVo();
+    @Transactional
+    public List<TransactionStatusVo> commitTransactionGroup(TransactionGroupVo transactionGroupVo) {
+        List<TransactionStatusVo> statusList = new ArrayList<>();
+        for (TransactionVo transactionVo : transactionGroupVo.getTransactionList()) {
+            transactionGroupVo.addExclude(transactionVo.getCiEntityTransactionVo().getCiEntityId());
+        }
+        for (TransactionVo transactionVo : transactionGroupVo.getTransactionList()) {
+            if (transactionVo.getStatus().equals(TransactionStatus.COMMITED.getValue())) {
+                throw new TransactionStatusIrregularException();
+            }
+            if (!CiAuthChecker.chain().checkCiEntityTransactionPrivilege(transactionVo.getCiId()).checkIsInGroup(transactionVo.getCiEntityId(), GroupType.MAINTAIN).check()) {
+                throw new TransactionAuthException();
+            }
             try {
-                boolean hasChange = validateCiEntityTransaction(ciEntityTransactionVo);
-                if (hasChange) {
-                    return this.commitTransaction(transactionVo, new TransactionGroupVo());
+                if (validateCiEntityTransactionForCommit(transactionVo.getCiEntityTransactionVo())) {
+                    this.commitTransaction(transactionVo, transactionGroupVo);
+                    statusList.add(new TransactionStatusVo(transactionVo.getId(), TransactionStatus.COMMITED));
                 }
             } catch (Exception ex) {
                 AfterTransactionJob<TransactionVo> job = new AfterTransactionJob<>();
@@ -1105,7 +1472,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                 throw ex;
             }
         }
-        return null;
+        return statusList;
     }
 
 
