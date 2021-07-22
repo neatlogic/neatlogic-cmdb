@@ -1,3 +1,8 @@
+/*
+ * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+ */
+
 package codedriver.module.cmdb.process.stephandler;
 
 import codedriver.framework.process.stephandler.core.IProcessStepHandlerType;
@@ -5,11 +10,11 @@ import codedriver.framework.process.stephandler.core.IProcessStepHandlerType;
 public enum CmdbProcessStepHandlerType implements IProcessStepHandlerType {
     CIENTITYSYNC("cientitysync", "process", "配置项同步");
 
-    private String handler;
-    private String name;
-    private String type;
+    private final String handler;
+    private final String name;
+    private final String type;
 
-    private CmdbProcessStepHandlerType(String _handler, String _type, String _name) {
+    CmdbProcessStepHandlerType(String _handler, String _type, String _name) {
         this.handler = _handler;
         this.type = _type;
         this.name = _name;

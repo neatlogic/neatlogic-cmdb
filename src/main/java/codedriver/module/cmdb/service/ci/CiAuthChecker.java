@@ -12,6 +12,8 @@ import codedriver.framework.cmdb.enums.CiAuthType;
 import codedriver.framework.cmdb.enums.GroupType;
 import codedriver.framework.common.constvalue.UserType;
 import codedriver.framework.dao.mapper.TeamMapper;
+import codedriver.module.cmdb.auth.label.CIENTITY_MODIFY;
+import codedriver.module.cmdb.auth.label.CI_MODIFY;
 import codedriver.module.cmdb.dao.mapper.ci.CiAuthMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import codedriver.module.cmdb.dao.mapper.group.GroupMapper;
@@ -98,14 +100,14 @@ public class CiAuthChecker {
 
         public Chain checkCiManagePrivilege() {
             if (!hasAuth) {
-                hasAuth = AuthActionChecker.check("CI_MODIFY");
+                hasAuth = AuthActionChecker.check(CI_MODIFY.class);
             }
             return this;
         }
 
         public Chain checkCiManagePrivilege(Long ciId) {
             if (!hasAuth) {
-                hasAuth = AuthActionChecker.check("CI_MODIFY");
+                hasAuth = AuthActionChecker.check(CI_MODIFY.class);
                 if (!hasAuth) {
                     hasAuth = CiAuthChecker.hasCiPrivilege(ciId, CiAuthType.CIMANAGE);
                 }
@@ -115,7 +117,7 @@ public class CiAuthChecker {
 
         public Chain checkCiEntityUpdatePrivilege(Long ciId) {
             if (!hasAuth) {
-                hasAuth = AuthActionChecker.check("CI_MODIFY", "CIENTITY_MODIFY");
+                hasAuth = AuthActionChecker.check(CI_MODIFY.class, CIENTITY_MODIFY.class);
                 if (!hasAuth) {
                     hasAuth = CiAuthChecker.hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYUPDATE);
                 }
@@ -131,7 +133,7 @@ public class CiAuthChecker {
          */
         public Chain checkCiEntityTransactionPrivilege(Long ciId) {
             if (!hasAuth) {
-                hasAuth = AuthActionChecker.check("CI_MODIFY", "CIENTITY_MODIFY");
+                hasAuth = AuthActionChecker.check(CI_MODIFY.class, CIENTITY_MODIFY.class);
                 if (!hasAuth) {
                     hasAuth = CiAuthChecker.hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.TRANSACTIONMANAGE);
                 }
@@ -141,7 +143,7 @@ public class CiAuthChecker {
 
         public Chain checkCiEntityInsertPrivilege(Long ciId) {
             if (!hasAuth) {
-                hasAuth = AuthActionChecker.check("CI_MODIFY", "CIENTITY_MODIFY");
+                hasAuth = AuthActionChecker.check(CI_MODIFY.class, CIENTITY_MODIFY.class);
                 if (!hasAuth) {
                     hasAuth = CiAuthChecker.hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYINSERT);
                 }
@@ -151,7 +153,7 @@ public class CiAuthChecker {
 
         public Chain checkCiEntityDeletePrivilege(Long ciId) {
             if (!hasAuth) {
-                hasAuth = AuthActionChecker.check("CI_MODIFY", "CIENTITY_MODIFY");
+                hasAuth = AuthActionChecker.check(CI_MODIFY.class, CIENTITY_MODIFY.class);
                 if (!hasAuth) {
                     hasAuth = CiAuthChecker.hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYDELETE);
                 }
@@ -161,7 +163,7 @@ public class CiAuthChecker {
 
         public Chain checkCiEntityQueryPrivilege(Long ciId) {
             if (!hasAuth) {
-                hasAuth = AuthActionChecker.check("CI_MODIFY", "CIENTITY_MODIFY");
+                hasAuth = AuthActionChecker.check(CI_MODIFY.class, CIENTITY_MODIFY.class);
                 if (!hasAuth) {
                     hasAuth = CiAuthChecker.hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYUPDATE, CiAuthType.CIENTITYDELETE, CiAuthType.TRANSACTIONMANAGE, CiAuthType.CIENTITYQUERY);
                 }
@@ -171,7 +173,7 @@ public class CiAuthChecker {
 
         public Chain checkViewPasswordPrivilege(Long ciId) {
             if (!hasAuth) {
-                hasAuth = AuthActionChecker.check("CI_MODIFY", "CIENTITY_MODIFY");
+                hasAuth = AuthActionChecker.check(CI_MODIFY.class, CIENTITY_MODIFY.class);
                 if (!hasAuth) {
                     hasAuth = CiAuthChecker.hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYUPDATE, CiAuthType.CIENTITYINSERT, CiAuthType.PASSWORDVIEW);
                 }
