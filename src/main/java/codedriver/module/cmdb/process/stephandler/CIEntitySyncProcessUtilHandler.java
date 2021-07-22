@@ -225,6 +225,13 @@ public class CIEntitySyncProcessUtilHandler extends ProcessStepInternalHandlerBa
         /** 可替换文本列表 **/
         resultObj.put("replaceableTextList", ProcessConfigUtil.regulateReplaceableTextList(configObj.getJSONArray("replaceableTextList")));
 
+        /** 关联表单组件 **/
+        JSONArray handlerList = configObj.getJSONArray("handlerList");
+        if (handlerList == null) {
+            handlerList = new JSONArray();
+        }
+        resultObj.put("handlerList", handlerList);
+
         /** 分配处理人 **/
         JSONObject workerPolicyConfig = configObj.getJSONObject("workerPolicyConfig");
         JSONObject workerPolicyObj = ProcessConfigUtil.regulateWorkerPolicyConfig(workerPolicyConfig);
