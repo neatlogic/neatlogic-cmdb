@@ -222,7 +222,7 @@ public class CiEntityServiceImpl implements CiEntityService {
      */
     @Transactional
     @Override
-    public Long deleteCiEntity(Long ciEntityId) {
+    public Long deleteCiEntity(Long ciEntityId, Boolean allowCommit) {
         CiEntityVo baseCiEntityVo = this.ciEntityMapper.getCiEntityBaseInfoById(ciEntityId);
         if (baseCiEntityVo == null) {
             throw new CiEntityNotFoundException(ciEntityId);
@@ -254,8 +254,10 @@ public class CiEntityServiceImpl implements CiEntityService {
         transactionMapper.insertTransaction(transactionVo);
         // 写入配置项事务
         transactionMapper.insertCiEntityTransaction(ciEntityTransactionVo);
-        TransactionGroupVo transactionGroupVo = new TransactionGroupVo();
-        commitTransaction(transactionVo, transactionGroupVo);
+        if (allowCommit) {
+            TransactionGroupVo transactionGroupVo = new TransactionGroupVo();
+            commitTransaction(transactionVo, transactionGroupVo);
+        }
 
         return transactionVo.getId();
 

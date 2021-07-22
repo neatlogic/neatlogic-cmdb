@@ -119,7 +119,7 @@ public class CiAuthChecker {
             if (!hasAuth) {
                 hasAuth = AuthActionChecker.check(CI_MODIFY.class, CIENTITY_MODIFY.class);
                 if (!hasAuth) {
-                    hasAuth = CiAuthChecker.hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYUPDATE);
+                    hasAuth = CiAuthChecker.hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYUPDATE, CiAuthType.TRANSACTIONMANAGE);
                 }
             }
             return this;
@@ -145,7 +145,7 @@ public class CiAuthChecker {
             if (!hasAuth) {
                 hasAuth = AuthActionChecker.check(CI_MODIFY.class, CIENTITY_MODIFY.class);
                 if (!hasAuth) {
-                    hasAuth = CiAuthChecker.hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYINSERT);
+                    hasAuth = CiAuthChecker.hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYINSERT, CiAuthType.TRANSACTIONMANAGE);
                 }
             }
             return this;
@@ -155,7 +155,7 @@ public class CiAuthChecker {
             if (!hasAuth) {
                 hasAuth = AuthActionChecker.check(CI_MODIFY.class, CIENTITY_MODIFY.class);
                 if (!hasAuth) {
-                    hasAuth = CiAuthChecker.hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYDELETE);
+                    hasAuth = CiAuthChecker.hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYDELETE, CiAuthType.TRANSACTIONMANAGE);
                 }
             }
             return this;

@@ -69,8 +69,19 @@ public class DeleteTransactionApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long transactionId = jsonObj.getLong("id");
         TransactionGroupVo transactionGroup = transactionMapper.getTransactionGroupByTransactionId(transactionId);
-        List<TransactionVo> transactionList = transactionMapper.getTransactionByGroupId(transactionGroup.getId());
-        for (TransactionVo transactionVo : transactionList) {
+        if (transactionGroup != null) {
+            List<TransactionVo> transactionList = transactionMapper.getTransactionByGroupId(transactionGroup.getId());
+            for (TransactionVo transactionVo : transactionList) {
+                if (transactionVo.getStatus().equals(TransactionStatus.COMMITED.getValue())) {
+                    throw new TransactionStatusIrregularException();
+                }
+                if (!CiAuthChecker.chain().checkCiEntityTransactionPrivilege(transactionVo.getCiId()).checkIsInGroup(transactionVo.getCiEntityId(), GroupType.MAINTAIN).check()) {
+                    throw new TransactionAuthException();
+                }
+                transactionMapper.deleteTransactionById(transactionVo.getId());
+            }
+        } else {
+            TransactionVo transactionVo = transactionMapper.getTransactionById(transactionId);
             if (transactionVo.getStatus().equals(TransactionStatus.COMMITED.getValue())) {
                 throw new TransactionStatusIrregularException();
             }

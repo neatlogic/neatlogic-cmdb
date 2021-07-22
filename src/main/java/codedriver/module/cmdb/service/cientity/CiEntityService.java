@@ -89,14 +89,15 @@ public interface CiEntityService {
 
     List<CiEntityVo> searchCiEntityBaseInfo(CiEntityVo ciEntityVo);
 
+
     /**
      * 删除整个配置项
      *
      * @param ciEntityId 配置项id
      * @return 事务id
      */
-    Long deleteCiEntity(Long ciEntityId);
-
+    @Transactional
+    Long deleteCiEntity(Long ciEntityId, Boolean allowCommit);
 
     /**
      * 验证配置项是否合法

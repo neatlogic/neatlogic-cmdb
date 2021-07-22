@@ -5,28 +5,24 @@
 
 package codedriver.module.cmdb.notify.handler;
 
-import codedriver.framework.autoexec.auth.AUTOEXEC_COMBOP_ADD;
 import codedriver.framework.dto.ConditionParamVo;
 import codedriver.framework.notify.core.INotifyPolicyHandlerGroup;
 import codedriver.framework.notify.core.NotifyHandlerType;
 import codedriver.framework.notify.core.NotifyPolicyHandlerBase;
 import codedriver.framework.notify.dto.NotifyTriggerTemplateVo;
 import codedriver.framework.notify.dto.NotifyTriggerVo;
+import codedriver.module.cmdb.auth.label.CI_MODIFY;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * @author: linbq
- * @since: 2021/4/15 9:47
- **/
 @Component
 public class CmdbNotifyPolicyHandler extends NotifyPolicyHandlerBase {
     @Override
     public String getName() {
-        return "配置管理";
+        return "模型";
     }
 
     /**
@@ -34,17 +30,21 @@ public class CmdbNotifyPolicyHandler extends NotifyPolicyHandlerBase {
      */
     @Override
     public String getAuthName() {
-        return AUTOEXEC_COMBOP_ADD.class.getSimpleName();
+        return CI_MODIFY.class.getSimpleName();
     }
 
     @Override
     public INotifyPolicyHandlerGroup getGroup() {
-        return null;
+        return CmdbNotifyGroup.CMDB;
     }
 
     @Override
     protected List<NotifyTriggerVo> myNotifyTriggerList() {
-        return new ArrayList<>();
+        List<NotifyTriggerVo> returnList = new ArrayList<>();
+        for (CmdbNotifyTriggerType triggerType : CmdbNotifyTriggerType.values()) {
+            returnList.add(new NotifyTriggerVo(triggerType.getTrigger(), triggerType.getText(), triggerType.getDescription()));
+        }
+        return returnList;
     }
 
     @Override

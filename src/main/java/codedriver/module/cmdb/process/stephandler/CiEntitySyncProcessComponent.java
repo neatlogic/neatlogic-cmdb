@@ -142,7 +142,7 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
                                 auditObj.put("ciEntityId", ciEntityObj.getLong("id"));
                                 auditObj.put("ciId", ciId);
                                 auditObj.put("action", TransactionActionType.DELETE.getValue());
-                                Long transactionId = ciEntityService.deleteCiEntity(ciEntityObj.getLong("id"));
+                                Long transactionId = ciEntityService.deleteCiEntity(ciEntityObj.getLong("id"), true);
                                 auditObj.put("status", "success");
                                 auditObj.put("transactionId", transactionId);
                             } else {
@@ -166,6 +166,7 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
                                 ciEntityTransactionVo.setRelEntityData(relObj);
                                 // 因为不一定编辑所有属性，所以需要切换成局部更新模式
                                 ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
+                                ciEntityTransactionVo.setAllowCommit(true);
                                 CiEntityVo oldCiEntityVo = ciEntityService.getCiEntityBaseInfoById(ciEntityTransactionVo.getCiEntityId());
                                 if (oldCiEntityVo != null) {
                                     auditObj.put("ciEntityName", oldCiEntityVo.getName());

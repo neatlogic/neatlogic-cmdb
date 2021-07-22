@@ -12,7 +12,6 @@ import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.enums.CiAuthType;
 import codedriver.framework.cmdb.enums.GroupType;
 import codedriver.framework.cmdb.enums.ShowType;
-import codedriver.framework.cmdb.exception.cientity.CiEntityAuthException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.restful.annotation.*;
@@ -82,14 +81,15 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         CiEntityVo ciEntityVo = JSONObject.toJavaObject(jsonObj, CiEntityVo.class);
-        if (!CiAuthChecker.chain().checkCiEntityQueryPrivilege(ciEntityVo.getCiId()).check()) {
+        /*FIXME:查看权限控制仍需斟酌，主要是考虑被引用的配置项列表如果没有权限是否允许查看，目前可控制左侧模型菜单显示，不做严格禁止
+        /*if (!CiAuthChecker.chain().checkCiEntityQueryPrivilege(ciEntityVo.getCiId()).check()) {
             List<Long> groupIdList = groupService.getCurrentUserGroupIdList();
             if (CollectionUtils.isNotEmpty(groupIdList)) {
                 ciEntityVo.setGroupIdList(groupIdList);
             } else {
                 throw new CiEntityAuthException("查看");
             }
-        }
+        }*/
 
         boolean needAction = jsonObj.getBooleanValue("needAction");
         boolean needCheck = jsonObj.getBooleanValue("needCheck");
@@ -154,13 +154,14 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
         ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
         JSONArray tbodyList = new JSONArray();
         if (CollectionUtils.isNotEmpty(ciEntityList)) {
-            boolean canEdit = false, canDelete = false, canViewPassword = false;
+            boolean canEdit = false, canDelete = false, canViewPassword = false, canTransaction = false;
             List<Long> hasMaintainCiEntityIdList = new ArrayList<>();
             List<Long> hasReadCiEntityIdList = new ArrayList<>();
             if (needAction && ciVo.getIsVirtual().equals(0) && ciVo.getIsAbstract().equals(0)) {
                 canEdit = CiAuthChecker.chain().checkCiEntityUpdatePrivilege(ciEntityVo.getCiId()).check();
                 canDelete = CiAuthChecker.chain().checkCiEntityDeletePrivilege(ciEntityVo.getCiId()).check();
                 canViewPassword = CiAuthChecker.chain().checkViewPasswordPrivilege(ciEntityVo.getCiId()).check();
+                canTransaction = CiAuthChecker.chain().checkCiEntityTransactionPrivilege(ciEntityVo.getCiId()).check();
                 // 任意权限缺失，都需要检查是否在运维群组
                 if (!canEdit || !canDelete) {
                     if (CollectionUtils.isNotEmpty(ciEntityVo.getGroupIdList())) {
@@ -186,6 +187,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
                     actionData.put(CiAuthType.CIENTITYUPDATE.getValue(), canEdit || hasMaintainCiEntityIdList.contains(entity.getId()));
                     actionData.put(CiAuthType.CIENTITYDELETE.getValue(), canDelete || hasMaintainCiEntityIdList.contains(entity.getId()));
                     actionData.put(CiAuthType.PASSWORDVIEW.getValue(), canViewPassword || hasMaintainCiEntityIdList.contains(entity.getId()) || hasReadCiEntityIdList.contains(entity.getId()));
+                    actionData.put(CiAuthType.TRANSACTIONMANAGE.getValue(), canTransaction || hasMaintainCiEntityIdList.contains(entity.getId()));
                     entityObj.put("authData", actionData);
                 }
                 tbodyList.add(entityObj);

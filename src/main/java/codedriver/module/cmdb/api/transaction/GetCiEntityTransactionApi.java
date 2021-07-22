@@ -8,11 +8,11 @@ package codedriver.module.cmdb.api.transaction;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
-import codedriver.framework.cmdb.dto.ci.CiViewVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.cmdb.dto.transaction.RelEntityTransactionVo;
 import codedriver.framework.cmdb.enums.RelDirectionType;
+import codedriver.framework.cmdb.enums.TransactionActionType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -73,115 +73,150 @@ public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
         Long ciEntityId = jsonObj.getLong("ciEntityId");
         Long transactionId = jsonObj.getLong("transactionId");
         Long ciId = jsonObj.getLong("ciId");
-        CiViewVo ciViewVo = new CiViewVo();
-        ciViewVo.setCiId(ciId);
-        List<AttrVo> attrList = attrMapper.getAttrByCiId(ciId);
 
-        CiEntityTransactionVo ciEntityTransactionVo =
-                transactionMapper.getCiEntityTransactionByTransactionIdAndCiEntityId(transactionId, ciEntityId);
+        CiEntityTransactionVo ciEntityTransactionVo = transactionMapper.getCiEntityTransactionByTransactionIdAndCiEntityId(transactionId, ciEntityId);
         JSONArray dataList = new JSONArray();
-        if (MapUtils.isNotEmpty(ciEntityTransactionVo.getAttrEntityData())) {
-            JSONObject oldAttrEntityData = null;
-            if (StringUtils.isNotBlank(ciEntityTransactionVo.getSnapshot())) {
-                JSONObject oldCiEntityObj = JSONObject.parseObject(ciEntityTransactionVo.getSnapshot());
-                oldAttrEntityData = oldCiEntityObj.getJSONObject("attrEntityData");
-
-            }
-            for (String key : ciEntityTransactionVo.getAttrEntityData().keySet()) {
-                JSONObject dataObj = new JSONObject();
-                JSONObject attrObj = ciEntityTransactionVo.getAttrEntityData().getJSONObject(key);
-                Long attrId = Long.parseLong(key.replace("attr_", ""));
-
-                Optional<AttrVo> filterAttr = attrList.stream().filter(attr -> attr.getId().equals(attrId)).findFirst();
-                if (filterAttr.isPresent()) {
-                    AttrVo attrVo = filterAttr.get();
-                    dataObj.put("newValue", buildAttrObj(attrVo, attrObj.getJSONArray("valueList")));
-                    if (MapUtils.isNotEmpty(oldAttrEntityData) && oldAttrEntityData.containsKey(key)) {
-                        dataObj.put("oldValue", buildAttrObj(attrVo, oldAttrEntityData.getJSONObject(key).getJSONArray("valueList")));
-                    }
-                    //如果整个newValueList都不存在表示原来使用的属性已经删除，这时候就不需要再显示新旧值了
-                } else {
-                    //如果属性已删除，尝试使用snapshot数据还原原来的值
-                    if (MapUtils.isNotEmpty(oldAttrEntityData) && oldAttrEntityData.containsKey(key)) {
-                        AttrVo attrVo = JSONObject.toJavaObject(oldAttrEntityData.getJSONObject(key), AttrVo.class);
-                        dataObj.put("oldValue", buildAttrObj(attrVo, oldAttrEntityData.getJSONObject(key).getJSONArray("valueList")));
-                    }
-                    dataObj.put("action", "delattr");
-                }
-                dataObj.put("id", attrId);
-                dataObj.put("name", attrObj.getString("name"));
-                dataObj.put("label", attrObj.getString("label"));
-                dataObj.put("type", "attr");
-                dataList.add(dataObj);
-            }
+        JSONObject oldCiEntityObj = null;
+        if (StringUtils.isNotBlank(ciEntityTransactionVo.getSnapshot())) {
+            oldCiEntityObj = JSONObject.parseObject(ciEntityTransactionVo.getSnapshot());
         }
+        if (!ciEntityTransactionVo.getAction().equals(TransactionActionType.DELETE.getValue())) {
+            if (MapUtils.isNotEmpty(ciEntityTransactionVo.getAttrEntityData())) {
+                List<AttrVo> attrList = attrMapper.getAttrByCiId(ciId);
 
-        if (MapUtils.isNotEmpty(ciEntityTransactionVo.getRelEntityData())) {
-            JSONObject oldRelEntityData = null;
-            if (StringUtils.isNotBlank(ciEntityTransactionVo.getSnapshot())) {
-                JSONObject oldCiEntityObj = JSONObject.parseObject(ciEntityTransactionVo.getSnapshot());
-                oldRelEntityData = oldCiEntityObj.getJSONObject("relEntityData");
-            }
-            for (String key : ciEntityTransactionVo.getRelEntityData().keySet()) {
-                JSONObject dataObj = new JSONObject();
-                JSONObject relObj = ciEntityTransactionVo.getRelEntityData().getJSONObject(key);
-                Long relId = Long.parseLong(key.split("_")[1]);
-                dataObj.put("id", relId);
-                dataObj.put("name", relObj.getString("name"));
-                dataObj.put("label", relObj.getString("label"));
-                dataObj.put("direction", relObj.getString("direction"));
-                dataObj.put("type", "rel");
-                JSONArray newValueList = new JSONArray();
-                //因为关系的修改只有insert和delete两种，显示对比时需要去掉删除的目标
-                for (int i = 0; i < relObj.getJSONArray("valueList").size(); i++) {
-                    JSONObject valueObj = relObj.getJSONArray("valueList").getJSONObject(i);
-                    if (!valueObj.containsKey("action") || !valueObj.getString("action").equals("delete")) {
-                        //补充ciEntityName
-                        CiEntityVo ciEntityVo = ciEntityMapper.getCiEntityBaseInfoById(valueObj.getLong("ciEntityId"));
-                        if (ciEntityVo != null) {
-                            valueObj.put("ciEntityName", ciEntityVo.getName());
-                        }
-                        valueObj.put("action", "insert");
-                    }
-                    newValueList.add(valueObj);
+                JSONObject oldAttrEntityData = null;
+                if (MapUtils.isNotEmpty(oldCiEntityObj)) {
+                    oldAttrEntityData = oldCiEntityObj.getJSONObject("attrEntityData");
                 }
 
-                if (MapUtils.isNotEmpty(oldRelEntityData) && oldRelEntityData.containsKey(key)) {
-                    //补充ciEntityName
-                    JSONArray oldValueList = oldRelEntityData.getJSONObject(key).getJSONArray("valueList");
-                    for (int i = 0; i < oldValueList.size(); i++) {
-                        JSONObject valueObj = oldValueList.getJSONObject(i);
-                        CiEntityVo ciEntityVo = ciEntityMapper.getCiEntityBaseInfoById(valueObj.getLong("ciEntityId"));
-                        if (ciEntityVo != null) {
-                            valueObj.put("ciEntityName", ciEntityVo.getName());
+                for (String key : ciEntityTransactionVo.getAttrEntityData().keySet()) {
+                    JSONObject dataObj = new JSONObject();
+                    JSONObject attrObj = ciEntityTransactionVo.getAttrEntityData().getJSONObject(key);
+                    Long attrId = Long.parseLong(key.replace("attr_", ""));
+
+                    Optional<AttrVo> filterAttr = attrList.stream().filter(attr -> attr.getId().equals(attrId)).findFirst();
+                    if (filterAttr.isPresent()) {
+                        AttrVo attrVo = filterAttr.get();
+                        dataObj.put("newValue", buildAttrObj(attrVo, attrObj.getJSONArray("valueList")));
+                        if (MapUtils.isNotEmpty(oldAttrEntityData) && oldAttrEntityData.containsKey(key)) {
+                            dataObj.put("oldValue", buildAttrObj(attrVo, oldAttrEntityData.getJSONObject(key).getJSONArray("valueList")));
                         }
-                        //补充原来的值
-                        boolean isExists = false;
-                        for (int j = 0; j < newValueList.size(); j++) {
-                            JSONObject newV = newValueList.getJSONObject(j);
-                            if (newV.getLong("ciEntityId").equals(valueObj.getLong("ciEntityId"))) {
-                                isExists = true;
-                                break;
+                        //如果整个newValueList都不存在表示原来使用的属性已经删除，这时候就不需要再显示新旧值了
+                    } else {
+                        //如果属性已删除，尝试使用snapshot数据还原原来的值
+                        if (MapUtils.isNotEmpty(oldAttrEntityData) && oldAttrEntityData.containsKey(key)) {
+                            AttrVo attrVo = JSONObject.toJavaObject(oldAttrEntityData.getJSONObject(key), AttrVo.class);
+                            dataObj.put("oldValue", buildAttrObj(attrVo, oldAttrEntityData.getJSONObject(key).getJSONArray("valueList")));
+                        }
+                        dataObj.put("action", "delattr");
+                    }
+                    dataObj.put("id", attrId);
+                    dataObj.put("name", attrObj.getString("name"));
+                    dataObj.put("label", attrObj.getString("label"));
+                    dataObj.put("type", "attr");
+                    dataList.add(dataObj);
+                }
+            }
+
+            if (MapUtils.isNotEmpty(ciEntityTransactionVo.getRelEntityData())) {
+                JSONObject oldRelEntityData = null;
+                if (MapUtils.isNotEmpty(oldCiEntityObj)) {
+                    oldRelEntityData = oldCiEntityObj.getJSONObject("relEntityData");
+                }
+                for (String key : ciEntityTransactionVo.getRelEntityData().keySet()) {
+                    JSONObject dataObj = new JSONObject();
+                    JSONObject relObj = ciEntityTransactionVo.getRelEntityData().getJSONObject(key);
+                    Long relId = Long.parseLong(key.split("_")[1]);
+                    dataObj.put("id", relId);
+                    dataObj.put("name", relObj.getString("name"));
+                    dataObj.put("label", relObj.getString("label"));
+                    dataObj.put("direction", relObj.getString("direction"));
+                    dataObj.put("type", "rel");
+                    JSONArray newValueList = new JSONArray();
+                    //因为关系的修改只有insert和delete两种，显示对比时需要去掉删除的目标
+                    for (int i = 0; i < relObj.getJSONArray("valueList").size(); i++) {
+                        JSONObject valueObj = relObj.getJSONArray("valueList").getJSONObject(i);
+                        if (!valueObj.containsKey("action") || !valueObj.getString("action").equals("delete")) {
+                            //补充ciEntityName
+                            CiEntityVo ciEntityVo = ciEntityMapper.getCiEntityBaseInfoById(valueObj.getLong("ciEntityId"));
+                            if (ciEntityVo != null) {
+                                valueObj.put("ciEntityName", ciEntityVo.getName());
+                            }
+                            valueObj.put("action", "insert");
+                        }
+                        newValueList.add(valueObj);
+                    }
+
+                    if (MapUtils.isNotEmpty(oldRelEntityData) && oldRelEntityData.containsKey(key)) {
+                        //补充ciEntityName
+                        JSONArray oldValueList = oldRelEntityData.getJSONObject(key).getJSONArray("valueList");
+                        for (int i = 0; i < oldValueList.size(); i++) {
+                            JSONObject valueObj = oldValueList.getJSONObject(i);
+                            /*CiEntityVo ciEntityVo = ciEntityMapper.getCiEntityBaseInfoById(valueObj.getLong("ciEntityId"));
+                            if (ciEntityVo != null) {
+                                valueObj.put("ciEntityName", ciEntityVo.getName());
+                            }*/
+                            //补充原来的值
+                            boolean isExists = false;
+                            for (int j = 0; j < newValueList.size(); j++) {
+                                JSONObject newV = newValueList.getJSONObject(j);
+                                if (newV.getLong("ciEntityId").equals(valueObj.getLong("ciEntityId"))) {
+                                    isExists = true;
+                                    break;
+                                }
+                            }
+                            if (!isExists) {
+                                newValueList.add(valueObj);
                             }
                         }
-                        if (!isExists) {
-                            newValueList.add(valueObj);
+                        dataObj.put("oldValue", oldValueList);
+                    }
+                    //清除删除信息
+                    for (int j = newValueList.size() - 1; j >= 0; j--) {
+                        JSONObject newV = newValueList.getJSONObject(j);
+                        if (newV.containsKey("action") && newV.getString("action").equals("delete")) {
+                            newValueList.remove(j);
                         }
                     }
-                    dataObj.put("oldValue", oldValueList);
+                    dataObj.put("newValue", newValueList);
+                    dataList.add(dataObj);
                 }
-                //清除删除信息
-                for (int j = newValueList.size() - 1; j >= 0; j--) {
-                    JSONObject newV = newValueList.getJSONObject(j);
-                    if (newV.containsKey("action") && newV.getString("action").equals("delete")) {
-                        newValueList.remove(j);
+            }
+        } else {
+            if (MapUtils.isNotEmpty(oldCiEntityObj)) {
+                JSONObject attrData = oldCiEntityObj.getJSONObject("attrEntityData");
+                if (MapUtils.isNotEmpty(attrData)) {
+                    for (String key : attrData.keySet()) {
+                        JSONObject dataObj = new JSONObject();
+                        //如果属性已删除，尝试使用snapshot数据还原原来的值
+                        JSONObject oldAttrEntityData = attrData.getJSONObject(key);
+                        AttrVo attrVo = JSONObject.toJavaObject(attrData.getJSONObject(key), AttrVo.class);
+                        dataObj.put("oldValue", buildAttrObj(attrVo, attrData.getJSONObject(key).getJSONArray("valueList")));
+                        dataObj.put("action", "delattr");
+                        dataObj.put("id", attrVo.getId());
+                        dataObj.put("name", attrVo.getName());
+                        dataObj.put("label", attrVo.getLabel());
+                        dataObj.put("type", "attr");
+                        dataList.add(dataObj);
                     }
                 }
-                dataObj.put("newValue", newValueList);
-                dataList.add(dataObj);
+                JSONObject relData = oldCiEntityObj.getJSONObject("relEntityData");
+                if (MapUtils.isNotEmpty(relData)) {
+                    for (String key : relData.keySet()) {
+                        JSONObject dataObj = new JSONObject();
+                        JSONObject oldRelEntityData = relData.getJSONObject(key);
+                        dataObj.put("oldValue", oldRelEntityData.getJSONArray("valueList"));
+                        dataObj.put("id", oldRelEntityData.getLong("relId"));
+                        dataObj.put("name", oldRelEntityData.getString("name"));
+                        dataObj.put("label", oldRelEntityData.getString("label"));
+                        dataObj.put("direction", oldRelEntityData.getString("direction"));
+                        dataObj.put("type", "rel");
+                        dataList.add(dataObj);
+                    }
+                }
             }
-        }
 
+        }
         return dataList;
     }
 

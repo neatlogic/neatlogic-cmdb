@@ -7,8 +7,10 @@ package codedriver.module.cmdb.api.cientity;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.enums.GroupType;
+import codedriver.framework.cmdb.enums.InputFrom;
 import codedriver.framework.cmdb.enums.TransactionActionType;
 import codedriver.framework.cmdb.exception.cientity.CiEntityAuthException;
+import codedriver.framework.cmdb.threadlocal.InputFromContext;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -48,18 +50,24 @@ public class DeleteCiEntityApi extends PrivateApiComponentBase {
     }
 
     @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
-            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "配置项id")})
+            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "配置项id"),
+            @Param(name = "needCommit", type = ApiParamType.BOOLEAN, isRequired = true, desc = "是否需要提交")})
     @Output({@Param(name = "transactionId", type = ApiParamType.LONG, desc = "事务id")})
     @Description(desc = "删除配置项接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
+        InputFromContext.init(InputFrom.PAGE);
         Long id = jsonObj.getLong("id");
         Long ciId = jsonObj.getLong("ciId");
+        boolean needCommit = jsonObj.getBooleanValue("needCommit");
         if (!CiAuthChecker.chain().checkCiEntityDeletePrivilege(ciId).checkIsInGroup(id, GroupType.MAINTAIN).check()) {
             throw new CiEntityAuthException(TransactionActionType.DELETE.getText());
         }
+        if (needCommit) {
+            needCommit = CiAuthChecker.chain().checkCiEntityTransactionPrivilege(ciId).checkIsInGroup(id, GroupType.MAINTAIN).check();
+        }
 
-        ciEntityService.deleteCiEntity(id);
+        ciEntityService.deleteCiEntity(id, needCommit);
         return null;
     }
 
