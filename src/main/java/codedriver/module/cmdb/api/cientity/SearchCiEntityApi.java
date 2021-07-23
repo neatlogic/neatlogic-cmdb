@@ -24,7 +24,6 @@ import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiViewMapper;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
-import codedriver.module.cmdb.service.group.GroupService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -51,8 +50,6 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
     @Resource
     private CiMapper ciMapper;
 
-    @Resource
-    private GroupService groupService;
 
     @Override
     public String getToken() {

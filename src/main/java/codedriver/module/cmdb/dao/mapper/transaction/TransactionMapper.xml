@@ -172,6 +172,14 @@
                     AND a.create_time &lt;= STR_TO_DATE(#{createTimeRange[1]},'%Y-%m-%d')
                 </if>
             </if>
+            <if test="commitTimeRange != null">
+                <if test="commitTimeRange.size() > 0">
+                    AND a.commit_time &gt;= STR_TO_DATE(#{commitTimeRange[0]},'%Y-%m-%d')
+                </if>
+                <if test="createTimeRange.size() > 1">
+                    AND a.commit_time &lt;= STR_TO_DATE(#{commitTimeRange[1]},'%Y-%m-%d')
+                </if>
+            </if>
         </where>
     </sql>
 
