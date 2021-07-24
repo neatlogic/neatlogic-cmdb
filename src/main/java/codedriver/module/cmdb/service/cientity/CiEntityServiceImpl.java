@@ -242,6 +242,7 @@ public class CiEntityServiceImpl implements CiEntityService {
 
         TransactionVo transactionVo = new TransactionVo();
         transactionVo.setCiId(oldCiEntityVo.getCiId());
+        transactionVo.setInputFrom(InputFromContext.get().getInputFrom());
         transactionVo.setStatus(TransactionStatus.UNCOMMIT.getValue());
         transactionVo.setCreateUser(UserContext.get().getUserUuid(true));
         CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo(oldCiEntityVo);

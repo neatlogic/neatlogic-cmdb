@@ -152,6 +152,9 @@
 
     <sql id="searchTransactionCondition">
         <where>
+            <if test="transactionId != null">
+                AND a.id = #{transactionId}
+            </if>
             <if test="ciEntityId != null">
                 AND b.`ci_entity_id` = #{ciEntityId}
             </if>
@@ -191,7 +194,7 @@
                 <if test="commitTimeRange.size() > 0">
                     AND a.commit_time &gt;= STR_TO_DATE(#{commitTimeRange[0]},'%Y-%m-%d')
                 </if>
-                <if test="createTimeRange.size() > 1">
+                <if test="commitTimeRange.size() > 1">
                     AND a.commit_time &lt;= STR_TO_DATE(#{commitTimeRange[1]},'%Y-%m-%d')
                 </if>
             </if>
