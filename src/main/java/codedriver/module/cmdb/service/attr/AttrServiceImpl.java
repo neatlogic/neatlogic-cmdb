@@ -5,6 +5,7 @@
 
 package codedriver.module.cmdb.service.attr;
 
+import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.batch.BatchRunner;
 import codedriver.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
 import codedriver.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
@@ -150,6 +151,8 @@ public class AttrServiceImpl implements AttrService {
                         TransactionVo transactionVo = new TransactionVo();
                         transactionVo.setCiId(item.getCiId());
                         transactionVo.setStatus(TransactionStatus.COMMITED.getValue());
+                        transactionVo.setCreateUser(UserContext.get().getUserUuid(true));
+                        transactionVo.setCommitUser(UserContext.get().getUserUuid(true));
                         transactionMapper.insertTransaction(transactionVo);
                         //写入事务分组
                         transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), transactionVo.getId());

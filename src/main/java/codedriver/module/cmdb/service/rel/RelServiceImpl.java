@@ -5,6 +5,7 @@
 
 package codedriver.module.cmdb.service.rel;
 
+import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.batch.BatchRunner;
 import codedriver.framework.cmdb.dto.ci.RelVo;
 import codedriver.framework.cmdb.dto.cientity.RelEntityVo;
@@ -14,6 +15,7 @@ import codedriver.framework.cmdb.dto.transaction.TransactionVo;
 import codedriver.framework.cmdb.enums.RelDirectionType;
 import codedriver.framework.cmdb.enums.TransactionActionType;
 import codedriver.framework.cmdb.enums.TransactionStatus;
+import codedriver.framework.cmdb.threadlocal.InputFromContext;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper;
 import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
@@ -64,6 +66,9 @@ public class RelServiceImpl implements RelService {
                         TransactionVo fromTransactionVo = new TransactionVo();
                         fromTransactionVo.setCiId(item.getFromCiId());
                         fromTransactionVo.setStatus(TransactionStatus.COMMITED.getValue());
+                        fromTransactionVo.setInputFrom(InputFromContext.get().getInputFrom());
+                        fromTransactionVo.setCreateUser(UserContext.get().getUserUuid(true));
+                        fromTransactionVo.setCommitUser(UserContext.get().getUserUuid(true));
                         transactionMapper.insertTransaction(fromTransactionVo);
                         //写入事务分组
                         transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), fromTransactionVo.getId());
@@ -95,6 +100,9 @@ public class RelServiceImpl implements RelService {
                         TransactionVo toTransactionVo = new TransactionVo();
                         toTransactionVo.setCiId(item.getToCiId());
                         toTransactionVo.setStatus(TransactionStatus.COMMITED.getValue());
+                        toTransactionVo.setInputFrom(InputFromContext.get().getInputFrom());
+                        toTransactionVo.setCreateUser(UserContext.get().getUserUuid(true));
+                        toTransactionVo.setCommitUser(UserContext.get().getUserUuid(true));
                         transactionMapper.insertTransaction(toTransactionVo);
                         //写入事务分组
                         transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), toTransactionVo.getId());

@@ -10,6 +10,7 @@ import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.cmdb.dto.transaction.TransactionGroupVo;
 import codedriver.framework.cmdb.dto.transaction.TransactionStatusVo;
+import codedriver.framework.cmdb.dto.transaction.TransactionVo;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -114,5 +115,8 @@ public interface CiEntityService {
      * @return 事务组id
      */
     Long saveCiEntity(List<CiEntityTransactionVo> ciEntityTransactionList);
+
+    @Transactional
+    void recoverCiEntity(TransactionVo transactionVo);
 
 }

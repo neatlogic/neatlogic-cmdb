@@ -73,7 +73,9 @@ public class DeleteTransactionApi extends PrivateApiComponentBase {
             List<TransactionVo> transactionList = transactionMapper.getTransactionByGroupId(transactionGroup.getId());
             for (TransactionVo transactionVo : transactionList) {
                 if (transactionVo.getStatus().equals(TransactionStatus.COMMITED.getValue())) {
-                    throw new TransactionStatusIrregularException();
+                    throw new TransactionStatusIrregularException(TransactionStatus.COMMITED);
+                } else if (transactionVo.getStatus().equals(TransactionStatus.RECOVER.getValue())) {
+                    throw new TransactionStatusIrregularException(TransactionStatus.RECOVER);
                 }
                 if (!CiAuthChecker.chain().checkCiEntityTransactionPrivilege(transactionVo.getCiId()).checkIsInGroup(transactionVo.getCiEntityId(), GroupType.MAINTAIN).check()) {
                     throw new TransactionAuthException();
@@ -83,7 +85,9 @@ public class DeleteTransactionApi extends PrivateApiComponentBase {
         } else {
             TransactionVo transactionVo = transactionMapper.getTransactionById(transactionId);
             if (transactionVo.getStatus().equals(TransactionStatus.COMMITED.getValue())) {
-                throw new TransactionStatusIrregularException();
+                throw new TransactionStatusIrregularException(TransactionStatus.COMMITED);
+            } else if (transactionVo.getStatus().equals(TransactionStatus.RECOVER.getValue())) {
+                throw new TransactionStatusIrregularException(TransactionStatus.RECOVER);
             }
             if (!CiAuthChecker.chain().checkCiEntityTransactionPrivilege(transactionVo.getCiId()).checkIsInGroup(transactionVo.getCiEntityId(), GroupType.MAINTAIN).check()) {
                 throw new TransactionAuthException();

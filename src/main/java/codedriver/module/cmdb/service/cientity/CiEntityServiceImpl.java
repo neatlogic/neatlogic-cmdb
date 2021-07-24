@@ -5,6 +5,7 @@
 
 package codedriver.module.cmdb.service.cientity;
 
+import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.batch.BatchRunner;
 import codedriver.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
 import codedriver.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
@@ -241,6 +242,8 @@ public class CiEntityServiceImpl implements CiEntityService {
 
         TransactionVo transactionVo = new TransactionVo();
         transactionVo.setCiId(oldCiEntityVo.getCiId());
+        transactionVo.setStatus(TransactionStatus.UNCOMMIT.getValue());
+        transactionVo.setCreateUser(UserContext.get().getUserUuid(true));
         CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo(oldCiEntityVo);
         ciEntityTransactionVo.setAction(TransactionActionType.DELETE.getValue());
         ciEntityTransactionVo.setTransactionId(transactionVo.getId());
@@ -328,6 +331,8 @@ public class CiEntityServiceImpl implements CiEntityService {
         TransactionVo transactionVo = new TransactionVo();
         transactionVo.setCiId(ciEntityTransactionVo.getCiId());
         transactionVo.setInputFrom(InputFromContext.get().getInputFrom());
+        transactionVo.setStatus(TransactionStatus.UNCOMMIT.getValue());
+        transactionVo.setCreateUser(UserContext.get().getUserUuid(true));
         ciEntityTransactionVo.setTransactionId(transactionVo.getId());
 
         transactionVo.setCiEntityTransactionVo(ciEntityTransactionVo);
@@ -635,7 +640,9 @@ public class CiEntityServiceImpl implements CiEntityService {
                 isTo = true;
             }
 
-            if (ciEntityTransactionVo.getAction().equals(TransactionActionType.INSERT.getValue()) || ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
+            if ((ciEntityTransactionVo.getAction().equals(TransactionActionType.INSERT.getValue())
+                    || ciEntityTransactionVo.getAction().equals(TransactionActionType.RECOVER.getValue()))
+                    || ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
 
                 // 全局模式下，不存在关系信息代表删除，需要校验必填规则
                 if (CollectionUtils.isEmpty(fromRelEntityTransactionList)) {
@@ -1188,7 +1195,8 @@ public class CiEntityServiceImpl implements CiEntityService {
                         toTransactionVo.setCiId(ciId);
                         toTransactionVo.setInputFrom(transactionVo.getInputFrom());
                         toTransactionVo.setStatus(TransactionStatus.COMMITED.getValue());
-
+                        toTransactionVo.setCreateUser(UserContext.get().getUserUuid(true));
+                        toTransactionVo.setCommitUser(UserContext.get().getUserUuid(true));
                         CiEntityTransactionVo endCiEntityTransactionVo = new CiEntityTransactionVo();
                         endCiEntityTransactionVo.setCiEntityId(ciEntityId);
                         endCiEntityTransactionVo.setCiId(ciId);
@@ -1228,7 +1236,7 @@ public class CiEntityServiceImpl implements CiEntityService {
         } else {
             /*
             写入属性信息
-            1、如果是引用类型，并且是replace模式，需要先清空原来的值在写入。
+            1、如果是引用类型，并且是replace模式，需要先清空原来的值再写入。
              */
             CiVo ciVo = ciMapper.getCiById(ciEntityTransactionVo.getCiId());
             CiEntityVo ciEntityVo = new CiEntityVo(ciEntityTransactionVo);
@@ -1268,6 +1276,12 @@ public class CiEntityServiceImpl implements CiEntityService {
                 this.insertCiEntity(ciEntityVo);
             } else if (ciEntityTransactionVo.getAction().equals(TransactionActionType.UPDATE.getValue())) {
                 this.updateCiEntity(ciEntityVo);
+            } else if (ciEntityTransactionVo.getAction().equals(TransactionActionType.RECOVER.getValue())) {
+                if (ciEntityMapper.getCiEntityBaseInfoById(ciEntityTransactionVo.getCiEntityId()) == null) {
+                    this.insertCiEntity(ciEntityVo);
+                } else {
+                    throw new CiEntityIsRecoveredException(ciEntityVo.getName());
+                }
             }
             /*
             写入关系信息
@@ -1299,6 +1313,8 @@ public class CiEntityServiceImpl implements CiEntityService {
                             toTransactionVo.setCiId(ciId);
                             toTransactionVo.setInputFrom(transactionVo.getInputFrom());
                             toTransactionVo.setStatus(TransactionStatus.COMMITED.getValue());
+                            toTransactionVo.setCreateUser(UserContext.get().getUserUuid(true));
+                            toTransactionVo.setCommitUser(UserContext.get().getUserUuid(true));
                             transactionMapper.insertTransaction(toTransactionVo);
                             transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), toTransactionVo.getId());
                             CiEntityTransactionVo endCiEntityTransactionVo = new CiEntityTransactionVo();
@@ -1453,7 +1469,9 @@ public class CiEntityServiceImpl implements CiEntityService {
         }
         for (TransactionVo transactionVo : transactionGroupVo.getTransactionList()) {
             if (transactionVo.getStatus().equals(TransactionStatus.COMMITED.getValue())) {
-                throw new TransactionStatusIrregularException();
+                throw new TransactionStatusIrregularException(TransactionStatus.COMMITED);
+            } else if (transactionVo.getStatus().equals(TransactionStatus.RECOVER.getValue())) {
+                throw new TransactionStatusIrregularException(TransactionStatus.RECOVER);
             }
             if (!CiAuthChecker.chain().checkCiEntityTransactionPrivilege(transactionVo.getCiId()).checkIsInGroup(transactionVo.getCiEntityId(), GroupType.MAINTAIN).check()) {
                 throw new TransactionAuthException();
@@ -1475,6 +1493,18 @@ public class CiEntityServiceImpl implements CiEntityService {
             }
         }
         return statusList;
+    }
+
+    @Transactional
+    public void recoverCiEntity(TransactionVo transactionVo) {
+        transactionVo.setAction(TransactionActionType.RECOVER.getValue());
+        transactionVo.getCiEntityTransactionVo().setAction(TransactionActionType.RECOVER.getValue());
+        if (transactionVo.getCiEntityTransactionVo().restoreSnapshot()) {
+            this.commitTransaction(transactionVo, new TransactionGroupVo());
+        }
+        transactionVo.setStatus(TransactionStatus.RECOVER.getValue());
+        transactionVo.setRecoverUser(UserContext.get().getUserUuid(true));
+        transactionMapper.updateTransactionStatus(transactionVo);
     }
 
 

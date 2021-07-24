@@ -279,6 +279,7 @@ public class CiEntityBuilder {
         attrObj.put("label", attrVo.getLabel());
         attrObj.put("config", attrVo.getConfig(true));//克隆一个config对象，避免json序列化出错
         attrObj.put("targetCiId", attrVo.getTargetCiId());
+        attrObj.put("ciId", attrVo.getCiId());
         JSONArray valueList = new JSONArray();
         try {
             //例如附件型参数有可能是个数组，所以先尝试做转换，不行再当字符串处理
