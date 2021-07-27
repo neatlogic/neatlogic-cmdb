@@ -57,11 +57,6 @@
             <artifactId>graphviz-java</artifactId>
             <version>0.17.0</version>
         </dependency>
-        <dependency>
-            <groupId>com.github.jsqlparser</groupId>
-            <artifactId>jsqlparser</artifactId>
-            <version>4.0</version>
-        </dependency>
 
         <!--  <dependency>
                 <groupId>org.w3c.dom</groupId>
