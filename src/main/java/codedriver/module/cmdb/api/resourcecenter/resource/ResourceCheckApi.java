@@ -88,6 +88,7 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
         List<ResourceVo> executeUserIsNotFoundInResourceList = new ArrayList<>();
         JSONObject executeUserIsNotFoundInResourceObj = new JSONObject();
         executeUserIsNotFoundInResourceObj.put("type", "executeUserIsNotFoundInResource");
+        executeUserIsNotFoundInResourceObj.put("protocol", protocol);
         executeUserIsNotFoundInResourceObj.put("executeUser", executeUser);
         executeUserIsNotFoundInResourceObj.put("list", executeUserIsNotFoundInResourceList);
         resultArray.add(executeUserIsNotFoundInResourceObj);
