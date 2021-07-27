@@ -58,7 +58,7 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "executeUser", type = ApiParamType.STRING, isRequired = true, desc = "执行用户"),
-            @Param(name = "protocol", type = ApiParamType.ENUM, rule = "application,db,tagent,ssh", isRequired = true, desc = "连接协议"),
+            @Param(name = "protocol", type = ApiParamType.ENUM, rule = "application,database,tagent,ssh", isRequired = true, desc = "连接协议"),
             @Param(name = "tagList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "标签列表"),
             @Param(name = "selectNodeList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "选择节点列表"),
             @Param(name = "inputNodeList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "输入节点列表")
@@ -88,6 +88,7 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
         List<ResourceVo> executeUserIsNotFoundInResourceList = new ArrayList<>();
         JSONObject executeUserIsNotFoundInResourceObj = new JSONObject();
         executeUserIsNotFoundInResourceObj.put("type", "executeUserIsNotFoundInResource");
+        executeUserIsNotFoundInResourceObj.put("protocol", protocol);
         executeUserIsNotFoundInResourceObj.put("executeUser", executeUser);
         executeUserIsNotFoundInResourceObj.put("list", executeUserIsNotFoundInResourceList);
         resultArray.add(executeUserIsNotFoundInResourceObj);
