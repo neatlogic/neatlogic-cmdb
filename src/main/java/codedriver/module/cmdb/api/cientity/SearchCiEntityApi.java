@@ -24,6 +24,7 @@ import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiViewMapper;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
+import codedriver.module.cmdb.utils.RelUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -95,7 +96,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
         ciViewVo.setCiId(ciEntityVo.getCiId());
         ciViewVo.addShowType(ShowType.LIST.getValue());
         ciViewVo.addShowType(ShowType.ALL.getValue());
-        List<CiViewVo> ciViewList = ciViewMapper.getCiViewByCiId(ciViewVo);
+        List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo));
         List<Long> attrIdList = null, relIdList = null;
         JSONArray theadList = new JSONArray();
         if (needCheck) {

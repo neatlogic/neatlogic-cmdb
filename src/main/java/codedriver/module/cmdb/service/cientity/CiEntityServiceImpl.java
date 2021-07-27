@@ -38,6 +38,7 @@ import codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper;
 import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.utils.CiEntityBuilder;
+import codedriver.module.cmdb.utils.RelUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -98,7 +99,7 @@ public class CiEntityServiceImpl implements CiEntityService {
             ciList.add(ciVo);
         }
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
-        List<RelVo> relList = relMapper.getRelByCiId(ciVo.getId());
+        List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciVo.getId()));
         ciEntityVo.setCiList(ciList);
         ciEntityVo.setId(ciEntityId);
         ciEntityVo.setCiId(ciVo.getId());
@@ -124,7 +125,7 @@ public class CiEntityServiceImpl implements CiEntityService {
         }
         List<CiVo> ciList = ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht());
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
-        List<RelVo> relList = relMapper.getRelByCiId(ciVo.getId());
+        List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciVo.getId()));
         CiEntityVo ciEntityVo = new CiEntityVo();
         ciEntityVo.setCiList(ciList);
         ciEntityVo.setAttrList(attrList);
@@ -147,7 +148,7 @@ public class CiEntityServiceImpl implements CiEntityService {
         }
         List<CiVo> ciList = ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht());
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
-        List<RelVo> relList = relMapper.getRelByCiId(ciVo.getId());
+        List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciVo.getId()));
         ciEntityVo.setCiList(ciList);
         ciEntityVo.setAttrList(attrList);
         ciEntityVo.setRelList(relList);
@@ -489,7 +490,7 @@ public class CiEntityServiceImpl implements CiEntityService {
      */
     private boolean validateCiEntityTransaction(CiEntityTransactionVo ciEntityTransactionVo) {
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciEntityTransactionVo.getCiId());
-        List<RelVo> relList = relMapper.getRelByCiId(ciEntityTransactionVo.getCiId());
+        List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciEntityTransactionVo.getCiId()));
         CiVo ciVo = ciMapper.getCiById(ciEntityTransactionVo.getCiId());
         CiEntityVo oldEntity = ciEntityTransactionVo.getOldCiEntityVo();
         List<AttrEntityVo> oldAttrEntityList = null;
@@ -845,7 +846,7 @@ public class CiEntityServiceImpl implements CiEntityService {
             return true;
         } else {
             List<AttrVo> attrList = attrMapper.getAttrByCiId(ciEntityTransactionVo.getCiId());
-            List<RelVo> relList = relMapper.getRelByCiId(ciEntityTransactionVo.getCiId());
+            List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciEntityTransactionVo.getCiId()));
             CiVo ciVo = ciMapper.getCiById(ciEntityTransactionVo.getCiId());
 
             // 清除不存在的属性

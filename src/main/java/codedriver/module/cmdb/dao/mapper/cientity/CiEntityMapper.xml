@@ -25,6 +25,7 @@
             resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
         SELECT
         id,
+        uuid,
         ci_id AS ciId,
         `name`,
         `status`
@@ -61,6 +62,7 @@
     <select id="getCiEntityBaseInfoByName" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
             resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
         SELECT id,
+               uuid,
                ci_id AS ciId,
                `name`,
                `status`,
@@ -77,6 +79,7 @@
             resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
             useCache="true">
         SELECT a.id,
+               a.uuid,
                a.ci_id AS ciId,
                a.`name`,
                a.`status`,
@@ -144,6 +147,7 @@
             useCache="false">
         SELECT
         a.id,
+        a.uuid,
         a.ci_id AS ciId,
         a.`name`,
         a.`status`,
@@ -163,6 +167,7 @@
     <select id="getCiEntityBaseInfoById" parameterType="java.lang.Long"
             resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo" useCache="true">
         SELECT id,
+               uuid,
                ci_id AS ciId,
                `name`,
                `status`,
@@ -200,6 +205,7 @@
             </choose>
         </foreach>
         `ci_base`.`id` AS `id`,
+        `ci_base`.`uuid` AS `uuid`,
         `ci_base`.`name` AS `name`,
         `ci_base`.`ci_id` AS ciId,
         <!--由于虚拟模型产生的视图没有以下字段，所以暂时先注释
@@ -582,6 +588,7 @@
 
     <insert id="insertCiEntityBaseInfo" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
         INSERT INTO `cmdb_cientity` (`id`,
+                                     `uuid`,
                                      `ci_id`,
                                      `name`,
                                      `fcu`,
@@ -589,6 +596,7 @@
                                      `status`,
                                      `is_locked`)
         VALUES (#{id},
+                #{uuid},
                 #{ciId},
                 #{name},
                 #{fcu},
@@ -950,6 +958,7 @@
             resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
         SELECT
         a.`id`,
+        a.`uuid`,
         a.`ci_id` AS ciId,
         b.`name` AS ciName,
         b.`icon` AS ciIcon,

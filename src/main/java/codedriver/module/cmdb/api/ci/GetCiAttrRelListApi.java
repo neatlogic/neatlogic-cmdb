@@ -18,6 +18,7 @@ import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
+import codedriver.module.cmdb.utils.RelUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -78,7 +79,7 @@ public class GetCiAttrRelListApi extends PrivateApiComponentBase {
                     ciObj.put("name", ciVo.getName());
                     ciObj.put("label", ciVo.getLabel());
                     List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
-                    List<RelVo> relList = relMapper.getRelByCiId(ciVo.getId());
+                    List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciVo.getId()));
                     JSONArray attrObjList = new JSONArray();
                     for (AttrVo attrVo : attrList) {
                         JSONObject attrObj = new JSONObject();

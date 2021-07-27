@@ -17,6 +17,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
+import codedriver.module.cmdb.utils.RelUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -68,7 +69,7 @@ public class ListExpressionAttrRelApi extends PrivateApiComponentBase {
             }
         }
 
-        List<RelVo> relList = relMapper.getRelByCiId(ciId);
+        List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciId));
         if (CollectionUtils.isNotEmpty(relList)) {
             for (RelVo relVo : relList) {
                 List<AttrVo> relAttrList;

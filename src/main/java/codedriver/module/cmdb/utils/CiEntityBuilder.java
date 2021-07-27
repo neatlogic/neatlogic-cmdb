@@ -15,6 +15,7 @@ import codedriver.framework.cmdb.exception.cientity.CiEntityMultipleException;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
@@ -51,6 +52,7 @@ public class CiEntityBuilder {
                 CiEntityVo ciEntityVo;
 
                 Long id = result.get("id") != null ? Long.valueOf(String.valueOf(result.get("id"))) : null;
+                String uuid = result.get("uuid") != null ? String.valueOf(result.get("uuid")) : null;
                 String name = result.get("name") != null ? String.valueOf(result.get("name")) : null;
                 String status = result.get("status") != null ? String.valueOf(result.get("status")) : null;
                 String fcu = result.get("fcu") != null ? String.valueOf(result.get("fcu")) : null;
@@ -66,9 +68,8 @@ public class CiEntityBuilder {
                 if (!ciEntityMap.containsKey(id)) {
                     ciEntityVo = new CiEntityVo();
                     ciEntityVo.setCiId(ciId);
-                    ciEntityVo.setCiLabel(ciLabel);
-                    ciEntityVo.setCiName(ciName);
                     ciEntityVo.setId(id);
+                    ciEntityVo.setUuid(uuid);
                     ciEntityVo.setName(name);
                     ciEntityVo.setStatus(status);
                     ciEntityVo.setTypeId(typeId);
@@ -136,12 +137,14 @@ public class CiEntityBuilder {
         for (Long key : ciEntityMap.keySet()) {
             CiEntityVo ciEntityVo = ciEntityMap.get(key);
             JSONObject attrObj = ciEntityVo.getAttrEntityData();
-            for (String attrKey : attrObj.keySet()) {
-                Long attrId = Long.parseLong(attrKey.replace("attr_", ""));
-                AttrVo attrVo = attrMap.get(attrId);
-                JSONArray valueList = attrObj.getJSONObject(attrKey).getJSONArray("valueList");
-                JSONArray actualValueList = AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValueList(attrVo, valueList);
-                attrObj.getJSONObject(attrKey).put("actualValueList", actualValueList);
+            if (MapUtils.isNotEmpty(attrObj)) {
+                for (String attrKey : attrObj.keySet()) {
+                    Long attrId = Long.parseLong(attrKey.replace("attr_", ""));
+                    AttrVo attrVo = attrMap.get(attrId);
+                    JSONArray valueList = attrObj.getJSONObject(attrKey).getJSONArray("valueList");
+                    JSONArray actualValueList = AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValueList(attrVo, valueList);
+                    attrObj.getJSONObject(attrKey).put("actualValueList", actualValueList);
+                }
             }
             ciEntityList.add(ciEntityVo);
         }
@@ -154,6 +157,7 @@ public class CiEntityBuilder {
             for (Map<String, Object> result : resultList) {
                 Long id = result.get("id") != null ? Long.valueOf(String.valueOf(result.get("id"))) : null;
                 String name = result.get("name") != null ? String.valueOf(result.get("name")) : null;
+                String uuid = result.get("uuid") != null ? String.valueOf(result.get("uuid")) : null;
                 String status = result.get("status") != null ? String.valueOf(result.get("status")) : null;
                 String fcu = result.get("fcu") != null ? String.valueOf(result.get("fcu")) : null;
                 Date fcd = result.get("fcd") != null ? (Date) result.get("fcd") : null;
@@ -169,9 +173,8 @@ public class CiEntityBuilder {
                 if (ciEntityVo == null) {
                     ciEntityVo = new CiEntityVo();
                     ciEntityVo.setCiId(ciId);
-                    ciEntityVo.setCiLabel(ciLabel);
-                    ciEntityVo.setCiName(ciName);
                     ciEntityVo.setId(id);
+                    ciEntityVo.setUuid(uuid);
                     ciEntityVo.setName(name);
                     ciEntityVo.setStatus(status);
                     ciEntityVo.setTypeId(typeId);
@@ -240,12 +243,14 @@ public class CiEntityBuilder {
         }
         if (ciEntityVo != null) {
             JSONObject attrObj = ciEntityVo.getAttrEntityData();
-            for (String attrKey : attrObj.keySet()) {
-                Long attrId = Long.parseLong(attrKey.replace("attr_", ""));
-                AttrVo attrVo = attrMap.get(attrId);
-                JSONArray valueList = attrObj.getJSONObject(attrKey).getJSONArray("valueList");
-                JSONArray actualValueList = AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValueList(attrVo, valueList);
-                attrObj.getJSONObject(attrKey).put("actualValueList", actualValueList);
+            if (MapUtils.isNotEmpty(attrObj)) {
+                for (String attrKey : attrObj.keySet()) {
+                    Long attrId = Long.parseLong(attrKey.replace("attr_", ""));
+                    AttrVo attrVo = attrMap.get(attrId);
+                    JSONArray valueList = attrObj.getJSONObject(attrKey).getJSONArray("valueList");
+                    JSONArray actualValueList = AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValueList(attrVo, valueList);
+                    attrObj.getJSONObject(attrKey).put("actualValueList", actualValueList);
+                }
             }
         }
         return ciEntityVo;

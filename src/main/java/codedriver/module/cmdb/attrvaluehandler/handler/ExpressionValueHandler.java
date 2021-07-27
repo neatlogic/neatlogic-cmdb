@@ -14,6 +14,7 @@ import codedriver.framework.cmdb.enums.SearchExpression;
 import codedriver.module.cmdb.attrexpression.AttrExpressionRebuildManager;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
+import codedriver.module.cmdb.utils.RelUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -98,7 +99,7 @@ public class ExpressionValueHandler implements IAttrValueHandler {
         JSONObject config = attrVo.getConfig();
         if (config.containsKey("expression") && config.get("expression") instanceof JSONArray) {
             JSONArray expressionList = config.getJSONArray("expression");
-            List<RelVo> relList = relMapper.getRelByCiId(attrVo.getCiId());
+            List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(attrVo.getCiId()));
             for (int i = 0; i < expressionList.size(); i++) {
                 String expression = expressionList.getString(i);
                 if (expression.startsWith("{") && expression.endsWith("}")) {

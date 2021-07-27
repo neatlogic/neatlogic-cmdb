@@ -55,8 +55,10 @@ public class TestMongodbApi extends PrivateApiComponentBase {
             mongoTemplate.insert(jsonList.getJSONObject(i), "process");
         }*/
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-
-        Query query = new Query(Criteria.where("_updatetime").gt(formatter.parse("2021-07-25")));
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        Query query = new Query();
+        query.addCriteria(Criteria.where("CPU_COUNT").is(2));
+        query.addCriteria(Criteria.where("IS_VIRTUAL").all(1));
         List<JSONObject> jsonList = mongoTemplate.find(query, JSONObject.class, "collect_host");
         return jsonList;
     }

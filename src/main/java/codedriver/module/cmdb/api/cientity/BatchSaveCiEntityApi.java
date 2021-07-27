@@ -72,7 +72,7 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
     @Input({@Param(name = "ciEntityList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "配置项数据"),
             @Param(name = "needCommit", type = ApiParamType.BOOLEAN, isRequired = true, desc = "是否需要提交")})
     @Description(desc = "批量保存配置项接口")
-    @Example(example = "{\"ciEntityList\":[{\"attrEntityData\":{\"attr_323010784722944\":{\"valueList\":[\"测试环境\"],\"name\":\"label\",\"label\":\"显示名\",\"type\":\"text\",\"saveMode\":\"merge\"},\"attr_323010700836864\":{\"valueList\":[\"stg33\"],\"name\":\"name\",\"label\":\"唯一标识\",\"type\":\"text\"}},\"ciId\":323010541453312,\"ciLabel\":\"环境\",\"ciName\":\"env\",\"fcd\":1617187647522,\"fcu\":\"20f2fbfe97cf11ea94ff005056c00001\",\"id\":330340423237635,\"isLocked\":0,\"lcd\":1617273899288,\"lcu\":\"20f2fbfe97cf11ea94ff005056c00001\",\"uuid\":\"3e3e74b1947b400aa34d7c6964f79168\"}]}")
+    @Example(example = "{\"ciEntityList\":[{\"attrEntityData\":{\"attr_323010784722944\":{\"valueList\":[\"测试环境\"],\"name\":\"label\",\"label\":\"显示名\",\"type\":\"text\",\"saveMode\":\"merge\"},\"attr_323010700836864\":{\"valueList\":[\"stg33\"],\"name\":\"name\",\"label\":\"唯一标识\",\"type\":\"text\"}},\"ciId\":323010541453312,\"id\":330340423237635,\"uuid\":\"3e3e74b1947b400aa34d7c6964f79168\"}]}")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         InputFromContext.init(InputFrom.PAGE);
@@ -102,12 +102,11 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
             Long id = ciEntityObj.getLong("id");
             String uuid = ciEntityObj.getString("uuid");
 
-            TransactionActionType mode = TransactionActionType.INSERT;
             CiEntityTransactionVo ciEntityTransactionVo;
             if (id != null) {
                 if (!CiAuthChecker.chain().checkCiEntityUpdatePrivilege(ciId).checkIsInGroup(id, GroupType.MAINTAIN).check()) {
                     CiVo ciVo = ciMapper.getCiById(ciId);
-                    throw new CiEntityAuthException(ciVo.getLabel(), mode.getText());
+                    throw new CiEntityAuthException(ciVo.getLabel(), TransactionActionType.UPDATE.getText());
                 }
                 ciEntityTransactionVo = new CiEntityTransactionVo();
                 ciEntityTransactionVo.setCiEntityId(id);
@@ -118,7 +117,7 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
             } else if (StringUtils.isNotBlank(uuid)) {
                 if (!CiAuthChecker.chain().checkCiEntityInsertPrivilege(ciId).check()) {
                     CiVo ciVo = ciMapper.getCiById(ciId);
-                    throw new CiEntityAuthException(ciVo.getLabel(), mode.getText());
+                    throw new CiEntityAuthException(ciVo.getLabel(), TransactionActionType.INSERT.getText());
                 }
                 ciEntityTransactionVo = ciEntityTransactionMap.get(uuid);
                 ciEntityTransactionVo.setCiEntityUuid(uuid);

@@ -21,6 +21,7 @@ import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiViewMapper;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
+import codedriver.module.cmdb.utils.RelUtil;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -67,13 +68,13 @@ public class GetCiRelListApi extends PrivateApiComponentBase {
         Long ciId = jsonObj.getLong("ciId");
         String showType = jsonObj.getString("showType");
         boolean needAction = jsonObj.getBooleanValue("needAction");
-        List<RelVo> relList = relMapper.getRelByCiId(ciId);
+        List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciId));
         if (StringUtils.isNotBlank(showType)) {
             CiViewVo ciViewVo = new CiViewVo();
             ciViewVo.setCiId(ciId);
             ciViewVo.addShowType(showType);
             ciViewVo.addShowType(ShowType.ALL.getValue());
-            List<CiViewVo> ciViewList = ciViewMapper.getCiViewByCiId(ciViewVo);
+            List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo));
             Set<Long> relSet = new HashSet<>();
             for (CiViewVo ciView : ciViewList) {
                 if (ciView.getType().startsWith("rel")) {

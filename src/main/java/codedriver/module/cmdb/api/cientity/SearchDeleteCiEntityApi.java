@@ -22,6 +22,7 @@ import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.CiViewMapper;
 import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
+import codedriver.module.cmdb.utils.RelUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -82,7 +83,7 @@ public class SearchDeleteCiEntityApi extends PrivateApiComponentBase {
         ciViewVo.setCiId(pTransactionVo.getCiId());
         ciViewVo.addShowType(ShowType.LIST.getValue());
         ciViewVo.addShowType(ShowType.ALL.getValue());
-        List<CiViewVo> ciViewList = ciViewMapper.getCiViewByCiId(ciViewVo);
+        List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo));
         JSONArray theadList = new JSONArray();
         if (needCheck) {
             // 增加复选列

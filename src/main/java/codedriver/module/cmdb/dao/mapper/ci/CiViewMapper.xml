@@ -25,11 +25,13 @@
         SELECT * FROM (
         SELECT
         attr.id AS itemId,
-        attr.`name` as itemName,
+        attr.`name` AS itemName,
         attr.`label` AS itemLabel,
         'attr' AS type,
         show_type AS showType,
-        IFNULL(v.sort, 999999) as sort
+        IFNULL(v.sort, 999999) AS sort,
+        if(ci.id = #{ciId}, 0, 1) AS isExtended,
+        '' AS uniqueKey
         FROM
         cmdb_ci ci JOIN
         cmdb_attr attr ON ci.id = attr.ci_id
@@ -46,7 +48,9 @@
         rel.to_label AS itemLabel,<!-- 当前模型作为上游时需要显示下游目标名称 -->
         'relfrom' AS type,
         show_type AS showType,
-        IFNULL(v.sort, 999999) as sort
+        IFNULL(v.sort, 999999) AS sort,
+        if(ci.id = #{ciId}, 0, 1) AS isExtended,
+        CONCAT(rel.from_ci_id,'-',rel.to_ci_id) AS uniqueKey
         FROM
         cmdb_rel rel
         JOIN cmdb_ci ci ON rel.from_ci_id = ci.id
@@ -63,7 +67,9 @@
         rel.from_label AS itemLabel,<!-- 当前模型作为下游时需要显示上游目标名称 -->
         'relto' AS type,
         v.show_type AS showType,
-        IFNULL(v.sort, 999999) as sort
+        IFNULL(v.sort, 999999) AS sort,
+        if(ci.id = #{ciId}, 0, 1) AS isExtended,
+        CONCAT(rel.from_ci_id,'-',rel.to_ci_id) AS uniqueKey
         FROM
         cmdb_rel rel
         JOIN cmdb_ci ci ON rel.to_ci_id = ci.id
@@ -80,7 +86,9 @@
         const.label AS itemLabel,
         'const' AS type,
         v.show_type AS showType,
-        IFNULL(v.sort, 999999) as sort
+        IFNULL(v.sort, 999999) as sort,
+        0 AS isExtended,
+        '' AS uniqueKey
         FROM cmdb_viewconst const
         LEFT JOIN cmdb_view v
         ON const.id = v.`item_id`

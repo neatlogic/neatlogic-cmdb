@@ -24,6 +24,7 @@ import codedriver.module.cmdb.dao.mapper.cischema.CiSchemaMapper;
 import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import codedriver.module.cmdb.service.rel.RelService;
+import codedriver.module.cmdb.utils.RelUtil;
 import codedriver.module.cmdb.utils.VirtualCiSqlBuilder;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -310,7 +311,7 @@ public class CiServiceImpl implements CiService {
             ciVo.setUpwardCiList(ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht()));
         }
         List<AttrVo> attrList = attrMapper.getAttrByCiId(id);
-        List<RelVo> relList = relMapper.getRelByCiId(id);
+        List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(id));
         ciVo.setRelList(relList);
         ciVo.setAttrList(attrList);
         return ciVo;
@@ -326,7 +327,7 @@ public class CiServiceImpl implements CiService {
             ciVo.setUpwardCiList(ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht()));
         }
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
-        List<RelVo> relList = relMapper.getRelByCiId(ciVo.getId());
+        List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciVo.getId()));
         ciVo.setRelList(relList);
         ciVo.setAttrList(attrList);
         return ciVo;

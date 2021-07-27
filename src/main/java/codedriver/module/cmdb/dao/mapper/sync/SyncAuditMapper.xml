@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.cmdb.dao.mapper.sync.SyncAuditMapper">
+    <insert id="insertSyncAudit" parameterType="codedriver.framework.cmdb.dto.sync.SyncAuditVo">
+        INSERT INTO cmdb_ci_sync_audit (id,
+                                        sync_config_id,
+                                        start_time,
+                                        exec_type,
+                                        status,
+                                        transaction_group_id,
+                                        server_id)
+        VALUES (#{id},
+                #{syncConfigId},
+                NOW(3),
+                #{execType},
+                #{status},
+                #{transactionGroupId},
+                #{serverId})
+    </insert>
+</mapper>
