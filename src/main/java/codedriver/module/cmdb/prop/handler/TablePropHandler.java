@@ -8,11 +8,10 @@ package codedriver.module.cmdb.prop.handler;
 import codedriver.framework.cmdb.enums.SearchExpression;
 import codedriver.framework.cmdb.prop.core.IPropertyHandler;
 import com.alibaba.fastjson.JSONObject;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-@Component
+@Deprecated
 public class TablePropHandler implements IPropertyHandler {
 
     @Override

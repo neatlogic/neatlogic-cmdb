@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.cmdb.dao.mapper.sync.SyncConfigMapper">
+    <select id="getSelectConfigById" parameterType="java.lang.Long"
+            resultType="codedriver.framework.cmdb.dto.sync.SyncConfigVo">
+        SELECT id,
+               ci_id           AS ciId,
+               is_active       AS isActive,
+               collection_name AS collectionName,
+               `condition`     AS conditionStr,
+               crons           AS cronListStr,
+               mapping         AS mappingStr
+        FROM cmdb_ci_sync_config
+        WHERE id = #{value}
+    </select>
+</mapper>

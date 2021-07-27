@@ -10,11 +10,10 @@ import codedriver.framework.cmdb.prop.core.IPropertyHandler;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-@Component
+@Deprecated
 public class TextareaPropHandler implements IPropertyHandler {
 
     @Override

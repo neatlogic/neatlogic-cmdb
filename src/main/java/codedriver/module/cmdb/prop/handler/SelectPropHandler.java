@@ -16,14 +16,13 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.util.DigestUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-@Component
+@Deprecated
 public class SelectPropHandler implements IPropertyHandler {
 
     @Autowired

@@ -10,12 +10,11 @@ import codedriver.framework.cmdb.prop.core.IPropertyHandler;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.regex.Pattern;
 
-@Component
+@Deprecated
 public class UrlPropHandler implements IPropertyHandler {
 
     private static Pattern pattern = Pattern.compile("^((https|http|ftp|rtsp|mms)?:\\/\\/)[^\\s]+$");

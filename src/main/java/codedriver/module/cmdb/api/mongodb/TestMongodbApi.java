@@ -12,11 +12,15 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
+
+import java.text.SimpleDateFormat;
+import java.util.List;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
@@ -46,10 +50,14 @@ public class TestMongodbApi extends PrivateApiComponentBase {
     @Description(desc = "mongo测试接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        JSONArray jsonList = jsonObj.getJSONArray("json");
+       /* JSONArray jsonList = jsonObj.getJSONArray("json");
         for (int i = 0; i < jsonList.size(); i++) {
             mongoTemplate.insert(jsonList.getJSONObject(i), "process");
-        }
-        return null;
+        }*/
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+
+        Query query = new Query(Criteria.where("_updatetime").gt(formatter.parse("2021-07-25")));
+        List<JSONObject> jsonList = mongoTemplate.find(query, JSONObject.class, "collect_host");
+        return jsonList;
     }
 }

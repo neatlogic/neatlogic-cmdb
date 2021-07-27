@@ -16,13 +16,12 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.util.DigestUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
+@Deprecated
 public class UserPropHandler implements IPropertyHandler {
 
     @Autowired
@@ -40,8 +39,8 @@ public class UserPropHandler implements IPropertyHandler {
 
     @Override
     public SearchExpression[] getSupportExpression() {
-        return new SearchExpression[] {SearchExpression.EQ, SearchExpression.NE, SearchExpression.LI,
-            SearchExpression.NL, SearchExpression.NOTNULL, SearchExpression.NULL};
+        return new SearchExpression[]{SearchExpression.EQ, SearchExpression.NE, SearchExpression.LI,
+                SearchExpression.NL, SearchExpression.NOTNULL, SearchExpression.NULL};
     }
 
     @Override
