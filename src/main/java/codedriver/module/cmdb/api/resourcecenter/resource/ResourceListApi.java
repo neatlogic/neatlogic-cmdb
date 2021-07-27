@@ -98,10 +98,12 @@ public class ResourceListApi extends PrivateApiComponentBase {
                 throw new CiNotFoundException(typeId);
             }
             List<CiVo> ciList = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
-            if (CollectionUtils.isNotEmpty(ciList)) {
-                List<Long> typeIdList = ciList.stream().map(CiVo::getId).collect(Collectors.toList());
-                searchVo.setTypeIdList(typeIdList);
+            List<Long> ciIdList = ciList.stream().map(CiVo::getId).collect(Collectors.toList());
+            List<Long> typeIdList = searchVo.getTypeIdList();
+            if (CollectionUtils.isNotEmpty(typeIdList)) {
+                ciIdList.retainAll(typeIdList);
             }
+            searchVo.setTypeIdList(ciIdList);
         }
         List<Long> resourceIdList = null;
         if (CollectionUtils.isNotEmpty(searchVo.getProtocolList())) {
