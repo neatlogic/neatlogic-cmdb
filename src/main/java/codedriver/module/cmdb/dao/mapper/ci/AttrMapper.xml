@@ -38,8 +38,37 @@
         WHERE b.value_attr_id = #{value}
     </select>
 
-    <select id="getExpressionAttrByValueAttrIdList" parameterType="java.lang.Long"
-            resultType="codedriver.framework.cmdb.dto.attrexpression.AttrExpressionRelVo" useCache="true">
+    <select id="getExpressionAttrByValueCiIdAndAttrIdList"
+            resultType="codedriver.framework.cmdb.dto.ci.AttrVo">
+        SELECT
+        DISTINCT a.`id`,
+        a.`ci_id` AS ciId,
+        a.`type`,
+        a.`target_ci_id` AS targetCiId,
+        a.`name`,
+        a.`label`,
+        a.`description`,
+        a.`validator_id` AS validatorId,
+        (SELECT name FROM cmdb_validator x WHERE x.id = a.validator_id) AS validatorName,
+        a.`is_required` AS isRequired,
+        a.`is_unique` AS isUnique,
+        a.`input_type` AS inputType,
+        a.`group_name` AS groupName,
+        a.`is_private` AS isPrivate,
+        a.`config` AS configStr
+        FROM `cmdb_attr` a
+        JOIN `cmdb_attrexpression_rel` b ON a.id = b.expression_attr_id
+        WHERE
+        b.value_ci_id = #{valueCiId}
+        AND b.value_attr_id in
+        <foreach collection="valueAttrIdList" item="attrId" open="(" close=")" separator=",">
+            #{attrId}
+        </foreach>
+    </select>
+
+
+    <select id="getExpressionAttrRelByValueCiIdAndAttrIdList" parameterType="java.lang.Long"
+            resultType="codedriver.framework.cmdb.dto.attrexpression.AttrExpressionRelVo">
         SELECT DISTINCT
         a.expression_ci_id AS expressionCiId,
         a.expression_attr_id AS expressAttrId,
@@ -226,10 +255,9 @@
     </delete>
 
     <delete id="deleteAttrById" parameterType="java.lang.Long">
-        DELETE a,b,c
+        DELETE a,b
         FROM `cmdb_attr` a
                  LEFT JOIN `cmdb_ci_unique` b ON a.id = b.attr_id
-                 LEFT JOIN `cmdb_ci_nameexpression` c ON a.id = c.attr_id
         WHERE a.id = #{value}
     </delete>
 

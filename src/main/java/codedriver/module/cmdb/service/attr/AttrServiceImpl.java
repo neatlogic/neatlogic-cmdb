@@ -18,7 +18,7 @@ import codedriver.framework.cmdb.dto.transaction.TransactionVo;
 import codedriver.framework.cmdb.enums.EditModeType;
 import codedriver.framework.cmdb.enums.TransactionActionType;
 import codedriver.framework.cmdb.enums.TransactionStatus;
-import codedriver.framework.cmdb.exception.attr.AttrIsUsedNameExpressionException;
+import codedriver.framework.cmdb.exception.attr.AttrIsUsedInExpressionException;
 import codedriver.framework.cmdb.exception.attr.AttrNameRepeatException;
 import codedriver.framework.cmdb.exception.attr.AttrNotFoundException;
 import codedriver.framework.cmdb.exception.attr.InsertAttrToSchemaException;
@@ -114,24 +114,13 @@ public class AttrServiceImpl implements AttrService {
         if (CollectionUtils.isNotEmpty(attrList)) {
             for (AttrVo eAttrVo : attrList) {
                 if (eAttrVo.getCiId().equals(attrVo.getCiId())) {
-                    throw new AttrIsUsedNameExpressionException(attrVo.getName());
+                    throw new AttrIsUsedInExpressionException(eAttrVo);
                 } else {
                     CiVo ciVo = ciMapper.getCiById(eAttrVo.getCiId());
-                    throw new AttrIsUsedNameExpressionException(ciVo.getLabel(), attrVo.getName());
+                    throw new AttrIsUsedInExpressionException(ciVo, eAttrVo);
                 }
             }
         }
-        /*List<Long> ciIdList = ciMapper.getCiNameExpressionCiIdByAttrId(attrVo.getId());
-        if (CollectionUtils.isNotEmpty(ciIdList)) {
-            for (Long ciId : ciIdList) {
-                if (ciId.equals(attrVo.getCiId())) {
-                    throw new AttrIsUsedNameExpressionException(attrVo.getName());
-                } else {
-                    CiVo ciVo = ciMapper.getCiById(ciId);
-                    throw new AttrIsUsedNameExpressionException(ciVo.getLabel(), attrVo.getName());
-                }
-            }
-        }*/
 
         //所有操作确认无误后再异步补充其他配置项的删除事务数据
         List<CiVo> ciList = ciMapper.getDownwardCiListByLR(attrCi.getLft(), attrCi.getRht());

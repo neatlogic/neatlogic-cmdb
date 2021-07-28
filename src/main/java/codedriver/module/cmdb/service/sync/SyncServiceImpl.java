@@ -5,12 +5,19 @@
 
 package codedriver.module.cmdb.service.sync;
 
+import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.cientity.AttrFilterVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.sync.SyncConfigVo;
 import codedriver.framework.cmdb.dto.sync.SyncMappingVo;
+import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
+import codedriver.framework.cmdb.dto.transaction.TransactionGroupVo;
 import codedriver.framework.cmdb.enums.SearchExpression;
+import codedriver.framework.cmdb.enums.TransactionActionType;
+import codedriver.framework.cmdb.exception.sync.CiEntityDuplicateException;
 import codedriver.framework.cmdb.exception.sync.UniqueMappingNotFoundException;
+import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
+import codedriver.module.cmdb.service.cientity.CiEntityService;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSONPath;
 import org.apache.commons.collections4.CollectionUtils;
@@ -27,6 +34,12 @@ public class SyncServiceImpl implements SyncService {
     @Resource
     private MongoTemplate mongoTemplate;
 
+    @Resource
+    private CiEntityService ciEntityService;
+
+    @Resource
+    private AttrMapper attrMapper;
+
     @Override
     public void doSync(SyncConfigVo syncConfigVo) {
         int pageSize = 100;
@@ -34,9 +47,12 @@ public class SyncServiceImpl implements SyncService {
         Query query = syncConfigVo.getQuery();
         query.limit(pageSize);
         List<JSONObject> dataList = mongoTemplate.find(query, JSONObject.class, syncConfigVo.getCollectionName());
+        TransactionGroupVo transactionGroupVo = new TransactionGroupVo();
+        List<AttrVo> uniqueAttrList = attrMapper.getAttrByIdList(syncConfigVo.getCiVo().getUniqueAttrIdList());
         while (CollectionUtils.isNotEmpty(dataList)) {
             for (JSONObject dataObj : dataList) {
                 CiEntityVo ciEntityConditionVo = new CiEntityVo();
+
                 for (Long attrId : syncConfigVo.getCiVo().getUniqueAttrIdList()) {
                     SyncMappingVo mappingVo = syncConfigVo.getMappingByAttrId(attrId);
                     if (mappingVo != null) {
@@ -48,6 +64,19 @@ public class SyncServiceImpl implements SyncService {
                     } else {
                         throw new UniqueMappingNotFoundException(attrId);
                     }
+                }
+                if (CollectionUtils.isNotEmpty(ciEntityConditionVo.getAttrFilterList())) {
+                    List<CiEntityVo> checkList = ciEntityService.searchCiEntity(ciEntityConditionVo);
+                    CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
+                    if (CollectionUtils.isEmpty(checkList)) {
+                        ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
+                    } else if (checkList.size() == 1) {
+                        ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
+                        ciEntityTransactionVo.setCiEntityId(checkList.get(0).getId());
+                    } else {
+                        throw new CiEntityDuplicateException();
+                    }
+                    ciEntityService.saveCiEntity(ciEntityTransactionVo, transactionGroupVo);
                 }
             }
 

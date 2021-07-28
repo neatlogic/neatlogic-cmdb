@@ -32,7 +32,6 @@ import codedriver.module.cmdb.attrexpression.AttrExpressionRebuildManager;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
-import codedriver.module.cmdb.dao.mapper.cientity.AttrExpressionRebuildAuditMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper;
 import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
@@ -50,8 +49,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -67,8 +64,6 @@ public class CiEntityServiceImpl implements CiEntityService {
     @Resource
     private TransactionMapper transactionMapper;
 
-    @Resource
-    private AttrExpressionRebuildAuditMapper attrExpressionRebuildAuditMapper;
 
     @Resource
     private CiMapper ciMapper;
@@ -360,63 +355,6 @@ public class CiEntityServiceImpl implements CiEntityService {
             // 没有任何变化则返回零
             return 0L;
         }
-    }
-
-    /**
-     * 根据名字表达式产生配置项名称，默认使用name属性
-     *
-     * @param ciEntityTransactionVo 事务
-     */
-    @Deprecated
-    private void createCiEntityName(CiEntityTransactionVo ciEntityTransactionVo) {
-        CiVo ciVo = ciMapper.getCiById(ciEntityTransactionVo.getCiId());
-        CiEntityVo oldCiEntityVo = ciEntityTransactionVo.getOldCiEntityVo();
-        boolean hasFound = false;
-        String ciEntityName = null;
-        if (StringUtils.isBlank(ciVo.getNameExpression())) {
-            for (AttrEntityTransactionVo attrEntityTransactionVo : ciEntityTransactionVo.getAttrEntityTransactionList()) {
-                if (attrEntityTransactionVo.getAttrName().equals("name")) {
-                    hasFound = true;
-                    ciEntityName = attrEntityTransactionVo.getValueList().getString(0);
-                }
-            }
-            if (!hasFound && oldCiEntityVo != null) {
-                for (AttrEntityVo attrEntityVo : oldCiEntityVo.getAttrEntityList()) {
-                    if (attrEntityVo.getAttrName().equals("name")) {
-                        ciEntityName = attrEntityVo.getValueList().getString(0);
-                    }
-                }
-            }
-        } else {
-            String regex = "\\{([^}]+?)}";
-            Matcher matcher = Pattern.compile(regex).matcher(ciVo.getNameExpression());
-            Set<String> labelSet = new HashSet<>();
-            while (matcher.find()) {
-                labelSet.add(matcher.group(1));
-            }
-            ciEntityName = ciVo.getNameExpression();
-            Iterator<String> labels = labelSet.iterator();
-            while (labels.hasNext()) {
-                String label = labels.next();
-                for (AttrEntityTransactionVo attrEntityTransactionVo : ciEntityTransactionVo.getAttrEntityTransactionList()) {
-                    if (attrEntityTransactionVo.getAttrName().equals(label)) {
-                        ciEntityName = ciEntityName.replace("{" + label + "}", attrEntityTransactionVo.getValueList().getString(0));
-                        labels.remove();
-                    }
-                }
-            }
-            labels = labelSet.iterator();
-            while (labels.hasNext()) {
-                String label = labels.next();
-                for (AttrEntityVo attrEntityVo : oldCiEntityVo.getAttrEntityList()) {
-                    if (attrEntityVo.getAttrName().equals(label)) {
-                        ciEntityName = ciEntityName.replace("{" + label + "}", attrEntityVo.getValueList().getString(0));
-                        labels.remove();
-                    }
-                }
-            }
-        }
-        ciEntityTransactionVo.setName(ciEntityName);
     }
 
     @Override
@@ -1427,20 +1365,6 @@ public class CiEntityServiceImpl implements CiEntityService {
                 AttrExpressionRebuildManager.rebuild(auditList);
             }
         }
-    }
-
-
-    /**
-     * 更新所有表达式属性
-     *
-     * @param ciEntityVo 配置项信息
-     */
-    private void updateExpressionAttr(CiEntityVo ciEntityVo) {
-        AfterTransactionJob<CiEntityVo> job = new AfterTransactionJob<>();
-        job.execute(ciEntityVo, pCiEntityVo -> {
-            Thread.currentThread().setName("UPDATE-CIENTITY-ATTR-EXPRESSION-" + pCiEntityVo.getId());
-
-        });
     }
 
     /**

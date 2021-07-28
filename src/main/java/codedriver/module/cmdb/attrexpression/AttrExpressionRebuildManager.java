@@ -159,7 +159,7 @@ public class AttrExpressionRebuildManager {
             //有配置项id的说明需要更新关联配置项的属性
             if (rebuildAuditVo.getCiId() != null && rebuildAuditVo.getCiEntityId() != null && rebuildAuditVo.getType().equals(RebuildAuditVo.Type.INVOKED.getValue()) && CollectionUtils.isNotEmpty(rebuildAuditVo.getAttrIdList())) {
                 //根据修改的配置项找到会影响的模型属性列表
-                List<AttrExpressionRelVo> expressionAttrList = attrMapper.getExpressionAttrByValueAttrIdList(rebuildAuditVo.getCiId(), rebuildAuditVo.getAttrIdList());
+                List<AttrExpressionRelVo> expressionAttrList = attrMapper.getExpressionAttrRelByValueCiIdAndAttrIdList(rebuildAuditVo.getCiId(), rebuildAuditVo.getAttrIdList());
                 if (CollectionUtils.isNotEmpty(expressionAttrList)) {
                     //查找当前配置项所关联的配置项，看是否在受影响模型列表里
                     List<RelEntityVo> relEntityList = relEntityMapper.getRelEntityByCiEntityId(rebuildAuditVo.getCiEntityId());
@@ -193,7 +193,7 @@ public class AttrExpressionRebuildManager {
             } else if (rebuildAuditVo.getCiId() != null && rebuildAuditVo.getCiEntityId() != null && rebuildAuditVo.getType().equals(RebuildAuditVo.Type.INVOKE.getValue())) {
                 if (CollectionUtils.isNotEmpty(rebuildAuditVo.getAttrIdList())) {
                     //如果修改的属性中没有表达式属性，则不做任何修改
-                    List<AttrExpressionRelVo> attrList = attrMapper.getExpressionAttrByValueAttrIdList(rebuildAuditVo.getCiId(), rebuildAuditVo.getAttrIdList());
+                    List<AttrExpressionRelVo> attrList = attrMapper.getExpressionAttrRelByValueCiIdAndAttrIdList(rebuildAuditVo.getCiId(), rebuildAuditVo.getAttrIdList());
                     if (CollectionUtils.isNotEmpty(attrList) && attrList.stream().anyMatch(attr -> attr.getExpressionCiId().equals(rebuildAuditVo.getCiId()))) {
                         updateExpressionAttr(new CiEntityVo(rebuildAuditVo.getCiId(), rebuildAuditVo.getCiEntityId()));
                     }

@@ -9,6 +9,9 @@ import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.ci.RelVo;
+import codedriver.framework.cmdb.exception.attr.AttrIsUsedInExpressionException;
+import codedriver.framework.cmdb.exception.attr.AttrIsUsedInNameAttrException;
+import codedriver.framework.cmdb.exception.attr.AttrIsUsedInUniqueRuleException;
 import codedriver.framework.cmdb.exception.ci.*;
 import codedriver.framework.exception.database.DataBaseNotFoundException;
 import codedriver.framework.lrcode.LRCodeManager;
@@ -236,6 +239,28 @@ public class CiServiceImpl implements CiService {
             if (ciEntityCount > 0) {
                 throw new CiParentCanNotBeChangedException(ciVo.getName(), ciEntityCount);
             }
+
+            List<AttrVo> parentAttrList = attrMapper.getAttrByCiId(checkCiVo.getParentCiId());
+            if (CollectionUtils.isNotEmpty(parentAttrList)) {
+                //检查子模型的表达式属性是否引用了父模型的属性
+                List<AttrVo> attrExpressionList = attrMapper.getExpressionAttrByValueCiIdAndAttrIdList(ciVo.getId(), parentAttrList.stream().map(AttrVo::getId).collect(Collectors.toList()));
+                attrExpressionList.removeIf(attr -> !attr.getCiId().equals(ciVo.getId()));
+                if (CollectionUtils.isNotEmpty(attrExpressionList)) {
+                    throw new AttrIsUsedInExpressionException(attrExpressionList);
+                }
+
+                //检查唯一规则是否有被引用
+                if (CollectionUtils.isNotEmpty(checkCiVo.getUniqueAttrIdList()) && checkCiVo.getUniqueAttrIdList().stream().anyMatch(id -> parentAttrList.stream().anyMatch(attr -> attr.getId().equals(id)))) {
+                    throw new AttrIsUsedInUniqueRuleException();
+                }
+
+                //检查名称属性是否有被引用
+                if (checkCiVo.getNameAttrId() != null && parentAttrList.stream().anyMatch(a -> a.getId().equals(checkCiVo.getNameAttrId()))) {
+                    throw new AttrIsUsedInNameAttrException();
+                }
+            }
+
+
             LRCodeManager.moveTreeNode("cmdb_ci", "id", "parent_ci_id", ciVo.getId(), MoveType.INNER, ciVo.getParentCiId());
         }
         if (ciMapper.checkCiNameIsExists(ciVo) > 0) {
