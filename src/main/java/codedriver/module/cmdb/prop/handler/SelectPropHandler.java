@@ -94,7 +94,7 @@ public class SelectPropHandler implements IPropertyHandler {
                 String textKey = config.getString("textKey");
                 String valueKey = config.getString("valueKey");
                 List<ValueTextVo> data =
-                        matrixDataMapper.getDynamicTableCellDataMap(matrixUuid, textKey, valueKey, values, TenantContext.get().getTenantUuid());
+                        matrixDataMapper.getDynamicTableCellDataMap(matrixUuid, textKey, valueKey, values, TenantContext.get().getDataDbName());
                 if (CollectionUtils.isNotEmpty(data)) {
                     for (ValueTextVo vo : data) {
                         JSONObject obj = new JSONObject();
