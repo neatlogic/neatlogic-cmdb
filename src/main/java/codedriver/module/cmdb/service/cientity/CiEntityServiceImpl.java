@@ -104,7 +104,7 @@ public class CiEntityServiceImpl implements CiEntityService {
         ciEntityVo.setAttrList(attrList);
         ciEntityVo.setRelList(relList);
         List<Map<String, Object>> resultList = ciEntityMapper.getCiEntityById(ciEntityVo);
-        return new CiEntityBuilder.Builder(resultList, ciVo, attrList, relList).build().getCiEntity();
+        return new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, attrList, relList).build().getCiEntity();
     }
 
     @Override
@@ -129,7 +129,7 @@ public class CiEntityServiceImpl implements CiEntityService {
         if (CollectionUtils.isNotEmpty(ciEntityIdList)) {
             ciEntityVo.setIdList(ciEntityIdList);
             List<Map<String, Object>> resultList = ciEntityMapper.searchCiEntity(ciEntityVo);
-            return new CiEntityBuilder.Builder(resultList, ciVo, attrList, relList).build().getCiEntityList();
+            return new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, attrList, relList).build().getCiEntityList();
         }
         return new ArrayList<>();
     }
@@ -195,7 +195,7 @@ public class CiEntityServiceImpl implements CiEntityService {
         if (CollectionUtils.isNotEmpty(ciEntityVo.getIdList())) {
             List<Map<String, Object>> resultList = ciEntityMapper.searchCiEntity(ciEntityVo);
             ciEntityVo.setIdList(null);//清除id列表，避免ciEntityVo重用时数据没法更新
-            return new CiEntityBuilder.Builder(resultList, ciVo, attrList, relList).build().getCiEntityList();
+            return new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, attrList, relList).build().getCiEntityList();
         }
         return new ArrayList<>();
     }

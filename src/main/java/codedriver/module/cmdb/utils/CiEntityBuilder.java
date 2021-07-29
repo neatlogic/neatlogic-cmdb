@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.*;
 
 public class CiEntityBuilder {
+    private final CiEntityVo paramCiEntityVo;
     private final List<Map<String, Object>> resultList;
     private Map<Long, AttrVo> attrMap;
     private Map<Long, RelVo> relMap;
@@ -31,6 +32,7 @@ public class CiEntityBuilder {
         List<AttrVo> attrList = builder.attrList;
         List<RelVo> relList = builder.relList;
         ciVo = builder.ciVo;
+        paramCiEntityVo = builder.ciEntityVo;
         if (CollectionUtils.isNotEmpty(attrList)) {
             attrMap = new HashMap<>();
             for (AttrVo attrVo : attrList) {
@@ -123,7 +125,7 @@ public class CiEntityBuilder {
                                 }
                             } else {
                                 //限制最大返回关系
-                                if (ciEntityVo.getRelEntityByRelIdAndDirection(relId, direction).size() <= ciEntityVo.getRelEntityCount()) {
+                                if (paramCiEntityVo.getMaxRelEntityCount() == null || ciEntityVo.getRelEntityByRelIdAndDirection(relId, direction).size() <= paramCiEntityVo.getMaxRelEntityCount()) {
                                     JSONObject valueDataObj = new JSONObject();
                                     valueDataObj.put("ciId", direction.equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiId() : relVo.getFromCiId());
                                     valueDataObj.put("ciEntityId", result.get(key));
@@ -231,7 +233,7 @@ public class CiEntityBuilder {
                                 }
                             } else {
                                 //限制最大返回关系
-                                if (ciEntityVo.getRelEntityByRelIdAndDirection(relId, direction).size() <= ciEntityVo.getRelEntityCount()) {
+                                if (paramCiEntityVo.getMaxRelEntityCount() == null || ciEntityVo.getRelEntityByRelIdAndDirection(relId, direction).size() <= paramCiEntityVo.getMaxRelEntityCount()) {
                                     JSONObject valueDataObj = new JSONObject();
                                     valueDataObj.put("ciId", direction.equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiId() : relVo.getFromCiId());
                                     valueDataObj.put("ciEntityId", result.get(key));
@@ -264,12 +266,14 @@ public class CiEntityBuilder {
 
 
     public static class Builder {
+        private final CiEntityVo ciEntityVo;
         private final List<Map<String, Object>> resultList;
         private final List<AttrVo> attrList;
         private final List<RelVo> relList;
         private final CiVo ciVo;
 
-        public Builder(List<Map<String, Object>> _resultList, CiVo _ciVo, List<AttrVo> _attrList, List<RelVo> _relList) {
+        public Builder(CiEntityVo _ciEntityVo, List<Map<String, Object>> _resultList, CiVo _ciVo, List<AttrVo> _attrList, List<RelVo> _relList) {
+            ciEntityVo = _ciEntityVo;
             resultList = _resultList;
             attrList = _attrList;
             relList = _relList;
