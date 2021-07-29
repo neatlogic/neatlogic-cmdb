@@ -22,7 +22,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.sync.SyncConfigMapper;
-import codedriver.module.cmdb.service.sync.SyncService;
+import codedriver.module.cmdb.service.sync.CiSyncManager;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,9 +41,6 @@ public class LaunchSyncCiApi extends PrivateApiComponentBase {
 
     @Resource
     private CiMapper ciMapper;
-
-    @Resource
-    private SyncService syncService;
 
 
     @Override
@@ -82,7 +79,7 @@ public class LaunchSyncCiApi extends PrivateApiComponentBase {
             }
 
             syncConfigVo.setCiVo(ciVo);
-            syncService.doSync(syncConfigVo);
+            CiSyncManager.doSync(syncConfigVo);
         }
         return null;
     }

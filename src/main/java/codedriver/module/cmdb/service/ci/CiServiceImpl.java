@@ -10,7 +10,6 @@ import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.ci.RelVo;
 import codedriver.framework.cmdb.exception.attr.AttrIsUsedInExpressionException;
-import codedriver.framework.cmdb.exception.attr.AttrIsUsedInNameAttrException;
 import codedriver.framework.cmdb.exception.attr.AttrIsUsedInUniqueRuleException;
 import codedriver.framework.cmdb.exception.ci.*;
 import codedriver.framework.exception.database.DataBaseNotFoundException;
@@ -233,14 +232,15 @@ public class CiServiceImpl implements CiService {
         if (checkCiVo == null) {
             throw new CiNotFoundException(ciVo.getId());
         }
+        List<AttrVo> parentAttrList = null;
         if (!Objects.equals(checkCiVo.getParentCiId(), ciVo.getParentCiId())) {
+            parentAttrList = attrMapper.getAttrByCiId(checkCiVo.getParentCiId());
             //如果继承发生改变需要检查是否有配置项数据，有数据不允许变更
             int ciEntityCount = ciEntityMapper.getDownwardCiEntityCountByLR(ciVo.getLft(), ciVo.getRht());
             if (ciEntityCount > 0) {
                 throw new CiParentCanNotBeChangedException(ciVo.getName(), ciEntityCount);
             }
 
-            List<AttrVo> parentAttrList = attrMapper.getAttrByCiId(checkCiVo.getParentCiId());
             if (CollectionUtils.isNotEmpty(parentAttrList)) {
                 //检查子模型的表达式属性是否引用了父模型的属性
                 List<AttrVo> attrExpressionList = attrMapper.getExpressionAttrByValueCiIdAndAttrIdList(ciVo.getId(), parentAttrList.stream().map(AttrVo::getId).collect(Collectors.toList()));
@@ -250,14 +250,18 @@ public class CiServiceImpl implements CiService {
                 }
 
                 //检查唯一规则是否有被引用
-                if (CollectionUtils.isNotEmpty(checkCiVo.getUniqueAttrIdList()) && checkCiVo.getUniqueAttrIdList().stream().anyMatch(id -> parentAttrList.stream().anyMatch(attr -> attr.getId().equals(id)))) {
-                    throw new AttrIsUsedInUniqueRuleException();
+                if (CollectionUtils.isNotEmpty(checkCiVo.getUniqueAttrIdList())) {
+                    for (Long uaId : checkCiVo.getUniqueAttrIdList()) {
+                        if (parentAttrList.stream().anyMatch(attr -> attr.getId().equals(uaId))) {
+                            throw new AttrIsUsedInUniqueRuleException();
+                        }
+                    }
                 }
 
                 //检查名称属性是否有被引用
-                if (checkCiVo.getNameAttrId() != null && parentAttrList.stream().anyMatch(a -> a.getId().equals(checkCiVo.getNameAttrId()))) {
+               /* if (checkCiVo.getNameAttrId() != null && parentAttrList.stream().anyMatch(a -> a.getId().equals(checkCiVo.getNameAttrId()))) {
                     throw new AttrIsUsedInNameAttrException();
-                }
+                }*/
             }
 
 
@@ -278,6 +282,13 @@ public class CiServiceImpl implements CiService {
             }
         }
         ciMapper.updateCi(ciVo);
+        if (!Objects.equals(checkCiVo.getParentCiId(), ciVo.getParentCiId())) {
+            //由于名称属性一旦选中不能取消，所以直接修改，不告警
+            if (checkCiVo.getNameAttrId() != null && CollectionUtils.isNotEmpty(parentAttrList) && parentAttrList.stream().anyMatch(a -> a.getId().equals(checkCiVo.getNameAttrId()))) {
+                ciVo.setNameAttrId(null);
+                ciMapper.updateCiNameAttrId(ciVo);
+            }
+        }
     }
 
     @Override
