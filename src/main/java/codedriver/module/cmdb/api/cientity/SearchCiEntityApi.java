@@ -197,7 +197,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
                 entityObj.put("typeName", entity.getTypeName());
                 entityObj.put("attrEntityData", entity.getAttrEntityData());
                 entityObj.put("relEntityData", entity.getRelEntityData());
-                entityObj.put("relEntityCount", entity.getMaxRelEntityCount());
+                entityObj.put("maxRelEntityCount", entity.getMaxRelEntityCount());
                 if (needAction && ciVo.getIsVirtual().equals(0)) {
                     JSONObject actionData = new JSONObject();
                     actionData.put(CiAuthType.CIENTITYUPDATE.getValue(), canEdit || hasMaintainCiEntityIdList.contains(entity.getId()));
