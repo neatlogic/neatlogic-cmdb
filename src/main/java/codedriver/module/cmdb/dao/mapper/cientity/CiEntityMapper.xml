@@ -452,6 +452,20 @@
                     </if>
                 </foreach>
             </if>
+            <if test="relCiEntityFilterList != null and relCiEntityFilterList.size() > 0">
+                <foreach collection="relCiEntityFilterList" item="relCiEntity">
+                    <choose>
+                        <when test="relCiEntity.direction=='from'">
+                            AND `cmdb_relentity_${relCiEntity.relId}_${relCiEntity.direction}`.to_cientity_id =
+                            #{relCiEntity.ciEntityId}
+                        </when>
+                        <otherwise>
+                            AND `cmdb_relentity_${relCiEntity.relId}_${relCiEntity.direction}`.from_cientity_id =
+                            #{relCiEntity.ciEntityId}
+                        </otherwise>
+                    </choose>
+                </foreach>
+            </if>
         </where>
     </sql>
 

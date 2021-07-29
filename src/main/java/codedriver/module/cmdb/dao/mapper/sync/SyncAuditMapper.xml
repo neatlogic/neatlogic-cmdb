@@ -6,6 +6,23 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.sync.SyncAuditMapper">
+    <select id="getDoingSyncByCiId" parameterType="java.lang.Long"
+            resultType="codedriver.framework.cmdb.dto.sync.SyncAuditVo">
+        select a.id,
+               a.sync_config_id       AS syncConfigId,
+               a.start_time           AS startTime,
+               a.end_time             AS endTime,
+               a.exec_type            AS execType,
+               a.status,
+               a.transaction_group_id AS transactionGroupId,
+               a.server_id            AS serverID
+        from cmdb_ci_sync_audit a
+                 join cmdb_ci_sync_config b on
+            a.sync_config_id = b.id
+        where b.ci_id = #{value}
+          and a.status = 'doing'
+    </select>
+
     <insert id="insertSyncAudit" parameterType="codedriver.framework.cmdb.dto.sync.SyncAuditVo">
         INSERT INTO cmdb_ci_sync_audit (id,
                                         sync_config_id,

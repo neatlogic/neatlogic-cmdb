@@ -9,6 +9,7 @@ import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.ci.CiViewVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.cmdb.dto.cientity.RelCiEntityFilterVo;
 import codedriver.framework.cmdb.enums.CiAuthType;
 import codedriver.framework.cmdb.enums.GroupType;
 import codedriver.framework.cmdb.enums.ShowType;
@@ -28,6 +29,7 @@ import codedriver.module.cmdb.utils.RelUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -71,7 +73,13 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
             @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "关键字"),
             @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "需要查询的配置项id列表）"),
             @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "是否需要操作列，如果需要则根据用户权限返回操作列"),
-            @Param(name = "needCheck", type = ApiParamType.BOOLEAN, desc = "是否需要复选列")})
+            @Param(name = "needCheck", type = ApiParamType.BOOLEAN, desc = "是否需要复选列"),
+            @Param(name = "relCiEntityId", type = ApiParamType.LONG, desc = "关系配置项id"),
+            @Param(name = "relId", type = ApiParamType.LONG, desc = "关系id"),
+            @Param(name = "direction", type = ApiParamType.STRING, desc = "当前模型在关系中的位置"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页大小"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页")
+    })
     @Output({@Param(explode = BasePageVo.class),
             @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = CiEntityVo[].class),
             @Param(name = "theadList", type = ApiParamType.JSONARRAY, desc = "表头信息")})
@@ -88,6 +96,15 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
                 throw new CiEntityAuthException("查看");
             }
         }*/
+
+        Long relCiEntityId = jsonObj.getLong("relCiEntityId");
+        Long relId = jsonObj.getLong("relId");
+        String direction = jsonObj.getString("direction");
+        if (relCiEntityId != null && relId != null && StringUtils.isNotBlank(direction)) {
+            List<RelCiEntityFilterVo> relCiEntityFilterList = new ArrayList<>();
+            relCiEntityFilterList.add(new RelCiEntityFilterVo(relId, relCiEntityId, direction));
+            ciEntityVo.setRelCiEntityFilterList(relCiEntityFilterList);
+        }
 
         boolean needAction = jsonObj.getBooleanValue("needAction");
         boolean needCheck = jsonObj.getBooleanValue("needCheck");
@@ -180,6 +197,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
                 entityObj.put("typeName", entity.getTypeName());
                 entityObj.put("attrEntityData", entity.getAttrEntityData());
                 entityObj.put("relEntityData", entity.getRelEntityData());
+                entityObj.put("relEntityCount", entity.getRelEntityCount());
                 if (needAction && ciVo.getIsVirtual().equals(0)) {
                     JSONObject actionData = new JSONObject();
                     actionData.put(CiAuthType.CIENTITYUPDATE.getValue(), canEdit || hasMaintainCiEntityIdList.contains(entity.getId()));

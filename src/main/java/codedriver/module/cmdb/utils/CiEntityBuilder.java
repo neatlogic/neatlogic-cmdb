@@ -122,11 +122,14 @@ public class CiEntityBuilder {
                                     ciEntityVo.addRelEntityData(relId, direction, buildRelObj(ciEntityVo.getId(), relVo, direction, result, key));
                                 }
                             } else {
-                                JSONObject valueDataObj = new JSONObject();
-                                valueDataObj.put("ciId", direction.equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiId() : relVo.getFromCiId());
-                                valueDataObj.put("ciEntityId", result.get(key));
-                                valueDataObj.put("ciEntityName", result.get(key + "#name"));
-                                ciEntityVo.addRelEntityDataValue(relId, direction, valueDataObj);
+                                //限制最大返回关系
+                                if (ciEntityVo.getRelEntityByRelIdAndDirection(relId, direction).size() <= ciEntityVo.getRelEntityCount()) {
+                                    JSONObject valueDataObj = new JSONObject();
+                                    valueDataObj.put("ciId", direction.equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiId() : relVo.getFromCiId());
+                                    valueDataObj.put("ciEntityId", result.get(key));
+                                    valueDataObj.put("ciEntityName", result.get(key + "#name"));
+                                    ciEntityVo.addRelEntityDataValue(relId, direction, valueDataObj);
+                                }
                             }
                         }
                     }
@@ -227,14 +230,17 @@ public class CiEntityBuilder {
                                     ciEntityVo.addRelEntityData(relId, direction, buildRelObj(ciEntityVo.getId(), relVo, direction, result, key));
                                 }
                             } else {
-                                JSONObject valueDataObj = new JSONObject();
-                                valueDataObj.put("ciId", direction.equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiId() : relVo.getFromCiId());
-                                valueDataObj.put("ciEntityId", result.get(key));
-                                valueDataObj.put("ciEntityName", result.get(key + "#name"));
-                                if (StringUtils.isBlank(valueDataObj.getString("ciEntityName"))) {
-                                    valueDataObj.put("ciEntityName", "无名配置项");
+                                //限制最大返回关系
+                                if (ciEntityVo.getRelEntityByRelIdAndDirection(relId, direction).size() <= ciEntityVo.getRelEntityCount()) {
+                                    JSONObject valueDataObj = new JSONObject();
+                                    valueDataObj.put("ciId", direction.equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiId() : relVo.getFromCiId());
+                                    valueDataObj.put("ciEntityId", result.get(key));
+                                    valueDataObj.put("ciEntityName", result.get(key + "#name"));
+                                    if (StringUtils.isBlank(valueDataObj.getString("ciEntityName"))) {
+                                        valueDataObj.put("ciEntityName", "无名配置项");
+                                    }
+                                    ciEntityVo.addRelEntityDataValue(relId, direction, valueDataObj);
                                 }
-                                ciEntityVo.addRelEntityDataValue(relId, direction, valueDataObj);
                             }
                         }
                     }
@@ -304,6 +310,7 @@ public class CiEntityBuilder {
         relObj.put("label", direction.equals(RelDirectionType.FROM.getValue()) ? relVo.getToLabel() : relVo.getFromLabel());
         relObj.put("relId", relVo.getId());
         relObj.put("direction", direction);
+        relObj.put("ciId", direction.equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiId() : relVo.getFromCiId());
         JSONObject valueDataObj = new JSONObject();
         valueDataObj.put("ciId", result.get(key + "#ciId"));
         valueDataObj.put("ciEntityId", result.get(key));

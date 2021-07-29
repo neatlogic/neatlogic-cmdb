@@ -7,6 +7,10 @@ package codedriver.module.cmdb.dao.mapper.sync;
 
 import codedriver.framework.cmdb.dto.sync.SyncAuditVo;
 
+import java.util.List;
+
 public interface SyncAuditMapper {
+    List<SyncAuditVo> getDoingSyncByCiId(Long ciId);
+
     void insertSyncAudit(SyncAuditVo syncAuditVo);
 }
