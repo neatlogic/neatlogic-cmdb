@@ -11,6 +11,7 @@ import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.cmdb.dto.customview.*;
 import codedriver.framework.cmdb.enums.customview.RelType;
 import codedriver.framework.cmdb.exception.customview.CustomViewCiNotFoundException;
+import codedriver.framework.cmdb.exception.customview.CustomViewEmptyException;
 import codedriver.framework.cmdb.exception.customview.CustomViewPrivilegeException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
@@ -88,6 +89,9 @@ public class SaveCustomViewApi extends PrivateApiComponentBase {
         CustomViewVo customViewVo = JSONObject.toJavaObject(jsonObj, CustomViewVo.class);
 
         JSONArray nodes = config.getJSONArray("nodes");
+        if (CollectionUtils.isEmpty(nodes)) {
+            throw new CustomViewEmptyException();
+        }
         Map<String, JSONObject> ciNodeMap = new HashMap<>();
         Map<String, JSONObject> attrNodeMap = new HashMap<>();
         Map<String, JSONObject> relNodeMap = new HashMap<>();
