@@ -519,9 +519,12 @@ public class CiEntityServiceImpl implements CiEntityService {
                         if (attrVo.isNeedTargetCi()) {
                             List<Long> toCiEntityIdList = new ArrayList<>();
                             for (int i = 0; i < attrEntityTransactionVo.getValueList().size(); i++) {
-                                Long tmpId = attrEntityTransactionVo.getValueList().getLong(i);
-                                if (tmpId != null) {
-                                    toCiEntityIdList.add(tmpId);
+                                //如果不是id,则代表是新添加配置项，这时候不需要判断属性唯一
+                                if (attrEntityTransactionVo.getValueList().get(i) instanceof Number) {
+                                    Long tmpId = attrEntityTransactionVo.getValueList().getLong(i);
+                                    if (tmpId != null) {
+                                        toCiEntityIdList.add(tmpId);
+                                    }
                                 }
                             }
                             if (attrEntityTransactionVo.getSaveMode().equals(SaveModeType.MERGE.getValue())) {
@@ -534,10 +537,12 @@ public class CiEntityServiceImpl implements CiEntityService {
                                 }
                             }
                             //检查新值是否被别的配置项引用
-                            int attrEntityCount = ciEntityMapper.getAttrEntityCountByAttrIdAndValue(ciEntityTransactionVo.getCiEntityId(), attrVo.getId(), toCiEntityIdList);
-                            if (attrEntityCount > 0) {
-                                List<CiEntityVo> toCiEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(toCiEntityIdList);
-                                throw new AttrEntityDuplicateException(attrVo.getLabel(), toCiEntityList.stream().map(CiEntityVo::getName).collect(Collectors.toList()));
+                            if (CollectionUtils.isNotEmpty(toCiEntityIdList)) {
+                                int attrEntityCount = ciEntityMapper.getAttrEntityCountByAttrIdAndValue(ciEntityTransactionVo.getCiEntityId(), attrVo.getId(), toCiEntityIdList);
+                                if (attrEntityCount > 0) {
+                                    List<CiEntityVo> toCiEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(toCiEntityIdList);
+                                    throw new AttrEntityDuplicateException(attrVo.getLabel(), toCiEntityList.stream().map(CiEntityVo::getName).collect(Collectors.toList()));
+                                }
                             }
                         } else {
                             //检查配置项表对应字段是否已被其他配置项使用
@@ -826,16 +831,20 @@ public class CiEntityServiceImpl implements CiEntityService {
                                 if (attrVo.isNeedTargetCi()) {
                                     List<Long> toCiEntityIdList = new ArrayList<>();
                                     for (int i = 0; i < attrEntityTransactionVo.getValueList().size(); i++) {
-                                        Long tmpId = attrEntityTransactionVo.getValueList().getLong(i);
-                                        if (tmpId != null) {
-                                            toCiEntityIdList.add(tmpId);
+                                        if (attrEntityTransactionVo.getValueList().get(i) instanceof Number) {
+                                            Long tmpId = attrEntityTransactionVo.getValueList().getLong(i);
+                                            if (tmpId != null) {
+                                                toCiEntityIdList.add(tmpId);
+                                            }
                                         }
                                     }
                                     //检查新值是否被别的配置项引用
-                                    int attrEntityCount = ciEntityMapper.getAttrEntityCountByAttrIdAndValue(ciEntityTransactionVo.getCiEntityId(), attrVo.getId(), toCiEntityIdList);
-                                    if (attrEntityCount > 0) {
-                                        List<CiEntityVo> toCiEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(toCiEntityIdList);
-                                        throw new AttrEntityDuplicateException(attrVo.getLabel(), toCiEntityList.stream().map(CiEntityVo::getName).collect(Collectors.toList()));
+                                    if (CollectionUtils.isNotEmpty(toCiEntityIdList)) {
+                                        int attrEntityCount = ciEntityMapper.getAttrEntityCountByAttrIdAndValue(ciEntityTransactionVo.getCiEntityId(), attrVo.getId(), toCiEntityIdList);
+                                        if (attrEntityCount > 0) {
+                                            List<CiEntityVo> toCiEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(toCiEntityIdList);
+                                            throw new AttrEntityDuplicateException(attrVo.getLabel(), toCiEntityList.stream().map(CiEntityVo::getName).collect(Collectors.toList()));
+                                        }
                                     }
                                 } else {
                                     //检查配置项表对应字段是否已被其他配置项使用
