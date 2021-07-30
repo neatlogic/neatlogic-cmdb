@@ -169,7 +169,7 @@ public class CiAuthChecker {
             if (!hasAuth) {
                 hasAuth = AuthActionChecker.check(CI_MODIFY.class, CIENTITY_MODIFY.class);
                 if (!hasAuth) {
-                    hasAuth = CiAuthChecker.hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYUPDATE, CiAuthType.CIENTITYDELETE, CiAuthType.TRANSACTIONMANAGE, CiAuthType.CIENTITYQUERY);
+                    hasAuth = CiAuthChecker.hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYUPDATE, CiAuthType.CIENTITYINSERT, CiAuthType.CIENTITYDELETE, CiAuthType.TRANSACTIONMANAGE, CiAuthType.CIENTITYQUERY, CiAuthType.PASSWORDVIEW, CiAuthType.CIENTITYRECOVER);
                 }
             }
             return this;
@@ -179,7 +179,7 @@ public class CiAuthChecker {
             if (!hasAuth) {
                 hasAuth = AuthActionChecker.check(CI_MODIFY.class, CIENTITY_MODIFY.class);
                 if (!hasAuth) {
-                    hasAuth = CiAuthChecker.hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYUPDATE, CiAuthType.CIENTITYINSERT, CiAuthType.PASSWORDVIEW);
+                    hasAuth = CiAuthChecker.hasCiPrivilege(ciId, CiAuthType.CIMANAGE, CiAuthType.CIENTITYUPDATE, CiAuthType.CIENTITYINSERT, CiAuthType.CIENTITYDELETE, CiAuthType.TRANSACTIONMANAGE, CiAuthType.PASSWORDVIEW, CiAuthType.CIENTITYRECOVER);
                 }
             }
             return this;

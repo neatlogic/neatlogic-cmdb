@@ -18,10 +18,7 @@ import codedriver.framework.cmdb.dto.transaction.TransactionVo;
 import codedriver.framework.cmdb.enums.EditModeType;
 import codedriver.framework.cmdb.enums.TransactionActionType;
 import codedriver.framework.cmdb.enums.TransactionStatus;
-import codedriver.framework.cmdb.exception.attr.AttrIsUsedInExpressionException;
-import codedriver.framework.cmdb.exception.attr.AttrNameRepeatException;
-import codedriver.framework.cmdb.exception.attr.AttrNotFoundException;
-import codedriver.framework.cmdb.exception.attr.InsertAttrToSchemaException;
+import codedriver.framework.cmdb.exception.attr.*;
 import codedriver.framework.transaction.core.EscapeTransactionJob;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
@@ -43,7 +40,6 @@ public class AttrServiceImpl implements AttrService {
     private CiMapper ciMapper;
     @Autowired
     private AttrMapper attrMapper;
-
 
     @Autowired
     private TransactionMapper transactionMapper;
@@ -82,14 +78,21 @@ public class AttrServiceImpl implements AttrService {
     @Override
     @Transactional
     public void updateAttr(AttrVo attrVo) {
-        if (attrMapper.getAttrById(attrVo.getId()) == null) {
+        AttrVo oldAttrVo = attrMapper.getAttrById(attrVo.getId());
+        if (oldAttrVo == null) {
             throw new AttrNotFoundException(attrVo.getId());
+        }
+        IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
+        if (handler.isNeedTargetCi() && !oldAttrVo.getTargetCiId().equals(attrVo.getTargetCiId())) {
+            if (ciEntityMapper.getAttrEntityCountByFromCiIdAndAttrId(attrVo.getCiId(), attrVo.getId()) > 0) {
+                throw new AttrIsUsedInTargetException();
+            }
         }
         attrMapper.updateAttr(attrVo);
         CiVo ciVo = ciMapper.getCiById(attrVo.getCiId());
         //把模型信息设进去为了可以生成属性表名
         attrVo.setCiVo(ciVo);
-        IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
+
         handler.afterUpdate(attrVo);
         if (!handler.isNeedTargetCi()) {
             //由于以下操作是DDL操作，所以需要使用EscapeTransactionJob避开当前事务

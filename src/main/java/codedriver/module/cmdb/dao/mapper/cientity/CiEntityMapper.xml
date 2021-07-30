@@ -10,6 +10,13 @@
     <!--<cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000"
            size="100"></cache>-->
 
+    <select id="getAttrEntityCountByFromCiIdAndAttrId" resultType="int">
+        SELECT count(1)
+        FROM cmdb_attrentity
+        WHERE from_ci_id = #{fromCiId}
+          AND attr_id = #{attrId}
+    </select>
+
     <sql id="searchCiEntityBaseInfoSql">
         <where>
             <if test="ciId != null">

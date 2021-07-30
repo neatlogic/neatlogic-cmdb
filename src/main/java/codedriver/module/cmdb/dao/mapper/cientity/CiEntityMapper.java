@@ -15,6 +15,15 @@ import java.util.Map;
 
 public interface CiEntityMapper {
     /**
+     * 检查引用属性是否有值
+     *
+     * @param fromCiId 模型id
+     * @param attrId   属性id
+     * @return 数量
+     */
+    int getAttrEntityCountByFromCiIdAndAttrId(@Param("fromCiId") Long fromCiId, @Param("attrId") Long attrId);
+
+    /**
      * 搜索配置项基本信息数量，只支持条件ci_id
      *
      * @param ciEntityVo 配置项信息
