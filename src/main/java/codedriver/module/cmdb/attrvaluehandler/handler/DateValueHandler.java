@@ -7,6 +7,7 @@ package codedriver.module.cmdb.attrvaluehandler.handler;
 
 import codedriver.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
 import codedriver.framework.cmdb.enums.SearchExpression;
+import com.alibaba.fastjson.JSONArray;
 import org.springframework.stereotype.Service;
 
 
@@ -67,6 +68,26 @@ public class DateValueHandler implements IAttrValueHandler {
     public SearchExpression[] getSupportExpression() {
         return new SearchExpression[]{SearchExpression.EQ, SearchExpression.NE, SearchExpression.LI,
                 SearchExpression.NL, SearchExpression.NOTNULL, SearchExpression.NULL};
+    }
+
+    /**
+     * 将值转换成显示的形式
+     *
+     * @param valueList 数据库的数据
+     * @return 用于显示数据
+     */
+    public void transferValueListToDisplay(JSONArray valueList) {
+        for (int i = 0; i < valueList.size(); i++) {
+            try {
+                String v = valueList.getString(i);
+                if (v.contains(",")) {
+                    v = v.replace(",", "~");
+                }
+                valueList.set(i, v);
+            } catch (Exception ignored) {
+
+            }
+        }
     }
 
     @Override

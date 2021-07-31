@@ -106,4 +106,24 @@ public class FileValueHandler implements IAttrValueHandler {
     public int getSort() {
         return 6;
     }
+
+    /**
+     * 将值转换成显示的形式
+     *
+     * @param valueList 数据库的数据
+     * @return 用于显示数据
+     */
+    public void transferValueListToDisplay(JSONArray valueList) {
+        for (int i = 0; i < valueList.size(); i++) {
+            try {
+                long fileId = valueList.getLongValue(i);
+                FileVo fileVo = fileMapper.getFileById(fileId);
+                if (fileVo != null) {
+                    valueList.set(i, fileVo.getName());
+                }
+            } catch (Exception ignored) {
+                //传进来的值不一定是id，例如视图分组后的"[空值]"
+            }
+        }
+    }
 }

@@ -5,16 +5,21 @@
 
 package codedriver.module.cmdb.service.customview;
 
+import codedriver.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
+import codedriver.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
+import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.customview.*;
 import codedriver.framework.cmdb.exception.customview.CustomViewNotFoundException;
 import codedriver.module.cmdb.dao.mapper.customview.CustomViewDataMapper;
 import codedriver.module.cmdb.dao.mapper.customview.CustomViewMapper;
+import com.alibaba.fastjson.JSONArray;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -50,6 +55,10 @@ public class CustomViewDataServiceImpl implements CustomViewDataService {
     @Override
     public List<Map<String, Object>> searchCustomViewData(CustomViewConditionVo customViewConditionVo) {
         List<CustomViewAttrVo> customViewAttrList = customViewMapper.getCustomViewAttrByCustomViewId(new CustomViewAttrVo(customViewConditionVo.getCustomViewId()));
+        Map<String, AttrVo> attrMap = new HashMap<>();
+        for (CustomViewAttrVo customViewAttr : customViewAttrList) {
+            attrMap.put(customViewAttr.getUuid(), customViewAttr.getAttrVo());
+        }
         customViewConditionVo.setFieldList(customViewAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "attr")).collect(Collectors.toList()));
         List<Map<String, Object>> dataList = customViewDataMapper.searchCustomViewData(customViewConditionVo);
         if (CollectionUtils.isNotEmpty(customViewConditionVo.getValueFilterList())) {
@@ -60,6 +69,24 @@ public class CustomViewDataServiceImpl implements CustomViewDataService {
                     filterList.add(new CustomViewValueFilterVo(filterVo.getUuid(), filterVo.getValue()));
                 }
                 data.put("_filterList", filterList);
+
+            }
+        }
+
+        //转换属性真实值
+        for (Map<String, Object> data : dataList) {
+            for (String key : data.keySet()) {
+                if (!key.equals("id") && !key.endsWith("_hash") && attrMap.containsKey(key) && data.get(key) != null) {
+                    IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrMap.get(key).getType());
+                    if (handler != null) {
+                        JSONArray vl = new JSONArray();
+                        vl.add(data.get(key));
+                        handler.transferValueListToDisplay(vl);
+                        if (CollectionUtils.isNotEmpty(vl)) {
+                            data.put(key, vl.get(0));
+                        }
+                    }
+                }
             }
         }
         return dataList;
@@ -106,6 +133,10 @@ public class CustomViewDataServiceImpl implements CustomViewDataService {
     public List<CustomViewDataGroupVo> searchCustomViewDataGroup(CustomViewConditionVo customViewConditionVo) {
         CustomViewAttrVo customViewAttrVo = customViewMapper.getCustomViewAttrByUuid(customViewConditionVo.getGroupBy());
         List<CustomViewAttrVo> customViewAttrList = customViewMapper.getCustomViewAttrByCustomViewId(new CustomViewAttrVo(customViewConditionVo.getCustomViewId()));
+        Map<String, AttrVo> attrMap = new HashMap<>();
+        for (CustomViewAttrVo customViewAttr : customViewAttrList) {
+            attrMap.put(customViewAttr.getUuid(), customViewAttr.getAttrVo());
+        }
         customViewConditionVo.setFieldList(customViewAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "attr")).collect(Collectors.toList()));
         List<CustomViewDataGroupVo> groupList = customViewDataMapper.searchCustomViewDataGroup(customViewConditionVo);
         for (CustomViewDataGroupVo customViewDataGroupVo : groupList) {
@@ -115,6 +146,18 @@ public class CustomViewDataServiceImpl implements CustomViewDataService {
                 //必须要复制一份，否则序列化成json会出错
                 for (CustomViewValueFilterVo filterVo : customViewConditionVo.getValueFilterList()) {
                     customViewDataGroupVo.addValueFilter(new CustomViewValueFilterVo(filterVo.getUuid(), filterVo.getValue()));
+                }
+            }
+            //转换属性真实值
+            if (attrMap.containsKey(customViewAttrVo.getUuid())) {
+                IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrMap.get(customViewAttrVo.getUuid()).getType());
+                if (handler != null) {
+                    JSONArray vl = new JSONArray();
+                    vl.add(customViewDataGroupVo.getValue());
+                    handler.transferValueListToDisplay(vl);
+                    if (CollectionUtils.isNotEmpty(vl)) {
+                        customViewDataGroupVo.setValue(vl.getString(0));
+                    }
                 }
             }
         }
