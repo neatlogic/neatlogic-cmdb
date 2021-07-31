@@ -64,25 +64,33 @@
     </select>
 
     <select id="getRelEntityByToCiEntityIdAndRelId" resultType="codedriver.framework.cmdb.dto.cientity.RelEntityVo">
-        SELECT `id`,
-               `rel_id`           AS relId,
-               `from_cientity_id` AS fromCiEntityId,
-               `to_cientity_id`   AS toCiEntityId,
-               `transaction_id`   AS transactionId
-        FROM `cmdb_relentity`
-        WHERE to_cientity_id = #{toCiEntityId}
-          AND rel_id = #{relId}
+        SELECT a.`id`,
+               a.`rel_id`           AS relId,
+               a.`from_cientity_id` AS fromCiEntityId,
+               a.`to_cientity_id`   AS toCiEntityId,
+               a.`transaction_id`   AS transactionId,
+               b.`name`             AS fromCiEntityName,
+               c.`name`             AS toCiEntityName
+        FROM `cmdb_relentity` a
+                 JOIN `cmdb_cientity` b ON a.`from_cientity_id` = b.id
+                 JOIN `cmdb_cientity` c ON a.`to_cientity_id` = c.id
+        WHERE a.to_cientity_id = #{toCiEntityId}
+          AND a.rel_id = #{relId}
     </select>
 
     <select id="getRelEntityByFromCiEntityIdAndRelId" resultType="codedriver.framework.cmdb.dto.cientity.RelEntityVo">
-        SELECT `id`,
-               `rel_id`           AS relId,
-               `from_cientity_id` AS fromCiEntityId,
-               `to_cientity_id`   AS toCiEntityId,
-               `transaction_id`   AS transactionId
-        FROM `cmdb_relentity`
-        WHERE from_cientity_id = #{fromCiEntityId}
-          AND rel_id = #{relId}
+        SELECT a.`id`,
+               a.`rel_id`           AS relId,
+               a.`from_cientity_id` AS fromCiEntityId,
+               a.`to_cientity_id`   AS toCiEntityId,
+               a.`transaction_id`   AS transactionId,
+               b.`name`             AS fromCiEntityName,
+               c.`name`             AS toCiEntityName
+        FROM `cmdb_relentity` a
+                 JOIN `cmdb_cientity` b ON a.`from_cientity_id` = b.id
+                 JOIN `cmdb_cientity` c ON a.`to_cientity_id` = c.id
+        WHERE a.from_cientity_id = #{fromCiEntityId}
+          AND a.rel_id = #{relId}
     </select>
 
     <select id="getRelEntityByCiEntityId" parameterType="java.lang.Long"

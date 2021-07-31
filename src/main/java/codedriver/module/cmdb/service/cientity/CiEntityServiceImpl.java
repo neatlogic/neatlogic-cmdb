@@ -594,10 +594,21 @@ public class CiEntityServiceImpl implements CiEntityService {
                     if (isFrom && relVo.getToIsRequired().equals(1)) {
                         throw new RelEntityNotFoundException(relVo.getToLabel());
                     }
-                } else if (fromRelEntityTransactionList.size() > 1) {
-                    // 检查关系是否允许重复
-                    if (RelRuleType.O.getValue().equals(relVo.getToRule())) {
-                        throw new RelEntityMutipleException(relVo.getToLabel());
+                } else {
+                    if (fromRelEntityTransactionList.size() > 1) {
+                        // 检查关系是否允许重复
+                        if (RelRuleType.O.getValue().equals(relVo.getToRule())) {
+                            throw new RelEntityMultipleException(relVo.getToLabel());
+                        }
+                    }
+                    //检查关系唯一
+                    if (relVo.getToIsUnique().equals(1)) {
+                        for (RelEntityTransactionVo fromRelEntityVo : fromRelEntityTransactionList) {
+                            List<RelEntityVo> checkFromRelEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(fromRelEntityVo.getToCiEntityId(), relVo.getId());
+                            if (checkFromRelEntityList.stream().anyMatch(r -> !r.getFromCiEntityId().equals(ciEntityTransactionVo.getCiEntityId()))) {
+                                throw new RelEntityIsUsedException(RelDirectionType.FROM, relVo);
+                            }
+                        }
                     }
                 }
 
@@ -606,12 +617,24 @@ public class CiEntityServiceImpl implements CiEntityService {
                     if (isTo && relVo.getFromIsRequired().equals(1)) {
                         throw new RelEntityNotFoundException(relVo.getFromLabel());
                     }
-                } else if (toRelEntityTransactionList.size() > 1) {
-                    // 检查关系是否允许重复
-                    if (RelRuleType.O.getValue().equals(relVo.getFromRule())) {
-                        throw new RelEntityMutipleException(relVo.getFromLabel());
+                } else {
+                    if (toRelEntityTransactionList.size() > 1) {
+                        // 检查关系是否允许重复
+                        if (RelRuleType.O.getValue().equals(relVo.getFromRule())) {
+                            throw new RelEntityMultipleException(relVo.getFromLabel());
+                        }
+                    }
+                    //检查关系唯一
+                    if (relVo.getFromIsUnique().equals(1)) {
+                        for (RelEntityTransactionVo toRelEntityVo : toRelEntityTransactionList) {
+                            List<RelEntityVo> checkFromRelEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(toRelEntityVo.getFromCiEntityId(), relVo.getId());
+                            if (checkFromRelEntityList.stream().anyMatch(r -> !r.getToCiEntityId().equals(ciEntityTransactionVo.getCiEntityId()))) {
+                                throw new RelEntityIsUsedException(RelDirectionType.TO, relVo);
+                            }
+                        }
                     }
                 }
+
             } else if (ciEntityTransactionVo.getEditMode().equals(EditModeType.PARTIAL.getValue())) {
                 if (CollectionUtils.isNotEmpty(fromRelEntityTransactionList)) {
                     if (fromRelEntityTransactionList.size() == 1) {
@@ -623,13 +646,22 @@ public class CiEntityServiceImpl implements CiEntityService {
                             if ((fromRelEntityList.size() == 1
                                     && !fromRelEntityList.contains(new RelEntityVo(fromRelEntityTransactionList.get(0))))
                                     || fromRelEntityList.size() > 1) {
-                                throw new RelEntityMutipleException(relVo.getToLabel());
+                                throw new RelEntityMultipleException(relVo.getToLabel());
                             }
                         }
                     } else if (fromRelEntityTransactionList.size() > 1) {
                         // 检查关系是否允许重复
                         if (RelRuleType.O.getValue().equals(relVo.getToRule())) {
-                            throw new RelEntityMutipleException(relVo.getToLabel());
+                            throw new RelEntityMultipleException(relVo.getToLabel());
+                        }
+                    }
+                    //检查关系唯一
+                    if (relVo.getToIsUnique().equals(1)) {
+                        for (RelEntityTransactionVo fromRelEntityVo : fromRelEntityTransactionList) {
+                            List<RelEntityVo> checkFromRelEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(fromRelEntityVo.getToCiEntityId(), relVo.getId());
+                            if (checkFromRelEntityList.stream().anyMatch(r -> !r.getFromCiEntityId().equals(ciEntityTransactionVo.getCiEntityId()))) {
+                                throw new RelEntityIsUsedException(RelDirectionType.FROM, relVo);
+                            }
                         }
                     }
                 }
@@ -643,13 +675,22 @@ public class CiEntityServiceImpl implements CiEntityService {
                             if ((toRelEntityList.size() == 1
                                     && !toRelEntityList.contains(new RelEntityVo(toRelEntityTransactionList.get(0))))
                                     || toRelEntityList.size() > 1) {
-                                throw new RelEntityMutipleException(relVo.getFromLabel());
+                                throw new RelEntityMultipleException(relVo.getFromLabel());
                             }
                         }
                     } else if (fromRelEntityTransactionList.size() > 1) {
                         // 检查关系是否允许重复
                         if (RelRuleType.O.getValue().equals(relVo.getFromRule())) {
-                            throw new RelEntityMutipleException(relVo.getFromLabel());
+                            throw new RelEntityMultipleException(relVo.getFromLabel());
+                        }
+                    }
+                    //检查关系唯一
+                    if (relVo.getFromIsUnique().equals(1)) {
+                        for (RelEntityTransactionVo toRelEntityVo : toRelEntityTransactionList) {
+                            List<RelEntityVo> checkFromRelEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(toRelEntityVo.getFromCiEntityId(), relVo.getId());
+                            if (checkFromRelEntityList.stream().anyMatch(r -> !r.getToCiEntityId().equals(ciEntityTransactionVo.getCiEntityId()))) {
+                                throw new RelEntityIsUsedException(RelDirectionType.TO, relVo);
+                            }
                         }
                     }
                 }
@@ -895,7 +936,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                     } else if (fromRelEntityTransactionList.size() > 1) {
                         // 检查关系是否允许重复
                         if (RelRuleType.O.getValue().equals(relVo.getToRule())) {
-                            throw new RelEntityMutipleException(relVo.getToLabel());
+                            throw new RelEntityMultipleException(relVo.getToLabel());
                         }
                     }
 
@@ -906,7 +947,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                     } else if (toRelEntityTransactionList.size() > 1) {
                         // 检查关系是否允许重复
                         if (RelRuleType.O.getValue().equals(relVo.getFromRule())) {
-                            throw new RelEntityMutipleException(relVo.getFromLabel());
+                            throw new RelEntityMultipleException(relVo.getFromLabel());
                         }
                     }
                 }
@@ -1038,7 +1079,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                             List<RelEntityTransactionVo> insertEntityList = fromRelEntityTransactionList.stream().filter(r -> r.getAction().equals(RelActionType.INSERT.getValue())).collect(Collectors.toList());
                             if (CollectionUtils.isNotEmpty(insertEntityList)) {
                                 if (insertEntityList.size() > 1) {
-                                    throw new RelEntityMutipleException(relVo.getToLabel());
+                                    throw new RelEntityMultipleException(relVo.getToLabel());
                                 } else {
                                     if (CollectionUtils.isNotEmpty(oldEntity.getRelEntityByRelIdAndDirection(relVo.getId(), RelDirectionType.FROM.getValue()))) {
                                         for (RelEntityTransactionVo relEntity : insertEntityList) {
@@ -1046,8 +1087,17 @@ public class CiEntityServiceImpl implements CiEntityService {
                                         }
                                     }
                                     if (CollectionUtils.isNotEmpty(oldEntity.getRelEntityByRelIdAndDirection(relVo.getId(), RelDirectionType.FROM.getValue()))) {
-                                        throw new RelEntityMutipleException(relVo.getToLabel());
+                                        throw new RelEntityMultipleException(relVo.getToLabel());
                                     }
+                                }
+                            }
+                        }
+                        //判断关系唯一
+                        if (relVo.getToIsUnique().equals(1)) {
+                            for (RelEntityTransactionVo fromRelEntityVo : fromRelEntityTransactionList) {
+                                List<RelEntityVo> checkFromRelEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(fromRelEntityVo.getToCiEntityId(), relVo.getId());
+                                if (checkFromRelEntityList.stream().anyMatch(r -> !r.getFromCiEntityId().equals(ciEntityTransactionVo.getCiEntityId()))) {
+                                    throw new RelEntityIsUsedException(RelDirectionType.FROM, relVo);
                                 }
                             }
                         }
@@ -1075,7 +1125,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                             List<RelEntityTransactionVo> insertEntityList = toRelEntityTransactionList.stream().filter(r -> r.getAction().equals(RelActionType.INSERT.getValue())).collect(Collectors.toList());
                             if (CollectionUtils.isNotEmpty(insertEntityList)) {
                                 if (insertEntityList.size() > 1) {
-                                    throw new RelEntityMutipleException(relVo.getFromLabel());
+                                    throw new RelEntityMultipleException(relVo.getFromLabel());
                                 } else {
                                     if (CollectionUtils.isNotEmpty(oldEntity.getRelEntityByRelIdAndDirection(relVo.getId(), RelDirectionType.TO.getValue()))) {
                                         for (RelEntityTransactionVo relEntity : insertEntityList) {
@@ -1083,8 +1133,17 @@ public class CiEntityServiceImpl implements CiEntityService {
                                         }
                                     }
                                     if (CollectionUtils.isNotEmpty(oldEntity.getRelEntityByRelIdAndDirection(relVo.getId(), RelDirectionType.TO.getValue()))) {
-                                        throw new RelEntityMutipleException(relVo.getToLabel());
+                                        throw new RelEntityMultipleException(relVo.getToLabel());
                                     }
+                                }
+                            }
+                        }
+                        //判断关系唯一
+                        if (relVo.getFromIsUnique().equals(1)) {
+                            for (RelEntityTransactionVo toRelEntityVo : toRelEntityTransactionList) {
+                                List<RelEntityVo> checkFromRelEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(toRelEntityVo.getFromCiEntityId(), relVo.getId());
+                                if (checkFromRelEntityList.stream().anyMatch(r -> !r.getToCiEntityId().equals(ciEntityTransactionVo.getCiEntityId()))) {
+                                    throw new RelEntityIsUsedException(RelDirectionType.TO, relVo);
                                 }
                             }
                         }
