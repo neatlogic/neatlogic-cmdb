@@ -1,3 +1,8 @@
+/*
+ * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+ */
+
 package codedriver.module.cmdb.api.batchimport;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
@@ -39,138 +44,138 @@ import java.util.List;
 @OperationType(type = OperationTypeEnum.CREATE)
 @Transactional
 public class UploadBatchImportFileApi extends PrivateBinaryStreamApiComponentBase {
-	static Logger logger = LoggerFactory.getLogger(UploadBatchImportFileApi.class);
+    static Logger logger = LoggerFactory.getLogger(UploadBatchImportFileApi.class);
 
-	@Autowired
-	private FileMapper fileMapper;
+    @Autowired
+    private FileMapper fileMapper;
 
-	@Autowired
-	private ImportMapper importMapper;
+    @Autowired
+    private ImportMapper importMapper;
 
-	@Override
-	public String getToken() {
-		return "/cmdb/import/file/upload";
-	}
+    @Override
+    public String getToken() {
+        return "/cmdb/import/file/upload";
+    }
 
-	@Override
-	public String getName() {
-		return "上传批量导入文件";
-	}
+    @Override
+    public String getName() {
+        return "上传批量导入文件";
+    }
 
-	@Override
-	public String getConfig() {
-		return null;
-	}
+    @Override
+    public String getConfig() {
+        return null;
+    }
 
-	@Input({
-			@Param(name = "param", type = ApiParamType.STRING, desc = "附件参数名称", isRequired = true),
-			@Param(name = "type", type = ApiParamType.STRING, desc = "附件类型", isRequired = true)
-	})
-	@Output({@Param(explode = FileVo.class)})
-	@Description(desc = "上传批量导入文件")
-	@Override
-	public Object myDoService(JSONObject paramObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
-		String tenantUuid = TenantContext.get().getTenantUuid();
-		if (StringUtils.isBlank(tenantUuid)) {
-			throw new NoTenantException();
-		}
-		MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
-		String paramName = paramObj.getString("param");
-		String type = paramObj.getString("type");
+    @Input({
+            @Param(name = "param", type = ApiParamType.STRING, desc = "附件参数名称", isRequired = true),
+            @Param(name = "type", type = ApiParamType.STRING, desc = "附件类型", isRequired = true)
+    })
+    @Output({@Param(explode = FileVo.class)})
+    @Description(desc = "上传批量导入文件")
+    @Override
+    public Object myDoService(JSONObject paramObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
+        String tenantUuid = TenantContext.get().getTenantUuid();
+        if (StringUtils.isBlank(tenantUuid)) {
+            throw new NoTenantException();
+        }
+        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+        String paramName = paramObj.getString("param");
+        String type = paramObj.getString("type");
 
-		List<FileTypeVo> fileTypeList = FileTypeHandlerFactory.getActiveFileTypeHandler();
-		FileTypeVo fileTypeVo = null;
-		for (FileTypeVo f : fileTypeList) {
-			if (f.getName().equalsIgnoreCase(type)) {
-				fileTypeVo = f;
-				break;
-			}
-		}
-		if (fileTypeVo == null) {
-			throw new FileTypeHandlerNotFoundException(type);
-		}
-		FileTypeVo fileTypeConfigVo = fileMapper.getFileTypeConfigByType(fileTypeVo.getName());
+        List<FileTypeVo> fileTypeList = FileTypeHandlerFactory.getActiveFileTypeHandler();
+        FileTypeVo fileTypeVo = null;
+        for (FileTypeVo f : fileTypeList) {
+            if (f.getName().equalsIgnoreCase(type)) {
+                fileTypeVo = f;
+                break;
+            }
+        }
+        if (fileTypeVo == null) {
+            throw new FileTypeHandlerNotFoundException(type);
+        }
+        FileTypeVo fileTypeConfigVo = fileMapper.getFileTypeConfigByType(fileTypeVo.getName());
 
-		MultipartFile multipartFile = multipartRequest.getFile(paramName);
+        MultipartFile multipartFile = multipartRequest.getFile(paramName);
 
-		if (multipartFile != null && multipartFile.getName() != null) {
-			String userUuid = UserContext.get().getUserUuid(true);
-			String oldFileName = multipartFile.getOriginalFilename();
-			if(!oldFileName.endsWith(".xls") && !oldFileName.endsWith(".xlsx")){
-				throw new ExcelFormatIllegalException(".xls或.xlsx");
-			}
-			Long size = multipartFile.getSize();
-			// 如果配置为空代表不受任何限制
-			if (fileTypeConfigVo != null) {
-				boolean isAllowed = false;
-				Long maxSize = 0L;
-				String fileExt = oldFileName.substring(oldFileName.lastIndexOf(".") + 1).toLowerCase();
-				JSONObject configObj = fileTypeConfigVo.getConfigObj();
-				JSONArray whiteList = new JSONArray();
-				JSONArray blackList = new JSONArray();
-				if (size == 0) {
-					throw new EmptyFileException();
-				}
-				if (configObj != null) {
-					whiteList = configObj.getJSONArray("whiteList");
-					blackList = configObj.getJSONArray("blackList");
-					maxSize = configObj.getLongValue("maxSize");
-				}
-				if (whiteList != null && whiteList.size() > 0) {
-					for (int i = 0; i < whiteList.size(); i++) {
-						if (fileExt.equalsIgnoreCase(whiteList.getString(i))) {
-							isAllowed = true;
-							break;
-						}
-					}
-				} else if (blackList != null && blackList.size() > 0) {
-					isAllowed = true;
-					for (int i = 0; i < blackList.size(); i++) {
-						if (fileExt.equalsIgnoreCase(blackList.getString(i))) {
-							isAllowed = false;
-							break;
-						}
-					}
-				} else {
-					isAllowed = true;
-				}
-				if (!isAllowed) {
-					throw new FileExtNotAllowedException(fileExt);
-				}
-				if (maxSize != null && maxSize > 0 && size > maxSize) {
-					throw new FileTooLargeException(size, maxSize);
-				}
-			}
+        if (multipartFile != null) {
+            String userUuid = UserContext.get().getUserUuid(true);
+            String oldFileName = multipartFile.getOriginalFilename();
+            if (StringUtils.isBlank(oldFileName) || (!oldFileName.endsWith(".xls") && !oldFileName.endsWith(".xlsx"))) {
+                throw new ExcelFormatIllegalException(".xls或.xlsx");
+            }
+            long size = multipartFile.getSize();
+            // 如果配置为空代表不受任何限制
+            if (fileTypeConfigVo != null) {
+                boolean isAllowed = false;
+                long maxSize = 0L;
+                String fileExt = oldFileName.substring(oldFileName.lastIndexOf(".") + 1).toLowerCase();
+                JSONObject configObj = fileTypeConfigVo.getConfigObj();
+                JSONArray whiteList = new JSONArray();
+                JSONArray blackList = new JSONArray();
+                if (size == 0) {
+                    throw new EmptyFileException();
+                }
+                if (configObj != null) {
+                    whiteList = configObj.getJSONArray("whiteList");
+                    blackList = configObj.getJSONArray("blackList");
+                    maxSize = configObj.getLongValue("maxSize");
+                }
+                if (whiteList != null && whiteList.size() > 0) {
+                    for (int i = 0; i < whiteList.size(); i++) {
+                        if (fileExt.equalsIgnoreCase(whiteList.getString(i))) {
+                            isAllowed = true;
+                            break;
+                        }
+                    }
+                } else if (blackList != null && blackList.size() > 0) {
+                    isAllowed = true;
+                    for (int i = 0; i < blackList.size(); i++) {
+                        if (fileExt.equalsIgnoreCase(blackList.getString(i))) {
+                            isAllowed = false;
+                            break;
+                        }
+                    }
+                } else {
+                    isAllowed = true;
+                }
+                if (!isAllowed) {
+                    throw new FileExtNotAllowedException(fileExt);
+                }
+                if (maxSize > 0 && size > maxSize) {
+                    throw new FileTooLargeException(size, maxSize);
+                }
+            }
 
-			IFileTypeHandler fileTypeHandler = FileTypeHandlerFactory.getHandler(type);
-			if (fileTypeHandler == null) {
-				throw new FileTypeHandlerNotFoundException(type);
-			}
+            IFileTypeHandler fileTypeHandler = FileTypeHandlerFactory.getHandler(type);
+            if (fileTypeHandler == null) {
+                throw new FileTypeHandlerNotFoundException(type);
+            }
 
-			FileVo fileVo = new FileVo();
-			fileVo.setName(oldFileName);
-			fileVo.setSize(size);
-			fileVo.setUserUuid(userUuid);
-			fileVo.setType(type);
-			fileVo.setContentType(multipartFile.getContentType());
-			String filePath = null;
-			try {
-				filePath = FileUtil.saveData(MinioFileSystemHandler.NAME, tenantUuid, multipartFile.getInputStream(), fileVo.getId().toString(), fileVo.getContentType(), fileVo.getType().toLowerCase());
-			} catch (Exception ex) {
-				// 如果minio出现异常，则上传到本地
-				logger.error(ex.getMessage(), ex);
-				filePath = FileUtil.saveData(LocalFileSystemHandler.NAME, tenantUuid, multipartFile.getInputStream(), fileVo.getId().toString(), fileVo.getContentType(), fileVo.getType().toLowerCase());
-			}
-			fileVo.setPath(filePath);
-			fileMapper.insertFile(fileVo);
-			fileTypeHandler.afterUpload(fileVo, paramObj);
-			FileVo file = fileMapper.getFileById(fileVo.getId());
-			file.setUrl("api/binary/file/download?id=" + fileVo.getId());
-			/** 插入cmdb批量导入文件表 */
-			importMapper.insertCmdbImportFile(file);
-			return file;
-		}
-		return null;
-	}
+            FileVo fileVo = new FileVo();
+            fileVo.setName(oldFileName);
+            fileVo.setSize(size);
+            fileVo.setUserUuid(userUuid);
+            fileVo.setType(type);
+            fileVo.setContentType(multipartFile.getContentType());
+            String filePath;
+            try {
+                filePath = FileUtil.saveData(MinioFileSystemHandler.NAME, tenantUuid, multipartFile.getInputStream(), fileVo.getId().toString(), fileVo.getContentType(), fileVo.getType().toLowerCase());
+            } catch (Exception ex) {
+                // 如果minio出现异常，则上传到本地
+                logger.error(ex.getMessage());
+                filePath = FileUtil.saveData(LocalFileSystemHandler.NAME, tenantUuid, multipartFile.getInputStream(), fileVo.getId().toString(), fileVo.getContentType(), fileVo.getType().toLowerCase());
+            }
+            fileVo.setPath(filePath);
+            fileMapper.insertFile(fileVo);
+            fileTypeHandler.afterUpload(fileVo, paramObj);
+            FileVo file = fileMapper.getFileById(fileVo.getId());
+            file.setUrl("api/binary/file/download?id=" + fileVo.getId());
+            /* 插入cmdb批量导入文件表 */
+            importMapper.insertCmdbImportFile(file);
+            return file;
+        }
+        return null;
+    }
 
 }

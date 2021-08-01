@@ -113,7 +113,8 @@ public class FileValueHandler implements IAttrValueHandler {
      * @param valueList 数据库的数据
      * @return 用于显示数据
      */
-    public void transferValueListToDisplay(JSONArray valueList) {
+    @Override
+    public void transferValueListToDisplay(AttrVo attrVo, JSONArray valueList) {
         for (int i = 0; i < valueList.size(); i++) {
             try {
                 long fileId = valueList.getLongValue(i);

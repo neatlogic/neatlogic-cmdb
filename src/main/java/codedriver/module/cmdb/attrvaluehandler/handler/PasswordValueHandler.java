@@ -6,6 +6,7 @@
 package codedriver.module.cmdb.attrvaluehandler.handler;
 
 import codedriver.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
+import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.enums.SearchExpression;
 import codedriver.framework.common.util.RC4Util;
 import com.alibaba.fastjson.JSONArray;
@@ -75,7 +76,8 @@ public class PasswordValueHandler implements IAttrValueHandler {
         return 5;
     }
 
-    public void transferValueListToSave(JSONArray valueList) {
+    @Override
+    public void transferValueListToSave(AttrVo attrVo, JSONArray valueList) {
         for (int i = 0; i < valueList.size(); i++) {
             String value = valueList.getString(i);
             if (!value.startsWith("RC4:")) {
@@ -90,7 +92,8 @@ public class PasswordValueHandler implements IAttrValueHandler {
      * @param valueList 数据库的数据
      * @return 用于显示数据
      */
-    public void transferValueListToDisplay(JSONArray valueList) {
+    @Override
+    public void transferValueListToDisplay(AttrVo attrVo, JSONArray valueList) {
         for (int i = 0; i < valueList.size(); i++) {
             String value = valueList.getString(i);
             if (value.startsWith("RC4:")) {

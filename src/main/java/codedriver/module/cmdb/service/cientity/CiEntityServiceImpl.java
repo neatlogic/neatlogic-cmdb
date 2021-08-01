@@ -394,9 +394,6 @@ public class CiEntityServiceImpl implements CiEntityService {
         if (oldCiEntityVo != null) {
             String content = JSON.toJSONString(oldCiEntityVo);
             ciEntityTransactionVo.setSnapshot(content);
-            //String hash = Md5Util.encryptMD5(content);
-            //ciEntitySnapshotMapper.replaceSnapshotContent(hash, content);
-            //ciEntityTransactionVo.setSnapshotHash(hash);
         }
     }
 
@@ -459,7 +456,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                     JSONArray valueList = attrEntityData.getJSONArray("valueList");
                     //进行必要的值转换，例如密码转换成密文
                     IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
-                    handler.transferValueListToSave(valueList);
+                    handler.transferValueListToSave(attrVo, valueList);
                     attrEntityData.clear();
                     attrEntityData.put("valueList", valueList);
                     attrEntityData.put("label", attrVo.getLabel());
