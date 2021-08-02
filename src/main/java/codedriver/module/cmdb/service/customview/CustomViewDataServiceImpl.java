@@ -15,6 +15,8 @@ import codedriver.module.cmdb.dao.mapper.customview.CustomViewDataMapper;
 import codedriver.module.cmdb.dao.mapper.customview.CustomViewMapper;
 import com.alibaba.fastjson.JSONArray;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -58,8 +60,16 @@ public class CustomViewDataServiceImpl implements CustomViewDataService {
         Map<String, AttrVo> attrMap = new HashMap<>();
         for (CustomViewAttrVo customViewAttr : customViewAttrList) {
             attrMap.put(customViewAttr.getUuid(), customViewAttr.getAttrVo());
+            if (MapUtils.isNotEmpty(customViewAttr.getCondition())) {
+                String expression = customViewAttr.getCondition().getString("expression");
+                if (StringUtils.isNotBlank(expression)) {
+                    JSONArray valueList = customViewAttr.getCondition().getJSONArray("valueList");
+                    customViewConditionVo.addAttrFilter(new CustomViewConditionFilterVo(customViewAttr.getUuid(), expression, valueList));
+                }
+            }
         }
         customViewConditionVo.setFieldList(customViewAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "attr")).collect(Collectors.toList()));
+
         List<Map<String, Object>> dataList = customViewDataMapper.searchCustomViewData(customViewConditionVo);
         if (CollectionUtils.isNotEmpty(customViewConditionVo.getValueFilterList())) {
             for (Map<String, Object> data : dataList) {
@@ -136,6 +146,13 @@ public class CustomViewDataServiceImpl implements CustomViewDataService {
         Map<String, AttrVo> attrMap = new HashMap<>();
         for (CustomViewAttrVo customViewAttr : customViewAttrList) {
             attrMap.put(customViewAttr.getUuid(), customViewAttr.getAttrVo());
+            if (MapUtils.isNotEmpty(customViewAttr.getCondition())) {
+                String expression = customViewAttr.getCondition().getString("expression");
+                if (StringUtils.isNotBlank(expression)) {
+                    JSONArray valueList = customViewAttr.getCondition().getJSONArray("valueList");
+                    customViewConditionVo.addAttrFilter(new CustomViewConditionFilterVo(customViewAttr.getUuid(), expression, valueList));
+                }
+            }
         }
         customViewConditionVo.setFieldList(customViewAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "attr")).collect(Collectors.toList()));
         List<CustomViewDataGroupVo> groupList = customViewDataMapper.searchCustomViewDataGroup(customViewConditionVo);
