@@ -87,7 +87,10 @@ public class SaveCustomViewApi extends PrivateApiComponentBase {
         }
         JSONObject config = jsonObj.getJSONObject("config");
         CustomViewVo customViewVo = JSONObject.toJavaObject(jsonObj, CustomViewVo.class);
-
+        if (isPrivate == 1) {
+            //私有视图默认都是激活
+            customViewVo.setIsActive(1);
+        }
         JSONArray nodes = config.getJSONArray("nodes");
         if (CollectionUtils.isEmpty(nodes)) {
             throw new CustomViewEmptyException();

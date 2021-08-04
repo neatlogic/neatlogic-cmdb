@@ -172,6 +172,9 @@
             <if test="tagId != null">
                 AND cct.tag_id = #{tagId}
             </if>
+            <if test="isActive != null">
+                AND cc.is_active = #{isActive}
+            </if>
             <choose>
                 <when test="isPrivate == 0">
                     AND cc.is_private = 0
