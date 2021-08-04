@@ -562,6 +562,13 @@ public class CiEntityServiceImpl implements CiEntityService {
                     }
                 }
 
+                //检查是否允许多选
+                if (attrVo.getTargetCiId() != null && (MapUtils.isEmpty(attrVo.getConfig()) || !attrVo.getConfig().containsKey("isMultiple") || attrVo.getConfig().getString("isMultiple").equals("0"))) {
+                    if (attrEntityTransactionVo != null && CollectionUtils.isNotEmpty(attrEntityTransactionVo.getValueList()) && attrEntityTransactionVo.getValueList().size() > 1) {
+                        throw new AttrEntityMultipleException(attrVo);
+                    }
+                }
+
                 /*  调用校验器校验数据合法性，只有非引用型属性才需要 */
                 if (attrEntityTransactionVo != null && CollectionUtils.isNotEmpty(attrEntityTransactionVo.getValueList())
                         && StringUtils.isNotBlank(attrVo.getValidatorHandler()) && !attrVo.isNeedTargetCi()) {
