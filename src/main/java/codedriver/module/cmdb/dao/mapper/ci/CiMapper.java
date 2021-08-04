@@ -20,7 +20,7 @@ public interface CiMapper {
 
     //List<Long> getCiNameExpressionCiIdByAttrId(Long attrId);
 
-    List<CiVo> getAllCi();
+    List<CiVo> getAllCi(@Param("idList") List<Long> idList);
 
     List<CiVo> getCiByTargetCiId(Long ciId);
 

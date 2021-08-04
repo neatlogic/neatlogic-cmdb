@@ -5,6 +5,7 @@
 
 package codedriver.module.cmdb.process.stephandler;
 
+import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.cmdb.dto.transaction.TransactionGroupVo;
@@ -12,6 +13,7 @@ import codedriver.framework.cmdb.enums.EditModeType;
 import codedriver.framework.cmdb.enums.InputFrom;
 import codedriver.framework.cmdb.enums.TransactionActionType;
 import codedriver.framework.cmdb.threadlocal.InputFromContext;
+import codedriver.framework.exception.core.ApiRuntimeException;
 import codedriver.framework.process.constvalue.ProcessStepMode;
 import codedriver.framework.process.dao.mapper.ProcessTaskStepDataMapper;
 import codedriver.framework.process.dto.ProcessTaskFormAttributeDataVo;
@@ -21,12 +23,14 @@ import codedriver.framework.process.dto.ProcessTaskStepWorkerVo;
 import codedriver.framework.process.exception.core.ProcessTaskException;
 import codedriver.framework.process.stephandler.core.ProcessStepHandlerBase;
 import codedriver.framework.transaction.core.EscapeTransactionJob;
+import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +47,9 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
 
     @Autowired
     private CiEntityService ciEntityService;
+
+    @Autowired
+    private CiMapper ciMapper;
 
     @Autowired
     private TransactionMapper transactionMapper;
@@ -92,26 +99,40 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
         String stepConfig = selectContentByHashMapper.getProcessTaskStepConfigByHash(processTaskStepVo.getConfigHash());
         // 获取参数
         Map<Long, JSONArray> syncCiEntityMap = new HashMap<>();
+        Map<String, CiEntityTransactionVo> ciEntityTransactionMap = new HashMap<>();
+        Map<Long, CiVo> ciMap = new HashMap<>();
         try {
             JSONObject stepConfigObj = JSONObject.parseObject(stepConfig);
             currentProcessTaskStepVo.setParamObj(stepConfigObj);
             if (MapUtils.isNotEmpty(stepConfigObj)) {
                 JSONArray handlerList = stepConfigObj.getJSONArray("handlerList");
                 if (CollectionUtils.isNotEmpty(handlerList)) {
-                    for (int hindex = 0; hindex < handlerList.size(); hindex++) {
+                    for (int hIndex = 0; hIndex < handlerList.size(); hIndex++) {
                         ProcessTaskFormAttributeDataVo p = new ProcessTaskFormAttributeDataVo();
                         p.setProcessTaskId(currentProcessTaskStepVo.getProcessTaskId());
-                        p.setAttributeUuid(handlerList.getString(hindex));
+                        p.setAttributeUuid(handlerList.getString(hIndex));
                         ProcessTaskFormAttributeDataVo processTaskFormAttributeDataVo =
                                 processTaskMapper.getProcessTaskFormAttributeDataByProcessTaskIdAndAttributeUuid(p);
                         if (processTaskFormAttributeDataVo != null) {
                             JSONArray dataList = JSONArray.parseArray(processTaskFormAttributeDataVo.getData());
-                            for (int dindex = 0; dindex < dataList.size(); dindex++) {
-                                JSONObject dataObj = dataList.getJSONObject(dindex);
-                                JSONArray entityObjList = dataObj.getJSONArray("entityList");
+                            for (int dIndex = 0; dIndex < dataList.size(); dIndex++) {
+                                JSONObject dataObj = dataList.getJSONObject(dIndex);
                                 Long ciId = dataObj.getLong("ciId");
-                                if (ciId != null && CollectionUtils.isNotEmpty(entityObjList)) {
-                                    syncCiEntityMap.put(ciId, entityObjList);
+                                String uuid = dataObj.getString("uuid");
+                                Long id = dataObj.getLong("id");
+                                if (ciId != null) {
+                                    if (!syncCiEntityMap.containsKey(ciId)) {
+                                        syncCiEntityMap.put(ciId, new JSONArray());
+                                        ciMap.put(ciId, ciMapper.getCiById(ciId));
+                                    }
+                                    syncCiEntityMap.get(ciId).add(dataObj);
+                                }
+                                if (StringUtils.isNotBlank(uuid)) {
+                                    CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
+                                    if (id != null) {
+                                        ciEntityTransactionVo.setCiEntityId(id);
+                                    }
+                                    ciEntityTransactionMap.put(uuid, ciEntityTransactionVo);
                                 }
                             }
                         }
@@ -134,48 +155,98 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
                     for (int entityIndex = 0; entityIndex < ciEntitySyncList.size(); entityIndex++) {
                         JSONObject auditObj = new JSONObject();
                         JSONObject ciEntityObj = ciEntitySyncList.getJSONObject(entityIndex);
+                        String uuid = ciEntityObj.getString("uuid");
+                        CiEntityTransactionVo ciEntityTransactionVo = ciEntityTransactionMap.get(uuid);
                         try {
-                            if ("delete".equalsIgnoreCase(ciEntityObj.getString("form_actiontype"))
+                            if ("delete".equalsIgnoreCase(ciEntityObj.getString("actionType"))
                                     && ciEntityObj.getLong("id") != null) {
                                 // 删除操作
                                 auditObj.put("ciEntityName", ciEntityService.getCiEntityBaseInfoById(ciEntityObj.getLong("id")).getName());
                                 auditObj.put("ciEntityId", ciEntityObj.getLong("id"));
                                 auditObj.put("ciId", ciId);
+                                auditObj.put("ciName", ciMap.get(ciId).getName());
+                                auditObj.put("ciLabel", ciMap.get(ciId).getLabel());
                                 auditObj.put("action", TransactionActionType.DELETE.getValue());
-                                Long transactionId = ciEntityService.deleteCiEntity(ciEntityObj.getLong("id"), true);
+                                Long transactionId = ciEntityService.deleteCiEntity(ciEntityObj.getLong("id"), true, transactionGroupVo);
                                 auditObj.put("status", "success");
                                 auditObj.put("transactionId", transactionId);
                             } else {
                                 Long id = ciEntityObj.getLong("id");
-                                String uuid = ciEntityObj.getString("uuid");
-                                CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
                                 ciEntityTransactionVo.setCiId(ciId);
                                 ciEntityTransactionVo.setCiEntityId(id);
                                 ciEntityTransactionVo.setCiEntityUuid(uuid);
 
-                                if (id == null) {
+                                if ("insert".equalsIgnoreCase(ciEntityObj.getString("actionType")) || id == null) {
                                     ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
                                 } else {
                                     ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
                                 }
                                 // 解析属性数据
                                 JSONObject attrObj = ciEntityObj.getJSONObject("attrEntityData");
+                                //修正新配置项的uuid为id
+                                if (MapUtils.isNotEmpty(attrObj)) {
+                                    for (String key : attrObj.keySet()) {
+                                        JSONObject obj = attrObj.getJSONObject(key);
+                                        JSONArray valueList = obj.getJSONArray("valueList");
+                                        //删除没用的属性
+                                        obj.remove("actualValueList");
+                                        if (CollectionUtils.isNotEmpty(valueList)) {
+                                            //因为可能需要删除某些成员，所以需要倒着循环
+                                            for (int i = valueList.size() - 1; i >= 0; i--) {
+                                                if (valueList.get(i) instanceof JSONObject) {
+                                                    JSONObject valueObj = valueList.getJSONObject(i);
+                                                    String attrCiEntityUuid = valueObj.getString("uuid");
+                                                    Long attrCiEntityId = valueObj.getLong("id");
+                                                    if (attrCiEntityId == null && StringUtils.isNotBlank(attrCiEntityUuid)) {
+                                                        CiEntityTransactionVo tmpVo = ciEntityTransactionMap.get(attrCiEntityUuid);
+                                                        if (tmpVo != null) {
+                                                            //替换掉原来的ciEntityUuid为新的ciEntityId
+                                                            valueList.set(i, tmpVo.getCiEntityId());
+                                                        } else {
+                                                            throw new ApiRuntimeException("找不到" + attrCiEntityUuid + "的新配置项");
+                                                        }
+                                                    } else if (attrCiEntityId != null) {
+                                                        valueList.set(i, attrCiEntityId);
+                                                    } else {
+                                                        valueList.remove(i);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                                 ciEntityTransactionVo.setAttrEntityData(attrObj);
                                 // 解析关系数据
                                 JSONObject relObj = ciEntityObj.getJSONObject("relEntityData");
+                                //修正新配置项的uuid为id
+                                if (MapUtils.isNotEmpty(relObj)) {
+                                    for (String key : relObj.keySet()) {
+                                        JSONObject obj = relObj.getJSONObject(key);
+                                        JSONArray relDataList = obj.getJSONArray("valueList");
+                                        if (CollectionUtils.isNotEmpty(relDataList)) {
+                                            for (int i = 0; i < relDataList.size(); i++) {
+                                                JSONObject relEntityObj = relDataList.getJSONObject(i);
+                                                if (relEntityObj.getLong("ciEntityId") == null && StringUtils.isNotBlank(relEntityObj.getString("ciEntityUuid"))) {
+                                                    CiEntityTransactionVo tmpVo = ciEntityTransactionMap.get(relEntityObj.getString("ciEntityUuid"));
+                                                    if (tmpVo != null) {
+                                                        relEntityObj.put("ciEntityId", tmpVo.getCiEntityId());
+                                                    } else {
+                                                        throw new ApiRuntimeException("找不到" + relEntityObj.getString("ciEntityUuid") + "的新配置项");
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                                 ciEntityTransactionVo.setRelEntityData(relObj);
                                 // 因为不一定编辑所有属性，所以需要切换成局部更新模式
                                 ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
                                 ciEntityTransactionVo.setAllowCommit(true);
-                                CiEntityVo oldCiEntityVo = ciEntityService.getCiEntityBaseInfoById(ciEntityTransactionVo.getCiEntityId());
-                                if (oldCiEntityVo != null) {
-                                    auditObj.put("ciEntityName", oldCiEntityVo.getName());
-                                } else {
-                                    auditObj.put("ciEntityName", "新配置项");
-                                }
                                 auditObj.put("action", ciEntityTransactionVo.getAction());
                                 auditObj.put("ciEntityId", ciEntityTransactionVo.getCiEntityId());
                                 auditObj.put("ciId", ciId);
+                                auditObj.put("ciName", ciMap.get(ciId).getName());
+                                auditObj.put("ciLabel", ciMap.get(ciId).getLabel());
                                 Long transactionId = ciEntityService.saveCiEntity(ciEntityTransactionVo, transactionGroupVo);
                                 transactionGroupVo.addTransactionId(transactionId);
                                 auditObj.put("status", "success");
@@ -185,6 +256,12 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
                             auditObj.put("error", ex.getMessage());
                             auditObj.put("status", "failed");
                         } finally {
+                            CiEntityVo oldCiEntityVo = ciEntityService.getCiEntityBaseInfoById(ciEntityTransactionVo.getCiEntityId());
+                            if (oldCiEntityVo != null) {
+                                auditObj.put("ciEntityName", oldCiEntityVo.getName());
+                            } else {
+                                auditObj.put("ciEntityName", "新配置项");
+                            }
                             auditObj.put("originalData", ciEntityObj);
                             auditList.add(auditObj);
                         }

@@ -7,20 +7,20 @@ package codedriver.module.cmdb.api.ci;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.ci.CiVo;
+import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.ValueTextVo;
-import codedriver.framework.restful.annotation.Description;
-import codedriver.framework.restful.annotation.OperationType;
-import codedriver.framework.restful.annotation.Output;
-import codedriver.framework.restful.annotation.Param;
+import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -46,11 +46,23 @@ public class ListCiApi extends PrivateApiComponentBase {
         return null;
     }
 
+    @Input({@Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "模型id列表")})
     @Output({@Param(explode = ValueTextVo[].class)})
     @Description(desc = "返回模型列表信息接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        List<CiVo> ciList = ciMapper.getAllCi();
+        JSONArray idList = jsonObj.getJSONArray("idList");
+        List<Long> ciIdList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(idList)) {
+            for (int i = 0; i < idList.size(); i++) {
+                try {
+                    ciIdList.add(idList.getLong(i));
+                } catch (Exception ignored) {
+
+                }
+            }
+        }
+        List<CiVo> ciList = ciMapper.getAllCi(ciIdList);
         JSONArray jsonList = new JSONArray();
         for (CiVo ciVo : ciList) {
             JSONObject valueObj = new JSONObject();

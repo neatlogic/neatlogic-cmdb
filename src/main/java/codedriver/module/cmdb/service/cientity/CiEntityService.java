@@ -98,6 +98,9 @@ public interface CiEntityService {
      * @return 事务id
      */
     @Transactional
+    Long deleteCiEntity(Long ciEntityId, Boolean allowCommit, TransactionGroupVo transactionGroupVo);
+
+    @Transactional
     Long deleteCiEntity(Long ciEntityId, Boolean allowCommit);
 
     /**

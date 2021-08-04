@@ -210,7 +210,6 @@ public class CiEntityServiceImpl implements CiEntityService {
         return ciEntityList;
     }
 
-
     /**
      * 删除配置项
      *
@@ -220,6 +219,19 @@ public class CiEntityServiceImpl implements CiEntityService {
     @Transactional
     @Override
     public Long deleteCiEntity(Long ciEntityId, Boolean allowCommit) {
+        return deleteCiEntity(ciEntityId, allowCommit, new TransactionGroupVo());
+
+    }
+
+    /**
+     * 删除配置项
+     *
+     * @param ciEntityId 配置项id
+     * @return 事务id
+     */
+    @Transactional
+    @Override
+    public Long deleteCiEntity(Long ciEntityId, Boolean allowCommit, TransactionGroupVo transactionGroupVo) {
         CiEntityVo baseCiEntityVo = this.ciEntityMapper.getCiEntityBaseInfoById(ciEntityId);
         if (baseCiEntityVo == null) {
             throw new CiEntityNotFoundException(ciEntityId);
@@ -255,7 +267,6 @@ public class CiEntityServiceImpl implements CiEntityService {
         // 写入配置项事务
         transactionMapper.insertCiEntityTransaction(ciEntityTransactionVo);
         if (allowCommit) {
-            TransactionGroupVo transactionGroupVo = new TransactionGroupVo();
             commitTransaction(transactionVo, transactionGroupVo);
         }
 

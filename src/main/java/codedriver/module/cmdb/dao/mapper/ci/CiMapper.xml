@@ -80,20 +80,28 @@
 
     <select id="getAllCi" resultType="codedriver.framework.cmdb.dto.ci.CiVo" useCache="true">
         SELECT a.`id`,
-               a.`name`,
-               a.`label`,
-               a.`description`,
-               a.`icon`,
-               a.`parent_ci_id` AS parentCiId,
-               a.`type_id`      AS typeId,
-               a.`is_private`   AS isPrivate,
-               a.`is_menu`      AS isMenu,
-               a.`is_abstract`  AS isAbstract,
-               a.`is_virtual`   AS isVirtual,
-               a.`file_id`      AS fileId,
-               a.`lft`          AS lft,
-               a.`rht`          AS rht
+        a.`name`,
+        a.`label`,
+        a.`description`,
+        a.`icon`,
+        a.`parent_ci_id` AS parentCiId,
+        a.`type_id` AS typeId,
+        a.`is_private` AS isPrivate,
+        a.`is_menu` AS isMenu,
+        a.`is_abstract` AS isAbstract,
+        a.`is_virtual` AS isVirtual,
+        a.`file_id` AS fileId,
+        a.`lft` AS lft,
+        a.`rht` AS rht
         FROM `cmdb_ci` a
+        <where>
+            <if test="idList != null and idList.size() > 0">
+                a.id IN
+                <foreach collection="idList" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
         ORDER BY `name`
     </select>
 

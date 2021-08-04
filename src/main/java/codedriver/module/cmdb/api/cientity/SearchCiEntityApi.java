@@ -74,11 +74,14 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
             @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "需要查询的配置项id列表）"),
             @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "是否需要操作列，如果需要则根据用户权限返回操作列"),
             @Param(name = "needCheck", type = ApiParamType.BOOLEAN, desc = "是否需要复选列"),
+            @Param(name = "needActionType", type = ApiParamType.BOOLEAN, desc = "是否需要操作类型列，一般在表单控件中使用，用于标记数据是新增还是修改还是删除"),
             @Param(name = "relCiEntityId", type = ApiParamType.LONG, desc = "关系配置项id"),
             @Param(name = "relId", type = ApiParamType.LONG, desc = "关系id"),
             @Param(name = "direction", type = ApiParamType.STRING, desc = "当前模型在关系中的位置"),
+            @Param(name = "mode", type = ApiParamType.ENUM, rule = "page,dialog", desc = "dialog模式不会显示详情连接"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页大小"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页")
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
+            @Param(name = "ciEntityList", type = ApiParamType.JSONARRAY, desc = "配置项结果集，如果提供则不会进行搜索，补充头部信息后直接返回")
     })
     @Output({@Param(explode = BasePageVo.class),
             @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = CiEntityVo[].class),
@@ -105,9 +108,11 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
             relCiEntityFilterList.add(new RelCiEntityFilterVo(relId, relCiEntityId, direction));
             ciEntityVo.setRelCiEntityFilterList(relCiEntityFilterList);
         }
-
+        JSONArray ciEntityObjList = jsonObj.getJSONArray("ciEntityList");
         boolean needAction = jsonObj.getBooleanValue("needAction");
         boolean needCheck = jsonObj.getBooleanValue("needCheck");
+        boolean needActionType = jsonObj.getBooleanValue("needActionType");
+        String mode = jsonObj.getString("mode");
         // 获取视图配置，只返回需要的属性和关系
         CiViewVo ciViewVo = new CiViewVo();
         ciViewVo.setCiId(ciEntityVo.getCiId());
@@ -121,6 +126,15 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
             theadList.add(new JSONObject() {
                 {
                     this.put("key", "selection");
+                }
+            });
+        }
+        if (needActionType) {
+            // 增加复选列
+            theadList.add(new JSONObject() {
+                {
+                    this.put("key", "actionType");
+                    this.put("title", "操作类型");
                 }
             });
         }
@@ -150,14 +164,14 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
                 }
                 theadList.add(headObj);
             }
-            // if (needAction) {
-            // 增加操作列，无需判断needAction，因为有“查看详情”操作
-            theadList.add(new JSONObject() {
-                {
-                    this.put("key", "action");
-                }
-            });
-            // }
+            if (needAction || !"dialog".equals(mode)) {
+                // 增加操作列，无需判断needAction，因为有“查看详情”操作
+                theadList.add(new JSONObject() {
+                    {
+                        this.put("key", "action");
+                    }
+                });
+            }
         }
 
         ciEntityVo.setAttrIdList(attrIdList);
@@ -166,13 +180,20 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
 
         List<CiEntityVo> ciEntityList;
         CiVo ciVo = ciMapper.getCiById(ciEntityVo.getCiId());
-        ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
+        if (ciEntityObjList == null) {
+            ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
+        } else {
+            ciEntityList = new ArrayList<>();
+            for (int i = 0; i < ciEntityObjList.size(); i++) {
+                ciEntityList.add(JSONObject.toJavaObject(ciEntityObjList.getJSONObject(i), CiEntityVo.class));
+            }
+        }
         JSONArray tbodyList = new JSONArray();
         if (CollectionUtils.isNotEmpty(ciEntityList)) {
             boolean canEdit = false, canDelete = false, canViewPassword = false, canTransaction = false;
             List<Long> hasMaintainCiEntityIdList = new ArrayList<>();
             List<Long> hasReadCiEntityIdList = new ArrayList<>();
-            if (needAction && ciVo.getIsVirtual().equals(0) && ciVo.getIsAbstract().equals(0)) {
+            if (ciEntityObjList == null && needAction && ciVo.getIsVirtual().equals(0) && ciVo.getIsAbstract().equals(0)) {
                 canEdit = CiAuthChecker.chain().checkCiEntityUpdatePrivilege(ciEntityVo.getCiId()).check();
                 canDelete = CiAuthChecker.chain().checkCiEntityDeletePrivilege(ciEntityVo.getCiId()).check();
                 canViewPassword = CiAuthChecker.chain().checkViewPasswordPrivilege(ciEntityVo.getCiId()).check();
@@ -189,21 +210,30 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
             for (CiEntityVo entity : ciEntityList) {
                 JSONObject entityObj = new JSONObject();
                 entityObj.put("id", entity.getId());
+                entityObj.put("uuid", entity.getUuid());
                 entityObj.put("name", entity.getName());
                 entityObj.put("ciId", entity.getCiId());
                 entityObj.put("ciName", entity.getCiName());
                 entityObj.put("ciLabel", entity.getCiLabel());
                 entityObj.put("type", entity.getTypeId());
                 entityObj.put("typeName", entity.getTypeName());
+                entityObj.put("actionType", entity.getActionType());
                 entityObj.put("attrEntityData", entity.getAttrEntityData());
                 entityObj.put("relEntityData", entity.getRelEntityData());
                 entityObj.put("maxRelEntityCount", entity.getMaxRelEntityCount());
-                if (needAction && ciVo.getIsVirtual().equals(0)) {
+                if (ciEntityObjList == null && needAction && ciVo.getIsVirtual().equals(0)) {
                     JSONObject actionData = new JSONObject();
                     actionData.put(CiAuthType.CIENTITYUPDATE.getValue(), canEdit || hasMaintainCiEntityIdList.contains(entity.getId()));
                     actionData.put(CiAuthType.CIENTITYDELETE.getValue(), canDelete || hasMaintainCiEntityIdList.contains(entity.getId()));
                     actionData.put(CiAuthType.PASSWORDVIEW.getValue(), canViewPassword || hasMaintainCiEntityIdList.contains(entity.getId()) || hasReadCiEntityIdList.contains(entity.getId()));
                     actionData.put(CiAuthType.TRANSACTIONMANAGE.getValue(), canTransaction || hasMaintainCiEntityIdList.contains(entity.getId()));
+                    entityObj.put("authData", actionData);
+                } else if (ciEntityObjList != null && needAction) {
+                    JSONObject actionData = new JSONObject();
+                    actionData.put(CiAuthType.CIENTITYUPDATE.getValue(), true);
+                    actionData.put(CiAuthType.CIENTITYDELETE.getValue(), true);
+                    actionData.put(CiAuthType.PASSWORDVIEW.getValue(), true);
+                    actionData.put(CiAuthType.TRANSACTIONMANAGE.getValue(), true);
                     entityObj.put("authData", actionData);
                 }
                 tbodyList.add(entityObj);

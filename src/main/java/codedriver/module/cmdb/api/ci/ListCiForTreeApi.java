@@ -45,7 +45,7 @@ public class ListCiForTreeApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("ciId");
-        List<CiVo> ciList = ciMapper.getAllCi();
+        List<CiVo> ciList = ciMapper.getAllCi(null);
         Map<Long, CiVo> ciMap = new HashMap<>();
         for (CiVo ciVo : ciList) {
             ciMap.put(ciVo.getId(), ciVo);
