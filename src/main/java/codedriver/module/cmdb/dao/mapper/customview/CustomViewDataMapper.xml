@@ -141,12 +141,15 @@
         SELECT DISTINCT id,name
         FROM ${viewName}
         <where>
-            <if test="keyword != null and keyword != '' and fieldList != null and fieldList.size() > 0">
+            <!--<if test="keyword != null and keyword != '' and fieldList != null and fieldList.size() > 0">
                 <foreach collection="fieldList" item="field" separator="OR" open="AND (" close=")">
                     <if test="field.type == 'attr'">
                         `${field.name}` LIKE CONCAT('%', #{keyword},'%')
                     </if>
                 </foreach>
+            </if>-->
+            <if test="keyword != null and keyword != ''">
+                name LIKE CONCAT('%', #{keyword},'%')
             </if>
         </where>
         <choose>
