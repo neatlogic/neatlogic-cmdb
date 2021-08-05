@@ -81,6 +81,15 @@ public class DateValueHandler implements IAttrValueHandler {
     @Override
     public void transferValueListToSave(AttrVo attrVo, JSONArray valueList) {
         if (CollectionUtils.isNotEmpty(valueList)) {
+            int len = valueList.size();
+            for (int i = len - 1; i >= 0; i--) {
+                String v = valueList.getString(i);
+                if (StringUtils.isBlank(v)) {
+                    valueList.remove(i);
+                }
+            }
+        }
+        if (CollectionUtils.isNotEmpty(valueList)) {
             JSONObject config = attrVo.getConfig();
             String type = config.getString("type");
             String format = config.getString("format");
