@@ -149,9 +149,12 @@
                 </foreach>
             </if>
         </where>
-        <if test="keyword != null and keyword != ''">
-            ORDER BY length(name)
-        </if>
+        <choose>
+            <when test="keyword != null and keyword != ''">
+                ORDER BY length(name),name
+            </when>
+            <otherwise>ORDER BY name</otherwise>
+        </choose>
         LIMIT
         #{startNum},
         #{pageSizePlus}

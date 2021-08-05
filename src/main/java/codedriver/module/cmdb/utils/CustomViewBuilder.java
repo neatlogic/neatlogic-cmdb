@@ -147,8 +147,8 @@ public class CustomViewBuilder {
                             join.withRight(true);
                         }
                         join.withRightItem(new SubSelect()
-                                .withSelectBody(buildSubSelectForCi(customViewCiVo).getSelectBody())
-                                .withAlias(new Alias("ci_" + customViewCiVo.getUuid())))
+                                        .withSelectBody(buildSubSelectForCi(customViewCiVo).getSelectBody())
+                                        .withAlias(new Alias("ci_" + customViewCiVo.getUuid())))
                                 .withOnExpression(new EqualsTo()
                                         .withLeftExpression(new Column()
                                                 .withTable(new Table("ci_" + linkVo.getFromCustomViewCiUuid()))
@@ -181,8 +181,8 @@ public class CustomViewBuilder {
                             join.withRight(true);
                         }
                         join.withRightItem(new Table().withName("cmdb_relentity")
-                                .withSchemaName(TenantContext.get().getDbName())
-                                .withAlias(new Alias("rel_" + linkVo.getUuid())))
+                                        .withSchemaName(TenantContext.get().getDbName())
+                                        .withAlias(new Alias("rel_" + linkVo.getUuid())))
                                 .withOnExpression(new AndExpression()
                                         .withLeftExpression(new EqualsTo()
                                                 .withLeftExpression(new Column()
@@ -209,8 +209,8 @@ public class CustomViewBuilder {
                                 join2.withRight(true);
                             }
                             join2.withRightItem(new SubSelect()
-                                    .withSelectBody(buildSubSelectForCi(customViewCiVo).getSelectBody())
-                                    .withAlias(new Alias("ci_" + customViewCiVo.getUuid())))
+                                            .withSelectBody(buildSubSelectForCi(customViewCiVo).getSelectBody())
+                                            .withAlias(new Alias("ci_" + customViewCiVo.getUuid())))
                                     .withOnExpression(new EqualsTo()
                                             .withLeftExpression(new Column()
                                                     .withTable(new Table("rel_" + linkVo.getUuid()))
@@ -363,6 +363,10 @@ public class CustomViewBuilder {
                                         .withColumnName("cientity_id"))));
 
             }
+            //增加where条件，限制数据在自己模型，不要查出子模型数据
+            plainSelect.withWhere(new EqualsTo()
+                    .withLeftExpression(new Column().withTable(new Table("ci_base")).withColumnName("ci_id"))
+                    .withRightExpression(new LongValue(customViewCiVo.getCiId())));
             return select;
         } else {
             Table mainTable = new Table();
