@@ -23,7 +23,6 @@ import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.CiTypeMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import codedriver.module.cmdb.dot.*;
-import codedriver.module.cmdb.service.cientity.CiEntityService;
 import codedriver.module.cmdb.service.customview.CustomViewDataService;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -49,8 +48,6 @@ public class GetCustomViewDataCiEntityTopoApi extends PrivateApiComponentBase {
     @Resource
     private CustomViewDataService customViewDataService;
 
-    @Autowired
-    private CiEntityService ciEntityService;
 
     @Resource
     private CiEntityMapper ciEntityMapper;
@@ -92,15 +89,11 @@ public class GetCustomViewDataCiEntityTopoApi extends PrivateApiComponentBase {
         }
         List<CiEntityVo> ciEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(new ArrayList<>(ciEntityIdList));
 
-        Map<Long, CiEntityVo> ciEntityMap = new HashMap<>();
         // 所有需要绘制的层次
         Set<Long> ciTypeIdSet = new HashSet<>();
         for (CiEntityVo ciEntityVo : ciEntityList) {
             ciTypeIdSet.add(ciEntityVo.getTypeId());
-            ciEntityMap.put(ciEntityVo.getId(), ciEntityVo);
         }
-        // 所有需要绘制的关系
-        Set<RelEntityVo> relEntitySet = new HashSet<>();
 
         Long ciEntityId = jsonObj.getLong("ciEntityId");
         //Long ciId = jsonObj.getLong("ciId");
@@ -114,10 +107,9 @@ public class GetCustomViewDataCiEntityTopoApi extends PrivateApiComponentBase {
         CiTypeVo pCiTypeVo = new CiTypeVo();
         pCiTypeVo.setIsShowInTopo(1);
         List<CiTypeVo> ciTypeList = ciTypeMapper.searchCiType(pCiTypeVo);
-        Set<Long> canShowCiTypeIdSet = new HashSet<>();
-        for (CiTypeVo ciTypeVo : ciTypeList) {
-            canShowCiTypeIdSet.add(ciTypeVo.getId());
-        }
+
+        //记录已经绘制的配置项
+        Set<String> ciEntityNodeSet = new HashSet<>();
 
         // 开始绘制dot图
         if (CollectionUtils.isNotEmpty(ciEntityList)) {
@@ -141,7 +133,7 @@ public class GetCustomViewDataCiEntityTopoApi extends PrivateApiComponentBase {
                             }
                             Node node = nb.build();
                             lb.addNode(node);
-
+                            ciEntityNodeSet.add("CiEntity_" + ciEntityVo.getCiId() + "_" + ciEntityVo.getId());
 
                             //根据分组属性计算分组
                             if (CollectionUtils.isNotEmpty(clusterAttrList)) {
@@ -173,14 +165,17 @@ public class GetCustomViewDataCiEntityTopoApi extends PrivateApiComponentBase {
                     if (CollectionUtils.isNotEmpty(fromCi.getCiEntityList()) && CollectionUtils.isNotEmpty(toCi.getCiEntityList())) {
                         for (JSONObject fromCiEntityObj : fromCi.getCiEntityList()) {
                             for (JSONObject toCiEntityObj : toCi.getCiEntityList()) {
-                                Link.Builder lb = new Link.Builder(
-                                        "CiEntity_" + fromCi.getCiId() + "_" + fromCiEntityObj.getLong("id"),
-                                        "CiEntity_" + toCi.getCiId() + "_" + toCiEntityObj.getLong("id"));
-                                if (StringUtils.isNotBlank(linkVo.getName())) {
-                                    lb.withLabel(linkVo.getName());
+                                if (ciEntityNodeSet.contains("CiEntity_" + fromCi.getCiId() + "_" + fromCiEntityObj.getLong("id")) &&
+                                        ciEntityNodeSet.contains("CiEntity_" + toCi.getCiId() + "_" + toCiEntityObj.getLong("id"))) {
+                                    Link.Builder lb = new Link.Builder(
+                                            "CiEntity_" + fromCi.getCiId() + "_" + fromCiEntityObj.getLong("id"),
+                                            "CiEntity_" + toCi.getCiId() + "_" + toCiEntityObj.getLong("id"));
+                                    if (StringUtils.isNotBlank(linkVo.getName())) {
+                                        lb.withLabel(linkVo.getName());
+                                    }
+                                    lb.setFontSize(9);
+                                    gb.addLink(lb.build());
                                 }
-                                lb.setFontSize(9);
-                                gb.addLink(lb.build());
                             }
                         }
                     }
