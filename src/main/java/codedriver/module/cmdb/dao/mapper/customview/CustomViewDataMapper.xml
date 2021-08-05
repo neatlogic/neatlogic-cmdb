@@ -55,7 +55,7 @@
                 AND
                 <foreach collection="fieldList" item="field" separator="OR" open="(" close=")">
                     <if test="field.type == 'attr'">
-                        ${field.name} LIKE CONCAT('%', #{keyword},'%')
+                        `${field.name}` LIKE CONCAT('%', #{keyword},'%')
                     </if>
                 </foreach>
             </if>
