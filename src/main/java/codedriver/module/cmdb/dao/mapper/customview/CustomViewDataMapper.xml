@@ -10,16 +10,16 @@
             parameterType="codedriver.framework.cmdb.dto.customview.CustomViewConditionVo"
             resultType="codedriver.framework.cmdb.dto.customview.CustomViewDataGroupVo">
         SELECT DISTINCT (CASE
-        WHEN ${groupBy} IS NULL THEN '【空值】'
-        WHEN ${groupBy} = '' THEN '【空值】'
-        ELSE ${groupBy} END) AS `value`,
-        ANY_VALUE(CASE
+        WHEN `${groupBy}` IS NULL THEN '【空值】'
+        WHEN `${groupBy}` = '' THEN '【空值】'
+        ELSE `${groupBy}` END) AS `value`,
+        MIN(CASE
         WHEN `${groupBy}_hash` IS NULL THEN 'isnull'
         ELSE `${groupBy}_hash` END) AS valueHash,
         count((CASE
-        WHEN ${groupBy} IS NULL THEN '【空值】'
-        WHEN ${groupBy} = '' THEN '【空值】'
-        ELSE ${groupBy} END)) AS `count`
+        WHEN `${groupBy}` IS NULL THEN '【空值】'
+        WHEN `${groupBy}` = '' THEN '【空值】'
+        ELSE `${groupBy}` END)) AS `count`
         FROM
         (<include refid="searchCustomViewDataSql"/>) t
         <where>
