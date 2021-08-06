@@ -75,6 +75,8 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
         Set<Long> ciTypeIdSet = new HashSet<>();
         // 所有需要绘制的关系
         Set<RelEntityVo> relEntitySet = new HashSet<>();
+        //记录已经绘制的配置项
+        Set<String> ciEntityNodeSet = new HashSet<>();
 
         Long ciEntityId = jsonObj.getLong("ciEntityId");
         //Long ciId = jsonObj.getLong("ciId");
@@ -170,6 +172,8 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                             Node node = nb.build();
                             lb.addNode(node);
 
+                            ciEntityNodeSet.add("CiEntity_" + ciEntityVo.getCiId() + "_" + ciEntityVo.getId());
+
 
                             //根据分组属性计算分组
                             if (CollectionUtils.isNotEmpty(clusterAttrList)) {
@@ -196,8 +200,8 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
             }
             if (!relEntitySet.isEmpty()) {
                 for (RelEntityVo relEntityVo : relEntitySet) {
-                    if (ciEntitySet.contains(new CiEntityVo(relEntityVo.getFromCiEntityId()))
-                            && ciEntitySet.contains(new CiEntityVo(relEntityVo.getToCiEntityId()))) {
+                    if (ciEntityNodeSet.contains("CiEntity_" + relEntityVo.getFromCiId() + "_" + relEntityVo.getFromCiEntityId())
+                            && ciEntityNodeSet.contains("CiEntity_" + relEntityVo.getToCiId() + "_" + relEntityVo.getToCiEntityId())) {
                         Link.Builder lb = new Link.Builder(
                                 "CiEntity_" + relEntityVo.getFromCiId() + "_" + relEntityVo.getFromCiEntityId(),
                                 "CiEntity_" + relEntityVo.getToCiId() + "_" + relEntityVo.getToCiEntityId());
