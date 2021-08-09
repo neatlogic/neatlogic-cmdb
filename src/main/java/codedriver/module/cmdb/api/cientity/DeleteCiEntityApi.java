@@ -7,10 +7,8 @@ package codedriver.module.cmdb.api.cientity;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.enums.GroupType;
-import codedriver.framework.cmdb.enums.InputFrom;
 import codedriver.framework.cmdb.enums.TransactionActionType;
 import codedriver.framework.cmdb.exception.cientity.CiEntityAuthException;
-import codedriver.framework.cmdb.threadlocal.InputFromContext;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -56,7 +54,6 @@ public class DeleteCiEntityApi extends PrivateApiComponentBase {
     @Description(desc = "删除配置项接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        InputFromContext.init(InputFrom.PAGE);
         Long id = jsonObj.getLong("id");
         Long ciId = jsonObj.getLong("ciId");
         boolean needCommit = jsonObj.getBooleanValue("needCommit");

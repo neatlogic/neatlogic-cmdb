@@ -8,10 +8,8 @@ package codedriver.module.cmdb.api.rel;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.ci.RelVo;
-import codedriver.framework.cmdb.enums.InputFrom;
 import codedriver.framework.cmdb.exception.ci.CiAuthException;
 import codedriver.framework.cmdb.exception.rel.RelNotFoundException;
-import codedriver.framework.cmdb.threadlocal.InputFromContext;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -61,7 +59,6 @@ public class DeleteRelApi extends PrivateApiComponentBase {
     @Description(desc = "删除模型关系接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        InputFromContext.init(InputFrom.PAGE);
         Long relId = jsonObj.getLong("id");
         RelVo relVo = relMapper.getRelById(relId);
         if (relVo == null) {

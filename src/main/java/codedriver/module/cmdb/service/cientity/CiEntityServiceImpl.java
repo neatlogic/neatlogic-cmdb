@@ -21,7 +21,7 @@ import codedriver.framework.cmdb.exception.ci.CiUniqueRuleException;
 import codedriver.framework.cmdb.exception.cientity.*;
 import codedriver.framework.cmdb.exception.transaction.TransactionAuthException;
 import codedriver.framework.cmdb.exception.transaction.TransactionStatusIrregularException;
-import codedriver.framework.cmdb.threadlocal.InputFromContext;
+import codedriver.framework.asynchronization.threadlocal.InputFromContext;
 import codedriver.framework.cmdb.validator.core.IValidator;
 import codedriver.framework.cmdb.validator.core.ValidatorFactory;
 import codedriver.framework.exception.core.ApiRuntimeException;
@@ -599,12 +599,10 @@ public class CiEntityServiceImpl implements CiEntityService {
             if (relVo.getToCiId().equals(ciEntityTransactionVo.getCiId())) {
                 isTo = true;
             }
-
+            // 全局模式下，不存在关系信息代表删除，需要校验必填规则
             if ((ciEntityTransactionVo.getAction().equals(TransactionActionType.INSERT.getValue())
                     || ciEntityTransactionVo.getAction().equals(TransactionActionType.RECOVER.getValue()))
                     || ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
-
-                // 全局模式下，不存在关系信息代表删除，需要校验必填规则
                 if (CollectionUtils.isEmpty(fromRelEntityTransactionList)) {
                     if (isFrom && relVo.getToIsRequired().equals(1)) {
                         throw new RelEntityNotFoundException(relVo.getToLabel());
@@ -614,6 +612,9 @@ public class CiEntityServiceImpl implements CiEntityService {
                         // 检查关系是否允许重复
                         if (RelRuleType.O.getValue().equals(relVo.getToRule())) {
                             throw new RelEntityMultipleException(relVo.getToLabel());
+                        }
+                        if (relVo.getFromIsUnique().equals(1)) {
+                            throw new RelEntityIsUsedException(RelDirectionType.FROM, relVo, false);
                         }
                     }
                     //检查关系唯一
@@ -637,6 +638,9 @@ public class CiEntityServiceImpl implements CiEntityService {
                         // 检查关系是否允许重复
                         if (RelRuleType.O.getValue().equals(relVo.getFromRule())) {
                             throw new RelEntityMultipleException(relVo.getFromLabel());
+                        }
+                        if (relVo.getToIsUnique().equals(1)) {
+                            throw new RelEntityIsUsedException(RelDirectionType.TO, relVo, false);
                         }
                     }
                     //检查关系唯一

@@ -21,7 +21,7 @@ import codedriver.framework.cmdb.enums.TransactionActionType;
 import codedriver.framework.cmdb.exception.sync.CiEntityDuplicateException;
 import codedriver.framework.cmdb.exception.sync.CiSyncIsDoingException;
 import codedriver.framework.cmdb.exception.sync.UniqueMappingNotFoundException;
-import codedriver.framework.cmdb.threadlocal.InputFromContext;
+import codedriver.framework.asynchronization.threadlocal.InputFromContext;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
 import codedriver.module.cmdb.dao.mapper.sync.SyncAuditMapper;
