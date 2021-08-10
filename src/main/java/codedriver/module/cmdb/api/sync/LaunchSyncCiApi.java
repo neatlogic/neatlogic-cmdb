@@ -63,7 +63,7 @@ public class LaunchSyncCiApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");
-        SyncConfigVo syncConfigVo = syncConfigMapper.getSelectConfigById(id);
+        SyncConfigVo syncConfigVo = syncConfigMapper.getSyncConfigById(id);
         if (syncConfigVo == null) {
             throw new SyncConfigNotFoundException(id);
         }

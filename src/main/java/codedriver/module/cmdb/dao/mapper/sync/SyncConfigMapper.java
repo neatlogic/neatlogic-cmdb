@@ -8,5 +8,5 @@ package codedriver.module.cmdb.dao.mapper.sync;
 import codedriver.framework.cmdb.dto.sync.SyncConfigVo;
 
 public interface SyncConfigMapper {
-    SyncConfigVo getSelectConfigById(Long id);
+    SyncConfigVo getSyncConfigById(Long id);
 }

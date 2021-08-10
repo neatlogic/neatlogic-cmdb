@@ -106,12 +106,14 @@ public class ExpressionValueHandler implements IAttrValueHandler {
                     expression = expression.substring(1, expression.length() - 1);
                     long attrId;
                     long relId;
+                    String direction;
                     if (expression.contains(".")) {
                         //关系属性
                         relId = Long.parseLong(expression.split("\\.")[0]);
                         attrId = Long.parseLong(expression.split("\\.")[1]);
+                        direction = expression.split("\\.")[2];
                         if (CollectionUtils.isNotEmpty(relList)) {
-                            Optional<RelVo> op = relList.stream().filter(rel -> rel.getId().equals(relId)).findFirst();
+                            Optional<RelVo> op = relList.stream().filter(rel -> rel.getId().equals(relId) && rel.getDirection().equals(direction)).findFirst();
                             if (op.isPresent()) {
                                 RelVo relVo = op.get();
                                 attrMapper.insertAttrExpressionRel(attrVo.getCiId(), attrVo.getId(), (relVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiId() : relVo.getFromCiId()), attrId);

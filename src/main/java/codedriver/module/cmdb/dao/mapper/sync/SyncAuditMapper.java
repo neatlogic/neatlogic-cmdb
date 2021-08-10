@@ -13,4 +13,6 @@ public interface SyncAuditMapper {
     List<SyncAuditVo> getDoingSyncByCiId(Long ciId);
 
     void insertSyncAudit(SyncAuditVo syncAuditVo);
+
+    void updateSyncAuditStatus(SyncAuditVo syncAuditVo);
 }

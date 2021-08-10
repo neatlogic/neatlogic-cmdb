@@ -38,7 +38,7 @@
         `status`
         FROM cmdb_cientity
         <include refid="searchCiEntityBaseInfoSql"></include>
-        ORDER BY id
+        ORDER BY id<!--这个排序不能删除-->
         LIMIT #{startNum}, #{pageSize}
     </select>
 

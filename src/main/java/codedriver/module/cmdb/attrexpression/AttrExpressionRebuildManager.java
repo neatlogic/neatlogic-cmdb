@@ -119,6 +119,7 @@ public class AttrExpressionRebuildManager {
         }
 
         private final Long key;
+        private final String direction;
         private final Type type;
         private final List<ExpressionGroupAttr> attrList = new ArrayList<>();
 
@@ -126,9 +127,10 @@ public class AttrExpressionRebuildManager {
             return type;
         }
 
-        public ExpressionGroup(Long key, Type type, String attr, ExpressionGroupAttr.Type attrType) {
+        public ExpressionGroup(Long key, String direction, Type type, String attr, ExpressionGroupAttr.Type attrType) {
             this.key = key;
             this.type = type;
+            this.direction = direction;
             this.attrList.add(new ExpressionGroupAttr(attr, attrType));
         }
 
@@ -138,6 +140,10 @@ public class AttrExpressionRebuildManager {
 
         public Long getKey() {
             return key;
+        }
+
+        public String getDirection() {
+            return direction;
         }
 
         public List<ExpressionGroupAttr> getAttrList() {
@@ -216,7 +222,7 @@ public class AttrExpressionRebuildManager {
                         attrExpressionRebuildAuditMapper.updateAttrExpressionRebuildAuditCiEntityIdStartById(rebuildAuditVo);
                     }
                     ciEntityVo.setCurrentPage(ciEntityVo.getCurrentPage() + 1);
-                    ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
+                    ciEntityList = ciEntityService.searchCiEntityBaseInfo(ciEntityVo);
                 }
             }
             //清除日志
@@ -250,20 +256,21 @@ public class AttrExpressionRebuildManager {
                                 if (exp.contains(".")) {
                                     Long relId = Long.parseLong(exp.split("\\.")[0]);
                                     String attrId = exp.split("\\.")[1];
+                                    String direction = exp.split("\\.")[2];
                                     if (CollectionUtils.isNotEmpty(groupList)) {
                                         ExpressionGroup expressionGroup = groupList.get(groupList.size() - 1);
-                                        if (expressionGroup.getType() == ExpressionGroup.Type.REL && expressionGroup.getKey().equals(relId)) {
+                                        if (expressionGroup.getType() == ExpressionGroup.Type.REL && expressionGroup.getKey().equals(relId) && expressionGroup.getDirection().equals(direction)) {
                                             expressionGroup.addAttr(attrId, ExpressionGroupAttr.Type.ATTR);
                                         } else {
-                                            groupList.add(new ExpressionGroup(relId, ExpressionGroup.Type.REL, attrId, ExpressionGroupAttr.Type.ATTR));
+                                            groupList.add(new ExpressionGroup(relId, direction, ExpressionGroup.Type.REL, attrId, ExpressionGroupAttr.Type.ATTR));
                                         }
                                     } else {
-                                        groupList.add(new ExpressionGroup(relId, ExpressionGroup.Type.REL, attrId, ExpressionGroupAttr.Type.ATTR));
+                                        groupList.add(new ExpressionGroup(relId, direction, ExpressionGroup.Type.REL, attrId, ExpressionGroupAttr.Type.ATTR));
                                     }
 
                                 } else {
                                     //用新id作为key，适配同一个属性重复出现的场景
-                                    groupList.add(new ExpressionGroup(SnowflakeUtil.uniqueLong(), ExpressionGroup.Type.ATTR, exp, ExpressionGroupAttr.Type.ATTR));
+                                    groupList.add(new ExpressionGroup(SnowflakeUtil.uniqueLong(), null, ExpressionGroup.Type.ATTR, exp, ExpressionGroupAttr.Type.ATTR));
                                 }
                             } else {
                                 if (CollectionUtils.isNotEmpty(groupList)) {
@@ -272,18 +279,18 @@ public class AttrExpressionRebuildManager {
                                         expressionGroup.addAttr(expression, ExpressionGroupAttr.Type.CONST);
                                     } else {
                                         //用新id作为key，适配同一个常量重复出现的场景
-                                        groupList.add(new ExpressionGroup(SnowflakeUtil.uniqueLong(), ExpressionGroup.Type.CONST, expression, ExpressionGroupAttr.Type.CONST));
+                                        groupList.add(new ExpressionGroup(SnowflakeUtil.uniqueLong(), null, ExpressionGroup.Type.CONST, expression, ExpressionGroupAttr.Type.CONST));
                                     }
                                 } else {
                                     //用新id作为key，适配同一个常量重复出现的场景
-                                    groupList.add(new ExpressionGroup(SnowflakeUtil.uniqueLong(), ExpressionGroup.Type.CONST, expression, ExpressionGroupAttr.Type.CONST));
+                                    groupList.add(new ExpressionGroup(SnowflakeUtil.uniqueLong(), null, ExpressionGroup.Type.CONST, expression, ExpressionGroupAttr.Type.CONST));
                                 }
                             }
                         }
                         StringBuilder expressionValue = new StringBuilder();
                         for (ExpressionGroup expressionGroup : groupList) {
                             if (expressionGroup.getType() == ExpressionGroup.Type.REL) {
-                                List<RelEntityVo> relEntityList = newCiEntityVo.getRelEntityByRelId(expressionGroup.getKey());
+                                List<RelEntityVo> relEntityList = newCiEntityVo.getRelEntityByRelIdAndDirection(expressionGroup.getKey(), expressionGroup.getDirection());
                                 if (CollectionUtils.isNotEmpty(relEntityList)) {
                                     List<String> expressionValueList = new ArrayList<>();
                                     for (RelEntityVo relEntity : relEntityList) {

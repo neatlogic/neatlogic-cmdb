@@ -6,6 +6,7 @@
 package codedriver.module.cmdb.service.sync;
 
 import codedriver.framework.asynchronization.thread.CodeDriverThread;
+import codedriver.framework.asynchronization.threadlocal.InputFromContext;
 import codedriver.framework.asynchronization.threadpool.CachedThreadPool;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.RelVo;
@@ -18,14 +19,15 @@ import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.cmdb.dto.transaction.TransactionGroupVo;
 import codedriver.framework.cmdb.enums.SearchExpression;
 import codedriver.framework.cmdb.enums.TransactionActionType;
+import codedriver.framework.cmdb.enums.sync.SyncStatus;
 import codedriver.framework.cmdb.exception.sync.CiEntityDuplicateException;
 import codedriver.framework.cmdb.exception.sync.CiSyncIsDoingException;
 import codedriver.framework.cmdb.exception.sync.UniqueMappingNotFoundException;
-import codedriver.framework.asynchronization.threadlocal.InputFromContext;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
 import codedriver.module.cmdb.dao.mapper.sync.SyncAuditMapper;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSONPath;
 import org.apache.commons.collections4.CollectionUtils;
@@ -34,7 +36,9 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class CiSyncManager {
@@ -55,11 +59,13 @@ public class CiSyncManager {
     public static class SyncHandler extends CodeDriverThread {
         private final SyncConfigVo syncConfigVo;
         private final TransactionGroupVo transactionGroupVo;
+        private final SyncAuditVo syncAuditVo;
 
-        public SyncHandler(SyncConfigVo syncConfigVo, TransactionGroupVo transactionGroupVo) {
+        public SyncHandler(SyncConfigVo syncConfigVo, TransactionGroupVo transactionGroupVo, SyncAuditVo syncAuditVo) {
             super.setThreadName("CI-SYNC-" + syncConfigVo.getId());
             this.syncConfigVo = syncConfigVo;
             this.transactionGroupVo = transactionGroupVo;
+            this.syncAuditVo = syncAuditVo;
         }
 
         @Override
@@ -70,6 +76,10 @@ public class CiSyncManager {
             query.limit(pageSize);
             List<JSONObject> dataList = mongoTemplate.find(query, JSONObject.class, syncConfigVo.getCollectionName());
             List<AttrVo> attrList = attrMapper.getAttrByCiId(syncConfigVo.getCiId());
+            Map<Long, AttrVo> attrMap = new HashMap<>();
+            attrList.forEach(attr -> {
+                attrMap.put(attr.getId(), attr);
+            });
             List<RelVo> relList = relMapper.getRelByCiId(syncConfigVo.getCiId());
             while (CollectionUtils.isNotEmpty(dataList)) {
                 for (JSONObject dataObj : dataList) {
@@ -98,9 +108,13 @@ public class CiSyncManager {
                             throw new CiEntityDuplicateException();
                         }
                         for (SyncMappingVo mappingVo : syncConfigVo.getMappingList()) {
-                            //ciEntityTransactionVo.addAttrEntityData(mappingVo.getAttrId(), attr, valueList);
+                            if (attrMap.containsKey(mappingVo.getAttrId())) {
+                                List<String> valueList = getValueListFromData(dataObj, mappingVo.getField());
+                                if (CollectionUtils.isNotEmpty(valueList)) {
+                                    ciEntityTransactionVo.addAttrEntityData(mappingVo.getAttrId(), attrMap.get(mappingVo.getAttrId()), JSONArray.parseArray(JSONArray.toJSONString(valueList)));
+                                }
+                            }
                         }
-
                         ciEntityService.saveCiEntity(ciEntityTransactionVo, transactionGroupVo);
                     }
                 }
@@ -109,6 +123,8 @@ public class CiSyncManager {
                 query.skip(pageSize * (currentPage - 1));
                 dataList = mongoTemplate.find(query, JSONObject.class, syncConfigVo.getCollectionName());
             }
+            syncAuditVo.setStatus(SyncStatus.DONE.getValue());
+            syncAuditMapper.updateSyncAuditStatus(syncAuditVo);
         }
     }
 
@@ -120,11 +136,12 @@ public class CiSyncManager {
         }
         TransactionGroupVo transactionGroupVo = new TransactionGroupVo();
         SyncAuditVo syncAuditVo = new SyncAuditVo();
+        syncAuditVo.setStatus(SyncStatus.DOING.getValue());
         syncAuditVo.setSyncConfigId(syncConfigVo.getId());
         syncAuditVo.setTransactionGroupId(transactionGroupVo.getId());
-        syncAuditVo.setExecType(InputFromContext.get().getInputFrom());
+        syncAuditVo.setInputFrom(InputFromContext.get().getInputFrom());
         syncAuditMapper.insertSyncAudit(syncAuditVo);
-        SyncHandler handler = new SyncHandler(syncConfigVo, transactionGroupVo);
+        SyncHandler handler = new SyncHandler(syncConfigVo, transactionGroupVo, syncAuditVo);
         CachedThreadPool.execute(handler);
     }
 
@@ -144,6 +161,7 @@ public class CiSyncManager {
         }
         return null;
     }
+
 /*
     private int checkCiEntityIsExists(List<AttrFilterVo> attrFilterList) {
         CiEntityVo ciEntityConditionVo = new CiEntityVo();

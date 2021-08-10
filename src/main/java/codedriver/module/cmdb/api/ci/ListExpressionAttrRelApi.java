@@ -85,7 +85,7 @@ public class ListExpressionAttrRelApi extends PrivateApiComponentBase {
                     for (AttrVo attrVo : relAttrList) {
                         if (!attrVo.getType().equals("expression")) {
                             JSONObject valueObj = new JSONObject();
-                            valueObj.put("value", "{" + relVo.getId() + "." + attrVo.getId() + "}");
+                            valueObj.put("value", "{" + relVo.getId() + "." + attrVo.getId() + "." + relVo.getDirection() + "}");
                             valueObj.put("text", relName + "->" + attrVo.getLabel());
                             jsonList.add(valueObj);
                         }

@@ -1480,8 +1480,10 @@ public class CiEntityServiceImpl implements CiEntityService {
         List<CiVo> ciList = ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht());
         ciEntityMapper.updateCiEntityBaseInfo(ciEntityVo);
         for (CiVo ci : ciList) {
-            ciEntityVo.setCiId(ci.getId());
-            ciEntityMapper.updateCiEntity(ciEntityVo);
+            if (ciEntityVo.getAttrEntityList().stream().anyMatch(attr -> !attr.isNeedTargetCi() && attr.getFromCiId().equals(ci.getId()))) {
+                ciEntityVo.setCiId(ci.getId());
+                ciEntityMapper.updateCiEntity(ciEntityVo);
+            }
         }
     }
 
