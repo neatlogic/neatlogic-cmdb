@@ -6,12 +6,9 @@
 package codedriver.module.cmdb.api.sync;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.dto.ci.CiVo;
-import codedriver.framework.cmdb.dto.sync.SyncConfigVo;
+import codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo;
 import codedriver.framework.cmdb.dto.sync.SyncMappingVo;
-import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
-import codedriver.framework.cmdb.exception.ci.CiUniqueAttrNotFoundException;
-import codedriver.framework.cmdb.exception.sync.SyncConfigNotFoundException;
+import codedriver.framework.cmdb.exception.sync.SyncCiCollectionNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -21,10 +18,8 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
-import codedriver.module.cmdb.dao.mapper.sync.SyncConfigMapper;
-import codedriver.module.cmdb.service.sync.CiSyncManager;
+import codedriver.module.cmdb.dao.mapper.sync.SyncMapper;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -37,7 +32,7 @@ import java.util.List;
 public class LaunchSyncCiApi extends PrivateApiComponentBase {
 
     @Autowired
-    private SyncConfigMapper syncConfigMapper;
+    private SyncMapper syncMapper;
 
     @Resource
     private CiMapper ciMapper;
@@ -63,24 +58,24 @@ public class LaunchSyncCiApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");
-        SyncConfigVo syncConfigVo = syncConfigMapper.getSyncConfigById(id);
-        if (syncConfigVo == null) {
-            throw new SyncConfigNotFoundException(id);
+        SyncCiCollectionVo syncCiCollectionVo = syncMapper.getSyncCiCollectionById(id);
+        if (syncCiCollectionVo == null) {
+            throw new SyncCiCollectionNotFoundException(id);
         }
 
-        List<SyncMappingVo> mappingList = syncConfigVo.getMappingList();
-        if (CollectionUtils.isNotEmpty(mappingList) && syncConfigVo.getCiId() != null) {
-            CiVo ciVo = ciMapper.getCiById(syncConfigVo.getCiId());
-            if (ciVo == null) {
-                throw new CiNotFoundException(syncConfigVo.getCiId());
-            }
-            if (CollectionUtils.isEmpty(ciVo.getUniqueAttrIdList())) {
-                throw new CiUniqueAttrNotFoundException(ciVo.getLabel());
-            }
-
-            syncConfigVo.setCiVo(ciVo);
-            CiSyncManager.doSync(syncConfigVo);
-        }
+        List<SyncMappingVo> mappingList = syncCiCollectionVo.getMappingList();
+//        if (CollectionUtils.isNotEmpty(mappingList) && syncConfigVo.getCiId() != null) {
+//            CiVo ciVo = ciMapper.getCiById(syncConfigVo.getCiId());
+//            if (ciVo == null) {
+//                throw new CiNotFoundException(syncConfigVo.getCiId());
+//            }
+//            if (CollectionUtils.isEmpty(ciVo.getUniqueAttrIdList())) {
+//                throw new CiUniqueAttrNotFoundException(ciVo.getLabel());
+//            }
+//
+//            syncConfigVo.setCiVo(ciVo);
+//            CiSyncManager.doSync(syncConfigVo);
+//        }
         return null;
     }
 

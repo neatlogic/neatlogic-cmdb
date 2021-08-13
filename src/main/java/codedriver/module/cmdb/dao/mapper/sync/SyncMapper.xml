@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.cmdb.dao.mapper.sync.SyncMapper">
+
+    <select id="checkSyncCiCollectionIsExists" parameterType="codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo"
+            resultType="int">
+        SELECT COUNT(1)
+        FROM cmdb_sync_ci_collection
+        WHERE ci_id = #{ciId}
+          AND collection_name = #{collectionName}
+          AND id != #{id}
+    </select>
+
+    <select id="getSyncPolicyById" parameterType="java.lang.Long"
+            resultType="codedriver.framework.cmdb.dto.sync.SyncPolicyVo">
+        SELECT id,
+               ci_collection_id AS ciCollectionId,
+               is_active        AS isActive,
+               `condition`      AS conditionStr,
+               crons            AS cronListStr,
+               name
+        FROM cmdb_sync_policy
+        WHERE id = #{value}
+    </select>
+
+    <select id="searchSyncCiCollection" parameterType="codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo"
+            resultType="codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo">
+        SELECT
+        a.id,
+        a.ci_id AS ciId,
+        b.label AS ciLabel,
+        b.name AS ciName,
+        a.collection_name AS collectionName
+        FROM cmdb_sync_ci_collection a
+        JOIN cmdb_ci b ON a.ci_id = b.id
+        <include refid="searchSyncCiCollectionSql"></include>
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="searchSyncCiCollectionCount" parameterType="codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo"
+            resultType="int">
+        SELECT COUNT(1)
+        FROM cmdb_sync_ci_collection a
+        JOIN cmdb_ci b ON a.ci_id = b.id
+        <include refid="searchSyncCiCollectionSql"></include>
+    </select>
+
+    <sql id="searchSyncCiCollectionSql">
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (b.name LIKE CONCAT('%',#{keyword},'%') OR b.label LIKE CONCAT('%',#{keyword},'%')
+                OR a.collection_name LIKE CONCAT('%',#{keyword},'%'))
+            </if>
+            <if test="ciId != null">
+                AND ci_id = #{ciId}
+            </if>
+            <if test="collectionName != null and collectionName != ''">
+                AND collection_name = #{collectionName}
+            </if>
+        </where>
+    </sql>
+
+    <resultMap id="syncCiCollectionResultMap" type="codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo">
+        <id property="id" column="id"/>
+        <result property="ciId" column="ciId"/>
+        <result property="collectionName" column="collectionName"/>
+        <collection property="mappingList" ofType="codedriver.framework.cmdb.dto.sync.SyncMappingVo">
+            <id property="id" column="mappingId"/>
+            <result property="attrId" column="attrId"/>
+            <result property="relId" column="relId"/>
+            <result property="direction" column="direction"/>
+            <result property="field" column="field"/>
+        </collection>
+    </resultMap>
+
+    <select id="getSyncCiCollectionById" parameterType="java.lang.Long"
+            resultMap="syncCiCollectionResultMap">
+        SELECT a.id,
+               a.ci_id           AS ciId,
+               a.collection_name AS collectionName,
+               csm.id            AS mappingId,
+               csm.attr_id       AS attrId,
+               csm.rel_id        AS relId,
+               csm.direction,
+               csm.field
+        FROM cmdb_sync_ci_collection a
+                 JOIN cmdb_sync_mapping csm on a.id = csm.ci_collection_id
+        WHERE a.id = #{value}
+    </select>
+
+    <insert id="insertSyncCiCollection" parameterType="codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo">
+        insert into cmdb_sync_ci_collection (id, ci_id, collection_name, fcd, fcu)
+        values (#{id}, #{ciId}, #{collectionName}, NOW(3), #{fcd})
+    </insert>
+
+    <insert id="insertSyncMapping" parameterType="codedriver.framework.cmdb.dto.sync.SyncMappingVo">
+        insert into cmdb_sync_mapping (id, ci_collection_id, rel_id, direction, attr_id, field)
+        values (#{id}, #{ciCollectionId}, #{relId}, #{direction}, #{attrId}, #{field})
+    </insert>
+
+    <delete id="deleteSyncCiCollectionById" parameterType="java.lang.Long">
+        delete
+        from cmdb_sync_ci_collection
+        where id = #{value}
+    </delete>
+
+    <delete id="deleteSyncMappingByCiCollectionId" parameterType="java.lang.Long">
+        delete
+        from cmdb_sync_mapping
+        where ci_collection_id = #{value}
+    </delete>
+</mapper>

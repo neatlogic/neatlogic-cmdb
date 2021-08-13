@@ -14,7 +14,7 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
-import codedriver.module.cmdb.dao.mapper.sync.SyncConfigMapper;
+import codedriver.module.cmdb.dao.mapper.sync.SyncMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,20 +22,20 @@ import org.springframework.stereotype.Service;
 @Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class GetSyncConfigApi extends PrivateApiComponentBase {
+public class GetSyncCiCollectionApi extends PrivateApiComponentBase {
 
     @Autowired
-    private SyncConfigMapper syncConfigMapper;
+    private SyncMapper syncMapper;
 
 
     @Override
     public String getToken() {
-        return "/cmdb/syncconfig/get";
+        return "/cmdb/sync/cicollection/get";
     }
 
     @Override
     public String getName() {
-        return "获取配置项同步策略";
+        return "获取配置项集合映射信息";
     }
 
     @Override
@@ -44,11 +44,11 @@ public class GetSyncConfigApi extends PrivateApiComponentBase {
     }
 
     @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "模型id")})
-    @Description(desc = "获取配置项同步策略接口")
+    @Description(desc = "获取配置项集合映射信息接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");
-        return syncConfigMapper.getSyncConfigById(id);
+        return syncMapper.getSyncCiCollectionById(id);
     }
 
 }

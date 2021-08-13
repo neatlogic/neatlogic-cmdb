@@ -28,7 +28,7 @@
 
     <insert id="insertAttrExpressionRebuildAudit"
             parameterType="codedriver.framework.cmdb.dto.attrexpression.RebuildAuditVo">
-        INSERT INTO cmdb_attrexpression_rebuild_audit
+        INSERT IGNORE INTO cmdb_attrexpression_rebuild_audit
         (id,
          ci_id,
          cientity_id,

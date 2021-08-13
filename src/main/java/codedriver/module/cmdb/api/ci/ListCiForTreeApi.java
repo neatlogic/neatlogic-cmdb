@@ -35,6 +35,11 @@ public class ListCiForTreeApi extends PrivateApiComponentBase {
     }
 
     @Override
+    public String getToken() {
+        return "cmdb/ci/listtree";
+    }
+
+    @Override
     public String getConfig() {
         return null;
     }
@@ -74,8 +79,5 @@ public class ListCiForTreeApi extends PrivateApiComponentBase {
         return false;
     }
 
-    @Override
-    public String getToken() {
-        return "cmdb/ci/listtree";
-    }
+
 }
