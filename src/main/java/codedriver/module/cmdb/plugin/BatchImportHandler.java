@@ -24,6 +24,7 @@ import codedriver.framework.common.constvalue.InputFrom;
 import codedriver.framework.common.util.FileUtil;
 import codedriver.framework.exception.core.ApiRuntimeException;
 import codedriver.framework.file.dto.FileVo;
+import codedriver.framework.util.UuidUtil;
 import codedriver.module.cmdb.dao.mapper.batchimport.ImportMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
@@ -215,6 +216,10 @@ public class BatchImportHandler {
                                         typeMap.put(cell.getColumnIndex(), "id");
                                         cellIndex.add(cell.getColumnIndex());
                                         continue;
+                                    } else if (content.equals("uuid")) {
+                                        typeMap.put(cell.getColumnIndex(), "uuid");
+                                        cellIndex.add(cell.getColumnIndex());
+                                        continue;
                                     }
 
                                     for (AttrVo attr : ciVo.getAttrList()) {
@@ -281,7 +286,8 @@ public class BatchImportHandler {
                                 try {
                                     Row row = sheet.getRow(r);
                                     if (row != null) {
-                                        Long ciEntityId = null;// 记录下表格中的ciEntityId，用于判断配置项是否存在
+                                        Long ciEntityId = null;
+                                        String ciEntityUuid = null;// 记录下表格中的ciEntityId，用于判断配置项是否存在
                                         CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
                                         ciEntityTransactionVo.setAllowCommit(true);
                                         ciEntityTransactionVo.setCiId(ciId);
@@ -291,14 +297,26 @@ public class BatchImportHandler {
                                             if (cell != null) {
                                                 String content = getCellContent(cell);
                                                 Object header = typeMap.get(index);
-                                                if (header instanceof String) { // 表示拿到的是ID列
-                                                    if (StringUtils.isNotBlank(content)) {
-                                                        try {
-                                                            ciEntityId = Long.parseLong(content);
-                                                            ciEntityTransactionVo.setCiEntityId(ciEntityId);
-                                                        } catch (Exception e) {
-                                                            throw new RuntimeException("无法获取到配置项id：" + e.getMessage());
+                                                if (header instanceof String) {
+                                                    if (header.equals("id")) {// 表示拿到的是ID列
+                                                        if (StringUtils.isNotBlank(content)) {
+                                                            try {
+                                                                ciEntityId = Long.parseLong(content);
+                                                                ciEntityTransactionVo.setCiEntityId(ciEntityId);
+                                                            } catch (Exception e) {
+                                                                throw new RuntimeException("无法获取到配置项id：" + e.getMessage());
+                                                            }
                                                         }
+                                                    } else if (header.equals("uuid")) {
+                                                        if (StringUtils.isNotBlank(content)) {
+                                                            ciEntityUuid = content.trim();
+                                                            if (ciEntityUuid.length() != 32) {
+                                                                throw new RuntimeException("uuid应该是一个由英文字母和数字组成的长度为32的字符串");
+                                                            }
+                                                        } else {
+                                                            ciEntityUuid = UuidUtil.randomUuid();
+                                                        }
+                                                        ciEntityTransactionVo.setCiEntityUuid(ciEntityUuid);
                                                     }
                                                 } else if (header instanceof AttrVo) {// 如果是属性
                                                     AttrVo attr = (AttrVo) header;

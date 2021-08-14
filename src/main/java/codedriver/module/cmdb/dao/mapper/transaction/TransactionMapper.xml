@@ -12,6 +12,7 @@
         `id`,
         `ci_id` AS ciId,
         `ci_entity_id` AS ciEntityId,
+        `ci_entity_uuid` AS ciEntityUuid,
         `name` AS name,
         `action`,
         `transaction_id` AS transactionId,
@@ -36,6 +37,7 @@
     <insert id="insertCiEntityTransaction"
             parameterType="codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo">
         INSERT INTO `cmdb_cientity_transaction` (`id`,
+                                                 `ci_entity_uuid`,
                                                  `ci_id`,
                                                  `ci_entity_id`,
                                                  `name`,
@@ -45,6 +47,7 @@
                                                  `snapshot`,
                                                  `edit_mode`)
         VALUES (#{id},
+                #{ciEntityUuid},
                 #{ciId},
                 #{ciEntityId},
                 #{name},
@@ -81,6 +84,7 @@
         <association property="ciEntityTransactionVo"
                      javaType="codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo">
             <id property="ciEntityId" column="ciEntityId"/>
+            <result property="ciEntityUuid" column="ciEntityUuid"/>
             <result property="name" column="ciEntityName"/>
             <result property="transactionId" column="ciEntityTransactionId"/>
             <result property="ciId" column="ciId"/>
@@ -111,6 +115,7 @@
                b.action                                                   AS action,
                b.transaction_id                                           AS ciEntityTransactionId,
                b.ci_entity_id                                             AS ciEntityId,
+               b.ci_entity_uuid                                           AS ciEntityUuid,
                b.edit_mode                                                AS editMode,
                b.snapshot                                                 AS snapshot,
                b.content                                                  AS content
@@ -141,6 +146,7 @@
                b.action                                                   AS action,
                b.transaction_id                                           AS ciEntityTransactionId,
                b.ci_entity_id                                             AS ciEntityId,
+               b.ci_entity_uuid                                           AS ciEntityUuid,
                b.edit_mode                                                AS editMode,
                b.snapshot                                                 AS snapshot,
                b.content                                                  AS content
@@ -222,6 +228,7 @@
         error,
         b.action AS action,
         b.ci_entity_id AS ciEntityId,
+        b.ci_entity_uuid AS ciEntityUuid,
         b.transaction_id AS ciEntityTransactionId,
         b.snapshot,
         b.content,
@@ -275,6 +282,7 @@
         SELECT a.`id`,
                a.`ci_id`          AS ciId,
                a.`ci_entity_id`   AS ciEntityId,
+               a.`ci_entity_uuid` AS ciEntityUuid,
                a.`name`           AS `name`,
                a.`action`,
                a.`transaction_id` AS transactionId,
@@ -291,6 +299,7 @@
         SELECT `id`,
                `ci_id`          AS ciId,
                `ci_entity_id`   AS ciEntityId,
+               `ci_entity_uuid` AS ciEntityUuid,
                `name`           AS name,
                `action`,
                `transaction_id` AS transactionId,

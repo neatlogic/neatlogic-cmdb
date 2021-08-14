@@ -134,11 +134,15 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
             int i = 0;
             HSSFRow row = sheet.createRow(0);
             row.setHeight((short) 300);// 设定行的高度
-            HSSFCell idcell = row.createCell(i);
-            idcell.setCellStyle(style);
-            idcell.setCellValue("id");
+            HSSFCell idCell = row.createCell(i);
+            idCell.setCellStyle(style);
+            idCell.setCellValue("id");
             i++;
-            /** 属性 */
+            idCell = row.createCell(i);
+            idCell.setCellStyle(style);
+            idCell.setCellValue("uuid");
+            i++;
+            /* 属性 */
             if (CollectionUtils.isNotEmpty(ciVo.getAttrList()) && CollectionUtils.isNotEmpty(attrIdList)) {
                 for (AttrVo attr : ciVo.getAttrList()) {
                     if (attrIdList.contains(attr.getId())) {
@@ -157,7 +161,7 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
                         }
 
                         if (ciTypeAttrNameDesc.length() > 0) {
-                            label = label + "[(" + ciTypeAttrNameDesc.toString() + ")]";
+                            label = label + "[(" + ciTypeAttrNameDesc + ")]";
                         }
                         HSSFCell cell = row.createCell(i);
                         cell.setCellStyle(style);
@@ -193,7 +197,7 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
                 }
             }
 
-            Boolean flag = request.getHeader("User-Agent").indexOf("Gecko") > 0;
+            boolean flag = request.getHeader("User-Agent").indexOf("Gecko") > 0;
             if (request.getHeader("User-Agent").toLowerCase().indexOf("msie") > 0 || flag) {
                 fileName = URLEncoder.encode(fileName, "UTF-8");// IE浏览器
             } else {
