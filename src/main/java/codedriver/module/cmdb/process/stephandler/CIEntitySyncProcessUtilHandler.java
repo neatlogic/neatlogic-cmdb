@@ -97,6 +97,11 @@ public class CIEntitySyncProcessUtilHandler extends ProcessStepInternalHandlerBa
         //保存回复模版ID
         Long commentTemplateId = stepConfigObj.getLong("commentTemplateId");
         processStepVo.setCommentTemplateId(commentTemplateId);
+
+        JSONArray tagList = stepConfigObj.getJSONArray("tagList");
+        if (CollectionUtils.isNotEmpty(tagList)) {
+            processStepVo.setTagList(tagList.toJavaList(String.class));
+        }
         /**
          * FIXME 设置CMDB节点设置
          */
