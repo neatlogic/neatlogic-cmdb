@@ -616,7 +616,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                 }
 
                 //检查是否允许多选
-                if (attrVo.getTargetCiId() != null && (MapUtils.isEmpty(attrVo.getConfig()) || !attrVo.getConfig().containsKey("isMultiple") || attrVo.getConfig().getString("isMultiple").equals("0"))) {
+                if (attrVo.getTargetCiId() != null && MapUtils.isNotEmpty(attrVo.getConfig()) && attrVo.getConfig().containsKey("isMultiple") && attrVo.getConfig().getString("isMultiple").equals("0")) {
                     if (attrEntityTransactionVo != null && CollectionUtils.isNotEmpty(attrEntityTransactionVo.getValueList()) && attrEntityTransactionVo.getValueList().size() > 1) {
                         throw new AttrEntityMultipleException(attrVo);
                     }
