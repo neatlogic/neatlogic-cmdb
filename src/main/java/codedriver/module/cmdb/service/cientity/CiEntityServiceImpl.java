@@ -184,6 +184,7 @@ public class CiEntityServiceImpl implements CiEntityService {
             }
         }
         if (CollectionUtils.isEmpty(ciEntityVo.getIdList())) {
+            ciEntityVo.setSmartSearch(true);
             int rowNum = ciEntityMapper.searchCiEntityIdCount(ciEntityVo);
             ciEntityVo.setRowNum(rowNum);
             List<Long> ciEntityIdList = ciEntityMapper.searchCiEntityId(ciEntityVo);
@@ -192,6 +193,7 @@ public class CiEntityServiceImpl implements CiEntityService {
             }
         }
         if (CollectionUtils.isNotEmpty(ciEntityVo.getIdList())) {
+            ciEntityVo.setSmartSearch(false);
             List<Map<String, Object>> resultList = ciEntityMapper.searchCiEntity(ciEntityVo);
             ciEntityVo.setIdList(null);//清除id列表，避免ciEntityVo重用时数据没法更新
             return new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, attrList, relList).build().getCiEntityList();
