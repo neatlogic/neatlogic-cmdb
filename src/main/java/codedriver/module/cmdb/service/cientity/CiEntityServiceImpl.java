@@ -599,6 +599,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                             }
                             //检查新值是否被别的配置项引用
                             if (CollectionUtils.isNotEmpty(toCiEntityIdList)) {
+                                //FIXME 这里的SQL有问题，有空再重写
                                 int attrEntityCount = ciEntityMapper.getAttrEntityCountByAttrIdAndValue(ciEntityTransactionVo.getCiEntityId(), attrVo.getId(), toCiEntityIdList);
                                 if (attrEntityCount > 0) {
                                     List<CiEntityVo> toCiEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(toCiEntityIdList);
