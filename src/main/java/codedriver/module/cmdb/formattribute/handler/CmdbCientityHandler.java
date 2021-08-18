@@ -20,10 +20,10 @@ import java.util.List;
  * @since 2021/8/18 14:24
  **/
 @Component
-public class CmdbListHandler extends FormHandlerBase {
+public class CmdbCientityHandler extends FormHandlerBase {
     @Override
     public String getHandler() {
-        return "formcmdblist";
+        return "formcmdbcientity";
     }
 
     @Override
