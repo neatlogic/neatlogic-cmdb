@@ -43,7 +43,7 @@ public class CmdbListHandler extends FormHandlerBase {
 
     @Override
     public ParamType getParamType() {
-        return null;
+        return ParamType.ARRAY;
     }
 
     @Override
