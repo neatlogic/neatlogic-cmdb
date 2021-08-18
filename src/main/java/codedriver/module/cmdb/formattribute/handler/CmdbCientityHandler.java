@@ -38,7 +38,7 @@ public class CmdbCientityHandler extends FormHandlerBase {
 
     @Override
     public String getIcon() {
-        return "ts-m-cmdb";
+        return "tsfont-tree";
     }
 
     @Override
