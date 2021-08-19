@@ -8,6 +8,7 @@ package codedriver.module.cmdb.dao.mapper.sync;
 import codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo;
 import codedriver.framework.cmdb.dto.sync.SyncMappingVo;
 import codedriver.framework.cmdb.dto.sync.SyncPolicyVo;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -21,6 +22,12 @@ public interface SyncMapper {
     int searchSyncCiCollectionCount(SyncCiCollectionVo syncCiCollectionVo);
 
     SyncCiCollectionVo getSyncCiCollectionById(Long id);
+
+    List<SyncCiCollectionVo> getSyncCiCollectionByCollectionName(String collectionName);
+
+    SyncCiCollectionVo getSyncCiCollectionByCiIdAndCollectionName(@Param("ciId") Long ciId, @Param("collectionName") String collectionName);
+
+    void updateSyncCiCollection(SyncCiCollectionVo syncCiCollectionVo);
 
     void insertSyncCiCollection(SyncCiCollectionVo syncCiCollectionVo);
 

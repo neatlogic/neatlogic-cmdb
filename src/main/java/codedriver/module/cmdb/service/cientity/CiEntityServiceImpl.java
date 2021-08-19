@@ -291,22 +291,22 @@ public class CiEntityServiceImpl implements CiEntityService {
     @Transactional
     public Long saveCiEntity(List<CiEntityTransactionVo> ciEntityTransactionList) {
         TransactionGroupVo transactionGroupVo = new TransactionGroupVo();
+        return saveCiEntity(ciEntityTransactionList, transactionGroupVo);
+    }
+
+    @Override
+    @Transactional
+    public Long saveCiEntity(List<CiEntityTransactionVo> ciEntityTransactionList, TransactionGroupVo transactionGroupVo) {
         for (CiEntityTransactionVo ciEntityTransactionVo : ciEntityTransactionList) {
             transactionGroupVo.addExclude(ciEntityTransactionVo.getCiEntityId());
         }
         if (CollectionUtils.isNotEmpty(ciEntityTransactionList)) {
             for (CiEntityTransactionVo ciEntityTransactionVo : ciEntityTransactionList) {
                 Long transactionId = saveCiEntity(ciEntityTransactionVo, transactionGroupVo);
-                transactionGroupVo.addTransactionId(transactionId);
-            }
-        }
-        if (CollectionUtils.isNotEmpty(transactionGroupVo.getTransactionIdList())) {
-            for (Long transactionId : transactionGroupVo.getTransactionIdList()) {
                 transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), transactionId);
             }
-            return transactionGroupVo.getId();
         }
-        return 0L;
+        return transactionGroupVo.getId();
     }
 
     @Transactional
@@ -1280,15 +1280,12 @@ public class CiEntityServiceImpl implements CiEntityService {
                     //如果不是自己引用自己，则需要补充对端配置项事务，此块需要在真正删除数据前处理
                     if (!item.getFromCiEntityId().equals(item.getToCiEntityId())) {
                         Long ciEntityId = null, ciId = null;
-                        String ciEntityName = null;
                         if (item.getDirection().equals(RelDirectionType.FROM.getValue())) {
                             ciEntityId = item.getToCiEntityId();
                             ciId = item.getToCiId();
-                            ciEntityName = item.getToCiEntityName();
                         } else if (item.getDirection().equals(RelDirectionType.TO.getValue())) {
                             ciEntityId = item.getFromCiEntityId();
                             ciId = item.getFromCiId();
-                            ciEntityName = item.getFromCiEntityName();
                         }
 
                         if (!ciEntityTransactionSet.contains(ciEntityId) && !transactionGroupVo.isExclude(ciEntityId)) {
