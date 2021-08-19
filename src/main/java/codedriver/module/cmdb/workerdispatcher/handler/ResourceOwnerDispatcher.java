@@ -55,7 +55,7 @@ public class ResourceOwnerDispatcher extends WorkerDispatcherBase {
         /** 选择ciEntity **/
         {
             JSONObject jsonObj = new JSONObject();
-            jsonObj.put("type", WorkerDispatcherForm.INPUT.getValue());
+            jsonObj.put("type", WorkerDispatcherForm.TEXT.getValue());
             jsonObj.put("name", "owner");
             jsonObj.put("label", "配置项属性名");
             jsonObj.put("validateList", Collections.singletonList("required"));
