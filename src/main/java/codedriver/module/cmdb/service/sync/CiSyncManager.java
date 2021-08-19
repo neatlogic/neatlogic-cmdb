@@ -35,7 +35,6 @@ import codedriver.module.cmdb.service.cientity.CiEntityService;
 import codedriver.module.cmdb.utils.RelUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.JSONPath;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -113,6 +112,14 @@ public class CiSyncManager {
             return this.CiRelMap.get(ciId);
         }
 
+        /**
+         * 根据数据生成配置项事务，由于可能出现关联配置项，因此有可能返回多个事务
+         *
+         * @param dataObj            数据
+         * @param syncCiCollectionVo 映射配置
+         * @param parentKey          上一层数据key，如果是关联数据就会有这个参数
+         * @return 配置项事务
+         */
         private List<CiEntityTransactionVo> generateCiEntityTransaction(JSONObject dataObj, SyncCiCollectionVo syncCiCollectionVo, String parentKey) {
             List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
             CiEntityVo ciEntityConditionVo = new CiEntityVo();
@@ -258,9 +265,6 @@ public class CiSyncManager {
                                                         logger.error(ex.getMessage(), ex);
                                                     }
                                                 }
-                                            /*for (CiEntityTransactionVo ciEntityTransactionVo : ciEntityTransactionList) {
-                                                System.out.println(JSONObject.toJSONString(ciEntityTransactionVo));
-                                            }*/
                                             }
                                         }
 
@@ -360,11 +364,6 @@ public class CiSyncManager {
         return JSONArray.parseArray(JSONArray.toJSONString(finalDataList));
     }
 
-    public static void main2(String[] argv) {
-        JSONObject a = new JSONObject();
-        a.put("a", "a");
-        System.out.println(a.getJSONArray("a"));
-    }
 
     public static void main(String[] argvs) {
         JSONObject jsonObj = JSONObject.parseObject("" +
@@ -606,72 +605,4 @@ public class CiSyncManager {
             }
         }
     }
-
-    /*public static void doSync(SyncPolicyVo syncPolicyVo) {
-        //FIXME 查询syncCiCollection
-        SyncCiCollectionVo syncCiCollectionVo = new SyncCiCollectionVo();
-
-        List<SyncAuditVo> auditList = syncAuditMapper.getDoingSyncByCiId(syncCiCollectionVo.getCiId());
-        if (CollectionUtils.isNotEmpty(auditList)) {
-            throw new CiSyncIsDoingException(syncPolicyVo.getCiVo());
-        }
-        TransactionGroupVo transactionGroupVo = new TransactionGroupVo();
-        SyncAuditVo syncAuditVo = new SyncAuditVo();
-        syncAuditVo.setStatus(SyncStatus.DOING.getValue());
-        syncAuditVo.setSyncConfigId(syncPolicyVo.getId());
-        syncAuditVo.setTransactionGroupId(transactionGroupVo.getId());
-        syncAuditVo.setInputFrom(InputFromContext.get().getInputFrom());
-        syncAuditMapper.insertSyncAudit(syncAuditVo);
-
-        SyncHandler handler = new SyncHandler(syncPolicyVo, syncCiCollectionVo, transactionGroupVo, syncAuditVo);
-        CachedThreadPool.execute(handler);
-    }*/
-
-
-    private static List<String> getValueListFromData(JSONObject dataObj, String jsonpath) {
-        Object v = JSONPath.read(dataObj.toJSONString(), jsonpath);
-        if (v != null) {
-            List<String> valueList = new ArrayList<>();
-            valueList.add(v.toString());
-            return valueList;
-        }
-        return null;
-    }
-
-/*
-    private int checkCiEntityIsExists(List<AttrFilterVo> attrFilterList) {
-        CiEntityVo ciEntityConditionVo = new CiEntityVo();
-        ciEntityConditionVo.setCiId(ciEntityTransactionVo.getCiId());
-        for (Long attrId : ciVo.getUniqueAttrIdList()) {
-            AttrEntityTransactionVo attrEntityTransactionVo = ciEntityTransactionVo.getAttrEntityTransactionByAttrId(attrId);
-            if (attrEntityTransactionVo != null) {
-                AttrFilterVo filterVo = new AttrFilterVo();
-                filterVo.setAttrId(attrId);
-                filterVo.setExpression(SearchExpression.EQ.getExpression());
-                filterVo.setValueList(attrEntityTransactionVo.getValueList().stream().map(Object::toString).collect(Collectors.toList()));
-                ciEntityConditionVo.addAttrFilter(filterVo);
-            } else {
-                if (oldEntity != null) {
-                    AttrEntityVo attrEntityVo = oldEntity.getAttrEntityByAttrId(attrId);
-                    if (attrEntityVo != null) {
-                        AttrFilterVo filterVo = new AttrFilterVo();
-                        filterVo.setAttrId(attrId);
-                        filterVo.setExpression(SearchExpression.EQ.getExpression());
-                        filterVo.setValueList(attrEntityVo.getValueList().stream().map(Object::toString).collect(Collectors.toList()));
-                        ciEntityConditionVo.addAttrFilter(filterVo);
-                    }
-                }//新值没有修改
-            }
-        }
-        if (CollectionUtils.isNotEmpty(ciEntityConditionVo.getAttrFilterList())) {
-            List<CiEntityVo> checkList = this.searchCiEntity(ciEntityConditionVo);
-            for (CiEntityVo checkCiEntity : checkList) {
-                if (!checkCiEntity.getId().equals(ciEntityTransactionVo.getCiEntityId())) {
-                    throw new CiUniqueRuleException();
-                }
-            }
-        }
-    }*/
-
-
 }
