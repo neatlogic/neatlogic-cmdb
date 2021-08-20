@@ -137,7 +137,7 @@ public class SearchDeleteCiEntityApi extends PrivateApiComponentBase {
                 if (StringUtils.isNotBlank(ciEntityTransactionVo.getSnapshot())) {
                     JSONObject entityObj = JSONObject.parseObject(ciEntityTransactionVo.getSnapshot());
                     entityObj.put("transactionId", transactionVo.getId());
-                    entityObj.put("brotherTransactionCount", transactionVo.getBrotherTransactionCount());
+                    entityObj.put("transactionGroupId", transactionVo.getTransactionGroupId());
                     entityObj.put("deleteTime", transactionVo.getCommitTime());
                     if (needAction) {
                         JSONObject actionData = new JSONObject();
