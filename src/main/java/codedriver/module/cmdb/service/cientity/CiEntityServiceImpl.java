@@ -303,7 +303,9 @@ public class CiEntityServiceImpl implements CiEntityService {
         if (CollectionUtils.isNotEmpty(ciEntityTransactionList)) {
             for (CiEntityTransactionVo ciEntityTransactionVo : ciEntityTransactionList) {
                 Long transactionId = saveCiEntity(ciEntityTransactionVo, transactionGroupVo);
-                transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), transactionId);
+                if (transactionId > 0L) {
+                    transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), transactionId);
+                }
             }
         }
         return transactionGroupVo.getId();

@@ -79,8 +79,8 @@
         <result property="createTime" column="createTime"/>
         <result property="commitTime" column="commitTime"/>
         <result property="recoverTime" column="recoverTime"/>
-        <result property="brotherTransactionCount" column="brotherTransactionCount"/>
         <result property="error" column="error" typeHandler="CompressHandler"/>
+        <result property="transactionGroupId" column="transactionGroupId"/>
         <association property="ciEntityTransactionVo"
                      javaType="codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo">
             <id property="ciEntityId" column="ciEntityId"/>
@@ -118,7 +118,8 @@
                b.ci_entity_uuid                                           AS ciEntityUuid,
                b.edit_mode                                                AS editMode,
                b.snapshot                                                 AS snapshot,
-               b.content                                                  AS content
+               b.content                                                  AS content,
+               c.id                                                       AS transactionGroupId
         FROM cmdb_transaction a
                  JOIN cmdb_cientity_transaction b ON a.id = b.`transaction_id`
                  JOIN cmdb_transactiongroup c ON a.id = c.transaction_id
@@ -149,10 +150,12 @@
                b.ci_entity_uuid                                           AS ciEntityUuid,
                b.edit_mode                                                AS editMode,
                b.snapshot                                                 AS snapshot,
-               b.content                                                  AS content
+               b.content                                                  AS content,
+               ct.id                                                      AS transactionGroupId
         FROM cmdb_transaction a
                  JOIN cmdb_cientity_transaction b
                       ON a.id = b.`transaction_id`
+                 LEFT JOIN cmdb_transactiongroup ct on b.transaction_id = ct.transaction_id
         WHERE a.id = #{value}
     </select>
 
@@ -207,6 +210,13 @@
         </where>
     </sql>
 
+    <select id="getBrotherTransactionCountByTransactionGroupId" resultType="int">
+        SELECT count(1)
+        FROM cmdb_transactiongroup
+        where id = #{transactionGroupId}
+          AND transaction_id != #{transactionId}
+    </select>
+
     <select id="searchTransaction" parameterType="codedriver.framework.cmdb.dto.transaction.TransactionVo"
             resultMap="transactionDetailMap">
         SELECT
@@ -233,13 +243,13 @@
         b.snapshot,
         b.content,
         c.name AS ciEntityName,
-        (Select count(ct.transaction_id) FROM cmdb_transactiongroup ct join cmdb_transactiongroup ct2 on ct.id = ct2.id
-        where ct2.transaction_id = a.id) AS brotherTransactionCount
+        t.id AS transactionGroupId
         FROM
         cmdb_transaction a
         JOIN cmdb_cientity_transaction b
         ON a.id = b.`transaction_id`
         LEFT JOIN cmdb_cientity c ON b.ci_entity_id = c.id
+        LEFT JOIN cmdb_transactiongroup t on a.id = t.transaction_id
         <include refid="searchTransactionCondition"></include>
         ORDER BY a.id DESC
         <if test="needPage == true">
