@@ -39,6 +39,8 @@ public class SyncServiceImpl implements SyncService {
             syncCiCollectionVo.setFcu(UserContext.get().getUserUuid());
             syncMapper.insertSyncCiCollection(syncCiCollectionVo);
         } else {
+            syncCiCollectionVo.setLcu(UserContext.get().getUserUuid());
+            syncMapper.updateSyncCiCollection(syncCiCollectionVo);
             syncMapper.deleteSyncMappingByCiCollectionId(syncCiCollectionVo.getId());
         }
         if (CollectionUtils.isNotEmpty(syncCiCollectionVo.getMappingList())) {

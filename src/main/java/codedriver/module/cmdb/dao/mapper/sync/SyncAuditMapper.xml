@@ -9,38 +9,42 @@
     <select id="getDoingSyncByCiId" parameterType="java.lang.Long"
             resultType="codedriver.framework.cmdb.dto.sync.SyncAuditVo">
         select a.id,
-               a.sync_config_id       AS syncConfigId,
-               a.start_time           AS startTime,
-               a.end_time             AS endTime,
-               a.input_from           AS inputFrom,
+               a.sync_ci_collection_id AS syncCiCollectionId,
+               a.start_time            AS startTime,
+               a.end_time              AS endTime,
+               a.input_from            AS inputFrom,
                a.status,
-               a.transaction_group_id AS transactionGroupId,
-               a.server_id            AS serverID
-        from cmdb_ci_sync_audit a
-                 join cmdb_ci_sync_config b on
-            a.sync_config_id = b.id
+               a.transaction_group_id  AS transactionGroupId,
+               a.server_id             AS serverID,
+               a.error                 AS error
+        from cmdb_sync_audit a
+                 join cmdb_sync_ci_collection b on
+            a.sync_ci_collection_id = b.id
         where b.ci_id = #{value}
           and a.status = 'doing'
     </select>
 
     <update id="updateSyncAuditStatus" parameterType="codedriver.framework.cmdb.dto.sync.SyncAuditVo">
         UPDATE
-            cmdb_ci_sync_audit
+        cmdb_sync_audit
         SET end_time = NOW(3),
-            status   = #{status}
+        status = #{status}
+        <if test="error != null and error != ''">
+            ,error = #{error,typeHandler=CompressHandler}
+        </if>
         WHERE id = #{id}
     </update>
 
     <insert id="insertSyncAudit" parameterType="codedriver.framework.cmdb.dto.sync.SyncAuditVo">
-        INSERT INTO cmdb_ci_sync_audit (id,
-                                        sync_config_id,
-                                        start_time,
-                                        input_from,
-                                        status,
-                                        transaction_group_id,
-                                        server_id)
+        INSERT INTO cmdb_sync_audit (id,
+                                     sync_ci_collection_id,
+                                     start_time,
+                                     input_from,
+                                     status,
+                                     transaction_group_id,
+                                     server_id)
         VALUES (#{id},
-                #{syncConfigId},
+                #{syncCiCollectionId},
                 NOW(3),
                 #{inputFrom},
                 #{status},

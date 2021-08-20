@@ -28,6 +28,7 @@
         WHERE id = #{value}
     </select>
 
+
     <select id="searchSyncCiCollection" parameterType="codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo"
             resultType="codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo">
         SELECT
@@ -35,7 +36,9 @@
         a.ci_id AS ciId,
         b.label AS ciLabel,
         b.name AS ciName,
-        a.collection_name AS collectionName
+        a.collection_name AS collectionName,
+        a.collect_mode AS collectMode,
+        a.is_auto_commit AS isAutoCommit
         FROM cmdb_sync_ci_collection a
         JOIN cmdb_ci b ON a.ci_id = b.id
         <include refid="searchSyncCiCollectionSql"></include>
@@ -69,6 +72,8 @@
         <id property="id" column="id"/>
         <result property="ciId" column="ciId"/>
         <result property="collectionName" column="collectionName"/>
+        <result property="collectMode" column="collectMode"/>
+        <result property="isAutoCommit" column="isAutoCommit"/>
         <collection property="mappingList" ofType="codedriver.framework.cmdb.dto.sync.SyncMappingVo">
             <id property="id" column="mappingId"/>
             <result property="attrId" column="attrId"/>
@@ -78,11 +83,48 @@
         </collection>
     </resultMap>
 
+    <select id="getSyncCiCollectionByCollectionName" parameterType="java.lang.String"
+            resultMap="syncCiCollectionResultMap">
+        SELECT a.id,
+               a.ci_id           AS ciId,
+               a.collection_name AS collectionName,
+               a.collect_mode    AS collectMode,
+               a.is_auto_commit  AS isAutoCommit,
+               csm.id            AS mappingId,
+               csm.attr_id       AS attrId,
+               csm.rel_id        AS relId,
+               csm.direction,
+               csm.field
+        FROM cmdb_sync_ci_collection a
+                 JOIN cmdb_sync_mapping csm on a.id = csm.ci_collection_id
+        WHERE a.collection_name = #{value}
+    </select>
+
+    <select id="getSyncCiCollectionByCiIdAndCollectionName"
+            resultMap="syncCiCollectionResultMap">
+        SELECT a.id,
+               a.ci_id           AS ciId,
+               a.collection_name AS collectionName,
+               a.collect_mode    AS collectMode,
+               a.is_auto_commit  AS isAutoCommit,
+               csm.id            AS mappingId,
+               csm.attr_id       AS attrId,
+               csm.rel_id        AS relId,
+               csm.direction,
+               csm.field
+        FROM cmdb_sync_ci_collection a
+                 JOIN cmdb_sync_mapping csm on a.id = csm.ci_collection_id
+        WHERE a.ci_id = #{ciId}
+          AND a.collection_name = #{collectionName}
+    </select>
+
     <select id="getSyncCiCollectionById" parameterType="java.lang.Long"
             resultMap="syncCiCollectionResultMap">
         SELECT a.id,
                a.ci_id           AS ciId,
                a.collection_name AS collectionName,
+               a.collect_mode    AS collectMode,
+               a.is_auto_commit  AS isAutoCommit,
                csm.id            AS mappingId,
                csm.attr_id       AS attrId,
                csm.rel_id        AS relId,
@@ -93,9 +135,18 @@
         WHERE a.id = #{value}
     </select>
 
+    <update id="updateSyncCiCollection" parameterType="codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo">
+        update cmdb_sync_ci_collection
+        SET collect_mode   = #{collectMode},
+            is_auto_commit = #{isAutoCommit},
+            lcd            = NOW(3),
+            lcu            = #{lcu}
+        WHERE id = #{id}
+    </update>
+
     <insert id="insertSyncCiCollection" parameterType="codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo">
-        insert into cmdb_sync_ci_collection (id, ci_id, collection_name, fcd, fcu)
-        values (#{id}, #{ciId}, #{collectionName}, NOW(3), #{fcd})
+        insert into cmdb_sync_ci_collection (id, ci_id, collection_name, collect_mode, is_auto_commit, fcd, fcu)
+        values (#{id}, #{ciId}, #{collectionName}, #{collectMode}, #{isAutoCommit}, NOW(3), #{fcd})
     </insert>
 
     <insert id="insertSyncMapping" parameterType="codedriver.framework.cmdb.dto.sync.SyncMappingVo">
