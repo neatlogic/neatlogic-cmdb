@@ -9,6 +9,8 @@ import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo;
 import codedriver.framework.cmdb.dto.sync.SyncMappingVo;
+import codedriver.framework.cmdb.dto.sync.SyncPolicyVo;
+import codedriver.framework.cmdb.dto.sync.SyncScheduleVo;
 import codedriver.framework.cmdb.exception.sync.SyncCiCollectionIsExistsException;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.sync.SyncMapper;
@@ -25,6 +27,23 @@ public class SyncServiceImpl implements SyncService {
 
     @Resource
     private CiMapper ciMapper;
+
+    public void saveSyncPolicy(SyncPolicyVo syncPolicyVo) {
+        SyncPolicyVo vo = syncMapper.getSyncPolicyById(syncPolicyVo.getId());
+        if (vo == null) {
+            syncMapper.insertSyncPolicy(syncPolicyVo);
+        } else {
+            syncMapper.deleteSyncScheduleByPolicyId(syncPolicyVo.getId());
+            syncMapper.updateSyncPolicy(syncPolicyVo);
+        }
+        if (CollectionUtils.isNotEmpty(syncPolicyVo.getCronList())) {
+            for (SyncScheduleVo cron : syncPolicyVo.getCronList()) {
+                cron.setPolicyId(syncPolicyVo.getId());
+                syncMapper.insertSyncSchedule(cron);
+            }
+        }
+    }
+
 
     @Override
     public void saveSyncCiCollection(SyncCiCollectionVo syncCiCollectionVo) {
