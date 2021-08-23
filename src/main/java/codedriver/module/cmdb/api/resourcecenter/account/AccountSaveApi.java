@@ -8,12 +8,11 @@ package codedriver.module.cmdb.api.resourcecenter.account;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
+import codedriver.framework.cmdb.dto.resourcecenter.AccountTagVo;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
+import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.cmdb.enums.resourcecenter.Protocol;
-import codedriver.framework.cmdb.exception.resourcecenter.ProtocolNotFoundException;
-import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterAccountLostPortException;
-import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterAccountNameRepeatsException;
-import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterAccountNotFoundException;
+import codedriver.framework.cmdb.exception.resourcecenter.*;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.util.RC4Util;
 import codedriver.framework.dto.FieldValidResultVo;
@@ -26,8 +25,11 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -58,9 +60,10 @@ public class AccountSaveApi extends PrivateApiComponentBase {
             @Param(name = "id", type = ApiParamType.LONG, desc = "账号ID"),
             @Param(name = "name", type = ApiParamType.STRING, maxLength = 50, isRequired = true, desc = "名称"),
             @Param(name = "account", type = ApiParamType.STRING, maxLength = 50, isRequired = true, desc = "用户名"),
-            @Param(name = "password", type = ApiParamType.STRING, maxLength = 50, isRequired = true, desc = "密码"),
+            @Param(name = "password", type = ApiParamType.STRING, maxLength = 50, isRequired = false, desc = "密码"),
             @Param(name = "protocol", type = ApiParamType.STRING, isRequired = true, desc = "协议"),
             @Param(name = "port", type = ApiParamType.INTEGER, desc = "端口"),
+            @Param(name = "tagList", type = ApiParamType.LONG, maxLength = 50, isRequired = false, desc = "标签"),
     })
     @Output({
     })
@@ -71,6 +74,17 @@ public class AccountSaveApi extends PrivateApiComponentBase {
         Long id = paramObj.getLong("id");
         if (resourceCenterMapper.checkAccountNameIsRepeats(vo) > 0) {
             throw new ResourceCenterAccountNameRepeatsException(vo.getName());
+        }
+        List<TagVo> tagVoList = vo.getTagList();
+        List<AccountTagVo> accountTagVoList = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(tagVoList)) {
+            for (int i = 0; i < tagVoList.size(); i++) {
+                if (resourceCenterMapper.checkTagIsExistsById(tagVoList.get(i).getId()) == 0) {
+                    throw new ResourceCenterTagNotFoundException(id);
+                }
+                accountTagVoList.add(new AccountTagVo(vo.getId(), tagVoList.get(i).getId()));
+                resourceCenterMapper.insertIgnoreAccountTag(accountTagVoList);
+            }
         }
         Protocol protocol = Protocol.getProtocol(vo.getProtocol());
         if (protocol == null) {
