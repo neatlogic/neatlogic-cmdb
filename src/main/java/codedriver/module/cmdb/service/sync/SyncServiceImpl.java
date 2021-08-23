@@ -81,9 +81,4 @@ public class SyncServiceImpl implements SyncService {
         return syncCiCollectionList;
     }
 
-    @Override
-    public void deleteSyncCiCollectionById(Long id) {
-        syncMapper.deleteSyncMappingByCiCollectionId(id);
-        syncMapper.deleteSyncCiCollectionById(id);
-    }
 }

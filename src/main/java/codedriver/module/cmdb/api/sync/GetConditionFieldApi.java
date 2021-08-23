@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -64,10 +65,14 @@ public class GetConditionFieldApi extends PrivateApiComponentBase {
                 for (int i = 0; i < collectionVo.getField().size(); i++) {
                     JSONObject fieldObj = collectionVo.getField().getJSONObject(i);
                     SyncFieldVo syncFieldVo = JSONObject.toJavaObject(fieldObj, SyncFieldVo.class);
-                    fieldList.add(syncFieldVo);
+                    //有条件表达式的字段才能作为搜索条件
+                    if (CollectionUtils.isNotEmpty(syncFieldVo.getExpressionList())) {
+                        fieldList.add(syncFieldVo);
+                    }
                 }
             }
         }
+        fieldList.sort(Comparator.comparing(SyncFieldVo::getName));
         return fieldList;
     }
 

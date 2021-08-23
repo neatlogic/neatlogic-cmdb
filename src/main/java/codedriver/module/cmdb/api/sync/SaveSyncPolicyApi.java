@@ -55,8 +55,8 @@ public class SaveSyncPolicyApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "id，存在代表修改，不存在代表新增"),
             @Param(name = "ciCollectionId", type = ApiParamType.LONG, isRequired = true, desc = "模型集合id"),
-            @Param(name = "name", type = ApiParamType.STRING, desc = "名称"),
-            @Param(name = "isActive", type = ApiParamType.INTEGER, desc = "是否激活"),
+            @Param(name = "name", type = ApiParamType.STRING, maxLength = 10, isRequired = true, xss = true, desc = "名称"),
+            @Param(name = "isActive", type = ApiParamType.INTEGER, isRequired = true, desc = "是否激活"),
             @Param(name = "cronList", type = ApiParamType.JSONARRAY, desc = "定时设置"),
             @Param(name = "conditionList", type = ApiParamType.JSONARRAY, desc = "筛选条件")})
     @Description(desc = "保存自动采集策略接口")

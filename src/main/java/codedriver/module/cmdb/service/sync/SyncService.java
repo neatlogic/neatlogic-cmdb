@@ -17,5 +17,4 @@ public interface SyncService {
 
     List<SyncCiCollectionVo> searchSyncCiCollection(SyncCiCollectionVo syncCiCollectionVo);
 
-    void deleteSyncCiCollectionById(Long id);
 }

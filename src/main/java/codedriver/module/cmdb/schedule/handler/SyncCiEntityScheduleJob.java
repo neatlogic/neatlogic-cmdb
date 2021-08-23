@@ -6,22 +6,25 @@
 package codedriver.module.cmdb.schedule.handler;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
+import codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo;
+import codedriver.framework.cmdb.dto.sync.SyncPolicyVo;
 import codedriver.framework.cmdb.dto.sync.SyncScheduleVo;
 import codedriver.framework.scheduler.core.JobBase;
 import codedriver.framework.scheduler.dto.JobObject;
 import codedriver.module.cmdb.dao.mapper.sync.SyncMapper;
+import codedriver.module.cmdb.service.sync.CiSyncManager;
 import org.apache.commons.collections4.CollectionUtils;
 import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 报表发送计划定时器
+ * 配置项自动同步定时器
  */
 @Component
 public class SyncCiEntityScheduleJob extends JobBase {
@@ -65,9 +68,19 @@ public class SyncCiEntityScheduleJob extends JobBase {
     }
 
     @Override
-    public void executeInternal(JobExecutionContext context, JobObject jobObject) throws JobExecutionException {
+    public void executeInternal(JobExecutionContext context, JobObject jobObject) {
         Long policyId = (Long) jobObject.getData("policyId");
-
+        SyncPolicyVo syncPolicyVo = syncMapper.getSyncPolicyById(policyId);
+        if (syncPolicyVo != null) {
+            SyncCiCollectionVo syncCiCollectionVo = syncMapper.getSyncCiCollectionById(syncPolicyVo.getCiCollectionId());
+            if (syncCiCollectionVo != null) {
+                List<SyncCiCollectionVo> syncCiCollectionList = new ArrayList<>();
+                syncCiCollectionList.add(syncCiCollectionVo);
+                CiSyncManager.doSync(syncCiCollectionList);
+            } else {
+                schedulerManager.unloadJob(jobObject);
+            }
+        }
     }
 
 

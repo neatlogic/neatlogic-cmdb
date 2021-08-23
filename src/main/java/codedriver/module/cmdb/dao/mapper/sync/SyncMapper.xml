@@ -6,6 +6,13 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.sync.SyncMapper">
+    <select id="getSyncPolicyByCiCollectionId" parameterType="java.lang.Long"
+            resultType="codedriver.framework.cmdb.dto.sync.SyncPolicyVo">
+        SELECT a.id, a.is_active as isActive, a.name, a.ci_id as ciId, a.`condition` as conditionStr
+        from cmdb_sync_policy a
+        WHERE a.ci_collection_id = #{value}
+    </select>
+
     <select id="getAllActivePolicySchedule" resultType="codedriver.framework.cmdb.dto.sync.SyncScheduleVo">
         SELECT a.id, a.cron, a.policy_id AS policyId
         FROM cmdb_sync_schedule a
@@ -247,9 +254,12 @@
     </delete>
 
     <delete id="deleteSyncCiCollectionById" parameterType="java.lang.Long">
-        delete
-        from cmdb_sync_ci_collection
-        where id = #{value}
+        delete a,b,c,d
+        from cmdb_sync_ci_collection a
+                 left join cmdb_sync_mapping b on a.id = b.ci_collection_id
+                 left join cmdb_sync_policy c on a.id = c.ci_collection_id
+                 left join cmdb_sync_schedule d on c.id = d.policy_id
+        where a.id = #{value}
     </delete>
 
     <delete id="deleteSyncMappingByCiCollectionId" parameterType="java.lang.Long">

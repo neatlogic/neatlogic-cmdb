@@ -6,6 +6,8 @@
 package codedriver.module.cmdb.api.sync;
 
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.dto.sync.SyncPolicyVo;
+import codedriver.framework.cmdb.exception.sync.CiCollectionIsInUsedException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -14,19 +16,21 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.SYNC_MODIFY;
-import codedriver.module.cmdb.service.sync.SyncService;
+import codedriver.module.cmdb.dao.mapper.sync.SyncMapper;
 import com.alibaba.fastjson.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.util.List;
 
 @Service
 @AuthAction(action = SYNC_MODIFY.class)
 @OperationType(type = OperationTypeEnum.DELETE)
 public class DeleteSyncCiCollectionApi extends PrivateApiComponentBase {
 
-    @Autowired
-    private SyncService syncService;
-
+    @Resource
+    private SyncMapper syncMapper;
 
     @Override
     public String getToken() {
@@ -48,7 +52,11 @@ public class DeleteSyncCiCollectionApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");
-        syncService.deleteSyncCiCollectionById(id);
+        List<SyncPolicyVo> policyList = syncMapper.getSyncPolicyByCiCollectionId(id);
+        if (CollectionUtils.isNotEmpty(policyList)) {
+            throw new CiCollectionIsInUsedException(policyList);
+        }
+        syncMapper.deleteSyncCiCollectionById(id);
         return null;
     }
 
