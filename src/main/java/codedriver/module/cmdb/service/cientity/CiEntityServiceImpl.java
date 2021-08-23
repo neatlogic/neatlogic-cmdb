@@ -184,6 +184,7 @@ public class CiEntityServiceImpl implements CiEntityService {
             }
         }
         if (CollectionUtils.isEmpty(ciEntityVo.getIdList())) {
+            ciEntityVo.setSmartSearch(true);
             int rowNum = ciEntityMapper.searchCiEntityIdCount(ciEntityVo);
             ciEntityVo.setRowNum(rowNum);
             List<Long> ciEntityIdList = ciEntityMapper.searchCiEntityId(ciEntityVo);
@@ -192,6 +193,7 @@ public class CiEntityServiceImpl implements CiEntityService {
             }
         }
         if (CollectionUtils.isNotEmpty(ciEntityVo.getIdList())) {
+            ciEntityVo.setSmartSearch(false);
             List<Map<String, Object>> resultList = ciEntityMapper.searchCiEntity(ciEntityVo);
             ciEntityVo.setIdList(null);//清除id列表，避免ciEntityVo重用时数据没法更新
             return new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, attrList, relList).build().getCiEntityList();
@@ -289,22 +291,24 @@ public class CiEntityServiceImpl implements CiEntityService {
     @Transactional
     public Long saveCiEntity(List<CiEntityTransactionVo> ciEntityTransactionList) {
         TransactionGroupVo transactionGroupVo = new TransactionGroupVo();
+        return saveCiEntity(ciEntityTransactionList, transactionGroupVo);
+    }
+
+    @Override
+    @Transactional
+    public Long saveCiEntity(List<CiEntityTransactionVo> ciEntityTransactionList, TransactionGroupVo transactionGroupVo) {
         for (CiEntityTransactionVo ciEntityTransactionVo : ciEntityTransactionList) {
             transactionGroupVo.addExclude(ciEntityTransactionVo.getCiEntityId());
         }
         if (CollectionUtils.isNotEmpty(ciEntityTransactionList)) {
             for (CiEntityTransactionVo ciEntityTransactionVo : ciEntityTransactionList) {
                 Long transactionId = saveCiEntity(ciEntityTransactionVo, transactionGroupVo);
-                transactionGroupVo.addTransactionId(transactionId);
+                if (transactionId > 0L) {
+                    transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), transactionId);
+                }
             }
         }
-        if (CollectionUtils.isNotEmpty(transactionGroupVo.getTransactionIdList())) {
-            for (Long transactionId : transactionGroupVo.getTransactionIdList()) {
-                transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), transactionId);
-            }
-            return transactionGroupVo.getId();
-        }
-        return 0L;
+        return transactionGroupVo.getId();
     }
 
     @Transactional
@@ -599,6 +603,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                             }
                             //检查新值是否被别的配置项引用
                             if (CollectionUtils.isNotEmpty(toCiEntityIdList)) {
+                                //FIXME 这里的SQL有问题，有空再重写
                                 int attrEntityCount = ciEntityMapper.getAttrEntityCountByAttrIdAndValue(ciEntityTransactionVo.getCiEntityId(), attrVo.getId(), toCiEntityIdList);
                                 if (attrEntityCount > 0) {
                                     List<CiEntityVo> toCiEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(toCiEntityIdList);
@@ -1277,15 +1282,12 @@ public class CiEntityServiceImpl implements CiEntityService {
                     //如果不是自己引用自己，则需要补充对端配置项事务，此块需要在真正删除数据前处理
                     if (!item.getFromCiEntityId().equals(item.getToCiEntityId())) {
                         Long ciEntityId = null, ciId = null;
-                        String ciEntityName = null;
                         if (item.getDirection().equals(RelDirectionType.FROM.getValue())) {
                             ciEntityId = item.getToCiEntityId();
                             ciId = item.getToCiId();
-                            ciEntityName = item.getToCiEntityName();
                         } else if (item.getDirection().equals(RelDirectionType.TO.getValue())) {
                             ciEntityId = item.getFromCiEntityId();
                             ciId = item.getFromCiId();
-                            ciEntityName = item.getFromCiEntityName();
                         }
 
                         if (!ciEntityTransactionSet.contains(ciEntityId) && !transactionGroupVo.isExclude(ciEntityId)) {

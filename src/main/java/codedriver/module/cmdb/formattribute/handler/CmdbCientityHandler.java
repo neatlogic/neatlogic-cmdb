@@ -1,65 +1,59 @@
+/*
+ * Copyright(c) 2021 TechSureCo.,Ltd.AllRightsReserved.
+ * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+ */
+
 package codedriver.module.cmdb.formattribute.handler;
 
 import codedriver.framework.common.constvalue.ParamType;
+import codedriver.framework.form.attribute.core.FormHandlerBase;
 import codedriver.framework.form.constvalue.FormConditionModel;
 import codedriver.framework.form.dto.AttributeDataVo;
 import codedriver.framework.form.exception.AttributeValidException;
-import codedriver.framework.form.attribute.core.FormHandlerBase;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+/**
+ * @author linbq
+ * @since 2021/8/18 14:24
+ **/
 @Component
-public class CiEntitySyncHandler extends FormHandlerBase {
-
+public class CmdbCientityHandler extends FormHandlerBase {
     @Override
     public String getHandler() {
-        return "cientityselect";
-    }
-
-    @Override
-    public boolean valid(AttributeDataVo attributeDataVo, JSONObject configObj) throws AttributeValidException {
-        return true;
-    }
-
-    @Override
-    public Object valueConversionText(AttributeDataVo attributeDataVo, JSONObject configObj) {
-        if (!attributeDataVo.dataIsEmpty()) {
-            return "已更新";
-        } else {
-            return "";
-        }
-    }
-
-    @Override
-    public Object dataTransformationForEmail(AttributeDataVo attributeDataVo, JSONObject configObj) {
-        return null;
-    }
-
-    @Override
-    public Object textConversionValue(List<String> values, JSONObject config) {
-        return null;
+        return "formcmdbcientity";
     }
 
     @Override
     public String getHandlerName() {
-        return "配置项修改组件";
+        return "配置项组件";
+    }
+
+    @Override
+    public String getHandlerType(FormConditionModel model) {
+        return null;
     }
 
     @Override
     public String getIcon() {
-        return "ts-m-cmdb";
+        return "tsfont-tree";
     }
 
     @Override
     public ParamType getParamType() {
-        return null;
+        return ParamType.ARRAY;
     }
 
     @Override
     public String getDataType() {
         return null;
+    }
+
+    @Override
+    public boolean isAudit() {
+        return true;
     }
 
     @Override
@@ -88,28 +82,37 @@ public class CiEntitySyncHandler extends FormHandlerBase {
     }
 
     @Override
-    public String getModule() {
-        return "cmdb";
-    }
-
-    @Override
     public boolean isForTemplate() {
         return false;
     }
 
     @Override
+    public String getModule() {
+        return "cmdb";
+    }
+
+    @Override
     public int getSort() {
-        return 10;
+        return 18;
     }
 
     @Override
-    public boolean isAudit() {
-        return true;
+    public boolean valid(AttributeDataVo attributeDataVo, JSONObject configObj) throws AttributeValidException {
+        return false;
     }
 
     @Override
-    public String getHandlerType(FormConditionModel model) {
+    public Object valueConversionText(AttributeDataVo attributeDataVo, JSONObject configObj) {
         return null;
     }
 
+    @Override
+    public Object dataTransformationForEmail(AttributeDataVo attributeDataVo, JSONObject configObj) {
+        return null;
+    }
+
+    @Override
+    public Object textConversionValue(List<String> values, JSONObject config) {
+        return null;
+    }
 }

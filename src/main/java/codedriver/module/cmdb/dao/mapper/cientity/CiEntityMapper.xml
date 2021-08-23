@@ -239,62 +239,66 @@
                 </otherwise>
             </choose>
         </foreach>
-        <foreach collection="attrList" item="attr">
-            <if test="attr.needTargetCi == true">
-                LEFT JOIN `cmdb_attrentity` `cmdb_attrentity_${attr.id}` ON `ci_base`.id =
-                `cmdb_attrentity_${attr.id}`.from_cientity_id AND `cmdb_attrentity_${attr.id}`.attr_id = #{attr.id}
+        <if test="!smartSearch or (smartSearch and ((keyword != null and keyword != '') or (attrFilterList != null and attrFilterList.size() > 0)))">
+            <foreach collection="attrList" item="attr">
+                <if test="attr.needTargetCi == true">
+                    LEFT JOIN `cmdb_attrentity` `cmdb_attrentity_${attr.id}` ON `ci_base`.id =
+                    `cmdb_attrentity_${attr.id}`.from_cientity_id AND `cmdb_attrentity_${attr.id}`.attr_id = #{attr.id}
+                    <choose>
+                        <when test="attr.targetIsVirtual != 1">
+                            LEFT JOIN `cmdb_cientity` `cmdb_attr_cientity_${attr.id}` ON
+                            `cmdb_attrentity_${attr.id}`.to_cientity_id
+                            = `cmdb_attr_cientity_${attr.id}`.id
+                        </when>
+                        <otherwise>
+                            LEFT JOIN ${attr.targetCiTableName} `cmdb_attr_cientity_${attr.id}` ON
+                            `cmdb_attrentity_${attr.id}`.to_cientity_id
+                            = `cmdb_attr_cientity_${attr.id}`.id
+                        </otherwise>
+                    </choose>
+                </if>
+            </foreach>
+        </if>
+        <if test="!smartSearch or (smartSearch and ((keyword != null and keyword != '') or (relFilterList != null and relFilterList.size() > 0) or (relCiEntityFilterList != null and relCiEntityFilterList.size() > 0)))">
+            <foreach collection="relList" item="rel">
                 <choose>
-                    <when test="attr.targetIsVirtual != 1">
-                        LEFT JOIN `cmdb_cientity` `cmdb_attr_cientity_${attr.id}` ON
-                        `cmdb_attrentity_${attr.id}`.to_cientity_id
-                        = `cmdb_attr_cientity_${attr.id}`.id
+                    <when test="rel.direction=='from'">
+                        LEFT JOIN `cmdb_relentity` `cmdb_relentity_${rel.id}_${rel.direction}` ON `ci_base`.id =
+                        `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
+                        AND `cmdb_relentity_${rel.id}_${rel.direction}`.rel_id = #{rel.id}
+                        <choose>
+                            <when test="rel.toIsVirtual == 0">
+                                LEFT JOIN `cmdb_cientity` `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
+                                `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
+                                `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
+                            </when>
+                            <otherwise>
+                                LEFT JOIN ${rel.toCiTableName} `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
+                                `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
+                                `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
+                            </otherwise>
+                        </choose>
                     </when>
                     <otherwise>
-                        LEFT JOIN ${attr.targetCiTableName} `cmdb_attr_cientity_${attr.id}` ON
-                        `cmdb_attrentity_${attr.id}`.to_cientity_id
-                        = `cmdb_attr_cientity_${attr.id}`.id
+                        LEFT JOIN `cmdb_relentity` `cmdb_relentity_${rel.id}_${rel.direction}` ON `ci_base`.id =
+                        `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
+                        AND `cmdb_relentity_${rel.id}_${rel.direction}`.rel_id = #{rel.id}
+                        <choose>
+                            <when test="rel.fromIsVirtual == 0">
+                                LEFT JOIN `cmdb_cientity` `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
+                                `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
+                                `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
+                            </when>
+                            <otherwise>
+                                LEFT JOIN ${rel.fromCiTableName} `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
+                                `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
+                                `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
+                            </otherwise>
+                        </choose>
                     </otherwise>
                 </choose>
-            </if>
-        </foreach>
-        <foreach collection="relList" item="rel">
-            <choose>
-                <when test="rel.direction=='from'">
-                    LEFT JOIN `cmdb_relentity` `cmdb_relentity_${rel.id}_${rel.direction}` ON `ci_base`.id =
-                    `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
-                    AND `cmdb_relentity_${rel.id}_${rel.direction}`.rel_id = #{rel.id}
-                    <choose>
-                        <when test="rel.toIsVirtual == 0">
-                            LEFT JOIN `cmdb_cientity` `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
-                            `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
-                            `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
-                        </when>
-                        <otherwise>
-                            LEFT JOIN ${rel.toCiTableName} `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
-                            `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
-                            `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
-                        </otherwise>
-                    </choose>
-                </when>
-                <otherwise>
-                    LEFT JOIN `cmdb_relentity` `cmdb_relentity_${rel.id}_${rel.direction}` ON `ci_base`.id =
-                    `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
-                    AND `cmdb_relentity_${rel.id}_${rel.direction}`.rel_id = #{rel.id}
-                    <choose>
-                        <when test="rel.fromIsVirtual == 0">
-                            LEFT JOIN `cmdb_cientity` `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
-                            `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
-                            `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
-                        </when>
-                        <otherwise>
-                            LEFT JOIN ${rel.fromCiTableName} `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
-                            `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
-                            `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
-                        </otherwise>
-                    </choose>
-                </otherwise>
-            </choose>
-        </foreach>
+            </foreach>
+        </if>
         <if test="groupIdList != null and groupIdList.size() > 0">
             JOIN `cmdb_cientity_group` `ccg` ON `ci_base`.id = `ccg`.ci_entity_id AND `ccg`.group_id IN
             <foreach collection="groupIdList" item="item" open="(" close=")" separator=",">

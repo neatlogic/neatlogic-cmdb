@@ -14,6 +14,8 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface TransactionMapper {
+    int getBrotherTransactionCountByTransactionGroupId(@Param("transactionId") Long transactionId, @Param("transactionGroupId") Long transactionGroupId);
+
     List<TransactionVo> getTransactionByGroupId(Long transactionGroupId);
 
     TransactionGroupVo getTransactionGroupByTransactionId(Long transactionId);

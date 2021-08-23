@@ -6,7 +6,35 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.sync.SyncMapper">
+    <select id="getAllActivePolicySchedule" resultType="codedriver.framework.cmdb.dto.sync.SyncScheduleVo">
+        SELECT a.id, a.cron, a.policy_id AS policyId
+        FROM cmdb_sync_schedule a
+                 join cmdb_sync_policy csp on a.policy_id = csp.id and csp.is_active = 1
+    </select>
 
+    <select id="getSyncScheduleById" parameterType="java.lang.Long"
+            resultType="codedriver.framework.cmdb.dto.sync.SyncScheduleVo">
+        SELECT a.id, a.cron, a.policy_id AS policyId, csp.is_active as isActive
+        FROM cmdb_sync_schedule a
+                 join cmdb_sync_policy csp on a.policy_id = csp.id
+        WHERE a.id = #{value}
+    </select>
+
+    <select id="searchSyncPolicy" parameterType="codedriver.framework.cmdb.dto.sync.SyncPolicyVo"
+            resultType="codedriver.framework.cmdb.dto.sync.SyncPolicyVo">
+        SELECT a.id,
+        a.ci_collection_id as ciCollectionId,
+        a.`condition` AS conditionStr,
+        a.is_active as isActive,
+        a.name,
+        a.ci_id AS ciId
+        from cmdb_sync_policy a
+        <where>
+            <if test="ciId != null">
+                and a.ci_id = #{ciId}
+            </if>
+        </where>
+    </select>
     <select id="checkSyncCiCollectionIsExists" parameterType="codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo"
             resultType="int">
         SELECT COUNT(1)
@@ -16,17 +44,46 @@
           AND id != #{id}
     </select>
 
-    <select id="getSyncPolicyById" parameterType="java.lang.Long"
-            resultType="codedriver.framework.cmdb.dto.sync.SyncPolicyVo">
-        SELECT id,
-               ci_collection_id AS ciCollectionId,
-               is_active        AS isActive,
-               `condition`      AS conditionStr,
-               crons            AS cronListStr,
-               name
-        FROM cmdb_sync_policy
-        WHERE id = #{value}
+    <select id="checkCiHasSyncCiCollection" parameterType="java.lang.Long" resultType="int">
+        SELECT COUNT(1)
+        FROM cmdb_sync_ci_collection
+        WHERE ci_id = #{value}
     </select>
+
+    <resultMap id="policyMap" type="codedriver.framework.cmdb.dto.sync.SyncPolicyVo">
+        <id property="id" column="id"/>
+        <result property="ciCollectionId" column="ciCollectionId"/>
+        <result property="isActive" column="isActive"/>
+        <result property="conditionStr" column="conditionStr"/>
+        <result property="name" column="name"/>
+        <result property="ciId" column="ciId"/>
+        <result property="collectionName" column="collectionName"/>
+        <collection property="cronList" ofType="codedriver.framework.cmdb.dto.sync.SyncScheduleVo">
+            <id property="id" column="cronId"/>
+            <result property="cron" column="cron"/>
+            <result property="policyId" column="cronPolicyId"/>
+        </collection>
+
+    </resultMap>
+
+    <select id="getSyncPolicyById" parameterType="java.lang.Long"
+            resultMap="policyMap">
+        SELECT a.id,
+               a.ci_collection_id AS ciCollectionId,
+               a.is_active        AS isActive,
+               a.`condition`      AS conditionStr,
+               a.name,
+               a.ci_id            AS ciId,
+               b.collection_name  AS collectionName,
+               c.id               AS cronId,
+               c.cron             AS cron,
+               c.policy_id        AS cronPolicyId
+        FROM cmdb_sync_policy a
+                 JOIN cmdb_sync_ci_collection b on a.ci_collection_id = b.id
+                 LEFT JOIN cmdb_sync_schedule c ON a.id = c.policy_id
+        WHERE a.id = #{value}
+    </select>
+
 
     <select id="searchSyncCiCollection" parameterType="codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo"
             resultType="codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo">
@@ -35,7 +92,13 @@
         a.ci_id AS ciId,
         b.label AS ciLabel,
         b.name AS ciName,
-        a.collection_name AS collectionName
+        a.collection_name AS collectionName,
+        a.collect_mode AS collectMode,
+        a.is_auto_commit AS isAutoCommit,
+        a.fcu,
+        a.fcd,
+        a.lcu,
+        a.lcd
         FROM cmdb_sync_ci_collection a
         JOIN cmdb_ci b ON a.ci_id = b.id
         <include refid="searchSyncCiCollectionSql"></include>
@@ -69,6 +132,8 @@
         <id property="id" column="id"/>
         <result property="ciId" column="ciId"/>
         <result property="collectionName" column="collectionName"/>
+        <result property="collectMode" column="collectMode"/>
+        <result property="isAutoCommit" column="isAutoCommit"/>
         <collection property="mappingList" ofType="codedriver.framework.cmdb.dto.sync.SyncMappingVo">
             <id property="id" column="mappingId"/>
             <result property="attrId" column="attrId"/>
@@ -78,11 +143,48 @@
         </collection>
     </resultMap>
 
+    <select id="getSyncCiCollectionByCollectionName" parameterType="java.lang.String"
+            resultMap="syncCiCollectionResultMap">
+        SELECT a.id,
+               a.ci_id           AS ciId,
+               a.collection_name AS collectionName,
+               a.collect_mode    AS collectMode,
+               a.is_auto_commit  AS isAutoCommit,
+               csm.id            AS mappingId,
+               csm.attr_id       AS attrId,
+               csm.rel_id        AS relId,
+               csm.direction,
+               csm.field
+        FROM cmdb_sync_ci_collection a
+                 JOIN cmdb_sync_mapping csm on a.id = csm.ci_collection_id
+        WHERE a.collection_name = #{value}
+    </select>
+
+    <select id="getSyncCiCollectionByCiIdAndCollectionName"
+            resultMap="syncCiCollectionResultMap">
+        SELECT a.id,
+               a.ci_id           AS ciId,
+               a.collection_name AS collectionName,
+               a.collect_mode    AS collectMode,
+               a.is_auto_commit  AS isAutoCommit,
+               csm.id            AS mappingId,
+               csm.attr_id       AS attrId,
+               csm.rel_id        AS relId,
+               csm.direction,
+               csm.field
+        FROM cmdb_sync_ci_collection a
+                 JOIN cmdb_sync_mapping csm on a.id = csm.ci_collection_id
+        WHERE a.ci_id = #{ciId}
+          AND a.collection_name = #{collectionName}
+    </select>
+
     <select id="getSyncCiCollectionById" parameterType="java.lang.Long"
             resultMap="syncCiCollectionResultMap">
         SELECT a.id,
                a.ci_id           AS ciId,
                a.collection_name AS collectionName,
+               a.collect_mode    AS collectMode,
+               a.is_auto_commit  AS isAutoCommit,
                csm.id            AS mappingId,
                csm.attr_id       AS attrId,
                csm.rel_id        AS relId,
@@ -93,15 +195,56 @@
         WHERE a.id = #{value}
     </select>
 
+    <update id="updateSyncCiCollection" parameterType="codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo">
+        update cmdb_sync_ci_collection
+        SET collect_mode   = #{collectMode},
+            is_auto_commit = #{isAutoCommit},
+            lcd            = NOW(3),
+            lcu            = #{lcu}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateSyncPolicy" parameterType="codedriver.framework.cmdb.dto.sync.SyncPolicyVo">
+        update cmdb_sync_policy
+        set ci_collection_id = #{ciCollectionId},
+            is_active        = #{isActive},
+            `condition`      = #{conditionStr},
+            name             = #{name}
+        WHERE id = #{id}
+    </update>
+
+    <insert id="insertSyncSchedule" parameterType="codedriver.framework.cmdb.dto.sync.SyncScheduleVo">
+        insert into cmdb_sync_schedule (id, cron, policy_id)
+        values (#{id}, #{cron}, #{policyId})
+    </insert>
+
     <insert id="insertSyncCiCollection" parameterType="codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo">
-        insert into cmdb_sync_ci_collection (id, ci_id, collection_name, fcd, fcu)
-        values (#{id}, #{ciId}, #{collectionName}, NOW(3), #{fcd})
+        insert into cmdb_sync_ci_collection (id, ci_id, collection_name, collect_mode, is_auto_commit, fcd, fcu)
+        values (#{id}, #{ciId}, #{collectionName}, #{collectMode}, #{isAutoCommit}, NOW(3), #{fcu})
     </insert>
 
     <insert id="insertSyncMapping" parameterType="codedriver.framework.cmdb.dto.sync.SyncMappingVo">
         insert into cmdb_sync_mapping (id, ci_collection_id, rel_id, direction, attr_id, field)
         values (#{id}, #{ciCollectionId}, #{relId}, #{direction}, #{attrId}, #{field})
     </insert>
+
+    <insert id="insertSyncPolicy" parameterType="codedriver.framework.cmdb.dto.sync.SyncPolicyVo">
+        insert into cmdb_sync_policy (id, ci_id, ci_collection_id, is_active, `condition`, name)
+        VALUES (#{id}, #{ciId}, #{ciCollectionId}, #{isActive}, #{conditionStr}, #{name})
+    </insert>
+
+    <delete id="deleteSyncScheduleByPolicyId" parameterType="java.lang.Long">
+        delete
+        from cmdb_sync_schedule
+        where policy_id = #{value}
+    </delete>
+
+    <delete id="deleteSyncPolicyById" parameterType="java.lang.Long">
+        delete a,b
+        from cmdb_sync_policy a
+                 LEFT JOIN cmdb_sync_schedule b ON a.id = b.policy_id
+        where a.id = #{value}
+    </delete>
 
     <delete id="deleteSyncCiCollectionById" parameterType="java.lang.Long">
         delete

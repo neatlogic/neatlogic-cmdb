@@ -7,8 +7,6 @@ package codedriver.module.cmdb.api.sync;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo;
-import codedriver.framework.cmdb.dto.sync.SyncMappingVo;
-import codedriver.framework.cmdb.exception.sync.SyncCiCollectionNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -19,6 +17,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.sync.SyncMapper;
+import codedriver.module.cmdb.service.sync.CiSyncManager;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,8 +27,8 @@ import java.util.List;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
-@OperationType(type = OperationTypeEnum.SEARCH)
-public class LaunchSyncCiApi extends PrivateApiComponentBase {
+@OperationType(type = OperationTypeEnum.OPERATE)
+public class LaunchSyncCollectionApi extends PrivateApiComponentBase {
 
     @Autowired
     private SyncMapper syncMapper;
@@ -53,17 +52,13 @@ public class LaunchSyncCiApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "配置id")})
+    @Input({@Param(name = "collection", type = ApiParamType.STRING, isRequired = true, desc = "配置id")})
     @Description(desc = "发起配置项自动发现接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        Long id = jsonObj.getLong("id");
-        SyncCiCollectionVo syncCiCollectionVo = syncMapper.getSyncCiCollectionById(id);
-        if (syncCiCollectionVo == null) {
-            throw new SyncCiCollectionNotFoundException(id);
-        }
-
-        List<SyncMappingVo> mappingList = syncCiCollectionVo.getMappingList();
+        String collectionName = jsonObj.getString("collection");
+        List<SyncCiCollectionVo> syncCiCollectionList = syncMapper.getSyncCiCollectionByCollectionName(collectionName);
+        CiSyncManager.doSync(syncCiCollectionList);
 //        if (CollectionUtils.isNotEmpty(mappingList) && syncConfigVo.getCiId() != null) {
 //            CiVo ciVo = ciMapper.getCiById(syncConfigVo.getCiId());
 //            if (ciVo == null) {
