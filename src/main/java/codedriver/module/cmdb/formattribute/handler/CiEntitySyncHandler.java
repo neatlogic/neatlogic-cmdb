@@ -49,7 +49,7 @@ public class CiEntitySyncHandler extends FormHandlerBase {
 
     @Override
     public String getIcon() {
-        return "ts-m-cmdb";
+        return "tsfont-cientityselect";
     }
 
     @Override
