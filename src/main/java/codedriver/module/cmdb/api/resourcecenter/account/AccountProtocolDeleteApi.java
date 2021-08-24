@@ -1,19 +1,23 @@
 package codedriver.module.cmdb.api.resourcecenter.account;
 
+import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountProtocolVo;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterAccountProtocolHasBeenReferredException;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterAccountProtocolNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.restful.annotation.Description;
-import codedriver.framework.restful.annotation.Input;
-import codedriver.framework.restful.annotation.Output;
-import codedriver.framework.restful.annotation.Param;
+import codedriver.framework.restful.annotation.*;
+import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.cmdb.auth.label.RESOURCECENTER_ACCOUNT_MODIFY;
 import com.alibaba.fastjson.JSONObject;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 
+@Service
+@AuthAction(action = RESOURCECENTER_ACCOUNT_MODIFY.class)
+@OperationType(type = OperationTypeEnum.DELETE)
 public class AccountProtocolDeleteApi extends PrivateApiComponentBase {
 
     @Resource
@@ -47,9 +51,9 @@ public class AccountProtocolDeleteApi extends PrivateApiComponentBase {
         String protocol = paramObj.getString("name");
         AccountProtocolVo accountProtocolVo = resourceCenterMapper.getAccountProtocolVoByProtocolName(protocol);
         if (accountProtocolVo == null) {
-            throw new ResourceCenterAccountProtocolNotFoundException(accountProtocolVo.getId());
+            throw new ResourceCenterAccountProtocolNotFoundException(accountProtocolVo.getProtocolId());
         }
-        if (resourceCenterMapper.checkAccountProtocolHasBeenReferredByprotocol(protocol) > 0) {
+        if (resourceCenterMapper.checkAccountProtocolHasBeenReferredByProtocol(protocol) > 0) {
             throw new ResourceCenterAccountProtocolHasBeenReferredException(protocol);
         }
         resourceCenterMapper.deleteResourceAccountProtocolById(id);

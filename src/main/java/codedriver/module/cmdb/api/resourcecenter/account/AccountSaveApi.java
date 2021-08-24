@@ -8,10 +8,9 @@ package codedriver.module.cmdb.api.resourcecenter.account;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
+import codedriver.framework.cmdb.dto.resourcecenter.AccountProtocolVo;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountTagVo;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
-import codedriver.framework.cmdb.dto.tag.TagVo;
-import codedriver.framework.cmdb.enums.resourcecenter.Protocol;
 import codedriver.framework.cmdb.exception.resourcecenter.*;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.util.RC4Util;
@@ -26,6 +25,7 @@ import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -62,8 +62,9 @@ public class AccountSaveApi extends PrivateApiComponentBase {
             @Param(name = "account", type = ApiParamType.STRING, maxLength = 50, isRequired = true, desc = "用户名"),
             @Param(name = "password", type = ApiParamType.STRING, maxLength = 50, isRequired = false, desc = "密码"),
             @Param(name = "protocol", type = ApiParamType.STRING, isRequired = true, desc = "协议"),
-            @Param(name = "port", type = ApiParamType.INTEGER, desc = "端口"),
-            @Param(name = "tagList", type = ApiParamType.LONG, maxLength = 50, isRequired = false, desc = "标签"),
+            @Param(name = "protocolId", type = ApiParamType.LONG, isRequired = true, desc = "协议id"),
+            @Param(name = "port", type = ApiParamType.INTEGER,isRequired = true, desc = "端口"),
+            @Param(name = "tagIdList", type = ApiParamType.JSONARRAY, isRequired = false, desc = "标签id列表"),
     })
     @Output({
     })
@@ -72,26 +73,23 @@ public class AccountSaveApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         AccountVo vo = JSON.toJavaObject(paramObj, AccountVo.class);
         Long id = paramObj.getLong("id");
+        Long protocolId = paramObj.getLong("protocolId");
         if (resourceCenterMapper.checkAccountNameIsRepeats(vo) > 0) {
             throw new ResourceCenterAccountNameRepeatsException(vo.getName());
         }
-        List<TagVo> tagVoList = vo.getTagList();
+        List<Long> tagIdList = vo.getTagIdList();
         List<AccountTagVo> accountTagVoList = new ArrayList<>();
-        if (!CollectionUtils.isEmpty(tagVoList)) {
-            for (int i = 0; i < tagVoList.size(); i++) {
-                if (resourceCenterMapper.checkTagIsExistsById(tagVoList.get(i).getId()) == 0) {
+        if (!CollectionUtils.isEmpty(tagIdList)) {
+            for (int i = 0; i < tagIdList.size(); i++) {
+                if (resourceCenterMapper.checkTagIsExistsById(tagIdList.get(i)) == 0) {
                     throw new ResourceCenterTagNotFoundException(id);
                 }
-                accountTagVoList.add(new AccountTagVo(vo.getId(), tagVoList.get(i).getId()));
-                resourceCenterMapper.insertIgnoreAccountTag(accountTagVoList);
+                accountTagVoList.add(new AccountTagVo(vo.getId(), tagIdList.get(i)));
             }
+            resourceCenterMapper.insertIgnoreAccountTag(accountTagVoList);
         }
-        Protocol protocol = Protocol.getProtocol(vo.getProtocol());
-        if (protocol == null) {
-            throw new ProtocolNotFoundException(vo.getProtocol());
-        }
-        if (Protocol.SSH.equals(protocol) && vo.getPort() == null) {
-            throw new ResourceCenterAccountLostPortException();
+        if (protocolId == null) {
+            throw new ResourceCenterAccountProtocolNotFoundException(protocolId);
         }
         vo.setLcu(UserContext.get().getUserUuid());
         if (id != null) {
@@ -99,9 +97,16 @@ public class AccountSaveApi extends PrivateApiComponentBase {
             if (oldVo == null) {
                 throw new ResourceCenterAccountNotFoundException(id);
             }
-            if (!Objects.equals(vo.getPassword(), oldVo.getPassword())) {
-                vo.setPassword(RC4Util.encrypt(vo.getPassword()));
+            if (!StringUtils.isEmpty(vo.getPassword())) {
+                if (!Objects.equals(vo.getPassword(), oldVo.getPassword())) {
+                    vo.setPassword(RC4Util.encrypt(vo.getPassword()));
+                }
             }
+            if (vo.getProtocol() == null) {
+                throw new ResourceCenterAccountProtocolNotFoundByNameException(vo.getProtocol());
+            }
+            AccountProtocolVo protocolVo = resourceCenterMapper.getAccountProtocolVoByProtocolName(vo.getProtocol());
+            vo.setProtocolId(protocolVo.getProtocolId());
             resourceCenterMapper.updateAccount(vo);
         } else {
             vo.setPassword(RC4Util.encrypt(vo.getPassword()));

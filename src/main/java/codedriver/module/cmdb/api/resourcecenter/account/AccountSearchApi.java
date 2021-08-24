@@ -9,6 +9,7 @@ import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountTagVo;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
@@ -67,33 +68,37 @@ public class AccountSearchApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONObject resultObj = new JSONObject();
+        List<AccountVo> accountVoList = null;
         AccountVo searchVo = JSON.toJavaObject(paramObj, AccountVo.class);
         List<Long> idList = resourceCenterMapper.getAccountIdList(searchVo);
-        List<AccountTagVo> accountTagVoList = resourceCenterMapper.getAccountTagListByAccountIdList(idList);
-        Map<Long, List<TagVo>> AccountTagVoMap = new HashMap<>();
-        if (CollectionUtils.isNotEmpty(accountTagVoList)) {
-            Set<Long> tagIdSet = accountTagVoList.stream().map(AccountTagVo::getTagId).collect(Collectors.toSet());
-            List<TagVo> tagList = resourceCenterMapper.getTagListByIdList(new ArrayList<>(tagIdSet));
-            Map<Long, TagVo> tagMap = tagList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
-            for (AccountTagVo accountTagVo : accountTagVoList) {
-                AccountTagVoMap.computeIfAbsent(accountTagVo.getAccountId(), k -> new ArrayList<>()).add(tagMap.get(accountTagVo.getTagId()));
+        if (CollectionUtils.isNotEmpty(idList)) {
+            List<AccountTagVo> accountTagVoList = resourceCenterMapper.getAccountTagListByAccountIdList(idList);
+            Map<Long, List<TagVo>> AccountTagVoMap = new HashMap<>();
+            if (CollectionUtils.isNotEmpty(accountTagVoList)) {
+                Set<Long> tagIdSet = accountTagVoList.stream().map(AccountTagVo::getTagId).collect(Collectors.toSet());
+                List<TagVo> tagList = resourceCenterMapper.getTagListByIdList(new ArrayList<>(tagIdSet));
+                Map<Long, TagVo> tagMap = tagList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
+                for (AccountTagVo accountTagVo : accountTagVoList) {
+                    AccountTagVoMap.computeIfAbsent(accountTagVo.getAccountId(), k -> new ArrayList<>()).add(tagMap.get(accountTagVo.getTagId()));
+                }
+            }
+            accountVoList = resourceCenterMapper.searchAccount(searchVo);
+            for (AccountVo accountVo : accountVoList) {
+                List<TagVo> tagVoList = AccountTagVoMap.get(accountVo.getId());
+                if (CollectionUtils.isNotEmpty(tagVoList)) {
+                    accountVo.setTagList(tagVoList);
+                }
+                if (StringUtils.isNotBlank(accountVo.getFcu())) {
+                    accountVo.setFcuVo(new UserVo(accountVo.getFcu()));
+                }
+                if (StringUtils.isNotBlank(accountVo.getLcu())) {
+                    accountVo.setLcuVo(new UserVo(accountVo.getLcu()));
+                }
+
             }
         }
-        List<AccountVo> accountVoList = resourceCenterMapper.searchAccount(searchVo);
-        for (AccountVo accountVo : accountVoList) {
-            List<TagVo> tagVoList = AccountTagVoMap.get(accountVo.getId());
-            if (CollectionUtils.isNotEmpty(tagVoList)) {
-                accountVo.setTagList(tagVoList);
-            }
-            if (StringUtils.isNotBlank(accountVo.getFcu())) {
-                accountVo.setFcuVo(new UserVo(accountVo.getFcu()));
-            }
-            if (StringUtils.isNotBlank(accountVo.getLcu())) {
-                accountVo.setLcuVo(new UserVo(accountVo.getLcu()));
-            }
-            if (accountVoList == null) {
-                accountVoList = new ArrayList<>();
-            }
+        if (accountVoList == null) {
+            accountVoList = new ArrayList<>();
         }
         resultObj.put("tbodyList", accountVoList);
 //        if (CollectionUtils.isNotEmpty(accountVoList)) {

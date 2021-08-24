@@ -8,6 +8,7 @@ package codedriver.module.cmdb.api.resourcecenter.resource;
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
+import codedriver.framework.cmdb.dto.resourcecenter.AccountProtocolVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -55,7 +56,7 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "executeUser", type = ApiParamType.STRING, isRequired = true, desc = "执行用户"),
-            @Param(name = "protocol", type = ApiParamType.ENUM, rule = "application,database,tagent,ssh", isRequired = true, desc = "连接协议"),
+            @Param(name = "protocolId", type = ApiParamType.LONG, isRequired = true, desc = "连接协议id"),
             @Param(name = "tagList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "标签列表"),
             @Param(name = "selectNodeList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "选择节点列表"),
             @Param(name = "inputNodeList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "输入节点列表")
@@ -71,7 +72,9 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
         JSONObject resultObj = new JSONObject();
         resultObj.put("list", resultArray);
         String executeUser = jsonObj.getString("executeUser");
-        String protocol = jsonObj.getString("protocol");
+        Long protocolId = jsonObj.getLong("protocolId");
+        AccountProtocolVo protocolVo = resourceCenterMapper.getAccountProtocolVoByProtocolId(protocolId);
+        String protocol = protocolVo.getProtocol();
         List<Long> accountIdList = resourceCenterMapper.getAccountIdListByAccountAndProtocol(executeUser, protocol);
         if (CollectionUtils.isEmpty(accountIdList)) {
             JSONObject executeUserIsNotFoundInProtocolObj = new JSONObject();
