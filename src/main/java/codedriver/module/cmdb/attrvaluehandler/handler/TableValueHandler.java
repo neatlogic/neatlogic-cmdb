@@ -7,13 +7,14 @@ package codedriver.module.cmdb.attrvaluehandler.handler;
 
 import codedriver.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
+import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.enums.SearchExpression;
+import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
+import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -26,6 +27,12 @@ public class TableValueHandler implements IAttrValueHandler {
 
     @Resource
     private CiEntityService ciEntityService;
+
+    @Resource
+    private CiMapper ciMapper;
+
+    @Resource
+    private CiEntityMapper ciEntityMapper;
 
     @Override
     public String getType() {
@@ -91,34 +98,48 @@ public class TableValueHandler implements IAttrValueHandler {
     @Override
     public JSONArray getActualValueList(AttrVo attrVo, JSONArray valueList) {
         JSONArray returnList = new JSONArray();
-        JSONObject config = attrVo.getConfig();
-        if (MapUtils.isNotEmpty(config)) {
-            // JSONArray attrList = config.getJSONArray("attrList");
-           /* if (CollectionUtils.isNotEmpty(attrList)) {
-                for (int i = 0; i < attrList.size(); i++) {
-                    JSONObject attrObj = attrList.getJSONObject(i);
-                    if (attrObj.getBooleanValue("isSelected")) {
-                        JSONObject headObj = new JSONObject();
-                        headObj.put("key", "attr_" + attrObj.getLong("id"));
-                        headObj.put("title", attrObj.getString("label"));
-                        theadList.add(headObj);
-                    }
-                }
-            }*/
-            if (CollectionUtils.isNotEmpty(valueList)) {
-                List<Long> ciEntityIdList = new ArrayList<>();
-                for (int i = 0; i < valueList.size(); i++) {
-                    try {
-                        ciEntityIdList.add(valueList.getLong(i));
-                    } catch (Exception ignored) {
+        if (CollectionUtils.isNotEmpty(valueList)) {
+            List<Long> ciEntityIdList = new ArrayList<>();
+            for (int i = 0; i < valueList.size(); i++) {
+                try {
+                    ciEntityIdList.add(valueList.getLong(i));
+                } catch (Exception ignored) {
 
-                    }
                 }
-                List<CiEntityVo> ciEntityList = ciEntityService.getCiEntityByIdList(attrVo.getTargetCiId(), ciEntityIdList);
-                returnList.addAll(ciEntityList);
+            }
+            List<CiEntityVo> ciEntityList = ciEntityService.getCiEntityByIdList(attrVo.getTargetCiId(), ciEntityIdList);
+            returnList.addAll(ciEntityList);
+        }
+        return returnList;
+    }
+
+    @Override
+    public void transferValueListToExport(AttrVo attrVo, JSONArray valueList) {
+        if (CollectionUtils.isNotEmpty(valueList) && attrVo.getTargetCiId() != null) {
+            List<Long> ciEntityIdList = new ArrayList<>();
+            for (int i = 0; i < valueList.size(); i++) {
+                try {
+                    ciEntityIdList.add(valueList.getLong(i));
+                } catch (Exception ignored) {
+
+                }
+            }
+            CiVo ciVo = ciMapper.getCiById(attrVo.getTargetCiId());
+            List<CiEntityVo> ciEntityList;
+            if (ciVo.getIsVirtual().equals(0)) {
+                ciEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(ciEntityIdList);
+            } else {
+                CiEntityVo ciEntityVo = new CiEntityVo();
+                ciEntityVo.setCiId(ciVo.getId());
+                ciEntityVo.setIdList(ciEntityIdList);
+                ciEntityList = ciEntityMapper.getVirtualCiEntityBaseInfoByIdList(ciEntityVo);
+            }
+            valueList.clear();
+            if (CollectionUtils.isNotEmpty(ciEntityList)) {
+                for (CiEntityVo ciEntityVo : ciEntityList) {
+                    valueList.add(ciEntityVo.getName());
+                }
             }
         }
-
-        return returnList;
     }
 }

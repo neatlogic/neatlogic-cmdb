@@ -10,6 +10,7 @@ import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.enums.SearchExpression;
 import codedriver.framework.common.util.RC4Util;
 import com.alibaba.fastjson.JSONArray;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 
@@ -40,6 +41,7 @@ public class PasswordValueHandler implements IAttrValueHandler {
     public boolean isCanInput() {
         return true;
     }
+
 
     @Override
     public boolean isCanImport() {
@@ -78,10 +80,12 @@ public class PasswordValueHandler implements IAttrValueHandler {
 
     @Override
     public void transferValueListToSave(AttrVo attrVo, JSONArray valueList) {
-        for (int i = 0; i < valueList.size(); i++) {
-            String value = valueList.getString(i);
-            if (!value.startsWith("RC4:")) {
-                valueList.set(i, "RC4:" + RC4Util.encrypt(value));
+        if (CollectionUtils.isNotEmpty(valueList)) {
+            for (int i = 0; i < valueList.size(); i++) {
+                String value = valueList.getString(i);
+                if (!value.startsWith("RC4:")) {
+                    valueList.set(i, "RC4:" + RC4Util.encrypt(value));
+                }
             }
         }
     }
@@ -94,10 +98,21 @@ public class PasswordValueHandler implements IAttrValueHandler {
      */
     @Override
     public void transferValueListToDisplay(AttrVo attrVo, JSONArray valueList) {
-        for (int i = 0; i < valueList.size(); i++) {
-            String value = valueList.getString(i);
-            if (value.startsWith("RC4:")) {
-                valueList.set(i, RC4Util.decrypt(value.substring(4)));
+        if (CollectionUtils.isNotEmpty(valueList)) {
+            for (int i = 0; i < valueList.size(); i++) {
+                String value = valueList.getString(i);
+                if (value.startsWith("RC4:")) {
+                    valueList.set(i, RC4Util.decrypt(value.substring(4)));
+                }
+            }
+        }
+    }
+
+    @Override
+    public void transferValueListToExport(AttrVo attrVo, JSONArray valueList) {
+        if (CollectionUtils.isNotEmpty(valueList)) {
+            for (int i = 0; i < valueList.size(); i++) {
+                valueList.set(i, "*******");
             }
         }
     }

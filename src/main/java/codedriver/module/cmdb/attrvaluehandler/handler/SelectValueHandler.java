@@ -110,6 +110,36 @@ public class SelectValueHandler implements IAttrValueHandler {
         return actualValueList;
     }
 
+    @Override
+    public void transferValueListToExport(AttrVo attrVo, JSONArray valueList) {
+        if (CollectionUtils.isNotEmpty(valueList) && attrVo.getTargetCiId() != null) {
+            List<Long> ciEntityIdList = new ArrayList<>();
+            for (int i = 0; i < valueList.size(); i++) {
+                try {
+                    ciEntityIdList.add(valueList.getLong(i));
+                } catch (Exception ignored) {
+
+                }
+            }
+            CiVo ciVo = ciMapper.getCiById(attrVo.getTargetCiId());
+            List<CiEntityVo> ciEntityList = null;
+            if (ciVo.getIsVirtual().equals(0)) {
+                ciEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(ciEntityIdList);
+            } else {
+                CiEntityVo ciEntityVo = new CiEntityVo();
+                ciEntityVo.setCiId(ciVo.getId());
+                ciEntityVo.setIdList(ciEntityIdList);
+                ciEntityList = ciEntityMapper.getVirtualCiEntityBaseInfoByIdList(ciEntityVo);
+            }
+            valueList.clear();
+            if (CollectionUtils.isNotEmpty(ciEntityList)) {
+                for (CiEntityVo ciEntityVo : ciEntityList) {
+                    valueList.add(ciEntityVo.getName());
+                }
+            }
+        }
+    }
+
 
     @Override
     public SearchExpression[] getSupportExpression() {

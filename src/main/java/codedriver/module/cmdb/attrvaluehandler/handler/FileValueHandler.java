@@ -93,6 +93,25 @@ public class FileValueHandler implements IAttrValueHandler {
     }
 
     @Override
+    public void transferValueListToExport(AttrVo attrVo, JSONArray valueList) {
+        if (CollectionUtils.isNotEmpty(valueList)) {
+            List<Long> idList = new ArrayList<>();
+            for (int i = 0; i < valueList.size(); i++) {
+                idList.add(valueList.getLong(i));
+            }
+            valueList.clear();
+            if (CollectionUtils.isNotEmpty(idList)) {
+                List<FileVo> fileList = fileMapper.getFileListByIdList(idList);
+                if (CollectionUtils.isNotEmpty(fileList)) {
+                    for (FileVo fileVo : fileList) {
+                        valueList.add(fileVo.getName());
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
     public boolean isNeedWholeRow() {
         return false;
     }

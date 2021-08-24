@@ -316,7 +316,7 @@
                 AND `ci_base`.ci_id = #{filterCiId}
             </if>
             <if test="keyword != null and keyword != ''">
-                AND (`ci_base`.`name` LIKE CONCAT('%',#{keyword},'%')
+                AND (`ci_base`.id = #{keyword} OR `ci_base`.`name` LIKE CONCAT('%',#{keyword},'%')
                 <foreach collection="attrList" item="attr">
                     <choose>
                         <when test="attr.needTargetCi == false ">
