@@ -221,7 +221,26 @@ public class CiEntityServiceImpl implements CiEntityService {
     @Override
     public Long deleteCiEntity(Long ciEntityId, Boolean allowCommit) {
         return deleteCiEntity(ciEntityId, allowCommit, new TransactionGroupVo());
+    }
 
+    /**
+     * 批量删除配置项
+     *
+     * @param ciEntityIdList 配置项id列表
+     * @param allowCommit    是否允许提交
+     * @return 事务组id
+     */
+    @Transactional
+    @Override
+    public Long deleteCiEntityList(List<Long> ciEntityIdList, Boolean allowCommit) {
+        if (CollectionUtils.isNotEmpty(ciEntityIdList)) {
+            TransactionGroupVo transactionGroupVo = new TransactionGroupVo();
+            for (Long ciEntityId : ciEntityIdList) {
+                deleteCiEntity(ciEntityId, allowCommit, transactionGroupVo);
+            }
+            return transactionGroupVo.getId();
+        }
+        return 0L;
     }
 
     /**

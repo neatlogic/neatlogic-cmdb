@@ -94,6 +94,9 @@ public interface CiEntityService {
     List<CiEntityVo> searchCiEntityBaseInfo(CiEntityVo ciEntityVo);
 
 
+    @Transactional
+    Long deleteCiEntityList(List<Long> ciEntityIdList, Boolean allowCommit);
+
     /**
      * 删除整个配置项
      *

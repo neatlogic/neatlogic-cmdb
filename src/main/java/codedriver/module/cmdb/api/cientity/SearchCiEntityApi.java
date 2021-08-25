@@ -29,6 +29,7 @@ import codedriver.module.cmdb.utils.RelUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -237,6 +238,20 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
                     actionData.put(CiAuthType.PASSWORDVIEW.getValue(), true);
                     actionData.put(CiAuthType.TRANSACTIONMANAGE.getValue(), true);
                     entityObj.put("authData", actionData);
+                }
+                if (needAction) {
+                    if (ciVo.getIsVirtual().equals(1)) {
+                        entityObj.put("isDisabled", true);//禁用前端复选框
+                    } else {
+                        JSONObject actionData = entityObj.getJSONObject("authData");
+                        if (MapUtils.isEmpty(actionData)) {
+                            entityObj.put("isDisabled", true);//禁用前端复选框
+                        } else {
+                            if (!actionData.getBoolean(CiAuthType.CIENTITYUPDATE.getValue()) && !actionData.getBoolean(CiAuthType.CIENTITYDELETE.getValue())) {
+                                entityObj.put("isDisabled", true);//禁用前端复选框
+                            }
+                        }
+                    }
                 }
                 tbodyList.add(entityObj);
             }
