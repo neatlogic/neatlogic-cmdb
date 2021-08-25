@@ -6,9 +6,12 @@
 package codedriver.module.cmdb.api.cientity;
 
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.cmdb.dto.transaction.TransactionVo;
 import codedriver.framework.cmdb.enums.GroupType;
 import codedriver.framework.cmdb.enums.TransactionActionType;
 import codedriver.framework.cmdb.exception.cientity.CiEntityAuthException;
+import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -47,24 +50,32 @@ public class DeleteCiEntityApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
+    @Input({
             @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "配置项id"),
-            @Param(name = "needCommit", type = ApiParamType.BOOLEAN, isRequired = true, desc = "是否需要提交")})
+            @Param(name = "needCommit", type = ApiParamType.BOOLEAN, isRequired = true, desc = "是否需要提交"),
+            @Param(name = "description", type = ApiParamType.STRING, desc = "备注", xss = true)})
     @Output({@Param(name = "transactionId", type = ApiParamType.LONG, desc = "事务id")})
     @Description(desc = "删除配置项接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");
-        Long ciId = jsonObj.getLong("ciId");
+        String description = jsonObj.getString("description");
+        CiEntityVo oldCiEntityVo = ciEntityService.getCiEntityBaseInfoById(id);
+        if (oldCiEntityVo == null) {
+            throw new CiEntityNotFoundException(id);
+        }
         boolean needCommit = jsonObj.getBooleanValue("needCommit");
-        if (!CiAuthChecker.chain().checkCiEntityDeletePrivilege(ciId).checkIsInGroup(id, GroupType.MAINTAIN).check()) {
+        if (!CiAuthChecker.chain().checkCiEntityDeletePrivilege(oldCiEntityVo.getCiId()).checkIsInGroup(id, GroupType.MAINTAIN).check()) {
             throw new CiEntityAuthException(TransactionActionType.DELETE.getText());
         }
         if (needCommit) {
-            needCommit = CiAuthChecker.chain().checkCiEntityTransactionPrivilege(ciId).checkIsInGroup(id, GroupType.MAINTAIN).check();
+            needCommit = CiAuthChecker.chain().checkCiEntityTransactionPrivilege(oldCiEntityVo.getCiId()).checkIsInGroup(id, GroupType.MAINTAIN).check();
         }
-
-        ciEntityService.deleteCiEntity(id, needCommit);
+        TransactionVo t = new TransactionVo();
+        CiEntityVo ciEntityVo = new CiEntityVo();
+        ciEntityVo.setId(id);
+        ciEntityVo.setDescription(description);
+        ciEntityService.deleteCiEntity(ciEntityVo, needCommit);
         return null;
     }
 

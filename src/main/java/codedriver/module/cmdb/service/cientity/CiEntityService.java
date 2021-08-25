@@ -95,19 +95,19 @@ public interface CiEntityService {
 
 
     @Transactional
-    Long deleteCiEntityList(List<Long> ciEntityIdList, Boolean allowCommit);
+    Long deleteCiEntityList(List<CiEntityVo> ciEntityList, Boolean allowCommit);
 
     /**
      * 删除整个配置项
      *
-     * @param ciEntityId 配置项id
+     * @param ciEntityVo 配置项
      * @return 事务id
      */
     @Transactional
-    Long deleteCiEntity(Long ciEntityId, Boolean allowCommit, TransactionGroupVo transactionGroupVo);
+    Long deleteCiEntity(CiEntityVo ciEntityVo, Boolean allowCommit, TransactionGroupVo transactionGroupVo);
 
     @Transactional
-    Long deleteCiEntity(Long ciEntityId, Boolean allowCommit);
+    Long deleteCiEntity(CiEntityVo ciEntityVo, Boolean allowCommit);
 
     /**
      * 验证配置项是否合法

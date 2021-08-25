@@ -214,29 +214,32 @@ public class CiEntityServiceImpl implements CiEntityService {
     /**
      * 删除配置项
      *
-     * @param ciEntityId 配置项id
+     * @param ciEntityVo 配置项
      * @return 事务id
      */
     @Transactional
     @Override
-    public Long deleteCiEntity(Long ciEntityId, Boolean allowCommit) {
-        return deleteCiEntity(ciEntityId, allowCommit, new TransactionGroupVo());
+    public Long deleteCiEntity(CiEntityVo ciEntityVo, Boolean allowCommit) {
+        return deleteCiEntity(ciEntityVo, allowCommit, new TransactionGroupVo());
     }
 
     /**
      * 批量删除配置项
      *
-     * @param ciEntityIdList 配置项id列表
-     * @param allowCommit    是否允许提交
+     * @param ciEntityList 配置项列表
+     * @param allowCommit  是否允许提交
      * @return 事务组id
      */
     @Transactional
     @Override
-    public Long deleteCiEntityList(List<Long> ciEntityIdList, Boolean allowCommit) {
-        if (CollectionUtils.isNotEmpty(ciEntityIdList)) {
+    public Long deleteCiEntityList(List<CiEntityVo> ciEntityList, Boolean allowCommit) {
+        if (CollectionUtils.isNotEmpty(ciEntityList)) {
             TransactionGroupVo transactionGroupVo = new TransactionGroupVo();
-            for (Long ciEntityId : ciEntityIdList) {
-                deleteCiEntity(ciEntityId, allowCommit, transactionGroupVo);
+            for (CiEntityVo ciEntityVo : ciEntityList) {
+                Long transactionId = deleteCiEntity(ciEntityVo, allowCommit, transactionGroupVo);
+                if (transactionId > 0L) {
+                    transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), transactionId);
+                }
             }
             return transactionGroupVo.getId();
         }
@@ -246,22 +249,25 @@ public class CiEntityServiceImpl implements CiEntityService {
     /**
      * 删除配置项
      *
-     * @param ciEntityId 配置项id
-     * @return 事务id
+     * @param ciEntityVo 配置项
+     * @return 事务id，为0代表没有创建新事务
      */
     @Transactional
     @Override
-    public Long deleteCiEntity(Long ciEntityId, Boolean allowCommit, TransactionGroupVo transactionGroupVo) {
+    public Long deleteCiEntity(CiEntityVo ciEntityVo, Boolean allowCommit, TransactionGroupVo transactionGroupVo) {
+        Long ciEntityId = ciEntityVo.getId();
         CiEntityVo baseCiEntityVo = this.ciEntityMapper.getCiEntityBaseInfoById(ciEntityId);
         if (baseCiEntityVo == null) {
             throw new CiEntityNotFoundException(ciEntityId);
         }
+        //检查是否有未提交的删除事务，如果有就不再创建新事务
+        List<TransactionVo> transactionList = transactionMapper.getUnCommitTransactionByCiEntityIdAndAction(ciEntityId, TransactionActionType.DELETE.getValue());
+        if (CollectionUtils.isNotEmpty(transactionList)) {
+            return 0L;//没有创建新事务
+        }
+
         CiEntityVo oldCiEntityVo = this.getCiEntityById(baseCiEntityVo.getCiId(), ciEntityId);
 
-        if (oldCiEntityVo.getIsLocked().equals(1)) {
-            // 正在编辑中的配置项，在事务提交或删除前不允许再次修改
-            throw new CiEntityIsLockedException(ciEntityId);
-        }
         //如果作为属性被引用，则不能删除
         List<AttrVo> attrList = ciEntityMapper.getAttrListByToCiEntityId(ciEntityId);
         if (CollectionUtils.isNotEmpty(attrList)) {
@@ -273,6 +279,7 @@ public class CiEntityServiceImpl implements CiEntityService {
         transactionVo.setInputFrom(InputFromContext.get().getInputFrom());
         transactionVo.setStatus(TransactionStatus.UNCOMMIT.getValue());
         transactionVo.setCreateUser(UserContext.get().getUserUuid(true));
+        transactionVo.setDescription(ciEntityVo.getDescription());
         CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo(oldCiEntityVo);
         ciEntityTransactionVo.setAction(TransactionActionType.DELETE.getValue());
         ciEntityTransactionVo.setTransactionId(transactionVo.getId());
@@ -357,6 +364,10 @@ public class CiEntityServiceImpl implements CiEntityService {
                 throw new CiEntityIsLockedException(ciEntityTransactionVo.getCiEntityId());
             }
             ciEntityTransactionVo.setOldCiEntityVo(oldCiEntityVo);
+
+            //锁定当前配置项
+            oldCiEntityVo.setIsLocked(1);
+            ciEntityMapper.updateCiEntityLockById(oldCiEntityVo);
         }
 
         TransactionVo transactionVo = new TransactionVo();
@@ -364,6 +375,7 @@ public class CiEntityServiceImpl implements CiEntityService {
         transactionVo.setInputFrom(InputFromContext.get().getInputFrom());
         transactionVo.setStatus(TransactionStatus.UNCOMMIT.getValue());
         transactionVo.setCreateUser(UserContext.get().getUserUuid(true));
+        transactionVo.setDescription(ciEntityTransactionVo.getDescription());
         ciEntityTransactionVo.setTransactionId(transactionVo.getId());
 
         transactionVo.setCiEntityTransactionVo(ciEntityTransactionVo);

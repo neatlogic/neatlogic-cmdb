@@ -167,7 +167,9 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
                                 auditObj.put("ciName", ciMap.get(ciId).getName());
                                 auditObj.put("ciLabel", ciMap.get(ciId).getLabel());
                                 auditObj.put("action", TransactionActionType.DELETE.getValue());
-                                Long transactionId = ciEntityService.deleteCiEntity(ciEntityObj.getLong("id"), true, transactionGroupVo);
+                                CiEntityVo ciEntityVo = new CiEntityVo();
+                                ciEntityVo.setId(ciEntityObj.getLong("id"));
+                                Long transactionId = ciEntityService.deleteCiEntity(ciEntityVo, true, transactionGroupVo);
                                 auditObj.put("status", "success");
                                 auditObj.put("transactionId", transactionId);
                             } else {

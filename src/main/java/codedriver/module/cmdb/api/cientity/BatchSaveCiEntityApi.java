@@ -98,8 +98,9 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
             Long ciId = ciEntityObj.getLong("ciId");
             Long id = ciEntityObj.getLong("id");
             String uuid = ciEntityObj.getString("uuid");
-
+            String description = ciEntityObj.getString("description");
             CiEntityTransactionVo ciEntityTransactionVo;
+
             if (id != null) {
                 if (!CiAuthChecker.chain().checkCiEntityUpdatePrivilege(ciId).checkIsInGroup(id, GroupType.MAINTAIN).check()) {
                     CiVo ciVo = ciMapper.getCiById(ciId);
@@ -126,8 +127,9 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
                 throw new ApiRuntimeException("数据不合法，缺少id或uuid");
             }
 
-
             ciEntityTransactionVo.setCiId(ciId);
+            ciEntityTransactionVo.setDescription(description);
+
             // 解析属性数据
             JSONObject attrObj = ciEntityObj.getJSONObject("attrEntityData");
             //修正新配置项的uuid为id

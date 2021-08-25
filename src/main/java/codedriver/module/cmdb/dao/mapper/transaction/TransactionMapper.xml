@@ -6,6 +6,16 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper">
+    <select id="getUnCommitTransactionByCiEntityIdAndAction"
+            resultType="codedriver.framework.cmdb.dto.transaction.TransactionVo">
+        select b.id, b.ci_id as ciId
+        from cmdb_cientity_transaction a
+                 join cmdb_transaction b on a.transaction_id = b.id
+        where a.ci_entity_id = #{ciEntityId}
+          and a.action = #{action}
+          and b.status = 'uncommit'
+    </select>
+
     <select id="getCiEntityTransactionByTransactionIdList"
             resultType="codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo">
         SELECT
@@ -80,6 +90,7 @@
         <result property="commitTime" column="commitTime"/>
         <result property="recoverTime" column="recoverTime"/>
         <result property="error" column="error" typeHandler="CompressHandler"/>
+        <result property="description" column="description"/>
         <result property="transactionGroupId" column="transactionGroupId"/>
         <association property="ciEntityTransactionVo"
                      javaType="codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo">
@@ -112,6 +123,7 @@
                commit_time                                                AS commitTime,
                recover_time                                               AS recoverTime,
                error,
+               a.description,
                b.action                                                   AS action,
                b.transaction_id                                           AS ciEntityTransactionId,
                b.ci_entity_id                                             AS ciEntityId,
@@ -144,6 +156,7 @@
                commit_time                                                AS commitTime,
                recover_time                                               AS recoverTime,
                error,
+               a.description,
                b.action                                                   AS action,
                b.transaction_id                                           AS ciEntityTransactionId,
                b.ci_entity_id                                             AS ciEntityId,
@@ -235,7 +248,8 @@
         create_time AS createTime,
         commit_time AS commitTime,
         recover_time AS recoverTime,
-        error,
+        a.error,
+        a.description AS description,
         b.action AS action,
         b.ci_entity_id AS ciEntityId,
         b.ci_entity_uuid AS ciEntityUuid,
@@ -373,6 +387,7 @@
         `create_user`,
         `input_from`,
         `source`,
+        `description`,
         `expire_time`,
         `create_time`
         <if test="status == 'commited'">
@@ -384,6 +399,7 @@
         #{createUser},
         #{inputFrom},
         #{source},
+        #{description},
         #{expireTime},
         NOW(3)
         <if test="status == 'commited'">
