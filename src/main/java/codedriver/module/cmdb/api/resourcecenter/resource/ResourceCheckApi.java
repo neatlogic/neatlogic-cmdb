@@ -74,7 +74,7 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
         String executeUser = jsonObj.getString("executeUser");
         Long protocolId = jsonObj.getLong("protocolId");
         AccountProtocolVo protocolVo = resourceCenterMapper.getAccountProtocolVoByProtocolId(protocolId);
-        String protocol = protocolVo.getProtocol();
+        String protocol = protocolVo.getName();
         List<Long> accountIdList = resourceCenterMapper.getAccountIdListByAccountAndProtocol(executeUser, protocol);
         if (CollectionUtils.isEmpty(accountIdList)) {
             JSONObject executeUserIsNotFoundInProtocolObj = new JSONObject();

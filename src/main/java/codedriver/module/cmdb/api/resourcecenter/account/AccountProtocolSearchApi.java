@@ -7,6 +7,7 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.framework.util.TableResultUtil;
 import codedriver.module.cmdb.auth.label.RESOURCECENTER_MODIFY;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -47,11 +48,9 @@ public class AccountProtocolSearchApi extends PrivateApiComponentBase {
     @Description(desc = "查找账户管理协议列表")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        JSONObject resultObj = new JSONObject();
         AccountProtocolVo searchVo = JSON.toJavaObject(paramObj, AccountProtocolVo.class);
         List<AccountProtocolVo> accountProtocolList = resourceCenterMapper.searchAccountProtocolListByProtocolName(searchVo);
-        resultObj.put("tbodyList", accountProtocolList);
-        return resultObj;
+        return TableResultUtil.getResult(accountProtocolList, searchVo);
     }
 
 

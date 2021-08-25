@@ -11,6 +11,7 @@ import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountProtocolVo;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountTagVo;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
+import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.cmdb.exception.resourcecenter.*;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.util.RC4Util;
@@ -61,7 +62,6 @@ public class AccountSaveApi extends PrivateApiComponentBase {
             @Param(name = "name", type = ApiParamType.STRING, maxLength = 50, isRequired = true, desc = "名称"),
             @Param(name = "account", type = ApiParamType.STRING, maxLength = 50, isRequired = true, desc = "用户名"),
             @Param(name = "password", type = ApiParamType.STRING, maxLength = 50, isRequired = false, desc = "密码"),
-            @Param(name = "protocol", type = ApiParamType.STRING, isRequired = true, desc = "协议"),
             @Param(name = "protocolId", type = ApiParamType.LONG, isRequired = true, desc = "协议id"),
             @Param(name = "port", type = ApiParamType.INTEGER,isRequired = true, desc = "端口"),
             @Param(name = "tagIdList", type = ApiParamType.JSONARRAY, isRequired = false, desc = "标签id列表"),
@@ -79,12 +79,13 @@ public class AccountSaveApi extends PrivateApiComponentBase {
         }
         List<Long> tagIdList = vo.getTagIdList();
         List<AccountTagVo> accountTagVoList = new ArrayList<>();
-        if (!CollectionUtils.isEmpty(tagIdList)) {
-            for (int i = 0; i < tagIdList.size(); i++) {
-                if (resourceCenterMapper.checkTagIsExistsById(tagIdList.get(i)) == 0) {
+        List<TagVo> tagVoList = resourceCenterMapper.searchTagListByIdList(tagIdList);
+        if (!CollectionUtils.isEmpty(tagVoList)) {
+            for (int i = 0; i < tagVoList.size(); i++) {
+                if (tagVoList.get(i).getId() == null) {
                     throw new ResourceCenterTagNotFoundException(id);
                 }
-                accountTagVoList.add(new AccountTagVo(vo.getId(), tagIdList.get(i)));
+                accountTagVoList.add(new AccountTagVo(vo.getId(), tagVoList.get(i).getId()));
             }
             resourceCenterMapper.insertIgnoreAccountTag(accountTagVoList);
         }
@@ -102,11 +103,11 @@ public class AccountSaveApi extends PrivateApiComponentBase {
                     vo.setPassword(RC4Util.encrypt(vo.getPassword()));
                 }
             }
-            if (vo.getProtocol() == null) {
+            if (vo.getProtocolId() == null) {
                 throw new ResourceCenterAccountProtocolNotFoundByNameException(vo.getProtocol());
             }
-            AccountProtocolVo protocolVo = resourceCenterMapper.getAccountProtocolVoByProtocolName(vo.getProtocol());
-            vo.setProtocolId(protocolVo.getProtocolId());
+            AccountProtocolVo protocolVo = resourceCenterMapper.getAccountProtocolVoByProtocolId(vo.getProtocolId());
+            vo.setProtocolId(protocolVo.getId());
             resourceCenterMapper.updateAccount(vo);
         } else {
             vo.setPassword(RC4Util.encrypt(vo.getPassword()));

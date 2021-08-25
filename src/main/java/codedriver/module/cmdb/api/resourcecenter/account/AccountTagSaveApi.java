@@ -59,7 +59,6 @@ public class AccountTagSaveApi extends PrivateApiComponentBase {
         if (CollectionUtils.isEmpty(tagArray)) {
             throw new ParamNotExistsException("tagList");
         }
-        String schemaName = TenantContext.get().getDataDbName();
         Long accountId = paramObj.getLong("accountId");
         if (resourceCenterMapper.checkAccountIsExists(accountId) == 0) {
             throw new ResourceNotFoundException(accountId);

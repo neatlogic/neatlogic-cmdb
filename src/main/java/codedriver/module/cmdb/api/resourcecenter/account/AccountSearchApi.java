@@ -69,8 +69,14 @@ public class AccountSearchApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONObject resultObj = new JSONObject();
         List<AccountVo> accountVoList = null;
+        List<Long> idList = new ArrayList<>();
         AccountVo searchVo = JSON.toJavaObject(paramObj, AccountVo.class);
-        List<Long> idList = resourceCenterMapper.getAccountIdList(searchVo);
+        accountVoList = resourceCenterMapper.searchAccount(searchVo);
+        if (CollectionUtils.isNotEmpty(accountVoList)) {
+            for (int i = 0; i < accountVoList.size(); i++) {
+                idList.add(accountVoList.get(i).getId());
+            }
+        }
         if (CollectionUtils.isNotEmpty(idList)) {
             List<AccountTagVo> accountTagVoList = resourceCenterMapper.getAccountTagListByAccountIdList(idList);
             Map<Long, List<TagVo>> AccountTagVoMap = new HashMap<>();
@@ -82,7 +88,6 @@ public class AccountSearchApi extends PrivateApiComponentBase {
                     AccountTagVoMap.computeIfAbsent(accountTagVo.getAccountId(), k -> new ArrayList<>()).add(tagMap.get(accountTagVo.getTagId()));
                 }
             }
-            accountVoList = resourceCenterMapper.searchAccount(searchVo);
             for (AccountVo accountVo : accountVoList) {
                 List<TagVo> tagVoList = AccountTagVoMap.get(accountVo.getId());
                 if (CollectionUtils.isNotEmpty(tagVoList)) {

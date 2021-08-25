@@ -51,7 +51,7 @@ public class AccountProtocolDeleteApi extends PrivateApiComponentBase {
         String protocol = paramObj.getString("name");
         AccountProtocolVo accountProtocolVo = resourceCenterMapper.getAccountProtocolVoByProtocolName(protocol);
         if (accountProtocolVo == null) {
-            throw new ResourceCenterAccountProtocolNotFoundException(accountProtocolVo.getProtocolId());
+            throw new ResourceCenterAccountProtocolNotFoundException(accountProtocolVo.getId());
         }
         if (resourceCenterMapper.checkAccountProtocolHasBeenReferredByProtocol(protocol) > 0) {
             throw new ResourceCenterAccountProtocolHasBeenReferredException(protocol);

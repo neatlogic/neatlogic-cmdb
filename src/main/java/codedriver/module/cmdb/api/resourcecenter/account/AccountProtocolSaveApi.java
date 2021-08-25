@@ -54,7 +54,7 @@ public class AccountProtocolSaveApi extends PrivateApiComponentBase {
         AccountProtocolVo accountProtocolVo = JSON.toJavaObject(paramObj, AccountProtocolVo.class);
         Long id = paramObj.getLong("protocolId");
         if (resourceCenterMapper.checkAccountProtocolIsRepeats(accountProtocolVo) > 0) {
-            throw new ResourceCenterAccountProtocolRepeatException(accountProtocolVo.getProtocol());
+            throw new ResourceCenterAccountProtocolRepeatException(accountProtocolVo.getName());
         }
         if (id != null) {
             if (resourceCenterMapper.checkAccountProtocolIsExistsById(id) == 0) {
@@ -71,7 +71,7 @@ public class AccountProtocolSaveApi extends PrivateApiComponentBase {
         return value -> {
             AccountProtocolVo accountProtocolVo = JSON.toJavaObject(value, AccountProtocolVo.class);
             if (resourceCenterMapper.checkAccountProtocolIsRepeats(accountProtocolVo) > 0) {
-                return new FieldValidResultVo(new ResourceCenterAccountProtocolRepeatException(accountProtocolVo.getProtocol()));
+                return new FieldValidResultVo(new ResourceCenterAccountProtocolRepeatException(accountProtocolVo.getName()));
             }
             return new FieldValidResultVo();
         };
