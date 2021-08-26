@@ -60,6 +60,7 @@ public class AccountDeleteApi extends PrivateApiComponentBase {
             throw new ResourceCenterAccountHasBeenReferredException(account.getName());
         }
         resourceCenterMapper.deleteAccountById(id);
+        resourceCenterMapper.deleteAccountTagByAccountId(id);
         return null;
     }
 
