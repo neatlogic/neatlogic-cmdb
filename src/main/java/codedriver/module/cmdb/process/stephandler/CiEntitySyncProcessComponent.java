@@ -169,6 +169,7 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
                                 auditObj.put("action", TransactionActionType.DELETE.getValue());
                                 CiEntityVo ciEntityVo = new CiEntityVo();
                                 ciEntityVo.setId(ciEntityObj.getLong("id"));
+                                ciEntityVo.setDescription(ciEntityObj.getString("description"));
                                 Long transactionId = ciEntityService.deleteCiEntity(ciEntityVo, true, transactionGroupVo);
                                 auditObj.put("status", "success");
                                 auditObj.put("transactionId", transactionId);
@@ -177,7 +178,7 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
                                 ciEntityTransactionVo.setCiId(ciId);
                                 ciEntityTransactionVo.setCiEntityId(id);
                                 ciEntityTransactionVo.setCiEntityUuid(uuid);
-
+                                ciEntityTransactionVo.setDescription(ciEntityObj.getString("description"));
                                 if ("insert".equalsIgnoreCase(ciEntityObj.getString("actionType")) || id == null) {
                                     ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
                                 } else {

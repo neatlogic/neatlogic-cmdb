@@ -271,7 +271,7 @@ public class CiEntityServiceImpl implements CiEntityService {
         //如果作为属性被引用，则不能删除
         List<AttrVo> attrList = ciEntityMapper.getAttrListByToCiEntityId(ciEntityId);
         if (CollectionUtils.isNotEmpty(attrList)) {
-            throw new CiEntityIsInUsedException(attrList);
+            throw new CiEntityIsInUsedException(baseCiEntityVo, attrList);
         }
 
         TransactionVo transactionVo = new TransactionVo();
