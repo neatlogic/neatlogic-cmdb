@@ -216,6 +216,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
                 entityObj.put("uuid", entity.getUuid());
                 entityObj.put("name", entity.getName());
                 entityObj.put("ciId", entity.getCiId());
+                entityObj.put("rootCiId", entity.getRootCiId());
                 entityObj.put("ciName", entity.getCiName());
                 entityObj.put("ciLabel", entity.getCiLabel());
                 entityObj.put("type", entity.getTypeId());
