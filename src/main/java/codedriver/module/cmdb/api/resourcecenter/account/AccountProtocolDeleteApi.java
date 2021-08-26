@@ -40,7 +40,6 @@ public class AccountProtocolDeleteApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "id", type = ApiParamType.LONG, desc = "协议ID"),
-            @Param(name = "name", type = ApiParamType.STRING, desc = "协议名称"),
     })
     @Output({
     })
@@ -48,13 +47,12 @@ public class AccountProtocolDeleteApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long id = paramObj.getLong("id");
-        String protocol = paramObj.getString("name");
-        AccountProtocolVo accountProtocolVo = resourceCenterMapper.getAccountProtocolVoByProtocolName(protocol);
-        if (accountProtocolVo == null) {
-            throw new ResourceCenterAccountProtocolNotFoundException(accountProtocolVo.getId());
+        AccountProtocolVo accountProtocolVo = resourceCenterMapper.getAccountProtocolVoByProtocolId(id);
+        if (id == null) {
+            throw new ResourceCenterAccountProtocolNotFoundException(id);
         }
-        if (resourceCenterMapper.checkAccountProtocolHasBeenReferredByProtocol(protocol) > 0) {
-            throw new ResourceCenterAccountProtocolHasBeenReferredException(protocol);
+        if (resourceCenterMapper.checkAccountProtocolHasBeenReferredByProtocol(accountProtocolVo.getName()) > 0) {
+            throw new ResourceCenterAccountProtocolHasBeenReferredException(accountProtocolVo.getName());
         }
         resourceCenterMapper.deleteResourceAccountProtocolById(id);
         return null;

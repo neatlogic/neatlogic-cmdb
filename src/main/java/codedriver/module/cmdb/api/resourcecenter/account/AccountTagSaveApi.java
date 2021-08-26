@@ -1,6 +1,5 @@
 package codedriver.module.cmdb.api.resourcecenter.account;
 
-import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountTagVo;
@@ -75,7 +74,7 @@ public class AccountTagSaveApi extends PrivateApiComponentBase {
                 tagIdList.add(tagVo.getId());
             }
         }
-        resourceCenterMapper.deleteResourceTagByAccountId(accountId);
+        resourceCenterMapper.deleteAccountTagByAccountId(accountId);
         List<AccountTagVo> accountTagVoList = new ArrayList<>();
         for (Long tagId : tagIdList) {
             accountTagVoList.add(new AccountTagVo(accountId, tagId));

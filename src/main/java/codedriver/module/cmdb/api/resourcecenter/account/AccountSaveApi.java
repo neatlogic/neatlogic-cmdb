@@ -32,6 +32,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -79,15 +80,31 @@ public class AccountSaveApi extends PrivateApiComponentBase {
         }
         List<Long> tagIdList = vo.getTagIdList();
         List<AccountTagVo> accountTagVoList = new ArrayList<>();
-        List<TagVo> tagVoList = resourceCenterMapper.searchTagListByIdList(tagIdList);
-        if (!CollectionUtils.isEmpty(tagVoList)) {
-            for (int i = 0; i < tagVoList.size(); i++) {
-                if (tagVoList.get(i).getId() == null) {
-                    throw new ResourceCenterTagNotFoundException(id);
+        if (!CollectionUtils.isEmpty(tagIdList)) {
+            List<Long> notFoundTagIdList = new ArrayList<>();
+            List<Long> searchTagIdList = null;
+            List<Long> insertTagIdList = new ArrayList<>();
+            insertTagIdList.addAll(tagIdList);
+            List<TagVo> tagVoList = resourceCenterMapper.searchTagListByIdList(tagIdList);
+            searchTagIdList = tagVoList.stream().map(TagVo::getId).collect(Collectors.toList());
+            insertTagIdList.removeAll(searchTagIdList);
+            if (!CollectionUtils.isEmpty(insertTagIdList)) {
+                notFoundTagIdList.addAll(insertTagIdList);
+                if (!CollectionUtils.isEmpty(notFoundTagIdList)) {
+                    throw new ResourceCenterTagNotFoundException(notFoundTagIdList);
                 }
-                accountTagVoList.add(new AccountTagVo(vo.getId(), tagVoList.get(i).getId()));
             }
-            resourceCenterMapper.insertIgnoreAccountTag(accountTagVoList);
+            resourceCenterMapper.deleteAccountTagByAccountId(id);
+            for (Long tagId : tagIdList) {
+                accountTagVoList.add(new AccountTagVo(id, tagId));
+                if (accountTagVoList.size() > 100) {
+                    resourceCenterMapper.insertIgnoreAccountTag(accountTagVoList);
+                    accountTagVoList.clear();
+                }
+            }
+            if (!CollectionUtils.isEmpty(accountTagVoList)) {
+                resourceCenterMapper.insertIgnoreAccountTag(accountTagVoList);
+            }
         }
         if (protocolId == null) {
             throw new ResourceCenterAccountProtocolNotFoundException(protocolId);

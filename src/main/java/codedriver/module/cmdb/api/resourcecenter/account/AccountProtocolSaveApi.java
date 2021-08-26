@@ -42,8 +42,8 @@ public class AccountProtocolSaveApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "protocolId", type = ApiParamType.LONG,isRequired = true, desc = "协议ID"),
-            @Param(name = "protocol", type = ApiParamType.STRING, isRequired = true,desc = "协议名称"),
+            @Param(name = "id", type = ApiParamType.LONG, isRequired = false, desc = "协议ID"),
+            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "协议名称"),
 
     })
     @Output({
@@ -52,29 +52,19 @@ public class AccountProtocolSaveApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         AccountProtocolVo accountProtocolVo = JSON.toJavaObject(paramObj, AccountProtocolVo.class);
-        Long id = paramObj.getLong("protocolId");
-        if (resourceCenterMapper.checkAccountProtocolIsRepeats(accountProtocolVo) > 0) {
-            throw new ResourceCenterAccountProtocolRepeatException(accountProtocolVo.getName());
-        }
+        Long id = paramObj.getLong("id");
         if (id != null) {
-            if (resourceCenterMapper.checkAccountProtocolIsExistsById(id) == 0) {
-                throw new ResourceCenterAccountProtocolNotFoundException(id);
+            if (resourceCenterMapper.checkAccountProtocolIsRepeats(accountProtocolVo) > 0) {
+                throw new ResourceCenterAccountProtocolRepeatException(accountProtocolVo.getName());
             }
             resourceCenterMapper.updateAccountProtocol(accountProtocolVo);
         } else {
-            resourceCenterMapper.insertAccountProtocol(accountProtocolVo);
+            if (resourceCenterMapper.checkAccountProtocolIsRepeats(accountProtocolVo) > 0) {
+                throw new ResourceCenterAccountProtocolRepeatException(accountProtocolVo.getName());
+            }
+            resourceCenterMapper.insertAccountProtocol(new AccountProtocolVo(accountProtocolVo.getId(), accountProtocolVo.getName()));
         }
         return null;
-    }
-
-    public IValid name() {
-        return value -> {
-            AccountProtocolVo accountProtocolVo = JSON.toJavaObject(value, AccountProtocolVo.class);
-            if (resourceCenterMapper.checkAccountProtocolIsRepeats(accountProtocolVo) > 0) {
-                return new FieldValidResultVo(new ResourceCenterAccountProtocolRepeatException(accountProtocolVo.getName()));
-            }
-            return new FieldValidResultVo();
-        };
     }
 
 
