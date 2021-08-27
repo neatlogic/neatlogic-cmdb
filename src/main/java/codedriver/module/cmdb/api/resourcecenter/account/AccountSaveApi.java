@@ -94,9 +94,9 @@ public class AccountSaveApi extends PrivateApiComponentBase {
                     throw new ResourceCenterTagNotFoundException(notFoundTagIdList);
                 }
             }
-            resourceCenterMapper.deleteAccountTagByAccountId(id);
+            resourceCenterMapper.deleteAccountTagByAccountId(vo.getId());
             for (Long tagId : tagIdList) {
-                accountTagVoList.add(new AccountTagVo(id, tagId));
+                accountTagVoList.add(new AccountTagVo(vo.getId(), tagId));
                 if (accountTagVoList.size() > 100) {
                     resourceCenterMapper.insertIgnoreAccountTag(accountTagVoList);
                     accountTagVoList.clear();
