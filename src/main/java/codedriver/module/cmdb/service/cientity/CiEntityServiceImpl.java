@@ -263,7 +263,16 @@ public class CiEntityServiceImpl implements CiEntityService {
         //检查是否有未提交的删除事务，如果有就不再创建新事务
         List<TransactionVo> transactionList = transactionMapper.getUnCommitTransactionByCiEntityIdAndAction(ciEntityId, TransactionActionType.DELETE.getValue());
         if (CollectionUtils.isNotEmpty(transactionList)) {
-            return 0L;//没有创建新事务
+            throw new CiEntityHasUnCommitTransactionException(baseCiEntityVo, TransactionActionType.DELETE);
+            /*if (!allowCommit) {
+                return 0L;//没有创建新事务
+            } else {
+                //如果需要提交
+                for (TransactionVo transactionVo : transactionList) {
+                    TransactionGroupVo oldTransactionGroup = transactionMapper.getTransactionGroupByTransactionId(transactionVo.getId());
+                    commitTransaction(transactionVo, oldTransactionGroup);
+                }
+            }*/
         }
 
         CiEntityVo oldCiEntityVo = this.getCiEntityById(baseCiEntityVo.getCiId(), ciEntityId);

@@ -256,7 +256,11 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
                                 auditObj.put("transactionId", transactionId);
                             }
                         } catch (Exception ex) {
-                            auditObj.put("error", ex.getMessage());
+                            if (ex instanceof ApiRuntimeException) {
+                                auditObj.put("error", ((ApiRuntimeException) ex).getMessage(true));
+                            } else {
+                                auditObj.put("error", ex.getMessage());
+                            }
                             auditObj.put("status", "failed");
                         } finally {
                             CiEntityVo oldCiEntityVo = ciEntityService.getCiEntityBaseInfoById(ciEntityTransactionVo.getCiEntityId());
