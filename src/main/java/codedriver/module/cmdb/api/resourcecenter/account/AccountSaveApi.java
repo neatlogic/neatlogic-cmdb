@@ -106,7 +106,7 @@ public class AccountSaveApi extends PrivateApiComponentBase {
                 resourceCenterMapper.insertIgnoreAccountTag(accountTagVoList);
             }
         }
-        if (protocolId == null) {
+        if (resourceCenterMapper.checkAccountProtocolIsExistsById(protocolId) == 0) {
             throw new ResourceCenterAccountProtocolNotFoundException(protocolId);
         }
         vo.setLcu(UserContext.get().getUserUuid());
@@ -119,9 +119,6 @@ public class AccountSaveApi extends PrivateApiComponentBase {
                 if (!Objects.equals(vo.getPassword(), oldVo.getPassword())) {
                     vo.setPassword(RC4Util.encrypt(vo.getPassword()));
                 }
-            }
-            if (vo.getProtocolId() == null) {
-                throw new ResourceCenterAccountProtocolNotFoundByNameException(vo.getProtocol());
             }
             AccountProtocolVo protocolVo = resourceCenterMapper.getAccountProtocolVoByProtocolId(vo.getProtocolId());
             vo.setProtocolId(protocolVo.getId());
