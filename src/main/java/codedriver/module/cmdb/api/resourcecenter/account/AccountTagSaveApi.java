@@ -4,7 +4,7 @@ import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountTagVo;
 import codedriver.framework.cmdb.dto.tag.TagVo;
-import codedriver.framework.cmdb.exception.resourcecenter.ResourceNotFoundException;
+import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterAccountNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.restful.annotation.Description;
@@ -60,7 +60,7 @@ public class AccountTagSaveApi extends PrivateApiComponentBase {
         }
         Long accountId = paramObj.getLong("accountId");
         if (resourceCenterMapper.checkAccountIsExists(accountId) == 0) {
-            throw new ResourceNotFoundException(accountId);
+            throw new ResourceCenterAccountNotFoundException(accountId);
         }
         List<String> tagList = tagArray.toJavaList(String.class);
         List<TagVo> existTagList = resourceCenterMapper.getTagListByTagNameList(tagList);
