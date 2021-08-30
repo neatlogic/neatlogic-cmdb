@@ -1,5 +1,6 @@
 package codedriver.module.cmdb.api.resourcecenter.resource;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
@@ -41,7 +42,10 @@ public class ResourceAccountSelectComponentApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "keyword", isRequired = false, type = ApiParamType.STRING)
+            @Param(name = "keyword", isRequired = false, type = ApiParamType.STRING),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
+            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true")
     })
     @Output({
             @Param(name = "tbodyList", explode = AccountVo[].class, desc = "账号列表"),
@@ -51,7 +55,10 @@ public class ResourceAccountSelectComponentApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         AccountComponentVo searchVo = JSON.toJavaObject(paramObj, AccountComponentVo.class);
         List<AccountComponentVo> accountComponentVoList = null;
-        accountComponentVoList = resourceCenterMapper.searchAccountComponent(searchVo);
+        String schemaName = TenantContext.get().getDataDbName();
+        accountComponentVoList = resourceCenterMapper.searchAccountComponent(searchVo, schemaName);
+        Integer rowNum = resourceCenterMapper.searchAccountComponentCount(searchVo, schemaName);
+        searchVo.setRowNum(rowNum);
         return TableResultUtil.getResult(accountComponentVoList, searchVo);
 
     }
