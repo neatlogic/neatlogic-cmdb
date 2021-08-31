@@ -23,6 +23,7 @@ import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.CiTypeMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import codedriver.module.cmdb.dot.*;
+import codedriver.module.cmdb.dot.enums.LayoutType;
 import codedriver.module.cmdb.service.customview.CustomViewDataService;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -71,13 +72,15 @@ public class GetCustomViewDataCiEntityTopoApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "customViewId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
+    @Input({@Param(name = "layout", type = ApiParamType.ENUM, rule = "dot,circo,fdp,neato,osage,patchwork,twopi", isRequired = true),
+            @Param(name = "customViewId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
             @Param(name = "ciEntityId", type = ApiParamType.LONG, isRequired = true, desc = "配置项id"),
             @Param(name = "level", type = ApiParamType.INTEGER, desc = "自动展开关系层数，默认是1")})
     @Output({@Param(name = "topo", type = ApiParamType.STRING)})
     @Description(desc = "获取自定义视图配置项拓扑接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
+        String layout = jsonObj.getString("layout");
         CustomViewConditionVo customViewConditionVo = JSONObject.toJavaObject(jsonObj, CustomViewConditionVo.class);
         CustomViewVo customViewVo = customViewDataService.getCustomViewCiEntityById(customViewConditionVo);
         //提取cientityid，补充层次等属性
@@ -113,7 +116,7 @@ public class GetCustomViewDataCiEntityTopoApi extends PrivateApiComponentBase {
 
         // 开始绘制dot图
         if (CollectionUtils.isNotEmpty(ciEntityList)) {
-            Graphviz.Builder gb = new Graphviz.Builder();
+            Graphviz.Builder gb = new Graphviz.Builder(LayoutType.get(layout));
             for (CiTypeVo ciTypeVo : ciTypeList) {
                 if (ciTypeIdSet.contains(ciTypeVo.getId())) {
                     Layer.Builder lb = new Layer.Builder("CiType" + ciTypeVo.getId());
@@ -123,7 +126,7 @@ public class GetCustomViewDataCiEntityTopoApi extends PrivateApiComponentBase {
                             Node.Builder nb =
                                     new Node.Builder("CiEntity_" + ciEntityVo.getCiId() + "_" + ciEntityVo.getId());// 必须按照这个格式写，前端会通过下划线来提取ciid和cientityid
                             nb.withTooltip(ciEntityVo.getName());
-                            nb.withLabel(ciEntityVo.getName());
+                            nb.withLabel(StringUtils.isNotBlank(ciEntityVo.getName()) ? ciEntityVo.getName() : "无名配置项");
                             nb.withImage(ciEntityVo.getCiIcon());
                             if (ciEntityId.equals(ciEntityVo.getId())) {
                                 nb.withFontColor("red");

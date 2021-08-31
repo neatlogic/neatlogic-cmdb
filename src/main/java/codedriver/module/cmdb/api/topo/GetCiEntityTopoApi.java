@@ -19,6 +19,7 @@ import codedriver.framework.util.Md5Util;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.CiTypeMapper;
 import codedriver.module.cmdb.dot.*;
+import codedriver.module.cmdb.dot.enums.LayoutType;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -62,13 +63,15 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
+    @Input({@Param(name = "layout", type = ApiParamType.ENUM, rule = "dot,circo,fdp,neato,osage,patchwork,twopi", isRequired = true),
+            @Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
             @Param(name = "ciEntityId", type = ApiParamType.LONG, isRequired = true, desc = "配置项id"),
             @Param(name = "level", type = ApiParamType.INTEGER, desc = "自动展开关系层数，默认是1")})
     @Output({@Param(name = "topo", type = ApiParamType.STRING)})
     @Description(desc = "获取配置项拓扑接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
+        String layout = jsonObj.getString("layout");
         // 所有需要绘制的配置项
         Set<CiEntityVo> ciEntitySet = new HashSet<>();
         // 所有需要绘制的层次
@@ -147,7 +150,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
         }
         // 开始绘制dot图
         if (!ciEntitySet.isEmpty()) {
-            Graphviz.Builder gb = new Graphviz.Builder();
+            Graphviz.Builder gb = new Graphviz.Builder(LayoutType.get(layout));
             for (CiTypeVo ciTypeVo : ciTypeList) {
                 if (ciTypeIdSet.contains(ciTypeVo.getId())) {
                     Layer.Builder lb = new Layer.Builder("CiType" + ciTypeVo.getId());

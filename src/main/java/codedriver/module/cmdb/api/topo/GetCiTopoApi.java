@@ -17,6 +17,7 @@ import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
 import codedriver.module.cmdb.dot.*;
+import codedriver.module.cmdb.dot.enums.LayoutType;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -55,7 +56,7 @@ public class GetCiTopoApi extends PrivateApiComponentBase {
     }
 
     public static void main(String[] ag) {
-        Graphviz.Builder gb = new Graphviz.Builder();
+        Graphviz.Builder gb = new Graphviz.Builder(LayoutType.DOT);
         Random random = new Random();
         List<Node> nodeList = new ArrayList<>();
         for (int i = 1; i <= 3; i++) {
@@ -97,17 +98,19 @@ public class GetCiTopoApi extends PrivateApiComponentBase {
         System.out.println(gb.build().toString());
     }
 
-    @Input({@Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字"),
+    @Input({@Param(name = "layout", type = ApiParamType.ENUM, rule = "dot,circo,fdp,neato,osage,patchwork,twopi", isRequired = true),
+            @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字"),
             @Param(name = "typeId", type = ApiParamType.LONG, desc = "类型id")})
     @Output({@Param(name = "topo", type = ApiParamType.STRING)})
     @Description(desc = "获取模型拓扑接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
+        String layout = jsonObj.getString("layout");
         CiVo ci = JSONObject.toJavaObject(jsonObj, CiVo.class);
         ci.setIsTypeShowInTopo(1);
         List<CiTypeVo> ciTypeList = ciMapper.searchCiTypeCi(ci);
         List<RelVo> relList = relMapper.getAllRelList();
-        Graphviz.Builder gb = new Graphviz.Builder();
+        Graphviz.Builder gb = new Graphviz.Builder(LayoutType.get(layout));
         Set<Long> ciIdSet = new HashSet<>();
         for (CiTypeVo ciTypeVo : ciTypeList) {
             if (CollectionUtils.isNotEmpty(ciTypeVo.getCiList())) {
@@ -153,6 +156,7 @@ public class GetCiTopoApi extends PrivateApiComponentBase {
         if (logger.isDebugEnabled()) {
             logger.debug(dot);
         }
+        System.out.println(dot);
         return dot;
     }
 

@@ -96,26 +96,28 @@ public class Node {
 
 
         public Builder withLabel(String _label) {
-            _label = _label.trim();
-            List<String> labelList = new ArrayList<>();
-            int s = _label.length() / LABEL_LENGTH;
-            for (int i = 0; i < s; i++) {
-                labelList.add(_label.substring(0, Math.min(LABEL_LENGTH, _label.length())));
-                _label = _label.substring(Math.min(LABEL_LENGTH, _label.length()));
-            }
             if (StringUtils.isNotBlank(_label)) {
-                labelList.add(_label);
-            }
-            StringBuilder returnLabel = new StringBuilder();
-            segment = 0;
-            for (String lb : labelList) {
-                if (StringUtils.isNotBlank(returnLabel)) {
-                    returnLabel.append("\n");
-                    segment++;
+                _label = _label.trim();
+                List<String> labelList = new ArrayList<>();
+                int s = _label.length() / LABEL_LENGTH;
+                for (int i = 0; i < s; i++) {
+                    labelList.add(_label.substring(0, Math.min(LABEL_LENGTH, _label.length())));
+                    _label = _label.substring(Math.min(LABEL_LENGTH, _label.length()));
                 }
-                returnLabel.append(lb);
+                if (StringUtils.isNotBlank(_label)) {
+                    labelList.add(_label);
+                }
+                StringBuilder returnLabel = new StringBuilder();
+                segment = 0;
+                for (String lb : labelList) {
+                    if (StringUtils.isNotBlank(returnLabel)) {
+                        returnLabel.append("\n");
+                        segment++;
+                    }
+                    returnLabel.append(lb);
+                }
+                this.label = returnLabel.toString();
             }
-            this.label = returnLabel.toString();
             return this;
         }
 
