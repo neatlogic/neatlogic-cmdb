@@ -359,7 +359,8 @@
             `is_menu`      = #{isMenu},
             `parent_ci_id` = #{parentCiId},
             `is_abstract`  = #{isAbstract},
-            `is_virtual`   = #{isVirtual}
+            `is_virtual`   = #{isVirtual},
+            `file_id`      = #{fileId}
         WHERE `id` = #{id}
     </update>
 

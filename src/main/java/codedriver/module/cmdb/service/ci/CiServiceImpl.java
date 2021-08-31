@@ -138,10 +138,32 @@ public class CiServiceImpl implements CiService {
             List<AttrVo> attrList = viewBuilder.getAttrList();
             if (CollectionUtils.isNotEmpty(attrList)) {
                 Map<String, Long> attrIdMap = new HashMap<>();
+                List<AttrVo> oldAttrList = attrMapper.getAttrByCiId(ciVo.getId());
+                Map<String, Long> oldAttrMap = new HashMap<>();
+                Map<Long, Boolean> attrExistsMap = new HashMap<>();
+                if (CollectionUtils.isNotEmpty(oldAttrList)) {
+                    for (AttrVo attrVo : oldAttrList) {
+                        oldAttrMap.put(attrVo.getName(), attrVo.getId());
+                        attrExistsMap.put(attrVo.getId(), false);
+                    }
+                }
                 for (AttrVo attrVo : attrList) {
-                    attrVo.setCiId(ciVo.getId());
-                    attrMapper.insertAttr(attrVo);
+                    if (!oldAttrMap.containsKey(attrVo.getName())) {
+                        attrVo.setCiId(ciVo.getId());
+                        attrMapper.insertAttr(attrVo);
+                    } else {
+                        //还原原来的id
+                        attrVo.setId(oldAttrMap.get(attrVo.getName()));
+                        attrMapper.updateAttr(attrVo);
+                        attrExistsMap.put(attrVo.getId(), true);
+                    }
                     attrIdMap.put(attrVo.getName(), attrVo.getId());
+                }
+                //删除没用的属性
+                for (Long key : attrExistsMap.keySet()) {
+                    if (!attrExistsMap.get(key)) {
+                        attrMapper.deleteAttrById(key);
+                    }
                 }
                 viewBuilder.setAttrIdMap(attrIdMap);
                 EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {

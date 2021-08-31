@@ -58,18 +58,17 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "批量保存配置项";
+        return "保存配置项";
     }
 
     @Override
     public String getConfig() {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Input({@Param(name = "ciEntityList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "配置项数据"),
             @Param(name = "needCommit", type = ApiParamType.BOOLEAN, isRequired = true, desc = "是否需要提交")})
-    @Description(desc = "批量保存配置项接口")
+    @Description(desc = "保存配置项接口")
     @Example(example = "{\"ciEntityList\":[{\"attrEntityData\":{\"attr_323010784722944\":{\"valueList\":[\"测试环境\"],\"name\":\"label\",\"label\":\"显示名\",\"type\":\"text\",\"saveMode\":\"merge\"},\"attr_323010700836864\":{\"valueList\":[\"stg33\"],\"name\":\"name\",\"label\":\"唯一标识\",\"type\":\"text\"}},\"ciId\":323010541453312,\"id\":330340423237635,\"uuid\":\"3e3e74b1947b400aa34d7c6964f79168\"}]}")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
