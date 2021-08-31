@@ -156,7 +156,7 @@ public class GetCiTopoApi extends PrivateApiComponentBase {
         if (logger.isDebugEnabled()) {
             logger.debug(dot);
         }
-        System.out.println(dot);
+        // System.out.println(dot);
         return dot;
     }
 
