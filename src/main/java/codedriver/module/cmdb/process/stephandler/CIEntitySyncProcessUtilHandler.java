@@ -1,27 +1,25 @@
 package codedriver.module.cmdb.process.stephandler;
 
-import java.util.*;
-
+import codedriver.framework.process.constvalue.ProcessTaskOperationType;
+import codedriver.framework.process.dto.ProcessStepVo;
+import codedriver.framework.process.dto.ProcessStepWorkerPolicyVo;
+import codedriver.framework.process.dto.ProcessTaskStepVo;
 import codedriver.framework.process.dto.processconfig.ActionConfigActionVo;
 import codedriver.framework.process.dto.processconfig.ActionConfigVo;
 import codedriver.framework.process.dto.processconfig.NotifyPolicyConfigVo;
+import codedriver.framework.process.stephandler.core.ProcessStepInternalHandlerBase;
 import codedriver.framework.process.util.ProcessConfigUtil;
-import com.alibaba.fastjson.JSONPath;
+import codedriver.module.cmdb.process.notifyhandler.CiEntitySyncNotifyHandler;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-
-import codedriver.framework.process.constvalue.ProcessTaskOperationType;
-import codedriver.framework.process.dto.ProcessStepVo;
-import codedriver.framework.process.dto.ProcessStepWorkerPolicyVo;
-import codedriver.framework.process.dto.ProcessTaskStepVo;
-import codedriver.framework.process.operationauth.core.IOperationAuthHandlerType;
-import codedriver.framework.process.stephandler.core.ProcessStepInternalHandlerBase;
-import codedriver.module.cmdb.process.notifyhandler.CiEntitySyncNotifyHandler;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 @Service
 public class CIEntitySyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
@@ -144,7 +142,7 @@ public class CIEntitySyncProcessUtilHandler extends ProcessStepInternalHandlerBa
         ProcessTaskOperationType[] stepButtons = {
                 ProcessTaskOperationType.STEP_COMPLETE,
                 ProcessTaskOperationType.STEP_BACK,
-                ProcessTaskOperationType.TASK_TRANSFER,
+                ProcessTaskOperationType.PROCESSTASK_TRANSFER,
                 ProcessTaskOperationType.STEP_START
         };
         JSONArray customButtonList = configObj.getJSONArray("customButtonList");
@@ -216,7 +214,7 @@ public class CIEntitySyncProcessUtilHandler extends ProcessStepInternalHandlerBa
         ProcessTaskOperationType[] stepButtons = {
                 ProcessTaskOperationType.STEP_COMPLETE,
                 ProcessTaskOperationType.STEP_BACK,
-                ProcessTaskOperationType.TASK_TRANSFER,
+                ProcessTaskOperationType.PROCESSTASK_TRANSFER,
                 ProcessTaskOperationType.STEP_START
         };
 
