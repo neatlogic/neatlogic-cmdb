@@ -10,9 +10,13 @@ import codedriver.framework.form.attribute.core.FormHandlerBase;
 import codedriver.framework.form.constvalue.FormConditionModel;
 import codedriver.framework.form.dto.AttributeDataVo;
 import codedriver.framework.form.exception.AttributeValidException;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -103,12 +107,26 @@ public class CmdbCientityHandler extends FormHandlerBase {
 
     @Override
     public Object valueConversionText(AttributeDataVo attributeDataVo, JSONObject configObj) {
-        return null;
+        List<String> resultList = new ArrayList<>();
+        JSONObject dataObj = (JSONObject) attributeDataVo.getDataObj();
+        if (MapUtils.isNotEmpty(dataObj)) {
+            JSONArray selectedCiEntityList = dataObj.getJSONArray("selectedCiEntityList");
+            for (int i = 0; i < selectedCiEntityList.size(); i++) {
+                JSONObject selectedCiEntityObj = selectedCiEntityList.getJSONObject(i);
+                if (MapUtils.isNotEmpty(selectedCiEntityObj)) {
+                    String name = selectedCiEntityObj.getString("name");
+                    if (StringUtils.isNotBlank(name)) {
+                        resultList.add(name);
+                    }
+                }
+            }
+        }
+        return resultList;
     }
 
     @Override
     public Object dataTransformationForEmail(AttributeDataVo attributeDataVo, JSONObject configObj) {
-        return null;
+        return valueConversionText(attributeDataVo, configObj);
     }
 
     @Override
