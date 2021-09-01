@@ -26,11 +26,13 @@ public class CiEntityBuilder {
     private Map<Long, AttrVo> attrMap;
     private Map<Long, RelVo> relMap;
     private final CiVo ciVo;
+    private boolean flattenAttr = false;
 
     private CiEntityBuilder(Builder builder) {
         resultList = builder.resultList;
         List<AttrVo> attrList = builder.attrList;
         List<RelVo> relList = builder.relList;
+        flattenAttr = builder.flattenAttr;
         ciVo = builder.ciVo;
         paramCiEntityVo = builder.ciEntityVo;
         if (CollectionUtils.isNotEmpty(attrList)) {
@@ -51,6 +53,14 @@ public class CiEntityBuilder {
         Map<Long, CiEntityVo> ciEntityMap = new LinkedHashMap<>();
         if (CollectionUtils.isNotEmpty(resultList)) {
             for (Map<String, Object> result : resultList) {
+                //由于mybatis去掉了值为null的属性字段，为了避免比对时数据不一致，所以要补充不存在的属性
+                if (flattenAttr) {
+                    for (Long attrId : attrMap.keySet()) {
+                        if (!result.containsKey("attr_" + attrId)) {
+                            result.put("attr_" + attrId, null);
+                        }
+                    }
+                }
                 CiEntityVo ciEntityVo;
 
                 Long id = result.get("id") != null ? Long.valueOf(String.valueOf(result.get("id"))) : null;
@@ -160,6 +170,15 @@ public class CiEntityBuilder {
         CiEntityVo ciEntityVo = null;
         if (CollectionUtils.isNotEmpty(resultList)) {
             for (Map<String, Object> result : resultList) {
+                //由于mybatis去掉了值为null的属性字段，为了避免比对时数据不一致，所以要补充不存在的属性
+                if (flattenAttr) {
+                    for (Long attrId : attrMap.keySet()) {
+                        if (!result.containsKey("attr_" + attrId)) {
+                            result.put("attr_" + attrId, null);
+                        }
+                    }
+                }
+
                 Long id = result.get("id") != null ? Long.valueOf(String.valueOf(result.get("id"))) : null;
                 String name = result.get("name") != null ? String.valueOf(result.get("name")) : null;
                 String uuid = result.get("uuid") != null ? String.valueOf(result.get("uuid")) : null;
@@ -271,6 +290,7 @@ public class CiEntityBuilder {
         private final List<AttrVo> attrList;
         private final List<RelVo> relList;
         private final CiVo ciVo;
+        private boolean flattenAttr = false;
 
         public Builder(CiEntityVo _ciEntityVo, List<Map<String, Object>> _resultList, CiVo _ciVo, List<AttrVo> _attrList, List<RelVo> _relList) {
             ciEntityVo = _ciEntityVo;
@@ -278,6 +298,11 @@ public class CiEntityBuilder {
             attrList = _attrList;
             relList = _relList;
             ciVo = _ciVo;
+        }
+
+        public Builder isFlattenAttr(boolean flattenAttr) {
+            this.flattenAttr = flattenAttr;
+            return this;
         }
 
         public CiEntityBuilder build() {
@@ -296,11 +321,13 @@ public class CiEntityBuilder {
         attrObj.put("targetCiId", attrVo.getTargetCiId());
         attrObj.put("ciId", attrVo.getCiId());
         JSONArray valueList = new JSONArray();
-        try {
-            //例如附件型参数有可能是个数组，所以先尝试做转换，不行再当字符串处理
-            valueList = JSONArray.parseArray(value.toString());
-        } catch (Exception ignored) {
-            valueList.add(value);
+        if (value != null) {
+            try {
+                //例如附件型参数有可能是个数组，所以先尝试做转换，不行再当字符串处理
+                valueList = JSONArray.parseArray(value.toString());
+            } catch (Exception ignored) {
+                valueList.add(value);
+            }
         }
         attrObj.put("valueList", valueList);
         //attrObj.put("actualValueList", AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValueList(attrVo, valueList));

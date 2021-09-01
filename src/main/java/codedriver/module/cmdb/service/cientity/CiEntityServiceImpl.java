@@ -78,8 +78,7 @@ public class CiEntityServiceImpl implements CiEntityService {
         return ciEntityMapper.getCiEntityBaseInfoById(ciEntityId);
     }
 
-    @Override
-    public CiEntityVo getCiEntityById(Long ciId, Long ciEntityId) {
+    private CiEntityVo getCiEntityById(Long ciId, Long ciEntityId, Boolean flattenAttr) {
         CiVo ciVo = ciMapper.getCiById(ciId);
         if (ciVo == null) {
             throw new CiNotFoundException(ciId);
@@ -103,7 +102,12 @@ public class CiEntityServiceImpl implements CiEntityService {
         ciEntityVo.setAttrList(attrList);
         ciEntityVo.setRelList(relList);
         List<Map<String, Object>> resultList = ciEntityMapper.getCiEntityById(ciEntityVo);
-        return new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, attrList, relList).build().getCiEntity();
+        return new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, attrList, relList).isFlattenAttr(flattenAttr).build().getCiEntity();
+    }
+
+    @Override
+    public CiEntityVo getCiEntityById(Long ciId, Long ciEntityId) {
+        return getCiEntityById(ciId, ciEntityId, false);
     }
 
     @Override
@@ -364,7 +368,7 @@ public class CiEntityServiceImpl implements CiEntityService {
     @Override
     public Long saveCiEntity(CiEntityTransactionVo ciEntityTransactionVo, TransactionGroupVo transactionGroupVo) {
         if (ciEntityTransactionVo.getAction().equals(TransactionActionType.UPDATE.getValue())) {
-            CiEntityVo oldCiEntityVo = this.getCiEntityById(ciEntityTransactionVo.getCiId(), ciEntityTransactionVo.getCiEntityId());
+            CiEntityVo oldCiEntityVo = this.getCiEntityById(ciEntityTransactionVo.getCiId(), ciEntityTransactionVo.getCiEntityId(), true);
 
             // 正在编辑中的配置项，在事务提交或删除前不允许再次修改
             if (oldCiEntityVo == null) {
@@ -529,7 +533,7 @@ public class CiEntityServiceImpl implements CiEntityService {
         List<RelEntityVo> oldRelEntityList = null;
         if (oldEntity == null) {
             //如果是单纯校验可能会没有旧配置项信息
-            oldEntity = this.getCiEntityById(ciEntityTransactionVo.getCiId(), ciEntityTransactionVo.getCiEntityId());
+            oldEntity = this.getCiEntityById(ciEntityTransactionVo.getCiId(), ciEntityTransactionVo.getCiEntityId(), true);
         }
         if (oldEntity != null) {
             oldAttrEntityList = oldEntity.getAttrEntityList();
