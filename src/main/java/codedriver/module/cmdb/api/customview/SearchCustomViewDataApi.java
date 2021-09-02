@@ -29,7 +29,7 @@ public class SearchCustomViewDataApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取自定义视图数据";
+        return "查询自定义视图数据";
     }
 
     @Override
@@ -48,7 +48,7 @@ public class SearchCustomViewDataApi extends PrivateApiComponentBase {
     })
     @Output({@Param(name = "dataList", type = ApiParamType.JSONARRAY, desc = "结果集"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页大小")})
-    @Description(desc = "获取自定义视图数据接口")
+    @Description(desc = "查询自定义视图数据接口")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         CustomViewConditionVo customViewConditionVo = JSONObject.toJavaObject(paramObj, CustomViewConditionVo.class);
