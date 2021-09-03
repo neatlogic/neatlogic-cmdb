@@ -12,6 +12,12 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface AttrMapper {
+    List<AttrVo> searchAttr(AttrVo attrVo);
+
+    int searchAttrCount(AttrVo attrVo);
+
+    List<AttrVo> getAttrByValidatorId(Long validatorId);
+
     List<AttrExpressionRelVo> getExpressionAttrRelByValueCiIdAndAttrIdList(@Param("valueCiId") Long valueCiId, @Param("valueAttrIdList") List<Long> valueAttrIdList);
 
     List<AttrVo> getExpressionAttrByValueCiIdAndAttrIdList(@Param("valueCiId") Long valueCiId, @Param("valueAttrIdList") List<Long> valueAttrIdList);

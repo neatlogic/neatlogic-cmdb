@@ -35,7 +35,7 @@ public class SearchValidatorApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询属性校验器";
+        return "查询校验规则";
     }
 
     @Override
@@ -48,7 +48,7 @@ public class SearchValidatorApi extends PrivateApiComponentBase {
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数量"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页")})
     @Output({@Param(explode = BasePageVo.class), @Param(name = "tbodyList", explode = ValidatorVo[].class)})
-    @Description(desc = "查询属性校验器接口")
+    @Description(desc = "查询校验规则接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONObject returnObj = new JSONObject();

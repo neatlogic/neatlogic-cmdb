@@ -6,8 +6,52 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.ci.AttrMapper">
-    <!--<cache-ref namespace="codedriver.module.cmdb.dao.mapper.ci.CiMapper"/>
-    <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>-->
+    <cache-ref namespace="codedriver.module.cmdb.dao.mapper.ci.CiMapper"/>
+    <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
+
+    <select id="searchAttr" parameterType="codedriver.framework.cmdb.dto.ci.AttrVo"
+            resultType="codedriver.framework.cmdb.dto.ci.AttrVo">
+        SELECT a.`id`,
+        a.`ci_id` AS ciId,
+        a.`name`,
+        a.`label`,
+        a.`description`,
+        b.name as ciName,
+        b.label as ciLabel
+        FROM `cmdb_attr` a
+        join `cmdb_ci` b on a.ci_id = b.id
+        <include refid="searchAttrCondition"></include>
+    </select>
+
+    <select id="searchAttrCount" parameterType="codedriver.framework.cmdb.dto.ci.AttrVo"
+            resultType="int">
+        SELECT count(1)
+        FROM `cmdb_attr` a
+        <include refid="searchAttrCondition"></include>
+    </select>
+
+    <sql id="searchAttrCondition">
+        <where>
+            <if test="validatorId != null">
+                a.validator_id = #{validatorId}
+            </if>
+        </where>
+    </sql>
+
+    <select id="getAttrByValidatorId" parameterType="java.lang.Long"
+            resultType="codedriver.framework.cmdb.dto.ci.AttrVo" useCache="false">
+        SELECT a.`id`,
+               a.`ci_id` AS ciId,
+               a.`name`,
+               a.`label`,
+               a.`description`,
+               b.name    as ciName,
+               b.label   as ciLabel
+        FROM `cmdb_attr` a
+                 join `cmdb_ci` b on a.ci_id = b.id
+        WHERE a.validator_id = #{value}
+    </select>
+
 
     <select id="getExpressionCiIdByValueCiId" parameterType="java.lang.Long"
             resultType="java.lang.Long">

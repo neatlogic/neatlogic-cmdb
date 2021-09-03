@@ -27,7 +27,7 @@ public class RegexValidator extends ValidatorBase {
     public JSONArray getForm() {
         JSONArray itemList = new JSONArray();
         JSONObject itemObj = new JSONObject();
-        itemObj.put("name", "config_regex");
+        itemObj.put("name", "regex");
         itemObj.put("type", "text");
         itemObj.put("label", "正则表达式");
         itemObj.put("validateList", new String[]{"required"});
