@@ -185,7 +185,7 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
                 .withHeadBgColor(HSSFColor.HSSFColorPredefined.DARK_BLUE)
                 .withColumnWidth(30);
         Workbook workbook = builder.build();
-        String fileNameEncode = ciVo.getLabel() + ".xlsx";
+        String fileNameEncode = ciVo.getId() + "_" + ciVo.getLabel() + ".xlsx";
         boolean flag = request.getHeader("User-Agent").indexOf("Gecko") > 0;
         if (request.getHeader("User-Agent").toLowerCase().indexOf("msie") > 0 || flag) {
             fileNameEncode = URLEncoder.encode(fileNameEncode, "UTF-8");// IE浏览器
