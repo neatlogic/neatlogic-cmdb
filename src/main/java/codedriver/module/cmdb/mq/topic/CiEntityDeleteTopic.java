@@ -29,9 +29,10 @@ public class CiEntityDeleteTopic extends TopicBase<CiEntityTransactionVo> {
 
     @Override
     protected JSONObject generateTopicContent(CiEntityTransactionVo content) {
+        //FIXME 补充内容
         JSONObject dataObj = new JSONObject();
-        dataObj.put("id", "123");
-        dataObj.put("name", "abc");
+        dataObj.put("attrEntityData", content.getAttrEntityData());
+        dataObj.put("relEntityData", content.getRelEntityData());
         return dataObj;
     }
 }

@@ -11,20 +11,20 @@ import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CiEntityUpdateTopic extends TopicBase<CiEntityTransactionVo> {
+public class CiEntityRecoverTopic extends TopicBase<CiEntityTransactionVo> {
     @Override
     public String getName() {
-        return "cmdb/cientity/update";
+        return "cmdb/cientity/recover";
     }
 
     @Override
     public String getLabel() {
-        return "配置项修改";
+        return "配置项恢复";
     }
 
     @Override
     public String getDescription() {
-        return "配置项修改并生效后触发此主题";
+        return "配置项恢复并生效后触发此主题";
     }
 
     @Override

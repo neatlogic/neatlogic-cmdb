@@ -29,6 +29,7 @@ public class CiEntityInsertTopic extends TopicBase<CiEntityTransactionVo> {
 
     @Override
     protected JSONObject generateTopicContent(CiEntityTransactionVo content) {
+        //FIXME 补充内容
         JSONObject dataObj = new JSONObject();
         dataObj.put("id", "123");
         dataObj.put("name", "abc");

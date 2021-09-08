@@ -5,8 +5,17 @@
 
 package codedriver.module.cmdb.service.group;
 
+import codedriver.framework.cmdb.dto.group.GroupVo;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 public interface GroupService {
     List<Long> getCurrentUserGroupIdList();
+
+    @Transactional
+    void insertGroup(GroupVo groupVo);
+
+    @Transactional
+    void updateGroup(GroupVo groupVo);
 }

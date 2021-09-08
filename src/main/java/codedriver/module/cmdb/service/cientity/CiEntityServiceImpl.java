@@ -34,6 +34,7 @@ import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper;
 import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
+import codedriver.module.cmdb.group.CiEntityGroupManager;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.utils.CiEntityBuilder;
 import codedriver.module.cmdb.utils.RelUtil;
@@ -1426,19 +1427,23 @@ public class CiEntityServiceImpl implements CiEntityService {
                 }
             }
 
+            String topicName = "";
             /*
             写入配置项信息
              */
             if (ciEntityTransactionVo.getAction().equals(TransactionActionType.INSERT.getValue())) {
                 this.insertCiEntity(ciEntityVo);
+                topicName = "cmdb/cientity/insert";
             } else if (ciEntityTransactionVo.getAction().equals(TransactionActionType.UPDATE.getValue())) {
                 this.updateCiEntity(ciEntityVo);
+                topicName = "cmdb/cientity/update";
             } else if (ciEntityTransactionVo.getAction().equals(TransactionActionType.RECOVER.getValue())) {
                 if (ciEntityMapper.getCiEntityBaseInfoById(ciEntityTransactionVo.getCiEntityId()) == null) {
                     this.insertCiEntity(ciEntityVo);
                 } else {
                     throw new CiEntityIsRecoveredException(ciEntityVo.getName());
                 }
+                topicName = "cmdb/cientity/recover";
             }
             /*
             写入关系信息
@@ -1525,6 +1530,17 @@ public class CiEntityServiceImpl implements CiEntityService {
                 transactionVo.setCommitUser(UserContext.get().getUserUuid(true));
             }
             transactionMapper.updateTransactionStatus(transactionVo);
+
+            //触发圈子归属判定
+            CiEntityGroupManager.groupCiEntity(ciEntityVo.getCiId(), ciEntityVo.getId());
+
+            //发送消息到消息队列
+            if (StringUtils.isNotBlank(topicName)) {
+                ITopic<CiEntityTransactionVo> topic = TopicFactory.getTopic(topicName);
+                if (topic != null) {
+                    topic.send(ciEntityTransactionVo);
+                }
+            }
             return ciEntityVo.getId();
         }
     }
