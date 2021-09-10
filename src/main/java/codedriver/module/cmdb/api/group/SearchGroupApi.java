@@ -11,7 +11,7 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.framework.util.TableResultUtil;
+import codedriver.framework.util.CardResultUtil;
 import codedriver.module.cmdb.auth.label.CI_MODIFY;
 import codedriver.module.cmdb.dao.mapper.group.GroupMapper;
 import com.alibaba.fastjson.JSONObject;
@@ -61,6 +61,6 @@ public class SearchGroupApi extends PrivateApiComponentBase {
             int rownum = groupMapper.searchGroupCount(groupVo);
             groupVo.setRowNum(rownum);
         }
-        return TableResultUtil.getResult(groupList, groupVo);
+        return CardResultUtil.getResult(groupList, groupVo);
     }
 }

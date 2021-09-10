@@ -6,11 +6,11 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.ci.AttrMapper">
-    <!-- <cache-ref namespace="codedriver.module.cmdb.dao.mapper.ci.CiMapper"/>
-     <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>-->
+    <cache-ref namespace="codedriver.module.cmdb.dao.mapper.ci.CiMapper"/>
+    <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
 
     <select id="searchAttr" parameterType="codedriver.framework.cmdb.dto.ci.AttrVo"
-            resultType="codedriver.framework.cmdb.dto.ci.AttrVo">
+            resultType="codedriver.framework.cmdb.dto.ci.AttrVo" useCache="false">
         SELECT a.`id`,
         a.`ci_id` AS ciId,
         a.`name`,
@@ -24,7 +24,7 @@
     </select>
 
     <select id="searchAttrCount" parameterType="codedriver.framework.cmdb.dto.ci.AttrVo"
-            resultType="int">
+            resultType="int" useCache="false">
         SELECT count(1)
         FROM `cmdb_attr` a
         <include refid="searchAttrCondition"></include>
@@ -54,14 +54,14 @@
 
 
     <select id="getExpressionCiIdByValueCiId" parameterType="java.lang.Long"
-            resultType="java.lang.Long">
+            resultType="java.lang.Long" useCache="false">
         SELECT DISTINCT expression_ci_id
         FROM cmdb_attrexpression_rel
         WHERE value_ci_id = #{value}
     </select>
 
     <select id="getExpressionAttrByValueAttrId" parameterType="java.lang.Long"
-            resultType="codedriver.framework.cmdb.dto.ci.AttrVo">
+            resultType="codedriver.framework.cmdb.dto.ci.AttrVo" useCache="false">
         SELECT a.`id`,
                a.`ci_id`                                                       AS ciId,
                a.`type`,
@@ -83,7 +83,7 @@
     </select>
 
     <select id="getExpressionAttrByValueCiIdAndAttrIdList"
-            resultType="codedriver.framework.cmdb.dto.ci.AttrVo">
+            resultType="codedriver.framework.cmdb.dto.ci.AttrVo" useCache="false">
         SELECT
         DISTINCT a.`id`,
         a.`ci_id` AS ciId,
@@ -112,7 +112,7 @@
 
 
     <select id="getExpressionAttrRelByValueCiIdAndAttrIdList" parameterType="java.lang.Long"
-            resultType="codedriver.framework.cmdb.dto.attrexpression.AttrExpressionRelVo">
+            resultType="codedriver.framework.cmdb.dto.attrexpression.AttrExpressionRelVo" useCache="false">
         SELECT DISTINCT
         a.expression_ci_id AS expressionCiId,
         a.expression_attr_id AS expressAttrId,
@@ -217,7 +217,8 @@
         id<!-- 按照视图设置的排序 -->
     </select>
 
-    <select id="checkAttrNameIsRepeat" parameterType="codedriver.framework.cmdb.dto.ci.AttrVo" resultType="int">
+    <select id="checkAttrNameIsRepeat" parameterType="codedriver.framework.cmdb.dto.ci.AttrVo" resultType="int"
+            useCache="false">
         SELECT COUNT(1)
         FROM `cmdb_attr`
         WHERE `name` = #{name}

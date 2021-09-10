@@ -16,6 +16,7 @@ import codedriver.framework.cmdb.dto.ci.RelVo;
 import codedriver.framework.cmdb.dto.cientity.*;
 import codedriver.framework.cmdb.dto.transaction.*;
 import codedriver.framework.cmdb.enums.*;
+import codedriver.framework.cmdb.enums.group.GroupType;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.cmdb.exception.ci.CiUniqueRuleException;
 import codedriver.framework.cmdb.exception.cientity.*;
@@ -137,7 +138,6 @@ public class CiEntityServiceImpl implements CiEntityService {
         }
         return new ArrayList<>();
     }
-
 
     @Override
     public List<CiEntityVo> searchCiEntity(CiEntityVo ciEntityVo) {

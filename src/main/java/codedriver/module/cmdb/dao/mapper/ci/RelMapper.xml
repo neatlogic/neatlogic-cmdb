@@ -6,8 +6,8 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.ci.RelMapper">
-    <!--<cache-ref namespace="codedriver.module.cmdb.dao.mapper.ci.CiMapper"/>
-    <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>-->
+    <cache-ref namespace="codedriver.module.cmdb.dao.mapper.ci.CiMapper"/>
+    <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
     <select id="getAllRelList" resultType="codedriver.framework.cmdb.dto.ci.RelVo" useCache="false">
         SELECT `id`,
                `type_id`                                                  AS typeId,
@@ -30,7 +30,8 @@
         FROM `cmdb_rel`
     </select>
 
-    <select id="checkRelGroupNameIsExists" parameterType="codedriver.framework.cmdb.dto.ci.RelGroupVo" resultType="int">
+    <select id="checkRelGroupNameIsExists" parameterType="codedriver.framework.cmdb.dto.ci.RelGroupVo" resultType="int"
+            useCache="false">
         SELECT COUNT(1)
         FROM `cmdb_relgroup`
         WHERE ci_id = #{ciId}
@@ -57,7 +58,8 @@
         WHERE id = #{value}
     </select>
 
-    <select id="checkRelByFromToName" parameterType="codedriver.framework.cmdb.dto.ci.RelVo" resultType="int">
+    <select id="checkRelByFromToName" parameterType="codedriver.framework.cmdb.dto.ci.RelVo" resultType="int"
+            useCache="false">
         SELECT COUNT(1)
         FROM cmdb_rel
         WHERE from_name = #{fromName}
@@ -65,7 +67,8 @@
           AND id != #{id}
     </select>
 
-    <select id="checkRelByFromToLabel" parameterType="codedriver.framework.cmdb.dto.ci.RelVo" resultType="int">
+    <select id="checkRelByFromToLabel" parameterType="codedriver.framework.cmdb.dto.ci.RelVo" resultType="int"
+            useCache="false">
         SELECT COUNT(1)
         FROM cmdb_rel
         WHERE from_label = #{fromLabel}
@@ -81,7 +84,7 @@
     </select>
 
     <select id="getRelById" parameterType="java.lang.Long" resultType="codedriver.framework.cmdb.dto.ci.RelVo"
-            useCache="false">
+            useCache="true">
         SELECT a.`id`,
                a.`type_id`                                                       AS typeId,
                (SELECT name FROM cmdb_reltype cr WHERE cr.id = a.`type_id`)      AS typeText,

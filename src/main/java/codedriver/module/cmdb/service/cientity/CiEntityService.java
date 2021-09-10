@@ -35,6 +35,12 @@ public interface CiEntityService {
      */
     List<CiEntityVo> getCiEntityByIdList(Long ciId, List<Long> ciEntityIdList, List<Long> groupIdList);
 
+    /**
+     * 查询配置项
+     *
+     * @param ciEntityVo 条件
+     * @return 配置项列表
+     */
     List<CiEntityVo> searchCiEntity(CiEntityVo ciEntityVo);
 
     @Transactional

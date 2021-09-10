@@ -13,6 +13,10 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface GroupMapper {
+    List<GroupVo> getDoingGroupByServerId(GroupVo groupVo);
+
+    int getCiEntityCountByGroupId(Long groupId);
+
     List<GroupVo> searchGroup(GroupVo groupVo);
 
     int searchGroupCount(GroupVo groupVo);
@@ -26,14 +30,21 @@ public interface GroupMapper {
 
     void insertCiEntityGroup(CiEntityGroupVo ciEntityGroupVo);
 
+    void updateGroupCiEntityCount(GroupVo groupVo);
+
+    void updateGroupStatus(GroupVo groupVo);
+
     void updateGroup(GroupVo groupVo);
 
     void insertGroup(GroupVo groupVo);
 
     void insertCiGroup(CiGroupVo ciGroupVo);
 
+    void deleteGroupById(Long groupId);
+
     void deleteCiGroupByGroupId(Long groupId);
 
     void deleteCiEntityGroupByCiEntityIdAndCiGroupId(@Param("ciEntityId") Long ciEntityId, @Param("ciGroupId") Long ciGroupId);
 
+    void deleteCiEntityGroupByGroupId(Long groupId);
 }

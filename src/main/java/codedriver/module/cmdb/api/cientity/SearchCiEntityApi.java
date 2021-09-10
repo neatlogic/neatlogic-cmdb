@@ -11,7 +11,7 @@ import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.cientity.RelCiEntityFilterVo;
 import codedriver.framework.cmdb.enums.CiAuthType;
-import codedriver.framework.cmdb.enums.GroupType;
+import codedriver.framework.cmdb.enums.group.GroupType;
 import codedriver.framework.cmdb.enums.ShowType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;

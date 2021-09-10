@@ -6,23 +6,31 @@
 package codedriver.module.cmdb.group;
 
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
-import codedriver.framework.cmdb.dto.group.CiEntityGroupVo;
-import codedriver.framework.cmdb.dto.group.CiGroupVo;
+import codedriver.framework.cmdb.dto.group.*;
+import codedriver.framework.cmdb.enums.group.Status;
+import codedriver.framework.exception.core.ApiRuntimeException;
 import codedriver.framework.transaction.core.AfterTransactionJob;
+import codedriver.framework.util.javascript.JavascriptUtil;
 import codedriver.module.cmdb.dao.mapper.group.GroupMapper;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import javax.script.ScriptException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Component
 public class CiEntityGroupManager {
-
+    private static final Logger logger = LoggerFactory.getLogger(CiEntityGroupManager.class);
     private static CiEntityService ciEntityService;
 
     private static GroupMapper groupMapper;
@@ -39,10 +47,11 @@ public class CiEntityGroupManager {
         pCiEntityVo.setId(pCiEntityId);
         pCiEntityVo.setCiId(pCiId);
         AfterTransactionJob<CiEntityVo> afterTransactionJob = new AfterTransactionJob<>();
-        Set<CiEntityGroupVo> checkSet = new HashSet<>();
         afterTransactionJob.execute(pCiEntityVo, vo -> {
             List<CiGroupVo> ciGroupVoList = groupMapper.getCiGroupByCiId(vo.getCiId());
             if (CollectionUtils.isNotEmpty(ciGroupVoList)) {
+                Set<CiEntityGroupVo> checkSet = new HashSet<>();
+                Set<Long> groupIdSet = new HashSet<>();
                 CiEntityVo ciEntityVo = ciEntityService.getCiEntityById(vo.getCiId(), vo.getId());
                 if (ciEntityVo != null) {
                     for (CiGroupVo group : ciGroupVoList) {
@@ -54,8 +63,79 @@ public class CiEntityGroupManager {
                             } else {
                                 groupMapper.deleteCiEntityGroupByCiEntityIdAndCiGroupId(ciEntityVo.getId(), group.getId());
                             }
+                            groupIdSet.add(group.getGroupId());
                         }
                     }
+                }
+                for (Long groupId : groupIdSet) {
+                    //重新计算配置项数量
+                    int count = groupMapper.getCiEntityCountByGroupId(groupId);
+                    GroupVo g = new GroupVo();
+                    g.setId(groupId);
+                    g.setCiEntityCount(count);
+                    groupMapper.updateGroupCiEntityCount(g);
+                }
+            }
+        });
+    }
+
+    public static void group(GroupVo groupVo) {
+        groupVo.setStatus(Status.DOING.getValue());
+        groupMapper.updateGroupStatus(groupVo);
+        AfterTransactionJob<GroupVo> afterTransactionJob = new AfterTransactionJob<>();
+        afterTransactionJob.execute(groupVo, gVo -> {
+            if (gVo != null && CollectionUtils.isNotEmpty(gVo.getCiGroupList())) {
+                try {
+                    if (gVo.getIsSync().equals(1)) {
+                        groupMapper.deleteCiEntityGroupByGroupId(gVo.getId());
+                        gVo.setCiEntityCount(0);
+                        groupMapper.updateGroupCiEntityCount(gVo);
+                    }
+                    for (CiGroupVo ciGroupVo : gVo.getCiGroupList()) {
+                        Set<CiEntityGroupVo> checkSet = new HashSet<>();
+                        CiEntityVo pCiEntityVo = new CiEntityVo();
+                        pCiEntityVo.setPageSize(100);
+                        pCiEntityVo.setCurrentPage(1);
+                        pCiEntityVo.setCiId(ciGroupVo.getCiId());
+                        List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(pCiEntityVo);
+                        while (CollectionUtils.isNotEmpty(ciEntityList)) {
+                            for (CiEntityVo ciEntityVo : ciEntityList) {
+                                CiEntityGroupVo ciEntityGroupVo = new CiEntityGroupVo(ciEntityVo.getId(), gVo.getId(), ciGroupVo.getId());
+                                if (!checkSet.contains(ciEntityGroupVo)) {
+                                    if (matchRule(ciEntityVo, ciGroupVo)) {
+                                        groupMapper.insertCiEntityGroup(ciEntityGroupVo);
+                                        checkSet.add(ciEntityGroupVo);
+                                    }
+                                }
+                            }
+                            pCiEntityVo.setCurrentPage(pCiEntityVo.getCurrentPage() + 1);
+                            ciEntityList = ciEntityService.searchCiEntity(pCiEntityVo);
+                        }
+                    }
+                    gVo.setError("");
+                } catch (Exception ex) {
+                    logger.error(ex.getMessage(), ex);
+                    String message = "";
+                    if (ex instanceof ApiRuntimeException) {
+                        message = ((ApiRuntimeException) ex).getMessage(true);
+                    } else {
+                        message = ExceptionUtils.getStackTrace(ex);
+                        logger.error(ex.getMessage(), ex);
+                    }
+                    gVo.setError(message);
+                } finally {
+                    //重新计算配置项数量,每100条更新一次，目的是为了计算进度
+                    int count = groupMapper.getCiEntityCountByGroupId(gVo.getId());
+                    gVo.setCiEntityCount(count);
+                    groupMapper.updateGroupCiEntityCount(gVo);
+                    gVo.setStatus(Status.DONE.getValue());
+                    groupMapper.updateGroupStatus(gVo);
+                }
+            } else {
+                if (gVo != null) {
+                    gVo.setError("当前团体没有关联任何配置项模型");
+                    gVo.setStatus(Status.DONE.getValue());
+                    groupMapper.updateGroupStatus(gVo);
                 }
             }
         });
@@ -67,76 +147,65 @@ public class CiEntityGroupManager {
 
     private static boolean matchRule(CiEntityVo ciEntityVo, CiGroupVo ciGroupVo) {
         JSONObject ruleObj = ciGroupVo.getRule();
+        boolean isAllMatch = false;
         if (ciEntityVo != null && MapUtils.isNotEmpty(ruleObj)) {
-            Map<Integer, Boolean> checkResultMap = new HashMap<>();
-            /*for (int i = 0; i < ruleList.size(); i++) {
-                checkResultMap.put(i, false);
-                JSONObject rule = ruleList.getJSONObject(i);
-                String exp = rule.getString("expression");
-                SearchExpression expression = SearchExpression.get(exp);
-                if (expression != null) {
-                    Long attrId = rule.getLong("attrId");
-                    JSONArray valueList = rule.getJSONArray("valueList");
-                    if (attrId != null) {
-                        AttrEntityVo attrEntityVo = ciEntityVo.getAttrEntityByAttrId(attrId);
-                        if (expression == SearchExpression.NULL) {
-                            if (attrEntityVo == null || CollectionUtils.isEmpty(attrEntityVo.getValueList())) {
-                                checkResultMap.put(i, true);
-                            }
-                        } else if (expression == SearchExpression.NOTNULL) {
-                            if (attrEntityVo != null && CollectionUtils.isNotEmpty(attrEntityVo.getValueList())) {
-                                checkResultMap.put(i, true);
-                            }
-                        } else if (expression == SearchExpression.EQ) {
-                            if (attrEntityVo != null && CollectionUtils.isNotEmpty(valueList) && CollectionUtils.isNotEmpty(attrEntityVo.getValueList()) && CollectionUtils.isEqualCollection(valueList, attrEntityVo.getValueList())) {
-                                checkResultMap.put(i, true);
-                            }
-                        } else if (expression == SearchExpression.LI) {
-                            if (attrEntityVo != null && CollectionUtils.isNotEmpty(valueList) && CollectionUtils.isNotEmpty(attrEntityVo.getValueList())) {
-                                if (attrEntityVo.getToCiId() != null && attrEntityVo.getValueList().containsAll(valueList)) {
-                                    //引用类型属性比较
-                                    checkResultMap.put(i, true);
-                                } else if (attrEntityVo.getToCiId() == null) {
-                                    //正常属性比较
-                                    String av = attrEntityVo.getValue();
-                                    String v = getValue(valueList);
-                                    if (StringUtils.isNotBlank(av) && StringUtils.isNotBlank(v) && av.contains(v)) {
-                                        checkResultMap.put(i, true);
-                                    }
-                                }
-                            }
-                        } else if (expression == SearchExpression.NE) {
-                            if (attrEntityVo != null && CollectionUtils.isNotEmpty(valueList) && CollectionUtils.isNotEmpty(attrEntityVo.getValueList()) && !CollectionUtils.isEqualCollection(valueList, attrEntityVo.getValueList())) {
-                                checkResultMap.put(i, true);
-                            }
-                        } else if (expression == SearchExpression.NL) {
-                            if (attrEntityVo != null && CollectionUtils.isNotEmpty(valueList) && CollectionUtils.isNotEmpty(attrEntityVo.getValueList())) {
-                                if (attrEntityVo.getToCiId() != null && !attrEntityVo.getValueList().containsAll(valueList)) {
-                                    //引用类型属性比较
-                                    checkResultMap.put(i, true);
-                                } else if (attrEntityVo.getToCiId() == null) {
-                                    //正常属性比较
-                                    String av = attrEntityVo.getValue();
-                                    String v = getValue(valueList);
-                                    if (StringUtils.isNotBlank(av) && StringUtils.isNotBlank(v) && !av.contains(v)) {
-                                        checkResultMap.put(i, true);
-                                    }
-                                }
-                            }
+            JSONArray conditionGroupList = ruleObj.getJSONArray("conditionGroupList");
+            JSONArray conditionGroupRelList = ruleObj.getJSONArray("conditionGroupRelList");
+            if (CollectionUtils.isNotEmpty(conditionGroupList)) {
+                //构造脚本
+                StringBuilder script = new StringBuilder();
+                JSONObject conditionObj = new JSONObject();
+                for (int i = 0; i < conditionGroupList.size(); i++) {
+                    ConditionGroupVo conditionGroupVo = JSONObject.toJavaObject(conditionGroupList.getJSONObject(i), ConditionGroupVo.class);
+                    if (i > 0 && CollectionUtils.isNotEmpty(conditionGroupRelList)) {
+                        if (conditionGroupRelList.size() >= i) {
+                            String joinType = conditionGroupRelList.getString(i - 1);
+                            script.append(joinType.equals("and") ? " && " : " || ");
+                        } else {
+                            //数据异常跳出
+                            break;
                         }
                     }
+                    script.append("(").append(conditionGroupVo.buildScript()).append(")");
+                    if (CollectionUtils.isNotEmpty(conditionGroupVo.getConditionList())) {
+                        for (ConditionVo conditionVo : conditionGroupVo.getConditionList()) {
+                            conditionObj.put(conditionVo.getUuid(), conditionVo.getValueList());
+                        }
+                    }
+
                 }
-            }*/
-            boolean isAllMatch = true;
-            for (int key : checkResultMap.keySet()) {
-                if (!checkResultMap.get(key)) {
-                    isAllMatch = false;
-                    break;
+
+                JSONObject paramObj = new JSONObject();
+                //将配置项参数处理成指定格式，格式和表达式相关，不能随意修改格式
+                JSONObject dataObj = new JSONObject();
+                if (MapUtils.isNotEmpty(ciEntityVo.getAttrEntityData())) {
+                    for (String key : ciEntityVo.getAttrEntityData().keySet()) {
+                        dataObj.put(key, ciEntityVo.getAttrEntityData().getJSONObject(key).getJSONArray("valueList"));
+                    }
+                }
+                if (MapUtils.isNotEmpty(ciEntityVo.getRelEntityData())) {
+                    for (String key : ciEntityVo.getRelEntityData().keySet()) {
+                        //转换格式
+                        JSONArray valueList = new JSONArray();
+                        if (CollectionUtils.isNotEmpty(ciEntityVo.getRelEntityData().getJSONObject(key).getJSONArray("valueList"))) {
+                            for (int i = 0; i < ciEntityVo.getRelEntityData().getJSONObject(key).getJSONArray("valueList").size(); i++) {
+                                JSONObject entityObj = ciEntityVo.getRelEntityData().getJSONObject(key).getJSONArray("valueList").getJSONObject(i);
+                                valueList.add(entityObj.getLong("ciEntityId"));
+                            }
+                        }
+                        dataObj.put(key, valueList);
+                    }
+                }
+                paramObj.put("data", dataObj);
+                paramObj.put("condition", conditionObj);
+                try {
+                    isAllMatch = JavascriptUtil.runExpression(paramObj, script.toString());
+                } catch (ScriptException | NoSuchMethodException e) {
+                    logger.error(e.getMessage(), e);
                 }
             }
-            return isAllMatch;
         }
-        return false;
+        return isAllMatch;
     }
 
     private static String getValue(JSONArray valueList) {

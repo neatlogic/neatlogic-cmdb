@@ -17,7 +17,7 @@ import javax.annotation.Resource;
 import java.util.List;
 
 @Service
-public class UpdateExpressionAttrStartup implements IStartup {
+public class UpdateExpressionAttrStartupHandler implements IStartup {
     @Resource
     private AttrExpressionRebuildAuditMapper attrExpressionRebuildAuditMapper;
 
@@ -32,7 +32,7 @@ public class UpdateExpressionAttrStartup implements IStartup {
     }
 
     @Override
-    public void executeForTenant() {
+    public void executeForCurrentTenant() {
         List<RebuildAuditVo> auditList = attrExpressionRebuildAuditMapper.getAttrExpressionRebuildAuditByServerId(Config.SCHEDULE_SERVER_ID);
         if (CollectionUtils.isNotEmpty(auditList)) {
             for (RebuildAuditVo audit : auditList) {
@@ -42,7 +42,7 @@ public class UpdateExpressionAttrStartup implements IStartup {
     }
 
     @Override
-    public void executeForOnce() {
+    public void executeForAllTenant() {
 
     }
 }

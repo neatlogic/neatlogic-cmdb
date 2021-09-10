@@ -6,7 +6,27 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.group.GroupMapper">
-    <!--<cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>-->
+    <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
+
+    <select id="getDoingGroupByServerId" parameterType="codedriver.framework.cmdb.dto.group.GroupVo"
+            resultType="codedriver.framework.cmdb.dto.group.GroupVo" useCache="false">
+        select a.id,
+               a.is_active      as isActive,
+               a.name,
+               a.type,
+               a.description,
+               a.cientity_count AS ciEntityCount,
+               a.status
+        from cmdb_group a
+        where server_id = #{serverId}
+          and status = #{status}
+    </select>
+
+    <select id="getCiEntityCountByGroupId" parameterType="java.lang.Long" resultType="int" useCache="false">
+        select count(1)
+        from cmdb_cientity_group
+        where group_id = #{value}
+    </select>
 
     <sql id="searchGroupCondition">
         <where>
@@ -25,13 +45,17 @@
         a.is_active as isActive,
         a.name,
         a.type,
-        a.description
+        a.description,
+        a.cientity_count AS ciEntityCount,
+        a.error,
+        a.status
         from cmdb_group a
         <include refid="searchGroupCondition"></include>
         LIMIT #{startNum},#{pageSize}
     </select>
 
-    <select id="searchGroupCount" parameterType="codedriver.framework.cmdb.dto.group.GroupVo" resultType="int">
+    <select id="searchGroupCount" parameterType="codedriver.framework.cmdb.dto.group.GroupVo" resultType="int"
+            useCache="false">
         select count(1)
         <include refid="searchGroupCondition"></include>
         from cmdb_group a
@@ -43,21 +67,28 @@
         <result property="name" column="name"/>
         <result property="type" column="type"/>
         <result property="description" column="description"/>
+        <result property="ciEntityCount" column="ciEntityCount"/>
+        <result property="status" column="status"/>
+        <result property="error" column="error"/>
         <collection property="ciGroupList" ofType="codedriver.framework.cmdb.dto.group.CiGroupVo">
             <id property="id" column="ciGroupId"/>
             <result property="ciId" column="ciId"/>
             <result property="ruleStr" column="ruleStr"/>
         </collection>
     </resultMap>
-    <select id="getGroupById" parameterType="java.lang.Long" resultMap="groupResultMap">
+
+    <select id="getGroupById" parameterType="java.lang.Long" resultMap="groupResultMap" useCache="true">
         select a.id,
-               a.is_active as isActive,
+               a.is_active      as isActive,
                a.name,
                a.type,
                a.description,
-               b.id        as ciGroupId,
-               b.ci_id     as ciId,
-               b.rule      as ruleStr
+               a.cientity_count AS ciEntityCount,
+               a.status         AS status,
+               a.error          as error,
+               b.id             as ciGroupId,
+               b.ci_id          as ciId,
+               b.rule           as ruleStr
         from cmdb_group a
                  left join cmdb_ci_group b on a.id = b.group_id
         where a.id = #{value}
@@ -117,6 +148,20 @@
         </if>
     </select>
 
+    <update id="updateGroupCiEntityCount" parameterType="codedriver.framework.cmdb.dto.group.GroupVo">
+        update cmdb_group
+        set cientity_count = #{ciEntityCount}
+        where id = #{id}
+    </update>
+
+    <update id="updateGroupStatus" parameterType="codedriver.framework.cmdb.dto.group.GroupVo">
+        update cmdb_group
+        set status    = #{status},
+            server_id = #{serverId},
+            error     = #{error}
+        where id = #{id}
+    </update>
+
     <update id="updateGroup" parameterType="codedriver.framework.cmdb.dto.group.GroupVo">
         update cmdb_group
         set name        = #{name},
@@ -129,8 +174,24 @@
     </update>
 
     <insert id="insertGroup" parameterType="codedriver.framework.cmdb.dto.group.GroupVo">
-        insert into cmdb_group (id, name, type, description, is_active, fcd, fcu)
-        values (#{id}, #{name}, #{type}, #{description}, #{isActive}, now(3), #{fcu})
+        insert into cmdb_group (id,
+                                name,
+                                type,
+                                description,
+                                is_active,
+                                cientity_count,
+                                status,
+                                fcd,
+                                fcu)
+        values (#{id},
+                #{name},
+                #{type},
+                #{description},
+                #{isActive},
+                0,
+                #{status},
+                now(3),
+                #{fcu})
     </insert>
 
     <insert id="insertCiGroup" parameterType="codedriver.framework.cmdb.dto.group.CiGroupVo">
@@ -139,18 +200,35 @@
     </insert>
 
     <insert id="insertCiEntityGroup" parameterType="codedriver.framework.cmdb.dto.group.CiEntityGroupVo">
-        insert ignore into cmdb_cientity_group (ci_entity_id, group_id, ci_group_id)
+        insert ignore into cmdb_cientity_group (cientity_id, group_id, ci_group_id)
         values (#{ciEntityId}, #{groupId}, #{ciGroupId})
     </insert>
 
+    <delete id="deleteGroupById" parameterType="java.lang.Long">
+        delete a,b,c,d
+        from cmdb_group a
+                 left join cmdb_ci_group b on a.id = b.group_id
+                 left join cmdb_cientity_group c on a.id = c.group_id
+                 left join cmdb_group_auth d on a.id = d.group_id
+        where a.id = #{value}
+    </delete>
+
+    <delete id="deleteCiEntityGroupByGroupId" parameterType="java.lang.Long">
+        delete
+        from cmdb_cientity_group
+        where group_id = #{value}
+    </delete>
+
     <delete id="deleteCiEntityGroupByCiEntityIdAndCiGroupId">
-        delete cmdb_cientity_group
-        where ci_entity_id = #{ciEntityId}
+        delete
+        from cmdb_cientity_group
+        where cientity_id = #{ciEntityId}
           and ci_group_id = #{ciGroupId}
     </delete>
 
     <delete id="deleteCiGroupByGroupId" parameterType="java.lang.Long">
-        delete cmdb_ci_group
+        delete
+        from cmdb_ci_group
         where group_id = #{value}
     </delete>
 </mapper>

@@ -8,7 +8,7 @@ package codedriver.module.cmdb.api.transaction;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.transaction.TransactionGroupVo;
 import codedriver.framework.cmdb.dto.transaction.TransactionVo;
-import codedriver.framework.cmdb.enums.GroupType;
+import codedriver.framework.cmdb.enums.group.GroupType;
 import codedriver.framework.cmdb.enums.TransactionStatus;
 import codedriver.framework.cmdb.exception.transaction.TransactionAuthException;
 import codedriver.framework.cmdb.exception.transaction.TransactionStatusIrregularException;

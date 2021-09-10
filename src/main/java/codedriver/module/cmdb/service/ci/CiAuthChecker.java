@@ -9,7 +9,7 @@ import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.cmdb.dto.ci.CiAuthVo;
 import codedriver.framework.cmdb.enums.CiAuthType;
-import codedriver.framework.cmdb.enums.GroupType;
+import codedriver.framework.cmdb.enums.group.GroupType;
 import codedriver.framework.common.constvalue.UserType;
 import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.module.cmdb.auth.label.CIENTITY_MODIFY;

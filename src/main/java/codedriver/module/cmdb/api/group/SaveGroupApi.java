@@ -13,7 +13,7 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.auth.label.CI_MODIFY;
+import codedriver.module.cmdb.auth.label.GROUP_MODIFY;
 import codedriver.module.cmdb.service.group.GroupService;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
@@ -21,7 +21,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 
 @Service
-@AuthAction(action = CI_MODIFY.class)
+@AuthAction(action = GROUP_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveGroupApi extends PrivateApiComponentBase {
 
