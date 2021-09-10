@@ -300,7 +300,7 @@
             </foreach>
         </if>
         <if test="groupIdList != null and groupIdList.size() > 0">
-            JOIN `cmdb_cientity_group` `ccg` ON `ci_base`.id = `ccg`.ci_entity_id AND `ccg`.group_id IN
+            JOIN `cmdb_cientity_group` `ccg` ON `ci_base`.id = `ccg`.cientity_id AND `ccg`.group_id IN
             <foreach collection="groupIdList" item="item" open="(" close=")" separator=",">
                 #{item}
             </foreach>
@@ -664,7 +664,7 @@
                               c.`to_cientity_id`
                  LEFT JOIN cmdb_cientity_group e
                            ON a.id =
-                              e.ci_entity_id
+                              e.cientity_id
         WHERE a.id =
               #{id}
     </delete>
@@ -944,7 +944,7 @@
             FROM
             cmdb_cientity cc JOIN
             `cmdb_cientity_group` ccg ON cc.id =
-            ccg.ci_entity_id AND cc.ci_id = #{ciId} AND ccg.group_id IN
+            ccg.cientity_id AND cc.ci_id = #{ciId} AND ccg.group_id IN
             <foreach collection="groupIdList" item="item" open="("
                      separator="," close=")">
                 #{item}
@@ -1031,7 +1031,7 @@
                               c.`to_cientity_id`
                  LEFT JOIN cmdb_cientity_group e
                            ON a.id =
-                              e.ci_entity_id
+                              e.cientity_id
         WHERE a.ci_id =
               #{value}
     </delete>

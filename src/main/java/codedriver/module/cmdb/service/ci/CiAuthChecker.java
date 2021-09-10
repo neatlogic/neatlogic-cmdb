@@ -207,7 +207,7 @@ public class CiAuthChecker {
     }
 
     public static boolean isCiInGroup(Long ciId, GroupType... groupType) {
-        List<Long> returnList = isCiEntityInGroup(new ArrayList<Long>() {
+        List<Long> returnList = isCiInGroup(new ArrayList<Long>() {
             {
                 this.add(ciId);
             }

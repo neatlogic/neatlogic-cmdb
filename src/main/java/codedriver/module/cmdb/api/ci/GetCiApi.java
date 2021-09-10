@@ -8,6 +8,7 @@ package codedriver.module.cmdb.api.ci;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.enums.CiAuthType;
+import codedriver.framework.cmdb.enums.group.GroupType;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
@@ -70,10 +71,11 @@ public class GetCiApi extends PrivateApiComponentBase {
                 hasCiEntityTransactionAuth = true;
                 hasCiEntityUpdateAuth = true;
             } else if (ciVo.getIsVirtual().equals(0) && ciVo.getIsAbstract().equals(0)) {
-                hasCiEntityUpdateAuth = CiAuthChecker.chain().checkCiEntityUpdatePrivilege(ciId).check();
-                hasCiEntityInsertAuth = CiAuthChecker.chain().checkCiEntityInsertPrivilege(ciId).check();
-                hasCiEntityTransactionAuth = CiAuthChecker.chain().checkCiEntityTransactionPrivilege(ciId).check();
+                hasCiEntityUpdateAuth = CiAuthChecker.chain().checkCiEntityUpdatePrivilege(ciId).checkCiIsInGroup(ciId, GroupType.MAINTAIN).check();
+                hasCiEntityInsertAuth = CiAuthChecker.chain().checkCiEntityInsertPrivilege(ciId).checkCiIsInGroup(ciId, GroupType.MAINTAIN).check();
+                hasCiEntityTransactionAuth = CiAuthChecker.chain().checkCiEntityTransactionPrivilege(ciId).checkCiIsInGroup(ciId, GroupType.MAINTAIN).check();
             }
+
             authData.put(CiAuthType.CIMANAGE.getValue(), hasCiManageAuth);
             authData.put(CiAuthType.CIENTITYUPDATE.getValue(), hasCiEntityUpdateAuth);
             authData.put(CiAuthType.CIENTITYINSERT.getValue(), hasCiEntityInsertAuth);

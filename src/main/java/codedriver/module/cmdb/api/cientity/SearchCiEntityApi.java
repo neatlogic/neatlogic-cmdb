@@ -11,8 +11,9 @@ import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.cientity.RelCiEntityFilterVo;
 import codedriver.framework.cmdb.enums.CiAuthType;
-import codedriver.framework.cmdb.enums.group.GroupType;
 import codedriver.framework.cmdb.enums.ShowType;
+import codedriver.framework.cmdb.enums.group.GroupType;
+import codedriver.framework.cmdb.exception.cientity.CiEntityAuthException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.restful.annotation.*;
@@ -25,6 +26,7 @@ import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiViewMapper;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
+import codedriver.module.cmdb.service.group.GroupService;
 import codedriver.module.cmdb.utils.RelUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -53,6 +55,9 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
 
     @Resource
     private CiMapper ciMapper;
+
+    @Resource
+    private GroupService groupService;
 
 
     @Override
@@ -93,15 +98,15 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         CiEntityVo ciEntityVo = JSONObject.toJavaObject(jsonObj, CiEntityVo.class);
-        /*FIXME:查看权限控制仍需斟酌，主要是考虑被引用的配置项列表如果没有权限是否允许查看，目前可控制左侧模型菜单显示，不做严格禁止
-        /*if (!CiAuthChecker.chain().checkCiEntityQueryPrivilege(ciEntityVo.getCiId()).check()) {
+        //FIXME:查看权限控制仍需斟酌，主要是考虑被引用的配置项列表如果没有权限是否允许查看，目前可控制左侧模型菜单显示，不做严格禁止
+        if (!CiAuthChecker.chain().checkCiEntityQueryPrivilege(ciEntityVo.getCiId()).check()) {
             List<Long> groupIdList = groupService.getCurrentUserGroupIdList();
             if (CollectionUtils.isNotEmpty(groupIdList)) {
                 ciEntityVo.setGroupIdList(groupIdList);
             } else {
                 throw new CiEntityAuthException("查看");
             }
-        }*/
+        }
 
         Long relCiEntityId = jsonObj.getLong("relCiEntityId");
         Long relId = jsonObj.getLong("relId");
