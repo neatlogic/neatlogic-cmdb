@@ -125,6 +125,9 @@ public class AccountSaveApi extends PrivateApiComponentBase {
             resourceCenterMapper.updateAccount(vo);
         } else {
             AccountProtocolVo protocolVo = resourceCenterMapper.getAccountProtocolVoByProtocolId(protocolId);
+            if (resourceCenterMapper.checkAccountProtocolIsExists(protocolVo) == 0) {
+                throw new ResourceCenterAccountProtocolNotFoundByNameException(protocolVo.getName());
+            }
             if (Objects.equals(protocolVo.getName(), "tagent")) {
                 throw new ResourceCenterAccountNotCreateTagentAccount();
             }
