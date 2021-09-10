@@ -7,6 +7,7 @@ package codedriver.module.cmdb.service.group;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.cmdb.dto.group.CiGroupVo;
+import codedriver.framework.cmdb.dto.group.GroupAuthVo;
 import codedriver.framework.cmdb.dto.group.GroupVo;
 import codedriver.framework.cmdb.exception.group.GroupNotFoundException;
 import codedriver.framework.dao.mapper.RoleMapper;
@@ -51,6 +52,12 @@ public class GroupServiceImpl implements GroupService {
                 groupMapper.insertCiGroup(ciGroupVo);
             }
         }
+        if (CollectionUtils.isNotEmpty(groupVo.getGroupAuthList())) {
+            for (GroupAuthVo authVo : groupVo.getGroupAuthList()) {
+                authVo.setGroupId(groupVo.getId());
+                groupMapper.insertGroupAuth(authVo);
+            }
+        }
     }
 
     @Transactional
@@ -60,11 +67,18 @@ public class GroupServiceImpl implements GroupService {
             throw new GroupNotFoundException(groupVo.getId());
         }
         groupMapper.deleteCiGroupByGroupId(groupVo.getId());
+        groupMapper.deleteGroupAuthByGroupId(groupVo.getId());
         groupMapper.updateGroup(groupVo);
         if (CollectionUtils.isNotEmpty(groupVo.getCiGroupList())) {
             for (CiGroupVo ciGroupVo : groupVo.getCiGroupList()) {
                 ciGroupVo.setGroupId(groupVo.getId());
                 groupMapper.insertCiGroup(ciGroupVo);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(groupVo.getGroupAuthList())) {
+            for (GroupAuthVo authVo : groupVo.getGroupAuthList()) {
+                authVo.setGroupId(groupVo.getId());
+                groupMapper.insertGroupAuth(authVo);
             }
         }
     }

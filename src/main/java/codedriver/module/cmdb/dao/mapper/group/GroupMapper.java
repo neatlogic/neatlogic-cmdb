@@ -7,6 +7,7 @@ package codedriver.module.cmdb.dao.mapper.group;
 
 import codedriver.framework.cmdb.dto.group.CiEntityGroupVo;
 import codedriver.framework.cmdb.dto.group.CiGroupVo;
+import codedriver.framework.cmdb.dto.group.GroupAuthVo;
 import codedriver.framework.cmdb.dto.group.GroupVo;
 import org.apache.ibatis.annotations.Param;
 
@@ -40,7 +41,11 @@ public interface GroupMapper {
 
     void insertCiGroup(CiGroupVo ciGroupVo);
 
+    void insertGroupAuth(GroupAuthVo groupAuthVo);
+
     void deleteGroupById(Long groupId);
+
+    void deleteGroupAuthByGroupId(Long groupId);
 
     void deleteCiGroupByGroupId(Long groupId);
 

@@ -8,6 +8,7 @@ package codedriver.module.cmdb.api.group;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.ci.CiVo;
+import codedriver.framework.cmdb.dto.group.GroupAuthVo;
 import codedriver.framework.cmdb.dto.group.GroupVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
@@ -16,9 +17,12 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.GROUP_MODIFY;
 import codedriver.module.cmdb.service.group.GroupService;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @AuthAction(action = GROUP_MODIFY.class)
@@ -49,7 +53,8 @@ public class SaveGroupApi extends PrivateApiComponentBase {
             @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "名称", maxLength = 50, xss = true),
             @Param(name = "isActive", type = ApiParamType.INTEGER, isRequired = true, desc = "是否激活，1：激活，0：禁用"),
             @Param(name = "description", type = ApiParamType.STRING, maxLength = 300, xss = true, desc = "描述"),
-            @Param(name = "ciGroupList", type = ApiParamType.JSONARRAY, desc = "模型规则列表")})
+            @Param(name = "ciGroupList", type = ApiParamType.JSONARRAY, desc = "模型规则列表"),
+            @Param(name = "authList", type = ApiParamType.JSONARRAY, desc = "授权列表")})
     @Output({@Param(explode = CiVo.class)})
     @Example(example = "{\n" +
             "  \"ciGroupList\": [\n" +
@@ -89,6 +94,17 @@ public class SaveGroupApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");
         GroupVo groupVo = JSONObject.toJavaObject(jsonObj, GroupVo.class);
+        //转换权限格式
+        List<GroupAuthVo> groupAuthList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(groupVo.getAuthList())) {
+            for (String auth : groupVo.getAuthList()) {
+                GroupAuthVo authVo = new GroupAuthVo();
+                authVo.setAuthType(auth.split("#")[0]);
+                authVo.setAuthUuid(auth.split("#")[1]);
+                groupAuthList.add(authVo);
+            }
+        }
+        groupVo.setGroupAuthList(groupAuthList);
         if (id == null) {
             groupVo.setFcu(UserContext.get().getUserUuid(true));
             groupService.insertGroup(groupVo);
