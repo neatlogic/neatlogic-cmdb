@@ -77,7 +77,7 @@ public class DeleteTransactionApi extends PrivateApiComponentBase {
                 } else if (transactionVo.getStatus().equals(TransactionStatus.RECOVER.getValue())) {
                     throw new TransactionStatusIrregularException(TransactionStatus.RECOVER);
                 }
-                if (!CiAuthChecker.chain().checkCiEntityTransactionPrivilege(transactionVo.getCiId()).checkIsInGroup(transactionVo.getCiEntityId(), GroupType.MAINTAIN).check()) {
+                if (!CiAuthChecker.chain().checkCiEntityTransactionPrivilege(transactionVo.getCiId()).checkCiEntityIsInGroup(transactionVo.getCiEntityId(), GroupType.MAINTAIN).check()) {
                     throw new TransactionAuthException();
                 }
                 transactionMapper.deleteTransactionById(transactionVo.getId());
@@ -89,7 +89,7 @@ public class DeleteTransactionApi extends PrivateApiComponentBase {
             } else if (transactionVo.getStatus().equals(TransactionStatus.RECOVER.getValue())) {
                 throw new TransactionStatusIrregularException(TransactionStatus.RECOVER);
             }
-            if (!CiAuthChecker.chain().checkCiEntityTransactionPrivilege(transactionVo.getCiId()).checkIsInGroup(transactionVo.getCiEntityId(), GroupType.MAINTAIN).check()) {
+            if (!CiAuthChecker.chain().checkCiEntityTransactionPrivilege(transactionVo.getCiId()).checkCiEntityIsInGroup(transactionVo.getCiEntityId(), GroupType.MAINTAIN).check()) {
                 throw new TransactionAuthException();
             }
             transactionMapper.deleteTransactionById(transactionVo.getId());

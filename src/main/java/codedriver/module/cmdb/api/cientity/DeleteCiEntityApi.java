@@ -65,11 +65,11 @@ public class DeleteCiEntityApi extends PrivateApiComponentBase {
             throw new CiEntityNotFoundException(id);
         }
         boolean needCommit = jsonObj.getBooleanValue("needCommit");
-        if (!CiAuthChecker.chain().checkCiEntityDeletePrivilege(oldCiEntityVo.getCiId()).checkIsInGroup(id, GroupType.MAINTAIN).check()) {
+        if (!CiAuthChecker.chain().checkCiEntityDeletePrivilege(oldCiEntityVo.getCiId()).checkCiEntityIsInGroup(id, GroupType.MAINTAIN).check()) {
             throw new CiEntityAuthException(TransactionActionType.DELETE.getText());
         }
         if (needCommit) {
-            needCommit = CiAuthChecker.chain().checkCiEntityTransactionPrivilege(oldCiEntityVo.getCiId()).checkIsInGroup(id, GroupType.MAINTAIN).check();
+            needCommit = CiAuthChecker.chain().checkCiEntityTransactionPrivilege(oldCiEntityVo.getCiId()).checkCiEntityIsInGroup(id, GroupType.MAINTAIN).check();
         }
         TransactionVo t = new TransactionVo();
         CiEntityVo ciEntityVo = new CiEntityVo();

@@ -186,9 +186,16 @@ public class CiAuthChecker {
         }
 
 
-        public Chain checkIsInGroup(Long ciEntityId, GroupType... groupType) {
+        public Chain checkCiEntityIsInGroup(Long ciEntityId, GroupType... groupType) {
             if (!hasAuth) {
-                hasAuth = CiAuthChecker.isInGroup(ciEntityId, groupType);
+                hasAuth = CiAuthChecker.isCiEntityInGroup(ciEntityId, groupType);
+            }
+            return this;
+        }
+
+        public Chain checkCiIsInGroup(Long ciId, GroupType... groupType) {
+            if (!hasAuth) {
+                hasAuth = CiAuthChecker.isCiInGroup(ciId, groupType);
             }
             return this;
         }
@@ -199,9 +206,17 @@ public class CiAuthChecker {
 
     }
 
+    public static boolean isCiInGroup(Long ciId, GroupType... groupType) {
+        List<Long> returnList = isCiEntityInGroup(new ArrayList<Long>() {
+            {
+                this.add(ciId);
+            }
+        }, groupType);
+        return returnList.contains(ciId);
+    }
 
-    private static boolean isInGroup(Long ciEntityId, GroupType... groupType) {
-        List<Long> returnList = isInGroup(new ArrayList<Long>() {
+    public static boolean isCiEntityInGroup(Long ciEntityId, GroupType... groupType) {
+        List<Long> returnList = isCiEntityInGroup(new ArrayList<Long>() {
             {
                 this.add(ciEntityId);
             }
@@ -209,7 +224,25 @@ public class CiAuthChecker {
         return returnList.contains(ciEntityId);
     }
 
-    public static List<Long> isInGroup(List<Long> ciEntityIdList, GroupType... groupType) {
+    public static List<Long> isCiInGroup(List<Long> ciIdList, GroupType... groupType) {
+        String userUuid = UserContext.get().getUserUuid(true);
+        List<String> teamUuidList = instance.teamMapper.getTeamUuidListByUserUuid(userUuid);
+        List<String> roleUuidList = UserContext.get().getRoleUuidList();
+        // 获取当前用户属于哪个圈子
+        List<Long> groupIdList = instance.groupMapper.getGroupIdByUserUuid(userUuid, teamUuidList, roleUuidList);
+        List<String> groupTypeList = new ArrayList<>();
+        for (GroupType g : groupType) {
+            groupTypeList.add(g.getValue());
+        }
+        if (CollectionUtils.isNotEmpty(groupIdList) && CollectionUtils.isNotEmpty(ciIdList)
+                && CollectionUtils.isNotEmpty(groupTypeList)) {
+            return instance.groupMapper.getCiIdByGroupIdList(groupIdList, ciIdList, groupTypeList);
+        } else {
+            return new ArrayList<>();
+        }
+    }
+
+    public static List<Long> isCiEntityInGroup(List<Long> ciEntityIdList, GroupType... groupType) {
         String userUuid = UserContext.get().getUserUuid(true);
         List<String> teamUuidList = instance.teamMapper.getTeamUuidListByUserUuid(userUuid);
         List<String> roleUuidList = UserContext.get().getRoleUuidList();
@@ -221,10 +254,11 @@ public class CiAuthChecker {
         }
         if (CollectionUtils.isNotEmpty(groupIdList) && CollectionUtils.isNotEmpty(ciEntityIdList)
                 && CollectionUtils.isNotEmpty(groupTypeList)) {
-            return instance.ciEntityMapper.getCiEntityIdByGroupIdList(groupIdList, ciEntityIdList, groupTypeList);
+            return instance.groupMapper.getCiEntityIdByGroupIdList(groupIdList, ciEntityIdList, groupTypeList);
         } else {
             return new ArrayList<>();
         }
     }
+
 
 }

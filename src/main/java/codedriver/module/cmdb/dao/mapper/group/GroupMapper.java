@@ -29,6 +29,11 @@ public interface GroupMapper {
     List<Long> getGroupIdByUserUuid(@Param("userUuid") String userUuid,
                                     @Param("teamUuidList") List<String> teamUuidList, @Param("roleUuidList") List<String> roleUuidList);
 
+    List<Long> getCiIdByGroupIdList(@Param("groupIdList") List<Long> groupIdList, @Param("ciIdList") List<Long> ciIdList, @Param("typeList") List<String> typeList);
+
+    List<Long> getCiEntityIdByGroupIdList(@Param("groupIdList") List<Long> groupIdList,
+                                          @Param("ciEntityIdList") List<Long> ciEntityIdList, @Param("typeList") List<String> typeList);
+
     void insertCiEntityGroup(CiEntityGroupVo ciEntityGroupVo);
 
     void updateGroupCiEntityCount(GroupVo groupVo);

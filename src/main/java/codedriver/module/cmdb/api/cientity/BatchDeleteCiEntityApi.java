@@ -72,11 +72,11 @@ public class BatchDeleteCiEntityApi extends PrivateApiComponentBase {
             ciEntityVo.setId(ciEntityId);
             ciEntityVo.setDescription(description);
             ciEntityList.add(ciEntityVo);
-            if (!CiAuthChecker.chain().checkCiEntityDeletePrivilege(ciId).checkIsInGroup(ciEntityId, GroupType.MAINTAIN).check()) {
+            if (!CiAuthChecker.chain().checkCiEntityDeletePrivilege(ciId).checkCiEntityIsInGroup(ciEntityId, GroupType.MAINTAIN).check()) {
                 throw new CiEntityAuthException(ciEntityId, ciEntityName, TransactionActionType.DELETE.getText());
             }
             if (needCommit) {
-                needCommit = CiAuthChecker.chain().checkCiEntityTransactionPrivilege(ciId).checkIsInGroup(ciEntityId, GroupType.MAINTAIN).check();
+                needCommit = CiAuthChecker.chain().checkCiEntityTransactionPrivilege(ciId).checkCiEntityIsInGroup(ciEntityId, GroupType.MAINTAIN).check();
                 if (!needCommit) {
                     throw new CiEntityAuthException(ciEntityId, ciEntityName, TransactionActionType.DELETE.getText());
                 }

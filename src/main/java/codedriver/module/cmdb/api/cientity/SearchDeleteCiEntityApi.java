@@ -132,7 +132,7 @@ public class SearchDeleteCiEntityApi extends PrivateApiComponentBase {
             boolean canRecover = CiAuthChecker.chain().checkCiEntityRecoverPrivilege(pTransactionVo.getCiId()).check();
             List<Long> hasMaintainCiEntityIdList = new ArrayList<>();
             if (!canRecover) {
-                hasMaintainCiEntityIdList = CiAuthChecker.isInGroup(transactionList.stream().map(t -> t.getCiEntityTransactionVo().getCiEntityId()).collect(Collectors.toList()), GroupType.MAINTAIN);
+                hasMaintainCiEntityIdList = CiAuthChecker.isCiEntityInGroup(transactionList.stream().map(t -> t.getCiEntityTransactionVo().getCiEntityId()).collect(Collectors.toList()), GroupType.MAINTAIN);
             }
             for (TransactionVo transactionVo : transactionList) {
                 CiEntityTransactionVo ciEntityTransactionVo = transactionVo.getCiEntityTransactionVo();

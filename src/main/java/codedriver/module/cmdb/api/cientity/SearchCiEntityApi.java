@@ -204,8 +204,8 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
                 // 任意权限缺失，都需要检查是否在运维群组
                 if (!canEdit || !canDelete) {
                     if (CollectionUtils.isNotEmpty(ciEntityVo.getGroupIdList())) {
-                        hasMaintainCiEntityIdList = CiAuthChecker.isInGroup(ciEntityList.stream().map(CiEntityVo::getId).collect(Collectors.toList()), GroupType.MAINTAIN);
-                        hasReadCiEntityIdList = CiAuthChecker.isInGroup(ciEntityList.stream().map(CiEntityVo::getId).collect(Collectors.toList()), GroupType.READONLY);
+                        hasMaintainCiEntityIdList = CiAuthChecker.isCiEntityInGroup(ciEntityList.stream().map(CiEntityVo::getId).collect(Collectors.toList()), GroupType.MAINTAIN);
+                        hasReadCiEntityIdList = CiAuthChecker.isCiEntityInGroup(ciEntityList.stream().map(CiEntityVo::getId).collect(Collectors.toList()), GroupType.READONLY);
                     }
                 }
             }

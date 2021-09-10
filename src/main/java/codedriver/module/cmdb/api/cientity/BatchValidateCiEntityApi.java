@@ -91,7 +91,7 @@ public class BatchValidateCiEntityApi extends PrivateApiComponentBase {
 
             CiEntityTransactionVo ciEntityTransactionVo;
             if (id != null) {
-                if (!CiAuthChecker.chain().checkCiEntityUpdatePrivilege(ciId).checkIsInGroup(id, GroupType.MAINTAIN).check()) {
+                if (!CiAuthChecker.chain().checkCiEntityUpdatePrivilege(ciId).checkCiEntityIsInGroup(id, GroupType.MAINTAIN).check()) {
                     CiVo ciVo = ciMapper.getCiById(ciId);
                     throw new CiEntityAuthException(ciVo.getLabel(), TransactionActionType.UPDATE.getText());
                 }

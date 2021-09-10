@@ -10,6 +10,7 @@ import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.cmdb.dto.ci.CiTypeVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.enums.CiAuthType;
+import codedriver.framework.cmdb.enums.group.GroupType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -63,10 +64,14 @@ public class SearchCiTypeCiApi extends PrivateApiComponentBase {
                     CiVo ciVo = itCi.next();
                     if (CollectionUtils.isNotEmpty(ciVo.getAuthList())) {
                         if (!CiAuthChecker.hasPrivilege(ciVo.getAuthList(), CiAuthType.CIMANAGE, CiAuthType.CIENTITYUPDATE, CiAuthType.CIENTITYDELETE, CiAuthType.TRANSACTIONMANAGE, CiAuthType.CIENTITYQUERY)) {
-                            itCi.remove();
+                            if (!CiAuthChecker.isCiInGroup(ciVo.getId(), GroupType.READONLY, GroupType.MAINTAIN)) {
+                                itCi.remove();
+                            }
                         }
                     } else {
-                        itCi.remove();
+                        if (!CiAuthChecker.isCiInGroup(ciVo.getId(), GroupType.READONLY, GroupType.MAINTAIN)) {
+                            itCi.remove();
+                        }
                     }
                 }
             }

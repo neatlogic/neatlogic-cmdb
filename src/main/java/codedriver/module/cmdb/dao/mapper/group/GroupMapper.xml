@@ -6,7 +6,58 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.group.GroupMapper">
+    <cache-ref namespace="codedriver.module.cmdb.dao.mapper.ci.CiMapper"/>
     <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
+
+    <select id="getCiIdByGroupIdList" resultType="java.lang.Long" useCache="true">
+        SELECT
+        `ci_id`
+        FROM
+        `cmdb_ci_group` a join cmdb_group b on a.group_id = b.id
+        WHERE
+        a.group_id IN
+        <foreach collection="groupIdList" item="item" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+        AND
+        a.ci_id IN
+        <foreach collection="ciIdList" item="item" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+        AND
+        b.type IN
+        <foreach collection="typeList" item="item" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <select id="getCiEntityIdByGroupIdList" resultType="java.lang.Long" useCache="true">
+        SELECT
+        a.`cientity_id`
+        FROM
+        `cmdb_cientity_group` a join `cmdb_group` b on a.group_id = b.id
+        WHERE
+        a.group_id IN
+        <foreach collection="groupIdList" item="item" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+        AND
+        a.cientity_id IN
+        <foreach collection="ciEntityIdList" item="item" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+        AND
+        b.type IN
+        <foreach collection="typeList" item="item" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
 
     <select id="getDoingGroupByServerId" parameterType="codedriver.framework.cmdb.dto.group.GroupVo"
             resultType="codedriver.framework.cmdb.dto.group.GroupVo" useCache="false">

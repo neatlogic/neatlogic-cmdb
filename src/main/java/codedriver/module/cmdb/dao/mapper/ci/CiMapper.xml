@@ -8,6 +8,7 @@
 <mapper namespace="codedriver.module.cmdb.dao.mapper.ci.CiMapper">
     <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000"
            size="100"></cache>
+
     <select id="getCiBaseInfoByCiEntityIdList" resultType="codedriver.framework.cmdb.dto.ci.CiVo" useCache="false">
         SELECT
         DISTINCT

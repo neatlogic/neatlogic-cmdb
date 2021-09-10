@@ -166,9 +166,6 @@ public interface CiEntityMapper {
 
     List<CiEntityVo> getCiEntityByAttrId(Long attrId);
 
-    List<Long> getCiEntityIdByGroupIdList(@Param("groupIdList") List<Long> groupIdList,
-                                          @Param("ciEntityIdList") List<Long> ciEntityIdList, @Param("typeList") List<String> typeList);
-
 
     int searchCiEntityIdCount(CiEntityVo ciEntityVo);
 

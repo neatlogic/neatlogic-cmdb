@@ -681,32 +681,6 @@
         WHERE b.attr_id = #{value}
     </select>
 
-    <select id="getCiEntityIdByGroupIdList"
-            resultType="java.lang.Long">
-        SELECT
-        `ci_entity_id`
-        FROM
-        `cmdb_cientity_group`
-        WHERE
-        group_id IN
-        <foreach collection="groupIdList" item="item" open="("
-                 separator="," close=")">
-            #{item}
-        </foreach>
-        AND
-        ci_entity_id IN
-        <foreach collection="ciEntityIdList" item="item" open="("
-                 separator="," close=")">
-            #{item}
-        </foreach>
-        AND
-        type IN
-        <foreach collection="typeList" item="item" open="("
-                 separator="," close=")">
-            #{item}
-        </foreach>
-    </select>
-
     <!--<select id="getCiEntityById" parameterType="java.lang.Long"
             resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
         SELECT a.`id`,

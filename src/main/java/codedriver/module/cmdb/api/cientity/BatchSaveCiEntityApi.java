@@ -101,14 +101,14 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
             CiEntityTransactionVo ciEntityTransactionVo;
 
             if (id != null) {
-                if (!CiAuthChecker.chain().checkCiEntityUpdatePrivilege(ciId).checkIsInGroup(id, GroupType.MAINTAIN).check()) {
+                if (!CiAuthChecker.chain().checkCiEntityUpdatePrivilege(ciId).checkCiEntityIsInGroup(id, GroupType.MAINTAIN).check()) {
                     CiVo ciVo = ciMapper.getCiById(ciId);
                     throw new CiEntityAuthException(ciVo.getLabel(), TransactionActionType.UPDATE.getText());
                 }
                 ciEntityTransactionVo = new CiEntityTransactionVo();
                 ciEntityTransactionVo.setCiEntityId(id);
                 ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
-                if (!CiAuthChecker.chain().checkCiEntityTransactionPrivilege(ciId).checkIsInGroup(id, GroupType.MAINTAIN).check()) {
+                if (!CiAuthChecker.chain().checkCiEntityTransactionPrivilege(ciId).checkCiEntityIsInGroup(id, GroupType.MAINTAIN).check()) {
                     allowCommit = false;
                 }
             } else if (StringUtils.isNotBlank(uuid)) {
@@ -119,7 +119,7 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
                 ciEntityTransactionVo = ciEntityTransactionMap.get(uuid);
                 ciEntityTransactionVo.setCiEntityUuid(uuid);
                 ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
-                if (!CiAuthChecker.chain().checkCiEntityTransactionPrivilege(ciId).checkIsInGroup(id, GroupType.MAINTAIN).check()) {
+                if (!CiAuthChecker.chain().checkCiEntityTransactionPrivilege(ciId).checkCiEntityIsInGroup(id, GroupType.MAINTAIN).check()) {
                     allowCommit = false;
                 }
             } else {
