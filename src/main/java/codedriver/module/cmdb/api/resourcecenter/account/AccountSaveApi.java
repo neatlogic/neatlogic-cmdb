@@ -124,6 +124,13 @@ public class AccountSaveApi extends PrivateApiComponentBase {
             vo.setProtocolId(protocolVo.getId());
             resourceCenterMapper.updateAccount(vo);
         } else {
+            AccountProtocolVo protocolVo = resourceCenterMapper.getAccountProtocolVoByProtocolId(protocolId);
+            if (protocolVo==null) {
+                throw new ResourceCenterAccountProtocolNotFoundByNameException(protocolVo.getName());
+            }
+            if (Objects.equals(protocolVo.getName(), "tagent")) {
+                throw new ResourceCenterAccountNotCreateTagentAccount();
+            }
             vo.setPassword(RC4Util.encrypt(vo.getPassword()));
             vo.setFcu(UserContext.get().getUserUuid());
             resourceCenterMapper.insertAccount(vo);
