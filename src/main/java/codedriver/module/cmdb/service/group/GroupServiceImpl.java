@@ -10,7 +10,6 @@ import codedriver.framework.cmdb.dto.group.CiGroupVo;
 import codedriver.framework.cmdb.dto.group.GroupAuthVo;
 import codedriver.framework.cmdb.dto.group.GroupVo;
 import codedriver.framework.cmdb.exception.group.GroupNotFoundException;
-import codedriver.framework.dao.mapper.RoleMapper;
 import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.module.cmdb.dao.mapper.group.GroupMapper;
 import org.apache.commons.collections4.CollectionUtils;
@@ -18,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import java.util.List;
 
 @Service
@@ -31,8 +29,6 @@ public class GroupServiceImpl implements GroupService {
     @Autowired
     private TeamMapper teamMapper;
 
-    @Resource
-    private RoleMapper roleMapper;
 
     @Override
     public List<Long> getCurrentUserGroupIdList() {

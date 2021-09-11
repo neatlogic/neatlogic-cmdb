@@ -8,6 +8,26 @@
 <mapper namespace="codedriver.module.cmdb.dao.mapper.group.GroupMapper">
     <cache-ref namespace="codedriver.module.cmdb.dao.mapper.ci.CiMapper"/>
     <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
+    <select id="getActiveGroupByCiId" parameterType="java.lang.Long"
+            resultType="codedriver.framework.cmdb.dto.group.GroupVo"
+            useCache="true">
+        SELECT a.id,
+               a.description,
+               a.name,
+               a.type,
+               a.is_active      as isActive,
+               a.status,
+               a.cientity_count as ciEntityCount,
+               a.error          as error,
+               a.fcd,
+               a.fcu,
+               a.lcd,
+               a.lcu
+        from cmdb_group a
+                 join cmdb_ci_group b on a.id = b.group_id
+        where b.ci_id = #{value}
+          and a.is_active = 1
+    </select>
 
     <select id="getCiIdByGroupIdList" resultType="java.lang.Long" useCache="true">
         SELECT

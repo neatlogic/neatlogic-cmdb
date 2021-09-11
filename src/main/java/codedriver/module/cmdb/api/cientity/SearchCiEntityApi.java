@@ -77,6 +77,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
             @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "关键字"),
+            @Param(name = "groupId", type = ApiParamType.LONG, desc = "团体id"),
             @Param(name = "attrFilterList", type = ApiParamType.STRING, desc = "属性过滤条件"),
             @Param(name = "relFilterList", type = ApiParamType.JSONARRAY, desc = "关系过滤条件"),
             @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "需要查询的配置项id列表）"),
@@ -98,9 +99,13 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         CiEntityVo ciEntityVo = JSONObject.toJavaObject(jsonObj, CiEntityVo.class);
+        Long groupId = jsonObj.getLong("groupId");
         //FIXME:查看权限控制仍需斟酌，主要是考虑被引用的配置项列表如果没有权限是否允许查看，目前可控制左侧模型菜单显示，不做严格禁止
         if (!CiAuthChecker.chain().checkCiEntityQueryPrivilege(ciEntityVo.getCiId()).check()) {
             List<Long> groupIdList = groupService.getCurrentUserGroupIdList();
+            if (groupId != null) {
+                groupIdList.removeIf(g -> !g.equals(groupId));
+            }
             if (CollectionUtils.isNotEmpty(groupIdList)) {
                 ciEntityVo.setGroupIdList(groupIdList);
             } else {

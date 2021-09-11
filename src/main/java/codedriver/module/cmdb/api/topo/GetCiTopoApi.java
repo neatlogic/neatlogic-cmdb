@@ -6,9 +6,12 @@
 package codedriver.module.cmdb.api.topo;
 
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.cmdb.dto.ci.CiTypeVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.ci.RelVo;
+import codedriver.framework.cmdb.enums.CiAuthType;
+import codedriver.framework.cmdb.enums.group.GroupType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -18,6 +21,7 @@ import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
 import codedriver.module.cmdb.dot.*;
 import codedriver.module.cmdb.dot.enums.LayoutType;
+import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -71,9 +75,9 @@ public class GetCiTopoApi extends PrivateApiComponentBase {
                 if (i == 1) {
                     nodeList.add(n);
                 }
-                Link.Builder linkb = new Link.Builder("Ci_" + (random.nextInt(3) + 1) + "_" + (random.nextInt(3) + 1), "Ci_" + (random.nextInt(3) + 1) + "_" + (random.nextInt(3) + 1));
-                linkb.setFontSize(9);
-                gb.addLink(linkb.build());
+                Link.Builder linkBuilder = new Link.Builder("Ci_" + (random.nextInt(3) + 1) + "_" + (random.nextInt(3) + 1), "Ci_" + (random.nextInt(3) + 1) + "_" + (random.nextInt(3) + 1));
+                linkBuilder.setFontSize(9);
+                gb.addLink(linkBuilder.build());
             }
             gb.addLayer(lb.build());
         }
@@ -109,6 +113,28 @@ public class GetCiTopoApi extends PrivateApiComponentBase {
         CiVo ci = JSONObject.toJavaObject(jsonObj, CiVo.class);
         ci.setIsTypeShowInTopo(1);
         List<CiTypeVo> ciTypeList = ciMapper.searchCiTypeCi(ci);
+
+        //根据权限去掉没权限查看的模型
+        if (!AuthActionChecker.check("CI_MODIFY", "CIENTITY_MODIFY")) {
+            for (CiTypeVo ciType : ciTypeList) {
+                Iterator<CiVo> itCi = ciType.getCiList().iterator();
+                while (itCi.hasNext()) {
+                    CiVo ciVo = itCi.next();
+                    if (CollectionUtils.isNotEmpty(ciVo.getAuthList())) {
+                        if (!CiAuthChecker.hasPrivilege(ciVo.getAuthList(), CiAuthType.CIMANAGE, CiAuthType.CIENTITYUPDATE, CiAuthType.CIENTITYDELETE, CiAuthType.TRANSACTIONMANAGE, CiAuthType.CIENTITYQUERY)) {
+                            if (!CiAuthChecker.isCiInGroup(ciVo.getId(), GroupType.READONLY, GroupType.MAINTAIN)) {
+                                itCi.remove();
+                            }
+                        }
+                    } else {
+                        if (!CiAuthChecker.isCiInGroup(ciVo.getId(), GroupType.READONLY, GroupType.MAINTAIN)) {
+                            itCi.remove();
+                        }
+                    }
+                }
+            }
+        }
+
         List<RelVo> relList = relMapper.getAllRelList();
         Graphviz.Builder gb = new Graphviz.Builder(LayoutType.get(layout));
         Set<Long> ciIdSet = new HashSet<>();
