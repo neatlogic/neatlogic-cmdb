@@ -5,6 +5,8 @@
 
 package codedriver.module.cmdb.api.cientity;
 
+import codedriver.framework.asynchronization.thread.CodeDriverThread;
+import codedriver.framework.asynchronization.threadpool.CachedThreadPool;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.ci.RelVo;
 import codedriver.framework.cmdb.dto.cientity.RelEntityVo;
@@ -45,7 +47,7 @@ public class ResetRelEntityIndexApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "重置关系索引";
+        return "重建关系索引";
     }
 
     @Override
@@ -53,40 +55,45 @@ public class ResetRelEntityIndexApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Description(desc = "重置关系索引接口，用于优化查询性能")
+    @Description(desc = "重建关系索引接口，用于优化查询性能")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        List<RelVo> relList = relMapper.getAllRelList();
-        for (RelVo rel : relList) {
-            RelEntityVo fromRelEntityVo = new RelEntityVo();
-            fromRelEntityVo.setRelId(rel.getId());
-            fromRelEntityVo.setFromCiId(rel.getFromCiId());
-            fromRelEntityVo.setPageSize(100);
-            fromRelEntityVo.setCurrentPage(1);
-            List<RelEntityVo> fromRelEntityList = relEntityMapper.getFromRelEntityByFromCiIdAndRelId(fromRelEntityVo);
-            while (CollectionUtils.isNotEmpty(fromRelEntityList)) {
-                for (RelEntityVo relEntity : fromRelEntityList) {
-                    ciEntityService.rebuildRelEntityIndex(RelDirectionType.FROM, relEntity.getRelId(), relEntity.getFromCiEntityId());
-                }
-                fromRelEntityVo.setCurrentPage(fromRelEntityVo.getCurrentPage() + 1);
-                fromRelEntityList = relEntityMapper.getFromRelEntityByFromCiIdAndRelId(fromRelEntityVo);
-            }
+        CachedThreadPool.execute(new CodeDriverThread("CMDB-REL-INDEX-BUILDER", true) {
+            @Override
+            protected void execute() {
+                List<RelVo> relList = relMapper.getAllRelList();
+                for (RelVo rel : relList) {
+                    RelEntityVo fromRelEntityVo = new RelEntityVo();
+                    fromRelEntityVo.setRelId(rel.getId());
+                    fromRelEntityVo.setFromCiId(rel.getFromCiId());
+                    fromRelEntityVo.setPageSize(100);
+                    fromRelEntityVo.setCurrentPage(1);
+                    List<RelEntityVo> fromRelEntityList = relEntityMapper.getFromRelEntityByFromCiIdAndRelId(fromRelEntityVo);
+                    while (CollectionUtils.isNotEmpty(fromRelEntityList)) {
+                        for (RelEntityVo relEntity : fromRelEntityList) {
+                            ciEntityService.rebuildRelEntityIndex(RelDirectionType.FROM, relEntity.getRelId(), relEntity.getFromCiEntityId());
+                        }
+                        fromRelEntityVo.setCurrentPage(fromRelEntityVo.getCurrentPage() + 1);
+                        fromRelEntityList = relEntityMapper.getFromRelEntityByFromCiIdAndRelId(fromRelEntityVo);
+                    }
 
-            RelEntityVo toRelEntityVo = new RelEntityVo();
-            toRelEntityVo.setRelId(rel.getId());
-            toRelEntityVo.setToCiId(rel.getToCiId());
-            toRelEntityVo.setPageSize(100);
-            toRelEntityVo.setCurrentPage(1);
-            List<RelEntityVo> toRelEntityList = relEntityMapper.getToRelEntityByToCiIdAndRelId(toRelEntityVo);
-            while (CollectionUtils.isNotEmpty(toRelEntityList)) {
-                for (RelEntityVo relEntity : toRelEntityList) {
-                    ciEntityService.rebuildRelEntityIndex(RelDirectionType.TO, relEntity.getRelId(), relEntity.getToCiEntityId());
+                    RelEntityVo toRelEntityVo = new RelEntityVo();
+                    toRelEntityVo.setRelId(rel.getId());
+                    toRelEntityVo.setToCiId(rel.getToCiId());
+                    toRelEntityVo.setPageSize(100);
+                    toRelEntityVo.setCurrentPage(1);
+                    List<RelEntityVo> toRelEntityList = relEntityMapper.getToRelEntityByToCiIdAndRelId(toRelEntityVo);
+                    while (CollectionUtils.isNotEmpty(toRelEntityList)) {
+                        for (RelEntityVo relEntity : toRelEntityList) {
+                            ciEntityService.rebuildRelEntityIndex(RelDirectionType.TO, relEntity.getRelId(), relEntity.getToCiEntityId());
+                        }
+                        toRelEntityVo.setCurrentPage(toRelEntityVo.getCurrentPage() + 1);
+                        toRelEntityList = relEntityMapper.getToRelEntityByToCiIdAndRelId(toRelEntityVo);
+                    }
                 }
-                toRelEntityVo.setCurrentPage(toRelEntityVo.getCurrentPage() + 1);
-                toRelEntityList = relEntityMapper.getToRelEntityByToCiIdAndRelId(toRelEntityVo);
             }
-        }
-        return null;
+        });
+        return "已发起重建作业，系统会在后台完成重建";
     }
 
 }
