@@ -56,6 +56,7 @@ import java.util.stream.Collectors;
 public class CiEntityServiceImpl implements CiEntityService {
     // private final static Logger logger = LoggerFactory.getLogger(CiEntityServiceImpl.class);
     private final static String EXPRESSION_TYPE = "expression";
+
     @Resource
     private CiEntityMapper ciEntityMapper;
 
@@ -103,6 +104,7 @@ public class CiEntityServiceImpl implements CiEntityService {
 
         ciEntityVo.setAttrList(attrList);
         ciEntityVo.setRelList(relList);
+        ciEntityVo.setLimitRelEntity(true);
         List<Map<String, Object>> resultList = ciEntityMapper.getCiEntityById(ciEntityVo);
         return new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, attrList, relList).isFlattenAttr(flattenAttr).build().getCiEntity();
     }
@@ -190,6 +192,7 @@ public class CiEntityServiceImpl implements CiEntityService {
         }
         if (CollectionUtils.isEmpty(ciEntityVo.getIdList())) {
             ciEntityVo.setSmartSearch(true);
+            ciEntityVo.setLimitRelEntity(false);
             int rowNum = ciEntityMapper.searchCiEntityIdCount(ciEntityVo);
             ciEntityVo.setRowNum(rowNum);
             List<Long> ciEntityIdList = ciEntityMapper.searchCiEntityId(ciEntityVo);
@@ -199,6 +202,7 @@ public class CiEntityServiceImpl implements CiEntityService {
         }
         if (CollectionUtils.isNotEmpty(ciEntityVo.getIdList())) {
             ciEntityVo.setSmartSearch(false);
+            ciEntityVo.setLimitRelEntity(true);
             List<Map<String, Object>> resultList = ciEntityMapper.searchCiEntity(ciEntityVo);
             ciEntityVo.setIdList(null);//清除id列表，避免ciEntityVo重用时数据没法更新
             return new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, attrList, relList).build().getCiEntityList();
@@ -723,7 +727,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                     //检查关系唯一
                     if (relVo.getToIsUnique().equals(1)) {
                         for (RelEntityTransactionVo fromRelEntityVo : fromRelEntityTransactionList) {
-                            List<RelEntityVo> checkFromRelEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(fromRelEntityVo.getToCiEntityId(), relVo.getId());
+                            List<RelEntityVo> checkFromRelEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(fromRelEntityVo.getToCiEntityId(), relVo.getId(), null);
                             if (checkFromRelEntityList.stream().anyMatch(r -> !r.getFromCiEntityId().equals(ciEntityTransactionVo.getCiEntityId()))) {
                                 throw new RelEntityIsUsedException(RelDirectionType.FROM, relVo);
                             }
@@ -749,7 +753,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                     //检查关系唯一
                     if (relVo.getFromIsUnique().equals(1)) {
                         for (RelEntityTransactionVo toRelEntityVo : toRelEntityTransactionList) {
-                            List<RelEntityVo> checkFromRelEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(toRelEntityVo.getFromCiEntityId(), relVo.getId());
+                            List<RelEntityVo> checkFromRelEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(toRelEntityVo.getFromCiEntityId(), relVo.getId(), null);
                             if (checkFromRelEntityList.stream().anyMatch(r -> !r.getToCiEntityId().equals(ciEntityTransactionVo.getCiEntityId()))) {
                                 throw new RelEntityIsUsedException(RelDirectionType.TO, relVo);
                             }
@@ -764,7 +768,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                         if (RelRuleType.O.getValue().equals(relVo.getToRule())) {
                             // 需要提取已有的关系信息判断是否有重复
                             List<RelEntityVo> fromRelEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(
-                                    ciEntityTransactionVo.getCiEntityId(), relVo.getId());
+                                    ciEntityTransactionVo.getCiEntityId(), relVo.getId(), 2);
                             if ((fromRelEntityList.size() == 1
                                     && !fromRelEntityList.contains(new RelEntityVo(fromRelEntityTransactionList.get(0))))
                                     || fromRelEntityList.size() > 1) {
@@ -780,7 +784,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                     //检查关系唯一
                     if (relVo.getToIsUnique().equals(1)) {
                         for (RelEntityTransactionVo fromRelEntityVo : fromRelEntityTransactionList) {
-                            List<RelEntityVo> checkFromRelEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(fromRelEntityVo.getToCiEntityId(), relVo.getId());
+                            List<RelEntityVo> checkFromRelEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(fromRelEntityVo.getToCiEntityId(), relVo.getId(), null);
                             if (checkFromRelEntityList.stream().anyMatch(r -> !r.getFromCiEntityId().equals(ciEntityTransactionVo.getCiEntityId()))) {
                                 throw new RelEntityIsUsedException(RelDirectionType.FROM, relVo);
                             }
@@ -793,7 +797,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                         if (RelRuleType.O.getValue().equals(relVo.getFromRule())) {
                             // 需要提取已有的关系信息判断是否有重复
                             List<RelEntityVo> toRelEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(
-                                    ciEntityTransactionVo.getCiEntityId(), relVo.getId());
+                                    ciEntityTransactionVo.getCiEntityId(), relVo.getId(), 2);
                             if ((toRelEntityList.size() == 1
                                     && !toRelEntityList.contains(new RelEntityVo(toRelEntityTransactionList.get(0))))
                                     || toRelEntityList.size() > 1) {
@@ -809,7 +813,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                     //检查关系唯一
                     if (relVo.getFromIsUnique().equals(1)) {
                         for (RelEntityTransactionVo toRelEntityVo : toRelEntityTransactionList) {
-                            List<RelEntityVo> checkFromRelEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(toRelEntityVo.getFromCiEntityId(), relVo.getId());
+                            List<RelEntityVo> checkFromRelEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(toRelEntityVo.getFromCiEntityId(), relVo.getId(), null);
                             if (checkFromRelEntityList.stream().anyMatch(r -> !r.getToCiEntityId().equals(ciEntityTransactionVo.getCiEntityId()))) {
                                 throw new RelEntityIsUsedException(RelDirectionType.TO, relVo);
                             }
@@ -1213,7 +1217,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                         //判断关系唯一
                         if (relVo.getToIsUnique().equals(1)) {
                             for (RelEntityTransactionVo fromRelEntityVo : fromRelEntityTransactionList) {
-                                List<RelEntityVo> checkFromRelEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(fromRelEntityVo.getToCiEntityId(), relVo.getId());
+                                List<RelEntityVo> checkFromRelEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(fromRelEntityVo.getToCiEntityId(), relVo.getId(), null);
                                 if (checkFromRelEntityList.stream().anyMatch(r -> !r.getFromCiEntityId().equals(ciEntityTransactionVo.getCiEntityId()))) {
                                     throw new RelEntityIsUsedException(RelDirectionType.FROM, relVo);
                                 }
@@ -1259,7 +1263,7 @@ public class CiEntityServiceImpl implements CiEntityService {
                         //判断关系唯一
                         if (relVo.getFromIsUnique().equals(1)) {
                             for (RelEntityTransactionVo toRelEntityVo : toRelEntityTransactionList) {
-                                List<RelEntityVo> checkFromRelEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(toRelEntityVo.getFromCiEntityId(), relVo.getId());
+                                List<RelEntityVo> checkFromRelEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(toRelEntityVo.getFromCiEntityId(), relVo.getId(), null);
                                 if (checkFromRelEntityList.stream().anyMatch(r -> !r.getToCiEntityId().equals(ciEntityTransactionVo.getCiEntityId()))) {
                                     throw new RelEntityIsUsedException(RelDirectionType.TO, relVo);
                                 }
@@ -1368,11 +1372,13 @@ public class CiEntityServiceImpl implements CiEntityService {
                             //正式删除关系数据
                             relEntityMapper.deleteRelEntityByRelIdFromCiEntityIdToCiEntityId(item.getRelId(),
                                     item.getFromCiEntityId(), item.getToCiEntityId());
-
                             ciEntityTransactionSet.add(ciEntityId);
                         }
                     }
                 }
+
+                //重建关系序列
+                rebuildRelEntityIndex(relEntityList);
             }
             CiEntityVo deleteCiEntityVo = new CiEntityVo(ciEntityTransactionVo);
             //删除之前找到所有关联配置项，可能需要更新他们的表达式属性
@@ -1452,6 +1458,7 @@ public class CiEntityServiceImpl implements CiEntityService {
             if (CollectionUtils.isNotEmpty(relEntityTransactionList)) {
                 //记录对端配置项的事务，如果同一个配置项则不需要添加多个事务
                 Map<Long, CiEntityTransactionVo> ciEntityTransactionMap = new HashMap<>();
+                List<RelEntityVo> rebuildRelEntityList = new ArrayList<>();
                 for (RelEntityTransactionVo relEntityTransactionVo : relEntityTransactionList) {
                     //如果不是自己引用自己，则需要补充对端配置项事务，此块需要在真正删除数据前处理
                     if (!relEntityTransactionVo.getFromCiEntityId().equals(relEntityTransactionVo.getToCiEntityId())) {
@@ -1496,10 +1503,12 @@ public class CiEntityServiceImpl implements CiEntityService {
                     if (relEntityTransactionVo.getAction().equals(RelActionType.DELETE.getValue())) {
                         relEntityMapper.deleteRelEntityByRelIdFromCiEntityIdToCiEntityId(relEntityTransactionVo.getRelId(),
                                 relEntityTransactionVo.getFromCiEntityId(), relEntityTransactionVo.getToCiEntityId());
+                        rebuildRelEntityList.add(new RelEntityVo(relEntityTransactionVo));
                     } else if (relEntityTransactionVo.getAction().equals(RelActionType.INSERT.getValue())) {
                         RelEntityVo newRelEntityVo = new RelEntityVo(relEntityTransactionVo);
                         if (relEntityMapper.checkRelEntityIsExists(newRelEntityVo) == 0) {
                             relEntityMapper.insertRelEntity(newRelEntityVo);
+                            rebuildRelEntityList.add(newRelEntityVo);
                         }
                     }
                 }
@@ -1507,6 +1516,9 @@ public class CiEntityServiceImpl implements CiEntityService {
                 for (Long ciEntityId : ciEntityTransactionMap.keySet()) {
                     transactionMapper.insertCiEntityTransaction(ciEntityTransactionMap.get(ciEntityId));
                 }
+                //重建关系序列
+                rebuildRelEntityIndex(rebuildRelEntityList);
+
             }
 
             //重新计算所有表达式属性的值
@@ -1542,6 +1554,53 @@ public class CiEntityServiceImpl implements CiEntityService {
                 }
             }
             return ciEntityVo.getId();
+        }
+    }
+
+    /**
+     * 重建序列号，优化搜索
+     */
+    @Override
+    public void rebuildRelEntityIndex(RelDirectionType direction, Long relId, Long ciEntityId) {
+        List<RelEntityVo> relEntityList = null;
+        if (direction == RelDirectionType.FROM) {
+            relEntityMapper.clearRelEntityFromIndex(relId, ciEntityId);
+            relEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(ciEntityId, relId, CiEntityVo.MAX_RELENTITY_COUNT + 1);
+            if (CollectionUtils.isNotEmpty(relEntityList)) {
+                for (int i = 0; i < relEntityList.size(); i++) {
+                    RelEntityVo rel = relEntityList.get(i);
+                    rel.setFromIndex(i + 1);
+                    relEntityMapper.updateRelEntityFromIndex(rel);
+                }
+            }
+        } else if (direction == RelDirectionType.TO) {
+            relEntityMapper.clearRelEntityToIndex(relId, ciEntityId);
+            relEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(ciEntityId, relId, CiEntityVo.MAX_RELENTITY_COUNT + 1);
+            if (CollectionUtils.isNotEmpty(relEntityList)) {
+                for (int i = 0; i < relEntityList.size(); i++) {
+                    RelEntityVo rel = relEntityList.get(i);
+                    rel.setToIndex(i + 1);
+                    relEntityMapper.updateRelEntityToIndex(rel);
+                }
+            }
+        }
+
+    }
+
+    private void rebuildRelEntityIndex(List<RelEntityVo> relEntityList) {
+        if (CollectionUtils.isNotEmpty(relEntityList)) {
+            Set<String> fromSet = relEntityList.stream().map(rel -> rel.getRelId() + "_" + rel.getFromCiEntityId()).collect(Collectors.toSet());
+            Set<String> toSet = relEntityList.stream().map(rel -> rel.getRelId() + "_" + rel.getToCiEntityId()).collect(Collectors.toSet());
+            if (CollectionUtils.isNotEmpty(fromSet)) {
+                for (String relId : fromSet) {
+                    rebuildRelEntityIndex(RelDirectionType.FROM, Long.parseLong(relId.split("_")[0]), Long.parseLong(relId.split("_")[1]));
+                }
+            }
+            if (CollectionUtils.isNotEmpty(toSet)) {
+                for (String relId : toSet) {
+                    rebuildRelEntityIndex(RelDirectionType.TO, Long.parseLong(relId.split("_")[0]), Long.parseLong(relId.split("_")[1]));
+                }
+            }
         }
     }
 

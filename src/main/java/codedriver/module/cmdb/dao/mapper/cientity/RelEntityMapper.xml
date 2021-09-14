@@ -7,6 +7,28 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper">
 
+    <select id="getFromRelEntityByFromCiIdAndRelId" parameterType="codedriver.framework.cmdb.dto.cientity.RelEntityVo"
+            resultType="codedriver.framework.cmdb.dto.cientity.RelEntityVo">
+        SELECT distinct rel_id           AS relId,
+                        from_cientity_id AS fromCiEntityId
+        FROM cmdb_relentity a
+                 JOIN cmdb_cientity b ON a.from_cientity_id = b.id
+        WHERE rel_id = #{relId}
+          AND b.ci_id = #{fromCiId}
+        LIMIT #{startNum},#{pageSize}
+    </select>
+
+    <select id="getToRelEntityByToCiIdAndRelId" parameterType="codedriver.framework.cmdb.dto.cientity.RelEntityVo"
+            resultType="codedriver.framework.cmdb.dto.cientity.RelEntityVo">
+        SELECT distinct rel_id         AS relId,
+                        to_cientity_id AS toCiEntityId
+        FROM cmdb_relentity a
+                 JOIN cmdb_cientity c ON a.to_cientity_id = c.id
+        WHERE rel_id = #{relId}
+          AND c.ci_id = #{toCiId}
+        LIMIT #{startNum},#{pageSize}
+    </select>
+
     <select id="getRelEntityByFromCiIdAndRelId" resultType="codedriver.framework.cmdb.dto.cientity.RelEntityVo">
         SELECT rel_id           AS relId,
                b.ci_id          AS fromCiId,
@@ -39,7 +61,9 @@
 
     <select id="getRelEntityByRelId" parameterType="codedriver.framework.cmdb.dto.cientity.RelEntityVo"
             resultType="codedriver.framework.cmdb.dto.cientity.RelEntityVo">
-        SELECT rel_id AS relId,
+        SELECT
+        a.id,
+        rel_id AS relId,
         b.ci_id AS fromCiId,
         c.ci_id AS toCiId,
         from_cientity_id AS fromCiEntityId,
@@ -68,32 +92,38 @@
 
     <select id="getRelEntityByToCiEntityIdAndRelId" resultType="codedriver.framework.cmdb.dto.cientity.RelEntityVo">
         SELECT a.`id`,
-               a.`rel_id`           AS relId,
-               a.`from_cientity_id` AS fromCiEntityId,
-               a.`to_cientity_id`   AS toCiEntityId,
-               a.`transaction_id`   AS transactionId,
-               b.`name`             AS fromCiEntityName,
-               c.`name`             AS toCiEntityName
+        a.`rel_id` AS relId,
+        a.`from_cientity_id` AS fromCiEntityId,
+        a.`to_cientity_id` AS toCiEntityId,
+        a.`transaction_id` AS transactionId,
+        b.`name` AS fromCiEntityName,
+        c.`name` AS toCiEntityName
         FROM `cmdb_relentity` a
-                 JOIN `cmdb_cientity` b ON a.`from_cientity_id` = b.id
-                 JOIN `cmdb_cientity` c ON a.`to_cientity_id` = c.id
+        JOIN `cmdb_cientity` b ON a.`from_cientity_id` = b.id
+        JOIN `cmdb_cientity` c ON a.`to_cientity_id` = c.id
         WHERE a.to_cientity_id = #{toCiEntityId}
-          AND a.rel_id = #{relId}
+        AND a.rel_id = #{relId}
+        <if test="limit != null">
+            LIMIT #{limit}
+        </if>
     </select>
 
     <select id="getRelEntityByFromCiEntityIdAndRelId" resultType="codedriver.framework.cmdb.dto.cientity.RelEntityVo">
         SELECT a.`id`,
-               a.`rel_id`           AS relId,
-               a.`from_cientity_id` AS fromCiEntityId,
-               a.`to_cientity_id`   AS toCiEntityId,
-               a.`transaction_id`   AS transactionId,
-               b.`name`             AS fromCiEntityName,
-               c.`name`             AS toCiEntityName
+        a.`rel_id` AS relId,
+        a.`from_cientity_id` AS fromCiEntityId,
+        a.`to_cientity_id` AS toCiEntityId,
+        a.`transaction_id` AS transactionId,
+        b.`name` AS fromCiEntityName,
+        c.`name` AS toCiEntityName
         FROM `cmdb_relentity` a
-                 JOIN `cmdb_cientity` b ON a.`from_cientity_id` = b.id
-                 JOIN `cmdb_cientity` c ON a.`to_cientity_id` = c.id
+        JOIN `cmdb_cientity` b ON a.`from_cientity_id` = b.id
+        JOIN `cmdb_cientity` c ON a.`to_cientity_id` = c.id
         WHERE a.from_cientity_id = #{fromCiEntityId}
-          AND a.rel_id = #{relId}
+        AND a.rel_id = #{relId}
+        <if test="limit != null">
+            LIMIT #{limit}
+        </if>
     </select>
 
     <select id="getRelEntityByCiEntityId" parameterType="java.lang.Long"
@@ -234,6 +264,34 @@
             </foreach>
         </if>
     </select>
+
+    <update id="clearRelEntityFromIndex">
+        update cmdb_relentity
+        set from_index = null
+        where rel_id = #{relId}
+          and from_cientity_id = #{ciEntityId}
+          and from_index is not null
+    </update>
+
+    <update id="clearRelEntityToIndex">
+        update cmdb_relentity
+        set to_index = null
+        where rel_id = #{relId}
+          and to_cientity_id = #{ciEntityId}
+          and to_index is not null
+    </update>
+
+    <update id="updateRelEntityFromIndex" parameterType="codedriver.framework.cmdb.dto.cientity.RelEntityVo">
+        update cmdb_relentity
+        set `from_index` = #{fromIndex}
+        where id = #{id}
+    </update>
+
+    <update id="updateRelEntityToIndex" parameterType="codedriver.framework.cmdb.dto.cientity.RelEntityVo">
+        update cmdb_relentity
+        set `to_index` = #{toIndex}
+        where id = #{id}
+    </update>
 
     <update id="updateRelEntityIsDeleteByRelId" parameterType="java.lang.Long">
         UPDATE cmdb_relentity

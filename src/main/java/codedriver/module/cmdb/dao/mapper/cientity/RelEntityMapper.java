@@ -18,6 +18,10 @@ public interface RelEntityMapper {
 
     int checkRelEntityIsExists(RelEntityVo relEntityVo);
 
+    List<RelEntityVo> getFromRelEntityByFromCiIdAndRelId(RelEntityVo relEntityVo);
+
+    List<RelEntityVo> getToRelEntityByToCiIdAndRelId(RelEntityVo relEntityVo);
+
     List<RelEntityVo> getRelEntityByFromCiIdAndRelId(@Param("relId") Long relId, @Param("fromCiId") Long fromCiId);
 
     List<RelEntityVo> getRelEntityByToCiIdAndRelId(@Param("relId") Long relId, @Param("toCiId") Long toCiId);
@@ -28,14 +32,23 @@ public interface RelEntityMapper {
                                                       @Param("relIdList") List<Long> relIdList);
 
     List<RelEntityVo> getRelEntityByFromCiEntityIdAndRelId(@Param("fromCiEntityId") Long fromCiEntityId,
-                                                           @Param("relId") Long relId);
+                                                           @Param("relId") Long relId, @Param("limit") Integer limit);
 
     List<RelEntityVo> getRelEntityByToCiEntityIdAndRelId(@Param("toCiEntityId") Long toCiEntityId,
-                                                         @Param("relId") Long relId);
+                                                         @Param("relId") Long relId, @Param("limit") Integer limit);
 
     List<Long> getFromToCiEntityIdByCiEntityIdList(@Param("idList") List<Long> idList);
 
     List<Long> getFromToCiEntityIdByCiEntityId(Long ciEntityId);
+
+    void clearRelEntityFromIndex(@Param("relId") Long relId, @Param("ciEntityId") Long ciEntityId);
+
+    void clearRelEntityToIndex(@Param("relId") Long relId, @Param("ciEntityId") Long ciEntityId);
+
+
+    void updateRelEntityFromIndex(RelEntityVo relEntityVo);
+
+    void updateRelEntityToIndex(RelEntityVo relEntityVo);
 
     int insertRelEntity(RelEntityVo relEntityVo);
 

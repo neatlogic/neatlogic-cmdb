@@ -11,6 +11,7 @@ import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.cmdb.dto.transaction.TransactionGroupVo;
 import codedriver.framework.cmdb.dto.transaction.TransactionStatusVo;
 import codedriver.framework.cmdb.dto.transaction.TransactionVo;
+import codedriver.framework.cmdb.enums.RelDirectionType;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -86,6 +87,8 @@ public interface CiEntityService {
     void updateCiEntityNameForCi(CiVo ciVo);
 
     void createSnapshot(CiEntityTransactionVo ciEntityTransactionVo);
+
+    void rebuildRelEntityIndex(RelDirectionType direction, Long relId, Long ciEntityId);
 
     void updateCiEntity(CiEntityVo ciEntityVo);
 

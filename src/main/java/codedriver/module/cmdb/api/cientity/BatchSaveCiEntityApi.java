@@ -7,9 +7,10 @@ package codedriver.module.cmdb.api.cientity;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.ci.CiVo;
+import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
-import codedriver.framework.cmdb.enums.group.GroupType;
 import codedriver.framework.cmdb.enums.TransactionActionType;
+import codedriver.framework.cmdb.enums.group.GroupType;
 import codedriver.framework.cmdb.exception.cientity.CiEntityAuthException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.exception.core.ApiRuntimeException;
@@ -101,27 +102,13 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
             CiEntityTransactionVo ciEntityTransactionVo;
 
             if (id != null) {
-                if (!CiAuthChecker.chain().checkCiEntityUpdatePrivilege(ciId).checkCiEntityIsInGroup(id, GroupType.MAINTAIN).check()) {
-                    CiVo ciVo = ciMapper.getCiById(ciId);
-                    throw new CiEntityAuthException(ciVo.getLabel(), TransactionActionType.UPDATE.getText());
-                }
                 ciEntityTransactionVo = new CiEntityTransactionVo();
                 ciEntityTransactionVo.setCiEntityId(id);
                 ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
-                if (!CiAuthChecker.chain().checkCiEntityTransactionPrivilege(ciId).checkCiEntityIsInGroup(id, GroupType.MAINTAIN).check()) {
-                    allowCommit = false;
-                }
             } else if (StringUtils.isNotBlank(uuid)) {
-                if (!CiAuthChecker.chain().checkCiEntityInsertPrivilege(ciId).check()) {
-                    CiVo ciVo = ciMapper.getCiById(ciId);
-                    throw new CiEntityAuthException(ciVo.getLabel(), TransactionActionType.INSERT.getText());
-                }
                 ciEntityTransactionVo = ciEntityTransactionMap.get(uuid);
                 ciEntityTransactionVo.setCiEntityUuid(uuid);
                 ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
-                if (!CiAuthChecker.chain().checkCiEntityTransactionPrivilege(ciId).checkCiEntityIsInGroup(id, GroupType.MAINTAIN).check()) {
-                    allowCommit = false;
-                }
             } else {
                 throw new ApiRuntimeException("数据不合法，缺少id或uuid");
             }
@@ -188,6 +175,28 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
                 }
             }
             ciEntityTransactionVo.setRelEntityData(relObj);
+
+            //判断权限
+            if (ciEntityTransactionVo.getAction().equals(TransactionActionType.INSERT.getValue())) {
+                boolean isInGroup = false;
+                CiEntityVo newCiEntityVo = new CiEntityVo(ciEntityTransactionVo);
+                if (!CiAuthChecker.chain().checkCiEntityInsertPrivilege(ciId).checkCiIsInGroup(ciId, GroupType.MAINTAIN).check()) {
+                    CiVo ciVo = ciMapper.getCiById(ciId);
+                    throw new CiEntityAuthException(ciVo.getLabel(), TransactionActionType.INSERT.getText());
+                }
+                if (!CiAuthChecker.chain().checkCiEntityTransactionPrivilege(ciId).checkCiIsInGroup(ciId, GroupType.MAINTAIN).check()) {
+                    allowCommit = false;
+                }
+            } else if (ciEntityTransactionVo.getAction().equals(TransactionActionType.UPDATE.getValue())) {
+                if (!CiAuthChecker.chain().checkCiEntityUpdatePrivilege(ciId).checkCiEntityIsInGroup(id, GroupType.MAINTAIN).check()) {
+                    CiVo ciVo = ciMapper.getCiById(ciId);
+                    throw new CiEntityAuthException(ciVo.getLabel(), TransactionActionType.UPDATE.getText());
+                }
+                if (!CiAuthChecker.chain().checkCiEntityTransactionPrivilege(ciId).checkCiEntityIsInGroup(id, GroupType.MAINTAIN).check()) {
+                    allowCommit = false;
+                }
+            }
+
             ciEntityTransactionList.add(ciEntityTransactionVo);
         }
         if (CollectionUtils.isNotEmpty(ciEntityTransactionList)) {

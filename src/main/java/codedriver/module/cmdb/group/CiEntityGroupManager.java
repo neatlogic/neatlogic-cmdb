@@ -5,9 +5,11 @@
 
 package codedriver.module.cmdb.group;
 
+import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.group.*;
 import codedriver.framework.cmdb.enums.group.Status;
+import codedriver.framework.dao.mapper.TeamMapper;
 import codedriver.framework.exception.core.ApiRuntimeException;
 import codedriver.framework.transaction.core.AfterTransactionJob;
 import codedriver.framework.util.javascript.JavascriptUtil;
@@ -35,10 +37,13 @@ public class CiEntityGroupManager {
 
     private static GroupMapper groupMapper;
 
+    private static TeamMapper teamMapper;
+
     @Autowired
-    public CiEntityGroupManager(CiEntityService _ciEntityService, GroupMapper _groupMapper) {
+    public CiEntityGroupManager(CiEntityService _ciEntityService, GroupMapper _groupMapper, TeamMapper _teamMapper) {
         ciEntityService = _ciEntityService;
         groupMapper = _groupMapper;
+        teamMapper = _teamMapper;
     }
 
 
@@ -139,6 +144,25 @@ public class CiEntityGroupManager {
                 }
             }
         });
+    }
+
+    public static boolean checkCiEntityIsInUserGroup(CiEntityVo ciEntityVo) {
+        String userUuid = UserContext.get().getUserUuid(true);
+        List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(userUuid);
+        List<String> roleUuidList = UserContext.get().getRoleUuidList();
+        List<GroupVo> groupList = groupMapper.getGroupByUserUuid(userUuid, teamUuidList, roleUuidList);
+        if (CollectionUtils.isNotEmpty(groupList)) {
+            for (GroupVo groupVo : groupList) {
+                if (CollectionUtils.isNotEmpty(groupVo.getCiGroupList())) {
+                    for (CiGroupVo ciGroupVo : groupVo.getCiGroupList()) {
+                        if (matchRule(ciEntityVo, ciGroupVo)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     public static void groupCi(Long ciId) {

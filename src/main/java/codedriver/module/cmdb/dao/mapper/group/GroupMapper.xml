@@ -185,6 +185,54 @@
         WHERE a.ci_id = #{value}
     </select>
 
+    <select id="getGroupByUserUuid" resultMap="groupResultMap" useCache="true">
+        select a.id,
+        a.is_active as isActive,
+        a.name,
+        a.type,
+        a.description,
+        a.cientity_count AS ciEntityCount,
+        a.status AS status,
+        a.error as error,
+        b.id as ciGroupId,
+        b.ci_id as ciId,
+        b.rule as ruleStr,
+        c.group_id as authGroupId,
+        c.auth_type as authType,
+        c.auth_uuid as authUuid
+        from cmdb_group a
+        left join cmdb_ci_group b on a.id = b.group_id
+        join cmdb_group_auth c on a.id = c.group_id and
+        (c.group_id = -1
+        <if test="userUuid != null and userUuid != ''">
+            OR (
+            c.auth_type = 'user'
+            AND
+            c.auth_uuid = #{userUuid}
+            )
+        </if>
+        <if test="teamUuidList != null and teamUuidList.size() > 0">
+            OR (
+            c.auth_type = 'team'
+            AND
+            c.auth_uuid IN
+            <foreach collection="teamUuidList" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+            )
+        </if>
+        <if test="roleUuidList != null and roleUuidList.size() > 0">
+            OR (
+            c.auth_type = 'role'
+            AND
+            c.auth_uuid IN
+            <foreach collection="roleUuidList" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>)
+        </if>
+        )
+    </select>
+
     <select id="getGroupIdByUserUuid" resultType="java.lang.Long" useCache="true">
         SELECT -1 AS group_id FROM `cmdb_group_auth` WHERE FALSE
         <if test="userUuid != null and userUuid != ''">
