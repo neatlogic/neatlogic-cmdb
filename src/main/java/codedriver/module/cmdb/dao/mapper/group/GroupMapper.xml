@@ -203,7 +203,7 @@
         from cmdb_group a
         left join cmdb_ci_group b on a.id = b.group_id
         join cmdb_group_auth c on a.id = c.group_id and
-        (c.group_id = -1
+        ((c.auth_type = 'common' AND c.auth_uuid = 'alluser')
         <if test="userUuid != null and userUuid != ''">
             OR (
             c.auth_type = 'user'
@@ -274,6 +274,10 @@
                 #{item}
             </foreach>
         </if>
+        UNION
+        SELECT `group_id` FROM `cmdb_group_auth`
+        WHERE
+        auth_type = 'common' AND auth_uuid = 'alluser'
     </select>
 
     <update id="updateGroupCiEntityCount" parameterType="codedriver.framework.cmdb.dto.group.GroupVo">

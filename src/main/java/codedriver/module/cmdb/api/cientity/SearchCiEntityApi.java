@@ -111,6 +111,12 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
             } else {
                 throw new CiEntityAuthException("查看");
             }
+        } else {
+            if (groupId != null) {
+                ciEntityVo.setGroupIdList(new ArrayList<Long>() {{
+                    this.add(groupId);
+                }});
+            }
         }
 
         Long relCiEntityId = jsonObj.getLong("relCiEntityId");
