@@ -254,7 +254,7 @@
     </delete>
 
     <delete id="deleteSyncCiCollectionById" parameterType="java.lang.Long">
-        delete a,b,c,d
+        delete a,b,c,d,csa
         from cmdb_sync_ci_collection a
                  left join cmdb_sync_mapping b on a.id = b.ci_collection_id
                  left join cmdb_sync_policy c on a.id = c.ci_collection_id
