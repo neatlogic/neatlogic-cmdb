@@ -131,9 +131,6 @@ public class AccountSaveApi extends PrivateApiComponentBase {
             if (Objects.equals(protocolVo.getName(), "tagent")) {
                 throw new ResourceCenterAccountNotCreateTagentAccount();
             }
-            if (StringUtils.isNotEmpty(vo.getPasswordPlain())) {
-                vo.setPasswordCipher(vo.getPasswordPlain());
-            }
             vo.setFcu(UserContext.get().getUserUuid());
             resourceCenterMapper.insertAccount(vo);
         }
