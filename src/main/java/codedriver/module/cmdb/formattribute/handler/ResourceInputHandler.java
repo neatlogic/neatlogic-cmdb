@@ -38,7 +38,7 @@ public class ResourceInputHandler extends FormHandlerBase {
 
     @Override
     public String getIcon() {
-        return "tsfont-formtextarea";
+        return "tsfont-zichanshuruzujian";
     }
 
     @Override
