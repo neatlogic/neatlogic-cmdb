@@ -1558,14 +1558,14 @@ public class CiEntityServiceImpl implements CiEntityService {
     }
 
     /**
-     * 重建序列号，优化搜索
+     * 重建序列号优化搜索，至少创建50条数据索引，留下足够扩展控件。
      */
     @Override
     public void rebuildRelEntityIndex(RelDirectionType direction, Long relId, Long ciEntityId) {
         List<RelEntityVo> relEntityList = null;
         if (direction == RelDirectionType.FROM) {
             relEntityMapper.clearRelEntityFromIndex(relId, ciEntityId);
-            relEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(ciEntityId, relId, CiEntityVo.MAX_RELENTITY_COUNT + 1);
+            relEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(ciEntityId, relId, Math.max(CiEntityVo.MAX_RELENTITY_COUNT + 1, 50));
             if (CollectionUtils.isNotEmpty(relEntityList)) {
                 for (int i = 0; i < relEntityList.size(); i++) {
                     RelEntityVo rel = relEntityList.get(i);
@@ -1575,7 +1575,7 @@ public class CiEntityServiceImpl implements CiEntityService {
             }
         } else if (direction == RelDirectionType.TO) {
             relEntityMapper.clearRelEntityToIndex(relId, ciEntityId);
-            relEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(ciEntityId, relId, CiEntityVo.MAX_RELENTITY_COUNT + 1);
+            relEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(ciEntityId, relId, Math.max(CiEntityVo.MAX_RELENTITY_COUNT + 1, 50));
             if (CollectionUtils.isNotEmpty(relEntityList)) {
                 for (int i = 0; i < relEntityList.size(); i++) {
                     RelEntityVo rel = relEntityList.get(i);

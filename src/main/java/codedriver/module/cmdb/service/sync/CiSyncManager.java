@@ -292,6 +292,10 @@ public class CiSyncManager {
 
     /**
      * 根据mapping字段扁平化json
+     * 例如原json是：
+     * [{"a":"A","b":[{"subB":"BA"},{"subB":"BB"}]}]
+     * 使用mapping字段"a","b.subB"转化后得到：
+     * [{"a":"A","b.subB":"BA"},{"a":"A","b.subB":"BB"}]
      *
      * @param dataList  原始数据
      * @param fieldList 字段列表
@@ -569,8 +573,10 @@ public class CiSyncManager {
                 "}"
         );
         Set<String> fieldList = new HashSet<>();
+        fieldList.add("STATE");
         fieldList.add("NET_INTERFACES.NAME");
         fieldList.add("NET_INTERFACES.MAC");
+        fieldList.add("MOUNT_POINTS.USED");
         //fieldList.add("MEM_CACHED");
         //fieldList.add("NET_INTERFACES");
         //System.out.println(j);
