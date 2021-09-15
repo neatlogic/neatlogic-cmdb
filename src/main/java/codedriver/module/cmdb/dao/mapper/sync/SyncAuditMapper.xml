@@ -6,20 +6,64 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.sync.SyncAuditMapper">
+    <sql id="searchSyncAuditCondition">
+        <where>
+            <if test="ciCollectionId != null">
+                and a.ci_collection_id= #{ciCollectionId}
+            </if>
+            <if test="status != null and status != ''">
+                and a.status = #{status}
+            </if>
+            <if test="inputFrom != null and inputFrom != ''">
+                and a.input_from = #{inputFrom}
+            </if>
+            <if test="hasError == true">
+                and a.error is not null
+            </if>
+        </where>
+    </sql>
+
+    <select id="searchSyncAuditCount" parameterType="codedriver.framework.cmdb.dto.sync.SyncAuditVo" resultType="int">
+        select count(a.id)
+        from cmdb_sync_audit a
+        join cmdb_sync_ci_collection b on
+        a.ci_collection_id = b.id
+        <include refid="searchSyncAuditCondition"></include>
+    </select>
+
+    <select id="searchSyncAudit" parameterType="codedriver.framework.cmdb.dto.sync.SyncAuditVo"
+            resultType="codedriver.framework.cmdb.dto.sync.SyncAuditVo">
+        select a.id,
+        a.ci_collection_id AS ciCollectionId,
+        a.start_time AS startTime,
+        a.end_time AS endTime,
+        a.input_from AS inputFrom,
+        a.status,
+        a.transaction_group_id AS transactionGroupId,
+        a.server_id AS serverID,
+        a.error AS error
+        from cmdb_sync_audit a
+        join cmdb_sync_ci_collection b on
+        a.ci_collection_id = b.id
+        <include refid="searchSyncAuditCondition"></include>
+        order by id desc
+        limit #{startNum}, #{pageSize}
+    </select>
+
     <select id="getDoingSyncByCiId" parameterType="java.lang.Long"
             resultType="codedriver.framework.cmdb.dto.sync.SyncAuditVo">
         select a.id,
-               a.sync_ci_collection_id AS syncCiCollectionId,
-               a.start_time            AS startTime,
-               a.end_time              AS endTime,
-               a.input_from            AS inputFrom,
+               a.ci_collection_id     AS ciCollectionId,
+               a.start_time           AS startTime,
+               a.end_time             AS endTime,
+               a.input_from           AS inputFrom,
                a.status,
-               a.transaction_group_id  AS transactionGroupId,
-               a.server_id             AS serverID,
-               a.error                 AS error
+               a.transaction_group_id AS transactionGroupId,
+               a.server_id            AS serverID,
+               a.error                AS error
         from cmdb_sync_audit a
                  join cmdb_sync_ci_collection b on
-            a.sync_ci_collection_id = b.id
+            a.ci_collection_id = b.id
         where b.ci_id = #{value}
           and a.status = 'doing'
     </select>
@@ -37,14 +81,14 @@
 
     <insert id="insertSyncAudit" parameterType="codedriver.framework.cmdb.dto.sync.SyncAuditVo">
         INSERT INTO cmdb_sync_audit (id,
-                                     sync_ci_collection_id,
+                                     ci_collection_id,
                                      start_time,
                                      input_from,
                                      status,
                                      transaction_group_id,
                                      server_id)
         VALUES (#{id},
-                #{syncCiCollectionId},
+                #{ciCollectionId},
                 NOW(3),
                 #{inputFrom},
                 #{status},

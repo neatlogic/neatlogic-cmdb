@@ -589,7 +589,7 @@ public class CiSyncManager {
                         TransactionGroupVo transactionGroupVo = new TransactionGroupVo();
                         SyncAuditVo syncAuditVo = new SyncAuditVo();
                         syncAuditVo.setStatus(SyncStatus.DOING.getValue());
-                        syncAuditVo.setSyncCiCollectionId(syncCiCollectionVo.getId());
+                        syncAuditVo.setCiCollectionId(syncCiCollectionVo.getId());
                         syncAuditVo.setTransactionGroupId(transactionGroupVo.getId());
                         syncAuditVo.setInputFrom(InputFromContext.get().getInputFrom());
                         syncAuditMapper.insertSyncAudit(syncAuditVo);

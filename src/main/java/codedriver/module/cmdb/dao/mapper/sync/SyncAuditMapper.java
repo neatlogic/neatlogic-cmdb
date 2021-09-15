@@ -12,6 +12,10 @@ import java.util.List;
 public interface SyncAuditMapper {
     List<SyncAuditVo> getDoingSyncByCiId(Long ciId);
 
+    List<SyncAuditVo> searchSyncAudit(SyncAuditVo syncAuditVo);
+
+    int searchSyncAuditCount(SyncAuditVo syncAuditVo);
+
     void insertSyncAudit(SyncAuditVo syncAuditVo);
 
     void updateSyncAuditStatus(SyncAuditVo syncAuditVo);

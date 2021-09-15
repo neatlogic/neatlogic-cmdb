@@ -259,6 +259,7 @@
                  left join cmdb_sync_mapping b on a.id = b.ci_collection_id
                  left join cmdb_sync_policy c on a.id = c.ci_collection_id
                  left join cmdb_sync_schedule d on c.id = d.policy_id
+                 left join cmdb_sync_audit csa on a.id = csa.sync_ci_collection_id
         where a.id = #{value}
     </delete>
 

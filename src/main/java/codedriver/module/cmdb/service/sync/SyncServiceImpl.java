@@ -7,12 +7,10 @@ package codedriver.module.cmdb.service.sync;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.cmdb.dto.ci.CiVo;
-import codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo;
-import codedriver.framework.cmdb.dto.sync.SyncMappingVo;
-import codedriver.framework.cmdb.dto.sync.SyncPolicyVo;
-import codedriver.framework.cmdb.dto.sync.SyncScheduleVo;
+import codedriver.framework.cmdb.dto.sync.*;
 import codedriver.framework.cmdb.exception.sync.SyncCiCollectionIsExistsException;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
+import codedriver.module.cmdb.dao.mapper.sync.SyncAuditMapper;
 import codedriver.module.cmdb.dao.mapper.sync.SyncMapper;
 import com.alibaba.nacos.common.utils.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -24,6 +22,9 @@ import java.util.List;
 public class SyncServiceImpl implements SyncService {
     @Resource
     private SyncMapper syncMapper;
+
+    @Resource
+    private SyncAuditMapper syncAuditMapper;
 
     @Resource
     private CiMapper ciMapper;
@@ -77,6 +78,12 @@ public class SyncServiceImpl implements SyncService {
         if (CollectionUtils.isNotEmpty(syncCiCollectionList)) {
             int rowNum = syncMapper.searchSyncCiCollectionCount(syncCiCollectionVo);
             syncCiCollectionVo.setRowNum(rowNum);
+            for (SyncCiCollectionVo ciCollectionVo : syncCiCollectionList) {
+                SyncAuditVo syncAuditVo = new SyncAuditVo();
+                syncAuditVo.setPageSize(100);
+                syncAuditVo.setCiCollectionId(ciCollectionVo.getId());
+                ciCollectionVo.setExecCount(syncAuditMapper.searchSyncAudit(syncAuditVo).size());
+            }
         }
         return syncCiCollectionList;
     }
