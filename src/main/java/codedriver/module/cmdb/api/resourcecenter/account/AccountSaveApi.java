@@ -115,11 +115,6 @@ public class AccountSaveApi extends PrivateApiComponentBase {
             if (oldVo == null) {
                 throw new ResourceCenterAccountNotFoundException(id);
             }
-            if (StringUtils.isNotEmpty(vo.getPasswordPlain())) {
-                if (!Objects.equals(vo.getPasswordCipher(), oldVo.getPasswordCipher())) {
-                    vo.setPasswordCipher(vo.getPasswordPlain());
-                }
-            }
             AccountProtocolVo protocolVo = resourceCenterMapper.getAccountProtocolVoByProtocolId(vo.getProtocolId());
             vo.setProtocolId(protocolVo.getId());
             resourceCenterMapper.updateAccount(vo);
