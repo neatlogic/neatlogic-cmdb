@@ -23,10 +23,10 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.RESOURCECENTER_ACCOUNT_MODIFY;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -62,7 +62,7 @@ public class AccountSaveApi extends PrivateApiComponentBase {
             @Param(name = "id", type = ApiParamType.LONG, desc = "账号ID"),
             @Param(name = "name", type = ApiParamType.STRING, maxLength = 50, isRequired = true, desc = "名称"),
             @Param(name = "account", type = ApiParamType.STRING, maxLength = 50, isRequired = true, desc = "用户名"),
-            @Param(name = "password", type = ApiParamType.STRING, maxLength = 50, isRequired = false, desc = "密码"),
+            @Param(name = "passwordPlain", type = ApiParamType.STRING, maxLength = 50, isRequired = false, desc = "密码"),
             @Param(name = "protocolId", type = ApiParamType.LONG, isRequired = true, desc = "协议id"),
             @Param(name = "port", type = ApiParamType.INTEGER,isRequired = false, desc = "端口"),
             @Param(name = "tagIdList", type = ApiParamType.JSONARRAY, isRequired = false, desc = "标签id列表"),
@@ -115,11 +115,6 @@ public class AccountSaveApi extends PrivateApiComponentBase {
             if (oldVo == null) {
                 throw new ResourceCenterAccountNotFoundException(id);
             }
-            if (!StringUtils.isEmpty(vo.getPassword())) {
-                if (!Objects.equals(vo.getPassword(), oldVo.getPassword())) {
-                    vo.setPassword(RC4Util.encrypt(vo.getPassword()));
-                }
-            }
             AccountProtocolVo protocolVo = resourceCenterMapper.getAccountProtocolVoByProtocolId(vo.getProtocolId());
             vo.setProtocolId(protocolVo.getId());
             resourceCenterMapper.updateAccount(vo);
@@ -131,7 +126,6 @@ public class AccountSaveApi extends PrivateApiComponentBase {
             if (Objects.equals(protocolVo.getName(), "tagent")) {
                 throw new ResourceCenterAccountNotCreateTagentAccount();
             }
-            vo.setPassword(RC4Util.encrypt(vo.getPassword()));
             vo.setFcu(UserContext.get().getUserUuid());
             resourceCenterMapper.insertAccount(vo);
         }
