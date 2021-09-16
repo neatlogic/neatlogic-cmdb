@@ -21,9 +21,14 @@
             <if test="inputFrom != null and inputFrom != ''">
                 and a.input_from = #{inputFrom}
             </if>
-            <if test="hasError == true">
-                and a.error is not null
-            </if>
+            <choose>
+                <when test="hasError == true">
+                    and a.error is not null
+                </when>
+                <when test="hasError == false">
+                    and a.error is null
+                </when>
+            </choose>
             <if test="startTimeRange != null">
                 <if test="startTimeRange.size() > 0">
                     AND a.start_time &gt;= STR_TO_DATE(#{startTimeRange[0]},'%Y-%m-%d')
