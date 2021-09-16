@@ -49,6 +49,9 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * 配置项和mongodb同步管理类
+ */
 @Service
 public class CiSyncManager {
     private static MongoTemplate mongoTemplate;

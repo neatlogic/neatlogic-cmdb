@@ -8,6 +8,10 @@
 <mapper namespace="codedriver.module.cmdb.dao.mapper.sync.SyncAuditMapper">
     <sql id="searchSyncAuditCondition">
         <where>
+            <if test="idList != null and idList.size() > 0">
+                and a.id in
+                <foreach collection="idList" item="item" open="(" close=")" separator=",">#{item}</foreach>
+            </if>
             <if test="ciCollectionId != null">
                 and a.ci_collection_id= #{ciCollectionId}
             </if>
@@ -19,6 +23,22 @@
             </if>
             <if test="hasError == true">
                 and a.error is not null
+            </if>
+            <if test="startTimeRange != null">
+                <if test="startTimeRange.size() > 0">
+                    AND a.start_time &gt;= STR_TO_DATE(#{startTimeRange[0]},'%Y-%m-%d')
+                </if>
+                <if test="startTimeRange.size() > 1">
+                    AND a.start_time &lt;= STR_TO_DATE(#{startTimeRange[1]},'%Y-%m-%d')
+                </if>
+            </if>
+            <if test="endTimeRange != null">
+                <if test="endTimeRange.size() > 0">
+                    AND a.end_time &gt;= STR_TO_DATE(#{endTimeRange[0]},'%Y-%m-%d')
+                </if>
+                <if test="endTimeRange.size() > 1">
+                    AND a.end_time &lt;= STR_TO_DATE(#{endTimeRange[1]},'%Y-%m-%d')
+                </if>
             </if>
         </where>
     </sql>
@@ -37,6 +57,7 @@
         a.ci_collection_id AS ciCollectionId,
         a.start_time AS startTime,
         a.end_time AS endTime,
+        (UNIX_TIMESTAMP(IFNULL(end_time, NOW(3)))*1000 - UNIX_TIMESTAMP(start_time)*1000) AS timeCost,
         a.input_from AS inputFrom,
         a.status,
         a.transaction_group_id AS transactionGroupId,
@@ -47,7 +68,9 @@
         a.ci_collection_id = b.id
         <include refid="searchSyncAuditCondition"></include>
         order by id desc
-        limit #{startNum}, #{pageSize}
+        <if test="idList == null or idList.size() == 0">
+            limit #{startNum}, #{pageSize}
+        </if>
     </select>
 
     <select id="getDoingSyncByCiId" parameterType="java.lang.Long"

@@ -106,6 +106,12 @@
         </association>
     </resultMap>
 
+    <select id="getTransactionCountByGroupId" parameterType="java.lang.Long" resultType="int">
+        SELECT count(*)
+        FROM cmdb_transactiongroup
+        WHERE id = #{value}
+    </select>
+
     <select id="getTransactionByGroupId" parameterType="java.lang.Long" resultMap="transactionDetailMap">
         SELECT a.id,
                a.ci_id                                                    AS ciId,
