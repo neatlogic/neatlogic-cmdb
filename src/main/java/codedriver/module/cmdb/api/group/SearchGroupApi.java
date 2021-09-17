@@ -49,18 +49,23 @@ public class SearchGroupApi extends PrivateApiComponentBase {
     @Input({@Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字"),
             @Param(name = "isActive", type = ApiParamType.INTEGER, desc = "是否激活，1：激活，0：禁用"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页大小")
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页大小"),
+            @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "id列表，用于精确查找")
     })
     @Output({@Param(explode = GroupVo[].class)})
-    @Description(desc = "搜索团体信息接口")
+    @Description(desc = "搜索团体信息接口，如果提供了idList参数，将会直接返回团体列表，没有tbodyList包裹")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         GroupVo groupVo = JSONObject.toJavaObject(jsonObj, GroupVo.class);
         List<GroupVo> groupList = groupMapper.searchGroup(groupVo);
-        if (CollectionUtils.isNotEmpty(groupList)) {
-            int rownum = groupMapper.searchGroupCount(groupVo);
-            groupVo.setRowNum(rownum);
+        if (CollectionUtils.isEmpty(groupVo.getIdList())) {
+            if (CollectionUtils.isNotEmpty(groupList)) {
+                int rownum = groupMapper.searchGroupCount(groupVo);
+                groupVo.setRowNum(rownum);
+            }
+            return CardResultUtil.getResult(groupList, groupVo);
+        } else {
+            return groupList;
         }
-        return CardResultUtil.getResult(groupList, groupVo);
     }
 }

@@ -101,6 +101,10 @@
 
     <sql id="searchGroupCondition">
         <where>
+            <if test="idList != null and idList.size() > 0">
+                and a.id in
+                <foreach collection="idList" item="item" open="(" close=")" separator=",">#{item}</foreach>
+            </if>
             <if test="isActive != null">
                 and a.is_active = #{isActive}
             </if>
@@ -122,7 +126,9 @@
         a.status
         from cmdb_group a
         <include refid="searchGroupCondition"></include>
-        LIMIT #{startNum},#{pageSize}
+        <if test="idList == null or idList.size() == 0">
+            LIMIT #{startNum},#{pageSize}
+        </if>
     </select>
 
     <select id="searchGroupCount" parameterType="codedriver.framework.cmdb.dto.group.GroupVo" resultType="int"
