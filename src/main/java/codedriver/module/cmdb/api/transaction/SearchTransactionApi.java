@@ -55,6 +55,7 @@ public class SearchTransactionApi extends PrivateApiComponentBase {
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页数"),
             @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页"),
             @Param(name = "status", type = ApiParamType.ENUM, rule = "commited,uncommit", desc = "状态"),
+            @Param(name = "transactionGroupId", type = ApiParamType.LONG, desc = "事务组id"),
             @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "是否需要操作列，如果需要则根据用户权限返回操作列")})
     @Output({@Param(name = "tbodyList", explode = TransactionVo[].class), @Param(explode = BasePageVo.class)})
     @Description(desc = "查询事务接口")

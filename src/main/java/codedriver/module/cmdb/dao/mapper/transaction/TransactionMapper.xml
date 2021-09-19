@@ -73,6 +73,8 @@
     <resultMap id="transactionDetailMap" type="codedriver.framework.cmdb.dto.transaction.TransactionVo">
         <id property="id" column="id"/>
         <result property="ciId" column="ciId"/>
+        <result property="ciLabel" column="ciLabel"/>
+        <result property="ciName" column="ciName"/>
         <result property="ciEntityId" column="ciEntityId"/>
         <result property="ciEntityName" column="ciEntityName"/>
         <result property="status" column="status"/>
@@ -210,6 +212,9 @@
             <if test="hasError == 0">
                 AND a.error is null
             </if>
+            <if test="transactionGroupId != null">
+                AND t.id = #{transactionGroupId}
+            </if>
             <if test="createTimeRange != null">
                 <if test="createTimeRange.size() > 0">
                     AND a.create_time &gt;= STR_TO_DATE(#{createTimeRange[0]},'%Y-%m-%d')
@@ -224,6 +229,14 @@
                 </if>
                 <if test="commitTimeRange.size() > 1">
                     AND a.commit_time &lt;= STR_TO_DATE(#{commitTimeRange[1]},'%Y-%m-%d')
+                </if>
+            </if>
+            <if test="recoverTimeRange != null">
+                <if test="recoverTimeRange.size() > 0">
+                    AND a.recover_time &gt;= STR_TO_DATE(#{recoverTimeRange[0]},'%Y-%m-%d')
+                </if>
+                <if test="commitTimeRange.size() > 1">
+                    AND a.recover_time &lt;= STR_TO_DATE(#{recoverTimeRange[1]},'%Y-%m-%d')
                 </if>
             </if>
         </where>
@@ -241,6 +254,8 @@
         SELECT
         a.id,
         a.ci_id AS ciId,
+        ci.name as ciName,
+        ci.label as ciLabel,
         a.`status`,
         create_user AS createUser,
         (SELECT user_name FROM user u WHERE u.uuid = create_user) AS createUserName,
@@ -266,8 +281,8 @@
         t.id AS transactionGroupId
         FROM
         cmdb_transaction a
-        JOIN cmdb_cientity_transaction b
-        ON a.id = b.`transaction_id`
+        JOIN cmdb_ci ci ON a.ci_id = ci.id
+        JOIN cmdb_cientity_transaction b ON a.id = b.`transaction_id`
         LEFT JOIN cmdb_cientity c ON b.ci_entity_id = c.id
         LEFT JOIN cmdb_transactiongroup t on a.id = t.transaction_id
         <include refid="searchTransactionCondition"></include>
@@ -280,12 +295,13 @@
     <select id="searchTransactionCount" parameterType="codedriver.framework.cmdb.dto.transaction.TransactionVo"
             resultType="int">
         SELECT
-        COUNT(1)
+        COUNT(distinct a.id)
         FROM
         cmdb_transaction a
-        JOIN cmdb_cientity_transaction b
-        ON a.id = b.`transaction_id`
+        JOIN cmdb_ci ci ON a.ci_id = ci.id
+        JOIN cmdb_cientity_transaction b ON a.id = b.`transaction_id`
         LEFT JOIN cmdb_cientity c ON b.ci_entity_id = c.id
+        LEFT JOIN cmdb_transactiongroup t on a.id = t.transaction_id
         <include refid="searchTransactionCondition"></include>
     </select>
 
@@ -364,26 +380,6 @@
             (id, transaction_id)
         VALUES (#{transactionGroupId},
                 #{transactionId})
-    </insert>
-
-    <insert id="insertRelEntityTransaction"
-            parameterType="codedriver.framework.cmdb.dto.transaction.RelEntityTransactionVo">
-        INSERT INTO `cmdb_relentity_transaction` (`id`,
-                                                  `rel_id`,
-                                                  `from_cientity_id`,
-                                                  `to_cientity_id`,
-                                                  `from_cientity_name`,
-                                                  `to_cientity_name`,
-                                                  `transaction_id`,
-                                                  `action`)
-        VALUES (#{id},
-                #{relId},
-                #{fromCiEntityId},
-                #{toCiEntityId},
-                #{fromCiEntityName},
-                #{toCiEntityName},
-                #{transactionId},
-                #{action})
     </insert>
 
     <insert id="insertTransaction" parameterType="codedriver.framework.cmdb.dto.transaction.TransactionVo">

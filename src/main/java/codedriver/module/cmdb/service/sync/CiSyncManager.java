@@ -25,6 +25,7 @@ import codedriver.framework.cmdb.enums.sync.CollectMode;
 import codedriver.framework.cmdb.enums.sync.SyncStatus;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.cmdb.exception.sync.CiEntityDuplicateException;
+import codedriver.framework.common.constvalue.InputFrom;
 import codedriver.framework.exception.core.ApiRuntimeException;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
@@ -232,6 +233,7 @@ public class CiSyncManager {
 
         @Override
         protected void execute() {
+            InputFromContext.init(InputFrom.AUTOEXEC);
             if (CollectionUtils.isNotEmpty(syncCiCollectionList)) {
                 for (SyncCiCollectionVo syncCiCollectionVo : syncCiCollectionList) {
                     try {

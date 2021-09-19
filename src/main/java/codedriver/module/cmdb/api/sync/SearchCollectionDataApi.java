@@ -62,24 +62,24 @@ public class SearchCollectionDataApi extends PrivateApiComponentBase {
         String collection = paramObj.getString("collection");
         BasePageVo pageVo = JSONObject.toJavaObject(paramObj, BasePageVo.class);
         JSONObject resultObj = new JSONObject();
-        CollectionVo collectionVo = mongoTemplate.findOne(new Query(Criteria.where("type").is(collection)), CollectionVo.class, "_dictionary");
+        CollectionVo collectionVo = mongoTemplate.findOne(new Query(Criteria.where("collection").is(collection)), CollectionVo.class, "_dictionary");
         JSONArray theadList = new JSONArray();
         Query query = new Query();
         Query countQuery = new Query();
         JSONObject subsetData = new JSONObject();
         if (collectionVo != null) {
-            if (CollectionUtils.isNotEmpty(collectionVo.getField())) {
+            if (CollectionUtils.isNotEmpty(collectionVo.getFields())) {
                 List<Criteria> criteriaList = new ArrayList<>();
                 Pattern pattern = null;
                 if (StringUtils.isNotBlank(pageVo.getKeyword())) {
                     pattern = Pattern.compile("^.*" + pageVo.getKeyword() + ".*$", Pattern.CASE_INSENSITIVE);
                     Criteria c = new Criteria();
                 }
-                for (int i = 0; i < collectionVo.getField().size(); i++) {
-                    JSONObject fieldObj = collectionVo.getField().getJSONObject(i);
+                for (int i = 0; i < collectionVo.getFields().size(); i++) {
+                    JSONObject fieldObj = collectionVo.getFields().getJSONObject(i);
                     JSONObject headObj = new JSONObject();
                     headObj.put("key", fieldObj.getString("name"));
-                    headObj.put("title", fieldObj.getString("desc"));
+                    headObj.put("title", fieldObj.getString("desc") + "(" + fieldObj.getString("name") + ")");
                     headObj.put("className", "top");
                     theadList.add(headObj);
                     //字符串字段才启用模糊匹配
@@ -92,7 +92,7 @@ public class SearchCollectionDataApi extends PrivateApiComponentBase {
                             JSONObject subHeadObj = new JSONObject();
                             JSONObject subObj = fieldObj.getJSONArray("subset").getJSONObject(s);
                             subHeadObj.put("key", subObj.getString("name"));
-                            subHeadObj.put("title", subObj.getString("desc"));
+                            subHeadObj.put("title", subObj.getString("desc") + "(" + subObj.getString("name") + ")");
                             subTheadList.add(subHeadObj);
                         }
                         subsetData.put(fieldObj.getString("name"), subTheadList);

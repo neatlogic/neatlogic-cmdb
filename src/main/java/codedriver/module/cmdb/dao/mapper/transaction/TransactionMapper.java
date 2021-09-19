@@ -6,7 +6,6 @@
 package codedriver.module.cmdb.dao.mapper.transaction;
 
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
-import codedriver.framework.cmdb.dto.transaction.RelEntityTransactionVo;
 import codedriver.framework.cmdb.dto.transaction.TransactionGroupVo;
 import codedriver.framework.cmdb.dto.transaction.TransactionVo;
 import org.apache.ibatis.annotations.Param;
@@ -32,10 +31,6 @@ public interface TransactionMapper {
 
     List<CiEntityTransactionVo> getCiEntityTransactionByTransactionIdList(@Param("transactionIdList") List<Long> transactionIdList, @Param("ciEntityId") Long ciEntityId);
 
-    //List<AttrEntityTransactionVo> getAttrEntityTransactionByTransactionIdAndCiEntityId(@Param("transactionId") Long transactionId, @Param("ciEntityId") Long ciEntityId);
-
-    //List<RelEntityTransactionVo> getRelEntityTransactionByTransactionIdAndCiEntityId(@Param("transactionId") Long transactionId, @Param("ciEntityId") Long ciEntityId);
-
     List<CiEntityTransactionVo> getCiEntityTransactionByTransactionGroupIdAndCiEntityId(@Param("transactionGroupId") Long transactionGroupId, @Param("ciEntityId") Long ciEntityId);
 
     CiEntityTransactionVo getCiEntityTransactionByTransactionIdAndCiEntityId(@Param("transactionId") Long transactionId, @Param("ciEntityId") Long ciEntityId);
@@ -43,10 +38,6 @@ public interface TransactionMapper {
     int updateTransactionStatus(TransactionVo transactionVo);
 
     void updateCiEntityTransactionContent(CiEntityTransactionVo ciEntityTransactionVo);
-
-    int insertRelEntityTransaction(RelEntityTransactionVo relEntityTransactionVo);
-
-    // int insertAttrEntityTransaction(AttrEntityTransactionVo attrEntityTransactionVo);
 
     int insertCiEntityTransaction(CiEntityTransactionVo ciEntityTransactionVo);
 

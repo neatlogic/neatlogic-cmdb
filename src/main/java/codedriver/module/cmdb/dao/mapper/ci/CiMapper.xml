@@ -209,7 +209,7 @@
     </resultMap>
 
     <select id="searchCiTypeCi" parameterType="codedriver.framework.cmdb.dto.ci.CiVo" resultMap="ciTypeMap"
-            useCache="false">
+            useCache="true">
         SELECT
         b.`id`,
         b.`name`,

@@ -58,12 +58,12 @@ public class GetConditionFieldApi extends PrivateApiComponentBase {
         if (ciCollectionVo == null) {
             throw new SyncCiCollectionNotFoundException(id);
         }
-        CollectionVo collectionVo = mongoTemplate.findOne(new Query(Criteria.where("type").is(ciCollectionVo.getCollectionName())), CollectionVo.class, "_dictionary");
+        CollectionVo collectionVo = mongoTemplate.findOne(new Query(Criteria.where("collection").is(ciCollectionVo.getCollectionName())), CollectionVo.class, "_dictionary");
         List<SyncFieldVo> fieldList = new ArrayList<>();
         if (collectionVo != null) {
-            if (CollectionUtils.isNotEmpty(collectionVo.getField())) {
-                for (int i = 0; i < collectionVo.getField().size(); i++) {
-                    JSONObject fieldObj = collectionVo.getField().getJSONObject(i);
+            if (CollectionUtils.isNotEmpty(collectionVo.getFields())) {
+                for (int i = 0; i < collectionVo.getFields().size(); i++) {
+                    JSONObject fieldObj = collectionVo.getFields().getJSONObject(i);
                     SyncFieldVo syncFieldVo = JSONObject.toJavaObject(fieldObj, SyncFieldVo.class);
                     //有条件表达式的字段才能作为搜索条件
                     if (CollectionUtils.isNotEmpty(syncFieldVo.getExpressionList())) {
