@@ -27,6 +27,8 @@ import codedriver.module.cmdb.dao.mapper.cischema.CiSchemaMapper;
 import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,7 +37,7 @@ import java.util.List;
 
 @Service
 public class AttrServiceImpl implements AttrService {
-
+    static Logger logger = LoggerFactory.getLogger(AttrServiceImpl.class);
     @Autowired
     private CiMapper ciMapper;
     @Autowired
@@ -96,8 +98,20 @@ public class AttrServiceImpl implements AttrService {
         handler.afterUpdate(attrVo);
         if (!handler.isNeedTargetCi()) {
             //由于以下操作是DDL操作，所以需要使用EscapeTransactionJob避开当前事务
-            EscapeTransactionJob.State s = new EscapeTransactionJob(() -> ciSchemaMapper.insertAttrToCiTable(ciVo.getCiTableName(), attrVo)).execute();
+            EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
+                try {
+                    ciSchemaMapper.insertAttrToCiTable(ciVo.getCiTableName(), attrVo);
+                } catch (Exception ex) {
+                    //如果报重复列异常，代表列已存在，这种异常无需处理
+                    if (!ex.getMessage().contains("Duplicate")) {
+                        throw ex;
+                    }
+                }
+            }).execute();
             //编辑属性只是尝试创建字段，如果创建不成功代表字段已经存在，所以无需处理执行结果
+            if (!s.isSucceed()) {
+                throw s.getException();
+            }
         }
     }
 
