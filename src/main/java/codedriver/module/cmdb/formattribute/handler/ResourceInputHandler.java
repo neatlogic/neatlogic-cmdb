@@ -122,6 +122,7 @@ public class ResourceInputHandler extends FormHandlerBase {
                 resourceIsNotFoundObj.put("type", "resourceIsNotFound");
                 resourceIsNotFoundObj.put("list", resourceIsNotFoundList);
                 JSONArray resultArray = new JSONArray();
+                resultArray.add(resourceIsNotFoundObj);
                 resultObj.put("list", resultArray);
             }
         }
