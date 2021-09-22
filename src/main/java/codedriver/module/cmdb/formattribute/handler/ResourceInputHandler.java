@@ -118,8 +118,11 @@ public class ResourceInputHandler extends FormHandlerBase {
             }
             if (CollectionUtils.isNotEmpty(resourceIsNotFoundList)) {
                 resultObj.put("result", false);
-                resultObj.put("type", "resourceIsNotFound");
-                resultObj.put("list", resourceIsNotFoundList);
+                JSONObject resourceIsNotFoundObj = new JSONObject();
+                resourceIsNotFoundObj.put("type", "resourceIsNotFound");
+                resourceIsNotFoundObj.put("list", resourceIsNotFoundList);
+                JSONArray resultArray = new JSONArray();
+                resultObj.put("list", resultArray);
             }
         }
         return resultObj;
