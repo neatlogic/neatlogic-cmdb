@@ -73,7 +73,7 @@ public class ResourceInputHandler extends FormHandlerBase {
 
     @Override
     public boolean isShowable() {
-        return false;
+        return true;
     }
 
     @Override
