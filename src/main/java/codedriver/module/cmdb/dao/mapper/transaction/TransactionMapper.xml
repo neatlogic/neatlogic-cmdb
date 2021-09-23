@@ -286,7 +286,7 @@
         LEFT JOIN cmdb_cientity c ON b.ci_entity_id = c.id
         LEFT JOIN cmdb_transactiongroup t on a.id = t.transaction_id
         <include refid="searchTransactionCondition"></include>
-        ORDER BY a.id DESC
+        ORDER BY b.id DESC
         <if test="needPage == true">
             LIMIT #{startNum}, #{pageSize}
         </if>
@@ -295,13 +295,15 @@
     <select id="searchTransactionCount" parameterType="codedriver.framework.cmdb.dto.transaction.TransactionVo"
             resultType="int">
         SELECT
-        COUNT(distinct a.id)
+        COUNT(1)
         FROM
         cmdb_transaction a
-        JOIN cmdb_ci ci ON a.ci_id = ci.id
+        <!--JOIN cmdb_ci ci ON a.ci_id = ci.id 条件用不到所以注释-->
         JOIN cmdb_cientity_transaction b ON a.id = b.`transaction_id`
-        LEFT JOIN cmdb_cientity c ON b.ci_entity_id = c.id
-        LEFT JOIN cmdb_transactiongroup t on a.id = t.transaction_id
+        <!-- LEFT JOIN cmdb_cientity c ON b.ci_entity_id = c.id  条件用不到所以注释-->
+        <if test="transactionGroupId != null">
+            LEFT JOIN cmdb_transactiongroup t on a.id = t.transaction_id
+        </if>
         <include refid="searchTransactionCondition"></include>
     </select>
 
