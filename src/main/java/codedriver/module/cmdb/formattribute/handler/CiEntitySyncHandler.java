@@ -31,8 +31,8 @@ public class CiEntitySyncHandler extends FormHandlerBase {
     }
 
     @Override
-    public boolean valid(AttributeDataVo attributeDataVo, JSONObject configObj) throws AttributeValidException {
-        return true;
+    public JSONObject valid(AttributeDataVo attributeDataVo, JSONObject configObj) throws AttributeValidException {
+        return null;
     }
 
     @Override

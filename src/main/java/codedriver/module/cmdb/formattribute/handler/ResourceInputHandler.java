@@ -5,14 +5,20 @@
 
 package codedriver.module.cmdb.formattribute.handler;
 
+import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import codedriver.framework.common.constvalue.ParamType;
 import codedriver.framework.form.attribute.core.FormHandlerBase;
 import codedriver.framework.form.constvalue.FormConditionModel;
 import codedriver.framework.form.dto.AttributeDataVo;
 import codedriver.framework.form.exception.AttributeValidException;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,6 +27,10 @@ import java.util.List;
  **/
 @Component
 public class ResourceInputHandler extends FormHandlerBase {
+
+    @Resource
+    private ResourceCenterMapper resourceCenterMapper;
+
     @Override
     public String getHandler() {
         return "resourceinput";
@@ -63,7 +73,7 @@ public class ResourceInputHandler extends FormHandlerBase {
 
     @Override
     public boolean isShowable() {
-        return false;
+        return true;
     }
 
     @Override
@@ -92,8 +102,31 @@ public class ResourceInputHandler extends FormHandlerBase {
     }
 
     @Override
-    public boolean valid(AttributeDataVo attributeDataVo, JSONObject configObj) throws AttributeValidException {
-        return false;
+    public JSONObject valid(AttributeDataVo attributeDataVo, JSONObject jsonObj) throws AttributeValidException {
+        JSONObject resultObj = new JSONObject();
+        resultObj.put("result", true);
+//        JSONObject configObj = jsonObj.getJSONObject("attributeConfig");
+        JSONArray dataObj = (JSONArray) attributeDataVo.getDataObj();
+        if (CollectionUtils.isNotEmpty(dataObj)) {
+            List<ResourceSearchVo> resourceIsNotFoundList = new ArrayList<>();
+            List<ResourceSearchVo> inputNodeList = dataObj.toJavaList(ResourceSearchVo.class);
+            for (ResourceSearchVo searchVo : inputNodeList) {
+                Long resourceId = resourceCenterMapper.getResourceIdByIpAndPortAndName(searchVo);
+                if (resourceId == null) {
+                    resourceIsNotFoundList.add(searchVo);
+                }
+            }
+            if (CollectionUtils.isNotEmpty(resourceIsNotFoundList)) {
+                resultObj.put("result", false);
+                JSONObject resourceIsNotFoundObj = new JSONObject();
+                resourceIsNotFoundObj.put("type", "resourceIsNotFound");
+                resourceIsNotFoundObj.put("list", resourceIsNotFoundList);
+                JSONArray resultArray = new JSONArray();
+                resultArray.add(resourceIsNotFoundObj);
+                resultObj.put("list", resultArray);
+            }
+        }
+        return resultObj;
     }
 
     @Override
