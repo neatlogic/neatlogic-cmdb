@@ -14,7 +14,6 @@ import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
 import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.cmdb.exception.resourcecenter.*;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.common.util.RC4Util;
 import codedriver.framework.dto.FieldValidResultVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -23,7 +22,6 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.RESOURCECENTER_ACCOUNT_MODIFY;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -127,7 +125,7 @@ public class AccountSaveApi extends PrivateApiComponentBase {
                 throw new ResourceCenterAccountNotCreateTagentAccount();
             }
             vo.setFcu(UserContext.get().getUserUuid());
-            resourceCenterMapper.insertAccount(vo);
+            resourceCenterMapper.replaceAccount(vo);
         }
         return null;
     }
