@@ -88,6 +88,14 @@ public interface CiEntityService {
 
     void createSnapshot(CiEntityTransactionVo ciEntityTransactionVo);
 
+    /**
+     * 验证配置项是否合法
+     *
+     * @param ciEntityTransactionVo 配置项事务
+     * @return 是否有变化
+     */
+    boolean validateCiEntityTransaction(CiEntityTransactionVo ciEntityTransactionVo);
+
     void rebuildRelEntityIndex(RelDirectionType direction, Long relId, Long ciEntityId);
 
     void updateCiEntity(CiEntityVo ciEntityVo);
@@ -118,13 +126,6 @@ public interface CiEntityService {
     @Transactional
     Long deleteCiEntity(CiEntityVo ciEntityVo, Boolean allowCommit);
 
-    /**
-     * 验证配置项是否合法
-     *
-     * @param ciEntityTransactionVo 事务
-     * @return 是否合法
-     */
-    boolean validateCiEntity(CiEntityTransactionVo ciEntityTransactionVo);
 
     /**
      * 批量保存多个配置项

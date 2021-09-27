@@ -319,17 +319,6 @@ public class CiEntityServiceImpl implements CiEntityService {
 
     }
 
-    @Override
-    public boolean validateCiEntity(CiEntityTransactionVo ciEntityTransactionVo) {
-        TransactionVo transactionVo = new TransactionVo();
-        transactionVo.setCiId(ciEntityTransactionVo.getCiId());
-
-        ciEntityTransactionVo.setTransactionId(transactionVo.getId());
-
-        transactionVo.setCiEntityTransactionVo(ciEntityTransactionVo);
-
-        return validateCiEntityTransaction(ciEntityTransactionVo);
-    }
 
     @Override
     @Transactional
@@ -529,7 +518,8 @@ public class CiEntityServiceImpl implements CiEntityService {
      * @param ciEntityTransactionVo 配置项事务实体
      * @return true:验证成功 false:验证失败
      */
-    private boolean validateCiEntityTransaction(CiEntityTransactionVo ciEntityTransactionVo) {
+    @Override
+    public boolean validateCiEntityTransaction(CiEntityTransactionVo ciEntityTransactionVo) {
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciEntityTransactionVo.getCiId());
         List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciEntityTransactionVo.getCiId()));
         CiVo ciVo = ciMapper.getCiById(ciEntityTransactionVo.getCiId());
@@ -609,9 +599,9 @@ public class CiEntityServiceImpl implements CiEntityService {
             if (!attrVo.getType().equals(EXPRESSION_TYPE)) {
                 AttrEntityTransactionVo attrEntityTransactionVo =
                         ciEntityTransactionVo.getAttrEntityTransactionByAttrId(attrVo.getId());
-                /* 属性必填校验： */
+                /* 更新模式是全局模式时才做属性必填校验： */
                 if (attrVo.getIsRequired().equals(1)) {
-                    if (ciEntityTransactionVo.getAction().equals(TransactionActionType.INSERT.getValue()) || ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
+                    if (/*ciEntityTransactionVo.getAction().equals(TransactionActionType.INSERT.getValue()) ||*/ ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
                         if (attrEntityTransactionVo == null) {
                             throw new AttrEntityValueEmptyException(attrVo.getLabel());
                         } else if (attrEntityTransactionVo.getSaveMode().equals(SaveModeType.REPLACE.getValue())
@@ -707,9 +697,9 @@ public class CiEntityServiceImpl implements CiEntityService {
                 isTo = true;
             }
             // 全局模式下，不存在关系信息代表删除，需要校验必填规则
-            if ((ciEntityTransactionVo.getAction().equals(TransactionActionType.INSERT.getValue())
+            if (/*(ciEntityTransactionVo.getAction().equals(TransactionActionType.INSERT.getValue())
                     || ciEntityTransactionVo.getAction().equals(TransactionActionType.RECOVER.getValue()))
-                    || ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
+                    || */ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
                 if (CollectionUtils.isEmpty(fromRelEntityTransactionList)) {
                     if (isFrom && relVo.getToIsRequired().equals(1)) {
                         throw new RelEntityNotFoundException(relVo.getToLabel());

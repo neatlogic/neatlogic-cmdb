@@ -3,37 +3,35 @@
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
-package codedriver.module.cmdb.api.sync;
+package codedriver.module.cmdb.api.cientity;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.dto.sync.CollectionVo;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.restful.annotation.Description;
+import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.module.cmdb.dao.mapper.legalvalid.IllegalCiEntityMapper;
 import com.alibaba.fastjson.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import javax.annotation.Resource;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class ListCollectionApi extends PrivateApiComponentBase {
-    @Autowired
-    private MongoTemplate mongoTemplate;
+@Transactional
+public class GetIllegalCiEntityCountApi extends PrivateApiComponentBase {
+    @Resource
+    private IllegalCiEntityMapper illegalCiEntityMapper;
 
     @Override
     public String getName() {
-        return "获取集合列表";
+        return "获取不合规配置项数量";
     }
 
     @Override
@@ -41,17 +39,16 @@ public class ListCollectionApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Output({@Param(name = "id", type = ApiParamType.LONG, desc = "配置id")})
-    @Description(desc = "获取集合列表接口，需要依赖mongodb")
+    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id")})
+    @Output({@Param(type = ApiParamType.INTEGER, desc = "不合规配置项数量")})
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        List<CollectionVo> collectionList = mongoTemplate.find(new Query(), CollectionVo.class, "_dictionary");
-        collectionList = collectionList.stream().distinct().collect(Collectors.toList());
-        return collectionList;
+        Long ciId = paramObj.getLong("ciId");
+        return illegalCiEntityMapper.getIllegalCiEntityCountByCiId(ciId);
     }
 
     @Override
     public String getToken() {
-        return "/cmdb/sync/collection/list";
+        return "/cmdb/cientity/illegal/count";
     }
 }

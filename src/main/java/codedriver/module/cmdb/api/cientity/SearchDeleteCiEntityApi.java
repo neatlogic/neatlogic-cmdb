@@ -10,15 +10,16 @@ import codedriver.framework.cmdb.dto.ci.CiViewVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.cmdb.dto.transaction.TransactionVo;
-import codedriver.framework.cmdb.enums.*;
+import codedriver.framework.cmdb.enums.CiAuthType;
+import codedriver.framework.cmdb.enums.ShowType;
+import codedriver.framework.cmdb.enums.TransactionActionType;
+import codedriver.framework.cmdb.enums.TransactionStatus;
 import codedriver.framework.cmdb.enums.group.GroupType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.auth.label.CIENTITY_MODIFY;
-import codedriver.module.cmdb.auth.label.CI_MODIFY;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.CiViewMapper;
 import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
@@ -37,8 +38,6 @@ import java.util.stream.Collectors;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
-@AuthAction(action = CI_MODIFY.class)
-@AuthAction(action = CIENTITY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class SearchDeleteCiEntityApi extends PrivateApiComponentBase {
 

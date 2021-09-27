@@ -14,9 +14,8 @@ import codedriver.framework.scheduler.dto.JobObject;
 import codedriver.module.cmdb.dao.mapper.sync.SyncMapper;
 import codedriver.module.cmdb.service.sync.CiSyncManager;
 import org.apache.commons.collections4.CollectionUtils;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -27,8 +26,8 @@ import java.util.List;
  * 配置项自动同步定时器
  */
 @Component
+@DisallowConcurrentExecution
 public class SyncCiEntityScheduleJob extends JobBase {
-    static Logger logger = LoggerFactory.getLogger(SyncCiEntityScheduleJob.class);
 
     @Autowired
     private SyncMapper syncMapper;
@@ -46,7 +45,6 @@ public class SyncCiEntityScheduleJob extends JobBase {
     @Override
     public void reloadJob(JobObject jobObject) {
         String tenantUuid = jobObject.getTenantUuid();
-        TenantContext.get().switchTenant(tenantUuid);
         SyncScheduleVo jobVo = syncMapper.getSyncScheduleById(Long.valueOf(jobObject.getJobName()));
         if (jobVo != null) {
             JobObject newJobObject = new JobObject.Builder(jobVo.getId().toString(), this.getGroupName(), this.getClassName(), tenantUuid).withCron(jobVo.getCron()).addData("policyId", jobVo.getPolicyId()).build();

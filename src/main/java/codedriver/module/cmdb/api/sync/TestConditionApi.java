@@ -6,9 +6,11 @@
 package codedriver.module.cmdb.api.sync;
 
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.dto.sync.CollectionVo;
 import codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo;
 import codedriver.framework.cmdb.dto.sync.SyncConditionVo;
 import codedriver.framework.cmdb.dto.sync.SyncPolicyVo;
+import codedriver.framework.cmdb.exception.sync.CollectionNotFoundException;
 import codedriver.framework.cmdb.exception.sync.SyncCiCollectionNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.Description;
@@ -21,7 +23,9 @@ import codedriver.module.cmdb.auth.label.SYNC_MODIFY;
 import codedriver.module.cmdb.dao.mapper.sync.SyncMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
@@ -50,27 +54,36 @@ public class TestConditionApi extends PrivateApiComponentBase {
     }
 
     @Input({@Param(name = "collectionId", type = ApiParamType.LONG, isRequired = true, desc = "集合映射id"),
-            @Param(name = "conditionList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "模型id")})
+            @Param(name = "conditionList", type = ApiParamType.JSONARRAY, desc = "模型id")})
     @Description(desc = "测试采集策略搜索条件接口")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long collectionId = paramObj.getLong("collectionId");
         JSONArray conditionObjList = paramObj.getJSONArray("conditionList");
-        List<SyncConditionVo> conditionList = new ArrayList<SyncConditionVo>();
-        for (int i = 0; i < conditionObjList.size(); i++) {
-            SyncConditionVo syncConditionVo = JSONObject.toJavaObject(conditionObjList.getJSONObject(i), SyncConditionVo.class);
-            conditionList.add(syncConditionVo);
+        List<SyncConditionVo> conditionList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(conditionObjList)) {
+            for (int i = 0; i < conditionObjList.size(); i++) {
+                SyncConditionVo syncConditionVo = JSONObject.toJavaObject(conditionObjList.getJSONObject(i), SyncConditionVo.class);
+                conditionList.add(syncConditionVo);
+            }
         }
-        SyncCiCollectionVo collectionVo = syncMapper.getSyncCiCollectionById(collectionId);
-        if (collectionVo == null) {
+        SyncCiCollectionVo syncCiCollectionVo = syncMapper.getSyncCiCollectionById(collectionId);
+        if (syncCiCollectionVo == null) {
             throw new SyncCiCollectionNotFoundException(collectionId);
+        }
+        CollectionVo collectionVo = mongoTemplate.findOne(new Query().addCriteria(Criteria.where("name").is(syncCiCollectionVo.getCollectionName())), CollectionVo.class, "_dictionary");
+        if (collectionVo == null) {
+            throw new CollectionNotFoundException(syncCiCollectionVo.getCollectionName());
         }
         SyncPolicyVo syncPolicyVo = new SyncPolicyVo();
         syncPolicyVo.setConditionList(conditionList);
         int pageSize = 100;
-        Query query = syncPolicyVo.getQuery();
+        Query query = new Query();
+        Criteria finalCriteria = new Criteria();
+        finalCriteria.andOperator(collectionVo.getFilterCriteria(), syncPolicyVo.getCriteria());
+        query.addCriteria(finalCriteria);
         query.limit(pageSize);
-        return mongoTemplate.find(query, JSONObject.class, collectionVo.getCollectionName()).size();
+        return mongoTemplate.find(query, JSONObject.class, collectionVo.getCollection()).size();
     }
 
     @Override

@@ -3,11 +3,9 @@
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
-package codedriver.module.cmdb.api.sync;
+package codedriver.module.cmdb.api.legalvalid;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.dto.sync.SyncPolicyVo;
-import codedriver.framework.cmdb.exception.sync.SyncPolicyNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -15,29 +13,30 @@ import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.auth.label.SYNC_MODIFY;
-import codedriver.module.cmdb.dao.mapper.sync.SyncMapper;
+import codedriver.module.cmdb.auth.label.CI_MODIFY;
+import codedriver.module.cmdb.dao.mapper.legalvalid.LegalValidMapper;
 import com.alibaba.fastjson.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-@Service
-@AuthAction(action = SYNC_MODIFY.class)
-@OperationType(type = OperationTypeEnum.DELETE)
-public class DeleteSyncPolicyApi extends PrivateApiComponentBase {
+import javax.annotation.Resource;
 
-    @Autowired
-    private SyncMapper syncMapper;
+@Service
+@AuthAction(action = CI_MODIFY.class)
+@OperationType(type = OperationTypeEnum.DELETE)
+public class DeleteLegalValidApi extends PrivateApiComponentBase {
+
+    @Resource
+    private LegalValidMapper legalValidMapper;
 
 
     @Override
     public String getToken() {
-        return "/cmdb/sync/policy/delete";
+        return "/cmdb/legalvalid/delete";
     }
 
     @Override
     public String getName() {
-        return "删除自动采集策略";
+        return "删除合规校验规则";
     }
 
     @Override
@@ -45,17 +44,11 @@ public class DeleteSyncPolicyApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "策略id")})
-    @Description(desc = "删除自动采集策略接口")
+    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "id")})
+    @Description(desc = "删除合规校验规则接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        Long id = jsonObj.getLong("id");
-        SyncPolicyVo syncPolicyVo = syncMapper.getSyncPolicyById(id);
-        if (syncPolicyVo == null) {
-            throw new SyncPolicyNotFoundException(id);
-        }
-        syncMapper.deleteSyncPolicyById(id);
+        legalValidMapper.deleteLegalValidById(jsonObj.getLong("id"));
         return null;
     }
-
 }

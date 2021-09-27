@@ -12,8 +12,6 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.auth.label.CIENTITY_MODIFY;
-import codedriver.module.cmdb.auth.label.CI_MODIFY;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import com.alibaba.fastjson.JSONObject;
@@ -22,8 +20,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
-@AuthAction(action = CI_MODIFY.class)
-@AuthAction(action = CIENTITY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.OPERATE)
 public class ValidateCiEntityApi extends PrivateApiComponentBase {
 
@@ -72,7 +68,7 @@ public class ValidateCiEntityApi extends PrivateApiComponentBase {
         } else {
             ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
         }
-        boolean hasChange = ciEntityService.validateCiEntity(ciEntityTransactionVo);
+        boolean hasChange = ciEntityService.validateCiEntityTransaction(ciEntityTransactionVo);
         JSONObject returnObj = new JSONObject();
         returnObj.put("hasChange", hasChange);
         return returnObj;

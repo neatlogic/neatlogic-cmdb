@@ -20,6 +20,7 @@ import codedriver.module.cmdb.dao.mapper.sync.SyncMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -62,12 +63,17 @@ public class SearchCollectionDataApi extends PrivateApiComponentBase {
         String collection = paramObj.getString("collection");
         BasePageVo pageVo = JSONObject.toJavaObject(paramObj, BasePageVo.class);
         JSONObject resultObj = new JSONObject();
-        CollectionVo collectionVo = mongoTemplate.findOne(new Query(Criteria.where("collection").is(collection)), CollectionVo.class, "_dictionary");
+        CollectionVo collectionVo = mongoTemplate.findOne(new Query(Criteria.where("name").is(collection)), CollectionVo.class, "_dictionary");
         JSONArray theadList = new JSONArray();
         Query query = new Query();
         Query countQuery = new Query();
         JSONObject subsetData = new JSONObject();
         if (collectionVo != null) {
+            List<Criteria> finalCriteria = new ArrayList<>();
+
+            if (MapUtils.isNotEmpty(collectionVo.getFilter())) {
+                finalCriteria.add(collectionVo.getFilterCriteria());
+            }
             if (CollectionUtils.isNotEmpty(collectionVo.getFields())) {
                 List<Criteria> criteriaList = new ArrayList<>();
                 Pattern pattern = null;
@@ -99,19 +105,22 @@ public class SearchCollectionDataApi extends PrivateApiComponentBase {
                     }
 
                 }
+
                 if (CollectionUtils.isNotEmpty(criteriaList)) {
                     Criteria criteria = new Criteria();
                     criteria.orOperator(criteriaList);
-                    query.addCriteria(criteria);
-                    countQuery.addCriteria(criteria);
+                    finalCriteria.add(criteria);
                 }
+
+                query.addCriteria(new Criteria().andOperator(finalCriteria));
+                countQuery.addCriteria(new Criteria().andOperator(finalCriteria));
 
                 query.limit(pageVo.getPageSize());
                 if (pageVo.getCurrentPage() > 1) {
                     query.skip((long) pageVo.getPageSize() * (pageVo.getCurrentPage() - 1));
                 }
-                List<JSONObject> resultList = mongoTemplate.find(query, JSONObject.class, collection);
-                long rowNum = mongoTemplate.count(countQuery, collection);
+                List<JSONObject> resultList = mongoTemplate.find(query, JSONObject.class, collectionVo.getCollection());
+                long rowNum = mongoTemplate.count(countQuery, collectionVo.getCollection());
                 pageVo.setRowNum((int) rowNum);
                 resultObj.put("theadList", theadList);
                 resultObj.put("tbodyList", resultList);
