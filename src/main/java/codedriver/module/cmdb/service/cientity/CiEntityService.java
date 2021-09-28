@@ -17,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 public interface CiEntityService {
+    CiEntityVo getCiEntityById(CiEntityVo ciEntityVo);
+
     /**
      * 根据配置项id列表返回配置项
      *

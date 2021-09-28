@@ -201,11 +201,15 @@
             <choose>
                 <when test="rel.direction == 'from'">
                     `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id AS `relfrom_${rel.id}`,
+                    `cmdb_relentity_${rel.id}_${rel.direction}`.id AS `relfrom_${rel.id}#id`,
+                    `cmdb_relentity_${rel.id}_${rel.direction}`.valid_day AS `relfrom_${rel.id}#validDay`,
                     `cmdb_rel_cientity_${rel.id}_${rel.direction}`.name AS `relfrom_${rel.id}#name`,
                     `cmdb_rel_cientity_${rel.id}_${rel.direction}`.ci_id AS `relfrom_${rel.id}#ciId`,
                 </when>
                 <otherwise>
                     `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id AS `relto_${rel.id}`,
+                    `cmdb_relentity_${rel.id}_${rel.direction}`.id AS `relto_${rel.id}#id`,
+                    `cmdb_relentity_${rel.id}_${rel.direction}`.valid_day AS `relto_${rel.id}#validDay`,
                     `cmdb_rel_cientity_${rel.id}_${rel.direction}`.name AS `relto_${rel.id}#name`,
                     `cmdb_rel_cientity_${rel.id}_${rel.direction}`.ci_id AS `relto_${rel.id}#ciId`,
                 </otherwise>

@@ -251,17 +251,16 @@ public class CiEntityBuilder {
                                     ciEntityVo.addRelEntityData(relId, direction, buildRelObj(ciEntityVo.getId(), relVo, direction, result, key));
                                 }
                             } else {
-                                //限制最大返回关系
-                                if (paramCiEntityVo.getMaxRelEntityCount() == null || ciEntityVo.getRelEntityByRelIdAndDirection(relId, direction).size() <= paramCiEntityVo.getMaxRelEntityCount()) {
-                                    JSONObject valueDataObj = new JSONObject();
-                                    valueDataObj.put("ciId", direction.equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiId() : relVo.getFromCiId());
-                                    valueDataObj.put("ciEntityId", result.get(key));
-                                    valueDataObj.put("ciEntityName", result.get(key + "#name"));
-                                    if (StringUtils.isBlank(valueDataObj.getString("ciEntityName"))) {
-                                        valueDataObj.put("ciEntityName", "无名配置项");
-                                    }
-                                    ciEntityVo.addRelEntityDataValue(relId, direction, valueDataObj);
+                                JSONObject valueDataObj = new JSONObject();
+                                valueDataObj.put("ciId", direction.equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiId() : relVo.getFromCiId());
+                                valueDataObj.put("ciEntityId", result.get(key));
+                                valueDataObj.put("id", result.get(key + "#id"));
+                                valueDataObj.put("ciEntityName", result.get(key + "#name"));
+                                valueDataObj.put("validDay", result.get(key + "#validDay"));
+                                if (StringUtils.isBlank(valueDataObj.getString("ciEntityName"))) {
+                                    valueDataObj.put("ciEntityName", "无名配置项");
                                 }
+                                ciEntityVo.addRelEntityDataValue(relId, direction, valueDataObj);
                             }
                         }
                     }
@@ -343,8 +342,10 @@ public class CiEntityBuilder {
         relObj.put("direction", direction);
         relObj.put("ciId", direction.equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiId() : relVo.getFromCiId());
         JSONObject valueDataObj = new JSONObject();
+        valueDataObj.put("id", result.get(key + "#id"));
         valueDataObj.put("ciId", result.get(key + "#ciId"));
         valueDataObj.put("ciEntityId", result.get(key));
+        valueDataObj.put("validDay", result.get(key + "#validDay"));
         valueDataObj.put("ciEntityName", result.get(key + "#name"));
         if (StringUtils.isBlank(valueDataObj.getString("ciEntityName"))) {
             valueDataObj.put("ciEntityName", "无名配置项");

@@ -14,6 +14,10 @@ import java.util.List;
  *
  */
 public interface RelEntityMapper {
+    List<RelEntityVo> getExpiredRelEntity(RelEntityVo relEntityVo);
+
+    RelEntityVo getRelEntityById(Long id);
+
     List<RelEntityVo> getRelEntityByRelId(RelEntityVo relEntityVo);
 
     int checkRelEntityIsExists(RelEntityVo relEntityVo);
@@ -52,7 +56,6 @@ public interface RelEntityMapper {
 
     int insertRelEntity(RelEntityVo relEntityVo);
 
-    void updateRelEntityIsDeleteByRelId(Long relId);
 
     int deleteRelEntityByFromCiEntityIdAndRelId(
             @Param("fromCiEntityId") Long fromCiEntityId, @Param("relId") Long relId);
@@ -63,4 +66,6 @@ public interface RelEntityMapper {
     int deleteRelEntityByRelIdFromCiEntityIdToCiEntityId(@Param("relId") Long relId,
                                                          @Param("fromCiEntityId") Long fromCiEntityId,
                                                          @Param("toCiEntityId") Long toCiEntityId);
+
+    void updateRelEntityValidDay(RelEntityVo relEntityVo);
 }

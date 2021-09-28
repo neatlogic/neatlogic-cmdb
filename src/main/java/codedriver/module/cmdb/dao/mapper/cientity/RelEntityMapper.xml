@@ -6,6 +6,43 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper">
+    <select id="getExpiredRelEntity" parameterType="codedriver.framework.cmdb.dto.cientity.RelEntityVo"
+            resultType="codedriver.framework.cmdb.dto.cientity.RelEntityVo">
+        select
+        a.id as id,
+        rel_id AS relId,
+        b.ci_id AS fromCiId,
+        c.ci_id AS toCiId,
+        from_cientity_id AS fromCiEntityId,
+        to_cientity_id AS toCiEntityId,
+        b.name AS fromCiEntityName,
+        c.name AS toCiEntityName
+        <if test="cacheFlushKey != null">
+            ,#{cacheFlushKey} AS cacheFlushKey
+        </if>
+        from cmdb_relentity a
+        JOIN cmdb_cientity b ON a.from_cientity_id = b.id
+        JOIN cmdb_cientity c ON a.to_cientity_id = c.id
+        where a.expired_time &lt;= NOW()
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+
+    <select id="getRelEntityById" parameterType="java.lang.Long"
+            resultType="codedriver.framework.cmdb.dto.cientity.RelEntityVo">
+        SELECT a.id             as id,
+               rel_id           AS relId,
+               b.ci_id          AS fromCiId,
+               c.ci_id          AS toCiId,
+               from_cientity_id AS fromCiEntityId,
+               to_cientity_id   AS toCiEntityId,
+               b.name           AS fromCiEntityName,
+               c.name           AS toCiEntityName
+        FROM cmdb_relentity a
+                 JOIN cmdb_cientity b ON a.from_cientity_id = b.id
+                 JOIN cmdb_cientity c ON a.to_cientity_id = c.id
+        WHERE a.id = #{value}
+    </select>
 
     <select id="getFromRelEntityByFromCiIdAndRelId" parameterType="codedriver.framework.cmdb.dto.cientity.RelEntityVo"
             resultType="codedriver.framework.cmdb.dto.cientity.RelEntityVo">
@@ -265,6 +302,13 @@
         </if>
     </select>
 
+    <update id="updateRelEntityValidDay" parameterType="codedriver.framework.cmdb.dto.cientity.RelEntityVo">
+        update cmdb_relentity
+        set valid_day    = #{validDay},
+            expired_time = DATE_ADD(insert_time, INTERVAL #{validDay} DAY)
+        where id = #{id}
+    </update>
+
     <update id="clearRelEntityFromIndex">
         update cmdb_relentity
         set from_index = null
@@ -293,23 +337,28 @@
         where id = #{id}
     </update>
 
-    <update id="updateRelEntityIsDeleteByRelId" parameterType="java.lang.Long">
-        UPDATE cmdb_relentity
-        SET is_delete = 1
-        WHERE rel_id = #{value}
-    </update>
 
     <insert id="insertRelEntity" parameterType="codedriver.framework.cmdb.dto.cientity.RelEntityVo">
         INSERT INTO `cmdb_relentity` (`id`,
-                                      `rel_id`,
-                                      `from_cientity_id`,
-                                      `to_cientity_id`,
-                                      `transaction_id`)
+        `rel_id`,
+        `from_cientity_id`,
+        `to_cientity_id`,
+        `transaction_id`,
+        `insert_time`,
+        `valid_day`
+        <if test="validDay != null and validDay > 0">
+            ,`expired_time`
+        </if>)
         VALUES (#{id},
-                #{relId},
-                #{fromCiEntityId},
-                #{toCiEntityId},
-                #{transactionId})
+        #{relId},
+        #{fromCiEntityId},
+        #{toCiEntityId},
+        #{transactionId},
+        NOW(3),
+        #{validDay}
+        <if test="validDay != null and validDay > 0">
+            ,DATE_ADD(NOW(3),INTERVAL #{validDay} DAY)
+        </if>)
     </insert>
 
 

@@ -81,7 +81,7 @@ public class CiEntityServiceImpl implements CiEntityService {
         return ciEntityMapper.getCiEntityBaseInfoById(ciEntityId);
     }
 
-    private CiEntityVo getCiEntityById(Long ciId, Long ciEntityId, Boolean flattenAttr) {
+    private CiEntityVo getCiEntityById(Long ciId, Long ciEntityId, Boolean flattenAttr, Boolean limitRelEntity) {
         CiVo ciVo = ciMapper.getCiById(ciId);
         if (ciVo == null) {
             throw new CiNotFoundException(ciId);
@@ -104,14 +104,19 @@ public class CiEntityServiceImpl implements CiEntityService {
 
         ciEntityVo.setAttrList(attrList);
         ciEntityVo.setRelList(relList);
-        ciEntityVo.setLimitRelEntity(true);
+        ciEntityVo.setLimitRelEntity(limitRelEntity);
         List<Map<String, Object>> resultList = ciEntityMapper.getCiEntityById(ciEntityVo);
         return new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, attrList, relList).isFlattenAttr(flattenAttr).build().getCiEntity();
     }
 
     @Override
     public CiEntityVo getCiEntityById(Long ciId, Long ciEntityId) {
-        return getCiEntityById(ciId, ciEntityId, false);
+        return getCiEntityById(ciId, ciEntityId, false, true);
+    }
+
+    @Override
+    public CiEntityVo getCiEntityById(CiEntityVo ciEntityVo) {
+        return getCiEntityById(ciEntityVo.getCiId(), ciEntityVo.getId(), false, ciEntityVo.isLimitRelEntity());
     }
 
     @Override
@@ -362,7 +367,7 @@ public class CiEntityServiceImpl implements CiEntityService {
     @Override
     public Long saveCiEntity(CiEntityTransactionVo ciEntityTransactionVo, TransactionGroupVo transactionGroupVo) {
         if (ciEntityTransactionVo.getAction().equals(TransactionActionType.UPDATE.getValue())) {
-            CiEntityVo oldCiEntityVo = this.getCiEntityById(ciEntityTransactionVo.getCiId(), ciEntityTransactionVo.getCiEntityId(), true);
+            CiEntityVo oldCiEntityVo = this.getCiEntityById(ciEntityTransactionVo.getCiId(), ciEntityTransactionVo.getCiEntityId(), true, false);
 
             // 正在编辑中的配置项，在事务提交或删除前不允许再次修改
             if (oldCiEntityVo == null) {
@@ -528,7 +533,7 @@ public class CiEntityServiceImpl implements CiEntityService {
         List<RelEntityVo> oldRelEntityList = null;
         if (oldEntity == null) {
             //如果是单纯校验可能会没有旧配置项信息
-            oldEntity = this.getCiEntityById(ciEntityTransactionVo.getCiId(), ciEntityTransactionVo.getCiEntityId(), true);
+            oldEntity = this.getCiEntityById(ciEntityTransactionVo.getCiId(), ciEntityTransactionVo.getCiEntityId(), true, false);
         }
         if (oldEntity != null) {
             oldAttrEntityList = oldEntity.getAttrEntityList();
