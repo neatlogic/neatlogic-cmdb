@@ -304,8 +304,15 @@
 
     <update id="updateRelEntityValidDay" parameterType="codedriver.framework.cmdb.dto.cientity.RelEntityVo">
         update cmdb_relentity
-        set valid_day    = #{validDay},
-            expired_time = DATE_ADD(insert_time, INTERVAL #{validDay} DAY)
+        set valid_day = #{validDay},
+        <choose>
+            <when test="validDay == null or validDay == 0">
+                expired_time = null
+            </when>
+            <otherwise>
+                expired_time = DATE_ADD(IFNULL(insert_time, NOW()), INTERVAL #{validDay} DAY)
+            </otherwise>
+        </choose>
         where id = #{id}
     </update>
 
