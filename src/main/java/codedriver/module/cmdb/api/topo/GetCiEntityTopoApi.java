@@ -7,7 +7,6 @@ package codedriver.module.cmdb.api.topo;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.ci.CiTypeVo;
-import codedriver.framework.cmdb.dto.ci.RelVo;
 import codedriver.framework.cmdb.dto.cientity.AttrEntityVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.cientity.RelEntityVo;
@@ -19,6 +18,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.Md5Util;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.CiTypeMapper;
+import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
 import codedriver.module.cmdb.dot.*;
 import codedriver.module.cmdb.dot.enums.LayoutType;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
@@ -29,10 +29,10 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.*;
 
 @Service
@@ -43,12 +43,15 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
     static Logger logger = LoggerFactory.getLogger(GetCiEntityTopoApi.class);
 
 
-    @Autowired
+    @Resource
     private CiEntityService ciEntityService;
 
 
-    @Autowired
+    @Resource
     private CiTypeMapper ciTypeMapper;
+
+    @Resource
+    private RelMapper relMapper;
 
     @Override
     public String getToken() {
@@ -68,7 +71,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
     @Input({@Param(name = "layout", type = ApiParamType.ENUM, rule = "dot,circo,fdp,neato,osage,patchwork,twopi", isRequired = true),
             @Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
             @Param(name = "ciEntityId", type = ApiParamType.LONG, isRequired = true, desc = "配置项id"),
-            @Param(name = "disableRelList", type = ApiParamType.JSONARRAY, desc = "不显示关系，格式：方向+'_'+id，例如：from_12323442或to_123131233"),
+            @Param(name = "disableRelList", type = ApiParamType.JSONARRAY, desc = "不显示关系id"),
             @Param(name = "level", type = ApiParamType.INTEGER, desc = "自动展开关系层数，默认是1")})
     @Output({@Param(name = "topo", type = ApiParamType.STRING)})
     @Description(desc = "获取配置项拓扑接口")
@@ -86,16 +89,12 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
 
         Long ciEntityId = jsonObj.getLong("ciEntityId");
         JSONArray disableRelObjList = jsonObj.getJSONArray("disableRelList");
-        Set<RelVo> disableRelList = new HashSet<>();
+        Set<Long> disableRelIdList = new HashSet<>();
+        Set<Long> containRelIdSet = new HashSet<>();
+        JSONObject returnObj = new JSONObject();
         if (CollectionUtils.isNotEmpty(disableRelObjList)) {
             for (int i = 0; i < disableRelObjList.size(); i++) {
-                String relStr = disableRelObjList.getString(i);
-                String direction = relStr.split("_")[0];
-                String relId = relStr.split("_")[1];
-                RelVo relVo = new RelVo();
-                relVo.setDirection(direction);
-                relVo.setId(Long.valueOf(relId));
-                disableRelList.add(relVo);
+                disableRelIdList.add(disableRelObjList.getLong(i));
             }
         }
         //Long ciId = jsonObj.getLong("ciId");
@@ -119,7 +118,6 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
         }
 
         // 每一层需要搜索关系的节点列表
-        Set<CiEntityVo> ciEntityLevelSet = new LinkedHashSet<>();
         Map<Long, List<Long>> ciCiEntityIdMap = new HashMap<>();
         ciCiEntityIdMap.put(jsonObj.getLong("ciId"), new ArrayList<Long>() {{
             this.add(ciEntityId);
@@ -142,7 +140,9 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                                 ciTypeIdSet.add(ciEntityVo.getTypeId());
                             }
                             for (RelEntityVo relEntityVo : ciEntityVo.getRelEntityList()) {
-                                if (CollectionUtils.isEmpty(disableRelList) || disableRelList.stream().noneMatch(r -> r.getDirection().equals(relEntityVo.getDirection()) && r.getId().equals(relEntityVo.getRelId()))) {
+                                //记录所有存在数据的关系
+                                containRelIdSet.add(relEntityVo.getRelId());
+                                if (CollectionUtils.isEmpty(disableRelIdList) || disableRelIdList.stream().noneMatch(r -> r.equals(relEntityVo.getRelId()))) {
                                     relEntitySet.add(relEntityVo);
                                     // 检查关系中的对端配置项是否已经存在，不存在可进入下一次搜索
                                     if (relEntityVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
@@ -247,10 +247,12 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
             if (logger.isDebugEnabled()) {
                 logger.debug(dot);
             }
-            //System.out.println(dot);
-            return dot;
+            returnObj.put("dot", dot);
         }
-        return "";
+        if (CollectionUtils.isNotEmpty(containRelIdSet)) {
+            returnObj.put("relList", relMapper.getRelByIdList(new ArrayList<>(containRelIdSet)));
+        }
+        return returnObj;
     }
 
     public static void main(String[] argv) {

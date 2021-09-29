@@ -83,6 +83,40 @@
         WHERE id = #{value}
     </select>
 
+    <select id="getRelByIdList" resultType="codedriver.framework.cmdb.dto.ci.RelVo" useCache="true">
+        SELECT a.`id`,
+        a.`type_id` AS typeId,
+        (SELECT name FROM cmdb_reltype cr WHERE cr.id = a.`type_id`) AS typeText,
+        a.`input_type` AS inputType,
+        a.`from_ci_id` AS fromCiId,
+        f.icon AS fromCiIcon,
+        f.name AS fromCiName,
+        f.label AS fromCiLabel,
+        a.`from_name` AS fromName,
+        a.`from_label` AS fromLabel,
+        a.`from_rule` AS fromRule,
+        a.`from_group_id` AS fromGroupId,
+        a.`from_is_unique` AS fromIsUnique,
+        a.`from_is_required` AS fromIsRequired,
+        (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`from_group_id`) AS fromGroupName,
+        a.`to_ci_id` AS toCiId,
+        t.icon AS toCiIcon,
+        t.name AS toCiName,
+        t.label AS toCiLabel,
+        a.`to_name` AS toName,
+        a.`to_label` AS toLabel,
+        a.`to_rule` AS toRule,
+        a.`to_group_id` AS toGroupId,
+        a.`to_is_unique` AS toIsUnique,
+        a.`to_is_required` AS toIsRequired,
+        (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`to_group_id`) AS toGroupName
+        FROM `cmdb_rel` a
+        JOIN cmdb_ci f ON a.from_ci_id = f.id
+        JOIN cmdb_ci t ON a.to_ci_id = t.id
+        WHERE a.id in
+        <foreach collection="relIdList" item="item" open="(" close=")" separator=",">#{item}</foreach>
+    </select>
+
     <select id="getRelById" parameterType="java.lang.Long" resultType="codedriver.framework.cmdb.dto.ci.RelVo"
             useCache="true">
         SELECT a.`id`,

@@ -20,10 +20,14 @@
     <sql id="searchCiEntityBaseInfoSql">
         <where>
             <if test="ciId != null">
-                ci_id = #{ciId}
+                and ci_id = #{ciId}
             </if>
             <if test="ciEntityIdStart != null">
-                id &gt; #{ciEntityIdStart}
+                and id &gt; #{ciEntityIdStart}
+            </if>
+            <if test="idList != null and idList.size() > 0">
+                and id in
+                <foreach collection="idList" item="item" open="(" close=")" separator=",">#{item}</foreach>
             </if>
         </where>
     </sql>
