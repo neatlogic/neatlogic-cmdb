@@ -89,6 +89,7 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
     })
     @Description(desc = "导出配置项接口")
     @Override
+    //TODO 后续要对数据进行优化防止OOM
     public Object myDoService(JSONObject jsonObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
         CiEntityVo ciEntityVo = JSONObject.toJavaObject(jsonObj, CiEntityVo.class);
         Long ciId = jsonObj.getLong("ciId");
@@ -130,10 +131,20 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
         ciEntityVo.setAttrIdList(attrIdList);
         ciEntityVo.setRelIdList(relIdList);
 
+        ExcelBuilder builder = new ExcelBuilder(SXSSFWorkbook.class);
+        builder.withSheetName("数据")
+                .withHeaderList(headerList)
+                .withColumnList(columnList)
+                .withBorderColor(HSSFColor.HSSFColorPredefined.GREY_40_PERCENT)
+                .withHeadFontColor(HSSFColor.HSSFColorPredefined.WHITE)
+                .withHeadBgColor(HSSFColor.HSSFColorPredefined.DARK_BLUE)
+                .withColumnWidth(30);
+        Workbook workbook = builder.build();
 
+        ciEntityVo.setPageSize(100);
+        ciEntityVo.setCurrentPage(1);
         List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
-        List<Map<String, Object>> dataList = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(ciEntityList)) {
+        while (CollectionUtils.isNotEmpty(ciEntityList)) {
             for (CiEntityVo entity : ciEntityList) {
                 Map<String, Object> dataMap = new HashMap<>();
                 dataMap.put("id", entity.getId());
@@ -172,19 +183,12 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
                         }
                     }
                 }
-                dataList.add(dataMap);
+                builder.addRow(dataMap);
             }
+            ciEntityVo.setCurrentPage(ciEntityVo.getCurrentPage() + 1);
+            ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
         }
-        ExcelBuilder builder = new ExcelBuilder(SXSSFWorkbook.class);
-        builder.withSheetName("数据")
-                .withHeaderList(headerList)
-                .withColumnList(columnList)
-                .withDataList(dataList)
-                .withBorderColor(HSSFColor.HSSFColorPredefined.GREY_40_PERCENT)
-                .withHeadFontColor(HSSFColor.HSSFColorPredefined.WHITE)
-                .withHeadBgColor(HSSFColor.HSSFColorPredefined.DARK_BLUE)
-                .withColumnWidth(30);
-        Workbook workbook = builder.build();
+
         String fileNameEncode = ciVo.getId() + "_" + ciVo.getLabel() + ".xlsx";
         boolean flag = request.getHeader("User-Agent").indexOf("Gecko") > 0;
         if (request.getHeader("User-Agent").toLowerCase().indexOf("msie") > 0 || flag) {

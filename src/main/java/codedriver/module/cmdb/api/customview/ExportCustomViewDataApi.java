@@ -19,6 +19,7 @@ import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.customview.CustomViewMapper;
 import codedriver.module.cmdb.service.customview.CustomViewDataService;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
@@ -71,6 +72,7 @@ public class ExportCustomViewDataApi extends PrivateBinaryStreamApiComponentBase
     @Output({@Param(name = "dataList", type = ApiParamType.JSONARRAY, desc = "结果集"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页大小")})
     @Description(desc = "查询自定义视图数据接口")
+    //TODO 后续要对数据进行优化防止OOM
     @Override
     public Object myDoService(JSONObject paramObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
         CustomViewConditionVo customViewConditionVo = JSONObject.toJavaObject(paramObj, CustomViewConditionVo.class);
@@ -90,18 +92,29 @@ public class ExportCustomViewDataApi extends PrivateBinaryStreamApiComponentBase
             columnList.add(attr.getUuid());
         }
 
-        customViewConditionVo.setCustomViewId(customViewId);
-        List<Map<String, Object>> dataList = customViewDataService.searchCustomViewData(customViewConditionVo);
         ExcelBuilder builder = new ExcelBuilder(SXSSFWorkbook.class);
         builder.withSheetName("数据")
                 .withHeaderList(headerList)
                 .withColumnList(columnList)
-                .withDataList(dataList)
                 .withBorderColor(HSSFColor.HSSFColorPredefined.GREY_40_PERCENT)
                 .withHeadFontColor(HSSFColor.HSSFColorPredefined.WHITE)
                 .withHeadBgColor(HSSFColor.HSSFColorPredefined.DARK_BLUE)
                 .withColumnWidth(30);
         Workbook workbook = builder.build();
+
+        customViewConditionVo.setCustomViewId(customViewId);
+        customViewConditionVo.setPageSize(100);
+        customViewConditionVo.setCurrentPage(1);
+        List<Map<String, Object>> dataList = customViewDataService.searchCustomViewData(customViewConditionVo);
+        while (CollectionUtils.isNotEmpty(dataList)) {
+            //由于展示页面的特殊性，查询sql用的是pageSizePlus，所以要去掉租后一条数据
+            for (int i = 0; i < Math.min(customViewConditionVo.getPageSize(), dataList.size()); i++) {
+                builder.addRow(dataList.get(i));
+            }
+            customViewConditionVo.setCurrentPage(customViewConditionVo.getCurrentPage() + 1);
+            dataList = customViewDataService.searchCustomViewData(customViewConditionVo);
+        }
+
         String fileNameEncode = customViewVo.getName() + ".xlsx";
         boolean flag = request.getHeader("User-Agent").indexOf("Gecko") > 0;
         if (request.getHeader("User-Agent").toLowerCase().indexOf("msie") > 0 || flag) {
