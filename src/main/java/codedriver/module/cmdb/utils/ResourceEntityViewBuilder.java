@@ -24,6 +24,8 @@ import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceCenterConfigMapp
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import codedriver.module.cmdb.service.ci.CiService;
 import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -196,6 +198,7 @@ public class ResourceEntityViewBuilder {
                                                 for (Element attrElement : attrElementList) {
                                                     String attrCiName = attrElement.attributeValue("ci");
                                                     String attrFieldName = attrElement.attributeValue("field");
+                                                    String joinAttrName = attrElement.attributeValue("joinAttrName");
                                                     if (StringUtils.isNotBlank(attrCiName)) {
                                                         CiVo joinCiVo = getCiByName(attrCiName);
                                                         if (joinCiVo == null) {
@@ -204,6 +207,9 @@ public class ResourceEntityViewBuilder {
                                                         ResourceEntityJoinVo joinVo = new ResourceEntityJoinVo(JoinType.ATTR);
                                                         joinVo.setCi(joinCiVo);
                                                         joinVo.setField(attrFieldName);
+                                                        if (StringUtils.isNotBlank(joinAttrName)) {
+                                                            joinVo.setJoinAttrName(joinAttrName);
+                                                        }
                                                         resourceEntityVo.addJoin(joinVo);
                                                     }
                                                 }
@@ -317,6 +323,27 @@ public class ResourceEntityViewBuilder {
                                                 .withRightExpression(new Column()
                                                         .withTable(new Table("cmdb_attrentity_" + entityJoin.getField().toLowerCase(Locale.ROOT)))
                                                         .withColumnName("from_cientity_id"))));
+                                if (StringUtils.isNotBlank(entityJoin.getJoinAttrName())) {
+                                    plainSelect.addJoins(new Join()
+                                            .withRightItem(new Table()
+                                                    .withName("cmdb_attr")
+                                                    .withSchemaName(TenantContext.get().getDbName())
+                                                    .withAlias(new Alias("cmdb_attr_" + entityJoin.getJoinAttrName().toLowerCase(Locale.ROOT)))
+                                            ).withOnExpression(new AndExpression()
+                                                    .withLeftExpression(new EqualsTo()
+                                                            .withLeftExpression(new Column()
+                                                                    .withTable(new Table("cmdb_attr_" + entityJoin.getJoinAttrName().toLowerCase(Locale.ROOT)))
+                                                                    .withColumnName("id"))
+                                                            .withRightExpression(new Column()
+                                                                    .withTable(new Table("cmdb_attrentity_" + entityJoin.getField().toLowerCase(Locale.ROOT)))
+                                                                    .withColumnName("attr_id")))
+                                                    .withRightExpression(new EqualsTo()
+                                                            .withLeftExpression(new Column()
+                                                                    .withTable(new Table("cmdb_attr_" + entityJoin.getJoinAttrName().toLowerCase(Locale.ROOT)))
+                                                                    .withColumnName("name"))
+                                                            .withRightExpression(new StringValue(entityJoin.getJoinAttrName()))))
+                                    );
+                                }
                                 plainSelect.addJoins(new Join()
                                         //.withLeft(true)
                                         .withRightItem(new SubSelect()
