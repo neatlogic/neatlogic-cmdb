@@ -15,7 +15,9 @@ import codedriver.framework.fulltextindex.dto.fulltextindex.FullTextIndexVo;
 import codedriver.framework.fulltextindex.dto.globalsearch.DocumentVo;
 import codedriver.module.cmdb.fulltextindex.enums.CmdbFullTextIndexType;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.common.utils.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -108,18 +110,20 @@ public class CiEntityFullTextIndexHandler extends FullTextIndexHandlerBase {
                     }
                 }
             }
-            /*if (ciEntityVo.getRelEntityList() != null && ciEntityVo.getRelEntityList().size() > 0) {
-                for (RelEntityVo rel : ciEntityVo.getRelEntityList()) {
-                    if (rel.getTargetCiEntityList() != null && rel.getTargetCiEntityList().size() > 0) {
-                        content.append("<b>").append(rel.getLabel()).append("</b>：");
+            if (MapUtils.isNotEmpty(ciEntityVo.getRelEntityData())) {
+                for (String key : ciEntityVo.getRelEntityData().keySet()) {
+                    JSONObject relObj = ciEntityVo.getRelEntityData().getJSONObject(key);
+                    if (CollectionUtils.isNotEmpty(relObj.getJSONArray("valueList"))) {
+                        content.append("<span class=\"ml-xs\" style=\"font-weight:bold\">").append(relObj.getString("label")).append("：</span>");
                         content.append("<span style=\"margin-right:5px\">");
-                        for (CiEntityVo t : rel.getTargetCiEntityList()) {
-                            content.append(t.getName()).append(" ");
+                        for (int i = 0; i < relObj.getJSONArray("valueList").size(); i++) {
+                            content.append(relObj.getJSONArray("valueList").getJSONObject(i).getString("ciEntityName")).append(" ");
                         }
                         content.append("</span>");
                     }
                 }
-            }*/
+            }
+            documentVo.setTargetUrl("cmdb.html#/ci/" + ciEntityVo.getCiId() + "/cientity-view/" + ciEntityVo.getId());
             documentVo.setContent(content.toString());
         }
     }
