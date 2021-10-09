@@ -159,12 +159,12 @@ public class ResourceListApi extends PrivateApiComponentBase {
                         if (CollectionUtils.isNotEmpty(accountVoList)) {
                             resourceVo.setAccountList(accountVoList);
                         }
-                        if (StringUtils.isNotBlank(resourceVo.getFcu())) {
-                            resourceVo.setFcuVo(new UserVo(resourceVo.getFcu()));
-                        }
-                        if (StringUtils.isNotBlank(resourceVo.getLcu())) {
-                            resourceVo.setLcuVo(new UserVo(resourceVo.getLcu()));
-                        }
+//                        if (StringUtils.isNotBlank(resourceVo.getFcu())) {
+//                            resourceVo.setFcuVo(new UserVo(resourceVo.getFcu()));
+//                        }
+//                        if (StringUtils.isNotBlank(resourceVo.getLcu())) {
+//                            resourceVo.setLcuVo(new UserVo(resourceVo.getLcu()));
+//                        }
                     }
                 }
             }

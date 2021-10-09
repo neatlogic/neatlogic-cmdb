@@ -93,12 +93,12 @@ public class AccountSearchApi extends PrivateApiComponentBase {
                 if (CollectionUtils.isNotEmpty(tagVoList)) {
                     accountVo.setTagList(tagVoList);
                 }
-                if (StringUtils.isNotBlank(accountVo.getFcu())) {
-                    accountVo.setFcuVo(new UserVo(accountVo.getFcu()));
-                }
-                if (StringUtils.isNotBlank(accountVo.getLcu())) {
-                    accountVo.setLcuVo(new UserVo(accountVo.getLcu()));
-                }
+//                if (StringUtils.isNotBlank(accountVo.getFcu())) {
+//                    accountVo.setFcuVo(new UserVo(accountVo.getFcu()));
+//                }
+//                if (StringUtils.isNotBlank(accountVo.getLcu())) {
+//                    accountVo.setLcuVo(new UserVo(accountVo.getLcu()));
+//                }
 
             }
         }

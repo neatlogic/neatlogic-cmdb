@@ -73,14 +73,14 @@ public class AppModuleListApi extends PrivateApiComponentBase {
             List<Long> idList = resourceCenterMapper.getAppModuleIdList(searchVo);
             if (CollectionUtils.isNotEmpty(idList)) {
                 resourceVoList = resourceCenterMapper.getAppModuleListByIdList(idList, TenantContext.get().getDataDbName());
-                for (ResourceVo resourceVo : resourceVoList) {
-                    if (StringUtils.isNotBlank(resourceVo.getFcu())) {
-                        resourceVo.setFcuVo(new UserVo(resourceVo.getFcu()));
-                    }
-                    if (StringUtils.isNotBlank(resourceVo.getLcu())) {
-                        resourceVo.setLcuVo(new UserVo(resourceVo.getLcu()));
-                    }
-                }
+//                for (ResourceVo resourceVo : resourceVoList) {
+//                    if (StringUtils.isNotBlank(resourceVo.getFcu())) {
+//                        resourceVo.setFcuVo(new UserVo(resourceVo.getFcu()));
+//                    }
+//                    if (StringUtils.isNotBlank(resourceVo.getLcu())) {
+//                        resourceVo.setLcuVo(new UserVo(resourceVo.getLcu()));
+//                    }
+//                }
             }
         }
         if (resourceVoList == null) {
