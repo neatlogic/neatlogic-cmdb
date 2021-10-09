@@ -79,7 +79,7 @@ public class GetPasswordAttrPlaintextApi extends PrivateApiComponentBase {
         }
         if (CollectionUtils.isNotEmpty(attrEntityVo.getValueList())) {
             IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrEntityVo.getAttrType());
-            handler.transferValueListToDisplay(attrVo, attrEntityVo.getValueList());
+            handler.transferValueListToDisplay(attrEntityVo.getValueList());
             return attrEntityVo.getValueList().getString(0);
         }
         return "";

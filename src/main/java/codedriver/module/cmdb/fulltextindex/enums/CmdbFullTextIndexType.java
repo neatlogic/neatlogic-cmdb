@@ -8,7 +8,7 @@ package codedriver.module.cmdb.fulltextindex.enums;
 import codedriver.framework.fulltextindex.core.IFullTextIndexType;
 
 public enum CmdbFullTextIndexType implements IFullTextIndexType {
-    CMDB_CIENTITY("cmdb_cientity", "配置项");
+    CIENTITY("cientity", "配置项");
 
     private final String type;
     private final String typeName;
@@ -36,5 +36,10 @@ public enum CmdbFullTextIndexType implements IFullTextIndexType {
             }
         }
         return "";
+    }
+
+    @Override
+    public boolean isActiveGlobalSearch() {
+        return true;
     }
 }

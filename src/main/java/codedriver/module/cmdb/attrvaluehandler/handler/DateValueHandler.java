@@ -126,6 +126,23 @@ public class DateValueHandler implements IAttrValueHandler {
         }
     }
 
+    @Override
+    public JSONArray getActualValueList(AttrVo attrVo, JSONArray valueList) {
+        JSONArray returnList = new JSONArray();
+        for (int i = 0; i < valueList.size(); i++) {
+            try {
+                String v = valueList.getString(i);
+                if (v.contains(",")) {
+                    v = v.replace(",", "~");
+                }
+                returnList.add(v);
+            } catch (Exception ignored) {
+
+            }
+        }
+        return returnList;
+    }
+
     /**
      * 将值转换成显示的形式
      *
@@ -133,7 +150,7 @@ public class DateValueHandler implements IAttrValueHandler {
      * @return 用于显示数据
      */
     @Override
-    public void transferValueListToDisplay(AttrVo attrVo, JSONArray valueList) {
+    public void transferValueListToDisplay(JSONArray valueList) {
         for (int i = 0; i < valueList.size(); i++) {
             try {
                 String v = valueList.getString(i);

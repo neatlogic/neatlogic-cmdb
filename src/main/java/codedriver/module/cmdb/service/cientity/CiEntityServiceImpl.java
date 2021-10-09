@@ -25,6 +25,8 @@ import codedriver.framework.cmdb.exception.transaction.TransactionStatusIrregula
 import codedriver.framework.cmdb.validator.core.IValidator;
 import codedriver.framework.cmdb.validator.core.ValidatorFactory;
 import codedriver.framework.exception.core.ApiRuntimeException;
+import codedriver.framework.fulltextindex.core.FullTextIndexHandlerFactory;
+import codedriver.framework.fulltextindex.core.IFullTextIndexHandler;
 import codedriver.framework.mq.core.ITopic;
 import codedriver.framework.mq.core.TopicFactory;
 import codedriver.framework.transaction.core.AfterTransactionJob;
@@ -35,6 +37,7 @@ import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper;
 import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
+import codedriver.module.cmdb.fulltextindex.enums.CmdbFullTextIndexType;
 import codedriver.module.cmdb.group.CiEntityGroupManager;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.utils.CiEntityBuilder;
@@ -1386,6 +1389,12 @@ public class CiEntityServiceImpl implements CiEntityService {
             transactionVo.setStatus(TransactionStatus.COMMITED.getValue());
             transactionMapper.updateTransactionStatus(transactionVo);
 
+            //删除全文检索索引
+            IFullTextIndexHandler handler = FullTextIndexHandlerFactory.getHandler(CmdbFullTextIndexType.CIENTITY);
+            if (handler != null) {
+                handler.deleteIndex(deleteCiEntityVo.getId());
+            }
+
             //发送消息到消息队列
             ITopic<CiEntityTransactionVo> topic = TopicFactory.getTopic("cmdb/cientity/delete");
             if (topic != null) {
@@ -1540,6 +1549,12 @@ public class CiEntityServiceImpl implements CiEntityService {
 
             //触发圈子归属判定
             CiEntityGroupManager.groupCiEntity(ciEntityVo.getCiId(), ciEntityVo.getId());
+
+            //创建全文检索索引
+            IFullTextIndexHandler handler = FullTextIndexHandlerFactory.getHandler(CmdbFullTextIndexType.CIENTITY);
+            if (handler != null) {
+                handler.createIndex(ciEntityVo.getId());
+            }
 
             //发送消息到消息队列
             if (StringUtils.isNotBlank(topicName)) {
