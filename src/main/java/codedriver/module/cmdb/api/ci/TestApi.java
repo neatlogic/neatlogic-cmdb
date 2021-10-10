@@ -43,7 +43,7 @@ public class TestApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         for (int j = 0; j < 3; j++) {
             int finalJ = j;
-            CodeDriverThread t = new CodeDriverThread() {
+            CodeDriverThread t = new CodeDriverThread("TEST-CACHE") {
                 @Override
                 protected void execute() {
                     List<CiVo> ciList = ciMapper.getAllCi(null);

@@ -179,7 +179,7 @@ public class AttrServiceImpl implements AttrService {
                         //写入配置项事务
                         transactionMapper.insertCiEntityTransaction(ciEntityTransactionVo);
                     }
-                });
+                }, "ATTRENTITY-BATCH-DELETER");
                 ciEntityVo.setCurrentPage(ciEntityVo.getCurrentPage() + 1);
                 ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
             }

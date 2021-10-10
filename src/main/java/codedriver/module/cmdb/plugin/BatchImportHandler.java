@@ -146,6 +146,7 @@ public class BatchImportHandler {
         }
 
         public Importer(Long ciId, String action, String editMode, FileVo fileVo, String importUser) {
+            super("CIENTITY-EXCEL-IMPORTER");
             this.ciId = ciId;
             this.fileVo = fileVo;
             this.action = action;

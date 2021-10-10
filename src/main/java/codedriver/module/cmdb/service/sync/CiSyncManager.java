@@ -89,6 +89,7 @@ public class CiSyncManager {
         private final List<CollectionVo> collectionList;
 
         public SyncHandler(List<SyncCiCollectionVo> syncCiCollectionVoList) {
+            super("COLLECTION-CIENTITY-SYNC-HANDLER");
             this.syncCiCollectionList = syncCiCollectionVoList;
             //获取所有集合列表
             List<CollectionVo> tmpList = mongoTemplate.find(new Query(), CollectionVo.class, "_dictionary");
