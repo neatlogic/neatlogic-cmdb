@@ -8,12 +8,21 @@ package codedriver.module.cmdb.dao.mapper.cientity;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.cientity.AttrEntityVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.fulltextindex.dto.fulltextindex.FullTextIndexTypeVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;
 
 public interface CiEntityMapper {
+    /**
+     * 查询没有创建索引的配置项id
+     *
+     * @param fullTextIndexTypeVo 索引类型
+     * @return 配置项id列表
+     */
+    List<Long> getNotIndexCiEntityIdList(FullTextIndexTypeVo fullTextIndexTypeVo);
+
     /**
      * 检查引用属性是否有值
      *

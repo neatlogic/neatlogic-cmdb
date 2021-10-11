@@ -150,7 +150,7 @@ public class DateValueHandler implements IAttrValueHandler {
      * @return 用于显示数据
      */
     @Override
-    public void transferValueListToDisplay(JSONArray valueList) {
+    public void transferValueListToDisplay(AttrVo attrVo, JSONArray valueList) {
         for (int i = 0; i < valueList.size(); i++) {
             try {
                 String v = valueList.getString(i);

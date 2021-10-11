@@ -5,18 +5,24 @@
 
 package codedriver.module.cmdb.fulltextindex.handler;
 
+import codedriver.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
+import codedriver.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
+import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.cientity.AttrEntityVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.cientity.RelEntityVo;
 import codedriver.framework.cmdb.enums.RelDirectionType;
 import codedriver.framework.fulltextindex.core.FullTextIndexHandlerBase;
 import codedriver.framework.fulltextindex.core.IFullTextIndexType;
+import codedriver.framework.fulltextindex.dto.fulltextindex.FullTextIndexTypeVo;
 import codedriver.framework.fulltextindex.dto.fulltextindex.FullTextIndexVo;
 import codedriver.framework.fulltextindex.dto.globalsearch.DocumentVo;
+import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
+import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import codedriver.module.cmdb.fulltextindex.enums.CmdbFullTextIndexType;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.nacos.common.utils.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +38,12 @@ public class CiEntityFullTextIndexHandler extends FullTextIndexHandlerBase {
 
     @Resource
     private CiEntityService ciEntityService;
+
+    @Resource
+    private CiEntityMapper ciEntityMapper;
+
+    @Resource
+    private AttrMapper attrMapper;
 
     @Override
     protected String getModuleId() {
@@ -88,21 +100,29 @@ public class CiEntityFullTextIndexHandler extends FullTextIndexHandlerBase {
     protected void myMakeupDocument(DocumentVo documentVo) {
         Long ciEntityId = documentVo.getTargetId();
         CiEntityVo baseCiEntityVo = ciEntityService.getCiEntityBaseInfoById(ciEntityId);
+
         if (baseCiEntityVo != null) {
+            List<AttrVo> attrList = attrMapper.getAttrByCiId(baseCiEntityVo.getCiId());
+            Map<Long, AttrVo> attrMap = new HashMap<>();
+            for (AttrVo attrVo : attrList) {
+                attrMap.put(attrVo.getId(), attrVo);
+            }
             CiEntityVo ciEntityVo = ciEntityService.getCiEntityById(baseCiEntityVo.getCiId(), baseCiEntityVo.getId());
             documentVo.setTitle(ciEntityVo.getName());
             StringBuilder content = new StringBuilder();
             if (ciEntityVo.getAttrEntityList() != null && ciEntityVo.getAttrEntityList().size() > 0) {
                 for (AttrEntityVo attr : ciEntityVo.getAttrEntityList()) {
-                    if (CollectionUtils.isNotEmpty(attr.getValueList())) {
-                        //IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attr.getAttrType());
-                        //handler.transferValueListToDisplay(attr.getValueList());
-                        content.append("<span class=\"ml-xs\" style=\"font-weight:bold\">").append(attr.getAttrLabel()).append("：</span>");
-                        content.append("<span>");
-                        if (CollectionUtils.isNotEmpty(attr.getActualValueList())) {
-                            for (int i = 0; i < attr.getActualValueList().size(); i++) {
-                                content.append(attr.getActualValueList().getString(i)).append(" ");
-                            }
+                    if (CollectionUtils.isNotEmpty(attr.getValueList()) && attrMap.containsKey(attr.getAttrId())) {
+                        IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attr.getAttrType());
+                            /*
+                            这个场景和导出类似，所以使用transferValueListToExport
+                            不能使用所以使用transferValueListToDisplay，因为对于select和table属性都是通过前端进行处理的，后台不会进行转换
+                            */
+                        handler.transferValueListToExport(attrMap.get(attr.getAttrId()), attr.getValueList());
+                        content.append("<span style=\"font-weight:bold\">").append(attr.getAttrLabel()).append("：</span>");
+                        content.append("<span class=\"mr-xs\">");
+                        if (CollectionUtils.isNotEmpty(attr.getValueList())) {
+                            content.append(attr.getValueList().stream().map(Object::toString).collect(Collectors.joining("、")));
                         } else {
                             content.append("-");
                         }
@@ -114,8 +134,8 @@ public class CiEntityFullTextIndexHandler extends FullTextIndexHandlerBase {
                 for (String key : ciEntityVo.getRelEntityData().keySet()) {
                     JSONObject relObj = ciEntityVo.getRelEntityData().getJSONObject(key);
                     if (CollectionUtils.isNotEmpty(relObj.getJSONArray("valueList"))) {
-                        content.append("<span class=\"ml-xs\" style=\"font-weight:bold\">").append(relObj.getString("label")).append("：</span>");
-                        content.append("<span style=\"margin-right:5px\">");
+                        content.append("<span style=\"font-weight:bold\">").append(relObj.getString("label")).append("：</span>");
+                        content.append("<span class=\"mr-xs\">");
                         for (int i = 0; i < relObj.getJSONArray("valueList").size(); i++) {
                             content.append(relObj.getJSONArray("valueList").getJSONObject(i).getString("ciEntityName")).append(" ");
                         }
@@ -134,7 +154,14 @@ public class CiEntityFullTextIndexHandler extends FullTextIndexHandlerBase {
     }
 
     @Override
-    public void myRebuildIndex(String type, Boolean isRebuildAll) {
-
+    public void myRebuildIndex(FullTextIndexTypeVo fullTextIndexTypeVo) {
+        fullTextIndexTypeVo.setPageSize(100);
+        List<Long> ciEntityIdList = ciEntityMapper.getNotIndexCiEntityIdList(fullTextIndexTypeVo);
+        while (CollectionUtils.isNotEmpty(ciEntityIdList)) {
+            for (Long ciEntityId : ciEntityIdList) {
+                this.createIndex(ciEntityId, true);
+            }
+            ciEntityIdList = ciEntityMapper.getNotIndexCiEntityIdList(fullTextIndexTypeVo);
+        }
     }
 }

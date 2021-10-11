@@ -91,7 +91,7 @@ public class CustomViewDataServiceImpl implements CustomViewDataService {
                     if (handler != null) {
                         JSONArray vl = new JSONArray();
                         vl.add(data.get(key));
-                        handler.transferValueListToDisplay(vl);
+                        handler.transferValueListToDisplay(attrMap.get(key), vl);
                         if (CollectionUtils.isNotEmpty(vl)) {
                             data.put(key, vl.get(0));
                         }
@@ -171,7 +171,7 @@ public class CustomViewDataServiceImpl implements CustomViewDataService {
                 if (handler != null) {
                     JSONArray vl = new JSONArray();
                     vl.add(customViewDataGroupVo.getValue());
-                    handler.transferValueListToDisplay(vl);
+                    handler.transferValueListToDisplay(attrMap.get(customViewAttrVo.getUuid()), vl);
                     if (CollectionUtils.isNotEmpty(vl)) {
                         customViewDataGroupVo.setValue(vl.getString(0));
                     }

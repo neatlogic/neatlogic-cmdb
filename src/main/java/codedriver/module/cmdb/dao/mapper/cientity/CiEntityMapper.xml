@@ -9,6 +9,16 @@
     <!--为了方便使用缓存，ciEntity,attrEntity,relEntity等操作全部汇集再这里-->
     <!--<cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000"
            size="100"></cache>-->
+    <select id="getNotIndexCiEntityIdList"
+            parameterType="codedriver.framework.fulltextindex.dto.fulltextindex.FullTextIndexTypeVo"
+            resultType="java.lang.Long">
+        select a.id
+        from cmdb_cientity a
+                 left join fulltextindex_target_cmdb b
+                           on a.id = b.target_id and b.target_type = #{type}
+        where b.target_id is null
+        limit #{pageSize}
+    </select>
 
     <select id="getAttrEntityCountByFromCiIdAndAttrId" resultType="int">
         SELECT count(1)
