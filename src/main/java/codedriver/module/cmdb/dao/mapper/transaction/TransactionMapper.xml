@@ -235,7 +235,7 @@
                 <if test="recoverTimeRange.size() > 0">
                     AND a.recover_time &gt;= STR_TO_DATE(#{recoverTimeRange[0]},'%Y-%m-%d')
                 </if>
-                <if test="commitTimeRange.size() > 1">
+                <if test="recoverTimeRange.size() > 1">
                     AND a.recover_time &lt;= STR_TO_DATE(#{recoverTimeRange[1]},'%Y-%m-%d')
                 </if>
             </if>
