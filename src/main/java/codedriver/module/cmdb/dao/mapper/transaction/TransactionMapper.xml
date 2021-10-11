@@ -298,7 +298,7 @@
         COUNT(1)
         FROM
         cmdb_transaction a
-        <!--JOIN cmdb_ci ci ON a.ci_id = ci.id 条件用不到所以注释-->
+        JOIN cmdb_ci ci ON a.ci_id = ci.id
         JOIN cmdb_cientity_transaction b ON a.id = b.`transaction_id`
         <!-- LEFT JOIN cmdb_cientity c ON b.ci_entity_id = c.id  条件用不到所以注释-->
         <if test="transactionGroupId != null">
