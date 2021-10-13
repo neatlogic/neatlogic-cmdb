@@ -141,6 +141,7 @@
         <result property="collectionName" column="collectionName"/>
         <result property="collectMode" column="collectMode"/>
         <result property="isAutoCommit" column="isAutoCommit"/>
+        <result property="lastSyncDate" column="lastSyncDate"/>
         <collection property="mappingList" ofType="codedriver.framework.cmdb.dto.sync.SyncMappingVo">
             <id property="id" column="mappingId"/>
             <result property="attrId" column="attrId"/>
@@ -157,6 +158,7 @@
                a.collection_name AS collectionName,
                a.collect_mode    AS collectMode,
                a.is_auto_commit  AS isAutoCommit,
+               a.last_sync_date  AS lastSyncDate,
                csm.id            AS mappingId,
                csm.attr_id       AS attrId,
                csm.rel_id        AS relId,
@@ -174,6 +176,7 @@
                a.collection_name AS collectionName,
                a.collect_mode    AS collectMode,
                a.is_auto_commit  AS isAutoCommit,
+               a.last_sync_date  AS lastSyncDate,
                csm.id            AS mappingId,
                csm.attr_id       AS attrId,
                csm.rel_id        AS relId,
@@ -192,6 +195,7 @@
                a.collection_name AS collectionName,
                a.collect_mode    AS collectMode,
                a.is_auto_commit  AS isAutoCommit,
+               a.last_sync_date  AS lastSyncDate,
                csm.id            AS mappingId,
                csm.attr_id       AS attrId,
                csm.rel_id        AS relId,
@@ -208,6 +212,12 @@
             is_auto_commit = #{isAutoCommit},
             lcd            = NOW(3),
             lcu            = #{lcu}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateSyncCiCollectionLastSyncDate" parameterType="java.lang.Long">
+        update cmdb_sync_ci_collection
+        SET last_sync_date = NOW(3)
         WHERE id = #{id}
     </update>
 

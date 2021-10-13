@@ -53,6 +53,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -315,6 +316,17 @@ public class CiSyncManager {
             }
         }
 
+        private Date convertToIsoDate(Date date) {
+            Date finalDate = null;
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+                finalDate = sdf.parse(sdf.format(date));
+            } catch (Exception ex) {
+                logger.error(ex.getMessage(), ex);
+            }
+            return finalDate;
+        }
+
         /**
          * 批量执行方式
          */
@@ -327,7 +339,9 @@ public class CiSyncManager {
                     }
                     try {
                         Criteria finalCriteria = new Criteria();
-                        finalCriteria.andOperator(collectionVo.getFilterCriteria());
+                        List<Criteria> criteriaList = new ArrayList<>();
+                        criteriaList.add(collectionVo.getFilterCriteria());
+
                         if (CollectionUtils.isNotEmpty(syncCiCollectionVo.getMappingList())) {
                             Set<String> fieldList = new HashSet<>();
                             for (SyncMappingVo syncMappingVo : syncCiCollectionVo.getMappingList()) {
@@ -340,8 +354,13 @@ public class CiSyncManager {
                                 long currentPage = 1;
                                 Query query = new Query();
                                 if (syncCiCollectionVo.getSyncPolicy() != null) {
-                                    finalCriteria.andOperator(syncCiCollectionVo.getSyncPolicy().getCriteria());
+                                    criteriaList.add(syncCiCollectionVo.getSyncPolicy().getCriteria());
                                 }
+                                //只更新上次同步以来新的集合数据进行同步
+                                if (syncCiCollectionVo.getLastSyncDate() != null) {
+                                    criteriaList.add(Criteria.where("_updatetime").gt(convertToIsoDate(syncCiCollectionVo.getLastSyncDate())));
+                                }
+                                finalCriteria.andOperator(criteriaList);
                                 query.addCriteria(finalCriteria);
                                 query.limit(pageSize);
                                 List<JSONObject> dataList = mongoTemplate.find(query, JSONObject.class, collectionVo.getCollection());
@@ -382,6 +401,10 @@ public class CiSyncManager {
                     } finally {
                         syncCiCollectionVo.getSyncAudit().setStatus(SyncStatus.DONE.getValue());
                         syncAuditMapper.updateSyncAuditStatus(syncCiCollectionVo.getSyncAudit());
+                        //如果没有异常才会更新最后同步时间，作为下一次同步的过滤
+                        if (StringUtils.isBlank(syncCiCollectionVo.getSyncAudit().getError())) {
+                            syncMapper.updateSyncCiCollectionLastSyncDate(syncCiCollectionVo.getId());
+                        }
                     }
                 }
             }

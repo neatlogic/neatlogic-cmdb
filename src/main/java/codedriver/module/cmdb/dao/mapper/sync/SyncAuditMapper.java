@@ -19,4 +19,5 @@ public interface SyncAuditMapper {
     void insertSyncAudit(SyncAuditVo syncAuditVo);
 
     void updateSyncAuditStatus(SyncAuditVo syncAuditVo);
+
 }

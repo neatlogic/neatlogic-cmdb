@@ -46,6 +46,8 @@ public interface SyncMapper {
 
     void updateSyncCiCollection(SyncCiCollectionVo syncCiCollectionVo);
 
+    void updateSyncCiCollectionLastSyncDate(Long id);
+
     void insertSyncCiCollection(SyncCiCollectionVo syncCiCollectionVo);
 
     void insertSyncMapping(SyncMappingVo syncMappingVo);
