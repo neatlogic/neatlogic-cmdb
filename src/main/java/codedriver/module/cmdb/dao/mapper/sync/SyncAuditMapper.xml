@@ -87,7 +87,7 @@
                a.input_from           AS inputFrom,
                a.status,
                a.transaction_group_id AS transactionGroupId,
-               a.server_id            AS serverID,
+               a.server_id            AS serverId,
                a.error                AS error
         from cmdb_sync_audit a
                  join cmdb_sync_ci_collection b on

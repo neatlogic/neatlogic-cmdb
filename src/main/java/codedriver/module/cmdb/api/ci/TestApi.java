@@ -5,21 +5,19 @@
 
 package codedriver.module.cmdb.api.ci;
 
-import codedriver.framework.asynchronization.thread.CodeDriverThread;
-import codedriver.framework.asynchronization.threadpool.CachedThreadPool;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.framework.tagent.dto.TagentVo;
+import codedriver.framework.tagent.register.core.AfterRegisterJobManager;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.List;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
@@ -30,7 +28,7 @@ public class TestApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "测试缓存";
+        return "测试Tagent注册";
     }
 
     @Override
@@ -38,31 +36,21 @@ public class TestApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Description(desc = "测试二级缓存")
+    @Description(desc = "测试Tagent注册")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        for (int j = 0; j < 3; j++) {
-            int finalJ = j;
-            CodeDriverThread t = new CodeDriverThread("TEST-CACHE") {
-                @Override
-                protected void execute() {
-                    List<CiVo> ciList = ciMapper.getAllCi(null);
-                    System.out.println(finalJ + " size:" + ciList.size());
-                    for (int i = ciList.size() - 1; i >= 0; i--) {
-                        if (finalJ % (i + 1) == 0) {
-                            ciList.remove(i);
-                        }
-                    }
-                    System.out.println(finalJ + " size:" + ciList.size());
-                }
-            };
-            CachedThreadPool.execute(t);
-        }
+        TagentVo tagentVo = new TagentVo();
+        tagentVo.setIp("9.9.9.9");
+        tagentVo.setOsType("linux");
+        tagentVo.setOsVersion("13.x");
+        tagentVo.setOsbit("64");
+        tagentVo.setName("tagent");
+        AfterRegisterJobManager.executeAll(tagentVo);
         return null;
     }
 
     @Override
     public String getToken() {
-        return "/testcache";
+        return "/tagenttest";
     }
 }

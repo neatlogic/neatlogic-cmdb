@@ -61,6 +61,7 @@ import java.util.stream.Collectors;
  */
 @Service
 public class CiSyncManager {
+    private final static Logger logger = LoggerFactory.getLogger(CiSyncManager.class);
     private static MongoTemplate mongoTemplate;
     private static CiEntityService ciEntityService;
     private static CiMapper ciMapper;
@@ -86,14 +87,24 @@ public class CiSyncManager {
         private final Map<Long, Map<Long, RelVo>> CiRelMap = new HashMap<>();
         private final Map<Long, CiVo> CiMap = new HashMap<>();
         private final List<SyncCiCollectionVo> syncCiCollectionList;
-        private final List<CollectionVo> collectionList;
+        private List<CollectionVo> collectionList;
+        private JSONObject singleDataObj;
+        private String mode = "batch";//如果是batch模式，代表批量更新，如果是single模式，接受单条数据更新
 
         public SyncHandler(List<SyncCiCollectionVo> syncCiCollectionVoList) {
-            super("COLLECTION-CIENTITY-SYNC-HANDLER");
+            super("COLLECTION-CIENTITY-SYNC-BATCH-HANDLER");
+            this.mode = "batch";
             this.syncCiCollectionList = syncCiCollectionVoList;
             //获取所有集合列表
             List<CollectionVo> tmpList = mongoTemplate.find(new Query(), CollectionVo.class, "_dictionary");
             this.collectionList = tmpList.stream().distinct().collect(Collectors.toList());
+        }
+
+        public SyncHandler(JSONObject dataObj, List<SyncCiCollectionVo> syncCiCollectionVoList) {
+            super("COLLECTION-CIENTITY-SYNC-SINGLE-HANDLER");
+            this.mode = "single";
+            this.singleDataObj = dataObj;
+            this.syncCiCollectionList = syncCiCollectionVoList;
         }
 
         private CiVo getCi(Long ciId) {
@@ -261,11 +272,53 @@ public class CiSyncManager {
             return null;
         }
 
+        /**
+         * 单个执行方式
+         */
+        private void executeBySingleMode() {
+            Set<String> fieldList = new HashSet<>();
+            if (CollectionUtils.isNotEmpty(syncCiCollectionList) && MapUtils.isNotEmpty(singleDataObj)) {
+                for (SyncCiCollectionVo syncCiCollectionVo : syncCiCollectionList) {
+                    try {
+                        for (SyncMappingVo syncMappingVo : syncCiCollectionVo.getMappingList()) {
+                            if (StringUtils.isNotBlank(syncMappingVo.getField())) {
+                                fieldList.add(syncMappingVo.getField().trim());
+                            }
+                        }
+                        JSONArray tmpDataList = new JSONArray();
+                        tmpDataList.add(singleDataObj);
+                        JSONArray finalDataList = flattenJson(tmpDataList, fieldList, null);
+                        for (int i = 0; i < finalDataList.size(); i++) {
+                            JSONObject dataObj = finalDataList.getJSONObject(i);
+                            List<CiEntityTransactionVo> ciEntityTransactionList = generateCiEntityTransaction(dataObj, syncCiCollectionVo, null);
+                            try {
+                                ciEntityService.saveCiEntity(ciEntityTransactionList, syncCiCollectionVo.getTransactionGroup());
+                            } catch (Exception ex) {
+                                syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
+                                if (!(ex instanceof ApiRuntimeException)) {
+                                    logger.error(ex.getMessage(), ex);
+                                }
+                            }
+                        }
+                    } catch (Exception ex) {
+                        if (!(ex instanceof ApiRuntimeException)) {
+                            logger.error(ex.getMessage(), ex);
+                            syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
+                        } else {
+                            syncCiCollectionVo.getSyncAudit().appendError(((ApiRuntimeException) ex).getMessage(true));
+                        }
+                    } finally {
+                        syncCiCollectionVo.getSyncAudit().setStatus(SyncStatus.DONE.getValue());
+                        syncAuditMapper.updateSyncAuditStatus(syncCiCollectionVo.getSyncAudit());
+                    }
+                }
+            }
+        }
 
-        @Override
-
-        protected void execute() {
-            InputFromContext.init(InputFrom.AUTOEXEC);
+        /**
+         * 批量执行方式
+         */
+        private void executeByBatchMode() {
             if (CollectionUtils.isNotEmpty(syncCiCollectionList)) {
                 for (SyncCiCollectionVo syncCiCollectionVo : syncCiCollectionList) {
                     CollectionVo collectionVo = getCollectionByName(syncCiCollectionVo.getCollectionName());
@@ -331,6 +384,17 @@ public class CiSyncManager {
                         syncAuditMapper.updateSyncAuditStatus(syncCiCollectionVo.getSyncAudit());
                     }
                 }
+            }
+        }
+
+
+        @Override
+        protected void execute() {
+            InputFromContext.init(InputFrom.AUTOEXEC);
+            if (mode.equals("batch")) {
+                executeByBatchMode();
+            } else {
+                executeBySingleMode();
             }
         }
     }
@@ -629,6 +693,45 @@ public class CiSyncManager {
         JSONArray dataList = new JSONArray();
         dataList.add(jsonObj);
         System.out.println(flattenJson(dataList, fieldList, null).toString(SerializerFeature.DisableCircularReferenceDetect));
+    }
+
+    public static void doSync(JSONObject dataObj, List<SyncCiCollectionVo> syncCiCollectionList) {
+        if (CollectionUtils.isNotEmpty(syncCiCollectionList) && MapUtils.isNotEmpty(dataObj)) {
+            List<SyncCiCollectionVo> syncList = new ArrayList<>();
+            Set<String> keys = dataObj.keySet();
+            COLLECTION:
+            for (SyncCiCollectionVo syncCiCollectionVo : syncCiCollectionList) {
+                    /*
+                    检查当前映射是否包含目标模型的所有唯一属性，并且数据中叶包含这些属性的对应值，是就开始同步，否则视为同步条件不满足
+                     */
+                Long ciId = syncCiCollectionVo.getCiId();
+                List<AttrVo> attrList = attrMapper.getAttrByCiId(ciId).stream().filter(d -> d.getIsCiUnique().equals(1)).collect(Collectors.toList());
+                if (CollectionUtils.isNotEmpty(attrList) && CollectionUtils.isNotEmpty(syncCiCollectionVo.getMappingList())) {
+                    for (AttrVo attrVo : attrList) {
+                        Optional<SyncMappingVo> op = syncCiCollectionVo.getMappingList().stream().filter(d -> d.getAttrId().equals(attrVo.getId())).findFirst();
+                        if (!op.isPresent() || !keys.contains(op.get().getField())) {
+                            continue COLLECTION;
+                        }
+                    }
+
+                    TransactionGroupVo transactionGroupVo = new TransactionGroupVo();
+                    SyncAuditVo syncAuditVo = new SyncAuditVo();
+                    syncAuditVo.setStatus(SyncStatus.DOING.getValue());
+                    syncAuditVo.setCiCollectionId(syncCiCollectionVo.getId());
+                    syncAuditVo.setTransactionGroupId(transactionGroupVo.getId());
+                    syncAuditVo.setInputFrom(InputFromContext.get().getInputFrom());
+                    syncAuditMapper.insertSyncAudit(syncAuditVo);
+                    syncCiCollectionVo.setSyncAudit(syncAuditVo);
+                    syncCiCollectionVo.setTransactionGroup(transactionGroupVo);
+                    syncList.add(syncCiCollectionVo);
+                }
+            }
+
+            if (CollectionUtils.isNotEmpty(syncList)) {
+                SyncHandler handler = new SyncHandler(dataObj, syncList);
+                CachedThreadPool.execute(handler);
+            }
+        }
     }
 
     public static void doSync(List<SyncCiCollectionVo> syncCiCollectionList) {
