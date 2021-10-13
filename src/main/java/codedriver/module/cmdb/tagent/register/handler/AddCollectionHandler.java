@@ -25,17 +25,24 @@ public class AddCollectionHandler extends AfterRegisterBase {
     private MongoTemplate mongoTemplate;
 
 
+    /**
+     * 注册后会送一条数据进mongodb，如果已存在不在写入，用于tagent注册时即使模型还没配置，也能在后续同步时写入配置库
+     *
+     * @param tagentVo tagent对象
+     */
     @Override
     public void myExecute(TagentVo tagentVo) {
         if (StringUtils.isNotBlank(tagentVo.getOsType()) && StringUtils.isNotBlank(tagentVo.getIp())) {
             Criteria criteria = new Criteria();
-            criteria.andOperator(Criteria.where("MGMT_IP").is(tagentVo.getIp()), Criteria.where("OS_TYPE").is(tagentVo.getOsType()));
+            criteria.andOperator(Criteria.where("MGMT_IP").is(tagentVo.getIp()), Criteria.where("_OBJ_TYPE").is(tagentVo.getOsType()));
             JSONObject oldData = mongoTemplate.findOne(new Query(criteria), JSONObject.class, "COLLECT_OS");
             if (oldData == null) {
                 JSONObject dataObj = new JSONObject();
+                dataObj.put("_OBJ_CATEGORY", "OS");
+                dataObj.put("_OBJ_TYPE", tagentVo.getOsType());
                 dataObj.put("OS_TYPE", tagentVo.getOsType());
                 dataObj.put("MGMT_IP", tagentVo.getIp());
-                dataObj.put("CPU_BITS", tagentVo.getOsbit());
+                dataObj.put("CPU_ARCH", tagentVo.getOsbit());
                 dataObj.put("HOSTNAME", tagentVo.getName());
                 dataObj.put("VERSION", tagentVo.getOsVersion());
                 mongoTemplate.insert(dataObj, "COLLECT_OS");

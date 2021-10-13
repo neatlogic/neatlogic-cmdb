@@ -47,9 +47,11 @@ public class AddCiEntityHandler extends AfterRegisterBase {
             if (CollectionUtils.isNotEmpty(ciCollectionList)) {
                 //组装成mongodb约定的数据格式
                 JSONObject dataObj = new JSONObject();
+                dataObj.put("_OBJ_CATEGORY", "OS");
+                dataObj.put("_OBJ_TYPE", tagentVo.getOsType());
                 dataObj.put("OS_TYPE", tagentVo.getOsType());
                 dataObj.put("MGMT_IP", tagentVo.getIp());
-                dataObj.put("CPU_BITS", tagentVo.getOsbit());
+                dataObj.put("CPU_ARCH", tagentVo.getOsbit());
                 dataObj.put("HOSTNAME", tagentVo.getName());
                 dataObj.put("VERSION", tagentVo.getOsVersion());
                 CiSyncManager.doSync(dataObj, ciCollectionList);
