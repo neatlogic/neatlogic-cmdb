@@ -14,7 +14,6 @@ import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
-import codedriver.framework.dto.UserVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -23,7 +22,6 @@ import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -70,7 +68,7 @@ public class ResourceListApi extends PrivateApiComponentBase {
     @Input({
             @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "模糊搜索"),
             @Param(name = "typeId", type = ApiParamType.LONG, desc = "类型id"),
-            @Param(name = "protocolList", type = ApiParamType.JSONARRAY, desc = "协议列表"),
+            @Param(name = "protocolIdList", type = ApiParamType.JSONARRAY, desc = "协议id列表"),
             @Param(name = "statusIdList", type = ApiParamType.JSONARRAY, desc = "状态id列表"),
             @Param(name = "envIdList", type = ApiParamType.JSONARRAY, desc = "环境id列表"),
             @Param(name = "appSystemIdList", type = ApiParamType.JSONARRAY, desc = "应用系统id列表"),
@@ -106,8 +104,8 @@ public class ResourceListApi extends PrivateApiComponentBase {
             searchVo.setTypeIdList(ciIdList);
         }
         List<Long> resourceIdList = null;
-        if (CollectionUtils.isNotEmpty(searchVo.getProtocolList())) {
-            List<Long> idList = resourceCenterMapper.getResourceIdListByProtocolList(searchVo);
+        if (CollectionUtils.isNotEmpty(searchVo.getProtocolIdList())) {
+            List<Long> idList = resourceCenterMapper.getResourceIdListByProtocolIdList(searchVo);
             if (resourceIdList == null) {
                 resourceIdList = idList;
             } else {
