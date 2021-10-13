@@ -20,6 +20,9 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 添加tagent数据进配置项
+ */
 @Service
 public class AddCiEntityHandler extends AfterRegisterBase {
 
@@ -44,6 +47,7 @@ public class AddCiEntityHandler extends AfterRegisterBase {
             if (CollectionUtils.isNotEmpty(ciCollectionList)) {
                 //组装成mongodb约定的数据格式
                 JSONObject dataObj = new JSONObject();
+                dataObj.put("OS_TYPE", tagentVo.getOsType());
                 dataObj.put("MGMT_IP", tagentVo.getIp());
                 dataObj.put("CPU_BITS", tagentVo.getOsbit());
                 dataObj.put("HOSTNAME", tagentVo.getName());
