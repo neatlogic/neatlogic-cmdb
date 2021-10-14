@@ -55,7 +55,6 @@ public class RelServiceImpl implements RelService {
         List<RelEntityVo> relEntityList = relEntityMapper.getRelEntityByRelId(relEntityVo);
         BatchRunner<RelEntityVo> runner = new BatchRunner<>();
         TransactionGroupVo transactionGroupVo = new TransactionGroupVo();
-        //并发清理配置项数据，最高并发5个线程
         while (CollectionUtils.isNotEmpty(relEntityList)) {
             for (RelEntityVo item : relEntityList) {
                 //检查当前配置项在当前事务组下是否已经存在事务，如果已经存在则无需创建新的事务

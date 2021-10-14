@@ -11,11 +11,13 @@ import codedriver.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
 import codedriver.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
+import codedriver.framework.cmdb.dto.cientity.AttrFilterVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.cmdb.dto.transaction.TransactionGroupVo;
 import codedriver.framework.cmdb.dto.transaction.TransactionVo;
 import codedriver.framework.cmdb.enums.EditModeType;
+import codedriver.framework.cmdb.enums.SearchExpression;
 import codedriver.framework.cmdb.enums.TransactionActionType;
 import codedriver.framework.cmdb.enums.TransactionStatus;
 import codedriver.framework.cmdb.exception.attr.*;
@@ -33,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -145,14 +148,20 @@ public class AttrServiceImpl implements AttrService {
             CiEntityVo ciEntityVo = new CiEntityVo();
             ciEntityVo.setCiId(ciVo.getId());
             ciEntityVo.setPageSize(100);
+            List<AttrFilterVo> attrFilterList = new ArrayList<>();
+            AttrFilterVo attrFilterVo = new AttrFilterVo();
+            attrFilterVo.setAttrId(attrVo.getId());
+            attrFilterVo.setExpression(SearchExpression.NOTNULL.getExpression());
+            attrFilterList.add(attrFilterVo);
+            ciEntityVo.setAttrFilterList(attrFilterList);
             List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
-            BatchRunner<CiEntityVo> runner = new BatchRunner<>();
-            TransactionGroupVo transactionGroupVo = new TransactionGroupVo();
-            //并发清理配置项数据，最高并发5个线程
-            int parallel = 10;
             while (CollectionUtils.isNotEmpty(ciEntityList)) {
+                BatchRunner<CiEntityVo> runner = new BatchRunner<>();
+                TransactionGroupVo transactionGroupVo = new TransactionGroupVo();
+                //并发清理配置项数据，最高并发3个线程
+                int parallel = 3;
                 runner.execute(ciEntityList, parallel, item -> {
-                    if (item != null) {
+                    if (item != null && item.getAttrEntityData().containsKey("attr_" + attrVo.getId())) {
                         //写入事务
                         TransactionVo transactionVo = new TransactionVo();
                         transactionVo.setCiId(item.getCiId());
@@ -172,7 +181,7 @@ public class AttrServiceImpl implements AttrService {
                         //必须使用局部修改模式，这样不需要提供其他属性
                         ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
                         //创建修改信息
-                        ciEntityTransactionVo.addAttrEntityData(attrVo.getId());
+                        ciEntityTransactionVo.addAttrEntityData(attrVo);
                         // 创建旧配置项快照
                         ciEntityService.createSnapshot(ciEntityTransactionVo);
 

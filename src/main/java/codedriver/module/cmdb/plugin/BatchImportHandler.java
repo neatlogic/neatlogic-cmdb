@@ -339,7 +339,7 @@ public class BatchImportHandler {
                                                     } else {
                                                         valueList.add(content);
                                                     }
-                                                    ciEntityTransactionVo.addAttrEntityData(attr.getId(), attr, valueList);
+                                                    ciEntityTransactionVo.addAttrEntityData(attr, valueList);
 
                                                 } else if (header instanceof RelVo) {
                                                     RelVo rel = (RelVo) header;

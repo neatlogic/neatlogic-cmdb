@@ -226,14 +226,14 @@ public class CiSyncManager {
                                                 ciEntityTransactionList.add(subCiEntityTransactionVo);
                                                 attrValueList.add(ciEntityTransactionVo.getId());
                                             }
-                                            ciEntityTransactionVo.addAttrEntityData(mappingVo.getAttrId(), attrMap.get(mappingVo.getAttrId()), attrValueList);
+                                            ciEntityTransactionVo.addAttrEntityData(attrMap.get(mappingVo.getAttrId()), attrValueList);
                                         }
                                     }
                                 }
                             }
                         } else {
                             if (dataObj.containsKey(mappingVo.getField(parentKey))) {
-                                ciEntityTransactionVo.addAttrEntityData(mappingVo.getAttrId(), attrMap.get(mappingVo.getAttrId()), dataObj.get(mappingVo.getField(parentKey)));
+                                ciEntityTransactionVo.addAttrEntityData(attrMap.get(mappingVo.getAttrId()), dataObj.get(mappingVo.getField(parentKey)));
                             }
                         }
                     } else if (mappingVo.getRelId() != null && relMap.containsKey(mappingVo.getRelId())) {
