@@ -48,7 +48,8 @@ public class GetDeletedCiEntityTransactionApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "transactionId", isRequired = true, type = ApiParamType.LONG, desc = "事务id")})
-    @Output({@Param(explode = CiEntityTransactionVo.class)})
+    @Output({@Param(name = "transaction", explode = TransactionVo.class, desc = "事务信息"),
+            @Param(name = "detail", type = ApiParamType.JSONARRAY, desc = "详细修改信息")})
     @Description(desc = "获取已删除配置项事务详细信息接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
@@ -90,8 +91,10 @@ public class GetDeletedCiEntityTransactionApi extends PrivateApiComponentBase {
                 }
             }
         }
-
-        return dataList;
+        JSONObject returnObj = new JSONObject();
+        returnObj.put("transaction", transactionVo);
+        returnObj.put("detail", dataList);
+        return returnObj;
     }
 
     @Override

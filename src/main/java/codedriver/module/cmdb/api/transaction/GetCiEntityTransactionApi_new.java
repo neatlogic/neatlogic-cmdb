@@ -10,6 +10,7 @@ import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.CiViewVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.cmdb.dto.transaction.RelEntityTransactionVo;
+import codedriver.framework.cmdb.dto.transaction.TransactionVo;
 import codedriver.framework.cmdb.enums.RelDirectionType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.Description;
@@ -71,7 +72,8 @@ public class GetCiEntityTransactionApi_new extends PrivateApiComponentBase {
             @Param(name = "ciId", isRequired = true, type = ApiParamType.LONG, desc = "模型id"),
             @Param(name = "ciEntityId", isRequired = true, type = ApiParamType.LONG, desc = "配置项id"),
             @Param(name = "transactionId", isRequired = true, type = ApiParamType.LONG, desc = "事务id")})
-    @Output({@Param(explode = CiEntityTransactionVo.class)})
+    @Output({@Param(name = "transaction", explode = TransactionVo.class, desc = "事务信息"),
+            @Param(name = "detail", type = ApiParamType.JSONARRAY, desc = "详细修改信息")})
     @Description(desc = "获取配置项事务详细信息接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
