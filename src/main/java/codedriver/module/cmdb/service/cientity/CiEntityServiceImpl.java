@@ -143,6 +143,7 @@ public class CiEntityServiceImpl implements CiEntityService {
         ciEntityVo.setGroupIdList(groupIdList);
         if (CollectionUtils.isNotEmpty(ciEntityIdList)) {
             ciEntityVo.setIdList(ciEntityIdList);
+            ciEntityVo.setLimitRelEntity(true);
             List<Map<String, Object>> resultList = ciEntityMapper.searchCiEntity(ciEntityVo);
             return new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, attrList, relList).build().getCiEntityList();
         }

@@ -71,8 +71,9 @@
     </insert>
 
     <delete id="deleteLegalValidById" parameterType="java.lang.Long">
-        delete
-        from cmdb_legalvalid
-        where id = #{value}
+        delete a,cci
+        from cmdb_legalvalid a
+                 left join cmdb_cientity_illegal cci on a.id = cci.legalvalid_id
+        where a.id = #{value}
     </delete>
 </mapper>
