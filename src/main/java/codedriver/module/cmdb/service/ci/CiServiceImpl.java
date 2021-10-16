@@ -9,6 +9,7 @@ import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.ci.RelVo;
+import codedriver.framework.cmdb.dto.customview.CustomViewVo;
 import codedriver.framework.cmdb.exception.attr.AttrIsUsedInExpressionException;
 import codedriver.framework.cmdb.exception.attr.AttrIsUsedInUniqueRuleException;
 import codedriver.framework.cmdb.exception.ci.*;
@@ -346,6 +347,15 @@ public class CiServiceImpl implements CiService {
         if (ciEntityCount > 0) {
             throw new CiIsNotEmptyException(ciId, ciEntityCount);
         }
+
+        //检查是否被自定义视图引用
+        List<CustomViewVo> viewList = ciMapper.getCustomViewByCiId(ciVo.getId());
+        if (CollectionUtils.isNotEmpty(viewList)) {
+            throw new CiIsUsedInCustomViewException(ciVo, viewList);
+        }
+
+        //检查是否被资源中心引用
+        //FIXME
 
         if (StringUtils.isNotBlank(ciVo.getCiTableName())) {
             if (ciVo.getIsVirtual().equals(0)) {

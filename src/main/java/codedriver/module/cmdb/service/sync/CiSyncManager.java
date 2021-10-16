@@ -30,6 +30,8 @@ import codedriver.framework.cmdb.exception.ci.CiUniqueAttrNotFoundException;
 import codedriver.framework.cmdb.exception.ci.CiUniqueRuleNotFoundException;
 import codedriver.framework.cmdb.exception.sync.CiEntityDuplicateException;
 import codedriver.framework.cmdb.exception.sync.CollectionNotFoundException;
+import codedriver.framework.cmdb.exception.sync.InitiativeSyncCiCollectionNotFoundException;
+import codedriver.framework.cmdb.exception.sync.UniqueAttrNotCertifyException;
 import codedriver.framework.common.constvalue.InputFrom;
 import codedriver.framework.exception.core.ApiRuntimeException;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
@@ -41,7 +43,6 @@ import codedriver.module.cmdb.service.cientity.CiEntityService;
 import codedriver.module.cmdb.utils.RelUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -86,7 +87,10 @@ public class CiSyncManager {
         private final static Logger logger = LoggerFactory.getLogger(SyncHandler.class);
         private final Map<Long, Map<Long, AttrVo>> CiAttrMap = new HashMap<>();
         private final Map<Long, Map<Long, RelVo>> CiRelMap = new HashMap<>();
-        private final Map<Long, CiVo> CiMap = new HashMap<>();
+        private final Map<Long, CiVo> CiMap = new HashMap<>();//模型缓存
+        private final Map<Long, List<CiVo>> DownwardCiMap = new HashMap<>();//子模型缓存
+        private final Map<String, SyncCiCollectionVo> InitiativeSyncCiCollectionMap = new HashMap<>();//主动采集集合映射缓存
+        private final Map<String, SyncCiCollectionVo> syncCiCollectionMap = new HashMap<>();//普通集合映射缓存
         private final List<SyncCiCollectionVo> syncCiCollectionList;
         private List<CollectionVo> collectionList;
         private JSONObject singleDataObj;
@@ -108,15 +112,45 @@ public class CiSyncManager {
             this.syncCiCollectionList = syncCiCollectionVoList;
         }
 
+        private SyncCiCollectionVo getSyncCiCollection(Long ciId, String collectionName) {
+            if (!syncCiCollectionMap.containsKey(ciId + "#" + collectionName)) {
+                SyncCiCollectionVo syncCiCollectionVo = syncMapper.getSyncCiCollectionByCiIdAndCollectionName(ciId, collectionName);
+                if (syncCiCollectionVo != null) {
+                    syncCiCollectionMap.put(ciId + "#" + collectionName, syncCiCollectionVo);
+                }
+            }
+            return syncCiCollectionMap.get(ciId + "#" + collectionName);
+        }
+
         private CiVo getCi(Long ciId) {
-            if (!this.CiMap.containsKey(ciId)) {
+            if (!CiMap.containsKey(ciId)) {
                 CiVo ciVo = ciMapper.getCiById(ciId);
                 if (ciVo == null) {
                     throw new CiNotFoundException(ciId);
                 }
                 CiMap.put(ciId, ciVo);
             }
-            return this.CiMap.get(ciId);
+            return CiMap.get(ciId);
+        }
+
+        private List<CiVo> getDownwardCiList(Long ciId) {
+            if (!DownwardCiMap.containsKey(ciId)) {
+                CiVo ciVo = getCi(ciId);
+                List<CiVo> downCiList = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
+                DownwardCiMap.put(ciId, downCiList);
+            }
+            return DownwardCiMap.get(ciId);
+        }
+
+        private SyncCiCollectionVo getInitiativeSyncCiCollection(String collectionName) {
+            if (!InitiativeSyncCiCollectionMap.containsKey(collectionName)) {
+                SyncCiCollectionVo syncCiCollectionVo = syncMapper.getInitiativeSyncCiCollectionByCollectName(collectionName);
+                if (syncCiCollectionVo == null) {
+                    throw new InitiativeSyncCiCollectionNotFoundException(collectionName);
+                }
+                InitiativeSyncCiCollectionMap.put(collectionName, syncCiCollectionVo);
+            }
+            return InitiativeSyncCiCollectionMap.get(collectionName);
         }
 
         private Map<Long, AttrVo> getAttrMap(Long ciId) {
@@ -217,7 +251,7 @@ public class CiSyncManager {
                                         /*
                                         需要使用同一个集合下的映射关系，如果没有则不处理下一层数据，直接丢弃
                                          */
-                                    SyncCiCollectionVo subSyncCiCollectionVo = syncMapper.getSyncCiCollectionByCiIdAndCollectionName(attrVo.getTargetCiId(), syncCiCollectionVo.getCollectionName());
+                                    SyncCiCollectionVo subSyncCiCollectionVo = getSyncCiCollection(attrVo.getTargetCiId(), syncCiCollectionVo.getCollectionName());
                                     if (subSyncCiCollectionVo != null) {
                                         List<CiEntityTransactionVo> subCiEntityTransactionList = generateCiEntityTransaction(subData, subSyncCiCollectionVo, mappingVo.getField());
                                         if (CollectionUtils.isNotEmpty(subCiEntityTransactionList)) {
@@ -237,21 +271,45 @@ public class CiSyncManager {
                             }
                         }
                     } else if (mappingVo.getRelId() != null && relMap.containsKey(mappingVo.getRelId())) {
+                        /*
+                        由于模型关系的对端模型可能是父模型，而采集数据有可能是各个不同的子模型，因此需要做如下处理：
+                        1、通过jsonarray数据成员中的_OBJ_TYPE找到相应的主动采集配置模型（已经规定一个集合只能关联一个主动采集配置模型）
+                        2、如果找到模型，则检查找到的模型是否数据关系对端模型的子模型（子模型列表包括自己）
+                        3、如果2成立，则查找2中找到的模型是否配置了当前集合的映射
+                        4、使用3找到的映射继续下一步数据同步操作
+                        以上任意一步不满足或找不到，则这部分数据不再同步
+                         */
                         RelVo relVo = relMap.get(mappingVo.getRelId());
                         Long ciId = mappingVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiId() : relVo.getFromCiId();
-                        SyncCiCollectionVo subSyncCiCollectionVo = syncMapper.getSyncCiCollectionByCiIdAndCollectionName(ciId, syncCiCollectionVo.getCollectionName());
-                        if (subSyncCiCollectionVo != null && dataObj.get(mappingVo.getField(parentKey)) instanceof JSONArray) {
+                        //SyncCiCollectionVo subSyncCiCollectionVo = syncMapper.getSyncCiCollectionByCiIdAndCollectionName(ciId, syncCiCollectionVo.getCollectionName());
+                        if (/*subSyncCiCollectionVo != null && */dataObj.get(mappingVo.getField(parentKey)) instanceof JSONArray) {
                             JSONArray subDataList = dataObj.getJSONArray(mappingVo.getField(parentKey));
                             for (int i = 0; i < subDataList.size(); i++) {
                                 JSONObject subData = subDataList.getJSONObject(i);
                                    /*
                                      需要使用同一个集合下的映射关系，如果没有则不处理下一层数据，直接丢弃
                                      */
-                                List<CiEntityTransactionVo> subCiEntityTransactionList = generateCiEntityTransaction(subData, subSyncCiCollectionVo, mappingVo.getField());
-                                if (CollectionUtils.isNotEmpty(subCiEntityTransactionList)) {
-                                    for (CiEntityTransactionVo subCiEntityTransactionVo : subCiEntityTransactionList) {
-                                        ciEntityTransactionList.add(subCiEntityTransactionVo);
-                                        ciEntityTransactionVo.addRelEntityData(relVo, mappingVo.getDirection(), ciId, subCiEntityTransactionVo.getCiEntityId());
+                                String subCollectionName = subData.getString("_OBJ_TYPE");
+                                if (StringUtils.isNotBlank(subCollectionName)) {
+                                    SyncCiCollectionVo subInitiativeSyncCiCollection = getInitiativeSyncCiCollection(subCollectionName);
+                                    if (subInitiativeSyncCiCollection != null) {
+                                        Long subCiId = subInitiativeSyncCiCollection.getCiId();
+                                    /*
+                                    检查关系集合主动采集所关联的模型id是否属于当前关系子模型
+                                     */
+                                        List<CiVo> downCiList = getDownwardCiList(ciId);
+                                        if (downCiList.stream().anyMatch(d -> d.getId().equals(subCiId))) {
+                                            SyncCiCollectionVo subSyncCiCollectionVo = getSyncCiCollection(subCiId, syncCiCollectionVo.getCollectionName());
+                                            if (subSyncCiCollectionVo != null) {
+                                                List<CiEntityTransactionVo> subCiEntityTransactionList = generateCiEntityTransaction(subData, subSyncCiCollectionVo, mappingVo.getField());
+                                                if (CollectionUtils.isNotEmpty(subCiEntityTransactionList)) {
+                                                    for (CiEntityTransactionVo subCiEntityTransactionVo : subCiEntityTransactionList) {
+                                                        ciEntityTransactionList.add(subCiEntityTransactionVo);
+                                                        ciEntityTransactionVo.addRelEntityData(relVo, mappingVo.getDirection(), ciId, subCiEntityTransactionVo.getCiEntityId());
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -259,6 +317,8 @@ public class CiSyncManager {
                     }
                 }
                 ciEntityTransactionList.add(ciEntityTransactionVo);
+            } else {
+                throw new UniqueAttrNotCertifyException(syncCiCollectionVo, ciVo);
             }
             return ciEntityTransactionList;
         }
@@ -499,223 +559,6 @@ public class CiSyncManager {
             }
         }
         return JSONArray.parseArray(JSONArray.toJSONString(finalDataList));
-    }
-
-
-    public static void main(String[] argvs) {
-        JSONObject jsonObj = JSONObject.parseObject("" +
-                "{\n" +
-                "    \"VCENTER_IP\": \"192.168.0.48\",\n" +
-                "    \"IP_ADDRS\": [\n" +
-                "        {\n" +
-                "            \"NAME\": \"192.168.0.26\"\n" +
-                "        }\n" +
-                "    ],\n" +
-                "    \"SWAP_FREE\": 1979.281,\n" +
-                "    \"IS_VIRTUAL\": 1,\n" +
-                "    \"IPV6_ADDRS\": [\n" +
-                "        {\n" +
-                "            \"NAME\": \"fe80::250:56ff:fea1:ebd2\"\n" +
-                "        }\n" +
-                "    ],\n" +
-                "    \"MEM_BUFFERS\": 0.023,\n" +
-                "    \"MACHINE_ID\": \"99eebc4953394a6f8b5ae644778cbb1a\",\n" +
-                "    \"FIREWALL_ENABLE\": 0,\n" +
-                "    \"MAX_OPEN_FILES\": 1610558,\n" +
-                "    \"OS_TYPE\": \"Linux\",\n" +
-                "    \"IP\": \"192.168.0.26\",\n" +
-                "    \"MACHINE_UUID\": \"4c4c4544-004a-4610-8046-c4c04f463358\",\n" +
-                "    \"SYS_VENDOR\": \"VMware, Inc.\",\n" +
-                "    \"MGMT_IP\": \"192.168.0.26\",\n" +
-                "    \"PRODUCT_NAME\": \"VMware Virtual Platform\",\n" +
-                "    \"NAME\": \"0.26_demo_prd\",\n" +
-                "    \"MEM_AVAILABLE\": 5900.934,\n" +
-                "    \"NTP_SERVERS\": [\n" +
-                "        {\n" +
-                "            \"NAME\": \"202.112.10.36\"\n" +
-                "        }\n" +
-                "    ],\n" +
-                "    \"_lasttime\": 1629302873000,\n" +
-                "    \"DISKS\": [\n" +
-                "        {\n" +
-                "            \"TYPE\": \"local\",\n" +
-                "            \"UNIT\": \"GB\",\n" +
-                "            \"NAME\": \"/dev/sda\",\n" +
-                "            \"CAPACITY\": 53.7\n" +
-                "        },\n" +
-                "        {\n" +
-                "            \"NAME\": \"/dev/sdb\",\n" +
-                "            \"CAPACITY\": 107.4,\n" +
-                "            \"UNIT\": \"GB\",\n" +
-                "            \"TYPE\": \"local\"\n" +
-                "        },\n" +
-                "        {\n" +
-                "            \"TYPE\": \"lvm\",\n" +
-                "            \"UNIT\": \"GB\",\n" +
-                "            \"CAPACITY\": 157.8,\n" +
-                "            \"NAME\": \"/dev/mapper/cl-root\"\n" +
-                "        },\n" +
-                "        {\n" +
-                "            \"TYPE\": \"lvm\",\n" +
-                "            \"UNIT\": \"GB\",\n" +
-                "            \"NAME\": \"/dev/mapper/cl-swap\",\n" +
-                "            \"CAPACITY\": 2.147\n" +
-                "        }\n" +
-                "    ],\n" +
-                "    \"CPU_CORES\": 4,\n" +
-                "    \"_id\": {\n" +
-                "        \"date\": 1629171794000,\n" +
-                "        \"timestamp\": 1629171794\n" +
-                "    },\n" +
-                "    \"USERS\": [\n" +
-                "        {\n" +
-                "            \"HOME\": \"/root\",\n" +
-                "            \"NAME\": \"root\",\n" +
-                "            \"GID\": \"0\",\n" +
-                "            \"UID\": \"0\",\n" +
-                "            \"SHELL\": \"/bin/bash\"\n" +
-                "        },\n" +
-                "        {\n" +
-                "            \"HOME\": \"/\",\n" +
-                "            \"NAME\": \"systemd-bus-proxy\",\n" +
-                "            \"UID\": \"999\",\n" +
-                "            \"SHELL\": \"/sbin/nologin\",\n" +
-                "            \"GID\": \"998\"\n" +
-                "        },\n" +
-                "        {\n" +
-                "            \"NAME\": \"polkitd\",\n" +
-                "            \"HOME\": \"/\",\n" +
-                "            \"GID\": \"997\",\n" +
-                "            \"UID\": \"998\",\n" +
-                "            \"SHELL\": \"/sbin/nologin\"\n" +
-                "        },\n" +
-                "        {\n" +
-                "            \"NAME\": \"chrony\",\n" +
-                "            \"HOME\": \"/var/lib/chrony\",\n" +
-                "            \"UID\": \"997\",\n" +
-                "            \"SHELL\": \"/sbin/nologin\",\n" +
-                "            \"GID\": \"995\"\n" +
-                "        },\n" +
-                "        {\n" +
-                "            \"HOME\": \"/var/lib/nfs\",\n" +
-                "            \"NAME\": \"nfsnobody\",\n" +
-                "            \"GID\": \"65534\",\n" +
-                "            \"SHELL\": \"/sbin/nologin\",\n" +
-                "            \"UID\": \"65534\"\n" +
-                "        },\n" +
-                "        {\n" +
-                "            \"GID\": \"500\",\n" +
-                "            \"UID\": \"500\",\n" +
-                "            \"SHELL\": \"/bin/bash\",\n" +
-                "            \"HOME\": \"/home/app\",\n" +
-                "            \"NAME\": \"app\"\n" +
-                "        },\n" +
-                "        {\n" +
-                "            \"GID\": \"1000\",\n" +
-                "            \"UID\": \"1000\",\n" +
-                "            \"SHELL\": \"/sbin/nologin\",\n" +
-                "            \"HOME\": \"/home/nginx\",\n" +
-                "            \"NAME\": \"nginx\"\n" +
-                "        },\n" +
-                "        {\n" +
-                "            \"HOME\": \"/home/postgres\",\n" +
-                "            \"NAME\": \"postgres\",\n" +
-                "            \"GID\": \"1001\",\n" +
-                "            \"SHELL\": \"/bin/bash\",\n" +
-                "            \"UID\": \"1001\"\n" +
-                "        },\n" +
-                "        {\n" +
-                "            \"NAME\": \"deploydemo\",\n" +
-                "            \"HOME\": \"/home/deploydemo\",\n" +
-                "            \"GID\": \"1002\",\n" +
-                "            \"SHELL\": \"/bin/bash\",\n" +
-                "            \"UID\": \"1002\"\n" +
-                "        },\n" +
-                "        {\n" +
-                "            \"GID\": \"1003\",\n" +
-                "            \"SHELL\": \"/bin/bash\",\n" +
-                "            \"UID\": \"1003\",\n" +
-                "            \"HOME\": \"/home/wenhb\",\n" +
-                "            \"NAME\": \"wenhb\"\n" +
-                "        }\n" +
-                "    ],\n" +
-                "    \"MGMT_PORT\": 3939,\n" +
-                "    \"MEM_FREE\": 1734.059,\n" +
-                "    \"VM_ID\": \"vm-56\",\n" +
-                "    \"STATE\": \"poweredOn\",\n" +
-                "    \"NIC_BOND\": 0,\n" +
-                "    \"OBJECT_TYPE\": \"OS\",\n" +
-                "    \"NFS_MOUNTED\": 0,\n" +
-                "    \"CPU_COUNT\": 4,\n" +
-                "    \"NTP_ENABLE\": 1,\n" +
-                "    \"DNS_SERVERS\": [\n" +
-                "        {\n" +
-                "            \"NAME\": \"192.168.1.188\"\n" +
-                "        }\n" +
-                "    ],\n" +
-                "    \"NETWORKMANAGER_ENABLE\": 1,\n" +
-                "    \"OS_ID\": \"111\",\n" +
-                "    \"MACHINE_SN\": \"DJFFF3X\",\n" +
-                "    \"MEM_CACHED\": 4549.301,\n" +
-                "    \"OPENSSL_VERSION\": \"1.0.1e-fips\",\n" +
-                "    \"MEM_UNIT\": \"MB\",\n" +
-                "    \"SSH_VERSION\": \"OpenSSH_6.6.1p1\",\n" +
-                "    \"SWAP_TOTAL\": 2047.996,\n" +
-                "    \"CPU_ARCH\": \"x86_64\",\n" +
-                "    \"PRODUCT_UUID\": \"42213814-A3BC-2393-7625-FED86156C6C2\",\n" +
-                "    \"SELINUX_STATUS\": \"permissive\",\n" +
-                "    \"NET_INTERFACES\": [\n" +
-                "        {\n" +
-                "            \"NAME\": \"ens160\",\n" +
-                "            \"UNIT\": \"Mb/s\",\n" +
-                "            \"SPEED\": 10000,\n" +
-                "            \"LINK_STATE\": \"up\",\n" +
-                "            \"MAC\": \"00:50:56:a1:eb:d2\"\n" +
-                "        }\n" +
-                "    ],\n" +
-                "    \"HOSTNAME\": \"centos7base\",\n" +
-                "    \"VERSION\": \"CentOS Linux release 7.3.1611 (Core) \",\n" +
-                "    \"MOUNT_POINTS\": [\n" +
-                "        {\n" +
-                "            \"FS_TYPE\": \"xfs\",\n" +
-                "            \"MOUNT_POINT\": \"/\",\n" +
-                "            \"CAPACITY\": 146.979,\n" +
-                "            \"USED\": 114.278,\n" +
-                "            \"USED%\": 78,\n" +
-                "            \"UNIT\": \"GB\",\n" +
-                "            \"DEVICE\": \"/dev/mapper/cl-root\",\n" +
-                "            \"AVAILABLE\": 32.701\n" +
-                "        },\n" +
-                "        {\n" +
-                "            \"USED\": 0.136,\n" +
-                "            \"USED%\": 14,\n" +
-                "            \"CAPACITY\": 0.99,\n" +
-                "            \"FS_TYPE\": \"xfs\",\n" +
-                "            \"MOUNT_POINT\": \"/boot\",\n" +
-                "            \"AVAILABLE\": 0.855,\n" +
-                "            \"DEVICE\": \"/dev/sdb1\",\n" +
-                "            \"UNIT\": \"GB\"\n" +
-                "        }\n" +
-                "    ],\n" +
-                "    \"PK\": [\n" +
-                "        \"MGMT_IP\"\n" +
-                "    ],\n" +
-                "    \"KERNEL_VERSION\": \"3.10.0-514.el7.x86_64\",\n" +
-                "    \"_updatetime\": 1629302873000,\n" +
-                "    \"MEM_TOTAL\": 15886.957\n" +
-                "}"
-        );
-        Set<String> fieldList = new HashSet<>();
-        fieldList.add("STATE");
-        fieldList.add("NET_INTERFACES.NAME");
-        fieldList.add("NET_INTERFACES.MAC");
-        fieldList.add("MOUNT_POINTS.USED");
-        //fieldList.add("MEM_CACHED");
-        //fieldList.add("NET_INTERFACES");
-        //System.out.println(j);
-        JSONArray dataList = new JSONArray();
-        dataList.add(jsonObj);
-        System.out.println(flattenJson(dataList, fieldList, null).toString(SerializerFeature.DisableCircularReferenceDetect));
     }
 
     public static void doSync(JSONObject dataObj, List<SyncCiCollectionVo> syncCiCollectionList) {

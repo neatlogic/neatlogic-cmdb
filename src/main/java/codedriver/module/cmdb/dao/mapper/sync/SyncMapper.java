@@ -14,6 +14,10 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface SyncMapper {
+    SyncCiCollectionVo getInitiativeSyncCiCollectionByCollectName(String collectName);
+
+    int checkInitiativeSyncCiCollectionIsExists(SyncCiCollectionVo syncCiCollectionVo);
+
     List<SyncPolicyVo> getSyncPolicyByCiCollectionId(Long collectionId);
 
     List<SyncScheduleVo> getAllActivePolicySchedule();

@@ -92,6 +92,35 @@
     </select>
 
 
+    <select id="checkInitiativeSyncCiCollectionIsExists"
+            parameterType="codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo"
+            resultType="int">
+        SELECT count(1)
+        FROM cmdb_sync_ci_collection
+        where collection_name = #{collectionName}
+          and collect_mode = #{collectMode}
+          and id != #{id}
+    </select>
+
+    <select id="getInitiativeSyncCiCollectionByCollectName" parameterType="java.lang.String"
+            resultType="codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo">
+        SELECT a.id,
+               a.ci_id           AS ciId,
+               b.label           AS ciLabel,
+               b.name            AS ciName,
+               a.collection_name AS collectionName,
+               a.collect_mode    AS collectMode,
+               a.is_auto_commit  AS isAutoCommit,
+               a.fcu,
+               a.fcd,
+               a.lcu,
+               a.lcd
+        FROM cmdb_sync_ci_collection a
+                 JOIN cmdb_ci b ON a.ci_id = b.id
+        WHERE a.collection_name = #{value}
+          and a.collect_mode = 'initiative'
+    </select>
+
     <select id="searchSyncCiCollection" parameterType="codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo"
             resultType="codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo">
         SELECT
@@ -131,6 +160,9 @@
             </if>
             <if test="collectionName != null and collectionName != ''">
                 AND collection_name = #{collectionName}
+            </if>
+            <if test="collectMode != null and collectMode != ''">
+                AND collect_mode = #{collectMode}
             </if>
         </where>
     </sql>

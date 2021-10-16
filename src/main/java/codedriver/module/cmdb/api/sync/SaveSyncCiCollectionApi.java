@@ -7,6 +7,8 @@ package codedriver.module.cmdb.api.sync;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo;
+import codedriver.framework.cmdb.enums.sync.CollectMode;
+import codedriver.framework.cmdb.exception.sync.InitiativeSyncCiCollectionIsExistsException;
 import codedriver.framework.cmdb.exception.sync.SyncMappingNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.Description;
@@ -16,19 +18,24 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.SYNC_MODIFY;
+import codedriver.module.cmdb.dao.mapper.sync.SyncMapper;
 import codedriver.module.cmdb.service.sync.SyncService;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.common.utils.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 
 @Service
 @AuthAction(action = SYNC_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveSyncCiCollectionApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private SyncService syncService;
+
+    @Resource
+    private SyncMapper syncMapper;
 
 
     @Override
@@ -48,7 +55,7 @@ public class SaveSyncCiCollectionApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "id，存在代表修改，不存在代表新增"),
             @Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
-            @Param(name = "collectionName", type = ApiParamType.STRING, desc = "集合名称"),
+            @Param(name = "collectionName", isRequired = true, type = ApiParamType.STRING, desc = "集合名称"),
             @Param(name = "mapping", type = ApiParamType.JSONARRAY, desc = "映射内容")})
     @Description(desc = "保存配置项集合映射设置接口")
     @Override
@@ -57,6 +64,9 @@ public class SaveSyncCiCollectionApi extends PrivateApiComponentBase {
 
         if (CollectionUtils.isEmpty(syncCiCollectionVo.getMappingList())) {
             throw new SyncMappingNotFoundException();
+        }
+        if (syncCiCollectionVo.getCollectMode().equals(CollectMode.INITIATIVE.getValue()) && syncMapper.checkInitiativeSyncCiCollectionIsExists(syncCiCollectionVo) > 0) {
+            throw new InitiativeSyncCiCollectionIsExistsException(syncCiCollectionVo.getCollectionName());
         }
         syncService.saveSyncCiCollection(syncCiCollectionVo);
         return null;
