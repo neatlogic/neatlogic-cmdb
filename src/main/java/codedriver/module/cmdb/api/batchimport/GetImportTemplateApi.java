@@ -9,27 +9,28 @@ import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.ci.RelVo;
+import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.cmdb.enums.PropHandlerType;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import codedriver.module.cmdb.service.ci.CiService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.hssf.util.HSSFColor;
-import org.apache.poi.ss.usermodel.BorderStyle;
-import org.apache.poi.ss.usermodel.FillPatternType;
-import org.apache.poi.ss.usermodel.HorizontalAlignment;
-import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddressList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -37,6 +38,7 @@ import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
@@ -45,7 +47,10 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
 
     static Logger logger = LoggerFactory.getLogger(GetImportTemplateApi.class);
 
-    @Autowired
+    @Resource
+    private CiEntityMapper ciEntityMapper;
+
+    @Resource
     private CiService ciService;
 
 
@@ -162,6 +167,24 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
 
                         if (ciTypeAttrNameDesc.length() > 0) {
                             label = label + "[(" + ciTypeAttrNameDesc + ")]";
+                        }
+                        // 如果是下拉框，则设置数据有效性
+                        if (PropHandlerType.SELECT.getValue().equals(attr.getType())) {
+                            List<Long> idList = ciEntityMapper.getCiEntityIdByCiId(attr.getTargetCiId());
+                            if (CollectionUtils.isNotEmpty(idList)) {
+                                List<CiEntityVo> entityVoList = ciEntityMapper.getCiEntityBaseInfoByIdList(idList);
+                                if (CollectionUtils.isNotEmpty(entityVoList)) {
+                                    List<String> collect = entityVoList.stream().map(CiEntityVo::getName).collect(Collectors.toList());
+                                    String[] array = new String[collect.size()];
+                                    collect.toArray(array);
+                                    CellRangeAddressList addressList = new CellRangeAddressList(row.getRowNum() + 1, 99999, i, i);
+                                    DVConstraint dvConstraint = DVConstraint.createExplicitListConstraint(array);
+                                    DataValidation validation = new HSSFDataValidation(addressList, dvConstraint);
+                                    validation.setSuppressDropDownArrow(true);
+                                    validation.setShowErrorBox(true);
+                                    sheet.addValidationData(validation);
+                                }
+                            }
                         }
                         HSSFCell cell = row.createCell(i);
                         cell.setCellStyle(style);
