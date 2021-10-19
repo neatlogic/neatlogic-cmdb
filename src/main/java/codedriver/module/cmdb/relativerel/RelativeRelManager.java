@@ -57,7 +57,6 @@ public class RelativeRelManager {
                 relEntityMapper.deleteRelEntityBySourceRelEntityId(relEntityVo.getId());
                 rebuildRelEntityIndex(relativeRelList);
             });
-            Tr
         }
     }
 
