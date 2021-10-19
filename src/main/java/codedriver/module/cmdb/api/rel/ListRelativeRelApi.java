@@ -165,12 +165,8 @@ public class ListRelativeRelApi extends PrivateApiComponentBase {
         //List<RelVo> relList = relMapper.getRelByCiId(ciId);
         List<RelVo> relList = relMapper.getAllRelList();
 
-        CiVo fromCi = ciMapper.getCiById(fromCiId);
-        List<CiVo> fromUpwardCiList = ciMapper.getUpwardCiListByLR(fromCi.getLft(), fromCi.getRht());
-
-        CiVo toCi = ciMapper.getCiById(toCiId);
-        List<CiVo> toUpwardCiList = ciMapper.getUpwardCiListByLR(toCi.getLft(), toCi.getRht());
-
+        List<RelVo> ciRelList = relMapper.getRelByCiId(ciId);
+        //排除当前模型中的关系
         if (relId != null) {
             relList.removeIf(d -> d.getId().equals(relId));
         }
@@ -203,10 +199,9 @@ public class ListRelativeRelApi extends PrivateApiComponentBase {
                 fromPathSet.forEach(f -> {
                     toPathSet.forEach(t -> {
                         Optional<RelVo> op = relList.stream().filter(d -> d.getFromCiId().equals(f.getCiId()) && d.getToCiId().equals(t.getCiId())).findFirst();
-                        //排除当前模型中的关系
                         if (op.isPresent()) {
                             RelVo rel = op.get();
-                            if (fromUpwardCiList.stream().noneMatch(d -> d.getId().equals(rel.getFromCiId())) && toUpwardCiList.stream().noneMatch(d -> d.getId().equals(rel.getToCiId()))) {
+                            if (ciRelList.stream().noneMatch(d -> d.getId().equals(rel.getId()))) {
                                 RelativeRelVo relativeRelVo = new RelativeRelVo();
                                 relativeRelVo.setRelativeRelId(rel.getId());
                                 relativeRelVo.setRelativeRelLabel(rel.getFromLabel() + "->" + rel.getToLabel());
