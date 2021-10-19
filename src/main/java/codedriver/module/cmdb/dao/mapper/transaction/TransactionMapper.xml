@@ -258,11 +258,11 @@
         ci.label as ciLabel,
         a.`status`,
         create_user AS createUser,
-        (SELECT user_name FROM user u WHERE u.uuid = create_user) AS createUserName,
+        (SELECT user_name FROM `user` u WHERE u.uuid = create_user) AS createUserName,
         commit_user AS commitUser,
-        (SELECT user_name FROM user u WHERE u.uuid = commit_user) AS commitUserName,
+        (SELECT user_name FROM `user` u WHERE u.uuid = commit_user) AS commitUserName,
         recover_user AS recoverUser,
-        (SELECT user_name FROM user u WHERE u.uuid = recover_user) AS recoverUserName,
+        (SELECT user_name FROM `user` u WHERE u.uuid = recover_user) AS recoverUserName,
         input_from AS inputFrom,
         source,
         expire_time AS expireTime,
@@ -282,8 +282,8 @@
         FROM
         cmdb_transaction a
         JOIN cmdb_ci ci ON a.ci_id = ci.id
-        JOIN cmdb_cientity_transaction b ON a.id = b.`transaction_id`
-        LEFT JOIN cmdb_cientity c ON b.ci_entity_id = c.id
+        JOIN cmdb_cientity_transaction b ON a.id = b.`transaction_id` and b.ci_id = a.ci_id
+        LEFT JOIN cmdb_cientity c ON b.ci_entity_id = c.id and b.ci_id = c.ci_id
         LEFT JOIN cmdb_transactiongroup t on a.id = t.transaction_id
         <include refid="searchTransactionCondition"></include>
         ORDER BY b.id DESC
