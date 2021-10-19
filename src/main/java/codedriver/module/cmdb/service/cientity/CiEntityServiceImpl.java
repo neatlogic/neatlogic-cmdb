@@ -39,6 +39,7 @@ import codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper;
 import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import codedriver.module.cmdb.fulltextindex.enums.CmdbFullTextIndexType;
 import codedriver.module.cmdb.group.CiEntityGroupManager;
+import codedriver.module.cmdb.relativerel.RelativeRelManager;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.utils.CiEntityBuilder;
 import codedriver.module.cmdb.utils.RelUtil;
@@ -1371,6 +1372,9 @@ public class CiEntityServiceImpl implements CiEntityService {
                             //正式删除关系数据
                             relEntityMapper.deleteRelEntityByRelIdFromCiEntityIdToCiEntityId(item.getRelId(),
                                     item.getFromCiEntityId(), item.getToCiEntityId());
+                            //删除级联关系数据
+                            RelativeRelManager.delete(item);
+
                             ciEntityTransactionSet.add(ciEntityId);
                         }
                     }
@@ -1505,15 +1509,20 @@ public class CiEntityServiceImpl implements CiEntityService {
                     }
 
                     if (relEntityTransactionVo.getAction().equals(RelActionType.DELETE.getValue())) {
+                        RelEntityVo relEntityVo = relEntityMapper.getRelEntityByFromCiEntityIdAndToCiEntityIdAndRelId(relEntityTransactionVo.getFromCiEntityId(), relEntityTransactionVo.getToCiEntityId(), relEntityTransactionVo.getRelId());
                         relEntityMapper.deleteRelEntityByRelIdFromCiEntityIdToCiEntityId(relEntityTransactionVo.getRelId(),
                                 relEntityTransactionVo.getFromCiEntityId(), relEntityTransactionVo.getToCiEntityId());
                         rebuildRelEntityList.add(new RelEntityVo(relEntityTransactionVo));
+                        //删除级联关系
+                        RelativeRelManager.delete(relEntityVo);
                     } else if (relEntityTransactionVo.getAction().equals(RelActionType.INSERT.getValue())) {
                         RelEntityVo newRelEntityVo = new RelEntityVo(relEntityTransactionVo);
                         if (relEntityMapper.checkRelEntityIsExists(newRelEntityVo) == 0) {
                             relEntityMapper.insertRelEntity(newRelEntityVo);
                             rebuildRelEntityList.add(newRelEntityVo);
                         }
+                        //添加级联关系
+                        RelativeRelManager.insert(newRelEntityVo);
                     }
                 }
                 //所有事务信息补充完毕后才能写入，因为对端配置项有可能被引用多次

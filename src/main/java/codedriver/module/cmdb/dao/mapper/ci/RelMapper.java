@@ -13,12 +13,12 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface RelMapper {
-    RelVo getRelBaseInfoById(Long relId);
+
+    List<RelativeRelVo> getRelativeRelByRelId(Long relId);
 
     List<RelVo> getAllRelList();
 
     List<RelGroupVo> getRelGroupByCiId(Long ciId);
-
 
     int checkRelGroupNameIsExists(RelGroupVo relGroupVo);
 

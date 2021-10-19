@@ -8,6 +8,19 @@
 <mapper namespace="codedriver.module.cmdb.dao.mapper.ci.RelMapper">
     <cache-ref namespace="codedriver.module.cmdb.dao.mapper.ci.CiMapper"/>
     <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
+
+
+    <select id="getRelativeRelByRelId" parameterType="java.lang.Long"
+            resultType="codedriver.framework.cmdb.dto.ci.RelativeRelVo" useCache="false">
+        SELECT rel_id          AS relId,
+               from_path       AS fromPath,
+               to_path         AS toPath,
+               relative_rel_id AS relativeRelId,
+               path_hash       AS hash
+        from cmdb_relativerel
+        WHERE rel_id = #{value}
+    </select>
+
     <select id="getAllRelList" resultType="codedriver.framework.cmdb.dto.ci.RelVo" useCache="true">
         SELECT rel.`id`,
                rel.`type_id`                                                  AS typeId,
@@ -82,12 +95,6 @@
           AND id != #{id}
     </select>
 
-    <select id="getRelBaseInfoById" parameterType="java.lang.Long" resultType="codedriver.framework.cmdb.dto.ci.RelVo"
-            useCache="true">
-        select id
-        from cmdb_rel
-        WHERE id = #{value}
-    </select>
 
     <select id="getRelByIdList" resultType="codedriver.framework.cmdb.dto.ci.RelVo" useCache="true">
         SELECT a.`id`,
@@ -347,7 +354,7 @@
 
     <insert id="insertRelativeRel" parameterType="codedriver.framework.cmdb.dto.ci.RelativeRelVo">
         insert ignore into cmdb_relativerel (rel_id, relative_rel_id, from_path, to_path, path_hash)
-        values (#{relId}, #{relativeRelId}, #{fromPath}, #{toPath}, #{fullPath,typeHandler=Md5Handler})
+        values (#{relId}, #{relativeRelId}, #{fromPath}, #{toPath}, #{hash})
     </insert>
 
     <delete id="deleteRelById" parameterType="java.lang.Long">

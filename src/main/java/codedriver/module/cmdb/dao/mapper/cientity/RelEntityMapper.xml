@@ -6,6 +6,58 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper">
+
+    <select id="getCiEntityIdByRelativeRelPath" resultType="java.lang.Long">
+        select distinct
+        <choose>
+            <when test="relativeRelItemList[relativeRelItemList.size() - 1].direction == 'from'">
+                t${relativeRelItemList.size()}.from_cientity_id
+            </when>
+            <otherwise>
+                t${relativeRelItemList.size()}.to_cientity_id
+            </otherwise>
+        </choose>
+        from cmdb_relentity t0
+        <foreach collection="relativeRelItemList" item="item" index="idx">
+            join cmdb_relentity t${idx+1} on
+            <choose>
+                <when test="item.direction == 'from'">
+                    t${idx+1}.to_cientity_id =
+                    <choose>
+                        <when test="position=='from'">t${idx}.from_cientity_id</when>
+                        <otherwise>t${idx}.to_cientity_id</otherwise>
+                    </choose>
+                </when>
+                <otherwise>
+                    t${idx+1}.from_cientity_id =
+                    <choose>
+                        <when test="position=='from'">t${idx}.from_cientity_id</when>
+                        <otherwise>t${idx}.to_cientity_id</otherwise>
+                    </choose>
+                </otherwise>
+            </choose>
+            and t${idx+1}.rel_id = #{item.relId}
+        </foreach>
+        where
+        t0.id = #{relEntityId}
+    </select>
+
+    <select id="getRelentityBySourceRelEntityId" parameterType="java.lang.Long"
+            resultType="codedriver.framework.cmdb.dto.cientity.RelEntityVo">
+        SELECT a.id             as id,
+               rel_id           AS relId,
+               b.ci_id          AS fromCiId,
+               c.ci_id          AS toCiId,
+               from_cientity_id AS fromCiEntityId,
+               to_cientity_id   AS toCiEntityId,
+               b.name           AS fromCiEntityName,
+               c.name           AS toCiEntityName
+        FROM cmdb_relentity a
+                 JOIN cmdb_cientity b ON a.from_cientity_id = b.id
+                 JOIN cmdb_cientity c ON a.to_cientity_id = c.id
+        WHERE a.source_relentity_id = #{value}
+    </select>
+
     <select id="getExpiredRelEntity" parameterType="codedriver.framework.cmdb.dto.cientity.RelEntityVo"
             resultType="codedriver.framework.cmdb.dto.cientity.RelEntityVo">
         select
@@ -143,6 +195,23 @@
         <if test="limit != null">
             LIMIT #{limit}
         </if>
+    </select>
+
+    <select id="getRelEntityByFromCiEntityIdAndToCiEntityIdAndRelId"
+            resultType="codedriver.framework.cmdb.dto.cientity.RelEntityVo">
+        SELECT a.`id`,
+               a.`rel_id`           AS relId,
+               a.`from_cientity_id` AS fromCiEntityId,
+               a.`to_cientity_id`   AS toCiEntityId,
+               a.`transaction_id`   AS transactionId,
+               b.`name`             AS fromCiEntityName,
+               c.`name`             AS toCiEntityName
+        FROM `cmdb_relentity` a
+                 JOIN `cmdb_cientity` b ON a.`from_cientity_id` = b.id
+                 JOIN `cmdb_cientity` c ON a.`to_cientity_id` = c.id
+        WHERE a.from_cientity_id = #{fromCiEntityId}
+          AND a.to_cientity_id = #{toCiEntityId}
+          AND a.rel_id = #{relId}
     </select>
 
     <select id="getRelEntityByFromCiEntityIdAndRelId" resultType="codedriver.framework.cmdb.dto.cientity.RelEntityVo">
@@ -352,7 +421,9 @@
         `to_cientity_id`,
         `transaction_id`,
         `insert_time`,
-        `valid_day`
+        `valid_day`,
+        `source_relentity_id`,
+        `relativerel_hash`
         <if test="validDay != null and validDay > 0">
             ,`expired_time`
         </if>)
@@ -362,7 +433,9 @@
         #{toCiEntityId},
         #{transactionId},
         NOW(3),
-        #{validDay}
+        #{validDay},
+        #{sourceRelEntityId},
+        #{relativeRelHash}
         <if test="validDay != null and validDay > 0">
             ,DATE_ADD(NOW(3),INTERVAL #{validDay} DAY)
         </if>)
@@ -389,5 +462,11 @@
         WHERE rel_id = #{relId}
           AND from_cientity_id = #{fromCiEntityId}
           AND to_cientity_id = #{toCiEntityId}
+    </delete>
+
+    <delete id="deleteRelEntityBySourceRelEntityId" parameterType="java.lang.Long">
+        delete
+        from `cmdb_relentity`
+        where source_relentity_id = #{value}
     </delete>
 </mapper>

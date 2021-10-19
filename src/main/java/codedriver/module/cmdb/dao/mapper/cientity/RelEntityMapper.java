@@ -5,6 +5,7 @@
 
 package codedriver.module.cmdb.dao.mapper.cientity;
 
+import codedriver.framework.cmdb.dto.ci.RelativeRelItemVo;
 import codedriver.framework.cmdb.dto.cientity.RelEntityVo;
 import org.apache.ibatis.annotations.Param;
 
@@ -14,6 +15,10 @@ import java.util.List;
  *
  */
 public interface RelEntityMapper {
+    List<Long> getCiEntityIdByRelativeRelPath(@Param("relativeRelItemList") List<RelativeRelItemVo> relativeRelItemList, @Param("relEntityId") Long relEntityId, @Param("position") String position);
+
+    List<RelEntityVo> getRelentityBySourceRelEntityId(Long sourceRelEntityId);
+
     List<RelEntityVo> getExpiredRelEntity(RelEntityVo relEntityVo);
 
     RelEntityVo getRelEntityById(Long id);
@@ -38,6 +43,8 @@ public interface RelEntityMapper {
     List<RelEntityVo> getRelEntityByFromCiEntityIdAndRelId(@Param("fromCiEntityId") Long fromCiEntityId,
                                                            @Param("relId") Long relId, @Param("limit") Integer limit);
 
+    RelEntityVo getRelEntityByFromCiEntityIdAndToCiEntityIdAndRelId(@Param("fromCiEntityId") Long fromCiEntityId, @Param("toCiEntityId") Long toCiEntityId, @Param("relId") Long relId);
+
     List<RelEntityVo> getRelEntityByToCiEntityIdAndRelId(@Param("toCiEntityId") Long toCiEntityId,
                                                          @Param("relId") Long relId, @Param("limit") Integer limit);
 
@@ -54,6 +61,8 @@ public interface RelEntityMapper {
 
     void updateRelEntityToIndex(RelEntityVo relEntityVo);
 
+    void updateRelEntityValidDay(RelEntityVo relEntityVo);
+
     int insertRelEntity(RelEntityVo relEntityVo);
 
 
@@ -67,5 +76,6 @@ public interface RelEntityMapper {
                                                          @Param("fromCiEntityId") Long fromCiEntityId,
                                                          @Param("toCiEntityId") Long toCiEntityId);
 
-    void updateRelEntityValidDay(RelEntityVo relEntityVo);
+    void deleteRelEntityBySourceRelEntityId(Long sourceRelEntityId);
+
 }
