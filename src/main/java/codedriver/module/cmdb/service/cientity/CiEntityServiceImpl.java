@@ -1375,7 +1375,6 @@ public class CiEntityServiceImpl implements CiEntityService {
                         }
                     }
                 }
-
                 //重建关系序列
                 rebuildRelEntityIndex(relEntityList);
             }

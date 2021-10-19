@@ -410,7 +410,7 @@
 
 
     <delete id="deleteCiById" parameterType="java.lang.Long">
-        DELETE a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q
+        DELETE a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s
         FROM
             `cmdb_ci` a
             LEFT JOIN `cmdb_attr` b
@@ -430,6 +430,8 @@
             LEFT JOIN `cmdb_attrexpression_rebuild_audit` o ON a.id = o.`ci_id`
             LEFT JOIN `cmdb_ci_group` p ON a.id = p.`ci_id`
             LEFT JOIN `cmdb_import_audit` q ON a.id = q.`ci_id`
+            LEFT JOIN `cmdb_relativerel` r ON c.`id` = r.`rel_id`
+            LEFT JOIN `cmdb_relativerel` s ON d.`id` = s.`rel_id`
         WHERE a.id = #{value}
     </delete>
 

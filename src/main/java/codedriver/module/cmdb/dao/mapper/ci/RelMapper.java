@@ -7,6 +7,7 @@ package codedriver.module.cmdb.dao.mapper.ci;
 
 import codedriver.framework.cmdb.dto.ci.RelGroupVo;
 import codedriver.framework.cmdb.dto.ci.RelVo;
+import codedriver.framework.cmdb.dto.ci.RelativeRelVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -41,6 +42,10 @@ public interface RelMapper {
 
     int insertRelGroup(RelGroupVo relGroupVo);
 
+    void insertRelativeRel(RelativeRelVo relativeRelVo);
+
     int deleteRelById(Long relId);
+
+    void deleteRelativeRelByRelId(Long relId);
 
 }

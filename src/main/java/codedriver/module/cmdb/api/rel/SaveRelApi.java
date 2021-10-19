@@ -7,6 +7,7 @@ package codedriver.module.cmdb.api.rel;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.ci.RelVo;
+import codedriver.framework.cmdb.dto.ci.RelativeRelVo;
 import codedriver.framework.cmdb.exception.ci.CiAuthException;
 import codedriver.framework.cmdb.exception.ci.RelIsExistsException;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -20,11 +21,14 @@ import codedriver.module.cmdb.auth.label.CI_MODIFY;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @AuthAction(action = CI_MODIFY.class)
+@Transactional
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveRelApi extends PrivateApiComponentBase {
 
@@ -62,7 +66,8 @@ public class SaveRelApi extends PrivateApiComponentBase {
             @Param(name = "toGroupId", type = ApiParamType.LONG, desc = "目标分组id"),
             @Param(name = "toRule", type = ApiParamType.ENUM, rule = "O,N", isRequired = true, desc = "目标规则"),
             @Param(name = "toIsUnique", type = ApiParamType.INTEGER, isRequired = true, desc = "下游端是否唯一"),
-            @Param(name = "toIsRequired", type = ApiParamType.INTEGER, isRequired = true, desc = "下游端是否必填")})
+            @Param(name = "toIsRequired", type = ApiParamType.INTEGER, isRequired = true, desc = "下游端是否必填"),
+            @Param(name = "relativeRelList", type = ApiParamType.JSONARRAY, desc = "级联关系配置")})
     @Description(desc = "保存模型关系接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
@@ -84,6 +89,13 @@ public class SaveRelApi extends PrivateApiComponentBase {
             relMapper.insertRel(relVo);
         } else {
             relMapper.updateRel(relVo);
+            relMapper.deleteRelativeRelByRelId(relVo.getId());
+        }
+        if (CollectionUtils.isNotEmpty(relVo.getRelativeRelList())) {
+            for (RelativeRelVo relativeRelVo : relVo.getRelativeRelList()) {
+                relativeRelVo.setRelId(relVo.getId());
+                relMapper.insertRelativeRel(relativeRelVo);
+            }
         }
         return relVo.getId();
     }

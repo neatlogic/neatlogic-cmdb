@@ -9,25 +9,31 @@
     <cache-ref namespace="codedriver.module.cmdb.dao.mapper.ci.CiMapper"/>
     <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
     <select id="getAllRelList" resultType="codedriver.framework.cmdb.dto.ci.RelVo" useCache="true">
-        SELECT `id`,
-               `type_id`                                                  AS typeId,
-               (SELECT name FROM cmdb_reltype cr WHERE cr.id = `type_id`) AS typeText,
-               `input_type`                                               AS inputType,
-               `from_ci_id`                                               AS fromCiId,
-               `from_name`                                                AS fromName,
-               `from_label`                                               AS fromLabel,
-               `from_rule`                                                AS fromRule,
-               `from_group_id`                                            AS fromGroupId,
-               `from_is_unique`                                           AS fromIsUnique,
-               `from_is_required`                                         AS fromIsRequired,
-               `to_ci_id`                                                 AS toCiId,
-               `to_name`                                                  AS toName,
-               `to_label`                                                 AS toLabel,
-               `to_rule`                                                  AS toRule,
-               `to_group_id`                                              AS toGroupId,
-               `to_is_unique`                                             AS toIsUnique,
-               `to_is_required`                                           AS toIsRequired
-        FROM `cmdb_rel`
+        SELECT rel.`id`,
+               rel.`type_id`                                                  AS typeId,
+               (SELECT name FROM cmdb_reltype cr WHERE cr.id = rel.`type_id`) AS typeText,
+               rel.`input_type`                                               AS inputType,
+               rel.`from_ci_id`                                               AS fromCiId,
+               rel.`from_name`                                                AS fromName,
+               rel.`from_label`                                               AS fromLabel,
+               rel.`from_rule`                                                AS fromRule,
+               rel.`from_group_id`                                            AS fromGroupId,
+               rel.`from_is_unique`                                           AS fromIsUnique,
+               rel.`from_is_required`                                         AS fromIsRequired,
+               rel.`to_ci_id`                                                 AS toCiId,
+               rel.`to_name`                                                  AS toName,
+               rel.`to_label`                                                 AS toLabel,
+               rel.`to_rule`                                                  AS toRule,
+               rel.`to_group_id`                                              AS toGroupId,
+               rel.`to_is_unique`                                             AS toIsUnique,
+               rel.`to_is_required`                                           AS toIsRequired,
+               from_ci.`name`                                                 AS fromCiName,
+               from_ci.`label`                                                AS fromCiLabel,
+               to_ci.`name`                                                   AS toCiName,
+               to_ci.`label`                                                  AS toCiLabel
+        FROM `cmdb_rel` rel
+                 JOIN `cmdb_ci` from_ci ON rel.`from_ci_id` = from_ci.`id`
+                 JOIN `cmdb_ci` to_ci ON rel.`to_ci_id` = to_ci.`id`
     </select>
 
     <select id="checkRelGroupNameIsExists" parameterType="codedriver.framework.cmdb.dto.ci.RelGroupVo" resultType="int"
@@ -117,7 +123,39 @@
         <foreach collection="relIdList" item="item" open="(" close=")" separator=",">#{item}</foreach>
     </select>
 
-    <select id="getRelById" parameterType="java.lang.Long" resultType="codedriver.framework.cmdb.dto.ci.RelVo"
+    <resultMap id="relDetailMap" type="codedriver.framework.cmdb.dto.ci.RelVo">
+        <id property="id" column="id"/>
+        <result property="typeId" column="typeId"/>
+        <result property="typeText" column="typeText"/>
+        <result property="inputType" column="inputType"/>
+        <result property="fromCiId" column="fromCiId"/>
+        <result property="fromCiIcon" column="fromCiIcon"/>
+        <result property="fromCiName" column="fromCiName"/>
+        <result property="fromCiLabel" column="fromCiLabel"/>
+        <result property="fromName" column="fromName"/>
+        <result property="fromLabel" column="fromLabel"/>
+        <result property="fromRule" column="fromRule"/>
+        <result property="fromGroupId" column="fromGroupId"/>
+        <result property="fromIsUnique" column="fromIsUnique"/>
+        <result property="fromIsRequired" column="fromIsRequired"/>
+        <result property="fromGroupName" column="fromGroupName"/>
+        <result property="toCiId" column="toCiId"/>
+        <result property="toCiIcon" column="toCiIcon"/>
+        <result property="toCiName" column="toCiName"/>
+        <result property="toCiLabel" column="toCiLabel"/>
+        <result property="toName" column="toName"/>
+        <result property="toLabel" column="toLabel"/>
+        <result property="toRule" column="toRule"/>
+        <result property="toGroupId" column="toGroupId"/>
+        <result property="toIsUnique" column="toIsUnique"/>
+        <result property="toIsRequired" column="toIsRequired"/>
+        <result property="toGroupName" column="toGroupName"/>
+        <collection property="relativeRelList" ofType="codedriver.framework.cmdb.dto.ci.RelativeRelVo">
+            <id property="relativeRelId" column="relativeRelId"/>
+        </collection>
+    </resultMap>
+
+    <select id="getRelById" parameterType="java.lang.Long" resultMap="relDetailMap"
             useCache="true">
         SELECT a.`id`,
                a.`type_id`                                                       AS typeId,
@@ -144,10 +182,12 @@
                a.`to_group_id`                                                   AS toGroupId,
                a.`to_is_unique`                                                  AS toIsUnique,
                a.`to_is_required`                                                AS toIsRequired,
-               (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`to_group_id`)   AS toGroupName
+               (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`to_group_id`)   AS toGroupName,
+               relativerel.relative_rel_id                                       as relativeRelId
         FROM `cmdb_rel` a
                  JOIN cmdb_ci f ON a.from_ci_id = f.id
                  JOIN cmdb_ci t ON a.to_ci_id = t.id
+                 LEFT JOIN `cmdb_relativerel` relativerel ON a.id = relativerel.rel_id
         WHERE a.id = #{value}
     </select>
 
@@ -305,10 +345,22 @@
                 #{toIsRequired})
     </insert>
 
+    <insert id="insertRelativeRel" parameterType="codedriver.framework.cmdb.dto.ci.RelativeRelVo">
+        insert ignore into cmdb_relativerel (rel_id, relative_rel_id, from_path, to_path, path_hash)
+        values (#{relId}, #{relativeRelId}, #{fromPath}, #{toPath}, #{fullPath,typeHandler=Md5Handler})
+    </insert>
+
     <delete id="deleteRelById" parameterType="java.lang.Long">
-        DELETE
-        FROM `cmdb_rel`
+        DELETE a,b
+        FROM `cmdb_rel` a
+                 LEFT JOIN `cmdb_relativerel` b ON a.id = b.rel_id
         WHERE `id` = #{value}
+    </delete>
+
+    <delete id="deleteRelativeRelByRelId" parameterType="java.lang.Long">
+        DELETE
+        from cmdb_relativerel
+        WHERE rel_id = #{value}
     </delete>
 
 </mapper>
