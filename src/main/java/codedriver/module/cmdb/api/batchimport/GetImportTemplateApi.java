@@ -180,7 +180,7 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
                                     CellRangeAddressList addressList = new CellRangeAddressList(row.getRowNum() + 1, 99999, i, i);
                                     DVConstraint dvConstraint = DVConstraint.createExplicitListConstraint(array);
                                     DataValidation validation = new HSSFDataValidation(addressList, dvConstraint);
-                                    validation.setSuppressDropDownArrow(true);
+                                    validation.setSuppressDropDownArrow(false);// false时显示下拉箭头(office2007)
                                     validation.setShowErrorBox(true);
                                     sheet.addValidationData(validation);
                                 }
