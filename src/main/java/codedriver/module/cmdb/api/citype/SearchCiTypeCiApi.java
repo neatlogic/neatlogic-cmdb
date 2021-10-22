@@ -57,7 +57,12 @@ public class SearchCiTypeCiApi extends PrivateApiComponentBase {
     @Description(desc = "获取模型类型和模型列表接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        List<CiTypeVo> ciTypeList = ciMapper.searchCiTypeCi(JSONObject.toJavaObject(jsonObj, CiVo.class));
+        CiVo pCiVo = new CiVo();
+        pCiVo.setKeyword(jsonObj.getString("keyword"));
+        pCiVo.setTypeId(jsonObj.getLong("typeId"));
+        pCiVo.setIsAbstract(jsonObj.getInteger("isAbstract"));
+        pCiVo.setIsVirtual(jsonObj.getInteger("isVirtual"));
+        List<CiTypeVo> ciTypeList = ciMapper.searchCiTypeCi(pCiVo);
         //如果没有管理权限则需要检查每个模型的权限
         if (!AuthActionChecker.check("CI_MODIFY", "CIENTITY_MODIFY")) {
             for (CiTypeVo ciType : ciTypeList) {
