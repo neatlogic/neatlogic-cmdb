@@ -613,7 +613,9 @@ public class CiEntityServiceImpl implements CiEntityService {
                 if (attrVo.getIsRequired().equals(1)) {
                     if (/*ciEntityTransactionVo.getAction().equals(TransactionActionType.INSERT.getValue()) ||*/ ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
                         if (attrEntityTransactionVo == null) {
-                            throw new AttrEntityValueEmptyException(attrVo.getLabel());
+                            if (attrVo.getAllowEdit() == null || attrVo.getAllowEdit().equals(1)) {
+                                throw new AttrEntityValueEmptyException(attrVo.getLabel());
+                            }
                         } else if (attrEntityTransactionVo.getSaveMode().equals(SaveModeType.REPLACE.getValue())
                                 && CollectionUtils.isEmpty(attrEntityTransactionVo.getValueList())) {
                             throw new AttrEntityValueEmptyException(attrVo.getLabel());
@@ -712,7 +714,9 @@ public class CiEntityServiceImpl implements CiEntityService {
                     || */ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
                 if (CollectionUtils.isEmpty(fromRelEntityTransactionList)) {
                     if (isFrom && relVo.getToIsRequired().equals(1)) {
-                        throw new RelEntityNotFoundException(relVo.getToLabel());
+                        if (relVo.getAllowEdit() == null || relVo.getAllowEdit().equals(1)) {
+                            throw new RelEntityNotFoundException(relVo.getToLabel());
+                        }
                     }
                 } else {
                     if (fromRelEntityTransactionList.size() > 1) {
@@ -738,7 +742,9 @@ public class CiEntityServiceImpl implements CiEntityService {
                 // 全局模式下，不存在关系信息代表删除，需要校验必填规则
                 if (CollectionUtils.isEmpty(toRelEntityTransactionList)) {
                     if (isTo && relVo.getFromIsRequired().equals(1)) {
-                        throw new RelEntityNotFoundException(relVo.getFromLabel());
+                        if (relVo.getAllowEdit() == null || relVo.getAllowEdit().equals(1)) {
+                            throw new RelEntityNotFoundException(relVo.getFromLabel());
+                        }
                     }
                 } else {
                     if (toRelEntityTransactionList.size() > 1) {
@@ -984,7 +990,9 @@ public class CiEntityServiceImpl implements CiEntityService {
                         /* 属性必填校验： */
                         if (attrVo.getIsRequired().equals(1)) {
                             if (attrEntityTransactionVo == null || CollectionUtils.isEmpty(attrEntityTransactionVo.getValueList())) {
-                                throw new AttrEntityValueEmptyException(attrVo.getLabel());
+                                if (attrVo.getAllowEdit() == null || attrVo.getAllowEdit().equals(1)) {
+                                    throw new AttrEntityValueEmptyException(attrVo.getLabel());
+                                }
                             }
                         }
                         /* 检查属性是否唯一： */
@@ -1053,7 +1061,9 @@ public class CiEntityServiceImpl implements CiEntityService {
 
                     if (CollectionUtils.isEmpty(fromRelEntityTransactionList)) {
                         if (isFrom && relVo.getToIsRequired().equals(1)) {
-                            throw new RelEntityNotFoundException(relVo.getToLabel());
+                            if (relVo.getAllowEdit() == null || relVo.getAllowEdit().equals(1)) {
+                                throw new RelEntityNotFoundException(relVo.getToLabel());
+                            }
                         }
                     } else if (fromRelEntityTransactionList.size() > 1) {
                         // 检查关系是否允许重复
@@ -1064,7 +1074,9 @@ public class CiEntityServiceImpl implements CiEntityService {
 
                     if (CollectionUtils.isEmpty(toRelEntityTransactionList)) {
                         if (isTo && relVo.getFromIsRequired().equals(1)) {
-                            throw new RelEntityNotFoundException(relVo.getFromLabel());
+                            if (relVo.getAllowEdit() == null || relVo.getAllowEdit().equals(1)) {
+                                throw new RelEntityNotFoundException(relVo.getFromLabel());
+                            }
                         }
                     } else if (toRelEntityTransactionList.size() > 1) {
                         // 检查关系是否允许重复

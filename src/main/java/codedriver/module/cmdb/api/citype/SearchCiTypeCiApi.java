@@ -51,15 +51,15 @@ public class SearchCiTypeCiApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字"),
             @Param(name = "typeId", type = ApiParamType.LONG, desc = "类型id"),
+            @Param(name = "typeIdList", type = ApiParamType.JSONARRAY, desc = "类型id列表"),
             @Param(name = "isVirtual", type = ApiParamType.INTEGER, desc = "是否虚拟模型，0：否，1：是"),
             @Param(name = "isAbstract", type = ApiParamType.INTEGER, desc = "是否抽象模型，0：否，1：是")})
     @Output({@Param(explode = CiTypeVo[].class)})
     @Description(desc = "获取模型类型和模型列表接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        CiVo pCiVo = new CiVo();
-        pCiVo.setKeyword(jsonObj.getString("keyword"));
-        pCiVo.setTypeId(jsonObj.getLong("typeId"));
+        CiVo pCiVo = JSONObject.toJavaObject(jsonObj, CiVo.class);
+        //以下两个属性有默认值，所以需要重新设置一遍
         pCiVo.setIsAbstract(jsonObj.getInteger("isAbstract"));
         pCiVo.setIsVirtual(jsonObj.getInteger("isVirtual"));
         List<CiTypeVo> ciTypeList = ciMapper.searchCiTypeCi(pCiVo);

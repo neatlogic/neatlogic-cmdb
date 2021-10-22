@@ -60,7 +60,9 @@ public class GetCiRelListApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
             @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "是否需要操作列，如果需要则根据用户权限返回合适的操作列"),
-            @Param(name = "showType", type = ApiParamType.ENUM, rule = "all,list,detail", desc = "显示类型")})
+            @Param(name = "allowEdit", type = ApiParamType.ENUM, rule = "1,0", desc = "是否允许编辑"),
+            @Param(name = "showType", type = ApiParamType.ENUM, rule = "all,list,detail", desc = "显示类型")
+    })
     @Output({@Param(explode = RelVo[].class)})
     @Description(desc = "获取模型关系列表接口")
     @Override
@@ -68,6 +70,7 @@ public class GetCiRelListApi extends PrivateApiComponentBase {
         Long ciId = jsonObj.getLong("ciId");
         String showType = jsonObj.getString("showType");
         boolean needAction = jsonObj.getBooleanValue("needAction");
+        Integer allowEdit = jsonObj.getInteger("allowEdit");
         List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciId));
         if (StringUtils.isNotBlank(showType)) {
             CiViewVo ciViewVo = new CiViewVo();
@@ -82,6 +85,10 @@ public class GetCiRelListApi extends PrivateApiComponentBase {
                 }
             }
             relList.removeIf(rel -> !relSet.contains(rel.getId()));
+        }
+        if (allowEdit != null) {
+            relList.removeIf(rel -> (allowEdit.equals(1) && (rel.getAllowEdit() != null && rel.getAllowEdit().equals(0)))
+                    || (allowEdit.equals(0) && (rel.getAllowEdit() == null || rel.getAllowEdit().equals(1))));
         }
         Map<Long, CiVo> checkCiMap = new HashMap<>();
         if (needAction) {

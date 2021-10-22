@@ -54,6 +54,7 @@ public class GetCiAttrListApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
             @Param(name = "showType", type = ApiParamType.ENUM, rule = "all,list,detail", desc = "显示类型"),
+            @Param(name = "allowEdit", type = ApiParamType.ENUM, rule = "1,0", desc = "是否允许编辑"),
             @Param(name = "isSimple", type = ApiParamType.BOOLEAN, rule = "true,false", desc = "是否简单属性")})
     @Output({@Param(name = "Return", explode = AttrVo[].class)})
     @Description(desc = "获取模型属性列表接口")
@@ -62,6 +63,7 @@ public class GetCiAttrListApi extends PrivateApiComponentBase {
         Long ciId = jsonObj.getLong("ciId");
         String showType = jsonObj.getString("showType");
         Boolean isSimple = jsonObj.getBoolean("isSimple");
+        Integer allowEdit = jsonObj.getInteger("allowEdit");
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciId);
         if (StringUtils.isNotBlank(showType)) {
             CiViewVo ciViewVo = new CiViewVo();
@@ -76,6 +78,10 @@ public class GetCiAttrListApi extends PrivateApiComponentBase {
                 }
             }
             attrList.removeIf(attr -> !attrSet.contains(attr.getId()));
+        }
+        if (allowEdit != null) {
+            attrList.removeIf(attr -> (allowEdit.equals(1) && (attr.getAllowEdit() != null && attr.getAllowEdit().equals(0)))
+                    || (allowEdit.equals(0) && (attr.getAllowEdit() == null || attr.getAllowEdit().equals(1))));
         }
         if (isSimple != null) {
             attrList.removeIf(attr -> AttrValueHandlerFactory.getHandler(attr.getType()).isSimple() != isSimple);

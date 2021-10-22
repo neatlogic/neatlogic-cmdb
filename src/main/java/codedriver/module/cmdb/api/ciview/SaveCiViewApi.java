@@ -52,7 +52,7 @@ public class SaveCiViewApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"), @Param(
             name = "ciViewList", type = ApiParamType.JSONARRAY, isRequired = true,
-            desc = "显示设置数据，格式{\"itemId\":属性或关系id,\"itemName\":\"属性或关系名称\",\"showType\":\"all|list|detail|none\",\"type\":\"attr|rel\"}")})
+            desc = "显示设置数据，格式{\"itemId\":属性或关系id,\"itemName\":\"属性或关系名称\",\"showType\":\"all|list|detail|none\",\"allowEdit\":1,\"type\":\"attr|rel\"}")})
     @Description(desc = "保存模型显示设置接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {

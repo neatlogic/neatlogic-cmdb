@@ -202,6 +202,7 @@
         attr.`is_private` AS isPrivate,
         if(ci.id = #{value}, 0, 1) AS `isExtended`,
         IFNULL(cview.sort, 999999) AS `sort`,
+        cview.`allow_edit` AS allowEdit,
         IF(ccu.attr_id is null, 0, 1) AS isCiUnique
         FROM
         `cmdb_ci` ci

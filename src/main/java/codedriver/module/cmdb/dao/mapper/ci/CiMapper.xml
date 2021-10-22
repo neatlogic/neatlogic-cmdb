@@ -244,6 +244,10 @@
             <if test="keyword != null and keyword !=''">
                 AND (b.name LIKE CONCAT('%', #{keyword}, '%') OR b.label LIKE CONCAT('%', #{keyword}, '%'))
             </if>
+            <if test="typeIdList != null and typeIdList.size() > 0">
+                AND a.id IN
+                <foreach collection="typeIdList" item="item" open="(" close=")" separator=",">#{item}</foreach>
+            </if>
             <if test="typeId != null">
                 AND a.id = #{typeId}
             </if>

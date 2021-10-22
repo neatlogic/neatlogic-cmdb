@@ -6,11 +6,11 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.ci.CiViewMapper">
-    <!-- <cache-ref namespace="codedriver.module.cmdb.dao.mapper.ci.CiMapper"/>
-     <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>-->
+    <cache-ref namespace="codedriver.module.cmdb.dao.mapper.ci.CiMapper"/>
+    <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
 
     <select id="getCiViewConstByCiId" parameterType="java.lang.Long"
-            resultType="codedriver.framework.cmdb.dto.view.ViewConstVo">
+            resultType="codedriver.framework.cmdb.dto.view.ViewConstVo" useCache="false">
         SELECT id
              , name
              , label
@@ -21,23 +21,22 @@
     </select>
 
     <select id="getCiViewByCiId" parameterType="codedriver.framework.cmdb.dto.ci.CiViewVo"
-            resultType="codedriver.framework.cmdb.dto.ci.CiViewVo">
+            resultType="codedriver.framework.cmdb.dto.ci.CiViewVo" useCache="false">
         SELECT * FROM (
         SELECT
         attr.id AS itemId,
         attr.`name` AS itemName,
         attr.`label` AS itemLabel,
         'attr' AS type,
-        show_type AS showType,
+        v.show_type AS showType,
+        v.allow_edit AS allowEdit,
         IFNULL(v.sort, 999999) AS sort,
         if(ci.id = #{ciId}, 0, 1) AS isExtended,
         '' AS uniqueKey
         FROM
-        cmdb_ci ci JOIN
-        cmdb_attr attr ON ci.id = attr.ci_id
-        LEFT JOIN cmdb_view v
-        ON attr.`id` = v.`item_id` AND v.`ci_id` = #{ciId}
-        AND v.`type` = 'attr'
+        cmdb_ci ci
+        JOIN cmdb_attr attr ON ci.id = attr.ci_id
+        LEFT JOIN cmdb_view v ON attr.`id` = v.`item_id` AND v.`ci_id` = #{ciId} AND v.`type` = 'attr'
         WHERE
         ci.lft &lt;= ( SELECT lft FROM `cmdb_ci` WHERE id = #{ciId} )
         AND ci.rht &gt;= ( SELECT rht FROM `cmdb_ci` WHERE id = #{ciId} )
@@ -47,17 +46,15 @@
         rel.to_name AS itemName,
         rel.to_label AS itemLabel,<!-- 当前模型作为上游时需要显示下游目标名称 -->
         'relfrom' AS type,
-        show_type AS showType,
+        v.show_type AS showType,
+        v.allow_edit AS allowEdit,
         IFNULL(v.sort, 999999) AS sort,
         if(ci.id = #{ciId}, 0, 1) AS isExtended,
         CONCAT(rel.from_ci_id,'-',rel.to_ci_id) AS uniqueKey
         FROM
         cmdb_rel rel
         JOIN cmdb_ci ci ON rel.from_ci_id = ci.id
-        LEFT JOIN cmdb_view v
-        ON rel.id = v.`item_id`
-        AND v.`type` = 'relfrom'
-        AND v.ci_id = #{ciId}
+        LEFT JOIN cmdb_view v ON rel.id = v.`item_id` AND v.`type` = 'relfrom' AND v.ci_id = #{ciId}
         WHERE ci.lft &lt;= ( SELECT lft FROM `cmdb_ci` WHERE id = #{ciId} )
         AND ci.rht &gt;= ( SELECT rht FROM `cmdb_ci` WHERE id = #{ciId} )
         UNION
@@ -67,6 +64,7 @@
         rel.from_label AS itemLabel,<!-- 当前模型作为下游时需要显示上游目标名称 -->
         'relto' AS type,
         v.show_type AS showType,
+        v.allow_edit AS allowEdit,
         IFNULL(v.sort, 999999) AS sort,
         if(ci.id = #{ciId}, 0, 1) AS isExtended,
         CONCAT(rel.from_ci_id,'-',rel.to_ci_id) AS uniqueKey
@@ -86,14 +84,12 @@
         const.label AS itemLabel,
         'const' AS type,
         v.show_type AS showType,
+        v.allow_edit AS allowEdit,
         IFNULL(v.sort, 999999) as sort,
         0 AS isExtended,
         '' AS uniqueKey
         FROM cmdb_viewconst const
-        LEFT JOIN cmdb_view v
-        ON const.id = v.`item_id`
-        AND v.`type` = 'const'
-        AND v.ci_id = #{ciId}
+        LEFT JOIN cmdb_view v ON const.id = v.`item_id` AND v.`type` = 'const' AND v.ci_id = #{ciId}
         ) t
         <where>
             <if test="showTypeList != null and showTypeList.size() > 0">
@@ -114,12 +110,14 @@
                                  `item_id`,
                                  `type`,
                                  `sort`,
-                                 `show_type`)
+                                 `show_type`,
+                                 `allow_edit`)
         VALUES (#{ciId},
                 #{itemId},
                 #{type},
                 #{sort},
-                #{showType})
+                #{showType},
+                #{allowEdit})
     </insert>
 
     <delete id="deleteCiViewByCiId" parameterType="java.lang.Long">
