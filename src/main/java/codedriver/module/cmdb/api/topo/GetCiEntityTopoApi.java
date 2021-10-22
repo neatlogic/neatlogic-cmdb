@@ -223,9 +223,9 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                 for (RelEntityVo relEntityVo : relEntitySet) {
                     if (ciEntityNodeSet.contains("CiEntity_" + relEntityVo.getFromCiId() + "_" + relEntityVo.getFromCiEntityId())
                             && ciEntityNodeSet.contains("CiEntity_" + relEntityVo.getToCiId() + "_" + relEntityVo.getToCiEntityId())) {
-                        Link.Builder lb = new Link.Builder(
-                                "CiEntity_" + relEntityVo.getFromCiId() + "_" + relEntityVo.getFromCiEntityId(),
-                                "CiEntity_" + relEntityVo.getToCiId() + "_" + relEntityVo.getToCiEntityId());
+                                   Link.Builder lb = new Link.Builder(
+                                           "CiEntity_" + relEntityVo.getFromCiId() + "_" + relEntityVo.getFromCiEntityId(),
+                                           "CiEntity_" + relEntityVo.getToCiId() + "_" + relEntityVo.getToCiEntityId());
                         lb.withLabel(relEntityVo.getRelTypeName());
                         lb.setFontSize(9);
                         gb.addLink(lb.build());

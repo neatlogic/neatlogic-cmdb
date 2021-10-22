@@ -50,7 +50,9 @@ public class SearchCiTypeCiApi extends PrivateApiComponentBase {
     }
 
     @Input({@Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字"),
-            @Param(name = "typeId", type = ApiParamType.LONG, desc = "类型id")})
+            @Param(name = "typeId", type = ApiParamType.LONG, desc = "类型id"),
+            @Param(name = "isVirtual", type = ApiParamType.INTEGER, desc = "是否虚拟模型，0：否，1：是"),
+            @Param(name = "isAbstract", type = ApiParamType.INTEGER, desc = "是否抽象模型，0：否，1：是")})
     @Output({@Param(explode = CiTypeVo[].class)})
     @Description(desc = "获取模型类型和模型列表接口")
     @Override

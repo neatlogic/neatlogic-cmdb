@@ -247,6 +247,12 @@
             <if test="typeId != null">
                 AND a.id = #{typeId}
             </if>
+            <if test="isVirtual != null">
+                AND b.`is_virtual` = #{isVirtual}
+            </if>
+            <if test="isAbstract != null">
+                AND b.`is_abstract` = #{isAbstract}
+            </if>
         </where>
         ORDER BY a.sort,b.lft
     </select>
