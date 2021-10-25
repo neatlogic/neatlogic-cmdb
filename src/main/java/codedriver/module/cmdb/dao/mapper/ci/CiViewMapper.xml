@@ -83,7 +83,7 @@
         const.name AS itemName,
         const.label AS itemLabel,
         'const' AS type,
-        v.show_type AS showType,
+        IFNULL(v.show_type,'none') AS showType,
         v.allow_edit AS allowEdit,
         IFNULL(v.sort, 999999) as sort,
         0 AS isExtended,

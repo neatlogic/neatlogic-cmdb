@@ -161,7 +161,7 @@ public class GetCiTopoApi extends PrivateApiComponentBase {
                     if (ciVo.getParentCiId() != null) {
                         if (ciIdSet.contains(ciVo.getParentCiId()) && ciIdSet.contains(ciVo.getId())) {
                             Link.Builder linkBuilder = new Link.Builder("Ci_" + ciVo.getId(), "Ci_" + ciVo.getParentCiId());
-                            linkBuilder.setStyle("dashed");
+                            linkBuilder.setStyle("dotted");
                             gb.addLink(linkBuilder.build());
                         }
                     }
@@ -174,6 +174,9 @@ public class GetCiTopoApi extends PrivateApiComponentBase {
                     Link.Builder lb = new Link.Builder("Ci_" + relVo.getFromCiId(), "Ci_" + relVo.getToCiId());
                     lb.withLabel(relVo.getTypeText());
                     lb.setFontSize(9);
+                    if (relVo.getIsShowInTopo().equals(0)) {
+                        lb.setStyle("dashed");
+                    }
                     gb.addLink(lb.build());
                 }
             }

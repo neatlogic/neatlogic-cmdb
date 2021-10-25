@@ -44,8 +44,11 @@ public class SaveRelTypeListApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "关系类型id，不提供代表添加"), @Param(name = "name",
-        type = ApiParamType.STRING, maxLength = 10, isRequired = true, xss = true, desc = "关系类型名称")})
+    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "关系类型id，不提供代表添加"),
+            @Param(name = "name", type = ApiParamType.STRING, maxLength = 10, isRequired = true, xss = true, desc = "关系类型名称"),
+            @Param(name = "isShowInTopo", type = ApiParamType.INTEGER, rule = "1,0", desc = "是否在拓扑图中展示"),
+            @Param(name = "description", type = ApiParamType.STRING, maxLength = 500, xss = true, desc = "关系类型说明")
+    })
     @Description(desc = "保存模型关系类型接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {

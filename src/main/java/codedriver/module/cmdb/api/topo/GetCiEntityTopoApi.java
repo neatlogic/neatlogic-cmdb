@@ -7,6 +7,7 @@ package codedriver.module.cmdb.api.topo;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.ci.CiTypeVo;
+import codedriver.framework.cmdb.dto.ci.RelTypeVo;
 import codedriver.framework.cmdb.dto.cientity.AttrEntityVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.cientity.RelEntityVo;
@@ -140,21 +141,25 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                                 ciTypeIdSet.add(ciEntityVo.getTypeId());
                             }
                             for (RelEntityVo relEntityVo : ciEntityVo.getRelEntityList()) {
-                                //记录所有存在数据的关系
-                                containRelIdSet.add(relEntityVo.getRelId());
-                                if (CollectionUtils.isEmpty(disableRelIdList) || disableRelIdList.stream().noneMatch(r -> r.equals(relEntityVo.getRelId()))) {
-                                    relEntitySet.add(relEntityVo);
-                                    // 检查关系中的对端配置项是否已经存在，不存在可进入下一次搜索
-                                    if (relEntityVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
-                                        if (!tmpCiCiEntityIdMap.containsKey(relEntityVo.getToCiId())) {
-                                            tmpCiCiEntityIdMap.put(relEntityVo.getToCiId(), new ArrayList<>());
+                                RelTypeVo relTypeVo = relMapper.getRelTypeByRelId(relEntityVo.getRelId());
+                                //判断关系类型是否展示topo
+                                if (relTypeVo != null && relTypeVo.getIsShowInTopo().equals(1)) {
+                                    //记录所有存在数据的关系
+                                    containRelIdSet.add(relEntityVo.getRelId());
+                                    if (CollectionUtils.isEmpty(disableRelIdList) || disableRelIdList.stream().noneMatch(r -> r.equals(relEntityVo.getRelId()))) {
+                                        relEntitySet.add(relEntityVo);
+                                        // 检查关系中的对端配置项是否已经存在，不存在可进入下一次搜索
+                                        if (relEntityVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
+                                            if (!tmpCiCiEntityIdMap.containsKey(relEntityVo.getToCiId())) {
+                                                tmpCiCiEntityIdMap.put(relEntityVo.getToCiId(), new ArrayList<>());
+                                            }
+                                            tmpCiCiEntityIdMap.get(relEntityVo.getToCiId()).add(relEntityVo.getToCiEntityId());
+                                        } else if (relEntityVo.getDirection().equals(RelDirectionType.TO.getValue())) {
+                                            if (!tmpCiCiEntityIdMap.containsKey(relEntityVo.getFromCiId())) {
+                                                tmpCiCiEntityIdMap.put(relEntityVo.getFromCiId(), new ArrayList<>());
+                                            }
+                                            tmpCiCiEntityIdMap.get(relEntityVo.getFromCiId()).add(relEntityVo.getFromCiEntityId());
                                         }
-                                        tmpCiCiEntityIdMap.get(relEntityVo.getToCiId()).add(relEntityVo.getToCiEntityId());
-                                    } else if (relEntityVo.getDirection().equals(RelDirectionType.TO.getValue())) {
-                                        if (!tmpCiCiEntityIdMap.containsKey(relEntityVo.getFromCiId())) {
-                                            tmpCiCiEntityIdMap.put(relEntityVo.getFromCiId(), new ArrayList<>());
-                                        }
-                                        tmpCiCiEntityIdMap.get(relEntityVo.getFromCiId()).add(relEntityVo.getFromCiEntityId());
                                     }
                                 }
                             }
@@ -223,9 +228,9 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                 for (RelEntityVo relEntityVo : relEntitySet) {
                     if (ciEntityNodeSet.contains("CiEntity_" + relEntityVo.getFromCiId() + "_" + relEntityVo.getFromCiEntityId())
                             && ciEntityNodeSet.contains("CiEntity_" + relEntityVo.getToCiId() + "_" + relEntityVo.getToCiEntityId())) {
-                                   Link.Builder lb = new Link.Builder(
-                                           "CiEntity_" + relEntityVo.getFromCiId() + "_" + relEntityVo.getFromCiEntityId(),
-                                           "CiEntity_" + relEntityVo.getToCiId() + "_" + relEntityVo.getToCiEntityId());
+                        Link.Builder lb = new Link.Builder(
+                                "CiEntity_" + relEntityVo.getFromCiId() + "_" + relEntityVo.getFromCiEntityId(),
+                                "CiEntity_" + relEntityVo.getToCiId() + "_" + relEntityVo.getToCiEntityId());
                         lb.withLabel(relEntityVo.getRelTypeName());
                         lb.setFontSize(9);
                         gb.addLink(lb.build());

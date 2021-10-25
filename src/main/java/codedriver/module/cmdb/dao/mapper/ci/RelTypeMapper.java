@@ -5,22 +5,24 @@
 
 package codedriver.module.cmdb.dao.mapper.ci;
 
-import java.util.List;
-
 import codedriver.framework.cmdb.dto.ci.RelTypeVo;
 
+import java.util.List;
+
 public interface RelTypeMapper {
-    public int checkRelTypeIsInUsed(Long relTypId);
+    int checkRelTypeIsInUsed(Long relTypId);
 
-    public int checkRelTypeNameIsExists(RelTypeVo relTypeVo);
+    int checkRelTypeNameIsExists(RelTypeVo relTypeVo);
 
-    public RelTypeVo getRelTypeById(Long id);
+    RelTypeVo getRelTypeById(Long id);
 
-    public List<RelTypeVo> getAllRelType();
+    List<RelTypeVo> getAllRelType();
 
-    public int insertRelType(RelTypeVo relTypeVo);
+    int insertRelType(RelTypeVo relTypeVo);
 
-    public int updateRelType(RelTypeVo relTypeVo);
+    int updateRelType(RelTypeVo relTypeVo);
 
-    public int deleteRelTypeById(Long relTypId);
+    int updateRelTypeIsShow(RelTypeVo relTypeVo);
+
+    int deleteRelTypeById(Long relTypId);
 }

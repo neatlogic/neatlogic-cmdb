@@ -9,6 +9,15 @@
     <cache-ref namespace="codedriver.module.cmdb.dao.mapper.ci.CiMapper"/>
     <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
 
+    <select id="getRelTypeByRelId" parameterType="java.lang.Long"
+            resultType="codedriver.framework.cmdb.dto.ci.RelTypeVo" useCache="true">
+        SELECT a.`id`,
+               a.`name`,
+               a.`is_showintopo` AS isShowInTopo
+        FROM `cmdb_reltype` a
+                 JOIN `cmdb_rel` b ON a.id = b.type_id
+        WHERE b.id = #{value}
+    </select>
 
     <select id="getRelativeRelByRelId" parameterType="java.lang.Long"
             resultType="codedriver.framework.cmdb.dto.ci.RelativeRelVo" useCache="false">
@@ -43,10 +52,12 @@
                from_ci.`name`                                                 AS fromCiName,
                from_ci.`label`                                                AS fromCiLabel,
                to_ci.`name`                                                   AS toCiName,
-               to_ci.`label`                                                  AS toCiLabel
+               to_ci.`label`                                                  AS toCiLabel,
+               reltype.`is_showintopo`                                        AS isShowInTopo
         FROM `cmdb_rel` rel
                  JOIN `cmdb_ci` from_ci ON rel.`from_ci_id` = from_ci.`id`
                  JOIN `cmdb_ci` to_ci ON rel.`to_ci_id` = to_ci.`id`
+                 JOIN `cmdb_reltype` reltype ON rel.type_id = reltype.id
     </select>
 
     <select id="checkRelGroupNameIsExists" parameterType="codedriver.framework.cmdb.dto.ci.RelGroupVo" resultType="int"
