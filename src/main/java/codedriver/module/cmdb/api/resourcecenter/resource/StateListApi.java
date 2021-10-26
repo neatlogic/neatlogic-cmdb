@@ -26,18 +26,17 @@ import java.util.List;
  * @author linbq
  * @since 2021/6/18 14:50
  **/
-@Deprecated// TODO linbq 改为 resourcecenter/state/list接口
 @Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class StatusListApi extends PrivateApiComponentBase {
+public class StateListApi extends PrivateApiComponentBase {
 
     @Resource
     private ResourceCenterMapper resourceCenterMapper;
 
     @Override
     public String getToken() {
-        return "resourcecenter/status/list";
+        return "resourcecenter/state/list";
     }
 
     @Override
@@ -57,7 +56,7 @@ public class StatusListApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         String schemaName = TenantContext.get().getDataDbName();
-        List<StateVo> statusList = resourceCenterMapper.getStateList(schemaName);
-        return statusList;
+        List<StateVo> stateList = resourceCenterMapper.getStateList(schemaName);
+        return stateList;
     }
 }
