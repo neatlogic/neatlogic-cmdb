@@ -8,6 +8,19 @@
 <mapper namespace="codedriver.module.cmdb.dao.mapper.ci.CiMapper">
     <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000"
            size="100"></cache>
+    <select id="getAttrCountByCiId" parameterType="java.lang.Long" resultType="int" useCache="false">
+        select count(1)
+        from cmdb_attr
+        where ci_id = #{value}
+    </select>
+
+    <select id="getRelCountByCiId" parameterType="java.lang.Long" resultType="int" useCache="false">
+        select count(1)
+        from cmdb_rel
+        where from_ci_id = #{value}
+           or to_ci_id = #{value}
+    </select>
+
     <select id="getCustomViewByCiId" parameterType="java.lang.Long"
             resultType="codedriver.framework.cmdb.dto.customview.CustomViewVo" useCache="false">
         select a.id,

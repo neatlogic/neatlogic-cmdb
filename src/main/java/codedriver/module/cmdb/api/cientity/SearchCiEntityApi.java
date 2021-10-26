@@ -183,14 +183,15 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
                 }
                 theadList.add(headObj);
             }
-            if (needAction || !"dialog".equals(mode)) {
-                // 增加操作列，无需判断needAction，因为有“查看详情”操作
-                theadList.add(new JSONObject() {
-                    {
-                        this.put("key", "action");
-                    }
-                });
-            }
+        }
+
+        if (needAction || !"dialog".equals(mode)) {
+            // 增加操作列，无需判断needAction，因为有“查看详情”操作
+            theadList.add(new JSONObject() {
+                {
+                    this.put("key", "action");
+                }
+            });
         }
 
         ciEntityVo.setAttrIdList(attrIdList);

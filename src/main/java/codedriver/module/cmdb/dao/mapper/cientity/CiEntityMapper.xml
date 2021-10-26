@@ -1065,4 +1065,19 @@
         WHERE a.ci_id =
               #{value}
     </delete>
+
+    <delete id="deleteParentCiEntity">
+        DELETE
+        <foreach collection="parentCiList" item="parentCi" separator=",">
+            `ci_${parentCi.id}`,`ci_${parentCi.id}_attrentity`
+        </foreach>
+        FROM
+        ${currentCi.ciTableName} `ci`
+        <foreach collection="parentCiList" item="parentCi">
+            LEFT JOIN ${parentCi.ciTableName} `ci_${parentCi.id}` ON `ci`.`cientity_id` =
+            `ci_${parentCi.id}`.`cientity_id`
+            LEFT JOIN `cmdb_attrentity` `ci_${parentCi.id}_attrentity` ON `ci_${parentCi.id}_attrentity`.`from_ci_id` =
+            #{parentCi.id} AND `ci_${parentCi.id}_attrentity`.`from_cientity_id` = `ci`.`cientity_id`
+        </foreach>
+    </delete>
 </mapper>

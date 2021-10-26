@@ -13,6 +13,10 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface CiMapper {
+    int getAttrCountByCiId(Long ciId);
+
+    int getRelCountByCiId(Long ciId);
+
     List<CustomViewVo> getCustomViewByCiId(Long ciId);
 
     List<CiVo> getCiBaseInfoByCiEntityIdList(@Param("ciEntityIdList") List<Long> ciEntityIdList);

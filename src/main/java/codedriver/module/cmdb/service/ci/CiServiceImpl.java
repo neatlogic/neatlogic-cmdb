@@ -257,13 +257,24 @@ public class CiServiceImpl implements CiService {
         }
         List<AttrVo> parentAttrList = null;
         if (!Objects.equals(checkCiVo.getParentCiId(), ciVo.getParentCiId())) {
-            parentAttrList = attrMapper.getAttrByCiId(checkCiVo.getParentCiId());
+
             //如果继承发生改变需要检查是否有配置项数据，有数据不允许变更
             int ciEntityCount = ciEntityMapper.getDownwardCiEntityCountByLR(ciVo.getLft(), ciVo.getRht());
             if (ciEntityCount > 0) {
-                throw new CiParentCanNotBeChangedException(ciVo.getName(), ciEntityCount);
+                //有关系的情况太复杂，例如父模型引用了子模型，这部分数据能否删除？想清楚之前暂时不能自动清理带关系的数据数据
+                if (ciVo.getParentCiId() != null || CollectionUtils.isNotEmpty(relMapper.getRelByCiId(ciVo.getId()))) {
+                    throw new CiParentCanNotBeChangedException(ciVo.getName(), ciEntityCount);
+                } else {
+                    List<CiVo> parentCiList = ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht());
+                    parentCiList.removeIf(d -> d.getId().equals(ciVo.getId()));
+                    //清空继承需要清除父模型的数据
+                    if (CollectionUtils.isNotEmpty(parentCiList)) {
+                        ciEntityMapper.deleteParentCiEntity(ciVo, parentCiList);
+                    }
+                }
             }
 
+            parentAttrList = attrMapper.getAttrByCiId(checkCiVo.getParentCiId());
             if (CollectionUtils.isNotEmpty(parentAttrList)) {
                 //检查子模型的表达式属性是否引用了父模型的属性
                 List<AttrVo> attrExpressionList = attrMapper.getExpressionAttrByValueCiIdAndAttrIdList(ciVo.getId(), parentAttrList.stream().map(AttrVo::getId).collect(Collectors.toList()));

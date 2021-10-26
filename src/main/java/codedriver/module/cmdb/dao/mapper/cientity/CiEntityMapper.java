@@ -6,6 +6,7 @@
 package codedriver.module.cmdb.dao.mapper.cientity;
 
 import codedriver.framework.cmdb.dto.ci.AttrVo;
+import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.AttrEntityVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.fulltextindex.dto.fulltextindex.FullTextIndexTypeVo;
@@ -186,5 +187,6 @@ public interface CiEntityMapper {
 
     int deleteCiEntityByCiId(Long ciId);
 
+    int deleteParentCiEntity(@Param("currentCi") CiVo currentCiVo, @Param("parentCiList") List<CiVo> parentCiList);
 
 }
