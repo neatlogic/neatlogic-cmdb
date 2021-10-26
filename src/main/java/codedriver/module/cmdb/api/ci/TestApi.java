@@ -43,7 +43,7 @@ public class TestApi extends PrivateApiComponentBase {
         tagentVo.setOsType("linux");
         tagentVo.setOsVersion("13.x");
         tagentVo.setOsbit("64");
-        tagentVo.setName("tagent");
+        tagentVo.setName("tagent222");
         tagentVo.setAccountId(10L);
         AfterRegisterJobManager.executeAll(tagentVo);
         return null;
