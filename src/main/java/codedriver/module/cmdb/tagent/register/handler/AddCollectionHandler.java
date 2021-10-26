@@ -41,6 +41,7 @@ public class AddCollectionHandler extends AfterRegisterBase {
                 dataObj.put("_OBJ_CATEGORY", "OS");
                 dataObj.put("_OBJ_TYPE", tagentVo.getOsType());
                 dataObj.put("OS_TYPE", tagentVo.getOsType());
+                dataObj.put("RESOURCE_ID", tagentVo.getResourceId());
                 dataObj.put("MGMT_IP", tagentVo.getIp());
                 dataObj.put("CPU_ARCH", tagentVo.getOsbit());
                 dataObj.put("HOSTNAME", tagentVo.getName());

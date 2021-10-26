@@ -226,6 +226,9 @@ public class CiSyncManager {
                 //使用所有非引用属性去搜索配置项，没有则添加，发现一个则就修改，发现多个就抛异常
                 List<CiEntityVo> checkList = ciEntityService.searchCiEntity(ciEntityConditionVo);
                 CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
+                if (dataObj.containsKey("RESOURCE_ID")) {
+                    ciEntityTransactionVo.setCiEntityId(dataObj.getLong("RESOURCE_ID"));
+                }
                 ciEntityTransactionVo.setCiId(ciVo.getId());
                 ciEntityTransactionVo.setAllowCommit(syncCiCollectionVo.getIsAutoCommit().equals(1));
                 ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());//局部更新模式
