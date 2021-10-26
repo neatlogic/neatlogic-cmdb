@@ -15,11 +15,10 @@ import codedriver.framework.tagent.register.core.AfterRegisterJobManager;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import com.alibaba.fastjson.JSONObject;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 
-@Service
+//@Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class TestApi extends PrivateApiComponentBase {
@@ -40,11 +39,12 @@ public class TestApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         TagentVo tagentVo = new TagentVo();
-        tagentVo.setIp("9.9.9.9");
+        tagentVo.setIp("99.99.99.99");
         tagentVo.setOsType("linux");
         tagentVo.setOsVersion("13.x");
         tagentVo.setOsbit("64");
         tagentVo.setName("tagent");
+        tagentVo.setAccountId(10L);
         AfterRegisterJobManager.executeAll(tagentVo);
         return null;
     }

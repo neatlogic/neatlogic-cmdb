@@ -341,6 +341,8 @@ public class CiSyncManager {
          */
         private void executeBySingleMode() {
             Set<String> fieldList = new HashSet<>();
+            //增加RESOURCE_ID的定义，在flattenJson时才能保持RESOURCE_ID的数据，当mongodb的数据提前生成了resource_id后，可以直接使用作为配置项的id，以便实现提前关联账号等场景
+            fieldList.add("RESOURCE_ID");
             if (CollectionUtils.isNotEmpty(syncCiCollectionList) && MapUtils.isNotEmpty(singleDataObj)) {
                 for (SyncCiCollectionVo syncCiCollectionVo : syncCiCollectionList) {
                     try {
@@ -407,6 +409,8 @@ public class CiSyncManager {
 
                         if (CollectionUtils.isNotEmpty(syncCiCollectionVo.getMappingList())) {
                             Set<String> fieldList = new HashSet<>();
+                            //增加RESOURCE_ID的定义，在flattenJson时才能保持RESOURCE_ID的数据，当mongodb的数据提前生成了resource_id后，可以直接使用作为配置项的id，以便实现提前关联账号等场景
+                            fieldList.add("RESOURCE_ID");
                             for (SyncMappingVo syncMappingVo : syncCiCollectionVo.getMappingList()) {
                                 if (StringUtils.isNotBlank(syncMappingVo.getField())) {
                                     fieldList.add(syncMappingVo.getField().trim());
