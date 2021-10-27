@@ -70,7 +70,6 @@ public class ResourceListApi extends PrivateApiComponentBase {
             @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "模糊搜索"),
             @Param(name = "typeId", type = ApiParamType.LONG, desc = "类型id"),
             @Param(name = "protocolIdList", type = ApiParamType.JSONARRAY, desc = "协议id列表"),
-            @Param(name = "statusIdList", type = ApiParamType.JSONARRAY, desc = "状态id列表"),
             @Param(name = "stateIdList", type = ApiParamType.JSONARRAY, desc = "状态id列表"),
             @Param(name = "envIdList", type = ApiParamType.JSONARRAY, desc = "环境id列表"),
             @Param(name = "appSystemIdList", type = ApiParamType.JSONARRAY, desc = "应用系统id列表"),
@@ -91,12 +90,6 @@ public class ResourceListApi extends PrivateApiComponentBase {
         JSONObject resultObj = new JSONObject();
         List<ResourceVo> resourceVoList = null;
         ResourceSearchVo searchVo = JSON.toJavaObject(jsonObj, ResourceSearchVo.class);
-        // TODO linbq 临时代码 等前端改完后删除
-        JSONArray statusIdArray = jsonObj.getJSONArray("statusIdList");
-        if (CollectionUtils.isNotEmpty(statusIdArray) && CollectionUtils.isEmpty(searchVo.getStateIdList())) {
-            List<Long> statusIdList = statusIdArray.toJavaList(Long.class);
-            searchVo.setStateIdList(statusIdList);
-        }
         Long typeId = searchVo.getTypeId();
         if (typeId != null) {
             CiVo ciVo = ciMapper.getCiById(typeId);
