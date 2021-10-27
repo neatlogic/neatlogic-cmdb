@@ -11,5 +11,7 @@ import codedriver.framework.cmdb.dto.transaction.TransactionGroupVo;
 import java.util.List;
 
 public interface RelEntityService {
+    List<RelEntityVo> getRelEntityByCiEntityId(Long ciEntityId);
+
     void deleteRelEntity(TransactionGroupVo transactionGroupVo, List<RelEntityVo> relEntityList);
 }

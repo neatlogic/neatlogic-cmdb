@@ -22,6 +22,7 @@ import codedriver.framework.cmdb.exception.ci.CiUniqueRuleException;
 import codedriver.framework.cmdb.exception.cientity.*;
 import codedriver.framework.cmdb.exception.transaction.TransactionAuthException;
 import codedriver.framework.cmdb.exception.transaction.TransactionStatusIrregularException;
+import codedriver.framework.cmdb.crossover.CiEntityCrossoverService;
 import codedriver.framework.cmdb.validator.core.IValidator;
 import codedriver.framework.cmdb.validator.core.ValidatorFactory;
 import codedriver.framework.exception.core.ApiRuntimeException;
@@ -57,7 +58,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class CiEntityServiceImpl implements CiEntityService {
+public class CiEntityServiceImpl implements CiEntityService, CiEntityCrossoverService {
     // private final static Logger logger = LoggerFactory.getLogger(CiEntityServiceImpl.class);
     private final static String EXPRESSION_TYPE = "expression";
 

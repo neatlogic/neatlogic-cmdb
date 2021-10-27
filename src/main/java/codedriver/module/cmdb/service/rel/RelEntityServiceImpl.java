@@ -15,6 +15,7 @@ import codedriver.framework.cmdb.dto.transaction.TransactionVo;
 import codedriver.framework.cmdb.enums.RelDirectionType;
 import codedriver.framework.cmdb.enums.TransactionActionType;
 import codedriver.framework.cmdb.enums.TransactionStatus;
+import codedriver.framework.cmdb.crossover.RelEntityCrossoverService;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper;
 import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
@@ -26,7 +27,7 @@ import javax.annotation.Resource;
 import java.util.List;
 
 @Service
-public class RelEntityServiceImpl implements RelEntityService {
+public class RelEntityServiceImpl implements RelEntityService, RelEntityCrossoverService {
     @Resource
     private TransactionMapper transactionMapper;
 
@@ -39,6 +40,10 @@ public class RelEntityServiceImpl implements RelEntityService {
     @Resource
     private RelEntityMapper relEntityMapper;
 
+    @Override
+    public List<RelEntityVo> getRelEntityByCiEntityId(Long ciEntityId) {
+        return relEntityMapper.getRelEntityByCiEntityId(ciEntityId);
+    }
 
     @Override
     public void deleteRelEntity(TransactionGroupVo transactionGroupVo, List<RelEntityVo> relEntityList) {

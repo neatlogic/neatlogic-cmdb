@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 清除过关系
+ * 清除过期关系
  */
 @Component
 @DisallowConcurrentExecution
