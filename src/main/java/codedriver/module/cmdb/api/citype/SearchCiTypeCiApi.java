@@ -59,9 +59,6 @@ public class SearchCiTypeCiApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         CiVo pCiVo = JSONObject.toJavaObject(jsonObj, CiVo.class);
-        //以下两个属性有默认值，所以需要重新设置一遍
-        pCiVo.setIsAbstract(jsonObj.getInteger("isAbstract"));
-        pCiVo.setIsVirtual(jsonObj.getInteger("isVirtual"));
         List<CiTypeVo> ciTypeList = ciMapper.searchCiTypeCi(pCiVo);
         //如果没有管理权限则需要检查每个模型的权限
         if (!AuthActionChecker.check("CI_MODIFY", "CIENTITY_MODIFY")) {
