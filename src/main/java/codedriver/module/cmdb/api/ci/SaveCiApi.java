@@ -64,7 +64,10 @@ public class SaveCiApi extends PrivateApiComponentBase {
             @Param(name = "icon", type = ApiParamType.STRING, desc = "图标"),
             @Param(name = "typeId", type = ApiParamType.LONG, desc = "类型id", isRequired = true),
             @Param(name = "parentCiId", type = ApiParamType.LONG, desc = "父配置项id"),
-            @Param(name = "isMenu", type = ApiParamType.INTEGER, desc = "是否在菜单显示")})
+            @Param(name = "isAbstract", type = ApiParamType.INTEGER, defaultValue = "0", desc = "是否抽象模型"),
+            @Param(name = "isVirtual", type = ApiParamType.INTEGER, defaultValue = "0", desc = "是否虚拟模型"),
+            @Param(name = "isPrivate", type = ApiParamType.INTEGER, defaultValue = "0", desc = "是否私有模型"),
+            @Param(name = "isMenu", type = ApiParamType.INTEGER, defaultValue = "0", desc = "是否在菜单显示")})
     @Output({@Param(name = "id", type = ApiParamType.STRING, desc = "模型id")})
     @Description(desc = "保存模型接口")
     @Override

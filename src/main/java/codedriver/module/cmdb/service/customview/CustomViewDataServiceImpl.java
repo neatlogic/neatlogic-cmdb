@@ -11,7 +11,6 @@ import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.customview.*;
 import codedriver.framework.cmdb.exception.customview.CustomViewNotFoundException;
-import codedriver.framework.cmdb.crossover.CustomViewDataCrossoverService;
 import codedriver.module.cmdb.dao.mapper.customview.CustomViewDataMapper;
 import codedriver.module.cmdb.dao.mapper.customview.CustomViewMapper;
 import com.alibaba.fastjson.JSONArray;
@@ -28,7 +27,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-public class CustomViewDataServiceImpl implements CustomViewDataService, CustomViewDataCrossoverService {
+public class CustomViewDataServiceImpl implements CustomViewDataService {
     @Resource
     private CustomViewDataMapper customViewDataMapper;
 
@@ -55,10 +54,6 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, CustomV
         return customViewDataVo;
     }
 
-    @Override
-    public List<Map<String, Object>> searchCustomViewDataOriginal(CustomViewConditionVo customViewConditionVo) {
-        return customViewDataMapper.searchCustomViewData(customViewConditionVo);
-    }
 
     @Override
     public List<Map<String, Object>> searchCustomViewData(CustomViewConditionVo customViewConditionVo) {
