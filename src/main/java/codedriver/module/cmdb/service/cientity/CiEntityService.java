@@ -60,6 +60,8 @@ public interface CiEntityService {
 
     CiEntityVo getCiEntityBaseInfoById(Long ciEntityId);
 
+    List<CiEntityVo> getCiEntityBaseInfoByName(Long ciId, String name);
+
     /**
      * 获取单个配置项详细信息
      *
