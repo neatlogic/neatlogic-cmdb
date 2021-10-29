@@ -6,6 +6,28 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.sync.SyncMapper">
+
+
+    <select id="getPassiveSyncCiCollectionByCiId" parameterType="java.lang.Long"
+            resultMap="syncCiCollectionResultMap">
+        SELECT a.id,
+               a.ci_id           AS ciId,
+               a.collection_name AS collectionName,
+               a.collect_mode    AS collectMode,
+               a.is_auto_commit  AS isAutoCommit,
+               a.last_sync_date  AS lastSyncDate,
+               csm.id            AS mappingId,
+               csm.attr_id       AS attrId,
+               csm.rel_id        AS relId,
+               csm.direction,
+               csm.field
+        FROM cmdb_sync_ci_collection a
+                 JOIN cmdb_sync_mapping csm on a.id = csm.ci_collection_id
+        WHERE a.ci_id = #{value}
+          AND a.collect_mode = 'passive'
+    </select>
+
+
     <select id="getSyncPolicyByCiCollectionId" parameterType="java.lang.Long"
             resultType="codedriver.framework.cmdb.dto.sync.SyncPolicyVo">
         SELECT a.id, a.is_active as isActive, a.name, a.ci_id as ciId, a.`condition` as conditionStr

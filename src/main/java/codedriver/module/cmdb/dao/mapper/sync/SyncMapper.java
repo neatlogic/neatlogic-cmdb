@@ -14,6 +14,8 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface SyncMapper {
+    List<SyncCiCollectionVo> getPassiveSyncCiCollectionByCiId(Long ciId);
+
     SyncCiCollectionVo getInitiativeSyncCiCollectionByCollectName(String collectName);
 
     int checkInitiativeSyncCiCollectionIsExists(SyncCiCollectionVo syncCiCollectionVo);

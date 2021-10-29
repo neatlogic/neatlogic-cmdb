@@ -56,8 +56,7 @@ public class SaveCiApi extends PrivateApiComponentBase {
     }
 
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "id，不提供代表新增模型"),
-            //name不能大于25个字符，因为mysql表名最长64字符，需要给属性名留下位置
-            @Param(name = "name", type = ApiParamType.STRING, xss = true, isRequired = true, maxLength = 25, desc = "英文名称"),
+            @Param(name = "name", type = ApiParamType.REGEX, rule = "^[a-zA-Z_\\d]+$", xss = true, isRequired = true, maxLength = 25, desc = "英文名称"),
             @Param(name = "label", type = ApiParamType.STRING, desc = "中文名称", xss = true, maxLength = 100,
                     isRequired = true),
             @Param(name = "description", type = ApiParamType.STRING, desc = "备注", maxLength = 500, xss = true),

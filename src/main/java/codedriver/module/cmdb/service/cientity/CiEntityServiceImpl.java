@@ -86,6 +86,14 @@ public class CiEntityServiceImpl implements CiEntityService, CiEntityCrossoverSe
         return ciEntityMapper.getCiEntityBaseInfoById(ciEntityId);
     }
 
+    @Override
+    public List<CiEntityVo> getCiEntityBaseInfoByName(Long ciId, String name) {
+        CiEntityVo ciEntityVo = new CiEntityVo();
+        ciEntityVo.setCiId(ciId);
+        ciEntityVo.setName(name);
+        return ciEntityMapper.getCiEntityBaseInfoByName(ciEntityVo);
+    }
+
     private CiEntityVo getCiEntityById(Long ciId, Long ciEntityId, Boolean flattenAttr, Boolean limitRelEntity) {
         CiVo ciVo = ciMapper.getCiById(ciId);
         if (ciVo == null) {
