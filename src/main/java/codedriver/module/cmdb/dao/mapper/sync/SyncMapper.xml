@@ -16,6 +16,7 @@
                a.collect_mode    AS collectMode,
                a.is_auto_commit  AS isAutoCommit,
                a.last_sync_date  AS lastSyncDate,
+               a.match_mode      AS matchMode,
                csm.id            AS mappingId,
                csm.attr_id       AS attrId,
                csm.rel_id        AS relId,
@@ -133,6 +134,7 @@
                a.collection_name AS collectionName,
                a.collect_mode    AS collectMode,
                a.is_auto_commit  AS isAutoCommit,
+               a.match_mode      AS matchMode,
                a.fcu,
                a.fcd,
                a.lcu,
@@ -153,6 +155,7 @@
         a.collection_name AS collectionName,
         a.collect_mode AS collectMode,
         a.is_auto_commit AS isAutoCommit,
+        a.match_mode AS matchMode,
         a.fcu,
         a.fcd,
         a.lcu,
@@ -196,12 +199,14 @@
         <result property="collectMode" column="collectMode"/>
         <result property="isAutoCommit" column="isAutoCommit"/>
         <result property="lastSyncDate" column="lastSyncDate"/>
+        <result property="matchMode" column="matchMode"/>
         <collection property="mappingList" ofType="codedriver.framework.cmdb.dto.sync.SyncMappingVo">
             <id property="id" column="mappingId"/>
             <result property="attrId" column="attrId"/>
             <result property="relId" column="relId"/>
             <result property="direction" column="direction"/>
             <result property="field" column="field"/>
+            <result property="matchMode" column="matchMode"/>
         </collection>
     </resultMap>
 
@@ -213,6 +218,7 @@
                a.collect_mode    AS collectMode,
                a.is_auto_commit  AS isAutoCommit,
                a.last_sync_date  AS lastSyncDate,
+               a.match_mode      AS matchMode,
                csm.id            AS mappingId,
                csm.attr_id       AS attrId,
                csm.rel_id        AS relId,
@@ -231,6 +237,7 @@
                a.collect_mode    AS collectMode,
                a.is_auto_commit  AS isAutoCommit,
                a.last_sync_date  AS lastSyncDate,
+               a.match_mode      AS matchMode,
                csm.id            AS mappingId,
                csm.attr_id       AS attrId,
                csm.rel_id        AS relId,
@@ -250,6 +257,7 @@
                a.collect_mode    AS collectMode,
                a.is_auto_commit  AS isAutoCommit,
                a.last_sync_date  AS lastSyncDate,
+               a.match_mode      AS matchMode,
                csm.id            AS mappingId,
                csm.attr_id       AS attrId,
                csm.rel_id        AS relId,
@@ -264,6 +272,7 @@
         update cmdb_sync_ci_collection
         SET collect_mode   = #{collectMode},
             is_auto_commit = #{isAutoCommit},
+            match_mode     = #{matchMode},
             lcd            = NOW(3),
             lcu            = #{lcu}
         WHERE id = #{id}
@@ -290,8 +299,9 @@
     </insert>
 
     <insert id="insertSyncCiCollection" parameterType="codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo">
-        insert into cmdb_sync_ci_collection (id, ci_id, collection_name, collect_mode, is_auto_commit, fcd, fcu)
-        values (#{id}, #{ciId}, #{collectionName}, #{collectMode}, #{isAutoCommit}, NOW(3), #{fcu})
+        insert into cmdb_sync_ci_collection (id, ci_id, collection_name, match_mode, collect_mode, is_auto_commit, fcd,
+                                             fcu)
+        values (#{id}, #{ciId}, #{collectionName}, #{matchMode}, #{collectMode}, #{isAutoCommit}, NOW(3), #{fcu})
     </insert>
 
     <insert id="insertSyncMapping" parameterType="codedriver.framework.cmdb.dto.sync.SyncMappingVo">

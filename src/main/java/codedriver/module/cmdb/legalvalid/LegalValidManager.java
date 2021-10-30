@@ -236,14 +236,14 @@ public class LegalValidManager {
                                 int attrEntityCount = ciEntityMapper.getAttrEntityCountByAttrIdAndValue(ciEntityVo.getId(), attrVo.getId(), toCiEntityIdList);
                                 if (attrEntityCount > 0) {
                                     List<CiEntityVo> toCiEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(toCiEntityIdList);
-                                    errorList.add(new AttrEntityDuplicateException(attrVo.getLabel(), toCiEntityList.stream().map(CiEntityVo::getName).collect(Collectors.toList())));
+                                    errorList.add(new AttrEntityDuplicateException(ciVo, attrVo.getLabel(), toCiEntityList.stream().map(CiEntityVo::getName).collect(Collectors.toList())));
                                 }
                             }
                         } else {
                             //检查配置项表对应字段是否已被其他配置项使用
                             int count = ciEntityMapper.getCiEntityCountByAttrIdAndValue(ciEntityVo.getId(), attrVo, attrEntityVo.getValue());
                             if (count > 0) {
-                                errorList.add(new AttrEntityDuplicateException(attrVo.getLabel(), attrEntityVo.getValueList()));
+                                errorList.add(new AttrEntityDuplicateException(ciVo, attrVo.getLabel(), attrEntityVo.getValueList()));
                             }
                         }
                     }

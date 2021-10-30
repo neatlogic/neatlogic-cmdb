@@ -667,14 +667,14 @@ public class CiEntityServiceImpl implements CiEntityService, CiEntityCrossoverSe
                                 int attrEntityCount = ciEntityMapper.getAttrEntityCountByAttrIdAndValue(ciEntityTransactionVo.getCiEntityId(), attrVo.getId(), toCiEntityIdList);
                                 if (attrEntityCount > 0) {
                                     List<CiEntityVo> toCiEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(toCiEntityIdList);
-                                    throw new AttrEntityDuplicateException(attrVo.getLabel(), toCiEntityList.stream().map(CiEntityVo::getName).collect(Collectors.toList()));
+                                    throw new AttrEntityDuplicateException(ciVo, attrVo.getLabel(), toCiEntityList.stream().map(CiEntityVo::getName).collect(Collectors.toList()));
                                 }
                             }
                         } else {
                             //检查配置项表对应字段是否已被其他配置项使用
                             int count = ciEntityMapper.getCiEntityCountByAttrIdAndValue(ciEntityTransactionVo.getCiEntityId(), attrVo, attrEntityTransactionVo.getValueList().getString(0));
                             if (count > 0) {
-                                throw new AttrEntityDuplicateException(attrVo.getLabel(), attrEntityTransactionVo.getValueList());
+                                throw new AttrEntityDuplicateException(ciVo, attrVo.getLabel(), attrEntityTransactionVo.getValueList());
                             }
                         }
                     }
@@ -848,7 +848,13 @@ public class CiEntityServiceImpl implements CiEntityService, CiEntityCrossoverSe
                     AttrFilterVo filterVo = new AttrFilterVo();
                     filterVo.setAttrId(attrId);
                     filterVo.setExpression(SearchExpression.EQ.getExpression());
-                    filterVo.setValueList(attrEntityTransactionVo.getValueList().stream().map(Object::toString).collect(Collectors.toList()));
+                    filterVo.setValueList(attrEntityTransactionVo.getValueList().stream().map(d -> {
+                        if (d != null) {
+                            return d.toString();
+                        } else {
+                            return "";
+                        }
+                    }).collect(Collectors.toList()));
                     ciEntityConditionVo.addAttrFilter(filterVo);
                 } else {
                     if (oldEntity != null) {
@@ -857,7 +863,13 @@ public class CiEntityServiceImpl implements CiEntityService, CiEntityCrossoverSe
                             AttrFilterVo filterVo = new AttrFilterVo();
                             filterVo.setAttrId(attrId);
                             filterVo.setExpression(SearchExpression.EQ.getExpression());
-                            filterVo.setValueList(attrEntityVo.getValueList().stream().map(Object::toString).collect(Collectors.toList()));
+                            filterVo.setValueList(attrEntityVo.getValueList().stream().map(d -> {
+                                if (d != null) {
+                                    return d.toString();
+                                } else {
+                                    return "";
+                                }
+                            }).collect(Collectors.toList()));
                             ciEntityConditionVo.addAttrFilter(filterVo);
                         }
                     }//新值没有修改
@@ -1023,14 +1035,14 @@ public class CiEntityServiceImpl implements CiEntityService, CiEntityCrossoverSe
                                         int attrEntityCount = ciEntityMapper.getAttrEntityCountByAttrIdAndValue(ciEntityTransactionVo.getCiEntityId(), attrVo.getId(), toCiEntityIdList);
                                         if (attrEntityCount > 0) {
                                             List<CiEntityVo> toCiEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(toCiEntityIdList);
-                                            throw new AttrEntityDuplicateException(attrVo.getLabel(), toCiEntityList.stream().map(CiEntityVo::getName).collect(Collectors.toList()));
+                                            throw new AttrEntityDuplicateException(ciVo, attrVo.getLabel(), toCiEntityList.stream().map(CiEntityVo::getName).collect(Collectors.toList()));
                                         }
                                     }
                                 } else {
                                     //检查配置项表对应字段是否已被其他配置项使用
                                     int count = ciEntityMapper.getCiEntityCountByAttrIdAndValue(ciEntityTransactionVo.getCiEntityId(), attrVo, attrEntityTransactionVo.getValueList().getString(0));
                                     if (count > 0) {
-                                        throw new AttrEntityDuplicateException(attrVo.getLabel(), attrEntityTransactionVo.getValueList());
+                                        throw new AttrEntityDuplicateException(ciVo, attrVo.getLabel(), attrEntityTransactionVo.getValueList());
                                     }
                                 }
                             }
@@ -1157,13 +1169,13 @@ public class CiEntityServiceImpl implements CiEntityService, CiEntityCrossoverSe
                                     int attrEntityCount = ciEntityMapper.getAttrEntityCountByAttrIdAndValue(ciEntityTransactionVo.getCiEntityId(), attrVo.getId(), toCiEntityIdList);
                                     if (attrEntityCount > 0) {
                                         List<CiEntityVo> toCiEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(toCiEntityIdList);
-                                        throw new AttrEntityDuplicateException(attrVo.getLabel(), toCiEntityList.stream().map(CiEntityVo::getName).collect(Collectors.toList()));
+                                        throw new AttrEntityDuplicateException(ciVo, attrVo.getLabel(), toCiEntityList.stream().map(CiEntityVo::getName).collect(Collectors.toList()));
                                     }
                                 } else {
                                     //检查配置项表对应字段是否已被其他配置项使用
                                     int count = ciEntityMapper.getCiEntityCountByAttrIdAndValue(ciEntityTransactionVo.getCiEntityId(), attrVo, attrEntityTransactionVo.getValueList().getString(0));
                                     if (count > 0) {
-                                        throw new AttrEntityDuplicateException(attrVo.getLabel(), attrEntityTransactionVo.getValueList());
+                                        throw new AttrEntityDuplicateException(ciVo, attrVo.getLabel(), attrEntityTransactionVo.getValueList());
                                     }
                                 }
                             }
