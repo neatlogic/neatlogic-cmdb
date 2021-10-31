@@ -70,7 +70,7 @@ public class BatchSaveCiEntityPublicApi extends PublicApiComponentBase {
         //遍历ciEntityList入参
         for (int i = 0; i < ciEntityObjArrayParam.size(); i++) {
             JSONObject ciEntityObj = ciEntityObjArrayParam.getJSONObject(i);
-            JSONObject attrEntityDataParam = ciEntityObj.getJSONObject("attrEntityData");
+            JSONObject entityDataParam = ciEntityObj.getJSONObject("entityData");
             String ciName = ciEntityObj.getString("ciName");
             String ciEntityName = ciEntityObj.getString("name");
             CiVo ciVo = ciMapper.getCiByName(ciName);
@@ -93,11 +93,11 @@ public class BatchSaveCiEntityPublicApi extends PublicApiComponentBase {
             }
             List<CiEntityVo> ciEntityList = ciEntityMapper.getCiEntityBaseInfoByName(new CiEntityVo(ciVo.getId(), ciEntityName));
             if (CollectionUtils.isEmpty(ciEntityList)) {
-                ciEntityResultArray.add(getCiEntityResultDate( ciVo, attrEntityDataParam,attrMap, relMap, null,ciMap));
+                ciEntityResultArray.add(getCiEntityResultDate( ciVo, entityDataParam,attrMap, relMap, null,ciMap));
             } else {
                 //如果一个entityName找到多个entity，直接给多个数据
                 for (CiEntityVo ciEntityVo : ciEntityList) {
-                    ciEntityResultArray.add(getCiEntityResultDate( ciVo, attrEntityDataParam,attrMap, relMap, ciEntityVo.getId(),ciMap));
+                    ciEntityResultArray.add(getCiEntityResultDate( ciVo, entityDataParam,attrMap, relMap, ciEntityVo.getId(),ciMap));
                 }
             }
         }
@@ -107,7 +107,17 @@ public class BatchSaveCiEntityPublicApi extends PublicApiComponentBase {
         return null;
     }
 
-    private JSONObject getCiEntityResultDate(CiVo ciVo,JSONObject attrEntityDataParam,Map<String, AttrVo> attrMap,Map<String, RelVo> relMap,Long ciEntityId,Map<Long, CiVo> ciMap){
+    /**
+     *
+     * @param ciVo ci对象
+     * @param entityDataParam entity属性或关系入参
+     * @param attrMap ci属性map
+     * @param relMap ci关系map
+     * @param ciEntityId entity Id
+     * @param ciMap ci 缓存
+     * @return
+     */
+    private JSONObject getCiEntityResultDate(CiVo ciVo,JSONObject entityDataParam,Map<String, AttrVo> attrMap,Map<String, RelVo> relMap,Long ciEntityId,Map<Long, CiVo> ciMap){
         JSONObject ciEntityResult = JSONObject.parseObject(JSONObject.toJSONString(ciVo));
         JSONObject attrEntityData = new JSONObject();
         if(ciEntityId != null){
@@ -117,7 +127,7 @@ public class BatchSaveCiEntityPublicApi extends PublicApiComponentBase {
         JSONObject relEntityData = new JSONObject();
         ciEntityResult.put("relEntityData", relEntityData);
         //遍历入参属性 key value,转换为对应id
-        for (Map.Entry<String, Object> attrEntity : attrEntityDataParam.entrySet()) {
+        for (Map.Entry<String, Object> attrEntity : entityDataParam.entrySet()) {
             String entityKey = attrEntity.getKey();
             JSONArray entityValueArray = JSONArray.parseArray(JSONArray.toJSONString(attrEntity.getValue()));
             if (attrMap.containsKey(entityKey)) {
