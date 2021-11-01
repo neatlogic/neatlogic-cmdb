@@ -24,13 +24,17 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -59,6 +63,7 @@ public class BatchSaveCiEntityPublicApi extends PublicApiComponentBase {
     @Input({@Param(name = "ciEntityList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "配置项数据"),
             @Param(name = "needCommit", type = ApiParamType.BOOLEAN, isRequired = true, desc = "是否需要提交")})
     @Description(desc = "保存配置项public 简化接口，attrEntityData 仅需传 属性name:属性value")
+    @Example(example = "{\"ciEntityList\":[{\"entityData\":{\"name\":[\"名称s4\"],\"description\":[\"描述s\"],\"state\":[\"下线\"],\"APPComponent\":[\"应用模块11\"],\"owner\":[\"林邦泉2\"],\"bg\":[\"部门1\"],\"data_center\":[\"MAIN\"],\"maintenance_window\":[\"20:00~22:00\"],\"APPIns\":[\"a\"]},\"ciName\":\"APP\",\"name\":\"名称s3\"}],\"needCommit\":true}")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONObject result = new JSONObject();
@@ -82,13 +87,14 @@ public class BatchSaveCiEntityPublicApi extends PublicApiComponentBase {
             Map<String, RelVo> relMap = new HashMap<>();
             ciVo = ciService.getCiById(ciVo.getId());
             for (AttrVo attr : ciVo.getAttrList()) {
-                attrMap.put(attr.getLabel(), attr);
+                attrMap.put(attr.getName(), attr);
             }
             for (RelVo rel : ciVo.getRelList()) {
-                if (StringUtils.isNotBlank(rel.getFromLabel())) {
-                    relMap.put(rel.getFromLabel(), rel);
-                } else {
-                    relMap.put(rel.getToLabel(), rel);
+                if (StringUtils.isNotBlank(rel.getFromCiName())) {
+                    relMap.put(rel.getFromCiName(), rel);
+                }
+                if (StringUtils.isNotBlank(rel.getToCiName())) {
+                    relMap.put(rel.getToCiName(), rel);
                 }
             }
             List<CiEntityVo> ciEntityList = ciEntityMapper.getCiEntityBaseInfoByName(new CiEntityVo(ciVo.getId(), ciEntityName));
@@ -101,9 +107,20 @@ public class BatchSaveCiEntityPublicApi extends PublicApiComponentBase {
                 }
             }
         }
-        //调用内部保存配置项接口
-        BatchSaveCiEntityApi startProcessApi = (BatchSaveCiEntityApi) PrivateApiComponentFactory.getInstance(BatchSaveCiEntityApi.class.getName());
-        startProcessApi.myDoService(result);
+        //调用内部保存配置项接口(transactional)
+        Object component = PrivateApiComponentFactory.getInstance(BatchSaveCiEntityApi.class.getName());
+        Method method = component.getClass().getMethod("myDoService", JSONObject.class);
+        try {
+            method.invoke(component, result);
+        }catch (Exception ex){
+            Throwable target = ex;
+            //如果是反射抛得异常，则需循环拆包，把真实得异常类找出来
+            while (target instanceof InvocationTargetException) {
+                target = ((InvocationTargetException) target).getTargetException();
+            }
+            String error = ex.getMessage() == null ? ExceptionUtils.getStackTrace(ex) : ex.getMessage();
+            throw (Exception) target;
+        }
         return null;
     }
 
@@ -115,13 +132,17 @@ public class BatchSaveCiEntityPublicApi extends PublicApiComponentBase {
      * @param relMap ci关系map
      * @param ciEntityId entity Id
      * @param ciMap ci 缓存
-     * @return
+     * @return 转换后的配置项入参
      */
     private JSONObject getCiEntityResultDate(CiVo ciVo,JSONObject entityDataParam,Map<String, AttrVo> attrMap,Map<String, RelVo> relMap,Long ciEntityId,Map<Long, CiVo> ciMap){
         JSONObject ciEntityResult = JSONObject.parseObject(JSONObject.toJSONString(ciVo));
+        ciEntityResult.put("ciId",ciVo.getId());
+        ciEntityResult.put("id",null);
         JSONObject attrEntityData = new JSONObject();
         if(ciEntityId != null){
             ciEntityResult.put("id",ciEntityId);
+        }else{
+            ciEntityResult.put("uuid", UUID.randomUUID().toString().replace("-", ""));
         }
         ciEntityResult.put("attrEntityData", attrEntityData);
         JSONObject relEntityData = new JSONObject();
@@ -189,6 +210,13 @@ public class BatchSaveCiEntityPublicApi extends PublicApiComponentBase {
         return ciEntityResult;
     }
 
+    /**
+     * 根据配置项值获取配置项
+     * @param ciId 配置模型id
+     * @param name 配置项值
+     * @param ciMap 缓存
+     * @return 配置项列表
+     */
     private List<CiEntityVo> getCiEntityBaseInfoByName(Long ciId, String name, Map<Long, CiVo> ciMap) {
         if (!ciMap.containsKey(ciId)) {
             ciMap.put(ciId, ciMapper.getCiById(ciId));
