@@ -302,9 +302,9 @@ public class CiSyncManager {
                                 //引用属性需要引用包含subset的数据
                                 if (dataObj.get(mappingVo.getField(parentKey)) instanceof JSONArray) {
                                     JSONArray subDataList = dataObj.getJSONArray(mappingVo.getField(parentKey));
+                                    JSONArray attrValueList = new JSONArray();
                                     for (int i = 0; i < subDataList.size(); i++) {
                                         JSONObject subData = subDataList.getJSONObject(i);
-
                                         /*
                                         需要使用同一个集合下的映射关系，如果没有则不处理下一层数据，直接丢弃
                                          */
@@ -323,7 +323,6 @@ public class CiSyncManager {
                                             }
                                             List<CiEntityTransactionVo> subCiEntityTransactionList = generateCiEntityTransaction(subDataWithPK, subSyncCiCollectionVo, ciEntityTransactionMap, mappingVo.getField());
                                             if (CollectionUtils.isNotEmpty(subCiEntityTransactionList)) {
-                                                JSONArray attrValueList = new JSONArray();
                                                 for (CiEntityTransactionVo subCiEntityTransactionVo : subCiEntityTransactionList) {
                                                     if (ciEntityTransactionMap.containsKey(subCiEntityTransactionVo.getHash())) {
                                                         attrValueList.add(ciEntityTransactionMap.get(subCiEntityTransactionVo.getHash()).getCiEntityId());
@@ -333,9 +332,11 @@ public class CiSyncManager {
                                                         attrValueList.add(subCiEntityTransactionVo.getCiEntityId());
                                                     }
                                                 }
-                                                ciEntityTransactionVo.addAttrEntityData(attrMap.get(mappingVo.getAttrId()), attrValueList);
                                             }
                                         }
+                                    }
+                                    if (CollectionUtils.isNotEmpty(attrValueList)) {
+                                        ciEntityTransactionVo.addAttrEntityData(attrMap.get(mappingVo.getAttrId()), attrValueList);
                                     }
                                 } else {
                                     //需要使用模型的唯一规则来查找配置项，如果找不到，或找到多个唯一表达式，就不做任何更新
