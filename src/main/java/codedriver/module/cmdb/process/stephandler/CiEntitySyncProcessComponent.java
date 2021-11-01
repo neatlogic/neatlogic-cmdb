@@ -103,7 +103,7 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
         Map<Long, CiVo> ciMap = new HashMap<>();
         try {
             JSONObject stepConfigObj = JSONObject.parseObject(stepConfig);
-            currentProcessTaskStepVo.setParamObj(stepConfigObj);
+            currentProcessTaskStepVo.getParamObj().putAll(stepConfigObj);
             if (MapUtils.isNotEmpty(stepConfigObj)) {
                 JSONArray handlerList = stepConfigObj.getJSONArray("handlerList");
                 if (CollectionUtils.isNotEmpty(handlerList)) {
@@ -308,23 +308,8 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
     }
 
     @Override
-    protected Set<ProcessTaskStepVo> myGetNext(ProcessTaskStepVo currentProcessTaskStepVo,
-                                               List<ProcessTaskStepVo> nextStepList, Long nextStepId) throws ProcessTaskException {
-        Set<ProcessTaskStepVo> nextStepSet = new HashSet<>();
-        if (nextStepList.size() == 1) {
-            nextStepSet.add(nextStepList.get(0));
-        } else if (nextStepList.size() > 1) {
-            if (nextStepId == null) {
-                throw new ProcessTaskException("找到多个后续节点");
-            }
-            for (ProcessTaskStepVo processTaskStepVo : nextStepList) {
-                if (processTaskStepVo.getId().equals(nextStepId)) {
-                    nextStepSet.add(processTaskStepVo);
-                    break;
-                }
-            }
-        }
-        return nextStepSet;
+    protected Set<Long> myGetNext(ProcessTaskStepVo currentProcessTaskStepVo, List<Long> nextStepIdList, Long nextStepId) throws ProcessTaskException {
+        return defaultGetNext(nextStepIdList, nextStepId);
     }
 
     @Override
