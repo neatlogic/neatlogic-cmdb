@@ -195,7 +195,7 @@ public class BatchSaveCiEntityPublicApi extends PublicApiComponentBase {
                             for (CiEntityVo entity : targetCiEntityList) {
                                 JSONObject valueRel = new JSONObject();
                                 valueList.add(valueRel);
-                                valueRel.put("ciId",ciVo.getId());
+                                valueRel.put("ciId",entity.getCiId());
                                 valueRel.put("ciEntityId",entity.getId());
                                 valueRel.put("ciEntityName",entity.getName());
                             }
