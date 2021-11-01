@@ -29,7 +29,6 @@ import codedriver.framework.cmdb.exception.attr.AttrNotFoundException;
 import codedriver.framework.cmdb.exception.ci.*;
 import codedriver.framework.cmdb.exception.sync.CiEntityDuplicateException;
 import codedriver.framework.cmdb.exception.sync.CollectionNotFoundException;
-import codedriver.framework.cmdb.exception.sync.InitiativeSyncCiCollectionNotFoundException;
 import codedriver.framework.common.constvalue.InputFrom;
 import codedriver.framework.exception.core.ApiRuntimeException;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
@@ -154,10 +153,11 @@ public class CiSyncManager {
         private SyncCiCollectionVo getInitiativeSyncCiCollection(String collectionName) {
             if (!InitiativeSyncCiCollectionMap.containsKey(collectionName)) {
                 SyncCiCollectionVo syncCiCollectionVo = syncMapper.getInitiativeSyncCiCollectionByCollectName(collectionName);
-                if (syncCiCollectionVo == null) {
+                if (syncCiCollectionVo != null) {
+                    InitiativeSyncCiCollectionMap.put(collectionName, syncCiCollectionVo);
+                } /*else {
                     throw new InitiativeSyncCiCollectionNotFoundException(collectionName);
-                }
-                InitiativeSyncCiCollectionMap.put(collectionName, syncCiCollectionVo);
+                }*/
             }
             return InitiativeSyncCiCollectionMap.get(collectionName);
         }

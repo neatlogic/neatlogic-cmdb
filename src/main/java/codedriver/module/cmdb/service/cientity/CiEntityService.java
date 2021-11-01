@@ -100,6 +100,8 @@ public interface CiEntityService {
      */
     boolean validateCiEntityTransaction(CiEntityTransactionVo ciEntityTransactionVo);
 
+    void rebuildAttrEntityIndex(Long attrId, Long fromCiEntityId);
+
     void rebuildRelEntityIndex(RelDirectionType direction, Long relId, Long ciEntityId);
 
     void updateCiEntity(CiEntityVo ciEntityVo);

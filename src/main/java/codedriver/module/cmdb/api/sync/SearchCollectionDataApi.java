@@ -111,9 +111,10 @@ public class SearchCollectionDataApi extends PrivateApiComponentBase {
                     criteria.orOperator(criteriaList);
                     finalCriteria.add(criteria);
                 }
-
-                query.addCriteria(new Criteria().andOperator(finalCriteria));
-                countQuery.addCriteria(new Criteria().andOperator(finalCriteria));
+                if (CollectionUtils.isNotEmpty(finalCriteria)) {
+                    query.addCriteria(new Criteria().andOperator(finalCriteria));
+                    countQuery.addCriteria(new Criteria().andOperator(finalCriteria));
+                }
 
                 query.limit(pageVo.getPageSize());
                 if (pageVo.getCurrentPage() > 1) {

@@ -56,7 +56,8 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
             @Param(name = "ciEntityId", type = ApiParamType.LONG, isRequired = true, desc = "配置项id"),
-            @Param(name = "limitRelEntity", type = ApiParamType.BOOLEAN, desc = "是否显示关系数量"),
+            @Param(name = "limitRelEntity", type = ApiParamType.BOOLEAN, desc = "是否限制关系数量"),
+            @Param(name = "limitAttrEntity", type = ApiParamType.BOOLEAN, desc = "是否限制引用属性数量"),
             @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "是否需要操作列，如果需要检查操作权限，会根据结果返回action列")})
     @Output({@Param(explode = CiEntityVo.class)})
     @Description(desc = "获取配置项详细信息接口")
@@ -65,6 +66,7 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
         Long ciEntityId = jsonObj.getLong("ciEntityId");
         Long ciId = jsonObj.getLong("ciId");
         Boolean limitRelEntity = jsonObj.getBoolean("limitRelEntity");
+        Boolean limitAttrEntity = jsonObj.getBoolean("limitAttrEntity");
         boolean needAction = jsonObj.getBooleanValue("needAction");
         CiVo ciVo = ciMapper.getCiById(ciId);
         CiEntityVo pCiEntityVo = new CiEntityVo();
@@ -72,6 +74,9 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
         pCiEntityVo.setCiId(ciId);
         if (limitRelEntity != null) {
             pCiEntityVo.setLimitRelEntity(limitRelEntity);
+        }
+        if (limitAttrEntity != null) {
+            pCiEntityVo.setLimitAttrEntity(limitAttrEntity);
         }
         CiEntityVo ciEntityVo = ciEntityService.getCiEntityById(pCiEntityVo);
         if (ciEntityVo == null) {

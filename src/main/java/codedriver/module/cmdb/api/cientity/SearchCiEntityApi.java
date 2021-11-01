@@ -90,7 +90,9 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
             @Param(name = "mode", type = ApiParamType.ENUM, rule = "page,dialog", desc = "dialog模式不会显示详情连接"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页大小"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
-            @Param(name = "ciEntityList", type = ApiParamType.JSONARRAY, desc = "配置项结果集，如果提供则不会进行搜索，补充头部信息后直接返回")
+            @Param(name = "ciEntityList", type = ApiParamType.JSONARRAY, desc = "配置项结果集，如果提供则不会进行搜索，补充头部信息后直接返回"),
+            @Param(name = "attrId", type = ApiParamType.LONG, desc = "关系id（通过引用配置项查询引用属性时使用）"),
+            @Param(name = "fromCiEntityId", type = ApiParamType.LONG, desc = "引用配置项id（通过引用配置项查询引用属性时使用）")
     })
     @Output({@Param(explode = BasePageVo.class),
             @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = CiEntityVo[].class),
@@ -242,6 +244,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
                 entityObj.put("attrEntityData", entity.getAttrEntityData());
                 entityObj.put("relEntityData", entity.getRelEntityData());
                 entityObj.put("maxRelEntityCount", entity.getMaxRelEntityCount());
+                entityObj.put("maxAttrEntityCount", entity.getMaxAttrEntityCount());
                 if (ciEntityObjList == null && needAction && ciVo.getIsVirtual().equals(0)) {
                     JSONObject actionData = new JSONObject();
                     actionData.put(CiAuthType.CIENTITYUPDATE.getValue(), canEdit || hasMaintainCiEntityIdList.contains(entity.getId()));

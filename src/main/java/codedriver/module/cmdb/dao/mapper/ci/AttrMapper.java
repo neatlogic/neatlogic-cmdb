@@ -12,6 +12,8 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface AttrMapper {
+    List<AttrVo> getAllNeedTargetCiAttrList();
+
     List<AttrVo> searchAttr(AttrVo attrVo);
 
     int searchAttrCount(AttrVo attrVo);
