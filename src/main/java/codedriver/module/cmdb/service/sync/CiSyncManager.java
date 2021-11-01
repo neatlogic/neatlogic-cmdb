@@ -414,8 +414,7 @@ public class CiSyncManager {
                          */
                             RelVo relVo = relMap.get(mappingVo.getRelId());
                             Long ciId = mappingVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiId() : relVo.getFromCiId();
-                            //SyncCiCollectionVo subSyncCiCollectionVo = syncMapper.getSyncCiCollectionByCiIdAndCollectionName(ciId, syncCiCollectionVo.getCollectionName());
-                            if (/*subSyncCiCollectionVo != null && */dataObj.get(mappingVo.getField(parentKey)) instanceof JSONArray) {
+                            if (dataObj.get(mappingVo.getField(parentKey)) instanceof JSONArray) {
                                 JSONArray subDataList = dataObj.getJSONArray(mappingVo.getField(parentKey));
                                 for (int i = 0; i < subDataList.size(); i++) {
                                     JSONObject subData = subDataList.getJSONObject(i);
@@ -427,12 +426,10 @@ public class CiSyncManager {
                                         SyncCiCollectionVo subInitiativeSyncCiCollection = getInitiativeSyncCiCollection(subCollectionName);
                                         if (subInitiativeSyncCiCollection != null) {
                                             Long subCiId = subInitiativeSyncCiCollection.getCiId();
-                                    /*
-                                    检查关系集合主动采集所关联的模型id是否属于当前关系子模型
-                                     */
                                             List<CiVo> downCiList = getDownwardCiList(ciId);
                                             if (downCiList.stream().anyMatch(d -> d.getId().equals(subCiId))) {
-                                                SyncCiCollectionVo subSyncCiCollectionVo = getSyncCiCollection(subCiId, syncCiCollectionVo.getCollectionName());
+                                                //找到关系原始模型id在当前集合下的映射关系
+                                                SyncCiCollectionVo subSyncCiCollectionVo = getSyncCiCollection(ciId, syncCiCollectionVo.getCollectionName());
                                                 if (subSyncCiCollectionVo != null) {
                                                     JSONObject subDataWithPK = new JSONObject();
                                                     for (String subKey : subData.keySet()) {
@@ -448,11 +445,11 @@ public class CiSyncManager {
                                                     if (CollectionUtils.isNotEmpty(subCiEntityTransactionList)) {
                                                         for (CiEntityTransactionVo subCiEntityTransactionVo : subCiEntityTransactionList) {
                                                             if (ciEntityTransactionMap.containsKey(subCiEntityTransactionVo.getHash())) {
-                                                                ciEntityTransactionVo.addRelEntityData(relVo, mappingVo.getDirection(), ciId, ciEntityTransactionMap.get(subCiEntityTransactionVo.getHash()).getCiEntityId());
+                                                                ciEntityTransactionVo.addRelEntityData(relVo, mappingVo.getDirection(), subCiId, ciEntityTransactionMap.get(subCiEntityTransactionVo.getHash()).getCiEntityId());
                                                             } else {
                                                                 ciEntityTransactionMap.put(subCiEntityTransactionVo.getHash(), subCiEntityTransactionVo);
                                                                 ciEntityTransactionList.add(subCiEntityTransactionVo);
-                                                                ciEntityTransactionVo.addRelEntityData(relVo, mappingVo.getDirection(), ciId, subCiEntityTransactionVo.getCiEntityId());
+                                                                ciEntityTransactionVo.addRelEntityData(relVo, mappingVo.getDirection(), subCiId, subCiEntityTransactionVo.getCiEntityId());
                                                             }
                                                         }
                                                     }
