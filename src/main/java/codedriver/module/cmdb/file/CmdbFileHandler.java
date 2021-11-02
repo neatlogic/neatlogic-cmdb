@@ -32,8 +32,8 @@ public class CmdbFileHandler extends FileTypeHandlerBase {
     }
 
     @Override
-    protected boolean myDeleteFile(Long fileId) {
-        importMapper.deleteCmdbImportFile(fileId);
+    protected boolean myDeleteFile(FileVo fileVo, JSONObject paramObj) {
+        importMapper.deleteCmdbImportFile(fileVo.getId());
         return true;
     }
 
