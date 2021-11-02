@@ -68,7 +68,7 @@ public class DeleteBatchImportFileApi extends PrivateApiComponentBase {
             IFileTypeHandler fileTypeHandler = FileTypeHandlerFactory.getHandler(fileVo.getType());
             if (fileTypeHandler != null) {
                 if (fileTypeHandler.valid(UserContext.get().getUserUuid(), fileVo, null)) {
-                    fileTypeHandler.deleteFile(fileId);
+                    fileTypeHandler.deleteFile(fileVo, null);
                 } else {
                     throw new FileAccessDeniedException(fileVo.getName(), OperationTypeEnum.DELETE.getText());
                 }
