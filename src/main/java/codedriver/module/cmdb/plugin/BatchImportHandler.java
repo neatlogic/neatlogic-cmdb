@@ -139,7 +139,12 @@ public class BatchImportHandler {
             ciEntityVo.setCiId(ciId);
             ciEntityVo.setName(name);
             if (ciVo.getIsVirtual().equals(0)) {
-                return ciEntityMapper.getCiEntityBaseInfoByName(ciEntityVo);
+                List<CiVo> list = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
+                if (CollectionUtils.isNotEmpty(list)) {
+                    ciEntityVo.setIdList(list.stream().map(CiVo::getId).collect(Collectors.toList()));
+                    return ciEntityMapper.getCiEntityListByCiIdListAndName(ciEntityVo);
+                }
+                return null;
             } else {
                 return ciEntityMapper.getVirtualCiEntityBaseInfoByName(ciEntityVo);
             }

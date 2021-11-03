@@ -17,6 +17,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import codedriver.module.cmdb.service.ci.CiService;
 import com.alibaba.fastjson.JSONArray;
@@ -46,6 +47,9 @@ import java.util.stream.Collectors;
 public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
 
     static Logger logger = LoggerFactory.getLogger(GetImportTemplateApi.class);
+
+    @Resource
+    private CiMapper ciMapper;
 
     @Resource
     private CiEntityMapper ciEntityMapper;
@@ -171,11 +175,11 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
                         }
                         // 如果是下拉框，则设置数据有效性
                         if (PropHandlerType.SELECT.getValue().equals(attr.getType())) {
-                            List<Long> idList = ciEntityMapper.getCiEntityIdByCiId(attr.getTargetCiId());
-                            if (CollectionUtils.isNotEmpty(idList)) {
-                                List<CiEntityVo> entityVoList = ciEntityMapper.getCiEntityBaseInfoByIdList(idList);
-                                if (CollectionUtils.isNotEmpty(entityVoList)) {
-                                    List<String> collect = entityVoList.stream().map(CiEntityVo::getName).collect(Collectors.toList());
+                            CiVo targetCi = ciMapper.getCiById(attr.getTargetCiId());
+                            if (targetCi != null) {
+                                List<CiEntityVo> list = ciEntityMapper.getDownwardCiEntityByLR(targetCi.getLft(), targetCi.getRht());
+                                if (CollectionUtils.isNotEmpty(list)) {
+                                    List<String> collect = list.stream().map(CiEntityVo::getName).collect(Collectors.toList());
                                     String[] array = new String[collect.size()];
                                     collect.toArray(array);
                                     addValidationData(wb, sheet, attr.getName(), validationSheetIndex, array, row.getRowNum() + 1, 99999, i, i);
@@ -198,9 +202,11 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
             }
             /* 关系 */
             if (CollectionUtils.isNotEmpty(ciVo.getRelList()) && CollectionUtils.isNotEmpty(relIdList)) {
+                List<Long> upwardCiIdList = ciVo.getUpwardCiList().stream().map(CiVo::getId).collect(Collectors.toList());
                 for (RelVo rel : ciVo.getRelList()) {
                     if (relIdList.contains(rel.getId())) {
-                        if (rel.getFromCiId().equals(ciVo.getId())) { //当前CI处于from
+                        if (rel.getFromCiId().equals(ciVo.getId())
+                                || (CollectionUtils.isNotEmpty(upwardCiIdList) && upwardCiIdList.contains(rel.getFromCiId()))) { //当前CI处于from
                             String label = rel.getToLabel();
                             if (rel.getToIsRequired().equals(1)) {
                                 label = label + "[(必填)]";
@@ -209,7 +215,8 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
                             cell.setCellStyle(style);
                             cell.setCellValue(label);
                             i++;
-                        } else if (rel.getToCiId().equals(ciVo.getId())) {//当前CI处于to
+                        } else if (rel.getToCiId().equals(ciVo.getId())
+                                || (CollectionUtils.isNotEmpty(upwardCiIdList) && upwardCiIdList.contains(rel.getToCiId()))) {//当前CI处于to
                             String label = rel.getFromLabel();
                             if (rel.getFromIsRequired().equals(1)) {
                                 label = label + "[(必填)]";
