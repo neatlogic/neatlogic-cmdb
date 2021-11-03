@@ -174,10 +174,24 @@ public class CiEntityServiceImpl implements CiEntityService, CiEntityCrossoverSe
         List<CiVo> ciList = ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht());
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
         List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciVo.getId()));
+        if (CollectionUtils.isNotEmpty(ciEntityVo.getAttrIdList()) && CollectionUtils.isNotEmpty(attrList)) {
+            for (AttrVo attrVo : attrList) {
+                if (ciEntityVo.getAttrIdList().stream().noneMatch(d -> d.equals(attrVo.getId()))) {
+                    attrVo.setMaxAttrEntityCount(-1);
+                }
+            }
+        }
+        if (CollectionUtils.isNotEmpty(ciEntityVo.getRelIdList()) && CollectionUtils.isNotEmpty(relList)) {
+            for (RelVo relVo : relList) {
+                if (ciEntityVo.getRelIdList().stream().noneMatch(d -> d.equals(relVo.getId()))) {
+                    relVo.setMaxRelEntityCount(-1);
+                }
+            }
+        }
         ciEntityVo.setCiList(ciList);
         ciEntityVo.setAttrList(attrList);
         ciEntityVo.setRelList(relList);
-        /*
+        /*a
         如果有属性过滤，则根据属性补充关键信息
          */
         if (CollectionUtils.isNotEmpty(ciEntityVo.getAttrFilterList())) {
@@ -1643,7 +1657,7 @@ public class CiEntityServiceImpl implements CiEntityService, CiEntityCrossoverSe
      */
     @Override
     public void rebuildRelEntityIndex(RelDirectionType direction, Long relId, Long ciEntityId) {
-        List<RelEntityVo> relEntityList = null;
+        List<RelEntityVo> relEntityList;
         if (direction == RelDirectionType.FROM) {
             relEntityMapper.clearRelEntityFromIndex(relId, ciEntityId);
             relEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(ciEntityId, relId, Math.max(CiEntityVo.MAX_RELENTITY_COUNT + 1, 50));

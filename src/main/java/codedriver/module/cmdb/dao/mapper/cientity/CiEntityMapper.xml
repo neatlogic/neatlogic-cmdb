@@ -263,7 +263,7 @@
                     LEFT JOIN `cmdb_attrentity` `cmdb_attrentity_${attr.id}` ON `ci_base`.id =
                     `cmdb_attrentity_${attr.id}`.from_cientity_id AND `cmdb_attrentity_${attr.id}`.attr_id = #{attr.id}
                     <if test="limitAttrEntity == true">
-                        AND `cmdb_attrentity_${attr.id}`.`from_index` &lt;= (#{maxAttrEntityCount} + 1)
+                        AND `cmdb_attrentity_${attr.id}`.`from_index` &lt;= (#{attr.maxAttrEntityCount} + 1)
                     </if>
                     <choose>
                         <when test="attr.targetIsVirtual != 1">
@@ -295,7 +295,8 @@
                         `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
                         AND `cmdb_relentity_${rel.id}_${rel.direction}`.rel_id = #{rel.id}
                         <if test="limitRelEntity == true">
-                            AND `cmdb_relentity_${rel.id}_${rel.direction}`.`from_index` &lt;= (#{maxRelEntityCount} +
+                            AND `cmdb_relentity_${rel.id}_${rel.direction}`.`from_index` &lt;= (#{rel.maxRelEntityCount}
+                            +
                             1)
                         </if>
                         <choose>
@@ -316,7 +317,8 @@
                         `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
                         AND `cmdb_relentity_${rel.id}_${rel.direction}`.rel_id = #{rel.id}
                         <if test="limitRelEntity == true">
-                            AND `cmdb_relentity_${rel.id}_${rel.direction}`.`to_index` &lt;= (#{maxRelEntityCount} + 1)
+                            AND `cmdb_relentity_${rel.id}_${rel.direction}`.`to_index` &lt;= (#{rel.maxRelEntityCount} +
+                            1)
                         </if>
                         <choose>
                             <when test="rel.fromIsVirtual == 0">
