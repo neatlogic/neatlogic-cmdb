@@ -149,6 +149,7 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
             i++;
             /* 属性 */
             if (CollectionUtils.isNotEmpty(ciVo.getAttrList()) && CollectionUtils.isNotEmpty(attrIdList)) {
+                int validationSheetIndex = 1;
                 for (AttrVo attr : ciVo.getAttrList()) {
                     if (attrIdList.contains(attr.getId())) {
                         String label = attr.getLabel();
@@ -177,12 +178,14 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
                                     List<String> collect = entityVoList.stream().map(CiEntityVo::getName).collect(Collectors.toList());
                                     String[] array = new String[collect.size()];
                                     collect.toArray(array);
-                                    CellRangeAddressList addressList = new CellRangeAddressList(row.getRowNum() + 1, 99999, i, i);
-                                    DVConstraint dvConstraint = DVConstraint.createExplicitListConstraint(array);
-                                    DataValidation validation = new HSSFDataValidation(addressList, dvConstraint);
-                                    validation.setSuppressDropDownArrow(false);// false时显示下拉箭头(office2007)
-                                    validation.setShowErrorBox(true);
-                                    sheet.addValidationData(validation);
+                                    addValidationData(wb, sheet, attr.getName(), validationSheetIndex, array, row.getRowNum() + 1, 99999, i, i);
+                                    //CellRangeAddressList addressList = new CellRangeAddressList(row.getRowNum() + 1, 99999, i, i);
+                                    //DVConstraint dvConstraint = DVConstraint.createExplicitListConstraint(array);
+                                    //DataValidation validation = new HSSFDataValidation(addressList, dvConstraint);
+                                    //validation.setSuppressDropDownArrow(false);// false时显示下拉箭头(office2007)
+                                    //validation.setShowErrorBox(true);
+                                    //sheet.addValidationData(validation);
+                                    validationSheetIndex++;
                                 }
                             }
                         }
@@ -246,5 +249,40 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
             }
         }
         return null;
+    }
+
+    /**
+     * 设置数据有效性
+     * 数据有效性列表过长，总字符数超过255时，需要将列表放在单独的sheet
+     *
+     * @param workbook       需要设置数据有效性的workbook
+     * @param targetSheet    需要设置需要设置数据有效性的sheet
+     * @param sheetName      数据有效性列表sheet名称
+     * @param sheetNameIndex 数据有效性列表sheet序号
+     * @param sheetData      数据有效性列表
+     * @param firstRow       数据有效性开始行
+     * @param lastRow        数据有效性结束行
+     * @param firstCol       数据有效性开始列
+     * @param lastCol        数据有效性结束列
+     */
+    private void addValidationData(Workbook workbook, Sheet targetSheet, String sheetName, int sheetNameIndex, String[] sheetData, int firstRow, int lastRow, int firstCol, int lastCol) {
+        Sheet hidden = workbook.createSheet(sheetName);
+        Cell cell;
+        for (int i = 0, length = sheetData.length; i < length; i++) {
+            String name = sheetData[i];
+            Row row = hidden.createRow(i);
+            cell = row.createCell(0);
+            cell.setCellValue(name);
+        }
+        Name namedCell = workbook.createName();
+        namedCell.setNameName(sheetName);
+        namedCell.setRefersToFormula(sheetName + "!$A$1:$A$" + sheetData.length);
+        DVConstraint constraint = DVConstraint.createFormulaListConstraint(sheetName);
+        CellRangeAddressList regions = new CellRangeAddressList(firstRow, lastRow, firstCol, lastCol);
+        DataValidation dataValidation = new HSSFDataValidation(regions, constraint);
+        dataValidation.setSuppressDropDownArrow(false);// false时显示下拉箭头(office2007)
+        dataValidation.setShowErrorBox(true);
+        workbook.setSheetHidden(sheetNameIndex, true);
+        targetSheet.addValidationData(dataValidation);
     }
 }
