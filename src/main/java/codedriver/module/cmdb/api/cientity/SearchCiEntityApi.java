@@ -196,9 +196,9 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
             });
         }
 
+        //把需要显示的属性和关系设进去，后台会进行自动过滤
         ciEntityVo.setAttrIdList(attrIdList);
         ciEntityVo.setRelIdList(relIdList);
-
 
         List<CiEntityVo> ciEntityList;
         CiVo ciVo = ciMapper.getCiById(ciEntityVo.getCiId());

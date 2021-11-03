@@ -97,7 +97,6 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
         CiViewVo ciViewVo = new CiViewVo();
         ciViewVo.setCiId(ciEntityVo.getCiId());
         List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo));
-        List<Long> attrIdList = null, relIdList = null;
         List<String> headerList = new ArrayList<>();
         headerList.add("id");
         headerList.add("uuid");
@@ -105,31 +104,23 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
         columnList.add("id");
         columnList.add("uuid");
         if (CollectionUtils.isNotEmpty(ciViewList)) {
-            attrIdList = new ArrayList<>();
-            relIdList = new ArrayList<>();
             for (CiViewVo ciview : ciViewList) {
                 switch (ciview.getType()) {
                     case "attr":
-                        attrIdList.add(ciview.getItemId());
                         columnList.add("attr_" + ciview.getItemId());
                         headerList.add(ciview.getItemLabel());
                         break;
                     case "relfrom":
-                        relIdList.add(ciview.getItemId());
                         columnList.add("relfrom_" + ciview.getItemId());
                         headerList.add(ciview.getItemLabel());
                         break;
                     case "relto":
-                        relIdList.add(ciview.getItemId());
                         columnList.add("relto_" + ciview.getItemId());
                         headerList.add(ciview.getItemLabel());
                         break;
                 }
             }
         }
-
-        ciEntityVo.setAttrIdList(attrIdList);
-        ciEntityVo.setRelIdList(relIdList);
 
         ExcelBuilder builder = new ExcelBuilder(SXSSFWorkbook.class);
         builder.withSheetName("数据")
@@ -198,7 +189,7 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
         }
         response.setContentType("application/vnd.ms-excel;charset=utf-8");
         response.setHeader("Content-Disposition", " attachment; filename=\"" + fileNameEncode + "\"");
-        try (OutputStream os = response.getOutputStream();) {
+        try (OutputStream os = response.getOutputStream()) {
             workbook.write(os);
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
