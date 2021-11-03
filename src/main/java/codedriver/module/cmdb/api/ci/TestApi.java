@@ -18,7 +18,6 @@ import com.alibaba.fastjson.JSONObject;
 
 import javax.annotation.Resource;
 
-//@Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class TestApi extends PrivateApiComponentBase {
@@ -39,11 +38,11 @@ public class TestApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         TagentVo tagentVo = new TagentVo();
-        tagentVo.setIp("99.99.99.99");
+        tagentVo.setIp("192.168.0.34");
         tagentVo.setOsType("linux");
         tagentVo.setOsVersion("13.x");
         tagentVo.setOsbit("64");
-        tagentVo.setName("tagent222");
+        tagentVo.setName("prd-demo-34");
         tagentVo.setAccountId(10L);
         AfterRegisterJobManager.executeAll(tagentVo);
         return null;
