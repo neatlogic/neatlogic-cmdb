@@ -116,11 +116,11 @@
 
     <select id="getAttrListByToCiEntityId" parameterType="java.lang.Long"
             resultType="codedriver.framework.cmdb.dto.ci.AttrVo" useCache="true">
-        SELECT a.label AS ciLabel,
-               a.name  AS ciName,
-               b.id    AS id,
-               b.name  AS name,
-               b.label AS label
+        SELECT distinct a.label AS ciLabel,
+                        a.name  AS ciName,
+                        b.id    AS id,
+                        b.name  AS name,
+                        b.label AS label
         FROM cmdb_ci a
                  JOIN cmdb_attr b ON a.id = b.ci_id
                  JOIN cmdb_attrentity c ON b.id = c.attr_id
