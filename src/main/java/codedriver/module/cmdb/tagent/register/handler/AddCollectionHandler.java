@@ -35,7 +35,7 @@ public class AddCollectionHandler extends AfterRegisterBase {
     public void myExecute(TagentVo tagentVo) {
         if (StringUtils.isNotBlank(tagentVo.getOsType()) && StringUtils.isNotBlank(tagentVo.getIp())) {
             Criteria criteria = new Criteria();
-            criteria.andOperator(Criteria.where("MGMT_IP").is(tagentVo.getIp()), Criteria.where("_OBJ_TYPE").is(tagentVo.getOsType()));
+            criteria.andOperator(Criteria.where("MGMT_IP").is(tagentVo.getIp()));
             Query query = new Query(criteria);
             JSONObject oldData = mongoTemplate.findOne(query, JSONObject.class, "COLLECT_OS");
             JSONObject dataObj = new JSONObject();
