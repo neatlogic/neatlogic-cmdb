@@ -177,7 +177,8 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
                         if (PropHandlerType.SELECT.getValue().equals(attr.getType())) {
                             CiVo targetCi = ciMapper.getCiById(attr.getTargetCiId());
                             if (targetCi != null) {
-                                List<CiEntityVo> list = ciEntityMapper.getDownwardCiEntityByLR(targetCi.getLft(), targetCi.getRht());
+                                // 获取当前属性关联的模型配置项（包括子模型的配置项，限制1000条）
+                                List<CiEntityVo> list = ciEntityMapper.getDownwardCiEntityByLRLimitSize(targetCi.getLft(), targetCi.getRht(), 1000);
                                 if (CollectionUtils.isNotEmpty(list)) {
                                     List<String> collect = list.stream().map(CiEntityVo::getName).collect(Collectors.toList());
                                     String[] array = new String[collect.size()];

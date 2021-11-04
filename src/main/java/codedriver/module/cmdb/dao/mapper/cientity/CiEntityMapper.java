@@ -60,12 +60,12 @@ public interface CiEntityMapper {
 
     /**
      * 获取当前模型以及所有子模型的配置项
-     *
      * @param lft 模型左编码
      * @param rht 模型右编码
+     * @param size 限制的返回数量
      * @return 配置项
      */
-    List<CiEntityVo> getDownwardCiEntityByLR(@Param("lft") Integer lft, @Param("rht") Integer rht);
+    List<CiEntityVo> getDownwardCiEntityByLRLimitSize(@Param("lft") Integer lft, @Param("rht") Integer rht, @Param("size") Integer size);
 
     /**
      * 获取配置项基本信息
