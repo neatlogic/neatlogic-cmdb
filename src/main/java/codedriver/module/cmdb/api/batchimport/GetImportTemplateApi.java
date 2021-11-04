@@ -48,6 +48,8 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
 
     static Logger logger = LoggerFactory.getLogger(GetImportTemplateApi.class);
 
+    private final int validationOptionSize = 100;// 限制数据有效性列表长度
+
     @Resource
     private CiMapper ciMapper;
 
@@ -177,10 +179,14 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
                         if (PropHandlerType.SELECT.getValue().equals(attr.getType())) {
                             CiVo targetCi = ciMapper.getCiById(attr.getTargetCiId());
                             if (targetCi != null) {
-                                // 获取当前属性关联的模型配置项（包括子模型的配置项，限制1000条）
-                                List<CiEntityVo> list = ciEntityMapper.getDownwardCiEntityByLRLimitSize(targetCi.getLft(), targetCi.getRht(), 1000);
+                                // 获取当前属性关联的模型配置项（包括子模型的配置项，限制validationOptionSize条）
+                                int ciEntityCount = ciEntityMapper.getDownwardCiEntityCountByLR(targetCi.getLft(), targetCi.getRht());
+                                List<CiEntityVo> list = ciEntityMapper.getDownwardCiEntityByLRLimitSize(targetCi.getLft(), targetCi.getRht(), validationOptionSize);
                                 if (CollectionUtils.isNotEmpty(list)) {
                                     List<String> collect = list.stream().map(CiEntityVo::getName).collect(Collectors.toList());
+                                    if (ciEntityCount > validationOptionSize) {
+                                        collect.add("选项过多，其余选项不予展示");
+                                    }
                                     String[] array = new String[collect.size()];
                                     collect.toArray(array);
                                     addValidationData(wb, sheet, attr.getName(), validationSheetIndex, array, row.getRowNum() + 1, 99999, i, i);
