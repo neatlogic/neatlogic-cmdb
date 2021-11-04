@@ -205,6 +205,7 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
                 List<Long> upwardCiIdList = ciVo.getUpwardCiList().stream().map(CiVo::getId).collect(Collectors.toList());
                 for (RelVo rel : ciVo.getRelList()) {
                     if (relIdList.contains(rel.getId())) {
+                        // 关系包括当前CI自身设置的关系与继承过来的关系
                         if (rel.getFromCiId().equals(ciVo.getId())
                                 || (CollectionUtils.isNotEmpty(upwardCiIdList) && upwardCiIdList.contains(rel.getFromCiId()))) { //当前CI处于from
                             String label = rel.getToLabel();
