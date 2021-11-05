@@ -3,13 +3,10 @@ package codedriver.module.cmdb.api.resourcecenter.account;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountProtocolVo;
-import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterAccountProtocolNotFoundException;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterAccountProtocolRepeatException;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.dto.FieldValidResultVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
-import codedriver.framework.restful.core.IValid;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.RESOURCECENTER_MODIFY;
 import com.alibaba.fastjson.JSON;
@@ -44,6 +41,7 @@ public class AccountProtocolSaveApi extends PrivateApiComponentBase {
     @Input({
             @Param(name = "id", type = ApiParamType.LONG, isRequired = false, desc = "协议ID"),
             @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "协议名称"),
+            @Param(name = "port", type = ApiParamType.INTEGER, desc = "协议端口"),
 
     })
     @Output({
@@ -52,17 +50,14 @@ public class AccountProtocolSaveApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         AccountProtocolVo accountProtocolVo = JSON.toJavaObject(paramObj, AccountProtocolVo.class);
+        if (resourceCenterMapper.checkAccountProtocolIsRepeats(accountProtocolVo) > 0) {
+            throw new ResourceCenterAccountProtocolRepeatException(accountProtocolVo.getName(),accountProtocolVo.getPort());
+        }
         Long id = paramObj.getLong("id");
         if (id != null) {
-            if (resourceCenterMapper.checkAccountProtocolIsRepeats(accountProtocolVo) > 0) {
-                throw new ResourceCenterAccountProtocolRepeatException(accountProtocolVo.getName());
-            }
             resourceCenterMapper.updateAccountProtocol(accountProtocolVo);
         } else {
-            if (resourceCenterMapper.checkAccountProtocolIsRepeats(accountProtocolVo) > 0) {
-                throw new ResourceCenterAccountProtocolRepeatException(accountProtocolVo.getName());
-            }
-            resourceCenterMapper.insertAccountProtocol(new AccountProtocolVo(accountProtocolVo.getId(), accountProtocolVo.getName()));
+            resourceCenterMapper.insertAccountProtocol(accountProtocolVo);
         }
         return null;
     }
