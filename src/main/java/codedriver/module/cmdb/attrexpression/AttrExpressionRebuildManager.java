@@ -361,7 +361,7 @@ public class AttrExpressionRebuildManager {
 
     public static void rebuild(RebuildAuditVo rebuildAuditVo) {
         attrExpressionRebuildAuditMapper.insertAttrExpressionRebuildAudit(rebuildAuditVo);
-        AfterTransactionJob<RebuildAuditVo> job = new AfterTransactionJob<>();
+        AfterTransactionJob<RebuildAuditVo> job = new AfterTransactionJob<>("CIENTITY-EXPRESSION-ATTR-BUILDER");
         job.execute(rebuildAuditVo, rebuildQueue::offer);
     }
 
@@ -370,7 +370,7 @@ public class AttrExpressionRebuildManager {
             for (RebuildAuditVo auditVo : rebuildAuditList) {
                 attrExpressionRebuildAuditMapper.insertAttrExpressionRebuildAudit(auditVo);
             }
-            AfterTransactionJob<List<RebuildAuditVo>> job = new AfterTransactionJob<>();
+            AfterTransactionJob<List<RebuildAuditVo>> job = new AfterTransactionJob<>("CIENTITY-EXPRESSION-ATTR-BUILDER");
             job.execute(rebuildAuditList, pRebuildAuditList -> {
                 for (RebuildAuditVo auditVo : pRebuildAuditList) {
                     rebuildQueue.offer(auditVo);

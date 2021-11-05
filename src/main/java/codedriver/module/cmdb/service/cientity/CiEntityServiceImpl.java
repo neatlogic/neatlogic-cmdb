@@ -1808,7 +1808,7 @@ public class CiEntityServiceImpl implements CiEntityService, CiEntityCrossoverSe
                     statusList.add(new TransactionStatusVo(transactionVo.getId(), TransactionStatus.COMMITED));
                 }
             } catch (Exception ex) {
-                AfterTransactionJob<TransactionVo> job = new AfterTransactionJob<>();
+                AfterTransactionJob<TransactionVo> job = new AfterTransactionJob<>("CIENTITY-UPDATE-TRANSACTION-STATUS");
                 job.execute(transactionVo, t -> {
                 }, t -> {
                     t.setError(ex instanceof ApiRuntimeException ? ((ApiRuntimeException) ex).getMessage(true) : ex.getMessage());

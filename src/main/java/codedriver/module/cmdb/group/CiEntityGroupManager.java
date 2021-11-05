@@ -51,7 +51,7 @@ public class CiEntityGroupManager {
         CiEntityVo pCiEntityVo = new CiEntityVo();
         pCiEntityVo.setId(pCiEntityId);
         pCiEntityVo.setCiId(pCiId);
-        AfterTransactionJob<CiEntityVo> afterTransactionJob = new AfterTransactionJob<>();
+        AfterTransactionJob<CiEntityVo> afterTransactionJob = new AfterTransactionJob<>("CIENTITY-GROUP-HANDLER");
         afterTransactionJob.execute(pCiEntityVo, vo -> {
             List<CiGroupVo> ciGroupVoList = groupMapper.getCiGroupByCiId(vo.getCiId());
             if (CollectionUtils.isNotEmpty(ciGroupVoList)) {
@@ -87,7 +87,7 @@ public class CiEntityGroupManager {
     public static void group(GroupVo groupVo) {
         groupVo.setStatus(Status.DOING.getValue());
         groupMapper.updateGroupStatus(groupVo);
-        AfterTransactionJob<GroupVo> afterTransactionJob = new AfterTransactionJob<>();
+        AfterTransactionJob<GroupVo> afterTransactionJob = new AfterTransactionJob<>("CIENTITY-GROUP-HANDLER");
         afterTransactionJob.execute(groupVo, gVo -> {
             if (gVo != null && CollectionUtils.isNotEmpty(gVo.getCiGroupList())) {
                 try {

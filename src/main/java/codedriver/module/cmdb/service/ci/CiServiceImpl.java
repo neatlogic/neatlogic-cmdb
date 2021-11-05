@@ -201,9 +201,8 @@ public class CiServiceImpl implements CiService {
     @Transactional
     public void updateCiNameAttrId(CiVo ciVo) {
         ciMapper.updateCiNameAttrId(ciVo);
-        AfterTransactionJob<CiVo> job = new AfterTransactionJob<>();
+        AfterTransactionJob<CiVo> job = new AfterTransactionJob<>("UPDATE-CIENTITY-NAME-" + ciVo.getId());
         job.execute(ciVo, dataCiVo -> {
-            Thread.currentThread().setName("UPDATE-CIENTITY-NAME-" + dataCiVo.getId());
             ciEntityService.updateCiEntityNameForCi(dataCiVo);
         });
     }

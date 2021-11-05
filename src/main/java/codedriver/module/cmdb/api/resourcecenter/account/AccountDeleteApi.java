@@ -8,7 +8,6 @@ package codedriver.module.cmdb.api.resourcecenter.account;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
-import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterAccountHasBeenReferredException;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterAccountNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
@@ -55,9 +54,6 @@ public class AccountDeleteApi extends PrivateApiComponentBase {
         AccountVo account = resourceCenterMapper.getAccountById(id);
         if (account == null) {
             throw new ResourceCenterAccountNotFoundException(id);
-        }
-        if (resourceCenterMapper.checkAccountHasBeenReferredById(id) > 0) {
-            throw new ResourceCenterAccountHasBeenReferredException(account.getName());
         }
         resourceCenterMapper.deleteAccountById(id);
         resourceCenterMapper.deleteAccountTagByAccountId(id);
