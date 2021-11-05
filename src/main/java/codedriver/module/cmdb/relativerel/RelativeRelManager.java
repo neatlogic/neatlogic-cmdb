@@ -51,7 +51,7 @@ public class RelativeRelManager {
      */
     public static void delete(RelEntityVo sourceRelEntityVo) {
         if (sourceRelEntityVo != null) {
-            AfterTransactionJob<RelEntityVo> job = new AfterTransactionJob<>();
+            AfterTransactionJob<RelEntityVo> job = new AfterTransactionJob<>("RELATIVE-RELENTITY-DELETER");
             job.execute(sourceRelEntityVo, relEntityVo -> {
                 List<RelEntityVo> relativeRelList = relEntityMapper.getRelentityBySourceRelEntityId(relEntityVo.getId());
                 relEntityMapper.deleteRelEntityBySourceRelEntityId(relEntityVo.getId());
@@ -82,7 +82,7 @@ public class RelativeRelManager {
 
     public static void insert(RelEntityVo sourceRelEntityVo) {
         if (sourceRelEntityVo != null) {
-            AfterTransactionJob<RelEntityVo> job = new AfterTransactionJob<>();
+            AfterTransactionJob<RelEntityVo> job = new AfterTransactionJob<>("RELATIVE-RELENTITY-APPENDER");
             job.execute(sourceRelEntityVo, relEntityVo -> {
                 List<RelativeRelVo> relativeRelList = relMapper.getRelativeRelByRelId(relEntityVo.getRelId());
                 if (CollectionUtils.isNotEmpty(relativeRelList)) {
