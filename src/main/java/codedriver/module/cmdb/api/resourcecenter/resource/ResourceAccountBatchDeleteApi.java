@@ -19,11 +19,13 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.RESOURCECENTER_MODIFY;
+import codedriver.module.cmdb.service.resourcecenter.account.ResourceCenterAccountService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -33,12 +35,16 @@ import java.util.List;
  * @since 2021/6/22 15:57
  **/
 @Service
+@Transactional
 @AuthAction(action = RESOURCECENTER_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class ResourceAccountBatchDeleteApi extends PrivateApiComponentBase {
 
     @Resource
     private ResourceCenterMapper resourceCenterMapper;
+
+    @Resource
+    private ResourceCenterAccountService resourceCenterAccountService;
 
     @Override
     public String getToken() {
@@ -102,6 +108,9 @@ public class ResourceAccountBatchDeleteApi extends PrivateApiComponentBase {
             }
         }
         resourceCenterMapper.deleteResourceAccountByResourceIdListAndAccountIdList(resourceIdList, accountIdList);
+        //刷新accountIp
+        //刷新accountIp
+        resourceCenterAccountService.refreshAccountIpByResourceIdList(resourceIdList);
         return null;
     }
 }

@@ -6,13 +6,13 @@
 package codedriver.module.cmdb.tagent.register.handler;
 
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
-import codedriver.framework.cmdb.dto.resourcecenter.ResourceAccountVo;
+import codedriver.framework.cmdb.dto.resourcecenter.AccountIpVo;
 import codedriver.framework.tagent.dto.TagentVo;
 import codedriver.framework.tagent.register.core.AfterRegisterBase;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 
 /**
  * 添加资源和账号的关联关系
@@ -31,14 +31,8 @@ public class AddAccountResourceRelHandler extends AfterRegisterBase {
      */
     @Override
     public void myExecute(TagentVo tagentVo) {
-        if (tagentVo.getResourceId() != null && tagentVo.getAccountId() != null) {
-            ResourceAccountVo resourceAccountVo = new ResourceAccountVo();
-            resourceAccountVo.setResourceId(tagentVo.getResourceId());
-            resourceAccountVo.setAccountId(tagentVo.getAccountId());
-            resourceCenterMapper.insertIgnoreResourceAccount(new ArrayList<ResourceAccountVo>() {{
-                this.add(resourceAccountVo);
-            }});
+        if(tagentVo != null && StringUtils.isNotBlank(tagentVo.getIp()) && tagentVo.getAccountId() != null){
+            resourceCenterMapper.insertIgnoreAccountIp(new AccountIpVo(tagentVo.getAccountId(),tagentVo.getIp()));
         }
-
     }
 }

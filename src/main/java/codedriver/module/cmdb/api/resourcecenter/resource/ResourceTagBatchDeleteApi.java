@@ -8,7 +8,6 @@ package codedriver.module.cmdb.api.resourcecenter.resource;
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
-import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.exception.type.ParamNotExistsException;
@@ -24,16 +23,17 @@ import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author linbq
  * @since 2021/6/22 15:58
  **/
 @Service
+@Transactional
 @AuthAction(action = RESOURCECENTER_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class ResourceTagBatchDeleteApi extends PrivateApiComponentBase {
