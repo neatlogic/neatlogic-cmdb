@@ -15,11 +15,15 @@ public interface ResourceEntityMapper {
 
     void insertResourceEntityView(String sql);
 
-    void insertResourceEntityAttr(ResourceEntityAttrVo resourceEntityAttrVo);
+    void insertResourceEntity(ResourceEntityVo resourceEntityVo);
+
+    void updateResourceEntity(ResourceEntityVo resourceEntityVo);
+
+//    void insertResourceEntityAttr(ResourceEntityAttrVo resourceEntityAttrVo);
 
     void deleteResourceEntityByName(String name);
 
     void deleteResourceEntityView(String viewName);
 
-    void deleteResourceEntityAttrByEntity(String entityName);
+//    void deleteResourceEntityAttrByEntity(String entityName);
 }
