@@ -252,7 +252,7 @@ public class ResourceEntityViewBuilder {
                         resourceEntityVo.setStatus(Status.ERROR.getValue());
                         resourceEntityVo.setError(ex.getMessage());
                     } finally {
-                        resourceCenterConfigMapper.insertResourceEntity(resourceEntityVo);
+                        resourceEntityMapper.insertResourceEntity(resourceEntityVo);
                     }
                 }
             }
@@ -399,7 +399,7 @@ public class ResourceEntityViewBuilder {
                         resourceEntity.setError(ex.getMessage());
                         resourceEntity.setStatus(Status.ERROR.getValue());
                     } finally {
-                        resourceCenterConfigMapper.updateResourceEntity(resourceEntity);
+                        resourceEntityMapper.updateResourceEntity(resourceEntity);
                     }
                 }
             }

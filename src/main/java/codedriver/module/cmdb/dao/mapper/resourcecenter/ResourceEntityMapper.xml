@@ -8,7 +8,7 @@
 <mapper namespace="codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper">
 
     <select id="getAllResourceEntity" resultType="codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
-        SELECT name, label, status, error, init_time
+        SELECT name, label, status, error, init_time AS initTime
         FROM cmdb_resourcecenter_entity
     </select>
 
@@ -16,18 +16,35 @@
         ${value}
     </insert>
 
+    <insert id="insertResourceEntity"
+            parameterType="codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
+        INSERT INTO cmdb_resourcecenter_entity (`name`, `label`, `status`, `error`, `init_time`)
+        VALUES (#{name}, #{label}, #{status}, #{error}, NOW(3))
+            ON DUPLICATE KEY UPDATE `error`     = #{error},
+                                 `status`    = #{status},
+                                 `init_time` = NOW(3)
+    </insert>
 
-    <insert id="insertResourceEntityAttr"
+    <update id="updateResourceEntity"
+            parameterType="codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
+        UPDATE cmdb_resourcecenter_entity
+        SET `status`    = #{status},
+            `error`     = #{error},
+            `init_time` = NOW(3)
+        WHERE `name` = #{name}
+    </update>
+
+    <!--<insert id="insertResourceEntityAttr"
             parameterType="codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityAttrVo">
         INSERT INTO cmdb_resourcecenter_field (`entity_name`, `field_name`, `ci_id`, `attr_id`)
         VALUES (#{entity}, #{field}, #{ciId}, #{attrId})
-    </insert>
+    </insert>-->
 
-    <delete id="deleteResourceEntityAttrByEntity" parameterType="java.lang.String">
+    <!--<delete id="deleteResourceEntityAttrByEntity" parameterType="java.lang.String">
         DELETE
         FROM cmdb_resourcecenter_field
         WHERE entity_name = #{value}
-    </delete>
+    </delete>-->
 
     <delete id="deleteResourceEntityByName" parameterType="java.lang.String">
         DELETE
