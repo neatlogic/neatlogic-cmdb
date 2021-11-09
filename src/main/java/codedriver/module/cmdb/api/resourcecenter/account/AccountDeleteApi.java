@@ -14,18 +14,24 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.RESOURCECENTER_ACCOUNT_MODIFY;
+import codedriver.module.cmdb.service.resourcecenter.account.ResourceCenterAccountService;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 
 @Service
+@Transactional
 @AuthAction(action = RESOURCECENTER_ACCOUNT_MODIFY.class)
 @OperationType(type = OperationTypeEnum.DELETE)
 public class AccountDeleteApi extends PrivateApiComponentBase {
 
     @Resource
     private ResourceCenterMapper resourceCenterMapper;
+
+    @Resource
+    private ResourceCenterAccountService accountService;
 
     @Override
     public String getToken() {
@@ -55,8 +61,7 @@ public class AccountDeleteApi extends PrivateApiComponentBase {
         if (account == null) {
             throw new ResourceCenterAccountNotFoundException(id);
         }
-        resourceCenterMapper.deleteAccountById(id);
-        resourceCenterMapper.deleteAccountTagByAccountId(id);
+        accountService.deleteAccount(id, false);
         return null;
     }
 

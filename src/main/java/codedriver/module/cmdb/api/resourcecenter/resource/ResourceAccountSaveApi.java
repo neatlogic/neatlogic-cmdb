@@ -21,11 +21,13 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.RESOURCECENTER_MODIFY;
+import codedriver.module.cmdb.service.resourcecenter.account.ResourceCenterAccountService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -35,12 +37,15 @@ import java.util.*;
  * @since 2021/6/22 15:55
  **/
 @Service
+@Transactional
 @AuthAction(action = RESOURCECENTER_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class ResourceAccountSaveApi extends PrivateApiComponentBase {
 
     @Resource
     private ResourceCenterMapper resourceCenterMapper;
+    @Resource
+    private ResourceCenterAccountService resourceCenterAccountService;
 
     @Override
     public String getToken() {
@@ -119,6 +124,9 @@ public class ResourceAccountSaveApi extends PrivateApiComponentBase {
         if (CollectionUtils.isNotEmpty(resourceAccountVoList)) {
             resourceCenterMapper.insertIgnoreResourceAccount(resourceAccountVoList);
         }
+        //刷新accountIp
+        resourceCenterAccountService.refreshAccountIpByResourceIdList(Collections.singletonList(resourceId));
+
         JSONObject resultObj = new JSONObject();
         resultObj.put("successCount", successCount);
         resultObj.put("failureCount", failureReasonList.size());

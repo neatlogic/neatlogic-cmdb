@@ -24,6 +24,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -35,6 +36,7 @@ import java.util.stream.Collectors;
  * @since 2021/6/22 15:56
  **/
 @Service
+@Transactional
 @AuthAction(action = RESOURCECENTER_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class ResourceTagSaveApi extends PrivateApiComponentBase {
