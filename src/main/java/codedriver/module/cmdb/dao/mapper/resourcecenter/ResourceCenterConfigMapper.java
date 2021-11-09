@@ -9,10 +9,14 @@ import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceCenterConfigV
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 
 public interface ResourceCenterConfigMapper {
+
+    int checkResourceCenterConfigIsExists(Long id);
+
     ResourceCenterConfigVo getResourceCenterConfig();
 
-    void updateResourceEntity(ResourceEntityVo resourceEntityVo);
+    ResourceCenterConfigVo getResourceCenterConfigLimitOne();
 
-    void insertResourceEntity(ResourceEntityVo resourceEntityVo);
+    int insertResourceCenterConfig(ResourceCenterConfigVo resourceCenterConfigVo);
 
+    void updateResourceCenterConfig(ResourceCenterConfigVo resourceCenterConfigVo);
 }
