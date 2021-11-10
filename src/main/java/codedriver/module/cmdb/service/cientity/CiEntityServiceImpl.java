@@ -44,7 +44,7 @@ import codedriver.module.cmdb.group.CiEntityGroupManager;
 import codedriver.module.cmdb.relativerel.RelativeRelManager;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.utils.CiEntityBuilder;
-import codedriver.module.cmdb.utils.RelUtil;
+import codedriver.framework.cmdb.utils.RelUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -139,30 +139,37 @@ public class CiEntityServiceImpl implements CiEntityService, CiEntityCrossoverSe
 
     @Override
     public List<CiEntityVo> getCiEntityByIdList(Long ciId, List<Long> ciEntityIdList) {
-        return getCiEntityByIdList(ciId, ciEntityIdList, null);
+        CiEntityVo ciEntityVo = new CiEntityVo();
+        ciEntityVo.setCiId(ciId);
+        ciEntityVo.setIdList(ciEntityIdList);
+        ciEntityVo.setLimitAttrEntity(true);
+        ciEntityVo.setLimitRelEntity(true);
+        return getCiEntityByIdList(ciEntityVo);
     }
 
+
     @Override
-    public List<CiEntityVo> getCiEntityByIdList(Long ciId, List<Long> ciEntityIdList, List<Long> groupIdList) {
-        CiVo ciVo = ciMapper.getCiById(ciId);
+    public List<CiEntityVo> getCiEntityByIdList(CiEntityVo ciEntityVo) {
+        CiVo ciVo = ciMapper.getCiById(ciEntityVo.getCiId());
         if (ciVo == null) {
-            throw new CiNotFoundException(ciId);
+            throw new CiNotFoundException(ciEntityVo.getCiId());
         }
         List<CiVo> ciList = ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht());
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
         List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciVo.getId()));
-        CiEntityVo ciEntityVo = new CiEntityVo();
         ciEntityVo.setCiList(ciList);
         ciEntityVo.setAttrList(attrList);
         ciEntityVo.setRelList(relList);
-        ciEntityVo.setGroupIdList(groupIdList);
-        if (CollectionUtils.isNotEmpty(ciEntityIdList)) {
-            ciEntityVo.setIdList(ciEntityIdList);
-            ciEntityVo.setLimitRelEntity(true);
+        if (CollectionUtils.isNotEmpty(ciEntityVo.getIdList())) {
             List<Map<String, Object>> resultList = ciEntityMapper.searchCiEntity(ciEntityVo);
             return new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, attrList, relList).build().getCiEntityList();
         }
         return new ArrayList<>();
+    }
+
+    @Override
+    public List<Long> getCiEntityIdByCiId(CiEntityVo ciEntityVo) {
+        return ciEntityMapper.getCiEntityIdByCiId(ciEntityVo);
     }
 
     @Override

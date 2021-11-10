@@ -40,6 +40,7 @@ public class CustomViewServiceImpl implements CustomViewService, CustomViewCross
         return customViewMapper.getCustomViewAttrByCustomViewId(customViewAttrVo);
     }
 
+
     @Override
     public void updateCustomViewActive(CustomViewVo customViewVo) {
         customViewMapper.updateCustomViewActive(customViewVo);

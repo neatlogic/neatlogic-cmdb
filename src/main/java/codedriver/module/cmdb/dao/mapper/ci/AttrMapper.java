@@ -5,13 +5,14 @@
 
 package codedriver.module.cmdb.dao.mapper.ci;
 
+import codedriver.framework.cmdb.crossover.AttrCrossoverMapper;
 import codedriver.framework.cmdb.dto.attrexpression.AttrExpressionRelVo;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
-public interface AttrMapper {
+public interface AttrMapper extends AttrCrossoverMapper {
     List<AttrVo> getAllNeedTargetCiAttrList();
 
     List<AttrVo> searchAttr(AttrVo attrVo);
