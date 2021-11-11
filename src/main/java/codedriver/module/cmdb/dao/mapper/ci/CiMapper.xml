@@ -45,7 +45,9 @@
         a.`parent_ci_id` AS parentCiId,
         a.`is_abstract` AS isAbstract,
         a.`is_virtual` AS isVirtual,
-        a.`file_id` AS fileId
+        a.`file_id` AS fileId,
+        a.`lft`,
+        a.`rht`
         FROM cmdb_cientity b JOIN cmdb_ci a ON b.ci_id = a.id
         WHERE b.id IN
         <foreach collection="ciEntityIdList" item="value" open="(" close=")" separator=",">
