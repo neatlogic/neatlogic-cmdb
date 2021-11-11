@@ -150,19 +150,31 @@ public class CiEntityServiceImpl implements CiEntityService, CiEntityCrossoverSe
 
     @Override
     public List<CiEntityVo> getCiEntityByIdList(CiEntityVo ciEntityVo) {
-        CiVo ciVo = ciMapper.getCiById(ciEntityVo.getCiId());
-        if (ciVo == null) {
-            throw new CiNotFoundException(ciEntityVo.getCiId());
-        }
-        List<CiVo> ciList = ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht());
-        List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
-        List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciVo.getId()));
-        ciEntityVo.setCiList(ciList);
-        ciEntityVo.setAttrList(attrList);
-        ciEntityVo.setRelList(relList);
         if (CollectionUtils.isNotEmpty(ciEntityVo.getIdList())) {
-            List<Map<String, Object>> resultList = ciEntityMapper.searchCiEntity(ciEntityVo);
-            return new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, attrList, relList).build().getCiEntityList();
+            List<CiVo> belongCiList = new ArrayList<>();
+            List<CiEntityVo> ciEntityList = new ArrayList<>();
+            if (ciEntityVo.getCiId() != null) {
+                CiVo ciVo = ciMapper.getCiById(ciEntityVo.getCiId());
+                if (ciVo == null) {
+                    throw new CiNotFoundException(ciEntityVo.getCiId());
+                }
+                belongCiList.add(ciVo);
+            } else {
+                belongCiList = ciMapper.getCiBaseInfoByCiEntityIdList(ciEntityVo.getIdList());
+            }
+            for (CiVo ciVo : belongCiList) {
+                List<CiVo> ciList = ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht());
+                List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
+                List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciVo.getId()));
+                ciEntityVo.setCiList(ciList);
+                ciEntityVo.setAttrList(attrList);
+                ciEntityVo.setRelList(relList);
+                if (CollectionUtils.isNotEmpty(ciEntityVo.getIdList())) {
+                    List<Map<String, Object>> resultList = ciEntityMapper.searchCiEntity(ciEntityVo);
+                    ciEntityList.addAll(new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, attrList, relList).build().getCiEntityList());
+                }
+            }
+            return ciEntityList;
         }
         return new ArrayList<>();
     }
