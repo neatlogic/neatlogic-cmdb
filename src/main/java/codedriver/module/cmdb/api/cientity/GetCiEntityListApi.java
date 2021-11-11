@@ -73,7 +73,13 @@ public class GetCiEntityListApi extends PrivateApiComponentBase {
         if (needGroup) {
             List<Long> groupIdList = groupService.getCurrentUserGroupIdList();
             if (CollectionUtils.isNotEmpty(groupIdList)) {
-                return ciEntityService.getCiEntityByIdList(ciId, idList, groupIdList);
+                CiEntityVo ciEntityVo = new CiEntityVo();
+                ciEntityVo.setCiId(ciId);
+                ciEntityVo.setIdList(idList);
+                ciEntityVo.setGroupIdList(groupIdList);
+                ciEntityVo.setLimitRelEntity(true);
+                ciEntityVo.setLimitAttrEntity(true);
+                return ciEntityService.getCiEntityByIdList(ciEntityVo);
             } else {
                 throw new CiEntityAuthException("查看");
             }

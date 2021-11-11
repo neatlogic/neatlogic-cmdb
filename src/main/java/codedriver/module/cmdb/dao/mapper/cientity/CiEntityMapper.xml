@@ -1042,11 +1042,12 @@
     </select>-->
 
 
-    <select id="getCiEntityIdByCiId" parameterType="java.lang.Long"
+    <select id="getCiEntityIdByCiId" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
             resultType="java.lang.Long">
         SELECT id
         FROM cmdb_cientity
-        WHERE ci_id = #{value}
+        WHERE ci_id = #{ciId}
+        LIMIT #{startNum},#{pageSize}
     </select>
 
     <select id="getIdByCiIdAndName" resultType="java.lang.Long">
@@ -1059,14 +1060,14 @@
     <select id="getCiEntityListByCiIdListAndName" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
             resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
         SELECT `id`,
-               `uuid`,
-               `ci_id` AS ciId,
-               `name`,
-               `status`,
-               `fcu`,
-               `fcd`,
-               `lcu`,
-               `lcd`
+        `uuid`,
+        `ci_id` AS ciId,
+        `name`,
+        `status`,
+        `fcu`,
+        `fcd`,
+        `lcu`,
+        `lcd`
         FROM `cmdb_cientity`
         WHERE `ci_id` in
         <foreach collection="idList" item="item" open="(" separator="," close=")">
@@ -1085,9 +1086,9 @@
                a.`lcu`,
                a.`lcd`
         FROM `cmdb_cientity` a
-        JOIN `cmdb_ci` b ON a.ci_id = b.id
+                 JOIN `cmdb_ci` b ON a.ci_id = b.id
         WHERE b.lft &gt;= #{lft}
-        AND b.rht &lt;= #{rht}
+          AND b.rht &lt;= #{rht}
         limit #{size}
     </select>
 

@@ -58,7 +58,7 @@ public class SearchCustomViewApi extends PrivateApiComponentBase {
     @Output({@Param(explode = BasePageVo.class),
             @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = CiEntityVo[].class),
             @Param(name = "theadList", type = ApiParamType.JSONARRAY, desc = "表头信息")})
-    @Description(desc = "根据用户权限查询查询自定义视图，包括用户的个人视图和公共视图")
+    @Description(desc = "根据用户权限查询自定义视图，包括用户的个人视图和公共视图")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         CustomViewVo customViewVo = JSONObject.toJavaObject(paramObj, CustomViewVo.class);

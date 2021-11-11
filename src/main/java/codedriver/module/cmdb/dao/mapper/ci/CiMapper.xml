@@ -274,6 +274,29 @@
         ORDER BY a.sort,b.lft
     </select>
 
+    <select id="searchCi" parameterType="codedriver.framework.cmdb.dto.ci.CiVo"
+            resultType="codedriver.framework.cmdb.dto.ci.CiVo">
+        select
+        `id`,
+        `name`,
+        `label`,
+        `description`,
+        `icon`,
+        `is_private` AS isPrivate,
+        `is_menu` AS ciIsMenu,
+        `type_id` AS typeId,
+        `parent_ci_id` AS parentCiId,
+        `is_abstract` AS isAbstract,
+        `is_virtual` AS isVirtual,
+        `file_id` AS fileId
+        from cmdb_ci
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (name LIKE concat('%',#{keyword},'%') or label LIKE concat('%',#{keyword},'%'))
+            </if>
+        </where>
+    </select>
+
     <select id="getCiByIdList" resultType="codedriver.framework.cmdb.dto.ci.CiVo" useCache="true">
         SELECT
         `id`,

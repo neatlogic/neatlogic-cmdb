@@ -5,6 +5,7 @@
 
 package codedriver.module.cmdb.dao.mapper.ci;
 
+import codedriver.framework.cmdb.crossover.RelCrossoverMapper;
 import codedriver.framework.cmdb.dto.ci.RelGroupVo;
 import codedriver.framework.cmdb.dto.ci.RelTypeVo;
 import codedriver.framework.cmdb.dto.ci.RelVo;
@@ -13,7 +14,7 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
-public interface RelMapper {
+public interface RelMapper extends RelCrossoverMapper {
     RelTypeVo getRelTypeByRelId(Long relId);
 
     List<RelativeRelVo> getRelativeRelByRelId(Long relId);
