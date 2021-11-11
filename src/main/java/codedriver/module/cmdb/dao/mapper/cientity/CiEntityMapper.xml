@@ -423,6 +423,14 @@
                                         (${attrFilter.ciTableName}.`${attrFilter.attrId}` IS NOT NULL AND
                                         ${attrFilter.ciTableName}.`${attrFilter.attrId}` != '')
                                     </when>
+                                    <!--根据属性的一些精确值，匹配多个配置项-->
+                                    <when test="attrFilter.expression == 'multi-equal'">
+                                        (${attrFilter.ciTableName}.`${attrFilter.attrId}` IN
+                                        <foreach collection="attrFilter.valueList" item="value" separator="," open="("
+                                                 close=")">#{value}
+                                        </foreach>
+                                        )
+                                    </when>
                                 </choose>
                             </otherwise>
                         </choose>
