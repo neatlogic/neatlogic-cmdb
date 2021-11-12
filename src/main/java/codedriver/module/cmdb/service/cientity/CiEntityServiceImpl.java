@@ -23,6 +23,7 @@ import codedriver.framework.cmdb.exception.ci.CiUniqueRuleException;
 import codedriver.framework.cmdb.exception.cientity.*;
 import codedriver.framework.cmdb.exception.transaction.TransactionAuthException;
 import codedriver.framework.cmdb.exception.transaction.TransactionStatusIrregularException;
+import codedriver.framework.cmdb.utils.RelUtil;
 import codedriver.framework.cmdb.validator.core.IValidator;
 import codedriver.framework.cmdb.validator.core.ValidatorFactory;
 import codedriver.framework.exception.core.ApiRuntimeException;
@@ -44,7 +45,6 @@ import codedriver.module.cmdb.group.CiEntityGroupManager;
 import codedriver.module.cmdb.relativerel.RelativeRelManager;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.utils.CiEntityBuilder;
-import codedriver.framework.cmdb.utils.RelUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -1700,29 +1700,37 @@ public class CiEntityServiceImpl implements CiEntityService, CiEntityCrossoverSe
         }
     }
 
-    private void rebuildAttrEntityIndex(List<AttrEntityVo> attrEntityList) {
-        if (CollectionUtils.isNotEmpty(attrEntityList)) {
-            for (AttrEntityVo attrEntityVo : attrEntityList) {
-                rebuildAttrEntityIndex(attrEntityVo.getAttrId(), attrEntityVo.getFromCiEntityId());
+    private void rebuildAttrEntityIndex(List<AttrEntityVo> pAttrEntityList) {
+        //在事务处理完毕后再处理所有索引重建，避免属性对象也是新添加配置项的场景中，由于数据写入的顺序问题导致找不到数据而无法重建索引的问题
+        AfterTransactionJob<List<AttrEntityVo>> job = new AfterTransactionJob<>("REBUILD-ATTRENTITY-INDEX");
+        job.execute(pAttrEntityList, attrEntityList -> {
+            if (CollectionUtils.isNotEmpty(attrEntityList)) {
+                for (AttrEntityVo attrEntityVo : attrEntityList) {
+                    rebuildAttrEntityIndex(attrEntityVo.getAttrId(), attrEntityVo.getFromCiEntityId());
+                }
             }
-        }
+        });
     }
 
-    private void rebuildRelEntityIndex(List<RelEntityVo> relEntityList) {
-        if (CollectionUtils.isNotEmpty(relEntityList)) {
-            Set<String> fromSet = relEntityList.stream().map(rel -> rel.getRelId() + "_" + rel.getFromCiEntityId()).collect(Collectors.toSet());
-            Set<String> toSet = relEntityList.stream().map(rel -> rel.getRelId() + "_" + rel.getToCiEntityId()).collect(Collectors.toSet());
-            if (CollectionUtils.isNotEmpty(fromSet)) {
-                for (String relId : fromSet) {
-                    rebuildRelEntityIndex(RelDirectionType.FROM, Long.parseLong(relId.split("_")[0]), Long.parseLong(relId.split("_")[1]));
+    private void rebuildRelEntityIndex(List<RelEntityVo> pRelEntityList) {
+        //在事务处理完毕后再处理所有关系索引重建，避免关系对象也是新添加的场景由于数据写入的顺序问题导致找不到数据而无法重建索引
+        AfterTransactionJob<List<RelEntityVo>> job = new AfterTransactionJob<>("REBUILD-RELENTITY-INDEX");
+        job.execute(pRelEntityList, relEntityList -> {
+            if (CollectionUtils.isNotEmpty(relEntityList)) {
+                Set<String> fromSet = relEntityList.stream().map(rel -> rel.getRelId() + "_" + rel.getFromCiEntityId()).collect(Collectors.toSet());
+                Set<String> toSet = relEntityList.stream().map(rel -> rel.getRelId() + "_" + rel.getToCiEntityId()).collect(Collectors.toSet());
+                if (CollectionUtils.isNotEmpty(fromSet)) {
+                    for (String relId : fromSet) {
+                        rebuildRelEntityIndex(RelDirectionType.FROM, Long.parseLong(relId.split("_")[0]), Long.parseLong(relId.split("_")[1]));
+                    }
+                }
+                if (CollectionUtils.isNotEmpty(toSet)) {
+                    for (String relId : toSet) {
+                        rebuildRelEntityIndex(RelDirectionType.TO, Long.parseLong(relId.split("_")[0]), Long.parseLong(relId.split("_")[1]));
+                    }
                 }
             }
-            if (CollectionUtils.isNotEmpty(toSet)) {
-                for (String relId : toSet) {
-                    rebuildRelEntityIndex(RelDirectionType.TO, Long.parseLong(relId.split("_")[0]), Long.parseLong(relId.split("_")[1]));
-                }
-            }
-        }
+        });
     }
 
     /**

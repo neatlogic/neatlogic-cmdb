@@ -18,6 +18,8 @@ import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -113,19 +115,29 @@ public class ListRelativeRelApi extends PrivateApiComponentBase {
         }
     }
 
-    private void findCiPathRecursive(String currentPath, Long sourceCiId, Long currentCiId, Set<RelPathVo> pathSet, List<RelVo> relList, UpwardCiBuilder builder) {
+    private void findCiPathRecursive(String currentPath, Long sourceCiId, Long currentCiId, Map<Long, RelPathVo> pathMap, List<RelVo> relList, UpwardCiBuilder builder) {
         //找到当前模型的所有父模型，以便查找继承过来的关系
         List<CiVo> parentCiList = builder.getUpwardCiListByCiId(currentCiId);
         //找到当前节点的所有上游关系（下游端指向当前节点或当前节点的父节点）
         List<RelVo> fromRelList = relList.stream().filter(d -> parentCiList.stream().anyMatch(ci -> ci.getId().equals(d.getToCiId()))).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(fromRelList)) {
             fromRelList.forEach(d -> {
-                RelPathVo relPathVo = new RelPathVo(d.getId(), d.getFromCiId());
-                if (!pathSet.contains(relPathVo) && !d.getFromCiId().equals(d.getToCiId())) {
+                if (!d.getFromCiId().equals(d.getToCiId())) {
+                    RelPathVo relPathVo = new RelPathVo(d.getId(), d.getFromCiId());
                     String newPath = currentPath + "<" + d.getId();
-                    relPathVo.setPath(newPath);
-                    pathSet.add(relPathVo);
-                    findCiPathRecursive(newPath, sourceCiId, d.getFromCiId(), pathSet, relList, builder);
+                    if (!pathMap.containsKey(relPathVo.getRelId())) {
+                        relPathVo.setPath(newPath);
+                        pathMap.put(relPathVo.getRelId(), relPathVo);
+                        findCiPathRecursive(newPath, sourceCiId, d.getFromCiId(), pathMap, relList, builder);
+                    } else if (pathMap.containsKey(relPathVo.getRelId())) {
+                        //比较原路径，用短的替换，同时要更换ciId，因为同一个relId可能会因为方向不一样，导致ciId不一样
+                        if (StringUtils.isNotBlank(pathMap.get(relPathVo.getRelId()).getPath())) {
+                            if (newPath.split("[>|<]").length < pathMap.get(relPathVo.getRelId()).getPath().split("[>|<]").length) {
+                                pathMap.get(relPathVo.getRelId()).setPath(newPath);
+                                pathMap.get(relPathVo.getRelId()).setCiId(d.getFromCiId());
+                            }
+                        }
+                    }
                 }
             });
         }
@@ -134,12 +146,22 @@ public class ListRelativeRelApi extends PrivateApiComponentBase {
         List<RelVo> toRelList = relList.stream().filter(d -> parentCiList.stream().anyMatch(ci -> ci.getId().equals(d.getFromCiId()))).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(toRelList)) {
             toRelList.forEach(d -> {
-                RelPathVo relPathVo = new RelPathVo(d.getId(), d.getToCiId());
-                if (!pathSet.contains(relPathVo) && !d.getFromCiId().equals(d.getToCiId())) {
+                if (!d.getFromCiId().equals(d.getToCiId())) {
+                    RelPathVo relPathVo = new RelPathVo(d.getId(), d.getToCiId());
                     String newPath = currentPath + ">" + d.getId();
-                    relPathVo.setPath(newPath);
-                    pathSet.add(relPathVo);
-                    findCiPathRecursive(newPath, sourceCiId, d.getToCiId(), pathSet, relList, builder);
+                    if (!pathMap.containsKey(relPathVo.getRelId())) {
+                        relPathVo.setPath(newPath);
+                        pathMap.put(relPathVo.getRelId(), relPathVo);
+                        findCiPathRecursive(newPath, sourceCiId, d.getToCiId(), pathMap, relList, builder);
+                    } else if (pathMap.containsKey(relPathVo.getRelId())) {
+                        //比较原路径，用短的替换，同时要更换ciId，因为同一个relId可能会因为方向不一样，导致ciId不一样
+                        if (StringUtils.isNotBlank(pathMap.get(relPathVo.getRelId()).getPath())) {
+                            if (newPath.split("[>|<]").length < pathMap.get(relPathVo.getRelId()).getPath().split("[>|<]").length) {
+                                pathMap.get(relPathVo.getRelId()).setPath(newPath);
+                                pathMap.get(relPathVo.getRelId()).setCiId(d.getToCiId());
+                            }
+                        }
+                    }
                 }
             });
         }
@@ -169,15 +191,15 @@ public class ListRelativeRelApi extends PrivateApiComponentBase {
 
         if (CollectionUtils.isNotEmpty(relList)) {
 
-            Set<RelPathVo> fromPathSet = new HashSet<>();
-            findCiPathRecursive("", fromCiId, fromCiId, fromPathSet, relList, new UpwardCiBuilder());
+            Map<Long, RelPathVo> fromPathMap = new HashMap<>();
+            findCiPathRecursive("", fromCiId, fromCiId, fromPathMap, relList, new UpwardCiBuilder());
             //补充起点节点进关系列表，关系id用0代替
-            fromPathSet.add(new RelPathVo(0L, fromCiId));
+            fromPathMap.put(0L, new RelPathVo(0L, fromCiId));
 
-            Set<RelPathVo> toPathSet = new HashSet<>();
-            findCiPathRecursive("", toCiId, toCiId, toPathSet, relList, new UpwardCiBuilder());
+            Map<Long, RelPathVo> toPathMap = new HashMap<>();
+            findCiPathRecursive("", toCiId, toCiId, toPathMap, relList, new UpwardCiBuilder());
             //补充起点节点进关系列表，关系id用0代替
-            fromPathSet.add(new RelPathVo(0L, toCiId));
+            toPathMap.put(0L, new RelPathVo(0L, toCiId));
 
             /*System.out.println("FROM");
             for (RelPathVo path : fromPathSet) {
@@ -188,11 +210,11 @@ public class ListRelativeRelApi extends PrivateApiComponentBase {
                 System.out.println(path.getPath());
             }*/
 
-            if (CollectionUtils.isNotEmpty(fromPathSet) && CollectionUtils.isNotEmpty(toPathSet)) {
+            if (MapUtils.isNotEmpty(fromPathMap) && MapUtils.isNotEmpty(toPathMap)) {
                 List<RelativeRelVo> matchRelList = new ArrayList<>();
                 Map<Long, RelativeRelVo> relativeRelMap = new HashMap<>();
-                fromPathSet.forEach(f -> {
-                    toPathSet.forEach(t -> {
+                for (RelPathVo f : fromPathMap.values()) {
+                    for (RelPathVo t : toPathMap.values()) {
                         Optional<RelVo> op = relList.stream().filter(d -> (d.getFromCiId().equals(f.getCiId()) && d.getToCiId().equals(t.getCiId()))
                                 /*|| (ciId.equals(d.getFromCiId()) && d.getToCiId().equals(t.getCiId()))*/
                                 /*|| (d.getFromCiId().equals(t.getCiId()) && d.getToCiId().equals(f.getCiId()))*/).findFirst();
@@ -221,17 +243,17 @@ public class ListRelativeRelApi extends PrivateApiComponentBase {
                                 //}
                             }
                         }
-                    });
-                });
+                    }
+                }
                 for (Long k : relativeRelMap.keySet()) {
                     matchRelList.add(relativeRelMap.get(k));
                 }
                 if (CollectionUtils.isNotEmpty(matchRelList)) {
                     matchRelList.sort(Comparator.comparing(RelativeRelVo::getRelativeRelLabel));
-                    /*System.out.println("START");
+                    System.out.println("START");
                     for (RelativeRelVo rel : matchRelList) {
                         System.out.println(rel.getRelativeRelLabel() + ":" + rel.getFromPath() + "#" + rel.getToPath());
-                    }*/
+                    }
                     return matchRelList;
                 }
             }
