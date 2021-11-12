@@ -14,6 +14,7 @@ import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -87,28 +88,39 @@ public class RelativeRelManager {
                 List<RelativeRelVo> relativeRelList = relMapper.getRelativeRelByRelId(relEntityVo.getRelId());
                 if (CollectionUtils.isNotEmpty(relativeRelList)) {
                     for (RelativeRelVo relativeRelVo : relativeRelList) {
-                        Matcher fromMatch = p.matcher(relativeRelVo.getFromPath());
-                        List<RelativeRelItemVo> fromItemList = new ArrayList<>();
-                        while (fromMatch.find()) {
-                            RelativeRelItemVo relativeRelItemVo = new RelativeRelItemVo();
-                            String direction = fromMatch.group(2).equals(">") ? "to" : "from";
-                            relativeRelItemVo.setRelId(Long.parseLong(fromMatch.group(3)));
-                            relativeRelItemVo.setDirection(direction);
-                            fromItemList.add(relativeRelItemVo);
+                        List<Long> fromCiEntityIdList = new ArrayList<>();
+                        if (StringUtils.isNotBlank(relativeRelVo.getFromPath())) {
+                            Matcher fromMatch = p.matcher(relativeRelVo.getFromPath());
+                            List<RelativeRelItemVo> fromItemList = new ArrayList<>();
+                            while (fromMatch.find()) {
+                                RelativeRelItemVo relativeRelItemVo = new RelativeRelItemVo();
+                                String direction = fromMatch.group(2).equals(">") ? "to" : "from";
+                                relativeRelItemVo.setRelId(Long.parseLong(fromMatch.group(3)));
+                                relativeRelItemVo.setDirection(direction);
+                                fromItemList.add(relativeRelItemVo);
+                            }
+                            fromCiEntityIdList = relEntityMapper.getCiEntityIdByRelativeRelPath(fromItemList, relEntityVo.getId(), "from");
+                        } else {
+                            fromCiEntityIdList.add(relEntityVo.getFromCiEntityId());
                         }
-                        List<Long> fromCiEntityIdList = relEntityMapper.getCiEntityIdByRelativeRelPath(fromItemList, relEntityVo.getId(), "from");
+
                         List<RelEntityVo> newRelEntityList = new ArrayList<>();
                         if (CollectionUtils.isNotEmpty(fromCiEntityIdList)) {
-                            Matcher toMatch = p.matcher(relativeRelVo.getToPath());
-                            List<RelativeRelItemVo> toItemList = new ArrayList<>();
-                            while (toMatch.find()) {
-                                RelativeRelItemVo relativeRelItemVo = new RelativeRelItemVo();
-                                String direction = toMatch.group(2).equals(">") ? "to" : "from";
-                                relativeRelItemVo.setRelId(Long.parseLong(toMatch.group(3)));
-                                relativeRelItemVo.setDirection(direction);
-                                toItemList.add(relativeRelItemVo);
+                            List<Long> toCiEntityIdList = new ArrayList<>();
+                            if (StringUtils.isNotBlank(relativeRelVo.getToPath())) {
+                                Matcher toMatch = p.matcher(relativeRelVo.getToPath());
+                                List<RelativeRelItemVo> toItemList = new ArrayList<>();
+                                while (toMatch.find()) {
+                                    RelativeRelItemVo relativeRelItemVo = new RelativeRelItemVo();
+                                    String direction = toMatch.group(2).equals(">") ? "to" : "from";
+                                    relativeRelItemVo.setRelId(Long.parseLong(toMatch.group(3)));
+                                    relativeRelItemVo.setDirection(direction);
+                                    toItemList.add(relativeRelItemVo);
+                                }
+                                toCiEntityIdList = relEntityMapper.getCiEntityIdByRelativeRelPath(toItemList, relEntityVo.getId(), "to");
+                            } else {
+                                toCiEntityIdList.add(relEntityVo.getToCiEntityId());
                             }
-                            List<Long> toCiEntityIdList = relEntityMapper.getCiEntityIdByRelativeRelPath(toItemList, relEntityVo.getId(), "to");
                             if (CollectionUtils.isNotEmpty(toCiEntityIdList)) {
                                 for (Long fromCiEntityId : fromCiEntityIdList) {
                                     for (Long toCiEntityId : toCiEntityIdList) {

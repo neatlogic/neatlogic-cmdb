@@ -170,6 +170,8 @@
         <result property="toGroupName" column="toGroupName"/>
         <collection property="relativeRelList" ofType="codedriver.framework.cmdb.dto.ci.RelativeRelVo">
             <id property="relativeRelId" column="relativeRelId"/>
+            <result property="fromPath" column="relativeFromPath"/>
+            <result property="toPath" column="relativeToPath"/>
         </collection>
     </resultMap>
 
@@ -201,7 +203,9 @@
                a.`to_is_unique`                                                  AS toIsUnique,
                a.`to_is_required`                                                AS toIsRequired,
                (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`to_group_id`)   AS toGroupName,
-               relativerel.relative_rel_id                                       as relativeRelId
+               relativerel.relative_rel_id                                       AS relativeRelId,
+               relativerel.from_path                                             AS relativeFromPath,
+               relativerel.to_path                                               AS relativeToPath
         FROM `cmdb_rel` a
                  JOIN cmdb_ci f ON a.from_ci_id = f.id
                  JOIN cmdb_ci t ON a.to_ci_id = t.id
