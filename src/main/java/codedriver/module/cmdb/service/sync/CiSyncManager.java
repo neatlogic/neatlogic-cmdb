@@ -122,7 +122,7 @@ public class CiSyncManager {
                     if (op.isPresent()) {
                         syncCiCollectionMap.put(ciId + "#" + collectionName, op.get());
                     } else {
-                        op = syncCiCollectionList.stream().filter(d -> Objects.requireNonNull(getCollectionByName(d.getCollectionName())).getCollection().equals(Objects.requireNonNull(getCollectionByName(collectionName)).getCollection())).findFirst();
+                        op = syncCiCollectionList.stream().filter(d -> getCollectionByName(d.getCollectionName()).getCollection().equals(getCollectionByName(collectionName).getCollection())).findFirst();
                         op.ifPresent(ciCollectionVo -> syncCiCollectionMap.put(ciId + "#" + collectionName, ciCollectionVo));
                     }
                 }
@@ -476,7 +476,7 @@ public class CiSyncManager {
                     return op.get();
                 }
             }
-            return null;
+            throw new CollectionNotFoundException(name);
         }
 
         /**
@@ -546,9 +546,6 @@ public class CiSyncManager {
             if (CollectionUtils.isNotEmpty(syncCiCollectionList)) {
                 for (SyncCiCollectionVo syncCiCollectionVo : syncCiCollectionList) {
                     CollectionVo collectionVo = getCollectionByName(syncCiCollectionVo.getCollectionName());
-                    if (collectionVo == null) {
-                        throw new CollectionNotFoundException(syncCiCollectionVo.getCollectionName());
-                    }
                     try {
                         Criteria finalCriteria = new Criteria();
                         List<Criteria> criteriaList = new ArrayList<>();
