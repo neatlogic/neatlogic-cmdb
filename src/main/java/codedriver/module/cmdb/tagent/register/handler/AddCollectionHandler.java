@@ -12,7 +12,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -42,18 +41,12 @@ public class AddCollectionHandler extends AfterRegisterBase {
             dataObj.put("_OBJ_CATEGORY", "OS");
             dataObj.put("_OBJ_TYPE", tagentVo.getOsType());
             dataObj.put("OS_TYPE", tagentVo.getOsType());
-            dataObj.put("RESOURCE_ID", tagentVo.getResourceId());
             dataObj.put("MGMT_IP", tagentVo.getIp());
             dataObj.put("CPU_ARCH", tagentVo.getOsbit());
             dataObj.put("HOSTNAME", tagentVo.getName());
             dataObj.put("VERSION", tagentVo.getOsVersion());
             if (oldData == null) {
                 mongoTemplate.insert(dataObj, "COLLECT_OS");
-            } else {
-                //如果是重复注册，需要更新RESOURCE_ID，否则对不上account和resource关系中的RESOURCE_ID
-                Update update = new Update();
-                update.set("RESOURCE_ID", tagentVo.getResourceId());
-                mongoTemplate.updateFirst(query, update, "COLLECT_OS");
             }
         }
     }
