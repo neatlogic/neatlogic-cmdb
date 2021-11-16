@@ -5,16 +5,13 @@
 
 package codedriver.module.cmdb.matrix.handler;
 
+import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.CiViewVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.AttrFilterVo;
 import codedriver.framework.cmdb.enums.ShowType;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
-import codedriver.framework.cmdb.utils.RelUtil;
 import codedriver.framework.common.constvalue.Expression;
-import codedriver.framework.dto.RoleVo;
-import codedriver.framework.dto.TeamVo;
-import codedriver.framework.dto.UserVo;
 import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.matrix.constvalue.MatrixAttributeType;
 import codedriver.framework.matrix.constvalue.MatrixType;
@@ -25,6 +22,7 @@ import codedriver.framework.matrix.exception.MatrixCiNotFoundException;
 import codedriver.framework.restful.core.MyApiComponent;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentFactory;
 import codedriver.module.cmdb.api.cientity.SearchCiEntityApi;
+import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiViewMapper;
 import com.alibaba.fastjson.JSON;
@@ -55,6 +53,9 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
 
     @Resource
     private CiMapper ciMapper;
+
+    @Resource
+    private AttrMapper attrMapper;
 
     @Resource
     private CiViewMapper ciViewMapper;
@@ -126,20 +127,78 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         if (matrixCiVo == null) {
             throw new MatrixCiNotFoundException(matrixUuid);
         }
-        CiViewVo ciViewVo = new CiViewVo();
-        ciViewVo.setCiId(matrixCiVo.getCiId());
-        ciViewVo.addShowType(ShowType.LIST.getValue());
-        ciViewVo.addShowType(ShowType.ALL.getValue());
-        List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo));
-        List<MatrixAttributeVo> matrixAttributeList = new ArrayList<>();
+//        CiViewVo ciViewVo = new CiViewVo();
+//        ciViewVo.setCiId(matrixCiVo.getCiId());
+//        ciViewVo.addShowType(ShowType.LIST.getValue());
+//        ciViewVo.addShowType(ShowType.ALL.getValue());
+//        List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo));
+//        int sort = 0;
+//        for (CiViewVo ciView : ciViewList) {
+//            MatrixAttributeVo matrixAttributeVo = new MatrixAttributeVo();
+//            matrixAttributeVo.setMatrixUuid(matrixUuid);
+//            matrixAttributeVo.setUuid(ciView.getType() + "_" + ciView.getItemId());
+////            matrixAttributeVo.setUuid(ciView.getItemId().toString());
+////            matrixAttributeVo.setUuid(ciView.getItemId().toString());
+//            matrixAttributeVo.setName(ciView.getItemLabel());
+//            matrixAttributeVo.setType(MatrixAttributeType.INPUT.getValue());
+//            matrixAttributeVo.setIsDeletable(0);
+//            matrixAttributeVo.setSort(sort++);
+//            matrixAttributeVo.setIsRequired(0);
+//            matrixAttributeList.add(matrixAttributeVo);
+//        }
+
+        Long ciId = matrixCiVo.getCiId();
+        String showType = ShowType.LIST.getValue();
+//        Boolean isSimple = jsonObj.getBoolean("isSimple");
+//        Integer allowEdit = jsonObj.getInteger("allowEdit");
+        List<AttrVo> attrList = attrMapper.getAttrByCiId(ciId);
+        if (StringUtils.isNotBlank(showType)) {
+            CiViewVo ciViewVo = new CiViewVo();
+            ciViewVo.setCiId(ciId);
+            ciViewVo.addShowType(showType);
+            ciViewVo.addShowType(ShowType.ALL.getValue());
+            List<CiViewVo> ciViewList = ciViewMapper.getCiViewByCiId(ciViewVo);
+            Set<Long> attrSet = new HashSet<>();
+            for (CiViewVo ciView : ciViewList) {
+                if (ciView.getType().equals("attr")) {
+                    attrSet.add(ciView.getItemId());
+                }
+            }
+            attrList.removeIf(attr -> !attrSet.contains(attr.getId()));
+        }
+//        if (allowEdit != null) {
+//            attrList.removeIf(attr -> (allowEdit.equals(1) && (attr.getAllowEdit() != null && attr.getAllowEdit().equals(0)))
+//                    || (allowEdit.equals(0) && (attr.getAllowEdit() == null || attr.getAllowEdit().equals(1))));
+//        }
+//        if (isSimple != null) {
+//            attrList.removeIf(attr -> AttrValueHandlerFactory.getHandler(attr.getType()).isSimple() != isSimple);
+//        }
+
         int sort = 0;
-        for (CiViewVo ciView : ciViewList) {
-            MatrixAttributeVo matrixAttributeVo = new MatrixAttributeVo();
+        List<MatrixAttributeVo> matrixAttributeList = new ArrayList<>();
+        MatrixAttributeVo matrixAttributeVo = new MatrixAttributeVo();
+        matrixAttributeVo.setMatrixUuid(matrixUuid);
+        matrixAttributeVo.setUuid("id");
+        matrixAttributeVo.setName("ID#");
+        matrixAttributeVo.setType(MatrixAttributeType.INPUT.getValue());
+        matrixAttributeVo.setIsDeletable(0);
+        matrixAttributeVo.setSort(sort++);
+        matrixAttributeVo.setIsRequired(0);
+        matrixAttributeList.add(matrixAttributeVo);
+        matrixAttributeVo = new MatrixAttributeVo();
+        matrixAttributeVo.setMatrixUuid(matrixUuid);
+        matrixAttributeVo.setUuid("ciLabel");
+        matrixAttributeVo.setName("模型");
+        matrixAttributeVo.setType(MatrixAttributeType.INPUT.getValue());
+        matrixAttributeVo.setIsDeletable(0);
+        matrixAttributeVo.setSort(sort++);
+        matrixAttributeVo.setIsRequired(0);
+        matrixAttributeList.add(matrixAttributeVo);
+        for (AttrVo attrVo : attrList) {
+            matrixAttributeVo = new MatrixAttributeVo();
             matrixAttributeVo.setMatrixUuid(matrixUuid);
-            matrixAttributeVo.setUuid(ciView.getType() + "_" + ciView.getItemId());
-//            matrixAttributeVo.setUuid(ciView.getItemId().toString());
-//            matrixAttributeVo.setUuid(ciView.getItemId().toString());
-            matrixAttributeVo.setName(ciView.getItemLabel());
+            matrixAttributeVo.setUuid(attrVo.getName());
+            matrixAttributeVo.setName(attrVo.getLabel());
             matrixAttributeVo.setType(MatrixAttributeType.INPUT.getValue());
             matrixAttributeVo.setIsDeletable(0);
             matrixAttributeVo.setSort(sort++);
@@ -163,13 +222,9 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         }
         JSONObject paramObj = new JSONObject();
         paramObj.put("ciId", matrixCiVo.getCiId());
-        paramObj.put("needCheck", false);
-        paramObj.put("needAction", false);
-        paramObj.put("needActionType", false);
-        paramObj.put("mode", "page");
         paramObj.put("currentPage", dataVo.getCurrentPage());
         paramObj.put("pageSize", dataVo.getPageSize());
-        JSONObject resultObj = (JSONObject) accessSearchCiEntityApi(paramObj);
+        JSONObject resultObj = accessSearchCiEntityApi(paramObj);
         if (MapUtils.isNotEmpty(resultObj)) {
             List<Map<String, Object>> tbodyList = new ArrayList<>();
             JSONArray tbodyArray = resultObj.getJSONArray("tbodyList");
@@ -187,10 +242,10 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             }
             resultObj.put("tbodyList", tbodyList);
         }
-//        MatrixVo matrixVo = matrixMapper.getMatrixByUuid(matrixUuid);
-//        List<MatrixAttributeVo> attributeVoList = myGetAttributeList(matrixVo);
-//        JSONArray theadList = getTheadList(attributeVoList);
-//        resultObj.put("theadList", theadList);
+        MatrixVo matrixVo = matrixMapper.getMatrixByUuid(matrixUuid);
+        List<MatrixAttributeVo> attributeVoList = myGetAttributeList(matrixVo);
+        JSONArray theadList = getTheadList(attributeVoList);
+        resultObj.put("theadList", theadList);
         return resultObj;
     }
 
@@ -206,10 +261,6 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         if (CollectionUtils.isNotEmpty(matrixAttributeList)) {
             JSONObject paramObj = new JSONObject();
             paramObj.put("ciId", matrixCiVo.getCiId());
-            paramObj.put("needCheck", false);
-            paramObj.put("needAction", false);
-            paramObj.put("needActionType", false);
-            paramObj.put("mode", "page");
             paramObj.put("currentPage", dataVo.getCurrentPage());
             paramObj.put("pageSize", dataVo.getPageSize());
             JSONArray defaultValue = dataVo.getDefaultValue();
@@ -260,7 +311,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                 }
                 paramObj.put("attrFilterList", attrFilterList);
             }
-            JSONObject resultObj = (JSONObject) accessSearchCiEntityApi(paramObj);
+            JSONObject resultObj = accessSearchCiEntityApi(paramObj);
             if (MapUtils.isNotEmpty(resultObj)) {
                 List<Map<String, Object>> tbodyList = new ArrayList<>();
                 JSONArray tbodyArray = resultObj.getJSONArray("tbodyList");
@@ -278,6 +329,8 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                 }
                 resultObj.put("tbodyList", tbodyList);
             }
+            JSONArray theadList = getTheadList(matrixUuid, matrixAttributeList, dataVo.getColumnList());
+            resultObj.put("theadList", theadList);
             return resultObj;
         }
         return new JSONObject();
@@ -303,10 +356,6 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             }
             JSONObject paramObj = new JSONObject();
             paramObj.put("ciId", matrixCiVo.getCiId());
-            paramObj.put("needCheck", false);
-            paramObj.put("needAction", false);
-            paramObj.put("needActionType", false);
-            paramObj.put("mode", "page");
             JSONArray defaultValue = dataVo.getDefaultValue();
             if (CollectionUtils.isNotEmpty(defaultValue)) {
                 for (String value : defaultValue.toJavaList(String.class)) {
@@ -338,7 +387,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                             }
                         }
                         paramObj.put("attrFilterList", attrFilterList);
-                        JSONObject resultObj = (JSONObject) accessSearchCiEntityApi(paramObj);
+                        JSONObject resultObj = accessSearchCiEntityApi(paramObj);
                         resultList.addAll(getCmdbCiDataTbodyList(resultObj, columnList));
                     }
                 }
@@ -387,7 +436,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                 int pageSize = dataVo.getPageSize();
                 paramObj.put("pageSize", pageSize);
                 paramObj.put("needPage", pageSize < 100);
-                JSONObject resultObj = (JSONObject) accessSearchCiEntityApi(paramObj);
+                JSONObject resultObj = accessSearchCiEntityApi(paramObj);
                 resultList = getCmdbCiDataTbodyList(resultObj, columnList);
             }
         }
@@ -409,11 +458,44 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
 
     }
 
-    private Object accessSearchCiEntityApi(JSONObject paramObj) {
+    private JSONObject accessSearchCiEntityApi(JSONObject paramObj) {
         MyApiComponent restComponent = (MyApiComponent) PrivateApiComponentFactory.getInstance(SearchCiEntityApi.class.getName());
         if (restComponent != null) {
             try {
-                return restComponent.myDoService(paramObj);
+                paramObj.put("needCheck", false);
+                paramObj.put("needAction", false);
+                paramObj.put("needActionType", false);
+                paramObj.put("mode", "dialog");
+                JSONObject resultObj = (JSONObject) restComponent.myDoService(paramObj);
+                JSONArray tbodyArray = resultObj.getJSONArray("tbodyList");
+                if (CollectionUtils.isNotEmpty(tbodyArray)) {
+                    JSONArray tbodyList = new JSONArray();
+                    for (int i = 0; i < tbodyArray.size(); i++) {
+                        JSONObject tbodyObj = tbodyArray.getJSONObject(i);
+                        if (MapUtils.isNotEmpty(tbodyObj)) {
+                            JSONObject tbody = new JSONObject();
+                            tbody.put("id", tbodyObj.getLong("id"));
+                            tbody.put("ciLabel", tbodyObj.getString("ciLabel"));
+                            JSONObject attrEntityData = tbodyObj.getJSONObject("attrEntityData");
+                            if (MapUtils.isNotEmpty(attrEntityData)) {
+                                for (Map.Entry<String, Object> entry : attrEntityData.entrySet()) {
+                                    JSONObject valueObj = (JSONObject) entry.getValue();
+                                    String name = valueObj.getString("name");
+                                    if (StringUtils.isNotBlank(name)) {
+                                        JSONArray actualValueArray = valueObj.getJSONArray("actualValueList");
+                                        if (CollectionUtils.isNotEmpty(actualValueArray)) {
+                                            List<String> actualValueList = actualValueArray.toJavaList(String.class);
+                                            tbody.put(name, String.join(",", actualValueList));
+                                        }
+                                    }
+                                }
+                            }
+                            tbodyList.add(tbody);
+                        }
+                    }
+                    resultObj.put("tbodyList", tbodyList);
+                }
+                return resultObj;
             } catch (Exception e) {
                 logger.error(e.getMessage(), e);
             }
