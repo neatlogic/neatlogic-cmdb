@@ -330,6 +330,8 @@
         <result column="isPrivate" property="isPrivate"></result>
         <result column="isMenu" property="isMenu"></result>
         <result column="parentCiId" property="parentCiId"></result>
+        <result column="parentCiName" property="parentCiName"></result>
+        <result column="parentCiLabel" property="parentCiLabel"></result>
         <result column="isAbstract" property="isAbstract"></result>
         <result column="isVirtual" property="isVirtual"></result>
         <result column="fileId" property="fileId"></result>
@@ -352,6 +354,8 @@
                a.`is_private`   AS isPrivate,
                a.`is_menu`      AS isMenu,
                a.`parent_ci_id` AS parentCiId,
+               c.label          AS parentCiLabel,
+               c.name           AS parentCiName,
                a.`is_abstract`  AS isAbstract,
                a.`is_virtual`   AS isVirtual,
                a.`file_id`      AS fileId,
@@ -361,7 +365,8 @@
                b.`attr_id`      AS uniqueAttrId
         FROM `cmdb_ci` a
                  LEFT JOIN `cmdb_ci_unique` b ON a.id = b.ci_id
-        WHERE id = #{value}
+                 LEFT JOIN `cmdb_ci` c ON a.`parent_ci_id` = c.id
+        WHERE a.id = #{value}
     </select>
 
     <select id="getCiByName" parameterType="java.lang.String" resultMap="ciResultMap"
@@ -375,6 +380,8 @@
                a.`is_private`   AS isPrivate,
                a.`is_menu`      AS isMenu,
                a.`parent_ci_id` AS parentCiId,
+               c.label          AS parentCiLabel,
+               c.name           AS parentCiName,
                a.`is_abstract`  AS isAbstract,
                a.`is_virtual`   AS isVirtual,
                a.`file_id`      AS fileId,
@@ -384,15 +391,9 @@
                b.`attr_id`      AS uniqueAttrId
         FROM `cmdb_ci` a
                  LEFT JOIN `cmdb_ci_unique` b ON a.id = b.ci_id
-        WHERE name = #{value}
+                 LEFT JOIN `cmdb_ci` c ON a.`parent_ci_id` = c.id
+        WHERE a.name = #{value}
     </select>
-
-    <!-- <update id="updateCiNameExpression">
-         UPDATE
-             `cmdb_ci`
-         SET `name_expression` = #{nameExpression}
-         WHERE id = #{ciId}
-     </update>-->
 
     <update id="updateCiNameAttrId" parameterType="codedriver.framework.cmdb.dto.ci.CiVo">
         UPDATE

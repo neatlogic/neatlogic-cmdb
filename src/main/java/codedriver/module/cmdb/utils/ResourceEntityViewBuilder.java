@@ -287,8 +287,8 @@ public class ResourceEntityViewBuilder {
                                     .withSelectBody(buildSubSelectForCi(resourceEntity.getCi()).getSelectBody())
                                     .withAlias(new Alias(resourceEntity.getName().toLowerCase(Locale.ROOT))))
                             .withOnExpression(new EqualsTo().withLeftExpression(new Column()
-                                    .withTable(new Table("ci_base"))
-                                    .withColumnName("id"))
+                                            .withTable(new Table("ci_base"))
+                                            .withColumnName("id"))
                                     .withRightExpression(new Column()
                                             .withTable(new Table(resourceEntity.getName()))
                                             .withColumnName("id"))));
@@ -424,6 +424,12 @@ public class ResourceEntityViewBuilder {
             plainSelect.addSelectItems(new SelectExpressionItem(new Column("fcd").withTable(new Table("ci_base"))));
             plainSelect.addSelectItems(new SelectExpressionItem(new Column("lcu").withTable(new Table("ci_base"))));
             plainSelect.addSelectItems(new SelectExpressionItem(new Column("lcd").withTable(new Table("ci_base"))));
+            plainSelect.addSelectItems(new SelectExpressionItem(new Column("inspect_status").withTable(new Table("ci_base"))).withAlias(new Alias("inspectStatus")));
+            plainSelect.addSelectItems(new SelectExpressionItem(new Column("inspect_time").withTable(new Table("ci_base"))).withAlias(new Alias("inspectTime")));
+            plainSelect.addSelectItems(new SelectExpressionItem(new Column("monitor_status").withTable(new Table("ci_base"))).withAlias(new Alias("monitorStatus")));
+            plainSelect.addSelectItems(new SelectExpressionItem(new Column("monitor_time").withTable(new Table("ci_base"))).withAlias(new Alias("monitorTime")));
+
+
             plainSelect.addSelectItems(new SelectExpressionItem(new Column("id").withTable(new Table("ci_info"))).withAlias(new Alias("typeId")));
             plainSelect.addSelectItems(new SelectExpressionItem(new Column("name").withTable(new Table("ci_info"))).withAlias(new Alias("typeName")));
             plainSelect.addSelectItems(new SelectExpressionItem(new Column("label").withTable(new Table("ci_info"))).withAlias(new Alias("typeLabel")));

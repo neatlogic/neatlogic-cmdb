@@ -7,12 +7,14 @@ package codedriver.module.cmdb.service.ci;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
+import codedriver.framework.cmdb.dto.ci.CiViewVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.ci.RelVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewVo;
 import codedriver.framework.cmdb.exception.attr.AttrIsUsedInExpressionException;
 import codedriver.framework.cmdb.exception.attr.AttrIsUsedInUniqueRuleException;
 import codedriver.framework.cmdb.exception.ci.*;
+import codedriver.framework.cmdb.utils.RelUtil;
 import codedriver.framework.exception.database.DataBaseNotFoundException;
 import codedriver.framework.lrcode.LRCodeManager;
 import codedriver.framework.lrcode.constvalue.MoveType;
@@ -20,6 +22,7 @@ import codedriver.framework.transaction.core.AfterTransactionJob;
 import codedriver.framework.transaction.core.EscapeTransactionJob;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
+import codedriver.module.cmdb.dao.mapper.ci.CiViewMapper;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper;
@@ -27,7 +30,6 @@ import codedriver.module.cmdb.dao.mapper.cischema.CiSchemaMapper;
 import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import codedriver.module.cmdb.service.rel.RelService;
-import codedriver.framework.cmdb.utils.RelUtil;
 import codedriver.module.cmdb.utils.VirtualCiSqlBuilder;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -37,6 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +49,9 @@ import java.util.stream.Collectors;
 @Service
 public class CiServiceImpl implements CiService {
     private final static Logger logger = LoggerFactory.getLogger(CiServiceImpl.class);
+
+    @Resource
+    private CiViewMapper ciViewMapper;
 
     @Autowired
     private CiMapper ciMapper;
@@ -84,10 +90,21 @@ public class CiServiceImpl implements CiService {
             throw new CiLabelIsExistsException(ciVo.getLabel());
         }
 
+
         int lft = LRCodeManager.beforeAddTreeNode("cmdb_ci", "id", "parent_ci_id", ciVo.getParentCiId());
         ciVo.setLft(lft);
         ciVo.setRht(lft + 1);
         ciMapper.insertCi(ciVo);
+        //如果父模型有配置显示视图，则复制一份，加快配置效率
+        if (ciVo.getParentCiId() != null) {
+            List<CiViewVo> ciViewList = ciViewMapper.getCiViewBaseInfoByCiId(ciVo.getParentCiId());
+            if (CollectionUtils.isNotEmpty(ciViewList)) {
+                for (CiViewVo ciViewVo : ciViewList) {
+                    ciViewVo.setCiId(ciVo.getId());
+                    ciViewMapper.insertCiView(ciViewVo);
+                }
+            }
+        }
 
         if (Objects.equals(ciVo.getIsVirtual(), 1)) {
             buildCiView(ciVo);
@@ -320,6 +337,18 @@ public class CiServiceImpl implements CiService {
             if (checkCiVo.getNameAttrId() != null && CollectionUtils.isNotEmpty(parentAttrList) && parentAttrList.stream().anyMatch(a -> a.getId().equals(checkCiVo.getNameAttrId()))) {
                 ciVo.setNameAttrId(null);
                 ciMapper.updateCiNameAttrId(ciVo);
+            }
+
+            //更换父模型的视图数据
+            ciViewMapper.deleteCiViewByCiId(ciVo.getId());
+            if (ciVo.getParentCiId() != null) {
+                List<CiViewVo> ciViewList = ciViewMapper.getCiViewBaseInfoByCiId(ciVo.getParentCiId());
+                if (CollectionUtils.isNotEmpty(ciViewList)) {
+                    for (CiViewVo ciViewVo : ciViewList) {
+                        ciViewVo.setCiId(ciVo.getId());
+                        ciViewMapper.insertCiView(ciViewVo);
+                    }
+                }
             }
         }
     }

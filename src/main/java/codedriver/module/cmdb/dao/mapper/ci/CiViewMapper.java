@@ -11,6 +11,8 @@ import codedriver.framework.cmdb.dto.view.ViewConstVo;
 import java.util.List;
 
 public interface CiViewMapper {
+    List<CiViewVo> getCiViewBaseInfoByCiId(Long ciId);
+
     List<ViewConstVo> getCiViewConstByCiId(Long ciId);
 
     List<CiViewVo> getCiViewByCiId(CiViewVo ciViewVo);
