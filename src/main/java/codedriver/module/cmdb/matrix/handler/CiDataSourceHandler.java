@@ -127,30 +127,9 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         if (matrixCiVo == null) {
             throw new MatrixCiNotFoundException(matrixUuid);
         }
-//        CiViewVo ciViewVo = new CiViewVo();
-//        ciViewVo.setCiId(matrixCiVo.getCiId());
-//        ciViewVo.addShowType(ShowType.LIST.getValue());
-//        ciViewVo.addShowType(ShowType.ALL.getValue());
-//        List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo));
-//        int sort = 0;
-//        for (CiViewVo ciView : ciViewList) {
-//            MatrixAttributeVo matrixAttributeVo = new MatrixAttributeVo();
-//            matrixAttributeVo.setMatrixUuid(matrixUuid);
-//            matrixAttributeVo.setUuid(ciView.getType() + "_" + ciView.getItemId());
-////            matrixAttributeVo.setUuid(ciView.getItemId().toString());
-////            matrixAttributeVo.setUuid(ciView.getItemId().toString());
-//            matrixAttributeVo.setName(ciView.getItemLabel());
-//            matrixAttributeVo.setType(MatrixAttributeType.INPUT.getValue());
-//            matrixAttributeVo.setIsDeletable(0);
-//            matrixAttributeVo.setSort(sort++);
-//            matrixAttributeVo.setIsRequired(0);
-//            matrixAttributeList.add(matrixAttributeVo);
-//        }
 
         Long ciId = matrixCiVo.getCiId();
         String showType = ShowType.LIST.getValue();
-//        Boolean isSimple = jsonObj.getBoolean("isSimple");
-//        Integer allowEdit = jsonObj.getInteger("allowEdit");
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciId);
         if (StringUtils.isNotBlank(showType)) {
             CiViewVo ciViewVo = new CiViewVo();
@@ -166,13 +145,6 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             }
             attrList.removeIf(attr -> !attrSet.contains(attr.getId()));
         }
-//        if (allowEdit != null) {
-//            attrList.removeIf(attr -> (allowEdit.equals(1) && (attr.getAllowEdit() != null && attr.getAllowEdit().equals(0)))
-//                    || (allowEdit.equals(0) && (attr.getAllowEdit() == null || attr.getAllowEdit().equals(1))));
-//        }
-//        if (isSimple != null) {
-//            attrList.removeIf(attr -> AttrValueHandlerFactory.getHandler(attr.getType()).isSimple() != isSimple);
-//        }
 
         int sort = 0;
         List<MatrixAttributeVo> matrixAttributeList = new ArrayList<>();
