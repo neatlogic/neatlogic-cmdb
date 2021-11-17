@@ -156,6 +156,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         matrixAttributeVo.setIsDeletable(0);
         matrixAttributeVo.setSort(sort++);
         matrixAttributeVo.setIsRequired(0);
+        matrixAttributeVo.setPrimaryKey(1);
         matrixAttributeList.add(matrixAttributeVo);
         matrixAttributeVo = new MatrixAttributeVo();
         matrixAttributeVo.setMatrixUuid(matrixUuid);
