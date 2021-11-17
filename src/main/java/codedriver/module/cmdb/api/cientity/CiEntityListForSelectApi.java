@@ -3,7 +3,7 @@
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
-package codedriver.module.cmdb.api.resourcecenter.resource;
+package codedriver.module.cmdb.api.cientity;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
@@ -43,7 +43,7 @@ public class CiEntityListForSelectApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "resourcecenter/cientity/list/forselect";
+        return "cmdb/cientity/list/forselect";
     }
 
     @Override
