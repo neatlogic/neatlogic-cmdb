@@ -1034,6 +1034,10 @@
     </select>-->
 
 
+    <select id="getCiEntityIdCountByCiId" parameterType="java.lang.Long" resultType="int">
+        SELECT COUNT(1) FROM `cmdb_cientity` WHERE `ci_id` = #{value}
+    </select>
+
     <select id="getCiEntityIdByCiId" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
             resultType="java.lang.Long">
         SELECT id

@@ -15,7 +15,6 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -24,7 +23,6 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author linbq
@@ -54,6 +52,7 @@ public class AppModuleListApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "模糊搜索"),
+            @Param(name = "appSystemIdList", type = ApiParamType.JSONARRAY, desc = "应用系统id列表"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
             @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true")
@@ -66,16 +65,22 @@ public class AppModuleListApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         List<ResourceVo> resourceVoList = new ArrayList<>();
-        ResourceSearchVo searchVo = JSON.toJavaObject(paramObj, ResourceSearchVo.class);
-        Set<Long> idSet = resourceCenterMapper.getAppModuleIdList(searchVo);
-        if (CollectionUtils.isNotEmpty(idSet)) {
-            int rowNum = idSet.size();
+        List<Long> idList = null;
+        ResourceSearchVo searchVo = paramObj.toJavaObject(ResourceSearchVo.class);
+        List<Long> appSystemIdList = searchVo.getAppSystemIdList();
+        if (CollectionUtils.isNotEmpty(appSystemIdList)) {
+            idList = resourceCenterMapper.getAppModuleIdListByAppSystemIdList(searchVo);
+        } else {
+            idList = resourceCenterMapper.getAppModuleIdList(searchVo);
+        }
+
+        if (CollectionUtils.isNotEmpty(idList)) {
+            int rowNum = idList.size();
             searchVo.setRowNum(rowNum);
             if (searchVo.getCurrentPage() <= searchVo.getPageCount()) {
                 int fromIndex = searchVo.getStartNum();
                 int toIndex = fromIndex + searchVo.getPageSize();
                 toIndex = toIndex >  rowNum ? rowNum : toIndex;
-                List<Long> idList = new ArrayList<>(idSet);
                 idList.sort(Comparator.reverseOrder());
                 List<Long> currentPageIdList = idList.subList(fromIndex, toIndex);
                 if (CollectionUtils.isNotEmpty(currentPageIdList)) {

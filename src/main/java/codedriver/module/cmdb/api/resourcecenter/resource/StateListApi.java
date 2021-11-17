@@ -26,6 +26,7 @@ import java.util.List;
  * @author linbq
  * @since 2021/6/18 14:50
  **/
+@Deprecated
 @Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
