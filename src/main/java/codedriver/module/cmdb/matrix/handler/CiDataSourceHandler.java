@@ -9,6 +9,8 @@ import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.CiViewVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.AttrFilterVo;
+import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.cmdb.enums.SearchExpression;
 import codedriver.framework.cmdb.enums.ShowType;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.common.constvalue.Expression;
@@ -24,6 +26,7 @@ import codedriver.module.cmdb.api.cientity.SearchCiEntityApi;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiViewMapper;
+import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import codedriver.module.cmdb.matrix.constvalue.MatrixType;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -53,6 +56,9 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
 
     @Resource
     private CiMapper ciMapper;
+
+    @Resource
+    private CiEntityMapper ciEntityMapper;
 
     @Resource
     private AttrMapper attrMapper;
@@ -176,6 +182,9 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             matrixAttributeVo.setIsDeletable(0);
             matrixAttributeVo.setSort(sort++);
             matrixAttributeVo.setIsRequired(0);
+            if ("date".equals(attrVo.getType())) {
+                matrixAttributeVo.setIsSearchable(0);
+            }
             matrixAttributeList.add(matrixAttributeVo);
         }
         return matrixAttributeList;
@@ -240,49 +249,9 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             if (CollectionUtils.isNotEmpty(defaultValue)) {
                 paramObj.put("idList", defaultValue.toJavaList(Long.class));
             } else {
-                List<AttrFilterVo> attrFilterList = new ArrayList<>();
-                JSONArray filterList = dataVo.getFilterList();
-                for (int i = 0; i < filterList.size(); i++) {
-                    JSONObject filterObj = filterList.getJSONObject(i);
-                    if (MapUtils.isEmpty(filterObj)) {
-                        continue;
-                    }
-                    String uuid = filterObj.getString("uuid");
-                    if (!uuid.startsWith("attr_")) {
-                        continue;
-                    }
-                    Long attrId = Long.parseLong(uuid.substring(5));
-                    JSONArray valueArray = filterObj.getJSONArray("valueList");
-                    if (CollectionUtils.isEmpty(valueArray)) {
-                        continue;
-                    }
-                    AttrFilterVo attrFilterVo = new AttrFilterVo();
-                    attrFilterVo.setAttrId(attrId);
-                    attrFilterVo.setExpression("equal");
-                    List<String> valueList = valueArray.toJavaList(String.class);
-                    attrFilterVo.setValueList(valueList);
-                    attrFilterList.add(attrFilterVo);
+                if (!setAttrFilterList(dataVo, matrixCiVo.getCiId(), paramObj)) {
+                    return new JSONObject();
                 }
-                List<MatrixColumnVo> matrixColumnList = dataVo.getSourceColumnList();
-                for (MatrixColumnVo matrixColumnVo : matrixColumnList) {
-                    Object value = matrixColumnVo.getValue();
-                    if (value == null) {
-                        continue;
-                    }
-                    String uuid = matrixColumnVo.getColumn();
-                    if (!uuid.startsWith("attr_")) {
-                        continue;
-                    }
-                    Long attrId = Long.parseLong(uuid.substring(5));
-                    AttrFilterVo attrFilterVo = new AttrFilterVo();
-                    attrFilterVo.setAttrId(attrId);
-                    attrFilterVo.setExpression(matrixColumnVo.getExpression());
-                    List<String> valueList = new ArrayList<>();
-                    valueList.add(value.toString());
-                    attrFilterVo.setValueList(valueList);
-                    attrFilterList.add(attrFilterVo);
-                }
-                paramObj.put("attrFilterList", attrFilterList);
             }
             JSONObject resultObj = accessSearchCiEntityApi(paramObj);
             if (MapUtils.isNotEmpty(resultObj)) {
@@ -309,6 +278,146 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         return new JSONObject();
     }
 
+    private boolean setAttrFilterList(MatrixDataVo dataVo, Long ciId, JSONObject paramObj) {
+        Map<String, AttrVo> attrMap = new HashMap<>();
+        List<AttrVo> attrList = attrMapper.getAttrByCiId(ciId);
+        for (AttrVo attrVo : attrList) {
+            attrMap.put(attrVo.getName(), attrVo);
+        }
+        List<AttrFilterVo> attrFilterList = new ArrayList<>();
+        JSONArray filterList = dataVo.getFilterList();
+        if (CollectionUtils.isNotEmpty(filterList)) {
+            for (int i = 0; i < filterList.size(); i++) {
+                JSONObject filterObj = filterList.getJSONObject(i);
+                if (MapUtils.isEmpty(filterObj)) {
+                    continue;
+                }
+                JSONArray valueArray = filterObj.getJSONArray("valueList");
+                if (CollectionUtils.isEmpty(valueArray)) {
+                    continue;
+                }
+                List<String> valueList = new ArrayList<>();
+                for (String value : valueArray.toJavaList(String.class)) {
+                    if (StringUtils.isNotBlank(value)) {
+                        valueList.add(value);
+                    }
+                }
+                if (CollectionUtils.isEmpty(valueList)) {
+                    continue;
+                }
+                String uuid = filterObj.getString("uuid");
+                if ("id".equals(uuid)) {
+                    paramObj.put("filterCiEntityId", valueList.get(0));
+                } else  if ("ciLabel".equals(uuid)) {
+                    String ciLabel = valueList.get(0);
+                    CiVo ciVo = ciMapper.getCiByLabel(ciLabel);
+                    if (ciVo == null) {
+                        return false;
+                    }
+                    paramObj.put("filterCiId", ciVo.getId());
+                } else {
+                    AttrVo attrVo = attrMap.get(uuid);
+                    if (attrVo == null) {
+                        continue;
+                    }
+                    if ("select".equals(attrVo.getType())) {
+                        CiVo targetCiVo = ciMapper.getCiById(attrVo.getTargetCiId());
+                        if (targetCiVo == null) {
+                            return false;
+                        }
+                        List<String> newValueList = new ArrayList<>();
+                        for (String value : valueList) {
+                            if (Objects.equals(targetCiVo.getIsVirtual(), 1)) {
+                                CiEntityVo ciEntityVo = new CiEntityVo();
+                                ciEntityVo.setCiId(targetCiVo.getId());
+                                ciEntityVo.setName(value);
+                                List<CiEntityVo> ciEntityList = ciEntityMapper.getVirtualCiEntityBaseInfoByName(ciEntityVo);
+                                if (CollectionUtils.isEmpty(ciEntityList)) {
+                                    return false;
+                                }
+                                for (CiEntityVo ciEntity : ciEntityList) {
+                                    newValueList.add(ciEntity.getId().toString());
+                                }
+                            } else {
+                                Long ciEntityId = ciEntityMapper.getIdByCiIdAndName(targetCiVo.getId(), value);
+                                if (ciEntityId == null) {
+                                    return false;
+                                }
+                                newValueList.add(ciEntityId.toString());
+                            }
+                        }
+                        valueList = newValueList;
+                    }
+                    AttrFilterVo attrFilterVo = new AttrFilterVo();
+                    attrFilterVo.setAttrId(attrVo.getId());
+                    attrFilterVo.setExpression(SearchExpression.EQ.getExpression());
+                    attrFilterVo.setValueList(valueList);
+                    attrFilterList.add(attrFilterVo);
+                }
+            }
+        }
+
+        List<MatrixColumnVo> matrixColumnList = dataVo.getSourceColumnList();
+        if (CollectionUtils.isNotEmpty(matrixColumnList)) {
+            for (MatrixColumnVo matrixColumnVo : matrixColumnList) {
+                Object value = matrixColumnVo.getValue();
+                if (value == null) {
+                    continue;
+                }
+                String uuid = matrixColumnVo.getColumn();
+                if ("id".equals(uuid)) {
+                    paramObj.put("filterCiEntityId", value);
+                } else if ("ciLabel".equals(uuid)) {
+                    CiVo ciVo = ciMapper.getCiByLabel(value.toString());
+                    if (ciVo == null) {
+                        return false;
+                    }
+                    paramObj.put("filterCiId", ciVo.getId());
+                } else {
+                    AttrVo attrVo = attrMap.get(uuid);
+                    if (attrVo == null) {
+                        continue;
+                    }
+                    List<String> valueList = new ArrayList<>();
+                    if ("select".equals(attrVo.getType())) {
+                        CiVo targetCiVo = ciMapper.getCiById(attrVo.getTargetCiId());
+                        if (targetCiVo == null) {
+                            return false;
+                        }
+                        if (Objects.equals(targetCiVo.getIsVirtual(), 1)) {
+                            CiEntityVo ciEntityVo = new CiEntityVo();
+                            ciEntityVo.setCiId(targetCiVo.getId());
+                            ciEntityVo.setName(value.toString());
+                            List<CiEntityVo> ciEntityList = ciEntityMapper.getVirtualCiEntityBaseInfoByName(ciEntityVo);
+                            if (CollectionUtils.isEmpty(ciEntityList)) {
+                                return false;
+                            }
+                            for (CiEntityVo ciEntity : ciEntityList) {
+                                valueList.add(ciEntity.getId().toString());
+                            }
+                        } else {
+                            Long ciEntityId = ciEntityMapper.getIdByCiIdAndName(attrVo.getTargetCiId(), value.toString());
+                            if (ciEntityId == null) {
+                                return false;
+                            }
+                            valueList.add(ciEntityId.toString());
+                        }
+                    } else {
+                        valueList.add(value.toString());
+                    }
+                    AttrFilterVo attrFilterVo = new AttrFilterVo();
+                    attrFilterVo.setAttrId(attrVo.getId());
+                    String expression = SearchExpression.checkExpressionIsExists(matrixColumnVo.getExpression());
+                    expression = expression == null ? SearchExpression.EQ.getExpression() : expression;
+                    attrFilterVo.setExpression(expression);
+                    attrFilterVo.setValueList(valueList);
+                    attrFilterList.add(attrFilterVo);
+                }
+            }
+        }
+        paramObj.put("attrFilterList", attrFilterList);
+        return true;
+    }
     @Override
     protected List<Map<String, JSONObject>> myTableColumnDataSearch(MatrixDataVo dataVo) {
         String matrixUuid = dataVo.getMatrixUuid();
@@ -329,6 +438,12 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             }
             JSONObject paramObj = new JSONObject();
             paramObj.put("ciId", matrixCiVo.getCiId());
+
+            Map<String, AttrVo> attrMap = new HashMap<>();
+            List<AttrVo> attrList = attrMapper.getAttrByCiId(matrixCiVo.getCiId());
+            for (AttrVo attrVo : attrList) {
+                attrMap.put(attrVo.getName(), attrVo);
+            }
             JSONArray defaultValue = dataVo.getDefaultValue();
             if (CollectionUtils.isNotEmpty(defaultValue)) {
                 for (String value : defaultValue.toJavaList(String.class)) {
@@ -346,13 +461,13 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                         for (int i = 0; i < min; i++) {
                             String column = columnList.get(i);
                             if (StringUtils.isNotBlank(column)) {
-                                if (!column.startsWith("attr_")) {
+                                AttrVo attrVo = attrMap.get(column);
+                                if (attrVo == null) {
                                     continue;
                                 }
-                                Long attrId = Long.parseLong(column.substring(5));
                                 AttrFilterVo attrFilterVo = new AttrFilterVo();
-                                attrFilterVo.setAttrId(attrId);
-                                attrFilterVo.setExpression(Expression.EQUAL.getExpression());
+                                attrFilterVo.setAttrId(attrVo.getId());
+                                attrFilterVo.setExpression(SearchExpression.EQ.getExpression());
                                 List<String> valueList = new ArrayList<>();
                                 valueList.add(splitList.get(i));
                                 attrFilterVo.setValueList(valueList);
@@ -365,46 +480,95 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                     }
                 }
             } else {
+                List<AttrFilterVo> attrFilterList = new ArrayList<>();
                 String keywordColumn = dataVo.getKeywordColumn();
                 if (StringUtils.isNotBlank(keywordColumn) && StringUtils.isNotBlank(dataVo.getKeyword())) {
                     if (!attributeList.contains(keywordColumn)) {
                         throw new MatrixAttributeNotFoundException(dataVo.getMatrixUuid(), keywordColumn);
                     }
-                    List<AttrFilterVo> attrFilterList = new ArrayList<>();
-                    JSONArray filterList = dataVo.getFilterList();
-                    for (int i = 0; i < filterList.size(); i++) {
-                        JSONObject filterObj = filterList.getJSONObject(i);
-                        if (MapUtils.isEmpty(filterObj)) {
-                            continue;
-                        }
-                        String uuid = filterObj.getString("uuid");
-                        if (!uuid.startsWith("attr_")) {
-                            continue;
-                        }
-                        Long attrId = Long.parseLong(uuid.substring(5));
-                        JSONArray valueArray = filterObj.getJSONArray("valueList");
-                        if (CollectionUtils.isEmpty(valueArray)) {
-                            continue;
-                        }
+                    AttrVo attrVo = attrMap.get(keywordColumn);
+                    if (attrVo != null) {
                         AttrFilterVo attrFilterVo = new AttrFilterVo();
-                        attrFilterVo.setAttrId(attrId);
-                        attrFilterVo.setExpression("equal");
-                        List<String> valueList = valueArray.toJavaList(String.class);
-                        attrFilterVo.setValueList(valueList);
-                        attrFilterList.add(attrFilterVo);
-                    }
-                    if (keywordColumn.startsWith("attr_")) {
-                        Long attrId = Long.parseLong(keywordColumn.substring(5));
-                        AttrFilterVo attrFilterVo = new AttrFilterVo();
-                        attrFilterVo.setAttrId(attrId);
-                        attrFilterVo.setExpression(Expression.LIKE.getExpression());
+                        attrFilterVo.setAttrId(attrVo.getId());
+                        attrFilterVo.setExpression(SearchExpression.LI.getExpression());
                         List<String> valueList = new ArrayList<>();
                         valueList.add(dataVo.getKeyword());
                         attrFilterVo.setValueList(valueList);
                         attrFilterList.add(attrFilterVo);
                     }
                 }
-//                integrationVo.getParamObj().putAll(jsonObj);
+                JSONArray filterList = dataVo.getFilterList();
+                if (CollectionUtils.isNotEmpty(filterList)) {
+                    for (int i = 0; i < filterList.size(); i++) {
+                        JSONObject filterObj = filterList.getJSONObject(i);
+                        if (MapUtils.isEmpty(filterObj)) {
+                            continue;
+                        }
+                        JSONArray valueArray = filterObj.getJSONArray("valueList");
+                        if (CollectionUtils.isEmpty(valueArray)) {
+                            continue;
+                        }
+                        List<String> valueList = new ArrayList<>();
+                        for (String value : valueArray.toJavaList(String.class)) {
+                            if (StringUtils.isNotBlank(value)) {
+                                valueList.add(value);
+                            }
+                        }
+                        if (CollectionUtils.isEmpty(valueList)) {
+                            continue;
+                        }
+                        String uuid = filterObj.getString("uuid");
+                        if ("id".equals(uuid)) {
+                            paramObj.put("filterCiEntityId", valueList.get(0));
+                        } else  if ("ciLabel".equals(uuid)) {
+                            String ciLabel = valueList.get(0);
+                            CiVo ciVo = ciMapper.getCiByLabel(ciLabel);
+                            if (ciVo == null) {
+                                return resultList;
+                            }
+                            paramObj.put("filterCiId", ciVo.getId());
+                        } else {
+                            AttrVo attrVo = attrMap.get(uuid);
+                            if (attrVo == null) {
+                                continue;
+                            }
+                            if ("select".equals(attrVo.getType())) {
+                                CiVo targetCiVo = ciMapper.getCiById(attrVo.getTargetCiId());
+                                if (targetCiVo == null) {
+                                    return resultList;
+                                }
+                                List<String> newValueList = new ArrayList<>();
+                                for (String value : valueList) {
+                                    if (Objects.equals(targetCiVo.getIsVirtual(), 1)) {
+                                        CiEntityVo ciEntityVo = new CiEntityVo();
+                                        ciEntityVo.setCiId(targetCiVo.getId());
+                                        ciEntityVo.setName(value);
+                                        List<CiEntityVo> ciEntityList = ciEntityMapper.getVirtualCiEntityBaseInfoByName(ciEntityVo);
+                                        if (CollectionUtils.isEmpty(ciEntityList)) {
+                                            return resultList;
+                                        }
+                                        for (CiEntityVo ciEntity : ciEntityList) {
+                                            newValueList.add(ciEntity.getId().toString());
+                                        }
+                                    } else {
+                                        Long ciEntityId = ciEntityMapper.getIdByCiIdAndName(targetCiVo.getId(), value);
+                                        if (ciEntityId == null) {
+                                            return resultList;
+                                        }
+                                        newValueList.add(ciEntityId.toString());
+                                    }
+                                }
+                                valueList = newValueList;
+                            }
+                            AttrFilterVo attrFilterVo = new AttrFilterVo();
+                            attrFilterVo.setAttrId(attrVo.getId());
+                            attrFilterVo.setExpression(SearchExpression.EQ.getExpression());
+                            attrFilterVo.setValueList(valueList);
+                            attrFilterList.add(attrFilterVo);
+                        }
+                    }
+                }
+                paramObj.put("attrFilterList", attrFilterList);
                 paramObj.put("currentPage", dataVo.getCurrentPage());
                 int pageSize = dataVo.getPageSize();
                 paramObj.put("pageSize", pageSize);

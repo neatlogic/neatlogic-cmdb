@@ -63,6 +63,8 @@ public interface CiMapper extends CiCrossoverMapper {
 
     CiVo getCiByName(String ciName);
 
+    CiVo getCiByLabel(String ciLabel);
+
     void updateCi(CiVo ciVo);
 
     void updateCiNameAttrId(CiVo ciVo);
