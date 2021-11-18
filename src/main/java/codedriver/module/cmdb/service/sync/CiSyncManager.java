@@ -701,27 +701,25 @@ public class CiSyncManager {
                 JSONObject data = dataList.getJSONObject(i);
                 JSONObject returnData = new JSONObject();
                 JSONArray returnDataList = new JSONArray();
+
                 for (String key : data.keySet()) {
-                    if (!(data.get(key) instanceof JSONArray)) {
-                        if (StringUtils.isNotBlank(parentKey)) {
-                            if (fieldList.contains(parentKey + "." + key)) {
-                                returnData.put(parentKey + "." + key, data.get(key));
-                            }
-                        } else {
-                            if (fieldList.contains(key)) {
-                                returnData.put(key, data.get(key));
-                            }
+                    if (StringUtils.isNotBlank(parentKey)) {
+                        if (fieldList.contains(parentKey + "." + key)) {
+                            returnData.put(parentKey + "." + key, data.get(key));
+                        }
+                    } else {
+                        if (fieldList.contains(key)) {
+                            returnData.put(key, data.get(key));
                         }
                     }
                 }
+
                 if (MapUtils.isNotEmpty(returnData)) {
                     returnDataList.add(returnData);
                 }
+
                 for (String key : data.keySet()) {
                     if (data.get(key) instanceof JSONArray) {
-                        if (fieldList.contains(StringUtils.isNotBlank(parentKey) ? parentKey + "." + key : key)) {
-                            returnData.put(StringUtils.isNotBlank(parentKey) ? parentKey + "." + key : key, data.get(key));
-                        }
                         JSONArray subDataList = flattenJson(data.getJSONArray(key), fieldList, StringUtils.isNotBlank(parentKey) ? parentKey + "." + key : key);
                         JSONArray tmpList = new JSONArray();
                         if (CollectionUtils.isNotEmpty(returnDataList)) {
@@ -824,5 +822,14 @@ public class CiSyncManager {
                 }
             }
         }
+    }
+
+    public static void main(String[] as) {
+        JSONObject a = new JSONObject();
+        a.put("a", 1);
+        JSONArray list = new JSONArray();
+        list.add(a);
+        a.put("b", 2);
+        System.out.println(list.toString());
     }
 }
