@@ -74,10 +74,9 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
         resultObj.put("list", resultArray);
         String executeUser = jsonObj.getString("executeUser");
         Long protocolId = jsonObj.getLong("protocolId");
-        AccountProtocolVo protocolVo;
         String protocol = null;
         if (protocolId != null) {
-            protocolVo = resourceCenterMapper.getAccountProtocolVoByProtocolId(protocolId);
+            AccountProtocolVo protocolVo = resourceCenterMapper.getAccountProtocolVoByProtocolId(protocolId);
             protocol = protocolVo.getName();
             // 协议和用户同时填了，才校验是否合法
             if (StringUtils.isNotBlank(executeUser)) {
