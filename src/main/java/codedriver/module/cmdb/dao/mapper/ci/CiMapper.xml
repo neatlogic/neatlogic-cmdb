@@ -395,6 +395,32 @@
         WHERE a.name = #{value}
     </select>
 
+    <select id="getCiByLabel" parameterType="java.lang.String" resultMap="ciResultMap"
+            useCache="true">
+        SELECT a.`id`,
+               a.`name`,
+               a.`label`,
+               a.`description`,
+               a.`icon`,
+               a.`type_id`      AS typeId,
+               a.`is_private`   AS isPrivate,
+               a.`is_menu`      AS isMenu,
+               a.`parent_ci_id` AS parentCiId,
+               c.label          AS parentCiLabel,
+               c.name           AS parentCiName,
+               a.`is_abstract`  AS isAbstract,
+               a.`is_virtual`   AS isVirtual,
+               a.`file_id`      AS fileId,
+               a.`name_attr_id` AS nameAttrId,
+               a.`lft`          AS lft,
+               a.`rht`          AS rht,
+               b.`attr_id`      AS uniqueAttrId
+        FROM `cmdb_ci` a
+                 LEFT JOIN `cmdb_ci_unique` b ON a.id = b.ci_id
+                 LEFT JOIN `cmdb_ci` c ON a.`parent_ci_id` = c.id
+        WHERE a.label = #{value}
+    </select>
+
     <update id="updateCiNameAttrId" parameterType="codedriver.framework.cmdb.dto.ci.CiVo">
         UPDATE
             `cmdb_ci`
