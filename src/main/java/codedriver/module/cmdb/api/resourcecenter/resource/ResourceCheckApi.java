@@ -19,6 +19,7 @@ import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -55,8 +56,8 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "executeUser", type = ApiParamType.STRING, isRequired = true, desc = "执行用户"),
-            @Param(name = "protocolId", type = ApiParamType.LONG, isRequired = true, desc = "连接协议id"),
+            @Param(name = "executeUser", type = ApiParamType.STRING, desc = "执行用户"),
+            @Param(name = "protocolId", type = ApiParamType.LONG, desc = "连接协议id"),
             @Param(name = "tagList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "标签列表"),
             @Param(name = "selectNodeList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "选择节点列表"),
             @Param(name = "inputNodeList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "输入节点列表")
@@ -73,17 +74,24 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
         resultObj.put("list", resultArray);
         String executeUser = jsonObj.getString("executeUser");
         Long protocolId = jsonObj.getLong("protocolId");
-        AccountProtocolVo protocolVo = resourceCenterMapper.getAccountProtocolVoByProtocolId(protocolId);
-        String protocol = protocolVo.getName();
-        List<Long> accountIdList = resourceCenterMapper.getAccountIdListByAccountAndProtocol(executeUser, protocol);
-        if (CollectionUtils.isEmpty(accountIdList)) {
-            JSONObject executeUserIsNotFoundInProtocolObj = new JSONObject();
-            executeUserIsNotFoundInProtocolObj.put("type", "executeUserIsNotFoundInProtocol");
-            executeUserIsNotFoundInProtocolObj.put("protocol", protocol);
-            executeUserIsNotFoundInProtocolObj.put("executeUser", executeUser);
-            resultArray.add(executeUserIsNotFoundInProtocolObj);
-            resultObj.put("count", 1);
-            return resultObj;
+        AccountProtocolVo protocolVo;
+        String protocol = null;
+        if (protocolId != null) {
+            protocolVo = resourceCenterMapper.getAccountProtocolVoByProtocolId(protocolId);
+            protocol = protocolVo.getName();
+            // 协议和用户同时填了，才校验是否合法
+            if (StringUtils.isNotBlank(executeUser)) {
+                List<Long> accountIdList = resourceCenterMapper.getAccountIdListByAccountAndProtocol(executeUser, protocol);
+                if (CollectionUtils.isEmpty(accountIdList)) {
+                    JSONObject executeUserIsNotFoundInProtocolObj = new JSONObject();
+                    executeUserIsNotFoundInProtocolObj.put("type", "executeUserIsNotFoundInProtocol");
+                    executeUserIsNotFoundInProtocolObj.put("protocol", protocol);
+                    executeUserIsNotFoundInProtocolObj.put("executeUser", executeUser);
+                    resultArray.add(executeUserIsNotFoundInProtocolObj);
+                    resultObj.put("count", 1);
+                    return resultObj;
+                }
+            }
         }
         List<ResourceVo> executeUserIsNotFoundInResourceList = new ArrayList<>();
         JSONObject executeUserIsNotFoundInResourceObj = new JSONObject();
@@ -94,20 +102,24 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
         resultArray.add(executeUserIsNotFoundInResourceObj);
         String schemaName = TenantContext.get().getDataDbName();
         List<Long> tagList = jsonObj.getJSONArray("tagList").toJavaList(Long.class);
-        if (CollectionUtils.isNotEmpty(tagList)) {
+        // 如果选的标签，只有填了协议和用户，才校验是否合法
+        if (CollectionUtils.isNotEmpty(tagList) && StringUtils.isNotBlank(protocol) && StringUtils.isNotBlank(executeUser)) {
             List<Long> resourceIdList = resourceCenterMapper.getNoCorrespondingAccountResourceIdListByTagListAndAccountIdAndProtocol(tagList, executeUser, protocol);
-            for (Long resourecId : resourceIdList) {
-                ResourceVo resourceVo = resourceCenterMapper.getResourceIpPortById(resourecId, schemaName);
+            for (Long resourceId : resourceIdList) {
+                ResourceVo resourceVo = resourceCenterMapper.getResourceIpPortById(resourceId, schemaName);
                 if (resourceVo != null) {
                     executeUserIsNotFoundInResourceList.add(resourceVo);
                 }
             }
         }
+        // 如果直接选的节点，当协议和用户都存在时，才校验是否合法
         List<ResourceVo> selectNodeList = jsonObj.getJSONArray("selectNodeList").toJavaList(ResourceVo.class);
-        for (ResourceVo resourceVo : selectNodeList) {
-            Long accountId = resourceCenterMapper.checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol(resourceVo.getId(), executeUser, protocol);
-            if (accountId == null) {
-                executeUserIsNotFoundInResourceList.add(resourceVo);
+        if (StringUtils.isNotBlank(protocol) && StringUtils.isNotBlank(executeUser)) {
+            for (ResourceVo resourceVo : selectNodeList) {
+                Long accountId = resourceCenterMapper.checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol(resourceVo.getId(), executeUser, protocol);
+                if (accountId == null) {
+                    executeUserIsNotFoundInResourceList.add(resourceVo);
+                }
             }
         }
         List<ResourceSearchVo> resourceIsNotFoundList = new ArrayList<>();
@@ -116,11 +128,12 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
         resourceIsNotFoundObj.put("list", resourceIsNotFoundList);
         resultArray.add(resourceIsNotFoundObj);
         List<ResourceSearchVo> inputNodeList = jsonObj.getJSONArray("inputNodeList").toJavaList(ResourceSearchVo.class);
+        // 如果是输入的目标，首先校验目标是否存在，如果存在且协议和用户都填了，再校验是否合法
         for (ResourceSearchVo searchVo : inputNodeList) {
             Long resourceId = resourceCenterMapper.getResourceIdByIpAndPortAndName(searchVo);
             if (resourceId == null) {
                 resourceIsNotFoundList.add(searchVo);
-            } else {
+            } else if (StringUtils.isNotBlank(protocol) && StringUtils.isNotBlank(executeUser)) {
                 Long accountId = resourceCenterMapper.checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol(resourceId, executeUser, protocol);
                 if (accountId == null) {
                     ResourceVo resourceVo = resourceCenterMapper.getResourceIpPortById(resourceId, schemaName);
