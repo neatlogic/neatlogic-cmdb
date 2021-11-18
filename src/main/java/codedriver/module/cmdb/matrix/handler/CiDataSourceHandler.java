@@ -406,8 +406,8 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                     }
                     AttrFilterVo attrFilterVo = new AttrFilterVo();
                     attrFilterVo.setAttrId(attrVo.getId());
-                    String expression = SearchExpression.checkExpressionIsExists(matrixColumnVo.getExpression());
-                    expression = expression == null ? SearchExpression.EQ.getExpression() : expression;
+                    String expression = matrixColumnVo.getExpression();
+                    expression = SearchExpression.checkExpressionIsExists(expression) ? expression : SearchExpression.EQ.getExpression();
                     attrFilterVo.setExpression(expression);
                     attrFilterVo.setValueList(valueList);
                     attrFilterList.add(attrFilterVo);
