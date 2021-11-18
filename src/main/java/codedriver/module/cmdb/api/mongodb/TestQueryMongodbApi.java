@@ -13,13 +13,13 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import com.alibaba.fastjson.JSONObject;
+import com.mongodb.client.MongoCursor;
+import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
@@ -51,7 +51,18 @@ public class TestQueryMongodbApi extends PrivateApiComponentBase {
         Query query = new Query();
         Criteria criteria = Criteria.where(jsonObj.getString("key")).in(jsonObj.getString("value"));
         query.addCriteria(criteria);
-        List<JSONObject> result = mongoTemplate.find(query, JSONObject.class, "process");
-        return result;
+       /* List<JSONObject> result = mongoTemplate.find(query, JSONObject.class, "COLLECT_INS");
+        return result.size();*/
+
+        MongoCursor<Document> cursor = mongoTemplate.getCollection("COLLECT_INS").find(query.getQueryObject()).noCursorTimeout(true).batchSize(1000).cursor();
+        int count = 0;
+        while (cursor.hasNext()) {
+            System.out.println("====================");
+            System.out.println(cursor.next().toJson());
+            count++;
+        }
+        cursor.close();
+        return count;
+
     }
 }

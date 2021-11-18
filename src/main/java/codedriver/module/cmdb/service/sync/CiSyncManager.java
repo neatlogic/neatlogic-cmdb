@@ -29,6 +29,7 @@ import codedriver.framework.cmdb.exception.attr.AttrNotFoundException;
 import codedriver.framework.cmdb.exception.ci.*;
 import codedriver.framework.cmdb.exception.sync.CiEntityDuplicateException;
 import codedriver.framework.cmdb.exception.sync.CollectionNotFoundException;
+import codedriver.framework.cmdb.utils.RelUtil;
 import codedriver.framework.common.constvalue.InputFrom;
 import codedriver.framework.exception.core.ApiRuntimeException;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
@@ -37,13 +38,14 @@ import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
 import codedriver.module.cmdb.dao.mapper.sync.SyncAuditMapper;
 import codedriver.module.cmdb.dao.mapper.sync.SyncMapper;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
-import codedriver.framework.cmdb.utils.RelUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.mongodb.client.MongoCursor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -554,8 +556,8 @@ public class CiSyncManager {
                                 }
                             }
                             if (CollectionUtils.isNotEmpty(fieldList)) {
-                                int pageSize = 100;
-                                long currentPage = 1;
+                                //int pageSize = 100;
+                                //long currentPage = 1;
                                 Query query = new Query();
                                 if (syncCiCollectionVo.getSyncPolicy() != null) {
                                     criteriaList.add(syncCiCollectionVo.getSyncPolicy().getCriteria());
@@ -566,8 +568,53 @@ public class CiSyncManager {
                                 }
                                 finalCriteria.andOperator(criteriaList);
                                 query.addCriteria(finalCriteria);
-                                query.limit(pageSize);
-                                List<JSONObject> dataList = mongoTemplate.find(query, JSONObject.class, collectionVo.getCollection());
+                                //query.limit(pageSize);
+                                int batchSize = 1000;//游标每次读取1000条数据
+                                long startTime = 0L;
+                                try (MongoCursor<Document> cursor = mongoTemplate.getCollection(collectionVo.getCollection()).find(query.getQueryObject()).noCursorTimeout(true).batchSize(batchSize).cursor()) {
+                                    while (cursor.hasNext()) {
+                                        if (logger.isInfoEnabled()) {
+                                            startTime = System.currentTimeMillis();
+                                        }
+                                        String jsonStr = cursor.next().toJson();
+                                        if (logger.isInfoEnabled()) {
+                                            logger.info("mongodb游标数据读取耗时：" + (System.currentTimeMillis() - startTime) + "ms");
+                                        }
+                                        JSONObject orgDataObj = JSONObject.parseObject(jsonStr);
+                                        JSONArray tmpDataList = new JSONArray();
+                                        tmpDataList.add(orgDataObj);
+                                        JSONArray finalDataList = flattenJson(tmpDataList, fieldList, null);
+                                        for (int i = 0; i < finalDataList.size(); i++) {
+                                            JSONObject dataObj = finalDataList.getJSONObject(i);
+                                            Map<Integer, CiEntityTransactionVo> ciEntityTransactionVoMap = new HashMap<>();
+
+                                            if (logger.isInfoEnabled()) {
+                                                startTime = System.currentTimeMillis();
+                                            }
+                                            List<CiEntityTransactionVo> ciEntityTransactionList = this.generateCiEntityTransaction(dataObj, syncCiCollectionVo, ciEntityTransactionVoMap, null);
+                                            if (logger.isInfoEnabled()) {
+                                                logger.info("创建了" + ciEntityTransactionList.size() + "个事务，耗时：" + (System.currentTimeMillis() - startTime) + "ms");
+                                            }
+                                            try {
+                                                if (logger.isInfoEnabled()) {
+                                                    startTime = System.currentTimeMillis();
+                                                }
+                                                ciEntityService.saveCiEntity(ciEntityTransactionList, syncCiCollectionVo.getTransactionGroup());
+                                                if (logger.isInfoEnabled()) {
+                                                    logger.info("保存了" + ciEntityTransactionList.size() + "个事务，耗时：" + (System.currentTimeMillis() - startTime) + "ms");
+                                                }
+                                            } catch (Exception ex) {
+                                                if (!(ex instanceof ApiRuntimeException)) {
+                                                    logger.error(ex.getMessage(), ex);
+                                                    syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
+                                                } else {
+                                                    syncCiCollectionVo.getSyncAudit().appendError(((ApiRuntimeException) ex).getMessage(true));
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                /*List<JSONObject> dataList = mongoTemplate.find(query, JSONObject.class, collectionVo.getCollection());
                                 if (CollectionUtils.isNotEmpty(dataList)) {
                                     while (CollectionUtils.isNotEmpty(dataList)) {
                                         for (JSONObject orgDataObj : dataList) {
@@ -579,10 +626,7 @@ public class CiSyncManager {
                                                 Map<Integer, CiEntityTransactionVo> ciEntityTransactionVoMap = new HashMap<>();
                                                 List<CiEntityTransactionVo> ciEntityTransactionList = this.generateCiEntityTransaction(dataObj, syncCiCollectionVo, ciEntityTransactionVoMap, null);
                                                 try {
-                                                    //FIXME 需要转换成按主动采集一个list
-                                                    /*for (CiEntityTransactionVo ciEntityTransactionVo : ciEntityTransactionList) {
-                                                        ciEntityService.saveCiEntity(ciEntityTransactionVo, syncCiCollectionVo.getTransactionGroup());
-                                                    }*/
+
                                                     ciEntityService.saveCiEntity(ciEntityTransactionList, syncCiCollectionVo.getTransactionGroup());
                                                 } catch (Exception ex) {
                                                     if (!(ex instanceof ApiRuntimeException)) {
@@ -599,7 +643,7 @@ public class CiSyncManager {
                                         query.skip(pageSize * (currentPage - 1));
                                         dataList = mongoTemplate.find(query, JSONObject.class, syncCiCollectionVo.getCollectionName());
                                     }
-                                }
+                                }*/
                             }
                         }
                     } catch (Exception ex) {
