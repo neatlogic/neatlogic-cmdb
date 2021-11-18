@@ -209,7 +209,7 @@ public class CiSyncManager {
                 SyncMappingVo syncMappingVo = syncCiCollectionVo.getMappingByAttrId(uniqueAttrId);
                 AttrVo attr = attrMap.get(uniqueAttrId);
                 if (syncMappingVo == null) {
-                    throw new CiUniqueAttrNotFoundException(attr, true);
+                    throw new CiUniqueAttrNotFoundException(ciVo, attr);
                 }
 
                 if (attr != null) {
