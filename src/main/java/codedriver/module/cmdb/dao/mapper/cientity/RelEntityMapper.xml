@@ -103,8 +103,8 @@
         FROM cmdb_relentity a
                  JOIN cmdb_cientity b ON a.from_cientity_id = b.id
         WHERE rel_id = #{relId}
-          AND b.ci_id = #{fromCiId}
-        LIMIT #{startNum},#{pageSize}
+          AND b.ci_id = #{fromCiId} LIMIT #{startNum}
+            , #{pageSize}
     </select>
 
     <select id="getToRelEntityByToCiIdAndRelId" parameterType="codedriver.framework.cmdb.dto.cientity.RelEntityVo"
@@ -114,8 +114,8 @@
         FROM cmdb_relentity a
                  JOIN cmdb_cientity c ON a.to_cientity_id = c.id
         WHERE rel_id = #{relId}
-          AND c.ci_id = #{toCiId}
-        LIMIT #{startNum},#{pageSize}
+          AND c.ci_id = #{toCiId} LIMIT #{startNum}
+            , #{pageSize}
     </select>
 
     <select id="getRelEntityByFromCiIdAndRelId" resultType="codedriver.framework.cmdb.dto.cientity.RelEntityVo">
@@ -180,13 +180,17 @@
     </select>
 
     <select id="getRelEntityByToCiEntityIdAndRelId" resultType="codedriver.framework.cmdb.dto.cientity.RelEntityVo">
-        SELECT a.`id`,
+        SELECT
+        a.`id`,
         a.`rel_id` AS relId,
         a.`from_cientity_id` AS fromCiEntityId,
         a.`to_cientity_id` AS toCiEntityId,
         a.`transaction_id` AS transactionId,
         b.`name` AS fromCiEntityName,
-        c.`name` AS toCiEntityName
+        c.`name` AS toCiEntityName,
+        a.`valid_day` AS validDay,
+        b.`ci_id` AS fromCiId,
+        c.`ci_id` AS toCiId
         FROM `cmdb_relentity` a
         JOIN `cmdb_cientity` b ON a.`from_cientity_id` = b.id
         JOIN `cmdb_cientity` c ON a.`to_cientity_id` = c.id
@@ -205,7 +209,10 @@
                a.`to_cientity_id`   AS toCiEntityId,
                a.`transaction_id`   AS transactionId,
                b.`name`             AS fromCiEntityName,
-               c.`name`             AS toCiEntityName
+               c.`name`             AS toCiEntityName,
+               a.`valid_day`        AS validDay,
+               b.`ci_id`            AS fromCiId,
+               c.`ci_id`            AS toCiId
         FROM `cmdb_relentity` a
                  JOIN `cmdb_cientity` b ON a.`from_cientity_id` = b.id
                  JOIN `cmdb_cientity` c ON a.`to_cientity_id` = c.id
@@ -215,13 +222,17 @@
     </select>
 
     <select id="getRelEntityByFromCiEntityIdAndRelId" resultType="codedriver.framework.cmdb.dto.cientity.RelEntityVo">
-        SELECT a.`id`,
+        SELECT
+        a.`id`,
         a.`rel_id` AS relId,
         a.`from_cientity_id` AS fromCiEntityId,
         a.`to_cientity_id` AS toCiEntityId,
         a.`transaction_id` AS transactionId,
         b.`name` AS fromCiEntityName,
-        c.`name` AS toCiEntityName
+        c.`name` AS toCiEntityName,
+        a.`valid_day` AS validDay,
+        b.`ci_id` AS fromCiId,
+        c.`ci_id` AS toCiId
         FROM `cmdb_relentity` a
         JOIN `cmdb_cientity` b ON a.`from_cientity_id` = b.id
         JOIN `cmdb_cientity` c ON a.`to_cientity_id` = c.id

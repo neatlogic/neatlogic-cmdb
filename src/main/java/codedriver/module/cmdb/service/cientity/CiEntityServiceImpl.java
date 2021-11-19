@@ -98,6 +98,98 @@ public class CiEntityServiceImpl implements CiEntityService, CiEntityCrossoverSe
         return ciEntityMapper.getCiEntityBaseInfoByName(ciEntityVo);
     }
 
+    /**
+     * 精简版查询单个配置项，不会join关系和属性表，在应用层通过多次search进行数据拼接
+     *
+     * @param ciId            模型id
+     * @param ciEntityId      配置项id
+     * @param flattenAttr     是否返回空属性
+     * @param limitRelEntity  是否限制关系数量
+     * @param limitAttrEntity 是否限制引用属性数量
+     * @return 配置项信息
+     */
+    private CiEntityVo getCiEntityByIdLite(Long ciId, Long ciEntityId, Boolean flattenAttr, Boolean limitRelEntity, Boolean limitAttrEntity) {
+        CiVo ciVo = ciMapper.getCiById(ciId);
+        if (ciVo == null) {
+            throw new CiNotFoundException(ciId);
+        }
+        CiEntityVo ciEntityVo = new CiEntityVo();
+        List<CiVo> ciList;
+        if (ciVo.getIsVirtual().equals(0)) {
+            ciList = ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht());
+        } else {
+            ciList = new ArrayList<>();
+            ciList.add(ciVo);
+        }
+        List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
+        List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciVo.getId()));
+        ciEntityVo.setCiList(ciList);
+        ciEntityVo.setId(ciEntityId);
+        ciEntityVo.setCiId(ciVo.getId());
+        ciEntityVo.setCiLabel(ciVo.getLabel());
+        ciEntityVo.setCiName(ciVo.getName());
+
+        ciEntityVo.setAttrList(attrList);
+        ciEntityVo.setRelList(relList);
+        ciEntityVo.setLimitRelEntity(limitRelEntity);
+        ciEntityVo.setLimitAttrEntity(limitAttrEntity);
+
+        List<Map<String, Object>> resultList = ciEntityMapper.getCiEntityByIdLite(ciEntityVo);
+        CiEntityVo returnCiEntityVo = new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, attrList, relList).isFlattenAttr(flattenAttr).build().getCiEntity();
+        //拼接引用属性数据
+        Integer attrEntityLimit = null;
+        if (limitAttrEntity) {
+            attrEntityLimit = CiEntityVo.MAX_ATTRENTITY_COUNT;
+        }
+        if (CollectionUtils.isNotEmpty(attrList)) {
+            for (AttrVo attrVo : attrList) {
+                if (attrVo.getTargetCiId() != null) {
+                    List<AttrEntityVo> attrEntityList = ciEntityMapper.getAttrEntityByAttrIdAndFromCiEntityId(returnCiEntityVo.getId(), attrVo.getId(), attrEntityLimit);
+                    if (CollectionUtils.isNotEmpty(attrEntityList)) {
+                        JSONArray valueList = new JSONArray();
+                        for (AttrEntityVo attrEntityVo : attrEntityList) {
+                            valueList.add(attrEntityVo.getToCiEntityId());
+                        }
+                        JSONArray actualValueList = new JSONArray();
+                        if (CollectionUtils.isNotEmpty(valueList)) {
+                            actualValueList = AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValueList(attrVo, valueList);
+                        }
+                        returnCiEntityVo.addAttrEntityData(attrVo.getId(), CiEntityBuilder.buildAttrObj(returnCiEntityVo.getId(), attrVo, valueList, actualValueList));
+                    }
+                }
+            }
+        }
+        //拼接关系数据
+        Integer relEntityLimit = null;
+        if (limitRelEntity) {
+            relEntityLimit = CiEntityVo.MAX_RELENTITY_COUNT;
+        }
+        if (CollectionUtils.isNotEmpty(relList)) {
+            for (RelVo relVo : relList) {
+                List<RelEntityVo> relEntityList;
+                if (relVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
+                    relEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(returnCiEntityVo.getId(), relVo.getId(), relEntityLimit);
+                } else {
+                    relEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(returnCiEntityVo.getId(), relVo.getId(), relEntityLimit);
+                }
+                if (CollectionUtils.isNotEmpty(relEntityList)) {
+                    returnCiEntityVo.addRelEntityData(relVo.getId(), relVo.getDirection(), CiEntityBuilder.buildRelObj(returnCiEntityVo.getId(), relVo, relEntityList));
+                }
+            }
+        }
+        return returnCiEntityVo;
+    }
+
+    /**
+     * 正常版查询单个配置项，会join所有关系和属性表
+     *
+     * @param ciId            模型id
+     * @param ciEntityId      配置项id
+     * @param flattenAttr     是否返回空属性
+     * @param limitRelEntity  是否限制关系数量
+     * @param limitAttrEntity 是否限制引用属性数量
+     * @return 配置项信息
+     */
     private CiEntityVo getCiEntityById(Long ciId, Long ciEntityId, Boolean flattenAttr, Boolean limitRelEntity, Boolean limitAttrEntity) {
         CiVo ciVo = ciMapper.getCiById(ciId);
         if (ciVo == null) {
@@ -129,12 +221,14 @@ public class CiEntityServiceImpl implements CiEntityService, CiEntityCrossoverSe
 
     @Override
     public CiEntityVo getCiEntityById(Long ciId, Long ciEntityId) {
-        return getCiEntityById(ciId, ciEntityId, false, true, true);
+        //return getCiEntityById(ciId, ciEntityId, false, true, true);
+        return getCiEntityByIdLite(ciId, ciEntityId, false, true, true);
     }
 
     @Override
     public CiEntityVo getCiEntityById(CiEntityVo ciEntityVo) {
-        return getCiEntityById(ciEntityVo.getCiId(), ciEntityVo.getId(), false, ciEntityVo.isLimitRelEntity(), ciEntityVo.isLimitAttrEntity());
+        //return getCiEntityById(ciEntityVo.getCiId(), ciEntityVo.getId(), false, ciEntityVo.isLimitRelEntity(), ciEntityVo.isLimitAttrEntity());
+        return getCiEntityByIdLite(ciEntityVo.getCiId(), ciEntityVo.getId(), false, ciEntityVo.isLimitRelEntity(), ciEntityVo.isLimitAttrEntity());
     }
 
     @Override
@@ -343,7 +437,7 @@ public class CiEntityServiceImpl implements CiEntityService, CiEntityCrossoverSe
             }*/
         }
 
-        CiEntityVo oldCiEntityVo = this.getCiEntityById(baseCiEntityVo.getCiId(), ciEntityId);
+        CiEntityVo oldCiEntityVo = this.getCiEntityByIdLite(baseCiEntityVo.getCiId(), ciEntityId, true, false, false);
 
         //如果作为属性被引用，则不能删除
         List<AttrVo> attrList = ciEntityMapper.getAttrListByToCiEntityId(ciEntityId);
@@ -421,7 +515,7 @@ public class CiEntityServiceImpl implements CiEntityService, CiEntityCrossoverSe
     @Override
     public Long saveCiEntity(CiEntityTransactionVo ciEntityTransactionVo, TransactionGroupVo transactionGroupVo) {
         if (ciEntityTransactionVo.getAction().equals(TransactionActionType.UPDATE.getValue())) {
-            CiEntityVo oldCiEntityVo = this.getCiEntityById(ciEntityTransactionVo.getCiId(), ciEntityTransactionVo.getCiEntityId(), true, false, false);
+            CiEntityVo oldCiEntityVo = this.getCiEntityByIdLite(ciEntityTransactionVo.getCiId(), ciEntityTransactionVo.getCiEntityId(), true, false, false);
 
             // 正在编辑中的配置项，在事务提交或删除前不允许再次修改
             if (oldCiEntityVo == null) {
@@ -587,7 +681,7 @@ public class CiEntityServiceImpl implements CiEntityService, CiEntityCrossoverSe
         List<RelEntityVo> oldRelEntityList = null;
         if (oldEntity == null) {
             //如果是单纯校验可能会没有旧配置项信息
-            oldEntity = this.getCiEntityById(ciEntityTransactionVo.getCiId(), ciEntityTransactionVo.getCiEntityId(), true, false, false);
+            oldEntity = this.getCiEntityByIdLite(ciEntityTransactionVo.getCiId(), ciEntityTransactionVo.getCiEntityId(), true, false, false);
         }
         if (oldEntity != null) {
             oldAttrEntityList = oldEntity.getAttrEntityList();
@@ -669,7 +763,7 @@ public class CiEntityServiceImpl implements CiEntityService, CiEntityCrossoverSe
                                 && CollectionUtils.isEmpty(attrEntityTransactionVo.getValueList())) {
                             throw new AttrEntityValueEmptyException(attrVo.getLabel());
                         } else if (attrEntityTransactionVo.getSaveMode().equals(SaveModeType.MERGE.getValue()) && attrVo.isNeedTargetCi() && CollectionUtils.isEmpty(attrEntityTransactionVo.getValueList())) {
-                            List<AttrEntityVo> oldList = ciEntityMapper.getAttrEntityByAttrIdAndFromCiEntityId(ciEntityTransactionVo.getCiEntityId(), attrVo.getId());
+                            List<AttrEntityVo> oldList = ciEntityMapper.getAttrEntityByAttrIdAndFromCiEntityId(ciEntityTransactionVo.getCiEntityId(), attrVo.getId(), null);
                             if (CollectionUtils.isEmpty(oldList)) {
                                 throw new AttrEntityValueEmptyException(attrVo.getLabel());
                             }
@@ -694,7 +788,7 @@ public class CiEntityServiceImpl implements CiEntityService, CiEntityCrossoverSe
                             }
                             if (attrEntityTransactionVo.getSaveMode().equals(SaveModeType.MERGE.getValue())) {
                                 //合并新老值
-                                List<AttrEntityVo> oldList = ciEntityMapper.getAttrEntityByAttrIdAndFromCiEntityId(ciEntityTransactionVo.getCiEntityId(), attrVo.getId());
+                                List<AttrEntityVo> oldList = ciEntityMapper.getAttrEntityByAttrIdAndFromCiEntityId(ciEntityTransactionVo.getCiEntityId(), attrVo.getId(), null);
                                 for (AttrEntityVo attrEntityVo : oldList) {
                                     if (!toCiEntityIdList.contains(attrEntityVo.getToCiEntityId())) {
                                         toCiEntityIdList.add(attrEntityVo.getToCiEntityId());
@@ -1170,7 +1264,7 @@ public class CiEntityServiceImpl implements CiEntityService, CiEntityCrossoverSe
                     }
                 }
             } else if (ciEntityTransactionVo.getAction().equals(TransactionActionType.UPDATE.getValue())) {
-                CiEntityVo oldEntity = this.getCiEntityById(ciEntityTransactionVo.getCiId(), ciEntityTransactionVo.getCiEntityId());
+                CiEntityVo oldEntity = this.getCiEntityByIdLite(ciEntityTransactionVo.getCiId(), ciEntityTransactionVo.getCiEntityId(), true, false, false);
                 if (oldEntity == null) {
                     throw new CiEntityNotFoundException(ciEntityTransactionVo.getCiEntityId());
                 }
@@ -1198,7 +1292,7 @@ public class CiEntityServiceImpl implements CiEntityService, CiEntityCrossoverSe
                                     }
                                     if (attrEntityTransactionVo.getSaveMode().equals(SaveModeType.MERGE.getValue())) {
                                         //合并新老值
-                                        List<AttrEntityVo> oldList = ciEntityMapper.getAttrEntityByAttrIdAndFromCiEntityId(ciEntityTransactionVo.getCiEntityId(), attrVo.getId());
+                                        List<AttrEntityVo> oldList = ciEntityMapper.getAttrEntityByAttrIdAndFromCiEntityId(ciEntityTransactionVo.getCiEntityId(), attrVo.getId(), null);
                                         for (AttrEntityVo attrEntityVo : oldList) {
                                             if (!toCiEntityIdList.contains(attrEntityVo.getToCiEntityId())) {
                                                 toCiEntityIdList.add(attrEntityVo.getToCiEntityId());
@@ -1420,7 +1514,7 @@ public class CiEntityServiceImpl implements CiEntityService, CiEntityCrossoverSe
                             toTransactionVo.setCreateUser(UserContext.get().getUserUuid(true));
                             toTransactionVo.setCommitUser(UserContext.get().getUserUuid(true));
                             CiEntityTransactionVo endCiEntityTransactionVo = new CiEntityTransactionVo();
-                            CiEntityVo oldCiEntityVo = this.getCiEntityById(ciId, ciEntityId);
+                            CiEntityVo oldCiEntityVo = this.getCiEntityByIdLite(ciId, ciEntityId, true, false, false);
                             endCiEntityTransactionVo.setCiEntityId(ciEntityId);
                             endCiEntityTransactionVo.setCiId(ciId);
                             endCiEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
@@ -1572,7 +1666,7 @@ public class CiEntityServiceImpl implements CiEntityService, CiEntityCrossoverSe
                             endCiEntityTransactionVo.setCiId(ciId);
                             endCiEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
                             endCiEntityTransactionVo.setTransactionId(toTransactionVo.getId());
-                            endCiEntityTransactionVo.setOldCiEntityVo(this.getCiEntityById(ciId, ciEntityId));
+                            endCiEntityTransactionVo.setOldCiEntityVo(this.getCiEntityByIdLite(ciId, ciEntityId, true, false, false));
                             createSnapshot(endCiEntityTransactionVo);
                             ciEntityTransactionMap.put(endCiEntityTransactionVo.getCiEntityId(), endCiEntityTransactionVo);
                         }

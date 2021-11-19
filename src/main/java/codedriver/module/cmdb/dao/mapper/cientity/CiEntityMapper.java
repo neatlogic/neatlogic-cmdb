@@ -133,9 +133,10 @@ public interface CiEntityMapper {
      *
      * @param attrId         属性id
      * @param fromCiEntityId 来源配置项id
+     * @param limit          限制数量
      * @return 属性列表
      */
-    List<AttrEntityVo> getAttrEntityByAttrIdAndFromCiEntityId(@Param("fromCiEntityId") Long fromCiEntityId, @Param("attrId") Long attrId);
+    List<AttrEntityVo> getAttrEntityByAttrIdAndFromCiEntityId(@Param("fromCiEntityId") Long fromCiEntityId, @Param("attrId") Long attrId, @Param("limit") Integer limit);
 
     /**
      * 返回来源配置项引用的所有目标配置项基本信息
@@ -158,6 +159,20 @@ public interface CiEntityMapper {
 
     List<Long> searchCiEntityId(CiEntityVo ciEntityVo);
 
+    /**
+     * 查询单个配置项精简版，不会join所有关系表和引用属性表
+     *
+     * @param ciEntityVo 配置项对象
+     * @return 数据集
+     */
+    List<Map<String, Object>> getCiEntityByIdLite(CiEntityVo ciEntityVo);
+
+    /**
+     * 查询单个配置项正常版，会join所有关系表和引用属性表，返回的数据量可能会很大
+     *
+     * @param ciEntityVo 配置项对象
+     * @return 数据集
+     */
     List<Map<String, Object>> getCiEntityById(CiEntityVo ciEntityVo);
 
     List<CiEntityVo> getCiEntityListByCiIdListAndName(CiEntityVo ciEntityVo);

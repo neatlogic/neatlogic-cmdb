@@ -10,6 +10,7 @@ import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.ci.RelVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.cmdb.dto.cientity.RelEntityVo;
 import codedriver.framework.cmdb.enums.RelDirectionType;
 import codedriver.framework.cmdb.exception.cientity.CiEntityMultipleException;
 import com.alibaba.fastjson.JSONArray;
@@ -271,6 +272,7 @@ public class CiEntityBuilder {
                 }
             }
         }
+        //转换引用属性的真实值
         if (ciEntityVo != null) {
             JSONObject attrObj = ciEntityVo.getAttrEntityData();
             if (MapUtils.isNotEmpty(attrObj)) {
@@ -313,6 +315,21 @@ public class CiEntityBuilder {
         }
     }
 
+    public static JSONObject buildAttrObj(Long ciEntityId, AttrVo attrVo, JSONArray valueList, JSONArray actualValueList) {
+        JSONObject attrObj = new JSONObject();
+        attrObj.put("ciEntityId", ciEntityId);
+        attrObj.put("attrId", attrVo.getId());
+        attrObj.put("type", attrVo.getType());
+        attrObj.put("name", attrVo.getName());
+        attrObj.put("label", attrVo.getLabel());
+        attrObj.put("config", attrVo.getConfig(true));//克隆一个config对象，避免json序列化出错
+        attrObj.put("targetCiId", attrVo.getTargetCiId());
+        attrObj.put("ciId", attrVo.getCiId());
+        attrObj.put("valueList", valueList);
+        attrObj.put("actualValueList", actualValueList);
+        return attrObj;
+    }
+
     private JSONObject buildAttrObj(Long ciEntityId, AttrVo attrVo, Object value) {
         JSONObject attrObj = new JSONObject();
         attrObj.put("ciEntityId", ciEntityId);
@@ -325,19 +342,64 @@ public class CiEntityBuilder {
         attrObj.put("ciId", attrVo.getCiId());
         JSONArray valueList = new JSONArray();
         if (value != null) {
-            try {
-                //例如附件型参数有可能是个数组，所以先尝试做转换，不行再当字符串处理
-                valueList = JSONArray.parseArray(value.toString());
-            } catch (Exception ignored) {
+            if (value instanceof JSONArray) {
+                valueList.addAll((JSONArray) value);
+            } else if (value.toString().startsWith("[")) {
+                try {
+                    //例如附件型参数有可能是个数组，所以先尝试做转换，不行再当字符串处理
+                    valueList = JSONArray.parseArray(value.toString());
+                } catch (Exception ignored) {
+                    valueList.add(value);
+                }
+            } else {
                 valueList.add(value);
             }
         }
         attrObj.put("valueList", valueList);
+        //不在这里处理的原因是为了等所有值都设完以后一起处理，避免单个值重复查
         //attrObj.put("actualValueList", AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValueList(attrVo, valueList));
         return attrObj;
     }
 
-    private JSONObject buildRelObj(Long ciEntityId, RelVo relVo, String direction, Map<String, Object> result, String key) {
+    public static JSONObject buildRelObj(Long ciEntityId, RelVo relVo, List<RelEntityVo> relEntityList) {
+        JSONObject relObj = new JSONObject();
+        relObj.put("ciEntityId", ciEntityId);
+        relObj.put("name", relVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? relVo.getToName() : relVo.getFromName());
+        relObj.put("label", relVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? relVo.getToLabel() : relVo.getFromLabel());
+        relObj.put("relId", relVo.getId());
+        relObj.put("direction", relVo.getDirection());
+        relObj.put("ciId", relVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiId() : relVo.getFromCiId());
+        JSONArray valueList = new JSONArray();
+        for (RelEntityVo relEntityVo : relEntityList) {
+            JSONObject valueDataObj = new JSONObject();
+            valueDataObj.put("id", relEntityVo.getRelId());
+            if (relVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
+                valueDataObj.put("ciId", relEntityVo.getToCiId());
+                valueDataObj.put("ciEntityId", relEntityVo.getToCiEntityId());
+                valueDataObj.put("validDay", relEntityVo.getValidDay());
+                if (StringUtils.isNotBlank(relEntityVo.getToCiEntityName())) {
+                    valueDataObj.put("ciEntityName", relEntityVo.getToCiEntityName());
+                } else {
+                    valueDataObj.put("ciEntityName", "无名配置项");
+                }
+            } else {
+                valueDataObj.put("ciId", relEntityVo.getFromCiId());
+                valueDataObj.put("ciEntityId", relEntityVo.getFromCiEntityId());
+                valueDataObj.put("validDay", relEntityVo.getValidDay());
+                if (StringUtils.isNotBlank(relEntityVo.getFromCiEntityName())) {
+                    valueDataObj.put("ciEntityName", relEntityVo.getFromCiEntityName());
+                } else {
+                    valueDataObj.put("ciEntityName", "无名配置项");
+                }
+            }
+            valueList.add(valueDataObj);
+        }
+
+        relObj.put("valueList", valueList);
+        return relObj;
+    }
+
+    private static JSONObject buildRelObj(Long ciEntityId, RelVo relVo, String direction, Map<String, Object> result, String key) {
         JSONObject relObj = new JSONObject();
         relObj.put("ciEntityId", ciEntityId);
         relObj.put("name", direction.equals(RelDirectionType.FROM.getValue()) ? relVo.getToName() : relVo.getFromName());

@@ -17,7 +17,7 @@
                  left join fulltextindex_target_cmdb b
                            on a.id = b.target_id and b.target_type = #{type}
         where b.target_id is null
-        limit #{pageSize}
+            limit #{pageSize}
     </select>
 
     <select id="getAttrEntityCountByFromCiIdAndAttrId" resultType="int">
@@ -128,16 +128,19 @@
     </select>
 
     <select id="getAttrEntityByAttrIdAndFromCiEntityId" resultType="codedriver.framework.cmdb.dto.cientity.AttrEntityVo"
-            useCache="true">
+            useCache="false">
         SELECT id,
-               from_cientity_id AS fromCiEntityId,
-               to_cientity_id   AS toCiEntityId,
-               attr_id          AS attrId,
-               from_ci_id       AS fromCiId,
-               to_ci_id         AS toCiId
+        from_cientity_id AS fromCiEntityId,
+        to_cientity_id AS toCiEntityId,
+        attr_id AS attrId,
+        from_ci_id AS fromCiId,
+        to_ci_id AS toCiId
         FROM `cmdb_attrentity`
         WHERE attr_id = #{attrId}
-          AND from_cientity_id = #{fromCiEntityId}
+        AND from_cientity_id = #{fromCiEntityId}
+        <if test="limit != null">
+            LIMIT #{limit}
+        </if>
     </select>
 
     <select id="getCiEntityCountByAttrIdAndValue" resultType="int" useCache="false">
@@ -538,6 +541,73 @@
         </choose>
     </sql>
 
+    <sql id="ciEntityColumnSqlLite">
+        <foreach collection="attrList" item="attr">
+            <if test="attr.needTargetCi == false ">
+                ${attr.ciTableName}.`${attr.id}` AS `attr_${attr.id}`,
+            </if>
+        </foreach>
+        `ci_base`.`id` AS `id`,
+        `ci_base`.`uuid` AS `uuid`,
+        `ci_base`.`name` AS `name`,
+        `ci_base`.`ci_id` AS ciId,
+        <!--由于虚拟模型产生的视图没有以下字段，所以暂时先注释
+        `ci_base`.`status` AS `status`,
+        `ci_base`.`fcd` AS `fcd`,
+        `ci_base`.`fcu` AS `fcu`,
+        `ci_base`.`lcd` AS `lcd`,
+        `ci_base`.`lcu` AS `lcu`,-->
+        `ci`.`type_id` AS `typeId`,
+        (SELECT name FROM cmdb_citype WHERE id = `ci`.`type_id`) AS `typeName`,
+        `ci`.`name` AS `ciName`,
+        `ci`.`icon` AS `ciIcon`,
+        `ci`.`label` AS `ciLabel`
+    </sql>
+
+    <sql id="ciEntityDriverSqlLite">
+        <choose>
+            <when test="ciList.size > 1">
+                FROM cmdb_cientity `ci_base` JOIN cmdb_ci `ci` ON ci_base.ci_id = ci.id
+            </when>
+            <when test="ciList.size == 1">
+                <foreach collection="ciList" item="ci">
+                    <choose>
+                        <when test="ci.isVirtual == 1">
+                            <!--虚拟模型没有实体表，所以驱动表要换成对应的模型视图-->
+                            FROM ${ci.ciTableName} `ci_base` JOIN cmdb_ci `ci` ON ci_base.ci_id = ci.id
+                        </when>
+                        <otherwise>
+                            FROM cmdb_cientity `ci_base` JOIN cmdb_ci `ci` ON ci_base.ci_id = ci.id
+                        </otherwise>
+                    </choose>
+                </foreach>
+            </when>
+        </choose>
+    </sql>
+
+    <sql id="ciEntityJoinSqlLite">
+        <foreach collection="ciList" item="ci">
+            <choose>
+                <when test="ci.isVirtual == 0">
+                    JOIN ${ci.ciTableName} ON `ci_base`.id = ${ci.ciTableName}.cientity_id
+                </when>
+                <otherwise>
+                    JOIN ${ci.ciTableName} ON `ci_base`.id = ${ci.ciTableName}.id
+                </otherwise>
+            </choose>
+        </foreach>
+    </sql>
+
+    <!--精简版，不会查询关系和引用型属性 -->
+    <select id="getCiEntityByIdLite" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
+            resultType="java.util.HashMap" useCache="false">
+        SELECT
+        <include refid="ciEntityColumnSqlLite"></include>
+        <include refid="ciEntityDriverSqlLite"></include>
+        <include refid="ciEntityJoinSqlLite"></include>
+        WHERE ci_base.id = #{id}
+    </select>
+
     <select id="getCiEntityById" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
             resultType="java.util.HashMap" useCache="false">
         SELECT
@@ -693,7 +763,7 @@
 
     <delete id="deleteCiEntityBaseInfo" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
         DELETE
-            a,b,c,d,e
+        a,b,c,d,e
         FROM cmdb_cientity a
                  LEFT JOIN cmdb_attrentity b
                            ON a.id =
@@ -708,7 +778,7 @@
                            ON a.id =
                               e.cientity_id
         WHERE a.id =
-              #{id}
+        #{id}
     </delete>
 
     <!-- old-->
@@ -1035,23 +1105,24 @@
 
 
     <select id="getCiEntityIdCountByCiId" parameterType="java.lang.Long" resultType="int">
-        SELECT COUNT(1) FROM `cmdb_cientity` WHERE `ci_id` = #{value}
+        SELECT COUNT(1)
+        FROM `cmdb_cientity`
+        WHERE `ci_id` = #{value}
     </select>
 
     <select id="getCiEntityIdByCiId" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
             resultType="java.lang.Long">
         SELECT id
         FROM cmdb_cientity
-        WHERE ci_id = #{ciId}
-        LIMIT #{startNum},#{pageSize}
+        WHERE ci_id = #{ciId} LIMIT #{startNum}
+            , #{pageSize}
     </select>
 
     <select id="getIdByCiIdAndName" resultType="java.lang.Long">
         SELECT `id`
         from `cmdb_cientity`
         where `ci_id` = #{ciId}
-          and `name` = #{name}
-        limit 1
+          and `name` = #{name} limit 1
     </select>
     <select id="getCiEntityListByCiIdListAndName" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
             resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
@@ -1084,8 +1155,7 @@
         FROM `cmdb_cientity` a
                  JOIN `cmdb_ci` b ON a.ci_id = b.id
         WHERE b.lft &gt;= #{lft}
-          AND b.rht &lt;= #{rht}
-        limit #{size}
+          AND b.rht &lt;= #{rht} limit #{size}
     </select>
 
     <update id="updateCiEntityLockById"
@@ -1099,7 +1169,7 @@
 
     <delete id="deleteCiEntityByCiId" parameterType="java.lang.Long">
         DELETE
-            a,b,c,d,e
+        a,b,c,d,e
         FROM cmdb_cientity a
                  LEFT JOIN cmdb_attrentity b
                            ON a.id =
@@ -1114,7 +1184,7 @@
                            ON a.id =
                               e.cientity_id
         WHERE a.ci_id =
-              #{value}
+        #{value}
     </delete>
 
     <delete id="deleteParentCiEntity">
