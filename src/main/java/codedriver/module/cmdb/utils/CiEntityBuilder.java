@@ -230,9 +230,13 @@ public class CiEntityBuilder {
                             } else {
                                 JSONArray valueList = new JSONArray();
                                 //例如附件型参数有可能是个数组，所以先尝试做转换，不行再当字符串处理
-                                try {
-                                    valueList = JSONArray.parseArray(value.toString());
-                                } catch (Exception ignored) {
+                                if (value.toString().startsWith("[")) {
+                                    try {
+                                        valueList = JSONArray.parseArray(value.toString());
+                                    } catch (Exception ignored) {
+                                        valueList.add(value);
+                                    }
+                                } else {
                                     valueList.add(value);
                                 }
                                 //JSONArray actualValueList = AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValueList(attrVo, valueList);
