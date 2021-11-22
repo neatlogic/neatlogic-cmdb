@@ -8,19 +8,15 @@ package codedriver.module.cmdb.api.resourcecenter.resource;
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
-import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.resourcecenter.*;
 import codedriver.framework.cmdb.dto.tag.TagVo;
-import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
-import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
+import codedriver.module.cmdb.service.resourcecenter.resource.ResourceCenterResourceService;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -44,7 +40,7 @@ public class ResourceListApi extends PrivateApiComponentBase {
     private ResourceCenterMapper resourceCenterMapper;
 
     @Resource
-    private CiMapper ciMapper;
+    private ResourceCenterResourceService resourceCenterResourceService;
 
     @Override
     public String getToken() {
@@ -89,40 +85,8 @@ public class ResourceListApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONObject resultObj = new JSONObject();
         List<ResourceVo> resourceVoList = null;
-        ResourceSearchVo searchVo = JSON.toJavaObject(jsonObj, ResourceSearchVo.class);
-        Long typeId = searchVo.getTypeId();
-        if (typeId != null) {
-            CiVo ciVo = ciMapper.getCiById(typeId);
-            if (ciVo == null) {
-                throw new CiNotFoundException(typeId);
-            }
-            List<CiVo> ciList = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
-            List<Long> ciIdList = ciList.stream().map(CiVo::getId).collect(Collectors.toList());
-            List<Long> typeIdList = searchVo.getTypeIdList();
-            if (CollectionUtils.isNotEmpty(typeIdList)) {
-                ciIdList.retainAll(typeIdList);
-            }
-            searchVo.setTypeIdList(ciIdList);
-        }
-        List<Long> resourceIdList = null;
-        if (CollectionUtils.isNotEmpty(searchVo.getProtocolIdList())) {
-            List<Long> idList = resourceCenterMapper.getResourceIdListByProtocolIdList(searchVo);
-            if (resourceIdList == null) {
-                resourceIdList = idList;
-            } else {
-                resourceIdList.retainAll(idList);
-            }
-        }
-        if (CollectionUtils.isNotEmpty(searchVo.getTagIdList())) {
-            List<Long> idList = resourceCenterMapper.getResourceIdListByTagIdList(searchVo);
-            if (resourceIdList == null) {
-                resourceIdList = idList;
-            } else {
-                resourceIdList.retainAll(idList);
-            }
-        }
-        if (resourceIdList == null || CollectionUtils.isNotEmpty(resourceIdList)) {
-            searchVo.setIdList(resourceIdList);
+        ResourceSearchVo searchVo = resourceCenterResourceService.assembleResourceSearchVo(jsonObj);
+        if (searchVo.getIdList() == null || CollectionUtils.isNotEmpty(searchVo.getIdList())) {
             int rowNum = resourceCenterMapper.getResourceCount(searchVo);
             if (rowNum > 0) {
                 searchVo.setRowNum(rowNum);
