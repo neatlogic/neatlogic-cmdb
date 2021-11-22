@@ -136,44 +136,46 @@ public class CiEntityServiceImpl implements CiEntityService, CiEntityCrossoverSe
 
         List<Map<String, Object>> resultList = ciEntityMapper.getCiEntityByIdLite(ciEntityVo);
         CiEntityVo returnCiEntityVo = new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, attrList, relList).isFlattenAttr(flattenAttr).build().getCiEntity();
-        //拼接引用属性数据
-        Integer attrEntityLimit = null;
-        if (limitAttrEntity) {
-            attrEntityLimit = CiEntityVo.MAX_ATTRENTITY_COUNT;
-        }
-        if (CollectionUtils.isNotEmpty(attrList)) {
-            for (AttrVo attrVo : attrList) {
-                if (attrVo.getTargetCiId() != null) {
-                    List<AttrEntityVo> attrEntityList = ciEntityMapper.getAttrEntityByAttrIdAndFromCiEntityId(returnCiEntityVo.getId(), attrVo.getId(), attrEntityLimit);
-                    if (CollectionUtils.isNotEmpty(attrEntityList)) {
-                        JSONArray valueList = new JSONArray();
-                        for (AttrEntityVo attrEntityVo : attrEntityList) {
-                            valueList.add(attrEntityVo.getToCiEntityId());
+        if (returnCiEntityVo != null) {
+            //拼接引用属性数据
+            Integer attrEntityLimit = null;
+            if (limitAttrEntity) {
+                attrEntityLimit = CiEntityVo.MAX_ATTRENTITY_COUNT;
+            }
+            if (CollectionUtils.isNotEmpty(attrList)) {
+                for (AttrVo attrVo : attrList) {
+                    if (attrVo.getTargetCiId() != null) {
+                        List<AttrEntityVo> attrEntityList = ciEntityMapper.getAttrEntityByAttrIdAndFromCiEntityId(returnCiEntityVo.getId(), attrVo.getId(), attrEntityLimit);
+                        if (CollectionUtils.isNotEmpty(attrEntityList)) {
+                            JSONArray valueList = new JSONArray();
+                            for (AttrEntityVo attrEntityVo : attrEntityList) {
+                                valueList.add(attrEntityVo.getToCiEntityId());
+                            }
+                            JSONArray actualValueList = new JSONArray();
+                            if (CollectionUtils.isNotEmpty(valueList)) {
+                                actualValueList = AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValueList(attrVo, valueList);
+                            }
+                            returnCiEntityVo.addAttrEntityData(attrVo.getId(), CiEntityBuilder.buildAttrObj(returnCiEntityVo.getId(), attrVo, valueList, actualValueList));
                         }
-                        JSONArray actualValueList = new JSONArray();
-                        if (CollectionUtils.isNotEmpty(valueList)) {
-                            actualValueList = AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValueList(attrVo, valueList);
-                        }
-                        returnCiEntityVo.addAttrEntityData(attrVo.getId(), CiEntityBuilder.buildAttrObj(returnCiEntityVo.getId(), attrVo, valueList, actualValueList));
                     }
                 }
             }
-        }
-        //拼接关系数据
-        Integer relEntityLimit = null;
-        if (limitRelEntity) {
-            relEntityLimit = CiEntityVo.MAX_RELENTITY_COUNT;
-        }
-        if (CollectionUtils.isNotEmpty(relList)) {
-            for (RelVo relVo : relList) {
-                List<RelEntityVo> relEntityList;
-                if (relVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
-                    relEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(returnCiEntityVo.getId(), relVo.getId(), relEntityLimit);
-                } else {
-                    relEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(returnCiEntityVo.getId(), relVo.getId(), relEntityLimit);
-                }
-                if (CollectionUtils.isNotEmpty(relEntityList)) {
-                    returnCiEntityVo.addRelEntityData(relVo.getId(), relVo.getDirection(), CiEntityBuilder.buildRelObj(returnCiEntityVo.getId(), relVo, relEntityList));
+            //拼接关系数据
+            Integer relEntityLimit = null;
+            if (limitRelEntity) {
+                relEntityLimit = CiEntityVo.MAX_RELENTITY_COUNT;
+            }
+            if (CollectionUtils.isNotEmpty(relList)) {
+                for (RelVo relVo : relList) {
+                    List<RelEntityVo> relEntityList;
+                    if (relVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
+                        relEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(returnCiEntityVo.getId(), relVo.getId(), relEntityLimit);
+                    } else {
+                        relEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(returnCiEntityVo.getId(), relVo.getId(), relEntityLimit);
+                    }
+                    if (CollectionUtils.isNotEmpty(relEntityList)) {
+                        returnCiEntityVo.addRelEntityData(relVo.getId(), relVo.getDirection(), CiEntityBuilder.buildRelObj(returnCiEntityVo.getId(), relVo, relEntityList));
+                    }
                 }
             }
         }
