@@ -43,23 +43,45 @@ public class ResourceAccountGetPublicApi extends PublicApiComponentBase {
     }
 
     @Input({
-            @Param(name = "resourceId", type = ApiParamType.LONG, isRequired = true, desc = "资产id"),
-            @Param(name = "host", type = ApiParamType.STRING, xss = true, desc = "host ip"),
+            @Param(name = "resourceId", type = ApiParamType.LONG, desc = "资产id"),
+            @Param(name = "host", type = ApiParamType.STRING, desc = "host ip"),
             @Param(name = "port", type = ApiParamType.INTEGER, desc = "端口"),
-            @Param(name = "protocol", type = ApiParamType.STRING, isRequired = true, desc = "协议"),
-            @Param(name = "protocolPort", type = ApiParamType.INTEGER, isRequired = true, desc = "协议端口"),
-            @Param(name = "username", type = ApiParamType.STRING, isRequired = true, desc = "账号名")
+            @Param(name = "accountId", type = ApiParamType.LONG, desc = "账号id"),
+            @Param(name = "username", type = ApiParamType.STRING, desc = "账号名")
     })
     @Output({
             @Param(name = "name", explode = AccountVo[].class, desc = "账号"),
     })
-    @Description(desc="根据资产id、账号名和协议获取账号密码")
+    @Description(desc = "根据资产id、账号名和协议获取账号密码")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        AccountVo accountVo = resourceCenterMapper.getResourceAccountByResourceIdAndProtocolAndProtocolPortAndAccount(paramObj.getLong("resourceId"),paramObj.getString("protocol"),paramObj.getInteger("protocolPort"),paramObj.getString("username"));
-        if(accountVo == null){
+        /*
+         * 按以下规则顺序匹配account
+         * 1、通过 ”资产id+账号id“ 匹配
+         * 2、通过 ”组合工具配置的执行节点的ip+账号id“ 匹配 账号表
+         * 3、通过 ”组合工具配置的执行节点的ip+端口“ 匹配 账号表
+         */
+        Long resourceId = paramObj.getLong("resourceId");
+        Long accountId = paramObj.getLong("accountId");
+        String host = paramObj.getString("host");
+        Integer port = paramObj.getInteger("port");
+        AccountVo accountVo = null;
+
+        //1
+        if (resourceId != null && accountId != null) {
+            accountVo = resourceCenterMapper.getResourceAccountByResourceIdAndAccountId(resourceId, accountId);
+        }
+        //2
+        if (accountVo == null && accountId != null && StringUtils.isNotBlank(host)) {
+            accountVo = resourceCenterMapper.getResourceAccountByIpAndAccountId(host, accountId);
+        }
+        //3
+        if (accountVo == null && StringUtils.isNotBlank(host) && port != null) {
+            accountVo = resourceCenterMapper.getResourceAccountByIpAndPort(host, port);
+        }
+        if (accountVo == null) {
             throw new ResourceCenterAccountNotFoundException();
         }
-        return "{ENCRYPTED}"+RC4Util.encrypt(AutoexecJobVo.AUTOEXEC_RC4_KEY,RC4Util.decrypt(accountVo.getPasswordCipher().replace("RC4:", StringUtils.EMPTY)));
+        return "{ENCRYPTED}" + RC4Util.encrypt(AutoexecJobVo.AUTOEXEC_RC4_KEY, RC4Util.decrypt(accountVo.getPasswordCipher().replace("RC4:", StringUtils.EMPTY)));
     }
 }
