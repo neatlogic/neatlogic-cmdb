@@ -46,7 +46,7 @@ public class ResourceAccountGetPublicApi extends PublicApiComponentBase {
             @Param(name = "resourceId", type = ApiParamType.LONG, desc = "资产id"),
             @Param(name = "host", type = ApiParamType.STRING, desc = "host ip"),
             @Param(name = "port", type = ApiParamType.INTEGER, desc = "端口"),
-            @Param(name = "accountId", type = ApiParamType.LONG, desc = "协议id"),
+            @Param(name = "accountId", type = ApiParamType.LONG, desc = "账号id"),
             @Param(name = "username", type = ApiParamType.STRING, desc = "账号名")
     })
     @Output({
