@@ -572,8 +572,30 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                 int pageSize = dataVo.getPageSize();
                 paramObj.put("pageSize", pageSize);
                 paramObj.put("needPage", pageSize < 100);
-                JSONObject resultObj = accessSearchCiEntityApi(paramObj);
-                resultList = getCmdbCiDataTbodyList(resultObj, columnList);
+                JSONObject result = accessSearchCiEntityApi(paramObj);
+                resultList = getCmdbCiDataTbodyList(result, columnList);
+
+                //去重
+                String firstColumn = columnList.get(0);
+                String secondColumn = columnList.get(0);
+                if (columnList.size() >= 2) {
+                    secondColumn = columnList.get(1);
+                }
+                List<String> exsited = new ArrayList<>();
+                Iterator<Map<String, JSONObject>> iterator = resultList.iterator();
+                while (iterator.hasNext()) {
+                    Map<String, JSONObject> resultObj = iterator.next();
+                    JSONObject firstObj = resultObj.get(firstColumn);
+                    JSONObject secondObj = resultObj.get(secondColumn);
+                    String firstValue = firstObj.getString("value");
+                    String secondText = secondObj.getString("text");
+                    String compose = firstValue + SELECT_COMPOSE_JOINER + secondText;
+                    if (exsited.contains(compose)) {
+                        iterator.remove();
+                    } else {
+                        exsited.add(compose);
+                    }
+                }
             }
         }
         return resultList;
