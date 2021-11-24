@@ -239,6 +239,7 @@ public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
         attrObj.put("config", attrVo.getConfig(true));//克隆一个config对象，避免json序列化出错
         attrObj.put("targetCiId", attrVo.getTargetCiId());
         attrObj.put("valueList", valueList);
+        attrObj.put("attrId", attrVo.getId());
         attrObj.put("actualValueList", AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValueList(attrVo, valueList));
         return attrObj;
     }
