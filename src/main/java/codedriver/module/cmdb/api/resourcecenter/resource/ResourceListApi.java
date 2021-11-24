@@ -17,6 +17,7 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.service.resourcecenter.resource.ResourceCenterResourceService;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -72,6 +73,7 @@ public class ResourceListApi extends PrivateApiComponentBase {
             @Param(name = "appModuleIdList", type = ApiParamType.JSONARRAY, desc = "应用模块id列表"),
             @Param(name = "typeIdList", type = ApiParamType.JSONARRAY, desc = "资源类型id列表"),
             @Param(name = "tagIdList", type = ApiParamType.JSONARRAY, desc = "标签id列表"),
+            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "用于回显的资源ID列表"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
             @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true")
@@ -85,7 +87,14 @@ public class ResourceListApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONObject resultObj = new JSONObject();
         List<ResourceVo> resourceVoList = null;
-        ResourceSearchVo searchVo = resourceCenterResourceService.assembleResourceSearchVo(jsonObj);
+        ResourceSearchVo searchVo;
+        JSONArray defaultValue = jsonObj.getJSONArray("defaultValue");
+        if (CollectionUtils.isNotEmpty(defaultValue)) {
+            searchVo = new ResourceSearchVo();
+            searchVo.setIdList(defaultValue.toJavaList(Long.class));
+        } else {
+            searchVo = resourceCenterResourceService.assembleResourceSearchVo(jsonObj);
+        }
         if (searchVo.getIdList() == null || CollectionUtils.isNotEmpty(searchVo.getIdList())) {
             int rowNum = resourceCenterMapper.getResourceCount(searchVo);
             if (rowNum > 0) {
