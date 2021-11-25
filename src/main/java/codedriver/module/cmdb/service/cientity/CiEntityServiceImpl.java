@@ -9,7 +9,7 @@ import codedriver.framework.asynchronization.threadlocal.InputFromContext;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
 import codedriver.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
-import codedriver.framework.cmdb.crossover.CiEntityCrossoverService;
+import codedriver.framework.cmdb.crossover.ICiEntityCrossoverService;
 import codedriver.framework.cmdb.dto.attrexpression.RebuildAuditVo;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
@@ -59,7 +59,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class CiEntityServiceImpl implements CiEntityService, CiEntityCrossoverService {
+public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverService {
     // private final static Logger logger = LoggerFactory.getLogger(CiEntityServiceImpl.class);
     private final static String EXPRESSION_TYPE = "expression";
 

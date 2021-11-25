@@ -5,7 +5,7 @@
 
 package codedriver.module.cmdb.dao.mapper.ci;
 
-import codedriver.framework.cmdb.crossover.CiCrossoverMapper;
+import codedriver.framework.cmdb.crossover.ICiCrossoverMapper;
 import codedriver.framework.cmdb.dto.ci.CiTypeVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewVo;
@@ -13,7 +13,7 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
-public interface CiMapper extends CiCrossoverMapper {
+public interface CiMapper extends ICiCrossoverMapper {
 
     int getAttrCountByCiId(Long ciId);
 
