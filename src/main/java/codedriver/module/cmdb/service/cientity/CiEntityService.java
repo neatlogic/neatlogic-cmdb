@@ -41,6 +41,8 @@ public interface CiEntityService {
      */
     List<CiEntityVo> searchCiEntity(CiEntityVo ciEntityVo);
 
+    Long saveCiEntityWithoutTransaction(List<CiEntityTransactionVo> ciEntityTransactionList, TransactionGroupVo transactionGroupVo);
+
     @Transactional
     Long saveCiEntity(List<CiEntityTransactionVo> ciEntityTransactionList, TransactionGroupVo transactionGroupVo);
 
