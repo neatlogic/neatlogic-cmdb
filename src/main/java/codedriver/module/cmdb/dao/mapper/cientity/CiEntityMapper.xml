@@ -17,7 +17,7 @@
                  left join fulltextindex_target_cmdb b
                            on a.id = b.target_id and b.target_type = #{type}
         where b.target_id is null
-            limit #{pageSize}
+        limit #{pageSize}
     </select>
 
     <select id="getAttrEntityCountByFromCiIdAndAttrId" resultType="int">
@@ -426,6 +426,19 @@
                                         (${attrFilter.ciTableName}.`${attrFilter.attrId}` IS NOT NULL AND
                                         ${attrFilter.ciTableName}.`${attrFilter.attrId}` != '')
                                     </when>
+                                    <when test="attrFilter.expression == 'between'">
+                                        <if test="@codedriver.framework.dao.ognl.Between@parse(attrFilter.value)[0] != ''">
+                                            ${attrFilter.ciTableName}.`${attrFilter.attrId}` &gt;=
+                                            ${@codedriver.framework.dao.ognl.Between@parse(attrFilter.value)[0]}
+                                        </if>
+                                        <if test="@codedriver.framework.dao.ognl.Between@parse(attrFilter.value)[0] != '' and @codedriver.framework.dao.ognl.Between@parse(attrFilter.value)[1] != ''">
+                                            and
+                                        </if>
+                                        <if test="@codedriver.framework.dao.ognl.Between@parse(attrFilter.value)[1] != ''">
+                                            ${attrFilter.ciTableName}.`${attrFilter.attrId}` &lt;=
+                                            ${@codedriver.framework.dao.ognl.Between@parse(attrFilter.value)[1]}
+                                        </if>
+                                    </when>
                                 </choose>
                             </otherwise>
                         </choose>
@@ -763,7 +776,7 @@
 
     <delete id="deleteCiEntityBaseInfo" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
         DELETE
-        a,b,c,d,e
+            a,b,c,d,e
         FROM cmdb_cientity a
                  LEFT JOIN cmdb_attrentity b
                            ON a.id =
@@ -778,7 +791,7 @@
                            ON a.id =
                               e.cientity_id
         WHERE a.id =
-        #{id}
+              #{id}
     </delete>
 
     <!-- old-->
@@ -1114,15 +1127,16 @@
             resultType="java.lang.Long">
         SELECT id
         FROM cmdb_cientity
-        WHERE ci_id = #{ciId} LIMIT #{startNum}
-            , #{pageSize}
+        WHERE ci_id = #{ciId}
+        LIMIT #{startNum} , #{pageSize}
     </select>
 
     <select id="getIdByCiIdAndName" resultType="java.lang.Long">
         SELECT `id`
         from `cmdb_cientity`
         where `ci_id` = #{ciId}
-          and `name` = #{name} limit 1
+          and `name` = #{name}
+        limit 1
     </select>
     <select id="getCiEntityListByCiIdListAndName" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
             resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
@@ -1155,7 +1169,8 @@
         FROM `cmdb_cientity` a
                  JOIN `cmdb_ci` b ON a.ci_id = b.id
         WHERE b.lft &gt;= #{lft}
-          AND b.rht &lt;= #{rht} limit #{size}
+          AND b.rht &lt;= #{rht}
+        limit #{size}
     </select>
 
     <update id="updateCiEntityLockById"
@@ -1169,7 +1184,7 @@
 
     <delete id="deleteCiEntityByCiId" parameterType="java.lang.Long">
         DELETE
-        a,b,c,d,e
+            a,b,c,d,e
         FROM cmdb_cientity a
                  LEFT JOIN cmdb_attrentity b
                            ON a.id =
@@ -1184,7 +1199,7 @@
                            ON a.id =
                               e.cientity_id
         WHERE a.ci_id =
-        #{value}
+              #{value}
     </delete>
 
     <delete id="deleteParentCiEntity">

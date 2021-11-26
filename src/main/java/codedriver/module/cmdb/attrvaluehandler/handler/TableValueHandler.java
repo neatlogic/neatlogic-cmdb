@@ -92,7 +92,7 @@ public class TableValueHandler implements IAttrValueHandler {
 
     @Override
     public int getSort() {
-        return 7;
+        return 8;
     }
 
     @Override

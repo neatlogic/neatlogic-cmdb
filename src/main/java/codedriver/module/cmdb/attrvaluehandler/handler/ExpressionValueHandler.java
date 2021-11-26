@@ -91,7 +91,7 @@ public class ExpressionValueHandler implements IAttrValueHandler {
 
     @Override
     public int getSort() {
-        return 8;
+        return 9;
     }
 
     @Override

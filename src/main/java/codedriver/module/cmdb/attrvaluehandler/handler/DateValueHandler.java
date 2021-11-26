@@ -166,7 +166,7 @@ public class DateValueHandler implements IAttrValueHandler {
 
     @Override
     public int getSort() {
-        return 4;
+        return 5;
     }
 
 }

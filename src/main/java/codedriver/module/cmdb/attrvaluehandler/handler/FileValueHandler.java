@@ -123,7 +123,7 @@ public class FileValueHandler implements IAttrValueHandler {
 
     @Override
     public int getSort() {
-        return 6;
+        return 7;
     }
 
     /**

@@ -149,6 +149,6 @@ public class SelectValueHandler implements IAttrValueHandler {
 
     @Override
     public int getSort() {
-        return 3;
+        return 4;
     }
 }

@@ -11,21 +11,21 @@ import org.springframework.stereotype.Service;
 
 
 @Service
-public class TextareaValueHandler implements IAttrValueHandler {
+public class NumberValueHandler implements IAttrValueHandler {
 
     @Override
     public String getType() {
-        return "textarea";
+        return "number";
     }
 
     @Override
     public String getName() {
-        return "文本域";
+        return "数字";
     }
 
     @Override
     public String getIcon() {
-        return "ts-textmodule";
+        return "tsfont-chart-number";
     }
 
     @Override
@@ -49,6 +49,11 @@ public class TextareaValueHandler implements IAttrValueHandler {
     }
 
     @Override
+    public boolean isNeedWholeRow() {
+        return false;
+    }
+
+    @Override
     public boolean isNeedTargetCi() {
         return false;
     }
@@ -59,18 +64,15 @@ public class TextareaValueHandler implements IAttrValueHandler {
     }
 
     @Override
-    public boolean isNeedWholeRow() {
-        return true;
-    }
-
-    @Override
     public SearchExpression[] getSupportExpression() {
-        return new SearchExpression[]{SearchExpression.LI, SearchExpression.NL, SearchExpression.NOTNULL,
-                SearchExpression.NULL};
+        return new SearchExpression[]{SearchExpression.BT, SearchExpression.NOTNULL, SearchExpression.NULL};
+
     }
 
     @Override
     public int getSort() {
-        return 3;
+        return 2;
     }
+
+
 }
