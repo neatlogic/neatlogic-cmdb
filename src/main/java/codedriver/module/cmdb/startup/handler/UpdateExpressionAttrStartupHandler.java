@@ -3,7 +3,7 @@
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
-package codedriver.module.cmdb.startup;
+package codedriver.module.cmdb.startup.handler;
 
 import codedriver.framework.cmdb.dto.attrexpression.RebuildAuditVo;
 import codedriver.framework.common.config.Config;

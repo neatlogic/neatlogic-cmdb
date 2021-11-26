@@ -1,12 +1,12 @@
 /*
- * Copyright (c)  2021 TechSure Co.,Ltd.  All Rights Reserved.
+ * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
 package codedriver.module.cmdb.service.resourcecenter.account;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
-import codedriver.framework.cmdb.crossover.ResourceCenterAccountCrossoverService;
+import codedriver.framework.cmdb.crossover.IResourceCenterAccountCrossoverService;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountIpVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceAccountVo;
@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  * @since 2021/11/8 14:41
  **/
 @Service
-public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountService, ResourceCenterAccountCrossoverService {
+public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountService, IResourceCenterAccountCrossoverService {
     @Resource
     ResourceCenterMapper resourceCenterMapper;
     @Resource

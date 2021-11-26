@@ -10,7 +10,7 @@ import codedriver.framework.cmdb.dto.customview.*;
 import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.cmdb.exception.customview.CreateCustomViewFailedException;
 import codedriver.framework.cmdb.exception.customview.DeleteCustomViewFailedException;
-import codedriver.framework.cmdb.crossover.CustomViewCrossoverService;
+import codedriver.framework.cmdb.crossover.ICustomViewCrossoverService;
 import codedriver.framework.transaction.core.EscapeTransactionJob;
 import codedriver.module.cmdb.dao.mapper.customview.CustomViewMapper;
 import codedriver.module.cmdb.dao.mapper.tag.CmdbTagMapper;
@@ -23,7 +23,7 @@ import javax.annotation.Resource;
 import java.util.List;
 
 @Service
-public class CustomViewServiceImpl implements CustomViewService, CustomViewCrossoverService {
+public class CustomViewServiceImpl implements CustomViewService, ICustomViewCrossoverService {
     @Resource
     private CustomViewMapper customViewMapper;
 
