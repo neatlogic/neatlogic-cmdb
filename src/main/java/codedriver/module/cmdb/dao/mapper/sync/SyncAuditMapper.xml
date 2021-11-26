@@ -7,7 +7,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.sync.SyncAuditMapper">
 
-<sql id="searchSyncAuditCondition">
+    <sql id="searchSyncAuditCondition">
         <where>
             <if test="idList != null and idList.size() > 0">
                 and a.id in
@@ -77,6 +77,22 @@
         <if test="idList == null or idList.size() == 0">
             limit #{startNum}, #{pageSize}
         </if>
+    </select>
+
+    <select id="getDoingSyncByServerId" parameterType="java.lang.Integer"
+            resultType="codedriver.framework.cmdb.dto.sync.SyncAuditVo">
+        select a.id,
+               a.ci_collection_id     AS ciCollectionId,
+               a.start_time           AS startTime,
+               a.end_time             AS endTime,
+               a.input_from           AS inputFrom,
+               a.status,
+               a.transaction_group_id AS transactionGroupId,
+               a.server_id            AS serverId,
+               a.error                AS error
+        from cmdb_sync_audit a
+        where a.server_id = #{value}
+          and a.status = 'doing'
     </select>
 
     <select id="getDoingSyncByCiId" parameterType="java.lang.Long"

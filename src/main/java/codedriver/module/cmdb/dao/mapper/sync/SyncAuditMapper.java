@@ -10,6 +10,8 @@ import codedriver.framework.cmdb.dto.sync.SyncAuditVo;
 import java.util.List;
 
 public interface SyncAuditMapper {
+    List<SyncAuditVo> getDoingSyncByServerId(Integer serverId);
+
     List<SyncAuditVo> getDoingSyncByCiId(Long ciId);
 
     List<SyncAuditVo> searchSyncAudit(SyncAuditVo syncAuditVo);
