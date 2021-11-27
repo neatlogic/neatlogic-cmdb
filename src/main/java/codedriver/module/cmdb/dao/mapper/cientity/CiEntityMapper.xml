@@ -794,40 +794,6 @@
               #{id}
     </delete>
 
-    <!-- old-->
-
-    <select id="getCiEntityByAttrId" parameterType="java.lang.Long"
-            resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
-        SELECT DISTINCT a.`id`,
-                        a.`ci_id` AS ciId
-        FROM `cmdb_cientity` a
-                 JOIN `cmdb_attrentity` b
-                      ON a.id = b.ci_entity_id
-        WHERE b.attr_id = #{value}
-    </select>
-
-    <!--<select id="getCiEntityById" parameterType="java.lang.Long"
-            resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
-        SELECT a.`id`,
-               a.`ci_id`     AS ciId,
-               a.`name`      AS name,
-               b.`name`      AS ciName,
-               b.`icon`      AS ciIcon,
-               b.`label`     AS ciLabel,
-               b.`type_id`   AS typeId,
-               c.`name`      AS typeName,
-               a.`fcu`,
-               a.`fcd`,
-               a.`lcu`,
-               a.`lcd`,
-               a.`status`,
-               a.`is_locked` AS isLocked
-        FROM `cmdb_cientity` a
-                 JOIN `cmdb_ci` b ON a.ci_id = b.id
-                 JOIN `cmdb_citype` c ON b.type_id = c.id
-        WHERE a.id = #{value}
-    </select>-->
-
     <sql id="searchCiEntityIdCondition">
         FROM (SELECT id FROM cmdb_cientity WHERE ci_id = #{ciId}
         <if test="idList != null and idList.size() > 0">
@@ -1078,44 +1044,6 @@
         </if>
     </sql>
 
-    <select id="searchCiEntityByIdList"
-            resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
-        SELECT
-        a.`id`,
-        a.`uuid`,
-        a.`ci_id` AS ciId,
-        b.`name` AS ciName,
-        b.`icon` AS ciIcon,
-        b.`type_id` AS typeId,
-        c.`name` AS typeName,
-        a.`fcu`,
-        a.`fcd`,
-        a.`lcu`,
-        a.`lcd`,
-        a.`status`,
-        a.`is_locked` AS isLocked
-        FROM
-        `cmdb_cientity` a JOIN
-        `cmdb_ci` b ON a.ci_id = b.id JOIN `cmdb_citype` c ON b.type_id = c.id
-        WHERE
-        a.id IN
-        <foreach collection="idList" item="item" open="("
-                 separator="," close=")">
-            #{item}
-        </foreach>
-        ORDER BY a.id DESC
-    </select>
-
-    <!--<select id="searchCiEntityId" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
-            resultType="java.lang.Long">
-        SELECT distinct(cientity.id)
-        <include refid="searchCiEntityIdCondition"></include>
-        ORDER BY cientity.id DESC
-        <if test="needPage == true">
-            LIMIT #{startNum}, #{pageSize}
-        </if>
-    </select>-->
-
 
     <select id="getCiEntityIdCountByCiId" parameterType="java.lang.Long" resultType="int">
         SELECT COUNT(1)
@@ -1138,6 +1066,7 @@
           and `name` = #{name}
         limit 1
     </select>
+
     <select id="getCiEntityListByCiIdListAndName" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
             resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
         SELECT `id`,
@@ -1156,6 +1085,7 @@
         </foreach>
         AND `name` = #{name}
     </select>
+
     <select id="getDownwardCiEntityByLRLimitSize" resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
         SELECT a.`id`,
                a.`uuid`,
@@ -1173,6 +1103,13 @@
         limit #{size}
     </select>
 
+    <update id="updateCiEntityInspectStatus" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
+        update cmdb_cientity
+        set inspect_time   = now(3),
+            inspect_status = #{inspectStatus}
+        where id = #{id}
+    </update>
+
     <update id="updateCiEntityLockById"
             parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
         UPDATE
@@ -1181,26 +1118,6 @@
         WHERE `id` = #{id}
     </update>
 
-
-    <delete id="deleteCiEntityByCiId" parameterType="java.lang.Long">
-        DELETE
-            a,b,c,d,e
-        FROM cmdb_cientity a
-                 LEFT JOIN cmdb_attrentity b
-                           ON a.id =
-                              b.`ci_entity_id`
-                 LEFT JOIN cmdb_relentity c
-                           ON a.id =
-                              c.`from_cientity_id`
-                 LEFT JOIN cmdb_relentity d
-                           ON a.id =
-                              c.`to_cientity_id`
-                 LEFT JOIN cmdb_cientity_group e
-                           ON a.id =
-                              e.cientity_id
-        WHERE a.ci_id =
-              #{value}
-    </delete>
 
     <delete id="deleteParentCiEntity">
         DELETE

@@ -175,6 +175,8 @@ public interface CiEntityMapper {
      */
     List<Map<String, Object>> getCiEntityById(CiEntityVo ciEntityVo);
 
+    List<Long> getCiEntityIdByCiId(CiEntityVo ciEntityVo);
+
     List<CiEntityVo> getCiEntityListByCiIdListAndName(CiEntityVo ciEntityVo);
 
     void deleteAttrEntityByFromCiEntityIdAndAttrId(@Param("fromCiEntityId") Long fromCiEntityId, @Param("attrId") Long attrId);
@@ -198,24 +200,15 @@ public interface CiEntityMapper {
     void deleteAttrEntityByAttrId(Long attrId);
 
     int getCiEntityIdCountByCiId(Long ciId);
-    //old
 
-    List<Long> getCiEntityIdByCiId(CiEntityVo ciEntityVo);
+    void updateCiEntityInspectStatus(CiEntityVo ciEntityVo);
 
-    List<CiEntityVo> getCiEntityByAttrId(Long attrId);
-
+    void updateCiEntityLockById(CiEntityVo ciEntityVo);
 
     int searchCiEntityIdCount(CiEntityVo ciEntityVo);
 
-    List<CiEntityVo> searchCiEntityByIdList(@Param("idList") List<Long> idList);
-
     Long getIdByCiIdAndName(@Param("ciId") Long ciId, @Param("name") String name);
 
-
-    int updateCiEntityLockById(CiEntityVo ciEntityVo);
-
-    int deleteCiEntityByCiId(Long ciId);
-
-    int deleteParentCiEntity(@Param("currentCi") CiVo currentCiVo, @Param("parentCiList") List<CiVo> parentCiList);
+    void deleteParentCiEntity(@Param("currentCi") CiVo currentCiVo, @Param("parentCiList") List<CiVo> parentCiList);
 
 }
