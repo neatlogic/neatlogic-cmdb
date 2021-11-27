@@ -7,6 +7,8 @@ package codedriver.module.cmdb.legalvalid;
 
 import codedriver.framework.asynchronization.thread.CodeDriverThread;
 import codedriver.framework.asynchronization.threadpool.CachedThreadPool;
+import codedriver.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
+import codedriver.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.ci.RelVo;
@@ -22,11 +24,13 @@ import codedriver.framework.cmdb.enums.RelDirectionType;
 import codedriver.framework.cmdb.enums.RelRuleType;
 import codedriver.framework.cmdb.enums.SearchExpression;
 import codedriver.framework.cmdb.enums.legalvalid.LegalValidType;
+import codedriver.framework.cmdb.exception.attrtype.AttrTypeNotFoundException;
 import codedriver.framework.cmdb.exception.ci.CiUniqueAttrNotFoundException;
 import codedriver.framework.cmdb.exception.ci.CiUniqueRuleException;
 import codedriver.framework.cmdb.exception.cientity.*;
 import codedriver.framework.cmdb.exception.validator.AttrInValidatedException;
 import codedriver.framework.cmdb.exception.validator.ValidatorNotFoundException;
+import codedriver.framework.cmdb.utils.RelUtil;
 import codedriver.framework.cmdb.validator.core.IValidator;
 import codedriver.framework.cmdb.validator.core.ValidatorFactory;
 import codedriver.framework.exception.core.ApiRuntimeException;
@@ -39,7 +43,6 @@ import codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper;
 import codedriver.module.cmdb.dao.mapper.legalvalid.IllegalCiEntityMapper;
 import codedriver.module.cmdb.dao.mapper.legalvalid.LegalValidMapper;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
-import codedriver.framework.cmdb.utils.RelUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -217,6 +220,36 @@ public class LegalValidManager {
                     }
                 }
 
+                //检查是否允许多选
+                if (attrVo.getTargetCiId() != null && MapUtils.isNotEmpty(attrVo.getConfig()) && attrVo.getConfig().containsKey("isMultiple") && attrVo.getConfig().getString("isMultiple").equals("0")) {
+                    if (attrEntityVo != null && CollectionUtils.isNotEmpty(attrEntityVo.getValueList()) && attrEntityVo.getValueList().size() > 1) {
+                        throw new AttrEntityMultipleException(attrVo);
+                    }
+                }
+
+                /* 校验值是否符合数据类型*/
+                if (attrEntityVo != null && CollectionUtils.isNotEmpty(attrEntityVo.getValueList()) && !attrVo.isNeedTargetCi()) {
+                    IAttrValueHandler attrHandler = AttrValueHandlerFactory.getHandler(attrVo.getType());
+                    if (attrHandler != null) {
+                        attrHandler.valid(attrVo, attrEntityVo.getValueList());
+                    } else {
+                        throw new AttrTypeNotFoundException(attrVo.getType());
+                    }
+                }
+
+                /*  调用校验器校验数据合法性，只有非引用型属性才需要 */
+                if (attrEntityVo != null && CollectionUtils.isNotEmpty(attrEntityVo.getValueList())
+                        && StringUtils.isNotBlank(attrVo.getValidatorHandler()) && !attrVo.isNeedTargetCi()) {
+                    IValidator validator = ValidatorFactory.getValidator(attrVo.getValidatorHandler());
+                    if (validator != null) {
+                        try {
+                            validator.valid(attrVo, attrEntityVo.getValueList());
+                        } catch (ValidatorNotFoundException | AttrInValidatedException ex) {
+                            errorList.add(ex);
+                        }
+                    }
+                }
+
                 /* 检查属性是否唯一： */
                 if (attrVo.getIsUnique().equals(1)) {
                     if (attrEntityVo != null
@@ -245,27 +278,6 @@ public class LegalValidManager {
                             if (count > 0) {
                                 errorList.add(new AttrEntityDuplicateException(ciVo, attrVo.getLabel(), attrEntityVo.getValueList()));
                             }
-                        }
-                    }
-                }
-
-                //检查是否允许多选
-                if (attrVo.getTargetCiId() != null && MapUtils.isNotEmpty(attrVo.getConfig()) && attrVo.getConfig().containsKey("isMultiple") && attrVo.getConfig().getString("isMultiple").equals("0")) {
-                    if (attrEntityVo != null && CollectionUtils.isNotEmpty(attrEntityVo.getValueList()) && attrEntityVo.getValueList().size() > 1) {
-                        throw new AttrEntityMultipleException(attrVo);
-                    }
-                }
-
-                /*  调用校验器校验数据合法性，只有非引用型属性才需要 */
-                if (attrEntityVo != null && CollectionUtils.isNotEmpty(attrEntityVo.getValueList())
-                        && StringUtils.isNotBlank(attrVo.getValidatorHandler()) && !attrVo.isNeedTargetCi()) {
-                    IValidator validator = ValidatorFactory.getValidator(attrVo.getValidatorHandler());
-                    if (validator != null) {
-                        try {
-                            validator.valid(attrVo.getLabel(), attrEntityVo.getValueList(),
-                                    attrVo.getValidatorId());
-                        } catch (ValidatorNotFoundException | AttrInValidatedException ex) {
-                            errorList.add(ex);
                         }
                     }
                 }

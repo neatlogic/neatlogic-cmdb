@@ -6,7 +6,12 @@
 package codedriver.module.cmdb.attrvaluehandler.handler;
 
 import codedriver.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
+import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.enums.SearchExpression;
+import codedriver.framework.cmdb.exception.attr.AttrValueIrregularException;
+import com.alibaba.fastjson.JSONArray;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 
@@ -66,12 +71,28 @@ public class NumberValueHandler implements IAttrValueHandler {
     @Override
     public SearchExpression[] getSupportExpression() {
         return new SearchExpression[]{SearchExpression.BT, SearchExpression.NOTNULL, SearchExpression.NULL};
-
     }
 
     @Override
     public int getSort() {
         return 2;
+    }
+
+    @Override
+    public boolean valid(AttrVo attrVo, JSONArray valueList) {
+        if (CollectionUtils.isNotEmpty(valueList)) {
+            for (int i = 0; i < valueList.size(); i++) {
+                String v = valueList.getString(i);
+                if (StringUtils.isNotBlank(v)) {
+                    try {
+                        Double.parseDouble(v);
+                    } catch (Exception ex) {
+                        throw new AttrValueIrregularException(attrVo, v);
+                    }
+                }
+            }
+        }
+        return true;
     }
 
 

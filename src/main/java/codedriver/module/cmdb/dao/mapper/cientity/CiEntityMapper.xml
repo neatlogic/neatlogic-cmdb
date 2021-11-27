@@ -427,14 +427,14 @@
                                         ${attrFilter.ciTableName}.`${attrFilter.attrId}` != '')
                                     </when>
                                     <when test="attrFilter.expression == 'between'">
-                                        <if test="@codedriver.framework.dao.ognl.Between@parse(attrFilter.value)[0] != ''">
+                                        <if test="@codedriver.framework.dao.ognl.Between@parse(attrFilter.value)[0] != null">
                                             ${attrFilter.ciTableName}.`${attrFilter.attrId}` &gt;=
                                             ${@codedriver.framework.dao.ognl.Between@parse(attrFilter.value)[0]}
                                         </if>
-                                        <if test="@codedriver.framework.dao.ognl.Between@parse(attrFilter.value)[0] != '' and @codedriver.framework.dao.ognl.Between@parse(attrFilter.value)[1] != ''">
+                                        <if test="@codedriver.framework.dao.ognl.Between@parse(attrFilter.value)[0] != null and @codedriver.framework.dao.ognl.Between@parse(attrFilter.value)[1] != null">
                                             and
                                         </if>
-                                        <if test="@codedriver.framework.dao.ognl.Between@parse(attrFilter.value)[1] != ''">
+                                        <if test="@codedriver.framework.dao.ognl.Between@parse(attrFilter.value)[1] != null">
                                             ${attrFilter.ciTableName}.`${attrFilter.attrId}` &lt;=
                                             ${@codedriver.framework.dao.ognl.Between@parse(attrFilter.value)[1]}
                                         </if>
