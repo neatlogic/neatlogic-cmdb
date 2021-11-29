@@ -41,9 +41,30 @@
 
     <insert id="insertAttrToCiTable">
         ALTER TABLE ${tableName}
-            ADD COLUMN `${attrVo.id}`      TEXT     NULL COMMENT '${attrVo.label}',
-            ADD COLUMN `${attrVo.id}_hash` CHAR(32) NULL COMMENT '${attrVo.label}值散列码',
-            ADD KEY `index_${attrVo.id}_hash` (`${attrVo.id}_hash`);
+        ADD COLUMN `${attrVo.id}`
+        <choose>
+            <when test="attrVo.type == 'number'">
+                decimal(50,4)
+            </when>
+            <when test="attrVo.type == 'date'">
+                date
+            </when>
+            <when test="attrVo.type == 'time'">
+                time
+            </when>
+            <when test="attrVo.type == 'datetime'">
+                datetime
+            </when>
+            <otherwise>TEXT</otherwise>
+        </choose>
+        NULL COMMENT '${attrVo.label}',
+        ADD COLUMN `${attrVo.id}_hash` CHAR(32) NULL COMMENT '${attrVo.label}值散列码',
+        <choose>
+            <when test="attrVo.type == 'number' or attrVo.type == 'date' or attrVo.type == 'time' or attrVo.type == 'datetime'">
+                ADD KEY `index_${attrVo.id}` (`${attrVo.id}`),
+            </when>
+        </choose>
+        ADD KEY `index_${attrVo.id}_hash` (`${attrVo.id}_hash`);
     </insert>
 
     <insert id="insertCiTable">

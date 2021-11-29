@@ -42,7 +42,7 @@ public class SelectValueHandler implements IAttrValueHandler {
 
     @Override
     public String getIcon() {
-        return "ts-list";
+        return "tsfont-list";
     }
 
     @Override
@@ -149,6 +149,6 @@ public class SelectValueHandler implements IAttrValueHandler {
 
     @Override
     public int getSort() {
-        return 3;
+        return 4;
     }
 }

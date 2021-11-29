@@ -46,7 +46,7 @@ public class TableValueHandler implements IAttrValueHandler {
 
     @Override
     public String getIcon() {
-        return "ts-tablechart";
+        return "tsfont-chart-table";
     }
 
     @Override
@@ -92,7 +92,7 @@ public class TableValueHandler implements IAttrValueHandler {
 
     @Override
     public int getSort() {
-        return 7;
+        return 11;
     }
 
     @Override

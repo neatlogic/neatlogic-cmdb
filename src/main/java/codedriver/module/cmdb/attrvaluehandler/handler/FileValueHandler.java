@@ -38,7 +38,7 @@ public class FileValueHandler implements IAttrValueHandler {
 
     @Override
     public String getIcon() {
-        return "ts-file";
+        return "tsfont-attachment";
     }
 
     @Override
@@ -111,6 +111,7 @@ public class FileValueHandler implements IAttrValueHandler {
         }
     }
 
+
     @Override
     public boolean isNeedWholeRow() {
         return false;
@@ -123,7 +124,7 @@ public class FileValueHandler implements IAttrValueHandler {
 
     @Override
     public int getSort() {
-        return 6;
+        return 10;
     }
 
     /**

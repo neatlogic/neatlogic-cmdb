@@ -18,6 +18,7 @@ import codedriver.framework.cmdb.dto.cientity.*;
 import codedriver.framework.cmdb.dto.transaction.*;
 import codedriver.framework.cmdb.enums.*;
 import codedriver.framework.cmdb.enums.group.GroupType;
+import codedriver.framework.cmdb.exception.attrtype.AttrTypeNotFoundException;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.cmdb.exception.ci.CiUniqueRuleException;
 import codedriver.framework.cmdb.exception.cientity.*;
@@ -317,6 +318,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 for (AttrVo attrVo : attrList) {
                     if (attrVo.getId().equals(attrFilterVo.getAttrId())) {
                         attrFilterVo.setCiId(attrVo.getCiId());
+                        attrFilterVo.setType(attrVo.getType());
                         attrFilterVo.setNeedTargetCi(attrVo.isNeedTargetCi());
                         isExists = true;
                         break;
@@ -483,8 +485,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
     }
 
     @Override
-    @Transactional
-    public Long saveCiEntity(List<CiEntityTransactionVo> ciEntityTransactionList, TransactionGroupVo transactionGroupVo) {
+    public Long saveCiEntityWithoutTransaction(List<CiEntityTransactionVo> ciEntityTransactionList, TransactionGroupVo transactionGroupVo) {
         for (CiEntityTransactionVo ciEntityTransactionVo : ciEntityTransactionList) {
             transactionGroupVo.addExclude(ciEntityTransactionVo.getCiEntityId());
         }
@@ -497,6 +498,12 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             }
         }
         return transactionGroupVo.getId();
+    }
+
+    @Override
+    @Transactional
+    public Long saveCiEntity(List<CiEntityTransactionVo> ciEntityTransactionList, TransactionGroupVo transactionGroupVo) {
+        return saveCiEntityWithoutTransaction(ciEntityTransactionList, transactionGroupVo);
     }
 
     @Transactional
@@ -773,6 +780,28 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     }
                 }
 
+                /*
+                校验值是否符合数据类型
+                 */
+                if (attrEntityTransactionVo != null && CollectionUtils.isNotEmpty(attrEntityTransactionVo.getValueList())
+                        && !attrVo.isNeedTargetCi()) {
+                    IAttrValueHandler attrHandler = AttrValueHandlerFactory.getHandler(attrVo.getType());
+                    if (attrHandler != null) {
+                        attrHandler.valid(attrVo, attrEntityTransactionVo.getValueList());
+                    } else {
+                        throw new AttrTypeNotFoundException(attrVo.getType());
+                    }
+                }
+
+                /*  调用校验器校验数据合法性，只有非引用型属性才需要 */
+                if (attrEntityTransactionVo != null && CollectionUtils.isNotEmpty(attrEntityTransactionVo.getValueList())
+                        && StringUtils.isNotBlank(attrVo.getValidatorHandler()) && !attrVo.isNeedTargetCi()) {
+                    IValidator validator = ValidatorFactory.getValidator(attrVo.getValidatorHandler());
+                    if (validator != null) {
+                        validator.valid(attrVo, attrEntityTransactionVo.getValueList());
+                    }
+                }
+
                 /* 检查属性是否唯一： */
                 if (attrVo.getIsUnique().equals(1)) {
                     if (attrEntityTransactionVo != null
@@ -823,15 +852,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     }
                 }
 
-                /*  调用校验器校验数据合法性，只有非引用型属性才需要 */
-                if (attrEntityTransactionVo != null && CollectionUtils.isNotEmpty(attrEntityTransactionVo.getValueList())
-                        && StringUtils.isNotBlank(attrVo.getValidatorHandler()) && !attrVo.isNeedTargetCi()) {
-                    IValidator validator = ValidatorFactory.getValidator(attrVo.getValidatorHandler());
-                    if (validator != null) {
-                        validator.valid(attrVo.getLabel(), attrEntityTransactionVo.getValueList(),
-                                attrVo.getValidatorId());
-                    }
-                }
+
             }
         }
 
@@ -1152,6 +1173,27 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                                 }
                             }
                         }
+
+                        /* 校验值是否符合数据类型*/
+                        if (attrEntityTransactionVo != null && CollectionUtils.isNotEmpty(attrEntityTransactionVo.getValueList())
+                                && !attrVo.isNeedTargetCi()) {
+                            IAttrValueHandler attrHandler = AttrValueHandlerFactory.getHandler(attrVo.getType());
+                            if (attrHandler != null) {
+                                attrHandler.valid(attrVo, attrEntityTransactionVo.getValueList());
+                            } else {
+                                throw new AttrTypeNotFoundException(attrVo.getType());
+                            }
+                        }
+
+                        /*  调用校验器校验数据合法性，只有非引用型属性才需要 */
+                        if (attrEntityTransactionVo != null && CollectionUtils.isNotEmpty(attrEntityTransactionVo.getValueList())
+                                && StringUtils.isNotBlank(attrVo.getValidatorHandler()) && !attrVo.isNeedTargetCi()) {
+                            IValidator validator = ValidatorFactory.getValidator(attrVo.getValidatorHandler());
+                            if (validator != null) {
+                                validator.valid(attrVo, attrEntityTransactionVo.getValueList());
+                            }
+                        }
+
                         /* 检查属性是否唯一： */
                         if (attrVo.getIsUnique().equals(1)) {
                             if (attrEntityTransactionVo != null
@@ -1184,15 +1226,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                             }
                         }
 
-                        /*  调用校验器校验数据合法性，只有非引用型属性才需要 */
-                        if (attrEntityTransactionVo != null && CollectionUtils.isNotEmpty(attrEntityTransactionVo.getValueList())
-                                && StringUtils.isNotBlank(attrVo.getValidatorHandler()) && !attrVo.isNeedTargetCi()) {
-                            IValidator validator = ValidatorFactory.getValidator(attrVo.getValidatorHandler());
-                            if (validator != null) {
-                                validator.valid(attrVo.getLabel(), attrEntityTransactionVo.getValueList(),
-                                        attrVo.getValidatorId());
-                            }
-                        }
+
                     }
                 }
 
@@ -1282,6 +1316,26 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                                 throw new AttrEntityValueEmptyException(attrVo.getLabel());
                             }
 
+                            /* 校验值是否符合数据类型*/
+                            if (CollectionUtils.isNotEmpty(attrEntityTransactionVo.getValueList())
+                                    && !attrVo.isNeedTargetCi()) {
+                                IAttrValueHandler attrHandler = AttrValueHandlerFactory.getHandler(attrVo.getType());
+                                if (attrHandler != null) {
+                                    attrHandler.valid(attrVo, attrEntityTransactionVo.getValueList());
+                                } else {
+                                    throw new AttrTypeNotFoundException(attrVo.getType());
+                                }
+                            }
+
+                            /*  调用校验器校验数据合法性，只有非引用型属性才需要 */
+                            if (CollectionUtils.isNotEmpty(attrEntityTransactionVo.getValueList())
+                                    && StringUtils.isNotBlank(attrVo.getValidatorHandler()) && !attrVo.isNeedTargetCi()) {
+                                IValidator validator = ValidatorFactory.getValidator(attrVo.getValidatorHandler());
+                                if (validator != null) {
+                                    validator.valid(attrVo, attrEntityTransactionVo.getValueList());
+                                }
+                            }
+
                             /* 检查属性是否唯一： */
                             if (!isDelete && attrVo.getIsUnique().equals(1)) {
                                 if (attrVo.isNeedTargetCi()) {
@@ -1316,15 +1370,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                                 }
                             }
 
-                            /*  调用校验器校验数据合法性，只有非引用型属性才需要 */
-                            if (CollectionUtils.isNotEmpty(attrEntityTransactionVo.getValueList())
-                                    && StringUtils.isNotBlank(attrVo.getValidatorHandler()) && !attrVo.isNeedTargetCi()) {
-                                IValidator validator = ValidatorFactory.getValidator(attrVo.getValidatorHandler());
-                                if (validator != null) {
-                                    validator.valid(attrVo.getLabel(), attrEntityTransactionVo.getValueList(),
-                                            attrVo.getValidatorId());
-                                }
-                            }
+
                         }
                     }
                 }

@@ -91,7 +91,7 @@ public class ExpressionValueHandler implements IAttrValueHandler {
 
     @Override
     public int getSort() {
-        return 8;
+        return 12;
     }
 
     @Override
@@ -138,6 +138,7 @@ public class ExpressionValueHandler implements IAttrValueHandler {
         attrMapper.deleteAttrExpressionRelByExpressionAttrId(attrVo.getId());
         afterInsert(attrVo);
     }
+
 
     @Override
     public void afterDelete(AttrVo attrVo) {

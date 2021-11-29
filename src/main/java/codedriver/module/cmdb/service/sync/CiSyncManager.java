@@ -500,7 +500,7 @@ public class CiSyncManager {
                             Map<Integer, CiEntityTransactionVo> ciEntityTransactionMap = new HashMap<>();
                             List<CiEntityTransactionVo> ciEntityTransactionList = generateCiEntityTransaction(dataObj, syncCiCollectionVo, ciEntityTransactionMap, null);
                             try {
-                                ciEntityService.saveCiEntity(ciEntityTransactionList, syncCiCollectionVo.getTransactionGroup());
+                                ciEntityService.saveCiEntityWithoutTransaction(ciEntityTransactionList, syncCiCollectionVo.getTransactionGroup());
                             } catch (Exception ex) {
                                 if (!(ex instanceof ApiRuntimeException)) {
                                     logger.error(ex.getMessage(), ex);
@@ -599,7 +599,7 @@ public class CiSyncManager {
                                                 if (logger.isInfoEnabled()) {
                                                     startTime = System.currentTimeMillis();
                                                 }
-                                                ciEntityService.saveCiEntity(ciEntityTransactionList, syncCiCollectionVo.getTransactionGroup());
+                                                ciEntityService.saveCiEntityWithoutTransaction(ciEntityTransactionList, syncCiCollectionVo.getTransactionGroup());
                                                 if (logger.isInfoEnabled()) {
                                                     logger.info("保存了" + ciEntityTransactionList.size() + "个事务，耗时：" + (System.currentTimeMillis() - startTime) + "ms");
                                                 }
@@ -614,36 +614,6 @@ public class CiSyncManager {
                                         }
                                     }
                                 }
-                                /*List<JSONObject> dataList = mongoTemplate.find(query, JSONObject.class, collectionVo.getCollection());
-                                if (CollectionUtils.isNotEmpty(dataList)) {
-                                    while (CollectionUtils.isNotEmpty(dataList)) {
-                                        for (JSONObject orgDataObj : dataList) {
-                                            JSONArray tmpDataList = new JSONArray();
-                                            tmpDataList.add(orgDataObj);
-                                            JSONArray finalDataList = flattenJson(tmpDataList, fieldList, null);
-                                            for (int i = 0; i < finalDataList.size(); i++) {
-                                                JSONObject dataObj = finalDataList.getJSONObject(i);
-                                                Map<Integer, CiEntityTransactionVo> ciEntityTransactionVoMap = new HashMap<>();
-                                                List<CiEntityTransactionVo> ciEntityTransactionList = this.generateCiEntityTransaction(dataObj, syncCiCollectionVo, ciEntityTransactionVoMap, null);
-                                                try {
-
-                                                    ciEntityService.saveCiEntity(ciEntityTransactionList, syncCiCollectionVo.getTransactionGroup());
-                                                } catch (Exception ex) {
-                                                    if (!(ex instanceof ApiRuntimeException)) {
-                                                        logger.error(ex.getMessage(), ex);
-                                                        syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
-                                                    } else {
-                                                        syncCiCollectionVo.getSyncAudit().appendError(((ApiRuntimeException) ex).getMessage(true));
-                                                    }
-                                                }
-                                            }
-                                        }
-
-                                        currentPage += 1;
-                                        query.skip(pageSize * (currentPage - 1));
-                                        dataList = mongoTemplate.find(query, JSONObject.class, syncCiCollectionVo.getCollectionName());
-                                    }
-                                }*/
                             }
                         }
                     } catch (Exception ex) {

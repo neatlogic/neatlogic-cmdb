@@ -16,19 +16,21 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 
 @Service
-public class DateValueHandler implements IAttrValueHandler {
+public class DateTimeValueHandler implements IAttrValueHandler {
 
     @Override
     public String getType() {
-        return "date";
+        return "datetime";
     }
 
     @Override
     public String getName() {
-        return "日期";
+        return "日期时间";
     }
 
     @Override
@@ -88,18 +90,23 @@ public class DateValueHandler implements IAttrValueHandler {
             }
         }
         if (CollectionUtils.isNotEmpty(valueList)) {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             for (int i = 0; i < valueList.size(); i++) {
                 try {
-                    DateUtils.parseDate(valueList.getString(i), "yyyy-MM-dd");
+                    //如果前端什么都不修改传回来的值就是Long，所以要转换一下
+                    if (valueList.get(i) instanceof Long) {
+                        valueList.set(i, sdf.format(new Date(valueList.getLong(i))));
+                    } else {
+                        DateUtils.parseDate(valueList.getString(i), "yyyy-MM-dd HH:mm:ss");
+                    }
                 } catch (ParseException e) {
-                    throw new DatetimeAttrFormatIrregularException(attrVo, valueList.getString(i), "yyyy-MM-dd");
+                    throw new DatetimeAttrFormatIrregularException(attrVo, valueList.getString(i), "yyyy-MM-dd HH:mm:ss");
                 }
             }
         }
     }
 
-    /*
-    @Override
+    /*@Override
     public JSONArray getActualValueList(AttrVo attrVo, JSONArray valueList) {
         JSONArray returnList = new JSONArray();
         for (int i = 0; i < valueList.size(); i++) {
@@ -114,27 +121,25 @@ public class DateValueHandler implements IAttrValueHandler {
             }
         }
         return returnList;
-    }
+    }*/
 
-    @Override
-    public void transferValueListToDisplay(AttrVo attrVo, JSONArray valueList) {
-        for (int i = 0; i < valueList.size(); i++) {
-            try {
-                String v = valueList.getString(i);
-                if (v.contains(",")) {
-                    v = v.replace(",", "~");
-                }
-                valueList.set(i, v);
-            } catch (Exception ignored) {
+    /* @Override
+     public void transferValueListToDisplay(AttrVo attrVo, JSONArray valueList) {
+         for (int i = 0; i < valueList.size(); i++) {
+             try {
+                 String v = valueList.getString(i);
+                 if (v.contains(",")) {
+                     v = v.replace(",", "~");
+                 }
+                 valueList.set(i, v);
+             } catch (Exception ignored) {
 
-            }
-        }
-    }
-*/
-
+             }
+         }
+     }*/
     @Override
     public int getSort() {
-        return 5;
+        return 7;
     }
 
 }
