@@ -7,6 +7,7 @@ package codedriver.module.cmdb.api.resourcecenter.resource;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.crossover.IResourceCenterResourceCrossoverService;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.*;
 import codedriver.framework.cmdb.dto.tag.TagVo;
@@ -35,7 +36,7 @@ import java.util.stream.Collectors;
 @Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class ResourceListApi extends PrivateApiComponentBase {
+public class ResourceListApi extends PrivateApiComponentBase implements IResourceCenterResourceCrossoverService {
 
     @Resource
     private ResourceCenterMapper resourceCenterMapper;
