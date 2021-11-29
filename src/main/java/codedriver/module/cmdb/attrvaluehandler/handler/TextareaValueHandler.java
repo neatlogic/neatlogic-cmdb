@@ -25,7 +25,7 @@ public class TextareaValueHandler implements IAttrValueHandler {
 
     @Override
     public String getIcon() {
-        return "ts-textmodule";
+        return "tsfont-formtextarea";
     }
 
     @Override

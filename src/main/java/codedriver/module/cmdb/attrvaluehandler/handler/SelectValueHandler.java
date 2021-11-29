@@ -42,7 +42,7 @@ public class SelectValueHandler implements IAttrValueHandler {
 
     @Override
     public String getIcon() {
-        return "ts-list";
+        return "tsfont-list";
     }
 
     @Override

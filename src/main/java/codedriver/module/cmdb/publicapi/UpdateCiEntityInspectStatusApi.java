@@ -16,6 +16,7 @@ import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Date;
 
 @Service
 @OperationType(type = OperationTypeEnum.UPDATE)
@@ -42,13 +43,15 @@ public class UpdateCiEntityInspectStatusApi extends PublicApiComponentBase {
     }
 
     @Input({@Param(name = "ciEntityId", type = ApiParamType.LONG, isRequired = true, desc = "配置项id"),
-            @Param(name = "inspectStatus", type = ApiParamType.ENUM, rule = "normal,warning,critical", isRequired = true, desc = "巡检状态")})
+            @Param(name = "inspectStatus", type = ApiParamType.ENUM, rule = "normal,warning,critical", isRequired = true, desc = "巡检状态"),
+            @Param(name = "inspectTime", type = ApiParamType.LONG, isRequired = true, desc = "巡检时间，格式：距1970年1月1日0时0分0秒的豪秒数")})
     @Output({})
     @Description(desc = "修改配置项巡检状态接口")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         CiEntityVo ciEntityVo = new CiEntityVo();
         ciEntityVo.setId(paramObj.getLong("ciEntityId"));
+        ciEntityVo.setInspectTime(new Date(paramObj.getLong("inspectTime")));
         ciEntityVo.setInspectStatus(paramObj.getString("inspectStatus"));
         ciEntityMapper.updateCiEntityInspectStatus(ciEntityVo);
         return null;

@@ -318,6 +318,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 for (AttrVo attrVo : attrList) {
                     if (attrVo.getId().equals(attrFilterVo.getAttrId())) {
                         attrFilterVo.setCiId(attrVo.getCiId());
+                        attrFilterVo.setType(attrVo.getType());
                         attrFilterVo.setNeedTargetCi(attrVo.isNeedTargetCi());
                         isExists = true;
                         break;

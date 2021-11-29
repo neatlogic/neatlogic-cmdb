@@ -400,43 +400,41 @@
                                 </choose>
                             </when>
                             <otherwise>
-                                AND
                                 <choose>
                                     <when test="attrFilter.expression == 'equal'">
-                                        ${attrFilter.ciTableName}.`${attrFilter.attrId}_hash` =
+                                        AND ${attrFilter.ciTableName}.`${attrFilter.attrId}_hash` =
                                         #{attrFilter.value,typeHandler=Md5Handler}
                                     </when>
                                     <when test="attrFilter.expression == 'notequal'">
-                                        ${attrFilter.ciTableName}.`${attrFilter.attrId}_hash` !=
+                                        AND ${attrFilter.ciTableName}.`${attrFilter.attrId}_hash` !=
                                         #{attrFilter.value,typeHandler=Md5Handler}
                                     </when>
                                     <when test="attrFilter.expression == 'like'">
-                                        ${attrFilter.ciTableName}.`${attrFilter.attrId}` LIKE
+                                        AND ${attrFilter.ciTableName}.`${attrFilter.attrId}` LIKE
                                         CONCAT('%',#{attrFilter.value},'%')
                                     </when>
                                     <when test="attrFilter.expression == 'notlike'">
-                                        ${attrFilter.ciTableName}.`${attrFilter.attrId}` NOT LIKE
+                                        AND ${attrFilter.ciTableName}.`${attrFilter.attrId}` NOT LIKE
                                         CONCAT('%',#{attrFilter.value},'%')
                                     </when>
                                     <when test="attrFilter.expression == 'is-null'">
-                                        (${attrFilter.ciTableName}.`${attrFilter.attrId}` IS NULL OR
-                                        ${attrFilter.ciTableName}.`${attrFilter.attrId}` = '')
+                                        AND (${attrFilter.ciTableName}.`${attrFilter.attrId}` IS NULL)
                                     </when>
                                     <when test="attrFilter.expression == 'is-not-null'">
-                                        (${attrFilter.ciTableName}.`${attrFilter.attrId}` IS NOT NULL AND
-                                        ${attrFilter.ciTableName}.`${attrFilter.attrId}` != '')
+                                        AND (${attrFilter.ciTableName}.`${attrFilter.attrId}` IS NOT NULL)
                                     </when>
-                                    <when test="attrFilter.expression == 'between'">
-                                        <if test="@codedriver.framework.dao.ognl.Between@parse(attrFilter.value)[0] != null">
+                                    <when test="attrFilter.expression == 'between' and (@codedriver.framework.cmdb.dao.ognl.Between@parse(attrFilter.type, attrFilter.value)[0] != null or @codedriver.framework.cmdb.dao.ognl.Between@parse(attrFilter.type, attrFilter.value)[1] != null)">
+                                        AND
+                                        <if test="@codedriver.framework.cmdb.dao.ognl.Between@parse(attrFilter.type, attrFilter.value)[0] != null">
                                             ${attrFilter.ciTableName}.`${attrFilter.attrId}` &gt;=
-                                            ${@codedriver.framework.dao.ognl.Between@parse(attrFilter.value)[0]}
+                                            ${@codedriver.framework.cmdb.dao.ognl.Between@parse(attrFilter.type, attrFilter.value)[0]}
                                         </if>
-                                        <if test="@codedriver.framework.dao.ognl.Between@parse(attrFilter.value)[0] != null and @codedriver.framework.dao.ognl.Between@parse(attrFilter.value)[1] != null">
+                                        <if test="@codedriver.framework.cmdb.dao.ognl.Between@parse(attrFilter.type, attrFilter.value)[0] != null and @codedriver.framework.cmdb.dao.ognl.Between@parse(attrFilter.type, attrFilter.value)[1] != null">
                                             and
                                         </if>
-                                        <if test="@codedriver.framework.dao.ognl.Between@parse(attrFilter.value)[1] != null">
+                                        <if test="@codedriver.framework.cmdb.dao.ognl.Between@parse(attrFilter.type, attrFilter.value)[1] != null">
                                             ${attrFilter.ciTableName}.`${attrFilter.attrId}` &lt;=
-                                            ${@codedriver.framework.dao.ognl.Between@parse(attrFilter.value)[1]}
+                                            ${@codedriver.framework.cmdb.dao.ognl.Between@parse(attrFilter.type, attrFilter.value)[1]}
                                         </if>
                                     </when>
                                 </choose>
@@ -1105,8 +1103,8 @@
 
     <update id="updateCiEntityInspectStatus" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
         update cmdb_cientity
-        set inspect_time   = now(3),
-            inspect_status = #{inspectStatus}
+        set inspect_status = #{inspectStatus},
+            inspect_time   = #{inspectTime}
         where id = #{id}
     </update>
 

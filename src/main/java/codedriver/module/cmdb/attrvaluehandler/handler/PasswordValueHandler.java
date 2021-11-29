@@ -30,7 +30,7 @@ public class PasswordValueHandler implements IAttrValueHandler {
 
     @Override
     public String getIcon() {
-        return "ts-eye-close";
+        return "tsfont-option-horizontal";
     }
 
     @Override
@@ -76,7 +76,7 @@ public class PasswordValueHandler implements IAttrValueHandler {
 
     @Override
     public int getSort() {
-        return 6;
+        return 9;
     }
 
     @Override

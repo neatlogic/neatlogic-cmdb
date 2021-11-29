@@ -19,21 +19,21 @@ import java.text.ParseException;
 
 
 @Service
-public class DateValueHandler implements IAttrValueHandler {
+public class TimeValueHandler implements IAttrValueHandler {
 
     @Override
     public String getType() {
-        return "date";
+        return "time";
     }
 
     @Override
     public String getName() {
-        return "日期";
+        return "时间";
     }
 
     @Override
     public String getIcon() {
-        return "tsfont-calendar";
+        return "tsfont-sla";
     }
 
     @Override
@@ -90,9 +90,9 @@ public class DateValueHandler implements IAttrValueHandler {
         if (CollectionUtils.isNotEmpty(valueList)) {
             for (int i = 0; i < valueList.size(); i++) {
                 try {
-                    DateUtils.parseDate(valueList.getString(i), "yyyy-MM-dd");
+                    DateUtils.parseDate(valueList.getString(i), "HH:mm:ss");
                 } catch (ParseException e) {
-                    throw new DatetimeAttrFormatIrregularException(attrVo, valueList.getString(i), "yyyy-MM-dd");
+                    throw new DatetimeAttrFormatIrregularException(attrVo, valueList.getString(i), "HH:mm:ss");
                 }
             }
         }
@@ -116,6 +116,7 @@ public class DateValueHandler implements IAttrValueHandler {
         return returnList;
     }
 
+
     @Override
     public void transferValueListToDisplay(AttrVo attrVo, JSONArray valueList) {
         for (int i = 0; i < valueList.size(); i++) {
@@ -134,7 +135,7 @@ public class DateValueHandler implements IAttrValueHandler {
 
     @Override
     public int getSort() {
-        return 5;
+        return 6;
     }
 
 }
