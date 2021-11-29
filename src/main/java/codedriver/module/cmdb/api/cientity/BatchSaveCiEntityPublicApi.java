@@ -15,6 +15,7 @@ import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
+import codedriver.framework.restful.core.MyApiComponent;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentFactory;
 import codedriver.framework.restful.core.publicapi.PublicApiComponentBase;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
@@ -24,13 +25,10 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -108,19 +106,8 @@ public class BatchSaveCiEntityPublicApi extends PublicApiComponentBase {
             }
         }
         //调用内部保存配置项接口(transactional)
-        Object component = PrivateApiComponentFactory.getInstance(BatchSaveCiEntityApi.class.getName());
-        Method method = component.getClass().getMethod("myDoService", JSONObject.class);
-        try {
-            method.invoke(component, result);
-        }catch (Exception ex){
-            Throwable target = ex;
-            //如果是反射抛得异常，则需循环拆包，把真实得异常类找出来
-            while (target instanceof InvocationTargetException) {
-                target = ((InvocationTargetException) target).getTargetException();
-            }
-            String error = ex.getMessage() == null ? ExceptionUtils.getStackTrace(ex) : ex.getMessage();
-            throw (Exception) target;
-        }
+        MyApiComponent component = (MyApiComponent)PrivateApiComponentFactory.getInstance(BatchSaveCiEntityApi.class.getName());
+        component.myDoService(result);
         return null;
     }
 

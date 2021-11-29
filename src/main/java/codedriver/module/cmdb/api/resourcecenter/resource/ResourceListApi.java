@@ -7,19 +7,17 @@ package codedriver.module.cmdb.api.resourcecenter.resource;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.crossover.IResourceCenterResourceCrossoverService;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
-import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.resourcecenter.*;
 import codedriver.framework.cmdb.dto.tag.TagVo;
-import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
-import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
-import com.alibaba.fastjson.JSON;
+import codedriver.module.cmdb.service.resourcecenter.resource.ResourceCenterResourceService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -38,13 +36,13 @@ import java.util.stream.Collectors;
 @Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class ResourceListApi extends PrivateApiComponentBase {
+public class ResourceListApi extends PrivateApiComponentBase implements IResourceCenterResourceCrossoverService {
 
     @Resource
     private ResourceCenterMapper resourceCenterMapper;
 
     @Resource
-    private CiMapper ciMapper;
+    private ResourceCenterResourceService resourceCenterResourceService;
 
     @Override
     public String getToken() {
@@ -76,6 +74,7 @@ public class ResourceListApi extends PrivateApiComponentBase {
             @Param(name = "appModuleIdList", type = ApiParamType.JSONARRAY, desc = "应用模块id列表"),
             @Param(name = "typeIdList", type = ApiParamType.JSONARRAY, desc = "资源类型id列表"),
             @Param(name = "tagIdList", type = ApiParamType.JSONARRAY, desc = "标签id列表"),
+            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "用于回显的资源ID列表"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
             @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true")
@@ -89,40 +88,15 @@ public class ResourceListApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONObject resultObj = new JSONObject();
         List<ResourceVo> resourceVoList = null;
-        ResourceSearchVo searchVo = JSON.toJavaObject(jsonObj, ResourceSearchVo.class);
-        Long typeId = searchVo.getTypeId();
-        if (typeId != null) {
-            CiVo ciVo = ciMapper.getCiById(typeId);
-            if (ciVo == null) {
-                throw new CiNotFoundException(typeId);
-            }
-            List<CiVo> ciList = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
-            List<Long> ciIdList = ciList.stream().map(CiVo::getId).collect(Collectors.toList());
-            List<Long> typeIdList = searchVo.getTypeIdList();
-            if (CollectionUtils.isNotEmpty(typeIdList)) {
-                ciIdList.retainAll(typeIdList);
-            }
-            searchVo.setTypeIdList(ciIdList);
+        ResourceSearchVo searchVo;
+        JSONArray defaultValue = jsonObj.getJSONArray("defaultValue");
+        if (CollectionUtils.isNotEmpty(defaultValue)) {
+            searchVo = new ResourceSearchVo();
+            searchVo.setIdList(defaultValue.toJavaList(Long.class));
+        } else {
+            searchVo = resourceCenterResourceService.assembleResourceSearchVo(jsonObj);
         }
-        List<Long> resourceIdList = null;
-        if (CollectionUtils.isNotEmpty(searchVo.getProtocolIdList())) {
-            List<Long> idList = resourceCenterMapper.getResourceIdListByProtocolIdList(searchVo);
-            if (resourceIdList == null) {
-                resourceIdList = idList;
-            } else {
-                resourceIdList.retainAll(idList);
-            }
-        }
-        if (CollectionUtils.isNotEmpty(searchVo.getTagIdList())) {
-            List<Long> idList = resourceCenterMapper.getResourceIdListByTagIdList(searchVo);
-            if (resourceIdList == null) {
-                resourceIdList = idList;
-            } else {
-                resourceIdList.retainAll(idList);
-            }
-        }
-        if (resourceIdList == null || CollectionUtils.isNotEmpty(resourceIdList)) {
-            searchVo.setIdList(resourceIdList);
+        if (searchVo.getIdList() == null || CollectionUtils.isNotEmpty(searchVo.getIdList())) {
             int rowNum = resourceCenterMapper.getResourceCount(searchVo);
             if (rowNum > 0) {
                 searchVo.setRowNum(rowNum);

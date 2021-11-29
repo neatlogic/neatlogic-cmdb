@@ -16,9 +16,11 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.module.cmdb.service.resourcecenter.resource.ResourceCenterResourceService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -40,6 +42,9 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
     @Resource
     private ResourceCenterMapper resourceCenterMapper;
 
+    @Resource
+    private ResourceCenterResourceService resourceCenterResourceService;
+
     @Override
     public String getToken() {
         return "resourcecenter/resource/check";
@@ -58,9 +63,9 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
     @Input({
             @Param(name = "executeUser", type = ApiParamType.STRING, desc = "执行用户"),
             @Param(name = "protocolId", type = ApiParamType.LONG, desc = "连接协议id"),
-            @Param(name = "tagList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "标签列表"),
-            @Param(name = "selectNodeList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "选择节点列表"),
-            @Param(name = "inputNodeList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "输入节点列表")
+            @Param(name = "filter", type = ApiParamType.JSONOBJECT, desc = "过滤器"),
+            @Param(name = "selectNodeList", type = ApiParamType.JSONARRAY, desc = "选择节点列表"),
+            @Param(name = "inputNodeList", type = ApiParamType.JSONARRAY, desc = "输入节点列表")
     })
     @Output({
             @Param(name = "count", type = ApiParamType.INTEGER, desc = "校验不成功个数"),
@@ -74,6 +79,7 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
         resultObj.put("list", resultArray);
         String executeUser = jsonObj.getString("executeUser");
         Long protocolId = jsonObj.getLong("protocolId");
+        JSONObject filter = jsonObj.getJSONObject("filter");
         String protocol = null;
         if (protocolId != null) {
             AccountProtocolVo protocolVo = resourceCenterMapper.getAccountProtocolVoByProtocolId(protocolId);
@@ -98,47 +104,84 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
         executeUserIsNotFoundInResourceObj.put("protocol", protocol);
         executeUserIsNotFoundInResourceObj.put("executeUser", executeUser);
         executeUserIsNotFoundInResourceObj.put("list", executeUserIsNotFoundInResourceList);
-        resultArray.add(executeUserIsNotFoundInResourceObj);
-        String schemaName = TenantContext.get().getDataDbName();
-        List<Long> tagList = jsonObj.getJSONArray("tagList").toJavaList(Long.class);
-        // 如果选的标签，只有填了协议和用户，才校验是否合法
-        if (CollectionUtils.isNotEmpty(tagList) && StringUtils.isNotBlank(protocol) && StringUtils.isNotBlank(executeUser)) {
-            List<Long> resourceIdList = resourceCenterMapper.getNoCorrespondingAccountResourceIdListByTagListAndAccountIdAndProtocol(tagList, executeUser, protocol);
-            for (Long resourceId : resourceIdList) {
-                ResourceVo resourceVo = resourceCenterMapper.getResourceIpPortById(resourceId, schemaName);
-                if (resourceVo != null) {
-                    executeUserIsNotFoundInResourceList.add(resourceVo);
-                }
-            }
-        }
-        // 如果直接选的节点，当协议和用户都存在时，才校验是否合法
-        List<ResourceVo> selectNodeList = jsonObj.getJSONArray("selectNodeList").toJavaList(ResourceVo.class);
-        if (StringUtils.isNotBlank(protocol) && StringUtils.isNotBlank(executeUser)) {
-            for (ResourceVo resourceVo : selectNodeList) {
-                Long accountId = resourceCenterMapper.checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol(resourceVo.getId(), executeUser, protocol);
-                if (accountId == null) {
-                    executeUserIsNotFoundInResourceList.add(resourceVo);
-                }
-            }
-        }
+
         List<ResourceSearchVo> resourceIsNotFoundList = new ArrayList<>();
         JSONObject resourceIsNotFoundObj = new JSONObject();
         resourceIsNotFoundObj.put("type", "resourceIsNotFound");
         resourceIsNotFoundObj.put("list", resourceIsNotFoundList);
-        resultArray.add(resourceIsNotFoundObj);
-        List<ResourceSearchVo> inputNodeList = jsonObj.getJSONArray("inputNodeList").toJavaList(ResourceSearchVo.class);
-        // 如果是输入的目标，首先校验目标是否存在，如果存在且协议和用户都填了，再校验是否合法
-        for (ResourceSearchVo searchVo : inputNodeList) {
-            Long resourceId = resourceCenterMapper.getResourceIdByIpAndPortAndName(searchVo);
-            if (resourceId == null) {
-                resourceIsNotFoundList.add(searchVo);
-            } else if (StringUtils.isNotBlank(protocol) && StringUtils.isNotBlank(executeUser)) {
-                Long accountId = resourceCenterMapper.checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol(resourceId, executeUser, protocol);
-                if (accountId == null) {
-                    ResourceVo resourceVo = resourceCenterMapper.getResourceIpPortById(resourceId, schemaName);
-                    executeUserIsNotFoundInResourceList.add(resourceVo);
+
+        String schemaName = TenantContext.get().getDataDbName();
+        if (CollectionUtils.isNotEmpty(jsonObj.getJSONArray("inputNodeList"))) {
+            ResourceSearchVo searchVo = null;
+            // 如果filter不为空，说明是在执行页带有过滤器的校验输入目标，把过滤器作为进一步的筛选条件
+            if (MapUtils.isNotEmpty(filter)) {
+                searchVo = resourceCenterResourceService.assembleResourceSearchVo(filter);
+                // 如果过滤器下没有任何目标，不再进行下一步校验
+                if (resourceCenterMapper.getResourceCount(searchVo) == 0) {
+                    JSONObject resourceIsEmpty = new JSONObject();
+                    resourceIsEmpty.put("type", "resourceIsEmpty");
+                    resultArray.add(resourceIsEmpty);
+                    return resultObj;
                 }
             }
+            List<ResourceSearchVo> inputNodeList = jsonObj.getJSONArray("inputNodeList").toJavaList(ResourceSearchVo.class);
+            // 如果是输入的目标，首先校验目标是否存在，如果存在且协议和用户都填了，再校验是否合法
+            for (ResourceSearchVo node : inputNodeList) {
+                Long resourceId;
+                if (searchVo != null) { // 如果searchVo不为null，说明有过滤器，那么加上过滤器筛选
+                    searchVo.setIp(node.getIp());
+                    searchVo.setPort(node.getPort());
+                    searchVo.setName(node.getName());
+                    resourceId = resourceCenterMapper.getResourceIdByIpAndPortAndNameWithFilter(searchVo);
+                } else {
+                    resourceId = resourceCenterMapper.getResourceIdByIpAndPortAndName(node);
+                }
+                if (resourceId == null) {
+                    resourceIsNotFoundList.add(node);
+                } else if (StringUtils.isNotBlank(protocol) && StringUtils.isNotBlank(executeUser)) {
+                    Long accountId = resourceCenterMapper.checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol(resourceId, executeUser, protocol);
+                    if (accountId == null) {
+                        ResourceVo resourceVo = resourceCenterMapper.getResourceIpPortById(resourceId, schemaName);
+                        executeUserIsNotFoundInResourceList.add(resourceVo);
+                    }
+                }
+            }
+        } else if (MapUtils.isNotEmpty(filter)) {
+            ResourceSearchVo searchVo = resourceCenterResourceService.assembleResourceSearchVo(filter);
+            // 先检查过滤器下是否存在资源
+            if (resourceCenterMapper.getResourceCount(searchVo) > 0) {
+                // 找出在过滤器的条件下，没有绑定protocol与executeUser的资源
+                if (StringUtils.isNotBlank(protocol) && StringUtils.isNotBlank(executeUser)) {
+                    searchVo.setProtocol(protocol);
+                    searchVo.setAccount(executeUser);
+                    List<ResourceVo> list = resourceCenterMapper.getNoCorrespondingResourceListByAccountIdAndProtocol(searchVo);
+                    if (CollectionUtils.isNotEmpty(list)) {
+                        executeUserIsNotFoundInResourceList.addAll(list);
+                    }
+                }
+            } else {
+                JSONObject resourceIsEmpty = new JSONObject();
+                resourceIsEmpty.put("type", "resourceIsEmpty");
+                resultArray.add(resourceIsEmpty);
+            }
+        } else if (CollectionUtils.isNotEmpty(jsonObj.getJSONArray("selectNodeList"))) {
+            // 如果直接选的节点，当协议和用户都存在时，才校验是否合法
+            List<ResourceVo> selectNodeList = jsonObj.getJSONArray("selectNodeList").toJavaList(ResourceVo.class);
+            if (StringUtils.isNotBlank(protocol) && StringUtils.isNotBlank(executeUser)) {
+                for (ResourceVo resourceVo : selectNodeList) {
+                    Long accountId = resourceCenterMapper.checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol(resourceVo.getId(), executeUser, protocol);
+                    if (accountId == null) {
+                        executeUserIsNotFoundInResourceList.add(resourceVo);
+                    }
+                }
+            }
+        }
+
+        if (executeUserIsNotFoundInResourceList.size() > 0) {
+            resultArray.add(executeUserIsNotFoundInResourceObj);
+        }
+        if (resourceIsNotFoundList.size() > 0) {
+            resultArray.add(resourceIsNotFoundObj);
         }
         int count = executeUserIsNotFoundInResourceList.size();
         count += resourceIsNotFoundList.size();
