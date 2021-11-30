@@ -65,7 +65,7 @@ public class AppModuleResourceListApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "应用模块id"),
-            @Param(name = "envId", type = ApiParamType.LONG, isRequired = true, desc = "环境id"),
+            @Param(name = "envId", type = ApiParamType.LONG, desc = "环境id"),
             @Param(name = "typeId", type = ApiParamType.LONG, desc = "类型id"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
