@@ -19,9 +19,6 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
-import java.text.SimpleDateFormat;
-import java.util.List;
-
 @Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
@@ -50,15 +47,9 @@ public class TestMongodbApi extends PrivateApiComponentBase {
     @Description(desc = "mongo测试接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-       /* JSONArray jsonList = jsonObj.getJSONArray("json");
-        for (int i = 0; i < jsonList.size(); i++) {
-            mongoTemplate.insert(jsonList.getJSONObject(i), "process");
-        }*/
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
         Query query = new Query();
-        query.addCriteria(Criteria.where("MGMT_IP").in("192.168.1.23"));
-        List<JSONObject> jsonList = mongoTemplate.find(query, JSONObject.class, "collect_linux");
-        return jsonList;
+        query.addCriteria(Criteria.where("RESOURCE_ID").in(497544521900032L));
+        JSONObject json = mongoTemplate.findOne(new Query(), JSONObject.class, "INSPECT_REPORTS");
+        return json;
     }
 }
