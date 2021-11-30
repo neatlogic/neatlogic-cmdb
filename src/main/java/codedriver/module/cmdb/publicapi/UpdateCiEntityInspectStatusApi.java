@@ -43,7 +43,7 @@ public class UpdateCiEntityInspectStatusApi extends PublicApiComponentBase {
     }
 
     @Input({@Param(name = "ciEntityId", type = ApiParamType.LONG, isRequired = true, desc = "配置项id"),
-            @Param(name = "inspectStatus", type = ApiParamType.ENUM, rule = "normal,warning,critical", isRequired = true, desc = "巡检状态"),
+            @Param(name = "inspectStatus", type = ApiParamType.ENUM, rule = "normal,warn,critical,fatal", isRequired = true, desc = "巡检状态"),
             @Param(name = "inspectTime", type = ApiParamType.LONG, isRequired = true, desc = "巡检时间，格式：距1970年1月1日0时0分0秒的豪秒数")})
     @Output({})
     @Description(desc = "修改配置项巡检状态接口")
