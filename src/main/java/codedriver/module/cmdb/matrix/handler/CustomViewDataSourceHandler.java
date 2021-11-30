@@ -154,11 +154,13 @@ public class CustomViewDataSourceHandler extends MatrixDataSourceHandlerBase {
 
     @Override
     protected JSONObject myTableDataSearch(MatrixDataVo dataVo) {
+
         return new JSONObject();
     }
 
     @Override
     protected List<Map<String, JSONObject>> myTableColumnDataSearch(MatrixDataVo dataVo) {
+
         return new ArrayList<>();
     }
 
