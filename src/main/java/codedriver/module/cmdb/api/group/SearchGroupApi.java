@@ -60,8 +60,8 @@ public class SearchGroupApi extends PrivateApiComponentBase {
         List<GroupVo> groupList = groupMapper.searchGroup(groupVo);
         if (CollectionUtils.isEmpty(groupVo.getIdList())) {
             if (CollectionUtils.isNotEmpty(groupList)) {
-                int rownum = groupMapper.searchGroupCount(groupVo);
-                groupVo.setRowNum(rownum);
+                int rowNum = groupMapper.searchGroupCount(groupVo);
+                groupVo.setRowNum(rowNum);
             }
             return CardResultUtil.getResult(groupList, groupVo);
         } else {
