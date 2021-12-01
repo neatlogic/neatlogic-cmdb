@@ -21,11 +21,14 @@ import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
+import java.util.Locale;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
@@ -98,7 +101,49 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
                 }
             });
         }
-        return ciEntityVo;
+        //由于前端无法识别属性格式进行转换，例如时间和颜色等，所以先在后台处理好再输出
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+
+        JSONObject entityObj = new JSONObject();
+        entityObj.put("id", ciEntityVo.getId());
+        entityObj.put("uuid", ciEntityVo.getUuid());
+        entityObj.put("name", ciEntityVo.getName());
+        entityObj.put("ciId", ciEntityVo.getCiId());
+        entityObj.put("rootCiId", ciEntityVo.getRootCiId());
+        entityObj.put("ciIcon", ciEntityVo.getCiIcon());
+        entityObj.put("ciName", ciEntityVo.getCiName());
+        entityObj.put("ciLabel", ciEntityVo.getCiLabel());
+        entityObj.put("type", ciEntityVo.getTypeId());
+        entityObj.put("typeName", ciEntityVo.getTypeName());
+        entityObj.put("inspectTime", ciEntityVo.getInspectTime() != null ? sdf.format(ciEntityVo.getInspectTime()) : null);
+        entityObj.put("inspectStatus", makeupStatus(ciEntityVo.getInspectStatus()));
+        entityObj.put("monitorTime", ciEntityVo.getMonitorTime() != null ? sdf.format(ciEntityVo.getMonitorTime()) : null);
+        entityObj.put("monitorStatus", makeupStatus(ciEntityVo.getMonitorStatus()));
+        entityObj.put("renewTime", ciEntityVo.getRenewTime() != null ? sdf.format(ciEntityVo.getRenewTime()) : null);
+        entityObj.put("actionType", ciEntityVo.getActionType());
+        entityObj.put("attrEntityData", ciEntityVo.getAttrEntityData());
+        entityObj.put("relEntityData", ciEntityVo.getRelEntityData());
+        entityObj.put("maxRelEntityCount", ciEntityVo.getMaxRelEntityCount());
+        entityObj.put("maxAttrEntityCount", ciEntityVo.getMaxAttrEntityCount());
+        entityObj.put("isVirtual", ciEntityVo.getIsVirtual());
+        entityObj.put("authData", ciEntityVo.getAuthData());
+        return entityObj;
+    }
+
+    private String makeupStatus(String status) {
+        if (StringUtils.isNotBlank(status)) {
+            switch (status) {
+                case "fatal":
+                    return "<span class=\"text-error\">" + status.toUpperCase(Locale.ROOT) + "</span>";
+                case "warn":
+                    return "<span class=\"text-warning\">" + status.toUpperCase(Locale.ROOT) + "</span>";
+                case "critical":
+                    return "<span class=\"text-error\">" + status.toUpperCase(Locale.ROOT) + "</span>";
+                default:
+                    return "<span class=\"text-success\">" + status.toUpperCase(Locale.ROOT) + "</span>";
+            }
+        }
+        return "";
     }
 
 }

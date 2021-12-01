@@ -14,6 +14,7 @@ import codedriver.framework.cmdb.enums.CiAuthType;
 import codedriver.framework.cmdb.enums.ShowType;
 import codedriver.framework.cmdb.enums.group.GroupType;
 import codedriver.framework.cmdb.exception.cientity.CiEntityAuthException;
+import codedriver.framework.cmdb.utils.RelUtil;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.restful.annotation.*;
@@ -27,7 +28,6 @@ import codedriver.module.cmdb.dao.mapper.ci.CiViewMapper;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import codedriver.module.cmdb.service.group.GroupService;
-import codedriver.framework.cmdb.utils.RelUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -36,8 +36,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 @Service
@@ -228,7 +230,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
                     }
                 }
             }
-
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
             for (CiEntityVo entity : ciEntityList) {
                 JSONObject entityObj = new JSONObject();
                 entityObj.put("id", entity.getId());
@@ -240,6 +242,11 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
                 entityObj.put("ciLabel", entity.getCiLabel());
                 entityObj.put("type", entity.getTypeId());
                 entityObj.put("typeName", entity.getTypeName());
+                entityObj.put("inspectTime", entity.getInspectTime() != null ? sdf.format(entity.getInspectTime()) : null);
+                entityObj.put("inspectStatus", makeupStatus(entity.getInspectStatus()));
+                entityObj.put("monitorTime", entity.getMonitorTime() != null ? sdf.format(entity.getMonitorTime()) : null);
+                entityObj.put("monitorStatus", makeupStatus(entity.getMonitorStatus()));
+                entityObj.put("renewTime", entity.getRenewTime() != null ? sdf.format(entity.getRenewTime()) : null);
                 entityObj.put("actionType", entity.getActionType());
                 entityObj.put("attrEntityData", entity.getAttrEntityData());
                 entityObj.put("relEntityData", entity.getRelEntityData());
@@ -287,4 +294,19 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
         return returnObj;
     }
 
+    private String makeupStatus(String status) {
+        if (StringUtils.isNotBlank(status)) {
+            switch (status) {
+                case "fatal":
+                    return "<span class=\"text-error\">" + status.toUpperCase(Locale.ROOT) + "</span>";
+                case "warn":
+                    return "<span class=\"text-warning\">" + status.toUpperCase(Locale.ROOT) + "</span>";
+                case "critical":
+                    return "<span class=\"text-error\">" + status.toUpperCase(Locale.ROOT) + "</span>";
+                default:
+                    return "<span class=\"text-success\">" + status.toUpperCase(Locale.ROOT) + "</span>";
+            }
+        }
+        return "";
+    }
 }

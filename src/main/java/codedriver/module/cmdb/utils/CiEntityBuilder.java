@@ -78,6 +78,13 @@ public class CiEntityBuilder {
                 String ciIcon = result.get("ciIcon") != null ? String.valueOf(result.get("ciIcon")) : null;
                 String ciLabel = result.get("ciLabel") != null ? String.valueOf(result.get("ciLabel")) : null;
                 Long ciId = result.get("ciId") != null ? Long.valueOf(String.valueOf(result.get("ciId"))) : null;
+
+                Date inspectTime = result.get("inspectTime") != null ? new Date(Long.parseLong(String.valueOf(result.get("inspectTime")))) : null;
+                Date monitorTime = result.get("monitorTime") != null ? new Date(Long.parseLong(String.valueOf(result.get("monitorTime")))) : null;
+                Date renewTime = result.get("renewTime") != null ? new Date(Long.parseLong(String.valueOf(result.get("renewTime")))) : null;
+                String inspectStatus = result.get("inspectStatus") != null ? String.valueOf(result.get("inspectStatus")) : null;
+                String monitorStatus = result.get("monitorStatus") != null ? String.valueOf(result.get("monitorStatus")) : null;
+
                 if (!ciEntityMap.containsKey(id)) {
                     ciEntityVo = new CiEntityVo();
                     ciEntityVo.setCiId(ciId);
@@ -94,6 +101,11 @@ public class CiEntityBuilder {
                     ciEntityVo.setFcd(fcd);
                     ciEntityVo.setLcu(lcu);
                     ciEntityVo.setLcd(lcd);
+                    ciEntityVo.setInspectStatus(inspectStatus);
+                    ciEntityVo.setInspectTime(inspectTime);
+                    ciEntityVo.setMonitorStatus(monitorStatus);
+                    ciEntityVo.setMonitorTime(monitorTime);
+                    ciEntityVo.setRenewTime(renewTime);
                     ciEntityMap.put(id, ciEntityVo);
                 } else {
                     ciEntityVo = ciEntityMap.get(id);
@@ -194,6 +206,11 @@ public class CiEntityBuilder {
                 String ciIcon = result.get("ciIcon") != null ? String.valueOf(result.get("ciIcon")) : null;
                 String ciLabel = result.get("ciLabel") != null ? String.valueOf(result.get("ciLabel")) : null;
                 Long ciId = result.get("ciId") != null ? Long.valueOf(String.valueOf(result.get("ciId"))) : null;
+                Date inspectTime = result.get("inspectTime") != null ? new Date(Long.parseLong(String.valueOf(result.get("inspectTime")))) : null;
+                Date monitorTime = result.get("monitorTime") != null ? new Date(Long.parseLong(String.valueOf(result.get("monitorTime")))) : null;
+                Date renewTime = result.get("renewTime") != null ? new Date(Long.parseLong(String.valueOf(result.get("renewTime")))) : null;
+                String inspectStatus = result.get("inspectStatus") != null ? String.valueOf(result.get("inspectStatus")) : null;
+                String monitorStatus = result.get("monitorStatus") != null ? String.valueOf(result.get("monitorStatus")) : null;
 
                 if (ciEntityVo == null) {
                     ciEntityVo = new CiEntityVo();
@@ -211,6 +228,11 @@ public class CiEntityBuilder {
                     ciEntityVo.setFcd(fcd);
                     ciEntityVo.setLcu(lcu);
                     ciEntityVo.setLcd(lcd);
+                    ciEntityVo.setInspectStatus(inspectStatus);
+                    ciEntityVo.setInspectTime(inspectTime);
+                    ciEntityVo.setMonitorStatus(monitorStatus);
+                    ciEntityVo.setMonitorTime(monitorTime);
+                    ciEntityVo.setRenewTime(renewTime);
                 } else {
                     if (!ciEntityVo.getId().equals(id)) {
                         throw new CiEntityMultipleException(id);

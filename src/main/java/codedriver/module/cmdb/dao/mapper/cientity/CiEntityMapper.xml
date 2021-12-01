@@ -236,12 +236,22 @@
         `ci_base`.`uuid` AS `uuid`,
         `ci_base`.`name` AS `name`,
         `ci_base`.`ci_id` AS ciId,
-        <!--由于虚拟模型产生的视图没有以下字段，所以暂时先注释
-        `ci_base`.`status` AS `status`,
-        `ci_base`.`fcd` AS `fcd`,
-        `ci_base`.`fcu` AS `fcu`,
-        `ci_base`.`lcd` AS `lcd`,
-        `ci_base`.`lcu` AS `lcu`,-->
+        <choose>
+            <when test="ciList.size == 1 and ciList[0].isVirtual == 1">
+                null as inspectTime,
+                null as inspectStatus,
+                null as monitorTime,
+                null as monitorStatus,
+                null as renewTime,
+            </when>
+            <otherwise>
+                ROUND(UNIX_TIMESTAMP(`ci_base`.`inspect_time`) * 1000) AS inspectTime,
+                `ci_base`.`inspect_status` AS inspectStatus,
+                ROUND(UNIX_TIMESTAMP(`ci_base`.`monitor_time`) * 1000) AS monitorTime,
+                `ci_base`.`monitor_status` AS monitorStatus,
+                ROUND(UNIX_TIMESTAMP(`ci_base`.`renew_time`) * 1000) AS renewTime,
+            </otherwise>
+        </choose>
         `ci`.`type_id` AS `typeId`,
         (SELECT name FROM cmdb_citype WHERE id = `ci`.`type_id`) AS `typeName`,
         `ci`.`name` AS `ciName`,
@@ -562,12 +572,22 @@
         `ci_base`.`uuid` AS `uuid`,
         `ci_base`.`name` AS `name`,
         `ci_base`.`ci_id` AS ciId,
-        <!--由于虚拟模型产生的视图没有以下字段，所以暂时先注释
-        `ci_base`.`status` AS `status`,
-        `ci_base`.`fcd` AS `fcd`,
-        `ci_base`.`fcu` AS `fcu`,
-        `ci_base`.`lcd` AS `lcd`,
-        `ci_base`.`lcu` AS `lcu`,-->
+        <choose>
+            <when test="ciList.size == 1 and ciList[0].isVirtual == 1">
+                null as inspectTime,
+                null as inspectStatus,
+                null as monitorTime,
+                null as monitorStatus,
+                null as renewTime,
+            </when>
+            <otherwise>
+                ROUND(UNIX_TIMESTAMP(`ci_base`.`inspect_time`) * 1000) AS inspectTime,
+                `ci_base`.`inspect_status` AS inspectStatus,
+                ROUND(UNIX_TIMESTAMP(`ci_base`.`monitor_time`) * 1000) AS monitorTime,
+                `ci_base`.`monitor_status` AS monitorStatus,
+                ROUND(UNIX_TIMESTAMP(`ci_base`.`renew_time`) * 1000) AS renewTime,
+            </otherwise>
+        </choose>
         `ci`.`type_id` AS `typeId`,
         (SELECT name FROM cmdb_citype WHERE id = `ci`.`type_id`) AS `typeName`,
         `ci`.`name` AS `ciName`,
