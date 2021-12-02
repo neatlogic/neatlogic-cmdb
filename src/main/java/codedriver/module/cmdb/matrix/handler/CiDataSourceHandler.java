@@ -765,6 +765,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             paramObj.put("needAction", false);
             paramObj.put("needActionType", false);
             paramObj.put("mode", "dialog");
+            paramObj.put("isAllColumn", 1);
             JSONObject resultObj = (JSONObject) searchCiEntityApi.myDoService(paramObj);
             JSONArray tbodyArray = resultObj.getJSONArray("tbodyList");
             if (CollectionUtils.isNotEmpty(tbodyArray)) {
