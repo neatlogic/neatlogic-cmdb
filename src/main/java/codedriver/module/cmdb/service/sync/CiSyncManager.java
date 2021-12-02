@@ -558,8 +558,6 @@ public class CiSyncManager {
                                 }
                             }
                             if (CollectionUtils.isNotEmpty(fieldList)) {
-                                //int pageSize = 100;
-                                //long currentPage = 1;
                                 Query query = new Query();
                                 if (syncCiCollectionVo.getSyncPolicy() != null) {
                                     criteriaList.add(syncCiCollectionVo.getSyncPolicy().getCriteria());

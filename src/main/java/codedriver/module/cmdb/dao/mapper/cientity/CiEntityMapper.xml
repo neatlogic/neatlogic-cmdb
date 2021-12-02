@@ -6,8 +6,8 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper">
-    <cache-ref namespace="codedriver.module.cmdb.dao.mapper.ci.CiMapper"/>
-    <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="500"></cache>
+    <!-- <cache-ref namespace="codedriver.module.cmdb.dao.mapper.ci.CiMapper"/>
+     <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="500"></cache>-->
 
     <select id="getNotIndexCiEntityIdList"
             parameterType="codedriver.framework.fulltextindex.dto.fulltextindex.FullTextIndexTypeVo"
