@@ -575,7 +575,6 @@ public class CiSyncManager {
          */
         private void executeByBatchMode() {
             if (CollectionUtils.isNotEmpty(syncCiCollectionList)) {
-                //创建搜索管理器
                 for (SyncCiCollectionVo syncCiCollectionVo : syncCiCollectionList) {
                     CollectionVo collectionVo = getCollectionByName(syncCiCollectionVo.getCollectionName());
                     try {
@@ -851,12 +850,4 @@ public class CiSyncManager {
             }
         }
     }
-
-
-    public static void main(String[] a) {
-        JSONArray valueList = new JSONArray();
-        valueList.add(123);
-        System.out.println(valueList.contains(123));
-    }
-
 }
