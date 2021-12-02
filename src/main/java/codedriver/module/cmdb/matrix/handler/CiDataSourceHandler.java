@@ -563,7 +563,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                             return false;
                         }
                         for (RelEntityVo relEntity : relEntityList) {
-                            Long ciEntityId = ciEntityMapper.getIdByCiIdAndName(relEntity.getToCiId(), value);
+                            Long ciEntityId = ciEntityMapper.getIdByCiIdAndName(relEntity.getFromCiId(), value);
                             if (ciEntityId != null) {
                                 newValueList2.add(ciEntityId);
                             }
