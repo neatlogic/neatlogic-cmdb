@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  * @since 2021/11/22 14:41
  **/
 @Service
-public class ResourceCenterResourceServiceImpl implements ResourceCenterResourceService {
+public class ResourceCenterResourceServiceImpl implements IResourceCenterResourceService {
     @Resource
     ResourceCenterMapper resourceCenterMapper;
 

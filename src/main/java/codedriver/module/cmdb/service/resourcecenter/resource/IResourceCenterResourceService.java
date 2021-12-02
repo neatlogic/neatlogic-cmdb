@@ -5,6 +5,7 @@
 
 package codedriver.module.cmdb.service.resourcecenter.resource;
 
+import codedriver.framework.cmdb.crossover.IResourceCenterResourceCrossoverService;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import com.alibaba.fastjson.JSONObject;
 
@@ -13,7 +14,7 @@ import com.alibaba.fastjson.JSONObject;
  * @author laiwt
  * @since 2021/11/22 14:41
  **/
-public interface ResourceCenterResourceService {
+public interface IResourceCenterResourceService extends IResourceCenterResourceCrossoverService {
 
     ResourceSearchVo assembleResourceSearchVo(JSONObject jsonObj);
 

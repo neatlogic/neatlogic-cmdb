@@ -7,7 +7,7 @@ package codedriver.module.cmdb.api.resourcecenter.resource;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.crossover.IResourceCenterResourceCrossoverService;
+import codedriver.framework.cmdb.crossover.IResourceListApiCrossoverService;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.*;
 import codedriver.framework.cmdb.dto.tag.TagVo;
@@ -17,7 +17,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
-import codedriver.module.cmdb.service.resourcecenter.resource.ResourceCenterResourceService;
+import codedriver.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -36,13 +36,13 @@ import java.util.stream.Collectors;
 @Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class ResourceListApi extends PrivateApiComponentBase implements IResourceCenterResourceCrossoverService {
+public class ResourceListApi extends PrivateApiComponentBase implements IResourceListApiCrossoverService {
 
     @Resource
     private ResourceCenterMapper resourceCenterMapper;
 
     @Resource
-    private ResourceCenterResourceService resourceCenterResourceService;
+    private IResourceCenterResourceService resourceCenterResourceService;
 
     @Override
     public String getToken() {

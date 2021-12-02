@@ -16,7 +16,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
-import codedriver.module.cmdb.service.resourcecenter.resource.ResourceCenterResourceService;
+import codedriver.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -43,7 +43,7 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
     private ResourceCenterMapper resourceCenterMapper;
 
     @Resource
-    private ResourceCenterResourceService resourceCenterResourceService;
+    private IResourceCenterResourceService resourceCenterResourceService;
 
     @Override
     public String getToken() {
