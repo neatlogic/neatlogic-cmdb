@@ -555,11 +555,19 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                             newValueList2.add(ciEntity.getId());
                         }
                     } else {
-                        Long ciEntityId = ciEntityMapper.getIdByCiIdAndName(fromCiVo.getId(), value);
-                        if (ciEntityId == null) {
+                        RelEntityVo relEntityVo = new RelEntityVo();
+                        relEntityVo.setRelId(relVo2.getId());
+                        relEntityVo.setPageSize(100);
+                        List<RelEntityVo> relEntityList = relEntityMapper.getRelEntityByRelId(relEntityVo);
+                        if (CollectionUtils.isEmpty(relEntityList)) {
                             return false;
                         }
-                        newValueList2.add(ciEntityId);
+                        for (RelEntityVo relEntity : relEntityList) {
+                            Long ciEntityId = ciEntityMapper.getIdByCiIdAndName(relEntity.getToCiId(), value);
+                            if (ciEntityId != null) {
+                                newValueList2.add(ciEntityId);
+                            }
+                        }
                     }
                 }
                 RelFilterVo relFilterVo2 = new RelFilterVo();
