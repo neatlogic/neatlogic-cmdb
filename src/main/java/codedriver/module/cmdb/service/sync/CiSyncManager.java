@@ -65,7 +65,6 @@ import java.util.stream.Collectors;
  */
 @Service
 public class CiSyncManager {
-    private final static Logger logger = LoggerFactory.getLogger(CiSyncManager.class);
     private static MongoTemplate mongoTemplate;
     private static CiEntityService ciEntityService;
     private static CiMapper ciMapper;
@@ -96,7 +95,32 @@ public class CiSyncManager {
         private final List<SyncCiCollectionVo> syncCiCollectionList;
         private final List<CollectionVo> collectionList;
         private JSONObject singleDataObj;
-        private String mode = "batch";//如果是batch模式，代表批量更新，如果是single模式，接受单条数据更新
+        private final String mode;//如果是batch模式，代表批量更新，如果是single模式，接受单条数据更新
+        int CAPACITY = 5000;//缓存大小
+        private final Map<Integer, List<CiEntityVo>> ciEntityCache = new LinkedHashMap<Integer, List<CiEntityVo>>(CAPACITY, 0.75F, true) {//用户缓存检索数据，提升效率
+            @Override
+            protected boolean removeEldestEntry(Map.Entry eldest) {
+                return size() > CAPACITY;
+            }
+        };
+
+        public List<CiEntityVo> searchCiEntityWithCache(CiEntityVo conditionVo) {
+            int hash = Objects.hash(conditionVo.getCiId(), CollectionUtils.isNotEmpty(conditionVo.getAttrFilterList()) ? JSONObject.toJSONString(conditionVo.getAttrFilterList()) : "");
+            List<CiEntityVo> ciEntityList = ciEntityCache.get(hash);
+            if (ciEntityList == null) {
+                ciEntityList = ciEntityService.searchCiEntity(conditionVo);
+                if (CollectionUtils.isNotEmpty(ciEntityList)) {
+                    synchronized (ciEntityCache) {
+                        ciEntityCache.put(hash, ciEntityList);
+                    }
+                }
+            } else {
+                if (logger.isInfoEnabled()) {
+                    logger.info("缓存命中，当前缓存大小：" + ciEntityCache.size());
+                }
+            }
+            return ciEntityList;
+        }
 
         public SyncHandler(List<SyncCiCollectionVo> syncCiCollectionVoList) {
             super("COLLECTION-CIENTITY-SYNC-BATCH-HANDLER");
@@ -186,6 +210,7 @@ public class CiSyncManager {
             return this.CiRelMap.get(ciId);
         }
 
+
         /**
          * 根据数据生成配置项事务，由于可能出现关联配置项，因此有可能返回多个事务
          *
@@ -254,7 +279,7 @@ public class CiSyncManager {
                                     this.add(v);
                                 }});
                                 attrConditionVo.addAttrFilter(targetFilterVo);
-                                List<CiEntityVo> attrCiCheckList = ciEntityService.searchCiEntity(attrConditionVo);
+                                List<CiEntityVo> attrCiCheckList = searchCiEntityWithCache(attrConditionVo);//ciEntityService.searchCiEntity(attrConditionVo);
                                 if (CollectionUtils.isNotEmpty(attrCiCheckList)) {
                                     List<String> valueList = attrCiCheckList.stream().map(d -> d.getId().toString()).collect(Collectors.toList());
                                     filterVo.setValueList(valueList);
@@ -279,7 +304,7 @@ public class CiSyncManager {
 
             if (CollectionUtils.isNotEmpty(ciEntityConditionVo.getAttrFilterList())) {
                 //使用所有非引用属性去搜索配置项，没有则添加，发现一个则就修改，发现多个就抛异常
-                List<CiEntityVo> checkList = ciEntityService.searchCiEntity(ciEntityConditionVo);
+                List<CiEntityVo> checkList = searchCiEntityWithCache(ciEntityConditionVo);//ciEntityService.searchCiEntity(ciEntityConditionVo);
                 if (CollectionUtils.isNotEmpty(checkList) && checkList.size() > 1) {
                     throw new CiEntityDuplicateException();
                 }
@@ -326,11 +351,17 @@ public class CiSyncManager {
                                             if (CollectionUtils.isNotEmpty(subCiEntityTransactionList)) {
                                                 for (CiEntityTransactionVo subCiEntityTransactionVo : subCiEntityTransactionList) {
                                                     if (ciEntityTransactionMap.containsKey(subCiEntityTransactionVo.getHash())) {
-                                                        attrValueList.add(ciEntityTransactionMap.get(subCiEntityTransactionVo.getHash()).getCiEntityId());
+                                                        Long ceId = ciEntityTransactionMap.get(subCiEntityTransactionVo.getHash()).getCiEntityId();
+                                                        if (!attrValueList.contains(ceId)) {
+                                                            attrValueList.add(ceId);
+                                                        }
                                                     } else {
                                                         ciEntityTransactionMap.put(subCiEntityTransactionVo.getHash(), subCiEntityTransactionVo);
                                                         ciEntityTransactionList.add(subCiEntityTransactionVo);
-                                                        attrValueList.add(subCiEntityTransactionVo.getCiEntityId());
+                                                        Long ceId = subCiEntityTransactionVo.getCiEntityId();
+                                                        if (!attrValueList.contains(ceId)) {
+                                                            attrValueList.add(ceId);
+                                                        }
                                                     }
                                                 }
                                             }
@@ -364,7 +395,7 @@ public class CiSyncManager {
                                             this.add(dataObj.getString(mappingVo.getField(parentKey)));
                                         }});
                                         attrConditionVo.addAttrFilter(filterVo);
-                                        List<CiEntityVo> attrCiCheckList = ciEntityService.searchCiEntity(attrConditionVo);
+                                        List<CiEntityVo> attrCiCheckList = searchCiEntityWithCache(attrConditionVo);//ciEntityService.searchCiEntity(attrConditionVo);
                                         if (CollectionUtils.isNotEmpty(attrCiCheckList) && attrCiCheckList.size() > 1) {
                                             throw new CiEntityDuplicateException();
                                         }
@@ -538,11 +569,13 @@ public class CiSyncManager {
             return finalDate;
         }
 
+
         /**
          * 批量执行方式
          */
         private void executeByBatchMode() {
             if (CollectionUtils.isNotEmpty(syncCiCollectionList)) {
+                //创建搜索管理器
                 for (SyncCiCollectionVo syncCiCollectionVo : syncCiCollectionList) {
                     CollectionVo collectionVo = getCollectionByName(syncCiCollectionVo.getCollectionName());
                     try {
@@ -819,12 +852,11 @@ public class CiSyncManager {
         }
     }
 
-    public static void main(String[] as) {
-        JSONObject a = new JSONObject();
-        a.put("a", 1);
-        JSONArray list = new JSONArray();
-        list.add(a);
-        a.put("b", 2);
-        System.out.println(list.toString());
+
+    public static void main(String[] a) {
+        JSONArray valueList = new JSONArray();
+        valueList.add(123);
+        System.out.println(valueList.contains(123));
     }
+
 }

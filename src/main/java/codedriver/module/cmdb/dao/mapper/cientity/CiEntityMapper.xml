@@ -397,6 +397,11 @@
             <if test="filterCiId != null">
                 AND `ci_base`.ci_id = #{filterCiId}
             </if>
+            <!--新逻辑-->
+            <if test="keyword != null and keyword != ''">
+                AND (`ci_base`.id = #{keyword} OR `ci_base`.`name` LIKE CONCAT('%',#{keyword},'%'))
+            </if>
+            <!--新逻辑-->
             <!--老逻辑备份
             <if test="keyword != null and keyword != ''">
                 AND (`ci_base`.id = #{keyword} OR `ci_base`.`name` LIKE CONCAT('%',#{keyword},'%')
