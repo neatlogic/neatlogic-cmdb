@@ -6,12 +6,12 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper">
-    <!--为了方便使用缓存，ciEntity,attrEntity,relEntity等操作全部汇集再这里-->
-    <!--<cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000"
-           size="100"></cache>-->
+    <cache-ref namespace="codedriver.module.cmdb.dao.mapper.ci.CiMapper"/>
+    <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="500"></cache>
+
     <select id="getNotIndexCiEntityIdList"
             parameterType="codedriver.framework.fulltextindex.dto.fulltextindex.FullTextIndexTypeVo"
-            resultType="java.lang.Long">
+            resultType="java.lang.Long" useCache="false">
         select a.id
         from cmdb_cientity a
                  left join fulltextindex_target_cmdb b
@@ -20,7 +20,7 @@
         limit #{pageSize}
     </select>
 
-    <select id="getAttrEntityCountByFromCiIdAndAttrId" resultType="int">
+    <select id="getAttrEntityCountByFromCiIdAndAttrId" resultType="int" useCache="false">
         SELECT count(1)
         FROM cmdb_attrentity
         WHERE from_ci_id = #{fromCiId}
@@ -43,7 +43,7 @@
     </sql>
 
     <select id="searchCiEntityBaseInfo" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
-            resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
+            resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo" useCache="false">
         SELECT
         id,
         uuid,
@@ -57,7 +57,7 @@
     </select>
 
     <select id="searchCiEntityBaseInfoCount" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
-            resultType="int">
+            resultType="int" useCache="false">
         SELECT
         COUNT(*)
         FROM cmdb_cientity
@@ -65,7 +65,7 @@
     </select>
 
 
-    <select id="getDownwardCiEntityCountByLR" resultType="int">
+    <select id="getDownwardCiEntityCountByLR" resultType="int" useCache="false">
         SELECT count(1)
         FROM `cmdb_cientity` a
                  JOIN `cmdb_ci` b ON a.ci_id = b.id
@@ -74,14 +74,14 @@
     </select>
 
     <select id="getVirtualCiEntityBaseInfoByName" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
-            resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
+            resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo" useCache="false">
         SELECT id, `name`
         FROM ${ciTableName}
         WHERE name = #{name}
     </select>
 
     <select id="getCiEntityBaseInfoByName" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
-            resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
+            resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo" useCache="false">
         SELECT id,
                uuid,
                ci_id AS ciId,
@@ -98,7 +98,7 @@
 
     <select id="getCiEntityBaseInfoByAttrIdAndFromCiEntityId"
             resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
-            useCache="true">
+            useCache="false">
         SELECT a.id,
                a.uuid,
                a.ci_id AS ciId,
@@ -115,7 +115,7 @@
     </select>
 
     <select id="getAttrListByToCiEntityId" parameterType="java.lang.Long"
-            resultType="codedriver.framework.cmdb.dto.ci.AttrVo" useCache="true">
+            resultType="codedriver.framework.cmdb.dto.ci.AttrVo" useCache="false">
         SELECT distinct a.label AS ciLabel,
                         a.name  AS ciName,
                         b.id    AS id,
@@ -159,7 +159,7 @@
     </select>
 
     <select id="getVirtualCiEntityBaseInfoByIdList" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
-            resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
+            resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo" useCache="false">
         SELECT id, name, ci_id AS ciId
         FROM ${ciTableName} WHERE id IN
         <foreach collection="idList" item="value" open="(" close=")" separator=",">
@@ -189,7 +189,7 @@
     </select>
 
     <select id="getCiEntityBaseInfoById" parameterType="java.lang.Long"
-            resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo" useCache="true">
+            resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo" useCache="false">
         SELECT id,
                uuid,
                ci_id AS ciId,
@@ -270,6 +270,7 @@
                 </otherwise>
             </choose>
         </foreach>
+        <!-- 老逻辑备份
         <if test="!smartSearch or (smartSearch and ((keyword != null and keyword != '') or (attrFilterList != null and attrFilterList.size() > 0)))">
             <foreach collection="attrList" item="attr">
                 <if test="attr.needTargetCi == true">
@@ -293,6 +294,32 @@
                 </if>
             </foreach>
         </if>
+       -->
+        <!--新逻辑-->
+        <if test="!smartSearch or (attrFilterList != null and attrFilterList.size() > 0)">
+            <foreach collection="attrList" item="attr">
+                <if test="attr.needTargetCi == true and (!smartSearch or @codedriver.framework.cmdb.dao.ognl.IsAttrExistsInFilter@isExists(attr, attrFilterList))">
+                    LEFT JOIN `cmdb_attrentity` `cmdb_attrentity_${attr.id}` ON `ci_base`.id =
+                    `cmdb_attrentity_${attr.id}`.from_cientity_id AND `cmdb_attrentity_${attr.id}`.attr_id = #{attr.id}
+                    <if test="limitAttrEntity == true">
+                        AND `cmdb_attrentity_${attr.id}`.`from_index` &lt;= (#{attr.maxAttrEntityCount} + 1)
+                    </if>
+                    <choose>
+                        <when test="attr.targetIsVirtual != 1">
+                            LEFT JOIN `cmdb_cientity` `cmdb_attr_cientity_${attr.id}` ON
+                            `cmdb_attrentity_${attr.id}`.to_cientity_id
+                            = `cmdb_attr_cientity_${attr.id}`.id
+                        </when>
+                        <otherwise>
+                            LEFT JOIN ${attr.targetCiTableName} `cmdb_attr_cientity_${attr.id}` ON
+                            `cmdb_attrentity_${attr.id}`.to_cientity_id
+                            = `cmdb_attr_cientity_${attr.id}`.id
+                        </otherwise>
+                    </choose>
+                </if>
+            </foreach>
+        </if>
+        <!--新逻辑-->
         <if test="attrCiEntityFilter != null ">
             JOIN `cmdb_attrentity` `cmdb_attrentity_${attrCiEntityFilter.attrId}` ON
             `cmdb_attrentity_${attrCiEntityFilter.attrId}`.`attr_id` = #{attrCiEntityFilter.attrId} and
@@ -300,10 +327,10 @@
             `ci_base`.`id`=
             `cmdb_attrentity_${attrCiEntityFilter.attrId}`.to_cientity_id
         </if>
-        <if test="!smartSearch or (smartSearch and ((keyword != null and keyword != '') or (relFilterList != null and relFilterList.size() > 0) or (relCiEntityFilterList != null and relCiEntityFilterList.size() > 0)))">
+        <if test="!smartSearch or ((relFilterList != null and relFilterList.size() > 0) or (relCiEntityFilterList != null and relCiEntityFilterList.size() > 0))">
             <foreach collection="relList" item="rel">
                 <choose>
-                    <when test="rel.direction=='from'">
+                    <when test="rel.direction=='from' and (!smartSearch or (@codedriver.framework.cmdb.dao.ognl.IsRelExistsInFilter@isExists(rel, relFilterList) or @codedriver.framework.cmdb.dao.ognl.IsRelExistsInCiEntityFilter@isExists(rel, relCiEntityFilterList)))">
                         LEFT JOIN `cmdb_relentity` `cmdb_relentity_${rel.id}_${rel.direction}` ON `ci_base`.id =
                         `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
                         AND `cmdb_relentity_${rel.id}_${rel.direction}`.rel_id = #{rel.id}
@@ -325,7 +352,7 @@
                             </otherwise>
                         </choose>
                     </when>
-                    <otherwise>
+                    <when test="rel.direction=='to' and (!smartSearch or (@codedriver.framework.cmdb.dao.ognl.IsRelExistsInFilter@isExists(rel, relFilterList) or @codedriver.framework.cmdb.dao.ognl.IsRelExistsInCiEntityFilter@isExists(rel, relCiEntityFilterList)))">
                         LEFT JOIN `cmdb_relentity` `cmdb_relentity_${rel.id}_${rel.direction}` ON `ci_base`.id =
                         `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
                         AND `cmdb_relentity_${rel.id}_${rel.direction}`.rel_id = #{rel.id}
@@ -345,7 +372,7 @@
                                 `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
                             </otherwise>
                         </choose>
-                    </otherwise>
+                    </when>
                 </choose>
             </foreach>
         </if>
@@ -354,6 +381,11 @@
             <foreach collection="groupIdList" item="item" open="(" close=")" separator=",">
                 #{item}
             </foreach>
+        </if>
+        <if test="keywordList != null and keywordList.size() > 0">
+            JOIN fulltextindex_field_cmdb ffc ON ffc.target_id = `ci_base`.id JOIN fulltextindex_word fw ON ffc.word_id
+            = fw.id AND fw.word IN
+            <foreach collection="keywordList" item="item" open="(" close=")" separator=",">#{item}</foreach>
         </if>
     </sql>
 
@@ -365,6 +397,7 @@
             <if test="filterCiId != null">
                 AND `ci_base`.ci_id = #{filterCiId}
             </if>
+            <!--老逻辑备份
             <if test="keyword != null and keyword != ''">
                 AND (`ci_base`.id = #{keyword} OR `ci_base`.`name` LIKE CONCAT('%',#{keyword},'%')
                 <foreach collection="attrList" item="attr">
@@ -372,7 +405,7 @@
                         <when test="attr.needTargetCi == false ">
                             OR ${attr.ciTableName}.`${attr.id}` LIKE CONCAT('%',#{keyword},'%')
                         </when>
-                        <otherwise><!--后续看情况优化成匹配所有列-->
+                        <otherwise>
                             OR `cmdb_attr_cientity_${attr.id}`.name LIKE CONCAT('%',#{keyword},'%')
                         </otherwise>
                     </choose>
@@ -382,6 +415,7 @@
                 </foreach>
                 )
             </if>
+            -->
             <if test="attrFilterList != null and attrFilterList.size() > 0">
                 <foreach collection="attrFilterList" item="attrFilter">
                     <if test="(attrFilter.valueList != null and attrFilter.valueList.size() > 0) or attrFilter.expression == 'is-null' or attrFilter.expression == 'is-not-null'">
@@ -682,10 +716,71 @@
     </select>
 
 
+    <select id="getCiEntityIdCountByCiId" parameterType="java.lang.Long" resultType="int" useCache="false">
+        SELECT COUNT(1)
+        FROM `cmdb_cientity`
+        WHERE `ci_id` = #{value}
+    </select>
+
+    <select id="getCiEntityIdByCiId" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
+            resultType="java.lang.Long" useCache="false">
+        SELECT id
+        FROM cmdb_cientity
+        WHERE ci_id = #{ciId}
+        LIMIT #{startNum} , #{pageSize}
+    </select>
+
+    <select id="getIdByCiIdAndName" resultType="java.lang.Long" useCache="false">
+        SELECT `id`
+        from `cmdb_cientity`
+        where `ci_id` = #{ciId}
+          and `name` = #{name}
+        limit 1
+    </select>
+
+    <select id="getCiEntityListByCiIdListAndName" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
+            resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo" useCache="false">
+        SELECT `id`,
+        `uuid`,
+        `ci_id` AS ciId,
+        `name`,
+        `status`,
+        `fcu`,
+        `fcd`,
+        `lcu`,
+        `lcd`
+        FROM `cmdb_cientity`
+        WHERE `ci_id` in
+        <foreach collection="idList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        AND `name` = #{name}
+    </select>
+
+    <select id="getDownwardCiEntityByLRLimitSize" resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
+            useCache="false">
+        SELECT a.`id`,
+               a.`uuid`,
+               a.`ci_id` AS ciId,
+               a.`name`,
+               a.`status`,
+               a.`fcu`,
+               a.`fcd`,
+               a.`lcu`,
+               a.`lcd`
+        FROM `cmdb_cientity` a
+                 JOIN `cmdb_ci` b ON a.ci_id = b.id
+        WHERE b.lft &gt;= #{lft}
+          AND b.rht &lt;= #{rht}
+        limit #{size}
+    </select>
+
+
     <update id="updateCiEntityBaseInfo" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
         UPDATE `cmdb_cientity`
-        SET lcu = #{lcu},
-            lcd = NOW(3)
+        SET lcu        = #{lcu},
+            lcd        = now(3),
+            renew_time = now(3)
         WHERE id = #{id}
     </update>
 
@@ -759,6 +854,7 @@
                                      `fcd`,
                                      `lcu`,
                                      `lcd`,
+                                     `renew_time`,
                                      `status`,
                                      `is_locked`)
         VALUES (#{id},
@@ -766,9 +862,10 @@
                 #{ciId},
                 #{name},
                 #{fcu},
-                NOW(3),
+                now(3),
                 #{fcu},
-                NOW(3),
+                now(3),
+                now(3),
                 #{status},
                 #{isLocked})
     </insert>
@@ -811,315 +908,6 @@
         WHERE a.id =
               #{id}
     </delete>
-
-    <sql id="searchCiEntityIdCondition">
-        FROM (SELECT id FROM cmdb_cientity WHERE ci_id = #{ciId}
-        <if test="idList != null and idList.size() > 0">
-            AND id IN
-            <foreach collection="idList" item="item" open="("
-                     separator="," close=")">
-                #{item}
-            </foreach>
-        </if>
-        ) cientity
-        <choose>
-            <when test="keywordList != null and keywordList.size() > 0">
-                JOIN `cmdb_attrentity` ca ON cientity.id =
-                ca.ci_entity_id
-                JOIN
-                `cmdb_attrentity_content` cac ON ca.value_hash =
-                cac.hash AND MATCH
-                (cac.content) AGAINST ('
-                <foreach collection="keywordList" item="keyword"
-                         index="index">"${keyword}"
-                </foreach>
-                ' IN BOOLEAN MODE)
-            </when>
-            <otherwise>
-                <if test="attrFilterList != null and attrFilterList.size() > 0">
-                    <foreach collection="attrFilterList" item="filter"
-                             index="index">
-                        <choose>
-                            <when test="filter.expression == 'equal'"><!-- 等于 -->
-                                <if
-                                        test="filter.valueHashList != null and filter.valueHashList.size() > 0">
-                                    JOIN (SELECT ci_entity_id FROM
-                                    cmdb_cientity ce
-                                    JOIN
-                                    cmdb_attrentity ae ON ce.id = ae.ci_entity_id
-                                    JOIN
-                                    cmdb_attrentity_content cac ON ae.value_hash = cac.hash
-                                    WHERE
-                                    ce.ci_id =
-                                    #{ciId} AND ae.attr_id = #{filter.attrId}
-                                    AND
-                                    cac.value_hash IN
-                                    <foreach collection="filter.valueHashList" item="val"
-                                             separator="," open="(" close=")">
-                                        #{val}
-                                    </foreach>
-                                    ) attr_${index} ON cientity.id =
-                                    attr_${index}.ci_entity_id
-                                </if>
-                            </when>
-                            <when test="filter.expression == 'like'"><!-- 包含 -->
-                                <if
-                                        test="filter.valueList != null and filter.valueList.size() > 0">
-                                    JOIN (SELECT ci_entity_id FROM
-                                    cmdb_cientity ce
-                                    JOIN
-                                    cmdb_attrentity ae ON ce.id = ae.ci_entity_id
-                                    JOIN
-                                    cmdb_attrentity_content cac ON ae.value_hash = cac.hash
-                                    WHERE
-                                    ce.ci_id =
-                                    #{ciId} AND ae.attr_id = #{filter.attrId}
-                                    AND
-                                    MATCH
-                                    (cac.content) AGAINST ('
-                                    <foreach collection="filter.valueList" item="val"
-                                             separator=",">
-                                        "${val}"
-                                    </foreach>
-                                    ' in BOOLEAN MODE)
-                                    ) attr_${index} ON cientity.id =
-                                    attr_${index}.ci_entity_id
-                                </if>
-                            </when>
-                            <when test="filter.expression == 'notequal'"><!-- 不等于 -->
-                                <if
-                                        test="filter.valueHashList != null and filter.valueHashList.size() > 0">
-                                    JOIN (
-                                    SELECT
-                                    id AS ci_entity_id
-                                    FROM
-                                    cmdb_cientity ce WHERE
-                                    ce.ci_id = #{ciId}
-                                    AND NOT EXISTS (SELECT 1 FROM
-                                    cmdb_attrentity
-                                    ae JOIN
-                                    cmdb_attrentity_content cac ON ae.value_hash = cac.hash
-                                    WHERE ae.ci_entity_id = ce.id
-                                    AND ae.attr_id =
-                                    #{filter.attrId}
-                                    AND
-                                    cac.content IN
-                                    <foreach collection="filter.valueHashList" item="val"
-                                             separator="," open="(" close=")">
-                                        #{val}
-                                    </foreach>
-                                    ) attr_${index} ON cientity.id =
-                                    attr_${index}.ci_entity_id
-                                </if>
-                            </when>
-                            <when test="filter.expression == 'notlike'"><!--不包含 -->
-                                <if
-                                        test="filter.valueList != null and filter.valueList.size() > 0">
-                                    JOIN (
-                                    SELECT
-                                    id AS ci_entity_id
-                                    FROM
-                                    cmdb_cientity ce WHERE
-                                    ce.ci_id = #{ciId}
-                                    AND NOT EXISTS (SELECT 1 FROM
-                                    cmdb_attrentity
-                                    ae JOIN
-                                    cmdb_attrentity_content cac ON ae.value_hash = cac.hash
-                                    WHERE ae.ci_entity_id = ce.id
-                                    AND ae.attr_id =
-                                    #{filter.attrId}
-                                    AND
-                                    MATCH
-                                    (cac.content) AGAINST ('
-                                    <foreach collection="filter.valueList" item="val"
-                                             separator=",">
-                                        "${val}"
-                                    </foreach>
-                                    ' in BOOLEAN MODE)
-                                    )
-                                    ) attr_${index} ON cientity.id =
-                                    attr_${index}.ci_entity_id
-                                </if>
-                            </when>
-                            <when test="filter.expression == 'is-null'">
-                                JOIN (SELECT ce.id as ci_entity_id FROM
-                                cmdb_cientity ce
-                                JOIN cmdb_attrentity ae ON ce.id =
-                                ae.ci_entity_id
-                                WHERE ce.ci_id = #{ciId}
-                                AND NOT EXISTS (SELECT 1
-                                FROM cmdb_attrentity xx WHERE
-                                ae.ci_entity_id = xx.ci_entity_id
-                                AND xx.`attr_id` = #{filter.attrId} )
-                                ) attr_${index} ON
-                                cientity.id = attr_${index}.ci_entity_id
-                            </when>
-                            <when test="filter.expression == 'is-not-null'">
-                                JOIN (SELECT ce.id as ci_entity_id FROM
-                                cmdb_cientity ce
-                                JOIN cmdb_attrentity ae ON ce.id =
-                                ae.ci_entity_id
-                                WHERE ce.ci_id = #{ciId}
-                                AND EXISTS (SELECT 1 FROM
-                                cmdb_attrentity xx WHERE
-                                ae.ci_entity_id = xx.ci_entity_id AND
-                                xx.`attr_id` = #{filter.attrId} )
-                                ) attr_${index} ON cientity.id
-                                = attr_${index}.ci_entity_id
-                            </when>
-                        </choose>
-                    </foreach>
-                </if>
-                <if test="relFilterList != null and relFilterList.size() > 0">
-                    <foreach collection="relFilterList" item="filter"
-                             index="index">
-                        <choose>
-                            <when
-                                    test="filter.expression == 'eq' and filter.valueList != null and filter.valueList.size() > 0">
-                                JOIN (SELECT ce.ci_entity_id FROM
-                                cmdb_cientity ce
-                                JOIN
-                                cmdb_relentity re ON ce.id = re.from_cientity_id
-                                WHERE ce.ci_id =
-                                #{ciId} AND re.rel_id = #{filter.relId}
-                                AND re.to_cientity_id IN
-                                <foreach collection="filter.valueList" item="val"
-                                         open="(" separator="," close=")">
-                                    #{val}
-                                </foreach>
-                                UNION
-                                SELECT ce.ci_entity_id FROM
-                                cmdb_cientity ce
-                                JOIN
-                                cmdb_relentity re ON ce.id = re.to_cientity_id
-                                WHERE ce.ci_id =
-                                #{ciId} AND re.rel_id = #{filter.relId}
-                                AND re.from_cientity_id
-                                IN
-                                <foreach collection="filter.valueList" item="val"
-                                         open="(" separator="," close=")">
-                                    #{val}
-                                </foreach>
-                                ) rel_${index} ON cientity.id = rel_${index}.ci_entity_id
-                            </when>
-                            <when
-                                    test="filter.expression == 'ne' and filter.valueList != null and filter.valueList.size() > 0">
-                                JOIN (SELECT ce.ci_entity_id FROM
-                                cmdb_cientity ce
-                                JOIN
-                                cmdb_relentity re ON ce.id = re.from_cientity_id
-                                WHERE ce.ci_id =
-                                #{ciId} AND re.rel_id = #{filter.relId}
-                                AND NOT EXISTS (SELECT 1
-                                FROM cmdb_relentity xx WHERE xx.from_cientity_id =
-                                re.from_cientity_id AND xx.rel_id = re.id AND re.to_cientity_id
-                                IN
-                                <foreach collection="filter.valueList" item="val"
-                                         open="(" separator="," close=")">
-                                    #{val}
-                                </foreach>
-                                )
-                                UNION
-                                SELECT ce.ci_entity_id FROM
-                                cmdb_cientity ce
-                                JOIN
-                                cmdb_relentity re ON ce.id = re.to_cientity_id
-                                WHERE ce.ci_id =
-                                #{ciId} AND re.rel_id = #{filter.relId}
-                                AND NOT EXISTS (SELECT 1
-                                FROM cmdb_relentity xx WHERE xx.to_cientity_id =
-                                re.to_cientity_id AND xx.rel_id = re.id AND re.from_cientity_id
-                                IN
-                                <foreach collection="filter.valueList" item="val"
-                                         open="(" separator="," close=")">
-                                    #{val}
-                                </foreach>
-                                )
-                                ) rel_${index} ON cientity.id = rel_${index}.ci_entity_id
-                            </when>
-                        </choose>
-                    </foreach>
-                </if>
-            </otherwise>
-        </choose>
-
-        <if test="groupIdList != null and groupIdList.size() > 0">
-            JOIN
-            (
-            SELECT -1 AS ci_entity_id
-            UNION
-            SELECT
-            cc.id AS ci_entity_id
-            FROM
-            cmdb_cientity cc JOIN
-            `cmdb_cientity_group` ccg ON cc.id =
-            ccg.cientity_id AND cc.ci_id = #{ciId} AND ccg.group_id IN
-            <foreach collection="groupIdList" item="item" open="("
-                     separator="," close=")">
-                #{item}
-            </foreach>
-            ) auth ON auth.ci_entity_id = cientity.id
-        </if>
-    </sql>
-
-
-    <select id="getCiEntityIdCountByCiId" parameterType="java.lang.Long" resultType="int">
-        SELECT COUNT(1)
-        FROM `cmdb_cientity`
-        WHERE `ci_id` = #{value}
-    </select>
-
-    <select id="getCiEntityIdByCiId" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
-            resultType="java.lang.Long">
-        SELECT id
-        FROM cmdb_cientity
-        WHERE ci_id = #{ciId}
-        LIMIT #{startNum} , #{pageSize}
-    </select>
-
-    <select id="getIdByCiIdAndName" resultType="java.lang.Long">
-        SELECT `id`
-        from `cmdb_cientity`
-        where `ci_id` = #{ciId}
-          and `name` = #{name}
-        limit 1
-    </select>
-
-    <select id="getCiEntityListByCiIdListAndName" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
-            resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
-        SELECT `id`,
-        `uuid`,
-        `ci_id` AS ciId,
-        `name`,
-        `status`,
-        `fcu`,
-        `fcd`,
-        `lcu`,
-        `lcd`
-        FROM `cmdb_cientity`
-        WHERE `ci_id` in
-        <foreach collection="idList" item="item" open="(" separator="," close=")">
-            #{item}
-        </foreach>
-        AND `name` = #{name}
-    </select>
-
-    <select id="getDownwardCiEntityByLRLimitSize" resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
-        SELECT a.`id`,
-               a.`uuid`,
-               a.`ci_id` AS ciId,
-               a.`name`,
-               a.`status`,
-               a.`fcu`,
-               a.`fcd`,
-               a.`lcu`,
-               a.`lcd`
-        FROM `cmdb_cientity` a
-                 JOIN `cmdb_ci` b ON a.ci_id = b.id
-        WHERE b.lft &gt;= #{lft}
-          AND b.rht &lt;= #{rht}
-        limit #{size}
-    </select>
 
     <update id="updateCiEntityInspectStatus" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
         update cmdb_cientity

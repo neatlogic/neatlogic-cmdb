@@ -103,8 +103,8 @@
         FROM cmdb_relentity a
                  JOIN cmdb_cientity b ON a.from_cientity_id = b.id
         WHERE rel_id = #{relId}
-          AND b.ci_id = #{fromCiId} LIMIT #{startNum}
-            , #{pageSize}
+          AND b.ci_id = #{fromCiId}
+        LIMIT #{startNum} , #{pageSize}
     </select>
 
     <select id="getToRelEntityByToCiIdAndRelId" parameterType="codedriver.framework.cmdb.dto.cientity.RelEntityVo"
@@ -114,8 +114,8 @@
         FROM cmdb_relentity a
                  JOIN cmdb_cientity c ON a.to_cientity_id = c.id
         WHERE rel_id = #{relId}
-          AND c.ci_id = #{toCiId} LIMIT #{startNum}
-            , #{pageSize}
+          AND c.ci_id = #{toCiId}
+        LIMIT #{startNum} , #{pageSize}
     </select>
 
     <select id="getRelEntityByFromCiIdAndRelId" resultType="codedriver.framework.cmdb.dto.cientity.RelEntityVo">
@@ -382,6 +382,12 @@
         </if>
     </select>
 
+    <update id="updateRelEntityRenewTime" parameterType="java.lang.Long">
+        update cmdb_relentity
+        set renew_time = now(3)
+        where id = #{value}
+    </update>
+
     <update id="updateRelEntityValidDay" parameterType="codedriver.framework.cmdb.dto.cientity.RelEntityVo">
         update cmdb_relentity
         set valid_day = #{validDay},
@@ -432,18 +438,21 @@
         `to_cientity_id`,
         `transaction_id`,
         `insert_time`,
+        `renew_time`,
         `valid_day`,
         `source_relentity_id`,
         `relativerel_hash`
         <if test="validDay != null and validDay > 0">
             ,`expired_time`
         </if>)
-        VALUES (#{id},
+        VALUES (
+        #{id},
         #{relId},
         #{fromCiEntityId},
         #{toCiEntityId},
         #{transactionId},
-        NOW(3),
+        now(3),
+        now(3),
         #{validDay},
         #{sourceRelEntityId},
         #{relativeRelHash}

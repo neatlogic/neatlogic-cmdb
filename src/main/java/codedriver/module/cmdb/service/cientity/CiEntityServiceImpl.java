@@ -1076,7 +1076,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             }
         }
 
-        // 排除掉没变化的关系
+        // 排除掉没变化的关系并且刷新renew time
         for (RelEntityVo relEntityVo : oldRelEntityList) {
             Long targetId = relEntityVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? relEntityVo.getToCiEntityId() : relEntityVo.getFromCiEntityId();
             ciEntityTransactionVo.removeRelEntityData(relEntityVo.getRelId(), relEntityVo.getDirection(), targetId);
@@ -1101,6 +1101,10 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
 
         if (MapUtils.isNotEmpty(ciEntityTransactionVo.getRelEntityData())) {
             hasChange = true;
+        } else {
+            //如果没有任何修改，也要renew一下配置项和关系
+            ciEntityMapper.updateCiEntityBaseInfo(new CiEntityVo(ciEntityTransactionVo.getCiEntityId()));
+
         }
         return hasChange;
     }

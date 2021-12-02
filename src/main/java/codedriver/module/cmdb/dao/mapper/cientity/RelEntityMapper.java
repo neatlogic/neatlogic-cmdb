@@ -63,6 +63,8 @@ public interface RelEntityMapper {
 
     void updateRelEntityValidDay(RelEntityVo relEntityVo);
 
+    void updateRelEntityRenewTime(Long relEntityId);
+
     int insertRelEntity(RelEntityVo relEntityVo);
 
 

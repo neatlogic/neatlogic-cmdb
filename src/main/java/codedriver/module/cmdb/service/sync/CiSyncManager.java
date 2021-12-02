@@ -8,6 +8,7 @@ package codedriver.module.cmdb.service.sync;
 import codedriver.framework.asynchronization.thread.CodeDriverThread;
 import codedriver.framework.asynchronization.threadlocal.InputFromContext;
 import codedriver.framework.asynchronization.threadpool.CachedThreadPool;
+import codedriver.framework.batch.BatchRunner;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.ci.RelVo;
@@ -56,6 +57,7 @@ import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -568,50 +570,23 @@ public class CiSyncManager {
                                 }
                                 finalCriteria.andOperator(criteriaList);
                                 query.addCriteria(finalCriteria);
-                                //query.limit(pageSize);
-                                int batchSize = 1000;//游标每次读取1000条数据
-                                long startTime = 0L;
+                                int batchSize = 500;//游标每次读取500条数据
+                                AtomicInteger count = new AtomicInteger(0);
                                 try (MongoCursor<Document> cursor = mongoTemplate.getCollection(collectionVo.getCollection()).find(query.getQueryObject()).noCursorTimeout(true).batchSize(batchSize).cursor()) {
+                                    List<JSONObject> dataList = new ArrayList<>();
                                     while (cursor.hasNext()) {
-                                        if (logger.isInfoEnabled()) {
-                                            startTime = System.currentTimeMillis();
-                                        }
                                         String jsonStr = cursor.next().toJson();
-                                        if (logger.isInfoEnabled()) {
-                                            logger.info("mongodb游标数据读取耗时：" + (System.currentTimeMillis() - startTime) + "ms");
-                                        }
                                         JSONObject orgDataObj = JSONObject.parseObject(jsonStr);
-                                        JSONArray tmpDataList = new JSONArray();
-                                        tmpDataList.add(orgDataObj);
-                                        JSONArray finalDataList = flattenJson(tmpDataList, fieldList, null);
-                                        for (int i = 0; i < finalDataList.size(); i++) {
-                                            JSONObject dataObj = finalDataList.getJSONObject(i);
-                                            Map<Integer, CiEntityTransactionVo> ciEntityTransactionVoMap = new HashMap<>();
-
-                                            if (logger.isInfoEnabled()) {
-                                                startTime = System.currentTimeMillis();
-                                            }
-                                            List<CiEntityTransactionVo> ciEntityTransactionList = this.generateCiEntityTransaction(dataObj, syncCiCollectionVo, ciEntityTransactionVoMap, null);
-                                            if (logger.isInfoEnabled()) {
-                                                logger.info("创建了" + ciEntityTransactionList.size() + "个事务，耗时：" + (System.currentTimeMillis() - startTime) + "ms");
-                                            }
-                                            try {
-                                                if (logger.isInfoEnabled()) {
-                                                    startTime = System.currentTimeMillis();
-                                                }
-                                                ciEntityService.saveCiEntityWithoutTransaction(ciEntityTransactionList, syncCiCollectionVo.getTransactionGroup());
-                                                if (logger.isInfoEnabled()) {
-                                                    logger.info("保存了" + ciEntityTransactionList.size() + "个事务，耗时：" + (System.currentTimeMillis() - startTime) + "ms");
-                                                }
-                                            } catch (Exception ex) {
-                                                if (!(ex instanceof ApiRuntimeException)) {
-                                                    logger.error(ex.getMessage(), ex);
-                                                    syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
-                                                } else {
-                                                    syncCiCollectionVo.getSyncAudit().appendError(((ApiRuntimeException) ex).getMessage(true));
-                                                }
-                                            }
+                                        dataList.add(orgDataObj);
+                                        //到达batchSize先处理一部分
+                                        if (dataList.size() == batchSize) {
+                                            dealWithDataBatch(syncCiCollectionVo, fieldList, dataList, count);
+                                            dataList = new ArrayList<>();
                                         }
+                                    }
+                                    //处理剩余的数据
+                                    if (CollectionUtils.isNotEmpty(dataList)) {
+                                        dealWithDataBatch(syncCiCollectionVo, fieldList, dataList, count);
                                     }
                                 }
                             }
@@ -639,6 +614,58 @@ public class CiSyncManager {
             }
         }
 
+        /**
+         * 并发处理所有采集数据
+         */
+        private void dealWithDataBatch(SyncCiCollectionVo syncCiCollectionVo, Set<String> fieldList, List<JSONObject> dataList, AtomicInteger count) {
+            if (CollectionUtils.isNotEmpty(dataList)) {
+                BatchRunner<JSONObject> batchRunner = new BatchRunner<>();
+                batchRunner.execute(dataList, 10, data -> {
+                    int tmpCount = count.addAndGet(1);
+                    long startTime = 0L;
+                    if (logger.isInfoEnabled()) {
+                        logger.info("开始处理第" + tmpCount + "条数据");
+                        startTime = System.currentTimeMillis();
+                        logger.info("mongodb游标数据读取耗时：" + (System.currentTimeMillis() - startTime) + "ms");
+                    }
+
+                    JSONArray tmpDataList = new JSONArray();
+                    tmpDataList.add(data);
+                    JSONArray finalDataList = flattenJson(tmpDataList, fieldList, null);
+                    for (int i = 0; i < finalDataList.size(); i++) {
+                        JSONObject dataObj = finalDataList.getJSONObject(i);
+                        Map<Integer, CiEntityTransactionVo> ciEntityTransactionVoMap = new HashMap<>();
+
+                        if (logger.isInfoEnabled()) {
+                            startTime = System.currentTimeMillis();
+                        }
+                        List<CiEntityTransactionVo> ciEntityTransactionList = this.generateCiEntityTransaction(dataObj, syncCiCollectionVo, ciEntityTransactionVoMap, null);
+                        if (logger.isInfoEnabled()) {
+                            logger.info("创建了" + ciEntityTransactionList.size() + "个事务，耗时：" + (System.currentTimeMillis() - startTime) + "ms");
+                        }
+                        try {
+                            if (logger.isInfoEnabled()) {
+                                startTime = System.currentTimeMillis();
+                            }
+                            ciEntityService.saveCiEntityWithoutTransaction(ciEntityTransactionList, syncCiCollectionVo.getTransactionGroup());
+                            if (logger.isInfoEnabled()) {
+                                logger.info("处理了" + ciEntityTransactionList.size() + "个事务，耗时：" + (System.currentTimeMillis() - startTime) + "ms");
+                            }
+                        } catch (Exception ex) {
+                            if (!(ex instanceof ApiRuntimeException)) {
+                                logger.error(ex.getMessage(), ex);
+                                syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
+                            } else {
+                                syncCiCollectionVo.getSyncAudit().appendError(((ApiRuntimeException) ex).getMessage(true));
+                            }
+                        }
+                    }
+                    if (logger.isInfoEnabled()) {
+                        logger.info("第" + tmpCount + "条数据处理完成，耗时：" + (System.currentTimeMillis() - startTime) + "ms");
+                    }
+                }, "SYNC-BATCH-HANDLER");
+            }
+        }
 
         @Override
         protected void execute() {
