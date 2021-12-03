@@ -16,7 +16,10 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -42,11 +45,22 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             }
             List<CiVo> ciList = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
             List<Long> ciIdList = ciList.stream().map(CiVo::getId).collect(Collectors.toList());
+            searchVo.setTypeIdList(ciIdList);
+        } else {
             List<Long> typeIdList = searchVo.getTypeIdList();
             if (CollectionUtils.isNotEmpty(typeIdList)) {
-                ciIdList.retainAll(typeIdList);
+                Set<Long> ciIdSet = new HashSet<>();
+                for (Long ciId : typeIdList) {
+                    CiVo ciVo = ciMapper.getCiById(ciId);
+                    if (ciVo == null) {
+                        throw new CiNotFoundException(ciId);
+                    }
+                    List<CiVo> ciList = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
+                    List<Long> ciIdList = ciList.stream().map(CiVo::getId).collect(Collectors.toList());
+                    ciIdSet.addAll(ciIdList);
+                }
+                searchVo.setTypeIdList(new ArrayList<>(ciIdSet));
             }
-            searchVo.setTypeIdList(ciIdList);
         }
         List<Long> resourceIdList = null;
         if (CollectionUtils.isNotEmpty(searchVo.getProtocolIdList())) {
