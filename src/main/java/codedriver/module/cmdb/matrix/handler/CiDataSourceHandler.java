@@ -329,9 +329,9 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             }
             JSONObject resultObj = new JSONObject();
             if (needAccessApi) {
-                System.out.println(paramObj);
+//                System.out.println(paramObj);
                 JSONObject result = accessSearchCiEntityApi(paramObj);
-                System.out.println(result);
+//                System.out.println(result);
                 if (MapUtils.isNotEmpty(result)) {
                     List<Map<String, Object>> tbodyList = new ArrayList<>();
                     JSONArray tbodyArray = result.getJSONArray("tbodyList");
@@ -476,7 +476,6 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                             fromCiEntityIdList.add(ciEntity.getId());
                         }
                     } else {
-                        System.out.println("relId=" + relVo.getId());
                         RelEntityVo relEntityVo = new RelEntityVo();
                         relEntityVo.setRelId(relVo.getId());
                         relEntityVo.setPageSize(100);
