@@ -8,7 +8,7 @@ package codedriver.module.cmdb.api.resourcecenter.resourcetype;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.annotation.ResourceType;
 import codedriver.framework.cmdb.annotation.ResourceTypes;
-import codedriver.framework.cmdb.crossover.ICiTypeListCrossoverService;
+import codedriver.framework.cmdb.crossover.IResourceTypeTreeApiCrossoverService;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceTypeVo;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
@@ -40,7 +40,7 @@ import java.util.*;
 @Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class ResourceTypeTreeApi extends PrivateApiComponentBase implements ICiTypeListCrossoverService {
+public class ResourceTypeTreeApi extends PrivateApiComponentBase implements IResourceTypeTreeApiCrossoverService {
 
     private static List<ResourceTypeVo> resourceTypeList = new ArrayList<>();
 
@@ -130,22 +130,8 @@ public class ResourceTypeTreeApi extends PrivateApiComponentBase implements ICiT
         return resultList;
     }
 
-    public List<CiVo> getCiTypeList() {
-        List<CiVo> ciList = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(resourceTypeList)) {
-            List<CiVo> ciVoList = new ArrayList<>();
-            for (ResourceTypeVo type : resourceTypeList) {
-                CiVo ciVo = ciMapper.getCiByName(type.getName());
-                if (ciVo == null) {
-                    throw new CiNotFoundException(type.getName());
-                }
-                ciVoList.add(ciVo);
-            }
-            ciVoList.sort(Comparator.comparing(CiVo::getLft));
-            for (CiVo ciVo : ciVoList) {
-                ciList = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
-            }
-        }
-        return ciList;
+    //用于巡检工具列表的显示
+    public List<ResourceTypeVo> getResourceTypeList() {
+        return resourceTypeList;
     }
 }
