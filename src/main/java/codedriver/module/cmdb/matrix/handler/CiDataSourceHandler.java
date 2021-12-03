@@ -357,84 +357,6 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         return new JSONObject();
     }
 
-    private boolean setAttrFilterList(MatrixDataVo dataVo, Long ciId, JSONObject paramObj) {
-        List<AttrVo> attrList = attrMapper.getAttrByCiId(ciId);
-        Map<String, AttrVo> attrMap = attrList.stream().collect(Collectors.toMap(e -> e.getName(), e -> e));
-        Map<String, RelVo> relMap = new HashMap<>();
-        List<RelVo> relList = relMapper.getRelByCiId(ciId);
-        for (RelVo relVo : relList) {
-            if ("from".equals(relVo.getDirection())) {
-                relMap.put(relVo.getToName(), relVo);
-            } else if ("to".equals(relVo.getDirection())) {
-                relMap.put(relVo.getFromName(), relVo);
-            }
-        }
-        CiViewVo ciViewVo = new CiViewVo();
-        ciViewVo.setCiId(ciId);
-        List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo));
-        Map<String, CiViewVo> ciViewMap = ciViewList.stream().collect(Collectors.toMap(e -> e.getItemName(), e -> e));
-        List<AttrFilterVo> attrFilterList = new ArrayList<>();
-        List<RelFilterVo> relFilterList = new ArrayList<>();
-        JSONArray filterList = dataVo.getFilterList();
-        if (CollectionUtils.isNotEmpty(filterList)) {
-            for (int i = 0; i < filterList.size(); i++) {
-                JSONObject filterObj = filterList.getJSONObject(i);
-                if (MapUtils.isEmpty(filterObj)) {
-                    continue;
-                }
-                JSONArray valueArray = filterObj.getJSONArray("valueList");
-                if (CollectionUtils.isEmpty(valueArray)) {
-                    continue;
-                }
-                List<String> valueList = new ArrayList<>();
-                for (String value : valueArray.toJavaList(String.class)) {
-                    if (StringUtils.isNotBlank(value)) {
-                        valueList.add(value);
-                    }
-                }
-                if (CollectionUtils.isEmpty(valueList)) {
-                    continue;
-                }
-                String uuid = filterObj.getString("uuid");
-
-                CiViewVo ciView = ciViewMap.get(uuid);
-                if (ciView == null) {
-                    continue;
-                }
-                if (!conversionFilter(uuid, valueList, attrMap, relMap, ciView, attrFilterList, relFilterList, paramObj)) {
-                    return false;
-                }
-            }
-        }
-
-        List<MatrixColumnVo> matrixColumnList = dataVo.getSourceColumnList();
-        if (CollectionUtils.isNotEmpty(matrixColumnList)) {
-            for (MatrixColumnVo matrixColumnVo : matrixColumnList) {
-                Object value = matrixColumnVo.getValue();
-                if (value == null) {
-                    continue;
-                }
-                String valueStr = value.toString();
-                if (StringUtils.isBlank(valueStr)) {
-                    continue;
-                }
-                String uuid = matrixColumnVo.getColumn();
-                CiViewVo ciView = ciViewMap.get(uuid);
-                if (ciView == null) {
-                    continue;
-                }
-                List<String> valueList = new ArrayList<>();
-                valueList.add(valueStr);
-                if (!conversionFilter(uuid, valueList, attrMap, relMap, ciView, attrFilterList, relFilterList, paramObj)) {
-                    return false;
-                }
-            }
-        }
-        paramObj.put("attrFilterList", attrFilterList);
-        paramObj.put("relFilterList", relFilterList);
-        return true;
-    }
-
     private boolean conversionFilter(
             String uuid,
             List<String> valueList,
@@ -444,6 +366,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             List<AttrFilterVo> attrFilterList,
             List<RelFilterVo> relFilterList,
             JSONObject paramObj) {
+        RelVo relVo = relMap.get(uuid);
         switch (ciView.getType()) {
             case "attr":
                 AttrVo attrVo = attrMap.get(uuid);
@@ -485,7 +408,6 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                 attrFilterList.add(attrFilterVo);
                 break;
             case "relfrom":
-                RelVo relVo = relMap.get(uuid);
                 if (relVo == null) {
                     return true;
                 }
@@ -493,7 +415,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                 if (toCiVo == null) {
                     return false;
                 }
-                List<Long> newValueList = new ArrayList<>();
+                List<Long> toCiEntityIdList = new ArrayList<>();
                 for (String value : valueList) {
                     if (Objects.equals(toCiVo.getIsVirtual(), 1)) {
                         CiEntityVo ciEntityVo = new CiEntityVo();
@@ -504,7 +426,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                             return false;
                         }
                         for (CiEntityVo ciEntity : ciEntityList) {
-                            newValueList.add(ciEntity.getId());
+                            toCiEntityIdList.add(ciEntity.getId());
                         }
                     } else {
                         RelEntityVo relEntityVo = new RelEntityVo();
@@ -515,33 +437,32 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                             return false;
                         }
                         for (RelEntityVo relEntity : relEntityList) {
-                            Long ciEntityId = ciEntityMapper.getIdByCiIdAndName(relEntity.getToCiId(), value);
-                            if (ciEntityId != null) {
-                                newValueList.add(ciEntityId);
+                            if (value.equals(relEntity.getToCiEntityName())) {
+                                toCiEntityIdList.add(relEntity.getToCiEntityId());
+                                break;
                             }
                         }
                     }
                 }
-                if (CollectionUtils.isEmpty(newValueList)) {
+                if (CollectionUtils.isEmpty(toCiEntityIdList)) {
                     return false;
                 }
-                RelFilterVo relFilterVo = new RelFilterVo();
-                relFilterVo.setRelId(relVo.getId());
-                relFilterVo.setExpression(SearchExpression.LI.getExpression());
-                relFilterVo.setValueList(newValueList);
-                relFilterVo.setDirection("from");
-                relFilterList.add(relFilterVo);
+                RelFilterVo toRelFilterVo = new RelFilterVo();
+                toRelFilterVo.setRelId(relVo.getId());
+                toRelFilterVo.setExpression(SearchExpression.LI.getExpression());
+                toRelFilterVo.setValueList(toCiEntityIdList);
+                toRelFilterVo.setDirection("from");
+                relFilterList.add(toRelFilterVo);
                 break;
             case "relto":
-                RelVo relVo2 = relMap.get(uuid);
-                if (relVo2 == null) {
+                if (relVo == null) {
                     return true;
                 }
-                CiVo fromCiVo = ciMapper.getCiById(relVo2.getFromCiId());
+                CiVo fromCiVo = ciMapper.getCiById(relVo.getFromCiId());
                 if (fromCiVo == null) {
                     return false;
                 }
-                List<Long> newValueList2 = new ArrayList<>();
+                List<Long> fromCiEntityIdList = new ArrayList<>();
                 for (String value : valueList) {
                     if (Objects.equals(fromCiVo.getIsVirtual(), 1)) {
                         CiEntityVo ciEntityVo = new CiEntityVo();
@@ -552,30 +473,31 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                             return false;
                         }
                         for (CiEntityVo ciEntity : ciEntityList) {
-                            newValueList2.add(ciEntity.getId());
+                            fromCiEntityIdList.add(ciEntity.getId());
                         }
                     } else {
+                        System.out.println("relId=" + relVo.getId());
                         RelEntityVo relEntityVo = new RelEntityVo();
-                        relEntityVo.setRelId(relVo2.getId());
+                        relEntityVo.setRelId(relVo.getId());
                         relEntityVo.setPageSize(100);
                         List<RelEntityVo> relEntityList = relEntityMapper.getRelEntityByRelId(relEntityVo);
                         if (CollectionUtils.isEmpty(relEntityList)) {
                             return false;
                         }
                         for (RelEntityVo relEntity : relEntityList) {
-                            Long ciEntityId = ciEntityMapper.getIdByCiIdAndName(relEntity.getFromCiId(), value);
-                            if (ciEntityId != null) {
-                                newValueList2.add(ciEntityId);
+                            if (value.equals(relEntity.getFromCiEntityName())) {
+                                fromCiEntityIdList.add(relEntity.getFromCiEntityId());
+                                break;
                             }
                         }
                     }
                 }
-                RelFilterVo relFilterVo2 = new RelFilterVo();
-                relFilterVo2.setRelId(relVo2.getId());
-                relFilterVo2.setExpression(SearchExpression.EQ.getExpression());
-                relFilterVo2.setValueList(newValueList2);
-                relFilterVo2.setDirection("to");
-                relFilterList.add(relFilterVo2);
+                RelFilterVo fromRelFilterVo = new RelFilterVo();
+                fromRelFilterVo.setRelId(relVo.getId());
+                fromRelFilterVo.setExpression(SearchExpression.LI.getExpression());
+                fromRelFilterVo.setValueList(fromCiEntityIdList);
+                fromRelFilterVo.setDirection("to");
+                relFilterList.add(fromRelFilterVo);
                 break;
             case "const":
                 //固化属性需要特殊处理
