@@ -12,8 +12,7 @@ import codedriver.framework.matrix.core.IMatrixType;
  * @since 2021/11/16 15:21
  **/
 public enum MatrixType implements IMatrixType {
-    CMDBCI("cmdbci", "cmdb模型", "ciId", 4),
-    CMDBCICUSTOMVIEW("cmdbcustomview", "cmdb自定义视图", "customViewId", 5);
+    CMDBCI("cmdbci", "cmdb模型", "ciId", 4);
 
     private String value;
     private String name;
