@@ -40,6 +40,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -94,7 +95,8 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
             @Param(name = "ciEntityList", type = ApiParamType.JSONARRAY, desc = "配置项结果集，如果提供则不会进行搜索，补充头部信息后直接返回"),
             @Param(name = "attrId", type = ApiParamType.LONG, desc = "关系id（通过引用配置项查询引用属性时使用）"),
-            @Param(name = "fromCiEntityId", type = ApiParamType.LONG, desc = "引用配置项id（通过引用配置项查询引用属性时使用）")
+            @Param(name = "fromCiEntityId", type = ApiParamType.LONG, desc = "引用配置项id（通过引用配置项查询引用属性时使用）"),
+            @Param(name = "isAllColumn", type = ApiParamType.ENUM, rule = "0,1", desc = "是否返回所有列数据")
     })
     @Output({@Param(explode = BasePageVo.class),
             @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = CiEntityVo[].class),
@@ -139,8 +141,10 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
         // 获取视图配置，只返回需要的属性和关系
         CiViewVo ciViewVo = new CiViewVo();
         ciViewVo.setCiId(ciEntityVo.getCiId());
-        ciViewVo.addShowType(ShowType.LIST.getValue());
-        ciViewVo.addShowType(ShowType.ALL.getValue());
+        if (!Objects.equals(jsonObj.getInteger("isAllColumn"), 1)) {
+            ciViewVo.addShowType(ShowType.LIST.getValue());
+            ciViewVo.addShowType(ShowType.ALL.getValue());
+        }
         List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo));
         List<Long> attrIdList = null, relIdList = null;
         JSONArray theadList = new JSONArray();
