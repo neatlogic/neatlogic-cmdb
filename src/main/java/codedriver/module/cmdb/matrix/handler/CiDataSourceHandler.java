@@ -491,6 +491,9 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                         }
                     }
                 }
+                if (CollectionUtils.isEmpty(fromCiEntityIdList)) {
+                    return false;
+                }
                 RelFilterVo fromRelFilterVo = new RelFilterVo();
                 fromRelFilterVo.setRelId(relVo.getId());
                 fromRelFilterVo.setExpression(SearchExpression.LI.getExpression());
