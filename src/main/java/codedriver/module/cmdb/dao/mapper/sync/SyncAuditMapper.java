@@ -22,4 +22,6 @@ public interface SyncAuditMapper {
 
     void updateSyncAuditStatus(SyncAuditVo syncAuditVo);
 
+    void deleteSyncAuditById(Long syncAuditId);
+
 }

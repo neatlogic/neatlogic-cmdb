@@ -140,4 +140,10 @@
                 #{transactionGroupId},
                 #{serverId})
     </insert>
+
+    <delete id="deleteSyncAuditById" parameterType="java.lang.Long">
+        delete
+        from cmdb_sync_audit
+        where id = #{value}
+    </delete>
 </mapper>

@@ -14,7 +14,7 @@ import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.module.cmdb.auth.label.SYNC_MODIFY;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@AuthAction(action = CMDB_BASE.class)
+@AuthAction(action = SYNC_MODIFY.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ListCollectionApi extends PrivateApiComponentBase {
     @Autowired
