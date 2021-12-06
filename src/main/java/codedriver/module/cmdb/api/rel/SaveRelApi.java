@@ -26,6 +26,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * 保存关系接口，关系不能支持虚拟模型，原因：
+ * 关系支持向下关联，例如在关系A->B中，其中C是B的子模型，D是C的子模型，在编辑A模型的配置项时，A->B关系是可以选择C或D的配置项的，因此在查询关系详细信息时，sql语句不能直接join cmdb_rel表，因为cmdb_rel中的from_ci_id和to_ci_id只是记录了A和B，没有记录A和C或D的关系。
+ * 现在的实现方式都是直接join cmdb_cientity表，直接拿到真实的ci_id。但虚拟模型在cmdb_cientity中是没有数据的，这导致join的时候会找不到信息，误判成关系不存在。因此综合考虑关系暂不支持虚拟模型
+ */
 @Service
 @AuthAction(action = CI_MODIFY.class)
 @Transactional
