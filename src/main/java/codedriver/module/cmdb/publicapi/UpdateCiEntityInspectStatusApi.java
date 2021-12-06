@@ -46,7 +46,7 @@ public class UpdateCiEntityInspectStatusApi extends PublicApiComponentBase {
             @Param(name = "inspectStatus", type = ApiParamType.ENUM, rule = "normal,warn,critical,fatal", isRequired = true, desc = "巡检状态"),
             @Param(name = "inspectTime", type = ApiParamType.LONG, isRequired = true, desc = "巡检时间，格式：距1970年1月1日0时0分0秒的豪秒数")})
     @Output({})
-    @Description(desc = "修改配置项巡检状态接口")
+    @Description(desc = "修改配置项巡检状态接口，自动化巡检时使用此接口更新巡检状态")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         CiEntityVo ciEntityVo = new CiEntityVo();

@@ -64,7 +64,7 @@ public class GetCiEntityAttrEntityApi extends PublicApiComponentBase {
             @Param(name = "attrList", type = ApiParamType.JSONARRAY, desc = "属性名称列表"),
     })
     @Output({@Param(explode = CiEntityVo.class)})
-    @Description(desc = "获取配置项属性信息接口")
+    @Description(desc = "获取配置项属性信息接口，自动化巡检时使用")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciEntityId = jsonObj.getLong("ciEntityId");
