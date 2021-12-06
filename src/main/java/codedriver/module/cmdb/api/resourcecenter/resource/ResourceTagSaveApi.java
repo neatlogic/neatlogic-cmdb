@@ -12,7 +12,6 @@ import codedriver.framework.cmdb.dto.resourcecenter.ResourceTagVo;
 import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
@@ -61,14 +60,14 @@ public class ResourceTagSaveApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "resourceId", type = ApiParamType.LONG, isRequired = true, desc = "资源id"),
-            @Param(name = "tagList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "标签列表")
+            @Param(name = "tagList", type = ApiParamType.JSONARRAY,desc = "标签列表")
     })
     @Description(desc = "保存资源标签")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONArray tagArray = paramObj.getJSONArray("tagList");
         if (CollectionUtils.isEmpty(tagArray)) {
-            throw new ParamNotExistsException("tagList");
+            return null;
         }
         String schemaName = TenantContext.get().getDataDbName();
         Long resourceId = paramObj.getLong("resourceId");
