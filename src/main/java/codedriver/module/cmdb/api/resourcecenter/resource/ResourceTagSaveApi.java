@@ -66,11 +66,12 @@ public class ResourceTagSaveApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONArray tagArray = paramObj.getJSONArray("tagList");
+        Long resourceId = paramObj.getLong("resourceId");
         if (CollectionUtils.isEmpty(tagArray)) {
+            resourceCenterMapper.deleteResourceTagByResourceId(resourceId);
             return null;
         }
         String schemaName = TenantContext.get().getDataDbName();
-        Long resourceId = paramObj.getLong("resourceId");
         if (resourceCenterMapper.checkResourceIsExists(resourceId, schemaName) == 0) {
             throw new ResourceNotFoundException(resourceId);
         }
