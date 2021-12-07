@@ -102,7 +102,7 @@ public class UploadBatchImportFileApi extends PrivateBinaryStreamApiComponentBas
             String userUuid = UserContext.get().getUserUuid(true);
             String oldFileName = multipartFile.getOriginalFilename();
             if (StringUtils.isBlank(oldFileName) || (!oldFileName.endsWith(".xls") && !oldFileName.endsWith(".xlsx"))) {
-                throw new ExcelFormatIllegalException(".xls或.xlsx");
+                throw new ExcelFormatIllegalException();
             }
             long size = multipartFile.getSize();
             // 如果配置为空代表不受任何限制

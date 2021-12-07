@@ -66,7 +66,7 @@ public class FireBatchImportApi extends PrivateApiComponentBase {
         if (fileList.size() > 0) {
             for (FileVo fileVo : fileList) {
                 if (!fileVo.getName().endsWith(".xls") && !fileVo.getName().endsWith(".xlsx")) {
-                    throw new ExcelFormatIllegalException(".xls或.xlsx");
+                    throw new ExcelFormatIllegalException();
                 }
                 if (fileVo.getName().contains("_")) {
                     Long ciId = null;
