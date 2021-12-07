@@ -732,7 +732,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                                     if (CollectionUtils.isNotEmpty(valueArray)) {
                                         List<String> ciEntityNameList = new ArrayList<>();
                                         for (int j = 0; j < valueArray.size(); j++) {
-                                            JSONObject valueObj = valueArray.getJSONObject(i);
+                                            JSONObject valueObj = valueArray.getJSONObject(j);
                                             String ciEntityName = valueObj.getString("ciEntityName");
                                             if (StringUtils.isNotBlank(ciEntityName)) {
                                                 ciEntityNameList.add(ciEntityName);
