@@ -60,15 +60,15 @@ public class ResourceTagSaveApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "resourceId", type = ApiParamType.LONG, isRequired = true, desc = "资源id"),
-            @Param(name = "tagList", type = ApiParamType.JSONARRAY,desc = "标签列表")
+            @Param(name = "tagList", type = ApiParamType.JSONARRAY, desc = "标签列表")
     })
     @Description(desc = "保存资源标签")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONArray tagArray = paramObj.getJSONArray("tagList");
         Long resourceId = paramObj.getLong("resourceId");
+        resourceCenterMapper.deleteResourceTagByResourceId(resourceId);
         if (CollectionUtils.isEmpty(tagArray)) {
-            resourceCenterMapper.deleteResourceTagByResourceId(resourceId);
             return null;
         }
         String schemaName = TenantContext.get().getDataDbName();
@@ -87,7 +87,6 @@ public class ResourceTagSaveApi extends PrivateApiComponentBase {
                 tagIdList.add(tagVo.getId());
             }
         }
-        resourceCenterMapper.deleteResourceTagByResourceId(resourceId);
         List<ResourceTagVo> resourceTagVoList = new ArrayList<>();
         for (Long tagId : tagIdList) {
             resourceTagVoList.add(new ResourceTagVo(resourceId, tagId));
