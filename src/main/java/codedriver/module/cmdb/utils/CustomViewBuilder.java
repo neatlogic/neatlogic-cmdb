@@ -364,9 +364,9 @@ public class CustomViewBuilder {
 
             }
             //增加where条件，限制数据在自己模型，不要查出子模型数据
-            plainSelect.withWhere(new EqualsTo()
+            /*plainSelect.withWhere(new EqualsTo()
                     .withLeftExpression(new Column().withTable(new Table("ci_base")).withColumnName("ci_id"))
-                    .withRightExpression(new LongValue(customViewCiVo.getCiId())));
+                    .withRightExpression(new LongValue(customViewCiVo.getCiId())));*/
             return select;
         } else {
             Table mainTable = new Table();
