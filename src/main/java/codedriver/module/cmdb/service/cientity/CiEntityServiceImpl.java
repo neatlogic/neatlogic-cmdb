@@ -295,6 +295,9 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         for (RelVo relVo : relList) {
             relVo.setMaxRelEntityCount(ciEntityVo.getMaxRelEntityCount());
         }
+        for (AttrVo attrVo : attrList) {
+            attrVo.setMaxAttrEntityCount(ciEntityVo.getMaxAttrEntityCount());
+        }
 
         if (CollectionUtils.isNotEmpty(ciEntityVo.getAttrIdList()) && CollectionUtils.isNotEmpty(attrList)) {
             for (AttrVo attrVo : attrList) {
