@@ -1,10 +1,12 @@
 package codedriver.module.cmdb.api.resourcecenter.resource;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.autoexec.dao.mapper.AutoexecScriptMapper;
 import codedriver.framework.autoexec.dto.script.AutoexecScriptVo;
 import codedriver.framework.autoexec.exception.AutoexecScriptNotFoundException;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
+import codedriver.framework.cmdb.exception.resourcecenter.ResourceNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -66,10 +68,10 @@ public class ResourceScriptSaveApi extends PrivateApiComponentBase {
             return null;
         }
         List<Long> scriptIdList = scriptIdArray.toJavaList(Long.class);
-/*        String schemaName = TenantContext.get().getDataDbName();
+        String schemaName = TenantContext.get().getDataDbName();
         if (resourceCenterMapper.checkResourceIsExists(resourceId, schemaName) == 0) {
             throw new ResourceNotFoundException(resourceId);
-        }*/
+        }
         for (Long scriptId : scriptIdList) {
             AutoexecScriptVo script = autoexecScriptMapper.getScriptBaseInfoById(scriptId);
             if (script == null) {
