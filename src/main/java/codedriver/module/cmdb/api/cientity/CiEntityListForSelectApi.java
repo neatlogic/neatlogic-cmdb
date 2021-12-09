@@ -17,7 +17,9 @@ import codedriver.framework.util.TableResultUtil;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -54,6 +56,7 @@ public class CiEntityListForSelectApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "ciName", type = ApiParamType.STRING, isRequired = true, desc = "模型名称"),
+            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "默认值列表"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
             @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true")
@@ -69,6 +72,14 @@ public class CiEntityListForSelectApi extends PrivateApiComponentBase {
         CiVo ciVo = ciMapper.getCiByName(ciName);
         if (ciVo == null) {
             throw new CiNotFoundException(ciName);
+        }
+        JSONArray defaultValue = ciEntityVo.getDefaultValue();
+        if (CollectionUtils.isNotEmpty(defaultValue)) {
+            List<Long> idList = defaultValue.toJavaList(Long.class);
+            List<CiEntityVo> ciEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(idList);
+            ciEntityVo.setPageSize(ciEntityList.size());
+            ciEntityVo.setRowNum(ciEntityList.size());
+            return TableResultUtil.getResult(ciEntityList, ciEntityVo);
         }
         int rowNum = ciEntityMapper.getCiEntityIdCountByCiId(ciVo.getId());
         if (rowNum > 0 ) {
