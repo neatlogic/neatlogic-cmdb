@@ -7,10 +7,11 @@ package codedriver.module.cmdb.api.resourcecenter.resource;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.autoexec.dao.mapper.AutoexecScriptMapper;
+import codedriver.framework.autoexec.dto.script.AutoexecScriptVo;
 import codedriver.framework.cmdb.crossover.IResourceListApiCrossoverService;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.*;
-import codedriver.framework.cmdb.dto.resourcecenter.ResourceScriptVo;
 import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
@@ -41,6 +42,9 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
 
     @Resource
     private ResourceCenterMapper resourceCenterMapper;
+
+    @Resource
+    private AutoexecScriptMapper autoexecScriptMapper;
 
     @Resource
     private IResourceCenterResourceService resourceCenterResourceService;
@@ -127,7 +131,9 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
                     List<ResourceScriptVo> resourceScriptVoList = resourceCenterMapper.getResourceScriptListByResourceIdList(idList);
                     if (CollectionUtils.isNotEmpty(resourceScriptVoList)) {
                         Set<Long> ScriptIdSet = resourceScriptVoList.stream().map(ResourceScriptVo::getScriptId).collect(Collectors.toSet());
-                        List<ResourceScriptVo> scriptList = resourceCenterMapper.getScriptListByIdList(new ArrayList<>(ScriptIdSet));
+                        List<AutoexecScriptVo> autoexecScriptList = autoexecScriptMapper.getAutoexecScriptByIdList(new ArrayList<>(ScriptIdSet));
+                        List<ResourceScriptVo> scriptList = new ArrayList<>();
+                        autoexecScriptList.forEach(e -> scriptList.add(new ResourceScriptVo(e.getId())));
                         Map<Long, ResourceScriptVo> scriptMap = scriptList.stream().collect(Collectors.toMap(e -> e.getScriptId(), e -> e));
                         for (ResourceScriptVo resourceScriptVo : resourceScriptVoList) {
                             resourceScriptVoMap.computeIfAbsent(resourceScriptVo.getResourceId(), k -> new ArrayList<>()).add(scriptMap.get(resourceScriptVo.getScriptId()));

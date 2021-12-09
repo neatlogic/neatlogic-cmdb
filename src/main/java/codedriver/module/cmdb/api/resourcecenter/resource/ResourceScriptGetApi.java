@@ -47,14 +47,12 @@ public class ResourceScriptGetApi extends PrivateApiComponentBase {
     @Description(desc = "根据资源id获取对应的脚本")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        JSONObject result = new JSONObject();
         Long resourceId = paramObj.getLong("resourceId");
         String schemaName = TenantContext.get().getDataDbName();
         if (resourceCenterMapper.checkResourceIsExists(resourceId, schemaName) == 0) {
             throw new ResourceNotFoundException(resourceId);
         }
         ResourceScriptVo resourceScriptVo = resourceCenterMapper.getResourceScriptByResourceId(resourceId);
-        result.put("tbodyList",resourceScriptVo);
-        return result;
+        return resourceScriptVo;
     }
 }
