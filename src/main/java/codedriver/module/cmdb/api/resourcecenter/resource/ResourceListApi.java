@@ -7,6 +7,8 @@ package codedriver.module.cmdb.api.resourcecenter.resource;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.autoexec.dao.mapper.AutoexecScriptMapper;
+import codedriver.framework.autoexec.dto.script.AutoexecScriptVo;
 import codedriver.framework.cmdb.crossover.IResourceListApiCrossoverService;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.*;
@@ -40,6 +42,9 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
 
     @Resource
     private ResourceCenterMapper resourceCenterMapper;
+
+    @Resource
+    private AutoexecScriptMapper autoexecScriptMapper;
 
     @Resource
     private IResourceCenterResourceService resourceCenterResourceService;
@@ -122,6 +127,18 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
                             resourceTagVoMap.computeIfAbsent(resourceTagVo.getResourceId(), k -> new ArrayList<>()).add(tagMap.get(resourceTagVo.getTagId()));
                         }
                     }
+                    Map<Long, List<ResourceScriptVo>> resourceScriptVoMap = new HashMap<>();
+                    List<ResourceScriptVo> resourceScriptVoList = resourceCenterMapper.getResourceScriptListByResourceIdList(idList);
+                    if (CollectionUtils.isNotEmpty(resourceScriptVoList)) {
+                        Set<Long> ScriptIdSet = resourceScriptVoList.stream().map(ResourceScriptVo::getScriptId).collect(Collectors.toSet());
+                        List<AutoexecScriptVo> autoexecScriptList = autoexecScriptMapper.getAutoexecScriptByIdList(new ArrayList<>(ScriptIdSet));
+                        List<ResourceScriptVo> scriptList = new ArrayList<>();
+                        autoexecScriptList.forEach(e -> scriptList.add(new ResourceScriptVo(e.getId())));
+                        Map<Long, ResourceScriptVo> scriptMap = scriptList.stream().collect(Collectors.toMap(e -> e.getScriptId(), e -> e));
+                        for (ResourceScriptVo resourceScriptVo : resourceScriptVoList) {
+                            resourceScriptVoMap.computeIfAbsent(resourceScriptVo.getResourceId(), k -> new ArrayList<>()).add(scriptMap.get(resourceScriptVo.getScriptId()));
+                        }
+                    }
                     resourceVoList = resourceCenterMapper.getResourceListByIdList(idList, TenantContext.get().getDataDbName());
                     for (ResourceVo resourceVo : resourceVoList) {
                         List<TagVo> tagVoList = resourceTagVoMap.get(resourceVo.getId());
@@ -131,6 +148,10 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
                         List<AccountVo> accountVoList = resourceAccountVoMap.get(resourceVo.getId());
                         if (CollectionUtils.isNotEmpty(accountVoList)) {
                             resourceVo.setAccountList(accountVoList);
+                        }
+                        List<ResourceScriptVo> scriptVoList = resourceScriptVoMap.get(resourceVo.getId());
+                        if (CollectionUtils.isNotEmpty(scriptVoList)) {
+                            resourceVo.setScriptList(scriptVoList);
                         }
 //                        if (StringUtils.isNotBlank(resourceVo.getFcu())) {
 //                            resourceVo.setFcuVo(new UserVo(resourceVo.getFcu()));
