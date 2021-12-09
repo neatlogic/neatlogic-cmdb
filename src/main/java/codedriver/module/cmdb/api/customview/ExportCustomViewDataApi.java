@@ -14,7 +14,8 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
-import codedriver.framework.util.ExcelBuilder;
+import codedriver.framework.util.excel.ExcelBuilder;
+import codedriver.framework.util.excel.SheetBuilder;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.customview.CustomViewMapper;
 import codedriver.module.cmdb.service.customview.CustomViewDataService;
@@ -93,13 +94,13 @@ public class ExportCustomViewDataApi extends PrivateBinaryStreamApiComponentBase
         }
 
         ExcelBuilder builder = new ExcelBuilder(SXSSFWorkbook.class);
-        builder.withSheetName("数据")
-                .withHeaderList(headerList)
-                .withColumnList(columnList)
+        SheetBuilder sheetBuilder = builder
                 .withBorderColor(HSSFColor.HSSFColorPredefined.GREY_40_PERCENT)
                 .withHeadFontColor(HSSFColor.HSSFColorPredefined.WHITE)
                 .withHeadBgColor(HSSFColor.HSSFColorPredefined.DARK_BLUE)
-                .withColumnWidth(30);
+                .withColumnWidth(30).addSheet("数据")
+                .withHeaderList(headerList)
+                .withColumnList(columnList);
         Workbook workbook = builder.build();
 
         customViewConditionVo.setCustomViewId(customViewId);
@@ -109,7 +110,7 @@ public class ExportCustomViewDataApi extends PrivateBinaryStreamApiComponentBase
         while (CollectionUtils.isNotEmpty(dataList)) {
             //由于展示页面的特殊性，查询sql用的是pageSizePlus，所以要去掉租后一条数据
             for (int i = 0; i < Math.min(customViewConditionVo.getPageSize(), dataList.size()); i++) {
-                builder.addRow(dataList.get(i));
+                sheetBuilder.addRow(dataList.get(i));
             }
             customViewConditionVo.setCurrentPage(customViewConditionVo.getCurrentPage() + 1);
             dataList = customViewDataService.searchCustomViewData(customViewConditionVo);
