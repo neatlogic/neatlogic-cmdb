@@ -132,6 +132,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                     pCiEntityVo.setIdList(ciCiEntityIdMap.get(ciId));
                     pCiEntityVo.setCiId(ciId);
                     pCiEntityVo.setMaxRelEntityCount(100);
+                    pCiEntityVo.setMaxAttrEntityCount(-1);//不用搜索关系
                     List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(pCiEntityVo);
                     if (CollectionUtils.isNotEmpty(ciEntityList)) {
                         // 获取当前层次配置项所有关系(包括上下游)
