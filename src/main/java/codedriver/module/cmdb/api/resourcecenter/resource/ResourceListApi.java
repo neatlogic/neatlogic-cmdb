@@ -133,7 +133,7 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
                         Set<Long> ScriptIdSet = resourceScriptVoList.stream().map(ResourceScriptVo::getScriptId).collect(Collectors.toSet());
                         List<AutoexecScriptVo> autoexecScriptList = autoexecScriptMapper.getAutoexecScriptByIdList(new ArrayList<>(ScriptIdSet));
                         List<ResourceScriptVo> scriptList = new ArrayList<>();
-                        autoexecScriptList.forEach(e -> scriptList.add(new ResourceScriptVo(e.getId())));
+                        autoexecScriptList.forEach(e -> scriptList.add(new ResourceScriptVo(e.getId(),e.getName())));
                         Map<Long, ResourceScriptVo> scriptMap = scriptList.stream().collect(Collectors.toMap(e -> e.getScriptId(), e -> e));
                         for (ResourceScriptVo resourceScriptVo : resourceScriptVoList) {
                             resourceScriptVoMap.computeIfAbsent(resourceScriptVo.getResourceId(), k -> new ArrayList<>()).add(scriptMap.get(resourceScriptVo.getScriptId()));
