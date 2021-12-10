@@ -51,7 +51,7 @@ public class ResourceScriptSaveApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "resourceId", type = ApiParamType.LONG, isRequired = true, desc = "资源id"),
-            @Param(name = "expandConfig", type = ApiParamType.JSONOBJECT, desc = "拓展配置")
+            @Param(name = "config", type = ApiParamType.JSONOBJECT, desc = "拓展配置")
     })
     @Description(desc = "保存资源脚本")
     @Override
@@ -59,21 +59,21 @@ public class ResourceScriptSaveApi extends PrivateApiComponentBase {
 
         Long scriptId = null;
         Long resourceId = paramObj.getLong("resourceId");
-        JSONObject expandConfig = paramObj.getJSONObject("expandConfig");
+        JSONObject config = paramObj.getJSONObject("config");
         String schemaName = TenantContext.get().getDataDbName();
         if (resourceCenterMapper.checkResourceIsExists(resourceId, schemaName) == 0) {
             throw new ResourceNotFoundException(resourceId);
         }
         resourceCenterMapper.deleteResourceScriptByResourceId(resourceId);
 
-        if (StringUtils.equals(expandConfig.getString("type"), "script")) {
-            scriptId = expandConfig.getLong("scriptId");
+        if (StringUtils.equals(config.getString("type"), "script")) {
+            scriptId = config.getLong("script");
             AutoexecScriptVo script = autoexecScriptMapper.getScriptBaseInfoById(scriptId);
             if (script == null) {
                 throw new AutoexecScriptNotFoundException(scriptId);
             }
         }
-        resourceCenterMapper.insertResourceScriptIdList(resourceId, scriptId, String.valueOf(expandConfig));
+        resourceCenterMapper.insertResourceScript(resourceId, scriptId, String.valueOf(config));
 
         return null;
     }
