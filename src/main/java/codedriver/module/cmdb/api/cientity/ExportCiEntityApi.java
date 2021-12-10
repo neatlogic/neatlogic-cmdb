@@ -12,6 +12,7 @@ import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.CiViewVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.cmdb.utils.RelUtil;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -19,14 +20,14 @@ import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
-import codedriver.framework.util.ExcelBuilder;
+import codedriver.framework.util.excel.ExcelBuilder;
+import codedriver.framework.util.excel.SheetBuilder;
 import codedriver.module.cmdb.auth.label.CIENTITY_MODIFY;
 import codedriver.module.cmdb.auth.label.CI_MODIFY;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiViewMapper;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
-import codedriver.framework.cmdb.utils.RelUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -123,13 +124,13 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
         }
 
         ExcelBuilder builder = new ExcelBuilder(SXSSFWorkbook.class);
-        builder.withSheetName("数据")
-                .withHeaderList(headerList)
-                .withColumnList(columnList)
-                .withBorderColor(HSSFColor.HSSFColorPredefined.GREY_40_PERCENT)
+        SheetBuilder sheetBuilder = builder.withBorderColor(HSSFColor.HSSFColorPredefined.GREY_40_PERCENT)
                 .withHeadFontColor(HSSFColor.HSSFColorPredefined.WHITE)
                 .withHeadBgColor(HSSFColor.HSSFColorPredefined.DARK_BLUE)
-                .withColumnWidth(30);
+                .withColumnWidth(30)
+                .addSheet("数据")
+                .withHeaderList(headerList)
+                .withColumnList(columnList);
         Workbook workbook = builder.build();
 
         ciEntityVo.setPageSize(100);
@@ -174,11 +175,12 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
                         }
                     }
                 }
-                builder.addRow(dataMap);
+                sheetBuilder.addRow(dataMap);
             }
             ciEntityVo.setCurrentPage(ciEntityVo.getCurrentPage() + 1);
             ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
         }
+
 
         String fileNameEncode = ciVo.getId() + "_" + ciVo.getLabel() + ".xlsx";
         boolean flag = request.getHeader("User-Agent").indexOf("Gecko") > 0;
