@@ -15,14 +15,12 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.RESOURCECENTER_MODIFY;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.List;
 
 @Service
 @Transactional
@@ -53,32 +51,29 @@ public class ResourceScriptSaveApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "resourceId", type = ApiParamType.LONG, isRequired = true, desc = "资源id"),
-            @Param(name = "scriptIdList", type = ApiParamType.JSONARRAY, desc = "脚本列表（自定义工具）"),
-            @Param(name = "urlSequence", type = ApiParamType.STRING, desc = "url序列")
+            @Param(name = "expandConfig", type = ApiParamType.JSONOBJECT, desc = "拓展配置")
     })
     @Description(desc = "保存资源脚本")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
 
-        JSONArray scriptIdArray = paramObj.getJSONArray("scriptIdList");
+        Long scriptId = null;
         Long resourceId = paramObj.getLong("resourceId");
-        String urlSequence = paramObj.getString("urlSequence");
-        resourceCenterMapper.deleteResourceScriptByResourceId(resourceId);
-        if (CollectionUtils.isEmpty(scriptIdArray)) {
-            return null;
-        }
-        List<Long> scriptIdList = scriptIdArray.toJavaList(Long.class);
+        JSONObject expandConfig = paramObj.getJSONObject("expandConfig");
         String schemaName = TenantContext.get().getDataDbName();
         if (resourceCenterMapper.checkResourceIsExists(resourceId, schemaName) == 0) {
             throw new ResourceNotFoundException(resourceId);
         }
-        for (Long scriptId : scriptIdList) {
+        resourceCenterMapper.deleteResourceScriptByResourceId(resourceId);
+
+        if (StringUtils.equals(expandConfig.getString("type"), "script")) {
+            scriptId = expandConfig.getLong("scriptId");
             AutoexecScriptVo script = autoexecScriptMapper.getScriptBaseInfoById(scriptId);
             if (script == null) {
                 throw new AutoexecScriptNotFoundException(scriptId);
             }
         }
-        resourceCenterMapper.insertResourceScriptIdList(resourceId, scriptIdList,urlSequence);
+        resourceCenterMapper.insertResourceScriptIdList(resourceId, scriptId, String.valueOf(expandConfig));
 
         return null;
     }
