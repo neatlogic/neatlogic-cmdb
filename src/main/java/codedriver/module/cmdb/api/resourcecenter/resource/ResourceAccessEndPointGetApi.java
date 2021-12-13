@@ -9,6 +9,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.publicapi.PublicApiComponentBase;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -34,6 +35,7 @@ public class ResourceAccessEndPointGetApi extends PublicApiComponentBase {
     public String getConfig() {
         return null;
     }
+
     @Input({
             @Param(name = "resourceId", isRequired = true, type = ApiParamType.LONG, desc = "资源id")
     })
@@ -50,9 +52,18 @@ public class ResourceAccessEndPointGetApi extends PublicApiComponentBase {
             throw new ResourceNotFoundException(resourceId);
         }
         ResourceScriptVo resourceScriptVo = resourceCenterMapper.getResourceScriptByResourceId(resourceId);
-        returnObject.put("config", resourceScriptVo.getConfig());
+        if (resourceScriptVo == null) {
+            return new JSONObject();
+        }
+        JSONObject configObj = resourceScriptVo.getConfig();
+        if (configObj != null) {
+            returnObject.put("config", resourceScriptVo.getConfig());
+        }
+        Long scriptId = resourceScriptVo.getScriptId();
+        if (ObjectUtils.isNotEmpty(scriptId)) {
+            returnObject.put("scriptId", scriptId);
+        }
         returnObject.put("resourceId", resourceScriptVo.getResourceId());
-        returnObject.put("scriptId", resourceScriptVo.getScriptId());
         return returnObject;
     }
 }
