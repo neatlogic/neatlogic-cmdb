@@ -110,7 +110,7 @@ public class ExportCustomViewDataApi extends PrivateBinaryStreamApiComponentBase
         while (CollectionUtils.isNotEmpty(dataList)) {
             //由于展示页面的特殊性，查询sql用的是pageSizePlus，所以要去掉租后一条数据
             for (int i = 0; i < Math.min(customViewConditionVo.getPageSize(), dataList.size()); i++) {
-                sheetBuilder.addRow(dataList.get(i));
+                sheetBuilder.addData(dataList.get(i));
             }
             customViewConditionVo.setCurrentPage(customViewConditionVo.getCurrentPage() + 1);
             dataList = customViewDataService.searchCustomViewData(customViewConditionVo);

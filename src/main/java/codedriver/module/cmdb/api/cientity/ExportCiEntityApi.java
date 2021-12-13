@@ -175,7 +175,7 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
                         }
                     }
                 }
-                sheetBuilder.addRow(dataMap);
+                sheetBuilder.addData(dataMap);
             }
             ciEntityVo.setCurrentPage(ciEntityVo.getCurrentPage() + 1);
             ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
