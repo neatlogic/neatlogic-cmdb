@@ -34,6 +34,7 @@ import com.alibaba.fastjson.JSONArray;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.ss.usermodel.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -196,6 +197,7 @@ public class BatchImportHandler {
 
                 try {
                     in = FileUtil.getData(fileVo.getPath());
+                    ZipSecureFile.setMinInflateRatio(-1.0d);
                     wb = WorkbookFactory.create(in);
                 } catch (Exception e) {
                     throw new RuntimeException("读取文件失败，" + e.getMessage());
