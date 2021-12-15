@@ -7,11 +7,15 @@ package codedriver.module.cmdb.api.resourcecenter.resource;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.crossover.IResourceCenterAccountCrossoverService;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountProtocolVo;
+import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
+import codedriver.framework.cmdb.enums.resourcecenter.Protocol;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -28,6 +32,8 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * 校验资源信息合法性接口
@@ -85,8 +91,11 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
         if (protocolId != null) {
             AccountProtocolVo protocolVo = resourceCenterMapper.getAccountProtocolVoByProtocolId(protocolId);
             protocol = protocolVo.getName();
+            if (Objects.equals(protocol, Protocol.TAGENT.getValue())) {
+                executeUser = null;
+            }
             // 协议和用户同时填了，才校验是否合法，协议为tagent时，无需校验用户名
-            if (StringUtils.isNotBlank(executeUser) && !Objects.equals(protocol, "tagent")) {
+            if (StringUtils.isNotBlank(executeUser)) {
                 List<Long> accountIdList = resourceCenterMapper.getAccountIdListByAccountAndProtocol(executeUser, protocol);
                 if (CollectionUtils.isEmpty(accountIdList)) {
                     JSONObject executeUserIsNotFoundInProtocolObj = new JSONObject();
@@ -117,7 +126,7 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
         resourceIsNotFoundObj.put("type", "resourceIsNotFound");
         resourceIsNotFoundObj.put("list", resourceIsNotFoundList);
 
-        String schemaName = TenantContext.get().getDataDbName();
+        List<AccountProtocolVo> protocolVoList = resourceCenterMapper.searchAccountProtocolListByProtocolName(new AccountProtocolVo());
         if (CollectionUtils.isNotEmpty(jsonObj.getJSONArray("inputNodeList"))) {
             ResourceSearchVo searchVo = null;
             // 如果filter不为空，说明是在执行页带有过滤器的校验输入目标，把过滤器作为进一步的筛选条件
@@ -131,6 +140,7 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
                     return resultObj;
                 }
             }
+            List<Long> idList = new ArrayList<>();
             List<ResourceSearchVo> inputNodeList = jsonObj.getJSONArray("inputNodeList").toJavaList(ResourceSearchVo.class);
             // 如果是输入的目标，首先校验目标是否存在，如果存在且协议和用户都填了，再校验是否合法
             for (ResourceSearchVo node : inputNodeList) {
@@ -145,42 +155,24 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
                 }
                 if (resourceId == null) {
                     resourceIsNotFoundList.add(node);
-                } else if (StringUtils.isNotBlank(protocol) && Objects.equals(protocol, "tagent")) {
-                    // 如果是tagent协议，只校验资源是否绑定了tagent账号，不校验用户名
-                    Long accountId = resourceCenterMapper
-                            .checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol(resourceId, null, protocol);
-                    if (accountId == null) {
-                        ResourceVo resourceVo = resourceCenterMapper.getResourceIpPortById(resourceId, schemaName);
-                        protocolIsNotFoundInResourceList.add(resourceVo);
-                    }
-                } else if (StringUtils.isNotBlank(protocol) && StringUtils.isNotBlank(executeUser)) {
-                    Long accountId = resourceCenterMapper
-                            .checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol(resourceId, executeUser, protocol);
-                    if (accountId == null) {
-                        ResourceVo resourceVo = resourceCenterMapper.getResourceIpPortById(resourceId, schemaName);
-                        executeUserIsNotFoundInResourceList.add(resourceVo);
-                    }
+                } else {
+                    idList.add(resourceId);
                 }
+            }
+            if (!idList.isEmpty()) {
+                addException(executeUser, protocolId, executeUserIsNotFoundInResourceList, protocolIsNotFoundInResourceList, protocolVoList, idList);
             }
         } else if (MapUtils.isNotEmpty(filter)) {
             ResourceSearchVo searchVo = resourceCenterResourceService.assembleResourceSearchVo(filter);
+            int rowNum = resourceCenterMapper.getResourceCount(searchVo);
             // 先检查过滤器下是否存在资源
-            if (resourceCenterMapper.getResourceCount(searchVo) > 0) {
-                // 找出在过滤器的条件下，没有绑定protocol与executeUser的资源
-                if (StringUtils.isNotBlank(protocol) && Objects.equals(protocol, "tagent")) {
-                    // 如果是tagent协议，只校验资源是否绑定了tagent账号，不校验用户名
-                    searchVo.setProtocol(protocol);
-                    List<ResourceVo> list = resourceCenterMapper.getNoCorrespondingResourceListByAccountIdAndProtocol(searchVo);
-                    if (CollectionUtils.isNotEmpty(list)) {
-                        protocolIsNotFoundInResourceList.addAll(list);
-                    }
-                } else if (StringUtils.isNotBlank(protocol) && StringUtils.isNotBlank(executeUser)) {
-                    searchVo.setProtocol(protocol);
-                    searchVo.setAccount(executeUser);
-                    List<ResourceVo> list = resourceCenterMapper.getNoCorrespondingResourceListByAccountIdAndProtocol(searchVo);
-                    if (CollectionUtils.isNotEmpty(list)) {
-                        executeUserIsNotFoundInResourceList.addAll(list);
-                    }
+            if (rowNum > 0) {
+                searchVo.setRowNum(rowNum);
+                searchVo.setPageSize(100);
+                for (int i = 1; i <= searchVo.getPageCount(); i++) {
+                    searchVo.setCurrentPage(i);
+                    List<Long> idList = resourceCenterMapper.getResourceIdList(searchVo);
+                    addException(executeUser, protocolId, executeUserIsNotFoundInResourceList, protocolIsNotFoundInResourceList, protocolVoList, idList);
                 }
             } else {
                 JSONObject resourceIsEmpty = new JSONObject();
@@ -189,25 +181,8 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
             }
         } else if (CollectionUtils.isNotEmpty(jsonObj.getJSONArray("selectNodeList"))) {
             // 如果直接选的节点，当协议和用户都存在时，才校验是否合法
-            List<ResourceVo> selectNodeList = jsonObj.getJSONArray("selectNodeList").toJavaList(ResourceVo.class);
-            if (StringUtils.isNotBlank(protocol) && Objects.equals(protocol, "tagent")) {
-                // 如果是tagent协议，只校验资源是否绑定了tagent账号，不校验用户名
-                for (ResourceVo resourceVo : selectNodeList) {
-                    Long accountId = resourceCenterMapper
-                            .checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol(resourceVo.getId(), null, protocol);
-                    if (accountId == null) {
-                        protocolIsNotFoundInResourceList.add(resourceVo);
-                    }
-                }
-            } else if (StringUtils.isNotBlank(protocol) && StringUtils.isNotBlank(executeUser)) {
-                for (ResourceVo resourceVo : selectNodeList) {
-                    Long accountId = resourceCenterMapper
-                            .checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol(resourceVo.getId(), executeUser, protocol);
-                    if (accountId == null) {
-                        executeUserIsNotFoundInResourceList.add(resourceVo);
-                    }
-                }
-            }
+            List<ResourceVo> resourceVoList = jsonObj.getJSONArray("selectNodeList").toJavaList(ResourceVo.class);
+            addException(executeUser, protocolId, executeUserIsNotFoundInResourceList, protocolIsNotFoundInResourceList, protocolVoList, resourceVoList.stream().map(ResourceVo::getId).collect(Collectors.toList()));
         }
 
         if (executeUserIsNotFoundInResourceList.size() > 0) {
@@ -222,5 +197,22 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
         int count = executeUserIsNotFoundInResourceList.size() + resourceIsNotFoundList.size() + protocolIsNotFoundInResourceList.size();
         resultObj.put("count", count);
         return resultObj;
+    }
+
+    private void addException(String executeUser, Long protocolId, List<ResourceVo> executeUserIsNotFoundInResourceList, List<ResourceVo> protocolIsNotFoundInResourceList, List<AccountProtocolVo> protocolVoList, List<Long> idList) {
+        IResourceCenterAccountCrossoverService accountService = CrossoverServiceFactory.getApi(IResourceCenterAccountCrossoverService.class);
+        List<ResourceVo> resourceVoList = resourceCenterMapper.getResourceByIdList(idList, TenantContext.get().getDataDbName());
+        List<AccountVo> accountVoList = resourceCenterMapper.getResourceAccountListByResourceIdAndProtocolAndAccount(idList, protocolId, executeUser);
+        List<AccountVo> allAccountVoList = resourceCenterMapper.getAccountListByIpList(resourceVoList.stream().map(ResourceVo::getIp).collect(Collectors.toList()));
+        for (ResourceVo vo : resourceVoList) {
+            Optional<AccountVo> accountOp = accountService.filterAccountByRules(accountVoList, allAccountVoList, protocolVoList, vo.getId(), protocolId, vo.getIp(), vo.getPort());
+            if (!accountOp.isPresent()) {
+                if (StringUtils.isNotBlank(executeUser)) {
+                    executeUserIsNotFoundInResourceList.add(vo);
+                } else {
+                    protocolIsNotFoundInResourceList.add(vo);
+                }
+            }
+        }
     }
 }
