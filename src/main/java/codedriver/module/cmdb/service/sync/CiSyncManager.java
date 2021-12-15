@@ -304,7 +304,7 @@ public class CiSyncManager {
 
             if (CollectionUtils.isNotEmpty(ciEntityConditionVo.getAttrFilterList())) {
                 //使用所有非引用属性去搜索配置项，没有则添加，发现一个则就修改，发现多个就抛异常
-                List<CiEntityVo> checkList = searchCiEntityWithCache(ciEntityConditionVo);//ciEntityService.searchCiEntity(ciEntityConditionVo);
+                List<CiEntityVo> checkList = searchCiEntityWithCache(ciEntityConditionVo);
                 if (CollectionUtils.isNotEmpty(checkList) && checkList.size() > 1) {
                     throw new CiEntityDuplicateException();
                 }
