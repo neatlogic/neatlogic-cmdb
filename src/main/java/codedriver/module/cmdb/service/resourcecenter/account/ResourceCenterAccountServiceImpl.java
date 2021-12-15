@@ -8,9 +8,7 @@ package codedriver.module.cmdb.service.resourcecenter.account;
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.cmdb.crossover.IResourceCenterAccountCrossoverService;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
-import codedriver.framework.cmdb.dto.resourcecenter.AccountIpVo;
-import codedriver.framework.cmdb.dto.resourcecenter.ResourceAccountVo;
-import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
+import codedriver.framework.cmdb.dto.resourcecenter.*;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterAccountHasBeenReferredException;
 import codedriver.framework.tagent.dao.mapper.TagentMapper;
 import codedriver.framework.tagent.dto.TagentVo;
@@ -20,6 +18,8 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -58,8 +58,8 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
         List<ResourceAccountVo> resourceAccountVoList = resourceCenterMapper.getResourceAccountListByResourceIdList(resourceIdList);
         List<ResourceVo> resourceVoList = resourceCenterMapper.getResourceByIdList(resourceAccountVoList.stream().map(ResourceAccountVo::getResourceId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
         //账号是否被resource引用
-        if(CollectionUtils.isNotEmpty(resourceVoList)) {
-            List<String> resourceIpList =  resourceVoList.stream().map(ResourceVo::getIp).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(resourceVoList)) {
+            List<String> resourceIpList = resourceVoList.stream().map(ResourceVo::getIp).collect(Collectors.toList());
             resourceCenterMapper.deleteAccountIpByIpList(resourceIpList);
             HashMap<Long, ResourceVo> resourceVoHashMap = new HashMap<>();
             for (ResourceVo resourceVo : resourceVoList) {
@@ -78,6 +78,23 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
                 }
             }
         }
+    }
+
+    @Override
+    public Optional<AccountVo> filterAccountByRules(List<AccountVo> accountVoList, List<AccountVo> allAccountVoList, List<AccountProtocolVo> protocolVoList, Long resourceId, Long protocolId, String ip, Integer port) {
+        //1
+        Optional<AccountVo> accountOp = accountVoList.stream().filter(o -> Objects.equals(o.getResourceId(), resourceId)).findFirst();
+        if (!accountOp.isPresent()) {
+            //2
+            Optional<AccountProtocolVo> protocolVoOptional = protocolVoList.stream().filter(o -> Objects.equals(o.getId(), protocolId)).findFirst();
+            if (protocolVoOptional.isPresent()) {
+                accountOp = allAccountVoList.stream().filter(o -> Objects.equals(o.getIp(), ip) && Objects.equals(o.getProtocolId(), protocolVoOptional.get().getId())).findFirst();
+            } else {
+                //3
+                accountOp = allAccountVoList.stream().filter(o -> Objects.equals(o.getIp(), ip) && Objects.equals(o.getProtocolPort(), port)).findFirst();
+            }
+        }
+        return accountOp;
     }
 
     /**
