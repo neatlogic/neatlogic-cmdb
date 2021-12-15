@@ -9,7 +9,6 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.publicapi.PublicApiComponentBase;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -23,7 +22,7 @@ public class ResourceAccessEndPointGetApi extends PublicApiComponentBase {
 
     @Override
     public String getName() {
-        return "根据资源id获取对应接入点信息";
+        return "根据资源id获取对应访问入口信息";
     }
 
     @Override
@@ -42,7 +41,7 @@ public class ResourceAccessEndPointGetApi extends PublicApiComponentBase {
     @Output({
             @Param(explode = ResourceScriptVo.class)
     })
-    @Description(desc = "根据资源id获取对应接入点信息")
+    @Description(desc = "根据资源id获取对应访问入口信息")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONObject returnObject = new JSONObject();
@@ -55,14 +54,8 @@ public class ResourceAccessEndPointGetApi extends PublicApiComponentBase {
         if (resourceScriptVo == null) {
             return new JSONObject();
         }
-        JSONObject configObj = resourceScriptVo.getConfig();
-        if (configObj != null) {
-            returnObject.put("config", resourceScriptVo.getConfig());
-        }
-        Long scriptId = resourceScriptVo.getScriptId();
-        if (ObjectUtils.isNotEmpty(scriptId)) {
-            returnObject.put("scriptId", scriptId);
-        }
+        returnObject.put("config", resourceScriptVo.getConfig());
+        returnObject.put("scriptId", resourceScriptVo.getScriptId());
         returnObject.put("resourceId", resourceScriptVo.getResourceId());
         return returnObject;
     }
