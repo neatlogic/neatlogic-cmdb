@@ -56,6 +56,7 @@ public class SaveSyncCiCollectionApi extends PrivateApiComponentBase {
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "id，存在代表修改，不存在代表新增"),
             @Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
             @Param(name = "collectionName", isRequired = true, type = ApiParamType.STRING, desc = "集合名称"),
+            @Param(name = "parentKey", type = ApiParamType.STRING, desc = "父属性"),
             @Param(name = "mapping", type = ApiParamType.JSONARRAY, desc = "映射内容")})
     @Description(desc = "保存配置项集合映射设置接口")
     @Override

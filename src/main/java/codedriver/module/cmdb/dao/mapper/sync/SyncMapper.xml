@@ -13,6 +13,7 @@
         SELECT a.id,
                a.ci_id           AS ciId,
                a.collection_name AS collectionName,
+               a.parent_key      AS parentKey,
                a.collect_mode    AS collectMode,
                a.is_auto_commit  AS isAutoCommit,
                a.last_sync_date  AS lastSyncDate,
@@ -71,6 +72,7 @@
         FROM cmdb_sync_ci_collection
         WHERE ci_id = #{ciId}
           AND collection_name = #{collectionName}
+          AND parent_key = #{parentKey}
           AND id != #{id}
     </select>
 
@@ -156,10 +158,12 @@
         a.collect_mode AS collectMode,
         a.is_auto_commit AS isAutoCommit,
         a.match_mode AS matchMode,
+        a.parent_key AS parentKey,
         a.fcu,
         a.fcd,
         a.lcu,
-        a.lcd
+        a.lcd,
+        a.last_sync_date AS lastSyncDate
         FROM cmdb_sync_ci_collection a
         JOIN cmdb_ci b ON a.ci_id = b.id
         <include refid="searchSyncCiCollectionSql"></include>
@@ -201,6 +205,7 @@
         <result property="isAutoCommit" column="isAutoCommit"/>
         <result property="lastSyncDate" column="lastSyncDate"/>
         <result property="matchMode" column="matchMode"/>
+        <result property="parentKey" column="parentKey"/>
         <collection property="mappingList" ofType="codedriver.framework.cmdb.dto.sync.SyncMappingVo">
             <id property="id" column="mappingId"/>
             <result property="attrId" column="attrId"/>
@@ -220,6 +225,7 @@
                a.is_auto_commit  AS isAutoCommit,
                a.last_sync_date  AS lastSyncDate,
                a.match_mode      AS matchMode,
+               a.parent_key      AS parentKey,
                csm.id            AS mappingId,
                csm.attr_id       AS attrId,
                csm.rel_id        AS relId,
@@ -239,6 +245,7 @@
                a.is_auto_commit  AS isAutoCommit,
                a.last_sync_date  AS lastSyncDate,
                a.match_mode      AS matchMode,
+               a.parent_key      AS parentKey,
                csm.id            AS mappingId,
                csm.attr_id       AS attrId,
                csm.rel_id        AS relId,
@@ -259,6 +266,7 @@
                a.is_auto_commit  AS isAutoCommit,
                a.last_sync_date  AS lastSyncDate,
                a.match_mode      AS matchMode,
+               a.parent_key      AS parentKey,
                csm.id            AS mappingId,
                csm.attr_id       AS attrId,
                csm.rel_id        AS relId,
@@ -273,9 +281,11 @@
         update cmdb_sync_ci_collection
         SET collect_mode   = #{collectMode},
             is_auto_commit = #{isAutoCommit},
+            parent_key     = #{parentKey},
             match_mode     = #{matchMode},
             lcd            = NOW(3),
-            lcu            = #{lcu}
+            lcu            = #{lcu},
+            last_sync_date = null
         WHERE id = #{id}
     </update>
 
@@ -300,9 +310,11 @@
     </insert>
 
     <insert id="insertSyncCiCollection" parameterType="codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo">
-        insert into cmdb_sync_ci_collection (id, ci_id, collection_name, match_mode, collect_mode, is_auto_commit, fcd,
+        insert into cmdb_sync_ci_collection (id, ci_id, collection_name, parent_key, match_mode, collect_mode,
+                                             is_auto_commit, fcd,
                                              fcu)
-        values (#{id}, #{ciId}, #{collectionName}, #{matchMode}, #{collectMode}, #{isAutoCommit}, NOW(3), #{fcu})
+        values (#{id}, #{ciId}, #{collectionName}, #{parentKey}, #{matchMode}, #{collectMode}, #{isAutoCommit}, NOW(3),
+                #{fcu})
     </insert>
 
     <insert id="insertSyncMapping" parameterType="codedriver.framework.cmdb.dto.sync.SyncMappingVo">
