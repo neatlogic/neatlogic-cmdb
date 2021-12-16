@@ -446,8 +446,15 @@ public class CiSyncManager {
                          */
                             RelVo relVo = relMap.get(mappingVo.getRelId());
                             Long ciId = mappingVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiId() : relVo.getFromCiId();
+                            JSONArray subDataList = null;
+                            //兼容一下jsonObject，这个是mongodb中数据结构不统一导致，正常情况不会出现jsonObject
                             if (dataObj.get(mappingVo.getField(parentKey)) instanceof JSONArray) {
-                                JSONArray subDataList = dataObj.getJSONArray(mappingVo.getField(parentKey));
+                                subDataList = dataObj.getJSONArray(mappingVo.getField(parentKey));
+                            } else if (dataObj.get(mappingVo.getField(parentKey)) instanceof JSONObject) {
+                                subDataList = new JSONArray();
+                                subDataList.add(dataObj.getJSONObject(mappingVo.getField(parentKey)));
+                            }
+                            if (subDataList != null) {
                                 for (int i = 0; i < subDataList.size(); i++) {
                                     JSONObject subData = subDataList.getJSONObject(i);
                                    /*
@@ -598,6 +605,9 @@ public class CiSyncManager {
                                 if (syncCiCollectionVo.getLastSyncDate() != null) {
                                     criteriaList.add(Criteria.where("_updatetime").gt(convertToIsoDate(syncCiCollectionVo.getLastSyncDate())));
                                 }
+                                //#############测试用条件，使用后注释掉
+                                criteriaList.add(Criteria.where("BELONG_APPLICATION").exists(true));
+                                //#############测试用条件
                                 finalCriteria.andOperator(criteriaList);
                                 query.addCriteria(finalCriteria);
                                 int batchSize = 500;//游标每次读取500条数据

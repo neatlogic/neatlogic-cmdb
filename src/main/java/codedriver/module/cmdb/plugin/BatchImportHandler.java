@@ -197,6 +197,7 @@ public class BatchImportHandler {
 
                 try {
                     in = FileUtil.getData(fileVo.getPath());
+                    //不加这一行会被检测出zip boom
                     ZipSecureFile.setMinInflateRatio(-1.0d);
                     wb = WorkbookFactory.create(in);
                 } catch (Exception e) {
