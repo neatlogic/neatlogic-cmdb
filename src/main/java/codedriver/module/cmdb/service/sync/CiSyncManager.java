@@ -636,6 +636,7 @@ public class CiSyncManager {
                                     if (CollectionUtils.isNotEmpty(dataList)) {
                                         dealWithDataBatch(syncCiCollectionVo, fieldList, dataList, count);
                                     }
+                                    syncCiCollectionVo.getSyncAudit().setDataCount(count.get());
                                 }
                             }
                         }

@@ -7,11 +7,13 @@ package codedriver.module.cmdb.api.mongodb;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
+import codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.module.cmdb.dao.mapper.sync.SyncMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -19,12 +21,18 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
+import java.text.SimpleDateFormat;
+
 @Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class TestMongodbApi extends PrivateApiComponentBase {
     @Autowired
     private MongoTemplate mongoTemplate;
+
+    @Resource
+    private SyncMapper syncMapper;
 
     @Override
     public String getToken() {
@@ -48,8 +56,13 @@ public class TestMongodbApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Query query = new Query();
-        query.addCriteria(Criteria.where("RESOURCE_ID").in(497544521900032L));
-        JSONObject json = mongoTemplate.findOne(new Query(), JSONObject.class, "INSPECT_REPORTS");
-        return json;
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmm");
+        query.addCriteria(Criteria.where("_id").is("618e3ebba4891d05a813e014"));
+        JSONObject json = mongoTemplate.findOne(new Query(), JSONObject.class, "COLLECT_OS");
+        SyncCiCollectionVo collectionVo = syncMapper.getSyncCiCollectionById(482988709961728L);
+        JSONObject returnObj = new JSONObject();
+        returnObj.put("db", sdf.format(collectionVo.getFcd()));
+        returnObj.put("mo", sdf.format(json.getDate("_updatetime")));
+        return returnObj;
     }
 }

@@ -206,6 +206,10 @@
         <result property="lastSyncDate" column="lastSyncDate"/>
         <result property="matchMode" column="matchMode"/>
         <result property="parentKey" column="parentKey"/>
+        <result property="fcd" column="fcd"/>
+        <result property="fcu" column="fcu"/>
+        <result property="lcd" column="lcd"/>
+        <result property="lcu" column="lcu"/>
         <collection property="mappingList" ofType="codedriver.framework.cmdb.dto.sync.SyncMappingVo">
             <id property="id" column="mappingId"/>
             <result property="attrId" column="attrId"/>
@@ -226,6 +230,10 @@
                a.last_sync_date  AS lastSyncDate,
                a.match_mode      AS matchMode,
                a.parent_key      AS parentKey,
+               a.fcd             AS fcd,
+               a.fcu             AS fcu,
+               a.lcd             AS lcd,
+               a.lcu             AS lcu,
                csm.id            AS mappingId,
                csm.attr_id       AS attrId,
                csm.rel_id        AS relId,
@@ -246,6 +254,10 @@
                a.last_sync_date  AS lastSyncDate,
                a.match_mode      AS matchMode,
                a.parent_key      AS parentKey,
+               a.fcd             AS fcd,
+               a.fcu             AS fcu,
+               a.lcd             AS lcd,
+               a.lcu             AS lcu,
                csm.id            AS mappingId,
                csm.attr_id       AS attrId,
                csm.rel_id        AS relId,
@@ -267,6 +279,10 @@
                a.last_sync_date  AS lastSyncDate,
                a.match_mode      AS matchMode,
                a.parent_key      AS parentKey,
+               a.fcd             AS fcd,
+               a.fcu             AS fcu,
+               a.lcd             AS lcd,
+               a.lcu             AS lcu,
                csm.id            AS mappingId,
                csm.attr_id       AS attrId,
                csm.rel_id        AS relId,

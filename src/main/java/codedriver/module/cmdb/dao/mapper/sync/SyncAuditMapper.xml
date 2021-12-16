@@ -67,7 +67,8 @@
         a.input_from AS inputFrom,
         a.status,
         a.transaction_group_id AS transactionGroupId,
-        a.server_id AS serverID,
+        a.server_id AS serverId,
+        a.data_count AS dataCount,
         a.error AS error
         from cmdb_sync_audit a
         join cmdb_sync_ci_collection b on
@@ -116,8 +117,10 @@
     <update id="updateSyncAuditStatus" parameterType="codedriver.framework.cmdb.dto.sync.SyncAuditVo">
         UPDATE
         cmdb_sync_audit
-        SET end_time = NOW(3),
-        status = #{status}
+        SET
+        end_time = NOW(3),
+        status = #{status},
+        data_count=#{dataCount}
         <if test="error != null and error != ''">
             ,error = #{error,typeHandler=CompressHandler}
         </if>
