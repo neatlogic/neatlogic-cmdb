@@ -414,6 +414,9 @@ public class CiServiceImpl implements CiService {
     @Override
     public CiVo getCiById(Long id) {
         CiVo ciVo = ciMapper.getCiById(id);
+        if (ciVo == null) {
+            throw new CiNotFoundException(id);
+        }
         if (ciVo.getIsVirtual().equals(0)) {
             ciVo.setUpwardCiList(ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht()));
         }
