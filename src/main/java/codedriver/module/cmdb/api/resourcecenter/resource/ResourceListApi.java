@@ -146,12 +146,6 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
                         }
                         ResourceScriptVo scriptVo = resourceScriptVoMap.get(resourceVo.getId());
                         resourceVo.setScript(scriptVo);
-//                        if (StringUtils.isNotBlank(resourceVo.getFcu())) {
-//                            resourceVo.setFcuVo(new UserVo(resourceVo.getFcu()));
-//                        }
-//                        if (StringUtils.isNotBlank(resourceVo.getLcu())) {
-//                            resourceVo.setLcuVo(new UserVo(resourceVo.getLcu()));
-//                        }
                     }
                 }
             }

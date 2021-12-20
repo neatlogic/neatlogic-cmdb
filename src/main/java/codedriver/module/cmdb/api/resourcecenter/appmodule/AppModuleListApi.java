@@ -20,9 +20,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author linbq
@@ -65,22 +63,31 @@ public class AppModuleListApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         List<ResourceVo> resourceVoList = new ArrayList<>();
-        List<Long> idList = null;
+        Set<Long> idSet = new HashSet<>();
         ResourceSearchVo searchVo = paramObj.toJavaObject(ResourceSearchVo.class);
         List<Long> appSystemIdList = searchVo.getAppSystemIdList();
         if (CollectionUtils.isNotEmpty(appSystemIdList)) {
-            idList = resourceCenterMapper.getAppModuleIdListByAppSystemIdList(searchVo);
+            List<Long> idList = resourceCenterMapper.getAppModuleIdListByAppSystemIdList(searchVo);
+            idSet.addAll(idList);
         } else {
-            idList = resourceCenterMapper.getAppModuleIdList(searchVo);
+            appSystemIdList = resourceCenterMapper.getAppSystemIdList(searchVo);
+            searchVo.setAppSystemIdList(appSystemIdList);
+            if (CollectionUtils.isNotEmpty(appSystemIdList)) {
+                List<Long> idList = resourceCenterMapper.getAppModuleIdListByAppSystemIdList(searchVo);
+                idSet.addAll(idList);
+            }
+            List<Long> idList = resourceCenterMapper.getAppModuleIdList(searchVo);
+            idSet.addAll(idList);
         }
 
-        if (CollectionUtils.isNotEmpty(idList)) {
-            int rowNum = idList.size();
+        if (CollectionUtils.isNotEmpty(idSet)) {
+            int rowNum = idSet.size();
             searchVo.setRowNum(rowNum);
             if (searchVo.getCurrentPage() <= searchVo.getPageCount()) {
                 int fromIndex = searchVo.getStartNum();
                 int toIndex = fromIndex + searchVo.getPageSize();
                 toIndex = toIndex >  rowNum ? rowNum : toIndex;
+                List<Long> idList = new ArrayList<>(idSet);
                 idList.sort(Comparator.reverseOrder());
                 List<Long> currentPageIdList = idList.subList(fromIndex, toIndex);
                 if (CollectionUtils.isNotEmpty(currentPageIdList)) {
