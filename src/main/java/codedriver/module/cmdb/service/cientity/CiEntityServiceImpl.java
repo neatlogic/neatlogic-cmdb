@@ -1032,7 +1032,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 List<CiEntityVo> checkList = this.searchCiEntity(ciEntityConditionVo);
                 for (CiEntityVo checkCiEntity : checkList) {
                     if (!checkCiEntity.getId().equals(ciEntityTransactionVo.getCiEntityId())) {
-                        throw new CiUniqueRuleException();
+                        throw new CiUniqueRuleException(ciVo);
                     }
                 }
             }
@@ -1287,7 +1287,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         List<CiEntityVo> checkList = this.searchCiEntity(ciEntityConditionVo);
                         for (CiEntityVo checkCiEntity : checkList) {
                             if (!checkCiEntity.getId().equals(ciEntityTransactionVo.getCiEntityId())) {
-                                throw new CiUniqueRuleException();
+                                throw new CiUniqueRuleException(ciVo);
                             }
                         }
                     }
@@ -1502,7 +1502,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         List<CiEntityVo> checkList = this.searchCiEntity(ciEntityConditionVo);
                         for (CiEntityVo checkCiEntity : checkList) {
                             if (!checkCiEntity.getId().equals(ciEntityTransactionVo.getCiEntityId())) {
-                                throw new CiUniqueRuleException();
+                                throw new CiUniqueRuleException(ciVo);
                             }
                         }
                     }
