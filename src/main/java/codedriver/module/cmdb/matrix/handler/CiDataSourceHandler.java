@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSureCo.,Ltd.AllRightsReserved.
+ * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -357,15 +357,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         return new JSONObject();
     }
 
-    private boolean conversionFilter(
-            String uuid,
-            List<String> valueList,
-            Map<String, AttrVo> attrMap,
-            Map<String, RelVo> relMap,
-            CiViewVo ciView,
-            List<AttrFilterVo> attrFilterList,
-            List<RelFilterVo> relFilterList,
-            JSONObject paramObj) {
+    private boolean conversionFilter(String uuid, List<String> valueList, Map<String, AttrVo> attrMap, Map<String, RelVo> relMap, CiViewVo ciView, List<AttrFilterVo> attrFilterList, List<RelFilterVo> relFilterList, JSONObject paramObj) {
         RelVo relVo = relMap.get(uuid);
         switch (ciView.getType()) {
             case "attr":
@@ -517,6 +509,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         }
         return true;
     }
+
     @Override
     protected List<Map<String, JSONObject>> myTableColumnDataSearch(MatrixDataVo dataVo) {
         String matrixUuid = dataVo.getMatrixUuid();
@@ -697,7 +690,8 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             paramObj.put("needAction", false);
             paramObj.put("needActionType", false);
             paramObj.put("mode", "dialog");
-            paramObj.put("isAllColumn", 1);
+            //避免性能太差
+            //paramObj.put("isAllColumn", 1);
             JSONObject resultObj = (JSONObject) searchCiEntityApi.myDoService(paramObj);
             JSONArray tbodyArray = resultObj.getJSONArray("tbodyList");
             if (CollectionUtils.isNotEmpty(tbodyArray)) {
