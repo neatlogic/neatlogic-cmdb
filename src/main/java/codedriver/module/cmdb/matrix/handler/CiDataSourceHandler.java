@@ -33,6 +33,7 @@ import codedriver.module.cmdb.service.cientity.CiEntityService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSONPath;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -92,13 +93,22 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         if (ciVo == null) {
             throw new CiNotFoundException(ciId);
         }
+        JSONObject config = matrixVo.getConfig();
+        if (MapUtils.isEmpty(config)) {
+            throw new ParamNotExistsException("config");
+        }
+        JSONArray showAttributeNameList = config.getJSONArray("showAttributeNameList");
+        if (CollectionUtils.isEmpty(showAttributeNameList)) {
+            throw new ParamNotExistsException("config.showAttributeNameList");
+        }
+        String configStr = config.toJSONString();
         MatrixCiVo oldMatrixCiVo = matrixMapper.getMatrixCiByMatrixUuid(matrixVo.getUuid());
         if (oldMatrixCiVo != null) {
-            if (ciId.equals(oldMatrixCiVo.getCiId())) {
+            if (ciId.equals(oldMatrixCiVo.getCiId()) && Objects.equals(oldMatrixCiVo.getConfig(), configStr)) {
                 return false;
             }
         }
-        MatrixCiVo matrixCiVo = new MatrixCiVo(matrixVo.getUuid(), ciId);
+        MatrixCiVo matrixCiVo = new MatrixCiVo(matrixVo.getUuid(), ciId, configStr);
         matrixMapper.replaceMatrixCi(matrixCiVo);
         return true;
     }
@@ -110,6 +120,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             throw new MatrixCiNotFoundException(matrixVo.getUuid());
         }
         matrixVo.setCiId(matrixCiVo.getCiId());
+        matrixVo.setConfig(JSONObject.parseObject(matrixCiVo.getConfig()));
     }
 
     @Override
@@ -139,12 +150,27 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
 
     @Override
     protected List<MatrixAttributeVo> myGetAttributeList(MatrixVo matrixVo) {
+        Long ciId = null;
+        JSONArray showAttributeNameArray = null;
         String matrixUuid = matrixVo.getUuid();
-        MatrixCiVo matrixCiVo = matrixMapper.getMatrixCiByMatrixUuid(matrixUuid);
-        if (matrixCiVo == null) {
-            throw new MatrixCiNotFoundException(matrixUuid);
+        if (StringUtils.isNotBlank(matrixUuid)) {
+            MatrixCiVo matrixCiVo = matrixMapper.getMatrixCiByMatrixUuid(matrixUuid);
+            if (matrixCiVo == null) {
+                throw new MatrixCiNotFoundException(matrixUuid);
+            }
+            ciId = matrixCiVo.getCiId();
+            showAttributeNameArray = (JSONArray) JSONPath.read(matrixCiVo.getConfig(), "showAttributeNameList");
+        } else {
+            ciId = matrixVo.getCiId();
         }
-        Long ciId = matrixCiVo.getCiId();
+        CiVo ciVo = ciMapper.getCiById(ciId);
+        if (ciVo == null) {
+            throw new CiNotFoundException(ciId);
+        }
+        List<String> showAttributeNameList = null;
+        if (CollectionUtils.isNotEmpty(showAttributeNameArray)) {
+            showAttributeNameList = showAttributeNameArray.toJavaList(String.class);
+        }
         int sort = 0;
         List<MatrixAttributeVo> matrixAttributeList = new ArrayList<>();
         CiViewVo ciViewVo = new CiViewVo();
@@ -177,6 +203,11 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                         //固化属性需要特殊处理
                         matrixAttributeVo.setUuid(ciview.getItemName().replace("_", ""));
                         break;
+                }
+                if (showAttributeNameList != null) {
+                    if (!showAttributeNameList.contains(matrixAttributeVo.getUuid())) {
+                        continue;
+                    }
                 }
                 matrixAttributeList.add(matrixAttributeVo);
             }
