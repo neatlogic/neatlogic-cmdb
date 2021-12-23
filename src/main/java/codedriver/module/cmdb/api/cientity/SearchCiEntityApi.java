@@ -83,6 +83,8 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
             @Param(name = "groupId", type = ApiParamType.LONG, desc = "团体id"),
             @Param(name = "attrFilterList", type = ApiParamType.STRING, desc = "属性过滤条件"),
             @Param(name = "relFilterList", type = ApiParamType.JSONARRAY, desc = "关系过滤条件"),
+            @Param(name = "showAttrList", type = ApiParamType.JSONARRAY, desc = "需要显示的属性id列表"),
+            @Param(name = "showRelList", type = ApiParamType.JSONARRAY, desc = "需要显示的关系id列表"),
             @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "需要查询的配置项id列表）"),
             @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "是否需要操作列，如果需要则根据用户权限返回操作列"),
             @Param(name = "needCheck", type = ApiParamType.BOOLEAN, desc = "是否需要复选列"),

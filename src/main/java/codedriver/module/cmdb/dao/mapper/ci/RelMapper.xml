@@ -9,6 +9,84 @@
     <cache-ref namespace="codedriver.module.cmdb.dao.mapper.ci.CiMapper"/>
     <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
 
+
+    <select id="getRelByCiIdAndRelName" resultType="codedriver.framework.cmdb.dto.ci.RelVo" useCache="true">
+        SELECT a.`id`,
+               a.`type_id`                                                       AS typeId,
+               (SELECT name FROM cmdb_reltype cr WHERE cr.id = a.`type_id`)      AS typeText,
+               a.`input_type`                                                    AS inputType,
+               if(f.id = #{ciId}, 0, 1)                                          AS isExtended,
+               f.id                                                              AS fromCiId,
+               f.icon                                                            AS fromCiIcon,
+               f.name                                                            AS fromCiName,
+               f.label                                                           AS fromCiLabel,
+               f.is_virtual                                                      AS fromIsVirtual,
+               a.`from_name`                                                     AS fromName,
+               a.`from_label`                                                    AS fromLabel,
+               a.`from_rule`                                                     AS fromRule,
+               a.`from_group_id`                                                 AS fromGroupId,
+               a.`from_is_unique`                                                AS fromIsUnique,
+               a.`from_is_required`                                              AS fromIsRequired,
+               (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`from_group_id`) AS fromGroupName,
+               t.id                                                              AS toCiId,
+               t.icon                                                            AS toCiIcon,
+               t.name                                                            AS toCiName,
+               t.label                                                           AS toCiLabel,
+               t.is_virtual                                                      AS toIsVirtual,
+               a.`to_name`                                                       AS toName,
+               a.`to_label`                                                      AS toLabel,
+               a.`to_rule`                                                       AS toRule,
+               a.`to_group_id`                                                   AS toGroupId,
+               a.`to_is_unique`                                                  AS toIsUnique,
+               a.`to_is_required`                                                AS toIsRequired,
+               (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`to_group_id`)   AS toGroupName,
+               'from'                                                            AS direction
+        FROM `cmdb_rel` a
+                 JOIN cmdb_ci f ON a.from_ci_id = f.id
+                 JOIN cmdb_ci t ON a.to_ci_id = t.id
+        WHERE f.lft &lt;= (select lft from cmdb_ci where id = #{ciId})
+          AND f.rht &gt;= (select rht from cmdb_ci where id = #{ciId})
+          AND a.to_name = #{relName}
+        UNION
+        SELECT a.`id`,
+               a.`type_id`                                                       AS typeId,
+               (SELECT name FROM cmdb_reltype cr WHERE cr.id = a.`type_id`)      AS typeText,
+               a.`input_type`                                                    AS inputType,
+               if(t.id = #{ciId}, 0, 1)                                          AS isExtended,
+               f.id                                                              AS fromCiId,
+               f.icon                                                            AS fromCiIcon,
+               f.name                                                            AS fromCiName,
+               f.label                                                           AS fromCiLabel,
+               f.is_virtual                                                      AS fromIsVirtual,
+               a.`from_name`                                                     AS fromName,
+               a.`from_label`                                                    AS fromLabel,
+               a.`from_rule`                                                     AS fromRule,
+               a.`from_group_id`                                                 AS fromGroupId,
+               a.`from_is_unique`                                                AS fromIsUnique,
+               a.`from_is_required`                                              AS fromIsRequired,
+               (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`from_group_id`) AS fromGroupName,
+               t.id                                                              AS toCiId,
+               t.icon                                                            AS toCiIcon,
+               t.name                                                            AS toCiName,
+               t.label                                                           AS toCiLabel,
+               t.is_virtual                                                      AS toVirtual,
+               a.`to_name`                                                       AS toName,
+               a.`to_label`                                                      AS toLabel,
+               a.`to_rule`                                                       AS toRule,
+               a.`to_group_id`                                                   AS toGroupId,
+               a.`to_is_unique`                                                  AS toIsUnique,
+               a.`to_is_required`                                                AS toIsRequired,
+               (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`to_group_id`)   AS toGroupName,
+               'to'                                                              AS direction
+        FROM `cmdb_rel` a
+                 JOIN cmdb_ci f ON a.from_ci_id = f.id
+                 JOIN cmdb_ci t ON a.to_ci_id = t.id
+        WHERE t.lft &lt;= (select lft from cmdb_ci where id = #{ciId})
+          and t.rht &gt;= (select rht from cmdb_ci where id = #{ciId})
+          and a.from_name = #{relName}
+        limit 1
+    </select>
+
     <select id="getRelTypeByRelId" parameterType="java.lang.Long"
             resultType="codedriver.framework.cmdb.dto.ci.RelTypeVo" useCache="true">
         SELECT a.`id`,

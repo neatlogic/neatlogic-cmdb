@@ -13,6 +13,8 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface AttrMapper extends IAttrCrossoverMapper {
+    AttrVo getAttrByCiIdAndName(@Param("ciId") Long ciId, @Param("attrName") String attrName);
+
     List<AttrVo> getAllNeedTargetCiAttrList();
 
     List<AttrVo> searchAttr(AttrVo attrVo);

@@ -9,6 +9,34 @@
     <cache-ref namespace="codedriver.module.cmdb.dao.mapper.ci.CiMapper"/>
     <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
 
+    <select id="getAttrByCiIdAndName" resultType="codedriver.framework.cmdb.dto.ci.AttrVo"
+            useCache="true">
+        SELECT ci.`id`                   AS ciId,
+               ci.`name`                 AS ciName,
+               ci.`label`                AS ciLabel,
+               attr.`id`,
+               attr.`type`,
+               attr.`config`             AS configStr,
+               attr.`name`,
+               attr.`label`,
+               attr.`description`,
+               attr.`validator_id`       AS validatorId,
+               attr.`target_ci_id`       AS targetCiId,
+               attr.`is_required`        AS isRequired,
+               attr.`is_unique`          AS isUnique,
+               attr.`input_type`         AS inputType,
+               attr.`group_name`         AS groupName,
+               attr.`is_private`         AS isPrivate,
+               if(ci.id = #{ciId}, 0, 1) AS `isExtended`
+        FROM `cmdb_ci` ci
+                 JOIN `cmdb_attr` attr ON ci.id = attr.ci_id
+        WHERE ci.lft &lt;= (SELECT lft FROM `cmdb_ci` WHERE id = #{ciId})
+          AND ci.rht &gt;= (SELECT rht FROM `cmdb_ci` WHERE id = #{ciId})
+          AND attr.name = #{attrName}
+        LIMIT 1
+    </select>
+
+
     <select id="getAllNeedTargetCiAttrList" resultType="codedriver.framework.cmdb.dto.ci.AttrVo" useCache="false">
         SELECT `id`, ci_id AS ciId
         FROM `cmdb_attr`
