@@ -6,6 +6,7 @@
 package codedriver.module.cmdb.dsl;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
+import codedriver.framework.cmdb.dsl.core.CalculateExpression;
 import codedriver.framework.cmdb.dsl.core.SearchExpression;
 import codedriver.framework.cmdb.dsl.core.SearchItem;
 import codedriver.framework.cmdb.dsl.core.SelectFragment;
@@ -55,6 +56,7 @@ public class DslSearchManager {
     private Long ciId;
     private final Map<String, SearchItem> searchItemMap = new HashMap<>();
     private final Map<Integer, SearchExpression> searchExpressionMap = new HashMap<>();
+    private final Map<Integer, CalculateExpression> calculateExpressionMap = new HashMap<>();
 
     @Autowired
     public DslSearchManager(CiService _ciService, AttrMapper _attrMapper, RelMapper _relMapper) {
@@ -123,14 +125,58 @@ public class DslSearchManager {
         }
     }
 
+    /**
+     * 建立计算表达式之间的关系，建立计算表达式和比较表达式之间的关系
+     * 此方法利用了DslVisitor的遍历顺序，buildCalculateExpression需要在buildSearchExpression执行完毕后才能执行，否则将无法建立计算表达式和比较表达式之间的关系
+     */
     public void buildCalculateExpression(CmdbDSLParser.CalculateExpressionsContext ctx) {
-        /*
-        CalculateExpression calculateExpression = new CalculateExpression(CalculateExpression.Type.CALCULATE);
-        calculateExpression.setCalculateOperator(ctx.);
-        if (ctx.NUMBER() != null) {
-            calculateExpression.setLeftExpression(new CalculateExpression(CalculateExpression.Type.NUMBER));
-        }*/
         System.out.println(ctx.getText());
+        CalculateExpression currentCalculateExpression = null;
+        if (CollectionUtils.isNotEmpty(ctx.calculateExpressions())) {
+            currentCalculateExpression = new CalculateExpression(CalculateExpression.Type.CALCULATE);
+            if (ctx.PLUS() != null) {
+                currentCalculateExpression.setCalculateOperator("+");
+            } else if (ctx.SUBTRACT() != null) {
+                currentCalculateExpression.setCalculateOperator("-");
+            } else if (ctx.MULTIPLY() != null) {
+                currentCalculateExpression.setCalculateOperator("*");
+            } else if (ctx.DIVIDE() != null) {
+                currentCalculateExpression.setCalculateOperator("/");
+            }
+            calculateExpressionMap.put(ctx.hashCode(), currentCalculateExpression);
+        } else if (ctx.NUMBER() != null) {
+            currentCalculateExpression = new CalculateExpression(CalculateExpression.Type.NUMBER);
+            currentCalculateExpression.setNumber(ctx.NUMBER().getText());
+            calculateExpressionMap.put(ctx.hashCode(), currentCalculateExpression);
+        } else if (ctx.attrs() != null) {
+            currentCalculateExpression = new CalculateExpression(CalculateExpression.Type.ATTR);
+            currentCalculateExpression.setAttrs(ctx.attrs().getText());
+            calculateExpressionMap.put(ctx.hashCode(), currentCalculateExpression);
+        }
+        if (currentCalculateExpression != null && ctx.getParent() != null) {
+            if (ctx.getParent() instanceof CmdbDSLParser.CalculateExpressionsContext) {
+                //建立计算表达式之间的关联关系
+                CmdbDSLParser.CalculateExpressionsContext parent = (CmdbDSLParser.CalculateExpressionsContext) ctx.getParent();
+                CalculateExpression parentCalculateExpression = calculateExpressionMap.get(parent.hashCode());
+                if (parentCalculateExpression != null && CollectionUtils.isNotEmpty(parent.calculateExpressions())) {
+                    if (parent.calculateExpressions().size() == 2) {
+                        if (ctx == parent.calculateExpressions(0)) {
+                            parentCalculateExpression.setLeftExpression(currentCalculateExpression);
+                        } else if (ctx == parent.calculateExpressions(1)) {
+                            parentCalculateExpression.setRightExpression(currentCalculateExpression);
+                        }
+                    } else if (parent.calculateExpressions().size() == 1 && parent.BRACKET_LEFT() != null && parent.BRACKET_RIGHT() != null) {
+                        parentCalculateExpression.setParenthesisExpression(currentCalculateExpression);
+                    }
+                }
+            } else if (ctx.getParent() instanceof CmdbDSLParser.ExpressionContext) {
+                //建立计算表达试和比较比较式之间的关系
+                SearchExpression searchExpression = searchExpressionMap.get(ctx.getParent().hashCode());
+                if (searchExpression != null) {
+                    searchExpression.setCalculateExpression(currentCalculateExpression);
+                }
+            }
+        }
     }
 
     /**
@@ -249,95 +295,20 @@ public class DslSearchManager {
                 CiVo currentVo = ciService.getCiById(searchItem.getCiId());
                 for (CiVo ci : currentVo.getUpwardCiList()) {
                     if (searchItem.getAttrVo().getCiId().equals(ci.getId())) {
-                        plainSelect.addSelectItems(new SelectExpressionItem(new Column(searchItem.getAttrVo().getId().toString())
-                                .withTable(new Table("cmdb_" + ci.getId())))
-                                .withAlias(new Alias(searchItem.getAlias())));
+                        plainSelect.addSelectItems(new SelectExpressionItem(new Column(searchItem.getAttrVo().getId().toString()).withTable(new Table("cmdb_" + ci.getId()))).withAlias(new Alias(searchItem.getAlias())));
                     }
                     //只需要join关系所在的模型和叶子模型，中间模型可以跳过，尽量减少没必要的join
                     if (!selectFragment.isCiExists(ci.getId()) && (searchItem.getAttrVo().getCiId().equals(ci.getId()) || ci.getId().equals(searchItem.getCiId()))) {
                         selectFragment.addCiToCheckSet(ci.getId());
-                        plainSelect.addJoins(new Join()
-                                .withRightItem(new Table()
-                                        .withName("cmdb_" + ci.getId())
-                                        .withSchemaName(TenantContext.get().getDataDbName())
-                                        .withAlias(new Alias("cmdb_" + ci.getId())))
-                                .withOnExpression(new EqualsTo()
-                                        .withLeftExpression(new Column()
-                                                .withTable(new Table("ci_base"))
-                                                .withColumnName("id"))
-                                        .withRightExpression(new Column()
-                                                .withTable(new Table("cmdb_" + ci.getId()))
-                                                .withColumnName("cientity_id"))));
+                        plainSelect.addJoins(new Join().withRightItem(new Table().withName("cmdb_" + ci.getId()).withSchemaName(TenantContext.get().getDataDbName()).withAlias(new Alias("cmdb_" + ci.getId()))).withOnExpression(new EqualsTo().withLeftExpression(new Column().withTable(new Table("ci_base")).withColumnName("id")).withRightExpression(new Column().withTable(new Table("cmdb_" + ci.getId())).withColumnName("cientity_id"))));
                     }
                 }
             } else if (searchItem.getAttrVo() != null && searchItem.getAttrVo().getTargetCiId() != null) {
-                plainSelect.addSelectItems(new SelectExpressionItem(new Column("name")
-                        .withTable(new Table("target_cientity")))
-                        .withAlias(new Alias(searchItem.getAlias())));
-                plainSelect.addJoins(new Join()
-                                .withLeft(true)
-                                .withRightItem(new Table()
-                                        .withName("cmdb_attrentity")
-                                        .withAlias(new Alias("cmdb_attrentity")))
-                                .withOnExpression(new AndExpression()
-                                        .withLeftExpression(new EqualsTo()
-                                                .withLeftExpression(new Column()
-                                                        .withTable(new Table("cmdb_attrentity"))
-                                                        .withColumnName("attr_id"))
-                                                .withRightExpression(new LongValue(searchItem.getAttrVo().getId())))
-                                        .withRightExpression(new EqualsTo()
-                                                .withLeftExpression(new Column()
-                                                        .withTable(new Table("ci_base"))
-                                                        .withColumnName("id"))
-                                                .withRightExpression(new Column()
-                                                        .withTable(new Table("cmdb_attrentity"))
-                                                        .withColumnName("from_cientity_id")))))
-                        .addJoins(new Join()
-                                .withLeft(true)
-                                .withRightItem(new Table()
-                                        .withName("cmdb_cientity")
-                                        .withAlias(new Alias("target_cientity")))
-                                .withOnExpression(new EqualsTo()
-                                        .withLeftExpression(new Column()
-                                                .withTable(new Table("cmdb_attrentity"))
-                                                .withColumnName("to_cientity_id"))
-                                        .withRightExpression(new Column()
-                                                .withTable(new Table("target_cientity"))
-                                                .withColumnName("id"))));
+                plainSelect.addSelectItems(new SelectExpressionItem(new Column("name").withTable(new Table("target_cientity"))).withAlias(new Alias(searchItem.getAlias())));
+                plainSelect.addJoins(new Join().withLeft(true).withRightItem(new Table().withName("cmdb_attrentity").withAlias(new Alias("cmdb_attrentity"))).withOnExpression(new AndExpression().withLeftExpression(new EqualsTo().withLeftExpression(new Column().withTable(new Table("cmdb_attrentity")).withColumnName("attr_id")).withRightExpression(new LongValue(searchItem.getAttrVo().getId()))).withRightExpression(new EqualsTo().withLeftExpression(new Column().withTable(new Table("ci_base")).withColumnName("id")).withRightExpression(new Column().withTable(new Table("cmdb_attrentity")).withColumnName("from_cientity_id"))))).addJoins(new Join().withLeft(true).withRightItem(new Table().withName("cmdb_cientity").withAlias(new Alias("target_cientity"))).withOnExpression(new EqualsTo().withLeftExpression(new Column().withTable(new Table("cmdb_attrentity")).withColumnName("to_cientity_id")).withRightExpression(new Column().withTable(new Table("target_cientity")).withColumnName("id"))));
             } else if (searchItem.getRelVo() != null) {
-                plainSelect.addSelectItems(new SelectExpressionItem(new Column("name")
-                        .withTable(new Table("target_cientity")))
-                        .withAlias(new Alias(searchItem.getAlias())));
-                plainSelect.addJoins(new Join()
-                                .withLeft(true)
-                                .withRightItem(new Table()
-                                        .withName("cmdb_relentity")
-                                        .withAlias(new Alias("cmdb_relentity")))
-                                .withOnExpression(new AndExpression()
-                                        .withLeftExpression(new EqualsTo()
-                                                .withLeftExpression(new Column()
-                                                        .withTable(new Table("cmdb_relentity"))
-                                                        .withColumnName("rel_id"))
-                                                .withRightExpression(new LongValue(searchItem.getRelVo().getId())))
-                                        .withRightExpression(new EqualsTo()
-                                                .withLeftExpression(new Column()
-                                                        .withTable(new Table("ci_base"))
-                                                        .withColumnName("id"))
-                                                .withRightExpression(new Column()
-                                                        .withTable(new Table("cmdb_relentity"))
-                                                        .withColumnName("from_cientity_id")))))
-                        .addJoins(new Join()
-                                .withLeft(true)
-                                .withRightItem(new Table()
-                                        .withName("cmdb_cientity")
-                                        .withAlias(new Alias("target_cientity")))
-                                .withOnExpression(new EqualsTo()
-                                        .withLeftExpression(new Column()
-                                                .withTable(new Table("cmdb_relentity"))
-                                                .withColumnName("to_cientity_id"))
-                                        .withRightExpression(new Column()
-                                                .withTable(new Table("target_cientity"))
-                                                .withColumnName("id"))));
+                plainSelect.addSelectItems(new SelectExpressionItem(new Column("name").withTable(new Table("target_cientity"))).withAlias(new Alias(searchItem.getAlias())));
+                plainSelect.addJoins(new Join().withLeft(true).withRightItem(new Table().withName("cmdb_relentity").withAlias(new Alias("cmdb_relentity"))).withOnExpression(new AndExpression().withLeftExpression(new EqualsTo().withLeftExpression(new Column().withTable(new Table("cmdb_relentity")).withColumnName("rel_id")).withRightExpression(new LongValue(searchItem.getRelVo().getId()))).withRightExpression(new EqualsTo().withLeftExpression(new Column().withTable(new Table("ci_base")).withColumnName("id")).withRightExpression(new Column().withTable(new Table("cmdb_relentity")).withColumnName("from_cientity_id"))))).addJoins(new Join().withLeft(true).withRightItem(new Table().withName("cmdb_cientity").withAlias(new Alias("target_cientity"))).withOnExpression(new EqualsTo().withLeftExpression(new Column().withTable(new Table("cmdb_relentity")).withColumnName("to_cientity_id")).withRightExpression(new Column().withTable(new Table("target_cientity")).withColumnName("id"))));
             }
         }
     }
@@ -378,41 +349,13 @@ public class DslSearchManager {
                     for (SearchItem prev : selectFragment.getPrevItemList()) {
                         if (prev.getAttrVo() != null) {
                             Join join = new Join();
-                            join.withRightItem(new Table()
-                                            .withName("cmdb_attrentity")
-                                            .withAlias(new Alias(prev.getTableAlias())))
-                                    .withLeft(true)
-                                    .addOnExpression(new AndExpression()
-                                            .withLeftExpression(new EqualsTo()
-                                                    .withLeftExpression(new Column()
-                                                            .withTable(new Table(prevTable))
-                                                            .withColumnName(prevColumn))
-                                                    .withRightExpression(new Column().withTable(new Table(prev.getTableAlias()))
-                                                            .withColumnName("from_cientity_id")))
-                                            .withRightExpression(new EqualsTo()
-                                                    .withLeftExpression(new Column().withTable(new Table(prev.getTableAlias()))
-                                                            .withColumnName("attr_id"))
-                                                    .withRightExpression(new LongValue(prev.getAttrVo().getId()))));
+                            join.withRightItem(new Table().withName("cmdb_attrentity").withAlias(new Alias(prev.getTableAlias()))).withLeft(true).addOnExpression(new AndExpression().withLeftExpression(new EqualsTo().withLeftExpression(new Column().withTable(new Table(prevTable)).withColumnName(prevColumn)).withRightExpression(new Column().withTable(new Table(prev.getTableAlias())).withColumnName("from_cientity_id"))).withRightExpression(new EqualsTo().withLeftExpression(new Column().withTable(new Table(prev.getTableAlias())).withColumnName("attr_id")).withRightExpression(new LongValue(prev.getAttrVo().getId()))));
                             plainSelect.addJoins(join);
                             prevTable = prev.getTableAlias();
                             prevColumn = "to_cientity_id";
                         } else if (prev.getRelVo() != null) {
                             Join join = new Join();
-                            join.withRightItem(new Table()
-                                            .withName("cmdb_relentity")
-                                            .withAlias(new Alias(prev.getTableAlias())))
-                                    .withLeft(true)
-                                    .addOnExpression(new AndExpression()
-                                            .withLeftExpression(new EqualsTo()
-                                                    .withLeftExpression(new Column()
-                                                            .withTable(new Table(prevTable))
-                                                            .withColumnName(prevColumn))
-                                                    .withRightExpression(new Column().withTable(new Table(prev.getTableAlias()))
-                                                            .withColumnName(prev.getRelVo().getDirection().equals(RelDirectionType.FROM.getValue()) ? "from_cientity_id" : "to_cientity_id")))
-                                            .withRightExpression(new EqualsTo()
-                                                    .withLeftExpression(new Column().withTable(new Table(prev.getTableAlias()))
-                                                            .withColumnName("rel_id"))
-                                                    .withRightExpression(new LongValue(prev.getRelVo().getId()))));
+                            join.withRightItem(new Table().withName("cmdb_relentity").withAlias(new Alias(prev.getTableAlias()))).withLeft(true).addOnExpression(new AndExpression().withLeftExpression(new EqualsTo().withLeftExpression(new Column().withTable(new Table(prevTable)).withColumnName(prevColumn)).withRightExpression(new Column().withTable(new Table(prev.getTableAlias())).withColumnName(prev.getRelVo().getDirection().equals(RelDirectionType.FROM.getValue()) ? "from_cientity_id" : "to_cientity_id"))).withRightExpression(new EqualsTo().withLeftExpression(new Column().withTable(new Table(prev.getTableAlias())).withColumnName("rel_id")).withRightExpression(new LongValue(prev.getRelVo().getId()))));
                             plainSelect.addJoins(join);
                             prevTable = prev.getTableAlias();
                             prevColumn = prev.getRelVo().getDirection().equals(RelDirectionType.FROM.getValue()) ? "to_cientity_id" : "from_cientity_id";
@@ -421,16 +364,7 @@ public class DslSearchManager {
                     }
                 }
                 Join join = new Join();
-                join.withRightItem(new SubSelect()
-                                .withSelectBody(selectFragment.getSelect().getSelectBody())
-                                .withAlias(new Alias(selectFragment.getAlias())))
-                        .withLeft(true)
-                        .addOnExpression(new EqualsTo()
-                                .withLeftExpression(new Column()
-                                        .withTable(new Table(selectFragment.getAlias()))
-                                        .withColumnName("id"))
-                                .withRightExpression(new Column().withTable(new Table(prevTable))
-                                        .withColumnName(prevColumn)));
+                join.withRightItem(new SubSelect().withSelectBody(selectFragment.getSelect().getSelectBody()).withAlias(new Alias(selectFragment.getAlias()))).withLeft(true).addOnExpression(new EqualsTo().withLeftExpression(new Column().withTable(new Table(selectFragment.getAlias())).withColumnName("id")).withRightExpression(new Column().withTable(new Table(prevTable)).withColumnName(prevColumn)));
                 plainSelect.addJoins(join);
             }
         }
@@ -454,15 +388,9 @@ public class DslSearchManager {
         Expression where = plainSelect.getWhere();
         if (where != null) {
             //增加模型id作为首要过滤条件
-            plainSelect.withWhere(new AndExpression()
-                    .withLeftExpression(new EqualsTo()
-                            .withLeftExpression(new Column().withTable(new Table("ci_base")).withColumnName("ci_id"))
-                            .withRightExpression(new LongValue(ciId)))
-                    .withRightExpression(where));
+            plainSelect.withWhere(new AndExpression().withLeftExpression(new EqualsTo().withLeftExpression(new Column().withTable(new Table("ci_base")).withColumnName("ci_id")).withRightExpression(new LongValue(ciId))).withRightExpression(where));
         } else {
-            plainSelect.withWhere(new EqualsTo()
-                    .withLeftExpression(new Column().withTable(new Table("ci_base")).withColumnName("ci_id"))
-                    .withRightExpression(new LongValue(ciId)));
+            plainSelect.withWhere(new EqualsTo().withLeftExpression(new Column().withTable(new Table("ci_base")).withColumnName("ci_id")).withRightExpression(new LongValue(ciId)));
         }
 
 
@@ -479,16 +407,14 @@ public class DslSearchManager {
                 Expression expression = searchExpression.getComparisonExpression();
                 if (expression != null) {
                     if (expression instanceof ComparisonOperator) {
-                        Object expressionValue = searchExpression.getExpressionValue();
+                        Object expressionValue = searchExpression.getExpressionValue(searchItemMap);
                         if (expressionValue instanceof Expression) {
-                            ((ComparisonOperator) expression).withLeftExpression(new Column().withColumnName(searchItem.getAlias()))
-                                    .withRightExpression((Expression) expressionValue);
+                            ((ComparisonOperator) expression).withLeftExpression(new Column().withColumnName(searchItem.getAlias())).withRightExpression((Expression) expressionValue);
                         }
                     } else if (expression instanceof InExpression) {
-                        Object expressionValue = searchExpression.getExpressionValue();
+                        Object expressionValue = searchExpression.getExpressionValue(searchItemMap);
                         if (expressionValue instanceof ItemsList) {
-                            ((InExpression) expression).withLeftExpression(new Column().withColumnName(searchItem.getAlias()))
-                                    .withRightItemsList((ItemsList) expressionValue);
+                            ((InExpression) expression).withLeftExpression(new Column().withColumnName(searchItem.getAlias())).withRightItemsList((ItemsList) expressionValue);
                         }
                     }
                     return expression;
@@ -498,11 +424,9 @@ public class DslSearchManager {
             Expression expression = null;
             //所有join都要增加括号包裹
             if (searchExpression.getLogicalOperator().equals("&&")) {
-                expression = new Parenthesis(new AndExpression().withLeftExpression(buildWhereExpression(searchExpression.getLeftExpression()))
-                        .withRightExpression(buildWhereExpression(searchExpression.getRightExpression())));
+                expression = new Parenthesis(new AndExpression().withLeftExpression(buildWhereExpression(searchExpression.getLeftExpression())).withRightExpression(buildWhereExpression(searchExpression.getRightExpression())));
             } else if (searchExpression.getLogicalOperator().equals("||")) {
-                expression = new Parenthesis(new OrExpression().withLeftExpression(buildWhereExpression(searchExpression.getLeftExpression()))
-                        .withRightExpression(buildWhereExpression(searchExpression.getRightExpression())));
+                expression = new Parenthesis(new OrExpression().withLeftExpression(buildWhereExpression(searchExpression.getLeftExpression())).withRightExpression(buildWhereExpression(searchExpression.getRightExpression())));
             }
             return expression;
         }
