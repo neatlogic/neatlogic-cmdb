@@ -130,7 +130,6 @@ public class DslSearchManager {
      * 此方法利用了DslVisitor的遍历顺序，buildCalculateExpression需要在buildSearchExpression执行完毕后才能执行，否则将无法建立计算表达式和比较表达式之间的关系
      */
     public void buildCalculateExpression(CmdbDSLParser.CalculateExpressionsContext ctx) {
-        System.out.println(ctx.getText());
         CalculateExpression currentCalculateExpression = null;
         if (CollectionUtils.isNotEmpty(ctx.calculateExpressions())) {
             currentCalculateExpression = new CalculateExpression(CalculateExpression.Type.CALCULATE);
