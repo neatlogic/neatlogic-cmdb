@@ -26,6 +26,9 @@
                  LEFT JOIN cmdb_view cview ON a.id = cview.item_id AND cview.type = 'const' AND cview.ci_id = #{ciId}
         ORDER BY sort
     </select>
+    <select id="getAllCiViewConstList" resultType="codedriver.framework.cmdb.dto.view.ViewConstVo" useCache="false">
+        SELECT `id`, `name`, `label` FROM `cmdb_viewconst` ORDER BY `id`
+    </select>
 
     <select id="getCiViewByCiId" parameterType="codedriver.framework.cmdb.dto.ci.CiViewVo"
             resultType="codedriver.framework.cmdb.dto.ci.CiViewVo" useCache="false">

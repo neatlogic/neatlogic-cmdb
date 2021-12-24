@@ -15,6 +15,8 @@ public interface CiViewMapper {
 
     List<ViewConstVo> getCiViewConstByCiId(Long ciId);
 
+    List<ViewConstVo> getAllCiViewConstList();
+
     List<CiViewVo> getCiViewByCiId(CiViewVo ciViewVo);
 
     int insertCiView(CiViewVo ciViewVo);
