@@ -147,14 +147,14 @@ public class CiEntityBuilder {
                                     ciEntityVo.addRelEntityData(relId, direction, buildRelObj(ciEntityVo.getId(), relVo, direction, result, key));
                                 }
                             } else {
-                                //限制最大返回关系
-                                if (paramCiEntityVo.getMaxRelEntityCount() == null || ciEntityVo.getRelEntityByRelIdAndDirection(relId, direction).size() <= paramCiEntityVo.getMaxRelEntityCount()) {
-                                    JSONObject valueDataObj = new JSONObject();
-                                    valueDataObj.put("ciId", direction.equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiId() : relVo.getFromCiId());
-                                    valueDataObj.put("ciEntityId", result.get(key));
-                                    valueDataObj.put("ciEntityName", result.get(key + "#name"));
-                                    ciEntityVo.addRelEntityDataValue(relId, direction, valueDataObj);
-                                }
+                                //限制最大返回关系，数据库已经控制，无需再处理
+                                //if (paramCiEntityVo.getMaxRelEntityCount() == null || ciEntityVo.getRelEntityByRelIdAndDirection(relId, direction).size() <= paramCiEntityVo.getMaxRelEntityCount()) {
+                                JSONObject valueDataObj = new JSONObject();
+                                valueDataObj.put("ciId", direction.equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiId() : relVo.getFromCiId());
+                                valueDataObj.put("ciEntityId", result.get(key));
+                                valueDataObj.put("ciEntityName", result.get(key + "#name"));
+                                ciEntityVo.addRelEntityDataValue(relId, direction, valueDataObj);
+                                //}
                             }
                         }
                     }
