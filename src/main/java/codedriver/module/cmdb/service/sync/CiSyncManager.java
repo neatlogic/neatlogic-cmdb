@@ -219,7 +219,7 @@ public class CiSyncManager {
 
 
         /**
-         * 根据数据生成配置项事务，由于可能出现关联配置项，因此有可能返回多个事务
+         * 根据数据生成配置项事务
          *
          * @param dataObj            数据
          * @param syncCiCollectionVo 映射配置

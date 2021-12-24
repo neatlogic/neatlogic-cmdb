@@ -270,32 +270,6 @@
                 </otherwise>
             </choose>
         </foreach>
-        <!-- 老逻辑备份
-        <if test="!smartSearch or (smartSearch and ((keyword != null and keyword != '') or (attrFilterList != null and attrFilterList.size() > 0)))">
-            <foreach collection="attrList" item="attr">
-                <if test="attr.needTargetCi == true">
-                    LEFT JOIN `cmdb_attrentity` `cmdb_attrentity_${attr.id}` ON `ci_base`.id =
-                    `cmdb_attrentity_${attr.id}`.from_cientity_id AND `cmdb_attrentity_${attr.id}`.attr_id = #{attr.id}
-                    <if test="limitAttrEntity == true">
-                        AND `cmdb_attrentity_${attr.id}`.`from_index` &lt;= (#{attr.maxAttrEntityCount} + 1)
-                    </if>
-                    <choose>
-                        <when test="attr.targetIsVirtual != 1">
-                            LEFT JOIN `cmdb_cientity` `cmdb_attr_cientity_${attr.id}` ON
-                            `cmdb_attrentity_${attr.id}`.to_cientity_id
-                            = `cmdb_attr_cientity_${attr.id}`.id
-                        </when>
-                        <otherwise>
-                            LEFT JOIN ${attr.targetCiTableName} `cmdb_attr_cientity_${attr.id}` ON
-                            `cmdb_attrentity_${attr.id}`.to_cientity_id
-                            = `cmdb_attr_cientity_${attr.id}`.id
-                        </otherwise>
-                    </choose>
-                </if>
-            </foreach>
-        </if>
-       -->
-        <!--新逻辑-->
         <if test="!smartSearch or (attrFilterList != null and attrFilterList.size() > 0)">
             <foreach collection="attrList" item="attr">
                 <if test="attr.needTargetCi == true and (!smartSearch or @codedriver.framework.cmdb.dao.ognl.IsAttrExistsInFilter@isExists(attr, attrFilterList))">
@@ -397,30 +371,9 @@
             <if test="filterCiId != null">
                 AND `ci_base`.ci_id = #{filterCiId}
             </if>
-            <!--新逻辑-->
             <if test="keyword != null and keyword != ''">
                 AND (`ci_base`.id = #{keyword} OR `ci_base`.`name` LIKE CONCAT('%',#{keyword},'%'))
             </if>
-            <!--新逻辑-->
-            <!--老逻辑备份
-            <if test="keyword != null and keyword != ''">
-                AND (`ci_base`.id = #{keyword} OR `ci_base`.`name` LIKE CONCAT('%',#{keyword},'%')
-                <foreach collection="attrList" item="attr">
-                    <choose>
-                        <when test="attr.needTargetCi == false ">
-                            OR ${attr.ciTableName}.`${attr.id}` LIKE CONCAT('%',#{keyword},'%')
-                        </when>
-                        <otherwise>
-                            OR `cmdb_attr_cientity_${attr.id}`.name LIKE CONCAT('%',#{keyword},'%')
-                        </otherwise>
-                    </choose>
-                </foreach>
-                <foreach collection="relList" item="rel">
-                    OR `cmdb_rel_cientity_${rel.id}_${rel.direction}`.name LIKE CONCAT('%',#{keyword},'%')
-                </foreach>
-                )
-            </if>
-            -->
             <if test="attrFilterList != null and attrFilterList.size() > 0">
                 <foreach collection="attrFilterList" item="attrFilter">
                     <if test="(attrFilter.valueList != null and attrFilter.valueList.size() > 0) or attrFilter.expression == 'is-null' or attrFilter.expression == 'is-not-null'">

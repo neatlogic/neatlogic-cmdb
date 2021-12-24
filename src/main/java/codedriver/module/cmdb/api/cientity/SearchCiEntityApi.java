@@ -80,6 +80,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
             @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "关键字"),
+            @Param(name = "dsl", type = ApiParamType.STRING, desc = "DSL语句"),
             @Param(name = "groupId", type = ApiParamType.LONG, desc = "团体id"),
             @Param(name = "attrFilterList", type = ApiParamType.STRING, desc = "属性过滤条件"),
             @Param(name = "relFilterList", type = ApiParamType.JSONARRAY, desc = "关系过滤条件"),
@@ -98,7 +99,9 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
             @Param(name = "ciEntityList", type = ApiParamType.JSONARRAY, desc = "配置项结果集，如果提供则不会进行搜索，补充头部信息后直接返回"),
             @Param(name = "attrId", type = ApiParamType.LONG, desc = "关系id（通过引用配置项查询引用属性时使用）"),
             @Param(name = "fromCiEntityId", type = ApiParamType.LONG, desc = "引用配置项id（通过引用配置项查询引用属性时使用）"),
-            @Param(name = "isAllColumn", type = ApiParamType.ENUM, rule = "0,1", desc = "是否返回所有列数据")
+            @Param(name = "isAllColumn", type = ApiParamType.ENUM, rule = "0,1", desc = "是否返回所有列数据"),
+            @Param(name = "isLimitRelEntity", type = ApiParamType.BOOLEAN, desc = "是否限制返回的关系数据"),
+            @Param(name = "isLimitAttrEntity", type = ApiParamType.BOOLEAN, desc = "是否限制返回的引用属性数据")
     })
     @Output({@Param(explode = BasePageVo.class),
             @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = CiEntityVo[].class),
