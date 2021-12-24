@@ -18,8 +18,10 @@ import codedriver.framework.cmdb.dto.cientity.*;
 import codedriver.framework.cmdb.dto.transaction.*;
 import codedriver.framework.cmdb.enums.*;
 import codedriver.framework.cmdb.enums.group.GroupType;
+import codedriver.framework.cmdb.exception.attr.AttrNotFoundException;
 import codedriver.framework.cmdb.exception.attrtype.AttrTypeNotFoundException;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
+import codedriver.framework.cmdb.exception.ci.CiUniqueAttrNotFoundException;
 import codedriver.framework.cmdb.exception.ci.CiUniqueRuleException;
 import codedriver.framework.cmdb.exception.cientity.*;
 import codedriver.framework.cmdb.exception.transaction.TransactionAuthException;
@@ -999,6 +1001,10 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             CiEntityVo ciEntityConditionVo = new CiEntityVo();
             ciEntityConditionVo.setCiId(ciEntityTransactionVo.getCiId());
             for (Long attrId : ciVo.getUniqueAttrIdList()) {
+                Optional<AttrVo> op = attrList.stream().filter(d -> d.getId().equals(attrId)).findFirst();
+                if (!op.isPresent()) {
+                    throw new AttrNotFoundException(attrId);
+                }
                 AttrEntityTransactionVo attrEntityTransactionVo = ciEntityTransactionVo.getAttrEntityTransactionByAttrId(attrId);
                 if (attrEntityTransactionVo != null) {
                     AttrFilterVo filterVo = new AttrFilterVo();
@@ -1006,9 +1012,12 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     filterVo.setExpression(SearchExpression.EQ.getExpression());
                     filterVo.setValueList(attrEntityTransactionVo.getValueList().stream().map(d -> {
                         if (d != null) {
+                            if (StringUtils.isBlank(d.toString())) {
+                                throw new CiUniqueAttrNotFoundException(op.get());
+                            }
                             return d.toString();
                         } else {
-                            return "";
+                            throw new CiUniqueAttrNotFoundException(op.get());
                         }
                     }).collect(Collectors.toList()));
                     ciEntityConditionVo.addAttrFilter(filterVo);
@@ -1021,14 +1030,20 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                             filterVo.setExpression(SearchExpression.EQ.getExpression());
                             filterVo.setValueList(attrEntityVo.getValueList().stream().map(d -> {
                                 if (d != null) {
+                                    if (StringUtils.isBlank(d.toString())) {
+                                        throw new CiUniqueAttrNotFoundException(op.get());
+                                    }
                                     return d.toString();
                                 } else {
-                                    return "";
+                                    throw new CiUniqueAttrNotFoundException(op.get());
                                 }
                             }).collect(Collectors.toList()));
                             ciEntityConditionVo.addAttrFilter(filterVo);
                         }
-                    }//新值没有修改
+                    } else {
+                        //没有oldEntity代表新添加数据，如果没有唯一属性值则需要抛异常
+                        throw new CiUniqueAttrNotFoundException(op.get());
+                    }
                 }
             }
             if (CollectionUtils.isNotEmpty(ciEntityConditionVo.getAttrFilterList())) {
