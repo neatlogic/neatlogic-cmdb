@@ -539,10 +539,11 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
     public Long saveCiEntity(CiEntityTransactionVo ciEntityTransactionVo, TransactionGroupVo transactionGroupVo) {
         if (ciEntityTransactionVo.getAction().equals(TransactionActionType.UPDATE.getValue())) {
             CiEntityVo oldCiEntityVo = this.getCiEntityByIdLite(ciEntityTransactionVo.getCiId(), ciEntityTransactionVo.getCiEntityId(), true, false, false);
-
             // 正在编辑中的配置项，在事务提交或删除前不允许再次修改
             if (oldCiEntityVo == null) {
-                throw new CiEntityNotFoundException(ciEntityTransactionVo.getCiEntityId());
+                //就配置项不存在直接返回0L，代表什么都不需要做
+                return 0L;
+                //throw new CiEntityNotFoundException(ciEntityTransactionVo.getCiEntityId());
             } else if (oldCiEntityVo.getIsLocked().equals(1)) {
                 throw new CiEntityIsLockedException(ciEntityTransactionVo.getCiEntityId());
             }

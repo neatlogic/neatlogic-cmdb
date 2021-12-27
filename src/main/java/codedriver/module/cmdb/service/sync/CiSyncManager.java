@@ -62,6 +62,9 @@ import java.util.stream.Collectors;
 
 /**
  * 配置项和mongodb同步管理类
+ * FIXME 遗留问题：1、searchCiEntityWithCache会缓存还没真正添加到数据库的配置项，如果这个配置项最终添加失败，就会导致后续的引用数据出现错误数据，但这种错误不影响查询，暂时先不处理。
+ *  后续要处理需要做比较大的改造，例如生成全局的hashcode和cientityId的关系表，但这样也没法保证数据正确，因为配置项的添加不一定严格按照引用顺序来添加，如果引用方在被引用方前写入数据库，一样会出现类似问题。
+ *  目前能想到比较好的做法是查询时能屏蔽不完整数据，允许数据库中能出现一定程度的错误数据，例如关系或引用属性引用了不存在的ciEntityId。
  */
 @Service
 public class CiSyncManager {
@@ -94,6 +97,7 @@ public class CiSyncManager {
         private final Map<String, SyncCiCollectionVo> syncCiCollectionMap = new HashMap<>();//普通集合映射缓存
         private final List<SyncCiCollectionVo> syncCiCollectionList;
         private final List<CollectionVo> collectionList;
+        private final HashMap<Integer, Object> filterLock = new HashMap<>();
         private JSONObject singleDataObj;
         private final String mode;//如果是batch模式，代表批量更新，如果是single模式，接受单条数据更新
         int CAPACITY = 5000;//缓存大小
@@ -104,22 +108,40 @@ public class CiSyncManager {
             }
         };
 
-        public List<CiEntityVo> searchCiEntityWithCache(CiEntityVo conditionVo) {
+
+        private List<CiEntityVo> searchCiEntityWithCache(CiEntityVo conditionVo) {
+            Object lock;
             int hash = Objects.hash(conditionVo.getCiId(), CollectionUtils.isNotEmpty(conditionVo.getAttrFilterList()) ? JSONObject.toJSONString(conditionVo.getAttrFilterList()) : "");
-            List<CiEntityVo> ciEntityList = ciEntityCache.get(hash);
-            if (ciEntityList == null) {
-                ciEntityList = ciEntityService.searchCiEntity(conditionVo);
-                if (CollectionUtils.isNotEmpty(ciEntityList)) {
-                    synchronized (ciEntityCache) {
-                        ciEntityCache.put(hash, ciEntityList);
+            synchronized (filterLock) {
+                if (!filterLock.containsKey(hash)) {
+                    filterLock.put(hash, new Object());
+                }
+                lock = filterLock.get(hash);
+            }
+            synchronized (lock) {
+                List<CiEntityVo> ciEntityList = ciEntityCache.get(hash);
+                //数据不为空才会写入cache
+                if (CollectionUtils.isEmpty(ciEntityList)) {
+                    ciEntityList = ciEntityService.searchCiEntity(conditionVo);
+                    if (CollectionUtils.isNotEmpty(ciEntityList)) {
+                        synchronized (ciEntityCache) {
+                            ciEntityCache.put(hash, ciEntityList);
+                        }
+                    } else {
+                        //用一个新的list去存放新的配置项对象是为了确保第一次为空时能返回一个空的列表，让系统能正常Insert第一个空配置项，后续添加都是使用cache
+                        List<CiEntityVo> tmpCiEntityList = new ArrayList<>();
+                        tmpCiEntityList.add(conditionVo);
+                        synchronized (ciEntityCache) {
+                            ciEntityCache.put(hash, tmpCiEntityList);
+                        }
+                    }
+                } else {
+                    if (logger.isInfoEnabled()) {
+                        logger.info("缓存命中，当前缓存大小：" + ciEntityCache.size());
                     }
                 }
-            } else {
-                if (logger.isInfoEnabled()) {
-                    logger.info("缓存命中，当前缓存大小：" + ciEntityCache.size());
-                }
+                return ciEntityList;
             }
-            return ciEntityList;
         }
 
         public SyncHandler(List<SyncCiCollectionVo> syncCiCollectionVoList) {
@@ -549,22 +571,21 @@ public class CiSyncManager {
                             }
                             try {
                                 ciEntityService.saveCiEntityWithoutTransaction(ciEntityTransactionList, syncCiCollectionVo.getTransactionGroup());
+                            } catch (ApiRuntimeException ex) {
+                                logger.warn(ex.getMessage(), ex);
+                                syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage(true));
                             } catch (Exception ex) {
-                                if (!(ex instanceof ApiRuntimeException)) {
-                                    logger.error(ex.getMessage(), ex);
-                                    syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
-                                } else {
-                                    syncCiCollectionVo.getSyncAudit().appendError(((ApiRuntimeException) ex).getMessage(true));
-                                }
+                                logger.error(ex.getMessage(), ex);
+                                syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
                             }
                         }
+                    } catch (ApiRuntimeException ex) {
+                        logger.warn(ex.getMessage(), ex);
+                        syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage(true));
                     } catch (Exception ex) {
-                        if (!(ex instanceof ApiRuntimeException)) {
-                            logger.error(ex.getMessage(), ex);
-                            syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
-                        } else {
-                            syncCiCollectionVo.getSyncAudit().appendError(((ApiRuntimeException) ex).getMessage(true));
-                        }
+                        logger.error(ex.getMessage(), ex);
+                        syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
+
                     } finally {
                         syncCiCollectionVo.getSyncAudit().setStatus(SyncStatus.DONE.getValue());
                         syncAuditMapper.updateSyncAuditStatus(syncCiCollectionVo.getSyncAudit());
@@ -640,16 +661,15 @@ public class CiSyncManager {
                                 }
                             }
                         }
+                    } catch (ApiRuntimeException ex) {
+                        logger.warn(ex.getMessage(), ex);
+                        syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage(true));
                     } catch (Exception ex) {
-                        if (!(ex instanceof ApiRuntimeException)) {
-                            logger.error(ex.getMessage(), ex);
-                            if (StringUtils.isNotBlank(ex.getMessage())) {
-                                syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
-                            } else {
-                                syncCiCollectionVo.getSyncAudit().appendError(ExceptionUtils.getStackTrace(ex));
-                            }
+                        logger.error(ex.getMessage(), ex);
+                        if (StringUtils.isNotBlank(ex.getMessage())) {
+                            syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
                         } else {
-                            syncCiCollectionVo.getSyncAudit().appendError(((ApiRuntimeException) ex).getMessage(true));
+                            syncCiCollectionVo.getSyncAudit().appendError(ExceptionUtils.getStackTrace(ex));
                         }
                     } finally {
                         syncCiCollectionVo.getSyncAudit().setStatus(SyncStatus.DONE.getValue());
@@ -669,7 +689,7 @@ public class CiSyncManager {
         private void dealWithDataBatch(SyncCiCollectionVo syncCiCollectionVo, Set<String> fieldList, List<JSONObject> dataList, AtomicInteger count) {
             if (CollectionUtils.isNotEmpty(dataList)) {
                 BatchRunner<JSONObject> batchRunner = new BatchRunner<>();
-                batchRunner.execute(dataList, 10, data -> {
+                BatchRunner.State state = batchRunner.execute(dataList, 10, data -> {
                     int tmpCount = count.addAndGet(1);
                     long startTime = 0L;
                     if (logger.isInfoEnabled()) {
@@ -708,19 +728,23 @@ public class CiSyncManager {
                             if (logger.isInfoEnabled()) {
                                 logger.info("处理了" + ciEntityTransactionList.size() + "个事务，耗时：" + (System.currentTimeMillis() - startTime) + "ms");
                             }
+                        } catch (ApiRuntimeException ex) {
+                            logger.warn(ex.getMessage(), ex);
+                            syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage(true));
                         } catch (Exception ex) {
-                            if (!(ex instanceof ApiRuntimeException)) {
-                                logger.error(ex.getMessage(), ex);
-                                syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
-                            } else {
-                                syncCiCollectionVo.getSyncAudit().appendError(((ApiRuntimeException) ex).getMessage(true));
-                            }
+                            logger.error(ex.getMessage(), ex);
+                            syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
                         }
                     }
                     if (logger.isInfoEnabled()) {
                         logger.info("第" + tmpCount + "条数据处理完成，耗时：" + (System.currentTimeMillis() - startTime) + "ms");
                     }
                 }, "SYNC-BATCH-HANDLER");
+                if (!state.isSucceed()) {
+                    if (state.getException() != null) {
+                        throw new ApiRuntimeException(state.getException());
+                    }
+                }
             }
         }
 
