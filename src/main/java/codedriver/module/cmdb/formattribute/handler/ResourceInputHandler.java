@@ -25,7 +25,7 @@ import java.util.List;
  * @author linbq
  * @since 2021/9/13 9:56
  **/
-@Component
+//@Component 用“执行目标”组件替代“资产输入”组件
 public class ResourceInputHandler extends FormHandlerBase {
 
     @Resource
