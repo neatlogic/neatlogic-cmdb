@@ -204,7 +204,11 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                         break;
                     case "const":
                         //固化属性需要特殊处理
-                        matrixAttributeVo.setUuid("const_" + ciview.getItemName().replace("_", ""));
+                        String itemName = ciview.getItemName().replace("_", "");
+                        matrixAttributeVo.setUuid("const_" + itemName);
+                        if ("id".equals(itemName)) {
+                            matrixAttributeVo.setPrimaryKey(1);
+                        }
                         break;
                 }
                 if (showAttributeUuidList != null) {
@@ -238,7 +242,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         // paramObj.put("ciId", matrixCiVo.getCiId());
         // paramObj.put("currentPage", dataVo.getCurrentPage());
         //  paramObj.put("pageSize", dataVo.getPageSize());
-        JSONObject resultObj = accessSearchCiEntityApi(ciEntityVo);
+        JSONObject resultObj = accessSearchCiEntityApi(matrixUuid, ciEntityVo);
         if (MapUtils.isNotEmpty(resultObj)) {
             List<Map<String, Object>> tbodyList = new ArrayList<>();
             JSONArray tbodyArray = resultObj.getJSONArray("tbodyList");
@@ -387,7 +391,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             JSONObject resultObj = new JSONObject();
             if (needAccessApi) {
 //                System.out.println(paramObj);
-                JSONObject result = accessSearchCiEntityApi(ciEntityVo);
+                JSONObject result = accessSearchCiEntityApi(matrixUuid, ciEntityVo);
 //                System.out.println(result);
                 if (MapUtils.isNotEmpty(result)) {
                     List<Map<String, Object>> tbodyList = new ArrayList<>();
@@ -641,7 +645,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                         if (needAccessApi) {
                             ciEntityVo.setAttrFilterList(attrFilterList);
                             ciEntityVo.setRelFilterList(relFilterList);
-                            JSONObject resultObj = accessSearchCiEntityApi(ciEntityVo);
+                            JSONObject resultObj = accessSearchCiEntityApi(matrixUuid, ciEntityVo);
                             resultList.addAll(getCmdbCiDataTbodyList(resultObj, columnList));
                         }
                     }
@@ -700,7 +704,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                     int pageSize = dataVo.getPageSize();
                     ciEntityVo.setPageSize(pageSize);
                     ciEntityVo.setNeedPage(pageSize < 100);
-                    JSONObject result = accessSearchCiEntityApi(ciEntityVo);
+                    JSONObject result = accessSearchCiEntityApi(matrixUuid, ciEntityVo);
                     resultList = getCmdbCiDataTbodyList(result, columnList);
                 }
 
@@ -745,9 +749,30 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
 
     }
 
-    private JSONObject accessSearchCiEntityApi(CiEntityVo ciEntityVo) {
+    private JSONObject accessSearchCiEntityApi(String matrixUuid, CiEntityVo ciEntityVo) {
         try {
             JSONObject resultObj = new JSONObject();
+            List<Long> attrIdList = new ArrayList<>();
+            List<Long> relIdList = new ArrayList<>();
+            MatrixCiVo matrixCiVo = matrixMapper.getMatrixCiByMatrixUuid(matrixUuid);
+            if (matrixCiVo == null) {
+                throw new MatrixCiNotFoundException(matrixUuid);
+            }
+            JSONArray showAttributeUuidArray = (JSONArray) JSONPath.read(matrixCiVo.getConfig(), "showAttributeUuidList");
+            if (CollectionUtils.isNotEmpty(showAttributeUuidArray)) {
+                List<String> showAttributeUuidList = showAttributeUuidArray.toJavaList(String.class);
+                for (String uuid : showAttributeUuidList) {
+                    if (uuid.startsWith("attr_")) {
+                        attrIdList.add(Long.valueOf(uuid.substring(5)));
+                    } else if (uuid.startsWith("relfrom_")) {
+                        relIdList.add(Long.valueOf(uuid.substring(8)));
+                    } else if (uuid.startsWith("relto_")) {
+                        relIdList.add(Long.valueOf(uuid.substring(6)));
+                    }
+                }
+                ciEntityVo.setAttrIdList(attrIdList);
+                ciEntityVo.setRelIdList(relIdList);
+            }
             List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
             if (CollectionUtils.isNotEmpty(ciEntityList)) {
                 List<String> viewConstNameList = new ArrayList<>();
