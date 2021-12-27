@@ -5,6 +5,7 @@
 
 package codedriver.module.cmdb.api.cientity;
 
+import codedriver.framework.cmdb.crossover.IBatchSaveCiEntityPublicApiCrossoverService;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.ci.RelVo;
@@ -38,7 +39,7 @@ import java.util.stream.Collectors;
 @Service
 @OperationType(type = OperationTypeEnum.UPDATE)
 @Transactional
-public class BatchSaveCiEntityPublicApi extends PublicApiComponentBase {
+public class BatchSaveCiEntityPublicApi extends PublicApiComponentBase implements IBatchSaveCiEntityPublicApiCrossoverService {
     @Resource
     private CiService ciService;
 
