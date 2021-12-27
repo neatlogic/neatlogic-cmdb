@@ -3,7 +3,7 @@
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
-package codedriver.module.cmdb.form.attribute.handler;
+package codedriver.module.cmdb.formattribute.handler;
 
 import codedriver.framework.common.constvalue.ParamType;
 import codedriver.framework.form.attribute.core.FormHandlerBase;
@@ -17,18 +17,18 @@ import java.util.List;
 
 /**
  * @author linbq
- * @since 2021/12/27 11:18
+ * @since 2021/12/27 11:14
  **/
 @Component
-public class ProtocolHandler extends FormHandlerBase {
+public class ResourcesHandler extends FormHandlerBase {
     @Override
     public String getHandler() {
-        return "protocol";
+        return "formresoureces";
     }
 
     @Override
     public String getHandlerName() {
-        return "连接协议";
+        return "执行目标";
     }
 
     @Override
@@ -38,7 +38,7 @@ public class ProtocolHandler extends FormHandlerBase {
 
     @Override
     public String getIcon() {
-        return "tsfont-zirenwu";
+        return "tsfont-blocks";
     }
 
     @Override
@@ -113,6 +113,6 @@ public class ProtocolHandler extends FormHandlerBase {
 
     @Override
     public int getSort() {
-        return 22;
+        return 21;
     }
 }
