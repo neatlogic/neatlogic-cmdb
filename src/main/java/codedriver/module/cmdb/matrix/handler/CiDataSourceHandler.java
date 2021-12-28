@@ -609,8 +609,26 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             }
             CiViewVo ciViewVo = new CiViewVo();
             ciViewVo.setCiId(ciId);
+            Map<String, CiViewVo> ciViewMap = new HashMap<>();
             List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo));
-            Map<String, CiViewVo> ciViewMap = ciViewList.stream().collect(Collectors.toMap(CiViewVo::getItemName, e -> e));
+            for (CiViewVo ciview : ciViewList) {
+                switch (ciview.getType()) {
+                    case "attr":
+                        ciViewMap.put("attr_" + ciview.getItemId(), ciview);
+                        break;
+                    case "relfrom":
+                        ciViewMap.put("relfrom_" + ciview.getItemId(), ciview);
+                        break;
+                    case "relto":
+                        ciViewMap.put("relto_" + ciview.getItemId(), ciview);
+                        break;
+                    case "const":
+                        //固化属性需要特殊处理
+                        ciViewMap.put("const_" + ciview.getItemName().replace("_", ""), ciview);
+                        break;
+                }
+            }
+//            Map<String, CiViewVo> ciViewMap = ciViewList.stream().collect(Collectors.toMap(CiViewVo::getItemName, e -> e));
             List<AttrFilterVo> attrFilterList = new ArrayList<>();
             List<RelFilterVo> relFilterList = new ArrayList<>();
             JSONArray defaultValue = dataVo.getDefaultValue();
