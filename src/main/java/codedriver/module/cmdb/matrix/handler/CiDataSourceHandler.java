@@ -212,7 +212,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                         break;
                 }
                 if (showAttributeUuidList != null) {
-                    if (!showAttributeUuidList.contains(matrixAttributeVo.getUuid())) {
+                    if (!showAttributeUuidList.contains(matrixAttributeVo.getUuid()) && Objects.equals(matrixAttributeVo.getPrimaryKey(), 0)) {
                         continue;
                     }
                 }
