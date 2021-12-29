@@ -412,12 +412,32 @@
                             <otherwise>
                                 <choose>
                                     <when test="attrFilter.expression == 'equal'">
-                                        AND ${attrFilter.ciTableName}.`${attrFilter.attrId}_hash` =
-                                        #{attrFilter.value,typeHandler=Md5Handler}
+                                        <choose>
+                                            <when test="attrFilter.valueList.size > 1">
+                                                AND ${attrFilter.ciTableName}.`${attrFilter.attrId}_hash` in
+                                                <foreach collection="attrFilter.valueList" item="item" open="("
+                                                         close=")" separator=",">
+                                                    #{item,typeHandler=Md5Handler}
+                                                </foreach>
+                                            </when>
+                                            <otherwise>AND ${attrFilter.ciTableName}.`${attrFilter.attrId}_hash` =
+                                                #{attrFilter.value,typeHandler=Md5Handler}
+                                            </otherwise>
+                                        </choose>
                                     </when>
                                     <when test="attrFilter.expression == 'notequal'">
-                                        AND ${attrFilter.ciTableName}.`${attrFilter.attrId}_hash` !=
-                                        #{attrFilter.value,typeHandler=Md5Handler}
+                                        <choose>
+                                            <when test="attrFilter.valueList.size > 1">
+                                                AND ${attrFilter.ciTableName}.`${attrFilter.attrId}_hash` not in
+                                                <foreach collection="attrFilter.valueList" item="item" open="("
+                                                         close=")" separator=",">
+                                                    #{item,typeHandler=Md5Handler}
+                                                </foreach>
+                                            </when>
+                                            <otherwise>AND ${attrFilter.ciTableName}.`${attrFilter.attrId}_hash` ！=
+                                                #{attrFilter.value,typeHandler=Md5Handler}
+                                            </otherwise>
+                                        </choose>
                                     </when>
                                     <when test="attrFilter.expression == 'like'">
                                         AND ${attrFilter.ciTableName}.`${attrFilter.attrId}` LIKE
