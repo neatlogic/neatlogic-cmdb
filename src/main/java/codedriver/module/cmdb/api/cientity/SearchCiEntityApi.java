@@ -167,7 +167,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
             // 增加下拉展开控制列
             theadList.add(new JSONObject() {
                 {
-                    this.put("key", "expand");
+                    this.put("key", "expandControl");
                 }
             });
         }
