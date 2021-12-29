@@ -236,10 +236,6 @@
         `ci_base`.`uuid` AS `uuid`,
         `ci_base`.`name` AS `name`,
         `ci_base`.`ci_id` AS ciId,
-        `ci_base`.`lcd` AS lcd,
-        `ci_base`.`lcu` AS lcu,
-        `ci_base`.`fcd` AS fcd,
-        `ci_base`.`fcu` AS fcu,
         <choose>
             <when test="ciList.size == 1 and ciList[0].isVirtual == 1">
                 null as inspectTime,
@@ -247,6 +243,10 @@
                 null as monitorTime,
                 null as monitorStatus,
                 null as renewTime,
+                null AS lcd,
+                null AS lcu,
+                null AS fcd,
+                null AS fcu,
             </when>
             <otherwise>
                 ROUND(UNIX_TIMESTAMP(`ci_base`.`inspect_time`) * 1000) AS inspectTime,
@@ -254,6 +254,10 @@
                 ROUND(UNIX_TIMESTAMP(`ci_base`.`monitor_time`) * 1000) AS monitorTime,
                 `ci_base`.`monitor_status` AS monitorStatus,
                 ROUND(UNIX_TIMESTAMP(`ci_base`.`renew_time`) * 1000) AS renewTime,
+                `ci_base`.`lcd` AS lcd,
+                `ci_base`.`lcu` AS lcu,
+                `ci_base`.`fcd` AS fcd,
+                `ci_base`.`fcu` AS fcu,
             </otherwise>
         </choose>
         `ci`.`type_id` AS `typeId`,
@@ -568,10 +572,6 @@
         `ci_base`.`uuid` AS `uuid`,
         `ci_base`.`name` AS `name`,
         `ci_base`.`ci_id` AS ciId,
-        `ci_base`.`lcd` AS lcd,
-        `ci_base`.`lcu` AS lcu,
-        `ci_base`.`fcd` AS fcd,
-        `ci_base`.`fcu` AS fcu,
         <choose>
             <when test="ciList.size == 1 and ciList[0].isVirtual == 1">
                 null as inspectTime,
@@ -579,6 +579,10 @@
                 null as monitorTime,
                 null as monitorStatus,
                 null as renewTime,
+                null AS lcd,
+                null AS lcu,
+                null AS fcd,
+                null AS fcu,
             </when>
             <otherwise>
                 ROUND(UNIX_TIMESTAMP(`ci_base`.`inspect_time`) * 1000) AS inspectTime,
@@ -586,6 +590,10 @@
                 ROUND(UNIX_TIMESTAMP(`ci_base`.`monitor_time`) * 1000) AS monitorTime,
                 `ci_base`.`monitor_status` AS monitorStatus,
                 ROUND(UNIX_TIMESTAMP(`ci_base`.`renew_time`) * 1000) AS renewTime,
+                `ci_base`.`lcd` AS lcd,
+                `ci_base`.`lcu` AS lcu,
+                `ci_base`.`fcd` AS fcd,
+                `ci_base`.`fcu` AS fcu,
             </otherwise>
         </choose>
         `ci`.`type_id` AS `typeId`,
