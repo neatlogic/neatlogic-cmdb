@@ -115,4 +115,9 @@ public class ResourcesHandler extends FormHandlerBase {
     public int getSort() {
         return 21;
     }
+
+    @Override
+    protected JSONObject getMyDetailedData(AttributeDataVo attributeDataVo, JSONObject configObj) {
+        return null;
+    }
 }

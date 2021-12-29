@@ -143,4 +143,9 @@ public class ResourceInputHandler extends FormHandlerBase {
     public Object textConversionValue(List<String> values, JSONObject config) {
         return null;
     }
+
+    @Override
+    protected JSONObject getMyDetailedData(AttributeDataVo attributeDataVo, JSONObject configObj) {
+        return null;
+    }
 }
