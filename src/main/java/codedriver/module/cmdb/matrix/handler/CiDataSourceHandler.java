@@ -23,6 +23,7 @@ import codedriver.framework.matrix.core.MatrixDataSourceHandlerBase;
 import codedriver.framework.matrix.dto.*;
 import codedriver.framework.matrix.exception.MatrixAttributeNotFoundException;
 import codedriver.framework.matrix.exception.MatrixCiNotFoundException;
+import codedriver.framework.util.TableResultUtil;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiViewMapper;
@@ -242,29 +243,24 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         // paramObj.put("ciId", matrixCiVo.getCiId());
         // paramObj.put("currentPage", dataVo.getCurrentPage());
         //  paramObj.put("pageSize", dataVo.getPageSize());
-        JSONObject resultObj = accessSearchCiEntityApi(matrixUuid, ciEntityVo);
-        if (MapUtils.isNotEmpty(resultObj)) {
-            List<Map<String, Object>> tbodyList = new ArrayList<>();
-            JSONArray tbodyArray = resultObj.getJSONArray("tbodyList");
-            if (CollectionUtils.isNotEmpty(tbodyArray)) {
-                for (int i = 0; i < tbodyArray.size(); i++) {
-                    JSONObject rowData = tbodyArray.getJSONObject(i);
-                    if (MapUtils.isNotEmpty(rowData)) {
-                        Map<String, Object> rowDataMap = new HashMap<>();
-                        for (Map.Entry<String, Object> entry : rowData.entrySet()) {
-                            rowDataMap.put(entry.getKey(), matrixAttributeValueHandle(null, entry.getValue()));
-                        }
-                        tbodyList.add(rowDataMap);
+        JSONArray tbodyArray = accessSearchCiEntity(matrixUuid, ciEntityVo);
+        List<Map<String, Object>> tbodyList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(tbodyArray)) {
+            for (int i = 0; i < tbodyArray.size(); i++) {
+                JSONObject rowData = tbodyArray.getJSONObject(i);
+                if (MapUtils.isNotEmpty(rowData)) {
+                    Map<String, Object> rowDataMap = new HashMap<>();
+                    for (Map.Entry<String, Object> entry : rowData.entrySet()) {
+                        rowDataMap.put(entry.getKey(), matrixAttributeValueHandle(null, entry.getValue()));
                     }
+                    tbodyList.add(rowDataMap);
                 }
             }
-            resultObj.put("tbodyList", tbodyList);
         }
         MatrixVo matrixVo = matrixMapper.getMatrixByUuid(matrixUuid);
         List<MatrixAttributeVo> attributeVoList = myGetAttributeList(matrixVo);
         JSONArray theadList = getTheadList(attributeVoList);
-        resultObj.put("theadList", theadList);
-        return resultObj;
+        return TableResultUtil.getResult(theadList, tbodyList, ciEntityVo);
     }
 
     @Override
@@ -388,32 +384,26 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                     // paramObj.put("relFilterList", relFilterList);
                 }
             }
-            JSONObject resultObj = new JSONObject();
+            List<Map<String, Object>> tbodyList = new ArrayList<>();
             if (needAccessApi) {
-//                System.out.println(paramObj);
-                JSONObject result = accessSearchCiEntityApi(matrixUuid, ciEntityVo);
-//                System.out.println(result);
-                if (MapUtils.isNotEmpty(result)) {
-                    List<Map<String, Object>> tbodyList = new ArrayList<>();
-                    JSONArray tbodyArray = result.getJSONArray("tbodyList");
-                    if (CollectionUtils.isNotEmpty(tbodyArray)) {
-                        for (int i = 0; i < tbodyArray.size(); i++) {
-                            JSONObject rowData = tbodyArray.getJSONObject(i);
-                            if (MapUtils.isNotEmpty(rowData)) {
-                                Map<String, Object> rowDataMap = new HashMap<>();
-                                for (Map.Entry<String, Object> entry : rowData.entrySet()) {
-                                    rowDataMap.put(entry.getKey(), matrixAttributeValueHandle(null, entry.getValue()));
-                                }
-                                tbodyList.add(rowDataMap);
+//                System.out.println(JSONObject.toJSONString(ciEntityVo.getAttrFilterList()));
+//                System.out.println(JSONObject.toJSONString(ciEntityVo.getRelFilterList()));
+                JSONArray tbodyArray = accessSearchCiEntity(matrixUuid, ciEntityVo);
+                if (CollectionUtils.isNotEmpty(tbodyArray)) {
+                    for (int i = 0; i < tbodyArray.size(); i++) {
+                        JSONObject rowData = tbodyArray.getJSONObject(i);
+                        if (MapUtils.isNotEmpty(rowData)) {
+                            Map<String, Object> rowDataMap = new HashMap<>();
+                            for (Map.Entry<String, Object> entry : rowData.entrySet()) {
+                                rowDataMap.put(entry.getKey(), matrixAttributeValueHandle(null, entry.getValue()));
                             }
+                            tbodyList.add(rowDataMap);
                         }
                     }
-                    resultObj.put("tbodyList", tbodyList);
                 }
             }
             JSONArray theadList = getTheadList(matrixUuid, matrixAttributeList, dataVo.getColumnList());
-            resultObj.put("theadList", theadList);
-            return resultObj;
+            return TableResultUtil.getResult(theadList, tbodyList, ciEntityVo);
         }
         return new JSONObject();
     }
@@ -663,8 +653,8 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                         if (needAccessApi) {
                             ciEntityVo.setAttrFilterList(attrFilterList);
                             ciEntityVo.setRelFilterList(relFilterList);
-                            JSONObject resultObj = accessSearchCiEntityApi(matrixUuid, ciEntityVo);
-                            resultList.addAll(getCmdbCiDataTbodyList(resultObj, columnList));
+                            JSONArray tbodyArray = accessSearchCiEntity(matrixUuid, ciEntityVo);
+                            resultList.addAll(getCmdbCiDataTbodyList(tbodyArray, columnList));
                         }
                     }
                 }
@@ -722,8 +712,8 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                     int pageSize = dataVo.getPageSize();
                     ciEntityVo.setPageSize(pageSize);
                     ciEntityVo.setNeedPage(pageSize < 100);
-                    JSONObject result = accessSearchCiEntityApi(matrixUuid, ciEntityVo);
-                    resultList = getCmdbCiDataTbodyList(result, columnList);
+                    JSONArray tbodyArray = accessSearchCiEntity(matrixUuid, ciEntityVo);
+                    resultList = getCmdbCiDataTbodyList(tbodyArray, columnList);
                 }
 
                 //去重
@@ -767,9 +757,8 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
 
     }
 
-    private JSONObject accessSearchCiEntityApi(String matrixUuid, CiEntityVo ciEntityVo) {
+    private JSONArray accessSearchCiEntity(String matrixUuid, CiEntityVo ciEntityVo) {
         try {
-            JSONObject resultObj = new JSONObject();
             List<Long> attrIdList = new ArrayList<>();
             List<Long> relIdList = new ArrayList<>();
             MatrixCiVo matrixCiVo = matrixMapper.getMatrixCiByMatrixUuid(matrixUuid);
@@ -851,30 +840,26 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                     }
                     tbodyList.add(tbody);
                 }
-                resultObj.put("tbodyList", tbodyList);
+                return tbodyList;
             }
-            return resultObj;
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
-        return new JSONObject();
+        return new JSONArray();
     }
 
-    public List<Map<String, JSONObject>> getCmdbCiDataTbodyList(JSONObject resultObj, List<String> columnList) {
+    public List<Map<String, JSONObject>> getCmdbCiDataTbodyList(JSONArray tbodyArray, List<String> columnList) {
         List<Map<String, JSONObject>> resultList = new ArrayList<>();
-        if (MapUtils.isNotEmpty(resultObj)) {
-            JSONArray tbodyArray = resultObj.getJSONArray("tbodyList");
-            if (CollectionUtils.isNotEmpty(tbodyArray)) {
-                for (int i = 0; i < tbodyArray.size(); i++) {
-                    JSONObject rowData = tbodyArray.getJSONObject(i);
-                    if (MapUtils.isNotEmpty(rowData)) {
-                        Map<String, JSONObject> resultMap = new HashMap<>(columnList.size());
-                        for (String column : columnList) {
-                            String columnValue = rowData.getString(column);
-                            resultMap.put(column, matrixAttributeValueHandle(null, columnValue));
-                        }
-                        resultList.add(resultMap);
+        if (CollectionUtils.isNotEmpty(tbodyArray)) {
+            for (int i = 0; i < tbodyArray.size(); i++) {
+                JSONObject rowData = tbodyArray.getJSONObject(i);
+                if (MapUtils.isNotEmpty(rowData)) {
+                    Map<String, JSONObject> resultMap = new HashMap<>(columnList.size());
+                    for (String column : columnList) {
+                        String columnValue = rowData.getString(column);
+                        resultMap.put(column, matrixAttributeValueHandle(null, columnValue));
                     }
+                    resultList.add(resultMap);
                 }
             }
         }
