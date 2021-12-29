@@ -89,6 +89,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
             @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "需要查询的配置项id列表）"),
             @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "是否需要操作列，如果需要则根据用户权限返回操作列"),
             @Param(name = "needCheck", type = ApiParamType.BOOLEAN, desc = "是否需要复选列"),
+            @Param(name = "needExpand", type = ApiParamType.BOOLEAN, desc = "是否需要显示展开控制列"),
             @Param(name = "needActionType", type = ApiParamType.BOOLEAN, desc = "是否需要操作类型列，一般在表单控件中使用，用于标记数据是新增还是修改还是删除"),
             @Param(name = "relCiEntityId", type = ApiParamType.LONG, desc = "关系配置项id"),
             @Param(name = "relId", type = ApiParamType.LONG, desc = "关系id"),
@@ -141,6 +142,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
         JSONArray ciEntityObjList = jsonObj.getJSONArray("ciEntityList");
         boolean needAction = jsonObj.getBooleanValue("needAction");
         boolean needCheck = jsonObj.getBooleanValue("needCheck");
+        boolean needExpand = jsonObj.getBooleanValue("needExpand");
         boolean needActionType = jsonObj.getBooleanValue("needActionType");
         String mode = jsonObj.getString("mode");
         // 获取视图配置，只返回需要的属性和关系
@@ -158,6 +160,14 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
             theadList.add(new JSONObject() {
                 {
                     this.put("key", "selection");
+                }
+            });
+        }
+        if (needExpand) {
+            // 增加下拉展开控制列
+            theadList.add(new JSONObject() {
+                {
+                    this.put("key", "expand");
                 }
             });
         }
