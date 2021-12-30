@@ -37,10 +37,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -84,8 +81,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
             @Param(name = "groupId", type = ApiParamType.LONG, desc = "团体id"),
             @Param(name = "attrFilterList", type = ApiParamType.STRING, desc = "属性过滤条件"),
             @Param(name = "relFilterList", type = ApiParamType.JSONARRAY, desc = "关系过滤条件"),
-            @Param(name = "showAttrList", type = ApiParamType.JSONARRAY, desc = "需要显示的属性id列表"),
-            @Param(name = "showRelList", type = ApiParamType.JSONARRAY, desc = "需要显示的关系id列表"),
+            @Param(name = "showAttrRelList", type = ApiParamType.JSONARRAY, desc = "需要显示的字段列表，包括属性关系和常量"),
             @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "需要查询的配置项id列表）"),
             @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "是否需要操作列，如果需要则根据用户权限返回操作列"),
             @Param(name = "needCheck", type = ApiParamType.BOOLEAN, desc = "是否需要复选列"),
@@ -144,6 +140,14 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
         boolean needCheck = jsonObj.getBooleanValue("needCheck");
         boolean needExpand = jsonObj.getBooleanValue("needExpand");
         boolean needActionType = jsonObj.getBooleanValue("needActionType");
+        JSONArray showAttrRelList = jsonObj.getJSONArray("showAttrRelList");
+        Set<String> showAttrRelSet = new HashSet<>();
+        if (CollectionUtils.isNotEmpty(showAttrRelList)) {
+            for (int i = 0; i < showAttrRelList.size(); i++) {
+                showAttrRelSet.add(showAttrRelList.getString(i));
+            }
+        }
+        Set<String> showRelSet = new HashSet<>();
         String mode = jsonObj.getString("mode");
         // 获取视图配置，只返回需要的属性和关系
         CiViewVo ciViewVo = new CiViewVo();
@@ -204,7 +208,9 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
                         headObj.put("key", "const_" + ciview.getItemName().replace("_", ""));
                         break;
                 }
-                theadList.add(headObj);
+                if (CollectionUtils.isEmpty(showAttrRelSet) || showAttrRelSet.contains(headObj.getString("key"))) {
+                    theadList.add(headObj);
+                }
             }
         }
 
