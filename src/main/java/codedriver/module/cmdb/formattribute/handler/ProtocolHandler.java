@@ -115,4 +115,9 @@ public class ProtocolHandler extends FormHandlerBase {
     public int getSort() {
         return 22;
     }
+
+    @Override
+    protected JSONObject getMyDetailedData(AttributeDataVo attributeDataVo, JSONObject configObj) {
+        return null;
+    }
 }

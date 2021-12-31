@@ -189,4 +189,8 @@ public class CiEntitySyncHandler extends FormHandlerBase {
         return null;
     }
 
+    @Override
+    protected JSONObject getMyDetailedData(AttributeDataVo attributeDataVo, JSONObject configObj) {
+        return null;
+    }
 }
