@@ -782,9 +782,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                 ciEntityVo.setAttrIdList(attrIdList);
                 ciEntityVo.setRelIdList(relIdList);
             }
-            System.out.println("inputParam="+ JSONObject.toJSONString(ciEntityVo));
             List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
-            System.out.println("outputParam="+ JSONObject.toJSONString(ciEntityList));
             if (CollectionUtils.isNotEmpty(ciEntityList)) {
                 List<String> viewConstNameList = new ArrayList<>();
                 List<ViewConstVo> ciViewConstList = ciViewMapper.getAllCiViewConstList();
