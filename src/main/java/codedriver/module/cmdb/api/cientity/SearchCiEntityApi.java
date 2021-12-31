@@ -286,7 +286,14 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
                     entityObj.put("authData", actionData);
                 } else if (ciEntityObjList != null && needAction) {
                     JSONObject actionData = new JSONObject();
-                    actionData.put(CiAuthType.CIENTITYUPDATE.getValue(), true);
+                    //用于表单组件的判断，如果是更新或添加操作时才会出现编辑按钮
+                    if (entityObj.containsKey("actionType")
+                            && (entityObj.getString("actionType").equals("update")
+                            || entityObj.getString("actionType").equals("insert"))) {
+                        actionData.put(CiAuthType.CIENTITYUPDATE.getValue(), true);
+                    } else {
+                        actionData.put(CiAuthType.CIENTITYUPDATE.getValue(), false);
+                    }
                     actionData.put(CiAuthType.CIENTITYDELETE.getValue(), true);
                     actionData.put(CiAuthType.PASSWORDVIEW.getValue(), true);
                     actionData.put(CiAuthType.TRANSACTIONMANAGE.getValue(), true);
