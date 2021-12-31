@@ -619,8 +619,6 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                 }
             }
 //            Map<String, CiViewVo> ciViewMap = ciViewList.stream().collect(Collectors.toMap(CiViewVo::getItemName, e -> e));
-            List<AttrFilterVo> attrFilterList = new ArrayList<>();
-            List<RelFilterVo> relFilterList = new ArrayList<>();
             JSONArray defaultValue = dataVo.getDefaultValue();
             if (CollectionUtils.isNotEmpty(defaultValue)) {
                 for (String value : defaultValue.toJavaList(String.class)) {
@@ -634,6 +632,8 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                             }
                         }
                         boolean needAccessApi = true;
+                        List<AttrFilterVo> attrFilterList = new ArrayList<>();
+                        List<RelFilterVo> relFilterList = new ArrayList<>();
                         int min = Math.min(splitList.size(), columnList.size());
                         for (int i = 0; i < min; i++) {
                             String column = columnList.get(i);
@@ -659,6 +659,8 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                     }
                 }
             } else {
+                List<AttrFilterVo> attrFilterList = new ArrayList<>();
+                List<RelFilterVo> relFilterList = new ArrayList<>();
                 boolean needAccessApi = true;
                 String keywordColumn = dataVo.getKeywordColumn();
                 if (StringUtils.isNotBlank(keywordColumn) && StringUtils.isNotBlank(dataVo.getKeyword())) {
@@ -780,7 +782,9 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                 ciEntityVo.setAttrIdList(attrIdList);
                 ciEntityVo.setRelIdList(relIdList);
             }
+            System.out.println("inputParam="+ JSONObject.toJSONString(ciEntityVo));
             List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
+            System.out.println("outputParam="+ JSONObject.toJSONString(ciEntityList));
             if (CollectionUtils.isNotEmpty(ciEntityList)) {
                 List<String> viewConstNameList = new ArrayList<>();
                 List<ViewConstVo> ciViewConstList = ciViewMapper.getAllCiViewConstList();
