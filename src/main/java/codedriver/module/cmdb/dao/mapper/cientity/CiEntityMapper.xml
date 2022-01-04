@@ -138,10 +138,10 @@
         FROM `cmdb_attrentity`
         WHERE attr_id = #{attrId}
         AND from_cientity_id = #{fromCiEntityId}
+        ORDER BY from_index
         <if test="limit != null">
             LIMIT #{limit}
         </if>
-        ORDER BY from_index
     </select>
 
     <select id="getCiEntityCountByAttrIdAndValue" resultType="int" useCache="false">
