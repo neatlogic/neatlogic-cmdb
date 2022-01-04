@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -141,7 +141,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         CiEntityVo returnCiEntityVo = new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, attrList, relList).isFlattenAttr(flattenAttr).build().getCiEntity();
         if (returnCiEntityVo != null) {
             //拼接引用属性数据
-            Integer attrEntityLimit = null;
+            Long attrEntityLimit = null;
             if (limitAttrEntity) {
                 attrEntityLimit = CiEntityVo.MAX_ATTRENTITY_COUNT;
             }
@@ -164,7 +164,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 }
             }
             //拼接关系数据
-            Integer relEntityLimit = null;
+            Long relEntityLimit = null;
             if (limitRelEntity) {
                 relEntityLimit = CiEntityVo.MAX_RELENTITY_COUNT;
             }
@@ -304,7 +304,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         if (CollectionUtils.isNotEmpty(ciEntityVo.getAttrIdList()) && CollectionUtils.isNotEmpty(attrList)) {
             for (AttrVo attrVo : attrList) {
                 if (ciEntityVo.getAttrIdList().stream().noneMatch(d -> d.equals(attrVo.getId()))) {
-                    attrVo.setMaxAttrEntityCount(-1);
+                    attrVo.setMaxAttrEntityCount(-1L);
                 }
             }
         }
@@ -312,7 +312,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         if (CollectionUtils.isNotEmpty(ciEntityVo.getRelIdList()) && CollectionUtils.isNotEmpty(relList)) {
             for (RelVo relVo : relList) {
                 if (ciEntityVo.getRelIdList().stream().noneMatch(d -> d.equals(relVo.getId()))) {
-                    relVo.setMaxRelEntityCount(-1);
+                    relVo.setMaxRelEntityCount(-1L);
                 }
             }
         }
@@ -947,7 +947,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         // 检查关系是否允许重复
                         if (RelRuleType.O.getValue().equals(relVo.getToRule())) {
                             // 需要提取已有的关系信息判断是否有重复
-                            List<RelEntityVo> fromRelEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(ciEntityTransactionVo.getCiEntityId(), relVo.getId(), 2);
+                            List<RelEntityVo> fromRelEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(ciEntityTransactionVo.getCiEntityId(), relVo.getId(), 2L);
                             if ((fromRelEntityList.size() == 1 && !fromRelEntityList.contains(new RelEntityVo(fromRelEntityTransactionList.get(0)))) || fromRelEntityList.size() > 1) {
                                 throw new RelEntityMultipleException(relVo.getToLabel());
                             }
@@ -973,7 +973,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         // 检查关系是否允许重复
                         if (RelRuleType.O.getValue().equals(relVo.getFromRule())) {
                             // 需要提取已有的关系信息判断是否有重复
-                            List<RelEntityVo> toRelEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(ciEntityTransactionVo.getCiEntityId(), relVo.getId(), 2);
+                            List<RelEntityVo> toRelEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(ciEntityTransactionVo.getCiEntityId(), relVo.getId(), 2L);
                             if ((toRelEntityList.size() == 1 && !toRelEntityList.contains(new RelEntityVo(toRelEntityTransactionList.get(0)))) || toRelEntityList.size() > 1) {
                                 throw new RelEntityMultipleException(relVo.getFromLabel());
                             }

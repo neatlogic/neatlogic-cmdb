@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -131,8 +131,8 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                     CiEntityVo pCiEntityVo = new CiEntityVo();
                     pCiEntityVo.setIdList(ciCiEntityIdMap.get(ciId));
                     pCiEntityVo.setCiId(ciId);
-                    pCiEntityVo.setMaxRelEntityCount(100);
-                    pCiEntityVo.setMaxAttrEntityCount(-1);//不用搜索关系
+                    pCiEntityVo.setMaxRelEntityCount(100L);
+                    pCiEntityVo.setMaxAttrEntityCount(-1L);//不用搜索关系
                     List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(pCiEntityVo);
                     if (CollectionUtils.isNotEmpty(ciEntityList)) {
                         // 获取当前层次配置项所有关系(包括上下游)
