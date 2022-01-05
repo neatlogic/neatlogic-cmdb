@@ -5,14 +5,20 @@
 
 package codedriver.module.cmdb.formattribute.handler;
 
+import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import codedriver.framework.common.constvalue.ParamType;
 import codedriver.framework.form.attribute.core.FormHandlerBase;
 import codedriver.framework.form.constvalue.FormConditionModel;
 import codedriver.framework.form.dto.AttributeDataVo;
 import codedriver.framework.form.exception.AttributeValidException;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,6 +27,10 @@ import java.util.List;
  **/
 @Component
 public class ResourcesHandler extends FormHandlerBase {
+
+    @Resource
+    private ResourceCenterMapper resourceCenterMapper;
+
     @Override
     public String getHandler() {
         return "formresoureces";
@@ -92,8 +102,29 @@ public class ResourcesHandler extends FormHandlerBase {
     }
 
     @Override
-    public JSONObject valid(AttributeDataVo attributeDataVo, JSONObject configObj) throws AttributeValidException {
-        return null;
+    public JSONObject valid(AttributeDataVo attributeDataVo, JSONObject jsonObj) throws AttributeValidException {
+        JSONObject resultObj = new JSONObject();
+        resultObj.put("result", true);
+        JSONObject dataObj = (JSONObject) attributeDataVo.getDataObj();
+        String type = dataObj.getString("type");
+        if ("input".equals(type)) {
+            JSONArray inputNodeArray = dataObj.getJSONArray("inputNodeList");
+            if (CollectionUtils.isNotEmpty(inputNodeArray)) {
+                List<ResourceSearchVo> resourceIsNotFoundList = new ArrayList<>();
+                List<ResourceSearchVo> inputNodeList = inputNodeArray.toJavaList(ResourceSearchVo.class);
+                for (ResourceSearchVo node : inputNodeList) {
+                    Long resourceId = resourceCenterMapper.getResourceIdByIpAndPortAndName(node);
+                    if (resourceId == null) {
+                        resourceIsNotFoundList.add(node);
+                    }
+                }
+                if (CollectionUtils.isNotEmpty(resourceIsNotFoundList)) {
+                    resultObj.put("result", false);
+                    resultObj.put("list", resourceIsNotFoundList);
+                }
+            }
+        }
+        return resultObj;
     }
 
     @Override
