@@ -43,10 +43,10 @@ public class ResourceAccountListApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "resourceId", type = ApiParamType.LONG, desc = "资源id")
+            @Param(name = "resourceId", type = ApiParamType.LONG, isRequired = true, desc = "资源id")
     })
     @Output({
-            @Param(name = "tbodyList", explode = AccountVo[].class, desc = "账号列表")})
+            @Param(explode = AccountVo[].class, desc = "账号列表")})
     @Description(desc = "根据资产id获取关联账号信息")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
