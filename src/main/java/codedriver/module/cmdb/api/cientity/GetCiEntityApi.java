@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -20,7 +20,9 @@ import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +30,9 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
@@ -61,6 +65,7 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
             @Param(name = "ciEntityId", type = ApiParamType.LONG, isRequired = true, desc = "配置项id"),
             @Param(name = "limitRelEntity", type = ApiParamType.BOOLEAN, desc = "是否限制关系数量"),
             @Param(name = "limitAttrEntity", type = ApiParamType.BOOLEAN, desc = "是否限制引用属性数量"),
+            @Param(name = "showAttrRelList", type = ApiParamType.JSONARRAY, desc = "需要显示的字段列表，包括属性关系和常量"),
             @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "是否需要操作列，如果需要检查操作权限，会根据结果返回action列")})
     @Output({@Param(explode = CiEntityVo.class)})
     @Description(desc = "获取配置项详细信息接口")
@@ -70,6 +75,13 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
         Long ciId = jsonObj.getLong("ciId");
         Boolean limitRelEntity = jsonObj.getBoolean("limitRelEntity");
         Boolean limitAttrEntity = jsonObj.getBoolean("limitAttrEntity");
+        JSONArray showAttrRelList = jsonObj.getJSONArray("showAttrRelList");
+        Set<String> showAttrRelSet = new HashSet<>();
+        if (CollectionUtils.isNotEmpty(showAttrRelList)) {
+            for (int i = 0; i < showAttrRelList.size(); i++) {
+                showAttrRelSet.add(showAttrRelList.getString(i));
+            }
+        }
         boolean needAction = jsonObj.getBooleanValue("needAction");
         CiVo ciVo = ciMapper.getCiById(ciId);
         CiEntityVo pCiEntityVo = new CiEntityVo();
@@ -121,13 +133,23 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
         entityObj.put("monitorStatus", makeupStatus(ciEntityVo.getMonitorStatus()));
         entityObj.put("renewTime", ciEntityVo.getRenewTime() != null ? sdf.format(ciEntityVo.getRenewTime()) : null);
         entityObj.put("actionType", ciEntityVo.getActionType());
-        entityObj.put("attrEntityData", ciEntityVo.getAttrEntityData());
-        entityObj.put("relEntityData", ciEntityVo.getRelEntityData());
+        entityObj.put("attrEntityData", CollectionUtils.isEmpty(showAttrRelSet) ? ciEntityVo.getAttrEntityData() : getFilterAttrRel(showAttrRelSet, ciEntityVo.getAttrEntityData()));
+        entityObj.put("relEntityData", CollectionUtils.isEmpty(showAttrRelSet) ? ciEntityVo.getRelEntityData() : getFilterAttrRel(showAttrRelSet, ciEntityVo.getRelEntityData()));
         entityObj.put("maxRelEntityCount", ciEntityVo.getMaxRelEntityCount());
         entityObj.put("maxAttrEntityCount", ciEntityVo.getMaxAttrEntityCount());
         entityObj.put("isVirtual", ciEntityVo.getIsVirtual());
         entityObj.put("authData", ciEntityVo.getAuthData());
         return entityObj;
+    }
+
+    private JSONObject getFilterAttrRel(Set<String> showAttrRelSet, JSONObject attrRelData) {
+        JSONObject returnObj = new JSONObject();
+        for (String key : attrRelData.keySet()) {
+            if (showAttrRelSet.contains(key)) {
+                returnObj.put(key, attrRelData.get(key));
+            }
+        }
+        return returnObj;
     }
 
     private String makeupStatus(String status) {

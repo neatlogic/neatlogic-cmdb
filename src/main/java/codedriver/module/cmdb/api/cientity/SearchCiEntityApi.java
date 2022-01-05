@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -147,7 +147,6 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
                 showAttrRelSet.add(showAttrRelList.getString(i));
             }
         }
-        Set<String> showRelSet = new HashSet<>();
         String mode = jsonObj.getString("mode");
         // 获取视图配置，只返回需要的属性和关系
         CiViewVo ciViewVo = new CiViewVo();
