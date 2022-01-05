@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -112,7 +112,7 @@ public class CustomViewBuilder {
                 .withRightItem(new SubSelect()
                         .withSelectBody(buildSubSelectForCi(startCustomViewCiVo).getSelectBody())
                         .withAlias(new Alias("ci_" + startCustomViewCiVo.getUuid())))
-                .withOnExpression(new EqualsTo()
+                .addOnExpression(new EqualsTo()
                         .withLeftExpression(new Column()
                                 .withTable(new Table("ci_base"))
                                 .withColumnName("id"))
@@ -149,7 +149,7 @@ public class CustomViewBuilder {
                         join.withRightItem(new SubSelect()
                                         .withSelectBody(buildSubSelectForCi(customViewCiVo).getSelectBody())
                                         .withAlias(new Alias("ci_" + customViewCiVo.getUuid())))
-                                .withOnExpression(new EqualsTo()
+                                .addOnExpression(new EqualsTo()
                                         .withLeftExpression(new Column()
                                                 .withTable(new Table("ci_" + linkVo.getFromCustomViewCiUuid()))
                                                 .withColumnName(linkVo.getFromUuid() + "_hash"))
@@ -161,7 +161,7 @@ public class CustomViewBuilder {
                         JoinWrapper fromJoinWrapper = joinMap.get(linkVo.getFromCustomViewCiUuid());
                         Join join = (fromJoinWrapper != null && toJoinWrapper.getIndex() < fromJoinWrapper.getIndex()) ? fromJoinWrapper.getJoin() : toJoinWrapper.getJoin();
                         Expression oldExpression = join.getOnExpression();
-                        join.withOnExpression(new AndExpression()
+                        join.addOnExpression(new AndExpression()
                                 .withLeftExpression(oldExpression)
                                 .withRightExpression(new EqualsTo()
                                         .withLeftExpression(new Column()
@@ -223,7 +223,7 @@ public class CustomViewBuilder {
                             JoinWrapper fromJoinWrapper = joinMap.get(linkVo.getFromCustomViewCiUuid());
                             Join join2 = (fromJoinWrapper != null && toJoinWrapper.getIndex() < fromJoinWrapper.getIndex()) ? fromJoinWrapper.getJoin() : toJoinWrapper.getJoin();
                             Expression oldExpression = join2.getOnExpression();
-                            join2.withOnExpression(new AndExpression()
+                            join2.addOnExpression(new AndExpression()
                                     .withLeftExpression(oldExpression)
                                     .withRightExpression(new EqualsTo()
                                             .withLeftExpression(new Column()
@@ -301,50 +301,68 @@ public class CustomViewBuilder {
                             .withTable(new Table("cmdb_" + attrVo.getCiId())))
                             .withAlias(new Alias("`" + viewAttrVo.getUuid() + "_hash`")));
                 } else {
-                    plainSelect.addSelectItems(new SelectExpressionItem(new Column("name")
-                            .withTable(new Table("attr_cientity_" + viewAttrVo.getUuid())))
-                            .withAlias(new Alias("`" + viewAttrVo.getUuid() + "`")));
-                    Function function = new Function();
-                    function.setName("md5");
-                    ExpressionList expressionList = new ExpressionList();
-                    expressionList.addExpressions(new Column("id")
-                            .withTable(new Table("attr_cientity_" + viewAttrVo.getUuid())));
-                    function.setParameters(expressionList);
-                    plainSelect.addSelectItems(new SelectExpressionItem(function).withAlias(new Alias("`" + viewAttrVo.getUuid() + "_hash`")));
+                    CiVo targetCiVo = ciService.getCiById(attrVo.getTargetCiId());
+                    if (targetCiVo != null) {
+                        plainSelect.addSelectItems(new SelectExpressionItem(new Column("name")
+                                .withTable(new Table("attr_cientity_" + viewAttrVo.getUuid())))
+                                .withAlias(new Alias("`" + viewAttrVo.getUuid() + "`")));
+                        Function function = new Function();
+                        function.setName("md5");
+                        ExpressionList expressionList = new ExpressionList();
+                        expressionList.addExpressions(new Column("id")
+                                .withTable(new Table("attr_cientity_" + viewAttrVo.getUuid())));
+                        function.setParameters(expressionList);
+                        plainSelect.addSelectItems(new SelectExpressionItem(function).withAlias(new Alias("`" + viewAttrVo.getUuid() + "_hash`")));
 
 
-                    plainSelect.addJoins(new Join()
-                            .withLeft(true)
-                            .withRightItem(new Table()
-                                    .withName("cmdb_attrentity")
-                                    .withSchemaName(TenantContext.get().getDbName())
-                                    .withAlias(new Alias("attr_" + viewAttrVo.getUuid())))
-                            .withOnExpression(new AndExpression()
-                                    .withLeftExpression(new EqualsTo()
+                        plainSelect.addJoins(new Join()
+                                .withLeft(true)
+                                .withRightItem(new Table()
+                                        .withName("cmdb_attrentity")
+                                        .withSchemaName(TenantContext.get().getDbName())
+                                        .withAlias(new Alias("attr_" + viewAttrVo.getUuid())))
+                                .addOnExpression(new AndExpression()
+                                        .withLeftExpression(new EqualsTo()
+                                                .withLeftExpression(new Column()
+                                                        .withTable(new Table("ci_base"))
+                                                        .withColumnName("id"))
+                                                .withRightExpression(new Column()
+                                                        .withTable(new Table("attr_" + viewAttrVo.getUuid()))
+                                                        .withColumnName("from_cientity_id")))
+                                        .withRightExpression(new EqualsTo()
+                                                .withLeftExpression(new Column()
+                                                        .withTable(new Table("attr_" + viewAttrVo.getUuid()))
+                                                        .withColumnName("attr_id"))
+                                                .withRightExpression(new LongValue(attrVo.getId())))));
+                        if (targetCiVo.getIsVirtual().equals(0)) {
+                            plainSelect.addJoins(new Join()
+                                    .withLeft(true)
+                                    .withRightItem(new Table()
+                                            .withName("cmdb_cientity")
+                                            .withSchemaName(TenantContext.get().getDbName())
+                                            .withAlias(new Alias("attr_cientity_" + viewAttrVo.getUuid())))
+                                    .addOnExpression(new EqualsTo()
                                             .withLeftExpression(new Column()
-                                                    .withTable(new Table("ci_base"))
-                                                    .withColumnName("id"))
+                                                    .withTable(new Table("attr_" + viewAttrVo.getUuid()))
+                                                    .withColumnName("to_cientity_id"))
                                             .withRightExpression(new Column()
-                                                    .withTable(new Table("attr_" + viewAttrVo.getUuid()))
-                                                    .withColumnName("from_cientity_id")))
-                                    .withRightExpression(new EqualsTo()
+                                                    .withTable(new Table("attr_cientity_" + viewAttrVo.getUuid()))
+                                                    .withColumnName("id"))));
+                        } else {
+                            plainSelect.addJoins(new Join()
+                                    .withLeft(true)
+                                    .withRightItem(new Table()
+                                            .withName(targetCiVo.getCiTableName())
+                                            .withAlias(new Alias("attr_cientity_" + viewAttrVo.getUuid())))
+                                    .addOnExpression(new EqualsTo()
                                             .withLeftExpression(new Column()
                                                     .withTable(new Table("attr_" + viewAttrVo.getUuid()))
-                                                    .withColumnName("attr_id"))
-                                            .withRightExpression(new LongValue(attrVo.getId())))));
-                    plainSelect.addJoins(new Join()
-                            .withLeft(true)
-                            .withRightItem(new Table()
-                                    .withName("cmdb_cientity")
-                                    .withSchemaName(TenantContext.get().getDbName())
-                                    .withAlias(new Alias("attr_cientity_" + viewAttrVo.getUuid())))
-                            .withOnExpression(new EqualsTo()
-                                    .withLeftExpression(new Column()
-                                            .withTable(new Table("attr_" + viewAttrVo.getUuid()))
-                                            .withColumnName("to_cientity_id"))
-                                    .withRightExpression(new Column()
-                                            .withTable(new Table("attr_cientity_" + viewAttrVo.getUuid()))
-                                            .withColumnName("id"))));
+                                                    .withColumnName("to_cientity_id"))
+                                            .withRightExpression(new Column()
+                                                    .withTable(new Table("attr_cientity_" + viewAttrVo.getUuid()))
+                                                    .withColumnName("id"))));
+                        }
+                    }
                 }
             }
             //生成主SQL，需要join所有父模型数据表
