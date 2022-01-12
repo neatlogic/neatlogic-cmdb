@@ -206,32 +206,36 @@
 
     <sql id="ciEntityColumnSql">
         <foreach collection="attrList" item="attr">
-            <choose>
-                <when test="attr.needTargetCi == true ">
-                    `cmdb_attrentity_${attr.id}`.`to_cientity_id` AS `attr_${attr.id}`,
-                </when>
-                <otherwise>
-                    ${attr.ciTableName}.`${attr.id}` AS `attr_${attr.id}`,
-                </otherwise>
-            </choose>
+            <if test="@codedriver.framework.cmdb.dao.ognl.IsAttrInAttrIdList@isExists(attr, attrIdList)">
+                <choose>
+                    <when test="attr.needTargetCi == true ">
+                        `cmdb_attrentity_${attr.id}`.`to_cientity_id` AS `attr_${attr.id}`,
+                    </when>
+                    <otherwise>
+                        ${attr.ciTableName}.`${attr.id}` AS `attr_${attr.id}`,
+                    </otherwise>
+                </choose>
+            </if>
         </foreach>
         <foreach collection="relList" item="rel">
-            <choose>
-                <when test="rel.direction == 'from'">
-                    `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id AS `relfrom_${rel.id}`,
-                    `cmdb_relentity_${rel.id}_${rel.direction}`.id AS `relfrom_${rel.id}#id`,
-                    `cmdb_relentity_${rel.id}_${rel.direction}`.valid_day AS `relfrom_${rel.id}#validDay`,
-                    `cmdb_rel_cientity_${rel.id}_${rel.direction}`.name AS `relfrom_${rel.id}#name`,
-                    `cmdb_rel_cientity_${rel.id}_${rel.direction}`.ci_id AS `relfrom_${rel.id}#ciId`,
-                </when>
-                <otherwise>
-                    `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id AS `relto_${rel.id}`,
-                    `cmdb_relentity_${rel.id}_${rel.direction}`.id AS `relto_${rel.id}#id`,
-                    `cmdb_relentity_${rel.id}_${rel.direction}`.valid_day AS `relto_${rel.id}#validDay`,
-                    `cmdb_rel_cientity_${rel.id}_${rel.direction}`.name AS `relto_${rel.id}#name`,
-                    `cmdb_rel_cientity_${rel.id}_${rel.direction}`.ci_id AS `relto_${rel.id}#ciId`,
-                </otherwise>
-            </choose>
+            <if test="@codedriver.framework.cmdb.dao.ognl.IsRelInRelIdList@isExists(rel, relIdList)">
+                <choose>
+                    <when test="rel.direction == 'from'">
+                        `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id AS `relfrom_${rel.id}`,
+                        `cmdb_relentity_${rel.id}_${rel.direction}`.id AS `relfrom_${rel.id}#id`,
+                        `cmdb_relentity_${rel.id}_${rel.direction}`.valid_day AS `relfrom_${rel.id}#validDay`,
+                        `cmdb_rel_cientity_${rel.id}_${rel.direction}`.name AS `relfrom_${rel.id}#name`,
+                        `cmdb_rel_cientity_${rel.id}_${rel.direction}`.ci_id AS `relfrom_${rel.id}#ciId`,
+                    </when>
+                    <otherwise>
+                        `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id AS `relto_${rel.id}`,
+                        `cmdb_relentity_${rel.id}_${rel.direction}`.id AS `relto_${rel.id}#id`,
+                        `cmdb_relentity_${rel.id}_${rel.direction}`.valid_day AS `relto_${rel.id}#validDay`,
+                        `cmdb_rel_cientity_${rel.id}_${rel.direction}`.name AS `relto_${rel.id}#name`,
+                        `cmdb_rel_cientity_${rel.id}_${rel.direction}`.ci_id AS `relto_${rel.id}#ciId`,
+                    </otherwise>
+                </choose>
+            </if>
         </foreach>
         `ci_base`.`id` AS `id`,
         `ci_base`.`uuid` AS `uuid`,
@@ -279,9 +283,9 @@
                 </otherwise>
             </choose>
         </foreach>
-        <if test="!smartSearch or (attrFilterList != null and attrFilterList.size() > 0)">
+        <!--<if test="attrFilterList != null and attrFilterList.size() > 0">-->
             <foreach collection="attrList" item="attr">
-                <if test="attr.needTargetCi == true and (!smartSearch or @codedriver.framework.cmdb.dao.ognl.IsAttrExistsInFilter@isExists(attr, attrFilterList))">
+                <if test="attr.needTargetCi == true and (!smartSearch or @codedriver.framework.cmdb.dao.ognl.IsAttrExistsInFilter@isExists(attr, attrFilterList) or @codedriver.framework.cmdb.dao.ognl.IsAttrInAttrIdList@isExists(attr, attrIdList))">
                     LEFT JOIN `cmdb_attrentity` `cmdb_attrentity_${attr.id}` ON `ci_base`.id =
                     `cmdb_attrentity_${attr.id}`.from_cientity_id AND `cmdb_attrentity_${attr.id}`.attr_id = #{attr.id}
                     <if test="limitAttrEntity == true">
@@ -301,8 +305,7 @@
                     </choose>
                 </if>
             </foreach>
-        </if>
-        <!--新逻辑-->
+        <!-- </if>-->
         <if test="attrCiEntityFilter != null ">
             JOIN `cmdb_attrentity` `cmdb_attrentity_${attrCiEntityFilter.attrId}` ON
             `cmdb_attrentity_${attrCiEntityFilter.attrId}`.`attr_id` = #{attrCiEntityFilter.attrId} and
@@ -310,20 +313,20 @@
             `ci_base`.`id`=
             `cmdb_attrentity_${attrCiEntityFilter.attrId}`.to_cientity_id
         </if>
-        <if test="!smartSearch or ((relFilterList != null and relFilterList.size() > 0) or (relCiEntityFilterList != null and relCiEntityFilterList.size() > 0))">
-            <foreach collection="relList" item="rel">
-                <choose>
-                    <when test="rel.direction=='from' and (!smartSearch or (@codedriver.framework.cmdb.dao.ognl.IsRelExistsInFilter@isExists(rel, relFilterList) or @codedriver.framework.cmdb.dao.ognl.IsRelExistsInCiEntityFilter@isExists(rel, relCiEntityFilterList)))">
-                        LEFT JOIN `cmdb_relentity` `cmdb_relentity_${rel.id}_${rel.direction}` ON `ci_base`.id =
-                        `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
-                        AND `cmdb_relentity_${rel.id}_${rel.direction}`.rel_id = #{rel.id}
-                        <if test="limitRelEntity == true">
-                            AND `cmdb_relentity_${rel.id}_${rel.direction}`.`from_index` &lt;= (#{rel.maxRelEntityCount}
-                            +
-                            1)
-                        </if>
-                        <choose>
-                            <when test="rel.toIsVirtual == 0">
+        <!--  <if test="(relFilterList != null and relFilterList.size() > 0) or (relCiEntityFilterList != null and relCiEntityFilterList.size() > 0)">-->
+        <foreach collection="relList" item="rel">
+            <choose>
+                <when test="rel.direction=='from' and (@codedriver.framework.cmdb.dao.ognl.IsRelInRelIdList@isExists(rel, relIdList) or @codedriver.framework.cmdb.dao.ognl.IsRelExistsInFilter@isExists(rel, relFilterList) or @codedriver.framework.cmdb.dao.ognl.IsRelExistsInCiEntityFilter@isExists(rel, relCiEntityFilterList))">
+                    LEFT JOIN `cmdb_relentity` `cmdb_relentity_${rel.id}_${rel.direction}` ON `ci_base`.id =
+                    `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
+                    AND `cmdb_relentity_${rel.id}_${rel.direction}`.rel_id = #{rel.id}
+                    <if test="limitRelEntity == true">
+                        AND `cmdb_relentity_${rel.id}_${rel.direction}`.`from_index` &lt;= (#{rel.maxRelEntityCount}
+                        +
+                        1)
+                    </if>
+                    <choose>
+                        <when test="rel.toIsVirtual == 0">
                                 LEFT JOIN `cmdb_cientity` `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
                                 `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
                                 `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
@@ -335,17 +338,17 @@
                             </otherwise>
                         </choose>
                     </when>
-                    <when test="rel.direction=='to' and (!smartSearch or (@codedriver.framework.cmdb.dao.ognl.IsRelExistsInFilter@isExists(rel, relFilterList) or @codedriver.framework.cmdb.dao.ognl.IsRelExistsInCiEntityFilter@isExists(rel, relCiEntityFilterList)))">
-                        LEFT JOIN `cmdb_relentity` `cmdb_relentity_${rel.id}_${rel.direction}` ON `ci_base`.id =
-                        `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
-                        AND `cmdb_relentity_${rel.id}_${rel.direction}`.rel_id = #{rel.id}
-                        <if test="limitRelEntity == true">
-                            AND `cmdb_relentity_${rel.id}_${rel.direction}`.`to_index` &lt;= (#{rel.maxRelEntityCount} +
-                            1)
-                        </if>
-                        <choose>
-                            <when test="rel.fromIsVirtual == 0">
-                                LEFT JOIN `cmdb_cientity` `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
+                <when test="rel.direction=='to' and (@codedriver.framework.cmdb.dao.ognl.IsRelInRelIdList@isExists(rel, relIdList) or @codedriver.framework.cmdb.dao.ognl.IsRelExistsInFilter@isExists(rel, relFilterList) or @codedriver.framework.cmdb.dao.ognl.IsRelExistsInCiEntityFilter@isExists(rel, relCiEntityFilterList))">
+                    LEFT JOIN `cmdb_relentity` `cmdb_relentity_${rel.id}_${rel.direction}` ON `ci_base`.id =
+                    `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
+                    AND `cmdb_relentity_${rel.id}_${rel.direction}`.rel_id = #{rel.id}
+                    <if test="limitRelEntity == true">
+                        AND `cmdb_relentity_${rel.id}_${rel.direction}`.`to_index` &lt;= (#{rel.maxRelEntityCount} +
+                        1)
+                    </if>
+                    <choose>
+                        <when test="rel.fromIsVirtual == 0">
+                            LEFT JOIN `cmdb_cientity` `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
                                 `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
                                 `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
                             </when>
@@ -358,7 +361,7 @@
                     </when>
                 </choose>
             </foreach>
-        </if>
+        <!--</if>-->
         <if test="groupIdList != null and groupIdList.size() > 0">
             JOIN `cmdb_cientity_group` `ccg` ON `ci_base`.id = `ccg`.cientity_id AND `ccg`.group_id IN
             <foreach collection="groupIdList" item="item" open="(" close=")" separator=",">
