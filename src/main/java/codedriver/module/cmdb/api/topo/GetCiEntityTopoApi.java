@@ -143,12 +143,13 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                             }
                             for (RelEntityVo relEntityVo : ciEntityVo.getRelEntityList()) {
                                 RelTypeVo relTypeVo = relMapper.getRelTypeByRelId(relEntityVo.getRelId());
-                                //判断关系类型是否展示topo
+                                //判断关系类型是否展示TOPO
                                 if (relTypeVo != null && relTypeVo.getIsShowInTopo().equals(1)) {
                                     //记录所有存在数据的关系
                                     containRelIdSet.add(relEntityVo.getRelId());
                                     if (CollectionUtils.isEmpty(disableRelIdList) || disableRelIdList.stream().noneMatch(r -> r.equals(relEntityVo.getRelId()))) {
                                         relEntitySet.add(relEntityVo);
+                                        System.out.println("1.CiEntity_" + relEntityVo.getFromCiId() + "_" + relEntityVo.getFromCiEntityId() + " -> " + "CiEntity_" + relEntityVo.getToCiId() + "_" + relEntityVo.getToCiEntityId());
                                         // 检查关系中的对端配置项是否已经存在，不存在可进入下一次搜索
                                         if (relEntityVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
                                             if (!tmpCiCiEntityIdMap.containsKey(relEntityVo.getToCiId())) {
@@ -182,7 +183,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                     for (CiEntityVo ciEntityVo : ciEntitySet) {
                         if (ciEntityVo.getTypeId().equals(ciTypeVo.getId())) {
                             Node.Builder nb =
-                                    new Node.Builder("CiEntity_" + ciEntityVo.getCiId() + "_" + ciEntityVo.getId());// 必须按照这个格式写，前端会通过下划线来提取ciid和cientityid
+                                    new Node.Builder("CiEntity_" + ciEntityVo.getId());// 必须按照这个格式写，前端会通过下划线来提取ciid和cientityid
                             if (StringUtils.isNotBlank(ciEntityVo.getName())) {
                                 nb.withTooltip(ciEntityVo.getName())
                                         .withLabel(ciEntityVo.getName());
@@ -199,7 +200,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                             Node node = nb.build();
                             lb.addNode(node);
 
-                            ciEntityNodeSet.add("CiEntity_" + ciEntityVo.getCiId() + "_" + ciEntityVo.getId());
+                            ciEntityNodeSet.add("CiEntity_" + ciEntityVo.getId());
 
 
                             //根据分组属性计算分组
@@ -227,11 +228,12 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
             }
             if (!relEntitySet.isEmpty()) {
                 for (RelEntityVo relEntityVo : relEntitySet) {
-                    if (ciEntityNodeSet.contains("CiEntity_" + relEntityVo.getFromCiId() + "_" + relEntityVo.getFromCiEntityId())
-                            && ciEntityNodeSet.contains("CiEntity_" + relEntityVo.getToCiId() + "_" + relEntityVo.getToCiEntityId())) {
+                    System.out.println("CiEntity_" + relEntityVo.getFromCiId() + "_" + relEntityVo.getFromCiEntityId() + " -> " + "CiEntity_" + relEntityVo.getToCiId() + "_" + relEntityVo.getToCiEntityId());
+                    if (ciEntityNodeSet.contains("CiEntity_" + relEntityVo.getFromCiEntityId())
+                            && ciEntityNodeSet.contains("CiEntity_" + relEntityVo.getToCiEntityId())) {
                         Link.Builder lb = new Link.Builder(
-                                "CiEntity_" + relEntityVo.getFromCiId() + "_" + relEntityVo.getFromCiEntityId(),
-                                "CiEntity_" + relEntityVo.getToCiId() + "_" + relEntityVo.getToCiEntityId());
+                                "CiEntity_" + relEntityVo.getFromCiEntityId(),
+                                "CiEntity_" + relEntityVo.getToCiEntityId());
                         lb.withLabel(relEntityVo.getRelTypeName());
                         lb.setFontSize(9);
                         gb.addLink(lb.build());
