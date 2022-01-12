@@ -163,6 +163,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             CiViewVo ciViewVo = ciViewMap.get(showAttributeUuid);
             if (ciViewVo != null) {
                 showAttributeObj.put("name", ciViewVo.getItemName());
+                showAttributeObj.put("label", ciViewVo.getItemLabel());
             }
             showAttributeArray.add(showAttributeObj);
             if (showAttributeUuid.startsWith("const_")) {
