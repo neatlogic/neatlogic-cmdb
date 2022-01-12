@@ -183,7 +183,8 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                     for (CiEntityVo ciEntityVo : ciEntitySet) {
                         if (ciEntityVo.getTypeId().equals(ciTypeVo.getId())) {
                             Node.Builder nb =
-                                    new Node.Builder("CiEntity_" + ciEntityVo.getId());// 必须按照这个格式写，前端会通过下划线来提取ciid和cientityid
+                                    new Node.Builder("CiEntity_" + ciEntityVo.getId());
+                            nb.addClass("CiEntity_" + ciEntityVo.getCiId() + "_" + ciEntityVo.getId());// 必须按照这个格式写，前端会通过下划线来提取ciid和cientityid
                             if (StringUtils.isNotBlank(ciEntityVo.getName())) {
                                 nb.withTooltip(ciEntityVo.getName())
                                         .withLabel(ciEntityVo.getName());
@@ -193,15 +194,14 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                             nb.withImage(ciEntityVo.getCiIcon());
                             if (ciEntityId.equals(ciEntityVo.getId())) {
                                 nb.withFontColor("red")
-                                        .withClass("cinode corenode");
+                                        .addClass("cinode").addClass("corenode");
                             } else {
-                                nb.withClass("cinode normalnode");
+                                nb.addClass("cinode").addClass("normalnode");
                             }
                             Node node = nb.build();
                             lb.addNode(node);
 
                             ciEntityNodeSet.add("CiEntity_" + ciEntityVo.getId());
-
 
                             //根据分组属性计算分组
                             if (CollectionUtils.isNotEmpty(clusterAttrList)) {
