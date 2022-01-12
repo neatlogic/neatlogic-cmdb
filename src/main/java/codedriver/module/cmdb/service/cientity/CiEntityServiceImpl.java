@@ -302,19 +302,21 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         }
         //不需要的属性将MaxAttrEntityCount设为-1，代表不返回任何引用属性
         if (CollectionUtils.isNotEmpty(ciEntityVo.getAttrIdList()) && CollectionUtils.isNotEmpty(attrList)) {
-            for (AttrVo attrVo : attrList) {
+           /* for (AttrVo attrVo : attrList) {
                 if (ciEntityVo.getAttrIdList().stream().noneMatch(d -> d.equals(attrVo.getId()))) {
                     attrVo.setMaxAttrEntityCount(-1L);
                 }
-            }
+            }*/
+            //attrList.removeIf(attrVo -> ciEntityVo.getAttrIdList().stream().noneMatch(d -> d.equals(attrVo.getId())));
         }
         //不需要的属性将MaxRelEntityCount设为-1，代表不返回任何关系
         if (CollectionUtils.isNotEmpty(ciEntityVo.getRelIdList()) && CollectionUtils.isNotEmpty(relList)) {
-            for (RelVo relVo : relList) {
+           /* for (RelVo relVo : relList) {
                 if (ciEntityVo.getRelIdList().stream().noneMatch(d -> d.equals(relVo.getId()))) {
                     relVo.setMaxRelEntityCount(-1L);
                 }
-            }
+            }*/
+            //relList.removeIf(relVo -> ciEntityVo.getRelIdList().stream().noneMatch(d -> d.equals(relVo.getId())));
         }
         ciEntityVo.setCiList(ciList);
         ciEntityVo.setAttrList(attrList);
@@ -371,7 +373,8 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             }
         }
         if (CollectionUtils.isNotEmpty(ciEntityVo.getIdList())) {
-            ciEntityVo.setSmartSearch(false);
+            //ciEntityVo.setSmartSearch(false);
+            ciEntityVo.setSmartSearch(true);
             ciEntityVo.setLimitRelEntity(isLimitRelEntity != null ? isLimitRelEntity : true);
             ciEntityVo.setLimitAttrEntity(isLimitAttrEntity != null ? isLimitAttrEntity : true);
             List<Map<String, Object>> resultList = ciEntityMapper.searchCiEntity(ciEntityVo);

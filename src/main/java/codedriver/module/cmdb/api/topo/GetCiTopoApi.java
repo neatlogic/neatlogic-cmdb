@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -69,7 +69,7 @@ public class GetCiTopoApi extends PrivateApiComponentBase {
             for (int j = 1; j <= 3; j++) {
                 Node.Builder nb = new Node.Builder("Ci_" + i + "_" + j);
                 nb.withLabel("对象" + i + "_" + j);
-                nb.withClass("cinode normalnode");
+                nb.addClass("cinode").addClass("normalnode");
                 Node n = nb.build();
                 lb.addNode(n);
                 if (i == 1) {
@@ -147,7 +147,7 @@ public class GetCiTopoApi extends PrivateApiComponentBase {
                     nb.withTooltip(ciVo.getLabel() + "(" + ciVo.getName() + ")");
                     nb.withLabel(ciVo.getLabel());
                     nb.withImage(ciVo.getIcon());
-                    nb.withClass("cinode normalnode");
+                    nb.addClass("cinode").addClass("normalnode");
                     lb.addNode(nb.build());
                     ciIdSet.add(ciVo.getId());
                 }
