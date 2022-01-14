@@ -124,7 +124,8 @@ public class GetCustomViewDataCiEntityTopoApi extends PrivateApiComponentBase {
                     for (CiEntityVo ciEntityVo : ciEntityList) {
                         if (ciEntityVo.getTypeId().equals(ciTypeVo.getId())) {
                             Node.Builder nb =
-                                    new Node.Builder("CiEntity_" + ciEntityVo.getCiId() + "_" + ciEntityVo.getId());// 必须按照这个格式写，前端会通过下划线来提取ciid和cientityid
+                                    new Node.Builder("CiEntity_" + ciEntityVo.getId());
+                            nb.addClass("CiEntity_" + ciEntityVo.getCiId() + "_" + ciEntityVo.getId());// 必须按照这个格式写，前端会通过下划线来提取ciid和cientityid
                             nb.withTooltip(ciEntityVo.getName());
                             nb.withLabel(StringUtils.isNotBlank(ciEntityVo.getName()) ? ciEntityVo.getName() : "无名配置项");
                             nb.withImage(ciEntityVo.getCiIcon());
@@ -136,7 +137,7 @@ public class GetCustomViewDataCiEntityTopoApi extends PrivateApiComponentBase {
                             }
                             Node node = nb.build();
                             lb.addNode(node);
-                            ciEntityNodeSet.add("CiEntity_" + ciEntityVo.getCiId() + "_" + ciEntityVo.getId());
+                            ciEntityNodeSet.add("CiEntity_" + ciEntityVo.getId());
 
                             //根据分组属性计算分组
                             if (CollectionUtils.isNotEmpty(clusterAttrList)) {
@@ -168,11 +169,11 @@ public class GetCustomViewDataCiEntityTopoApi extends PrivateApiComponentBase {
                     if (CollectionUtils.isNotEmpty(fromCi.getCiEntityList()) && CollectionUtils.isNotEmpty(toCi.getCiEntityList())) {
                         for (JSONObject fromCiEntityObj : fromCi.getCiEntityList()) {
                             for (JSONObject toCiEntityObj : toCi.getCiEntityList()) {
-                                if (ciEntityNodeSet.contains("CiEntity_" + fromCi.getCiId() + "_" + fromCiEntityObj.getLong("id")) &&
-                                        ciEntityNodeSet.contains("CiEntity_" + toCi.getCiId() + "_" + toCiEntityObj.getLong("id"))) {
+                                if (ciEntityNodeSet.contains("CiEntity_" + fromCiEntityObj.getLong("id")) &&
+                                        ciEntityNodeSet.contains("CiEntity_" + toCiEntityObj.getLong("id"))) {
                                     Link.Builder lb = new Link.Builder(
-                                            "CiEntity_" + fromCi.getCiId() + "_" + fromCiEntityObj.getLong("id"),
-                                            "CiEntity_" + toCi.getCiId() + "_" + toCiEntityObj.getLong("id"));
+                                            "CiEntity_" + fromCiEntityObj.getLong("id"),
+                                            "CiEntity_" + toCiEntityObj.getLong("id"));
                                     if (StringUtils.isNotBlank(linkVo.getName())) {
                                         lb.withLabel(linkVo.getName());
                                     }
