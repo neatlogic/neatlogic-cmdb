@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSureCo.,Ltd.AllRightsReserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -12,12 +12,13 @@ import codedriver.framework.matrix.core.IMatrixType;
  * @since 2021/11/16 15:21
  **/
 public enum MatrixType implements IMatrixType {
-    CMDBCI("cmdbci", "cmdb模型", "ciId", 4);
+    CMDBCI("cmdbci", "配置项", "ciId", 4);
 
     private String value;
     private String name;
     private String key;
     private int sort;
+
     MatrixType(String _value, String _name, String _key, int _sort) {
         this.value = _value;
         this.name = _name;
