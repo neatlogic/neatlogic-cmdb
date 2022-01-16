@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -196,6 +196,23 @@ public class CiAuthChecker {
         public Chain checkCiIsInGroup(Long ciId, GroupType... groupType) {
             if (!hasAuth) {
                 hasAuth = CiAuthChecker.isCiInGroup(ciId, groupType);
+            }
+            return this;
+        }
+
+        public Chain checkAuth(Long ciId, Long ciEntityId, CiAuthType auth) {
+            if (auth == CiAuthType.CIMANAGE) {
+                return checkCiManagePrivilege(ciId);
+            } else if (auth == CiAuthType.CIENTITYINSERT) {
+                return checkCiEntityInsertPrivilege(ciId);
+            } else if (auth == CiAuthType.CIENTITYDELETE) {
+                return checkCiEntityDeletePrivilege(ciId);
+            } else if (auth == CiAuthType.TRANSACTIONMANAGE) {
+                return checkCiEntityTransactionPrivilege(ciId);
+            } else if (auth == CiAuthType.CIENTITYRECOVER) {
+                return checkCiEntityRecoverPrivilege(ciId);
+            } else if (auth == CiAuthType.PASSWORDVIEW) {
+                return checkViewPasswordPrivilege(ciId);
             }
             return this;
         }

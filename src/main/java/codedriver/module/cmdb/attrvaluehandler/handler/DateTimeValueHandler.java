@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -106,37 +106,7 @@ public class DateTimeValueHandler implements IAttrValueHandler {
         }
     }
 
-    /*@Override
-    public JSONArray getActualValueList(AttrVo attrVo, JSONArray valueList) {
-        JSONArray returnList = new JSONArray();
-        for (int i = 0; i < valueList.size(); i++) {
-            try {
-                String v = valueList.getString(i);
-                if (v.contains(",")) {
-                    v = v.replace(",", "~");
-                }
-                returnList.add(v);
-            } catch (Exception ignored) {
 
-            }
-        }
-        return returnList;
-    }*/
-
-    /* @Override
-     public void transferValueListToDisplay(AttrVo attrVo, JSONArray valueList) {
-         for (int i = 0; i < valueList.size(); i++) {
-             try {
-                 String v = valueList.getString(i);
-                 if (v.contains(",")) {
-                     v = v.replace(",", "~");
-                 }
-                 valueList.set(i, v);
-             } catch (Exception ignored) {
-
-             }
-         }
-     }*/
     @Override
     public int getSort() {
         return 7;

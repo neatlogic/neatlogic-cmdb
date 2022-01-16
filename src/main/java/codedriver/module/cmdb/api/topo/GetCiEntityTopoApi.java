@@ -228,7 +228,6 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
             }
             if (!relEntitySet.isEmpty()) {
                 for (RelEntityVo relEntityVo : relEntitySet) {
-                    System.out.println("CiEntity_" + relEntityVo.getFromCiId() + "_" + relEntityVo.getFromCiEntityId() + " -> " + "CiEntity_" + relEntityVo.getToCiId() + "_" + relEntityVo.getToCiEntityId());
                     if (ciEntityNodeSet.contains("CiEntity_" + relEntityVo.getFromCiEntityId())
                             && ciEntityNodeSet.contains("CiEntity_" + relEntityVo.getToCiEntityId())) {
                         Link.Builder lb = new Link.Builder(

@@ -507,6 +507,24 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             transactionGroupVo.addExclude(ciEntityTransactionVo.getCiEntityId());
         }
         if (CollectionUtils.isNotEmpty(ciEntityTransactionList)) {
+            //批量更新时为了防止后续更新干扰，需要提前生成所有配置项的snapshot
+            for (CiEntityTransactionVo ciEntityTransactionVo : ciEntityTransactionList) {
+                if (ciEntityTransactionVo.getAction().equals(TransactionActionType.UPDATE.getValue())) {
+                    CiEntityVo oldCiEntityVo = this.getCiEntityByIdLite(ciEntityTransactionVo.getCiId(), ciEntityTransactionVo.getCiEntityId(), true, false, false);
+                    // 正在编辑中的配置项，在事务提交或删除前不允许再次修改
+                    if (oldCiEntityVo == null) {
+                        //就配置项不存在直接返回0L，代表什么都不需要做
+                        return 0L;
+                        //throw new CiEntityNotFoundException(ciEntityTransactionVo.getCiEntityId());
+                    } else if (oldCiEntityVo.getIsLocked().equals(1)) {
+                        throw new CiEntityIsLockedException(ciEntityTransactionVo.getCiEntityId());
+                    }
+                    ciEntityTransactionVo.setOldCiEntityVo(oldCiEntityVo);
+
+                    // 生成快照
+                    createSnapshot(ciEntityTransactionVo);
+                }
+            }
             for (CiEntityTransactionVo ciEntityTransactionVo : ciEntityTransactionList) {
                 Long transactionId = saveCiEntity(ciEntityTransactionVo, transactionGroupVo);
                 if (transactionId > 0L) {
@@ -540,7 +558,8 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
     @Transactional
     @Override
     public Long saveCiEntity(CiEntityTransactionVo ciEntityTransactionVo, TransactionGroupVo transactionGroupVo) {
-        if (ciEntityTransactionVo.getAction().equals(TransactionActionType.UPDATE.getValue())) {
+        //批量更新时会生成snapshot，但有些地方还需要在这里生成snapshot
+        if (ciEntityTransactionVo.getAction().equals(TransactionActionType.UPDATE.getValue()) && ciEntityTransactionVo.getOldCiEntityVo() == null) {
             CiEntityVo oldCiEntityVo = this.getCiEntityByIdLite(ciEntityTransactionVo.getCiId(), ciEntityTransactionVo.getCiEntityId(), true, false, false);
             // 正在编辑中的配置项，在事务提交或删除前不允许再次修改
             if (oldCiEntityVo == null) {
@@ -552,9 +571,13 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             }
             ciEntityTransactionVo.setOldCiEntityVo(oldCiEntityVo);
 
-            //锁定当前配置项
-            oldCiEntityVo.setIsLocked(1);
-            ciEntityMapper.updateCiEntityLockById(oldCiEntityVo);
+            // 生成快照
+            createSnapshot(ciEntityTransactionVo);
+        }
+        //锁定当前配置项
+        if (ciEntityTransactionVo.getOldCiEntityVo() != null) {
+            ciEntityTransactionVo.getOldCiEntityVo().setIsLocked(1);
+            ciEntityMapper.updateCiEntityLockById(ciEntityTransactionVo.getOldCiEntityVo());
         }
 
         TransactionVo transactionVo = new TransactionVo();
@@ -571,9 +594,6 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         if (hasChange) {
             //生成配置项名称
             createCiEntityName(ciEntityTransactionVo);
-
-            // 保存快照
-            createSnapshot(ciEntityTransactionVo);
 
             // 写入事务
             transactionMapper.insertTransaction(transactionVo);
@@ -1678,7 +1698,8 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 if (ciEntityMapper.getCiEntityBaseInfoById(ciEntityTransactionVo.getCiEntityId()) == null) {
                     this.insertCiEntity(ciEntityVo);
                 } else {
-                    throw new CiEntityIsRecoveredException(ciEntityVo.getName());
+                    //throw new CiEntityIsRecoveredException(ciEntityVo.getName());
+                    this.updateCiEntity(ciEntityVo);
                 }
                 topicName = "cmdb/cientity/recover";
             }
@@ -2000,7 +2021,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         CiEntityTransactionVo ciEntityTransactionVo = transactionVo.getCiEntityTransactionVo();
         transactionVo.setAction(TransactionActionType.RECOVER.getValue());
         transactionVo.getCiEntityTransactionVo().setAction(TransactionActionType.RECOVER.getValue());
-        if (validateCiEntityTransactionForCommit(ciEntityTransactionVo)) {
+        if (validateCiEntityTransaction(ciEntityTransactionVo)) {
             this.commitTransaction(transactionVo, new TransactionGroupVo());
         }
         transactionMapper.updateTransactionStatus(transactionVo);
