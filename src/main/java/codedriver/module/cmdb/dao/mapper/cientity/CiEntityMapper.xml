@@ -284,27 +284,27 @@
             </choose>
         </foreach>
         <!--<if test="attrFilterList != null and attrFilterList.size() > 0">-->
-            <foreach collection="attrList" item="attr">
-                <if test="attr.needTargetCi == true and (!smartSearch or @codedriver.framework.cmdb.dao.ognl.IsAttrExistsInFilter@isExists(attr, attrFilterList) or @codedriver.framework.cmdb.dao.ognl.IsAttrInAttrIdList@isExists(attr, attrIdList))">
-                    LEFT JOIN `cmdb_attrentity` `cmdb_attrentity_${attr.id}` ON `ci_base`.id =
-                    `cmdb_attrentity_${attr.id}`.from_cientity_id AND `cmdb_attrentity_${attr.id}`.attr_id = #{attr.id}
-                    <if test="limitAttrEntity == true">
-                        AND `cmdb_attrentity_${attr.id}`.`from_index` &lt;= (#{attr.maxAttrEntityCount} + 1)
-                    </if>
-                    <choose>
-                        <when test="attr.targetIsVirtual != 1">
-                            LEFT JOIN `cmdb_cientity` `cmdb_attr_cientity_${attr.id}` ON
-                            `cmdb_attrentity_${attr.id}`.to_cientity_id
-                            = `cmdb_attr_cientity_${attr.id}`.id
-                        </when>
-                        <otherwise>
-                            LEFT JOIN ${attr.targetCiTableName} `cmdb_attr_cientity_${attr.id}` ON
-                            `cmdb_attrentity_${attr.id}`.to_cientity_id
-                            = `cmdb_attr_cientity_${attr.id}`.id
-                        </otherwise>
-                    </choose>
+        <foreach collection="attrList" item="attr">
+            <if test="attr.needTargetCi == true and (!smartSearch or @codedriver.framework.cmdb.dao.ognl.IsAttrExistsInFilter@isExists(attr, attrFilterList) or @codedriver.framework.cmdb.dao.ognl.IsAttrInAttrIdList@isExists(attr, attrIdList))">
+                LEFT JOIN `cmdb_attrentity` `cmdb_attrentity_${attr.id}` ON `ci_base`.id =
+                `cmdb_attrentity_${attr.id}`.from_cientity_id AND `cmdb_attrentity_${attr.id}`.attr_id = #{attr.id}
+                <if test="limitAttrEntity == true">
+                    AND `cmdb_attrentity_${attr.id}`.`from_index` &lt;= (#{attr.maxAttrEntityCount} + 1)
                 </if>
-            </foreach>
+                <choose>
+                    <when test="attr.targetIsVirtual != 1">
+                        LEFT JOIN `cmdb_cientity` `cmdb_attr_cientity_${attr.id}` ON
+                        `cmdb_attrentity_${attr.id}`.to_cientity_id
+                        = `cmdb_attr_cientity_${attr.id}`.id
+                    </when>
+                    <otherwise>
+                        LEFT JOIN ${attr.targetCiTableName} `cmdb_attr_cientity_${attr.id}` ON
+                        `cmdb_attrentity_${attr.id}`.to_cientity_id
+                        = `cmdb_attr_cientity_${attr.id}`.id
+                    </otherwise>
+                </choose>
+            </if>
+        </foreach>
         <!-- </if>-->
         <if test="attrCiEntityFilter != null ">
             JOIN `cmdb_attrentity` `cmdb_attrentity_${attrCiEntityFilter.attrId}` ON
@@ -327,17 +327,17 @@
                     </if>
                     <choose>
                         <when test="rel.toIsVirtual == 0">
-                                LEFT JOIN `cmdb_cientity` `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
-                                `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
-                                `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
-                            </when>
-                            <otherwise>
-                                LEFT JOIN ${rel.toCiTableName} `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
-                                `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
-                                `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
-                            </otherwise>
-                        </choose>
-                    </when>
+                            LEFT JOIN `cmdb_cientity` `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
+                            `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
+                            `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
+                        </when>
+                        <otherwise>
+                            LEFT JOIN ${rel.toCiTableName} `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
+                            `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
+                            `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
+                        </otherwise>
+                    </choose>
+                </when>
                 <when test="rel.direction=='to' and (@codedriver.framework.cmdb.dao.ognl.IsRelInRelIdList@isExists(rel, relIdList) or @codedriver.framework.cmdb.dao.ognl.IsRelExistsInFilter@isExists(rel, relFilterList) or @codedriver.framework.cmdb.dao.ognl.IsRelExistsInCiEntityFilter@isExists(rel, relCiEntityFilterList))">
                     LEFT JOIN `cmdb_relentity` `cmdb_relentity_${rel.id}_${rel.direction}` ON `ci_base`.id =
                     `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
@@ -349,18 +349,18 @@
                     <choose>
                         <when test="rel.fromIsVirtual == 0">
                             LEFT JOIN `cmdb_cientity` `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
-                                `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
-                                `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
-                            </when>
-                            <otherwise>
-                                LEFT JOIN ${rel.fromCiTableName} `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
-                                `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
-                                `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
-                            </otherwise>
-                        </choose>
-                    </when>
-                </choose>
-            </foreach>
+                            `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
+                            `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
+                        </when>
+                        <otherwise>
+                            LEFT JOIN ${rel.fromCiTableName} `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
+                            `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
+                            `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
+                        </otherwise>
+                    </choose>
+                </when>
+            </choose>
+        </foreach>
         <!--</if>-->
         <if test="groupIdList != null and groupIdList.size() > 0">
             JOIN `cmdb_cientity_group` `ccg` ON `ci_base`.id = `ccg`.cientity_id AND `ccg`.group_id IN
@@ -370,8 +370,10 @@
         </if>
         <if test="keywordList != null and keywordList.size() > 0">
             JOIN fulltextindex_field_cmdb ffc ON ffc.target_id = `ci_base`.id JOIN fulltextindex_word fw ON ffc.word_id
-            = fw.id AND fw.word IN
+            = fw.id AND (fw.word IN
             <foreach collection="keywordList" item="item" open="(" close=")" separator=",">#{item}</foreach>
+            OR `ci_base`.id = #{keyword} OR `ci_base`.`name` LIKE CONCAT('%',#{keyword},'%')
+            )
         </if>
     </sql>
 
@@ -383,9 +385,10 @@
             <if test="filterCiId != null">
                 AND `ci_base`.ci_id = #{filterCiId}
             </if>
+            <!--有全文检索就不需要
             <if test="keyword != null and keyword != ''">
                 AND (`ci_base`.id = #{keyword} OR `ci_base`.`name` LIKE CONCAT('%',#{keyword},'%'))
-            </if>
+            </if>-->
             <if test="attrFilterList != null and attrFilterList.size() > 0">
                 <foreach collection="attrFilterList" item="attrFilter">
                     <if test="(attrFilter.valueList != null and attrFilter.valueList.size() > 0) or attrFilter.expression == 'is-null' or attrFilter.expression == 'is-not-null'">
