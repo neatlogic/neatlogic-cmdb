@@ -17,12 +17,14 @@ import codedriver.framework.cmdb.dto.view.ViewConstVo;
 import codedriver.framework.cmdb.enums.SearchExpression;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.cmdb.utils.RelUtil;
+import codedriver.framework.dependency.core.DependencyManager;
 import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.matrix.constvalue.MatrixAttributeType;
 import codedriver.framework.matrix.core.MatrixDataSourceHandlerBase;
 import codedriver.framework.matrix.dto.*;
 import codedriver.framework.matrix.exception.MatrixAttributeNotFoundException;
 import codedriver.framework.matrix.exception.MatrixCiNotFoundException;
+import codedriver.framework.util.SnowflakeUtil;
 import codedriver.framework.util.TableResultUtil;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
@@ -32,6 +34,7 @@ import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper;
 import codedriver.module.cmdb.matrix.constvalue.MatrixType;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
+import codedriver.module.framework.dependency.handler.CiAttr2MatrixAttrDependencyHandler;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -99,18 +102,80 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         if (MapUtils.isEmpty(config)) {
             throw new ParamNotExistsException("config");
         }
-        JSONArray showAttributeUuidList = config.getJSONArray("showAttributeUuidList");
-        if (CollectionUtils.isEmpty(showAttributeUuidList)) {
+        JSONArray showAttributeUuidArray = config.getJSONArray("showAttributeUuidList");
+        if (CollectionUtils.isEmpty(showAttributeUuidArray)) {
             throw new ParamNotExistsException("config.showAttributeUuidList");
         }
-        String configStr = config.toJSONString();
         MatrixCiVo oldMatrixCiVo = matrixMapper.getMatrixCiByMatrixUuid(matrixVo.getUuid());
         if (oldMatrixCiVo != null) {
-            if (ciId.equals(oldMatrixCiVo.getCiId()) && Objects.equals(oldMatrixCiVo.getConfig(), configStr)) {
-                return false;
+            if (ciId.equals(oldMatrixCiVo.getCiId())) {
+                JSONObject oldConfig = oldMatrixCiVo.getConfig();
+                if (MapUtils.isNotEmpty(oldConfig)) {
+                    JSONArray oldShowAttributeUuidArray = oldConfig.getJSONArray("showAttributeUuidList");
+                    if (CollectionUtils.isNotEmpty(oldShowAttributeUuidArray)) {
+                        if (CollectionUtils.isEqualCollection(oldShowAttributeUuidArray, showAttributeUuidArray)) {
+                            return false;
+                        }
+                        JSONArray showAttributeArray = oldConfig.getJSONArray("showAttributeList");
+                        if (CollectionUtils.isNotEmpty(showAttributeArray)) {
+                            for (int i = 0; i < showAttributeArray.size(); i++) {
+                                JSONObject showAttributeObj = showAttributeArray.getJSONObject(i);
+                                if (MapUtils.isNotEmpty(showAttributeObj)) {
+                                    Long id = showAttributeObj.getLong("id");
+                                    if (id != null) {
+                                        DependencyManager.delete(CiAttr2MatrixAttrDependencyHandler.class, id);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
-        MatrixCiVo matrixCiVo = new MatrixCiVo(matrixVo.getUuid(), ciId, configStr);
+        CiViewVo searchVo = new CiViewVo();
+        searchVo.setCiId(ciId);
+        Map<String, CiViewVo> ciViewMap = new HashMap<>();
+        List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(searchVo));
+        for (CiViewVo ciview : ciViewList) {
+            switch (ciview.getType()) {
+                case "attr":
+                    ciViewMap.put("attr_" + ciview.getItemId(), ciview);
+                    break;
+                case "relfrom":
+                    ciViewMap.put("relfrom_" + ciview.getItemId(), ciview);
+                    break;
+                case "relto":
+                    ciViewMap.put("relto_" + ciview.getItemId(), ciview);
+                    break;
+                case "const":
+                    //固化属性需要特殊处理
+                    ciViewMap.put("const_" + ciview.getItemName().replace("_", ""), ciview);
+                    break;
+            }
+        }
+        JSONArray showAttributeArray = new JSONArray();
+        List<String> showAttributeUuidList = showAttributeUuidArray.toJavaList(String.class);
+        for (String showAttributeUuid : showAttributeUuidList) {
+            JSONObject showAttributeObj = new JSONObject();
+            showAttributeObj.put("uuid", showAttributeUuid);
+            Long showAttributeId = SnowflakeUtil.uniqueLong();
+            showAttributeObj.put("id", showAttributeId);
+            CiViewVo ciViewVo = ciViewMap.get(showAttributeUuid);
+            if (ciViewVo != null) {
+                showAttributeObj.put("name", ciViewVo.getItemName());
+                showAttributeObj.put("label", ciViewVo.getItemLabel());
+            }
+            showAttributeArray.add(showAttributeObj);
+            if (showAttributeUuid.startsWith("const_")) {
+                continue;
+            }
+            JSONObject dependencyConfig = new JSONObject();
+            dependencyConfig.put("matrixUuid", matrixVo.getUuid());
+            dependencyConfig.put("ciId", ciId);
+            DependencyManager.insert(CiAttr2MatrixAttrDependencyHandler.class, showAttributeUuid.split("_")[1], showAttributeId, dependencyConfig);
+        }
+        config.put("showAttributeList", showAttributeArray);
+        MatrixCiVo matrixCiVo = new MatrixCiVo(matrixVo.getUuid(), ciId, config);
         matrixMapper.replaceMatrixCi(matrixCiVo);
         return true;
     }
@@ -122,12 +187,30 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             throw new MatrixCiNotFoundException(matrixVo.getUuid());
         }
         matrixVo.setCiId(matrixCiVo.getCiId());
-        matrixVo.setConfig(JSONObject.parseObject(matrixCiVo.getConfig()));
+        matrixVo.setConfig(matrixCiVo.getConfig());
     }
 
     @Override
     protected void myDeleteMatrix(String uuid) {
-        matrixMapper.deleteMatrixCiByMatrixUuid(uuid);
+        MatrixCiVo matrixCiVo = matrixMapper.getMatrixCiByMatrixUuid(uuid);
+        if (matrixCiVo != null) {
+            matrixMapper.deleteMatrixCiByMatrixUuid(uuid);
+            JSONObject config = matrixCiVo.getConfig();
+            if (MapUtils.isNotEmpty(config)) {
+                JSONArray showAttributeArray = config.getJSONArray("showAttributeList");
+                if (CollectionUtils.isNotEmpty(showAttributeArray)) {
+                    for (int i = 0; i < showAttributeArray.size(); i++) {
+                        JSONObject showAttributeObj = showAttributeArray.getJSONObject(i);
+                        if (MapUtils.isNotEmpty(showAttributeObj)) {
+                            Long id = showAttributeObj.getLong("id");
+                            if (id != null) {
+                                DependencyManager.delete(CiAttr2MatrixAttrDependencyHandler.class, id);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -161,7 +244,8 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                 throw new MatrixCiNotFoundException(matrixUuid);
             }
             ciId = matrixCiVo.getCiId();
-            showAttributeUuidArray = (JSONArray) JSONPath.read(matrixCiVo.getConfig(), "showAttributeUuidList");
+            JSONObject config = matrixCiVo.getConfig();
+            showAttributeUuidArray = config.getJSONArray("showAttributeUuidList");
         } else {
             ciId = matrixVo.getCiId();
         }
@@ -767,7 +851,8 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             if (matrixCiVo == null) {
                 throw new MatrixCiNotFoundException(matrixUuid);
             }
-            JSONArray showAttributeUuidArray = (JSONArray) JSONPath.read(matrixCiVo.getConfig(), "showAttributeUuidList");
+            JSONObject config = matrixCiVo.getConfig();
+            JSONArray showAttributeUuidArray = config.getJSONArray("showAttributeUuidList");
             if (CollectionUtils.isNotEmpty(showAttributeUuidArray)) {
                 List<String> showAttributeUuidList = showAttributeUuidArray.toJavaList(String.class);
                 for (String uuid : showAttributeUuidList) {
