@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -465,9 +465,10 @@ public class CiSyncManager {
                         /*
                         由于模型关系的对端模型可能是父模型，而采集数据有可能是各个不同的子模型，因此需要做如下处理：
                         1、通过jsonArray数据成员中的_OBJ_TYPE找到相应的主动采集配置模型（已经规定一个集合只能关联一个主动采集配置模型）。
-                        2、如果找到模型，则检查找到的模型是否数据关系对端模型的子模型（子模型列表包括自己）。
-                        3、如果2成立，则查找2中找到的模型是否配置了当前集合的被动采集配置。
-                        4、使用3找到的映射继续下一步数据同步操作。
+                        2、如果找到模型，则检查找到的模型是否属于关系对端模型的子模型（子模型列表包括自己）。
+                        3、如果2成立，则检查关系对端模型（可能是父模型）是否配置了当前集合的被动采集配置。
+                        4、如果有3成立，则把采集配置的父模型id切换成第一步中真正的子模型id。
+                        5、把修改后的映射配置传下去继续下一步数据同步操作。
                         以上任意一步不满足或找不到，则这部分数据不再同步
                          */
                             RelVo relVo = relMap.get(mappingVo.getRelId());
@@ -506,6 +507,8 @@ public class CiSyncManager {
                                                             subDataWithPK.put(key, dataObj.get(key));
                                                         }
                                                     }
+                                                    //切换关系原始模型id为真正的子模型id，否则数据找不到真正的模型id
+                                                    subSyncCiCollectionVo.setCiId(subCiId);
                                                     CiEntityTransactionVo subCiEntityTransactionVo = generateCiEntityTransaction(subDataWithPK, subSyncCiCollectionVo, ciEntityTransactionMap, mappingVo.getField());
                                                     if (subCiEntityTransactionVo != null) {
                                                         if (ciEntityTransactionMap.containsKey(subCiEntityTransactionVo.getHash())) {
