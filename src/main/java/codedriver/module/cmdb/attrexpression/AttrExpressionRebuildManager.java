@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -207,22 +207,27 @@ public class AttrExpressionRebuildManager {
                     updateExpressionAttr(new CiEntityVo(rebuildAuditVo.getCiId(), rebuildAuditVo.getCiEntityId()));
                 }
             } else if (rebuildAuditVo.getCiId() != null && rebuildAuditVo.getCiEntityId() == null && StringUtils.isNotBlank(rebuildAuditVo.getAttrIds())) {
-                //没有配置项信息的则是因为表达式发生了修改，所以需要更新模型下所有配置项信息
-                CiEntityVo ciEntityVo = new CiEntityVo();
-                ciEntityVo.setCiId(rebuildAuditVo.getCiId());
-                ciEntityVo.setPageSize(100);
-                ciEntityVo.setCurrentPage(1);
-                ciEntityVo.setCiEntityIdStart(rebuildAuditVo.getCiEntityIdStart());
-                List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntityBaseInfo(ciEntityVo);
-                while (CollectionUtils.isNotEmpty(ciEntityList)) {
-                    for (CiEntityVo ciEntity : ciEntityList) {
-                        updateExpressionAttr(ciEntity, rebuildAuditVo.getAttrIdList());
-                        //更新修改进度
-                        rebuildAuditVo.setCiEntityIdStart(ciEntity.getId());
-                        attrExpressionRebuildAuditMapper.updateAttrExpressionRebuildAuditCiEntityIdStartById(rebuildAuditVo);
+                //没有配置项信息的则是因为表达式发生了修改，所以需要更新模型下所有配置项信息，如果是抽象模型修改，则需要更新所有子模型的信息
+                CiVo ciVo = ciMapper.getCiById(rebuildAuditVo.getCiId());
+                if (ciVo != null) {
+                    List<CiVo> ciList = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
+                    CiEntityVo ciEntityVo = new CiEntityVo();
+                    //ciEntityVo.setCiId(rebuildAuditVo.getCiId());
+                    ciEntityVo.setCiIdList(ciList.stream().map(CiVo::getId).collect(Collectors.toList()));
+                    ciEntityVo.setPageSize(100);
+                    ciEntityVo.setCurrentPage(1);
+                    ciEntityVo.setCiEntityIdStart(rebuildAuditVo.getCiEntityIdStart());
+                    List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntityBaseInfo(ciEntityVo);
+                    while (CollectionUtils.isNotEmpty(ciEntityList)) {
+                        for (CiEntityVo ciEntity : ciEntityList) {
+                            updateExpressionAttr(ciEntity, rebuildAuditVo.getAttrIdList());
+                            //更新修改进度
+                            rebuildAuditVo.setCiEntityIdStart(ciEntity.getId());
+                            attrExpressionRebuildAuditMapper.updateAttrExpressionRebuildAuditCiEntityIdStartById(rebuildAuditVo);
+                        }
+                        ciEntityVo.setCurrentPage(ciEntityVo.getCurrentPage() + 1);
+                        ciEntityList = ciEntityService.searchCiEntityBaseInfo(ciEntityVo);
                     }
-                    ciEntityVo.setCurrentPage(ciEntityVo.getCurrentPage() + 1);
-                    ciEntityList = ciEntityService.searchCiEntityBaseInfo(ciEntityVo);
                 }
             }
             //清除日志

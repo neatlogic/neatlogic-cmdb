@@ -29,9 +29,15 @@
 
     <sql id="searchCiEntityBaseInfoSql">
         <where>
-            <if test="ciId != null">
-                and ci_id = #{ciId}
-            </if>
+            <choose>
+                <when test="ciId != null">
+                    and ci_id = #{ciId}
+                </when>
+                <when test="ciIdList != null and ciIdList.size > 0">
+                    and ci_id in
+                    <foreach collection="ciIdList" item="item" open="(" close=")" separator=",">#{item}</foreach>
+                </when>
+            </choose>
             <if test="ciEntityIdStart != null">
                 and id &gt; #{ciEntityIdStart}
             </if>
