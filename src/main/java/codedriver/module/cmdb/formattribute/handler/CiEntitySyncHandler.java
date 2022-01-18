@@ -1,18 +1,16 @@
 package codedriver.module.cmdb.formattribute.handler;
 
+import codedriver.framework.cmdb.crossover.ISearchCiEntityApiCrossoverService;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.common.constvalue.ParamType;
+import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.form.constvalue.FormConditionModel;
 import codedriver.framework.form.dto.AttributeDataVo;
 import codedriver.framework.form.exception.AttributeValidException;
 import codedriver.framework.form.attribute.core.FormHandlerBase;
-import codedriver.framework.restful.core.MyApiComponent;
-import codedriver.framework.restful.core.privateapi.PrivateApiComponentFactory;
-import codedriver.framework.restful.dto.ApiVo;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -49,65 +47,60 @@ public class CiEntitySyncHandler extends FormHandlerBase {
         JSONArray tableArray = new JSONArray();
         JSONArray dataArray = (JSONArray) attributeDataVo.getDataObj();
         if (CollectionUtils.isNotEmpty(dataArray)) {
-            ApiVo api = PrivateApiComponentFactory.getApiByToken("cmdb/cientity/search");
-            if (api != null) {
-                MyApiComponent restComponent = (MyApiComponent) PrivateApiComponentFactory.getInstance(api.getHandler());
-                if (restComponent != null) {
-                    JSONObject paramObj = new JSONObject();
-                    paramObj.put("currentPage", 1);
-                    paramObj.put("needPage", false);
-                    paramObj.put("mode", "dialog");
-                    paramObj.put("needActionType", true);
-                    List<Long> ciIdList = new ArrayList<>();
-                    Map<Long, String> ciLabelMap = new HashMap<>();
-                    Map<Long, List<CiEntityVo>> ciEntityListMap = new HashMap<>();
-                    List<CiEntityVo> ciEntityVoList = dataArray.toJavaList(CiEntityVo.class);
-                    for (CiEntityVo ciEntityVo : ciEntityVoList) {
-                        Long ciId = ciEntityVo.getCiId();
-                        if (!ciIdList.contains(ciId)) {
-                            ciIdList.add(ciId);
-                            ciLabelMap.put(ciId, ciEntityVo.getCiLabel());
+            JSONObject paramObj = new JSONObject();
+            paramObj.put("currentPage", 1);
+            paramObj.put("needPage", false);
+            paramObj.put("mode", "dialog");
+            paramObj.put("needActionType", true);
+            List<Long> ciIdList = new ArrayList<>();
+            Map<Long, String> ciLabelMap = new HashMap<>();
+            Map<Long, List<CiEntityVo>> ciEntityListMap = new HashMap<>();
+            List<CiEntityVo> ciEntityVoList = dataArray.toJavaList(CiEntityVo.class);
+            for (CiEntityVo ciEntityVo : ciEntityVoList) {
+                Long ciId = ciEntityVo.getCiId();
+                if (!ciIdList.contains(ciId)) {
+                    ciIdList.add(ciId);
+                    ciLabelMap.put(ciId, ciEntityVo.getCiLabel());
+                }
+                ciEntityListMap.computeIfAbsent(ciId, key -> new ArrayList<>()).add(ciEntityVo);
+            }
+            for (Long ciId : ciIdList) {
+                paramObj.put("ciId", ciId);
+                paramObj.put("ciEntityList", ciEntityListMap.get(ciId));
+                try {
+                    ISearchCiEntityApiCrossoverService searchCiEntityApiCrossoverService = CrossoverServiceFactory.getApi(ISearchCiEntityApiCrossoverService.class);
+                    JSONObject tableObj = (JSONObject) searchCiEntityApiCrossoverService.myDoService(paramObj);
+                    JSONArray tbodyList = new JSONArray();
+                    JSONArray tbodyArray = tableObj.getJSONArray("tbodyList");
+                    for (int i = 0; i < tbodyArray.size(); i++) {
+                        JSONObject tbodyObj = tbodyArray.getJSONObject(i);
+                        String actionType = tbodyObj.getString("actionType");
+                        List<String> valueList = new ArrayList<>();
+                        valueList.add(actionType);
+                        List<String> actualValueList = new ArrayList<>();
+                        String actualValue = "";
+                        if ("insert".equals(actionType)) {
+                            actualValue = "新增";
+                        } else if ("update".equals(actionType)) {
+                            actualValue = "编辑";
+                        } else if ("delete".equals(actionType)) {
+                            actualValue = "删除";
                         }
-                        ciEntityListMap.computeIfAbsent(ciId, key -> new ArrayList<>()).add(ciEntityVo);
+                        actualValueList.add(actualValue);
+                        JSONObject actionTypeObj = new JSONObject();
+                        actionTypeObj.put("type", "text");
+                        actionTypeObj.put("valueList", valueList);
+                        actionTypeObj.put("actualValueList", actualValueList);
+                        JSONObject attrEntityData = tbodyObj.getJSONObject("attrEntityData");
+                        attrEntityData.put("actionType", actionTypeObj);
+                        tbodyList.add(attrEntityData);
                     }
-                    for (Long ciId : ciIdList) {
-                        paramObj.put("ciId", ciId);
-                        paramObj.put("ciEntityList", ciEntityListMap.get(ciId));
-                        try {
-                            JSONObject tableObj = (JSONObject) restComponent.myDoService(paramObj);
-                            JSONArray tbodyList = new JSONArray();
-                            JSONArray tbodyArray = tableObj.getJSONArray("tbodyList");
-                            for (int i = 0; i < tbodyArray.size(); i++) {
-                                JSONObject tbodyObj = tbodyArray.getJSONObject(i);
-                                String actionType = tbodyObj.getString("actionType");
-                                List<String> valueList = new ArrayList<>();
-                                valueList.add(actionType);
-                                List<String> actualValueList = new ArrayList<>();
-                                String actualValue = "";
-                                if ("insert".equals(actionType)) {
-                                    actualValue = "新增";
-                                } else if ("update".equals(actionType)) {
-                                    actualValue = "编辑";
-                                } else if ("delete".equals(actionType)) {
-                                    actualValue = "删除";
-                                }
-                                actualValueList.add(actualValue);
-                                JSONObject actionTypeObj = new JSONObject();
-                                actionTypeObj.put("type", "text");
-                                actionTypeObj.put("valueList", valueList);
-                                actionTypeObj.put("actualValueList", actualValueList);
-                                JSONObject attrEntityData = tbodyObj.getJSONObject("attrEntityData");
-                                attrEntityData.put("actionType", actionTypeObj);
-                                tbodyList.add(attrEntityData);
-                            }
-                            tableObj.put("tbodyList", tbodyList);
-                            tableObj.put("ciId", ciId);
-                            tableObj.put("ciLabel", ciLabelMap.get(ciId));
-                            tableArray.add(tableObj);
-                        } catch (Exception e) {
-                            logger.error(e.getMessage(), e);
-                        }
-                    }
+                    tableObj.put("tbodyList", tbodyList);
+                    tableObj.put("ciId", ciId);
+                    tableObj.put("ciLabel", ciLabelMap.get(ciId));
+                    tableArray.add(tableObj);
+                } catch (Exception e) {
+                    logger.error(e.getMessage(), e);
                 }
             }
         }

@@ -6,6 +6,7 @@
 package codedriver.module.cmdb.api.cientity;
 
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.crossover.ISearchCiEntityApiCrossoverService;
 import codedriver.framework.cmdb.dto.ci.CiViewVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
@@ -45,7 +46,7 @@ import java.util.stream.Collectors;
 @AuthAction(action = CI_MODIFY.class)
 @AuthAction(action = CIENTITY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class SearchCiEntityApi extends PrivateApiComponentBase {
+public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearchCiEntityApiCrossoverService {
 
     @Resource
     private CiEntityService ciEntityService;
