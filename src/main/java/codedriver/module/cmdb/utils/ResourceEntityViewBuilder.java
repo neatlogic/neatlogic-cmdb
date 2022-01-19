@@ -249,9 +249,9 @@ public class ResourceEntityViewBuilder {
                             throw new ResourceCenterConfigIrregularException(resourceEntityVo.getName());
                         }
                         resourceEntityVo.setStatus(Status.PENDING.getValue());
-                    } catch (ApiRuntimeException ex) {
+                    } catch (Exception ex) {
                         resourceEntityVo.setStatus(Status.ERROR.getValue());
-                        resourceEntityVo.setError(ex.getMessage(true));
+                        resourceEntityVo.setError(ex.getMessage());
                     } finally {
                         resourceEntityMapper.insertResourceEntity(resourceEntityVo);
                     }
