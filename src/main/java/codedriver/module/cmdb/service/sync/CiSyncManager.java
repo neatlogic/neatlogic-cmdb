@@ -576,7 +576,7 @@ public class CiSyncManager {
                                 ciEntityService.saveCiEntityWithoutTransaction(ciEntityTransactionList, syncCiCollectionVo.getTransactionGroup());
                             } catch (ApiRuntimeException ex) {
                                 logger.warn(ex.getMessage(), ex);
-                                syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage(true));
+                                syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
                             } catch (Exception ex) {
                                 logger.error(ex.getMessage(), ex);
                                 syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
@@ -584,7 +584,7 @@ public class CiSyncManager {
                         }
                     } catch (ApiRuntimeException ex) {
                         logger.warn(ex.getMessage(), ex);
-                        syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage(true));
+                        syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
                     } catch (Exception ex) {
                         logger.error(ex.getMessage(), ex);
                         syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
@@ -666,7 +666,7 @@ public class CiSyncManager {
                         }
                     } catch (ApiRuntimeException ex) {
                         logger.warn(ex.getMessage(), ex);
-                        syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage(true));
+                        syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
                     } catch (Exception ex) {
                         logger.error(ex.getMessage(), ex);
                         if (StringUtils.isNotBlank(ex.getMessage())) {
@@ -733,7 +733,7 @@ public class CiSyncManager {
                             }
                         } catch (ApiRuntimeException ex) {
                             logger.warn(ex.getMessage(), ex);
-                            syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage(true));
+                            syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
                         } catch (Exception ex) {
                             logger.error(ex.getMessage(), ex);
                             syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
