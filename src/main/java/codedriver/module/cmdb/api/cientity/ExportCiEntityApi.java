@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -46,10 +46,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -85,6 +82,7 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
 
     @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
             @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "关键字"),
+            @Param(name = "showAttrRelList", type = ApiParamType.JSONARRAY, desc = "需要导出的字段列表，包括属性和关系"),
             @Param(name = "attrFilterList", type = ApiParamType.STRING, desc = "属性过滤条件"),
             @Param(name = "relFilterList", type = ApiParamType.JSONARRAY, desc = "关系过滤条件")
     })
@@ -93,6 +91,13 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
     //TODO 后续要对数据进行优化防止OOM
     public Object myDoService(JSONObject jsonObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
         CiEntityVo ciEntityVo = JSONObject.toJavaObject(jsonObj, CiEntityVo.class);
+        JSONArray showAttrRelList = jsonObj.getJSONArray("showAttrRelList");
+        Set<String> showAttrRelSet = new HashSet<>();
+        if (CollectionUtils.isNotEmpty(showAttrRelList)) {
+            for (int i = 0; i < showAttrRelList.size(); i++) {
+                showAttrRelSet.add(showAttrRelList.getString(i));
+            }
+        }
         Long ciId = jsonObj.getLong("ciId");
         CiVo ciVo = ciMapper.getCiById(ciId);
         CiViewVo ciViewVo = new CiViewVo();
@@ -104,24 +109,38 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
         List<String> columnList = new ArrayList<>();
         columnList.add("id");
         columnList.add("uuid");
+        List<Long> attrIdList = new ArrayList<>();
+        List<Long> relIdList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(ciViewList)) {
             for (CiViewVo ciview : ciViewList) {
                 switch (ciview.getType()) {
                     case "attr":
-                        columnList.add("attr_" + ciview.getItemId());
-                        headerList.add(ciview.getItemLabel());
+                        if (showAttrRelSet.contains("attr_" + ciview.getItemId())) {
+                            attrIdList.add(ciview.getItemId());
+                            columnList.add("attr_" + ciview.getItemId());
+                            headerList.add(ciview.getItemLabel());
+                        }
                         break;
                     case "relfrom":
-                        columnList.add("relfrom_" + ciview.getItemId());
-                        headerList.add(ciview.getItemLabel());
+                        if (showAttrRelSet.contains("relfrom_" + ciview.getItemId())) {
+                            relIdList.add(ciview.getItemId());
+                            columnList.add("relfrom_" + ciview.getItemId());
+                            headerList.add(ciview.getItemLabel());
+                        }
                         break;
                     case "relto":
-                        columnList.add("relto_" + ciview.getItemId());
-                        headerList.add(ciview.getItemLabel());
+                        if (showAttrRelSet.contains("relto_" + ciview.getItemId())) {
+                            relIdList.add(ciview.getItemId());
+                            columnList.add("relto_" + ciview.getItemId());
+                            headerList.add(ciview.getItemLabel());
+                        }
                         break;
                 }
             }
         }
+        //把需要显示的属性和关系设进去，后台会进行自动过滤
+        ciEntityVo.setAttrIdList(attrIdList);
+        ciEntityVo.setRelIdList(relIdList);
 
         ExcelBuilder builder = new ExcelBuilder(SXSSFWorkbook.class);
         SheetBuilder sheetBuilder = builder.withBorderColor(HSSFColor.HSSFColorPredefined.GREY_40_PERCENT)

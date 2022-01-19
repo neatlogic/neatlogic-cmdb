@@ -191,24 +191,31 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
                 headObj.put("title", ciview.getItemLabel());
                 switch (ciview.getType()) {
                     case "attr":
-                        attrIdList.add(ciview.getItemId());
-                        headObj.put("key", "attr_" + ciview.getItemId());
+                        if (CollectionUtils.isEmpty(showAttrRelSet) || showAttrRelSet.contains("attr_" + ciview.getItemId())) {
+                            attrIdList.add(ciview.getItemId());
+                            headObj.put("key", "attr_" + ciview.getItemId());
+                            theadList.add(headObj);
+                        }
                         break;
                     case "relfrom":
-                        relIdList.add(ciview.getItemId());
-                        headObj.put("key", "relfrom_" + ciview.getItemId());
+                        if (CollectionUtils.isEmpty(showAttrRelSet) || showAttrRelSet.contains("relfrom_" + ciview.getItemId())) {
+                            relIdList.add(ciview.getItemId());
+                            headObj.put("key", "relfrom_" + ciview.getItemId());
+                            theadList.add(headObj);
+                        }
                         break;
                     case "relto":
-                        relIdList.add(ciview.getItemId());
-                        headObj.put("key", "relto_" + ciview.getItemId());
+                        if (CollectionUtils.isEmpty(showAttrRelSet) || showAttrRelSet.contains("relto_" + ciview.getItemId())) {
+                            relIdList.add(ciview.getItemId());
+                            headObj.put("key", "relto_" + ciview.getItemId());
+                            theadList.add(headObj);
+                        }
                         break;
                     case "const":
                         //固化属性需要特殊处理
                         headObj.put("key", "const_" + ciview.getItemName().replace("_", ""));
+                        theadList.add(headObj);
                         break;
-                }
-                if (CollectionUtils.isEmpty(showAttrRelSet) || showAttrRelSet.contains(headObj.getString("key"))) {
-                    theadList.add(headObj);
                 }
             }
         }

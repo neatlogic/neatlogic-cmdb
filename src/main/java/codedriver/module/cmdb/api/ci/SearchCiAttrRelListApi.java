@@ -54,8 +54,7 @@ public class SearchCiAttrRelListApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
-            @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字，只匹配属性和关系的唯一标识")})
+    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"), @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字，只匹配属性和关系的唯一标识")})
     @Output({@Param(type = ApiParamType.JSONARRAY)})
     @Description(desc = "搜索模型属性和关系信息接口，此接口主要用在DSL输入控件搜索属性和关系")
     @Override
@@ -70,12 +69,12 @@ public class SearchCiAttrRelListApi extends PrivateApiComponentBase {
             //因为有二级缓存，数据量也不大，可以直接在应用层过滤关键字实现搜索效果
             String finalKeyword = keyword;
             attrList = attrList.stream().filter(d -> d.getName().toLowerCase(Locale.ROOT).contains(finalKeyword)).collect(Collectors.toList());
-            relList = relList.stream().filter(d -> (d.getDirection().equals(RelDirectionType.FROM.getValue()) && d.getToName().toLowerCase(Locale.ROOT).contains(finalKeyword))
-                    || (d.getDirection().equals(RelDirectionType.TO.getValue()) && d.getFromName().toLowerCase(Locale.ROOT).contains(finalKeyword))).collect(Collectors.toList());
+            relList = relList.stream().filter(d -> (d.getDirection().equals(RelDirectionType.FROM.getValue()) && d.getToName().toLowerCase(Locale.ROOT).contains(finalKeyword)) || (d.getDirection().equals(RelDirectionType.TO.getValue()) && d.getFromName().toLowerCase(Locale.ROOT).contains(finalKeyword))).collect(Collectors.toList());
         }
         for (AttrVo attrVo : attrList) {
             JSONObject attrObj = new JSONObject();
             attrObj.put("id", attrVo.getId());
+            attrObj.put("uid", "attr_" + attrVo.getId());
             attrObj.put("name", attrVo.getName());
             attrObj.put("label", attrVo.getLabel());
             attrObj.put("targetCiId", attrVo.getTargetCiId());
@@ -85,10 +84,12 @@ public class SearchCiAttrRelListApi extends PrivateApiComponentBase {
             JSONObject relObj = new JSONObject();
             relObj.put("id", relVo.getId());
             if (relVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
+                relObj.put("uid", "relfrom_" + relVo.getId());
                 relObj.put("name", relVo.getToName());
                 relObj.put("label", relVo.getToLabel());
                 relObj.put("targetCiId", relVo.getToCiId());
             } else if (relVo.getDirection().equals(RelDirectionType.TO.getValue())) {
+                relObj.put("uid", "relto_" + relVo.getId());
                 relObj.put("name", relVo.getFromName());
                 relObj.put("label", relVo.getFromLabel());
                 relObj.put("targetCiId", relVo.getFromCiId());
