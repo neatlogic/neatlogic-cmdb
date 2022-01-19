@@ -257,7 +257,7 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
                             }
                         } catch (Exception ex) {
                             if (ex instanceof ApiRuntimeException) {
-                                auditObj.put("error", ((ApiRuntimeException) ex).getMessage(true));
+                                auditObj.put("error", ((ApiRuntimeException) ex).getMessage());
                             } else {
                                 auditObj.put("error", ex.getMessage());
                             }

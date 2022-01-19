@@ -122,7 +122,7 @@ public class CiEntityGroupManager {
                     logger.error(ex.getMessage(), ex);
                     String message = "";
                     if (ex instanceof ApiRuntimeException) {
-                        message = ((ApiRuntimeException) ex).getMessage(true);
+                        message = ((ApiRuntimeException) ex).getMessage();
                     } else {
                         message = ExceptionUtils.getStackTrace(ex);
                         logger.error(ex.getMessage(), ex);

@@ -108,7 +108,7 @@ public class LegalValidManager {
                             if (CollectionUtils.isNotEmpty(errorList)) {
                                 JSONArray errorMsgList = new JSONArray();
                                 for (ApiRuntimeException ex : errorList) {
-                                    errorMsgList.add(ex.getMessage(true));
+                                    errorMsgList.add(ex.getMessage());
                                 }
                                 IllegalCiEntityVo illegalCiEntityVo = new IllegalCiEntityVo();
                                 illegalCiEntityVo.setCiId(ciEntityVo.getCiId());

@@ -2004,7 +2004,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 AfterTransactionJob<TransactionVo> job = new AfterTransactionJob<>("CIENTITY-UPDATE-TRANSACTION-STATUS");
                 job.execute(transactionVo, t -> {
                 }, t -> {
-                    t.setError(ex instanceof ApiRuntimeException ? ((ApiRuntimeException) ex).getMessage(true) : ex.getMessage());
+                    t.setError(ex instanceof ApiRuntimeException ? ((ApiRuntimeException) ex).getMessage() : ex.getMessage());
                     t.setStatus(TransactionStatus.UNCOMMIT.getValue());
                     transactionMapper.updateTransactionStatus(t);
                 });
