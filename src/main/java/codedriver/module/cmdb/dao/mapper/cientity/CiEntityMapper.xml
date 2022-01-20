@@ -714,8 +714,14 @@
 
     <select id="searchCiEntityId" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
             resultType="java.lang.Long" useCache="true">
+        SELECT id from (
         SELECT
-        DISTINCT ci_base.id
+        DISTINCT ci_base.id AS id
+        <if test="sortList != null and sortList.size() > 0">
+            <foreach collection="sortList" item="sort">
+                ,${sort.ciTableName}.`${sort.attrId}`
+            </foreach>
+        </if>
         <include refid="ciEntityDriverSql">
         </include>
         <include refid="ciEntityJoinSql">
@@ -734,6 +740,7 @@
             </otherwise>
         </choose>
         LIMIT #{startNum}, #{pageSize}
+        ) t
     </select>
 
     <select id="searchCiEntityIdCount" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
