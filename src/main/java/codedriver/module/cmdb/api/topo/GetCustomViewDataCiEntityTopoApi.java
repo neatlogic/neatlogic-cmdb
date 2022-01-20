@@ -7,7 +7,6 @@ package codedriver.module.cmdb.api.topo;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.ci.CiTypeVo;
-import codedriver.framework.cmdb.dto.cientity.AttrEntityVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.cientity.RelEntityVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewCiVo;
@@ -15,19 +14,20 @@ import codedriver.framework.cmdb.dto.customview.CustomViewConditionVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewLinkVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewVo;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.graphviz.Graphviz;
+import codedriver.framework.graphviz.Layer;
+import codedriver.framework.graphviz.Link;
+import codedriver.framework.graphviz.Node;
+import codedriver.framework.graphviz.enums.LayoutType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.framework.util.Md5Util;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.CiTypeMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
-import codedriver.framework.graphviz.*;
-import codedriver.framework.graphviz.enums.LayoutType;
 import codedriver.module.cmdb.service.customview.CustomViewDataService;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +36,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -97,18 +100,19 @@ public class GetCustomViewDataCiEntityTopoApi extends PrivateApiComponentBase {
         for (CiEntityVo ciEntityVo : ciEntityList) {
             ciTypeIdSet.add(ciEntityVo.getTypeId());
         }
-
+        JSONObject returnObj = new JSONObject();
         Long ciEntityId = jsonObj.getLong("ciEntityId");
         //Long ciId = jsonObj.getLong("ciId");
         //分组属性
-        List<String> clusterAttrList = new ArrayList<>();
+        /*List<String> clusterAttrList = new ArrayList<>();
         clusterAttrList.add("tomcat#port");
         clusterAttrList.add("hardware#brand");
         clusterAttrList.add("system#env");
-        Map<String, Cluster.Builder> clusterMap = new HashMap<>();
+        Map<String, Cluster.Builder> clusterMap = new HashMap<>();*/
         // 先搜索出所有层次，因为需要按照层次顺序展示
         CiTypeVo pCiTypeVo = new CiTypeVo();
-        pCiTypeVo.setIsShowInTopo(1);
+        //视图层次不受模型类型限制
+        //pCiTypeVo.setIsShowInTopo(1);
         List<CiTypeVo> ciTypeList = ciTypeMapper.searchCiType(pCiTypeVo);
 
         //记录已经绘制的配置项
@@ -140,7 +144,7 @@ public class GetCustomViewDataCiEntityTopoApi extends PrivateApiComponentBase {
                             ciEntityNodeSet.add("CiEntity_" + ciEntityVo.getId());
 
                             //根据分组属性计算分组
-                            if (CollectionUtils.isNotEmpty(clusterAttrList)) {
+                            /*if (CollectionUtils.isNotEmpty(clusterAttrList)) {
                                 for (String clusterAttr : clusterAttrList) {
                                     if (clusterAttr.contains(ciEntityVo.getCiName() + "#")) {
                                         String attrname = clusterAttr.split("#")[1];
@@ -155,7 +159,7 @@ public class GetCustomViewDataCiEntityTopoApi extends PrivateApiComponentBase {
                                         }
                                     }
                                 }
-                            }
+                            }*/
 
                         }
                     }
@@ -187,23 +191,22 @@ public class GetCustomViewDataCiEntityTopoApi extends PrivateApiComponentBase {
             }
 
             //测试分组代码
-            if (MapUtils.isNotEmpty(clusterMap)) {
+            /*if (MapUtils.isNotEmpty(clusterMap)) {
                 for (String key : clusterMap.keySet()) {
                     Cluster.Builder cb = clusterMap.get(key);
                     cb.withStyle("filled");
                     gb.addCluster(cb.build());
                 }
-            }
+            }*/
 
 
             String dot = gb.build().toString();
             if (logger.isDebugEnabled()) {
                 logger.debug(dot);
             }
-            //System.out.println(dot);
-            return dot;
+            returnObj.put("dot", dot);
         }
-        return "";
+        return returnObj;
     }
 
     public static void main(String[] argv) {
