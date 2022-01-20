@@ -8,20 +8,18 @@ package codedriver.module.cmdb.api.topo;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.ci.CiTypeVo;
 import codedriver.framework.cmdb.dto.ci.RelTypeVo;
-import codedriver.framework.cmdb.dto.cientity.AttrEntityVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.cientity.RelEntityVo;
 import codedriver.framework.cmdb.enums.RelDirectionType;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.graphviz.*;
+import codedriver.framework.graphviz.enums.LayoutType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.framework.util.Md5Util;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.CiTypeMapper;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
-import codedriver.framework.graphviz.*;
-import codedriver.framework.graphviz.enums.LayoutType;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -100,11 +98,11 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
         }
         //Long ciId = jsonObj.getLong("ciId");
         //分组属性
-        List<String> clusterAttrList = new ArrayList<>();
+       /* List<String> clusterAttrList = new ArrayList<>();
         clusterAttrList.add("tomcat#port");
         clusterAttrList.add("hardware#brand");
         clusterAttrList.add("system#env");
-        Map<String, Cluster.Builder> clusterMap = new HashMap<>();
+        Map<String, Cluster.Builder> clusterMap = new HashMap<>();*/
         // 先搜索出所有层次，因为需要按照层次顺序展示
         CiTypeVo pCiTypeVo = new CiTypeVo();
         pCiTypeVo.setIsShowInTopo(1);
@@ -204,7 +202,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                             ciEntityNodeSet.add("CiEntity_" + ciEntityVo.getId());
 
                             //根据分组属性计算分组
-                            if (CollectionUtils.isNotEmpty(clusterAttrList)) {
+                           /* if (CollectionUtils.isNotEmpty(clusterAttrList)) {
                                 for (String clusterAttr : clusterAttrList) {
                                     if (clusterAttr.contains(ciEntityVo.getCiName() + "#")) {
                                         String attrname = clusterAttr.split("#")[1];
@@ -219,7 +217,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                                         }
                                     }
                                 }
-                            }
+                            }*/
 
                         }
                     }
@@ -241,13 +239,13 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
             }
 
             //测试分组代码
-            if (MapUtils.isNotEmpty(clusterMap)) {
+            /*if (MapUtils.isNotEmpty(clusterMap)) {
                 for (String key : clusterMap.keySet()) {
                     Cluster.Builder cb = clusterMap.get(key);
                     cb.withStyle("filled");
                     gb.addCluster(cb.build());
                 }
-            }
+            }*/
 
 
             String dot = gb.build().toString();

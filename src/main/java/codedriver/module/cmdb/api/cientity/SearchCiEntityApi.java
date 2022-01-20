@@ -6,6 +6,9 @@
 package codedriver.module.cmdb.api.cientity;
 
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
+import codedriver.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
+import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.CiViewVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
@@ -23,6 +26,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CIENTITY_MODIFY;
 import codedriver.module.cmdb.auth.label.CI_MODIFY;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiViewMapper;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
@@ -55,6 +59,9 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
 
     @Resource
     private CiMapper ciMapper;
+
+    @Resource
+    private AttrMapper attrMapper;
 
     @Resource
     private GroupService groupService;
@@ -96,6 +103,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
             @Param(name = "ciEntityList", type = ApiParamType.JSONARRAY, desc = "配置项结果集，如果提供则不会进行搜索，补充头部信息后直接返回"),
             @Param(name = "attrId", type = ApiParamType.LONG, desc = "关系id（通过引用配置项查询引用属性时使用）"),
             @Param(name = "fromCiEntityId", type = ApiParamType.LONG, desc = "引用配置项id（通过引用配置项查询引用属性时使用）"),
+            @Param(name = "sortList", type = ApiParamType.JSONARRAY, desc = "排序规则"),
             @Param(name = "isAllColumn", type = ApiParamType.ENUM, rule = "0,1", desc = "是否返回所有列数据"),
             @Param(name = "isLimitRelEntity", type = ApiParamType.BOOLEAN, desc = "是否限制返回的关系数据"),
             @Param(name = "isLimitAttrEntity", type = ApiParamType.BOOLEAN, desc = "是否限制返回的引用属性数据")
@@ -183,9 +191,16 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
                 }
             });
         }
+        JSONArray sortList = new JSONArray();
         if (CollectionUtils.isNotEmpty(ciViewList)) {
             attrIdList = new ArrayList<>();
             relIdList = new ArrayList<>();
+            List<AttrVo> attrList = attrMapper.getAttrByCiId(ciEntityVo.getCiId());
+            Map<Long, AttrVo> attrMap = new HashMap<>();
+            for (AttrVo attrVo : attrList) {
+                attrMap.put(attrVo.getId(), attrVo);
+            }
+
             for (CiViewVo ciview : ciViewList) {
                 JSONObject headObj = new JSONObject();
                 headObj.put("title", ciview.getItemLabel());
@@ -195,6 +210,13 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
                             attrIdList.add(ciview.getItemId());
                             headObj.put("key", "attr_" + ciview.getItemId());
                             theadList.add(headObj);
+                            AttrVo attrVo = attrMap.get(ciview.getItemId());
+                            if (attrVo != null) {
+                                IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
+                                if (handler != null && handler.isCanSort()) {
+                                    sortList.add("attr_" + attrVo.getId());
+                                }
+                            }
                         }
                         break;
                     case "relfrom":
@@ -329,6 +351,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase {
         returnObj.put("currentPage", ciEntityVo.getCurrentPage());
         returnObj.put("tbodyList", tbodyList);
         returnObj.put("theadList", theadList);
+        returnObj.put("sortList", sortList);
         return returnObj;
     }
 
