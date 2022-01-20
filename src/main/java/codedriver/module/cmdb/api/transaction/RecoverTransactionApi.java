@@ -74,7 +74,7 @@ public class RecoverTransactionApi extends PrivateApiComponentBase {
             ciEntityService.recoverCiEntity(transactionVo);
         } catch (Exception ex) {
             if (ex instanceof ApiRuntimeException) {
-                transactionVo.setError(((ApiRuntimeException) ex).getMessage(true));
+                transactionVo.setError(((ApiRuntimeException) ex).getMessage());
             } else {
                 transactionVo.setError(ex.getMessage());
             }

@@ -391,7 +391,7 @@ public class BatchImportHandler {
                                             }
                                         } catch (ApiRuntimeException e) {
                                             failedCount += 1;
-                                            rowError.put(r, e.getMessage(true));
+                                            rowError.put(r, e.getMessage());
                                         } catch (Exception e) {
                                             failedCount += 1;
                                             rowError.put(r, e.getMessage());
@@ -399,7 +399,7 @@ public class BatchImportHandler {
                                     }
                                 } catch (ApiRuntimeException e) {
                                     failedCount += 1;
-                                    rowError.put(r, e.getMessage(true));
+                                    rowError.put(r, e.getMessage());
                                 } catch (Exception e) {
                                     failedCount += 1;
                                     rowError.put(r, e.getMessage());
@@ -439,7 +439,7 @@ public class BatchImportHandler {
                 }
             } catch (Exception e) {
                 importAuditVo.setError((StringUtils.isBlank(importAuditVo.getError()) ? ""
-                        : importAuditVo.getError() + "<br>") + (e instanceof ApiRuntimeException ? ((ApiRuntimeException) e).getMessage(true) : e.getMessage()));
+                        : importAuditVo.getError() + "<br>") + (e instanceof ApiRuntimeException ? ((ApiRuntimeException) e).getMessage() : e.getMessage()));
                 logger.error(e.getMessage(), e);
             } finally {
                 try {
