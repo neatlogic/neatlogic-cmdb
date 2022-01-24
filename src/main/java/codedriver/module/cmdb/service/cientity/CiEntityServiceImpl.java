@@ -300,7 +300,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         for (AttrVo attrVo : attrList) {
             attrVo.setMaxAttrEntityCount(ciEntityVo.getMaxAttrEntityCount());
         }
-        
+
         ciEntityVo.setCiList(ciList);
         ciEntityVo.setAttrList(attrList);
         ciEntityVo.setRelList(relList);
@@ -332,7 +332,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 RelFilterVo relFilterVo = itRelFilter.next();
                 boolean isExists = false;
                 for (RelVo relVo : relList) {
-                    if (relVo.getId().equals(relFilterVo.getRelId())) {
+                    if (relVo.getId().equals(relFilterVo.getRelId()) && relVo.getDirection().equals(relFilterVo.getDirection())) {
                         isExists = true;
                         break;
                     }
@@ -345,7 +345,6 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         Boolean isLimitRelEntity = ciEntityVo.isLimitRelEntity();
         Boolean isLimitAttrEntity = ciEntityVo.isLimitAttrEntity();
         if (CollectionUtils.isEmpty(ciEntityVo.getIdList())) {
-            ciEntityVo.setSmartSearch(true);
             ciEntityVo.setLimitRelEntity(false);
             ciEntityVo.setLimitAttrEntity(false);
             int rowNum = ciEntityMapper.searchCiEntityIdCount(ciEntityVo);
@@ -356,8 +355,6 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             }
         }
         if (CollectionUtils.isNotEmpty(ciEntityVo.getIdList())) {
-            //ciEntityVo.setSmartSearch(false);
-            ciEntityVo.setSmartSearch(true);
             ciEntityVo.setLimitRelEntity(isLimitRelEntity != null ? isLimitRelEntity : true);
             ciEntityVo.setLimitAttrEntity(isLimitAttrEntity != null ? isLimitAttrEntity : true);
             List<Map<String, Object>> resultList = ciEntityMapper.searchCiEntity(ciEntityVo);
