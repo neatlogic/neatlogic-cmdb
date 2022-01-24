@@ -130,7 +130,10 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                     pCiEntityVo.setIdList(ciCiEntityIdMap.get(ciId));
                     pCiEntityVo.setCiId(ciId);
                     pCiEntityVo.setMaxRelEntityCount(100L);
-                    pCiEntityVo.setMaxAttrEntityCount(-1L);//不用搜索关系
+                    //不需要多余的属性
+                    pCiEntityVo.setAttrIdList(new ArrayList<Long>() {{
+                        this.add(0L);
+                    }});
                     List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(pCiEntityVo);
                     if (CollectionUtils.isNotEmpty(ciEntityList)) {
                         // 获取当前层次配置项所有关系(包括上下游)
@@ -147,7 +150,6 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                                     containRelIdSet.add(relEntityVo.getRelId());
                                     if (CollectionUtils.isEmpty(disableRelIdList) || disableRelIdList.stream().noneMatch(r -> r.equals(relEntityVo.getRelId()))) {
                                         relEntitySet.add(relEntityVo);
-                                        System.out.println("1.CiEntity_" + relEntityVo.getFromCiId() + "_" + relEntityVo.getFromCiEntityId() + " -> " + "CiEntity_" + relEntityVo.getToCiId() + "_" + relEntityVo.getToCiEntityId());
                                         // 检查关系中的对端配置项是否已经存在，不存在可进入下一次搜索
                                         if (relEntityVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
                                             if (!tmpCiCiEntityIdMap.containsKey(relEntityVo.getToCiId())) {

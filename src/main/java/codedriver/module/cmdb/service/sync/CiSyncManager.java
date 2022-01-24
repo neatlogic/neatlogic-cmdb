@@ -301,6 +301,12 @@ public class CiSyncManager {
                             if (!targetNameAttrVo.getType().equals("expression") && !targetNameAttrVo.isNeedTargetCi()) {
                                 CiEntityVo attrConditionVo = new CiEntityVo();
                                 attrConditionVo.setCiId(attr.getTargetCiId());
+                                attrConditionVo.setAttrIdList(new ArrayList<Long>() {{
+                                    this.add(0L);
+                                }});
+                                attrConditionVo.setRelIdList(new ArrayList<Long>() {{
+                                    this.add(0L);
+                                }});
                                 AttrFilterVo targetFilterVo = new AttrFilterVo();
                                 targetFilterVo.setAttrId(uAttrId);
                                 targetFilterVo.setExpression(SearchExpression.EQ.getExpression());

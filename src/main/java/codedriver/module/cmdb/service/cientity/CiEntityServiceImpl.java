@@ -300,24 +300,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         for (AttrVo attrVo : attrList) {
             attrVo.setMaxAttrEntityCount(ciEntityVo.getMaxAttrEntityCount());
         }
-        //不需要的属性将MaxAttrEntityCount设为-1，代表不返回任何引用属性
-        if (CollectionUtils.isNotEmpty(ciEntityVo.getAttrIdList()) && CollectionUtils.isNotEmpty(attrList)) {
-           /* for (AttrVo attrVo : attrList) {
-                if (ciEntityVo.getAttrIdList().stream().noneMatch(d -> d.equals(attrVo.getId()))) {
-                    attrVo.setMaxAttrEntityCount(-1L);
-                }
-            }*/
-            //attrList.removeIf(attrVo -> ciEntityVo.getAttrIdList().stream().noneMatch(d -> d.equals(attrVo.getId())));
-        }
-        //不需要的属性将MaxRelEntityCount设为-1，代表不返回任何关系
-        if (CollectionUtils.isNotEmpty(ciEntityVo.getRelIdList()) && CollectionUtils.isNotEmpty(relList)) {
-           /* for (RelVo relVo : relList) {
-                if (ciEntityVo.getRelIdList().stream().noneMatch(d -> d.equals(relVo.getId()))) {
-                    relVo.setMaxRelEntityCount(-1L);
-                }
-            }*/
-            //relList.removeIf(relVo -> ciEntityVo.getRelIdList().stream().noneMatch(d -> d.equals(relVo.getId())));
-        }
+        
         ciEntityVo.setCiList(ciList);
         ciEntityVo.setAttrList(attrList);
         ciEntityVo.setRelList(relList);
@@ -664,6 +647,12 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             pCiEntityVo.setCiId(ciVo.getId());
             pCiEntityVo.setPageSize(100);
             pCiEntityVo.setCurrentPage(1);
+            pCiEntityVo.setAttrIdList(new ArrayList<Long>() {{
+                this.add(ciVo.getNameAttrId());
+            }});
+            pCiEntityVo.setRelIdList(new ArrayList<Long>() {{
+                this.add(0L);
+            }});
             List<CiEntityVo> ciEntityList = searchCiEntity(pCiEntityVo);
             while (CollectionUtils.isNotEmpty(ciEntityList)) {
                 for (CiEntityVo ciEntityVo : ciEntityList) {
@@ -1071,6 +1060,13 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 }
             }
             if (CollectionUtils.isNotEmpty(ciEntityConditionVo.getAttrFilterList())) {
+                //检查是否存在不需要join所有属性和关系
+                ciEntityConditionVo.setAttrIdList(new ArrayList<Long>() {{
+                    this.add(0L);
+                }});
+                ciEntityConditionVo.setRelIdList(new ArrayList<Long>() {{
+                    this.add(0L);
+                }});
                 List<CiEntityVo> checkList = this.searchCiEntity(ciEntityConditionVo);
                 for (CiEntityVo checkCiEntity : checkList) {
                     if (!checkCiEntity.getId().equals(ciEntityTransactionVo.getCiEntityId())) {
@@ -1315,6 +1311,12 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 if (CollectionUtils.isNotEmpty(ciVo.getUniqueAttrIdList())) {
                     CiEntityVo ciEntityConditionVo = new CiEntityVo();
                     ciEntityConditionVo.setCiId(ciEntityTransactionVo.getCiId());
+                    ciEntityConditionVo.setAttrIdList(new ArrayList<Long>() {{
+                        this.add(0L);
+                    }});
+                    ciEntityConditionVo.setRelIdList(new ArrayList<Long>() {{
+                        this.add(0L);
+                    }});
                     for (Long attrId : ciVo.getUniqueAttrIdList()) {
                         AttrEntityTransactionVo attrEntityTransactionVo = ciEntityTransactionVo.getAttrEntityTransactionByAttrId(attrId);
                         if (attrEntityTransactionVo != null) {
@@ -1521,6 +1523,12 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 if (CollectionUtils.isNotEmpty(ciVo.getUniqueAttrIdList())) {
                     CiEntityVo ciEntityConditionVo = new CiEntityVo();
                     ciEntityConditionVo.setCiId(ciEntityTransactionVo.getCiId());
+                    ciEntityConditionVo.setAttrIdList(new ArrayList<Long>() {{
+                        this.add(0L);
+                    }});
+                    ciEntityConditionVo.setRelIdList(new ArrayList<Long>() {{
+                        this.add(0L);
+                    }});
                     for (Long attrId : ciVo.getUniqueAttrIdList()) {
                         AttrEntityTransactionVo attrEntityTransactionVo = ciEntityTransactionVo.getAttrEntityTransactionByAttrId(attrId);
                         if (attrEntityTransactionVo != null) {

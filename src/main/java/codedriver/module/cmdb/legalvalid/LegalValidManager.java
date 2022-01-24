@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -99,6 +99,13 @@ public class LegalValidManager {
                 CiEntityVo pCiEntityVo = new CiEntityVo();
                 pCiEntityVo.setCiId(legalValidVo.getCiId());
                 pCiEntityVo.setPageSize(100);
+                //检查是否存在不需要join所有属性和关系
+                pCiEntityVo.setAttrIdList(new ArrayList<Long>() {{
+                    this.add(0L);
+                }});
+                pCiEntityVo.setRelIdList(new ArrayList<Long>() {{
+                    this.add(0L);
+                }});
                 List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(pCiEntityVo);
                 while (CollectionUtils.isNotEmpty(ciEntityList)) {
                     for (CiEntityVo ciEntityVo : ciEntityList) {
@@ -358,6 +365,13 @@ public class LegalValidManager {
         if (CollectionUtils.isNotEmpty(ciVo.getUniqueAttrIdList())) {
             CiEntityVo ciEntityConditionVo = new CiEntityVo();
             ciEntityConditionVo.setCiId(ciEntityVo.getCiId());
+            //检查是否存在不需要join所有属性和关系
+            ciEntityConditionVo.setAttrIdList(new ArrayList<Long>() {{
+                this.add(0L);
+            }});
+            ciEntityConditionVo.setRelIdList(new ArrayList<Long>() {{
+                this.add(0L);
+            }});
             for (Long attrId : ciVo.getUniqueAttrIdList()) {
                 AttrEntityVo attrEntityVo = ciEntityVo.getAttrEntityByAttrId(attrId);
                 if (attrEntityVo != null) {

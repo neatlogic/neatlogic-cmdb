@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -148,6 +148,12 @@ public class AttrServiceImpl implements AttrService {
             CiEntityVo ciEntityVo = new CiEntityVo();
             ciEntityVo.setCiId(ciVo.getId());
             ciEntityVo.setPageSize(100);
+            ciEntityVo.setAttrIdList(new ArrayList<Long>() {{
+                this.add(0L);
+            }});
+            ciEntityVo.setRelIdList(new ArrayList<Long>() {{
+                this.add(0L);
+            }});
             List<AttrFilterVo> attrFilterList = new ArrayList<>();
             AttrFilterVo attrFilterVo = new AttrFilterVo();
             attrFilterVo.setAttrId(attrVo.getId());
@@ -177,7 +183,8 @@ public class AttrServiceImpl implements AttrService {
                         ciEntityTransactionVo.setCiId(item.getCiId());
                         ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
                         ciEntityTransactionVo.setTransactionId(transactionVo.getId());
-                        ciEntityTransactionVo.setOldCiEntityVo(item);
+                        //不用join的目的是避免触碰到mysql的join数量上限
+                        ciEntityTransactionVo.setOldCiEntityVo(ciEntityService.getCiEntityById(item.getCiId(), item.getId()));
                         //必须使用局部修改模式，这样不需要提供其他属性
                         ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
                         //创建修改信息
