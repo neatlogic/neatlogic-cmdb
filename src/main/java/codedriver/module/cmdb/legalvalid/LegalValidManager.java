@@ -53,7 +53,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.script.ScriptException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -109,6 +108,10 @@ public class LegalValidManager {
                 List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(pCiEntityVo);
                 while (CollectionUtils.isNotEmpty(ciEntityList)) {
                     for (CiEntityVo ciEntityVo : ciEntityList) {
+                        //查找完整的配置项信息
+                        ciEntityVo.setLimitAttrEntity(false);
+                        ciEntityVo.setLimitRelEntity(false);
+                        ciEntityVo = ciEntityService.getCiEntityById(ciEntityVo);
                         illegalCiEntityMapper.deleteCiEntityIllegal(ciEntityVo.getId(), legalValidVo.getId());
                         if (legalValidVo.getType().equals(LegalValidType.CI.getValue())) {
                             List<ApiRuntimeException> errorList = validateCiEntity(ciEntityVo);
@@ -125,11 +128,17 @@ public class LegalValidManager {
                                 illegalCiEntityMapper.insertCiEntityIllegal(illegalCiEntityVo);
                             }
                         } else if (legalValidVo.getType().equals(LegalValidType.CUSTOM.getValue())) {
-                            if (validateCiEntity(ciEntityVo, legalValidVo.getRule())) {
+                            List<ApiRuntimeException> errorList = validateCiEntity(ciEntityVo, legalValidVo.getRule());
+                            if (CollectionUtils.isNotEmpty(errorList)) {
+                                JSONArray errorMsgList = new JSONArray();
+                                for (ApiRuntimeException ex : errorList) {
+                                    errorMsgList.add(ex.getMessage());
+                                }
                                 IllegalCiEntityVo illegalCiEntityVo = new IllegalCiEntityVo();
                                 illegalCiEntityVo.setCiId(ciEntityVo.getCiId());
                                 illegalCiEntityVo.setCiEntityId(ciEntityVo.getId());
                                 illegalCiEntityVo.setLegalValidId(legalValidVo.getId());
+                                illegalCiEntityVo.setError(errorMsgList);
                                 illegalCiEntityMapper.insertCiEntityIllegal(illegalCiEntityVo);
                             }
                         }
@@ -141,8 +150,8 @@ public class LegalValidManager {
         });
     }
 
-    private static boolean validateCiEntity(CiEntityVo ciEntityVo, JSONObject ruleObj) {
-        boolean isAllMatch = false;
+    private static List<ApiRuntimeException> validateCiEntity(CiEntityVo ciEntityVo, JSONObject ruleObj) {
+        List<ApiRuntimeException> errorList = new ArrayList<>();
         if (ciEntityVo != null && MapUtils.isNotEmpty(ruleObj)) {
             JSONArray conditionGroupList = ruleObj.getJSONArray("conditionGroupList");
             JSONArray conditionGroupRelList = ruleObj.getJSONArray("conditionGroupRelList");
@@ -194,13 +203,13 @@ public class LegalValidManager {
                 paramObj.put("data", dataObj);
                 paramObj.put("condition", conditionObj);
                 try {
-                    isAllMatch = JavascriptUtil.runExpression(paramObj, script.toString());
-                } catch (ScriptException | NoSuchMethodException e) {
-                    logger.error(e.getMessage(), e);
+                    JavascriptUtil.runExpression(paramObj, script.toString());
+                } catch (Exception e) {
+                    errorList.add(new ApiRuntimeException(e));
                 }
             }
         }
-        return isAllMatch;
+        return errorList;
     }
 
     /**
@@ -217,8 +226,7 @@ public class LegalValidManager {
 
         for (AttrVo attrVo : attrList) {
             if (!attrVo.getType().equals(EXPRESSION_TYPE)) {
-                AttrEntityVo attrEntityVo =
-                        ciEntityVo.getAttrEntityByAttrId(attrVo.getId());
+                AttrEntityVo attrEntityVo = ciEntityVo.getAttrEntityByAttrId(attrVo.getId());
                 if (attrVo.getIsRequired().equals(1)) {
                     if (attrEntityVo == null) {
                         errorList.add(new AttrEntityValueEmptyException(attrVo.getLabel()));
@@ -245,8 +253,7 @@ public class LegalValidManager {
                 }
 
                 /*  调用校验器校验数据合法性，只有非引用型属性才需要 */
-                if (attrEntityVo != null && CollectionUtils.isNotEmpty(attrEntityVo.getValueList())
-                        && StringUtils.isNotBlank(attrVo.getValidatorHandler()) && !attrVo.isNeedTargetCi()) {
+                if (attrEntityVo != null && CollectionUtils.isNotEmpty(attrEntityVo.getValueList()) && StringUtils.isNotBlank(attrVo.getValidatorHandler()) && !attrVo.isNeedTargetCi()) {
                     IValidator validator = ValidatorFactory.getValidator(attrVo.getValidatorHandler());
                     if (validator != null) {
                         try {
@@ -259,8 +266,7 @@ public class LegalValidManager {
 
                 /* 检查属性是否唯一： */
                 if (attrVo.getIsUnique().equals(1)) {
-                    if (attrEntityVo != null
-                            && CollectionUtils.isNotEmpty(attrEntityVo.getValueList())) {
+                    if (attrEntityVo != null && CollectionUtils.isNotEmpty(attrEntityVo.getValueList())) {
                         if (attrVo.isNeedTargetCi()) {
                             List<Long> toCiEntityIdList = new ArrayList<>();
                             for (int i = 0; i < attrEntityVo.getValueList().size(); i++) {
@@ -294,11 +300,9 @@ public class LegalValidManager {
         // 校验关系信息
         for (RelVo relVo : relList) {
             // 判断当前配置项处于from位置的规则
-            List<RelEntityVo> fromRelEntityList =
-                    ciEntityVo.getRelEntityByRelIdAndDirection(relVo.getId(), RelDirectionType.FROM.getValue());
+            List<RelEntityVo> fromRelEntityList = ciEntityVo.getRelEntityByRelIdAndDirection(relVo.getId(), RelDirectionType.FROM.getValue());
             // 判断当前配置项处于to位置的规则
-            List<RelEntityVo> toRelEntityList =
-                    ciEntityVo.getRelEntityByRelIdAndDirection(relVo.getId(), RelDirectionType.TO.getValue());
+            List<RelEntityVo> toRelEntityList = ciEntityVo.getRelEntityByRelIdAndDirection(relVo.getId(), RelDirectionType.TO.getValue());
 
             // 标记当前模型是在关系的上端或者下端
             boolean isFrom = false;
