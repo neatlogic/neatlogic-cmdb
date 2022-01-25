@@ -14,6 +14,7 @@ import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityAttrVo;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityJoinVo;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
+import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceViewVo;
 import codedriver.framework.cmdb.enums.RelDirectionType;
 import codedriver.framework.cmdb.enums.resourcecenter.JoinType;
 import codedriver.framework.cmdb.enums.resourcecenter.Status;
@@ -52,6 +53,7 @@ public class ResourceEntityViewBuilder {
 
 
     private List<ResourceEntityVo> resourceEntityList;
+    private List<ResourceViewVo> resourceViewList;
     private final Map<String, CiVo> ciMap = new HashMap<>();
     private static ResourceCenterConfigMapper resourceCenterConfigMapper;
     private static CiService ciService;
@@ -255,6 +257,22 @@ public class ResourceEntityViewBuilder {
                         resourceEntityMapper.insertResourceEntity(resourceEntityVo);
                     }
                 }
+
+                resourceViewList = new ArrayList<>();
+                List<Element> viewElementList = root.elements("view");
+                for (Element element : viewElementList) {
+                    String name = element.attributeValue("name");
+                    String label = element.attributeValue("label");
+                    if (StringUtils.isBlank(name)) {
+                        continue;
+                    }
+                    Element sqlElement = element.element("sql");
+                    if (sqlElement == null) {
+                        throw new ResourceCenterConfigIrregularException(name, "sql");
+                    }
+                    String sql = sqlElement.getTextTrim();
+                    resourceViewList.add(new ResourceViewVo(name, label, sql));
+                }
             }
 
             if (CollectionUtils.isNotEmpty(oldResourceEntityList)) {
@@ -401,6 +419,31 @@ public class ResourceEntityViewBuilder {
                     } finally {
                         resourceEntityMapper.updateResourceEntity(resourceEntity);
                     }
+                }
+            }
+        }
+        if (CollectionUtils.isNotEmpty(resourceViewList)) {
+            for (ResourceViewVo resourceViewVo : resourceViewList) {
+                ResourceEntityVo resourceEntity = new ResourceEntityVo();
+                resourceEntity.setName(resourceViewVo.getName());
+                resourceEntity.setLabel(resourceViewVo.getLabel());
+                try {
+                    String viewSql = resourceViewVo.getSql();
+                    viewSql = viewSql.replace("${schemaName}", TenantContext.get().getDataDbName());
+                    String sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + "." + resourceViewVo.getName() + " AS " + viewSql;
+                    logger.error(sql);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug(sql);
+                    }
+                    resourceEntityMapper.insertResourceEntityView(sql);
+                    resourceEntity.setError("");
+                    resourceEntity.setStatus(Status.READY.getValue());
+                } catch (Exception ex) {
+                    logger.error(ex.getMessage());
+                    resourceEntity.setError(ex.getMessage());
+                    resourceEntity.setStatus(Status.ERROR.getValue());
+                } finally {
+                    resourceEntityMapper.updateResourceEntity(resourceEntity);
                 }
             }
         }
