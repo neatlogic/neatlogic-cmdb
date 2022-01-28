@@ -41,6 +41,7 @@ import codedriver.module.cmdb.dao.mapper.sync.SyncMapper;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSONPath;
 import com.mongodb.client.MongoCursor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -650,16 +651,28 @@ public class CiSyncManager {
                                 query.addCriteria(finalCriteria);
                                 int batchSize = 500;//游标每次读取500条数据
                                 AtomicInteger count = new AtomicInteger(0);
+                                int counter = 0;
                                 try (MongoCursor<Document> cursor = mongoTemplate.getCollection(collectionVo.getCollection()).find(query.getQueryObject()).noCursorTimeout(true).batchSize(batchSize).cursor()) {
                                     List<JSONObject> dataList = new ArrayList<>();
                                     while (cursor.hasNext()) {
+                                        counter += 1;
                                         String jsonStr = cursor.next().toJson();
-                                        JSONObject orgDataObj = JSONObject.parseObject(jsonStr);
-                                        dataList.add(orgDataObj);
+
+                                        if (StringUtils.isNotBlank(collectionVo.getDocroot())) {
+                                            JSONArray objList = (JSONArray) JSONPath.read(jsonStr, "$." + collectionVo.getDocroot());
+                                            for (int i = 0; i < objList.size(); i++) {
+                                                dataList.add(objList.getJSONObject(i));
+                                            }
+                                        } else {
+                                            JSONObject orgDataObj = JSONObject.parseObject(jsonStr);
+                                            dataList.add(orgDataObj);
+                                        }
+
                                         //到达batchSize先处理一部分
-                                        if (dataList.size() == batchSize) {
+                                        if (counter == batchSize) {
                                             dealWithDataBatch(syncCiCollectionVo, fieldList, dataList, count);
                                             dataList = new ArrayList<>();
+                                            counter = 0;
                                         }
                                     }
                                     //处理剩余的数据
@@ -698,7 +711,7 @@ public class CiSyncManager {
         private void dealWithDataBatch(SyncCiCollectionVo syncCiCollectionVo, Set<String> fieldList, List<JSONObject> dataList, AtomicInteger count) {
             if (CollectionUtils.isNotEmpty(dataList)) {
                 BatchRunner<JSONObject> batchRunner = new BatchRunner<>();
-                BatchRunner.State state = batchRunner.execute(dataList, 10, data -> {
+                BatchRunner.State state = batchRunner.execute(dataList, 3, data -> {
                     int tmpCount = count.addAndGet(1);
                     long startTime = 0L;
                     if (logger.isInfoEnabled()) {
