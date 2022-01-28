@@ -725,7 +725,8 @@ public class CiSyncManager {
                     JSONArray finalDataList = flattenJson(tmpDataList, fieldList, null);
                     for (int i = 0; i < finalDataList.size(); i++) {
                         JSONObject dataObj = finalDataList.getJSONObject(i);
-                        Map<Integer, CiEntityTransactionVo> ciEntityTransactionVoMap = new HashMap<>();
+                        //需要严格按照写入的先后顺序生成list，否则后期写入关系数据时，会因为被引用配置项还不存在而导致清除掉关系。
+                        Map<Integer, CiEntityTransactionVo> ciEntityTransactionVoMap = new LinkedHashMap<>();
 
                         if (logger.isInfoEnabled()) {
                             startTime = System.currentTimeMillis();
