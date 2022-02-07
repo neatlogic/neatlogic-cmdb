@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -19,6 +19,7 @@ import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.sync.SyncMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSONPath;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -121,6 +122,16 @@ public class SearchCollectionDataApi extends PrivateApiComponentBase {
                     query.skip((long) pageVo.getPageSize() * (pageVo.getCurrentPage() - 1));
                 }
                 List<JSONObject> resultList = mongoTemplate.find(query, JSONObject.class, collectionVo.getCollection());
+                if (StringUtils.isNotEmpty(collectionVo.getDocroot())) {
+                    List<JSONObject> finalResultList = new ArrayList<>();
+                    for (JSONObject obj : resultList) {
+                        JSONArray objList = (JSONArray) JSONPath.read(obj.toJSONString(), "$." + collectionVo.getDocroot());
+                        for (int i = 0; i < objList.size(); i++) {
+                            finalResultList.add(objList.getJSONObject(i));
+                        }
+                    }
+                    resultList = finalResultList;
+                }
                 long rowNum = mongoTemplate.count(countQuery, collectionVo.getCollection());
                 pageVo.setRowNum((int) rowNum);
                 resultObj.put("theadList", theadList);

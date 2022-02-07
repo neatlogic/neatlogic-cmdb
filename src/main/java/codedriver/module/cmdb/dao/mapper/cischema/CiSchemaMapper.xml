@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!--
-  ~ Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+  ~ Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
   ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
   -->
 
@@ -55,12 +55,15 @@
             <when test="attrVo.type == 'datetime'">
                 datetime
             </when>
+            <when test="attrVo.type == 'enum'">
+                char(30)
+            </when>
             <otherwise>TEXT</otherwise>
         </choose>
         NULL COMMENT '${attrVo.label}',
         ADD COLUMN `${attrVo.id}_hash` CHAR(32) NULL COMMENT '${attrVo.label}值散列码',
         <choose>
-            <when test="attrVo.type == 'number' or attrVo.type == 'date' or attrVo.type == 'time' or attrVo.type == 'datetime'">
+            <when test="attrVo.type == 'number' or attrVo.type == 'date' or attrVo.type == 'time' or attrVo.type == 'datetime' or attrVo.type == 'enum'">
                 ADD KEY `index_${attrVo.id}` (`${attrVo.id}`),
             </when>
         </choose>
