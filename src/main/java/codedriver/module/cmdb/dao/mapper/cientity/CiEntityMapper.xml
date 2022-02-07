@@ -559,8 +559,10 @@
                                                 </foreach>
                                             </when>
                                             <otherwise>
-                                                AND ${attrFilter.ciTableName}.`${attrFilter.attrId}_hash` ！=
-                                                #{attrFilter.value,typeHandler=Md5Handler}
+                                                AND (${attrFilter.ciTableName}.`${attrFilter.attrId}_hash` !=
+                                                #{attrFilter.value,typeHandler=Md5Handler} or
+                                                ${attrFilter.ciTableName}.`${attrFilter.attrId}` is null
+                                                )
                                             </otherwise>
                                         </choose>
                                     </when>
