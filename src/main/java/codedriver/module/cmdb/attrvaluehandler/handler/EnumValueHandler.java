@@ -25,7 +25,7 @@ public class EnumValueHandler implements IAttrValueHandler {
 
     @Override
     public String getIcon() {
-        return "tsfont-check-square";
+        return "tsfont-circle-o";
     }
 
     @Override
