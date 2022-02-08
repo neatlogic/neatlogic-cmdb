@@ -58,6 +58,9 @@
             <when test="attrVo.type == 'enum'">
                 char(30)
             </when>
+            <when test="attrVo.type == 'hyperlink'">
+                varchar(500)
+            </when>
             <otherwise>TEXT</otherwise>
         </choose>
         NULL COMMENT '${attrVo.label}',
