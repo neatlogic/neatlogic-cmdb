@@ -140,7 +140,7 @@ public class TimeValueHandler implements IAttrValueHandler {
 
     @Override
     public int getSort() {
-        return 6;
+        return 7;
     }
 
 }
