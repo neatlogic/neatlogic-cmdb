@@ -280,10 +280,13 @@ public class CiSyncManager {
                                 filterVo.setValueList(new ArrayList<String>() {{
                                     this.add(v);
                                 }});
-                                ciEntityConditionVo.addAttrFilter(filterVo);
                             } else {
-                                throw new CiUniqueAttrDataEmptyException(syncCiCollectionVo, ciVo, syncMappingVo.getField(parentKey), dataObj);
+                                //throw new CiUniqueAttrDataEmptyException(syncCiCollectionVo, ciVo, syncMappingVo.getField(parentKey), dataObj);
+                                filterVo.setValueList(new ArrayList<String>() {{
+                                    this.add("");
+                                }});
                             }
+                            ciEntityConditionVo.addAttrFilter(filterVo);
                         } else {
                             //如果是引用属性，需要被引用模型的唯一属性只有一个才能成功定位引用配置项
                             CiVo targetCiVo = getCi(attr.getTargetCiId());

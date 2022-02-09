@@ -544,8 +544,17 @@
                                                 </foreach>
                                             </when>
                                             <otherwise>
-                                                AND ${attrFilter.ciTableName}.`${attrFilter.attrId}_hash` =
-                                                #{attrFilter.value,typeHandler=Md5Handler}
+                                                <choose>
+                                                    <!--如果是空值需要兼容两种情况-->
+                                                    <when test="attrFilter.value == ''">
+                                                        AND (${attrFilter.ciTableName}.`${attrFilter.attrId}` = '' OR
+                                                        ${attrFilter.ciTableName}.`${attrFilter.attrId}` is null)
+                                                    </when>
+                                                    <otherwise>
+                                                        AND ${attrFilter.ciTableName}.`${attrFilter.attrId}_hash` =
+                                                        #{attrFilter.value,typeHandler=Md5Handler}
+                                                    </otherwise>
+                                                </choose>
                                             </otherwise>
                                         </choose>
                                     </when>
