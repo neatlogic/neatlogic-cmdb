@@ -709,6 +709,10 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciEntityTransactionVo.getCiId());
         List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciEntityTransactionVo.getCiId()));
         CiVo ciVo = ciMapper.getCiById(ciEntityTransactionVo.getCiId());
+        //如果外部有自定义唯一规则，则使用外部的唯一规则
+        if (CollectionUtils.isNotEmpty(ciEntityTransactionVo.getUniqueAttrIdList())) {
+            ciVo.setUniqueAttrIdList(ciEntityTransactionVo.getUniqueAttrIdList());
+        }
         CiEntityVo oldEntity = ciEntityTransactionVo.getOldCiEntityVo();
         List<AttrEntityVo> oldAttrEntityList = null;
         List<RelEntityVo> oldRelEntityList = null;
@@ -1022,10 +1026,9 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     filterVo.setExpression(SearchExpression.EQ.getExpression());
                     filterVo.setValueList(attrEntityTransactionVo.getValueList().stream().map(d -> {
                         if (d != null) {
-                            //空字符串可以作为合法的值，参考db的unique key规范
-                           /* if (StringUtils.isBlank(d.toString())) {
+                            if (StringUtils.isBlank(d.toString())) {
                                 throw new CiUniqueAttrNotFoundException(op.get());
-                            }*/
+                            }
                             return d.toString();
                         } else {
                             throw new CiUniqueAttrNotFoundException(op.get());
@@ -1041,11 +1044,9 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                             filterVo.setExpression(SearchExpression.EQ.getExpression());
                             filterVo.setValueList(attrEntityVo.getValueList().stream().map(d -> {
                                 if (d != null) {
-                                    //空字符串可以作为合法的值，参考db的unique key规范
-                                    /*
                                     if (StringUtils.isBlank(d.toString())) {
                                         throw new CiUniqueAttrNotFoundException(op.get());
-                                    }*/
+                                    }
                                     return d.toString();
                                 } else {
                                     throw new CiUniqueAttrNotFoundException(op.get());

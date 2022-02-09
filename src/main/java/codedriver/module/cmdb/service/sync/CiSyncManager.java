@@ -285,10 +285,7 @@ public class CiSyncManager {
                                     this.add(v);
                                 }});
                             } else {
-                                //throw new CiUniqueAttrDataEmptyException(syncCiCollectionVo, ciVo, syncMappingVo.getField(parentKey), dataObj);
-                                filterVo.setValueList(new ArrayList<String>() {{
-                                    this.add("");
-                                }});
+                                throw new CiUniqueAttrNotFoundException(syncCiCollectionVo, ciVo, syncMappingVo.getField(parentKey), dataObj);
                             }
                             ciEntityConditionVo.addAttrFilter(filterVo);
                         } else {
