@@ -259,6 +259,10 @@ public class CiSyncManager {
             /*
             需要使用模型的唯一规则来查找配置项，如果找不到，就不做任何更新
              */
+            //用自动采集设置中的唯一规则替换掉模型的唯一规则，后面的逻辑都不需要修改了
+            if (CollectionUtils.isNotEmpty(syncCiCollectionVo.getUniqueAttrIdList())) {
+                ciVo.setUniqueAttrIdList(syncCiCollectionVo.getUniqueAttrIdList());
+            }
             if (CollectionUtils.isEmpty(ciVo.getUniqueAttrIdList())) {
                 throw new CiUniqueRuleNotFoundException(ciVo);
             }
@@ -280,10 +284,13 @@ public class CiSyncManager {
                                 filterVo.setValueList(new ArrayList<String>() {{
                                     this.add(v);
                                 }});
-                                ciEntityConditionVo.addAttrFilter(filterVo);
                             } else {
-                                throw new CiUniqueAttrDataEmptyException(syncCiCollectionVo, ciVo, syncMappingVo.getField(parentKey), dataObj);
+                                //throw new CiUniqueAttrDataEmptyException(syncCiCollectionVo, ciVo, syncMappingVo.getField(parentKey), dataObj);
+                                filterVo.setValueList(new ArrayList<String>() {{
+                                    this.add("");
+                                }});
                             }
+                            ciEntityConditionVo.addAttrFilter(filterVo);
                         } else {
                             //如果是引用属性，需要被引用模型的唯一属性只有一个才能成功定位引用配置项
                             CiVo targetCiVo = getCi(attr.getTargetCiId());
@@ -331,7 +338,7 @@ public class CiSyncManager {
                             }
                         }
                     } else {
-                        throw new CiUniqueAttrDataEmptyException(syncCiCollectionVo, ciVo, syncMappingVo.getField(parentKey), dataObj);
+                        throw new CiUniqueAttrNotFoundException(syncCiCollectionVo, ciVo, syncMappingVo.getField(parentKey), dataObj);
                     }
                 } else {
                     throw new AttrNotFoundException(uniqueAttrId);
@@ -765,7 +772,7 @@ public class CiSyncManager {
                 }, "SYNC-BATCH-HANDLER");
                 if (!state.isSucceed()) {
                     if (state.getException() != null) {
-                        throw new ApiRuntimeException(state.getException());
+                        throw new ApiRuntimeException(state.getException().getMessage());
                     }
                 }
             }
