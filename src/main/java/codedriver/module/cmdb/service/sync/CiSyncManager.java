@@ -334,7 +334,7 @@ public class CiSyncManager {
                             }
                         }
                     } else {
-                        throw new CiUniqueAttrDataEmptyException(syncCiCollectionVo, ciVo, syncMappingVo.getField(parentKey), dataObj);
+                        throw new CiUniqueAttrNotFoundException(syncCiCollectionVo, ciVo, syncMappingVo.getField(parentKey), dataObj);
                     }
                 } else {
                     throw new AttrNotFoundException(uniqueAttrId);

@@ -1022,9 +1022,10 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     filterVo.setExpression(SearchExpression.EQ.getExpression());
                     filterVo.setValueList(attrEntityTransactionVo.getValueList().stream().map(d -> {
                         if (d != null) {
-                            if (StringUtils.isBlank(d.toString())) {
+                            //空字符串可以作为合法的值，参考db的unique key规范
+                           /* if (StringUtils.isBlank(d.toString())) {
                                 throw new CiUniqueAttrNotFoundException(op.get());
-                            }
+                            }*/
                             return d.toString();
                         } else {
                             throw new CiUniqueAttrNotFoundException(op.get());
@@ -1040,9 +1041,11 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                             filterVo.setExpression(SearchExpression.EQ.getExpression());
                             filterVo.setValueList(attrEntityVo.getValueList().stream().map(d -> {
                                 if (d != null) {
+                                    //空字符串可以作为合法的值，参考db的unique key规范
+                                    /*
                                     if (StringUtils.isBlank(d.toString())) {
                                         throw new CiUniqueAttrNotFoundException(op.get());
-                                    }
+                                    }*/
                                     return d.toString();
                                 } else {
                                     throw new CiUniqueAttrNotFoundException(op.get());
