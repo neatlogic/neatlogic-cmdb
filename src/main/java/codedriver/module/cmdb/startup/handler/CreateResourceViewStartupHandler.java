@@ -13,14 +13,11 @@ import codedriver.framework.dao.mapper.SchemaMapper;
 import codedriver.framework.startup.IStartup;
 import codedriver.module.cmdb.utils.ResourceCustomViewFactory;
 import codedriver.module.cmdb.utils.ResourceEntityFactory;
-import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
-import net.sf.jsqlparser.statement.select.SelectItem;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -59,9 +56,6 @@ public class CreateResourceViewStartupHandler implements IStartup {
     public void executeForCurrentTenant() {
         List<ICustomView> custonViewList = ResourceCustomViewFactory.getCustomViewList();
         List<ResourceEntityVo> resourceEntityList = ResourceEntityFactory.getResourceEntityList();
-        if (!"default".equals(TenantContext.get().getTenantUuid())) {
-            return;
-        }
         if (CollectionUtils.isNotEmpty(resourceEntityList)) {
             List<ResourceEntityVo> newResourceEntityList = new ArrayList<>();
             for (ResourceEntityVo resourceEntity : resourceEntityList) {
@@ -75,9 +69,11 @@ public class CreateResourceViewStartupHandler implements IStartup {
                             if (!columnNameList.contains(attrVo.getField())) {
                                 newResourceEntityList.add(resourceEntity);
                                 if ("BASE TABLE".equals(tableType)) {
+                                    logger.debug("删除表：" + resourceEntity.getName());
                                     schemaMapper.deleteTable(TenantContext.get().getDataDbName() + "." + resourceEntity.getName());
                                 } else if("VIEW".equals(tableType)) {
                                     schemaMapper.deleteView(TenantContext.get().getDataDbName() + "." + resourceEntity.getName());
+                                    logger.debug("删除视图：" + resourceEntity.getName());
                                 }
                                 break;
                             }
@@ -90,7 +86,6 @@ public class CreateResourceViewStartupHandler implements IStartup {
             // 如果通过@ResourceType注解定义的视图不存在，先创建具有相同字段的空表代替
             if (CollectionUtils.isNotEmpty(newResourceEntityList)) {
                 for (ResourceEntityVo resourceEntity : newResourceEntityList) {
-//                    resourceEntityMapper.deleteResourceEntityTable(TenantContext.get().getDataDbName() + "." + resourceEntity.getName());
                     Table table = new Table();
                     table.setName(resourceEntity.getName());
                     table.setSchemaName(TenantContext.get().getDataDbName());
@@ -106,6 +101,7 @@ public class CreateResourceViewStartupHandler implements IStartup {
                     createTable.setTable(table);
                     createTable.setColumnDefinitions(columnDefinitions);
                     createTable.setIfNotExists(true);
+                    logger.debug("创建表：" + resourceEntity.getName());
                     schemaMapper.insertView(createTable.toString());
                 }
             }
@@ -114,36 +110,14 @@ public class CreateResourceViewStartupHandler implements IStartup {
         for (ICustomView custonView : custonViewList) {
             PlainSelect plainSelect = (PlainSelect) custonView.getSelectBody();
             if (plainSelect != null) {
-                boolean needCreateView = false;
-                //判断视图是否存在，如果已存在，进一步判断原视图与新视图字段是否一致，如果不一致就重新建。
-                String tableType = schemaMapper.checkTableOrViewIsExists(TenantContext.get().getDataDbName(), custonView.getName());
-                if (StringUtils.isNotBlank(tableType)) {
-                    List<String> columnNameList = schemaMapper.getTableOrViewAllColumnNameList(TenantContext.get().getDataDbName(), custonView.getName());
-                    List<String> oldColumnNameList = new ArrayList<>();
-                    List<SelectItem> selectItems = plainSelect.getSelectItems();
-                    for (SelectItem selectItem : selectItems) {
-                        if (selectItem instanceof SelectExpressionItem) {
-                            SelectExpressionItem selectExpressionItem = (SelectExpressionItem) selectItem;
-                            Alias alias = selectExpressionItem.getAlias();
-                            if (alias != null) {
-                                oldColumnNameList.add(alias.getName());
-                            }
-                        }
+                try {
+                    String sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + "." + custonView.getName() + " AS " + plainSelect;
+                    if (logger.isDebugEnabled()) {
+                        logger.debug(sql);
                     }
-                    needCreateView = !CollectionUtils.isEqualCollection(oldColumnNameList, columnNameList);
-                } else {
-                    needCreateView = true;
-                }
-                if (needCreateView) {
-                    try {
-                        String sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + "." + custonView.getName() + " AS " + plainSelect;
-                        if (logger.isDebugEnabled()) {
-                            logger.debug(sql);
-                        }
-                        schemaMapper.insertView(sql);
-                    } catch (Exception ex) {
-                        logger.error(ex.getMessage(), ex);
-                    }
+                    schemaMapper.insertView(sql);
+                } catch (Exception ex) {
+                    logger.error(ex.getMessage(), ex);
                 }
             }
         }
