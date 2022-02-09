@@ -121,7 +121,7 @@ public class ResourceEntityViewBuilder {
                 }
                 // 创建自定义视图
                 for (ICustomView custonView : custonViewList) {
-                    PlainSelect plainSelect = custonView.getSql();
+                    PlainSelect plainSelect = (PlainSelect) custonView.getSelectBody();
                     if (plainSelect != null) {
                         boolean needCreateView = false;
                         //判断视图是否存在，如果已存在，进一步判断原视图与新视图字段是否一致，如果不一致就重新建。
