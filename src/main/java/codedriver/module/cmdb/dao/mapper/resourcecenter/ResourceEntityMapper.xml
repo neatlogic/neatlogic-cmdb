@@ -12,21 +12,9 @@
         FROM cmdb_resourcecenter_entity
     </select>
 
-    <select id="checkTableOrViewIsExists" resultType="java.lang.String">
-        SELECT `table_type` FROM `information_schema`.`tables`
-        WHERE `table_schema` = #{tableSchema}
-          AND `table_name` = #{tableName};
-    </select>
-
-    <select id="getTableOrViewAllColumnNameList" resultType="java.lang.String">
-        SELECT `column_name` FROM `information_schema`.`COLUMNS`
-        WHERE `table_schema` = #{tableSchema}
-          AND `table_name` = #{tableName};
-    </select>
-
-    <insert id="insertResourceEntityView" parameterType="java.lang.String">
+    <!--<insert id="insertResourceEntityView" parameterType="java.lang.String">
         ${value}
-    </insert>
+    </insert>-->
 
     <insert id="insertResourceEntity"
             parameterType="codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
@@ -64,11 +52,7 @@
         WHERE name = #{value}
     </delete>
 
-    <delete id="deleteResourceEntityView" parameterType="java.lang.String">
+    <!--<delete id="deleteResourceEntityView" parameterType="java.lang.String">
         DROP VIEW IF EXISTS ${value}
-    </delete>
-
-    <delete id="deleteResourceEntityTable" parameterType="java.lang.String">
-        DROP TABLE IF EXISTS ${value}
-    </delete>
+    </delete>-->
 </mapper>

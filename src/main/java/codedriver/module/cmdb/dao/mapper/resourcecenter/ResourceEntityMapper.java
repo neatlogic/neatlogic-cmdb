@@ -14,11 +14,7 @@ import java.util.Map;
 public interface ResourceEntityMapper {
     List<ResourceEntityVo> getAllResourceEntity();
 
-    String checkTableOrViewIsExists(@Param("tableSchema") String tableSchema, @Param("tableName") String tableName);
-
-    List<String> getTableOrViewAllColumnNameList(@Param("tableSchema") String tableSchema, @Param("tableName") String tableName);
-
-    void insertResourceEntityView(String sql);
+//    void insertResourceEntityView(String sql);
 
     void insertResourceEntity(ResourceEntityVo resourceEntityVo);
 
@@ -28,9 +24,7 @@ public interface ResourceEntityMapper {
 
     void deleteResourceEntityByName(String name);
 
-    void deleteResourceEntityView(String viewName);
-
-    void deleteResourceEntityTable(String tableName);
+//    void deleteResourceEntityView(String viewName);
 
 //    void deleteResourceEntityAttrByEntity(String entityName);
 }
