@@ -768,7 +768,7 @@ public class CiSyncManager {
                 }, "SYNC-BATCH-HANDLER");
                 if (!state.isSucceed()) {
                     if (state.getException() != null) {
-                        throw new ApiRuntimeException(state.getException());
+                        throw new ApiRuntimeException(state.getException().getMessage());
                     }
                 }
             }
