@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -57,7 +57,8 @@ public class SaveSyncCiCollectionApi extends PrivateApiComponentBase {
             @Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
             @Param(name = "collectionName", isRequired = true, type = ApiParamType.STRING, desc = "集合名称"),
             @Param(name = "parentKey", type = ApiParamType.STRING, desc = "父属性"),
-            @Param(name = "mapping", type = ApiParamType.JSONARRAY, desc = "映射内容")})
+            @Param(name = "mapping", type = ApiParamType.JSONARRAY, desc = "映射内容"),
+            @Param(name = "uniqueAttrIdList", type = ApiParamType.JSONARRAY, desc = "唯一规则")})
     @Description(desc = "保存配置项集合映射设置接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {

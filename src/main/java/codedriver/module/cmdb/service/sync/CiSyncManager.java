@@ -259,6 +259,10 @@ public class CiSyncManager {
             /*
             需要使用模型的唯一规则来查找配置项，如果找不到，就不做任何更新
              */
+            //用自动采集设置中的唯一规则替换掉模型的唯一规则，后面的逻辑都不需要修改了
+            if (CollectionUtils.isNotEmpty(syncCiCollectionVo.getUniqueAttrIdList())) {
+                ciVo.setUniqueAttrIdList(syncCiCollectionVo.getUniqueAttrIdList());
+            }
             if (CollectionUtils.isEmpty(ciVo.getUniqueAttrIdList())) {
                 throw new CiUniqueRuleNotFoundException(ciVo);
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -60,6 +60,7 @@ public class SyncServiceImpl implements SyncService {
             syncMapper.insertSyncCiCollection(syncCiCollectionVo);
         } else {
             syncCiCollectionVo.setLcu(UserContext.get().getUserUuid());
+            syncMapper.deleteSyncUniqueByCiCollectionId(syncCiCollectionVo.getId());
             syncMapper.updateSyncCiCollection(syncCiCollectionVo);
             syncMapper.deleteSyncMappingByCiCollectionId(syncCiCollectionVo.getId());
         }
@@ -67,6 +68,11 @@ public class SyncServiceImpl implements SyncService {
             for (SyncMappingVo syncMappingVo : syncCiCollectionVo.getMappingList()) {
                 syncMappingVo.setCiCollectionId(syncCiCollectionVo.getId());
                 syncMapper.insertSyncMapping(syncMappingVo);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(syncCiCollectionVo.getUniqueAttrIdList())) {
+            for (Long attrId : syncCiCollectionVo.getUniqueAttrIdList()) {
+                syncMapper.insertSyncUnique(syncCiCollectionVo.getId(), attrId);
             }
         }
     }
