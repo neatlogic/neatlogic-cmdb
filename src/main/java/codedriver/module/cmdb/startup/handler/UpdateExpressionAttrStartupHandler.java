@@ -8,6 +8,7 @@ package codedriver.module.cmdb.startup.handler;
 import codedriver.framework.cmdb.dto.attrexpression.RebuildAuditVo;
 import codedriver.framework.common.config.Config;
 import codedriver.framework.startup.IStartup;
+import codedriver.framework.startup.StartupBase;
 import codedriver.module.cmdb.attrexpression.AttrExpressionRebuildManager;
 import codedriver.module.cmdb.dao.mapper.cientity.AttrExpressionRebuildAuditMapper;
 import org.apache.commons.collections4.CollectionUtils;
@@ -17,7 +18,7 @@ import javax.annotation.Resource;
 import java.util.List;
 
 @Service
-public class UpdateExpressionAttrStartupHandler implements IStartup {
+public class UpdateExpressionAttrStartupHandler extends StartupBase {
     @Resource
     private AttrExpressionRebuildAuditMapper attrExpressionRebuildAuditMapper;
 

@@ -11,6 +11,7 @@ import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import codedriver.framework.cmdb.dto.resourcecenter.customview.ICustomView;
 import codedriver.framework.dao.mapper.SchemaMapper;
 import codedriver.framework.startup.IStartup;
+import codedriver.framework.startup.StartupBase;
 import codedriver.module.cmdb.utils.ResourceCustomViewFactory;
 import codedriver.module.cmdb.utils.ResourceEntityFactory;
 import net.sf.jsqlparser.schema.Table;
@@ -34,7 +35,7 @@ import java.util.Set;
  * @since 2022/2/9 12:12
  **/
 @Component
-public class CreateResourceViewStartupHandler implements IStartup {
+public class CreateResourceViewStartupHandler extends StartupBase {
     private Logger logger = LoggerFactory.getLogger(CreateResourceViewStartupHandler.class);
 
     @Resource
