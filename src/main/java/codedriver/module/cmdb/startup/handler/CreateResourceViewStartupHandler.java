@@ -108,10 +108,10 @@ public class CreateResourceViewStartupHandler implements IStartup {
         }
         // 创建自定义视图
         for (ICustomView custonView : custonViewList) {
-            PlainSelect plainSelect = (PlainSelect) custonView.getSelectBody();
-            if (plainSelect != null) {
+            String selectBody = custonView.getSelectBody();
+            if (StringUtils.isNotBlank(selectBody)) {
                 try {
-                    String sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + "." + custonView.getName() + " AS " + plainSelect;
+                    String sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + "." + custonView.getName() + " AS " + selectBody;
                     if (logger.isDebugEnabled()) {
                         logger.debug(sql);
                     }
