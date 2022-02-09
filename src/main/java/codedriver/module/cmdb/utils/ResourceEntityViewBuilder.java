@@ -14,25 +14,31 @@ import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityAttrVo;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityJoinVo;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
-import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceViewVo;
+import codedriver.framework.cmdb.dto.resourcecenter.customview.ICustomView;
 import codedriver.framework.cmdb.enums.RelDirectionType;
 import codedriver.framework.cmdb.enums.resourcecenter.JoinType;
 import codedriver.framework.cmdb.enums.resourcecenter.Status;
 import codedriver.framework.cmdb.exception.attr.AttrNotFoundException;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterConfigIrregularException;
-import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceCenterConfigMapper;
+import codedriver.framework.dao.mapper.TenantMapper;
+import codedriver.framework.dto.TenantVo;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import codedriver.module.cmdb.service.ci.CiService;
+import com.alibaba.fastjson.JSONObject;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.create.table.ColDataType;
+import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
+import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.util.SelectUtils;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.*;
 import org.reflections.Reflections;
@@ -43,6 +49,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.*;
@@ -53,18 +60,110 @@ public class ResourceEntityViewBuilder {
 
 
     private List<ResourceEntityVo> resourceEntityList;
-    private List<ResourceViewVo> resourceViewList;
     private final Map<String, CiVo> ciMap = new HashMap<>();
-    private static ResourceCenterConfigMapper resourceCenterConfigMapper;
+    private static TenantMapper tenantMapper;
     private static CiService ciService;
     private static ResourceEntityMapper resourceEntityMapper;
 
 
     @Autowired
-    public ResourceEntityViewBuilder(ResourceCenterConfigMapper _resourceCenterConfigMapper, CiService _ciService, ResourceEntityMapper _resourceEntityMapper) {
-        resourceCenterConfigMapper = _resourceCenterConfigMapper;
+    public ResourceEntityViewBuilder(TenantMapper _tenantMapper, CiService _ciService, ResourceEntityMapper _resourceEntityMapper) {
+        tenantMapper = _tenantMapper;
         resourceEntityMapper = _resourceEntityMapper;
         ciService = _ciService;
+    }
+
+    @PostConstruct
+    private void init() {
+        try {
+            logger.error("==ResourceEntityViewBuilder.init()==");
+            List<ICustomView> custonViewList = findCustomViewList();
+            List<ResourceEntityVo> resourceEntityList = findResourceEntity();
+            List<TenantVo> tenantList = tenantMapper.getAllActiveTenant();
+            for (TenantVo tenantVo : tenantList) {
+                if (!"default".equals(tenantVo.getUuid())) {
+                    continue;
+                }
+                //数据源切换到当前租户库
+                TenantContext.init(tenantVo.getUuid()).setUseDefaultDatasource(false);
+                if (CollectionUtils.isNotEmpty(resourceEntityList)) {
+                    List<ResourceEntityVo> newResourceEntityList = new ArrayList<>();
+                    for (ResourceEntityVo resourceEntity : resourceEntityList) {
+                        Set<ResourceEntityAttrVo> attrList = resourceEntity.getAttrList();
+                        if (CollectionUtils.isNotEmpty(attrList)) {
+                            String tableType = resourceEntityMapper.checkTableOrViewIsExists(TenantContext.get().getDataDbName(), resourceEntity.getName());
+                            if (StringUtils.isNotBlank(tableType)) {
+                                List<String> columnNameList = resourceEntityMapper.getTableOrViewAllColumnNameList(TenantContext.get().getDataDbName(), resourceEntity.getName());
+                                for (ResourceEntityAttrVo attrVo : attrList) {
+                                    //如果已存在的视图需要新增字段，就删除旧视图，先新建一个空表代替视图
+                                    if (!columnNameList.contains(attrVo.getField())) {
+                                        newResourceEntityList.add(resourceEntity);
+                                        if ("BASE TABLE".equals(tableType)) {
+                                            resourceEntityMapper.deleteResourceEntityTable(TenantContext.get().getDataDbName() + "." + resourceEntity.getName());
+                                        } else if("VIEW".equals(tableType)) {
+                                            resourceEntityMapper.deleteResourceEntityView(TenantContext.get().getDataDbName() + "." + resourceEntity.getName());
+                                        }
+                                        break;
+                                    }
+                                }
+                            } else {
+                                newResourceEntityList.add(resourceEntity);
+                            }
+                        }
+                    }
+                    // 如果通过@ResourceType注解定义的视图不存在，先创建具有相同字段的空表代替
+                    if (CollectionUtils.isNotEmpty(newResourceEntityList)) {
+                        for (ResourceEntityVo resourceEntity : newResourceEntityList) {
+                            resourceEntityMapper.deleteResourceEntityTable(TenantContext.get().getDataDbName() + "." + resourceEntity.getName());
+                            resourceEntityMapper.insertResourceEntityView(getCreateTable(resourceEntity).toString());
+                        }
+                    }
+                }
+                // 创建自定义视图
+                for (ICustomView custonView : custonViewList) {
+                    PlainSelect plainSelect = custonView.getSql();
+                    if (plainSelect != null) {
+                        boolean needCreateView = false;
+                        //判断视图是否存在，如果已存在，进一步判断原视图与新视图字段是否一致，如果不一致就重新建。
+                        String tableType = resourceEntityMapper.checkTableOrViewIsExists(TenantContext.get().getDataDbName(), custonView.getName());
+                        if (StringUtils.isNotBlank(tableType)) {
+                            List<String> columnNameList = resourceEntityMapper.getTableOrViewAllColumnNameList(TenantContext.get().getDataDbName(), custonView.getName());
+                            List<String> oldColumnNameList = new ArrayList<>();
+                            List<SelectItem> selectItems = plainSelect.getSelectItems();
+                            for (SelectItem selectItem : selectItems) {
+                                if (selectItem instanceof SelectExpressionItem) {
+                                    SelectExpressionItem selectExpressionItem = (SelectExpressionItem) selectItem;
+                                    Alias alias = selectExpressionItem.getAlias();
+                                    if (alias != null) {
+                                        oldColumnNameList.add(alias.getName());
+                                    }
+                                }
+                            }
+                            needCreateView = !CollectionUtils.isEqualCollection(oldColumnNameList, columnNameList);
+                        } else {
+                            needCreateView = true;
+                        }
+                        if (needCreateView) {
+                            try {
+                                String sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + "." + custonView.getName() + " AS " + plainSelect;
+                                if (logger.isDebugEnabled()) {
+                                    logger.debug(sql);
+                                }
+                                resourceEntityMapper.insertResourceEntityView(sql);
+                            } catch (Exception ex) {
+                                logger.error(ex.getMessage(), ex);
+                            }
+                        }
+                    }
+                }
+            }
+        } finally {
+            //数据源切换会codedriver库
+            TenantContext tenantContext = TenantContext.get();
+            if (tenantContext != null) {
+                tenantContext.setUseDefaultDatasource(true);
+            }
+        }
     }
 
     private CiVo getCiByName(String ciName) {
@@ -257,22 +356,6 @@ public class ResourceEntityViewBuilder {
                         resourceEntityMapper.insertResourceEntity(resourceEntityVo);
                     }
                 }
-
-                resourceViewList = new ArrayList<>();
-                List<Element> viewElementList = root.elements("view");
-                for (Element element : viewElementList) {
-                    String name = element.attributeValue("name");
-                    String label = element.attributeValue("label");
-                    if (StringUtils.isBlank(name)) {
-                        continue;
-                    }
-                    Element sqlElement = element.element("sql");
-                    if (sqlElement == null) {
-                        throw new ResourceCenterConfigIrregularException(name, "sql");
-                    }
-                    String sql = sqlElement.getTextTrim();
-                    resourceViewList.add(new ResourceViewVo(name, label, sql));
-                }
             }
 
             if (CollectionUtils.isNotEmpty(oldResourceEntityList)) {
@@ -410,40 +493,17 @@ public class ResourceEntityViewBuilder {
                         if (logger.isDebugEnabled()) {
                             logger.debug(sql);
                         }
+                        resourceEntityMapper.deleteResourceEntityTable(TenantContext.get().getDataDbName() + "." + resourceEntity.getName());
                         resourceEntityMapper.insertResourceEntityView(sql);
                         resourceEntity.setError("");
                         resourceEntity.setStatus(Status.READY.getValue());
                     } catch (Exception ex) {
                         resourceEntity.setError(ex.getMessage());
                         resourceEntity.setStatus(Status.ERROR.getValue());
+                        resourceEntityMapper.insertResourceEntityView(getCreateTable(resourceEntity).toString());
                     } finally {
                         resourceEntityMapper.updateResourceEntity(resourceEntity);
                     }
-                }
-            }
-        }
-        if (CollectionUtils.isNotEmpty(resourceViewList)) {
-            for (ResourceViewVo resourceViewVo : resourceViewList) {
-                ResourceEntityVo resourceEntity = new ResourceEntityVo();
-                resourceEntity.setName(resourceViewVo.getName());
-                resourceEntity.setLabel(resourceViewVo.getLabel());
-                try {
-                    String viewSql = resourceViewVo.getSql();
-                    viewSql = viewSql.replace("${schemaName}", TenantContext.get().getDataDbName());
-                    String sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + "." + resourceViewVo.getName() + " AS " + viewSql;
-                    logger.error(sql);
-                    if (logger.isDebugEnabled()) {
-                        logger.debug(sql);
-                    }
-                    resourceEntityMapper.insertResourceEntityView(sql);
-                    resourceEntity.setError("");
-                    resourceEntity.setStatus(Status.READY.getValue());
-                } catch (Exception ex) {
-                    logger.error(ex.getMessage());
-                    resourceEntity.setError(ex.getMessage());
-                    resourceEntity.setStatus(Status.ERROR.getValue());
-                } finally {
-                    resourceEntityMapper.updateResourceEntity(resourceEntity);
                 }
             }
         }
@@ -577,5 +637,47 @@ public class ResourceEntityViewBuilder {
             }
         }
         return resourceEntityList;
+    }
+
+    /**
+     * 扫描实现ICustomView接口的类，找出需要创建的自定义视图
+     * @return
+     */
+    private List<ICustomView> findCustomViewList() {
+        List<ICustomView> resultList = new ArrayList<>();
+        Reflections reflections = new Reflections("codedriver.framework.cmdb.dto.resourcecenter.customview");
+        Set<Class<? extends ICustomView>> classSet = reflections.getSubTypesOf(ICustomView.class);
+        for (Class<? extends ICustomView> c : classSet) {
+            try {
+                resultList.add(c.newInstance());
+            } catch (Exception ex) {
+                logger.error(ex.getMessage(), ex);
+            }
+        }
+        return resultList;
+    }
+
+    /**
+     * 根据resourceEntity信息构造创建表语句
+     * @param resourceEntity
+     * @return
+     */
+    private CreateTable getCreateTable(ResourceEntityVo resourceEntity) {
+        Table table = new Table();
+        table.setName(resourceEntity.getName());
+        table.setSchemaName(TenantContext.get().getDataDbName());
+        List<ColumnDefinition> columnDefinitions = new ArrayList<>();
+        Set<ResourceEntityAttrVo> attrList = resourceEntity.getAttrList();
+        for (ResourceEntityAttrVo attrVo : attrList) {
+            ColumnDefinition columnDefinition = new ColumnDefinition();
+            columnDefinition.setColumnName(attrVo.getField());
+            columnDefinition.setColDataType(new ColDataType("int"));
+            columnDefinitions.add(columnDefinition);
+        }
+        CreateTable createTable = new CreateTable();
+        createTable.setTable(table);
+        createTable.setColumnDefinitions(columnDefinitions);
+        createTable.setIfNotExists(true);
+        return createTable;
     }
 }
