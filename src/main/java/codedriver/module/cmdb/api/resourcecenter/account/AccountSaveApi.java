@@ -125,7 +125,7 @@ public class AccountSaveApi extends PrivateApiComponentBase {
                 throw new ResourceCenterAccountNotCreateTagentAccount();
             }
             vo.setFcu(UserContext.get().getUserUuid());
-            resourceCenterMapper.replaceAccount(vo);
+            resourceCenterMapper.insertAccount(vo);
         }
         return null;
     }
