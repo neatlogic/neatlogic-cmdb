@@ -11,21 +11,21 @@ import org.springframework.stereotype.Service;
 
 
 @Service
-public class TextValueHandler implements IAttrValueHandler {
+public class HyperLinkValueHandler implements IAttrValueHandler {
 
     @Override
     public String getType() {
-        return "text";
+        return "hyperlink";
     }
 
     @Override
     public String getName() {
-        return "文本框";
+        return "超链接";
     }
 
     @Override
     public String getIcon() {
-        return "tsfont-forminput";
+        return "tsfont-bind";
     }
 
     @Override
@@ -50,7 +50,7 @@ public class TextValueHandler implements IAttrValueHandler {
 
     @Override
     public boolean isSimple() {
-        return true;
+        return false;
     }
 
     @Override
@@ -65,19 +65,18 @@ public class TextValueHandler implements IAttrValueHandler {
 
     @Override
     public boolean isNeedConfig() {
-        return false;
+        return true;
     }
 
     @Override
     public SearchExpression[] getSupportExpression() {
-        return new SearchExpression[]{SearchExpression.EQ, SearchExpression.NE, SearchExpression.LI,
-                SearchExpression.NL, SearchExpression.NOTNULL, SearchExpression.NULL};
+        return new SearchExpression[]{SearchExpression.NOTNULL, SearchExpression.NULL};
 
     }
 
     @Override
     public int getSort() {
-        return 1;
+        return 14;
     }
 
 

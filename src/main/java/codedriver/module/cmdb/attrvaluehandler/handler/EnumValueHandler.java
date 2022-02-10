@@ -11,21 +11,21 @@ import org.springframework.stereotype.Service;
 
 
 @Service
-public class TextValueHandler implements IAttrValueHandler {
+public class EnumValueHandler implements IAttrValueHandler {
 
     @Override
     public String getType() {
-        return "text";
+        return "enum";
     }
 
     @Override
     public String getName() {
-        return "文本框";
+        return "枚举型";
     }
 
     @Override
     public String getIcon() {
-        return "tsfont-forminput";
+        return "tsfont-circle-o";
     }
 
     @Override
@@ -40,7 +40,7 @@ public class TextValueHandler implements IAttrValueHandler {
 
     @Override
     public boolean isCanSort() {
-        return false;
+        return true;
     }
 
     @Override
@@ -54,31 +54,28 @@ public class TextValueHandler implements IAttrValueHandler {
     }
 
     @Override
-    public boolean isNeedWholeRow() {
-        return false;
-    }
-
-    @Override
     public boolean isNeedTargetCi() {
         return false;
     }
 
     @Override
     public boolean isNeedConfig() {
+        return true;
+    }
+
+    @Override
+    public boolean isNeedWholeRow() {
         return false;
     }
 
     @Override
     public SearchExpression[] getSupportExpression() {
-        return new SearchExpression[]{SearchExpression.EQ, SearchExpression.NE, SearchExpression.LI,
-                SearchExpression.NL, SearchExpression.NOTNULL, SearchExpression.NULL};
-
+        return new SearchExpression[]{SearchExpression.EQ, SearchExpression.NE, SearchExpression.NOTNULL, SearchExpression.NULL};
     }
 
     @Override
     public int getSort() {
-        return 1;
+        return 4;
     }
-
 
 }

@@ -8,6 +8,7 @@ package codedriver.module.cmdb.startup.handler;
 import codedriver.framework.cmdb.dto.group.GroupVo;
 import codedriver.framework.cmdb.enums.group.Status;
 import codedriver.framework.startup.IStartup;
+import codedriver.framework.startup.StartupBase;
 import codedriver.module.cmdb.dao.mapper.group.GroupMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -16,7 +17,7 @@ import javax.annotation.Resource;
 import java.util.List;
 
 @Service
-public class ResetGroupStatusStartupHandler implements IStartup {
+public class ResetGroupStatusStartupHandler extends StartupBase {
     @Resource
     private GroupMapper groupMapper;
 

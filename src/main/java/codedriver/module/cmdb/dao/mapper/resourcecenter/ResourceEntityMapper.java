@@ -5,15 +5,16 @@
 
 package codedriver.module.cmdb.dao.mapper.resourcecenter;
 
-import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityAttrVo;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ResourceEntityMapper {
     List<ResourceEntityVo> getAllResourceEntity();
 
-    void insertResourceEntityView(String sql);
+//    void insertResourceEntityView(String sql);
 
     void insertResourceEntity(ResourceEntityVo resourceEntityVo);
 
@@ -23,7 +24,7 @@ public interface ResourceEntityMapper {
 
     void deleteResourceEntityByName(String name);
 
-    void deleteResourceEntityView(String viewName);
+//    void deleteResourceEntityView(String viewName);
 
 //    void deleteResourceEntityAttrByEntity(String entityName);
 }

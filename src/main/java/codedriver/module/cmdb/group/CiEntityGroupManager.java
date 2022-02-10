@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.script.ScriptException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -102,6 +103,13 @@ public class CiEntityGroupManager {
                         pCiEntityVo.setPageSize(100);
                         pCiEntityVo.setCurrentPage(1);
                         pCiEntityVo.setCiId(ciGroupVo.getCiId());
+                        //检查是否存在不需要join所有属性和关系
+                        pCiEntityVo.setAttrIdList(new ArrayList<Long>() {{
+                            this.add(0L);
+                        }});
+                        pCiEntityVo.setRelIdList(new ArrayList<Long>() {{
+                            this.add(0L);
+                        }});
                         List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(pCiEntityVo);
                         while (CollectionUtils.isNotEmpty(ciEntityList)) {
                             for (CiEntityVo ciEntityVo : ciEntityList) {
@@ -122,7 +130,7 @@ public class CiEntityGroupManager {
                     logger.error(ex.getMessage(), ex);
                     String message = "";
                     if (ex instanceof ApiRuntimeException) {
-                        message = ((ApiRuntimeException) ex).getMessage(true);
+                        message = ((ApiRuntimeException) ex).getMessage();
                     } else {
                         message = ExceptionUtils.getStackTrace(ex);
                         logger.error(ex.getMessage(), ex);

@@ -9,6 +9,7 @@ import codedriver.framework.cmdb.dto.sync.SyncAuditVo;
 import codedriver.framework.cmdb.enums.sync.SyncStatus;
 import codedriver.framework.common.config.Config;
 import codedriver.framework.startup.IStartup;
+import codedriver.framework.startup.StartupBase;
 import codedriver.module.cmdb.dao.mapper.sync.SyncAuditMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,7 @@ import javax.annotation.Resource;
 import java.util.List;
 
 @Service
-public class ResetCiSyncStatusStartupHandler implements IStartup {
+public class ResetCiSyncStatusStartupHandler extends StartupBase {
     @Resource
     private SyncAuditMapper syncAuditMapper;
 

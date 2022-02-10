@@ -8,6 +8,7 @@ package codedriver.module.cmdb.api.resourcecenter.account;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
+import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterAccountNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
@@ -15,9 +16,11 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
@@ -56,6 +59,11 @@ public class AccountGetApi extends PrivateApiComponentBase {
         if (account == null) {
             throw new ResourceCenterAccountNotFoundException(id);
         }
+        List<TagVo> tagVoList = resourceCenterMapper.getTagListByAccountId(id);
+        if (CollectionUtils.isNotEmpty(tagVoList)) {
+            account.setTagList(tagVoList);
+        }
+
         return account;
     }
 

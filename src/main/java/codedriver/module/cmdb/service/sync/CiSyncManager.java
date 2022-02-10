@@ -41,6 +41,7 @@ import codedriver.module.cmdb.dao.mapper.sync.SyncMapper;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSONPath;
 import com.mongodb.client.MongoCursor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -258,6 +259,10 @@ public class CiSyncManager {
             /*
             需要使用模型的唯一规则来查找配置项，如果找不到，就不做任何更新
              */
+            //用自动采集设置中的唯一规则替换掉模型的唯一规则，后面的逻辑都不需要修改了
+            if (CollectionUtils.isNotEmpty(syncCiCollectionVo.getUniqueAttrIdList())) {
+                ciVo.setUniqueAttrIdList(syncCiCollectionVo.getUniqueAttrIdList());
+            }
             if (CollectionUtils.isEmpty(ciVo.getUniqueAttrIdList())) {
                 throw new CiUniqueRuleNotFoundException(ciVo);
             }
@@ -279,10 +284,10 @@ public class CiSyncManager {
                                 filterVo.setValueList(new ArrayList<String>() {{
                                     this.add(v);
                                 }});
-                                ciEntityConditionVo.addAttrFilter(filterVo);
                             } else {
-                                throw new CiUniqueAttrDataEmptyException(syncCiCollectionVo, ciVo, syncMappingVo.getField(parentKey), dataObj);
+                                throw new CiUniqueAttrNotFoundException(syncCiCollectionVo, ciVo, syncMappingVo.getField(parentKey), dataObj);
                             }
+                            ciEntityConditionVo.addAttrFilter(filterVo);
                         } else {
                             //如果是引用属性，需要被引用模型的唯一属性只有一个才能成功定位引用配置项
                             CiVo targetCiVo = getCi(attr.getTargetCiId());
@@ -301,6 +306,12 @@ public class CiSyncManager {
                             if (!targetNameAttrVo.getType().equals("expression") && !targetNameAttrVo.isNeedTargetCi()) {
                                 CiEntityVo attrConditionVo = new CiEntityVo();
                                 attrConditionVo.setCiId(attr.getTargetCiId());
+                                attrConditionVo.setAttrIdList(new ArrayList<Long>() {{
+                                    this.add(0L);
+                                }});
+                                attrConditionVo.setRelIdList(new ArrayList<Long>() {{
+                                    this.add(0L);
+                                }});
                                 AttrFilterVo targetFilterVo = new AttrFilterVo();
                                 targetFilterVo.setAttrId(uAttrId);
                                 targetFilterVo.setExpression(SearchExpression.EQ.getExpression());
@@ -324,7 +335,7 @@ public class CiSyncManager {
                             }
                         }
                     } else {
-                        throw new CiUniqueAttrDataEmptyException(syncCiCollectionVo, ciVo, syncMappingVo.getField(parentKey), dataObj);
+                        throw new CiUniqueAttrNotFoundException(syncCiCollectionVo, ciVo, syncMappingVo.getField(parentKey), dataObj);
                     }
                 } else {
                     throw new AttrNotFoundException(uniqueAttrId);
@@ -576,7 +587,7 @@ public class CiSyncManager {
                                 ciEntityService.saveCiEntityWithoutTransaction(ciEntityTransactionList, syncCiCollectionVo.getTransactionGroup());
                             } catch (ApiRuntimeException ex) {
                                 logger.warn(ex.getMessage(), ex);
-                                syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage(true));
+                                syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
                             } catch (Exception ex) {
                                 logger.error(ex.getMessage(), ex);
                                 syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
@@ -584,7 +595,7 @@ public class CiSyncManager {
                         }
                     } catch (ApiRuntimeException ex) {
                         logger.warn(ex.getMessage(), ex);
-                        syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage(true));
+                        syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
                     } catch (Exception ex) {
                         logger.error(ex.getMessage(), ex);
                         syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
@@ -644,16 +655,28 @@ public class CiSyncManager {
                                 query.addCriteria(finalCriteria);
                                 int batchSize = 500;//游标每次读取500条数据
                                 AtomicInteger count = new AtomicInteger(0);
+                                int counter = 0;
                                 try (MongoCursor<Document> cursor = mongoTemplate.getCollection(collectionVo.getCollection()).find(query.getQueryObject()).noCursorTimeout(true).batchSize(batchSize).cursor()) {
                                     List<JSONObject> dataList = new ArrayList<>();
                                     while (cursor.hasNext()) {
+                                        counter += 1;
                                         String jsonStr = cursor.next().toJson();
-                                        JSONObject orgDataObj = JSONObject.parseObject(jsonStr);
-                                        dataList.add(orgDataObj);
+
+                                        if (StringUtils.isNotBlank(collectionVo.getDocroot())) {
+                                            JSONArray objList = (JSONArray) JSONPath.read(jsonStr, "$." + collectionVo.getDocroot());
+                                            for (int i = 0; i < objList.size(); i++) {
+                                                dataList.add(objList.getJSONObject(i));
+                                            }
+                                        } else {
+                                            JSONObject orgDataObj = JSONObject.parseObject(jsonStr);
+                                            dataList.add(orgDataObj);
+                                        }
+
                                         //到达batchSize先处理一部分
-                                        if (dataList.size() == batchSize) {
+                                        if (counter == batchSize) {
                                             dealWithDataBatch(syncCiCollectionVo, fieldList, dataList, count);
                                             dataList = new ArrayList<>();
+                                            counter = 0;
                                         }
                                     }
                                     //处理剩余的数据
@@ -666,7 +689,7 @@ public class CiSyncManager {
                         }
                     } catch (ApiRuntimeException ex) {
                         logger.warn(ex.getMessage(), ex);
-                        syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage(true));
+                        syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
                     } catch (Exception ex) {
                         logger.error(ex.getMessage(), ex);
                         if (StringUtils.isNotBlank(ex.getMessage())) {
@@ -692,7 +715,7 @@ public class CiSyncManager {
         private void dealWithDataBatch(SyncCiCollectionVo syncCiCollectionVo, Set<String> fieldList, List<JSONObject> dataList, AtomicInteger count) {
             if (CollectionUtils.isNotEmpty(dataList)) {
                 BatchRunner<JSONObject> batchRunner = new BatchRunner<>();
-                BatchRunner.State state = batchRunner.execute(dataList, 10, data -> {
+                BatchRunner.State state = batchRunner.execute(dataList, 3, data -> {
                     int tmpCount = count.addAndGet(1);
                     long startTime = 0L;
                     if (logger.isInfoEnabled()) {
@@ -706,7 +729,8 @@ public class CiSyncManager {
                     JSONArray finalDataList = flattenJson(tmpDataList, fieldList, null);
                     for (int i = 0; i < finalDataList.size(); i++) {
                         JSONObject dataObj = finalDataList.getJSONObject(i);
-                        Map<Integer, CiEntityTransactionVo> ciEntityTransactionVoMap = new HashMap<>();
+                        //需要严格按照写入的先后顺序生成list，否则后期写入关系数据时，会因为被引用配置项还不存在而导致清除掉关系。
+                        Map<Integer, CiEntityTransactionVo> ciEntityTransactionVoMap = new LinkedHashMap<>();
 
                         if (logger.isInfoEnabled()) {
                             startTime = System.currentTimeMillis();
@@ -733,7 +757,7 @@ public class CiSyncManager {
                             }
                         } catch (ApiRuntimeException ex) {
                             logger.warn(ex.getMessage(), ex);
-                            syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage(true));
+                            syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
                         } catch (Exception ex) {
                             logger.error(ex.getMessage(), ex);
                             syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
@@ -745,7 +769,7 @@ public class CiSyncManager {
                 }, "SYNC-BATCH-HANDLER");
                 if (!state.isSucceed()) {
                     if (state.getException() != null) {
-                        throw new ApiRuntimeException(state.getException());
+                        throw new ApiRuntimeException(state.getException().getMessage());
                     }
                 }
             }

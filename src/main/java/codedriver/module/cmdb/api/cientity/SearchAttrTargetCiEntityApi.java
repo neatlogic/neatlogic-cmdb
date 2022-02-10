@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -99,6 +99,13 @@ public class SearchAttrTargetCiEntityApi extends PrivateApiComponentBase {
         if (StringUtils.isNotBlank(keyword)) {
             ciEntityVo.setName(keyword);
         }
+        //不需要多余的属性和关系
+        ciEntityVo.setAttrIdList(new ArrayList<Long>() {{
+            this.add(0L);
+        }});
+        ciEntityVo.setRelIdList(new ArrayList<Long>() {{
+            this.add(0L);
+        }});
         List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
         JSONArray jsonList = new JSONArray();
         for (CiEntityVo ciEntity : ciEntityList) {

@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -9,6 +9,7 @@ import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
+import codedriver.framework.cmdb.enums.EditModeType;
 import codedriver.framework.cmdb.enums.TransactionActionType;
 import codedriver.framework.cmdb.enums.group.GroupType;
 import codedriver.framework.cmdb.exception.cientity.CiEntityAuthException;
@@ -32,10 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
@@ -70,7 +68,7 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
     @Input({@Param(name = "ciEntityList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "配置项数据"),
             @Param(name = "needCommit", type = ApiParamType.BOOLEAN, isRequired = true, desc = "是否需要提交")})
     @Description(desc = "保存配置项接口")
-    @Example(example = "{\"ciEntityList\":[{\"attrEntityData\":{\"attr_323010784722944\":{\"valueList\":[\"测试环境\"],\"name\":\"label\",\"label\":\"显示名\",\"type\":\"text\",\"saveMode\":\"merge\"},\"attr_323010700836864\":{\"valueList\":[\"stg33\"],\"name\":\"name\",\"label\":\"唯一标识\",\"type\":\"text\"}},\"ciId\":323010541453312,\"id\":330340423237635,\"uuid\":\"3e3e74b1947b400aa34d7c6964f79168\"}]}")
+    @Example(example = "{\"ciEntityList\":[{\"editMode\":\"global|partial\",\"attrEntityData\":{\"attr_323010784722944\":{\"valueList\":[\"测试环境\"],\"name\":\"label\",\"label\":\"显示名\",\"type\":\"text\",\"saveMode\":\"merge\"},\"attr_323010700836864\":{\"valueList\":[\"stg33\"],\"name\":\"name\",\"label\":\"唯一标识\",\"type\":\"text\"}},\"ciId\":323010541453312,\"id\":330340423237635,\"uuid\":\"3e3e74b1947b400aa34d7c6964f79168\"}]}")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         boolean needCommit = jsonObj.getBooleanValue("needCommit");
@@ -113,6 +111,9 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
                 throw new ApiRuntimeException("数据不合法，缺少id或uuid");
             }
 
+            if (Objects.equals(ciEntityObj.getString("editMode"), EditModeType.GLOBAL.getValue()) || Objects.equals(ciEntityObj.getString("editMode"), EditModeType.PARTIAL.getValue())) {
+                ciEntityTransactionVo.setEditMode(ciEntityObj.getString("editMode"));
+            }
             ciEntityTransactionVo.setCiId(ciId);
             ciEntityTransactionVo.setDescription(description);
 

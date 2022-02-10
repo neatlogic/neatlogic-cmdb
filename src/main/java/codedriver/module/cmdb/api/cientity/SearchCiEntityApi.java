@@ -6,11 +6,14 @@
 package codedriver.module.cmdb.api.cientity;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.crossover.ISearchCiEntityApiCrossoverService;
+import codedriver.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
+import codedriver.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
+import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.CiViewVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.cientity.RelCiEntityFilterVo;
+import codedriver.framework.cmdb.dto.cientity.SortVo;
 import codedriver.framework.cmdb.enums.CiAuthType;
 import codedriver.framework.cmdb.enums.ShowType;
 import codedriver.framework.cmdb.enums.group.GroupType;
@@ -24,6 +27,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CIENTITY_MODIFY;
 import codedriver.module.cmdb.auth.label.CI_MODIFY;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiViewMapper;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
@@ -46,7 +50,7 @@ import java.util.stream.Collectors;
 @AuthAction(action = CI_MODIFY.class)
 @AuthAction(action = CIENTITY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearchCiEntityApiCrossoverService {//FIXME 内部暂时使用Crossover的方式调用该接口
+public class SearchCiEntityApi extends PrivateApiComponentBase {
 
     @Resource
     private CiEntityService ciEntityService;
@@ -56,6 +60,9 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
 
     @Resource
     private CiMapper ciMapper;
+
+    @Resource
+    private AttrMapper attrMapper;
 
     @Resource
     private GroupService groupService;
@@ -80,7 +87,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
             @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "关键字"),
             @Param(name = "dsl", type = ApiParamType.STRING, desc = "DSL语句"),
             @Param(name = "groupId", type = ApiParamType.LONG, desc = "团体id"),
-            @Param(name = "attrFilterList", type = ApiParamType.STRING, desc = "属性过滤条件"),
+            @Param(name = "attrFilterList", type = ApiParamType.JSONARRAY, desc = "属性过滤条件"),
             @Param(name = "relFilterList", type = ApiParamType.JSONARRAY, desc = "关系过滤条件"),
             @Param(name = "showAttrRelList", type = ApiParamType.JSONARRAY, desc = "需要显示的字段列表，包括属性关系和常量"),
             @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "需要查询的配置项id列表）"),
@@ -97,6 +104,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
             @Param(name = "ciEntityList", type = ApiParamType.JSONARRAY, desc = "配置项结果集，如果提供则不会进行搜索，补充头部信息后直接返回"),
             @Param(name = "attrId", type = ApiParamType.LONG, desc = "关系id（通过引用配置项查询引用属性时使用）"),
             @Param(name = "fromCiEntityId", type = ApiParamType.LONG, desc = "引用配置项id（通过引用配置项查询引用属性时使用）"),
+            @Param(name = "sortConfig", type = ApiParamType.JSONOBJECT, desc = "排序规则，范例：{\"attr_xxxxx\":\"DESC\",\"attr_yyyyy\":\"ASC\"}"),
             @Param(name = "isAllColumn", type = ApiParamType.ENUM, rule = "0,1", desc = "是否返回所有列数据"),
             @Param(name = "isLimitRelEntity", type = ApiParamType.BOOLEAN, desc = "是否限制返回的关系数据"),
             @Param(name = "isLimitAttrEntity", type = ApiParamType.BOOLEAN, desc = "是否限制返回的引用属性数据")
@@ -108,6 +116,24 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         CiEntityVo ciEntityVo = JSONObject.toJavaObject(jsonObj, CiEntityVo.class);
+        List<AttrVo> attrList = attrMapper.getAttrByCiId(ciEntityVo.getCiId());
+        Map<Long, AttrVo> attrMap = new HashMap<>();
+        for (AttrVo attrVo : attrList) {
+            attrMap.put(attrVo.getId(), attrVo);
+        }
+        JSONObject sortConfig = jsonObj.getJSONObject("sortConfig");
+        if (MapUtils.isNotEmpty(sortConfig)) {
+            List<SortVo> sortConfigList = new ArrayList<>();
+            for (String key : sortConfig.keySet()) {
+                AttrVo attrVo = attrMap.get(Long.parseLong(key.replace("attr_", "")));
+                if (attrVo != null) {
+                    sortConfigList.add(new SortVo(attrVo.getCiId(), attrVo.getId(), sortConfig.getString(key)));
+                }
+            }
+            if (CollectionUtils.isNotEmpty(sortConfigList)) {
+                ciEntityVo.setSortList(sortConfigList);
+            }
+        }
         Long groupId = jsonObj.getLong("groupId");
         //FIXME:查看权限控制仍需斟酌，主要是考虑被引用的配置项列表如果没有权限是否允许查看，目前可控制左侧模型菜单显示，不做严格禁止
         if (!CiAuthChecker.chain().checkCiEntityQueryPrivilege(ciEntityVo.getCiId()).check()) {
@@ -184,6 +210,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
                 }
             });
         }
+        JSONArray sortList = new JSONArray();
         if (CollectionUtils.isNotEmpty(ciViewList)) {
             attrIdList = new ArrayList<>();
             relIdList = new ArrayList<>();
@@ -192,24 +219,38 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
                 headObj.put("title", ciview.getItemLabel());
                 switch (ciview.getType()) {
                     case "attr":
-                        attrIdList.add(ciview.getItemId());
-                        headObj.put("key", "attr_" + ciview.getItemId());
+                        if (CollectionUtils.isEmpty(showAttrRelSet) || showAttrRelSet.contains("attr_" + ciview.getItemId())) {
+                            attrIdList.add(ciview.getItemId());
+                            headObj.put("key", "attr_" + ciview.getItemId());
+                            theadList.add(headObj);
+                            AttrVo attrVo = attrMap.get(ciview.getItemId());
+                            if (attrVo != null) {
+                                IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
+                                if (handler != null && handler.isCanSort()) {
+                                    sortList.add("attr_" + attrVo.getId());
+                                }
+                            }
+                        }
                         break;
                     case "relfrom":
-                        relIdList.add(ciview.getItemId());
-                        headObj.put("key", "relfrom_" + ciview.getItemId());
+                        if (CollectionUtils.isEmpty(showAttrRelSet) || showAttrRelSet.contains("relfrom_" + ciview.getItemId())) {
+                            relIdList.add(ciview.getItemId());
+                            headObj.put("key", "relfrom_" + ciview.getItemId());
+                            theadList.add(headObj);
+                        }
                         break;
                     case "relto":
-                        relIdList.add(ciview.getItemId());
-                        headObj.put("key", "relto_" + ciview.getItemId());
+                        if (CollectionUtils.isEmpty(showAttrRelSet) || showAttrRelSet.contains("relto_" + ciview.getItemId())) {
+                            relIdList.add(ciview.getItemId());
+                            headObj.put("key", "relto_" + ciview.getItemId());
+                            theadList.add(headObj);
+                        }
                         break;
                     case "const":
                         //固化属性需要特殊处理
                         headObj.put("key", "const_" + ciview.getItemName().replace("_", ""));
+                        theadList.add(headObj);
                         break;
-                }
-                if (CollectionUtils.isEmpty(showAttrRelSet) || showAttrRelSet.contains(headObj.getString("key"))) {
-                    theadList.add(headObj);
                 }
             }
         }
@@ -323,6 +364,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
         returnObj.put("currentPage", ciEntityVo.getCurrentPage());
         returnObj.put("tbodyList", tbodyList);
         returnObj.put("theadList", theadList);
+        returnObj.put("sortList", sortList);
         return returnObj;
     }
 

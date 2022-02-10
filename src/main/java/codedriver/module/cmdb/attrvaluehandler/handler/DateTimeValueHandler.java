@@ -44,6 +44,11 @@ public class DateTimeValueHandler implements IAttrValueHandler {
     }
 
     @Override
+    public boolean isCanSort() {
+        return true;
+    }
+
+    @Override
     public boolean isCanInput() {
         return true;
     }
@@ -109,7 +114,7 @@ public class DateTimeValueHandler implements IAttrValueHandler {
 
     @Override
     public int getSort() {
-        return 7;
+        return 8;
     }
 
 }

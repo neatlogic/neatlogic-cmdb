@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -54,7 +54,7 @@ public class TestQueryMongodbApi extends PrivateApiComponentBase {
        /* List<JSONObject> result = mongoTemplate.find(query, JSONObject.class, "COLLECT_INS");
         return result.size();*/
 
-        MongoCursor<Document> cursor = mongoTemplate.getCollection("COLLECT_INS").find(query.getQueryObject()).noCursorTimeout(true).batchSize(1000).cursor();
+        MongoCursor<Document> cursor = mongoTemplate.getCollection("COLLECT_VIRTUALIZED").find(query.getQueryObject()).noCursorTimeout(true).batchSize(1000).cursor();
         int count = 0;
         while (cursor.hasNext()) {
             System.out.println("====================");
