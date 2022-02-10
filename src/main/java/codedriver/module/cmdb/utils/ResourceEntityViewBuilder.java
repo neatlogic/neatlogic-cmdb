@@ -6,9 +6,6 @@
 package codedriver.module.cmdb.utils;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
-import codedriver.framework.cmdb.annotation.ResourceField;
-import codedriver.framework.cmdb.annotation.ResourceType;
-import codedriver.framework.cmdb.annotation.ResourceTypes;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityAttrVo;
@@ -20,7 +17,7 @@ import codedriver.framework.cmdb.enums.resourcecenter.Status;
 import codedriver.framework.cmdb.exception.attr.AttrNotFoundException;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterConfigIrregularException;
-import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceCenterConfigMapper;
+import codedriver.framework.dao.mapper.SchemaMapper;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import codedriver.module.cmdb.service.ci.CiService;
 import net.sf.jsqlparser.expression.Alias;
@@ -29,21 +26,19 @@ import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.create.table.ColDataType;
+import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
+import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.util.SelectUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.*;
-import org.reflections.Reflections;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
 import java.util.*;
 
 @Component
@@ -53,14 +48,14 @@ public class ResourceEntityViewBuilder {
 
     private List<ResourceEntityVo> resourceEntityList;
     private final Map<String, CiVo> ciMap = new HashMap<>();
-    private static ResourceCenterConfigMapper resourceCenterConfigMapper;
+    private static SchemaMapper schemaMapper;
     private static CiService ciService;
     private static ResourceEntityMapper resourceEntityMapper;
 
 
     @Autowired
-    public ResourceEntityViewBuilder(ResourceCenterConfigMapper _resourceCenterConfigMapper, CiService _ciService, ResourceEntityMapper _resourceEntityMapper) {
-        resourceCenterConfigMapper = _resourceCenterConfigMapper;
+    public ResourceEntityViewBuilder(SchemaMapper _schemaMapper, CiService _ciService, ResourceEntityMapper _resourceEntityMapper) {
+        schemaMapper = _schemaMapper;
         resourceEntityMapper = _resourceEntityMapper;
         ciService = _ciService;
     }
@@ -94,7 +89,7 @@ public class ResourceEntityViewBuilder {
     public ResourceEntityViewBuilder(String xml) {
         try {
             Map<String, List<Element>> elementMap = new HashMap<>();
-            resourceEntityList = findResourceEntity();
+            resourceEntityList = ResourceEntityFactory.getResourceEntityList();
             List<ResourceEntityVo> oldResourceEntityList = resourceEntityMapper.getAllResourceEntity();
             oldResourceEntityList.removeAll(resourceEntityList);
             if (CollectionUtils.isNotEmpty(resourceEntityList)) {
@@ -260,7 +255,7 @@ public class ResourceEntityViewBuilder {
             if (CollectionUtils.isNotEmpty(oldResourceEntityList)) {
                 for (ResourceEntityVo entity : oldResourceEntityList) {
                     resourceEntityMapper.deleteResourceEntityByName(entity.getName());
-                    resourceEntityMapper.deleteResourceEntityView(TenantContext.get().getDataDbName() + "." + entity.getName());
+                    schemaMapper.deleteView(TenantContext.get().getDataDbName() + "." + entity.getName());
                 }
             }
         } catch (DocumentException e) {
@@ -392,12 +387,29 @@ public class ResourceEntityViewBuilder {
                         if (logger.isDebugEnabled()) {
                             logger.debug(sql);
                         }
-                        resourceEntityMapper.insertResourceEntityView(sql);
+                        schemaMapper.deleteTable(TenantContext.get().getDataDbName() + "." + resourceEntity.getName());
+                        schemaMapper.insertView(sql);
                         resourceEntity.setError("");
                         resourceEntity.setStatus(Status.READY.getValue());
                     } catch (Exception ex) {
                         resourceEntity.setError(ex.getMessage());
                         resourceEntity.setStatus(Status.ERROR.getValue());
+                        Table table = new Table();
+                        table.setName(resourceEntity.getName());
+                        table.setSchemaName(TenantContext.get().getDataDbName());
+                        List<ColumnDefinition> columnDefinitions = new ArrayList<>();
+                        Set<ResourceEntityAttrVo> attrList = resourceEntity.getAttrList();
+                        for (ResourceEntityAttrVo attrVo : attrList) {
+                            ColumnDefinition columnDefinition = new ColumnDefinition();
+                            columnDefinition.setColumnName(attrVo.getField());
+                            columnDefinition.setColDataType(new ColDataType("int"));
+                            columnDefinitions.add(columnDefinition);
+                        }
+                        CreateTable createTable = new CreateTable();
+                        createTable.setTable(table);
+                        createTable.setColumnDefinitions(columnDefinitions);
+                        createTable.setIfNotExists(true);
+                        schemaMapper.insertView(createTable.toString());
                     } finally {
                         resourceEntityMapper.updateResourceEntity(resourceEntity);
                     }
@@ -475,64 +487,5 @@ public class ResourceEntityViewBuilder {
             mainTable.setName("cmdb_" + ciVo.getId());
             return SelectUtils.buildSelectFromTable(mainTable);
         }
-    }
-
-
-    private List<ResourceEntityVo> findResourceEntity() {
-        List<ResourceEntityVo> resourceEntityList = new ArrayList<>();
-        Reflections ref = new Reflections("codedriver.framework.cmdb.dto.resourcecenter.entity", new TypeAnnotationsScanner(), new SubTypesScanner(true));
-        Set<Class<?>> classList = ref.getTypesAnnotatedWith(ResourceType.class, true);
-        for (Class<?> c : classList) {
-            ResourceEntityVo resourceEntityVo = null;
-            Annotation[] classAnnotations = c.getDeclaredAnnotations();
-            for (Annotation annotation : classAnnotations) {
-                if (annotation instanceof ResourceType) {
-                    ResourceType rt = (ResourceType) annotation;
-                    resourceEntityVo = new ResourceEntityVo();
-                    resourceEntityVo.setName(rt.name());
-                    resourceEntityVo.setLabel(rt.label());
-                }
-            }
-            if (resourceEntityVo == null) {
-                continue;
-            }
-            for (Field field : c.getDeclaredFields()) {
-                Annotation[] annotations = field.getDeclaredAnnotations();
-                for (Annotation annotation : annotations) {
-                    if (annotation instanceof ResourceField) {
-                        ResourceField rf = (ResourceField) annotation;
-                        if (StringUtils.isNotBlank(rf.name())) {
-                            ResourceEntityAttrVo attr = new ResourceEntityAttrVo();
-                            attr.setField(rf.name());
-                            resourceEntityVo.addAttr(attr);
-                        }
-                    }
-                }
-            }
-            resourceEntityList.add(resourceEntityVo);
-        }
-        classList = ref.getTypesAnnotatedWith(ResourceTypes.class, true);
-        for (Class<?> c : classList) {
-            ResourceTypes resourceTypes = c.getAnnotation(ResourceTypes.class);
-            if (resourceTypes != null) {
-                for (ResourceType rt : resourceTypes.value()) {
-                    ResourceEntityVo resourceEntityVo = new ResourceEntityVo();
-                    resourceEntityVo.setName(rt.name());
-                    resourceEntityVo.setLabel(rt.label());
-                    for (Field field : c.getDeclaredFields()) {
-                        ResourceField rf = field.getAnnotation(ResourceField.class);
-                        if (rf != null) {
-                            if (StringUtils.isNotBlank(rf.name())) {
-                                ResourceEntityAttrVo attr = new ResourceEntityAttrVo();
-                                attr.setField(rf.name());
-                                resourceEntityVo.addAttr(attr);
-                            }
-                        }
-                    }
-                    resourceEntityList.add(resourceEntityVo);
-                }
-            }
-        }
-        return resourceEntityList;
     }
 }

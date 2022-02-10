@@ -12,9 +12,9 @@
         FROM cmdb_resourcecenter_entity
     </select>
 
-    <insert id="insertResourceEntityView" parameterType="java.lang.String">
+    <!--<insert id="insertResourceEntityView" parameterType="java.lang.String">
         ${value}
-    </insert>
+    </insert>-->
 
     <insert id="insertResourceEntity"
             parameterType="codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
@@ -52,7 +52,7 @@
         WHERE name = #{value}
     </delete>
 
-    <delete id="deleteResourceEntityView" parameterType="java.lang.String">
+    <!--<delete id="deleteResourceEntityView" parameterType="java.lang.String">
         DROP VIEW IF EXISTS ${value}
-    </delete>
+    </delete>-->
 </mapper>
