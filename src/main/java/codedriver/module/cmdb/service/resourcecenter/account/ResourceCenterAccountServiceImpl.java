@@ -41,14 +41,14 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
         if (CollectionUtils.isNotEmpty(resourceAccountVoList)) {
             List<ResourceVo> resourceVoList = resourceCenterMapper.getResourceByIdList(resourceAccountVoList.stream().map(ResourceAccountVo::getResourceId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
             for (ResourceVo resourceVo : resourceVoList) {
-                resourceCenterMapper.insertIgnoreAccountIp(new AccountIpVo(accountId, resourceVo.getIp()));
+                resourceCenterMapper.replaceAccountIp(new AccountIpVo(accountId, resourceVo.getIp()));
             }
         }
         //账号是否被tagent引用
         List<TagentVo> tagentVoList = tagentMapper.getTagentByAccountId(accountId);
         if (CollectionUtils.isNotEmpty(tagentVoList)) {
             for (TagentVo tagentVo : tagentVoList) {
-                resourceCenterMapper.insertIgnoreAccountIp(new AccountIpVo(tagentVo.getAccountId(), tagentVo.getIp()));
+                resourceCenterMapper.replaceAccountIp(new AccountIpVo(tagentVo.getAccountId(), tagentVo.getIp()));
             }
         }
     }
@@ -67,14 +67,14 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
             }
             for (ResourceAccountVo resourceAccountVo : resourceAccountVoList) {
                 if (resourceVoHashMap.containsKey(resourceAccountVo.getResourceId())) {
-                    resourceCenterMapper.insertIgnoreAccountIp(new AccountIpVo(resourceAccountVo.getAccountId(), resourceVoHashMap.get(resourceAccountVo.getResourceId()).getIp()));
+                    resourceCenterMapper.replaceAccountIp(new AccountIpVo(resourceAccountVo.getAccountId(), resourceVoHashMap.get(resourceAccountVo.getResourceId()).getIp()));
                 }
             }
             //账号是否被tagent引用
             List<TagentVo> tagentVoList = tagentMapper.getTagentByIpList(resourceIpList);
             if (CollectionUtils.isNotEmpty(tagentVoList)) {
                 for (TagentVo tagentVo : tagentVoList) {
-                    resourceCenterMapper.insertIgnoreAccountIp(new AccountIpVo(tagentVo.getAccountId(), tagentVo.getIp()));
+                    resourceCenterMapper.replaceAccountIp(new AccountIpVo(tagentVo.getAccountId(), tagentVo.getIp()));
                 }
             }
         }
