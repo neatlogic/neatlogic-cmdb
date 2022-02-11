@@ -18,6 +18,7 @@
                a.is_auto_commit  AS isAutoCommit,
                a.last_sync_date  AS lastSyncDate,
                a.match_mode      AS matchMode,
+               a.description,
                csm.id            AS mappingId,
                csm.attr_id       AS attrId,
                csm.rel_id        AS relId,
@@ -165,7 +166,8 @@
         a.fcd,
         a.lcu,
         a.lcd,
-        a.last_sync_date AS lastSyncDate
+        a.last_sync_date AS lastSyncDate,
+        a.description
         FROM cmdb_sync_ci_collection a
         JOIN cmdb_ci b ON a.ci_id = b.id
         <include refid="searchSyncCiCollectionSql"></include>
@@ -208,6 +210,7 @@
         <result property="lastSyncDate" column="lastSyncDate"/>
         <result property="matchMode" column="matchMode"/>
         <result property="parentKey" column="parentKey"/>
+        <result property="description" column="description"/>
         <result property="fcd" column="fcd"/>
         <result property="fcu" column="fcu"/>
         <result property="lcd" column="lcd"/>
@@ -235,6 +238,7 @@
                a.last_sync_date  AS lastSyncDate,
                a.match_mode      AS matchMode,
                a.parent_key      AS parentKey,
+               a.description,
                a.fcd             AS fcd,
                a.fcu             AS fcu,
                a.lcd             AS lcd,
@@ -261,6 +265,7 @@
                a.last_sync_date  AS lastSyncDate,
                a.match_mode      AS matchMode,
                a.parent_key      AS parentKey,
+               a.description,
                a.fcd             AS fcd,
                a.fcu             AS fcu,
                a.lcd             AS lcd,
@@ -288,6 +293,7 @@
                a.last_sync_date  AS lastSyncDate,
                a.match_mode      AS matchMode,
                a.parent_key      AS parentKey,
+               a.description,
                a.fcd             AS fcd,
                a.fcu             AS fcu,
                a.lcd             AS lcd,
@@ -312,6 +318,7 @@
             match_mode     = #{matchMode},
             lcd            = NOW(3),
             lcu            = #{lcu},
+            description    = #{description},
             last_sync_date = null
         WHERE id = #{id}
     </update>
@@ -338,9 +345,10 @@
 
     <insert id="insertSyncCiCollection" parameterType="codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo">
         insert into cmdb_sync_ci_collection (id, ci_id, collection_name, parent_key, match_mode, collect_mode,
-                                             is_auto_commit, fcd,
+                                             is_auto_commit, description, fcd,
                                              fcu)
-        values (#{id}, #{ciId}, #{collectionName}, #{parentKey}, #{matchMode}, #{collectMode}, #{isAutoCommit}, NOW(3),
+        values (#{id}, #{ciId}, #{collectionName}, #{parentKey}, #{matchMode}, #{collectMode}, #{isAutoCommit},
+                #{description}, NOW(3),
                 #{fcu})
     </insert>
 
