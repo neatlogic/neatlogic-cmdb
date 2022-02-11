@@ -120,14 +120,26 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
     @Override
     public void deleteAccount(List<Long> accountIdList, boolean isTagent) {
         for (Long accountId : accountIdList) {
+            //如果是tagent 无需判断直接删除账号相关信息
             if (!isTagent) {
-                //如果是tagent 无需判断直接删除账号相关信息
+                //判断是否是tagent包含ip的账号
+                List<String> ipList = resourceCenterMapper.getAccountIpListByAccountId(accountId);
+                if (CollectionUtils.isNotEmpty(ipList)) {
+                    for (String ip : ipList) {
+                        TagentVo tagentVo = tagentMapper.getTagentByIp(ip);
+                        if (tagentVo != null) {
+                            throw new ResourceCenterAccountHasBeenReferredException("tagent");
+                        }
+                    }
+                }
+                //判断时候是tagent的账号
                 List<TagentVo> tagentVoList = tagentMapper.getTagentByAccountId(accountId);
                 List<ResourceAccountVo> resourceAccountVoList = resourceCenterMapper.getResourceAccountListByAccountId(accountId);
                 if (CollectionUtils.isNotEmpty(tagentVoList)) {
                     throw new ResourceCenterAccountHasBeenReferredException("tagent");
                 }
-                if ( CollectionUtils.isNotEmpty(resourceAccountVoList)) {
+                //判断是否被资产引用
+                if (CollectionUtils.isNotEmpty(resourceAccountVoList)) {
                     throw new ResourceCenterAccountHasBeenReferredException("resource");
                 }
             }
