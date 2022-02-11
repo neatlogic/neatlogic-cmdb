@@ -115,22 +115,24 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
     /**
      * 删除账号
      *
-     * @param accountId 账号id
+     * @param accountIdList 账号idList
      */
     @Override
-    public void deleteAccount(Long accountId, boolean isTagent) {
-        List<TagentVo> tagentVoList = tagentMapper.getTagentByAccountId(accountId);
-        List<ResourceAccountVo> resourceAccountVoList = resourceCenterMapper.getResourceAccountListByAccountId(accountId);
-        if (CollectionUtils.isNotEmpty(tagentVoList)) {
-            throw new ResourceCenterAccountHasBeenReferredException("tagent");
+    public void deleteAccount(List<Long> accountIdList, boolean isTagent) {
+        for (Long accountId : accountIdList) {
+            List<TagentVo> tagentVoList = tagentMapper.getTagentByAccountId(accountId);
+            List<ResourceAccountVo> resourceAccountVoList = resourceCenterMapper.getResourceAccountListByAccountId(accountId);
+            if (CollectionUtils.isNotEmpty(tagentVoList)) {
+                throw new ResourceCenterAccountHasBeenReferredException("tagent");
+            }
+            //如果是tagent 无需判断直接删除账号相关信息
+            if (!isTagent && CollectionUtils.isNotEmpty(resourceAccountVoList)) {
+                throw new ResourceCenterAccountHasBeenReferredException("resource");
+            }
+            resourceCenterMapper.deleteAccountById(accountId);
+            resourceCenterMapper.deleteResourceAccountByAccountId(accountId);
+            resourceCenterMapper.deleteAccountTagByAccountId(accountId);
+            resourceCenterMapper.deleteAccountIpByAccountId(accountId);
         }
-        //如果是tagent 无需判断直接删除账号相关信息
-        if (!isTagent && CollectionUtils.isNotEmpty(resourceAccountVoList)) {
-            throw new ResourceCenterAccountHasBeenReferredException("resource");
-        }
-        resourceCenterMapper.deleteAccountById(accountId);
-        resourceCenterMapper.deleteResourceAccountByAccountId(accountId);
-        resourceCenterMapper.deleteAccountTagByAccountId(accountId);
-        resourceCenterMapper.deleteAccountIpByAccountId(accountId);
     }
 }
