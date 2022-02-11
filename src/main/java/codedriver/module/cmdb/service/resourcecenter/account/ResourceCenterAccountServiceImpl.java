@@ -86,13 +86,13 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
      * 2、通过 ”组合工具配置的执行节点的ip+协议id“ 匹配 账号表
      * 3、通过 ”组合工具配置的执行节点的ip+端口“ 匹配 账号表
      *
-     * @param accountVoList 通过执行节点的资产id+协议id+执行用户 查询回来的账号列表
+     * @param accountVoList    通过执行节点的资产id+协议id+执行用户 查询回来的账号列表
      * @param allAccountVoList 通过执行节点的ip 查询回来的站好列表
-     * @param protocolVoList 所有协议列表
-     * @param resourceId 执行节点的资产id
-     * @param protocolId 执行节点协议id
-     * @param ip 执行节点的ip
-     * @param port 执行节点的port
+     * @param protocolVoList   所有协议列表
+     * @param resourceId       执行节点的资产id
+     * @param protocolId       执行节点协议id
+     * @param ip               执行节点的ip
+     * @param port             执行节点的port
      * @return 匹配的账号
      */
     @Override
@@ -123,22 +123,17 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
             //如果是tagent 无需判断直接删除账号相关信息
             if (!isTagent) {
                 //判断是否为tagent包含ip的账号
-                List<String> ipList = resourceCenterMapper.getAccountIpListByAccountId(accountId);
-                if (CollectionUtils.isNotEmpty(ipList)) {
-                    for (String ip : ipList) {
-                        TagentVo tagentVo = tagentMapper.getTagentByIp(ip);
-                        if (tagentVo != null) {
-                            throw new ResourceCenterAccountHasBeenReferredException("tagent");
-                        }
-                    }
+                List<TagentVo> tagentList = tagentMapper.getTagentListByAccountId(accountId);
+                if (CollectionUtils.isNotEmpty(tagentList)) {
+                    throw new ResourceCenterAccountHasBeenReferredException("tagent");
                 }
-                //判断时候是否为tagent的账号
+                //判断是否为tagent的账号
                 List<TagentVo> tagentVoList = tagentMapper.getTagentByAccountId(accountId);
-                List<ResourceAccountVo> resourceAccountVoList = resourceCenterMapper.getResourceAccountListByAccountId(accountId);
                 if (CollectionUtils.isNotEmpty(tagentVoList)) {
                     throw new ResourceCenterAccountHasBeenReferredException("tagent");
                 }
                 //判断是否被资产引用
+                List<ResourceAccountVo> resourceAccountVoList = resourceCenterMapper.getResourceAccountListByAccountId(accountId);
                 if (CollectionUtils.isNotEmpty(resourceAccountVoList)) {
                     throw new ResourceCenterAccountHasBeenReferredException("resource");
                 }
