@@ -121,12 +121,12 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
     public void deleteAccount(List<Long> accountIdList, boolean isTagent) {
         for (Long accountId : accountIdList) {
             if (!isTagent) {
+                //如果是tagent 无需判断直接删除账号相关信息
                 List<TagentVo> tagentVoList = tagentMapper.getTagentByAccountId(accountId);
                 List<ResourceAccountVo> resourceAccountVoList = resourceCenterMapper.getResourceAccountListByAccountId(accountId);
                 if (CollectionUtils.isNotEmpty(tagentVoList)) {
                     throw new ResourceCenterAccountHasBeenReferredException("tagent");
                 }
-                //如果是tagent 无需判断直接删除账号相关信息
                 if ( CollectionUtils.isNotEmpty(resourceAccountVoList)) {
                     throw new ResourceCenterAccountHasBeenReferredException("resource");
                 }
