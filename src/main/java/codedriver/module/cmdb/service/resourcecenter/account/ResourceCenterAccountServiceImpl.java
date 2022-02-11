@@ -122,7 +122,7 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
         for (Long accountId : accountIdList) {
             //如果是tagent 无需判断直接删除账号相关信息
             if (!isTagent) {
-                //判断是否是tagent包含ip的账号
+                //判断是否tagent包含ip的账号
                 List<String> ipList = resourceCenterMapper.getAccountIpListByAccountId(accountId);
                 if (CollectionUtils.isNotEmpty(ipList)) {
                     for (String ip : ipList) {
@@ -132,7 +132,7 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
                         }
                     }
                 }
-                //判断时候是tagent的账号
+                //判断时候是否tagent的账号
                 List<TagentVo> tagentVoList = tagentMapper.getTagentByAccountId(accountId);
                 List<ResourceAccountVo> resourceAccountVoList = resourceCenterMapper.getResourceAccountListByAccountId(accountId);
                 if (CollectionUtils.isNotEmpty(tagentVoList)) {
