@@ -185,9 +185,8 @@
 
     <sql id="searchSyncCiCollectionSql">
         <where>
-            <if test="keyword != null and keyword != ''">
-                AND (b.name LIKE CONCAT('%',#{keyword},'%') OR b.label LIKE CONCAT('%',#{keyword},'%')
-                OR a.collection_name LIKE CONCAT('%',#{keyword},'%'))
+            <if test="collectionName != null and collectionName != ''">
+                AND a.collection_name = #{collectionName}
             </if>
             <if test="ciId != null">
                 AND ci_id = #{ciId}
