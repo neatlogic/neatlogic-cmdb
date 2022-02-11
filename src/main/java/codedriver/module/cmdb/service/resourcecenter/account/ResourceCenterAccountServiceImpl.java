@@ -41,14 +41,14 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
         if (CollectionUtils.isNotEmpty(resourceAccountVoList)) {
             List<ResourceVo> resourceVoList = resourceCenterMapper.getResourceByIdList(resourceAccountVoList.stream().map(ResourceAccountVo::getResourceId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
             for (ResourceVo resourceVo : resourceVoList) {
-                resourceCenterMapper.insertIgnoreAccountIp(new AccountIpVo(accountId, resourceVo.getIp()));
+                resourceCenterMapper.insertAccountIp(new AccountIpVo(accountId, resourceVo.getIp()));
             }
         }
         //账号是否被tagent引用
         List<TagentVo> tagentVoList = tagentMapper.getTagentByAccountId(accountId);
         if (CollectionUtils.isNotEmpty(tagentVoList)) {
             for (TagentVo tagentVo : tagentVoList) {
-                resourceCenterMapper.insertIgnoreAccountIp(new AccountIpVo(tagentVo.getAccountId(), tagentVo.getIp()));
+                resourceCenterMapper.insertAccountIp(new AccountIpVo(tagentVo.getAccountId(), tagentVo.getIp()));
             }
         }
     }
@@ -67,14 +67,14 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
             }
             for (ResourceAccountVo resourceAccountVo : resourceAccountVoList) {
                 if (resourceVoHashMap.containsKey(resourceAccountVo.getResourceId())) {
-                    resourceCenterMapper.insertIgnoreAccountIp(new AccountIpVo(resourceAccountVo.getAccountId(), resourceVoHashMap.get(resourceAccountVo.getResourceId()).getIp()));
+                    resourceCenterMapper.insertAccountIp(new AccountIpVo(resourceAccountVo.getAccountId(), resourceVoHashMap.get(resourceAccountVo.getResourceId()).getIp()));
                 }
             }
             //账号是否被tagent引用
             List<TagentVo> tagentVoList = tagentMapper.getTagentByIpList(resourceIpList);
             if (CollectionUtils.isNotEmpty(tagentVoList)) {
                 for (TagentVo tagentVo : tagentVoList) {
-                    resourceCenterMapper.insertIgnoreAccountIp(new AccountIpVo(tagentVo.getAccountId(), tagentVo.getIp()));
+                    resourceCenterMapper.insertAccountIp(new AccountIpVo(tagentVo.getAccountId(), tagentVo.getIp()));
                 }
             }
         }
@@ -115,22 +115,38 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
     /**
      * 删除账号
      *
-     * @param accountId 账号id
+     * @param accountIdList 账号idList
      */
     @Override
-    public void deleteAccount(Long accountId, boolean isTagent) {
-        List<TagentVo> tagentVoList = tagentMapper.getTagentByAccountId(accountId);
-        List<ResourceAccountVo> resourceAccountVoList = resourceCenterMapper.getResourceAccountListByAccountId(accountId);
-        if (CollectionUtils.isNotEmpty(tagentVoList)) {
-            throw new ResourceCenterAccountHasBeenReferredException("tagent");
+    public void deleteAccount(List<Long> accountIdList, boolean isTagent) {
+        for (Long accountId : accountIdList) {
+            //如果是tagent 无需判断直接删除账号相关信息
+            if (!isTagent) {
+                //判断是否为tagent包含ip的账号
+                List<String> ipList = resourceCenterMapper.getAccountIpListByAccountId(accountId);
+                if (CollectionUtils.isNotEmpty(ipList)) {
+                    for (String ip : ipList) {
+                        TagentVo tagentVo = tagentMapper.getTagentByIp(ip);
+                        if (tagentVo != null) {
+                            throw new ResourceCenterAccountHasBeenReferredException("tagent");
+                        }
+                    }
+                }
+                //判断时候是否为tagent的账号
+                List<TagentVo> tagentVoList = tagentMapper.getTagentByAccountId(accountId);
+                List<ResourceAccountVo> resourceAccountVoList = resourceCenterMapper.getResourceAccountListByAccountId(accountId);
+                if (CollectionUtils.isNotEmpty(tagentVoList)) {
+                    throw new ResourceCenterAccountHasBeenReferredException("tagent");
+                }
+                //判断是否被资产引用
+                if (CollectionUtils.isNotEmpty(resourceAccountVoList)) {
+                    throw new ResourceCenterAccountHasBeenReferredException("resource");
+                }
+            }
+            resourceCenterMapper.deleteAccountById(accountId);
+            resourceCenterMapper.deleteResourceAccountByAccountId(accountId);
+            resourceCenterMapper.deleteAccountTagByAccountId(accountId);
+            resourceCenterMapper.deleteAccountIpByAccountId(accountId);
         }
-        //如果是tagent 无需判断直接删除账号相关信息
-        if (!isTagent && CollectionUtils.isNotEmpty(resourceAccountVoList)) {
-            throw new ResourceCenterAccountHasBeenReferredException("resource");
-        }
-        resourceCenterMapper.deleteAccountById(accountId);
-        resourceCenterMapper.deleteResourceAccountByAccountId(accountId);
-        resourceCenterMapper.deleteAccountTagByAccountId(accountId);
-        resourceCenterMapper.deleteAccountIpByAccountId(accountId);
     }
 }

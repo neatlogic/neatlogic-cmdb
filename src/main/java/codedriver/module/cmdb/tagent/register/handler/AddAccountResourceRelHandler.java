@@ -32,7 +32,7 @@ public class AddAccountResourceRelHandler extends AfterRegisterBase {
     @Override
     public void myExecute(TagentVo tagentVo) {
         if (tagentVo != null && StringUtils.isNotBlank(tagentVo.getIp()) && tagentVo.getAccountId() != null) {
-            resourceCenterMapper.insertIgnoreAccountIp(new AccountIpVo(tagentVo.getAccountId(), tagentVo.getIp()));
+            resourceCenterMapper.insertAccountIp(new AccountIpVo(tagentVo.getAccountId(), tagentVo.getIp()));
         }
     }
 }

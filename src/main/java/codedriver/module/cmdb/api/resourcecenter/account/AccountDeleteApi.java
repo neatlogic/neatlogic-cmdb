@@ -20,6 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Transactional
@@ -61,7 +63,9 @@ public class AccountDeleteApi extends PrivateApiComponentBase {
         if (account == null) {
             throw new ResourceCenterAccountNotFoundException(id);
         }
-        accountService.deleteAccount(id, false);
+        List<Long> idList = new ArrayList<>();
+        idList.add(id);
+        accountService.deleteAccount(idList, false);
         return null;
     }
 
