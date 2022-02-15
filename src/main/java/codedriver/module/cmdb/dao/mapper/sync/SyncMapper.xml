@@ -185,14 +185,15 @@
 
     <sql id="searchSyncCiCollectionSql">
         <where>
-            <if test="collectionName != null and collectionName != ''">
-                AND a.collection_name = #{collectionName}
-            </if>
             <if test="ciId != null">
                 AND ci_id = #{ciId}
             </if>
             <if test="collectionName != null and collectionName != ''">
                 AND collection_name = #{collectionName}
+            </if>
+            <if test="collectionNameList != null and collectionNameList.size() > 0">
+                AND collection_name IN
+                <foreach collection="collectionNameList" item="item" open="(" close=")" separator=",">#{item}</foreach>
             </if>
             <if test="collectMode != null and collectMode != ''">
                 AND collect_mode = #{collectMode}
