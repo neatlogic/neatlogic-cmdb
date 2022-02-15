@@ -7,7 +7,8 @@ package codedriver.module.cmdb.service.resourcecenter.resource;
 
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.ci.CiVo;
-import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
+import codedriver.framework.cmdb.dto.resourcecenter.*;
+import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import com.alibaba.fastjson.JSON;
@@ -16,10 +17,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -82,5 +80,41 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         searchVo.setIdList(resourceIdList);
         return searchVo;
     }
+
+    @Override
+    public void getResourceAccountAndTag(List<Long> idList, List<ResourceVo> resourceVoList) {
+        Map<Long, List<AccountVo>> resourceAccountVoMap = new HashMap<>();
+        List<ResourceAccountVo> resourceAccountVoList = resourceCenterMapper.getResourceAccountListByResourceIdList(idList);
+        if (CollectionUtils.isNotEmpty(resourceAccountVoList)) {
+            Set<Long> accountIdSet = resourceAccountVoList.stream().map(ResourceAccountVo::getAccountId).collect(Collectors.toSet());
+            List<AccountVo> accountList = resourceCenterMapper.getAccountListByIdList(new ArrayList<>(accountIdSet));
+            Map<Long, AccountVo> accountMap = accountList.stream().collect(Collectors.toMap(AccountVo::getId, e -> e));
+            for (ResourceAccountVo resourceAccountVo : resourceAccountVoList) {
+                resourceAccountVoMap.computeIfAbsent(resourceAccountVo.getResourceId(), k -> new ArrayList<>()).add(accountMap.get(resourceAccountVo.getAccountId()));
+            }
+        }
+        Map<Long, List<TagVo>> resourceTagVoMap = new HashMap<>();
+        List<ResourceTagVo> resourceTagVoList = resourceCenterMapper.getResourceTagListByResourceIdList(idList);
+        if (CollectionUtils.isNotEmpty(resourceTagVoList)) {
+            Set<Long> tagIdSet = resourceTagVoList.stream().map(ResourceTagVo::getTagId).collect(Collectors.toSet());
+            List<TagVo> tagList = resourceCenterMapper.getTagListByIdList(new ArrayList<>(tagIdSet));
+            Map<Long, TagVo> tagMap = tagList.stream().collect(Collectors.toMap(TagVo::getId, e -> e));
+            for (ResourceTagVo resourceTagVo : resourceTagVoList) {
+                resourceTagVoMap.computeIfAbsent(resourceTagVo.getResourceId(), k -> new ArrayList<>()).add(tagMap.get(resourceTagVo.getTagId()));
+            }
+        }
+
+        for (ResourceVo resourceVo : resourceVoList) {
+            List<TagVo> tagVoList = resourceTagVoMap.get(resourceVo.getId());
+            if (CollectionUtils.isNotEmpty(tagVoList)) {
+                resourceVo.setTagList(tagVoList.stream().map(TagVo::getName).collect(Collectors.toList()));
+            }
+            List<AccountVo> accountVoList = resourceAccountVoMap.get(resourceVo.getId());
+            if (CollectionUtils.isNotEmpty(accountVoList)) {
+                resourceVo.setAccountList(accountVoList);
+            }
+        }
+    }
+
 
 }

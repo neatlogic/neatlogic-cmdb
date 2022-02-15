@@ -10,8 +10,9 @@ import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.autoexec.dao.mapper.AutoexecScriptMapper;
 import codedriver.framework.cmdb.crossover.IResourceListApiCrossoverService;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
-import codedriver.framework.cmdb.dto.resourcecenter.*;
-import codedriver.framework.cmdb.dto.tag.TagVo;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceScriptVo;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.restful.annotation.*;
@@ -25,8 +26,10 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 查询资源中心数据列表接口
@@ -106,26 +109,8 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
                 searchVo.setRowNum(rowNum);
                 List<Long> idList = resourceCenterMapper.getResourceIdList(searchVo);
                 if (CollectionUtils.isNotEmpty(idList)) {
-                    Map<Long, List<AccountVo>> resourceAccountVoMap = new HashMap<>();
-                    List<ResourceAccountVo> resourceAccountVoList = resourceCenterMapper.getResourceAccountListByResourceIdList(idList);
-                    if (CollectionUtils.isNotEmpty(resourceAccountVoList)) {
-                        Set<Long> accountIdSet = resourceAccountVoList.stream().map(ResourceAccountVo::getAccountId).collect(Collectors.toSet());
-                        List<AccountVo> accountList = resourceCenterMapper.getAccountListByIdList(new ArrayList<>(accountIdSet));
-                        Map<Long, AccountVo> accountMap = accountList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
-                        for (ResourceAccountVo resourceAccountVo : resourceAccountVoList) {
-                            resourceAccountVoMap.computeIfAbsent(resourceAccountVo.getResourceId(), k -> new ArrayList<>()).add(accountMap.get(resourceAccountVo.getAccountId()));
-                        }
-                    }
-                    Map<Long, List<TagVo>> resourceTagVoMap = new HashMap<>();
-                    List<ResourceTagVo> resourceTagVoList = resourceCenterMapper.getResourceTagListByResourceIdList(idList);
-                    if (CollectionUtils.isNotEmpty(resourceTagVoList)) {
-                        Set<Long> tagIdSet = resourceTagVoList.stream().map(ResourceTagVo::getTagId).collect(Collectors.toSet());
-                        List<TagVo> tagList = resourceCenterMapper.getTagListByIdList(new ArrayList<>(tagIdSet));
-                        Map<Long, TagVo> tagMap = tagList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
-                        for (ResourceTagVo resourceTagVo : resourceTagVoList) {
-                            resourceTagVoMap.computeIfAbsent(resourceTagVo.getResourceId(), k -> new ArrayList<>()).add(tagMap.get(resourceTagVo.getTagId()));
-                        }
-                    }
+                    resourceVoList = resourceCenterMapper.getResourceListByIdList(idList, TenantContext.get().getDataDbName());
+                    resourceCenterResourceService.getResourceAccountAndTag(idList, resourceVoList);
                     Map<Long, ResourceScriptVo> resourceScriptVoMap = new HashMap<>();
                     List<ResourceScriptVo> resourceScriptVoList = resourceCenterMapper.getResourceScriptListByResourceIdList(idList);
                     if (CollectionUtils.isNotEmpty(resourceScriptVoList)) {
@@ -133,17 +118,7 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
                             resourceScriptVoMap.put(resourceScriptVo.getResourceId(), resourceScriptVo);
                         }
                     }
-
-                    resourceVoList = resourceCenterMapper.getResourceListByIdList(idList, TenantContext.get().getDataDbName());
                     for (ResourceVo resourceVo : resourceVoList) {
-                        List<TagVo> tagVoList = resourceTagVoMap.get(resourceVo.getId());
-                        if (CollectionUtils.isNotEmpty(tagVoList)) {
-                            resourceVo.setTagList(tagVoList.stream().map(TagVo::getName).collect(Collectors.toList()));
-                        }
-                        List<AccountVo> accountVoList = resourceAccountVoMap.get(resourceVo.getId());
-                        if (CollectionUtils.isNotEmpty(accountVoList)) {
-                            resourceVo.setAccountList(accountVoList);
-                        }
                         ResourceScriptVo scriptVo = resourceScriptVoMap.get(resourceVo.getId());
                         resourceVo.setScript(scriptVo);
                     }
