@@ -110,18 +110,21 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
                 List<Long> idList = resourceCenterMapper.getResourceIdList(searchVo);
                 if (CollectionUtils.isNotEmpty(idList)) {
                     resourceVoList = resourceCenterMapper.getResourceListByIdList(idList, TenantContext.get().getDataDbName());
-                    resourceCenterResourceService.getResourceAccountAndTag(idList, resourceVoList);
-                    Map<Long, ResourceScriptVo> resourceScriptVoMap = new HashMap<>();
-                    List<ResourceScriptVo> resourceScriptVoList = resourceCenterMapper.getResourceScriptListByResourceIdList(idList);
-                    if (CollectionUtils.isNotEmpty(resourceScriptVoList)) {
-                        for (ResourceScriptVo resourceScriptVo : resourceScriptVoList) {
-                            resourceScriptVoMap.put(resourceScriptVo.getResourceId(), resourceScriptVo);
+                    if (CollectionUtils.isNotEmpty(resourceVoList)) {
+                        resourceCenterResourceService.getResourceAccountAndTag(idList, resourceVoList);
+                        Map<Long, ResourceScriptVo> resourceScriptVoMap = new HashMap<>();
+                        List<ResourceScriptVo> resourceScriptVoList = resourceCenterMapper.getResourceScriptListByResourceIdList(idList);
+                        if (CollectionUtils.isNotEmpty(resourceScriptVoList)) {
+                            for (ResourceScriptVo resourceScriptVo : resourceScriptVoList) {
+                                resourceScriptVoMap.put(resourceScriptVo.getResourceId(), resourceScriptVo);
+                            }
+                        }
+                        for (ResourceVo resourceVo : resourceVoList) {
+                            ResourceScriptVo scriptVo = resourceScriptVoMap.get(resourceVo.getId());
+                            resourceVo.setScript(scriptVo);
                         }
                     }
-                    for (ResourceVo resourceVo : resourceVoList) {
-                        ResourceScriptVo scriptVo = resourceScriptVoMap.get(resourceVo.getId());
-                        resourceVo.setScript(scriptVo);
-                    }
+
                 }
             }
         }
