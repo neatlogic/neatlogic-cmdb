@@ -76,7 +76,7 @@ public class AccountSaveApi extends PrivateApiComponentBase {
 
         AccountProtocolVo protocolVo = resourceCenterMapper.getAccountProtocolVoByProtocolId(vo.getProtocolId());
         if (protocolVo == null) {
-            throw new ResourceCenterAccountProtocolNotFoundException();
+            throw new ResourceCenterAccountProtocolNotFoundException(vo.getProtocolId());
         }
         if (!StringUtils.equals(protocolVo.getName(), "tagent") && StringUtils.isEmpty(paramObj.getString("account"))) {
             throw new ResourceCenterAccountNameIsNotNullException();
