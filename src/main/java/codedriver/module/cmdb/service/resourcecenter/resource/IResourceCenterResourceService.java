@@ -7,7 +7,10 @@ package codedriver.module.cmdb.service.resourcecenter.resource;
 
 import codedriver.framework.cmdb.crossover.IResourceCenterResourceCrossoverService;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import com.alibaba.fastjson.JSONObject;
+
+import java.util.List;
 
 
 /**
@@ -18,5 +21,10 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
 
     ResourceSearchVo assembleResourceSearchVo(JSONObject jsonObj);
 
-
+    /**
+     * 补充资产的账号信息和标签信息
+     * @param idList
+     * @param resourceVoList
+     */
+    void getResourceAccountAndTag(List<Long> idList, List<ResourceVo> resourceVoList);
 }
