@@ -6,6 +6,7 @@
 package codedriver.module.cmdb.api.resourcecenter.appmodule;
 
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -61,7 +62,8 @@ public class AppModuleResourceListApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONObject resultObj = new JSONObject();
-        resultObj.put("tableList", resourceCenterResourceService.getAppModuleResourceList(paramObj));
+        ResourceSearchVo searchVo = paramObj.toJavaObject(ResourceSearchVo.class);
+        resultObj.put("tableList", resourceCenterResourceService.getAppModuleResourceList(searchVo));
         return resultObj;
     }
 }
