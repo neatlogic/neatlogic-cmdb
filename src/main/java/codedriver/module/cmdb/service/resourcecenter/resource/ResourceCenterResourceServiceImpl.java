@@ -144,16 +144,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         if (resourceCenterMapper.checkAppModuleIsExists(appModuleId, schemaName) == 0) {
             throw new AppModuleNotFoundException(appModuleId);
         }
-
-        List<String> resourceTypeNameList = new ArrayList<>();
-        resourceTypeNameList.add("OS");
-        resourceTypeNameList.add("StorageDevice");
-        resourceTypeNameList.add("NetworkDevice");
-        resourceTypeNameList.add("APPIns");
-        resourceTypeNameList.add("APPInsCluster");
-        resourceTypeNameList.add("DBIns");
-        resourceTypeNameList.add("DBCluster");
-        resourceTypeNameList.add("AccessEndPoint");
+        List<String> resourceTypeNameList = Arrays.asList("OS", "StorageDevice", "NetworkDevice", "APPIns", "APPInsCluster", "DBIns", "DBCluster", "AccessEndPoint");
         List<CiVo> resourceCiVoList = new ArrayList<>();
         Map<Long, CiVo> ciVoMap = new HashMap<>();
         List<CiVo> ciVoList = ciMapper.getAllCi(null);
