@@ -32,7 +32,7 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
 
 
     /**
-     * 获取应用清单信息
+     * 获取应用列表
      *
      * @param paramObj
      * @return
