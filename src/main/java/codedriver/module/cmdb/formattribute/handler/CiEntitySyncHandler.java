@@ -3013,7 +3013,7 @@ public class CiEntitySyncHandler extends FormHandlerBase {
                     JSONObject attrEntityData = dataObj.getJSONObject("attrEntityData");
                     if (MapUtils.isNotEmpty(attrEntityData)) {
                         for (String key : keyList) {
-                            tbodyObj.put(key, attrEntityData.getJSONObject("key"));
+                            tbodyObj.put(key, attrEntityData.getJSONObject(key));
                         }
                     }
                     tbodyList.add(tbodyObj);

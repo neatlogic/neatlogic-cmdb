@@ -237,6 +237,170 @@ public class ResourcesHandler extends FormHandlerBase {
 //        "type": "node"
 //    }
 //返回数据结构
+//{
+//	"value": {
+//		"selectNodeList": [
+//			{
+//				"port": 3306,
+//				"ip": "192.168.0.101",
+//				"name": "Mysql",
+//				"id": 493223784800258
+//			},
+//			{
+//				"port": 3306,
+//				"ip": "192.168.0.21",
+//				"name": "Mysql",
+//				"id": 493223793188865
+//			}
+//		],
+//		"inputNodeList": [
+//			{
+//				"port": "8081",
+//				"ip": "192.168.0.1",
+//				"name": "codedriver2"
+//			},
+//			{
+//				"port": "8080",
+//				"ip": "192.168.0.1",
+//				"name": "codedriver"
+//			}
+//		],
+//		"filter": {
+//			"envIdList": [
+//				481856650534914,
+//				481856650534918,
+//				481856650534925
+//			],
+//			"protocolIdList": [
+//				547705260400640,
+//				478219912355840
+//			],
+//			"stateIdList": [
+//				481855425798147
+//			],
+//			"typeIdList": [
+//				479596491317248,
+//				479598143873024
+//			],
+//			"appSystemIdList": [
+//				481894852255745,
+//				481894852255749
+//			],
+//			"appModuleIdList": [
+//				481894994862129,
+//				481894986473498
+//			],
+//			"tagIdList": [
+//				504187276025856,
+//				508639420669952
+//			]
+//		},
+//		"type": "input/node/filter"
+//	},
+//	"selectNodeList": [
+//		{
+//			"port": 3306,
+//			"ip": "192.168.0.101",
+//			"name": "Mysql",
+//			"id": 493223784800258
+//		},
+//		{
+//			"port": 3306,
+//			"ip": "192.168.0.21",
+//			"name": "Mysql",
+//			"id": 493223793188865
+//		}
+//	],
+//	"inputNodeList": [
+//		{
+//			"port": "8081",
+//			"ip": "192.168.0.1",
+//			"name": "codedriver2"
+//		},
+//		{
+//			"port": "8080",
+//			"ip": "192.168.0.1",
+//			"name": "codedriver"
+//		}
+//	],
+//	"filterList": [
+//		{
+//			"textList": [
+//				"PRD",
+//				"UAT",
+//				"SIT"
+//			],
+//			"valueList": [
+//				481856650534914,
+//				481856650534918,
+//				481856650534925
+//			],
+//			"label": "环境"
+//		},
+//		{
+//			"textList": [
+//				"https",
+//				"ssh"
+//			],
+//			"valueList": [
+//				547705260400640,
+//				478219912355840
+//			],
+//			"label": "连接协议"
+//		},
+//		{
+//			"textList": [
+//				"使用中"
+//			],
+//			"valueList": [
+//				481855425798147
+//			],
+//			"label": "状态"
+//		},
+//		{
+//			"textList": [
+//				"DBIns",
+//				"DBCluster"
+//			],
+//			"valueList": [
+//				479596491317248,
+//				479598143873024
+//			],
+//			"label": "模型类型"
+//		},
+//		{
+//			"textList": [
+//				"理财资产管理",
+//				"全网支付平台"
+//			],
+//			"valueList": [
+//				481894852255745,
+//				481894852255749
+//			],
+//			"label": "系统"
+//		},
+//		{
+//			"textList": [
+//				"交易反欺诈消费",
+//				"台账系统"
+//			],
+//			"valueList": [
+//				481894994862129,
+//				481894986473498
+//			],
+//			"label": "模块"
+//		},
+//		{
+//			"textList": [],
+//			"valueList": [
+//				504187276025856,
+//				508639420669952
+//			],
+//			"label": "标签"
+//		}
+//	],
+//	"type": "input/node/filter"
+//}
     @Override
     protected JSONObject getMyDetailedData(AttributeDataVo attributeDataVo, JSONObject configObj) {
         JSONObject resultObj = new JSONObject();
@@ -380,6 +544,7 @@ public class ResourcesHandler extends FormHandlerBase {
                     jsonObj.put("textList", textList);
                     filterList.add(jsonObj);
                 }
+                resultObj.put("filterList", filterList);
             }
         }
         return resultObj;
