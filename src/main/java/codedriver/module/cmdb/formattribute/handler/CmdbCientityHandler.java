@@ -133,9 +133,123 @@ public class CmdbCientityHandler extends FormHandlerBase {
     public Object textConversionValue(List<String> values, JSONObject config) {
         return null;
     }
-
+//表单组件配置信息
+//    {
+//        "handler": "formcmdbcientity",
+//        "label": "配置项组件_1",
+//        "type": "form",
+//        "uuid": "468c20afaaed452c89599a44b90ed077",
+//        "config": {
+//            "isRequired": false,
+//            "ruleList": [],
+//            "width": "100%",
+//            "validList": [],
+//            "quoteUuid": "",
+//            "defaultValueType": "self",
+//            "placeholder": "请选择配置项组件",
+//            "authorityConfig": [
+//                "common#alluser"
+//            ]
+//        }
+//    }
+//保存数据结构
+//    {
+//        "selectedCiEntityList": [
+//            {
+//                "typeName": "应用系统",
+//                "type": 441079325270016,
+//                "inspectStatus": "",
+//                "uuid": "770ec8aea3dd4a53925a514b93b2d309",
+//                "ciName": "APP",
+//                "ciId": 479609502048256,
+//                "renewTime": "2022-01-25 14:32",
+//                "_selected": true,
+//                "maxRelEntityCount": 3,
+//                "relEntityData": {},
+//                "name": "名称s4",
+//                "attrEntityData": {
+//                    "attr_478701787553792": {
+//                        "ciEntityId": 547082414645248,
+//                        "attrId": 478701787553792,
+//                        "actualValueList": [
+//                            "名称s4"
+//					    ],
+//                        "valueList": [
+//                            "名称s4"
+//					    ],
+//                        "name": "name",
+//                        "label": "名称",
+//                        "type": "text",
+//                        "ciId": 441087512551424
+//                    },
+//                    "attr_478702072766464": {
+//                        "ciEntityId": 547082414645248,
+//                        "attrId": 478702072766464,
+//                        "actualValueList": [
+//                            "描述s"
+//                        ],
+//                        "valueList": [
+//                            "描述s"
+//                        ],
+//                        "name": "description",
+//                        "label": "备注",
+//                        "type": "text",
+//                        "ciId": 441087512551424
+//                    },
+//                    "attr_480816840630272": {
+//                        "ciEntityId": 547082414645248,
+//                        "attrId": 480816840630272,
+//                        "actualValueList": [
+//                            "2021-01-02"
+//                        ],
+//                        "valueList": [
+//                            "2021-01-02"
+//                        ],
+//                        "name": "maintenance_window",
+//                        "label": "维护窗口",
+//                        "type": "date",
+//                        "config": {
+//                            "format": "HH:mm",
+//                            "type": "timerange"
+//                        },
+//                        "ciId": 441087512551424
+//                    },
+//                    "attr_478703406555136": {
+//                        "ciEntityId": 547082414645248,
+//                        "attrId": 478703406555136,
+//                        "actualValueList": [
+//                            "闫雅(0163347)"
+//                        ],
+//                        "valueList": [
+//                            431662986961481
+//                        ],
+//                        "name": "owner",
+//                        "label": "负责人",
+//                        "targetCiId": 479643459133440,
+//                        "type": "select",
+//                        "config": {
+//                            "mode": "r",
+//                            "isMultiple": 1
+//                        },
+//                        "ciId": 441087512551424
+//                    }
+//                },
+//                "id": 547082414645248,
+//                "maxAttrEntityCount": 3,
+//                "ciLabel": "应用系统",
+//                "monitorStatus": ""
+//            }
+//        ],
+//        "ciId": 441087512551424
+//    }
+//返回数据结构
+//{
+//    "value": 原始数据
+//}
     @Override
     protected JSONObject getMyDetailedData(AttributeDataVo attributeDataVo, JSONObject configObj) {
-        return null;
+        JSONObject resultObj = new JSONObject();
+        resultObj.put("value", attributeDataVo.getDataObj());
+        return resultObj;
     }
 }

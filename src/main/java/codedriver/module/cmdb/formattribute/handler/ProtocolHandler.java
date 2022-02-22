@@ -5,6 +5,8 @@
 
 package codedriver.module.cmdb.formattribute.handler;
 
+import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
+import codedriver.framework.cmdb.dto.resourcecenter.AccountProtocolVo;
 import codedriver.framework.common.constvalue.ParamType;
 import codedriver.framework.form.attribute.core.FormHandlerBase;
 import codedriver.framework.form.constvalue.FormConditionModel;
@@ -13,6 +15,7 @@ import codedriver.framework.form.exception.AttributeValidException;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -21,6 +24,10 @@ import java.util.List;
  **/
 @Component
 public class ProtocolHandler extends FormHandlerBase {
+
+    @Resource
+    private ResourceCenterMapper resourceCenterMapper;
+
     @Override
     public String getHandler() {
         return "protocol";
@@ -115,9 +122,44 @@ public class ProtocolHandler extends FormHandlerBase {
     public int getSort() {
         return 22;
     }
-
+//表单组件配置信息
+//    {
+//        "handler": "protocol",
+//        "label": "连接协议_1",
+//        "type": "form",
+//        "uuid": "d9a91e90f2b94171883b8092bdddd384",
+//        "config": {
+//            "isRequired": false,
+//            "ruleList": [],
+//            "width": "100%",
+//            "validList": [],
+//            "quoteUuid": "",
+//            "defaultValueType": "self",
+//            "placeholder": "选择连接协议",
+//            "authorityConfig": [
+//                "common#alluser"
+//            ]
+//        }
+//    }
+//保存数据
+//    478184378212353
+//返回数据结构
+//    {
+//        "value": 478184378212353,
+//        "name": "tagent",
+//        "port": 3939
+//    }
     @Override
     protected JSONObject getMyDetailedData(AttributeDataVo attributeDataVo, JSONObject configObj) {
-        return null;
+        JSONObject resultObj = new JSONObject();
+        String protocolIdStr = (String) attributeDataVo.getDataObj();
+        Long protocolId = Long.valueOf(protocolIdStr);
+        resultObj.put("value", protocolId);
+        AccountProtocolVo protocolVo = resourceCenterMapper.getAccountProtocolVoByProtocolId(protocolId);
+        if (protocolVo != null) {
+            resultObj.put("name", protocolVo.getName());
+            resultObj.put("port", protocolVo.getPort());
+        }
+        return resultObj;
     }
 }
