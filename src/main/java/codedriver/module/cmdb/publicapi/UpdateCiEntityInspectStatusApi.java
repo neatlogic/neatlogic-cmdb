@@ -6,6 +6,7 @@
 
 package codedriver.module.cmdb.publicapi;
 
+import codedriver.framework.cmdb.dto.cientity.CiEntityInspectVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
@@ -54,6 +55,11 @@ public class UpdateCiEntityInspectStatusApi extends PublicApiComponentBase {
         ciEntityVo.setInspectTime(new Date(paramObj.getLong("inspectTime")));
         ciEntityVo.setInspectStatus(paramObj.getString("inspectStatus"));
         ciEntityMapper.updateCiEntityInspectStatus(ciEntityVo);
+        CiEntityInspectVo ciEntityInspectVo = new CiEntityInspectVo();
+        ciEntityInspectVo.setCiEntityId(paramObj.getLong("ciEntityId"));
+        ciEntityInspectVo.setInspectTime(new Date(paramObj.getLong("inspectTime")));
+        ciEntityInspectVo.setInspectStatus(paramObj.getString("inspectStatus"));
+        ciEntityMapper.insertCiEntityInspect(ciEntityInspectVo);
         return null;
     }
 

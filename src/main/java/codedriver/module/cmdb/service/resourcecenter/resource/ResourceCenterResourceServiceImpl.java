@@ -95,7 +95,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
     }
 
     @Override
-    public void getResourceAccountAndTag(List<Long> idList, List<ResourceVo> resourceVoList) {
+    public void addResourceAccount(List<Long> idList, List<ResourceVo> resourceVoList) {
         Map<Long, List<AccountVo>> resourceAccountVoMap = new HashMap<>();
         List<ResourceAccountVo> resourceAccountVoList = resourceCenterMapper.getResourceAccountListByResourceIdList(idList);
         if (CollectionUtils.isNotEmpty(resourceAccountVoList)) {
@@ -106,6 +106,16 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 resourceAccountVoMap.computeIfAbsent(resourceAccountVo.getResourceId(), k -> new ArrayList<>()).add(accountMap.get(resourceAccountVo.getAccountId()));
             }
         }
+        for (ResourceVo resourceVo : resourceVoList) {
+            List<AccountVo> accountVoList = resourceAccountVoMap.get(resourceVo.getId());
+            if (CollectionUtils.isNotEmpty(accountVoList)) {
+                resourceVo.setAccountList(accountVoList);
+            }
+        }
+    }
+
+    @Override
+    public void addResourceTag(List<Long> idList, List<ResourceVo> resourceVoList) {
         Map<Long, List<TagVo>> resourceTagVoMap = new HashMap<>();
         List<ResourceTagVo> resourceTagVoList = resourceCenterMapper.getResourceTagListByResourceIdList(idList);
         if (CollectionUtils.isNotEmpty(resourceTagVoList)) {
@@ -121,10 +131,6 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             List<TagVo> tagVoList = resourceTagVoMap.get(resourceVo.getId());
             if (CollectionUtils.isNotEmpty(tagVoList)) {
                 resourceVo.setTagList(tagVoList.stream().map(TagVo::getName).collect(Collectors.toList()));
-            }
-            List<AccountVo> accountVoList = resourceAccountVoMap.get(resourceVo.getId());
-            if (CollectionUtils.isNotEmpty(accountVoList)) {
-                resourceVo.setAccountList(accountVoList);
             }
         }
     }

@@ -112,7 +112,8 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
                 if (CollectionUtils.isNotEmpty(idList)) {
                     resourceVoList = resourceCenterMapper.getResourceListByIdList(idList, TenantContext.get().getDataDbName());
                     if (CollectionUtils.isNotEmpty(resourceVoList)) {
-                        resourceCenterResourceService.getResourceAccountAndTag(idList, resourceVoList);
+                        resourceCenterResourceService.addResourceAccount(idList, resourceVoList);
+                        resourceCenterResourceService.addResourceTag(idList, resourceVoList);
                         Map<Long, ResourceScriptVo> resourceScriptVoMap = new HashMap<>();
                         List<ResourceScriptVo> resourceScriptVoList = resourceCenterMapper.getResourceScriptListByResourceIdList(idList);
                         if (CollectionUtils.isNotEmpty(resourceScriptVoList)) {
