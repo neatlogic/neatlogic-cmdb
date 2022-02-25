@@ -8,6 +8,7 @@ package codedriver.module.cmdb.dao.mapper.cientity;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.AttrEntityVo;
+import codedriver.framework.cmdb.dto.cientity.CiEntityInspectVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.fulltextindex.dto.fulltextindex.FullTextIndexTypeVo;
 import org.apache.ibatis.annotations.Param;
@@ -192,6 +193,8 @@ public interface CiEntityMapper {
     void insertCiEntityBaseInfo(CiEntityVo ciEntityVo);
 
     void insertAttrEntity(AttrEntityVo attrEntityVo);
+
+    void insertCiEntityInspect(CiEntityInspectVo ciEntityInspectVo);
 
     void deleteCiEntityBaseInfo(CiEntityVo ciEntityVo);
 
