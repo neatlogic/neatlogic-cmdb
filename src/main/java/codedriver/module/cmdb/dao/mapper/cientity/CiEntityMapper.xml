@@ -1059,8 +1059,8 @@
                 #{ciEntityId},
                 #{inspectStatus},
                 #{inspectTime}) ON DUPLICATE KEY
-        UPDATE `job_id` = #{jobId},
-            `ci_entity_id` = #{ciEntityId}
+        UPDATE `inspect_status` = #{inspectStatus},
+            `inspect_time` = #{inspectTime}
     </insert>
 
     <delete id="deleteAttrEntityByFromCiEntityIdAndAttrId">
