@@ -56,7 +56,7 @@ public class UpdateCiEntityInspectStatusApi extends PublicApiComponentBase {
         ciEntityVo.setId(paramObj.getLong("ciEntityId"));
         ciEntityVo.setInspectTime(new Date(paramObj.getLong("inspectTime")));
         ciEntityVo.setInspectStatus(paramObj.getString("inspectStatus"));
-//        ciEntityMapper.updateCiEntityInspectStatus(ciEntityVo);
+        ciEntityMapper.updateCiEntityInspectStatus(ciEntityVo);
         CiEntityInspectVo ciEntityInspectVo = new CiEntityInspectVo(paramObj.getLong("jobId"),paramObj.getLong("ciEntityId"),new Date(paramObj.getLong("inspectTime")),paramObj.getString("inspectStatus"));
         ciEntityMapper.insertCiEntityInspect(ciEntityInspectVo);
         return null;
