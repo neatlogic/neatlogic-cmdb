@@ -23,12 +23,21 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
     ResourceSearchVo assembleResourceSearchVo(JSONObject jsonObj);
 
     /**
-     * 补充资产的账号信息和标签信息
+     * 补充资产的账号信息
      *
      * @param idList
      * @param resourceVoList
      */
-    void getResourceAccountAndTag(List<Long> idList, List<ResourceVo> resourceVoList);
+    void addResourceAccount(List<Long> idList, List<ResourceVo> resourceVoList);
+
+    /**
+     * 补充资产的标签信息
+     *
+     *
+     * @param idList
+     * @param resourceVoList
+     */
+    void addResourceTag(List<Long> idList, List<ResourceVo> resourceVoList);
 
 
     /**

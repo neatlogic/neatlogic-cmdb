@@ -1048,6 +1048,21 @@
                 #{isLocked})
     </insert>
 
+    <insert id="insertCiEntityInspect" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityInspectVo">
+        INSERT INTO `cmdb_cientity_inspect` (`id`,
+                                             `job_id`,
+                                             `ci_entity_id`,
+                                             `inspect_status`,
+                                             `inspect_time`)
+        VALUES (#{id},
+                #{jobId},
+                #{ciEntityId},
+                #{inspectStatus},
+                #{inspectTime}) ON DUPLICATE KEY
+        UPDATE `inspect_status` = #{inspectStatus},
+            `inspect_time` = #{inspectTime}
+    </insert>
+
     <delete id="deleteAttrEntityByFromCiEntityIdAndAttrId">
         DELETE
         FROM cmdb_attrentity
