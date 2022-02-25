@@ -43,7 +43,9 @@ public class UpdateCiEntityInspectStatusApi extends PublicApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciEntityId", type = ApiParamType.LONG, isRequired = true, desc = "配置项id"),
+    @Input({
+            @Param(name = "jobId", type = ApiParamType.LONG, isRequired = true, desc = "作业id"),
+            @Param(name = "ciEntityId", type = ApiParamType.LONG, isRequired = true, desc = "配置项id"),
             @Param(name = "inspectStatus", type = ApiParamType.ENUM, rule = "normal,warn,critical,fatal", isRequired = true, desc = "巡检状态"),
             @Param(name = "inspectTime", type = ApiParamType.LONG, isRequired = true, desc = "巡检时间，格式：距1970年1月1日0时0分0秒的豪秒数")})
     @Output({})
@@ -54,11 +56,8 @@ public class UpdateCiEntityInspectStatusApi extends PublicApiComponentBase {
         ciEntityVo.setId(paramObj.getLong("ciEntityId"));
         ciEntityVo.setInspectTime(new Date(paramObj.getLong("inspectTime")));
         ciEntityVo.setInspectStatus(paramObj.getString("inspectStatus"));
-        ciEntityMapper.updateCiEntityInspectStatus(ciEntityVo);
-        CiEntityInspectVo ciEntityInspectVo = new CiEntityInspectVo();
-        ciEntityInspectVo.setCiEntityId(paramObj.getLong("ciEntityId"));
-        ciEntityInspectVo.setInspectTime(new Date(paramObj.getLong("inspectTime")));
-        ciEntityInspectVo.setInspectStatus(paramObj.getString("inspectStatus"));
+//        ciEntityMapper.updateCiEntityInspectStatus(ciEntityVo);
+        CiEntityInspectVo ciEntityInspectVo = new CiEntityInspectVo(paramObj.getLong("jobId"),paramObj.getLong("ciEntityId"),new Date(paramObj.getLong("inspectTime")),paramObj.getString("inspectStatus"));
         ciEntityMapper.insertCiEntityInspect(ciEntityInspectVo);
         return null;
     }
