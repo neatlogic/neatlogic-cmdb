@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -23,7 +23,7 @@ import java.util.*;
 
 public class CiEntityBuilder {
     private final CiEntityVo paramCiEntityVo;
-    private final List<Map<String, Object>> resultList;
+    private final List<HashMap<String, Object>> resultList;
     private Map<Long, AttrVo> attrMap;
     private Map<Long, RelVo> relMap;
     private final CiVo ciVo;
@@ -114,27 +114,24 @@ public class CiEntityBuilder {
                 for (String key : result.keySet()) {
                     if (key.startsWith("attr_")) {
                         Long attrId = Long.parseLong(key.substring(5));
-
                         Object value = result.get(key);
                         //处理属性
-                        if (key.startsWith("attr_")) {
-                            AttrVo attrVo = attrMap.get(attrId);
-                            if (!ciEntityVo.hasAttrEntityData(attrId)) {
-                                if (attrVo != null) {
-                                    ciEntityVo.addAttrEntityData(attrId, buildAttrObj(ciEntityVo.getId(), attrVo, value));
-                                }
-                            } else {
-                                JSONArray valueList = new JSONArray();
-                                //例如附件型参数有可能是个数组，所以先尝试做转换，不行再当字符串处理
-                                try {
-                                    valueList = JSONArray.parseArray(value.toString());
-                                } catch (Exception ignored) {
-                                    valueList.add(value);
-                                }
-                                //JSONArray actualValueList = AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValueList(attrVo, valueList);
-                                //ciEntityVo.addAttrEntityDataValue(attrId, valueList, actualValueList);
-                                ciEntityVo.addAttrEntityDataValue(attrId, valueList);
+                        AttrVo attrVo = attrMap.get(attrId);
+                        if (!ciEntityVo.hasAttrEntityData(attrId)) {
+                            if (attrVo != null) {
+                                ciEntityVo.addAttrEntityData(attrId, buildAttrObj(ciEntityVo.getId(), attrVo, value));
                             }
+                        } else {
+                            JSONArray valueList = new JSONArray();
+                            //例如附件型参数有可能是个数组，所以先尝试做转换，不行再当字符串处理
+                            try {
+                                valueList = JSONArray.parseArray(value.toString());
+                            } catch (Exception ignored) {
+                                valueList.add(value);
+                            }
+                            //JSONArray actualValueList = AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValueList(attrVo, valueList);
+                            //ciEntityVo.addAttrEntityDataValue(attrId, valueList, actualValueList);
+                            ciEntityVo.addAttrEntityDataValue(attrId, valueList);
                         }
                     } else if (key.startsWith("rel")) {//字段名范例：relfrom_12313131323或relto_131231231313
                         if (!key.contains("#")) {
@@ -313,13 +310,13 @@ public class CiEntityBuilder {
 
     public static class Builder {
         private final CiEntityVo ciEntityVo;
-        private final List<Map<String, Object>> resultList;
+        private final List<HashMap<String, Object>> resultList;
         private final List<AttrVo> attrList;
         private final List<RelVo> relList;
         private final CiVo ciVo;
         private boolean flattenAttr = false;
 
-        public Builder(CiEntityVo _ciEntityVo, List<Map<String, Object>> _resultList, CiVo _ciVo, List<AttrVo> _attrList, List<RelVo> _relList) {
+        public Builder(CiEntityVo _ciEntityVo, List<HashMap<String, Object>> _resultList, CiVo _ciVo, List<AttrVo> _attrList, List<RelVo> _relList) {
             ciEntityVo = _ciEntityVo;
             resultList = _resultList;
             attrList = _attrList;

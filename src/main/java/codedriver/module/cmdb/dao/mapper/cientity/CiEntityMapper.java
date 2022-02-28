@@ -13,8 +13,8 @@ import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.fulltextindex.dto.fulltextindex.FullTextIndexTypeVo;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public interface CiEntityMapper {
     /**
@@ -88,7 +88,7 @@ public interface CiEntityMapper {
     /**
      * 根据配置项名称获取虚拟模型配置项
      *
-     * @param ciEntityVo
+     * @param ciEntityVo 条件
      * @return 配置项列表
      */
     List<CiEntityVo> getVirtualCiEntityBaseInfoByName(CiEntityVo ciEntityVo);
@@ -156,7 +156,7 @@ public interface CiEntityMapper {
      */
     List<AttrVo> getAttrListByToCiEntityId(Long toCiEntityId);
 
-    List<Map<String, Object>> searchCiEntity(CiEntityVo ciEntityVo);
+    List<HashMap<String, Object>> searchCiEntity(CiEntityVo ciEntityVo);
 
     List<Long> searchCiEntityId(CiEntityVo ciEntityVo);
 
@@ -166,7 +166,7 @@ public interface CiEntityMapper {
      * @param ciEntityVo 配置项对象
      * @return 数据集
      */
-    List<Map<String, Object>> getCiEntityByIdLite(CiEntityVo ciEntityVo);
+    List<HashMap<String, Object>> getCiEntityByIdLite(CiEntityVo ciEntityVo);
 
     /**
      * 查询单个配置项正常版，会join所有关系表和引用属性表，返回的数据量可能会很大
@@ -174,7 +174,7 @@ public interface CiEntityMapper {
      * @param ciEntityVo 配置项对象
      * @return 数据集
      */
-    List<Map<String, Object>> getCiEntityById(CiEntityVo ciEntityVo);
+    List<HashMap<String, Object>> getCiEntityById(CiEntityVo ciEntityVo);
 
     List<Long> getCiEntityIdByCiId(CiEntityVo ciEntityVo);
 

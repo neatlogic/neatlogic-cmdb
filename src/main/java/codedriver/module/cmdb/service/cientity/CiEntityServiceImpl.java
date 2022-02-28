@@ -137,7 +137,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         ciEntityVo.setLimitRelEntity(limitRelEntity);
         ciEntityVo.setLimitAttrEntity(limitAttrEntity);
 
-        List<Map<String, Object>> resultList = ciEntityMapper.getCiEntityByIdLite(ciEntityVo);
+        List<HashMap<String, Object>> resultList = ciEntityMapper.getCiEntityByIdLite(ciEntityVo);
         CiEntityVo returnCiEntityVo = new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, attrList, relList).isFlattenAttr(flattenAttr).build().getCiEntity();
         if (returnCiEntityVo != null) {
             //拼接引用属性数据
@@ -220,7 +220,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         ciEntityVo.setRelList(relList);
         ciEntityVo.setLimitRelEntity(limitRelEntity);
         ciEntityVo.setLimitAttrEntity(limitAttrEntity);
-        List<Map<String, Object>> resultList = ciEntityMapper.getCiEntityById(ciEntityVo);
+        List<HashMap<String, Object>> resultList = ciEntityMapper.getCiEntityById(ciEntityVo);
         return new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, attrList, relList).isFlattenAttr(flattenAttr).build().getCiEntity();
     }
 
@@ -269,7 +269,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 ciEntityVo.setAttrList(attrList);
                 ciEntityVo.setRelList(relList);
                 if (CollectionUtils.isNotEmpty(ciEntityVo.getIdList())) {
-                    List<Map<String, Object>> resultList = ciEntityMapper.searchCiEntity(ciEntityVo);
+                    List<HashMap<String, Object>> resultList = ciEntityMapper.searchCiEntity(ciEntityVo);
                     ciEntityList.addAll(new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, attrList, relList).build().getCiEntityList());
                 }
             }
@@ -357,7 +357,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         if (CollectionUtils.isNotEmpty(ciEntityVo.getIdList())) {
             ciEntityVo.setLimitRelEntity(isLimitRelEntity != null ? isLimitRelEntity : true);
             ciEntityVo.setLimitAttrEntity(isLimitAttrEntity != null ? isLimitAttrEntity : true);
-            List<Map<String, Object>> resultList = ciEntityMapper.searchCiEntity(ciEntityVo);
+            List<HashMap<String, Object>> resultList = ciEntityMapper.searchCiEntity(ciEntityVo);
             ciEntityVo.setIdList(null);//清除id列表，避免ciEntityVo重用时数据没法更新
             return new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, attrList, relList).build().getCiEntityList();
         }

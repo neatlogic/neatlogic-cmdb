@@ -27,8 +27,8 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -116,7 +116,7 @@ public class GetCiEntityAttrEntityApi extends PublicApiComponentBase {
         ciEntityVo.setCiName(ciVo.getName());
         ciEntityVo.setAttrList(attrList);
 
-        List<Map<String, Object>> resultList = ciEntityMapper.getCiEntityByIdLite(ciEntityVo);
+        List<HashMap<String, Object>> resultList = ciEntityMapper.getCiEntityByIdLite(ciEntityVo);
         CiEntityVo returnCiEntityVo = new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, attrList, null).build().getCiEntity();
         if (returnCiEntityVo != null) {
             //拼接引用属性数据
