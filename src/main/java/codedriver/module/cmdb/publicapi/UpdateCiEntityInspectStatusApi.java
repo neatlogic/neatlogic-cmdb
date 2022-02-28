@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -47,7 +47,7 @@ public class UpdateCiEntityInspectStatusApi extends PublicApiComponentBase {
             @Param(name = "jobId", type = ApiParamType.LONG, isRequired = true, desc = "作业id"),
             @Param(name = "ciEntityId", type = ApiParamType.LONG, isRequired = true, desc = "配置项id"),
             @Param(name = "inspectStatus", type = ApiParamType.ENUM, rule = "normal,warn,critical,fatal", isRequired = true, desc = "巡检状态"),
-            @Param(name = "inspectTime", type = ApiParamType.LONG, isRequired = true, desc = "巡检时间，格式：距1970年1月1日0时0分0秒的豪秒数")})
+            @Param(name = "inspectTime", type = ApiParamType.LONG, isRequired = true, desc = "巡检时间，格式：距1970年1月1日0时0分0秒的毫秒数")})
     @Output({})
     @Description(desc = "修改配置项巡检状态接口，自动化巡检时使用此接口更新巡检状态")
     @Override
@@ -56,6 +56,7 @@ public class UpdateCiEntityInspectStatusApi extends PublicApiComponentBase {
         ciEntityVo.setId(paramObj.getLong("ciEntityId"));
         ciEntityVo.setInspectTime(new Date(paramObj.getLong("inspectTime")));
         ciEntityVo.setInspectStatus(paramObj.getString("inspectStatus"));
+
         ciEntityMapper.updateCiEntityInspectStatus(ciEntityVo);
         CiEntityInspectVo ciEntityInspectVo = new CiEntityInspectVo(paramObj);
         ciEntityMapper.insertCiEntityInspect(ciEntityInspectVo);
