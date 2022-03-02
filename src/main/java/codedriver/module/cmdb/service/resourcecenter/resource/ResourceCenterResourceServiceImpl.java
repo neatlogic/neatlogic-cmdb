@@ -160,7 +160,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 //            throw new AppModuleNotFoundException(appModuleId);
 //        }
         //20220302跟产品确认应用清单的模块中不需要出现“网络设备”和“存储设备StorageDevice”
-        List<String> resourceTypeNameList = Arrays.asList("OS", "StorageDevice", "NetworkDevice", "APPIns", "APPInsCluster", "DBIns", "DBCluster", "AccessEndPoint", "Database");
+//        List<String> resourceTypeNameList = Arrays.asList("OS", "StorageDevice", "NetworkDevice", "APPIns", "APPInsCluster", "DBIns", "DBCluster", "AccessEndPoint", "Database");
         Map<String, String> typeNameActionMap = new HashMap<>();
         typeNameActionMap.put("OS", "OS");
         typeNameActionMap.put("APPIns", "APPIns");
@@ -174,7 +174,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         List<CiVo> ciVoList = ciMapper.getAllCi(null);
         for (CiVo ciVo : ciVoList) {
             ciVoMap.put(ciVo.getId(), ciVo);
-            if (resourceTypeNameList.contains(ciVo.getName())) {
+            if (typeNameActionMap.containsKey(ciVo.getName())) {
                 resourceCiVoList.add(ciVo);
             }
         }
