@@ -210,8 +210,12 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 if (StringUtils.isBlank(resourceTypeName)) {
                     continue;
                 }
+                String actionKey = typeNameActionMap.get(resourceTypeName);
+                if (StringUtils.isBlank(actionKey)) {
+                    continue;
+                }
                 searchVo.setTypeId(resourceTypeId);
-                JSONObject tableObj = TableResultUtil.getResult(searchMap.get(resourceTypeName).execute(searchVo), searchVo);
+                JSONObject tableObj = TableResultUtil.getResult(searchMap.get(actionKey).execute(searchVo), searchVo);
                 tableObj.put("type", resourceTypeVo);
                 tableList.add(tableObj);
             }
