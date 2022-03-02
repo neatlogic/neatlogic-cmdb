@@ -169,19 +169,20 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         typeNameActionMap.put("DBCluster", "ipObject");
         typeNameActionMap.put("AccessEndPoint", "ipObject");
         typeNameActionMap.put("Database", "ipObject");
-        List<CiVo> resourceCiVoList = new ArrayList<>();
-        Map<Long, CiVo> ciVoMap = new HashMap<>();
-        List<CiVo> ciVoList = ciMapper.getAllCi(null);
-        for (CiVo ciVo : ciVoList) {
-            ciVoMap.put(ciVo.getId(), ciVo);
-            if (typeNameActionMap.containsKey(ciVo.getName())) {
-                resourceCiVoList.add(ciVo);
-            }
-        }
+//        List<CiVo> resourceCiVoList = new ArrayList<>();
+//        Map<Long, CiVo> ciVoMap = new HashMap<>();
+//        List<CiVo> ciVoList = ciMapper.getAllCi(null);
+//        for (CiVo ciVo : ciVoList) {
+//            ciVoMap.put(ciVo.getId(), ciVo);
+//            if (typeNameActionMap.containsKey(ciVo.getName())) {
+//                resourceCiVoList.add(ciVo);
+//            }
+//        }
+        List<CiVo> resourceCiVoList = ciMapper.getCiListByNameList(new ArrayList<>(typeNameActionMap.keySet()));
         List<Long> resourceTypeIdList = new ArrayList<>();
         Long typeId = searchVo.getTypeId();
         if (typeId != null) {
-            CiVo ciVo = ciVoMap.get(typeId);
+            CiVo ciVo = ciMapper.getCiById(typeId);
             if (ciVo == null) {
                 throw new CiNotFoundException(typeId);
             }
@@ -192,19 +193,16 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             if (CollectionUtils.isNotEmpty(resourceTypeIdSet)) {
                 resourceTypeIdSet = resourceCenterMapper.getOsResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
                 resourceTypeIdList.addAll(resourceTypeIdSet);
-                if (CollectionUtils.isNotEmpty(resourceTypeIdSet)) {
-                    resourceTypeIdSet = resourceCenterMapper.getNetWorkDeviceResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
-                    resourceTypeIdList.addAll(resourceTypeIdSet);
-                }
+//                if (CollectionUtils.isNotEmpty(resourceTypeIdSet)) {
+//                    resourceTypeIdSet = resourceCenterMapper.getNetWorkDeviceResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
+//                    resourceTypeIdList.addAll(resourceTypeIdSet);
+//                }
             }
         }
 
         if (CollectionUtils.isNotEmpty(resourceTypeIdList)) {
-            for (Long resourceTypeId : resourceTypeIdList) {
-                CiVo ciVo = ciVoMap.get(resourceTypeId);
-                if (ciVo == null) {
-                    throw new CiNotFoundException(resourceTypeId);
-                }
+            List<CiVo> ciList = ciMapper.getAllCi(resourceTypeIdList);
+            for (CiVo ciVo : ciList) {
                 ResourceTypeVo resourceTypeVo = new ResourceTypeVo(ciVo.getId(), ciVo.getParentCiId(), ciVo.getLabel(), ciVo.getName());
                 String resourceTypeName = getResourceTypeName(resourceCiVoList, ciVo);
                 if (StringUtils.isBlank(resourceTypeName)) {
@@ -214,7 +212,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 if (StringUtils.isBlank(actionKey)) {
                     continue;
                 }
-                searchVo.setTypeId(resourceTypeId);
+                searchVo.setTypeId(ciVo.getId());
                 JSONObject tableObj = TableResultUtil.getResult(searchMap.get(actionKey).execute(searchVo), searchVo);
                 tableObj.put("type", resourceTypeVo);
                 tableList.add(tableObj);
