@@ -141,14 +141,10 @@
         a.`lft` AS lft,
         a.`rht` AS rht
         FROM `cmdb_ci` a
-        <where>
-            <if test="list != null and list.size() > 0">
-                a.`name` IN
-                <foreach collection="list" open="(" close=")" separator="," item="item">
-                    #{item}
-                </foreach>
-            </if>
-        </where>
+        WHERE a.`name` IN
+        <foreach collection="list" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
         ORDER BY `name`
     </select>
 

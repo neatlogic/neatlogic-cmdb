@@ -150,7 +150,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
     @Override
     public JSONArray getAppModuleResourceList(ResourceSearchVo searchVo) {
         JSONArray tableList = new JSONArray();
-        String schemaName = TenantContext.get().getDataDbName();
+//        String schemaName = TenantContext.get().getDataDbName();
         Long appModuleId = searchVo.getAppModuleId();
         CiEntityVo ciEntityVo = ciEntityMapper.getCiEntityBaseInfoById(appModuleId);
         if (ciEntityVo == null) {
