@@ -90,12 +90,11 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
             typeNameActionMap.put("AccessEndPoint", "ipObject");
             typeNameActionMap.put("Database", "ipObject");
             List<CiVo> resourceCiVoList = ciMapper.getCiListByNameList(new ArrayList<>(typeNameActionMap.keySet()));
-
             //获取环境模型list
             ciEntityVo.setCiId(moduleCiVo.getId());
             List<Long> idList = ciEntityMapper.getCiEntityIdByCiId(ciEntityVo);
             List<CiEntityVo> ciEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(idList);
-            //获取所有的ci，用于通过id去获得对应的模型
+            //获取所有的模型，用于通过id去获得对应的模型
             Map<Long, CiVo> allCiVoMap = new HashMap<>();
             List<CiVo> ciVoList = ciMapper.getAllCi(null);
             for (CiVo ci : ciVoList) {
@@ -117,7 +116,6 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
                     resourceTypeIdSet = resourceCenterMapper.getOsResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
                     resourceTypeIdList.addAll(resourceTypeIdSet);
                 }
-
                 if (CollectionUtils.isNotEmpty(resourceTypeIdList)) {
                     for (Long resourceTypeId : resourceTypeIdList) {
                         CiVo ciVo = allCiVoMap.get(resourceTypeId);
