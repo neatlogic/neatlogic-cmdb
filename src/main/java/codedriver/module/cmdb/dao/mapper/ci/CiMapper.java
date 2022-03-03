@@ -45,6 +45,8 @@ public interface CiMapper extends ICiCrossoverMapper {
 
     List<CiVo> getAllCi(@Param("idList") List<Long> idList);
 
+    List<CiVo> getCiListByNameList(List<String> nameList);
+
     List<CiVo> getCiByTargetCiId(Long ciId);
 
     List<CiVo> getCiByFromCiId(Long ciId);
