@@ -118,6 +118,7 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
                         if (ciVo == null) {
                             throw new CiNotFoundException(resourceTypeId);
                         }
+                        //在固定的模型list里面 寻找当前模型对应的父级模型
                         String resourceTypeName = resourceCenterResourceService.getResourceTypeName(resourceCiVoList, ciVo);
                         if (resourceTypeNameList.contains(resourceTypeName)) {
                             ciList.add(ciVo);
