@@ -83,12 +83,12 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
             //获取应用环境实例list
             CiEntityVo envCiEntityVo = new CiEntityVo();
             envCiEntityVo.setCiId(envCiVo.getId());
-            List<Long> idList = ciEntityMapper.getCiEntityIdByCiId(envCiEntityVo);
-            List<CiEntityVo> envCiEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(idList);
+            List<Long> envIdList = ciEntityMapper.getCiEntityIdByCiId(envCiEntityVo);
+            List<CiEntityVo> envCiEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(envIdList);
             //获取数据库所有的模型，用于通过id去获得对应的模型
             Map<Long, CiVo> allCiVoMap = new HashMap<>();
-            List<CiVo> ciVoList = ciMapper.getAllCi(null);
-            for (CiVo ci : ciVoList) {
+            List<CiVo> allCiVoList = ciMapper.getAllCi(null);
+            for (CiVo ci : allCiVoList) {
                 allCiVoMap.put(ci.getId(), ci);
                 if (resourceTypeNameList.contains(ci.getName())) {
                     resourceCiVoList.add(ci);
