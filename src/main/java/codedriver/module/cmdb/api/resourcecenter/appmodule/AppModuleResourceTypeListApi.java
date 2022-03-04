@@ -45,7 +45,7 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询当前模块的各环境资产类型列表";
+        return "查询当前模块的各环境的模型列表";
     }
 
     @Override
@@ -59,34 +59,34 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "ciName", type = ApiParamType.STRING, isRequired = true, desc = "模型名称"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "应用模块id（模型id）")
+            @Param(name = "ciName", type = ApiParamType.STRING, isRequired = true, desc = "应用环境名称（模型名称）"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "应用模块id（实例id）")
     })
     @Output({
-            @Param(desc = "当前模块的各环境资产类型列表")
+            @Param(desc = "当前模块的各环境的模型列表")
     })
-    @Description(desc = "当前模块的各环境资产类型列表")
+    @Description(desc = "当前模块的各环境的模型列表")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONArray returnArray = new JSONArray();
         CiEntityVo ciEntityVo = paramObj.toJavaObject(CiEntityVo.class);
         String ciName = paramObj.getString("ciName");
-        //获取当前模块信息
-        CiVo moduleCiVo = ciMapper.getCiByName(ciName);
-        if (moduleCiVo == null) {
+        //获取应用环境模型
+        CiVo CiVo = ciMapper.getCiByName(ciName);
+        if (CiVo == null) {
             throw new CiNotFoundException(ciName);
         }
-        //获取模块的环境个数
-        int rowNum = ciEntityMapper.getCiEntityIdCountByCiId(moduleCiVo.getId());
+        //获取应用环境实例个数
+        int rowNum = ciEntityMapper.getCiEntityIdCountByCiId(CiVo.getId());
         if (rowNum > 0) {
-            //定义需要采集的类型
+            //定义需要采集的模型
             List<String> resourceTypeNameList = Arrays.asList("OS", "APPIns", "APPInsCluster", "DBIns", "DBCluster", "AccessEndPoint", "Database");
             List<CiVo> resourceCiVoList = new ArrayList<>();
-            //获取环境模型list
-            ciEntityVo.setCiId(moduleCiVo.getId());
+            //获取环境实例list
+            ciEntityVo.setCiId(CiVo.getId());
             List<Long> idList = ciEntityMapper.getCiEntityIdByCiId(ciEntityVo);
             List<CiEntityVo> ciEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(idList);
-            //获取所有的模型，用于通过id去获得对应的模型
+            //获取数据库所有的模型，用于通过id去获得对应的模型
             Map<Long, CiVo> allCiVoMap = new HashMap<>();
             List<CiVo> ciVoList = ciMapper.getAllCi(null);
             for (CiVo ci : ciVoList) {
@@ -102,7 +102,7 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
                 JSONObject returnObj = new JSONObject();
                 returnObj.put("env", ciEntity);
                 searchVo.setEnvId(ciEntity.getId());
-                //获取当前的环境的模型类型idList
+                //获取当前环境的模型idList
                 List<Long> resourceTypeIdList = new ArrayList<>();
                 Set<Long> resourceTypeIdSet = resourceCenterMapper.getIpObjectResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
                 resourceTypeIdList.addAll(resourceTypeIdSet);
