@@ -84,7 +84,7 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
             CiEntityVo envCiEntityVo = new CiEntityVo();
             envCiEntityVo.setCiId(envCiVo.getId());
             List<Long> idList = ciEntityMapper.getCiEntityIdByCiId(envCiEntityVo);
-            List<CiEntityVo> ciEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(idList);
+            List<CiEntityVo> envCiEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(idList);
             //获取数据库所有的模型，用于通过id去获得对应的模型
             Map<Long, CiVo> allCiVoMap = new HashMap<>();
             List<CiVo> ciVoList = ciMapper.getAllCi(null);
@@ -97,7 +97,7 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
 
             ResourceSearchVo searchVo = new ResourceSearchVo();
             searchVo.setAppModuleId(appModuleId);
-            for (CiEntityVo ciEntity : ciEntityList) {
+            for (CiEntityVo ciEntity : envCiEntityList) {
                 JSONObject returnObj = new JSONObject();
                 returnObj.put("env", ciEntity);
                 searchVo.setEnvId(ciEntity.getId());
