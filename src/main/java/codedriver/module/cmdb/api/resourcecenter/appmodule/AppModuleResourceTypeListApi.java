@@ -70,20 +70,20 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
         JSONArray returnArray = new JSONArray();
         Long appModuleId = paramObj.getLong("appModuleId");
         //获取应用环境模型
-        CiVo CiVo = ciMapper.getCiByName("APPEnv");
-        if (CiVo == null) {
+        CiVo envCiVo = ciMapper.getCiByName("APPEnv");
+        if (envCiVo == null) {
             throw new CiNotFoundException("APPEnv");
         }
         //获取应用环境实例个数
-        int rowNum = ciEntityMapper.getCiEntityIdCountByCiId(CiVo.getId());
+        int rowNum = ciEntityMapper.getCiEntityIdCountByCiId(envCiVo.getId());
         if (rowNum > 0) {
             //定义需要采集的模型
             List<String> resourceTypeNameList = Arrays.asList("OS", "APPIns", "APPInsCluster", "DBIns", "DBCluster", "AccessEndPoint", "Database");
             List<CiVo> resourceCiVoList = new ArrayList<>();
             //获取应用环境实例list
-            CiEntityVo ciEntityVo = new CiEntityVo();
-            ciEntityVo.setCiId(CiVo.getId());
-            List<Long> idList = ciEntityMapper.getCiEntityIdByCiId(ciEntityVo);
+            CiEntityVo envCiEntityVo = new CiEntityVo();
+            envCiEntityVo.setCiId(envCiVo.getId());
+            List<Long> idList = ciEntityMapper.getCiEntityIdByCiId(envCiEntityVo);
             List<CiEntityVo> ciEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(idList);
             //获取数据库所有的模型，用于通过id去获得对应的模型
             Map<Long, CiVo> allCiVoMap = new HashMap<>();
@@ -101,7 +101,7 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
                 JSONObject returnObj = new JSONObject();
                 returnObj.put("env", ciEntity);
                 searchVo.setEnvId(ciEntity.getId());
-                //获取当前环境的模型idList
+                //根据模块id和环境id，获取当前环境的并且含有资产的 模型idList
                 List<Long> resourceTypeIdList = new ArrayList<>();
                 Set<Long> resourceTypeIdSet = resourceCenterMapper.getIpObjectResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
                 resourceTypeIdList.addAll(resourceTypeIdSet);
@@ -110,6 +110,8 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
                     resourceTypeIdSet = resourceCenterMapper.getOsResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
                     resourceTypeIdList.addAll(resourceTypeIdSet);
                 }
+
+                //循环符合条件的模型idList，查找到符合以上定义的模型，并返回给前端
                 if (CollectionUtils.isNotEmpty(resourceTypeIdList)) {
                     for (Long resourceTypeId : resourceTypeIdList) {
                         CiVo ciVo = allCiVoMap.get(resourceTypeId);
