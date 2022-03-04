@@ -782,7 +782,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                         }
                         String uuid = filterObj.getString("uuid");
                         CiViewVo ciView = ciViewMap.get(uuid);
-                        if (ciView != null) {
+                        if (ciView == null) {
                             continue;
                         }
                         if (!conversionFilter(uuid, valueList, attrMap, relMap, ciView, attrFilterList, relFilterList, ciEntityVo)) {
