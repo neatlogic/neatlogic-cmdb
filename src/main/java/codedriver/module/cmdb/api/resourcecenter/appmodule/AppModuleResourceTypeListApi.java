@@ -97,10 +97,10 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
 
             ResourceSearchVo searchVo = new ResourceSearchVo();
             searchVo.setAppModuleId(appModuleId);
-            for (CiEntityVo nevCiEntity : envCiEntityList) {
+            for (CiEntityVo envCiEntity : envCiEntityList) {
                 JSONObject returnObj = new JSONObject();
-                returnObj.put("env", nevCiEntity);
-                searchVo.setEnvId(nevCiEntity.getId());
+                returnObj.put("env", envCiEntity);
+                searchVo.setEnvId(envCiEntity.getId());
                 //根据模块id和环境id，获取当前环境下含有资产的 模型idList（resourceTypeIdList）
                 List<Long> resourceTypeIdList = new ArrayList<>();
                 Set<Long> resourceTypeIdSet = resourceCenterMapper.getIpObjectResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
