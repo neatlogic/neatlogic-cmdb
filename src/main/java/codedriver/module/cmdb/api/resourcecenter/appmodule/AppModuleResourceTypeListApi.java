@@ -97,11 +97,11 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
 
             ResourceSearchVo searchVo = new ResourceSearchVo();
             searchVo.setAppModuleId(appModuleId);
-            for (CiEntityVo ciEntity : envCiEntityList) {
+            for (CiEntityVo nevCiEntity : envCiEntityList) {
                 JSONObject returnObj = new JSONObject();
-                returnObj.put("env", ciEntity);
-                searchVo.setEnvId(ciEntity.getId());
-                //根据模块id和环境id，获取当前环境的并且含有资产的 模型idList
+                returnObj.put("env", nevCiEntity);
+                searchVo.setEnvId(nevCiEntity.getId());
+                //根据模块id和环境id，获取当前环境下含有资产的 模型idList（resourceTypeIdList）
                 List<Long> resourceTypeIdList = new ArrayList<>();
                 Set<Long> resourceTypeIdSet = resourceCenterMapper.getIpObjectResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
                 resourceTypeIdList.addAll(resourceTypeIdSet);
@@ -111,14 +111,13 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
                     resourceTypeIdList.addAll(resourceTypeIdSet);
                 }
 
-                //循环符合条件的模型idList，查找到符合以上定义的模型，并返回给前端
+                //循环resourceTypeIdList，将其父级模型的name存在于resourceTypeNameList中的 模型 返回给前端
                 if (CollectionUtils.isNotEmpty(resourceTypeIdList)) {
                     for (Long resourceTypeId : resourceTypeIdList) {
                         CiVo ciVo = allCiVoMap.get(resourceTypeId);
                         if (ciVo == null) {
                             throw new CiNotFoundException(resourceTypeId);
                         }
-                        //在固定的模型list里面 寻找当前模型对应的父级模型
                         String resourceTypeName = resourceCenterResourceService.getResourceTypeName(resourceCiVoList, ciVo);
                         if (resourceTypeNameList.contains(resourceTypeName)) {
                             ciVoSet.add(ciVo);
