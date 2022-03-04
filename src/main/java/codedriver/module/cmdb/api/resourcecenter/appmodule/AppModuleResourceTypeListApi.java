@@ -75,8 +75,8 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
             throw new CiNotFoundException("APPEnv");
         }
         //获取应用环境实例个数
-        int rowNum = ciEntityMapper.getCiEntityIdCountByCiId(envCiVo.getId());
-        if (rowNum > 0) {
+        int envCount = ciEntityMapper.getCiEntityIdCountByCiId(envCiVo.getId());
+        if (envCount > 0) {
             //定义需要采集的模型
             List<String> resourceTypeNameList = Arrays.asList("OS", "APPIns", "APPInsCluster", "DBIns", "DBCluster", "AccessEndPoint", "Database");
             List<CiVo> resourceCiVoList = new ArrayList<>();
