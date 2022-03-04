@@ -105,7 +105,7 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
                 List<Long> resourceTypeIdList = new ArrayList<>();
                 Set<Long> resourceTypeIdSet = resourceCenterMapper.getIpObjectResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
                 resourceTypeIdList.addAll(resourceTypeIdSet);
-                List<CiVo> ciList = new ArrayList<>();
+                Set<CiVo> ciVoSet = new HashSet<>();
                 if (CollectionUtils.isNotEmpty(resourceTypeIdSet)) {
                     resourceTypeIdSet = resourceCenterMapper.getOsResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
                     resourceTypeIdList.addAll(resourceTypeIdSet);
@@ -121,12 +121,12 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
                         //在固定的模型list里面 寻找当前模型对应的父级模型
                         String resourceTypeName = resourceCenterResourceService.getResourceTypeName(resourceCiVoList, ciVo);
                         if (resourceTypeNameList.contains(resourceTypeName)) {
-                            ciList.add(ciVo);
+                            ciVoSet.add(ciVo);
                         }
                     }
                 }
-                if (CollectionUtils.isNotEmpty(ciList)) {
-                    returnObj.put("ciVoList", ciList);
+                if (CollectionUtils.isNotEmpty(ciVoSet)) {
+                    returnObj.put("ciVoList", new ArrayList<>(ciVoSet));
                 } else {
                     returnObj.put("ciVoList", new ArrayList<>());
                 }
