@@ -6,6 +6,7 @@
 package codedriver.module.cmdb.service.resourcecenter.resource;
 
 import codedriver.framework.cmdb.crossover.IResourceCenterResourceCrossoverService;
+import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import com.alibaba.fastjson.JSONArray;
@@ -33,7 +34,6 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
     /**
      * 补充资产的标签信息
      *
-     *
      * @param idList
      * @param resourceVoList
      */
@@ -48,4 +48,13 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
      * @return
      */
     JSONArray getAppModuleResourceList(ResourceSearchVo searchVo);
+
+    /**
+     * 获取对应的资产类型名称
+     *
+     * @param resourceCiVoList
+     * @param resourceCiVo
+     * @return
+     */
+    public String getResourceTypeName(List<CiVo> resourceCiVoList, CiVo resourceCiVo);
 }
