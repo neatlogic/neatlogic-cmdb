@@ -17,7 +17,6 @@ import codedriver.module.cmdb.service.resourcecenter.resource.IResourceCenterRes
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -69,8 +68,8 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
     @Description(desc = "当前模块的各环境资产类型列表")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        CiEntityVo ciEntityVo = paramObj.toJavaObject(CiEntityVo.class);
         JSONArray returnArray = new JSONArray();
+        CiEntityVo ciEntityVo = paramObj.toJavaObject(CiEntityVo.class);
         String ciName = paramObj.getString("ciName");
         //获取当前模块信息
         CiVo moduleCiVo = ciMapper.getCiByName(ciName);
@@ -81,15 +80,8 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
         int rowNum = ciEntityMapper.getCiEntityIdCountByCiId(moduleCiVo.getId());
         if (rowNum > 0) {
             //定义需要采集的类型
-            Map<String, String> typeNameActionMap = new HashMap<>();
-            typeNameActionMap.put("OS", "OS");
-            typeNameActionMap.put("APPIns", "APPIns");
-            typeNameActionMap.put("APPInsCluster", "ipObject");
-            typeNameActionMap.put("DBIns", "DBIns");
-            typeNameActionMap.put("DBCluster", "ipObject");
-            typeNameActionMap.put("AccessEndPoint", "ipObject");
-            typeNameActionMap.put("Database", "ipObject");
-            List<CiVo> resourceCiVoList = ciMapper.getCiListByNameList(new ArrayList<>(typeNameActionMap.keySet()));
+            List<String> resourceTypeNameList = Arrays.asList("OS", "APPIns", "APPInsCluster", "DBIns", "DBCluster", "AccessEndPoint", "Database");
+            List<CiVo> resourceCiVoList = new ArrayList<>();
             //获取环境模型list
             ciEntityVo.setCiId(moduleCiVo.getId());
             List<Long> idList = ciEntityMapper.getCiEntityIdByCiId(ciEntityVo);
@@ -99,6 +91,9 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
             List<CiVo> ciVoList = ciMapper.getAllCi(null);
             for (CiVo ci : ciVoList) {
                 allCiVoMap.put(ci.getId(), ci);
+                if (resourceTypeNameList.contains(ci.getName())) {
+                    resourceCiVoList.add(ci);
+                }
             }
 
             ResourceSearchVo searchVo = new ResourceSearchVo();
@@ -123,11 +118,7 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
                             throw new CiNotFoundException(resourceTypeId);
                         }
                         String resourceTypeName = resourceCenterResourceService.getResourceTypeName(resourceCiVoList, ciVo);
-                        String actionKey = typeNameActionMap.get(resourceTypeName);
-                        if (StringUtils.isBlank(actionKey)) {
-                            continue;
-                        }
-                        if (typeNameActionMap.containsKey(resourceTypeName)) {
+                        if (resourceTypeNameList.contains(resourceTypeName)) {
                             ciList.add(ciVo);
                         }
                     }
