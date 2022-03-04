@@ -68,7 +68,7 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONArray returnArray = new JSONArray();
-        CiEntityVo ciEntityVo = paramObj.toJavaObject(CiEntityVo.class);
+        Long appModuleId = paramObj.getLong("appModuleId");
         //获取应用环境模型
         CiVo CiVo = ciMapper.getCiByName("APPEnv");
         if (CiVo == null) {
@@ -81,6 +81,7 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
             List<String> resourceTypeNameList = Arrays.asList("OS", "APPIns", "APPInsCluster", "DBIns", "DBCluster", "AccessEndPoint", "Database");
             List<CiVo> resourceCiVoList = new ArrayList<>();
             //获取应用环境实例list
+            CiEntityVo ciEntityVo = new CiEntityVo();
             ciEntityVo.setCiId(CiVo.getId());
             List<Long> idList = ciEntityMapper.getCiEntityIdByCiId(ciEntityVo);
             List<CiEntityVo> ciEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(idList);
@@ -95,7 +96,7 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
             }
 
             ResourceSearchVo searchVo = new ResourceSearchVo();
-            searchVo.setAppModuleId(paramObj.getLong("appModuleId"));
+            searchVo.setAppModuleId(appModuleId);
             for (CiEntityVo ciEntity : ciEntityList) {
                 JSONObject returnObj = new JSONObject();
                 returnObj.put("env", ciEntity);
