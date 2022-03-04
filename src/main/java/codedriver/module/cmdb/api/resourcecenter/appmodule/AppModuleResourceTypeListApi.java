@@ -105,7 +105,7 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
                 List<Long> resourceTypeIdList = new ArrayList<>();
                 Set<Long> resourceTypeIdSet = resourceCenterMapper.getIpObjectResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
                 resourceTypeIdList.addAll(resourceTypeIdSet);
-                Set<CiVo> ciVoSet = new HashSet<>();
+                Set<CiVo> returnCiVoSet = new HashSet<>();
                 if (CollectionUtils.isNotEmpty(resourceTypeIdSet)) {
                     resourceTypeIdSet = resourceCenterMapper.getOsResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
                     resourceTypeIdList.addAll(resourceTypeIdSet);
@@ -120,12 +120,12 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
                         }
                         String resourceTypeName = resourceCenterResourceService.getResourceTypeName(resourceCiVoList, ciVo);
                         if (resourceTypeNameList.contains(resourceTypeName)) {
-                            ciVoSet.add(ciVo);
+                            returnCiVoSet.add(ciVo);
                         }
                     }
                 }
-                if (CollectionUtils.isNotEmpty(ciVoSet)) {
-                    returnObj.put("ciVoList", new ArrayList<>(ciVoSet));
+                if (CollectionUtils.isNotEmpty(returnCiVoSet)) {
+                    returnObj.put("ciVoList", new ArrayList<>(returnCiVoSet));
                 } else {
                     returnObj.put("ciVoList", new ArrayList<>());
                 }
