@@ -11,7 +11,7 @@ import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.resourcecenter.*;
 import codedriver.framework.cmdb.dto.tag.TagVo;
-import codedriver.framework.cmdb.enums.resourcecenter.ModuleResourceType;
+import codedriver.framework.cmdb.enums.resourcecenter.AppModuleResourceType;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.cmdb.exception.resourcecenter.AppModuleNotFoundException;
 import codedriver.framework.util.TableResultUtil;
@@ -179,7 +179,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 //                resourceCiVoList.add(ciVo);
 //            }
 //        }
-        List<CiVo> resourceCiVoList = ciMapper.getCiListByNameList(ModuleResourceType.getNameList());
+        List<CiVo> resourceCiVoList = ciMapper.getCiListByNameList(AppModuleResourceType.getNameList());
         List<Long> resourceTypeIdList = new ArrayList<>();
         Long typeId = searchVo.getTypeId();
         if (typeId != null) {
@@ -210,7 +210,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                     continue;
                 }
 //                String actionKey = typeNameActionMap.get(resourceTypeName);
-                String actionKey = ModuleResourceType.getAction(resourceTypeName);
+                String actionKey = AppModuleResourceType.getAction(resourceTypeName);
                 if (StringUtils.isBlank(actionKey)) {
                     continue;
                 }
