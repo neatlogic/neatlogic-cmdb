@@ -11,6 +11,7 @@ import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.resourcecenter.*;
 import codedriver.framework.cmdb.dto.tag.TagVo;
+import codedriver.framework.cmdb.enums.resourcecenter.AppModuleResourceType;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.cmdb.exception.resourcecenter.AppModuleNotFoundException;
 import codedriver.framework.util.TableResultUtil;
@@ -161,14 +162,14 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 //        }
         //20220302跟产品确认应用清单的模块中不需要出现“网络设备”和“存储设备StorageDevice”
 //        List<String> resourceTypeNameList = Arrays.asList("OS", "StorageDevice", "NetworkDevice", "APPIns", "APPInsCluster", "DBIns", "DBCluster", "AccessEndPoint", "Database");
-        Map<String, String> typeNameActionMap = new HashMap<>();
-        typeNameActionMap.put("OS", "OS");
-        typeNameActionMap.put("APPIns", "APPIns");
-        typeNameActionMap.put("APPInsCluster", "ipObject");
-        typeNameActionMap.put("DBIns", "DBIns");
-        typeNameActionMap.put("DBCluster", "ipObject");
-        typeNameActionMap.put("AccessEndPoint", "ipObject");
-        typeNameActionMap.put("Database", "ipObject");
+//        Map<String, String> typeNameActionMap = new HashMap<>();
+//        typeNameActionMap.put("OS", "OS");
+//        typeNameActionMap.put("APPIns", "APPIns");
+//        typeNameActionMap.put("APPInsCluster", "ipObject");
+//        typeNameActionMap.put("DBIns", "DBIns");
+//        typeNameActionMap.put("DBCluster", "ipObject");
+//        typeNameActionMap.put("AccessEndPoint", "ipObject");
+//        typeNameActionMap.put("Database", "ipObject");
 //        List<CiVo> resourceCiVoList = new ArrayList<>();
 //        Map<Long, CiVo> ciVoMap = new HashMap<>();
 //        List<CiVo> ciVoList = ciMapper.getAllCi(null);
@@ -178,7 +179,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 //                resourceCiVoList.add(ciVo);
 //            }
 //        }
-        List<CiVo> resourceCiVoList = ciMapper.getCiListByNameList(new ArrayList<>(typeNameActionMap.keySet()));
+        List<CiVo> resourceCiVoList = ciMapper.getCiListByNameList(AppModuleResourceType.getNameList());
         List<Long> resourceTypeIdList = new ArrayList<>();
         Long typeId = searchVo.getTypeId();
         if (typeId != null) {
@@ -208,7 +209,8 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 if (StringUtils.isBlank(resourceTypeName)) {
                     continue;
                 }
-                String actionKey = typeNameActionMap.get(resourceTypeName);
+//                String actionKey = typeNameActionMap.get(resourceTypeName);
+                String actionKey = AppModuleResourceType.getAction(resourceTypeName);
                 if (StringUtils.isBlank(actionKey)) {
                     continue;
                 }
