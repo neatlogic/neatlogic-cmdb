@@ -142,7 +142,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 
     /**
      * 获取对应模块的应用清单列表
-     * 其中清单列表有 系统 存储设备 网络设备 应用实例 应用实例集群 DB实例 DB实例集群 访问入口
+     * 其中清单列表有 系统 应用实例 应用实例集群 DB实例 DB实例集群 访问入口
      *
      * @param searchVo
      * @return
@@ -343,7 +343,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 
     }
 
-    private String getResourceTypeName(List<CiVo> resourceCiVoList, CiVo resourceCiVo) {
+    public String getResourceTypeName(List<CiVo> resourceCiVoList, CiVo resourceCiVo) {
         for (CiVo ciVo : resourceCiVoList) {
             if (ciVo.getLft() <= resourceCiVo.getLft() && ciVo.getRht() >= resourceCiVo.getRht()) {
                 return ciVo.getName();
