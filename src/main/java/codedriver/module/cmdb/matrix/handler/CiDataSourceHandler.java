@@ -26,6 +26,8 @@ import codedriver.framework.matrix.exception.MatrixAttributeNotFoundException;
 import codedriver.framework.matrix.exception.MatrixCiNotFoundException;
 import codedriver.framework.util.SnowflakeUtil;
 import codedriver.framework.util.TableResultUtil;
+import codedriver.framework.util.excel.ExcelBuilder;
+import codedriver.framework.util.excel.SheetBuilder;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiViewMapper;
@@ -42,7 +44,9 @@ import com.alibaba.fastjson.JSONPath;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -224,8 +228,58 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
     }
 
     @Override
-    protected HSSFWorkbook myExportMatrix(MatrixVo matrixVo) {
-        return null;
+    protected Workbook myExportMatrix(MatrixVo matrixVo) {
+        String matrixUuid = matrixVo.getUuid();
+        MatrixCiVo matrixCiVo = matrixMapper.getMatrixCiByMatrixUuid(matrixUuid);
+        if (matrixCiVo == null) {
+            throw new MatrixCiNotFoundException(matrixUuid);
+        }
+        List<MatrixAttributeVo> attributeVoList = myGetAttributeList(matrixVo);
+        JSONArray theadList = getTheadList(attributeVoList);
+        List<String> headList = new ArrayList<>();
+        List<String> columnList = new ArrayList<>();
+        for (int i = 0; i < theadList.size(); i++) {
+            JSONObject obj = theadList.getJSONObject(i);
+            String title = obj.getString("title");
+            String key = obj.getString("key");
+            if (StringUtils.isNotBlank(title) && StringUtils.isNotBlank(key)) {
+                headList.add(title);
+                columnList.add(key);
+            }
+        }
+        ExcelBuilder builder = new ExcelBuilder(SXSSFWorkbook.class);
+        SheetBuilder sheetBuilder = builder.withBorderColor(HSSFColor.HSSFColorPredefined.GREY_40_PERCENT)
+                .withHeadFontColor(HSSFColor.HSSFColorPredefined.WHITE)
+                .withHeadBgColor(HSSFColor.HSSFColorPredefined.DARK_BLUE)
+                .withColumnWidth(30)
+                .addSheet("数据")
+                .withHeaderList(headList)
+                .withColumnList(columnList);
+        Workbook workbook = builder.build();
+        CiEntityVo ciEntityVo = new CiEntityVo();
+        ciEntityVo.setCiId(matrixCiVo.getCiId());
+        ciEntityVo.setCurrentPage(1);
+        ciEntityVo.setPageSize(1000);
+        setAttrIdListAndRelIdListFromMatrixConfig(matrixCiVo, ciEntityVo);
+        List<Map<String, Object>> dataList = getExcelRowDataList(ciEntityVo);
+        Integer rowNum = ciEntityVo.getRowNum();
+        if (rowNum > 0) {
+            int currentPage = 1;
+            ciEntityVo.setPageSize(1000);
+            Integer pageCount = ciEntityVo.getPageCount();
+            while (currentPage <= pageCount) {
+                List<Map<String, Object>> array;
+                if (currentPage == 1) {
+                    array = dataList;
+                } else {
+                    ciEntityVo.setCurrentPage(currentPage);
+                    array = getExcelRowDataList(ciEntityVo);
+                }
+                sheetBuilder.addDataList(array);
+                currentPage++;
+            }
+        }
+        return workbook;
     }
 
     @Override
@@ -843,30 +897,40 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
 
     }
 
+    /**
+     * 从matrixCiVo中提取showAttributeUuidList为CiEntityVo的attrIdList与relIdList赋值
+     *
+     * @param matrixCiVo
+     * @param ciEntityVo
+     */
+    private void setAttrIdListAndRelIdListFromMatrixConfig(MatrixCiVo matrixCiVo, CiEntityVo ciEntityVo) {
+        List<Long> attrIdList = new ArrayList<>();
+        List<Long> relIdList = new ArrayList<>();
+        if (matrixCiVo == null) {
+            throw new MatrixCiNotFoundException(matrixCiVo.getMatrixUuid());
+        }
+        JSONObject config = matrixCiVo.getConfig();
+        JSONArray showAttributeUuidArray = config.getJSONArray("showAttributeUuidList");
+        if (CollectionUtils.isNotEmpty(showAttributeUuidArray)) {
+            List<String> showAttributeUuidList = showAttributeUuidArray.toJavaList(String.class);
+            for (String uuid : showAttributeUuidList) {
+                if (uuid.startsWith("attr_")) {
+                    attrIdList.add(Long.valueOf(uuid.substring(5)));
+                } else if (uuid.startsWith("relfrom_")) {
+                    relIdList.add(Long.valueOf(uuid.substring(8)));
+                } else if (uuid.startsWith("relto_")) {
+                    relIdList.add(Long.valueOf(uuid.substring(6)));
+                }
+            }
+            ciEntityVo.setAttrIdList(attrIdList);
+            ciEntityVo.setRelIdList(relIdList);
+        }
+    }
+
     private JSONArray accessSearchCiEntity(String matrixUuid, CiEntityVo ciEntityVo) {
         try {
-            List<Long> attrIdList = new ArrayList<>();
-            List<Long> relIdList = new ArrayList<>();
             MatrixCiVo matrixCiVo = matrixMapper.getMatrixCiByMatrixUuid(matrixUuid);
-            if (matrixCiVo == null) {
-                throw new MatrixCiNotFoundException(matrixUuid);
-            }
-            JSONObject config = matrixCiVo.getConfig();
-            JSONArray showAttributeUuidArray = config.getJSONArray("showAttributeUuidList");
-            if (CollectionUtils.isNotEmpty(showAttributeUuidArray)) {
-                List<String> showAttributeUuidList = showAttributeUuidArray.toJavaList(String.class);
-                for (String uuid : showAttributeUuidList) {
-                    if (uuid.startsWith("attr_")) {
-                        attrIdList.add(Long.valueOf(uuid.substring(5)));
-                    } else if (uuid.startsWith("relfrom_")) {
-                        relIdList.add(Long.valueOf(uuid.substring(8)));
-                    } else if (uuid.startsWith("relto_")) {
-                        relIdList.add(Long.valueOf(uuid.substring(6)));
-                    }
-                }
-                ciEntityVo.setAttrIdList(attrIdList);
-                ciEntityVo.setRelIdList(relIdList);
-            }
+            setAttrIdListAndRelIdListFromMatrixConfig(matrixCiVo, ciEntityVo);
             List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
             if (CollectionUtils.isNotEmpty(ciEntityList)) {
                 List<String> viewConstNameList = new ArrayList<>();
@@ -876,55 +940,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                 }
                 JSONArray tbodyList = new JSONArray();
                 for (CiEntityVo ciEntity : ciEntityList) {
-                    String ciEntityToJSONString = JSONObject.toJSONString(ciEntity);
-                    JSONObject tbody = new JSONObject();
-                    for (String viewConstName : viewConstNameList) {
-                        Object viewConstValue = JSONPath.read(ciEntityToJSONString, viewConstName.replace("_", ""));
-                        if (viewConstValue != null) {
-                            tbody.put("const" + viewConstName, viewConstValue);
-                        } else {
-                            tbody.put("const" + viewConstName, "");
-                        }
-                    }
-//                    tbody.put("id", ciEntity.getId());
-//                    tbody.put("ciLabel", ciEntity.getCiLabel());
-                    JSONObject attrEntityData = ciEntity.getAttrEntityData();
-                    if (MapUtils.isNotEmpty(attrEntityData)) {
-                        for (Map.Entry<String, Object> entry : attrEntityData.entrySet()) {
-                            JSONObject valueObj = (JSONObject) entry.getValue();
-//                            String name = valueObj.getString("name");
-                            String key = entry.getKey();
-                            if (StringUtils.isNotBlank(key)) {
-                                JSONArray actualValueArray = valueObj.getJSONArray("actualValueList");
-                                if (CollectionUtils.isNotEmpty(actualValueArray)) {
-                                    List<String> actualValueList = actualValueArray.toJavaList(String.class);
-                                    tbody.put(key, String.join(",", actualValueList));
-                                }
-                            }
-                        }
-                    }
-                    JSONObject relEntityData = ciEntity.getRelEntityData();
-                    if (MapUtils.isNotEmpty(relEntityData)) {
-                        for (Map.Entry<String, Object> entry : relEntityData.entrySet()) {
-                            JSONObject relObj = (JSONObject) entry.getValue();
-//                            String name = relObj.getString("name");
-                            String key = entry.getKey();
-                            if (StringUtils.isNotBlank(key)) {
-                                JSONArray valueArray = relObj.getJSONArray("valueList");
-                                if (CollectionUtils.isNotEmpty(valueArray)) {
-                                    List<String> ciEntityNameList = new ArrayList<>();
-                                    for (int j = 0; j < valueArray.size(); j++) {
-                                        JSONObject valueObj = valueArray.getJSONObject(j);
-                                        String ciEntityName = valueObj.getString("ciEntityName");
-                                        if (StringUtils.isNotBlank(ciEntityName)) {
-                                            ciEntityNameList.add(ciEntityName);
-                                        }
-                                    }
-                                    tbody.put(key, String.join(",", ciEntityNameList));
-                                }
-                            }
-                        }
-                    }
+                    JSONObject tbody = getTbodyRowData(viewConstNameList, ciEntity);
                     tbodyList.add(tbody);
                 }
                 return tbodyList;
@@ -933,6 +949,93 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             logger.error(e.getMessage(), e);
         }
         return new JSONArray();
+    }
+
+    /**
+     * 查询配置项的同时构造Excel行数据
+     *
+     * @param ciEntityVo
+     * @return
+     */
+    private List<Map<String, Object>> getExcelRowDataList(CiEntityVo ciEntityVo) {
+        List<Map<String, Object>> row = new ArrayList<>();
+        List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
+        if (CollectionUtils.isNotEmpty(ciEntityList)) {
+            List<String> viewConstNameList = new ArrayList<>();
+            List<ViewConstVo> ciViewConstList = ciViewMapper.getAllCiViewConstList();
+            for (ViewConstVo viewConstVo : ciViewConstList) {
+                viewConstNameList.add(viewConstVo.getName());
+            }
+            for (CiEntityVo ciEntity : ciEntityList) {
+                JSONObject rowData = getTbodyRowData(viewConstNameList, ciEntity);
+                Map<String, Object> rowDataMap = new HashMap<>();
+                for (Map.Entry<String, Object> entry : rowData.entrySet()) {
+                    rowDataMap.put(entry.getKey(), matrixAttributeValueHandle(null, entry.getValue()).getString("text"));
+                }
+                row.add(rowDataMap);
+            }
+        }
+        return row;
+    }
+
+    /**
+     * 查询配置项，构造tbodyList的每一行
+     *
+     * @param viewConstNameList
+     * @param ciEntity
+     * @return
+     */
+    private JSONObject getTbodyRowData(List<String> viewConstNameList, CiEntityVo ciEntity) {
+        String ciEntityToJSONString = JSONObject.toJSONString(ciEntity);
+        JSONObject tbody = new JSONObject();
+        for (String viewConstName : viewConstNameList) {
+            Object viewConstValue = JSONPath.read(ciEntityToJSONString, viewConstName.replace("_", ""));
+            if (viewConstValue != null) {
+                tbody.put("const" + viewConstName, viewConstValue);
+            } else {
+                tbody.put("const" + viewConstName, "");
+            }
+        }
+//                    tbody.put("id", ciEntity.getId());
+//                    tbody.put("ciLabel", ciEntity.getCiLabel());
+        JSONObject attrEntityData = ciEntity.getAttrEntityData();
+        if (MapUtils.isNotEmpty(attrEntityData)) {
+            for (Map.Entry<String, Object> entry : attrEntityData.entrySet()) {
+                JSONObject valueObj = (JSONObject) entry.getValue();
+//                            String name = valueObj.getString("name");
+                String key = entry.getKey();
+                if (StringUtils.isNotBlank(key)) {
+                    JSONArray actualValueArray = valueObj.getJSONArray("actualValueList");
+                    if (CollectionUtils.isNotEmpty(actualValueArray)) {
+                        List<String> actualValueList = actualValueArray.toJavaList(String.class);
+                        tbody.put(key, String.join(",", actualValueList));
+                    }
+                }
+            }
+        }
+        JSONObject relEntityData = ciEntity.getRelEntityData();
+        if (MapUtils.isNotEmpty(relEntityData)) {
+            for (Map.Entry<String, Object> entry : relEntityData.entrySet()) {
+                JSONObject relObj = (JSONObject) entry.getValue();
+//                            String name = relObj.getString("name");
+                String key = entry.getKey();
+                if (StringUtils.isNotBlank(key)) {
+                    JSONArray valueArray = relObj.getJSONArray("valueList");
+                    if (CollectionUtils.isNotEmpty(valueArray)) {
+                        List<String> ciEntityNameList = new ArrayList<>();
+                        for (int j = 0; j < valueArray.size(); j++) {
+                            JSONObject valueObj = valueArray.getJSONObject(j);
+                            String ciEntityName = valueObj.getString("ciEntityName");
+                            if (StringUtils.isNotBlank(ciEntityName)) {
+                                ciEntityNameList.add(ciEntityName);
+                            }
+                        }
+                        tbody.put(key, String.join(",", ciEntityNameList));
+                    }
+                }
+            }
+        }
+        return tbody;
     }
 
     public List<Map<String, JSONObject>> getCmdbCiDataTbodyList(JSONArray tbodyArray, List<String> columnList) {
