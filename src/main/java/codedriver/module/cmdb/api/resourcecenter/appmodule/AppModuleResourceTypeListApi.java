@@ -5,6 +5,7 @@ import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
+import codedriver.framework.cmdb.enums.resourcecenter.ModuleResourceType;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
@@ -78,7 +79,8 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
         int envCount = ciEntityMapper.getCiEntityIdCountByCiId(envCiVo.getId());
         if (envCount > 0) {
             //定义需要采集的模型
-            List<String> resourceTypeNameList = Arrays.asList("OS", "APPIns", "APPInsCluster", "DBIns", "DBCluster", "AccessEndPoint", "Database");
+//            List<String> resourceTypeNameList = Arrays.asList("OS", "APPIns", "APPInsCluster", "DBIns", "DBCluster", "AccessEndPoint", "Database");
+            List<String> resourceTypeNameList = ModuleResourceType.getNameList();
             List<CiVo> resourceCiVoList = new ArrayList<>();
             //获取应用环境实例list
             CiEntityVo envCiEntityVo = new CiEntityVo();
