@@ -259,7 +259,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         CiEntityVo ciEntityVo = new CiEntityVo();
         ciEntityVo.setCiId(matrixCiVo.getCiId());
         ciEntityVo.setCurrentPage(1);
-        ciEntityVo.setPageSize(20);
+        ciEntityVo.setPageSize(1000);
         setAttrIdListAndRelIdListFromMatrixConfig(matrixCiVo, ciEntityVo);
         List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
         Integer rowNum = ciEntityVo.getRowNum();
@@ -270,7 +270,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                 viewConstNameList.add(viewConstVo.getName());
             }
             int currentPage = 1;
-            ciEntityVo.setPageSize(20);
+            ciEntityVo.setPageSize(1000);
             Integer pageCount = ciEntityVo.getPageCount();
             while (currentPage <= pageCount) {
                 List<CiEntityVo> list;
