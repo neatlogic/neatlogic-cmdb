@@ -259,23 +259,33 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         CiEntityVo ciEntityVo = new CiEntityVo();
         ciEntityVo.setCiId(matrixCiVo.getCiId());
         ciEntityVo.setCurrentPage(1);
-        ciEntityVo.setPageSize(1000);
+        ciEntityVo.setPageSize(20);
         setAttrIdListAndRelIdListFromMatrixConfig(matrixCiVo, ciEntityVo);
-        List<Map<String, Object>> dataList = getExcelRowDataList(ciEntityVo);
+        List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
         Integer rowNum = ciEntityVo.getRowNum();
         if (rowNum > 0) {
+            List<String> viewConstNameList = new ArrayList<>();
+            List<ViewConstVo> ciViewConstList = ciViewMapper.getAllCiViewConstList();
+            for (ViewConstVo viewConstVo : ciViewConstList) {
+                viewConstNameList.add(viewConstVo.getName());
+            }
             int currentPage = 1;
-            ciEntityVo.setPageSize(1000);
+            ciEntityVo.setPageSize(20);
             Integer pageCount = ciEntityVo.getPageCount();
             while (currentPage <= pageCount) {
-                List<Map<String, Object>> array;
+                List<CiEntityVo> list;
                 if (currentPage == 1) {
-                    array = dataList;
+                    list = ciEntityList;
                 } else {
                     ciEntityVo.setCurrentPage(currentPage);
-                    array = getExcelRowDataList(ciEntityVo);
+                    list = ciEntityService.searchCiEntity(ciEntityVo);
                 }
-                sheetBuilder.addDataList(array);
+                if (CollectionUtils.isNotEmpty(list)) {
+                    for (CiEntityVo ciEntity : list) {
+                        JSONObject rowData = getTbodyRowData(viewConstNameList, ciEntity);
+                        sheetBuilder.addData(rowData);
+                    }
+                }
                 currentPage++;
             }
         }
@@ -949,33 +959,6 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             logger.error(e.getMessage(), e);
         }
         return new JSONArray();
-    }
-
-    /**
-     * 查询配置项的同时构造Excel行数据
-     *
-     * @param ciEntityVo
-     * @return
-     */
-    private List<Map<String, Object>> getExcelRowDataList(CiEntityVo ciEntityVo) {
-        List<Map<String, Object>> row = new ArrayList<>();
-        List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
-        if (CollectionUtils.isNotEmpty(ciEntityList)) {
-            List<String> viewConstNameList = new ArrayList<>();
-            List<ViewConstVo> ciViewConstList = ciViewMapper.getAllCiViewConstList();
-            for (ViewConstVo viewConstVo : ciViewConstList) {
-                viewConstNameList.add(viewConstVo.getName());
-            }
-            for (CiEntityVo ciEntity : ciEntityList) {
-                JSONObject rowData = getTbodyRowData(viewConstNameList, ciEntity);
-                Map<String, Object> rowDataMap = new HashMap<>();
-                for (Map.Entry<String, Object> entry : rowData.entrySet()) {
-                    rowDataMap.put(entry.getKey(), matrixAttributeValueHandle(null, entry.getValue()).getString("text"));
-                }
-                row.add(rowDataMap);
-            }
-        }
-        return row;
     }
 
     /**
