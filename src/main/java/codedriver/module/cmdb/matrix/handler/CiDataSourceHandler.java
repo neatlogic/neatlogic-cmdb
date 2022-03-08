@@ -26,8 +26,6 @@ import codedriver.framework.matrix.exception.MatrixAttributeNotFoundException;
 import codedriver.framework.matrix.exception.MatrixCiNotFoundException;
 import codedriver.framework.util.SnowflakeUtil;
 import codedriver.framework.util.TableResultUtil;
-import codedriver.framework.util.excel.ExcelBuilder;
-import codedriver.framework.util.excel.SheetBuilder;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiViewMapper;
@@ -44,9 +42,6 @@ import com.alibaba.fastjson.JSONPath;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.hssf.util.HSSFColor;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -54,6 +49,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -228,7 +224,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
     }
 
     @Override
-    protected Workbook myExportMatrix(MatrixVo matrixVo) {
+    protected void myExportMatrix(MatrixVo matrixVo, OutputStream os) throws IOException {
         String matrixUuid = matrixVo.getUuid();
         MatrixCiVo matrixCiVo = matrixMapper.getMatrixCiByMatrixUuid(matrixUuid);
         if (matrixCiVo == null) {
@@ -236,26 +232,20 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         }
         List<MatrixAttributeVo> attributeVoList = myGetAttributeList(matrixVo);
         JSONArray theadList = getTheadList(attributeVoList);
+        StringBuilder header = new StringBuilder();
         List<String> headList = new ArrayList<>();
-        List<String> columnList = new ArrayList<>();
         for (int i = 0; i < theadList.size(); i++) {
             JSONObject obj = theadList.getJSONObject(i);
             String title = obj.getString("title");
             String key = obj.getString("key");
             if (StringUtils.isNotBlank(title) && StringUtils.isNotBlank(key)) {
-                headList.add(title);
-                columnList.add(key);
+                header.append(title).append(",");
+                headList.add(key);
             }
         }
-        ExcelBuilder builder = new ExcelBuilder(SXSSFWorkbook.class);
-        SheetBuilder sheetBuilder = builder.withBorderColor(HSSFColor.HSSFColorPredefined.GREY_40_PERCENT)
-                .withHeadFontColor(HSSFColor.HSSFColorPredefined.WHITE)
-                .withHeadBgColor(HSSFColor.HSSFColorPredefined.DARK_BLUE)
-                .withColumnWidth(30)
-                .addSheet("数据")
-                .withHeaderList(headList)
-                .withColumnList(columnList);
-        Workbook workbook = builder.build();
+        header.append("\n");
+        os.write(header.toString().getBytes("GBK"));
+        os.flush();
         CiEntityVo ciEntityVo = new CiEntityVo();
         ciEntityVo.setCiId(matrixCiVo.getCiId());
         ciEntityVo.setCurrentPage(1);
@@ -272,8 +262,8 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             int currentPage = 1;
             ciEntityVo.setPageSize(1000);
             Integer pageCount = ciEntityVo.getPageCount();
+            List<CiEntityVo> list;
             while (currentPage <= pageCount) {
-                List<CiEntityVo> list;
                 if (currentPage == 1) {
                     list = ciEntityList;
                 } else {
@@ -281,15 +271,22 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                     list = ciEntityService.searchCiEntity(ciEntityVo);
                 }
                 if (CollectionUtils.isNotEmpty(list)) {
+                    StringBuilder content = new StringBuilder();
                     for (CiEntityVo ciEntity : list) {
                         JSONObject rowData = getTbodyRowData(viewConstNameList, ciEntity);
-                        sheetBuilder.addData(rowData);
+                        for (String head : headList) {
+                            String value = rowData.getString(head);
+                            content.append(value != null ? value.replaceAll("\n", "").replaceAll(",", "，") : StringUtils.EMPTY).append(",");
+                        }
+                        content.append("\n");
                     }
+                    os.write(content.toString().getBytes("GBK"));
+                    os.flush();
                 }
+                list.clear();
                 currentPage++;
             }
         }
-        return workbook;
     }
 
     @Override
