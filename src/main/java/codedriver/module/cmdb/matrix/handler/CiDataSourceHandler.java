@@ -17,7 +17,6 @@ import codedriver.framework.cmdb.dto.view.ViewConstVo;
 import codedriver.framework.cmdb.enums.SearchExpression;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.cmdb.utils.RelUtil;
-import codedriver.framework.common.constvalue.ExportFileType;
 import codedriver.framework.dependency.core.DependencyManager;
 import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.matrix.constvalue.MatrixAttributeType;
@@ -43,7 +42,6 @@ import com.alibaba.fastjson.JSONPath;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -88,11 +86,6 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
     @Override
     public String getHandler() {
         return MatrixType.CMDBCI.getValue();
-    }
-
-    @Override
-    public String getExportFileType() {
-        return ExportFileType.CSV.getValue();
     }
 
     @Override
@@ -294,11 +287,6 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                 currentPage++;
             }
         }
-    }
-
-    @Override
-    protected Workbook myExportMatrix2Excel(MatrixVo matrixVo) {
-        return null;
     }
 
     @Override
