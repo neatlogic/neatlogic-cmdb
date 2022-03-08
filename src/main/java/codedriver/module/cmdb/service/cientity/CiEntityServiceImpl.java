@@ -879,6 +879,8 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             }
         }
 
+        //所有需要删除的关系先记录到这里
+        List<RelEntityVo> needDeleteRelEntityList = new ArrayList<>();
         // 校验关系信息
         for (RelVo relVo : relList) {
             // 判断当前配置项处于from位置的规则
@@ -961,7 +963,18 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         if (RelRuleType.O.getValue().equals(relVo.getToRule())) {
                             // 需要提取已有的关系信息判断是否有重复
                             List<RelEntityVo> fromRelEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(ciEntityTransactionVo.getCiEntityId(), relVo.getId(), 2L);
-                            if ((fromRelEntityList.size() == 1 && !fromRelEntityList.contains(new RelEntityVo(fromRelEntityTransactionList.get(0)))) || fromRelEntityList.size() > 1) {
+                            RelEntityTransactionVo newFromRelEntityTransactionVo = fromRelEntityTransactionList.get(0);
+                            //如果是替换模式，则把旧的关系添加到需删除列表里
+                            if (newFromRelEntityTransactionVo.getAction().equals(RelActionType.REPLACE.getValue())) {
+                                for (RelEntityVo oldFromRelEntityVo : fromRelEntityList) {
+                                    if (!oldFromRelEntityVo.equals(new RelEntityVo(newFromRelEntityTransactionVo))) {
+                                        needDeleteRelEntityList.add(oldFromRelEntityVo);
+                                    }
+                                }
+                                //清理不相等的旧关系列表，方便下面进行校验
+                                fromRelEntityList.removeIf(d -> !d.equals(new RelEntityVo(newFromRelEntityTransactionVo)));
+                            }
+                            if ((fromRelEntityList.size() == 1 && !fromRelEntityList.contains(new RelEntityVo(newFromRelEntityTransactionVo))) || fromRelEntityList.size() > 1) {
                                 throw new RelEntityMultipleException(relVo.getToLabel());
                             }
                         }
@@ -987,6 +1000,17 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         if (RelRuleType.O.getValue().equals(relVo.getFromRule())) {
                             // 需要提取已有的关系信息判断是否有重复
                             List<RelEntityVo> toRelEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(ciEntityTransactionVo.getCiEntityId(), relVo.getId(), 2L);
+                            RelEntityTransactionVo newToRelEntityTransactionVo = toRelEntityTransactionList.get(0);
+                            //如果是替换模式，则把旧的关系添加到需删除列表里
+                            if (newToRelEntityTransactionVo.getAction().equals(RelActionType.REPLACE.getValue())) {
+                                for (RelEntityVo oldToRelEntityVo : toRelEntityList) {
+                                    if (!oldToRelEntityVo.equals(new RelEntityVo(newToRelEntityTransactionVo))) {
+                                        needDeleteRelEntityList.add(oldToRelEntityVo);
+                                    }
+                                }
+                                //清理不相等的旧关系列表，方便下面进行校验
+                                toRelEntityList.removeIf(d -> !d.equals(new RelEntityVo(newToRelEntityTransactionVo)));
+                            }
                             if ((toRelEntityList.size() == 1 && !toRelEntityList.contains(new RelEntityVo(toRelEntityTransactionList.get(0)))) || toRelEntityList.size() > 1) {
                                 throw new RelEntityMultipleException(relVo.getFromLabel());
                             }
@@ -1096,14 +1120,13 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
 
 
         // 全局修改模式下，事务中不包含的关系代表要删除
-        List<RelEntityVo> needDeleteRelEntityList = new ArrayList<>();
         if (ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
             if (CollectionUtils.isNotEmpty(oldRelEntityList)) {
                 //找到旧对象中存在，但在事务中不存在的关系，重新添加到事务中，并且把操作设为删除
                 for (RelEntityVo relEntityVo : oldRelEntityList) {
                     Long targetId = relEntityVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? relEntityVo.getToCiEntityId() : relEntityVo.getFromCiEntityId();
                     if (!ciEntityTransactionVo.containRelEntityData(relEntityVo.getRelId(), relEntityVo.getDirection(), targetId)) {
-                        //先暂存在待删除列表里，等清除完没变化的关系后在添加到事务里
+                        //先暂存在待删除列表里，等清除完没变化的关系后再添加到事务里
                         needDeleteRelEntityList.add(relEntityVo);
                     }
                 }
@@ -1767,7 +1790,8 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         rebuildRelEntityList.add(new RelEntityVo(relEntityTransactionVo));
                         //删除级联关系
                         RelativeRelManager.delete(relEntityVo);
-                    } else if (relEntityTransactionVo.getAction().equals(RelActionType.INSERT.getValue())) {
+                    } else if (relEntityTransactionVo.getAction().equals(RelActionType.INSERT.getValue()) ||
+                            relEntityTransactionVo.getAction().equals(RelActionType.REPLACE.getValue())) {
                         RelEntityVo newRelEntityVo = new RelEntityVo(relEntityTransactionVo);
                         if (relEntityMapper.checkRelEntityIsExists(newRelEntityVo) == 0) {
                             relEntityMapper.insertRelEntity(newRelEntityVo);

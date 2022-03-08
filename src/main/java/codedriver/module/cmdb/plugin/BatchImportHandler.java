@@ -18,8 +18,10 @@ import codedriver.framework.cmdb.exception.ci.CiIsAbstractedException;
 import codedriver.framework.cmdb.exception.ci.CiIsVirtualException;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.cmdb.exception.ci.CiWithoutAttrRelException;
+import codedriver.framework.cmdb.exception.cientity.AttrEntityValueEmptyException;
 import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.asynchronization.threadlocal.InputFromContext;
+import codedriver.framework.cmdb.exception.cientity.RelEntityNotFoundException;
 import codedriver.framework.common.constvalue.InputFrom;
 import codedriver.framework.common.util.FileUtil;
 import codedriver.framework.exception.core.ApiRuntimeException;
@@ -211,6 +213,7 @@ public class BatchImportHandler {
                         List<Integer> cellIndex = new ArrayList<>();// 列数
                         Map<Integer, Object> typeMap = new HashMap<>();// 表头列数->表头属性
                         Set<String> checkAttrSet = new HashSet<>();
+                        Set<String> requireAttrSet = new HashSet<>();//必填属性或关系
                         try {
                             COLUMN:
                             for (Iterator<Cell> cellIterator = headRow.cellIterator(); cellIterator.hasNext(); ) {
@@ -230,13 +233,28 @@ public class BatchImportHandler {
                                         cellIndex.add(cell.getColumnIndex());
                                         continue;
                                     }
-
+                                    if (CollectionUtils.isNotEmpty(ciVo.getUniqueAttrIdList())) {
+                                        for (Long attrId : ciVo.getUniqueAttrIdList()) {
+                                            requireAttrSet.add("attr_" + attrId);
+                                        }
+                                    }
+                                    for (AttrVo attr : ciVo.getAttrList()) {
+                                        if (attr.getIsRequired().equals(1)) {
+                                            requireAttrSet.add("attr_" + attr.getId());
+                                        }
+                                    }
                                     for (AttrVo attr : ciVo.getAttrList()) {
                                         if (attr.getLabel().equals(content)) {
                                             checkAttrSet.add("attr_" + attr.getId());
                                             typeMap.put(cell.getColumnIndex(), attr);
                                             cellIndex.add(cell.getColumnIndex());
                                             continue COLUMN;
+                                        }
+                                    }
+                                    for (RelVo rel : ciVo.getRelList()) {
+                                        if ((rel.getDirection().equals(RelDirectionType.FROM.getValue()) && rel.getToIsRequired().equals(1)) ||
+                                                (rel.getDirection().equals(RelDirectionType.TO.getValue()) && rel.getFromIsRequired().equals(1))) {
+                                            requireAttrSet.add("rel_" + rel.getDirection() + rel.getId());
                                         }
                                     }
                                     for (RelVo rel : ciVo.getRelList()) {
@@ -254,9 +272,19 @@ public class BatchImportHandler {
                             throw new RuntimeException("分析表头失败：" + e.getMessage());
                         }
                         /*
-                          【只添加】与【添加&更新】模式下，不能缺少必填属性列 【只更新】且【全局更新】模式下，不能缺少必填属性列
+                          【只添加】与【添加&更新】模式下，不能缺少必填属性列和唯一属性列
+                          【只更新】且【全局更新】模式下，不能缺少必填属性列
                          */
                         List<String> lostColumns = new ArrayList<>();
+                        if (action.equals("all") || action.equals("append")) {
+                            if (CollectionUtils.isNotEmpty(ciVo.getUniqueAttrIdList())) {
+                                for (Long attrId : ciVo.getUniqueAttrIdList()) {
+                                    if (!checkAttrSet.contains("attr_" + attrId)) {
+                                        lostColumns.add(ciVo.getAttrById(attrId).getLabel());
+                                    }
+                                }
+                            }
+                        }
                         if (action.equals("all") || action.equals("append")
                                 || (action.equals("update") && editMode.equals(EditModeType.GLOBAL.getValue()))) {
                             for (AttrVo attr : ciVo.getAttrList()) {
@@ -266,12 +294,12 @@ public class BatchImportHandler {
                                 }
                             }
                             for (RelVo rel : ciVo.getRelList()) {
-                                if (rel.getFromCiId().equals(ciVo.getId())) {
+                                if (rel.getDirection().equals(RelDirectionType.FROM.getValue())) {
                                     if (!checkAttrSet.contains("rel_" + rel.getDirection() + rel.getId())
                                             && rel.getToIsRequired().equals(1)) {
                                         lostColumns.add(rel.getToLabel());
                                     }
-                                } else if (rel.getToCiId().equals(ciVo.getId())) {
+                                } else {
                                     if (!checkAttrSet.contains("rel_" + rel.getDirection() + rel.getId())
                                             && rel.getFromIsRequired().equals(1)) {
                                         lostColumns.add(rel.getFromLabel());
@@ -280,7 +308,7 @@ public class BatchImportHandler {
                             }
                         }
                         if (CollectionUtils.isNotEmpty(lostColumns)) {
-                            error = "<b class=\"text-danger\">导入模版缺少：" + Arrays.toString(lostColumns.toArray())
+                            error = "<b class=\"text-danger\">导入模版缺少必要的属性：" + Arrays.toString(lostColumns.toArray())
                                     + "</b></br>";
                             totalCount = sheet.getPhysicalNumberOfRows() - 1;
                             failedCount = totalCount;
@@ -331,6 +359,9 @@ public class BatchImportHandler {
                                                 } else if (header instanceof AttrVo) {// 如果是属性
                                                     AttrVo attr = (AttrVo) header;
                                                     JSONArray valueList = new JSONArray();
+                                                    if (requireAttrSet.contains("attr_" + attr.getId()) && StringUtils.isBlank(content)) {
+                                                        throw new AttrEntityValueEmptyException(attr.getLabel());
+                                                    }
                                                     //如果是引用类型需要先转换成目标配置项的id
                                                     //FIXME 可能需要替换使用唯一规则获取配置项信息
                                                     if (attr.getTargetCiId() != null) {
@@ -352,6 +383,9 @@ public class BatchImportHandler {
 
                                                 } else if (header instanceof RelVo) {
                                                     RelVo rel = (RelVo) header;
+                                                    if (requireAttrSet.contains("rel_" + rel.getDirection() + rel.getId()) && StringUtils.isBlank(content)) {
+                                                        throw new RelEntityNotFoundException(rel.getDirection().equals(RelDirectionType.FROM.getValue()) ? rel.getToLabel() : rel.getFromLabel());
+                                                    }
                                                     for (String c : content.split(",")) {
                                                         if (StringUtils.isNotBlank(c)) {
                                                             c = c.trim();
@@ -364,6 +398,19 @@ public class BatchImportHandler {
                                                                 throw new CiEntityNotFoundException(c);
                                                             }
                                                         }
+                                                    }
+                                                }
+                                            } else {
+                                                Object header = typeMap.get(index);
+                                                if (header instanceof AttrVo) {// 如果是属性
+                                                    AttrVo attr = (AttrVo) header;
+                                                    if (requireAttrSet.contains("attr_" + attr.getId())) {
+                                                        throw new AttrEntityValueEmptyException(attr.getLabel());
+                                                    }
+                                                } else if (header instanceof RelVo) {
+                                                    RelVo rel = (RelVo) header;
+                                                    if (requireAttrSet.contains("rel_" + rel.getDirection() + rel.getId())) {
+                                                        throw new RelEntityNotFoundException(rel.getDirection().equals(RelDirectionType.FROM.getValue()) ? rel.getToLabel() : rel.getFromLabel());
                                                     }
                                                 }
                                             }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!--
-  ~ Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+  ~ Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
   ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
   -->
 
@@ -190,7 +190,8 @@
         c.`name` AS toCiEntityName,
         a.`valid_day` AS validDay,
         b.`ci_id` AS fromCiId,
-        c.`ci_id` AS toCiId
+        c.`ci_id` AS toCiId,
+        'to' AS direction
         FROM `cmdb_relentity` a
         JOIN `cmdb_cientity` b ON a.`from_cientity_id` = b.id
         JOIN `cmdb_cientity` c ON a.`to_cientity_id` = c.id
@@ -232,7 +233,8 @@
         c.`name` AS toCiEntityName,
         a.`valid_day` AS validDay,
         b.`ci_id` AS fromCiId,
-        c.`ci_id` AS toCiId
+        c.`ci_id` AS toCiId,
+        'from' as ditection
         FROM `cmdb_relentity` a
         JOIN `cmdb_cientity` b ON a.`from_cientity_id` = b.id
         JOIN `cmdb_cientity` c ON a.`to_cientity_id` = c.id
