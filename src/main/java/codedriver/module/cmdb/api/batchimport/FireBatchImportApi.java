@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -20,6 +20,7 @@ import codedriver.module.cmdb.auth.label.CIENTITY_BATCH_IMPORT;
 import codedriver.module.cmdb.dao.mapper.batchimport.ImportMapper;
 import codedriver.module.cmdb.plugin.BatchImportHandler;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,7 +64,7 @@ public class FireBatchImportApi extends PrivateApiComponentBase {
         String action = paramObj.getString("action");
         String editMode = paramObj.getString("editMode");
         List<FileVo> fileList = importMapper.getCmdbImportFileList(userUuid);
-        if (fileList.size() > 0) {
+        if (CollectionUtils.isNotEmpty(fileList)) {
             for (FileVo fileVo : fileList) {
                 if (!fileVo.getName().endsWith(".xls") && !fileVo.getName().endsWith(".xlsx")) {
                     throw new ExcelFormatIllegalException();
@@ -79,6 +80,7 @@ public class FireBatchImportApi extends PrivateApiComponentBase {
                         throw new ExcelNameIllegalException("“ciId_名称”，e.g.:29_应用子系统");
                     }
                     CachedThreadPool.execute(new BatchImportHandler.Importer(ciId, action, editMode, fileVo, userUuid));
+                    importMapper.deleteCmdbImportFile(fileVo.getId());
                 } else {
                     throw new ExcelNameIllegalException("“ciId_名称”，e.g.:29_应用子系统");
                 }

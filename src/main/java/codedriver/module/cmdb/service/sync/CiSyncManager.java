@@ -20,10 +20,7 @@ import codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo;
 import codedriver.framework.cmdb.dto.sync.SyncMappingVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.cmdb.dto.transaction.TransactionGroupVo;
-import codedriver.framework.cmdb.enums.EditModeType;
-import codedriver.framework.cmdb.enums.RelDirectionType;
-import codedriver.framework.cmdb.enums.SearchExpression;
-import codedriver.framework.cmdb.enums.TransactionActionType;
+import codedriver.framework.cmdb.enums.*;
 import codedriver.framework.cmdb.enums.sync.CollectMode;
 import codedriver.framework.cmdb.enums.sync.SyncStatus;
 import codedriver.framework.cmdb.exception.attr.AttrNotFoundException;
@@ -523,10 +520,10 @@ public class CiSyncManager {
                                                     CiEntityTransactionVo subCiEntityTransactionVo = generateCiEntityTransaction(subDataWithPK, subSyncCiCollectionVo, ciEntityTransactionMap, mappingVo.getField());
                                                     if (subCiEntityTransactionVo != null) {
                                                         if (ciEntityTransactionMap.containsKey(subCiEntityTransactionVo.getHash())) {
-                                                            ciEntityTransactionVo.addRelEntityData(relVo, mappingVo.getDirection(), subCiId, ciEntityTransactionMap.get(subCiEntityTransactionVo.getHash()).getCiEntityId());
+                                                            ciEntityTransactionVo.addRelEntityData(relVo, mappingVo.getDirection(), subCiId, ciEntityTransactionMap.get(subCiEntityTransactionVo.getHash()).getCiEntityId(), RelActionType.REPLACE.getValue());
                                                         } else {
                                                             ciEntityTransactionMap.put(subCiEntityTransactionVo.getHash(), subCiEntityTransactionVo);
-                                                            ciEntityTransactionVo.addRelEntityData(relVo, mappingVo.getDirection(), subCiId, subCiEntityTransactionVo.getCiEntityId());
+                                                            ciEntityTransactionVo.addRelEntityData(relVo, mappingVo.getDirection(), subCiId, subCiEntityTransactionVo.getCiEntityId(), RelActionType.REPLACE.getValue());
                                                         }
                                                     }
                                                 }
@@ -649,7 +646,7 @@ public class CiSyncManager {
                                     criteriaList.add(Criteria.where("_updatetime").gt(convertToIsoDate(syncCiCollectionVo.getLastSyncDate())));
                                 }
                                 //#############测试用条件，使用后注释掉
-                                //criteriaList.add(Criteria.where("BELONG_APPLICATION").exists(true));
+                                //criteriaList.add(Criteria.where("PRIMARY_IP").is("10.0.25.138"));
                                 //#############测试用条件
                                 finalCriteria.andOperator(criteriaList);
                                 query.addCriteria(finalCriteria);
