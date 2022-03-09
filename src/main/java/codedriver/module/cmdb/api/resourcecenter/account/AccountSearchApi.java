@@ -9,13 +9,16 @@ import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountTagVo;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceAccountVo;
 import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
-import codedriver.framework.common.util.PageUtil;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.framework.tagent.dao.mapper.TagentMapper;
+import codedriver.framework.tagent.dto.TagentVo;
+import codedriver.framework.util.TableResultUtil;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -33,6 +36,9 @@ public class AccountSearchApi extends PrivateApiComponentBase {
 
     @Resource
     private ResourceCenterMapper resourceCenterMapper;
+
+    @Resource
+    private TagentMapper tagentMapper;
 
     @Override
     public String getToken() {
@@ -64,61 +70,47 @@ public class AccountSearchApi extends PrivateApiComponentBase {
     @Description(desc = "查询资源中心账号")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        JSONObject resultObj = new JSONObject();
         List<AccountVo> accountVoList = null;
-        List<Long> idList = new ArrayList<>();
-        AccountVo searchVo = JSON.toJavaObject(paramObj, AccountVo.class);
-        accountVoList = resourceCenterMapper.searchAccount(searchVo);
-        if (CollectionUtils.isNotEmpty(accountVoList)) {
-            for (int i = 0; i < accountVoList.size(); i++) {
-                idList.add(accountVoList.get(i).getId());
-            }
-        }
-        if (CollectionUtils.isNotEmpty(idList)) {
-            List<AccountTagVo> accountTagVoList = resourceCenterMapper.getAccountTagListByAccountIdList(idList);
-            Map<Long, List<TagVo>> AccountTagVoMap = new HashMap<>();
-            if (CollectionUtils.isNotEmpty(accountTagVoList)) {
-                Set<Long> tagIdSet = accountTagVoList.stream().map(AccountTagVo::getTagId).collect(Collectors.toSet());
-                List<TagVo> tagList = resourceCenterMapper.getTagListByIdList(new ArrayList<>(tagIdSet));
-                Map<Long, TagVo> tagMap = tagList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
-                for (AccountTagVo accountTagVo : accountTagVoList) {
-                    AccountTagVoMap.computeIfAbsent(accountTagVo.getAccountId(), k -> new ArrayList<>()).add(tagMap.get(accountTagVo.getTagId()));
+        AccountVo searchAccountVo = JSON.toJavaObject(paramObj, AccountVo.class);
+        int accountCount = resourceCenterMapper.searchAccountCount(searchAccountVo);
+        if (accountCount > 0) {
+            searchAccountVo.setRowNum(accountCount);
+            accountVoList = resourceCenterMapper.searchAccount(searchAccountVo);
+            List<Long> accountIdList = accountVoList.stream().map(AccountVo::getId).collect(Collectors.toList());
+
+            if (CollectionUtils.isNotEmpty(accountIdList)) {
+                //查询账号关联的标签
+                List<AccountTagVo> accountTagVoList = resourceCenterMapper.getAccountTagListByAccountIdList(accountIdList);
+                Map<Long, List<TagVo>> AccountTagVoMap = new HashMap<>();
+                if (CollectionUtils.isNotEmpty(accountTagVoList)) {
+                    Set<Long> tagIdSet = accountTagVoList.stream().map(AccountTagVo::getTagId).collect(Collectors.toSet());
+                    List<TagVo> tagList = resourceCenterMapper.getTagListByIdList(new ArrayList<>(tagIdSet));
+                    Map<Long, TagVo> tagMap = tagList.stream().collect(Collectors.toMap(TagVo::getId, e -> e));
+                    for (AccountTagVo accountTagVo : accountTagVoList) {
+                        AccountTagVoMap.computeIfAbsent(accountTagVo.getAccountId(), k -> new ArrayList<>()).add(tagMap.get(accountTagVo.getTagId()));
+                    }
                 }
-            }
-            for (AccountVo accountVo : accountVoList) {
-                List<TagVo> tagVoList = AccountTagVoMap.get(accountVo.getId());
-                if (CollectionUtils.isNotEmpty(tagVoList)) {
-                    accountVo.setTagList(tagVoList);
+                //查询账号依赖的资产
+                List<ResourceAccountVo> resourceAccountList = resourceCenterMapper.getResourceAccountListByAccountIdList(accountIdList);
+                //查询账号依赖的tagent
+                List<TagentVo> tagentVoList = tagentMapper.getTagentListByAccountIdList(accountIdList);
+
+                for (AccountVo accountVo : accountVoList) {
+                    //补充账号关联的标签
+                    List<TagVo> tagVoList = AccountTagVoMap.get(accountVo.getId());
+                    if (CollectionUtils.isNotEmpty(tagVoList)) {
+                        accountVo.setTagList(tagVoList);
+                    }
+                    //补充账号依赖的资产
+                    accountVo.setResourceReferredCount((int) resourceAccountList.stream().filter(a -> a.getAccountId().equals(accountVo.getId())).count());
+                    //补充账号依赖的tagent
+                    accountVo.setTagentReferredCount((int) tagentVoList.stream().filter(a -> a.getAccountId().equals(accountVo.getId())).count());
                 }
             }
         }
         if (accountVoList == null) {
             accountVoList = new ArrayList<>();
         }
-        resultObj.put("tbodyList", accountVoList);
-//        if (CollectionUtils.isNotEmpty(accountVoList)) {
-//            Boolean hasAuth = AuthActionChecker.check(RESOURCECENTER_ACCOUNT_MODIFY.class.getSimpleName());
-//            accountVoList.stream().forEach(o -> {
-//                OperateVo delete = new OperateVo("delete", "删除");
-//                if (hasAuth) {
-//                    if (o.getAssetsCount() > 0) {
-//                        delete.setDisabled(1);
-//                        delete.setDisabledReason("当前账号已被引用，不可删除");
-//                    }
-//                    o.getOperateList().add(delete);
-//                } else {
-//                    delete.setDisabled(1);
-//                    delete.setDisabledReason("无权限，请联系管理员");
-//                }
-//            });
-//        }
-        int rowNum = resourceCenterMapper.searchAccountCount(searchVo);
-        searchVo.setRowNum(rowNum);
-        resultObj.put("rowNum", rowNum);
-        resultObj.put("pageCount", PageUtil.getPageCount(rowNum, searchVo.getPageSize()));
-        resultObj.put("currentPage", searchVo.getCurrentPage());
-        resultObj.put("pageSize", searchVo.getPageSize());
-        return resultObj;
+        return TableResultUtil.getResult(accountVoList, searchAccountVo);
     }
-
 }

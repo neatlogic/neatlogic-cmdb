@@ -48,7 +48,7 @@ public class AccountProtocolDeleteApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long id = paramObj.getLong("id");
         AccountProtocolVo accountProtocolVo = resourceCenterMapper.getAccountProtocolVoByProtocolId(id);
-        if (id == null) {
+        if (accountProtocolVo == null) {
             throw new ResourceCenterAccountProtocolNotFoundException(id);
         }
         if (resourceCenterMapper.checkAccountProtocolHasBeenReferredByProtocolId(id) > 0) {
