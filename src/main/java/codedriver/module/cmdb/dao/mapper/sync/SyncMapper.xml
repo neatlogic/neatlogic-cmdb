@@ -24,7 +24,8 @@
                csm.rel_id        AS relId,
                csm.direction,
                csm.field,
-               csu.attr_id       AS uniqueAttrId
+               csu.attr_id       AS uniqueAttrId,
+               csm.action        as relAction
         FROM cmdb_sync_ci_collection a
                  JOIN cmdb_sync_mapping csm on a.id = csm.ci_collection_id
                  LEFT JOIN cmdb_sync_unique csu on a.id = csu.ci_collection_id
@@ -222,6 +223,7 @@
             <result property="direction" column="direction"/>
             <result property="field" column="field"/>
             <result property="matchMode" column="matchMode"/>
+            <result property="action" column="relAction"/>
         </collection>
         <collection property="uniqueAttrIdList" ofType="java.lang.Long">
             <result column="uniqueAttrId"/>
@@ -248,7 +250,8 @@
                csm.rel_id        AS relId,
                csm.direction,
                csm.field,
-               csu.attr_id       AS uniqueAttrId
+               csu.attr_id       AS uniqueAttrId,
+               csm.action        as relAction
         FROM cmdb_sync_ci_collection a
                  JOIN cmdb_sync_mapping csm on a.id = csm.ci_collection_id
                  LEFT JOIN cmdb_sync_unique csu on a.id = csu.ci_collection_id
@@ -275,7 +278,8 @@
                csm.rel_id        AS relId,
                csm.direction,
                csm.field,
-               csu.attr_id       AS uniqueAttrId
+               csu.attr_id       AS uniqueAttrId,
+               csm.action        as relAction
         FROM cmdb_sync_ci_collection a
                  JOIN cmdb_sync_mapping csm on a.id = csm.ci_collection_id
                  LEFT JOIN cmdb_sync_unique csu on a.id = csu.ci_collection_id
@@ -303,7 +307,8 @@
                csm.rel_id        AS relId,
                csm.direction,
                csm.field,
-               csu.attr_id       AS uniqueAttrId
+               csu.attr_id       AS uniqueAttrId,
+               csm.action        as relAction
         FROM cmdb_sync_ci_collection a
                  JOIN cmdb_sync_mapping csm on a.id = csm.ci_collection_id
                  LEFT JOIN cmdb_sync_unique csu on a.id = csu.ci_collection_id
@@ -353,8 +358,8 @@
     </insert>
 
     <insert id="insertSyncMapping" parameterType="codedriver.framework.cmdb.dto.sync.SyncMappingVo">
-        insert into cmdb_sync_mapping (id, ci_collection_id, rel_id, direction, attr_id, field)
-        values (#{id}, #{ciCollectionId}, #{relId}, #{direction}, #{attrId}, #{field})
+        insert into cmdb_sync_mapping (id, ci_collection_id, rel_id, direction, attr_id, field, action)
+        values (#{id}, #{ciCollectionId}, #{relId}, #{direction}, #{attrId}, #{field}, #{action})
     </insert>
 
     <insert id="insertSyncUnique">

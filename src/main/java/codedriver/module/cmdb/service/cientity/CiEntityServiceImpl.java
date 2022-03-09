@@ -958,23 +958,37 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
 
             } else if (ciEntityTransactionVo.getEditMode().equals(EditModeType.PARTIAL.getValue())) {
                 if (CollectionUtils.isNotEmpty(fromRelEntityTransactionList)) {
+                    /*
+                    检查是否有action=replace的关系，action=replace的数据来自自动发现同步，只要有一个是replace，所有都是replace，以下逻辑都是基于这个规则编写
+                     */
+                    boolean isReplace = fromRelEntityTransactionList.stream().anyMatch(d -> d.getAction().equals(RelActionType.REPLACE.getValue()));
+                    List<RelEntityVo> fromRelEntityList = null;
+                    if (isReplace) {
+                       /*
+                       如果是replace模式，旧的关系数据需要清理掉，替换成新的关系数据
+                        */
+                        fromRelEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(ciEntityTransactionVo.getCiEntityId(), relVo.getId(), null);
+                        Iterator<RelEntityVo> fromRelEntityIt = fromRelEntityList.iterator();
+                        while (fromRelEntityIt.hasNext()) {
+                            RelEntityVo oldFromRelEntityVo = fromRelEntityIt.next();
+                            /*
+                            旧关系列表不存在事务列表的对象先放到待删除列表里
+                             */
+                            if (fromRelEntityTransactionList.stream().noneMatch(d -> new RelEntityVo(d).equals(oldFromRelEntityVo))) {
+                                needDeleteRelEntityList.add(oldFromRelEntityVo);
+                                fromRelEntityIt.remove();
+                            }
+                        }
+                    } else {
+                        /*
+                        如果没有replace的数据，fromRelEntityList主要用来校验RelRuleType=O的规则，因此去两条数据即可
+                         */
+                        fromRelEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(ciEntityTransactionVo.getCiEntityId(), relVo.getId(), 2L);
+                    }
                     if (fromRelEntityTransactionList.size() == 1) {
                         // 检查关系是否允许重复
                         if (RelRuleType.O.getValue().equals(relVo.getToRule())) {
-                            // 需要提取已有的关系信息判断是否有重复
-                            List<RelEntityVo> fromRelEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(ciEntityTransactionVo.getCiEntityId(), relVo.getId(), 2L);
-                            RelEntityTransactionVo newFromRelEntityTransactionVo = fromRelEntityTransactionList.get(0);
-                            //如果是替换模式，则把旧的关系添加到需删除列表里
-                            if (newFromRelEntityTransactionVo.getAction().equals(RelActionType.REPLACE.getValue())) {
-                                for (RelEntityVo oldFromRelEntityVo : fromRelEntityList) {
-                                    if (!oldFromRelEntityVo.equals(new RelEntityVo(newFromRelEntityTransactionVo))) {
-                                        needDeleteRelEntityList.add(oldFromRelEntityVo);
-                                    }
-                                }
-                                //清理不相等的旧关系列表，方便下面进行校验
-                                fromRelEntityList.removeIf(d -> !d.equals(new RelEntityVo(newFromRelEntityTransactionVo)));
-                            }
-                            if ((fromRelEntityList.size() == 1 && !fromRelEntityList.contains(new RelEntityVo(newFromRelEntityTransactionVo))) || fromRelEntityList.size() > 1) {
+                            if ((fromRelEntityList.size() == 1 && !fromRelEntityList.contains(new RelEntityVo(fromRelEntityTransactionList.get(0)))) || fromRelEntityList.size() > 1) {
                                 throw new RelEntityMultipleException(relVo.getToLabel());
                             }
                         }
@@ -995,22 +1009,36 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     }
                 }
                 if (CollectionUtils.isNotEmpty(toRelEntityTransactionList)) {
+                     /*
+                    检查是否有action=replace的关系，action=replace的数据来自自动发现同步，只要有一个是replace，所有都是replace，以下逻辑都是基于这个规则编写
+                     */
+                    boolean isReplace = toRelEntityTransactionList.stream().anyMatch(d -> d.getAction().equals(RelActionType.REPLACE.getValue()));
+                    List<RelEntityVo> toRelEntityList = null;
+                    if (isReplace) {
+                       /*
+                       如果是replace模式，旧的关系数据需要清理掉，替换成新的关系数据
+                        */
+                        toRelEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(ciEntityTransactionVo.getCiEntityId(), relVo.getId(), null);
+                        Iterator<RelEntityVo> toRelEntityIt = toRelEntityList.iterator();
+                        while (toRelEntityIt.hasNext()) {
+                            RelEntityVo oldToRelEntityVo = toRelEntityIt.next();
+                            /*
+                            旧关系列表不存在事务列表的对象先放到待删除列表里
+                             */
+                            if (toRelEntityTransactionList.stream().noneMatch(d -> new RelEntityVo(d).equals(oldToRelEntityVo))) {
+                                needDeleteRelEntityList.add(oldToRelEntityVo);
+                                toRelEntityIt.remove();
+                            }
+                        }
+                    } else {
+                        /*
+                        如果没有replace的数据，toRelEntityList主要用来校验RelRuleType=O的规则，因此取两条数据即可
+                         */
+                        toRelEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(ciEntityTransactionVo.getCiEntityId(), relVo.getId(), 2L);
+                    }
                     if (toRelEntityTransactionList.size() == 1) {
                         // 检查关系是否允许重复
                         if (RelRuleType.O.getValue().equals(relVo.getFromRule())) {
-                            // 需要提取已有的关系信息判断是否有重复
-                            List<RelEntityVo> toRelEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(ciEntityTransactionVo.getCiEntityId(), relVo.getId(), 2L);
-                            RelEntityTransactionVo newToRelEntityTransactionVo = toRelEntityTransactionList.get(0);
-                            //如果是替换模式，则把旧的关系添加到需删除列表里
-                            if (newToRelEntityTransactionVo.getAction().equals(RelActionType.REPLACE.getValue())) {
-                                for (RelEntityVo oldToRelEntityVo : toRelEntityList) {
-                                    if (!oldToRelEntityVo.equals(new RelEntityVo(newToRelEntityTransactionVo))) {
-                                        needDeleteRelEntityList.add(oldToRelEntityVo);
-                                    }
-                                }
-                                //清理不相等的旧关系列表，方便下面进行校验
-                                toRelEntityList.removeIf(d -> !d.equals(new RelEntityVo(newToRelEntityTransactionVo)));
-                            }
                             if ((toRelEntityList.size() == 1 && !toRelEntityList.contains(new RelEntityVo(toRelEntityTransactionList.get(0)))) || toRelEntityList.size() > 1) {
                                 throw new RelEntityMultipleException(relVo.getFromLabel());
                             }

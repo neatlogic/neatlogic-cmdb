@@ -520,10 +520,10 @@ public class CiSyncManager {
                                                     CiEntityTransactionVo subCiEntityTransactionVo = generateCiEntityTransaction(subDataWithPK, subSyncCiCollectionVo, ciEntityTransactionMap, mappingVo.getField());
                                                     if (subCiEntityTransactionVo != null) {
                                                         if (ciEntityTransactionMap.containsKey(subCiEntityTransactionVo.getHash())) {
-                                                            ciEntityTransactionVo.addRelEntityData(relVo, mappingVo.getDirection(), subCiId, ciEntityTransactionMap.get(subCiEntityTransactionVo.getHash()).getCiEntityId(), RelActionType.REPLACE.getValue());
+                                                            ciEntityTransactionVo.addRelEntityData(relVo, mappingVo.getDirection(), subCiId, ciEntityTransactionMap.get(subCiEntityTransactionVo.getHash()).getCiEntityId(), mappingVo.getAction());
                                                         } else {
                                                             ciEntityTransactionMap.put(subCiEntityTransactionVo.getHash(), subCiEntityTransactionVo);
-                                                            ciEntityTransactionVo.addRelEntityData(relVo, mappingVo.getDirection(), subCiId, subCiEntityTransactionVo.getCiEntityId(), RelActionType.REPLACE.getValue());
+                                                            ciEntityTransactionVo.addRelEntityData(relVo, mappingVo.getDirection(), subCiId, subCiEntityTransactionVo.getCiEntityId(), mappingVo.getAction());
                                                         }
                                                     }
                                                 }
