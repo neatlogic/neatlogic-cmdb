@@ -39,7 +39,7 @@ public class AccountProtocolSaveApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, isRequired = false, desc = "协议ID"),
+            @Param(name = "id", type = ApiParamType.LONG,  desc = "协议ID"),
             @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "协议名称"),
             @Param(name = "port", type = ApiParamType.INTEGER, desc = "协议端口"),
 

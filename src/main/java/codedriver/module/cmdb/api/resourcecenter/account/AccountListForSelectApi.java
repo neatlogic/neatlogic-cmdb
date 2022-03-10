@@ -10,10 +10,10 @@ import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
-import codedriver.framework.common.util.PageUtil;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.framework.util.TableResultUtil;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -61,22 +61,14 @@ public class AccountListForSelectApi extends PrivateApiComponentBase {
     @Description(desc = "查询资源中心账号列表（下拉列表专用）")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        JSONObject resultObj = new JSONObject();
-        int pageCount = 0;
-        AccountVo searchVo = JSON.toJavaObject(paramObj, AccountVo.class);
-        int rowNum = resourceCenterMapper.getAccountCount(searchVo);
-        if (rowNum > 0) {
-            pageCount = PageUtil.getPageCount(rowNum, searchVo.getPageSize());
-            List<AccountVo> accountVoList = resourceCenterMapper.getAccountListForSelect(searchVo);
-            resultObj.put("tbodyList", accountVoList);
-        } else {
-            resultObj.put("tbodyList", new ArrayList<>());
+        List<AccountVo> accountVoList =new ArrayList<>();
+        AccountVo accountVo = JSON.toJavaObject(paramObj, AccountVo.class);
+        int accountCount = resourceCenterMapper.getAccountCount(accountVo);
+        if (accountCount > 0) {
+            accountVo.setRowNum(accountCount);
+            accountVoList = resourceCenterMapper.getAccountListForSelect(accountVo);
         }
-        resultObj.put("rowNum", rowNum);
-        resultObj.put("pageCount", pageCount);
-        resultObj.put("currentPage", searchVo.getCurrentPage());
-        resultObj.put("pageSize", searchVo.getPageSize());
-        return resultObj;
+        return TableResultUtil.getResult(accountVoList, accountVo);
     }
 
 }
