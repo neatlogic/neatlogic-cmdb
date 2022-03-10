@@ -70,15 +70,15 @@ public class AccountSearchApi extends PrivateApiComponentBase {
     @Description(desc = "查询资源中心账号")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        List<AccountVo> accountVoList = null;
-        AccountVo searchAccountVo = JSON.toJavaObject(paramObj, AccountVo.class);
-        int accountCount = resourceCenterMapper.searchAccountCount(searchAccountVo);
+        List<AccountVo> returnAccountVoList = null;
+        AccountVo paramAccountVo = JSON.toJavaObject(paramObj, AccountVo.class);
+        int accountCount = resourceCenterMapper.searchAccountCount(paramAccountVo);
         if (accountCount > 0) {
-            searchAccountVo.setRowNum(accountCount);
-            accountVoList = resourceCenterMapper.searchAccount(searchAccountVo);
-            List<Long> accountIdList = accountVoList.stream().map(AccountVo::getId).collect(Collectors.toList());
-
+            paramAccountVo.setRowNum(accountCount);
+            returnAccountVoList = resourceCenterMapper.searchAccount(paramAccountVo);
+            List<Long> accountIdList = returnAccountVoList.stream().map(AccountVo::getId).collect(Collectors.toList());
             if (CollectionUtils.isNotEmpty(accountIdList)) {
+
                 //查询账号关联的标签
                 List<AccountTagVo> accountTagVoList = resourceCenterMapper.getAccountTagListByAccountIdList(accountIdList);
                 Map<Long, List<TagVo>> AccountTagVoMap = new HashMap<>();
@@ -91,26 +91,45 @@ public class AccountSearchApi extends PrivateApiComponentBase {
                     }
                 }
                 //查询账号依赖的资产
+                Map<Long, Integer> resourceReferredCountMap = new HashMap<>();
                 List<ResourceAccountVo> resourceAccountList = resourceCenterMapper.getResourceAccountListByAccountIdList(accountIdList);
+                if (CollectionUtils.isNotEmpty(resourceAccountList)) {
+                    Set<Long> resourceAccountIdSet = resourceAccountList.stream().map(ResourceAccountVo::getAccountId).collect(Collectors.toSet());
+                    for (Long accountId : resourceAccountIdSet) {
+                        resourceReferredCountMap.put(accountId, (int) resourceAccountList.stream().filter(a -> a.getAccountId().equals(accountId)).count());
+                    }
+                }
                 //查询账号依赖的tagent
+                Map<Long, Integer> tagentReferredCountMap = new HashMap<>();
                 List<TagentVo> tagentVoList = tagentMapper.getTagentListByAccountIdList(accountIdList);
+                if (CollectionUtils.isNotEmpty(tagentVoList)) {
+                    Set<Long> resourceTagentIdSet = tagentVoList.stream().map(TagentVo::getAccountId).collect(Collectors.toSet());
+                    for (Long accountId : resourceTagentIdSet) {
+                        tagentReferredCountMap.put(accountId, (int) tagentVoList.stream().filter(a -> a.getAccountId().equals(accountId)).count());
+                    }
+                }
 
-                for (AccountVo accountVo : accountVoList) {
+                for (AccountVo accountVo : returnAccountVoList) {
+                    Long returnAccountId = accountVo.getId();
                     //补充账号关联的标签
-                    List<TagVo> tagVoList = AccountTagVoMap.get(accountVo.getId());
+                    List<TagVo> tagVoList = AccountTagVoMap.get(returnAccountId);
                     if (CollectionUtils.isNotEmpty(tagVoList)) {
                         accountVo.setTagList(tagVoList);
                     }
-                    //补充账号依赖的资产
-                    accountVo.setResourceReferredCount((int) resourceAccountList.stream().filter(a -> a.getAccountId().equals(accountVo.getId())).count());
-                    //补充账号依赖的tagent
-                    accountVo.setTagentReferredCount((int) tagentVoList.stream().filter(a -> a.getAccountId().equals(accountVo.getId())).count());
+                    //补充账号依赖的资产个数
+                    if (resourceReferredCountMap.containsKey(returnAccountId)) {
+                        accountVo.setResourceReferredCount(resourceReferredCountMap.get(returnAccountId));
+                    }
+                    //补充账号依赖的tagent个数
+                    if (tagentReferredCountMap.containsKey(returnAccountId)) {
+                        accountVo.setTagentReferredCount(tagentReferredCountMap.get(returnAccountId));
+                    }
                 }
             }
         }
-        if (accountVoList == null) {
-            accountVoList = new ArrayList<>();
+        if (returnAccountVoList == null) {
+            returnAccountVoList = new ArrayList<>();
         }
-        return TableResultUtil.getResult(accountVoList, searchAccountVo);
+        return TableResultUtil.getResult(returnAccountVoList, paramAccountVo);
     }
 }
