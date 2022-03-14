@@ -503,7 +503,11 @@ public class CiSyncManager {
                                             List<CiVo> downCiList = getDownwardCiList(ciId);
                                             if (downCiList.stream().anyMatch(d -> d.getId().equals(subCiId))) {
                                                 //找到关系原始模型id在当前集合下的映射关系
-                                                SyncCiCollectionVo subSyncCiCollectionVo = getSyncCiCollection(ciId, syncCiCollectionVo.getCollectionName(), mappingVo.getField(parentKey));
+                                                SyncCiCollectionVo subSyncCiCollectionVo = getSyncCiCollection(subCiId, syncCiCollectionVo.getCollectionName(), mappingVo.getField(parentKey));
+                                                //先根据obj_type匹配到模型id去寻找是否配了被动采集，如果没有，就用到关系的原始模型（父模型）去寻找是否有配置被动采集
+                                                if (subSyncCiCollectionVo == null) {
+                                                    subSyncCiCollectionVo = getSyncCiCollection(ciId, syncCiCollectionVo.getCollectionName(), mappingVo.getField(parentKey));
+                                                }
                                                 if (subSyncCiCollectionVo != null) {
                                                     JSONObject subDataWithPK = new JSONObject();
                                                     for (String subKey : subData.keySet()) {
@@ -646,7 +650,7 @@ public class CiSyncManager {
                                     criteriaList.add(Criteria.where("_updatetime").gt(convertToIsoDate(syncCiCollectionVo.getLastSyncDate())));
                                 }
                                 //#############测试用条件，使用后注释掉
-                                //criteriaList.add(Criteria.where("PRIMARY_IP").is("10.0.25.138"));
+                                criteriaList.add(Criteria.where("SERVICE_NAME").is("sgcrdb"));
                                 //#############测试用条件
                                 finalCriteria.andOperator(criteriaList);
                                 query.addCriteria(finalCriteria);
