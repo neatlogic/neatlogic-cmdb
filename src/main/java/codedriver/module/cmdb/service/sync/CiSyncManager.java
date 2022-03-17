@@ -650,7 +650,7 @@ public class CiSyncManager {
                                     criteriaList.add(Criteria.where("_updatetime").gt(convertToIsoDate(syncCiCollectionVo.getLastSyncDate())));
                                 }
                                 //#############测试用条件，使用后注释掉
-                                criteriaList.add(Criteria.where("SERVICE_NAME").is("sgcrdb"));
+                                //criteriaList.add(Criteria.where("SERVICE_NAME").is("sgcrdb"));
                                 //#############测试用条件
                                 finalCriteria.andOperator(criteriaList);
                                 query.addCriteria(finalCriteria);

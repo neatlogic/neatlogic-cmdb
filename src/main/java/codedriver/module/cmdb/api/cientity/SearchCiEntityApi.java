@@ -18,7 +18,6 @@ import codedriver.framework.cmdb.dto.cientity.SortVo;
 import codedriver.framework.cmdb.enums.CiAuthType;
 import codedriver.framework.cmdb.enums.ShowType;
 import codedriver.framework.cmdb.enums.group.GroupType;
-import codedriver.framework.cmdb.exception.cientity.CiEntityAuthException;
 import codedriver.framework.cmdb.utils.RelUtil;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
@@ -136,6 +135,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
             }
         }
         Long groupId = jsonObj.getLong("groupId");
+        boolean hasAuth = true;
         //FIXME:查看权限控制仍需斟酌，主要是考虑被引用的配置项列表如果没有权限是否允许查看，目前可控制左侧模型菜单显示，不做严格禁止
         if (!CiAuthChecker.chain().checkCiEntityQueryPrivilege(ciEntityVo.getCiId()).check()) {
             List<Long> groupIdList = groupService.getCurrentUserGroupIdList();
@@ -145,7 +145,8 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
             if (CollectionUtils.isNotEmpty(groupIdList)) {
                 ciEntityVo.setGroupIdList(groupIdList);
             } else {
-                throw new CiEntityAuthException("查看");
+                //throw new CiEntityAuthException(ciVo, "查看");
+                hasAuth = false;
             }
         } else {
             if (groupId != null) {
@@ -154,218 +155,222 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
                 }});
             }
         }
-
-        Long relCiEntityId = jsonObj.getLong("relCiEntityId");
-        Long relId = jsonObj.getLong("relId");
-        String direction = jsonObj.getString("direction");
-        if (relCiEntityId != null && relId != null && StringUtils.isNotBlank(direction)) {
-            List<RelCiEntityFilterVo> relCiEntityFilterList = new ArrayList<>();
-            relCiEntityFilterList.add(new RelCiEntityFilterVo(relId, relCiEntityId, direction));
-            ciEntityVo.setRelCiEntityFilterList(relCiEntityFilterList);
-        }
-        JSONArray ciEntityObjList = jsonObj.getJSONArray("ciEntityList");
-        boolean needAction = jsonObj.getBooleanValue("needAction");
-        boolean needCheck = jsonObj.getBooleanValue("needCheck");
-        boolean needExpand = jsonObj.getBooleanValue("needExpand");
-        boolean needActionType = jsonObj.getBooleanValue("needActionType");
-        JSONArray showAttrRelList = jsonObj.getJSONArray("showAttrRelList");
-        Set<String> showAttrRelSet = new HashSet<>();
-        if (CollectionUtils.isNotEmpty(showAttrRelList)) {
-            for (int i = 0; i < showAttrRelList.size(); i++) {
-                showAttrRelSet.add(showAttrRelList.getString(i));
+        JSONObject returnObj = new JSONObject();
+        if (!hasAuth) {
+            CiVo ciVo = ciMapper.getCiById(ciEntityVo.getCiId());
+            returnObj.put("error", "您没有查看“" + ciVo.getLabel() + "(" + ciVo.getName() + ")”配置项的权限");
+        } else {
+            Long relCiEntityId = jsonObj.getLong("relCiEntityId");
+            Long relId = jsonObj.getLong("relId");
+            String direction = jsonObj.getString("direction");
+            if (relCiEntityId != null && relId != null && StringUtils.isNotBlank(direction)) {
+                List<RelCiEntityFilterVo> relCiEntityFilterList = new ArrayList<>();
+                relCiEntityFilterList.add(new RelCiEntityFilterVo(relId, relCiEntityId, direction));
+                ciEntityVo.setRelCiEntityFilterList(relCiEntityFilterList);
             }
-        }
-        String mode = jsonObj.getString("mode");
-        // 获取视图配置，只返回需要的属性和关系
-        CiViewVo ciViewVo = new CiViewVo();
-        ciViewVo.setCiId(ciEntityVo.getCiId());
-        if (!Objects.equals(jsonObj.getInteger("isAllColumn"), 1)) {
-            ciViewVo.addShowType(ShowType.LIST.getValue());
-            ciViewVo.addShowType(ShowType.ALL.getValue());
-        }
-        List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo));
-        List<Long> attrIdList = null, relIdList = null;
-        JSONArray theadList = new JSONArray();
-        if (needCheck) {
-            // 增加复选列
-            theadList.add(new JSONObject() {
-                {
-                    this.put("key", "selection");
+            JSONArray ciEntityObjList = jsonObj.getJSONArray("ciEntityList");
+            boolean needAction = jsonObj.getBooleanValue("needAction");
+            boolean needCheck = jsonObj.getBooleanValue("needCheck");
+            boolean needExpand = jsonObj.getBooleanValue("needExpand");
+            boolean needActionType = jsonObj.getBooleanValue("needActionType");
+            JSONArray showAttrRelList = jsonObj.getJSONArray("showAttrRelList");
+            Set<String> showAttrRelSet = new HashSet<>();
+            if (CollectionUtils.isNotEmpty(showAttrRelList)) {
+                for (int i = 0; i < showAttrRelList.size(); i++) {
+                    showAttrRelSet.add(showAttrRelList.getString(i));
                 }
-            });
-        }
-        if (needExpand) {
-            // 增加下拉展开控制列
-            theadList.add(new JSONObject() {
-                {
-                    this.put("key", "expander");
-                }
-            });
-        }
-        if (needActionType) {
-            // 增加复选列
-            theadList.add(new JSONObject() {
-                {
-                    this.put("key", "actionType");
-                    this.put("title", "操作类型");
-                }
-            });
-        }
-        JSONArray sortList = new JSONArray();
-        if (CollectionUtils.isNotEmpty(ciViewList)) {
-            attrIdList = new ArrayList<>();
-            relIdList = new ArrayList<>();
-            for (CiViewVo ciview : ciViewList) {
-                JSONObject headObj = new JSONObject();
-                headObj.put("title", ciview.getItemLabel());
-                switch (ciview.getType()) {
-                    case "attr":
-                        if (CollectionUtils.isEmpty(showAttrRelSet) || showAttrRelSet.contains("attr_" + ciview.getItemId())) {
-                            attrIdList.add(ciview.getItemId());
-                            headObj.put("key", "attr_" + ciview.getItemId());
+            }
+            String mode = jsonObj.getString("mode");
+            // 获取视图配置，只返回需要的属性和关系
+            CiViewVo ciViewVo = new CiViewVo();
+            ciViewVo.setCiId(ciEntityVo.getCiId());
+            if (!Objects.equals(jsonObj.getInteger("isAllColumn"), 1)) {
+                ciViewVo.addShowType(ShowType.LIST.getValue());
+                ciViewVo.addShowType(ShowType.ALL.getValue());
+            }
+            List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo));
+            List<Long> attrIdList = null, relIdList = null;
+            JSONArray theadList = new JSONArray();
+            if (needCheck) {
+                // 增加复选列
+                theadList.add(new JSONObject() {
+                    {
+                        this.put("key", "selection");
+                    }
+                });
+            }
+            if (needExpand) {
+                // 增加下拉展开控制列
+                theadList.add(new JSONObject() {
+                    {
+                        this.put("key", "expander");
+                    }
+                });
+            }
+            if (needActionType) {
+                // 增加复选列
+                theadList.add(new JSONObject() {
+                    {
+                        this.put("key", "actionType");
+                        this.put("title", "操作类型");
+                    }
+                });
+            }
+            JSONArray sortList = new JSONArray();
+            if (CollectionUtils.isNotEmpty(ciViewList)) {
+                attrIdList = new ArrayList<>();
+                relIdList = new ArrayList<>();
+                for (CiViewVo ciview : ciViewList) {
+                    JSONObject headObj = new JSONObject();
+                    headObj.put("title", ciview.getItemLabel());
+                    switch (ciview.getType()) {
+                        case "attr":
+                            if (CollectionUtils.isEmpty(showAttrRelSet) || showAttrRelSet.contains("attr_" + ciview.getItemId())) {
+                                attrIdList.add(ciview.getItemId());
+                                headObj.put("key", "attr_" + ciview.getItemId());
+                                theadList.add(headObj);
+                                AttrVo attrVo = attrMap.get(ciview.getItemId());
+                                if (attrVo != null) {
+                                    IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
+                                    if (handler != null && handler.isCanSort()) {
+                                        sortList.add("attr_" + attrVo.getId());
+                                    }
+                                }
+                            }
+                            break;
+                        case "relfrom":
+                            if (CollectionUtils.isEmpty(showAttrRelSet) || showAttrRelSet.contains("relfrom_" + ciview.getItemId())) {
+                                relIdList.add(ciview.getItemId());
+                                headObj.put("key", "relfrom_" + ciview.getItemId());
+                                theadList.add(headObj);
+                            }
+                            break;
+                        case "relto":
+                            if (CollectionUtils.isEmpty(showAttrRelSet) || showAttrRelSet.contains("relto_" + ciview.getItemId())) {
+                                relIdList.add(ciview.getItemId());
+                                headObj.put("key", "relto_" + ciview.getItemId());
+                                theadList.add(headObj);
+                            }
+                            break;
+                        case "const":
+                            //固化属性需要特殊处理
+                            headObj.put("key", "const_" + ciview.getItemName().replace("_", ""));
                             theadList.add(headObj);
-                            AttrVo attrVo = attrMap.get(ciview.getItemId());
-                            if (attrVo != null) {
-                                IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
-                                if (handler != null && handler.isCanSort()) {
-                                    sortList.add("attr_" + attrVo.getId());
+                            break;
+                    }
+                }
+            }
+
+            if (needAction || !"dialog".equals(mode)) {
+                // 增加操作列，无需判断needAction，因为有“查看详情”操作
+                theadList.add(new JSONObject() {
+                    {
+                        this.put("key", "action");
+                    }
+                });
+            }
+
+            //把需要显示的属性和关系设进去，后台会进行自动过滤
+            ciEntityVo.setAttrIdList(attrIdList);
+            ciEntityVo.setRelIdList(relIdList);
+
+            List<CiEntityVo> ciEntityList;
+            CiVo ciVo = ciMapper.getCiById(ciEntityVo.getCiId());
+            if (ciEntityObjList == null) {
+                ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
+            } else {
+                ciEntityList = new ArrayList<>();
+                for (int i = 0; i < ciEntityObjList.size(); i++) {
+                    ciEntityList.add(JSONObject.toJavaObject(ciEntityObjList.getJSONObject(i), CiEntityVo.class));
+                }
+            }
+            JSONArray tbodyList = new JSONArray();
+            if (CollectionUtils.isNotEmpty(ciEntityList)) {
+                boolean canEdit = false, canDelete = false, canViewPassword = false, canTransaction = false;
+                List<Long> hasMaintainCiEntityIdList = new ArrayList<>();
+                List<Long> hasReadCiEntityIdList = new ArrayList<>();
+                if (ciEntityObjList == null && needAction && ciVo.getIsVirtual().equals(0) /*&& ciVo.getIsAbstract().equals(0)*/) {
+                    canEdit = CiAuthChecker.chain().checkCiEntityUpdatePrivilege(ciEntityVo.getCiId()).check();
+                    canDelete = CiAuthChecker.chain().checkCiEntityDeletePrivilege(ciEntityVo.getCiId()).check();
+                    canViewPassword = CiAuthChecker.chain().checkViewPasswordPrivilege(ciEntityVo.getCiId()).check();
+                    canTransaction = CiAuthChecker.chain().checkCiEntityTransactionPrivilege(ciEntityVo.getCiId()).check();
+                    // 任意权限缺失，都需要检查是否在运维群组
+                    if (!canEdit || !canDelete) {
+                        if (CollectionUtils.isNotEmpty(ciEntityVo.getGroupIdList())) {
+                            hasMaintainCiEntityIdList = CiAuthChecker.isCiEntityInGroup(ciEntityList.stream().map(CiEntityVo::getId).collect(Collectors.toList()), GroupType.MAINTAIN);
+                            hasReadCiEntityIdList = CiAuthChecker.isCiEntityInGroup(ciEntityList.stream().map(CiEntityVo::getId).collect(Collectors.toList()), GroupType.READONLY);
+                        }
+                    }
+                }
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+                for (CiEntityVo entity : ciEntityList) {
+                    JSONObject entityObj = new JSONObject();
+                    entityObj.put("id", entity.getId());
+                    entityObj.put("uuid", entity.getUuid());
+                    entityObj.put("name", entity.getName());
+                    entityObj.put("ciId", entity.getCiId());
+                    entityObj.put("rootCiId", entity.getRootCiId());
+                    entityObj.put("ciName", entity.getCiName());
+                    entityObj.put("ciLabel", entity.getCiLabel());
+                    entityObj.put("type", entity.getTypeId());
+                    entityObj.put("typeName", entity.getTypeName());
+                    entityObj.put("inspectTime", entity.getInspectTime() != null ? sdf.format(entity.getInspectTime()) : null);
+                    entityObj.put("inspectStatus", makeupStatus(entity.getInspectStatus()));
+                    entityObj.put("monitorTime", entity.getMonitorTime() != null ? sdf.format(entity.getMonitorTime()) : null);
+                    entityObj.put("monitorStatus", makeupStatus(entity.getMonitorStatus()));
+                    entityObj.put("renewTime", entity.getRenewTime() != null ? sdf.format(entity.getRenewTime()) : null);
+                    entityObj.put("actionType", entity.getActionType());
+                    entityObj.put("attrEntityData", entity.getAttrEntityData());
+                    entityObj.put("relEntityData", entity.getRelEntityData());
+                    entityObj.put("maxRelEntityCount", entity.getMaxRelEntityCount());
+                    entityObj.put("maxAttrEntityCount", entity.getMaxAttrEntityCount());
+                    if (ciEntityObjList == null && needAction && ciVo.getIsVirtual().equals(0)) {
+                        JSONObject actionData = new JSONObject();
+                        actionData.put(CiAuthType.CIENTITYUPDATE.getValue(), canEdit || hasMaintainCiEntityIdList.contains(entity.getId()));
+                        actionData.put(CiAuthType.CIENTITYDELETE.getValue(), canDelete || hasMaintainCiEntityIdList.contains(entity.getId()));
+                        actionData.put(CiAuthType.PASSWORDVIEW.getValue(), canViewPassword || hasMaintainCiEntityIdList.contains(entity.getId()) || hasReadCiEntityIdList.contains(entity.getId()));
+                        actionData.put(CiAuthType.TRANSACTIONMANAGE.getValue(), canTransaction || hasMaintainCiEntityIdList.contains(entity.getId()));
+                        entityObj.put("authData", actionData);
+                    } else if (ciEntityObjList != null && needAction) {
+                        JSONObject actionData = new JSONObject();
+                        //用于表单组件的判断，如果是更新或添加操作时才会出现编辑按钮
+                        if (entityObj.containsKey("actionType")
+                                && (entityObj.getString("actionType").equals("update")
+                                || entityObj.getString("actionType").equals("insert"))) {
+                            actionData.put(CiAuthType.CIENTITYUPDATE.getValue(), true);
+                        } else {
+                            actionData.put(CiAuthType.CIENTITYUPDATE.getValue(), false);
+                        }
+                        actionData.put(CiAuthType.CIENTITYDELETE.getValue(), true);
+                        actionData.put(CiAuthType.PASSWORDVIEW.getValue(), true);
+                        actionData.put(CiAuthType.TRANSACTIONMANAGE.getValue(), true);
+                        entityObj.put("authData", actionData);
+                    }
+                    if (needAction) {
+                        if (ciVo.getIsVirtual().equals(1)) {
+                            entityObj.put("isDisabled", true);//禁用前端复选框
+                        } else {
+                            JSONObject actionData = entityObj.getJSONObject("authData");
+                            if (MapUtils.isEmpty(actionData)) {
+                                entityObj.put("isDisabled", true);//禁用前端复选框
+                            } else {
+                                if (!actionData.getBoolean(CiAuthType.CIENTITYUPDATE.getValue()) && !actionData.getBoolean(CiAuthType.CIENTITYDELETE.getValue())) {
+                                    entityObj.put("isDisabled", true);//禁用前端复选框
                                 }
                             }
                         }
-                        break;
-                    case "relfrom":
-                        if (CollectionUtils.isEmpty(showAttrRelSet) || showAttrRelSet.contains("relfrom_" + ciview.getItemId())) {
-                            relIdList.add(ciview.getItemId());
-                            headObj.put("key", "relfrom_" + ciview.getItemId());
-                            theadList.add(headObj);
-                        }
-                        break;
-                    case "relto":
-                        if (CollectionUtils.isEmpty(showAttrRelSet) || showAttrRelSet.contains("relto_" + ciview.getItemId())) {
-                            relIdList.add(ciview.getItemId());
-                            headObj.put("key", "relto_" + ciview.getItemId());
-                            theadList.add(headObj);
-                        }
-                        break;
-                    case "const":
-                        //固化属性需要特殊处理
-                        headObj.put("key", "const_" + ciview.getItemName().replace("_", ""));
-                        theadList.add(headObj);
-                        break;
-                }
-            }
-        }
-
-        if (needAction || !"dialog".equals(mode)) {
-            // 增加操作列，无需判断needAction，因为有“查看详情”操作
-            theadList.add(new JSONObject() {
-                {
-                    this.put("key", "action");
-                }
-            });
-        }
-
-        //把需要显示的属性和关系设进去，后台会进行自动过滤
-        ciEntityVo.setAttrIdList(attrIdList);
-        ciEntityVo.setRelIdList(relIdList);
-
-        List<CiEntityVo> ciEntityList;
-        CiVo ciVo = ciMapper.getCiById(ciEntityVo.getCiId());
-        if (ciEntityObjList == null) {
-            ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
-        } else {
-            ciEntityList = new ArrayList<>();
-            for (int i = 0; i < ciEntityObjList.size(); i++) {
-                ciEntityList.add(JSONObject.toJavaObject(ciEntityObjList.getJSONObject(i), CiEntityVo.class));
-            }
-        }
-        JSONArray tbodyList = new JSONArray();
-        if (CollectionUtils.isNotEmpty(ciEntityList)) {
-            boolean canEdit = false, canDelete = false, canViewPassword = false, canTransaction = false;
-            List<Long> hasMaintainCiEntityIdList = new ArrayList<>();
-            List<Long> hasReadCiEntityIdList = new ArrayList<>();
-            if (ciEntityObjList == null && needAction && ciVo.getIsVirtual().equals(0) /*&& ciVo.getIsAbstract().equals(0)*/) {
-                canEdit = CiAuthChecker.chain().checkCiEntityUpdatePrivilege(ciEntityVo.getCiId()).check();
-                canDelete = CiAuthChecker.chain().checkCiEntityDeletePrivilege(ciEntityVo.getCiId()).check();
-                canViewPassword = CiAuthChecker.chain().checkViewPasswordPrivilege(ciEntityVo.getCiId()).check();
-                canTransaction = CiAuthChecker.chain().checkCiEntityTransactionPrivilege(ciEntityVo.getCiId()).check();
-                // 任意权限缺失，都需要检查是否在运维群组
-                if (!canEdit || !canDelete) {
-                    if (CollectionUtils.isNotEmpty(ciEntityVo.getGroupIdList())) {
-                        hasMaintainCiEntityIdList = CiAuthChecker.isCiEntityInGroup(ciEntityList.stream().map(CiEntityVo::getId).collect(Collectors.toList()), GroupType.MAINTAIN);
-                        hasReadCiEntityIdList = CiAuthChecker.isCiEntityInGroup(ciEntityList.stream().map(CiEntityVo::getId).collect(Collectors.toList()), GroupType.READONLY);
                     }
+                    tbodyList.add(entityObj);
                 }
             }
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-            for (CiEntityVo entity : ciEntityList) {
-                JSONObject entityObj = new JSONObject();
-                entityObj.put("id", entity.getId());
-                entityObj.put("uuid", entity.getUuid());
-                entityObj.put("name", entity.getName());
-                entityObj.put("ciId", entity.getCiId());
-                entityObj.put("rootCiId", entity.getRootCiId());
-                entityObj.put("ciName", entity.getCiName());
-                entityObj.put("ciLabel", entity.getCiLabel());
-                entityObj.put("type", entity.getTypeId());
-                entityObj.put("typeName", entity.getTypeName());
-                entityObj.put("inspectTime", entity.getInspectTime() != null ? sdf.format(entity.getInspectTime()) : null);
-                entityObj.put("inspectStatus", makeupStatus(entity.getInspectStatus()));
-                entityObj.put("monitorTime", entity.getMonitorTime() != null ? sdf.format(entity.getMonitorTime()) : null);
-                entityObj.put("monitorStatus", makeupStatus(entity.getMonitorStatus()));
-                entityObj.put("renewTime", entity.getRenewTime() != null ? sdf.format(entity.getRenewTime()) : null);
-                entityObj.put("actionType", entity.getActionType());
-                entityObj.put("attrEntityData", entity.getAttrEntityData());
-                entityObj.put("relEntityData", entity.getRelEntityData());
-                entityObj.put("maxRelEntityCount", entity.getMaxRelEntityCount());
-                entityObj.put("maxAttrEntityCount", entity.getMaxAttrEntityCount());
-                if (ciEntityObjList == null && needAction && ciVo.getIsVirtual().equals(0)) {
-                    JSONObject actionData = new JSONObject();
-                    actionData.put(CiAuthType.CIENTITYUPDATE.getValue(), canEdit || hasMaintainCiEntityIdList.contains(entity.getId()));
-                    actionData.put(CiAuthType.CIENTITYDELETE.getValue(), canDelete || hasMaintainCiEntityIdList.contains(entity.getId()));
-                    actionData.put(CiAuthType.PASSWORDVIEW.getValue(), canViewPassword || hasMaintainCiEntityIdList.contains(entity.getId()) || hasReadCiEntityIdList.contains(entity.getId()));
-                    actionData.put(CiAuthType.TRANSACTIONMANAGE.getValue(), canTransaction || hasMaintainCiEntityIdList.contains(entity.getId()));
-                    entityObj.put("authData", actionData);
-                } else if (ciEntityObjList != null && needAction) {
-                    JSONObject actionData = new JSONObject();
-                    //用于表单组件的判断，如果是更新或添加操作时才会出现编辑按钮
-                    if (entityObj.containsKey("actionType")
-                            && (entityObj.getString("actionType").equals("update")
-                            || entityObj.getString("actionType").equals("insert"))) {
-                        actionData.put(CiAuthType.CIENTITYUPDATE.getValue(), true);
-                    } else {
-                        actionData.put(CiAuthType.CIENTITYUPDATE.getValue(), false);
-                    }
-                    actionData.put(CiAuthType.CIENTITYDELETE.getValue(), true);
-                    actionData.put(CiAuthType.PASSWORDVIEW.getValue(), true);
-                    actionData.put(CiAuthType.TRANSACTIONMANAGE.getValue(), true);
-                    entityObj.put("authData", actionData);
-                }
-                if (needAction) {
-                    if (ciVo.getIsVirtual().equals(1)) {
-                        entityObj.put("isDisabled", true);//禁用前端复选框
-                    } else {
-                        JSONObject actionData = entityObj.getJSONObject("authData");
-                        if (MapUtils.isEmpty(actionData)) {
-                            entityObj.put("isDisabled", true);//禁用前端复选框
-                        } else {
-                            if (!actionData.getBoolean(CiAuthType.CIENTITYUPDATE.getValue()) && !actionData.getBoolean(CiAuthType.CIENTITYDELETE.getValue())) {
-                                entityObj.put("isDisabled", true);//禁用前端复选框
-                            }
-                        }
-                    }
-                }
-                tbodyList.add(entityObj);
-            }
+            returnObj.put("pageSize", ciEntityVo.getPageSize());
+            returnObj.put("pageCount", ciEntityVo.getPageCount());
+            returnObj.put("rowNum", ciEntityVo.getRowNum());
+            returnObj.put("currentPage", ciEntityVo.getCurrentPage());
+            returnObj.put("tbodyList", tbodyList);
+            returnObj.put("theadList", theadList);
+            returnObj.put("sortList", sortList);
         }
-        JSONObject returnObj = new JSONObject();
-        returnObj.put("pageSize", ciEntityVo.getPageSize());
-        returnObj.put("pageCount", ciEntityVo.getPageCount());
-        returnObj.put("rowNum", ciEntityVo.getRowNum());
-        returnObj.put("currentPage", ciEntityVo.getCurrentPage());
-        returnObj.put("tbodyList", tbodyList);
-        returnObj.put("theadList", theadList);
-        returnObj.put("sortList", sortList);
         return returnObj;
     }
 
