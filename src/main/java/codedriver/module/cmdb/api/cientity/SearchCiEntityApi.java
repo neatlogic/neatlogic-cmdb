@@ -157,7 +157,6 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
         }
         JSONObject returnObj = new JSONObject();
         if (!hasAuth) {
-            //TODO 后期再优化说明
             CiVo ciVo = ciMapper.getCiById(ciEntityVo.getCiId());
             returnObj.put("error", "您没有查看“" + ciVo.getLabel() + "(" + ciVo.getName() + ")”配置项的权限");
         } else {
