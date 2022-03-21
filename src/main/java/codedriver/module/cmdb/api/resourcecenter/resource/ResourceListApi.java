@@ -7,7 +7,6 @@ package codedriver.module.cmdb.api.resourcecenter.resource;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.autoexec.dao.mapper.AutoexecScriptMapper;
 import codedriver.framework.cmdb.crossover.IResourceListApiCrossoverService;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceScriptVo;
@@ -18,6 +17,7 @@ import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.framework.util.TableResultUtil;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import com.alibaba.fastjson.JSONArray;
@@ -44,9 +44,6 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
 
     @Resource
     private ResourceCenterMapper resourceCenterMapper;
-
-    @Resource
-    private AutoexecScriptMapper autoexecScriptMapper;
 
     @Resource
     private IResourceCenterResourceService resourceCenterResourceService;
@@ -94,51 +91,38 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
     @Description(desc = "查询资源中心数据列表")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        JSONObject resultObj = new JSONObject();
-        List<ResourceVo> resourceVoList = null;
+        List<ResourceVo> resourceVoList = new ArrayList<>();
         ResourceSearchVo searchVo;
         JSONArray defaultValue = jsonObj.getJSONArray("defaultValue");
         if (CollectionUtils.isNotEmpty(defaultValue)) {
             searchVo = new ResourceSearchVo();
-            searchVo.setIdList(defaultValue.toJavaList(Long.class));
+            searchVo.setDefaultValue(defaultValue);
         } else {
             searchVo = resourceCenterResourceService.assembleResourceSearchVo(jsonObj);
         }
-        if (searchVo.getIdList() == null || CollectionUtils.isNotEmpty(searchVo.getIdList())) {
-            int rowNum = resourceCenterMapper.getResourceCount(searchVo);
-            if (rowNum > 0) {
-                searchVo.setRowNum(rowNum);
-                List<Long> idList = resourceCenterMapper.getResourceIdList(searchVo);
-                if (CollectionUtils.isNotEmpty(idList)) {
-                    resourceVoList = resourceCenterMapper.getResourceListByIdList(idList, TenantContext.get().getDataDbName());
-                    if (CollectionUtils.isNotEmpty(resourceVoList)) {
-                        resourceCenterResourceService.addResourceAccount(idList, resourceVoList);
-                        resourceCenterResourceService.addResourceTag(idList, resourceVoList);
-                        Map<Long, ResourceScriptVo> resourceScriptVoMap = new HashMap<>();
-                        List<ResourceScriptVo> resourceScriptVoList = resourceCenterMapper.getResourceScriptListByResourceIdList(idList);
-                        if (CollectionUtils.isNotEmpty(resourceScriptVoList)) {
-                            for (ResourceScriptVo resourceScriptVo : resourceScriptVoList) {
-                                resourceScriptVoMap.put(resourceScriptVo.getResourceId(), resourceScriptVo);
-                            }
-                        }
-                        for (ResourceVo resourceVo : resourceVoList) {
-                            ResourceScriptVo scriptVo = resourceScriptVoMap.get(resourceVo.getId());
-                            resourceVo.setScript(scriptVo);
+        int rowNum = resourceCenterMapper.getResourceCount(searchVo);
+        if (rowNum > 0) {
+            searchVo.setRowNum(rowNum);
+            List<Long> idList = resourceCenterMapper.getResourceIdList(searchVo);
+            if (CollectionUtils.isNotEmpty(idList)) {
+                resourceVoList = resourceCenterMapper.getResourceListByIdList(idList, TenantContext.get().getDataDbName());
+                if (CollectionUtils.isNotEmpty(resourceVoList)) {
+                    resourceCenterResourceService.addResourceAccount(idList, resourceVoList);
+                    resourceCenterResourceService.addResourceTag(idList, resourceVoList);
+                    Map<Long, ResourceScriptVo> resourceScriptVoMap = new HashMap<>();
+                    List<ResourceScriptVo> resourceScriptVoList = resourceCenterMapper.getResourceScriptListByResourceIdList(idList);
+                    if (CollectionUtils.isNotEmpty(resourceScriptVoList)) {
+                        for (ResourceScriptVo resourceScriptVo : resourceScriptVoList) {
+                            resourceScriptVoMap.put(resourceScriptVo.getResourceId(), resourceScriptVo);
                         }
                     }
-
+                    for (ResourceVo resourceVo : resourceVoList) {
+                        ResourceScriptVo scriptVo = resourceScriptVoMap.get(resourceVo.getId());
+                        resourceVo.setScript(scriptVo);
+                    }
                 }
             }
         }
-
-        if (resourceVoList == null) {
-            resourceVoList = new ArrayList<>();
-        }
-        resultObj.put("tbodyList", resourceVoList);
-        resultObj.put("rowNum", searchVo.getRowNum());
-        resultObj.put("pageCount", searchVo.getPageCount());
-        resultObj.put("currentPage", searchVo.getCurrentPage());
-        resultObj.put("pageSize", searchVo.getPageSize());
-        return resultObj;
+        return TableResultUtil.getResult(resourceVoList, searchVo);
     }
 }

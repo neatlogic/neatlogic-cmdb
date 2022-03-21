@@ -17,7 +17,6 @@ import codedriver.framework.cmdb.exception.resourcecenter.AppModuleNotFoundExcep
 import codedriver.framework.util.TableResultUtil;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -53,7 +52,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 
     @Override
     public ResourceSearchVo assembleResourceSearchVo(JSONObject jsonObj) {
-        ResourceSearchVo searchVo = JSON.toJavaObject(jsonObj, ResourceSearchVo.class);
+        ResourceSearchVo searchVo = jsonObj.toJavaObject(ResourceSearchVo.class);
         Long typeId = searchVo.getTypeId();
         if (typeId != null) {
             CiVo ciVo = ciMapper.getCiById(typeId);
@@ -79,24 +78,25 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 searchVo.setTypeIdList(new ArrayList<>(ciIdSet));
             }
         }
-        List<Long> resourceIdList = null;
-        if (CollectionUtils.isNotEmpty(searchVo.getProtocolIdList())) {
-            List<Long> idList = resourceCenterMapper.getResourceIdListByProtocolIdList(searchVo);
-            if (resourceIdList == null) {
-                resourceIdList = idList;
-            } else {
-                resourceIdList.retainAll(idList);
-            }
-        }
-        if (CollectionUtils.isNotEmpty(searchVo.getTagIdList())) {
-            List<Long> idList = resourceCenterMapper.getResourceIdListByTagIdList(searchVo);
-            if (resourceIdList == null) {
-                resourceIdList = idList;
-            } else {
-                resourceIdList.retainAll(idList);
-            }
-        }
-        searchVo.setIdList(resourceIdList);
+        //下面逻辑改成通过join对应的表实现
+//        List<Long> resourceIdList = null;
+//        if (CollectionUtils.isNotEmpty(searchVo.getProtocolIdList())) {
+//            List<Long> idList = resourceCenterMapper.getResourceIdListByProtocolIdList(searchVo);
+//            if (resourceIdList == null) {
+//                resourceIdList = idList;
+//            } else {
+//                resourceIdList.retainAll(idList);
+//            }
+//        }
+//        if (CollectionUtils.isNotEmpty(searchVo.getTagIdList())) {
+//            List<Long> idList = resourceCenterMapper.getResourceIdListByTagIdList(searchVo);
+//            if (resourceIdList == null) {
+//                resourceIdList = idList;
+//            } else {
+//                resourceIdList.retainAll(idList);
+//            }
+//        }
+//        searchVo.setIdList(resourceIdList);
         return searchVo;
     }
 
