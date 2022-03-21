@@ -17,7 +17,6 @@ import codedriver.framework.cmdb.exception.resourcecenter.AppModuleNotFoundExcep
 import codedriver.framework.util.TableResultUtil;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -53,7 +52,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 
     @Override
     public ResourceSearchVo assembleResourceSearchVo(JSONObject jsonObj) {
-        ResourceSearchVo searchVo = JSON.toJavaObject(jsonObj, ResourceSearchVo.class);
+        ResourceSearchVo searchVo = jsonObj.toJavaObject(ResourceSearchVo.class);
         Long typeId = searchVo.getTypeId();
         if (typeId != null) {
             CiVo ciVo = ciMapper.getCiById(typeId);
