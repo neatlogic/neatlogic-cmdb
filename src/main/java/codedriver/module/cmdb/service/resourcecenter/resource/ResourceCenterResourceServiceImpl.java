@@ -79,24 +79,25 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 searchVo.setTypeIdList(new ArrayList<>(ciIdSet));
             }
         }
-        List<Long> resourceIdList = null;
-        if (CollectionUtils.isNotEmpty(searchVo.getProtocolIdList())) {
-            List<Long> idList = resourceCenterMapper.getResourceIdListByProtocolIdList(searchVo);
-            if (resourceIdList == null) {
-                resourceIdList = idList;
-            } else {
-                resourceIdList.retainAll(idList);
-            }
-        }
-        if (CollectionUtils.isNotEmpty(searchVo.getTagIdList())) {
-            List<Long> idList = resourceCenterMapper.getResourceIdListByTagIdList(searchVo);
-            if (resourceIdList == null) {
-                resourceIdList = idList;
-            } else {
-                resourceIdList.retainAll(idList);
-            }
-        }
-        searchVo.setIdList(resourceIdList);
+        //下面逻辑改成通过join对应的表实现
+//        List<Long> resourceIdList = null;
+//        if (CollectionUtils.isNotEmpty(searchVo.getProtocolIdList())) {
+//            List<Long> idList = resourceCenterMapper.getResourceIdListByProtocolIdList(searchVo);
+//            if (resourceIdList == null) {
+//                resourceIdList = idList;
+//            } else {
+//                resourceIdList.retainAll(idList);
+//            }
+//        }
+//        if (CollectionUtils.isNotEmpty(searchVo.getTagIdList())) {
+//            List<Long> idList = resourceCenterMapper.getResourceIdListByTagIdList(searchVo);
+//            if (resourceIdList == null) {
+//                resourceIdList = idList;
+//            } else {
+//                resourceIdList.retainAll(idList);
+//            }
+//        }
+//        searchVo.setIdList(resourceIdList);
         return searchVo;
     }
 
