@@ -9,15 +9,16 @@ import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountTagVo;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
-import codedriver.framework.cmdb.dto.resourcecenter.ResourceAccountVo;
 import codedriver.framework.cmdb.dto.tag.TagVo;
+import codedriver.framework.cmdb.enums.CmdbFromType;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
+import codedriver.framework.dependency.core.DependencyManager;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.tagent.dao.mapper.TagentMapper;
-import codedriver.framework.tagent.dto.TagentVo;
+import codedriver.framework.tagent.enums.TagentFromType;
 import codedriver.framework.util.TableResultUtil;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import com.alibaba.fastjson.JSON;
@@ -91,23 +92,9 @@ public class AccountSearchApi extends PrivateApiComponentBase {
                     }
                 }
                 //查询账号依赖的资产
-                Map<Long, Integer> resourceReferredCountMap = new HashMap<>();
-                List<ResourceAccountVo> resourceAccountList = resourceCenterMapper.getResourceAccountListByAccountIdList(accountIdList);
-                if (CollectionUtils.isNotEmpty(resourceAccountList)) {
-                    Set<Long> resourceAccountIdSet = resourceAccountList.stream().map(ResourceAccountVo::getAccountId).collect(Collectors.toSet());
-                    for (Long accountId : resourceAccountIdSet) {
-                        resourceReferredCountMap.put(accountId, (int) resourceAccountList.stream().filter(a -> a.getAccountId().equals(accountId)).count());
-                    }
-                }
+                Map<Object, Integer> resourceReferredCountMap = DependencyManager.getBatchDependencyCount(CmdbFromType.RESOURCE_ACCOUNT, accountIdList);
                 //查询账号依赖的tagent
-                Map<Long, Integer> tagentReferredCountMap = new HashMap<>();
-                List<TagentVo> tagentVoList = tagentMapper.getTagentListByAccountIdList(accountIdList);
-                if (CollectionUtils.isNotEmpty(tagentVoList)) {
-                    Set<Long> resourceTagentIdSet = tagentVoList.stream().map(TagentVo::getAccountId).collect(Collectors.toSet());
-                    for (Long accountId : resourceTagentIdSet) {
-                        tagentReferredCountMap.put(accountId, (int) tagentVoList.stream().filter(a -> a.getAccountId().equals(accountId)).count());
-                    }
-                }
+                Map<Object, Integer> tagentReferredCountMap = DependencyManager.getBatchDependencyCount(TagentFromType.TAGENT_ACCOUNT, accountIdList);
 
                 for (AccountVo accountVo : returnAccountVoList) {
                     Long returnAccountId = accountVo.getId();
@@ -116,13 +103,15 @@ public class AccountSearchApi extends PrivateApiComponentBase {
                     if (CollectionUtils.isNotEmpty(tagVoList)) {
                         accountVo.setTagList(tagVoList);
                     }
+
                     //补充账号依赖的资产个数
                     if (resourceReferredCountMap.containsKey(returnAccountId)) {
                         accountVo.setResourceReferredCount(resourceReferredCountMap.get(returnAccountId));
                     }
+
                     //补充账号依赖的tagent个数
                     if (tagentReferredCountMap.containsKey(returnAccountId)) {
-                        accountVo.setTagentReferredCount(tagentReferredCountMap.get(returnAccountId));
+                        accountVo.setTagentReferredCount((tagentReferredCountMap.get(returnAccountId)));
                     }
                 }
             }
