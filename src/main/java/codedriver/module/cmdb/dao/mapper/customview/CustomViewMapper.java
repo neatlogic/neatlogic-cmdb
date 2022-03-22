@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -11,6 +11,8 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface CustomViewMapper {
+    CustomViewConstAttrVo getCustomViewConstAttrByUuid(String uuid);
+
     CustomViewAttrVo getCustomViewAttrByUuid(String uuid);
 
     CustomViewVo getCustomViewById(Long customViewId);
@@ -20,6 +22,8 @@ public interface CustomViewMapper {
     List<CustomViewCiVo> getCustomViewCiByCustomViewId(Long customViewId);
 
     List<CustomViewAttrVo> getCustomViewAttrByCustomViewId(CustomViewAttrVo customViewAttrVo);
+
+    List<CustomViewConstAttrVo> getCustomViewConstAttrByCustomViewId(CustomViewConstAttrVo customViewConstAttrVo);
 
     List<CustomViewLinkVo> getCustomViewLinkByCustomViewId(Long customViewId);
 
@@ -35,6 +39,8 @@ public interface CustomViewMapper {
 
     void insertCustomViewCi(CustomViewCiVo customViewCiVo);
 
+    void insertCustomViewConstAttr(CustomViewConstAttrVo customViewConstAttrVo);
+
     void insertCustomViewAttr(CustomViewAttrVo customViewAttrVo);
 
     void insertCustomViewLink(CustomViewLinkVo customViewLinkVo);
@@ -44,6 +50,8 @@ public interface CustomViewMapper {
     void deleteCustomViewCiByCustomViewId(Long customViewId);
 
     void deleteCustomViewAttrByCustomViewId(Long customViewId);
+
+    void deleteCustomViewConstAttrByCustomViewId(Long customViewId);
 
     void deleteCustomViewLinkByCustomViewId(Long customViewId);
 

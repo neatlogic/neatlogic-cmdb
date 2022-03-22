@@ -1,11 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!--
-  ~ Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+  ~ Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
   ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
   -->
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.customview.CustomViewMapper">
+
+    <select id="getCustomViewConstAttrByUuid" parameterType="java.lang.String"
+            resultType="codedriver.framework.cmdb.dto.customview.CustomViewConstAttrVo">
+        SELECT customview_id      AS customViewId,
+               customview_ci_uuid AS customViewCiUuid,
+               uuid,
+               const_name         AS constName,
+               alias,
+               sort,
+               is_hidden          AS isHidden
+        FROM `cmdb_customview_constattr`
+        WHERE uuid = #{value}
+    </select>
 
     <select id="getCustomViewAttrByUuid" parameterType="java.lang.String"
             resultType="codedriver.framework.cmdb.dto.customview.CustomViewAttrVo">
@@ -61,6 +74,24 @@
             <result property="configStr" column="configStr"/>
         </association>
     </resultMap>
+
+    <select id="getCustomViewConstAttrByCustomViewId"
+            parameterType="codedriver.framework.cmdb.dto.customview.CustomViewConstAttrVo"
+            resultType="codedriver.framework.cmdb.dto.customview.CustomViewConstAttrVo">
+        select a.customview_id AS customViewId,
+        a.customview_ci_uuid AS customViewCiUuid,
+        a.uuid,
+        a.const_name AS constName,
+        a.alias,
+        a.sort,
+        a.is_hidden AS isHidden
+        from cmdb_customview_constattr a
+        where a.customview_id = #{customViewId}
+        <if test="isHidden != null">
+            AND a.is_hidden = #{isHidden}
+        </if>
+        ORDER BY a.sort
+    </select>
 
     <select id="getCustomViewAttrByCustomViewId"
             parameterType="codedriver.framework.cmdb.dto.customview.CustomViewAttrVo" resultMap="customViewAttrMap">
@@ -304,6 +335,25 @@
         VALUES (#{customViewId}, #{uuid}, #{ciId}, #{sort}, #{isHidden}, #{isStart}, #{alias})
     </insert>
 
+    <insert id="insertCustomViewConstAttr"
+            parameterType="codedriver.framework.cmdb.dto.customview.CustomViewConstAttrVo">
+        INSERT INTO cmdb_customview_constattr
+        (customview_id,
+         customview_ci_uuid,
+         uuid,
+         const_name,
+         alias,
+         sort,
+         is_hidden)
+        VALUES (#{customViewId},
+                #{customViewCiUuid},
+                #{uuid},
+                #{constName},
+                #{alias},
+                #{sort},
+                #{isHidden})
+    </insert>
+
     <insert id="insertCustomViewAttr" parameterType="codedriver.framework.cmdb.dto.customview.CustomViewAttrVo">
         INSERT INTO cmdb_customview_attr
         (customview_id,
@@ -379,6 +429,12 @@
     <delete id="deleteCustomViewAttrByCustomViewId" parameterType="java.lang.Long">
         DELETE
         FROM cmdb_customview_attr
+        WHERE customview_id = #{value}
+    </delete>
+
+    <delete id="deleteCustomViewConstAttrByCustomViewId" parameterType="java.lang.Long">
+        DELETE
+        FROM cmdb_customview_constattr
         WHERE customview_id = #{value}
     </delete>
 

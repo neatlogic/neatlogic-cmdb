@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -58,18 +58,28 @@ public class CustomViewDataServiceImpl implements CustomViewDataService {
     @Override
     public List<Map<String, Object>> searchCustomViewData(CustomViewConditionVo customViewConditionVo) {
         List<CustomViewAttrVo> customViewAttrList = customViewMapper.getCustomViewAttrByCustomViewId(new CustomViewAttrVo(customViewConditionVo.getCustomViewId()));
+        List<CustomViewConstAttrVo> customViewConstAttrList = customViewMapper.getCustomViewConstAttrByCustomViewId(new CustomViewConstAttrVo(customViewConditionVo.getCustomViewId()));
         Map<String, AttrVo> attrMap = new HashMap<>();
-        for (CustomViewAttrVo customViewAttr : customViewAttrList) {
-            attrMap.put(customViewAttr.getUuid(), customViewAttr.getAttrVo());
-            if (MapUtils.isNotEmpty(customViewAttr.getCondition())) {
-                String expression = customViewAttr.getCondition().getString("expression");
-                if (StringUtils.isNotBlank(expression)) {
-                    JSONArray valueList = customViewAttr.getCondition().getJSONArray("valueList");
-                    customViewConditionVo.addAttrFilter(new CustomViewConditionFilterVo(customViewAttr.getUuid(), expression, valueList));
+        Map<String, CustomViewConstAttrVo> constAttrMap = new HashMap<>();
+        if (CollectionUtils.isNotEmpty(customViewAttrList)) {
+            for (CustomViewAttrVo customViewAttr : customViewAttrList) {
+                attrMap.put(customViewAttr.getUuid(), customViewAttr.getAttrVo());
+                if (MapUtils.isNotEmpty(customViewAttr.getCondition())) {
+                    String expression = customViewAttr.getCondition().getString("expression");
+                    if (StringUtils.isNotBlank(expression)) {
+                        JSONArray valueList = customViewAttr.getCondition().getJSONArray("valueList");
+                        customViewConditionVo.addAttrFilter(new CustomViewConditionFilterVo(customViewAttr.getUuid(), expression, valueList));
+                    }
                 }
             }
         }
-        customViewConditionVo.setFieldList(customViewAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "attr")).collect(Collectors.toList()));
+        if (CollectionUtils.isNotEmpty(customViewConstAttrList)) {
+            for (CustomViewConstAttrVo customViewConstAttrVo : customViewConstAttrList) {
+                constAttrMap.put(customViewConstAttrVo.getUuid(), customViewConstAttrVo);
+            }
+        }
+        customViewConditionVo.addFieldList(customViewAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "attr")).collect(Collectors.toList()));
+        customViewConditionVo.addFieldList(customViewConstAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "constattr")).collect(Collectors.toList()));
 
         List<Map<String, Object>> dataList = customViewDataMapper.searchCustomViewData(customViewConditionVo);
         if (CollectionUtils.isNotEmpty(customViewConditionVo.getValueFilterList())) {
@@ -143,23 +153,40 @@ public class CustomViewDataServiceImpl implements CustomViewDataService {
     @Override
     public List<CustomViewDataGroupVo> searchCustomViewDataGroup(CustomViewConditionVo customViewConditionVo) {
         CustomViewAttrVo customViewAttrVo = customViewMapper.getCustomViewAttrByUuid(customViewConditionVo.getGroupBy());
+        CustomViewConstAttrVo customViewConstAttrVo = customViewMapper.getCustomViewConstAttrByUuid(customViewConditionVo.getGroupBy());
         List<CustomViewAttrVo> customViewAttrList = customViewMapper.getCustomViewAttrByCustomViewId(new CustomViewAttrVo(customViewConditionVo.getCustomViewId()));
+        List<CustomViewConstAttrVo> customViewConstAttrList = customViewMapper.getCustomViewConstAttrByCustomViewId(new CustomViewConstAttrVo(customViewConditionVo.getCustomViewId()));
         Map<String, AttrVo> attrMap = new HashMap<>();
-        for (CustomViewAttrVo customViewAttr : customViewAttrList) {
-            attrMap.put(customViewAttr.getUuid(), customViewAttr.getAttrVo());
-            if (MapUtils.isNotEmpty(customViewAttr.getCondition())) {
-                String expression = customViewAttr.getCondition().getString("expression");
-                if (StringUtils.isNotBlank(expression)) {
-                    JSONArray valueList = customViewAttr.getCondition().getJSONArray("valueList");
-                    customViewConditionVo.addAttrFilter(new CustomViewConditionFilterVo(customViewAttr.getUuid(), expression, valueList));
+        //Map<String, CustomViewConstAttrVo> constAttrMap = new HashMap<>();
+        if (CollectionUtils.isNotEmpty(customViewAttrList)) {
+            for (CustomViewAttrVo customViewAttr : customViewAttrList) {
+                attrMap.put(customViewAttr.getUuid(), customViewAttr.getAttrVo());
+                if (MapUtils.isNotEmpty(customViewAttr.getCondition())) {
+                    String expression = customViewAttr.getCondition().getString("expression");
+                    if (StringUtils.isNotBlank(expression)) {
+                        JSONArray valueList = customViewAttr.getCondition().getJSONArray("valueList");
+                        customViewConditionVo.addAttrFilter(new CustomViewConditionFilterVo(customViewAttr.getUuid(), expression, valueList));
+                    }
                 }
             }
         }
-        customViewConditionVo.setFieldList(customViewAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "attr")).collect(Collectors.toList()));
+       /* if (CollectionUtils.isNotEmpty(customViewConstAttrList)) {
+            for (CustomViewConstAttrVo constAttrVo : customViewConstAttrList) {
+                constAttrMap.put(constAttrVo.getUuid(), constAttrVo);
+            }
+        }*/
+        customViewConditionVo.addFieldList(customViewAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "attr")).collect(Collectors.toList()));
+        customViewConditionVo.addFieldList(customViewConstAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "constattr")).collect(Collectors.toList()));
+
         List<CustomViewDataGroupVo> groupList = customViewDataMapper.searchCustomViewDataGroup(customViewConditionVo);
         for (CustomViewDataGroupVo customViewDataGroupVo : groupList) {
-            customViewDataGroupVo.setAttrAlias(customViewAttrVo.getAlias());
-            customViewDataGroupVo.setAttrUuid(customViewAttrVo.getUuid());
+            if (customViewAttrVo != null) {
+                customViewDataGroupVo.setAttrAlias(customViewAttrVo.getAlias());
+                customViewDataGroupVo.setAttrUuid(customViewAttrVo.getUuid());
+            } else if (customViewConstAttrVo != null) {
+                customViewDataGroupVo.setAttrAlias(customViewConstAttrVo.getAlias());
+                customViewDataGroupVo.setAttrUuid(customViewConstAttrVo.getUuid());
+            }
             if (CollectionUtils.isNotEmpty(customViewConditionVo.getValueFilterList())) {
                 //必须要复制一份，否则序列化成json会出错
                 for (CustomViewValueFilterVo filterVo : customViewConditionVo.getValueFilterList()) {
@@ -167,14 +194,16 @@ public class CustomViewDataServiceImpl implements CustomViewDataService {
                 }
             }
             //转换属性真实值
-            if (attrMap.containsKey(customViewAttrVo.getUuid())) {
-                IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrMap.get(customViewAttrVo.getUuid()).getType());
-                if (handler != null) {
-                    JSONArray vl = new JSONArray();
-                    vl.add(customViewDataGroupVo.getValue());
-                    handler.transferValueListToDisplay(attrMap.get(customViewAttrVo.getUuid()), vl);
-                    if (CollectionUtils.isNotEmpty(vl)) {
-                        customViewDataGroupVo.setValue(vl.getString(0));
+            if (customViewAttrVo != null) {
+                if (attrMap.containsKey(customViewAttrVo.getUuid())) {
+                    IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrMap.get(customViewAttrVo.getUuid()).getType());
+                    if (handler != null) {
+                        JSONArray vl = new JSONArray();
+                        vl.add(customViewDataGroupVo.getValue());
+                        handler.transferValueListToDisplay(attrMap.get(customViewAttrVo.getUuid()), vl);
+                        if (CollectionUtils.isNotEmpty(vl)) {
+                            customViewDataGroupVo.setValue(vl.getString(0));
+                        }
                     }
                 }
             }

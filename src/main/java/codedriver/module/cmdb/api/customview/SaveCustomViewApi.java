@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -98,9 +98,11 @@ public class SaveCustomViewApi extends PrivateApiComponentBase {
         Map<String, JSONObject> ciNodeMap = new HashMap<>();
         Map<String, JSONObject> attrNodeMap = new HashMap<>();
         Map<String, JSONObject> relNodeMap = new HashMap<>();
+        Map<String, JSONObject> constNodeMap = new HashMap<>();
         Map<String, CustomViewAttrVo> attrMap = new HashMap<>();
         Map<String, CustomViewRelVo> relMap = new HashMap<>();
         Map<String, CustomViewCiVo> ciMap = new HashMap<>();
+        Map<String, CustomViewConstAttrVo> constAttrMap = new HashMap<>();
 
         List<CustomViewCiVo> ciList = new ArrayList<>();
         List<CustomViewLinkVo> linkList = new ArrayList<>();
@@ -118,6 +120,9 @@ public class SaveCustomViewApi extends PrivateApiComponentBase {
                 case "Rel":
                     relNodeMap.put(nodeObj.getString("uuid"), nodeObj);
                     break;
+                case "ConstAttr":
+                    constNodeMap.put(nodeObj.getString("uuid"), nodeObj);
+                    break;
             }
         }
         JSONArray groups = config.getJSONArray("groups");
@@ -130,6 +135,7 @@ public class SaveCustomViewApi extends PrivateApiComponentBase {
                 CustomViewCiVo customViewCiVo = null;
                 List<CustomViewAttrVo> attrList = new ArrayList<>();
                 List<CustomViewRelVo> relList = new ArrayList<>();
+                List<CustomViewConstAttrVo> constAttrList = new ArrayList<>();
                 for (int j = 0; j < contains.size(); j++) {
                     if (ciNodeMap.containsKey(contains.getString(j))) {
                         JSONObject ciNodeObj = ciNodeMap.get(contains.getString(j));
@@ -148,6 +154,12 @@ public class SaveCustomViewApi extends PrivateApiComponentBase {
                         relVo.setCustomViewId(customViewVo.getId());
                         relMap.put(relVo.getUuid(), relVo);
                         relList.add(relVo);
+                    } else if (constNodeMap.containsKey(contains.getString(j))) {
+                        JSONObject constNodeObj = constNodeMap.get(contains.getString(j));
+                        CustomViewConstAttrVo constAttrVo = new CustomViewConstAttrVo(constNodeObj);
+                        constAttrVo.setCustomViewId(customViewVo.getId());
+                        constAttrMap.put(constAttrVo.getUuid(), constAttrVo);
+                        constAttrList.add(constAttrVo);
                     }
                 }
                 if (customViewCiVo != null) {
@@ -157,8 +169,12 @@ public class SaveCustomViewApi extends PrivateApiComponentBase {
                     for (CustomViewRelVo relVo : relList) {
                         relVo.setCustomViewCiUuid(customViewCiVo.getUuid());
                     }
+                    for (CustomViewConstAttrVo constAttrVo : constAttrList) {
+                        constAttrVo.setCustomViewCiUuid(customViewCiVo.getUuid());
+                    }
                     customViewCiVo.setAttrList(attrList);
                     customViewCiVo.setRelList(relList);
+                    customViewCiVo.setConstAttrList(constAttrList);
                     ciList.add(customViewCiVo);
                 }
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -83,6 +83,7 @@ public class CustomViewServiceImpl implements CustomViewService, ICustomViewCros
         customViewMapper.updateCustomView(customViewVo);
         customViewMapper.deleteCustomViewCiByCustomViewId(customViewVo.getId());
         customViewMapper.deleteCustomViewAttrByCustomViewId(customViewVo.getId());
+        customViewMapper.deleteCustomViewConstAttrByCustomViewId(customViewVo.getId());
         customViewMapper.deleteCustomViewRelByCustomViewId(customViewVo.getId());
         customViewMapper.deleteCustomViewLinkByCustomViewId(customViewVo.getId());
         customViewMapper.deleteCustomViewTagByCustomViewId(customViewVo.getId());
@@ -106,6 +107,13 @@ public class CustomViewServiceImpl implements CustomViewService, ICustomViewCros
                         customViewRelVo.setCustomViewId(customViewVo.getId());
                         customViewRelVo.setCustomViewCiUuid(customViewCiVo.getUuid());
                         customViewMapper.insertCustomViewRel(customViewRelVo);
+                    }
+                }
+                if (CollectionUtils.isNotEmpty(customViewCiVo.getConstAttrList())) {
+                    for (CustomViewConstAttrVo customViewConstAttrVo : customViewCiVo.getConstAttrList()) {
+                        customViewConstAttrVo.setCustomViewId(customViewVo.getId());
+                        customViewConstAttrVo.setCustomViewCiUuid(customViewCiVo.getUuid());
+                        customViewMapper.insertCustomViewConstAttr(customViewConstAttrVo);
                     }
                 }
             }
