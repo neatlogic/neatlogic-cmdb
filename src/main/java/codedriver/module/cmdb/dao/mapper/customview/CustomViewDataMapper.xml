@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!--
-  ~ Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+  ~ Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
   ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
   -->
 
@@ -54,7 +54,7 @@
             <if test="keyword != null and keyword != '' and fieldList != null and fieldList.size() > 0">
                 AND
                 <foreach collection="fieldList" item="field" separator="OR" open="(" close=")">
-                    <if test="field.type == 'attr'">
+                    <if test="field.type == 'attr' or field.type == 'constattr'">
                         `${field.name}` LIKE CONCAT('%', #{keyword},'%')
                     </if>
                 </foreach>

@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -8,6 +8,7 @@ package codedriver.module.cmdb.api.customview;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.customview.CustomViewAttrVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewConditionVo;
+import codedriver.framework.cmdb.dto.customview.CustomViewConstAttrVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewVo;
 import codedriver.framework.cmdb.exception.customview.CustomViewNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -36,6 +37,7 @@ import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -85,12 +87,36 @@ public class ExportCustomViewDataApi extends PrivateBinaryStreamApiComponentBase
         CustomViewAttrVo pCustomViewAttrVo = new CustomViewAttrVo();
         pCustomViewAttrVo.setCustomViewId(customViewId);
         pCustomViewAttrVo.setIsHidden(0);
+        CustomViewConstAttrVo pCustomViewConstAttrVo = new CustomViewConstAttrVo();
+        pCustomViewConstAttrVo.setCustomViewId(customViewId);
+        pCustomViewConstAttrVo.setIsHidden(0);
         List<CustomViewAttrVo> attrList = customViewMapper.getCustomViewAttrByCustomViewId(pCustomViewAttrVo);
+        List<CustomViewConstAttrVo> constAttrList = customViewMapper.getCustomViewConstAttrByCustomViewId(pCustomViewConstAttrVo);
+        List<JSONObject> attrsList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(attrList)) {
+            for (CustomViewAttrVo attrVo : attrList) {
+                JSONObject dataObj = new JSONObject();
+                dataObj.put("alias", attrVo.getAlias());
+                dataObj.put("uuid", attrVo.getUuid());
+                dataObj.put("sort", attrVo.getSort());
+                attrsList.add(dataObj);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(constAttrList)) {
+            for (CustomViewConstAttrVo attrVo : constAttrList) {
+                JSONObject dataObj = new JSONObject();
+                dataObj.put("alias", attrVo.getAlias());
+                dataObj.put("uuid", attrVo.getUuid());
+                dataObj.put("sort", attrVo.getSort());
+                attrsList.add(dataObj);
+            }
+        }
+        attrsList.sort(Comparator.comparing(o -> o.getInteger("sort")));
         List<String> headerList = new ArrayList<>();
         List<String> columnList = new ArrayList<>();
-        for (CustomViewAttrVo attr : attrList) {
-            headerList.add(attr.getAlias());
-            columnList.add(attr.getUuid());
+        for (JSONObject attr : attrsList) {
+            headerList.add(attr.getString("alias"));
+            columnList.add(attr.getString("uuid"));
         }
 
         ExcelBuilder builder = new ExcelBuilder(SXSSFWorkbook.class);

@@ -60,7 +60,6 @@ public class CustomViewDataServiceImpl implements CustomViewDataService {
         List<CustomViewAttrVo> customViewAttrList = customViewMapper.getCustomViewAttrByCustomViewId(new CustomViewAttrVo(customViewConditionVo.getCustomViewId()));
         List<CustomViewConstAttrVo> customViewConstAttrList = customViewMapper.getCustomViewConstAttrByCustomViewId(new CustomViewConstAttrVo(customViewConditionVo.getCustomViewId()));
         Map<String, AttrVo> attrMap = new HashMap<>();
-        Map<String, CustomViewConstAttrVo> constAttrMap = new HashMap<>();
         if (CollectionUtils.isNotEmpty(customViewAttrList)) {
             for (CustomViewAttrVo customViewAttr : customViewAttrList) {
                 attrMap.put(customViewAttr.getUuid(), customViewAttr.getAttrVo());
@@ -75,11 +74,13 @@ public class CustomViewDataServiceImpl implements CustomViewDataService {
         }
         if (CollectionUtils.isNotEmpty(customViewConstAttrList)) {
             for (CustomViewConstAttrVo customViewConstAttrVo : customViewConstAttrList) {
-                constAttrMap.put(customViewConstAttrVo.getUuid(), customViewConstAttrVo);
+
             }
         }
-        customViewConditionVo.addFieldList(customViewAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "attr")).collect(Collectors.toList()));
-        customViewConditionVo.addFieldList(customViewConstAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "constattr")).collect(Collectors.toList()));
+        List<CustomViewConditionFieldVo> customViewConditionFieldList = new ArrayList<>();
+        customViewConditionFieldList.addAll(customViewAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "attr")).collect(Collectors.toList()));
+        customViewConditionFieldList.addAll(customViewConstAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "constattr")).collect(Collectors.toList()));
+        customViewConditionVo.setFieldList(customViewConditionFieldList);
 
         List<Map<String, Object>> dataList = customViewDataMapper.searchCustomViewData(customViewConditionVo);
         if (CollectionUtils.isNotEmpty(customViewConditionVo.getValueFilterList())) {
@@ -146,7 +147,11 @@ public class CustomViewDataServiceImpl implements CustomViewDataService {
     @Override
     public List<CiEntityVo> searchCustomViewCiEntity(CustomViewConditionVo customViewConditionVo) {
         List<CustomViewAttrVo> customViewAttrList = customViewMapper.getCustomViewAttrByCustomViewId(new CustomViewAttrVo(customViewConditionVo.getCustomViewId()));
-        customViewConditionVo.setFieldList(customViewAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "attr")).collect(Collectors.toList()));
+        List<CustomViewConstAttrVo> customViewConstAttrList = customViewMapper.getCustomViewConstAttrByCustomViewId(new CustomViewConstAttrVo(customViewConditionVo.getCustomViewId()));
+        List<CustomViewConditionFieldVo> customViewConditionFieldList = new ArrayList<>();
+        customViewConditionFieldList.addAll(customViewAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "attr")).collect(Collectors.toList()));
+        customViewConditionFieldList.addAll(customViewConstAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "constattr")).collect(Collectors.toList()));
+        customViewConditionVo.setFieldList(customViewConditionFieldList);
         return customViewDataMapper.searchCustomViewCiEntity(customViewConditionVo);
     }
 
@@ -170,13 +175,11 @@ public class CustomViewDataServiceImpl implements CustomViewDataService {
                 }
             }
         }
-       /* if (CollectionUtils.isNotEmpty(customViewConstAttrList)) {
-            for (CustomViewConstAttrVo constAttrVo : customViewConstAttrList) {
-                constAttrMap.put(constAttrVo.getUuid(), constAttrVo);
-            }
-        }*/
-        customViewConditionVo.addFieldList(customViewAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "attr")).collect(Collectors.toList()));
-        customViewConditionVo.addFieldList(customViewConstAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "constattr")).collect(Collectors.toList()));
+        List<CustomViewConditionFieldVo> customViewConditionFieldList = new ArrayList<>();
+        customViewConditionFieldList.addAll(customViewAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "attr")).collect(Collectors.toList()));
+        customViewConditionFieldList.addAll(customViewConstAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "constattr")).collect(Collectors.toList()));
+
+        customViewConditionVo.setFieldList(customViewConditionFieldList);
 
         List<CustomViewDataGroupVo> groupList = customViewDataMapper.searchCustomViewDataGroup(customViewConditionVo);
         for (CustomViewDataGroupVo customViewDataGroupVo : groupList) {
