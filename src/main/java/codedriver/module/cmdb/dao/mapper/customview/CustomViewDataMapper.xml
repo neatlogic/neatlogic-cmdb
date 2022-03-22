@@ -65,10 +65,24 @@
                         AND
                         <choose>
                             <when test="attrFilter.expression == 'equal'">
-                                `${attrFilter.attrUuid}_hash` = #{attrFilter.value,typeHandler=Md5Handler}
+                                <choose>
+                                    <when test="attrFilter.type == 'attr'">
+                                        `${attrFilter.attrUuid}_hash` = #{attrFilter.value,typeHandler=Md5Handler}
+                                    </when>
+                                    <otherwise>
+                                        `${attrFilter.attrUuid}` = #{attrFilter.value}
+                                    </otherwise>
+                                </choose>
                             </when>
                             <when test="attrFilter.expression == 'notequal'">
-                                `${attrFilter.attrUuid}_hash` != #{attrFilter.value,typeHandler=Md5Handler}
+                                <choose>
+                                    <when test="attrFilter.type == 'attr'">
+                                        `${attrFilter.attrUuid}_hash` != #{attrFilter.value,typeHandler=Md5Handler}
+                                    </when>
+                                    <otherwise>
+                                        `${attrFilter.attrUuid}` != #{attrFilter.value}
+                                    </otherwise>
+                                </choose>
                             </when>
                             <when test="attrFilter.expression == 'like'">
                                 `${attrFilter.attrUuid}` LIKE

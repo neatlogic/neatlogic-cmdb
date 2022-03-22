@@ -72,11 +72,6 @@ public class CustomViewDataServiceImpl implements CustomViewDataService {
                 }
             }
         }
-        if (CollectionUtils.isNotEmpty(customViewConstAttrList)) {
-            for (CustomViewConstAttrVo customViewConstAttrVo : customViewConstAttrList) {
-
-            }
-        }
         List<CustomViewConditionFieldVo> customViewConditionFieldList = new ArrayList<>();
         customViewConditionFieldList.addAll(customViewAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "attr")).collect(Collectors.toList()));
         customViewConditionFieldList.addAll(customViewConstAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "constattr")).collect(Collectors.toList()));
