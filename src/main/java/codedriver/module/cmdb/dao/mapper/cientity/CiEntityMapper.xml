@@ -909,7 +909,6 @@
         </if>
     </select>
 
-
     <select id="getCiEntityIdByCiId" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
             resultType="java.lang.Long" useCache="false">
         SELECT id
