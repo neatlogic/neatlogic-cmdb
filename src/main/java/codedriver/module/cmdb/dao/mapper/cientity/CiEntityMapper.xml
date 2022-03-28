@@ -900,11 +900,24 @@
         WHERE `ci_id` = #{value}
     </select>
 
+    <select id="getCiEntityIdCountByCiIdAndKeyword" resultType="int">
+        SELECT COUNT(1)
+        FROM `cmdb_cientity`
+        WHERE `ci_id` = #{id}
+        <if test="keyword != null and keyword != ''">
+            AND name LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+    </select>
+
+
     <select id="getCiEntityIdByCiId" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
             resultType="java.lang.Long" useCache="false">
         SELECT id
         FROM cmdb_cientity
         WHERE ci_id = #{ciId}
+        <if test="keyword != null and keyword != ''">
+            AND name LIKE CONCAT('%', #{keyword}, '%')
+        </if>
         LIMIT #{startNum} , #{pageSize}
     </select>
 

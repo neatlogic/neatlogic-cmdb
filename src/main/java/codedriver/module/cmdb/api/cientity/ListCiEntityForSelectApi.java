@@ -58,6 +58,7 @@ public class ListCiEntityForSelectApi extends PrivateApiComponentBase {
             @Param(name = "ciName", type = ApiParamType.STRING, isRequired = true, desc = "模型名称"),
             @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "默认值列表"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
+            @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
             @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true")
     })
@@ -81,8 +82,8 @@ public class ListCiEntityForSelectApi extends PrivateApiComponentBase {
             ciEntityVo.setRowNum(ciEntityList.size());
             return TableResultUtil.getResult(ciEntityList, ciEntityVo);
         }
-        int rowNum = ciEntityMapper.getCiEntityIdCountByCiId(ciVo.getId());
-        if (rowNum > 0 ) {
+        int rowNum = ciEntityMapper.getCiEntityIdCountByCiIdAndKeyword(ciVo.getId(), ciEntityVo.getKeyword());
+        if (rowNum > 0) {
             ciEntityVo.setRowNum(rowNum);
             ciEntityVo.setCiId(ciVo.getId());
             List<Long> idList = ciEntityMapper.getCiEntityIdByCiId(ciEntityVo);
