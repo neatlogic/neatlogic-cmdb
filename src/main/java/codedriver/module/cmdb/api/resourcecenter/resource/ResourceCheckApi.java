@@ -72,7 +72,8 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
             @Param(name = "protocolId", type = ApiParamType.LONG, desc = "连接协议id"),
             @Param(name = "filter", type = ApiParamType.JSONOBJECT, desc = "过滤器"),
             @Param(name = "selectNodeList", type = ApiParamType.JSONARRAY, desc = "选择节点列表"),
-            @Param(name = "inputNodeList", type = ApiParamType.JSONARRAY, desc = "输入节点列表")
+            @Param(name = "inputNodeList", type = ApiParamType.JSONARRAY, desc = "输入节点列表"),
+            @Param(name = "whitelist", type = ApiParamType.JSONARRAY, desc = "白名单")
     })
     @Output({
             @Param(name = "count", type = ApiParamType.INTEGER, desc = "校验不成功个数"),
@@ -109,17 +110,21 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
             }
         }
         List<ResourceVo> executeUserIsNotFoundInResourceList = new ArrayList<>();
+        List<ResourceVo> executeUserIsNotFoundInWhitelist = new ArrayList<>();
         JSONObject executeUserIsNotFoundInResourceObj = new JSONObject();
         executeUserIsNotFoundInResourceObj.put("type", "executeUserIsNotFoundInResource");
         executeUserIsNotFoundInResourceObj.put("protocol", protocol);
         executeUserIsNotFoundInResourceObj.put("executeUser", executeUser);
         executeUserIsNotFoundInResourceObj.put("list", executeUserIsNotFoundInResourceList);
+        executeUserIsNotFoundInResourceObj.put("whitelist", executeUserIsNotFoundInWhitelist);
 
         List<ResourceVo> protocolIsNotFoundInResourceList = new ArrayList<>();
+        List<ResourceVo> protocolIsNotFoundInWhitelist = new ArrayList<>();
         JSONObject protocolIsNotFoundInResourceObj = new JSONObject();
         protocolIsNotFoundInResourceObj.put("type", "protocolIsNotFoundInResource");
         protocolIsNotFoundInResourceObj.put("protocol", protocol);
         protocolIsNotFoundInResourceObj.put("list", protocolIsNotFoundInResourceList);
+        protocolIsNotFoundInResourceObj.put("whitelist", protocolIsNotFoundInWhitelist);
 
         List<ResourceSearchVo> resourceIsNotFoundList = new ArrayList<>();
         JSONObject resourceIsNotFoundObj = new JSONObject();
@@ -185,16 +190,21 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
             addException(executeUser, protocolId, executeUserIsNotFoundInResourceList, protocolIsNotFoundInResourceList, protocolVoList, resourceVoList.stream().map(ResourceVo::getId).collect(Collectors.toList()));
         }
 
-        if (executeUserIsNotFoundInResourceList.size() > 0) {
+        JSONArray whiteArray = jsonObj.getJSONArray("whitelist");
+        if (CollectionUtils.isNotEmpty(whiteArray)) {
+            List<ResourceVo> whitelist = whiteArray.toJavaList(ResourceVo.class);
+            addException(executeUser, protocolId, executeUserIsNotFoundInWhitelist, protocolIsNotFoundInWhitelist, protocolVoList, whitelist.stream().map(ResourceVo::getId).collect(Collectors.toList()));
+        }
+        if (executeUserIsNotFoundInResourceList.size() > 0 || executeUserIsNotFoundInWhitelist.size() > 0) {
             resultArray.add(executeUserIsNotFoundInResourceObj);
         }
         if (resourceIsNotFoundList.size() > 0) {
             resultArray.add(resourceIsNotFoundObj);
         }
-        if (protocolIsNotFoundInResourceList.size() > 0) {
+        if (protocolIsNotFoundInResourceList.size() > 0 || protocolIsNotFoundInWhitelist.size() > 0) {
             resultArray.add(protocolIsNotFoundInResourceObj);
         }
-        int count = executeUserIsNotFoundInResourceList.size() + resourceIsNotFoundList.size() + protocolIsNotFoundInResourceList.size();
+        int count = executeUserIsNotFoundInResourceList.size() + resourceIsNotFoundList.size() + protocolIsNotFoundInResourceList.size() + executeUserIsNotFoundInWhitelist.size() + protocolIsNotFoundInWhitelist.size();
         resultObj.put("count", count);
         return resultObj;
     }
