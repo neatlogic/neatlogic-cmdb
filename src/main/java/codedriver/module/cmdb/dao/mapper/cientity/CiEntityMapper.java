@@ -204,6 +204,8 @@ public interface CiEntityMapper {
 
     int getCiEntityIdCountByCiId(Long ciId);
 
+    int getCiEntityIdCountByCiIdAndKeyword(@Param("id") Long id, @Param("keyword") String keyword);
+
     void updateCiEntityInspectStatus(CiEntityVo ciEntityVo);
 
     void updateCiEntityLockById(CiEntityVo ciEntityVo);
