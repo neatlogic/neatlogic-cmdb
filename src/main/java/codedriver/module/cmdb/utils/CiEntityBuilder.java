@@ -364,10 +364,14 @@ public class CiEntityBuilder {
             if (value instanceof JSONArray) {
                 valueList.addAll((JSONArray) value);
             } else if (value.toString().startsWith("[")) {
-                try {
-                    //例如附件型参数有可能是个数组，所以先尝试做转换，不行再当字符串处理
-                    valueList = JSONArray.parseArray(value.toString());
-                } catch (Exception ignored) {
+                if (attrVo.getType().equals("file")) {
+                    try {
+                        //例如附件型参数有可能是个数组，所以先尝试做转换，不行再当字符串处理
+                        valueList = JSONArray.parseArray(value.toString());
+                    } catch (Exception ignored) {
+                        valueList.add(value);
+                    }
+                } else {
                     valueList.add(value);
                 }
             } else {
