@@ -252,7 +252,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 
 //        searchMap.put("StorageDevice", (searchVo) -> {
 //            int rowNum = resourceCenterMapper.getStorageResourceCount(searchVo);
-//            if (rowNum > 0) {getOsResourceCountByAppModuleIdAndEnvId
+//            if (rowNum > 0) {
 //                searchVo.setRowNum(rowNum);
 //                List<Long> idList = resourceCenterMapper.getStorageResourceIdList(searchVo);
 //                if (CollectionUtils.isNotEmpty(idList)) {
