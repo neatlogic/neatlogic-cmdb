@@ -215,8 +215,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                     continue;
                 }
                 searchVo.setTypeId(ciVo.getId());
-                if (CollectionUtils.isNotEmpty(searchMap.get(actionKey).execute(searchVo))) {
-                    JSONObject tableObj =TableResultUtil.getResult(searchMap.get(actionKey).execute(searchVo), searchVo);
+                List<ResourceVo> returnList = searchMap.get(actionKey).execute(searchVo);
+                if (CollectionUtils.isNotEmpty(returnList)) {
+                    JSONObject tableObj =TableResultUtil.getResult(returnList, searchVo);
                     tableObj.put("type", resourceTypeVo);
                     tableList.add(tableObj);
                 }
