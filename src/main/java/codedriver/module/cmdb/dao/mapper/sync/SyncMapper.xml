@@ -172,7 +172,7 @@
         FROM cmdb_sync_ci_collection a
         JOIN cmdb_ci b ON a.ci_id = b.id
         <include refid="searchSyncCiCollectionSql"></include>
-        ORDER BY a.collection_name ,a.id DESC
+        ORDER BY a.collection_name ,a.collect_mode
         LIMIT #{startNum}, #{pageSize}
     </select>
 
