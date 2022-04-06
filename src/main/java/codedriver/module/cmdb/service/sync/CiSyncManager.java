@@ -343,7 +343,7 @@ public class CiSyncManager {
                 //使用所有非引用属性去搜索配置项，没有则添加，发现一个则就修改，发现多个就抛异常
                 List<CiEntityVo> checkList = searchCiEntityWithCache(ciEntityConditionVo);
                 if (CollectionUtils.isNotEmpty(checkList) && checkList.size() > 1) {
-                    throw new CiEntityDuplicateException();
+                    throw new CiEntityDuplicateException(dataObj);
                 }
                 CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
                 ciEntityTransactionVo.setCiId(ciVo.getId());
@@ -432,7 +432,7 @@ public class CiSyncManager {
                                         attrConditionVo.addAttrFilter(filterVo);
                                         List<CiEntityVo> attrCiCheckList = searchCiEntityWithCache(attrConditionVo);//ciEntityService.searchCiEntity(attrConditionVo);
                                         if (CollectionUtils.isNotEmpty(attrCiCheckList) && attrCiCheckList.size() > 1) {
-                                            throw new CiEntityDuplicateException();
+                                            throw new CiEntityDuplicateException(dataObj);
                                         }
                                         //添加目标属性事务
                                         CiEntityTransactionVo attrCiEntityTransactionVo = new CiEntityTransactionVo();
