@@ -215,9 +215,11 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                     continue;
                 }
                 searchVo.setTypeId(ciVo.getId());
-                JSONObject tableObj = TableResultUtil.getResult(searchMap.get(actionKey).execute(searchVo), searchVo);
-                tableObj.put("type", resourceTypeVo);
-                tableList.add(tableObj);
+                if (CollectionUtils.isNotEmpty(searchMap.get(actionKey).execute(searchVo))) {
+                    JSONObject tableObj =TableResultUtil.getResult(searchMap.get(actionKey).execute(searchVo), searchVo);
+                    tableObj.put("type", resourceTypeVo);
+                    tableList.add(tableObj);
+                }
             }
         }
         return tableList;
@@ -237,12 +239,12 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             return new ArrayList<>();
         });
         searchMap.put("OS", (searchVo) -> {
-            int rowNum = resourceCenterMapper.getOsResourceCount(searchVo);
+            int rowNum = resourceCenterMapper.getOsResourceCountByAppModuleIdAndEnvId(searchVo);
             if (rowNum > 0) {
                 searchVo.setRowNum(rowNum);
-                List<Long> idList = resourceCenterMapper.getOsResourceIdList(searchVo);
-                if (CollectionUtils.isNotEmpty(idList)) {
-                    return resourceCenterMapper.getOsResourceListByIdList(idList, TenantContext.get().getDataDbName());
+                Set<Long> idSet = resourceCenterMapper.getOsResourceIdListByAppModuleIdAndEnvId(searchVo);
+                if (CollectionUtils.isNotEmpty(idSet)) {
+                    return resourceCenterMapper.getOsResourceListByIdList(new ArrayList<>(idSet), TenantContext.get().getDataDbName());
                 }
             }
             return new ArrayList<>();
