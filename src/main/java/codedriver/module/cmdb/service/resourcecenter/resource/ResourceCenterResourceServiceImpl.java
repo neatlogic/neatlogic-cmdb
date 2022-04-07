@@ -243,9 +243,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             int rowNum = resourceCenterMapper.getOsResourceCountByAppModuleIdAndEnvId(searchVo);
             if (rowNum > 0) {
                 searchVo.setRowNum(rowNum);
-                Set<Long> idSet = resourceCenterMapper.getOsResourceIdListByAppModuleIdAndEnvId(searchVo);
-                if (CollectionUtils.isNotEmpty(idSet)) {
-                    return resourceCenterMapper.getOsResourceListByIdList(new ArrayList<>(idSet), TenantContext.get().getDataDbName());
+                List<Long> idList = resourceCenterMapper.getOsResourceIdListByAppModuleIdAndEnvId(searchVo);
+                if (CollectionUtils.isNotEmpty(idList)) {
+                    return resourceCenterMapper.getOsResourceListByIdList(idList, TenantContext.get().getDataDbName());
                 }
             }
             return new ArrayList<>();
