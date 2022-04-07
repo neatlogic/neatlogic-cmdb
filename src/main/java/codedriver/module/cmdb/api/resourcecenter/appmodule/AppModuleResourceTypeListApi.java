@@ -59,6 +59,11 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
         return null;
     }
 
+    @Override
+    public boolean disableReturnCircularReferenceDetect() {
+        return true;
+    }
+
     @Input({
             @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "应用模块id（实例id）")
     })
@@ -116,28 +121,17 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
                 //循环resourceTypeIdList，将其父级模型的name存在于resourceTypeNameList中的 模型 返回给前端
                 if (CollectionUtils.isNotEmpty(resourceTypeIdList)) {
                     for (Long resourceTypeId : resourceTypeIdList) {
-                        //重复引用，需要new新的对象，避免出现"$ref": "$.Return[1].ciVoList[0]"的情况
-                        CiVo returnCiVo = new CiVo();
                         CiVo ciVo = allCiVoMap.get(resourceTypeId);
-                        returnCiVo.setId(ciVo.getId());
-                        returnCiVo.setName(ciVo.getName());
-                        returnCiVo.setLabel(ciVo.getLabel());
-                        returnCiVo.setLft(ciVo.getLft());
-                        returnCiVo.setRht(ciVo.getRht());
-                        if (returnCiVo == null) {
+                        if (ciVo == null) {
                             throw new CiNotFoundException(resourceTypeId);
                         }
-                        String resourceTypeName = resourceCenterResourceService.getResourceTypeName(resourceCiVoList, returnCiVo);
+                        String resourceTypeName = resourceCenterResourceService.getResourceTypeName(resourceCiVoList, ciVo);
                         if (resourceTypeNameList.contains(resourceTypeName)) {
-                            returnCiVoSet.add(returnCiVo);
+                            returnCiVoSet.add(ciVo);
                         }
                     }
                 }
-                if (CollectionUtils.isNotEmpty(returnCiVoSet)) {
-                    returnObj.put("ciVoList", new ArrayList<>(returnCiVoSet));
-                } else {
-                    returnObj.put("ciVoList", new ArrayList<>());
-                }
+                returnObj.put("ciVoList", returnCiVoSet);
                 returnArray.add(returnObj);
             }
         }
