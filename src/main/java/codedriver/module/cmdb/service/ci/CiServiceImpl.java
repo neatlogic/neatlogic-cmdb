@@ -271,6 +271,7 @@ public class CiServiceImpl implements CiService {
             throw new CiNotFoundException(ciVo.getId());
         }
         List<AttrVo> parentAttrList = null;
+        boolean needRebuildLRCode = false;
         if (!Objects.equals(checkCiVo.getParentCiId(), ciVo.getParentCiId())) {
 
             //如果继承发生改变需要检查是否有配置项数据，有数据不允许变更
@@ -312,8 +313,7 @@ public class CiServiceImpl implements CiService {
                     throw new AttrIsUsedInNameAttrException();
                 }*/
             }
-            //重建所有左右编码，性能差点但可靠
-            LRCodeManager.rebuildLeftRightCode("cmdb_ci", "id", "parent_ci_id");
+            needRebuildLRCode = true;
             //LRCodeManager.moveTreeNode("cmdb_ci", "id", "parent_ci_id", ciVo.getId(), MoveType.INNER, ciVo.getParentCiId());
         }
         if (ciMapper.checkCiNameIsExists(ciVo) > 0) {
@@ -349,6 +349,10 @@ public class CiServiceImpl implements CiService {
                     }
                 }
             }
+        }
+        if (needRebuildLRCode) {
+            //重建所有左右编码，性能差点但可靠
+            LRCodeManager.rebuildLeftRightCode("cmdb_ci", "id", "parent_ci_id");
         }
     }
 
