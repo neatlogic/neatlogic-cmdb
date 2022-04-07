@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -17,7 +17,6 @@ import codedriver.framework.cmdb.exception.ci.*;
 import codedriver.framework.cmdb.utils.RelUtil;
 import codedriver.framework.exception.database.DataBaseNotFoundException;
 import codedriver.framework.lrcode.LRCodeManager;
-import codedriver.framework.lrcode.constvalue.MoveType;
 import codedriver.framework.transaction.core.AfterTransactionJob;
 import codedriver.framework.transaction.core.EscapeTransactionJob;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
@@ -313,9 +312,9 @@ public class CiServiceImpl implements CiService {
                     throw new AttrIsUsedInNameAttrException();
                 }*/
             }
-
-
-            LRCodeManager.moveTreeNode("cmdb_ci", "id", "parent_ci_id", ciVo.getId(), MoveType.INNER, ciVo.getParentCiId());
+            //重建所有左右编码，性能差点但可靠
+            LRCodeManager.rebuildLeftRightCode("cmdb_ci", "id", "parent_ci_id");
+            //LRCodeManager.moveTreeNode("cmdb_ci", "id", "parent_ci_id", ciVo.getId(), MoveType.INNER, ciVo.getParentCiId());
         }
         if (ciMapper.checkCiNameIsExists(ciVo) > 0) {
             throw new CiNameIsExistsException(ciVo.getName());
