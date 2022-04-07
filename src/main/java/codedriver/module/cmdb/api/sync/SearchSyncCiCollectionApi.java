@@ -54,7 +54,10 @@ public class SearchSyncCiCollectionApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciId", type = ApiParamType.LONG, desc = "模型id"), @Param(name = "collectionType", type = ApiParamType.STRING, desc = "集合类型"), @Param(name = "collectionName", type = ApiParamType.STRING, desc = "集合名称")})
+    @Input({@Param(name = "ciId", type = ApiParamType.LONG, desc = "模型id"),
+            @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字"),
+            @Param(name = "collectionType", type = ApiParamType.STRING, desc = "集合类型"),
+            @Param(name = "collectionName", type = ApiParamType.STRING, desc = "集合名称")})
     @Description(desc = "搜索模型集合映射接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
