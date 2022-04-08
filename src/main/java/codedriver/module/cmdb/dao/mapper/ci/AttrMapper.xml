@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!--
-  ~ Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+  ~ Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
   ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
   -->
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.ci.AttrMapper">
     <cache-ref namespace="codedriver.module.cmdb.dao.mapper.ci.CiMapper"/>
-    <cache type="codedriver.framework.dao.cache.CodeDriverCache" flushInterval="30000" size="100"></cache>
 
     <select id="getAttrByCiIdAndName" resultType="codedriver.framework.cmdb.dto.ci.AttrVo"
             useCache="true">
