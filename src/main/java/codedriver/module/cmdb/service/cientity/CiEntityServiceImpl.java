@@ -1995,6 +1995,8 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
      * @param ciEntityVo 配置项信息
      */
     private void insertCiEntity(CiEntityVo ciEntityVo) {
+        //记录原来的ciId，后面需要还原
+        Long ciId = ciEntityVo.getCiId();
         CiVo ciVo = ciMapper.getCiById(ciEntityVo.getCiId());
         List<CiVo> ciList = ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht());
         ciEntityMapper.insertCiEntityBaseInfo(ciEntityVo);
@@ -2002,6 +2004,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             ciEntityVo.setCiId(ci.getId());
             ciEntityMapper.insertCiEntity(ciEntityVo);
         }
+        ciEntityVo.setCiId(ciId);
     }
 
     /**
@@ -2011,6 +2014,8 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
      */
     @Override
     public void updateCiEntity(CiEntityVo ciEntityVo) {
+        //记录原来的ciId，后面需要还原
+        Long ciId = ciEntityVo.getCiId();
         CiVo ciVo = ciMapper.getCiById(ciEntityVo.getCiId());
         List<CiVo> ciList = ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht());
         ciEntityMapper.updateCiEntityBaseInfo(ciEntityVo);
@@ -2020,6 +2025,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 ciEntityMapper.updateCiEntity(ciEntityVo);
             }
         }
+        ciEntityVo.setCiId(ciId);
     }
 
     /**
