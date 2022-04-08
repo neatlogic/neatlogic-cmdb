@@ -594,15 +594,15 @@ public class CiSyncManager {
                             JSONObject dataObj = finalDataList.getJSONObject(i);
                             //用于存放一样的配置项事务，当关联到相同的配置项时只会增加一次
                             Map<Integer, CiEntityTransactionVo> ciEntityTransactionMap = new HashMap<>();
-                            CiEntityTransactionVo ciEntityTransactionVo = generateCiEntityTransaction(dataObj, syncCiCollectionVo, ciEntityTransactionMap, null);
-                            if (ciEntityTransactionVo != null && !ciEntityTransactionMap.containsKey(ciEntityTransactionVo.getHash())) {
-                                ciEntityTransactionMap.put(ciEntityTransactionVo.getHash(), ciEntityTransactionVo);
-                            }
-                            List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
-                            for (Integer key : ciEntityTransactionMap.keySet()) {
-                                ciEntityTransactionList.add(ciEntityTransactionMap.get(key));
-                            }
                             try {
+                                CiEntityTransactionVo ciEntityTransactionVo = generateCiEntityTransaction(dataObj, syncCiCollectionVo, ciEntityTransactionMap, null);
+                                if (ciEntityTransactionVo != null && !ciEntityTransactionMap.containsKey(ciEntityTransactionVo.getHash())) {
+                                    ciEntityTransactionMap.put(ciEntityTransactionVo.getHash(), ciEntityTransactionVo);
+                                }
+                                List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
+                                for (Integer key : ciEntityTransactionMap.keySet()) {
+                                    ciEntityTransactionList.add(ciEntityTransactionMap.get(key));
+                                }
                                 ciEntityService.saveCiEntityWithoutTransaction(ciEntityTransactionList, syncCiCollectionVo.getTransactionGroup());
                             } catch (ApiRuntimeException ex) {
                                 logger.warn(ex.getMessage(), ex);
@@ -754,18 +754,19 @@ public class CiSyncManager {
                         if (logger.isInfoEnabled()) {
                             startTime = System.currentTimeMillis();
                         }
-                        CiEntityTransactionVo ciEntityTransactionVo = this.generateCiEntityTransaction(dataObj, syncCiCollectionVo, ciEntityTransactionVoMap, null);
-                        if (ciEntityTransactionVo != null && !ciEntityTransactionVoMap.containsKey(ciEntityTransactionVo.getHash())) {
-                            ciEntityTransactionVoMap.put(ciEntityTransactionVo.getHash(), ciEntityTransactionVo);
-                        }
-                        List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
-                        for (Integer key : ciEntityTransactionVoMap.keySet()) {
-                            ciEntityTransactionList.add(ciEntityTransactionVoMap.get(key));
-                        }
-                        if (logger.isInfoEnabled()) {
-                            logger.info("创建了" + ciEntityTransactionList.size() + "个事务，耗时：" + (System.currentTimeMillis() - startTime) + "ms");
-                        }
                         try {
+                            CiEntityTransactionVo ciEntityTransactionVo = this.generateCiEntityTransaction(dataObj, syncCiCollectionVo, ciEntityTransactionVoMap, null);
+                            if (ciEntityTransactionVo != null && !ciEntityTransactionVoMap.containsKey(ciEntityTransactionVo.getHash())) {
+                                ciEntityTransactionVoMap.put(ciEntityTransactionVo.getHash(), ciEntityTransactionVo);
+                            }
+                            List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
+                            for (Integer key : ciEntityTransactionVoMap.keySet()) {
+                                ciEntityTransactionList.add(ciEntityTransactionVoMap.get(key));
+                            }
+                            if (logger.isInfoEnabled()) {
+                                logger.info("创建了" + ciEntityTransactionList.size() + "个事务，耗时：" + (System.currentTimeMillis() - startTime) + "ms");
+                            }
+
                             if (logger.isInfoEnabled()) {
                                 startTime = System.currentTimeMillis();
                             }
