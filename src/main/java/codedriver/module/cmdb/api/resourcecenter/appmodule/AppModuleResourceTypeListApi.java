@@ -46,7 +46,7 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询当前模块各环境的模型列表";
+        return "查询当前模块各环境的需要显示的模型列表";
     }
 
     @Override
@@ -59,13 +59,18 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
         return null;
     }
 
+    @Override
+    public boolean disableReturnCircularReferenceDetect() {
+        return true;
+    }
+
     @Input({
             @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "应用模块id（实例id）")
     })
     @Output({
-            @Param(desc = "当前模块各环境的模型列表")
+            @Param(desc = "当前模块各环境的需要显示的模型列表")
     })
-    @Description(desc = "当前模块各环境的模型列表")
+    @Description(desc = "当前模块各环境的需要显示的模型列表")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONArray returnArray = new JSONArray();
@@ -126,11 +131,7 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
                         }
                     }
                 }
-                if (CollectionUtils.isNotEmpty(returnCiVoSet)) {
-                    returnObj.put("ciVoList", new ArrayList<>(returnCiVoSet));
-                } else {
-                    returnObj.put("ciVoList", new ArrayList<>());
-                }
+                returnObj.put("ciVoList", returnCiVoSet);
                 returnArray.add(returnObj);
             }
         }
