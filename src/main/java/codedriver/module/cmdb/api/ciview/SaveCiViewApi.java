@@ -70,7 +70,6 @@ public class SaveCiViewApi extends PrivateApiComponentBase {
                 ciViewMapper.insertCiView(ciViewVo);
             }
         }
-        System.out.println(System.currentTimeMillis() + ":update ciview");
         return null;
     }
 
