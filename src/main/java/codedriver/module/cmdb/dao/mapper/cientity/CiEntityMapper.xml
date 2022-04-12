@@ -303,6 +303,7 @@
                 <if test="limitAttrEntity == true">
                     AND `cmdb_attrentity_${attr.id}`.`from_index` &lt;= (#{attr.maxAttrEntityCount} + 1)
                 </if>
+                <!--由于select部分语句并没有涉及以下表，而且是left join查询，去掉可以提升性能
                 <choose>
                     <when test="attr.targetIsVirtual != 1">
                         LEFT JOIN `cmdb_cientity` `cmdb_attr_cientity_${attr.id}` ON
@@ -314,7 +315,7 @@
                         `cmdb_attrentity_${attr.id}`.to_cientity_id
                         = `cmdb_attr_cientity_${attr.id}`.id
                     </otherwise>
-                </choose>
+                </choose>-->
             </if>
         </foreach>
         <if test="attrCiEntityFilter != null ">
@@ -406,18 +407,20 @@
                 <if test="limitAttrEntity == true">
                     AND `cmdb_attrentity_${attr.id}`.`from_index` &lt;= (#{attr.maxAttrEntityCount} + 1)
                 </if>
-                <choose>
-                    <when test="attr.targetIsVirtual != 1">
-                        LEFT JOIN `cmdb_cientity` `cmdb_attr_cientity_${attr.id}` ON
-                        `cmdb_attrentity_${attr.id}`.to_cientity_id
-                        = `cmdb_attr_cientity_${attr.id}`.id
-                    </when>
-                    <otherwise>
-                        LEFT JOIN ${attr.targetCiTableName} `cmdb_attr_cientity_${attr.id}` ON
-                        `cmdb_attrentity_${attr.id}`.to_cientity_id
-                        = `cmdb_attr_cientity_${attr.id}`.id
-                    </otherwise>
-                </choose>
+                <!--由于select部分语句并没有涉及以下表，而且是left join查询，去掉可以提升性能
+               <choose>
+                   <when test="attr.targetIsVirtual != 1">
+                       LEFT JOIN `cmdb_cientity` `cmdb_attr_cientity_${attr.id}` ON
+                       `cmdb_attrentity_${attr.id}`.to_cientity_id
+                       = `cmdb_attr_cientity_${attr.id}`.id
+                   </when>
+                   <otherwise>
+                       LEFT JOIN ${attr.targetCiTableName} `cmdb_attr_cientity_${attr.id}` ON
+                       `cmdb_attrentity_${attr.id}`.to_cientity_id
+                       = `cmdb_attr_cientity_${attr.id}`.id
+                   </otherwise>
+               </choose>
+               -->
             </if>
         </foreach>
         <if test="attrCiEntityFilter != null ">
@@ -1070,9 +1073,10 @@
                 #{jobId},
                 #{ciEntityId},
                 #{inspectStatus},
-                #{inspectTime}) ON DUPLICATE KEY
-        UPDATE `inspect_status` = #{inspectStatus},
-            `inspect_time` = #{inspectTime}
+                #{inspectTime})
+        ON DUPLICATE KEY
+            UPDATE `inspect_status` = #{inspectStatus},
+                   `inspect_time`   = #{inspectTime}
     </insert>
 
     <delete id="deleteAttrEntityByFromCiEntityIdAndAttrId">
