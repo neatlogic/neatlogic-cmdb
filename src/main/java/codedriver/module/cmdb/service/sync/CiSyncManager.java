@@ -175,7 +175,8 @@ public class CiSyncManager {
                         if (op.isPresent()) {
                             syncCiCollectionMap.put(ciId + "#" + collectionName + "#" + pk, op.get());
                         } else {
-                            //如果在当前的逻辑集合collectionName找不到映射配置，则根据ciId随便找一个物理集合相同的被动映射关系（之所以这样做是假设同一个模型在不同逻辑集合上的配置应该是一致的，所以只要物理集合一致即可）
+                            //如果在当前的逻辑集合collectionName找不到映射配置，则根据ciId随便找一个物理集合相同的被动映射关系
+                            // （之所以这样做是假设同一个模型在不同逻辑集合上的配置应该是一致的，所以只要物理集合一致即可）
                             op = syncCiCollectionList.stream().filter(d -> getCollectionByName(d.getCollectionName()).getCollection().equals(getCollectionByName(collectionName).getCollection())).findFirst();
                             op.ifPresent(ciCollectionVo -> syncCiCollectionMap.put(ciId + "#" + collectionName + "#" + pk, ciCollectionVo));
                         }
