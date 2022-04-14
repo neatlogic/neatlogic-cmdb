@@ -13,7 +13,7 @@ import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.auth.label.RESOURCECENTER_MODIFY;
+import codedriver.module.cmdb.auth.label.RESOURCECENTER_ACCOUNT_MODIFY;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@AuthAction(action = RESOURCECENTER_MODIFY.class)
+@AuthAction(action = RESOURCECENTER_ACCOUNT_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class AccountTagSaveApi extends PrivateApiComponentBase {
 
