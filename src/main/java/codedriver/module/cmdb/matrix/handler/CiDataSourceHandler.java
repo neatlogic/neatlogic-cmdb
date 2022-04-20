@@ -341,7 +341,9 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                     case "attr":
                         matrixAttributeVo.setUuid("attr_" + ciview.getItemId());
                         AttrVo attrVo = attrMap.get(ciview.getItemId());
-                        matrixAttributeVo.setConfigStr(JSONObject.toJSONString(attrVo));
+                        JSONObject attrConfig = new JSONObject();
+                        attrConfig.put("attr", attrVo);
+                        matrixAttributeVo.setConfig(attrConfig);
 //                        if ("date".equals(attrVo.getType())) {
 //                            matrixAttributeVo.setIsSearchable(0);
 //                        }
@@ -349,12 +351,16 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                     case "relfrom":
                         matrixAttributeVo.setUuid("relfrom_" + ciview.getItemId());
                         RelVo fromRelVo = fromRelMap.get(ciview.getItemId());
-                        matrixAttributeVo.setConfigStr(JSONObject.toJSONString(fromRelVo));
+                        JSONObject fromRelConfig = new JSONObject();
+                        fromRelConfig.put("rel", fromRelVo);
+                        matrixAttributeVo.setConfig(fromRelConfig);
                         break;
                     case "relto":
                         matrixAttributeVo.setUuid("relto_" + ciview.getItemId());
                         RelVo toRelVo = toRelMap.get(ciview.getItemId());
-                        matrixAttributeVo.setConfigStr(JSONObject.toJSONString(toRelVo));
+                        JSONObject toRelConfig = new JSONObject();
+                        toRelConfig.put("rel", toRelVo);
+                        matrixAttributeVo.setConfig(toRelConfig);
                         break;
                     case "const":
                         //固化属性需要特殊处理
