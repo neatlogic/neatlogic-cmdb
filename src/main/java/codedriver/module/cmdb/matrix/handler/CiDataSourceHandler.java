@@ -456,35 +456,35 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                 ciEntityVo.setIdList(defaultValue.toJavaList(Long.class));
                 //paramObj.put("idList", defaultValue.toJavaList(Long.class));
             } else {
-                Long ciId = matrixCiVo.getCiId();
-                List<AttrVo> attrList = attrMapper.getAttrByCiId(ciId);
-                Map<Long, AttrVo> attrMap = attrList.stream().collect(Collectors.toMap(AttrVo::getId, e -> e));
-                Map<Long, RelVo> relMap = new HashMap<>();
-                List<RelVo> relList = relMapper.getRelByCiId(ciId);
-                for (RelVo relVo : relList) {
-                    relMap.put(relVo.getId(), relVo);
-                }
-                CiViewVo ciViewVo = new CiViewVo();
-                ciViewVo.setCiId(ciId);
-                Map<String, CiViewVo> ciViewMap = new HashMap<>();
-                List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo));
-                for (CiViewVo ciview : ciViewList) {
-                    switch (ciview.getType()) {
-                        case "attr":
-                            ciViewMap.put("attr_" + ciview.getItemId(), ciview);
-                            break;
-                        case "relfrom":
-                            ciViewMap.put("relfrom_" + ciview.getItemId(), ciview);
-                            break;
-                        case "relto":
-                            ciViewMap.put("relto_" + ciview.getItemId(), ciview);
-                            break;
-                        case "const":
-                            //固化属性需要特殊处理
-                            ciViewMap.put("const_" + ciview.getItemName().replace("_", ""), ciview);
-                            break;
-                    }
-                }
+//                Long ciId = matrixCiVo.getCiId();
+//                List<AttrVo> attrList = attrMapper.getAttrByCiId(ciId);
+//                Map<Long, AttrVo> attrMap = attrList.stream().collect(Collectors.toMap(AttrVo::getId, e -> e));
+//                Map<Long, RelVo> relMap = new HashMap<>();
+//                List<RelVo> relList = relMapper.getRelByCiId(ciId);
+//                for (RelVo relVo : relList) {
+//                    relMap.put(relVo.getId(), relVo);
+//                }
+//                CiViewVo ciViewVo = new CiViewVo();
+//                ciViewVo.setCiId(ciId);
+//                Map<String, CiViewVo> ciViewMap = new HashMap<>();
+//                List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo));
+//                for (CiViewVo ciview : ciViewList) {
+//                    switch (ciview.getType()) {
+//                        case "attr":
+//                            ciViewMap.put("attr_" + ciview.getItemId(), ciview);
+//                            break;
+//                        case "relfrom":
+//                            ciViewMap.put("relfrom_" + ciview.getItemId(), ciview);
+//                            break;
+//                        case "relto":
+//                            ciViewMap.put("relto_" + ciview.getItemId(), ciview);
+//                            break;
+//                        case "const":
+//                            //固化属性需要特殊处理
+//                            ciViewMap.put("const_" + ciview.getItemName().replace("_", ""), ciview);
+//                            break;
+//                    }
+//                }
 //                Map<String, CiViewVo> ciViewMap = ciViewList.stream().collect(Collectors.toMap(CiViewVo::getItemName, e -> e));
 //                List<AttrFilterVo> attrFilterList = new ArrayList<>();
 //                List<RelFilterVo> relFilterList = new ArrayList<>();
@@ -800,6 +800,16 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             }
 //            Map<String, CiViewVo> ciViewMap = ciViewList.stream().collect(Collectors.toMap(CiViewVo::getItemName, e -> e));
             JSONArray defaultValue = dataVo.getDefaultValue();
+            List<AttrFilterVo> attrFilterList = new ArrayList<>();
+            List<RelFilterVo> relFilterList = new ArrayList<>();
+            JSONArray attrFilterArray = dataVo.getAttrFilterList();
+            if (CollectionUtils.isNotEmpty(attrFilterArray)) {
+                attrFilterList = attrFilterArray.toJavaList(AttrFilterVo.class);
+            }
+            JSONArray relFilterArray = dataVo.getRelFilterList();
+            if (CollectionUtils.isNotEmpty(relFilterArray)) {
+                relFilterList = relFilterArray.toJavaList(RelFilterVo.class);
+            }
             if (CollectionUtils.isNotEmpty(defaultValue)) {
                 for (String value : defaultValue.toJavaList(String.class)) {
                     if (value.contains(SELECT_COMPOSE_JOINER)) {
@@ -812,8 +822,8 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                             }
                         }
                         boolean needAccessApi = true;
-                        List<AttrFilterVo> attrFilterList = new ArrayList<>();
-                        List<RelFilterVo> relFilterList = new ArrayList<>();
+//                        List<AttrFilterVo> attrFilterList = new ArrayList<>();
+//                        List<RelFilterVo> relFilterList = new ArrayList<>();
                         int min = Math.min(splitList.size(), columnList.size());
                         for (int i = 0; i < min; i++) {
                             String column = columnList.get(i);
@@ -839,8 +849,8 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                     }
                 }
             } else {
-                List<AttrFilterVo> attrFilterList = new ArrayList<>();
-                List<RelFilterVo> relFilterList = new ArrayList<>();
+//                List<AttrFilterVo> attrFilterList = new ArrayList<>();
+//                List<RelFilterVo> relFilterList = new ArrayList<>();
                 boolean needAccessApi = true;
                 String keywordColumn = dataVo.getKeywordColumn();
                 if (StringUtils.isNotBlank(keywordColumn) && StringUtils.isNotBlank(dataVo.getKeyword())) {
