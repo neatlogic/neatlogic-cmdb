@@ -547,6 +547,15 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                         List<RelFilterVo> relFilterList = relFilterArray.toJavaList(RelFilterVo.class);
                         ciEntityVo.setRelFilterList(relFilterList);
                     }
+                    ciEntityVo.setFilterCiEntityId(dataVo.getFilterCiEntityId());
+                    ciEntityVo.setFilterCiId(dataVo.getFilterCiId());
+                    Long groupId = dataVo.getGroupId();
+                    if (groupId != null) {
+                        List<Long> groupIdList = new ArrayList<>();
+                        groupIdList.add(groupId);
+                        ciEntityVo.setGroupIdList(groupIdList);
+                    }
+
                     // paramObj.put("attrFilterList", attrFilterList);
                     // paramObj.put("relFilterList", relFilterList);
                 }
