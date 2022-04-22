@@ -5,10 +5,13 @@
 
 package codedriver.module.cmdb.api.resourcecenter.resource;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.autoexec.dto.job.AutoexecJobVo;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterAccountNotFoundException;
+import codedriver.framework.cmdb.exception.resourcecenter.ResourceNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.util.RC4Util;
 import codedriver.framework.restful.annotation.Description;
@@ -17,10 +20,12 @@ import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.publicapi.PublicApiComponentBase;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 @Service
 public class ResourceAccountGetPublicApi extends PublicApiComponentBase {
@@ -46,8 +51,9 @@ public class ResourceAccountGetPublicApi extends PublicApiComponentBase {
             @Param(name = "resourceId", type = ApiParamType.LONG, desc = "资产id"),
             @Param(name = "host", type = ApiParamType.STRING, desc = "host ip"),
             @Param(name = "port", type = ApiParamType.INTEGER, desc = "端口"),
-            @Param(name = "accountId", type = ApiParamType.LONG, desc = "账号id"),
-            @Param(name = "username", type = ApiParamType.STRING, desc = "账号名")
+            @Param(name = "protocol", type = ApiParamType.STRING, desc = "协议",isRequired = true),
+            @Param(name = "protocolPort", type = ApiParamType.INTEGER, desc = "协议端口"),
+            @Param(name = "username", type = ApiParamType.STRING, desc = "账号名",isRequired = true)
     })
     @Output({
             @Param(name = "name", explode = AccountVo[].class, desc = "账号"),
@@ -55,33 +61,26 @@ public class ResourceAccountGetPublicApi extends PublicApiComponentBase {
     @Description(desc = "根据资产id、账号名和协议获取账号密码")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        /*
-         * 按以下规则顺序匹配account
-         * 1、通过 ”资产id+账号id“ 匹配
-         * 2、通过 ”组合工具配置的执行节点的ip+账号id“ 匹配 账号表
-         * 3、通过 ”组合工具配置的执行节点的ip+端口“ 匹配 账号表
-         */
-        Long resourceId = paramObj.getLong("resourceId");
-        Long accountId = paramObj.getLong("accountId");
-        String host = paramObj.getString("host");
-        Integer port = paramObj.getInteger("port");
-        AccountVo accountVo = null;
 
-        //1
-        if (resourceId != null && accountId != null) {
-            accountVo = resourceCenterMapper.getResourceAccountByResourceIdAndAccountId(resourceId, accountId);
+        Long resourceId = paramObj.getLong("resourceId");
+        String ip = paramObj.getString("host");
+        Integer port = paramObj.getInteger("port");
+        String protocol = paramObj.getString("protocol");
+        Integer protocolPort = paramObj.getInteger("protocolPort");
+        String username = paramObj.getString("username");
+
+        if (resourceId == null) {
+            ResourceVo resourceVo = resourceCenterMapper.getResourceByIpAndPort(TenantContext.get().getDataDbName(), ip, port);
+            if(resourceVo == null){
+                throw new ResourceNotFoundException();
+            }
+            resourceId = resourceVo.getId();
         }
-        //2
-        if (accountVo == null && accountId != null && StringUtils.isNotBlank(host)) {
-            accountVo = resourceCenterMapper.getResourceAccountByIpAndAccountId(host, accountId);
-        }
-        //3
-        if (accountVo == null && StringUtils.isNotBlank(host) && port != null) {
-            accountVo = resourceCenterMapper.getResourceAccountByIpAndPort(host, port);
-        }
-        if (accountVo == null) {
+
+        List<AccountVo> accountVoList = resourceCenterMapper.getResourceAccountByResourceIdAndProtocolAndProtocolPortAndUsername(resourceId,protocol,protocolPort,username);
+        if (CollectionUtils.isEmpty(accountVoList)) {
             throw new ResourceCenterAccountNotFoundException();
         }
-        return "{ENCRYPTED}" + RC4Util.encrypt(AutoexecJobVo.AUTOEXEC_RC4_KEY, RC4Util.decrypt(accountVo.getPasswordCipher().replace("RC4:", StringUtils.EMPTY)));
+        return "{ENCRYPTED}" + RC4Util.encrypt(AutoexecJobVo.AUTOEXEC_RC4_KEY, RC4Util.decrypt(accountVoList.get(0).getPasswordCipher().replace("RC4:", StringUtils.EMPTY)));
     }
 }
