@@ -108,9 +108,6 @@ public class ResourceAccountBatchDeleteApi extends PrivateApiComponentBase {
             }
         }
         resourceCenterMapper.deleteResourceAccountByResourceIdListAndAccountIdList(resourceIdList, accountIdList);
-        //刷新accountIp
-        //刷新accountIp
-        resourceCenterAccountService.refreshAccountIpByResourceIdList(resourceIdList);
         return null;
     }
 }

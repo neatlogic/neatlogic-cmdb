@@ -158,8 +158,6 @@ public class ResourceAccountBatchAddApi extends PrivateApiComponentBase {
         if (CollectionUtils.isNotEmpty(resourceAccountVoList)) {
             resourceCenterMapper.insertIgnoreResourceAccount(resourceAccountVoList);
         }
-        //刷新accountIp
-        resourceCenterAccountService.refreshAccountIpByResourceIdList(resourceIdList);
 
         JSONObject resultObj = new JSONObject();
         resultObj.put("successCount", successCount);

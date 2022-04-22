@@ -124,8 +124,6 @@ public class ResourceAccountSaveApi extends PrivateApiComponentBase {
         if (CollectionUtils.isNotEmpty(resourceAccountVoList)) {
             resourceCenterMapper.insertIgnoreResourceAccount(resourceAccountVoList);
         }
-        //刷新accountIp
-        resourceCenterAccountService.refreshAccountIpByResourceIdList(Collections.singletonList(resourceId));
 
         JSONObject resultObj = new JSONObject();
         resultObj.put("successCount", successCount);
