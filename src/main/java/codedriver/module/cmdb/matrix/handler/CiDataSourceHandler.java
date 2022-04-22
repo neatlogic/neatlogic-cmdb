@@ -368,6 +368,16 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                         matrixAttributeVo.setUuid("const_" + itemName);
                         if ("id".equals(itemName)) {
                             matrixAttributeVo.setPrimaryKey(1);
+                        } else if ("ciLabel".equals(itemName)) {
+                            // 不是虚拟模型的模型属性不能搜索
+                            if (Objects.equals(ciVo.getIsAbstract(), 0)) {
+                                matrixAttributeVo.setIsSearchable(0);
+                            }
+                            JSONObject config = new JSONObject();
+                            config.put("ciId", ciId);
+                            matrixAttributeVo.setConfig(config);
+                        } else {
+                            matrixAttributeVo.setIsSearchable(0);
                         }
                         break;
                 }
@@ -549,12 +559,6 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                     }
                     ciEntityVo.setFilterCiEntityId(dataVo.getFilterCiEntityId());
                     ciEntityVo.setFilterCiId(dataVo.getFilterCiId());
-                    Long groupId = dataVo.getGroupId();
-                    if (groupId != null) {
-                        List<Long> groupIdList = new ArrayList<>();
-                        groupIdList.add(groupId);
-                        ciEntityVo.setGroupIdList(groupIdList);
-                    }
 
                     // paramObj.put("attrFilterList", attrFilterList);
                     // paramObj.put("relFilterList", relFilterList);
