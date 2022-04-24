@@ -714,8 +714,6 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                             }
                         }
                         boolean needAccessApi = true;
-//                        List<AttrFilterVo> attrFilterList = new ArrayList<>();
-//                        List<RelFilterVo> relFilterList = new ArrayList<>();
                         int min = Math.min(splitList.size(), columnList.size());
                         for (int i = 0; i < min; i++) {
                             String column = columnList.get(i);
