@@ -471,12 +471,15 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             List<Map<String, Object>> tbodyList = new ArrayList<>();
             JSONArray tbodyArray = accessSearchCiEntity(matrixUuid, ciEntityVo);
             if (CollectionUtils.isNotEmpty(tbodyArray)) {
+                Map<String, String> attributeUuidMap = matrixAttributeList.stream().collect(Collectors.toMap(e -> e.getLabel(), e -> e.getUuid()));
                 for (int i = 0; i < tbodyArray.size(); i++) {
                     JSONObject rowData = tbodyArray.getJSONObject(i);
                     if (MapUtils.isNotEmpty(rowData)) {
                         Map<String, Object> rowDataMap = new HashMap<>();
-                        for (Map.Entry<String, Object> entry : rowData.entrySet()) {
-                            rowDataMap.put(entry.getKey(), matrixAttributeValueHandle(null, entry.getValue()));
+                        for (Map.Entry<String, Object> entry : rowData.entrySet()) {String uuid = attributeUuidMap.get(entry.getKey());
+                            if (StringUtils.isNotBlank(uuid)) {
+                                rowDataMap.put(uuid, matrixAttributeValueHandle(null, entry.getValue()));
+                            }
                         }
                         tbodyList.add(rowDataMap);
                     }
