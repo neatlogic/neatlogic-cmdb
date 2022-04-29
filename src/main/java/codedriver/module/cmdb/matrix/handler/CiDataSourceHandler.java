@@ -761,37 +761,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                         }
                     }
                 }
-                JSONArray filterList = dataVo.getFilterList();
-                if (CollectionUtils.isNotEmpty(filterList)) {
-                    for (int i = 0; i < filterList.size(); i++) {
-                        JSONObject filterObj = filterList.getJSONObject(i);
-                        if (MapUtils.isEmpty(filterObj)) {
-                            continue;
-                        }
-                        JSONArray valueArray = filterObj.getJSONArray("valueList");
-                        if (CollectionUtils.isEmpty(valueArray)) {
-                            continue;
-                        }
-                        List<String> valueList = new ArrayList<>();
-                        for (String value : valueArray.toJavaList(String.class)) {
-                            if (StringUtils.isNotBlank(value)) {
-                                valueList.add(value);
-                            }
-                        }
-                        if (CollectionUtils.isEmpty(valueList)) {
-                            continue;
-                        }
-                        String uuid = filterObj.getString("uuid");
-                        CiViewVo ciView = ciViewMap.get(uuid);
-                        if (ciView == null) {
-                            continue;
-                        }
-                        if (!conversionFilter(uuid, valueList, attrMap, relMap, ciView, attrFilterList, relFilterList, ciEntityVo)) {
-                            needAccessApi = false;
-                            break;
-                        }
-                    }
-                }
+
                 if (needAccessApi) {
                     ciEntityVo.setAttrFilterList(attrFilterList);
                     ciEntityVo.setRelFilterList(relFilterList);
