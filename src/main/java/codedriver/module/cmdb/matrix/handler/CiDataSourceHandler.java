@@ -24,7 +24,6 @@ import codedriver.framework.matrix.core.MatrixDataSourceHandlerBase;
 import codedriver.framework.matrix.dto.*;
 import codedriver.framework.matrix.exception.MatrixAttributeNotFoundException;
 import codedriver.framework.matrix.exception.MatrixCiNotFoundException;
-import codedriver.framework.util.SnowflakeUtil;
 import codedriver.framework.util.TableResultUtil;
 import codedriver.framework.util.UuidUtil;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
@@ -36,7 +35,6 @@ import codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper;
 import codedriver.module.cmdb.matrix.constvalue.MatrixType;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
 import codedriver.module.framework.dependency.handler.CiAttr2MatrixAttrDependencyHandler;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSONPath;
@@ -124,7 +122,6 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                                 JSONObject showAttributeObj = showAttributeArray.getJSONObject(i);
                                 if (MapUtils.isNotEmpty(showAttributeObj)) {
                                     String uuid = showAttributeObj.getString("uuid");
-//                                    Long id = showAttributeObj.getLong("id");
                                     if (uuid != null) {
                                         oldShowAttributeUuidMap.put(showAttributeObj.getString("label"), uuid);
                                         DependencyManager.delete(CiAttr2MatrixAttrDependencyHandler.class, uuid);
@@ -356,7 +353,6 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                         break;
                     case "relfrom":
                         matrixAttributeVo.setLabel("relfrom_" + ciview.getItemId());
-                        matrixAttributeVo.setUuid("relfrom_" + ciview.getItemId());
                         RelVo fromRelVo = fromRelMap.get(ciview.getItemId());
                         JSONObject fromRelConfig = new JSONObject();
                         fromRelConfig.put("rel", fromRelVo);
@@ -364,8 +360,6 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                         break;
                     case "relto":
                         matrixAttributeVo.setLabel("relto_" + ciview.getItemId());
-//                        matrixAttributeVo.setUuid("relto_" + ciview.getItemId());
-                        matrixAttributeVo.setUuid("relto_" + ciview.getItemId());
                         RelVo toRelVo = toRelMap.get(ciview.getItemId());
                         JSONObject toRelConfig = new JSONObject();
                         toRelConfig.put("rel", toRelVo);
@@ -418,13 +412,9 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         MatrixVo matrixVo = matrixMapper.getMatrixByUuid(matrixUuid);
         List<MatrixAttributeVo> attributeVoList = myGetAttributeList(matrixVo);
         CiEntityVo ciEntityVo = new CiEntityVo();
-        //JSONObject paramObj = new JSONObject();
         ciEntityVo.setCiId(matrixCiVo.getCiId());
         ciEntityVo.setCurrentPage(dataVo.getCurrentPage());
         ciEntityVo.setPageSize(dataVo.getPageSize());
-        // paramObj.put("ciId", matrixCiVo.getCiId());
-        // paramObj.put("currentPage", dataVo.getCurrentPage());
-        //  paramObj.put("pageSize", dataVo.getPageSize());
         JSONArray tbodyArray = accessSearchCiEntity(matrixUuid, ciEntityVo);
         List<Map<String, Object>> tbodyList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(tbodyArray)) {
@@ -499,7 +489,6 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
     }
 
     private boolean conversionFilter(String uuid, List<String> valueList, Map<Long, AttrVo> attrMap, Map<Long, RelVo> relMap, CiViewVo ciView, List<AttrFilterVo> attrFilterList, List<RelFilterVo> relFilterList, CiEntityVo pCiEntityVo) {
-//        RelVo relVo = relMap.get(uuid);
         switch (ciView.getType()) {
             case "attr":
                 Long attrId = Long.valueOf(uuid.substring(5));
@@ -643,7 +632,6 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                 //固化属性需要特殊处理
                 if ("id".equals(uuid)) {
                     pCiEntityVo.setFilterCiEntityId(Long.valueOf(valueList.get(0)));
-                    // paramObj.put("filterCiEntityId", valueList.get(0));
                 } else if ("ciLabel".equals(uuid)) {
                     String ciLabel = valueList.get(0);
                     CiVo ciVo = ciMapper.getCiByLabel(ciLabel);
@@ -651,7 +639,6 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                         return false;
                     }
                     pCiEntityVo.setFilterCiId(ciVo.getId());
-                    //paramObj.put("filterCiId", ciVo.getId());
                 }
                 break;
         }
@@ -676,7 +663,6 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                     throw new MatrixAttributeNotFoundException(dataVo.getMatrixUuid(), column);
                 }
             }
-            //JSONObject paramObj = new JSONObject();
             CiEntityVo ciEntityVo = new CiEntityVo();
             Long ciId = matrixCiVo.getCiId();
             ciEntityVo.setCiId(ciId);
@@ -752,7 +738,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                             ciEntityVo.setAttrFilterList(attrFilterList);
                             ciEntityVo.setRelFilterList(relFilterList);
                             JSONArray tbodyArray = accessSearchCiEntity(matrixUuid, ciEntityVo);
-                            resultList.addAll(getCmdbCiDataTbodyList(tbodyArray, columnList));
+                            resultList.addAll(getCmdbCiDataTbodyList(tbodyArray, columnList, matrixUuid));
                         }
                     }
                 }
@@ -927,13 +913,10 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                 tbody.put("const" + viewConstName, "");
             }
         }
-//                    tbody.put("id", ciEntity.getId());
-//                    tbody.put("ciLabel", ciEntity.getCiLabel());
         JSONObject attrEntityData = ciEntity.getAttrEntityData();
         if (MapUtils.isNotEmpty(attrEntityData)) {
             for (Map.Entry<String, Object> entry : attrEntityData.entrySet()) {
                 JSONObject valueObj = (JSONObject) entry.getValue();
-//                            String name = valueObj.getString("name");
                 String key = entry.getKey();
                 if (StringUtils.isNotBlank(key)) {
                     JSONArray actualValueArray = valueObj.getJSONArray("actualValueList");
@@ -948,7 +931,6 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         if (MapUtils.isNotEmpty(relEntityData)) {
             for (Map.Entry<String, Object> entry : relEntityData.entrySet()) {
                 JSONObject relObj = (JSONObject) entry.getValue();
-//                            String name = relObj.getString("name");
                 String key = entry.getKey();
                 if (StringUtils.isNotBlank(key)) {
                     JSONArray valueArray = relObj.getJSONArray("valueList");
