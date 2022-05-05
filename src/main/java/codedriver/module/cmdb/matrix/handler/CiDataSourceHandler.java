@@ -659,6 +659,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         MatrixVo matrixVo = matrixMapper.getMatrixByUuid(matrixUuid);
         List<MatrixAttributeVo> matrixAttributeList = myGetAttributeList(matrixVo);
         if (CollectionUtils.isNotEmpty(matrixAttributeList)) {
+            Map<String, String> attributeLabelMap = matrixAttributeList.stream().collect(Collectors.toMap(e -> e.getUuid(), e -> e.getLabel()));
             List<String> attributeList = matrixAttributeList.stream().map(MatrixAttributeVo::getUuid).collect(Collectors.toList());
             List<String> columnList = dataVo.getColumnList();
             for (String column : columnList) {
@@ -725,13 +726,14 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                         for (int i = 0; i < min; i++) {
                             String column = columnList.get(i);
                             if (StringUtils.isNotBlank(column)) {
-                                CiViewVo ciView = ciViewMap.get(column);
+                                String label = attributeLabelMap.get(column);
+                                CiViewVo ciView = ciViewMap.get(label);
                                 if (ciView == null) {
                                     continue;
                                 }
                                 List<String> valueList = new ArrayList<>();
                                 valueList.add(splitList.get(i));
-                                if (!conversionFilter(column, valueList, attrMap, relMap, ciView, attrFilterList, relFilterList, ciEntityVo)) {
+                                if (!conversionFilter(label, valueList, attrMap, relMap, ciView, attrFilterList, relFilterList, ciEntityVo)) {
                                     needAccessApi = false;
                                     break;
                                 }
@@ -752,11 +754,12 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                     if (!attributeList.contains(keywordColumn)) {
                         throw new MatrixAttributeNotFoundException(dataVo.getMatrixUuid(), keywordColumn);
                     }
-                    CiViewVo ciView = ciViewMap.get(keywordColumn);
+                    String label = attributeLabelMap.get(keywordColumn);
+                    CiViewVo ciView = ciViewMap.get(label);
                     if (ciView != null) {
                         List<String> valueList = new ArrayList<>();
                         valueList.add(dataVo.getKeyword());
-                        if (!conversionFilter(keywordColumn, valueList, attrMap, relMap, ciView, attrFilterList, relFilterList, ciEntityVo)) {
+                        if (!conversionFilter(label, valueList, attrMap, relMap, ciView, attrFilterList, relFilterList, ciEntityVo)) {
                             needAccessApi = false;
                         }
                     }
@@ -926,7 +929,8 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
 
     private List<Map<String, JSONObject>> getCmdbCiDataTbodyList(JSONArray tbodyArray, List<String> columnList, String matrixUuid) {
         List<Map<String, JSONObject>> resultList = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(tbodyArray)) {MatrixVo matrixVo = matrixMapper.getMatrixByUuid(matrixUuid);
+        if (CollectionUtils.isNotEmpty(tbodyArray)) {
+            MatrixVo matrixVo = matrixMapper.getMatrixByUuid(matrixUuid);
             List<MatrixAttributeVo> attributeVoList = myGetAttributeList(matrixVo);
             Map<String, String> attributeLabelMap = attributeVoList.stream().collect(Collectors.toMap(e -> e.getUuid(), e -> e.getLabel()));
             for (int i = 0; i < tbodyArray.size(); i++) {
