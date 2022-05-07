@@ -22,6 +22,7 @@ import java.util.*;
 @Component
 public class CiEntitySyncHandler extends FormHandlerBase {
     private final static Logger logger = LoggerFactory.getLogger(CiEntitySyncHandler.class);
+
     @Override
     public String getHandler() {
         return "cientityselect";
@@ -180,7 +181,8 @@ public class CiEntitySyncHandler extends FormHandlerBase {
     public String getHandlerType(FormConditionModel model) {
         return null;
     }
-//表单组件配置信息
+
+    //表单组件配置信息
 //{
 //	"handler": "cientityselect",
 //	"label": "配置项修改组件_1",
@@ -1047,5 +1049,27 @@ public class CiEntitySyncHandler extends FormHandlerBase {
         }
         resultObj.put("tbodyList", tbodyList);
         return resultObj;
+    }
+
+    @Override
+    public int getExcelHeadLength(JSONObject configObj) {
+        int count = 0;
+        JSONArray dataConfig = configObj.getJSONArray("dataConfig");
+        if (CollectionUtils.isNotEmpty(dataConfig)) {
+            for (int i = 0; i < dataConfig.size(); i++) {
+                JSONObject dataObj = dataConfig.getJSONObject(i);
+                if (MapUtils.isNotEmpty(dataObj)) {
+                    Boolean isShow = dataObj.getBoolean("isShow");
+                    if (Objects.equals(isShow, true)) {
+                        String key = dataObj.getString("key");
+                        String title = dataObj.getString("title");
+                        if (StringUtils.isNotBlank(key) && StringUtils.isNotBlank(title)) {
+                            count++;
+                        }
+                    }
+                }
+            }
+        }
+        return count;
     }
 }
