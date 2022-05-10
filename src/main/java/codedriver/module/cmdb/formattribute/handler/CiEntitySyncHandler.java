@@ -1072,4 +1072,17 @@ public class CiEntitySyncHandler extends FormHandlerBase {
         }
         return count;
     }
+
+    @Override
+    public int getExcelRowCount(AttributeDataVo attributeDataVo, JSONObject configObj) {
+        int count = 1;
+        JSONArray dataList = (JSONArray) attributeDataVo.getDataObj();
+        for (int i = 0; i < dataList.size(); i++) {
+            JSONObject dataObj = dataList.getJSONObject(i);
+            if (MapUtils.isNotEmpty(dataObj)) {
+                count++;
+            }
+        }
+        return count;
+    }
 }
