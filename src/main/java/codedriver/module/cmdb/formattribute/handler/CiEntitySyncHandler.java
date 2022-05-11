@@ -1052,6 +1052,11 @@ public class CiEntitySyncHandler extends FormHandlerBase {
     }
 
     @Override
+    public Object dataTransformationForExcel(AttributeDataVo attributeDataVo, JSONObject configObj) {
+        return getMyDetailedData(attributeDataVo, configObj);
+    }
+
+    @Override
     public int getExcelHeadLength(JSONObject configObj) {
         int count = 0;
         JSONArray dataConfig = configObj.getJSONArray("dataConfig");
@@ -1069,6 +1074,9 @@ public class CiEntitySyncHandler extends FormHandlerBase {
                     }
                 }
             }
+        }
+        if (count == 0) {
+            count++;
         }
         return count;
     }
