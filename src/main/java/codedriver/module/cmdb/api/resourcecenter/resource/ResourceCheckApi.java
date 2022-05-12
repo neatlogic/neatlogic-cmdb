@@ -212,15 +212,17 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
     private void addException(String executeUser, Long protocolId, List<ResourceVo> executeUserIsNotFoundInResourceList, List<ResourceVo> protocolIsNotFoundInResourceList, List<AccountProtocolVo> protocolVoList, List<Long> idList) {
         IResourceCenterAccountCrossoverService accountService = CrossoverServiceFactory.getApi(IResourceCenterAccountCrossoverService.class);
         List<ResourceVo> resourceVoList = resourceCenterMapper.getResourceByIdList(idList, TenantContext.get().getDataDbName());
-        List<AccountVo> accountVoList = resourceCenterMapper.getResourceAccountListByResourceIdAndProtocolAndAccount(idList, protocolId, executeUser);
-        List<AccountVo> allAccountVoList = resourceCenterMapper.getAccountListByIpList(resourceVoList.stream().map(ResourceVo::getIp).collect(Collectors.toList()));
-        for (ResourceVo vo : resourceVoList) {
-            Optional<AccountVo> accountOp = accountService.filterAccountByRules(accountVoList, allAccountVoList, protocolVoList, vo.getId(), protocolId, vo.getIp(), vo.getPort());
-            if (!accountOp.isPresent()) {
-                if (StringUtils.isNotBlank(executeUser)) {
-                    executeUserIsNotFoundInResourceList.add(vo);
-                } else {
-                    protocolIsNotFoundInResourceList.add(vo);
+        if(CollectionUtils.isNotEmpty(resourceVoList)) {
+            List<AccountVo> accountVoList = resourceCenterMapper.getResourceAccountListByResourceIdAndProtocolAndAccount(idList, protocolId, executeUser);
+            List<AccountVo> allAccountVoList = resourceCenterMapper.getAccountListByIpList(resourceVoList.stream().map(ResourceVo::getIp).collect(Collectors.toList()));
+            for (ResourceVo vo : resourceVoList) {
+                Optional<AccountVo> accountOp = accountService.filterAccountByRules(accountVoList, allAccountVoList, protocolVoList, vo.getId(), protocolId, vo.getIp(), vo.getPort());
+                if (!accountOp.isPresent()) {
+                    if (StringUtils.isNotBlank(executeUser)) {
+                        executeUserIsNotFoundInResourceList.add(vo);
+                    } else {
+                        protocolIsNotFoundInResourceList.add(vo);
+                    }
                 }
             }
         }
