@@ -330,6 +330,18 @@ public class BatchImportHandler {
                                         ciEntityTransactionVo.setAllowCommit(true);
                                         ciEntityTransactionVo.setCiId(ciId);
                                         ciEntityTransactionVo.setEditMode(editMode);
+                                        //先遍历所有cell检查是否空行，如果是空行直接跳过
+                                        boolean isEmptyRow = true;
+                                        for (Integer index : cellIndex) {
+                                            Cell cell = row.getCell(index);
+                                            if (StringUtils.isNotBlank(getCellContent(cell))) {
+                                                isEmptyRow = false;
+                                                break;
+                                            }
+                                        }
+                                        if (isEmptyRow) {
+                                            continue;
+                                        }
                                         for (Integer index : cellIndex) {
                                             Cell cell = row.getCell(index);
                                             if (cell != null) {
@@ -436,17 +448,11 @@ public class BatchImportHandler {
                                             } else {
                                                 throw new RuntimeException("请正确填写模版与选择导入模式，【只添加】不需要填写ID；【只更新】必须填写ID");
                                             }
-                                        } catch (ApiRuntimeException e) {
-                                            failedCount += 1;
-                                            rowError.put(r, e.getMessage());
                                         } catch (Exception e) {
                                             failedCount += 1;
                                             rowError.put(r, e.getMessage());
                                         }
                                     }
-                                } catch (ApiRuntimeException e) {
-                                    failedCount += 1;
-                                    rowError.put(r, e.getMessage());
                                 } catch (Exception e) {
                                     failedCount += 1;
                                     rowError.put(r, e.getMessage());
