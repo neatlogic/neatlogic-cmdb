@@ -122,7 +122,8 @@ public class ProtocolHandler extends FormHandlerBase {
     public int getSort() {
         return 22;
     }
-//表单组件配置信息
+
+    //表单组件配置信息
 //    {
 //        "handler": "protocol",
 //        "label": "连接协议_1",
@@ -161,5 +162,17 @@ public class ProtocolHandler extends FormHandlerBase {
             resultObj.put("port", protocolVo.getPort());
         }
         return resultObj;
+    }
+
+    @Override
+    public Object dataTransformationForExcel(AttributeDataVo attributeDataVo, JSONObject configObj) {
+        JSONObject detailedData = getMyDetailedData(attributeDataVo, configObj);
+        if (detailedData != null) {
+            Long value = detailedData.getLong("value");
+            String name = detailedData.getString("name");
+            String port = detailedData.getString("port");
+            return name + port + "(" + value + ")";
+        }
+        return null;
     }
 }

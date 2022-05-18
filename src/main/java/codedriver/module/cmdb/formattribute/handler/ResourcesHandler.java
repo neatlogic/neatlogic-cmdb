@@ -161,7 +161,8 @@ public class ResourcesHandler extends FormHandlerBase {
     public int getSort() {
         return 21;
     }
-//表单组件配置信息
+
+    //表单组件配置信息
 //    {
 //        "handler": "formresoureces",
 //        "label": "执行目标_2",
@@ -548,5 +549,38 @@ public class ResourcesHandler extends FormHandlerBase {
             }
         }
         return resultObj;
+    }
+
+    @Override
+    public Object dataTransformationForExcel(AttributeDataVo attributeDataVo, JSONObject configObj) {
+        JSONObject detailedData = getMyDetailedData(attributeDataVo, configObj);
+        if (detailedData != null) {
+            String type = detailedData.getString("type");
+            if ("node".equals(type)) {
+                JSONArray selectNodeList = detailedData.getJSONArray("selectNodeList");
+                if (CollectionUtils.isNotEmpty(selectNodeList)) {
+                    List<String> list = new ArrayList<>();
+                    for (int i = 0; i < selectNodeList.size(); i++) {
+                        JSONObject object = selectNodeList.getJSONObject(i);
+                        String name = object.getString("name");
+                        if (name != null) {
+                            list.add(name);
+                        }
+                    }
+                    return String.join(",", list);
+                }
+            } else if ("input".equals(type)) {
+                JSONArray inputNodeList = detailedData.getJSONArray("inputNodeList");
+                if (inputNodeList != null) {
+                    return inputNodeList.toJSONString();
+                }
+            } else if ("filter".equals(type)) {
+                JSONArray filterList = detailedData.getJSONArray("filterList");
+                if (filterList != null) {
+                    return filterList.toJSONString();
+                }
+            }
+        }
+        return null;
     }
 }

@@ -22,6 +22,7 @@ import java.util.*;
 @Component
 public class CiEntitySyncHandler extends FormHandlerBase {
     private final static Logger logger = LoggerFactory.getLogger(CiEntitySyncHandler.class);
+
     @Override
     public String getHandler() {
         return "cientityselect";
@@ -180,7 +181,8 @@ public class CiEntitySyncHandler extends FormHandlerBase {
     public String getHandlerType(FormConditionModel model) {
         return null;
     }
-//表单组件配置信息
+
+    //表单组件配置信息
 //{
 //	"handler": "cientityselect",
 //	"label": "配置项修改组件_1",
@@ -1047,5 +1049,118 @@ public class CiEntitySyncHandler extends FormHandlerBase {
         }
         resultObj.put("tbodyList", tbodyList);
         return resultObj;
+    }
+
+    @Override
+    public Object dataTransformationForExcel(AttributeDataVo attributeDataVo, JSONObject configObj) {
+        JSONObject resultObj = new JSONObject();
+        JSONArray theadList = new JSONArray();
+        JSONObject actionObj = new JSONObject();
+        actionObj.put("key", "actionType");
+        actionObj.put("title", "操作类型");
+        theadList.add(actionObj);
+        List<String> keyList = new ArrayList<>();
+        JSONArray dataConfig = configObj.getJSONArray("dataConfig");
+        if (CollectionUtils.isNotEmpty(dataConfig)) {
+            for (int i = 0; i < dataConfig.size(); i++) {
+                JSONObject dataObj = dataConfig.getJSONObject(i);
+                if (MapUtils.isNotEmpty(dataObj)) {
+                    Boolean isShow = dataObj.getBoolean("isShow");
+                    if (Objects.equals(isShow, true)) {
+                        String key = dataObj.getString("key");
+                        String title = dataObj.getString("title");
+                        if (StringUtils.isNotBlank(key) && StringUtils.isNotBlank(title)) {
+                            JSONObject theadObj = new JSONObject();
+                            theadObj.put("key", key);
+                            theadObj.put("title", title);
+                            theadList.add(theadObj);
+                            keyList.add(key);
+                        }
+                    }
+                }
+            }
+        }
+        resultObj.put("theadList", theadList);
+        JSONArray dataList = (JSONArray) attributeDataVo.getDataObj();
+        resultObj.put("value", dataList);
+        JSONArray tbodyList = new JSONArray();
+        if (CollectionUtils.isNotEmpty(dataList)) {
+            for (int i = 0; i < dataList.size(); i++) {
+                JSONObject dataObj = dataList.getJSONObject(i);
+                if (MapUtils.isNotEmpty(dataObj)) {
+                    String actionType = dataObj.getString("actionType");
+                    List<String> actualValueList = new ArrayList<>();
+                    String actualValue = "";
+                    if ("insert".equals(actionType)) {
+                        actualValue = "新增";
+                    } else if ("update".equals(actionType)) {
+                        actualValue = "编辑";
+                    } else if ("delete".equals(actionType)) {
+                        actualValue = "删除";
+                    }
+                    actualValueList.add(actualValue);
+                    JSONObject tbodyObj = new JSONObject();
+                    tbodyObj.put("actionType", new JSONObject() {
+                        {
+                            this.put("text", String.join(",", actualValueList));
+                        }
+                    });
+                    JSONObject attrEntityData = dataObj.getJSONObject("attrEntityData");
+                    if (MapUtils.isNotEmpty(attrEntityData)) {
+                        for (String key : keyList) {
+                            JSONObject object = attrEntityData.getJSONObject(key);
+                            JSONArray valueList = object.getJSONArray("actualValueList");
+                            tbodyObj.put(key, new JSONObject() {
+                                {
+                                    this.put("text", valueList != null ? String.join(",", valueList.toJavaList(String.class)) : "");
+                                }
+                            });
+                        }
+                    }
+                    tbodyList.add(tbodyObj);
+                }
+            }
+        }
+        resultObj.put("tbodyList", tbodyList);
+        return resultObj;
+    }
+
+    @Override
+    public int getExcelHeadLength(JSONObject configObj) {
+        int count = 0;
+        JSONArray dataConfig = configObj.getJSONArray("dataConfig");
+        if (CollectionUtils.isNotEmpty(dataConfig)) {
+            for (int i = 0; i < dataConfig.size(); i++) {
+                JSONObject dataObj = dataConfig.getJSONObject(i);
+                if (MapUtils.isNotEmpty(dataObj)) {
+                    Boolean isShow = dataObj.getBoolean("isShow");
+                    if (Objects.equals(isShow, true)) {
+                        String key = dataObj.getString("key");
+                        String title = dataObj.getString("title");
+                        if (StringUtils.isNotBlank(key) && StringUtils.isNotBlank(title)) {
+                            count++;
+                        }
+                    }
+                }
+            }
+            count++;
+        }
+        if (count == 0) {
+            count++;
+        }
+        return count;
+    }
+
+    @Override
+    public int getExcelRowCount(AttributeDataVo attributeDataVo, JSONObject configObj) {
+        int count = 1;
+        JSONArray dataList = (JSONArray) attributeDataVo.getDataObj();
+        for (int i = 0; i < dataList.size(); i++) {
+            JSONObject dataObj = dataList.getJSONObject(i);
+            if (MapUtils.isNotEmpty(dataObj)) {
+                count++;
+            }
+        }
+        return count;
     }
 }

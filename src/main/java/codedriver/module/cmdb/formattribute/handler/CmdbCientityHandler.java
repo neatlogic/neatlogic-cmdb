@@ -133,7 +133,8 @@ public class CmdbCientityHandler extends FormHandlerBase {
     public Object textConversionValue(List<String> values, JSONObject config) {
         return null;
     }
-//表单组件配置信息
+
+    //表单组件配置信息
 //    {
 //        "handler": "formcmdbcientity",
 //        "label": "配置项组件_1",
@@ -251,5 +252,14 @@ public class CmdbCientityHandler extends FormHandlerBase {
         JSONObject resultObj = new JSONObject();
         resultObj.put("value", attributeDataVo.getDataObj());
         return resultObj;
+    }
+
+    @Override
+    public Object dataTransformationForExcel(AttributeDataVo attributeDataVo, JSONObject configObj) {
+        Object value = valueConversionText(attributeDataVo, configObj);
+        if (value != null) {
+            return String.join(",", (List<String>) value);
+        }
+        return null;
     }
 }
