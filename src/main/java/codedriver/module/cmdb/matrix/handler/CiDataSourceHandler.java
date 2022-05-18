@@ -877,6 +877,9 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                         resultList.addAll(list);
                         pageSize -= list.size();
                         currentPage++;
+                        if (currentPage >= 10) {
+                            break;
+                        }
                     }
                 }
             }
