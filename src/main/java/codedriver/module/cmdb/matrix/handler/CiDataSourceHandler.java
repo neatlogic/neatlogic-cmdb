@@ -812,6 +812,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                         }
                     }
                 }
+                deduplicateData(columnList, resultList);
             } else {
                 boolean needAccessApi = true;
                 JSONArray filterList = dataVo.getFilterList();
@@ -859,35 +860,23 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                 }
 
                 if (needAccessApi) {
+                    List<String> exsited = new ArrayList<>();
                     ciEntityVo.setAttrFilterList(attrFilterList);
                     ciEntityVo.setRelFilterList(relFilterList);
-                    ciEntityVo.setCurrentPage(dataVo.getCurrentPage());
                     int pageSize = dataVo.getPageSize();
-                    ciEntityVo.setPageSize(pageSize);
-                    ciEntityVo.setNeedPage(pageSize < 100);
-                    JSONArray tbodyArray = accessSearchCiEntity(matrixUuid, ciEntityVo);
-                    resultList = getCmdbCiDataTbodyList(tbodyArray, columnList, matrixUuid);
-                }
-
-                //去重
-                String firstColumn = columnList.get(0);
-                String secondColumn = columnList.get(0);
-                if (columnList.size() >= 2) {
-                    secondColumn = columnList.get(1);
-                }
-                List<String> exsited = new ArrayList<>();
-                Iterator<Map<String, JSONObject>> iterator = resultList.iterator();
-                while (iterator.hasNext()) {
-                    Map<String, JSONObject> resultObj = iterator.next();
-                    JSONObject firstObj = resultObj.get(firstColumn);
-                    JSONObject secondObj = resultObj.get(secondColumn);
-                    String firstValue = firstObj.getString("value");
-                    String secondText = secondObj.getString("text");
-                    String compose = firstValue + SELECT_COMPOSE_JOINER + secondText;
-                    if (exsited.contains(compose)) {
-                        iterator.remove();
-                    } else {
-                        exsited.add(compose);
+                    int currentPage = 1;
+                    while(resultList.size() < pageSize) {
+                        ciEntityVo.setCurrentPage(currentPage);
+                        ciEntityVo.setPageSize(pageSize);
+                        JSONArray tbodyArray = accessSearchCiEntity(matrixUuid, ciEntityVo);
+                        if (CollectionUtils.isEmpty(tbodyArray)) {
+                            break;
+                        }
+                        List<Map<String, JSONObject>> list = getCmdbCiDataTbodyList(tbodyArray, columnList, matrixUuid);
+                        deduplicateData(columnList, exsited, list);
+                        resultList.addAll(list);
+                        pageSize -= list.size();
+                        currentPage++;
                     }
                 }
             }
