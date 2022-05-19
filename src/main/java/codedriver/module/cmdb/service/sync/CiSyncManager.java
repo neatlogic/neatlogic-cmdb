@@ -20,11 +20,15 @@ import codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo;
 import codedriver.framework.cmdb.dto.sync.SyncMappingVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.cmdb.dto.transaction.TransactionGroupVo;
-import codedriver.framework.cmdb.enums.*;
+import codedriver.framework.cmdb.enums.EditModeType;
+import codedriver.framework.cmdb.enums.RelDirectionType;
+import codedriver.framework.cmdb.enums.SearchExpression;
+import codedriver.framework.cmdb.enums.TransactionActionType;
 import codedriver.framework.cmdb.enums.sync.CollectMode;
 import codedriver.framework.cmdb.enums.sync.SyncStatus;
 import codedriver.framework.cmdb.exception.attr.AttrNotFoundException;
 import codedriver.framework.cmdb.exception.ci.*;
+import codedriver.framework.cmdb.exception.collection.CollectionDataIrregularException;
 import codedriver.framework.cmdb.exception.sync.CiEntityDuplicateException;
 import codedriver.framework.cmdb.exception.sync.CollectionNotFoundException;
 import codedriver.framework.cmdb.utils.RelUtil;
@@ -377,6 +381,9 @@ public class CiSyncManager {
                                     JSONArray subDataList = dataObj.getJSONArray(mappingVo.getField(parentKey));
                                     JSONArray attrValueList = new JSONArray();
                                     for (int i = 0; i < subDataList.size(); i++) {
+                                        if (!(subDataList.get(i) instanceof JSONObject)) {
+                                            throw new CollectionDataIrregularException(mappingVo.getField(parentKey), "json");
+                                        }
                                         JSONObject subData = subDataList.getJSONObject(i);
                                         /*
                                         需要使用同一个集合下的映射关系，如果没有则不处理下一层数据，直接丢弃
