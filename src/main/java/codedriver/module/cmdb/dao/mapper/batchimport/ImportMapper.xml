@@ -144,5 +144,11 @@
         WHERE `file_id` = #{value}
     </delete>
 
+    <delete id="deleteAuditByDayBefore" parameterType="int">
+        delete
+        from cmdb_import_audit
+        where `import_date` &lt; DATE_SUB(CURRENT_DATE, INTERVAL #{value} DAY)
+    </delete>
+
 
 </mapper>
