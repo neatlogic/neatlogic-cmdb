@@ -249,9 +249,6 @@ public class FormFormSelectAndDynamicListCmdbMatrixConfigUpdateApi extends Priva
         if (MapUtils.isEmpty(config)) {
             return configStr;
         }
-        //记录每一列对应的attributeUuid，sheetsConfig.tableList[x][x].component中需要用到
-        Map<String, Map<String, String>> attributeUuidMap = new HashMap<>();
-        Map<String, Map<String, String>> secondAttributeUuidMap = new HashMap<>();
         JSONArray controllerList = config.getJSONArray("controllerList");
         if (CollectionUtils.isNotEmpty(controllerList)) {
             //遍历表单的所有组件
