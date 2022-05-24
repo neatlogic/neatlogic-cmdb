@@ -9,14 +9,10 @@ import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.sync.CollectionVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
-import codedriver.framework.restful.annotation.Description;
-import codedriver.framework.restful.annotation.Input;
-import codedriver.framework.restful.annotation.OperationType;
-import codedriver.framework.restful.annotation.Param;
+import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
-import codedriver.module.cmdb.dao.mapper.sync.SyncMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSONPath;
@@ -40,8 +36,6 @@ public class SearchCollectionDataApi extends PrivateApiComponentBase {
     @Resource
     private MongoTemplate mongoTemplate;
 
-    @Resource
-    private SyncMapper syncMapper;
 
     @Override
     public String getName() {
@@ -58,6 +52,10 @@ public class SearchCollectionDataApi extends PrivateApiComponentBase {
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数量"),
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字")})
+    @Output({@Param(explode = BasePageVo.class),
+            @Param(name = "subTheadData", type = ApiParamType.JSONOBJECT, desc = "子属性表头定义"),
+            @Param(name = "theadList", type = ApiParamType.JSONARRAY, desc = "表头数据"),
+            @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, desc = "表格数据")})
     @Description(desc = "搜索自动采集集合数据接口")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
