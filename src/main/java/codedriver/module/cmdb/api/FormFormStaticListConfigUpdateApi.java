@@ -1,19 +1,20 @@
 /*
- * Copyright(c) 2021 TechSureCo.,Ltd.AllRightsReserved.
+ * Copyright(c) 2022 TechSureCo.,Ltd.AllRightsReserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
 package codedriver.module.cmdb.api;
 
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.form.attribute.core.IFormAttributeHandler;
 import codedriver.framework.form.dao.mapper.FormMapper;
 import codedriver.framework.form.dto.FormAttributeVo;
 import codedriver.framework.form.dto.FormVersionVo;
 import codedriver.framework.matrix.dao.mapper.MatrixMapper;
 import codedriver.framework.matrix.dto.MatrixCiVo;
-import codedriver.framework.matrix.dto.MatrixVo;
 import codedriver.framework.process.dao.mapper.ProcessTaskMapper;
 import codedriver.framework.process.dao.mapper.SelectContentByHashMapper;
+import codedriver.framework.process.dto.ProcessTaskFormAttributeDataVo;
 import codedriver.framework.process.dto.ProcessTaskFormVo;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
@@ -23,6 +24,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.UuidUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.nacos.common.utils.Objects;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -40,13 +42,10 @@ import java.util.*;
  **/
 @Service
 @Transactional
-public class FormFormSelectAndDynamicListCmdbMatrixConfigUpdateApi extends PrivateApiComponentBase {
+public class FormFormStaticListConfigUpdateApi extends PrivateApiComponentBase {
 
     @Resource
     private FormMapper formMapper;
-
-    @Resource
-    private MatrixMapper matrixMapper;
 
     @Resource
     private SelectContentByHashMapper selectContentByHashMapper;
@@ -54,6 +53,8 @@ public class FormFormSelectAndDynamicListCmdbMatrixConfigUpdateApi extends Priva
     @Resource
     private ProcessTaskMapper processTaskMapper;
 
+    @Resource
+    private MatrixMapper matrixMapper;
     /**
      * 接口唯一标识，也是访问URI
      *
@@ -61,7 +62,7 @@ public class FormFormSelectAndDynamicListCmdbMatrixConfigUpdateApi extends Priva
      */
     @Override
     public String getToken() {
-        return "cmdb/form/formselectanddynamiclist/cmdbmatix/config/update";
+        return "cmdb/form/formstaticlist/config/update";
     }
     /**
      * 接口中文名
@@ -70,7 +71,7 @@ public class FormFormSelectAndDynamicListCmdbMatrixConfigUpdateApi extends Priva
      */
     @Override
     public String getName() {
-        return "表单下拉框和表格选择组件引用cmdb矩阵config更新";
+        return "表单表格输入组件config更新";
     }
 
     /**
@@ -87,7 +88,7 @@ public class FormFormSelectAndDynamicListCmdbMatrixConfigUpdateApi extends Priva
     @Output({
             @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, desc = "更新情况")
     })
-    @Description(desc="表单下拉框和表格选择组件引用cmdb矩阵config更新")
+    @Description(desc="表单表格输入组件config更新")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         List<String> resultList = new ArrayList<>();
@@ -96,72 +97,26 @@ public class FormFormSelectAndDynamicListCmdbMatrixConfigUpdateApi extends Priva
         int c = 0;
         int d = 0;
         int e = 0;
-
-        MatrixVo search = new MatrixVo();
-        search.setType("cmdbci");
-        List<MatrixVo> matrixList = matrixMapper.searchMatrix(search);
-        for (MatrixVo matrixVo : matrixList) {
-            MatrixCiVo matrixCiVo = matrixMapper.getMatrixCiByMatrixUuid(matrixVo.getUuid());
-            if (matrixCiVo == null) {
-                continue;
-            }
-            JSONObject config = matrixCiVo.getConfig();
-            if (MapUtils.isEmpty(config)) {
-                continue;
-            }
-            JSONArray showAttributeUuidArray = config.getJSONArray("showAttributeUuidList");
-            if (CollectionUtils.isEmpty(showAttributeUuidArray)) {
-                continue;
-            }
-
-            JSONArray showAttributeArray = config.getJSONArray("showAttributeList");
-            if (CollectionUtils.isEmpty(showAttributeArray)) {
-                continue;
-            }
-            JSONArray showAttributeList = new JSONArray();
-            for (String uuid : showAttributeUuidArray.toJavaList(String.class)) {
-                for (int i = 0; i < showAttributeArray.size(); i++) {
-                    JSONObject showAttributeObj = showAttributeArray.getJSONObject(i);
-                    if (MapUtils.isEmpty(showAttributeObj)) {
-                        continue;
-                    }
-                    if(!uuid.equals(showAttributeObj.getString("uuid"))) {
-                        continue;
-                    }
-                    JSONObject newShowAttributeObj = new JSONObject();
-                    newShowAttributeObj.put("uuid", UuidUtil.randomUuid());
-                    newShowAttributeObj.put("label", uuid);
-                    newShowAttributeObj.put("name", showAttributeObj.getString("label"));
-                    showAttributeList.add(newShowAttributeObj);
-                }
-            }
-            config.remove("showAttributeUuidList");
-            config.put("showAttributeLabelList", showAttributeUuidArray);
-            config.put("showAttributeList", showAttributeList);
-            matrixCiVo.setConfigStr(null);
-            matrixMapper.replaceMatrixCi(matrixCiVo);
-            System.out.println("update matrix=" + matrixCiVo.getMatrixUuid());
-        }
-
+        int f = 0;
+        String handler = "formstaticlist";
         //保存已经更新过的config生成的hash
         Set<String> newFormConfigHashSet = new HashSet<>();
         //第一步
         //在form_version表中找出有表格输入组件的表单版本
-        List<FormVersionVo> formVersionList =  formMapper.getFormVersionList();
+        List<FormVersionVo> formVersionList =  formMapper.getFormVersionListByFormConfigLikeKeyword(handler);
         for (FormVersionVo formVersionVo : formVersionList) {
-            String versionUuid = formVersionVo.getUuid();
             String oldFormConfig = formVersionVo.getFormConfig();
             String oldFormConfigHash = DigestUtils.md5DigestAsHex(oldFormConfig.getBytes());
+            //判断config是否已经更新过了
+//            if (newFormConfigHashSet.contains(oldFormConfigHash)) {
+//                continue;
+//            }
             List<String> attributeUuidList = new ArrayList<>();
             String newFormConfig = updateConfig(oldFormConfig, attributeUuidList);
             //如果更新前后相同，则说明已经转换过了(重复执行本接口)
             if (Objects.equals(newFormConfig, oldFormConfig)) {
                 continue;
             }
-//            System.out.println("oldFormConfig:");
-//            System.out.println(oldFormConfig);
-//            System.out.println("newFormConfig:");
-//            System.out.println(newFormConfig);
             String newFormConfigHash = DigestUtils.md5DigestAsHex(newFormConfig.getBytes());
             newFormConfigHashSet.add(newFormConfigHash);
             FormVersionVo newFormVersionVo = new FormVersionVo();
@@ -180,16 +135,7 @@ public class FormFormSelectAndDynamicListCmdbMatrixConfigUpdateApi extends Priva
                         formMapper.updateFormAttributeConfig(formAttributeVo);
                         b++;
                     }
-//                    if ("formdynamiclist".equals(formAttributeVo.getHandler())) {
-//                        formMapper.updateFormAttributeConfig(formAttributeVo);
-//                        b++;
-//                    } else if ("formselect".equals(formAttributeVo.getHandler())) {
-//                        formMapper.updateFormAttributeConfig(formAttributeVo);
-//                        b++;
-//                    } else if ("formcheckbox".equals(formAttributeVo.getHandler())) {
-//                        formMapper.updateFormAttributeConfig(formAttributeVo);
-//                        b++;
-//                    } else if ("formradio".equals(formAttributeVo.getHandler())) {
+//                    if ("formstaticlist".equals(formAttributeVo.getHandler())) {
 //                        formMapper.updateFormAttributeConfig(formAttributeVo);
 //                        b++;
 //                    }
@@ -217,7 +163,7 @@ public class FormFormSelectAndDynamicListCmdbMatrixConfigUpdateApi extends Priva
 //        System.out.println("form_attribute表更新" + b + "条数据。");
         //第二步
         //在processtask_form_content中找出有表格输入组件的表单配置副本
-        List<ProcessTaskFormVo> processTaskFormList = processTaskMapper.getProcessTaskFormContentList();
+        List<ProcessTaskFormVo> processTaskFormList = processTaskMapper.getProcessTaskFormContentListByContentLikeKeyword(handler);
         for (ProcessTaskFormVo processTaskFormVo : processTaskFormList) {
             String oldFormConfigHash = processTaskFormVo.getFormContentHash();
             //第一步已经更新过了
@@ -252,7 +198,6 @@ public class FormFormSelectAndDynamicListCmdbMatrixConfigUpdateApi extends Priva
         return resultList;
     }
 
-
     /**
      * 将旧配置信息转换成新的配置信息，主要是给表格输入组件的每一列加上attributeUuid，如果列的类型是table，把table里的每一列加上attributeUuid。
      * @param configStr 旧的配置信息
@@ -275,8 +220,21 @@ public class FormFormSelectAndDynamicListCmdbMatrixConfigUpdateApi extends Priva
                 if (MapUtils.isEmpty(controllerObj)) {
                     continue;
                 }
+                //只更新表格输入组件
+                String handler = controllerObj.getString("handler");
+                if (!"formstaticlist".equals(handler)) {
+                    continue;
+                }
+                JSONObject controllerConfig = controllerObj.getJSONObject("config");
+                if (MapUtils.isEmpty(controllerConfig)) {
+                    continue;
+                }
+                JSONArray attributeList = controllerConfig.getJSONArray("attributeList");
+                if (CollectionUtils.isEmpty(attributeList)) {
+                    continue;
+                }
                 String attributeUuid = controllerObj.getString("uuid");
-                if(updateControllerConfig(controllerObj)) {
+                if(updateAttributeList(attributeList)) {
                     attributeUuidList.add(attributeUuid);
                     attributeUuidMap.put(attributeUuid, JSONObject.parseObject(controllerObj.toJSONString()));
                 }
@@ -307,107 +265,114 @@ public class FormFormSelectAndDynamicListCmdbMatrixConfigUpdateApi extends Priva
                     if (MapUtils.isEmpty(component)) {
                         continue;
                     }
+                    String handler = component.getString("handler");
+                    if (!"formstaticlist".equals(handler)) {
+                        continue;
+                    }
+                    JSONObject componentConfig = component.getJSONObject("config");
+                    if (MapUtils.isEmpty(componentConfig)) {
+                        continue;
+                    }
+                    JSONArray attributeList = componentConfig.getJSONArray("attributeList");
+                    if (CollectionUtils.isEmpty(attributeList)) {
+                        continue;
+                    }
                     String attributeUuid = component.getString("uuid");
                     JSONObject newComponent = attributeUuidMap.get(attributeUuid);
                     if (newComponent != null) {
                         cellObj.put("component", newComponent);
                     }
-//                    updateControllerConfig(component);
+//                    updateAttributeList(attributeList);
                 }
             }
         }
         return config.toJSONString();
     }
 
-    private boolean updateControllerConfig(JSONObject controllerObj) {
+    /**
+     * 遍历表格输入组件的所有列，添加attributeUuid字段
+     * @param attributeList
+     */
+    private boolean updateAttributeList(JSONArray attributeList) {
         boolean flag = false;
-        //只更新表格输入组件
-        String handler = controllerObj.getString("handler");
-        if (!"formdynamiclist".equals(handler) && !"formselect".equals(handler) && !"formcheckbox".equals(handler) && !"formradio".equals(handler)) {
-            return false;
-        }
-        JSONObject controllerConfig = controllerObj.getJSONObject("config");
-        if (MapUtils.isEmpty(controllerConfig)) {
-            return false;
-        }
-        String dataSource = controllerConfig.getString("dataSource");
-        if (!"matrix".equals(dataSource)) {
-            return false;
-        }
-        String matrixType = controllerConfig.getString("matrixType");
-        if (!"cmdbci".equals(matrixType)) {
-            return false;
-        }
-        String matrixUuid = controllerConfig.getString("matrixUuid");
-        if (StringUtils.isBlank(matrixUuid)) {
-            return false;
-        }
-        MatrixCiVo matrixCiVo = matrixMapper.getMatrixCiByMatrixUuid(matrixUuid);
-        if (matrixCiVo == null) {
-            System.out.println("matrixUuid=" + matrixUuid);
-            return false;
-        }
-        JSONObject matrixCiVoConfig = matrixCiVo.getConfig();
-        if (MapUtils.isEmpty(matrixCiVoConfig)) {
-            return false;
-        }
-        JSONArray showAttributeLabelList = matrixCiVoConfig.getJSONArray("showAttributeLabelList");
-        if (CollectionUtils.isEmpty(showAttributeLabelList)) {
-            return false;
-        }
-        JSONArray showAttributeList = matrixCiVoConfig.getJSONArray("showAttributeList");
-        if (CollectionUtils.isEmpty(showAttributeList)) {
-            return false;
-        }
-        Map<String, String> labelUuidMap = new HashMap<>();
-        for (int j = 0; j < showAttributeList.size(); j++) {
-            JSONObject showAttributeObj = showAttributeList.getJSONObject(j);
-            if (MapUtils.isNotEmpty(showAttributeObj)) {
-                String label = showAttributeObj.getString("label");
-                if (showAttributeLabelList.contains(label)) {
-                    labelUuidMap.put(label, showAttributeObj.getString("uuid"));
-                }
+        for (int i = 0; i < attributeList.size(); i++) {
+            JSONObject attributeObj = attributeList.getJSONObject(i);
+            if (MapUtils.isEmpty(attributeObj)) {
+                continue;
             }
-        }
-        if ("formselect".equals(handler) || "formcheckbox".equals(handler) || "formradio".equals(handler)) {
-            JSONObject mapping = controllerConfig.getJSONObject("mapping");
-            if (MapUtils.isEmpty(mapping)) {
-                return false;
-            }
-            String value = mapping.getString("value");
-            String newValue = labelUuidMap.get(value);
-            if (StringUtils.isNotBlank(newValue)) {
-                mapping.put("value", newValue);
-                flag = true;
-            }
-            String text = mapping.getString("text");
-            String newText = labelUuidMap.get(text);
-            if (StringUtils.isNotBlank(newText)) {
-                mapping.put("text", newText);
-                flag = true;
-            }
-        } else if ("formdynamiclist".equals(handler)) {
-            JSONArray dataConfig = controllerConfig.getJSONArray("dataConfig");
-            if (CollectionUtils.isEmpty(dataConfig)) {
-                return false;
-            }
-            for (int j = 0; j < dataConfig.size(); j++) {
-                JSONObject dataObj = dataConfig.getJSONObject(j);
-                if (MapUtils.isEmpty(dataObj)) {
+            String type = attributeObj.getString("type");
+            if ("table".equals(type)) {
+                //如果是嵌套表格，就继续遍历
+                JSONObject attrConfig = attributeObj.getJSONObject("attrConfig");
+                if (MapUtils.isEmpty(attrConfig)) {
                     continue;
                 }
-                String uuid = dataObj.getString("uuid");
-                String newUuid = labelUuidMap.get(uuid);
-                if (StringUtils.isNotBlank(newUuid)) {
-                    dataObj.put("uuid", newUuid);
+                JSONArray attributeArray = attrConfig.getJSONArray("attributeList");
+                if (CollectionUtils.isEmpty(attributeArray)) {
+                    continue;
+                }
+                if(updateAttributeList(attributeArray)) {
+                    flag = true;
+                }
+            } else {
+                JSONObject attrConfig = attributeObj.getJSONObject("attrConfig");
+                if (MapUtils.isEmpty(attrConfig)) {
+                    continue;
+                }
+                String dataSource = attrConfig.getString("dataSource");
+                if (!"matrix".equals(dataSource)) {
+                    continue;
+                }
+                String matrixUuid = attrConfig.getString("matrixUuid");
+                if (StringUtils.isBlank(matrixUuid)) {
+                    continue;
+                }
+                MatrixCiVo matrixCiVo = matrixMapper.getMatrixCiByMatrixUuid(matrixUuid);
+                if (matrixCiVo == null) {
+                    System.out.println("matrixUuid=" + matrixUuid);
+                    continue;
+                }
+                JSONObject matrixCiVoConfig = matrixCiVo.getConfig();
+                if (MapUtils.isEmpty(matrixCiVoConfig)) {
+                    continue;
+                }
+                JSONArray showAttributeLabelList = matrixCiVoConfig.getJSONArray("showAttributeLabelList");
+                if (CollectionUtils.isEmpty(showAttributeLabelList)) {
+                    continue;
+                }
+                JSONArray showAttributeList = matrixCiVoConfig.getJSONArray("showAttributeList");
+                if (CollectionUtils.isEmpty(showAttributeList)) {
+                    continue;
+                }
+                Map<String, String> labelUuidMap = new HashMap<>();
+                for (int j = 0; j < showAttributeList.size(); j++) {
+                    JSONObject showAttributeObj = showAttributeList.getJSONObject(j);
+                    if (MapUtils.isNotEmpty(showAttributeObj)) {
+                        String label = showAttributeObj.getString("label");
+                        if (showAttributeLabelList.contains(label)) {
+                            labelUuidMap.put(label, showAttributeObj.getString("uuid"));
+                        }
+                    }
+                }
+                JSONObject mapping = attrConfig.getJSONObject("mapping");
+                if (MapUtils.isEmpty(mapping)) {
+                    continue;
+                }
+                String value = mapping.getString("value");
+                String newValue = labelUuidMap.get(value);
+                if (StringUtils.isNotBlank(newValue)) {
+                    mapping.put("value", newValue);
+                    flag = true;
+                }
+                String text = mapping.getString("text");
+                String newText = labelUuidMap.get(text);
+                if (StringUtils.isNotBlank(newText)) {
+                    mapping.put("text", newText);
                     flag = true;
                 }
             }
         }
-        controllerConfig.remove("filterList");
-        controllerConfig.put("relFilterList", new ArrayList<>());
-        controllerConfig.put("attrFilterList", new ArrayList<>());
-        flag = true;
         return flag;
     }
+
 }
