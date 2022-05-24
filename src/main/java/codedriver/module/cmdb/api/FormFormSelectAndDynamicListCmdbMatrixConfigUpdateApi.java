@@ -11,7 +11,6 @@ import codedriver.framework.form.dto.FormAttributeVo;
 import codedriver.framework.form.dto.FormVersionVo;
 import codedriver.framework.matrix.dao.mapper.MatrixMapper;
 import codedriver.framework.matrix.dto.MatrixCiVo;
-import codedriver.framework.matrix.dto.MatrixColumnVo;
 import codedriver.framework.matrix.dto.MatrixVo;
 import codedriver.framework.process.dao.mapper.ProcessTaskMapper;
 import codedriver.framework.process.dao.mapper.SelectContentByHashMapper;
@@ -287,88 +286,6 @@ public class FormFormSelectAndDynamicListCmdbMatrixConfigUpdateApi extends Priva
                         continue;
                     }
                     updateControllerConfig(component);
-//                    String handler = component.getString("handler");
-//                    if (!"formdynamiclist".equals(handler) && !"formselect".equals(handler) && !"formcheckbox".equals(handler) && !"formradio".equals(handler)) {
-//                        continue;
-//                    }
-//                    JSONObject componentConfig = component.getJSONObject("config");
-//                    if (MapUtils.isEmpty(componentConfig)) {
-//                        continue;
-//                    }
-//                    String dataSource = componentConfig.getString("dataSource");
-//                    if (!"matrix".equals(dataSource)) {
-//                        continue;
-//                    }
-//                    String matrixType = componentConfig.getString("matrixType");
-//                    if (!"cmdbci".equals(matrixType)) {
-//                        continue;
-//                    }
-//                    String matrixUuid = componentConfig.getString("matrixUuid");
-//                    if (StringUtils.isBlank(matrixUuid)) {
-//                        continue;
-//                    }
-//                    MatrixCiVo matrixCiVo = matrixMapper.getMatrixCiByMatrixUuid(matrixUuid);
-//                    if (matrixCiVo == null) {
-//                        System.out.println("matrixUuid=" + matrixUuid);
-//                        continue;
-//                    }
-//                    JSONObject matrixCiVoConfig = matrixCiVo.getConfig();
-//                    if (MapUtils.isEmpty(matrixCiVoConfig)) {
-//                        continue;
-//                    }
-//                    JSONArray showAttributeLabelList = matrixCiVoConfig.getJSONArray("showAttributeLabelList");
-//                    if (CollectionUtils.isEmpty(showAttributeLabelList)) {
-//                        continue;
-//                    }
-//                    JSONArray showAttributeList = matrixCiVoConfig.getJSONArray("showAttributeList");
-//                    if (CollectionUtils.isEmpty(showAttributeList)) {
-//                        continue;
-//                    }
-//                    Map<String, String> labelUuidMap = new HashMap<>();
-//                    for (int k = 0; k < showAttributeList.size(); k++) {
-//                        JSONObject showAttributeObj = showAttributeList.getJSONObject(k);
-//                        if (MapUtils.isEmpty(showAttributeObj)) {
-//                            String label = showAttributeObj.getString("label");
-//                            if (showAttributeLabelList.contains(label)) {
-//                                labelUuidMap.put(label, showAttributeObj.getString("uuid"));
-//                            }
-//                        }
-//                    }
-//                    if ("formselect".equals(handler) || "formcheckbox".equals(handler) || "formradio".equals(handler)) {
-//                        JSONObject mapping = componentConfig.getJSONObject("mapping");
-//                        if (MapUtils.isEmpty(mapping)) {
-//                            continue;
-//                        }
-//                        String value = mapping.getString("value");
-//                        String newValue = labelUuidMap.get(value);
-//                        if (StringUtils.isNotBlank(newValue)) {
-//                            mapping.put("value", newValue);
-//                        }
-//                        String text = mapping.getString("text");
-//                        String newText = labelUuidMap.get(text);
-//                        if (StringUtils.isNotBlank(newText)) {
-//                            mapping.put("text", newText);
-//                        }
-//                    } else if ("formdynamiclist".equals(handler)) {
-//                        JSONArray dataConfig = componentConfig.getJSONArray("dataConfig");
-//                        if (CollectionUtils.isEmpty(dataConfig)) {
-//                            continue;
-//                        }
-//                        for (int k = 0; k < dataConfig.size(); k++) {
-//                            JSONObject dataObj = dataConfig.getJSONObject(k);
-//                            if (MapUtils.isEmpty(dataObj)) {
-//                                continue;
-//                            }
-//                            String uuid = dataObj.getString("uuid");
-//                            String newUuid = labelUuidMap.get(uuid);
-//                            if (StringUtils.isNotBlank(newUuid)) {
-//                                dataObj.put("uuid", newUuid);
-//                            }
-//                        }
-//                    }
-//                    componentConfig.remove("filterList");
-//                    componentConfig.put("relFilterList", new ArrayList<>());
-//                    componentConfig.put("attrFilterList", new ArrayList<>());
                 }
             }
         }
