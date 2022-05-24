@@ -156,6 +156,10 @@ public class FormFormSelectAndDynamicListCmdbMatrixConfigUpdateApi extends Priva
             if (Objects.equals(newFormConfig, oldFormConfig)) {
                 continue;
             }
+            System.out.println("oldFormConfig:");
+            System.out.println(oldFormConfig);
+            System.out.println("newFormConfig:");
+            System.out.println(newFormConfig);
             String newFormConfigHash = DigestUtils.md5DigestAsHex(newFormConfig.getBytes());
             newFormConfigHashSet.add(newFormConfigHash);
             FormVersionVo newFormVersionVo = new FormVersionVo();
@@ -174,6 +178,12 @@ public class FormFormSelectAndDynamicListCmdbMatrixConfigUpdateApi extends Priva
                         formMapper.updateFormAttributeConfig(formAttributeVo);
                         b++;
                     } else if ("formselect".equals(formAttributeVo.getHandler())) {
+                        formMapper.updateFormAttributeConfig(formAttributeVo);
+                        b++;
+                    } else if ("formcheckbox".equals(formAttributeVo.getHandler())) {
+                        formMapper.updateFormAttributeConfig(formAttributeVo);
+                        b++;
+                    } else if ("formradio".equals(formAttributeVo.getHandler())) {
                         formMapper.updateFormAttributeConfig(formAttributeVo);
                         b++;
                     }
@@ -334,7 +344,7 @@ public class FormFormSelectAndDynamicListCmdbMatrixConfigUpdateApi extends Priva
         Map<String, String> labelUuidMap = new HashMap<>();
         for (int j = 0; j < showAttributeList.size(); j++) {
             JSONObject showAttributeObj = showAttributeList.getJSONObject(j);
-            if (MapUtils.isEmpty(showAttributeObj)) {
+            if (MapUtils.isNotEmpty(showAttributeObj)) {
                 String label = showAttributeObj.getString("label");
                 if (showAttributeLabelList.contains(label)) {
                     labelUuidMap.put(label, showAttributeObj.getString("uuid"));
