@@ -15,6 +15,7 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -47,6 +48,7 @@ public class SearchDiscoveryRuleApi extends PrivateApiComponentBase {
     }
 
     @Input({
+            @Param(name = "oidList", type = ApiParamType.JSONARRAY, desc = "oid列表"),
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数量"),
@@ -69,6 +71,10 @@ public class SearchDiscoveryRuleApi extends PrivateApiComponentBase {
             for (String field : fieldList) {
                 criteriaList.add(Criteria.where(field).is(pattern));
             }
+        }
+        JSONArray oidList = paramObj.getJSONArray("oidList");
+        if (CollectionUtils.isNotEmpty(oidList)) {
+            criteriaList.add(Criteria.where("sysObjectId").in(oidList));
         }
 
         if (CollectionUtils.isNotEmpty(criteriaList)) {
