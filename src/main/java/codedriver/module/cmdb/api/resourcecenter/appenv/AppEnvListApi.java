@@ -18,7 +18,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -48,7 +47,8 @@ public class AppEnvListApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appModuleIdList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "应用模块id列表"),
+            @Param(name = "appId", type = ApiParamType.LONG, desc = "应用id"),
+            @Param(name = "appModuleIdList", type = ApiParamType.JSONARRAY, desc = "应用模块id列表"),
     })
     @Output({
             @Param(explode = AppEnvironmentVo[].class, desc = "应用模块环境列表"),
@@ -56,11 +56,12 @@ public class AppEnvListApi extends PrivateApiComponentBase {
     @Description(desc = "查询应用系统环境列表")
     @Override
     public Object myDoService(JSONObject paramObj) {
-        List<AppEnvironmentVo> appEnvironmentVoList = new ArrayList<>();
         JSONArray appModuleIdArray = paramObj.getJSONArray("appModuleIdList");
+        List<Long> appModuleResourceIdList = null;
         if (CollectionUtils.isNotEmpty(appModuleIdArray)) {
-            appEnvironmentVoList = appSystemMapper.getAppEnvironmentListByModuleIdList(appModuleIdArray.toJavaList(Long.class), TenantContext.get().getDataDbName());
+            appModuleResourceIdList = appModuleIdArray.toJavaList(Long.class);
         }
-        return appEnvironmentVoList;
+        Long appResourceId = paramObj.getLong("appId");
+        return appSystemMapper.getAppEnvironmentListByAppResourceIdAndModuleResourceIdList(appResourceId, appModuleResourceIdList, TenantContext.get().getDataDbName());
     }
 }

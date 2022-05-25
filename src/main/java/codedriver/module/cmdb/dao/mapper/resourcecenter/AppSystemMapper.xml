@@ -43,18 +43,26 @@
     <!--        </where>-->
     <!--    </select>-->
 
-    <select id="getAppEnvironmentListByModuleIdList"
+    <select id="getAppEnvironmentListByAppResourceIdAndModuleResourceIdList"
             resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo">
         SELECT DISTINCT
         rse.env_id AS envId,
         rse.env_name AS envName
         FROM
-        ${schemaName}.resource_ipobject_appmodule ria
+        ${schemaName}.resource_appsystem_appmodule raa
+        join ${schemaName}.resource_ipobject_appmodule ria on raa.app_module_id = ria.app_module_id
         join ${schemaName}.resource_appinstance ra on ria.resource_id = ra.id
         JOIN ${schemaName}.resource_softwareservice_env rse ON ra.id = rse.resource_id
-        where ria.app_module_id in
-        <foreach collection="list" item="id" separator="," open="(" close=")">
-            #{id}
-        </foreach>
+        <where>
+            <if test="appResourceId != null">
+                  raa.resource_id = #{appResourceId}
+            </if>
+            <if test="moduleResourceIdList != null and moduleResourceIdList.size() > 0">
+                and ria.app_module_id in
+                <foreach collection="moduleResourceIdList" item="id" separator="," open="(" close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
     </select>
 </mapper>
