@@ -988,36 +988,7 @@ public class CiEntitySyncHandler extends FormHandlerBase {
         JSONArray dataConfig = configObj.getJSONArray("dataConfig");
         if (CollectionUtils.isNotEmpty(dataConfig)) {
             //计算勾选显示属性个数，如不勾选任何属性则按照模型显示设置中的配置显示相关属性
-            int isShowTrueCount = 0;
-            for (int i = 0; i < dataConfig.size(); i++) {
-                JSONObject dataObj = dataConfig.getJSONObject(i);
-                if (MapUtils.isNotEmpty(dataObj)) {
-                    Boolean isShow = dataObj.getBoolean("isShow");
-                    if (Objects.equals(isShow, true)) {
-                        isShowTrueCount++;
-                    }
-                }
-            }
-            for (int i = 0; i < dataConfig.size(); i++) {
-                JSONObject dataObj = dataConfig.getJSONObject(i);
-                if (MapUtils.isNotEmpty(dataObj)) {
-                    if (isShowTrueCount > 0) {
-                        Boolean isShow = dataObj.getBoolean("isShow");
-                        if (!Objects.equals(isShow, true)) {
-                            continue;
-                        }
-                    }
-                    String key = dataObj.getString("key");
-                    String title = dataObj.getString("title");
-                    if (StringUtils.isNotBlank(key) && StringUtils.isNotBlank(title)) {
-                        JSONObject theadObj = new JSONObject();
-                        theadObj.put("key", key);
-                        theadObj.put("title", title);
-                        theadList.add(theadObj);
-                        keyList.add(key);
-                    }
-                }
-            }
+            getTheadList(theadList, keyList, dataConfig);
         }
         resultObj.put("theadList", theadList);
         JSONArray dataList = (JSONArray) attributeDataVo.getDataObj();
@@ -1082,23 +1053,7 @@ public class CiEntitySyncHandler extends FormHandlerBase {
         List<String> keyList = new ArrayList<>();
         JSONArray dataConfig = configObj.getJSONArray("dataConfig");
         if (CollectionUtils.isNotEmpty(dataConfig)) {
-            for (int i = 0; i < dataConfig.size(); i++) {
-                JSONObject dataObj = dataConfig.getJSONObject(i);
-                if (MapUtils.isNotEmpty(dataObj)) {
-                    Boolean isShow = dataObj.getBoolean("isShow");
-                    if (Objects.equals(isShow, true)) {
-                        String key = dataObj.getString("key");
-                        String title = dataObj.getString("title");
-                        if (StringUtils.isNotBlank(key) && StringUtils.isNotBlank(title)) {
-                            JSONObject theadObj = new JSONObject();
-                            theadObj.put("key", key);
-                            theadObj.put("title", title);
-                            theadList.add(theadObj);
-                            keyList.add(key);
-                        }
-                    }
-                }
-            }
+            getTheadList(theadList, keyList, dataConfig);
         }
         resultObj.put("theadList", theadList);
         JSONArray dataList = (JSONArray) attributeDataVo.getDataObj();
@@ -1129,12 +1084,39 @@ public class CiEntitySyncHandler extends FormHandlerBase {
                     if (MapUtils.isNotEmpty(attrEntityData)) {
                         for (String key : keyList) {
                             JSONObject object = attrEntityData.getJSONObject(key);
-                            JSONArray valueList = object.getJSONArray("actualValueList");
-                            tbodyObj.put(key, new JSONObject() {
-                                {
-                                    this.put("text", valueList != null ? String.join(",", valueList.toJavaList(String.class)) : "");
+                            if (object != null) {
+                                JSONArray valueList = object.getJSONArray("actualValueList");
+                                tbodyObj.put(key, new JSONObject() {
+                                    {
+                                        this.put("text", valueList != null ? String.join(",", valueList.toJavaList(String.class)) : "");
+                                    }
+                                });
+                            }
+                        }
+                    }
+                    JSONObject relEntityData = dataObj.getJSONObject("relEntityData");
+                    if (MapUtils.isNotEmpty(relEntityData)) {
+                        for (String key : keyList) {
+                            JSONObject object = relEntityData.getJSONObject(key);
+                            if (object != null) {
+                                JSONArray valueList = object.getJSONArray("valueList");
+                                if (CollectionUtils.isNotEmpty(valueList)) {
+                                    List<String> entityNameList = new ArrayList<>();
+                                    for (int j = 0; j < valueList.size(); j++) {
+                                        JSONObject obj = valueList.getJSONObject(j);
+                                        String ciEntityName = obj.getString("ciEntityName");
+                                        if (ciEntityName != null) {
+                                            entityNameList.add(ciEntityName);
+                                        }
+                                    }
+                                    tbodyObj.put(key, new JSONObject() {
+                                        {
+                                            this.put("text", entityNameList.size() > 0 ? String.join(",", entityNameList) : "");
+                                        }
+                                    });
                                 }
-                            });
+
+                            }
                         }
                     }
                     tbodyList.add(tbodyObj);
@@ -1145,21 +1127,65 @@ public class CiEntitySyncHandler extends FormHandlerBase {
         return resultObj;
     }
 
+    private void getTheadList(JSONArray theadList, List<String> keyList, JSONArray dataConfig) {
+        //计算勾选显示属性个数，如不勾选任何属性则按照模型显示设置中的配置显示相关属性
+        int isShowTrueCount = getIsShowTrueCount(dataConfig);
+        for (int i = 0; i < dataConfig.size(); i++) {
+            JSONObject dataObj = dataConfig.getJSONObject(i);
+            if (MapUtils.isNotEmpty(dataObj)) {
+                if (isShowTrueCount > 0) {
+                    Boolean isShow = dataObj.getBoolean("isShow");
+                    if (!Objects.equals(isShow, true)) {
+                        continue;
+                    }
+                }
+                String key = dataObj.getString("key");
+                String title = dataObj.getString("title");
+                if (StringUtils.isNotBlank(key) && StringUtils.isNotBlank(title)) {
+                    JSONObject theadObj = new JSONObject();
+                    theadObj.put("key", key);
+                    theadObj.put("title", title);
+                    theadList.add(theadObj);
+                    keyList.add(key);
+                }
+            }
+        }
+    }
+
+    private int getIsShowTrueCount(JSONArray dataConfig) {
+        int isShowTrueCount = 0;
+        for (int i = 0; i < dataConfig.size(); i++) {
+            JSONObject dataObj = dataConfig.getJSONObject(i);
+            if (MapUtils.isNotEmpty(dataObj)) {
+                Boolean isShow = dataObj.getBoolean("isShow");
+                if (Objects.equals(isShow, true)) {
+                    isShowTrueCount++;
+                }
+            }
+        }
+        return isShowTrueCount;
+    }
+
     @Override
     public int getExcelHeadLength(JSONObject configObj) {
         int count = 0;
         JSONArray dataConfig = configObj.getJSONArray("dataConfig");
         if (CollectionUtils.isNotEmpty(dataConfig)) {
+            //计算勾选显示属性个数，如不勾选任何属性则按照模型显示设置中的配置显示相关属性
+            int isShowTrueCount = getIsShowTrueCount(dataConfig);
             for (int i = 0; i < dataConfig.size(); i++) {
                 JSONObject dataObj = dataConfig.getJSONObject(i);
                 if (MapUtils.isNotEmpty(dataObj)) {
-                    Boolean isShow = dataObj.getBoolean("isShow");
-                    if (Objects.equals(isShow, true)) {
-                        String key = dataObj.getString("key");
-                        String title = dataObj.getString("title");
-                        if (StringUtils.isNotBlank(key) && StringUtils.isNotBlank(title)) {
-                            count++;
+                    if (isShowTrueCount > 0) {
+                        Boolean isShow = dataObj.getBoolean("isShow");
+                        if (!Objects.equals(isShow, true)) {
+                            continue;
                         }
+                    }
+                    String key = dataObj.getString("key");
+                    String title = dataObj.getString("title");
+                    if (StringUtils.isNotBlank(key) && StringUtils.isNotBlank(title)) {
+                        count++;
                     }
                 }
             }
