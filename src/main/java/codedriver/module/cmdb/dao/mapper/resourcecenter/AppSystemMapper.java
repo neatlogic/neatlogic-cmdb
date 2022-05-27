@@ -13,5 +13,5 @@ import java.util.List;
 
 public interface AppSystemMapper extends IAppSystemMapper {
 //    List<AppSystemVo> searchAppSystem(AppSystemVo appSystemVo);
-    List<AppEnvironmentVo> getAppEnvironmentListByAppResourceIdAndModuleResourceIdList(@Param("appResourceId") Long appResourceId, @Param("moduleResourceIdList") List<Long> moduleIdList,@Param("schemaName") String schemaName);
+    List<AppEnvironmentVo> getAppEnvListByAppSystemIdAndModuleIdList(@Param("appResourceId") Long appResourceId, @Param("moduleResourceIdList") List<Long> moduleIdList, @Param("schemaName") String schemaName);
 }

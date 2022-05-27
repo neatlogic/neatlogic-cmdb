@@ -47,7 +47,7 @@ public class AppEnvListApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appId", type = ApiParamType.LONG, desc = "应用id"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用id"),
             @Param(name = "appModuleIdList", type = ApiParamType.JSONARRAY, desc = "应用模块id列表"),
     })
     @Output({
@@ -57,11 +57,11 @@ public class AppEnvListApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) {
         JSONArray appModuleIdArray = paramObj.getJSONArray("appModuleIdList");
-        List<Long> appModuleResourceIdList = null;
+        List<Long> appModuleIdList = null;
         if (CollectionUtils.isNotEmpty(appModuleIdArray)) {
-            appModuleResourceIdList = appModuleIdArray.toJavaList(Long.class);
+            appModuleIdList = appModuleIdArray.toJavaList(Long.class);
         }
-        Long appResourceId = paramObj.getLong("appId");
-        return appSystemMapper.getAppEnvironmentListByAppResourceIdAndModuleResourceIdList(appResourceId, appModuleResourceIdList, TenantContext.get().getDataDbName());
+        Long appSystemId = paramObj.getLong("appSystemId");
+        return appSystemMapper.getAppEnvListByAppSystemIdAndModuleIdList(appSystemId, appModuleIdList, TenantContext.get().getDataDbName());
     }
 }

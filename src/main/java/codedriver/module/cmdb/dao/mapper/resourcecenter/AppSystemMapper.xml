@@ -43,7 +43,7 @@
     <!--        </where>-->
     <!--    </select>-->
 
-    <select id="getAppEnvironmentListByAppResourceIdAndModuleResourceIdList"
+    <select id="getAppEnvListByAppSystemIdAndModuleIdList"
             resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo">
         SELECT DISTINCT
         rse.env_id AS envId,
