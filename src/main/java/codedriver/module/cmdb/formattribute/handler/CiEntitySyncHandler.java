@@ -1057,6 +1057,12 @@ public class CiEntitySyncHandler extends FormHandlerBase {
                             tbodyObj.put(key, attrEntityData.getJSONObject(key));
                         }
                     }
+                    JSONObject relEntityData = dataObj.getJSONObject("relEntityData");
+                    if (MapUtils.isNotEmpty(relEntityData)) {
+                        for (String key : keyList) {
+                            tbodyObj.put(key, relEntityData.getJSONObject(key));
+                        }
+                    }
                     tbodyList.add(tbodyObj);
                 }
             }
