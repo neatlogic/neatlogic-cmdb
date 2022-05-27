@@ -987,20 +987,34 @@ public class CiEntitySyncHandler extends FormHandlerBase {
         List<String> keyList = new ArrayList<>();
         JSONArray dataConfig = configObj.getJSONArray("dataConfig");
         if (CollectionUtils.isNotEmpty(dataConfig)) {
+            //计算勾选显示属性个数，如不勾选任何属性则按照模型显示设置中的配置显示相关属性
+            int isShowTrueCount = 0;
             for (int i = 0; i < dataConfig.size(); i++) {
                 JSONObject dataObj = dataConfig.getJSONObject(i);
                 if (MapUtils.isNotEmpty(dataObj)) {
                     Boolean isShow = dataObj.getBoolean("isShow");
                     if (Objects.equals(isShow, true)) {
-                        String key = dataObj.getString("key");
-                        String title = dataObj.getString("title");
-                        if (StringUtils.isNotBlank(key) && StringUtils.isNotBlank(title)) {
-                            JSONObject theadObj = new JSONObject();
-                            theadObj.put("key", key);
-                            theadObj.put("title", title);
-                            theadList.add(theadObj);
-                            keyList.add(key);
+                        isShowTrueCount++;
+                    }
+                }
+            }
+            for (int i = 0; i < dataConfig.size(); i++) {
+                JSONObject dataObj = dataConfig.getJSONObject(i);
+                if (MapUtils.isNotEmpty(dataObj)) {
+                    if (isShowTrueCount > 0) {
+                        Boolean isShow = dataObj.getBoolean("isShow");
+                        if (!Objects.equals(isShow, true)) {
+                            continue;
                         }
+                    }
+                    String key = dataObj.getString("key");
+                    String title = dataObj.getString("title");
+                    if (StringUtils.isNotBlank(key) && StringUtils.isNotBlank(title)) {
+                        JSONObject theadObj = new JSONObject();
+                        theadObj.put("key", key);
+                        theadObj.put("title", title);
+                        theadList.add(theadObj);
+                        keyList.add(key);
                     }
                 }
             }
