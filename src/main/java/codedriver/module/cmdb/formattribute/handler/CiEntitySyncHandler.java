@@ -1094,6 +1094,31 @@ public class CiEntitySyncHandler extends FormHandlerBase {
                             }
                         }
                     }
+                    JSONObject relEntityData = dataObj.getJSONObject("relEntityData");
+                    if (MapUtils.isNotEmpty(relEntityData)) {
+                        for (String key : keyList) {
+                            JSONObject object = relEntityData.getJSONObject(key);
+                            if (object != null) {
+                                JSONArray valueList = object.getJSONArray("valueList");
+                                if (CollectionUtils.isNotEmpty(valueList)) {
+                                    List<String> entityNameList = new ArrayList<>();
+                                    for (int j = 0; j < valueList.size(); j++) {
+                                        JSONObject obj = valueList.getJSONObject(j);
+                                        String ciEntityName = obj.getString("ciEntityName");
+                                        if (ciEntityName != null) {
+                                            entityNameList.add(ciEntityName);
+                                        }
+                                    }
+                                    tbodyObj.put(key, new JSONObject() {
+                                        {
+                                            this.put("text", entityNameList.size() > 0 ? String.join(",", entityNameList) : "");
+                                        }
+                                    });
+                                }
+
+                            }
+                        }
+                    }
                     tbodyList.add(tbodyObj);
                 }
             }
