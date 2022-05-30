@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!--
-  ~ Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+  ~ Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
   ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
   -->
 
@@ -419,6 +419,15 @@
                  LEFT JOIN cmdb_transactiongroup c ON a.`id` = c.`transaction_id`
         WHERE a.`ci_id` =
               #{value}
+    </delete>
+
+    <delete id="deleteTransactionByDayBefore" parameterType="int">
+        DELETE
+            a,b,c
+        FROM cmdb_transaction a
+                 LEFT JOIN cmdb_cientity_transaction b ON a.`id` = b.`transaction_id`
+                 LEFT JOIN cmdb_transactiongroup c ON a.`id` = c.`transaction_id`
+        WHERE commit_time &lt; DATE_SUB(CURRENT_DATE, INTERVAL #{value} DAY)
     </delete>
 
     <delete id="deleteTransactionById" parameterType="java.lang.Long">
