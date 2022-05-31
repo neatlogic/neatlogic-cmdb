@@ -65,4 +65,15 @@
             </if>
         </where>
     </select>
+
+    <select id="getAppSystemIdListCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+            resultType="java.lang.Integer">
+        SELECT count(distinct ra.`id`) FROM ${schemaName}.`resource_appsystem` ra
+        left join ${schemaName}.`resource_appsystem_appmodule` raa  on raa.resource_id = ra.id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                ra.`name` LIKE concat('%', #{keyword}, '%') or raa.app_module_name LIKE concat('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
 </mapper>

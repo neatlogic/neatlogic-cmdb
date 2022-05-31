@@ -6,6 +6,7 @@
 package codedriver.module.cmdb.dao.mapper.resourcecenter;
 
 import codedriver.framework.cmdb.crossover.IAppSystemMapper;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo;
 import org.apache.ibatis.annotations.Param;
 
@@ -14,4 +15,6 @@ import java.util.List;
 public interface AppSystemMapper extends IAppSystemMapper {
 //    List<AppSystemVo> searchAppSystem(AppSystemVo appSystemVo);
     List<AppEnvironmentVo> getAppEnvListByAppSystemIdAndModuleIdList(@Param("appResourceId") Long appResourceId, @Param("moduleResourceIdList") List<Long> moduleIdList, @Param("schemaName") String schemaName);
+
+    Integer getAppSystemIdListCount(ResourceSearchVo searchVo);
 }
