@@ -16,6 +16,7 @@ import codedriver.framework.file.dto.FileVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.framework.util.RegexUtils;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.service.ci.CiService;
@@ -56,7 +57,7 @@ public class SaveCiApi extends PrivateApiComponentBase {
     }
 
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "id，不提供代表新增模型"),
-            @Param(name = "name", type = ApiParamType.REGEX, rule = "^[a-zA-Z_\\d]+$", xss = true, isRequired = true, maxLength = 25, desc = "英文名称"),
+            @Param(name = "name", type = ApiParamType.REGEX, rule = RegexUtils.ENGLISH_NAME, xss = true, isRequired = true, maxLength = 25, desc = "英文名称"),
             @Param(name = "label", type = ApiParamType.STRING, desc = "中文名称", xss = true, maxLength = 100,
                     isRequired = true),
             @Param(name = "description", type = ApiParamType.STRING, desc = "备注", maxLength = 500, xss = true),
