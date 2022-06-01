@@ -5,6 +5,7 @@
 
 package codedriver.module.cmdb.dao.mapper.cientity;
 
+import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.AttrEntityVo;
@@ -16,7 +17,7 @@ import org.apache.ibatis.annotations.Param;
 import java.util.HashMap;
 import java.util.List;
 
-public interface CiEntityMapper {
+public interface CiEntityMapper extends ICiEntityCrossoverMapper {
     /**
      * 查询没有创建索引的配置项id
      *
