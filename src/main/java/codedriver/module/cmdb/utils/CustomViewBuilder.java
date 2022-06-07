@@ -281,8 +281,7 @@ public class CustomViewBuilder {
             }
             //生成主SQL，需要join所有父模型数据表
             for (CiVo ci : ciVo.getUpwardCiList()) {
-                plainSelect.addJoins(new Join().withRightItem(new Table().withName("cmdb_" + ci.getId()).withSchemaName(TenantContext.get().getDataDbName()).withAlias(new Alias("cmdb_" + ci.getId()))).addOnExpression(new EqualsTo().withLeftExpression(new Column().withTable(new Table("ci_base")).withColumnName("id")).withRightExpression(new Column().withTable(new Table("cmdb_" + ci.getId())).withColumnName("cientity_id"))));
-
+                plainSelect.addJoins(new Join().withRightItem(new Table().withName("cmdb_" + ci.getId()).withSchemaName(TenantContext.get().getDataDbName()).withAlias(new Alias("cmdb_" + ci.getId()))).addOnExpression(new EqualsTo().withLeftExpression(new Column().withTable(new Table("ci_base")).withColumnName("id")).withRightExpression(new Column().withTable(new Table("cmdb_" + ci.getId())).withColumnName(ci.getIsVirtual().equals(0) ? "cientity_id" : "id"))));
             }
             //增加where条件，限制数据在自己模型，不要查出子模型数据
             /*plainSelect.withWhere(new EqualsTo()
