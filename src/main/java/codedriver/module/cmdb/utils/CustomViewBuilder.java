@@ -86,9 +86,16 @@ public class CustomViewBuilder {
 
     public void buildView() {
         Table mainTable = new Table();
-        mainTable.setSchemaName(TenantContext.get().getDbName());
-        mainTable.setName("cmdb_cientity");
-        mainTable.setAlias(new Alias("ci_base"));
+        CustomViewCiVo startCustomViewCiVo = customViewVo.getStartCustomViewCi();
+        if (startCustomViewCiVo.getCiVo().getIsVirtual().equals(0)) {
+            mainTable.setSchemaName(TenantContext.get().getDbName());
+            mainTable.setName("cmdb_cientity");
+            mainTable.setAlias(new Alias("ci_base"));
+        } else {
+            mainTable.setSchemaName(TenantContext.get().getDataDbName());
+            mainTable.setName("cmdb_" + startCustomViewCiVo.getCiVo().getId());
+            mainTable.setAlias(new Alias("ci_base"));
+        }
         Select select = SelectUtils.buildSelectFromTableAndSelectItems(mainTable);
         SelectBody selectBody = select.getSelectBody();
         PlainSelect plainSelect = (PlainSelect) selectBody;
@@ -103,7 +110,6 @@ public class CustomViewBuilder {
                 }
             }
         }
-        CustomViewCiVo startCustomViewCiVo = customViewVo.getStartCustomViewCi();
         plainSelect.addJoins(new Join().withRightItem(new SubSelect().withSelectBody(buildSubSelectForCi(startCustomViewCiVo).getSelectBody()).withAlias(new Alias("ci_" + startCustomViewCiVo.getUuid()))).addOnExpression(new EqualsTo().withLeftExpression(new Column().withTable(new Table("ci_base")).withColumnName("id")).withRightExpression(new Column().withTable(new Table("ci_" + startCustomViewCiVo.getUuid())).withColumnName("id"))));
         for (CustomViewAttrVo attrVo : customViewVo.getAttrList()) {
             plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getUuid() + "`")));
