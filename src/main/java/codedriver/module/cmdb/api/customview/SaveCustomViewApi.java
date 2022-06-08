@@ -191,6 +191,9 @@ public class SaveCustomViewApi extends PrivateApiComponentBase {
                 } else if (relNodeMap.containsKey(sUuid)) {
                     customViewLinkVo.setFromType(RelType.REL.getValue());
                     customViewLinkVo.setFromCustomViewCiUuid(relMap.get(sUuid).getCustomViewCiUuid());
+                } else if (constNodeMap.containsKey(sUuid)) {
+                    customViewLinkVo.setFromType(RelType.CONST_ATTR.getValue());
+                    customViewLinkVo.setFromCustomViewCiUuid(constAttrMap.get(sUuid).getCustomViewCiUuid());
                 }
 
                 String tUuid = linkObj.getString("target");
@@ -200,6 +203,9 @@ public class SaveCustomViewApi extends PrivateApiComponentBase {
                 } else if (ciNodeMap.containsKey(tUuid)) {
                     customViewLinkVo.setToType(RelType.CI.getValue());
                     customViewLinkVo.setToCustomViewCiUuid(ciMap.get(tUuid).getUuid());
+                } else if (constNodeMap.containsKey(tUuid)) {
+                    customViewLinkVo.setToType(RelType.CONST_ATTR.getValue());
+                    customViewLinkVo.setToCustomViewCiUuid(constAttrMap.get(tUuid).getCustomViewCiUuid());
                 }
 
                 linkList.add(customViewLinkVo);

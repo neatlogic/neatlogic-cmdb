@@ -420,9 +420,9 @@ public class CiServiceImpl implements CiService {
         if (ciVo == null) {
             throw new CiNotFoundException(id);
         }
-        //if (ciVo.getIsVirtual().equals(0)) {
-        ciVo.setUpwardCiList(ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht()));
-        //}
+        if (ciVo.getIsVirtual().equals(0)) {
+            ciVo.setUpwardCiList(ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht()));
+        }
         List<AttrVo> attrList = attrMapper.getAttrByCiId(id);
         List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(id));
         ciVo.setRelList(relList);
