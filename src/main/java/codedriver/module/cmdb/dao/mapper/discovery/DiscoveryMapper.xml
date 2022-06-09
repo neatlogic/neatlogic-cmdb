@@ -7,7 +7,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.discovery.DiscoveryMapper">
     <select id="getDiscoveryConfCombopByConfId"
-            parameterType="java.lang.String"
+            parameterType="java.lang.Long"
             resultType="codedriver.framework.cmdb.dto.discovery.DiscoverConfCombopVo">
         select conf_id AS confId, combop_id AS combopId
         from discovery_conf_combop
@@ -19,7 +19,7 @@
         values (#{confId}, #{combopId})
     </insert>
 
-    <delete id="deleteDiscoveryConfCombopByConfId" parameterType="java.lang.String">
+    <delete id="deleteDiscoveryConfCombopByConfId" parameterType="java.lang.Long">
         delete
         from discovery_conf_combop
         where conf_id = #{value}

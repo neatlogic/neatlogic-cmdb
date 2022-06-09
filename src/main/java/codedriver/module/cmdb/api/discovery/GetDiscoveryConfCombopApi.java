@@ -42,12 +42,12 @@ public class GetDiscoveryConfCombopApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "confId", type = ApiParamType.STRING, isRequired = true, desc = "自动发现配置id")})
+    @Input({@Param(name = "confId", type = ApiParamType.LONG, isRequired = true, desc = "自动发现配置id")})
     @Output({@Param(explode = DiscoverConfCombopVo.class)})
     @Description(desc = "获取自动发现配置组合工具关系接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        return discoveryMapper.getDiscoveryConfCombopByConfId(jsonObj.getString("confId"));
+        return discoveryMapper.getDiscoveryConfCombopByConfId(jsonObj.getLong("confId"));
     }
 
 }

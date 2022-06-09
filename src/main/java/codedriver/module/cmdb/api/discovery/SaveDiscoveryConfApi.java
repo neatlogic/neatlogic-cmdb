@@ -80,9 +80,9 @@ public class SaveDiscoveryConfApi extends PrivateApiComponentBase {
             jsonObj.put("_id", new ObjectId(jsonObj.getString("_id")));
         }
         mongoTemplate.save(jsonObj, "_discovery_conf");
-        discoveryMapper.deleteDiscoveryConfCombopByConfId(_id);
+        discoveryMapper.deleteDiscoveryConfCombopByConfId(jsonObj.getLong("id"));
         if (combopId != null) {
-            discoveryMapper.insertDiscoveryConfCombop(new DiscoverConfCombopVo(_id, combopId));
+            discoveryMapper.insertDiscoveryConfCombop(new DiscoverConfCombopVo(jsonObj.getLong("id"), combopId));
         }
         return null;
     }

@@ -8,9 +8,9 @@ package codedriver.module.cmdb.dao.mapper.discovery;
 import codedriver.framework.cmdb.dto.discovery.DiscoverConfCombopVo;
 
 public interface DiscoveryMapper {
-    DiscoverConfCombopVo getDiscoveryConfCombopByConfId(String confId);
+    DiscoverConfCombopVo getDiscoveryConfCombopByConfId(Long confId);
 
     void insertDiscoveryConfCombop(DiscoverConfCombopVo discoverConfCombopVo);
 
-    void deleteDiscoveryConfCombopByConfId(String confId);
+    void deleteDiscoveryConfCombopByConfId(Long confId);
 }
