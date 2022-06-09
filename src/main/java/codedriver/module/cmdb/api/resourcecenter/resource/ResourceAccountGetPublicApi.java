@@ -51,9 +51,11 @@ public class ResourceAccountGetPublicApi extends PublicApiComponentBase {
             @Param(name = "resourceId", type = ApiParamType.LONG, desc = "资产id"),
             @Param(name = "host", type = ApiParamType.STRING, desc = "host ip"),
             @Param(name = "port", type = ApiParamType.INTEGER, desc = "端口"),
-            @Param(name = "protocol", type = ApiParamType.STRING, desc = "协议",isRequired = true),
+            @Param(name = "nodeName", type = ApiParamType.STRING, desc = "资产名"),
+            @Param(name = "nodeType", type = ApiParamType.STRING, desc = "ci模型"),
+            @Param(name = "protocol", type = ApiParamType.STRING, desc = "协议", isRequired = true),
             @Param(name = "protocolPort", type = ApiParamType.INTEGER, desc = "协议端口"),
-            @Param(name = "username", type = ApiParamType.STRING, desc = "账号名",isRequired = true)
+            @Param(name = "username", type = ApiParamType.STRING, desc = "账号名", isRequired = true)
     })
     @Output({
             @Param(name = "name", explode = AccountVo[].class, desc = "账号"),
@@ -65,19 +67,21 @@ public class ResourceAccountGetPublicApi extends PublicApiComponentBase {
         Long resourceId = paramObj.getLong("resourceId");
         String ip = paramObj.getString("host");
         Integer port = paramObj.getInteger("port");
+        String nodeName = paramObj.getString("nodeName");
+        String nodeType = paramObj.getString("nodeType");
         String protocol = paramObj.getString("protocol");
         Integer protocolPort = paramObj.getInteger("protocolPort");
         String username = paramObj.getString("username");
 
         if (resourceId == null) {
-            ResourceVo resourceVo = resourceCenterMapper.getResourceByIpAndPort(TenantContext.get().getDataDbName(), ip, port);
-            if(resourceVo == null){
+            ResourceVo resourceVo = resourceCenterMapper.getResourceByIpAndPortAndNameAndTypeName(TenantContext.get().getDataDbName(), ip, port, nodeName, nodeType);
+            if (resourceVo == null) {
                 throw new ResourceNotFoundException();
             }
             resourceId = resourceVo.getId();
         }
 
-        List<AccountVo> accountVoList = resourceCenterMapper.getResourceAccountByResourceIdAndProtocolAndProtocolPortAndUsername(resourceId,protocol,protocolPort,username);
+        List<AccountVo> accountVoList = resourceCenterMapper.getResourceAccountByResourceIdAndProtocolAndProtocolPortAndUsername(resourceId, protocol, protocolPort, username);
         if (CollectionUtils.isEmpty(accountVoList)) {
             throw new ResourceCenterAccountNotFoundException();
         }
