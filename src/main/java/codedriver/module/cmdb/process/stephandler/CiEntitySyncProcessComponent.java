@@ -5,14 +5,14 @@
 
 package codedriver.module.cmdb.process.stephandler;
 
+import codedriver.framework.asynchronization.threadlocal.InputFromContext;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import codedriver.framework.cmdb.dto.transaction.TransactionGroupVo;
 import codedriver.framework.cmdb.enums.EditModeType;
-import codedriver.framework.common.constvalue.InputFrom;
 import codedriver.framework.cmdb.enums.TransactionActionType;
-import codedriver.framework.asynchronization.threadlocal.InputFromContext;
+import codedriver.framework.common.constvalue.InputFrom;
 import codedriver.framework.exception.core.ApiRuntimeException;
 import codedriver.framework.process.constvalue.ProcessStepMode;
 import codedriver.framework.process.dao.mapper.ProcessTaskStepDataMapper;
@@ -20,7 +20,7 @@ import codedriver.framework.process.dto.ProcessTaskFormAttributeDataVo;
 import codedriver.framework.process.dto.ProcessTaskStepDataVo;
 import codedriver.framework.process.dto.ProcessTaskStepVo;
 import codedriver.framework.process.dto.ProcessTaskStepWorkerVo;
-import codedriver.framework.process.exception.core.ProcessTaskException;
+import codedriver.framework.process.exception.processtask.ProcessTaskException;
 import codedriver.framework.process.stephandler.core.ProcessStepHandlerBase;
 import codedriver.framework.transaction.core.EscapeTransactionJob;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
@@ -36,7 +36,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
