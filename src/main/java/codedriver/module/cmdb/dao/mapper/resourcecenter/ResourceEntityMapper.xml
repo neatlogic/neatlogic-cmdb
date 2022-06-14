@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!--
-  ~ Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+  ~ Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
   ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
   -->
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper">
+    <select id="getResourceEntityByName" parameterType="java.lang.String"
+            resultType="codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
+        SELECT name, label, status, error, init_time AS initTime, ci_id AS ciId
+        FROM cmdb_resourcecenter_entity
+        WHERE name = #{value}
+    </select>
 
     <select id="getAllResourceEntity" resultType="codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
         SELECT name, label, status, error, init_time AS initTime
@@ -18,11 +24,12 @@
 
     <insert id="insertResourceEntity"
             parameterType="codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
-        INSERT INTO cmdb_resourcecenter_entity (`name`, `label`, `status`, `error`, `init_time`)
-        VALUES (#{name}, #{label}, #{status}, #{error}, NOW(3))
-            ON DUPLICATE KEY UPDATE `error`     = #{error},
-                                 `status`    = #{status},
-                                 `init_time` = NOW(3)
+        INSERT INTO cmdb_resourcecenter_entity (`name`, `label`, `status`, `error`, `init_time`, `ci_id`)
+        VALUES (#{name}, #{label}, #{status}, #{error}, NOW(3), #{ciId})
+        ON DUPLICATE KEY UPDATE `error`     = #{error},
+                                `status`    = #{status},
+                                `init_time` = NOW(3),
+                                `ci_id`     = #{ciId}
     </insert>
 
     <update id="updateResourceEntity"

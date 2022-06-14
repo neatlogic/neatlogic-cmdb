@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSureCo.,Ltd.AllRightsReserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -86,7 +86,7 @@ public class AppModuleListApi extends PrivateApiComponentBase {
             if (searchVo.getCurrentPage() <= searchVo.getPageCount()) {
                 int fromIndex = searchVo.getStartNum();
                 int toIndex = fromIndex + searchVo.getPageSize();
-                toIndex = toIndex >  rowNum ? rowNum : toIndex;
+                toIndex = Math.min(toIndex, rowNum);
                 List<Long> idList = new ArrayList<>(idSet);
                 idList.sort(Comparator.reverseOrder());
                 List<Long> currentPageIdList = idList.subList(fromIndex, toIndex);
