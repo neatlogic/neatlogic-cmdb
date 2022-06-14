@@ -14,6 +14,7 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.SYNC_MODIFY;
+import codedriver.module.cmdb.dao.mapper.discovery.DiscoveryMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -29,6 +30,8 @@ public class DeleteDiscoveryConfApi extends PrivateApiComponentBase {
     @Resource
     private MongoTemplate mongoTemplate;
 
+    @Resource
+    private DiscoveryMapper discoveryMapper;
 
     @Override
     public String getToken() {
@@ -45,12 +48,15 @@ public class DeleteDiscoveryConfApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "_id", type = ApiParamType.STRING, desc = "id", isRequired = true)})
+    @Input({
+            @Param(name = "_id", type = ApiParamType.STRING, desc = "MongoDB文档id", isRequired = true),
+            @Param(name = "id", type = ApiParamType.LONG, desc = "id", isRequired = true)})
     @Description(desc = "删除自动发现配置接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         jsonObj.put("_id", new ObjectId(jsonObj.getString("_id")));
         mongoTemplate.remove(jsonObj, "_discovery_conf");
+        discoveryMapper.deleteDiscoveryConfCombopByConfId(jsonObj.getLong("id"));
         return null;
     }
 }
