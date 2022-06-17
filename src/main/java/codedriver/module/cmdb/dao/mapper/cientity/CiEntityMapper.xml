@@ -950,6 +950,15 @@
         AND `name` = #{name}
     </select>
 
+    <select id="getResourceEnvByAppSystemIdAndAppModuleId"
+            resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
+        SELECT
+            DISTINCT env_id,env_name
+        FROM resource_ipobject_detail
+        WHERE app_system_id = #{appSystemId}
+          AND app_module_id = #{appModuleId}
+    </select>
+
     <select id="getDownwardCiEntityByLRLimitSize" resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
             useCache="false">
         SELECT a.`id`,

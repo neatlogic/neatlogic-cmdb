@@ -181,6 +181,8 @@ public interface CiEntityMapper extends ICiEntityCrossoverMapper {
 
     List<CiEntityVo> getCiEntityListByCiIdListAndName(CiEntityVo ciEntityVo);
 
+    List<CiEntityVo> getResourceEnvByAppSystemIdAndAppModuleId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId);
+
     void deleteAttrEntityByFromCiEntityIdAndAttrId(@Param("fromCiEntityId") Long fromCiEntityId, @Param("attrId") Long attrId);
 
     void updateCiEntityBaseInfo(CiEntityVo ciEntityVo);
