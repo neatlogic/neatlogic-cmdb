@@ -874,25 +874,6 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                     List<Map<String, JSONObject>> list = getCmdbCiDataTbodyList(tbodyArray, columnList, matrixUuid);
                     deduplicateData(columnList, exsited, list);
                     resultList.addAll(list);
-                    //下面逻辑适用于下拉框只显示一页数据，没有滚动加载，可以搜索
-//                    int pageSize = dataVo.getPageSize();
-//                    int currentPage = 1;
-//                    while(resultList.size() < pageSize) {
-//                        ciEntityVo.setCurrentPage(currentPage);
-//                        ciEntityVo.setPageSize(pageSize);
-//                        JSONArray tbodyArray = accessSearchCiEntity(matrixUuid, ciEntityVo);
-//                        if (CollectionUtils.isEmpty(tbodyArray)) {
-//                            break;
-//                        }
-//                        List<Map<String, JSONObject>> list = getCmdbCiDataTbodyList(tbodyArray, columnList, matrixUuid);
-//                        deduplicateData(columnList, exsited, list);
-//                        resultList.addAll(list);
-//                        pageSize -= list.size();
-//                        currentPage++;
-//                        if (currentPage >= 10) {
-//                            break;
-//                        }
-//                    }
                 }
             }
         }
