@@ -7,6 +7,7 @@ package codedriver.module.cmdb.api.resourcecenter.resource;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.autoexec.exception.AutoexecCombopProtocolCannotBeEmptyException;
 import codedriver.framework.cmdb.crossover.IResourceCenterAccountCrossoverService;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountProtocolVo;
@@ -91,6 +92,9 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
         String protocol = null;
         if (protocolId != null) {
             AccountProtocolVo protocolVo = resourceCenterMapper.getAccountProtocolVoByProtocolId(protocolId);
+            if(protocolVo == null){
+                throw new AutoexecCombopProtocolCannotBeEmptyException();
+            }
             protocol = protocolVo.getName();
             if (Objects.equals(protocol, Protocol.TAGENT.getValue())) {
                 executeUser = null;
