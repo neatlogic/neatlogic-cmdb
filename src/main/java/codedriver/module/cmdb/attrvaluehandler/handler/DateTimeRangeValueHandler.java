@@ -29,7 +29,7 @@ public class DateTimeRangeValueHandler implements IAttrValueHandler {
 
     @Override
     public String getName() {
-        return "日期时间范围";
+        return "时间范围";
     }
 
     @Override

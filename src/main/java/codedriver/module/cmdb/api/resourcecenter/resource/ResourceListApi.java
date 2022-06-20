@@ -9,7 +9,6 @@ import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.crossover.IResourceListApiCrossoverService;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
-import codedriver.framework.cmdb.dto.resourcecenter.ResourceScriptVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -27,9 +26,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 查询资源中心数据列表接口
@@ -109,17 +106,6 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
                 if (CollectionUtils.isNotEmpty(resourceVoList)) {
                     resourceCenterResourceService.addResourceAccount(idList, resourceVoList);
                     resourceCenterResourceService.addResourceTag(idList, resourceVoList);
-                    Map<Long, ResourceScriptVo> resourceScriptVoMap = new HashMap<>();
-                    List<ResourceScriptVo> resourceScriptVoList = resourceCenterMapper.getResourceScriptListByResourceIdList(idList);
-                    if (CollectionUtils.isNotEmpty(resourceScriptVoList)) {
-                        for (ResourceScriptVo resourceScriptVo : resourceScriptVoList) {
-                            resourceScriptVoMap.put(resourceScriptVo.getResourceId(), resourceScriptVo);
-                        }
-                    }
-                    for (ResourceVo resourceVo : resourceVoList) {
-                        ResourceScriptVo scriptVo = resourceScriptVoMap.get(resourceVo.getId());
-                        resourceVo.setScript(scriptVo);
-                    }
                 }
             }
         }
