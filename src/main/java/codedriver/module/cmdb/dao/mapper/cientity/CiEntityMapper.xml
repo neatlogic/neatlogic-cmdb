@@ -965,7 +965,7 @@
                  JOIN `cmdb_ci` b ON a.ci_id = b.id
         WHERE b.lft &gt;= #{lft}
           AND b.rht &lt;= #{rht}
-            limit #{size}
+        limit #{size}
     </select>
 
 
