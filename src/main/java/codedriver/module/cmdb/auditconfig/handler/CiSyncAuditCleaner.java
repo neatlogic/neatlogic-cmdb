@@ -5,7 +5,9 @@
 
 package codedriver.module.cmdb.auditconfig.handler;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auditconfig.core.AuditCleanerBase;
+import codedriver.framework.healthcheck.dao.mapper.DatabaseFragmentMapper;
 import codedriver.module.cmdb.dao.mapper.sync.SyncAuditMapper;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +17,8 @@ import javax.annotation.Resource;
 public class CiSyncAuditCleaner extends AuditCleanerBase {
     @Resource
     private SyncAuditMapper syncAuditMapper;
+    @Resource
+    private DatabaseFragmentMapper databaseFragmentMapper;
 
     @Override
     public String getName() {
@@ -24,5 +28,6 @@ public class CiSyncAuditCleaner extends AuditCleanerBase {
     @Override
     protected void myClean(int dayBefore) {
         syncAuditMapper.deleteAuditByDayBefore(dayBefore);
+        databaseFragmentMapper.rebuildTable(TenantContext.get().getDbName(), "cmdb_sync_audit");
     }
 }
