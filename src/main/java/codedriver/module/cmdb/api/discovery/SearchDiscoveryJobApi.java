@@ -48,6 +48,7 @@ public class SearchDiscoveryJobApi extends PrivateApiComponentBase {
             @Param(name = "typeIdList", type = ApiParamType.JSONARRAY, desc = "组合工具类型"),
             @Param(name = "combopName", type = ApiParamType.STRING, desc = "组合工具"),
             @Param(name = "combopId", type = ApiParamType.LONG, desc = "组合工具Id"),
+            @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "id列表，用于精确查找作业刷新状态"),
             @Param(name = "confId", type = ApiParamType.LONG, desc = "自动发现配置id"),
             @Param(name = "startTime", type = ApiParamType.JSONOBJECT, desc = "时间过滤"),
             @Param(name = "execUserList", type = ApiParamType.JSONARRAY, desc = "操作人"),
