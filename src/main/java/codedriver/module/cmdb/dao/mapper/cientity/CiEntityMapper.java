@@ -207,6 +207,8 @@ public interface CiEntityMapper extends ICiEntityCrossoverMapper {
 
     int getCiEntityIdCountByCiIdAndKeyword(@Param("id") Long id, @Param("keyword") String keyword);
 
+    int getCiEntityIdListCountByCiName(@Param("ciName") String ciName);
+
     void updateCiEntityInspectStatus(CiEntityVo ciEntityVo);
 
     void updateCiEntityLockById(CiEntityVo ciEntityVo);

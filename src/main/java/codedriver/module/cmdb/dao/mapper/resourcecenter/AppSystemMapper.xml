@@ -50,9 +50,8 @@
         rse.env_name AS envName
         FROM
         ${schemaName}.resource_appsystem_appmodule raa
-        join ${schemaName}.resource_ipobject_appmodule ria on raa.app_module_id = ria.app_module_id
-        join ${schemaName}.resource_appinstance ra on ria.resource_id = ra.id
-        JOIN ${schemaName}.resource_softwareservice_env rse ON ra.id = rse.resource_id
+        JOIN ${schemaName}.resource_ipobject_appmodule ria ON raa.app_module_id = ria.app_module_id
+        JOIN ${schemaName}.resource_softwareservice_env rse ON ria.resource_id = rse.resource_id
         <where>
             <if test="appResourceId != null">
                   raa.resource_id = #{appResourceId}
@@ -73,6 +72,16 @@
         <where>
             <if test="keyword != null and keyword != ''">
                 ra.`name` LIKE concat('%', #{keyword}, '%') or raa.app_module_name LIKE concat('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="getAppSystemIdListByAppModuleName" resultType="java.lang.Long">
+        SELECT raa.`resource_id` FROM
+          ${schemaName}.`resource_appsystem_appmodule` raa
+        <where>
+            <if test="keyword != null and keyword != ''">
+               raa.app_module_name LIKE concat('%',#{keyword}, '%')
             </if>
         </where>
     </select>
