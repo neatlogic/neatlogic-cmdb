@@ -50,9 +50,9 @@
         rse.env_name AS envName
         FROM
         ${schemaName}.resource_appsystem_appmodule raa
-        join ${schemaName}.resource_ipobject_appmodule ria on raa.app_module_id = ria.app_module_id
-        join ${schemaName}.resource_appinstance ra on ria.resource_id = ra.id
-        JOIN ${schemaName}.resource_softwareservice_env rse ON ra.id = rse.resource_id
+        JOIN ${schemaName}.resource_ipobject_appmodule ria ON raa.app_module_id = ria.app_module_id
+        JOIN cmdb_cientity cc ON cc.id = ria.resource_id
+        JOIN ${schemaName}.resource_softwareservice_env rse ON cc.id = rse.resource_id
         <where>
             <if test="appResourceId != null">
                   raa.resource_id = #{appResourceId}
