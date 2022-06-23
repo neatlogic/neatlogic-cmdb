@@ -54,6 +54,7 @@ public class SearchSyncCiCollectionApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "ciId", type = ApiParamType.LONG, desc = "模型id"),
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字"),
+            @Param(name = "isShowPhysicalType", type = ApiParamType.INTEGER, desc = "是否显示物理集合数据"),
             @Param(name = "collectionType", type = ApiParamType.STRING, desc = "集合类型"),
             @Param(name = "collectionName", type = ApiParamType.STRING, desc = "集合名称")})
     @Output({@Param(explode = BasePageVo.class)})
@@ -63,17 +64,30 @@ public class SearchSyncCiCollectionApi extends PrivateApiComponentBase {
         SyncCiCollectionVo syncCiCollectionVo = JSONObject.toJavaObject(jsonObj, SyncCiCollectionVo.class);
         if (StringUtils.isNotBlank(jsonObj.getString("collectionType")) && StringUtils.isBlank(jsonObj.getString("collectionName"))) {
             Query query = new Query();
-            Criteria criteria = Criteria.where("collection").is(jsonObj.getString("collectionType"));
-            query.addCriteria(criteria);
+            query.addCriteria(Criteria.where("collection").is(jsonObj.getString("collectionType")));
             List<CollectionVo> collectionList = mongoTemplate.find(query, CollectionVo.class, "_dictionary");
             List<String> collectionNameList = new ArrayList<>();
             for (CollectionVo collectionVo : collectionList) {
                 collectionNameList.add(collectionVo.getName());
             }
             syncCiCollectionVo.setCollectionNameList(collectionNameList);
+        } else if (StringUtils.isNotBlank(jsonObj.getString("collectionName"))) {
+            if (jsonObj.getIntValue("isShowPhysicalType") == 1) {
+                syncCiCollectionVo.setCollectionName("");//清空集合名，改用collectionNameList属性进行检索
+                List<String> collectionNameList = new ArrayList<>();
+                collectionNameList.add(jsonObj.getString("collectionName"));
+                Query query = new Query();
+                query.addCriteria(Criteria.where("name").is(jsonObj.getString("collectionName")));
+                CollectionVo collection = mongoTemplate.findOne(query, CollectionVo.class, "_dictionary");
+                if (collection != null && StringUtils.isNotBlank(collection.getCollection())) {
+                    collectionNameList.add(collection.getCollection().toLowerCase().substring(8));//去掉collect_前缀
+                }
+                syncCiCollectionVo.setCollectionNameList(collectionNameList);
+            }
         }
         List<SyncCiCollectionVo> syncCiCollectionList = syncService.searchSyncCiCollection(syncCiCollectionVo);
         return TableResultUtil.getResult(syncCiCollectionList, syncCiCollectionVo);
     }
+
 
 }
