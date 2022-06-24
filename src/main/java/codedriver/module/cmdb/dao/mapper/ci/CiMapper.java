@@ -55,6 +55,8 @@ public interface CiMapper extends ICiCrossoverMapper {
 
     List<CiVo> getCiByIdList(@Param("ciIdList") List<Long> ciIds);
 
+    List<CiVo> getDownwardNotAbstractCiListByByLR(@Param("lft") Integer lft, @Param("rht") Integer rht);
+
     int checkCiNameIsExists(CiVo ciVo);
 
     int checkCiLabelIsExists(CiVo ciVo);
