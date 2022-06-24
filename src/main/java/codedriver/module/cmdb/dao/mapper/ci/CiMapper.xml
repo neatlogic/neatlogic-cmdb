@@ -75,28 +75,6 @@
         ORDER BY lft
     </select>
 
-    <select id="getDownwardNotAbstractCiListByByLR" resultType="codedriver.framework.cmdb.dto.ci.CiVo" useCache="true">
-        SELECT a.`id`,
-               a.`name`,
-               a.`label`,
-               a.`description`,
-               a.`icon`,
-               a.`parent_ci_id` AS parentCiId,
-               a.`type_id`      AS typeId,
-               a.`is_private`   AS isPrivate,
-               a.`is_menu`      AS isMenu,
-               a.`is_abstract`  AS isAbstract,
-               a.`is_virtual`   AS isVirtual,
-               a.`file_id`      AS fileId,
-               a.`lft`          AS lft,
-               a.`rht`          AS rht
-        FROM `cmdb_ci` a
-        WHERE a.lft &gt;= #{lft}
-          AND a.rht &lt;= #{rht}
-          AND a.is_abstract = 0
-        ORDER BY lft
-    </select>
-
     <select id="getUpwardCiListByLR" resultType="codedriver.framework.cmdb.dto.ci.CiVo" useCache="true">
         SELECT a.`id`,
                a.`name`,

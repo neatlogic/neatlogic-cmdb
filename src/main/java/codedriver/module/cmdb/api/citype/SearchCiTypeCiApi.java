@@ -18,6 +18,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
@@ -52,6 +54,7 @@ public class SearchCiTypeCiApi extends PrivateApiComponentBase {
     @Input({@Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字"),
             @Param(name = "typeId", type = ApiParamType.LONG, desc = "类型id"),
             @Param(name = "typeIdList", type = ApiParamType.JSONARRAY, desc = "类型id列表"),
+            @Param(name = "ciNameList", type = ApiParamType.JSONARRAY, desc = "模型名称列表"),
             @Param(name = "isVirtual", type = ApiParamType.INTEGER, desc = "是否虚拟模型，0：否，1：是"),
             @Param(name = "isAbstract", type = ApiParamType.INTEGER, desc = "是否抽象模型，0：否，1：是")})
     @Output({@Param(explode = CiTypeVo[].class)})
@@ -59,6 +62,14 @@ public class SearchCiTypeCiApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         CiVo pCiVo = JSONObject.toJavaObject(jsonObj, CiVo.class);
+        //查询ciNameList的ciTypeIdList
+        JSONArray ciNameList = jsonObj.getJSONArray("ciNameList");
+        if (CollectionUtils.isNotEmpty(ciNameList)) {
+            List<CiVo> ciListByName = ciMapper.getCiListByNameList(ciNameList.toJavaList(String.class));
+            if (CollectionUtils.isNotEmpty(ciListByName)) {
+                pCiVo.getTypeIdList().addAll(ciListByName.stream().map(CiVo::getId).collect(Collectors.toList()));
+            }
+        }
         List<CiTypeVo> ciTypeList = ciMapper.searchCiTypeCi(pCiVo);
         //如果没有管理权限则需要检查每个模型的权限
         if (!AuthActionChecker.check("CI_MODIFY", "CIENTITY_MODIFY")) {
