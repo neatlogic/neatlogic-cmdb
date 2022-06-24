@@ -5,6 +5,7 @@
 
 package codedriver.module.cmdb.formattribute.handler;
 
+import codedriver.framework.cmdb.enums.FormHandler;
 import codedriver.framework.common.constvalue.ParamType;
 import codedriver.framework.form.attribute.core.FormHandlerBase;
 import codedriver.framework.form.constvalue.FormConditionModel;
@@ -27,12 +28,12 @@ import java.util.List;
 public class CmdbCientityHandler extends FormHandlerBase {
     @Override
     public String getHandler() {
-        return "formcmdbcientity";
+        return FormHandler.FORMCMDBCIENTITY.getHandler();
     }
 
     @Override
     public String getHandlerName() {
-        return "配置项组件";
+        return FormHandler.FORMCMDBCIENTITY.getHandlerName();
     }
 
     @Override
