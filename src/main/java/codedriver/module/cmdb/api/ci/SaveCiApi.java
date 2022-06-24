@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -57,7 +57,7 @@ public class SaveCiApi extends PrivateApiComponentBase {
     }
 
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "id，不提供代表新增模型"),
-            @Param(name = "name", type = ApiParamType.REGEX, rule = RegexUtils.ENGLISH_NAME, xss = true, isRequired = true, maxLength = 25, desc = "英文名称"),
+            @Param(name = "name", type = ApiParamType.REGEX, rule = RegexUtils.ENGLISH_NUMBER_NAME, xss = true, isRequired = true, maxLength = 25, desc = "英文名称"),
             @Param(name = "label", type = ApiParamType.STRING, desc = "中文名称", xss = true, maxLength = 100,
                     isRequired = true),
             @Param(name = "description", type = ApiParamType.STRING, desc = "备注", maxLength = 500, xss = true),
