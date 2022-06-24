@@ -2,6 +2,7 @@ package codedriver.module.cmdb.formattribute.handler;
 
 import codedriver.framework.cmdb.crossover.ISearchCiEntityApiCrossoverService;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
+import codedriver.framework.cmdb.enums.FormHandler;
 import codedriver.framework.common.constvalue.ParamType;
 import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.form.constvalue.FormConditionModel;
@@ -25,7 +26,7 @@ public class CiEntitySyncHandler extends FormHandlerBase {
 
     @Override
     public String getHandler() {
-        return "cientityselect";
+        return FormHandler.CIENTITYSELECT.getHandler();
     }
 
     @Override
@@ -114,7 +115,7 @@ public class CiEntitySyncHandler extends FormHandlerBase {
 
     @Override
     public String getHandlerName() {
-        return "配置项修改组件";
+        return FormHandler.CIENTITYSELECT.getHandlerName();
     }
 
     @Override

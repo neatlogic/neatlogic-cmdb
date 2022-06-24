@@ -11,6 +11,7 @@ import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountProtocolVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import codedriver.framework.cmdb.dto.tag.TagVo;
+import codedriver.framework.cmdb.enums.FormHandler;
 import codedriver.framework.common.constvalue.ParamType;
 import codedriver.framework.form.attribute.core.FormHandlerBase;
 import codedriver.framework.form.constvalue.FormConditionModel;
@@ -48,12 +49,12 @@ public class ResourcesHandler extends FormHandlerBase {
 
     @Override
     public String getHandler() {
-        return "formresoureces";
+        return FormHandler.FORMRESOURECES.getHandler();
     }
 
     @Override
     public String getHandlerName() {
-        return "执行目标";
+        return FormHandler.FORMRESOURECES.getHandlerName();
     }
 
     @Override
