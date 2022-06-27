@@ -63,7 +63,6 @@ public class AppModuleListApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         List<ResourceVo> resourceVoList = new ArrayList<>();
-        Set<Long> idSet = new HashSet<>();
         ResourceSearchVo searchVo = paramObj.toJavaObject(ResourceSearchVo.class);
         List<Long> appSystemIdList = searchVo.getAppSystemIdList();
         if (CollectionUtils.isNotEmpty(appSystemIdList)) {
@@ -72,19 +71,17 @@ public class AppModuleListApi extends PrivateApiComponentBase {
             if (idList.size() == 0) {
                 return null;
             }
-            idSet.addAll(idList);
             searchVo.setIdList(idList);
         }
-        idSet = new HashSet<>(resourceCenterMapper.getAppModuleIdList(searchVo));
+        List<Long> idList = resourceCenterMapper.getAppModuleIdList(searchVo);
 
-        if (CollectionUtils.isNotEmpty(idSet)) {
-            int rowNum = idSet.size();
+        if (CollectionUtils.isNotEmpty(idList)) {
+            int rowNum = idList.size();
             searchVo.setRowNum(rowNum);
             if (searchVo.getCurrentPage() <= searchVo.getPageCount()) {
                 int fromIndex = searchVo.getStartNum();
                 int toIndex = fromIndex + searchVo.getPageSize();
                 toIndex = Math.min(toIndex, rowNum);
-                List<Long> idList = new ArrayList<>(idSet);
                 idList.sort(Comparator.reverseOrder());
                 List<Long> currentPageIdList = idList.subList(fromIndex, toIndex);
                 if (CollectionUtils.isNotEmpty(currentPageIdList)) {
