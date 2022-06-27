@@ -16,11 +16,10 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.List;
 
 /**
  * @author linbq
@@ -62,39 +61,12 @@ public class AppModuleListApi extends PrivateApiComponentBase {
     @Description(desc = "查询资源中应用模块列表")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        List<ResourceVo> resourceVoList = new ArrayList<>();
-        Set<Long> idSet = new HashSet<>();
         ResourceSearchVo searchVo = paramObj.toJavaObject(ResourceSearchVo.class);
-        List<Long> appSystemIdList = searchVo.getAppSystemIdList();
-        if (CollectionUtils.isNotEmpty(appSystemIdList)) {
-            List<Long> idList = resourceCenterMapper.getAppModuleIdListByAppSystemIdList(appSystemIdList, TenantContext.get().getDataDbName());
-            idSet.addAll(idList);
-        } else {
-            appSystemIdList = resourceCenterMapper.getAppSystemIdList(searchVo);
-            searchVo.setAppSystemIdList(appSystemIdList);
-            if (CollectionUtils.isNotEmpty(appSystemIdList)) {
-                List<Long> idList = resourceCenterMapper.getAppModuleIdListByAppSystemIdList(appSystemIdList, TenantContext.get().getDataDbName());
-                idSet.addAll(idList);
-            }
-            List<Long> idList = resourceCenterMapper.getAppModuleIdList(searchVo);
-            idSet.addAll(idList);
+        int count = resourceCenterMapper.searchAppModuleCount(searchVo, TenantContext.get().getDataDbName());
+        if (count > 0) {
+            searchVo.setRowNum(count);
+            return TableResultUtil.getResult(resourceCenterMapper.searchAppModule(searchVo, TenantContext.get().getDataDbName()), searchVo);
         }
-
-        if (CollectionUtils.isNotEmpty(idSet)) {
-            int rowNum = idSet.size();
-            searchVo.setRowNum(rowNum);
-            if (searchVo.getCurrentPage() <= searchVo.getPageCount()) {
-                int fromIndex = searchVo.getStartNum();
-                int toIndex = fromIndex + searchVo.getPageSize();
-                toIndex = Math.min(toIndex, rowNum);
-                List<Long> idList = new ArrayList<>(idSet);
-                idList.sort(Comparator.reverseOrder());
-                List<Long> currentPageIdList = idList.subList(fromIndex, toIndex);
-                if (CollectionUtils.isNotEmpty(currentPageIdList)) {
-                    resourceVoList = resourceCenterMapper.getAppModuleListByIdList(currentPageIdList, TenantContext.get().getDataDbName());
-                }
-            }
-        }
-        return TableResultUtil.getResult(resourceVoList, searchVo);
+        return null;
     }
 }
