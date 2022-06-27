@@ -16,11 +16,10 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.List;
 
 /**
  * @author linbq
@@ -62,33 +61,8 @@ public class AppModuleListApi extends PrivateApiComponentBase {
     @Description(desc = "查询资源中应用模块列表")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        List<ResourceVo> resourceVoList = new ArrayList<>();
         ResourceSearchVo searchVo = paramObj.toJavaObject(ResourceSearchVo.class);
-        List<Long> appSystemIdList = searchVo.getAppSystemIdList();
-        if (CollectionUtils.isNotEmpty(appSystemIdList)) {
-            List<Long> idList = resourceCenterMapper.getAppModuleIdListByAppSystemIdList(appSystemIdList, TenantContext.get().getDataDbName());
-            // 若根据系统id搜索不到模块，则关键字搜索无效
-            if (idList.size() == 0) {
-                return null;
-            }
-            searchVo.setIdList(idList);
-        }
-        List<Long> idList = resourceCenterMapper.getAppModuleIdList(searchVo);
-
-        if (CollectionUtils.isNotEmpty(idList)) {
-            int rowNum = idList.size();
-            searchVo.setRowNum(rowNum);
-            if (searchVo.getCurrentPage() <= searchVo.getPageCount()) {
-                int fromIndex = searchVo.getStartNum();
-                int toIndex = fromIndex + searchVo.getPageSize();
-                toIndex = Math.min(toIndex, rowNum);
-                idList.sort(Comparator.reverseOrder());
-                List<Long> currentPageIdList = idList.subList(fromIndex, toIndex);
-                if (CollectionUtils.isNotEmpty(currentPageIdList)) {
-                    resourceVoList = resourceCenterMapper.getAppModuleListByIdList(currentPageIdList, TenantContext.get().getDataDbName());
-                }
-            }
-        }
+        List<ResourceVo> resourceVoList = resourceCenterMapper.searchAppModule(searchVo, TenantContext.get().getDataDbName());
         return TableResultUtil.getResult(resourceVoList, searchVo);
     }
 }
