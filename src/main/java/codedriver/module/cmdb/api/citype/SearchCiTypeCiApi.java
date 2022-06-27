@@ -67,7 +67,12 @@ public class SearchCiTypeCiApi extends PrivateApiComponentBase {
         if (CollectionUtils.isNotEmpty(ciNameList)) {
             List<CiVo> ciListByName = ciMapper.getCiListByNameList(ciNameList.toJavaList(String.class));
             if (CollectionUtils.isNotEmpty(ciListByName)) {
-                pCiVo.getTypeIdList().addAll(ciListByName.stream().map(CiVo::getId).collect(Collectors.toList()));
+                List<Long> typeIdList = pCiVo.getTypeIdList();
+                if (CollectionUtils.isNotEmpty(typeIdList)) {
+                    pCiVo.getTypeIdList().addAll(ciListByName.stream().map(CiVo::getTypeId).collect(Collectors.toList()));
+                } else {
+                    pCiVo.setTypeIdList(ciListByName.stream().map(CiVo::getTypeId).collect(Collectors.toList()));
+                }
             }
         }
         List<CiTypeVo> ciTypeList = ciMapper.searchCiTypeCi(pCiVo);
