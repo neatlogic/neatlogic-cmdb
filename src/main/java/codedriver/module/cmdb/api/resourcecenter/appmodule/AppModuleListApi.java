@@ -68,11 +68,14 @@ public class AppModuleListApi extends PrivateApiComponentBase {
         List<Long> appSystemIdList = searchVo.getAppSystemIdList();
         if (CollectionUtils.isNotEmpty(appSystemIdList)) {
             List<Long> idList = resourceCenterMapper.getAppModuleIdListByAppSystemIdList(appSystemIdList, TenantContext.get().getDataDbName());
+            // 若根据系统id搜索不到模块，则关键字搜索无效
+            if (idList.size() == 0) {
+                return null;
+            }
             idSet.addAll(idList);
-        } else {
-            List<Long> idList = resourceCenterMapper.getAppModuleIdList(searchVo);
-            idSet.addAll(idList);
+            searchVo.setIdList(idList);
         }
+        idSet = new HashSet<>(resourceCenterMapper.getAppModuleIdList(searchVo));
 
         if (CollectionUtils.isNotEmpty(idSet)) {
             int rowNum = idSet.size();
