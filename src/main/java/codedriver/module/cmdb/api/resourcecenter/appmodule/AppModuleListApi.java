@@ -70,12 +70,6 @@ public class AppModuleListApi extends PrivateApiComponentBase {
             List<Long> idList = resourceCenterMapper.getAppModuleIdListByAppSystemIdList(appSystemIdList, TenantContext.get().getDataDbName());
             idSet.addAll(idList);
         } else {
-            appSystemIdList = resourceCenterMapper.getAppSystemIdList(searchVo);
-            searchVo.setAppSystemIdList(appSystemIdList);
-            if (CollectionUtils.isNotEmpty(appSystemIdList)) {
-                List<Long> idList = resourceCenterMapper.getAppModuleIdListByAppSystemIdList(appSystemIdList, TenantContext.get().getDataDbName());
-                idSet.addAll(idList);
-            }
             List<Long> idList = resourceCenterMapper.getAppModuleIdList(searchVo);
             idSet.addAll(idList);
         }
