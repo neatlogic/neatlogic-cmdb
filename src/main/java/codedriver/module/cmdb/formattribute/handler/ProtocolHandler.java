@@ -7,6 +7,7 @@ package codedriver.module.cmdb.formattribute.handler;
 
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountProtocolVo;
+import codedriver.framework.cmdb.enums.FormHandler;
 import codedriver.framework.common.constvalue.ParamType;
 import codedriver.framework.form.attribute.core.FormHandlerBase;
 import codedriver.framework.form.constvalue.FormConditionModel;
@@ -30,12 +31,12 @@ public class ProtocolHandler extends FormHandlerBase {
 
     @Override
     public String getHandler() {
-        return "protocol";
+        return FormHandler.PROTOCOL.getHandler();
     }
 
     @Override
     public String getHandlerName() {
-        return "连接协议";
+        return FormHandler.PROTOCOL.getHandlerName();
     }
 
     @Override
