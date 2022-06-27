@@ -62,7 +62,11 @@ public class AppModuleListApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         ResourceSearchVo searchVo = paramObj.toJavaObject(ResourceSearchVo.class);
-        List<ResourceVo> resourceVoList = resourceCenterMapper.searchAppModule(searchVo, TenantContext.get().getDataDbName());
-        return TableResultUtil.getResult(resourceVoList, searchVo);
+        int count = resourceCenterMapper.searchAppModuleCount(searchVo, TenantContext.get().getDataDbName());
+        if (count > 0) {
+            searchVo.setRowNum(count);
+            return TableResultUtil.getResult(resourceCenterMapper.searchAppModule(searchVo, TenantContext.get().getDataDbName()), searchVo);
+        }
+        return null;
     }
 }
