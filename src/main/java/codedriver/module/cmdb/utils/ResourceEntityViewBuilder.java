@@ -45,6 +45,7 @@ import java.util.*;
 public class ResourceEntityViewBuilder {
     private final static Logger logger = LoggerFactory.getLogger(ResourceEntityViewBuilder.class);
 
+    private final static List<String> defaultAttrList = Arrays.asList("_id", "_uuid", "_name", "_fcu", "_fcd", "_lcu", "_lcd", "_inspectStatus", "_inspectTime", "_monitorStatus", "_monitorTime", "_typeId", "_typeName", "_typeLabel");
 
     private List<ResourceEntityVo> resourceEntityList;
 
@@ -114,7 +115,7 @@ public class ResourceEntityViewBuilder {
                                 CiVo ciVo = getCiByName(ciName);
                                 if (ciVo != null) {
                                     resourceEntityVo.setCi(ciVo);
-
+                                    resourceEntityVo.setJoinList(null);
                                     if (CollectionUtils.isNotEmpty(resourceEntityVo.getAttrList())) {
                                         //分析属性
                                         for (ResourceEntityAttrVo attr : resourceEntityVo.getAttrList()) {
@@ -137,10 +138,12 @@ public class ResourceEntityViewBuilder {
                                                 if (StringUtils.isNotBlank(attrName)) {
                                                     attr.setAttr(attrName);
                                                     if (attrCiVo == null) {
+                                                        checkAttrIsExists(ciVo, attrName);
                                                         attr.setCiId(ciVo.getId());
                                                         attr.setCiName(ciName);
                                                         attr.setTableAlias(resourceEntityVo.getName());
                                                     } else {
+                                                        checkAttrIsExists(attrCiVo, attrName);
                                                         attr.setCiName(attrCiName);
                                                         attr.setCiId(attrCiVo.getId());
                                                         attr.setCi(attrCiVo);
@@ -206,6 +209,10 @@ public class ResourceEntityViewBuilder {
                                                     String attrCiName = attrElement.attributeValue("ci");
                                                     String attrFieldName = attrElement.attributeValue("field");
                                                     String joinAttrName = attrElement.attributeValue("joinAttrName");
+                                                    if (StringUtils.isBlank(joinAttrName)) {
+                                                        throw new ResourceCenterConfigIrregularException(resourceEntityVo.getName(), "attr", attrFieldName, "joinAttrName");
+                                                    }
+                                                    checkAttrIsExists(ciVo, joinAttrName);
                                                     if (StringUtils.isNotBlank(attrCiName)) {
                                                         CiVo joinCiVo = getCiByName(attrCiName);
                                                         if (joinCiVo == null) {
@@ -215,9 +222,7 @@ public class ResourceEntityViewBuilder {
                                                         joinVo.setCi(joinCiVo);
                                                         joinVo.setCiName(joinCiVo.getName());
                                                         joinVo.setField(attrFieldName);
-                                                        if (StringUtils.isNotBlank(joinAttrName)) {
-                                                            joinVo.setJoinAttrName(joinAttrName);
-                                                        }
+                                                        joinVo.setJoinAttrName(joinAttrName);
                                                         resourceEntityVo.addJoin(joinVo);
                                                     }
                                                 }
@@ -276,6 +281,26 @@ public class ResourceEntityViewBuilder {
         } catch (DocumentException e) {
             throw new ResourceCenterConfigIrregularException(e);
         }
+    }
+
+    /**
+     * 检查模型中是否存在对应属性
+     * @param ciVo
+     * @param attrName
+     */
+    private boolean checkAttrIsExists(CiVo ciVo, String attrName) {
+        if (defaultAttrList.contains(attrName)) {
+            return true;
+        }
+        List<AttrVo> attrList = ciVo.getAttrList();
+        if (CollectionUtils.isNotEmpty(attrList)) {
+            for (AttrVo attrVo : attrList) {
+                if (Objects.equals(attrVo.getName(), attrName)) {
+                    return true;
+                }
+            }
+        }
+        throw new AttrNotFoundException(ciVo.getName(), attrName);
     }
 
 
