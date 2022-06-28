@@ -11,22 +11,39 @@ import codedriver.framework.cmdb.crossover.IResourceListApiCrossoverService;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
+import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceCenterConfigVo;
+import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceInfo;
+import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterConfigNotFoundException;
+import codedriver.framework.cmdb.utils.ResourceSearchGenerateSqlUtil;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
+import codedriver.framework.jsqlparser.OrExpressionList;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceCenterConfigMapper;
 import codedriver.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
+import codedriver.module.cmdb.utils.ResourceEntityViewBuilder;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import net.sf.jsqlparser.expression.*;
+import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
+import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.InExpression;
+import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
+import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.select.*;
+import net.sf.jsqlparser.util.cnfexpression.MultiOrExpression;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * 查询资源中心数据列表接口
@@ -39,11 +56,82 @@ import java.util.List;
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ResourceListApi extends PrivateApiComponentBase implements IResourceListApiCrossoverService {
 
+    private static String mainResourceId = "resource_ipobject";
+    private static List<ResourceInfo> theadList = new ArrayList<>();
+    private static Map<String, ResourceInfo> searchConditionMappingMap = new HashMap<>();
+    private static List<ResourceInfo> keywordList = new ArrayList<>();
+    static {
+        theadList.add(new ResourceInfo("resource_ipobject", "id"));
+        //1.IP地址:端口
+        theadList.add(new ResourceInfo("resource_ipobject", "ip"));
+        theadList.add(new ResourceInfo("resource_softwareservice", "port"));
+        //2.类型
+        theadList.add(new ResourceInfo("resource_ipobject", "type_id"));
+        theadList.add(new ResourceInfo("resource_ipobject", "type_name"));
+        theadList.add(new ResourceInfo("resource_ipobject", "type_label"));
+        //3.名称
+        theadList.add(new ResourceInfo("resource_ipobject", "name"));
+        //4.监控状态
+        theadList.add(new ResourceInfo("resource_ipobject", "monitor_status"));
+        theadList.add(new ResourceInfo("resource_ipobject", "monitor_time"));
+        //5.巡检状态
+        theadList.add(new ResourceInfo("resource_ipobject", "inspect_status"));
+        theadList.add(new ResourceInfo("resource_ipobject", "inspect_time"));
+        //12.网络区域
+        theadList.add(new ResourceInfo("resource_ipobject", "network_area"));
+        //14.维护窗口
+        theadList.add(new ResourceInfo("resource_ipobject", "maintenance_window"));
+        //16.描述
+        theadList.add(new ResourceInfo("resource_ipobject", "description"));
+        //6.模块
+        theadList.add(new ResourceInfo("resource_ipobject_appmodule", "app_module_id"));
+        theadList.add(new ResourceInfo("resource_ipobject_appmodule", "app_module_name"));
+        theadList.add(new ResourceInfo("resource_ipobject_appmodule", "app_module_abbr_name"));
+        //7.应用
+        theadList.add(new ResourceInfo("resource_appmodule_appsystem", "app_system_id"));
+        theadList.add(new ResourceInfo("resource_appmodule_appsystem", "app_system_name"));
+        theadList.add(new ResourceInfo("resource_appmodule_appsystem", "app_system_abbr_name"));
+        //8.IP列表
+        theadList.add(new ResourceInfo("resource_ipobject_allip", "allip_id"));
+        theadList.add(new ResourceInfo("resource_ipobject_allip", "allip_ip"));
+        theadList.add(new ResourceInfo("resource_ipobject_allip", "allip_label"));
+        //9.所属部门
+        theadList.add(new ResourceInfo("resource_ipobject_bg", "bg_id"));
+        theadList.add(new ResourceInfo("resource_ipobject_bg", "bg_name"));
+        //10.所有者
+        theadList.add(new ResourceInfo("resource_ipobject_owner", "user_id"));
+        theadList.add(new ResourceInfo("resource_ipobject_owner", "user_uuid"));
+        theadList.add(new ResourceInfo("resource_ipobject_owner", "user_name"));
+        //11.资产状态
+        theadList.add(new ResourceInfo("resource_ipobject_state", "state_id"));
+        theadList.add(new ResourceInfo("resource_ipobject_state", "state_name"));
+        theadList.add(new ResourceInfo("resource_ipobject_state", "state_label"));
+        //11.环境状态
+        theadList.add(new ResourceInfo("resource_softwareservice_env", "env_id"));
+        theadList.add(new ResourceInfo("resource_softwareservice_env", "env_name"));
+//        theadList.add(new ResourceInfo("resource_softwareservice_env", "env_desc"));
+
+        searchConditionMappingMap.put("typeIdList", new ResourceInfo("resource_ipobject","type_id", false));
+        searchConditionMappingMap.put("stateIdList", new ResourceInfo("resource_ipobject_state","state_id", false));
+        searchConditionMappingMap.put("envIdList", new ResourceInfo("resource_softwareservice_env","env_id", false));
+        searchConditionMappingMap.put("appSystemIdList", new ResourceInfo("resource_appmodule_appsystem","app_system_id", false));
+        searchConditionMappingMap.put("appModuleIdList", new ResourceInfo("resource_ipobject_appmodule","app_module_id", false));
+        searchConditionMappingMap.put("defaultValue", new ResourceInfo("resource_ipobject","id", false));
+        searchConditionMappingMap.put("inspectStatusList", new ResourceInfo("resource_ipobject","inspect_status", false));
+
+        keywordList.add(new ResourceInfo("resource_ipobject", "name"));
+        keywordList.add(new ResourceInfo("resource_ipobject", "ip"));
+        keywordList.add(new ResourceInfo("resource_softwareservice", "port"));
+    }
+
     @Resource
     private ResourceCenterMapper resourceCenterMapper;
 
     @Resource
     private IResourceCenterResourceService resourceCenterResourceService;
+
+    @Resource
+    private ResourceCenterConfigMapper resourceCenterConfigMapper;
 
     @Override
     public String getToken() {
@@ -89,6 +177,7 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         List<ResourceVo> resourceVoList = new ArrayList<>();
+        List<ResourceVo> resourceVoList3 = new ArrayList<>();
         ResourceSearchVo searchVo;
         JSONArray defaultValue = jsonObj.getJSONArray("defaultValue");
         if (CollectionUtils.isNotEmpty(defaultValue)) {
@@ -97,18 +186,324 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
         } else {
             searchVo = resourceCenterResourceService.assembleResourceSearchVo(jsonObj);
         }
+        searchVo.setPageSize(100);
+        ResourceCenterConfigVo configVo = resourceCenterConfigMapper.getResourceCenterConfig();
+        if (configVo == null) {
+            throw new ResourceCenterConfigNotFoundException();
+        }
+        ResourceEntityViewBuilder builder = new ResourceEntityViewBuilder(configVo.getConfig());
+        ResourceSearchGenerateSqlUtil resourceSearchGenerateSqlUtil = new ResourceSearchGenerateSqlUtil(builder.getResourceEntityList());
+        PlainSelect filterPlainSelect = getPlainSelectBySearchCondition(searchVo, resourceSearchGenerateSqlUtil);
+        if (filterPlainSelect == null) {
+            return TableResultUtil.getResult(resourceVoList, searchVo);
+        }
+        String sql = getResourceCountSql(filterPlainSelect);
+        System.out.println(sql+";");
+        int rowNum3 = resourceCenterMapper.getResourceCount3(sql);
         int rowNum = resourceCenterMapper.getResourceCount(searchVo);
+        if (!Objects.equals(rowNum3, rowNum)) {
+            System.out.println("rowNum3=" + rowNum3);
+            System.out.println("rowNum=" + rowNum);
+        }
         if (rowNum > 0) {
             searchVo.setRowNum(rowNum);
+            sql = getResourceIdListSql(filterPlainSelect, searchVo);
+            System.out.println(sql+";");
+            List<Long> idList3 = resourceCenterMapper.getResourceIdList3(sql);
             List<Long> idList = resourceCenterMapper.getResourceIdList(searchVo);
+            for (int i = 0; i < idList.size(); i++) {
+                if (!Objects.equals(idList3.get(i), idList.get(i))) {
+                    System.out.println("idList3[" + i + "]=" + idList3.get(i));
+                    System.out.println("idList[" + i + "]=" + idList.get(i));
+                }
+            }
             if (CollectionUtils.isNotEmpty(idList)) {
+                sql = getResourceListByIdListSql(idList, mainResourceId, theadList, resourceSearchGenerateSqlUtil);
+                if (StringUtils.isNotBlank(sql)) {
+                    System.out.println("currentPage=" + searchVo.getCurrentPage());
+                    System.out.println(sql + ";");
+                    resourceVoList3 = resourceCenterMapper.getResourceListByIdList3(sql);
+                    if (CollectionUtils.isNotEmpty(resourceVoList3)) {
+                        resourceCenterResourceService.addResourceAccount(idList, resourceVoList3);
+                        resourceCenterResourceService.addResourceTag(idList, resourceVoList3);
+                    }
+                }
                 resourceVoList = resourceCenterMapper.getResourceListByIdList(idList, TenantContext.get().getDataDbName());
                 if (CollectionUtils.isNotEmpty(resourceVoList)) {
                     resourceCenterResourceService.addResourceAccount(idList, resourceVoList);
                     resourceCenterResourceService.addResourceTag(idList, resourceVoList);
                 }
+                for (int i = 0; i < resourceVoList.size(); i++) {
+                    ResourceVo resourceVo3 = resourceVoList3.get(i);
+                    ResourceVo resourceVo = resourceVoList.get(i);
+                    if (!Objects.equals(JSONObject.toJSONString(resourceVo3), JSONObject.toJSONString(resourceVo))) {
+                        System.out.println("resourceVo3[" + i + "]=" + JSONObject.toJSONString(resourceVo3));
+                        System.out.println("resourceVo [" + i + "]=" + JSONObject.toJSONString(resourceVo));
+                    }
+                }
             }
         }
         return TableResultUtil.getResult(resourceVoList, searchVo);
+    }
+
+    private String getResourceCountSql(PlainSelect filterPlainSelect) {
+        Table fromTable = (Table)filterPlainSelect.getFromItem();
+        filterPlainSelect.setSelectItems(Arrays.asList(new SelectExpressionItem(new Function().withName("COUNT").withDistinct(true).withParameters(new ExpressionList(Arrays.asList(new Column(fromTable, "id")))))));
+        return filterPlainSelect.toString();
+    }
+
+    public String getResourceIdListSql(PlainSelect filterPlainSelect, ResourceSearchVo searchVo) {
+        Table fromTable = (Table)filterPlainSelect.getFromItem();
+        List<OrderByElement> orderByElements = new ArrayList<>();
+        OrderByElement orderByElement = new OrderByElement();
+        orderByElement.withExpression(new Column(fromTable, "id")).withAsc(true);
+        orderByElements.add(orderByElement);
+        filterPlainSelect.withOrderByElements(orderByElements);
+        filterPlainSelect.withDistinct(new Distinct()).setSelectItems(Arrays.asList((new SelectExpressionItem(new Column(fromTable, "id")))));
+        filterPlainSelect.withLimit(new Limit().withOffset(new LongValue(searchVo.getStartNum())).withRowCount(new LongValue(searchVo.getPageSize())));
+        return filterPlainSelect.toString();
+    }
+
+    /**
+     * 根据查询过滤条件，生成对应的sql语句
+     * @param searchVo
+     * @param resourceSearchGenerateSqlUtil
+     * @return
+     */
+    private PlainSelect getPlainSelectBySearchCondition(ResourceSearchVo searchVo, ResourceSearchGenerateSqlUtil resourceSearchGenerateSqlUtil) {
+        PlainSelect plainSelect = resourceSearchGenerateSqlUtil.initPlainSelectByMainResourceId(mainResourceId);
+        if (plainSelect == null) {
+            return null;
+        }
+        Table mainTable = (Table) plainSelect.getFromItem();
+        JSONArray defaultValue = searchVo.getDefaultValue();
+        if (CollectionUtils.isNotEmpty(defaultValue)) {
+            List<Long> idList = defaultValue.toJavaList(Long.class);
+            ResourceInfo resourceInfo = searchConditionMappingMap.get("defaultValue");
+            resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo);
+            Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
+            InExpression inExpression = new InExpression();
+            inExpression.setLeftExpression(column);
+            ExpressionList expressionList = new ExpressionList();
+            for (Long id : idList) {
+                expressionList.addExpressions(new LongValue(id));
+            }
+            inExpression.setRightItemsList(expressionList);
+            Expression where = plainSelect.getWhere();
+            if (where == null) {
+                plainSelect.setWhere(inExpression);
+            } else {
+                plainSelect.setWhere(new AndExpression(where, inExpression));
+            }
+        }
+        List<Long> typeIdList = searchVo.getTypeIdList();
+        if (CollectionUtils.isNotEmpty(typeIdList)) {
+            ResourceInfo resourceInfo = searchConditionMappingMap.get("typeIdList");
+            resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo);
+            Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
+            InExpression inExpression = new InExpression();
+            inExpression.setLeftExpression(column);
+            ExpressionList expressionList = new ExpressionList();
+            for (Long id : typeIdList) {
+                expressionList.addExpressions(new LongValue(id));
+            }
+            inExpression.setRightItemsList(expressionList);
+            Expression where = plainSelect.getWhere();
+            if (where == null) {
+                plainSelect.setWhere(inExpression);
+            } else {
+                plainSelect.setWhere(new AndExpression(where, inExpression));
+            }
+        }
+        List<String> inspectStatusList = searchVo.getInspectStatusList();
+        if (CollectionUtils.isNotEmpty(inspectStatusList)) {
+            ResourceInfo resourceInfo = searchConditionMappingMap.get("inspectStatusList");
+            resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo);
+            Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
+            InExpression inExpression = new InExpression();
+            inExpression.setLeftExpression(column);
+            ExpressionList expressionList = new ExpressionList();
+            for (String inspectStatus : inspectStatusList) {
+                expressionList.addExpressions(new StringValue(inspectStatus));
+            }
+            inExpression.setRightItemsList(expressionList);
+            Expression where = plainSelect.getWhere();
+            if (where == null) {
+                plainSelect.setWhere(inExpression);
+            } else {
+                plainSelect.setWhere(new AndExpression(where, inExpression));
+            }
+        }
+        List<Long> stateIdList = searchVo.getStateIdList();
+        if (CollectionUtils.isNotEmpty(stateIdList)) {
+            ResourceInfo resourceInfo = searchConditionMappingMap.get("stateIdList");
+            resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo);
+            Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
+            InExpression inExpression = new InExpression();
+            inExpression.setLeftExpression(column);
+            ExpressionList expressionList = new ExpressionList();
+            for (Long id : stateIdList) {
+                expressionList.addExpressions(new LongValue(id));
+            }
+            inExpression.setRightItemsList(expressionList);
+            Expression where = plainSelect.getWhere();
+            if (where == null) {
+                plainSelect.setWhere(inExpression);
+            } else {
+                plainSelect.setWhere(new AndExpression(where, inExpression));
+            }
+        }
+        List<Long> envIdList = searchVo.getEnvIdList();
+        if (CollectionUtils.isNotEmpty(envIdList)) {
+            ResourceInfo resourceInfo = searchConditionMappingMap.get("envIdList");
+            resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo);
+            Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
+            InExpression inExpression = new InExpression();
+            inExpression.setLeftExpression(column);
+            ExpressionList expressionList = new ExpressionList();
+            for (Long id : envIdList) {
+                expressionList.addExpressions(new LongValue(id));
+            }
+            inExpression.setRightItemsList(expressionList);
+            Expression where = plainSelect.getWhere();
+            if (where == null) {
+                plainSelect.setWhere(inExpression);
+            } else {
+                plainSelect.setWhere(new AndExpression(where, inExpression));
+            }
+        }
+        List<Long> appModuleIdList = searchVo.getAppModuleIdList();
+        List<Long> appSystemIdList = searchVo.getAppSystemIdList();
+        if (CollectionUtils.isNotEmpty(appModuleIdList) || CollectionUtils.isNotEmpty(appSystemIdList)) {
+            ResourceInfo resourceInfo = searchConditionMappingMap.get("appModuleIdList");
+            resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo);
+            Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
+            if (CollectionUtils.isNotEmpty(appModuleIdList)) {
+                InExpression inExpression = new InExpression();
+                inExpression.setLeftExpression(column);
+                ExpressionList expressionList = new ExpressionList();
+                for (Long id : appModuleIdList) {
+                    expressionList.addExpressions(new LongValue(id));
+                }
+                inExpression.setRightItemsList(expressionList);
+                Expression where = plainSelect.getWhere();
+                if (where == null) {
+                    plainSelect.setWhere(inExpression);
+                } else {
+                    plainSelect.setWhere(new AndExpression(where, inExpression));
+                }
+            }
+        }
+        if (CollectionUtils.isNotEmpty(appSystemIdList)) {
+            ResourceInfo resourceInfo = searchConditionMappingMap.get("appSystemIdList");
+            resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo);
+            Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
+            InExpression inExpression = new InExpression();
+            inExpression.setLeftExpression(column);
+            ExpressionList expressionList = new ExpressionList();
+            for (Long id : appSystemIdList) {
+                expressionList.addExpressions(new LongValue(id));
+            }
+            inExpression.setRightItemsList(expressionList);
+            Expression where = plainSelect.getWhere();
+            if (where == null) {
+                plainSelect.setWhere(inExpression);
+            } else {
+                plainSelect.setWhere(new AndExpression(where, inExpression));
+            }
+        }
+        List<Long> protocolIdList = searchVo.getProtocolIdList();
+        if (CollectionUtils.isNotEmpty(protocolIdList)) {
+            Table table = new Table("cmdb_resourcecenter_resource_account").withAlias(new Alias("b").withUseAs(false));
+            EqualsTo equalsTo = new EqualsTo()
+                    .withLeftExpression(new Column(table, "resource_id"))
+                    .withRightExpression(new Column(mainTable, "id"));
+            Join join1 = new Join().withRightItem(table).addOnExpression(equalsTo);
+            plainSelect.addJoins(join1);
+
+            Table table2 = new Table("cmdb_resourcecenter_account").withAlias(new Alias("c").withUseAs(false));
+            EqualsTo equalsTo1 = new EqualsTo()
+                    .withLeftExpression(new Column(table2, "id"))
+                    .withRightExpression(new Column(table, "account_id"));
+            InExpression inExpression = new InExpression();
+            inExpression.setLeftExpression(new Column(table2, "protocol_id"));
+            ExpressionList expressionList = new ExpressionList();
+            for (Long protocolId : protocolIdList) {
+                expressionList.addExpressions(new LongValue(protocolId));
+            }
+            inExpression.setRightItemsList(expressionList);
+            Join join2 = new Join().withRightItem(table2).addOnExpression(new AndExpression(equalsTo1, inExpression));
+            plainSelect.addJoins(join2);
+        }
+        List<Long> tagIdList = searchVo.getTagIdList();
+        if (CollectionUtils.isNotEmpty(tagIdList)) {
+            Table table = new Table("cmdb_resourcecenter_resource_tag").withAlias(new Alias("d").withUseAs(false));
+            EqualsTo equalsTo = new EqualsTo()
+                    .withLeftExpression(new Column(table, "resource_id"))
+                    .withRightExpression(new Column(mainTable, "id"));
+            InExpression inExpression = new InExpression();
+            inExpression.setLeftExpression(new Column(table, "tag_id"));
+            ExpressionList expressionList = new ExpressionList();
+            for (Long tagId : tagIdList) {
+                expressionList.addExpressions(new LongValue(tagId));
+            }
+            inExpression.setRightItemsList(expressionList);
+            Join join1 = new Join().withRightItem(table).addOnExpression(new AndExpression(equalsTo, inExpression));
+            plainSelect.addJoins(join1);
+        }
+//        System.out.println(plainSelect.toString()+ ";");
+        String keyword = searchVo.getKeyword();
+        if (StringUtils.isNotBlank(keyword)) {
+            keyword = "%" + keyword + "%";
+            List<Expression> expressionList = new ArrayList<>();
+            for (ResourceInfo resourceInfo : keywordList) {
+                resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo);
+                Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
+                expressionList.add(new LikeExpression().withLeftExpression(column).withRightExpression(new StringValue(keyword)));
+            }
+            MultiOrExpression multiOrExpression = new MultiOrExpression(expressionList);
+            Expression where = plainSelect.getWhere();
+            if (where == null) {
+                plainSelect.setWhere(multiOrExpression);
+            } else {
+                plainSelect.setWhere(new AndExpression(where, multiOrExpression));
+            }
+        }
+        return plainSelect;
+    }
+
+    /**
+     * 根据需要查询的列，生成对应的sql语句
+     * @param idList
+     * @param mainResourceId
+     * @param theadList
+     * @param resourceSearchGenerateSqlUtil
+     * @return
+     */
+    public String getResourceListByIdListSql(List<Long> idList, String mainResourceId, List<ResourceInfo> theadList, ResourceSearchGenerateSqlUtil resourceSearchGenerateSqlUtil) {
+        PlainSelect plainSelect = resourceSearchGenerateSqlUtil.initPlainSelectByMainResourceId(mainResourceId);
+        if (plainSelect == null) {
+            return null;
+        }
+        for (ResourceInfo resourceInfo : theadList) {
+            resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo);
+            resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
+//            System.out.println(plainSelect.toString()+ ";");
+        }
+        if (CollectionUtils.isNotEmpty(idList)) {
+            InExpression inExpression = new InExpression();
+            inExpression.setLeftExpression(new Column((Table) plainSelect.getFromItem(), "id"));
+            ExpressionList expressionList = new ExpressionList();
+            for (Object id : idList) {
+                if (id instanceof Long) {
+                    expressionList.addExpressions(new LongValue((Long)id));
+                } else if (id instanceof String) {
+                    expressionList.addExpressions(new StringValue((String)id));
+                }
+            }
+            inExpression.setRightItemsList(expressionList);
+            plainSelect.setWhere(inExpression);
+        }
+        return plainSelect.toString();
     }
 }

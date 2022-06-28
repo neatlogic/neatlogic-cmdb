@@ -213,6 +213,7 @@ public class ResourceEntityViewBuilder {
                                                         }
                                                         ResourceEntityJoinVo joinVo = new ResourceEntityJoinVo(JoinType.ATTR);
                                                         joinVo.setCi(joinCiVo);
+                                                        joinVo.setCiName(joinCiVo.getName());
                                                         joinVo.setField(attrFieldName);
                                                         if (StringUtils.isNotBlank(joinAttrName)) {
                                                             joinVo.setJoinAttrName(joinAttrName);
@@ -235,6 +236,7 @@ public class ResourceEntityViewBuilder {
                                                         }
                                                         ResourceEntityJoinVo joinVo = new ResourceEntityJoinVo(JoinType.REL);
                                                         joinVo.setCi(joinCiVo);
+                                                        joinVo.setCiName(joinCiVo.getName());
                                                         joinVo.setField(relFieldName);
                                                         if (StringUtils.isNotBlank(relDirection)) {
                                                             joinVo.setDirection(relDirection);
