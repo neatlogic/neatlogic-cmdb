@@ -104,9 +104,9 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
         theadList.add(new ResourceInfo("resource_ipobject_state", "state_id"));
         theadList.add(new ResourceInfo("resource_ipobject_state", "state_name"));
         theadList.add(new ResourceInfo("resource_ipobject_state", "state_label"));
-        //11.环境状态
-        theadList.add(new ResourceInfo("resource_softwareservice_env", "env_id"));
-        theadList.add(new ResourceInfo("resource_softwareservice_env", "env_name"));
+        //环境状态
+//        theadList.add(new ResourceInfo("resource_softwareservice_env", "env_id"));
+//        theadList.add(new ResourceInfo("resource_softwareservice_env", "env_name"));
 
         searchConditionMappingMap.put("typeIdList", new ResourceInfo("resource_ipobject","type_id", false));
         searchConditionMappingMap.put("stateIdList", new ResourceInfo("resource_ipobject_state","state_id", false));
