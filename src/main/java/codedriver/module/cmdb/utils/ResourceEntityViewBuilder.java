@@ -47,6 +47,15 @@ public class ResourceEntityViewBuilder {
 
 
     private List<ResourceEntityVo> resourceEntityList;
+
+    public List<ResourceEntityVo> getResourceEntityList() {
+        return resourceEntityList;
+    }
+
+    public void setResourceEntityList(List<ResourceEntityVo> resourceEntityList) {
+        this.resourceEntityList = resourceEntityList;
+    }
+
     private final Map<String, CiVo> ciMap = new HashMap<>();
     private static SchemaMapper schemaMapper;
     private static CiService ciService;
@@ -90,8 +99,8 @@ public class ResourceEntityViewBuilder {
         try {
             Map<String, List<Element>> elementMap = new HashMap<>();
             resourceEntityList = ResourceEntityFactory.getResourceEntityList();
-            List<ResourceEntityVo> oldResourceEntityList = resourceEntityMapper.getAllResourceEntity();
-            oldResourceEntityList.removeAll(resourceEntityList);
+//            List<ResourceEntityVo> oldResourceEntityList = resourceEntityMapper.getAllResourceEntity();
+//            oldResourceEntityList.removeAll(resourceEntityList);
             if (CollectionUtils.isNotEmpty(resourceEntityList)) {
                 Document document = DocumentHelper.parseText(xml);
                 Element root = document.getRootElement();
@@ -134,6 +143,7 @@ public class ResourceEntityViewBuilder {
                                                     } else {
                                                         attr.setCiName(attrCiName);
                                                         attr.setCiId(attrCiVo.getId());
+                                                        attr.setCi(attrCiVo);
                                                         attr.setTableAlias("target_cientity_" + attrCiName.toLowerCase(Locale.ROOT));
                                                     }
 
@@ -148,6 +158,7 @@ public class ResourceEntityViewBuilder {
                                                     if (attrCiVo != null) {
                                                         attr.setAttr("_id");
                                                         attr.setCiId(attrCiVo.getId());
+                                                        attr.setCi(attrCiVo);
                                                         attr.setCiName(attrCiName);
                                                         attr.setTableAlias("target_cientity_" + attrCiName.toLowerCase(Locale.ROOT));
                                                     } else {
@@ -175,6 +186,7 @@ public class ResourceEntityViewBuilder {
                                                     if (attrCiVo != null) {
                                                         attr.setAttr("_id");
                                                         attr.setCiId(attrCiVo.getId());
+                                                        attr.setCi(attrCiVo);
                                                         attr.setCiName(attrCiName);
                                                         attr.setTableAlias("target_cientity_" + attrCiName.toLowerCase(Locale.ROOT));
                                                     } else {
@@ -201,6 +213,7 @@ public class ResourceEntityViewBuilder {
                                                         }
                                                         ResourceEntityJoinVo joinVo = new ResourceEntityJoinVo(JoinType.ATTR);
                                                         joinVo.setCi(joinCiVo);
+                                                        joinVo.setCiName(joinCiVo.getName());
                                                         joinVo.setField(attrFieldName);
                                                         if (StringUtils.isNotBlank(joinAttrName)) {
                                                             joinVo.setJoinAttrName(joinAttrName);
@@ -223,6 +236,7 @@ public class ResourceEntityViewBuilder {
                                                         }
                                                         ResourceEntityJoinVo joinVo = new ResourceEntityJoinVo(JoinType.REL);
                                                         joinVo.setCi(joinCiVo);
+                                                        joinVo.setCiName(joinCiVo.getName());
                                                         joinVo.setField(relFieldName);
                                                         if (StringUtils.isNotBlank(relDirection)) {
                                                             joinVo.setDirection(relDirection);
@@ -246,18 +260,19 @@ public class ResourceEntityViewBuilder {
                     } catch (Exception ex) {
                         resourceEntityVo.setStatus(Status.ERROR.getValue());
                         resourceEntityVo.setError(ex.getMessage());
-                    } finally {
-                        resourceEntityMapper.insertResourceEntity(resourceEntityVo);
                     }
+//                    finally {
+//                        resourceEntityMapper.insertResourceEntity(resourceEntityVo);
+//                    }
                 }
             }
 
-            if (CollectionUtils.isNotEmpty(oldResourceEntityList)) {
-                for (ResourceEntityVo entity : oldResourceEntityList) {
-                    resourceEntityMapper.deleteResourceEntityByName(entity.getName());
-                    schemaMapper.deleteView(TenantContext.get().getDataDbName() + "." + entity.getName());
-                }
-            }
+//            if (CollectionUtils.isNotEmpty(oldResourceEntityList)) {
+//                for (ResourceEntityVo entity : oldResourceEntityList) {
+//                    resourceEntityMapper.deleteResourceEntityByName(entity.getName());
+//                    schemaMapper.deleteView(TenantContext.get().getDataDbName() + "." + entity.getName());
+//                }
+//            }
         } catch (DocumentException e) {
             throw new ResourceCenterConfigIrregularException(e);
         }
@@ -265,7 +280,19 @@ public class ResourceEntityViewBuilder {
 
 
     public void buildView() {
+        List<ResourceEntityVo> oldResourceEntityList = resourceEntityMapper.getAllResourceEntity();
+        oldResourceEntityList.removeAll(resourceEntityList);
+        if (CollectionUtils.isNotEmpty(oldResourceEntityList)) {
+            for (ResourceEntityVo entity : oldResourceEntityList) {
+                resourceEntityMapper.deleteResourceEntityByName(entity.getName());
+                schemaMapper.deleteView(TenantContext.get().getDataDbName() + "." + entity.getName());
+            }
+        }
         if (CollectionUtils.isNotEmpty(resourceEntityList)) {
+
+            for (ResourceEntityVo resourceEntity : resourceEntityList) {
+                resourceEntityMapper.insertResourceEntity(resourceEntity);
+            }
             for (ResourceEntityVo resourceEntity : resourceEntityList) {
                 if (resourceEntity.getStatus().equals(Status.PENDING.getValue())) {
                     Table mainTable = new Table();
