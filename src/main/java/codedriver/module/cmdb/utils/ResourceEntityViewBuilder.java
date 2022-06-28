@@ -259,7 +259,6 @@ public class ResourceEntityViewBuilder {
                         resourceEntityVo.setStatus(Status.PENDING.getValue());
                     } catch (Exception ex) {
                         resourceEntityVo.setStatus(Status.ERROR.getValue());
-                        ex.printStackTrace();
                         resourceEntityVo.setError(ex.getMessage());
                     }
 //                    finally {
@@ -420,7 +419,6 @@ public class ResourceEntityViewBuilder {
                         resourceEntity.setError("");
                         resourceEntity.setStatus(Status.READY.getValue());
                     } catch (Exception ex) {
-                        ex.printStackTrace();
                         resourceEntity.setError(ex.getMessage());
                         resourceEntity.setStatus(Status.ERROR.getValue());
                         Table table = new Table();
