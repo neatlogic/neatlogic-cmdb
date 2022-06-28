@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.script.ScriptException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -85,6 +84,52 @@ public class CiEntityGroupManager {
         });
     }
 
+    private static List<Long> getAttrIdFromRule(JSONObject ruleObj) {
+        Set<Long> attrIdList = new HashSet<>();
+        attrIdList.add(0L);//默认值，预防一个属性都没有的情况下变成搜索所有属性
+        if (MapUtils.isNotEmpty(ruleObj)) {
+            JSONArray conditionGroupList = ruleObj.getJSONArray("conditionGroupList");
+            if (CollectionUtils.isNotEmpty(conditionGroupList)) {
+                for (int i = 0; i < conditionGroupList.size(); i++) {
+                    JSONArray conditionList = conditionGroupList.getJSONObject(i).getJSONArray("conditionList");
+                    if (CollectionUtils.isNotEmpty(conditionList)) {
+                        for (int j = 0; j < conditionList.size(); j++) {
+                            JSONObject conditionObj = conditionList.getJSONObject(j);
+                            if (conditionObj.getString("type").equals("attr")) {
+                                attrIdList.add(Long.parseLong(conditionObj.getString("id").replace("attr_", "")));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return new ArrayList<>(attrIdList);
+    }
+
+    private static List<Long> getRelIdFromRule(JSONObject ruleObj) {
+        Set<Long> relIdList = new HashSet<>();
+        relIdList.add(0L);//默认值，预防一个关系都没有的情况下变成搜索所有关系
+        if (MapUtils.isNotEmpty(ruleObj)) {
+            JSONArray conditionGroupList = ruleObj.getJSONArray("conditionGroupList");
+            if (CollectionUtils.isNotEmpty(conditionGroupList)) {
+                for (int i = 0; i < conditionGroupList.size(); i++) {
+                    JSONArray conditionList = conditionGroupList.getJSONObject(i).getJSONArray("conditionList");
+                    if (CollectionUtils.isNotEmpty(conditionList)) {
+                        for (int j = 0; j < conditionList.size(); j++) {
+                            JSONObject conditionObj = conditionList.getJSONObject(j);
+                            if (conditionObj.getString("type").equals("relfrom")) {
+                                relIdList.add(Long.parseLong(conditionObj.getString("id").replace("relfrom_", "")));
+                            } else if (conditionObj.getString("type").equals("relto")) {
+                                relIdList.add(Long.parseLong(conditionObj.getString("id").replace("relto_", "")));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return new ArrayList<>(relIdList);
+    }
+
     public static void group(GroupVo groupVo) {
         groupVo.setStatus(Status.DOING.getValue());
         groupMapper.updateGroupStatus(groupVo);
@@ -103,13 +148,9 @@ public class CiEntityGroupManager {
                         pCiEntityVo.setPageSize(100);
                         pCiEntityVo.setCurrentPage(1);
                         pCiEntityVo.setCiId(ciGroupVo.getCiId());
-                        //检查是否存在不需要join所有属性和关系
-                        pCiEntityVo.setAttrIdList(new ArrayList<Long>() {{
-                            this.add(0L);
-                        }});
-                        pCiEntityVo.setRelIdList(new ArrayList<Long>() {{
-                            this.add(0L);
-                        }});
+                        pCiEntityVo.setAttrIdList(getAttrIdFromRule(ciGroupVo.getRule()));
+                        pCiEntityVo.setRelIdList(getRelIdFromRule(ciGroupVo.getRule()));
+
                         List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(pCiEntityVo);
                         while (CollectionUtils.isNotEmpty(ciEntityList)) {
                             for (CiEntityVo ciEntityVo : ciEntityList) {
@@ -232,8 +273,11 @@ public class CiEntityGroupManager {
                 paramObj.put("condition", conditionObj);
                 try {
                     isAllMatch = JavascriptUtil.runExpression(paramObj, script.toString());
-                } catch (ScriptException | NoSuchMethodException e) {
-                    logger.error(e.getMessage(), e);
+                } catch (ApiRuntimeException ex) {
+                    logger.error(ex.getMessage(), ex);
+                    //忽略内部异常
+                } catch (Exception ex) {
+                    logger.error(ex.getMessage(), ex);
                 }
             }
         }
