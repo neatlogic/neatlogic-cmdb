@@ -5,7 +5,6 @@
 
 package codedriver.module.cmdb.api.resourcecenter.resource;
 
-import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.crossover.IResourceListApiCrossoverService;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
@@ -17,7 +16,6 @@ import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterConfigNo
 import codedriver.framework.cmdb.utils.ResourceSearchGenerateSqlUtil;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
-import codedriver.framework.jsqlparser.OrExpressionList;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -109,7 +107,6 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
         //11.环境状态
         theadList.add(new ResourceInfo("resource_softwareservice_env", "env_id"));
         theadList.add(new ResourceInfo("resource_softwareservice_env", "env_name"));
-//        theadList.add(new ResourceInfo("resource_softwareservice_env", "env_desc"));
 
         searchConditionMappingMap.put("typeIdList", new ResourceInfo("resource_ipobject","type_id", false));
         searchConditionMappingMap.put("stateIdList", new ResourceInfo("resource_ipobject_state","state_id", false));
@@ -177,7 +174,6 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         List<ResourceVo> resourceVoList = new ArrayList<>();
-        List<ResourceVo> resourceVoList3 = new ArrayList<>();
         ResourceSearchVo searchVo;
         JSONArray defaultValue = jsonObj.getJSONArray("defaultValue");
         if (CollectionUtils.isNotEmpty(defaultValue)) {
@@ -186,7 +182,6 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
         } else {
             searchVo = resourceCenterResourceService.assembleResourceSearchVo(jsonObj);
         }
-        searchVo.setPageSize(100);
         ResourceCenterConfigVo configVo = resourceCenterConfigMapper.getResourceCenterConfig();
         if (configVo == null) {
             throw new ResourceCenterConfigNotFoundException();
@@ -198,47 +193,18 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
             return TableResultUtil.getResult(resourceVoList, searchVo);
         }
         String sql = getResourceCountSql(filterPlainSelect);
-        System.out.println(sql+";");
-        int rowNum3 = resourceCenterMapper.getResourceCount3(sql);
-        int rowNum = resourceCenterMapper.getResourceCount(searchVo);
-        if (!Objects.equals(rowNum3, rowNum)) {
-            System.out.println("rowNum3=" + rowNum3);
-            System.out.println("rowNum=" + rowNum);
-        }
+        int rowNum = resourceCenterMapper.getResourceCountNew(sql);
         if (rowNum > 0) {
             searchVo.setRowNum(rowNum);
             sql = getResourceIdListSql(filterPlainSelect, searchVo);
-            System.out.println(sql+";");
-            List<Long> idList3 = resourceCenterMapper.getResourceIdList3(sql);
-            List<Long> idList = resourceCenterMapper.getResourceIdList(searchVo);
-            for (int i = 0; i < idList.size(); i++) {
-                if (!Objects.equals(idList3.get(i), idList.get(i))) {
-                    System.out.println("idList3[" + i + "]=" + idList3.get(i));
-                    System.out.println("idList[" + i + "]=" + idList.get(i));
-                }
-            }
+            List<Long> idList = resourceCenterMapper.getResourceIdListNew(sql);
             if (CollectionUtils.isNotEmpty(idList)) {
-                sql = getResourceListByIdListSql(idList, mainResourceId, theadList, resourceSearchGenerateSqlUtil);
+                sql = getResourceListByIdListSql(idList, resourceSearchGenerateSqlUtil);
                 if (StringUtils.isNotBlank(sql)) {
-                    System.out.println("currentPage=" + searchVo.getCurrentPage());
-                    System.out.println(sql + ";");
-                    resourceVoList3 = resourceCenterMapper.getResourceListByIdList3(sql);
-                    if (CollectionUtils.isNotEmpty(resourceVoList3)) {
-                        resourceCenterResourceService.addResourceAccount(idList, resourceVoList3);
-                        resourceCenterResourceService.addResourceTag(idList, resourceVoList3);
-                    }
-                }
-                resourceVoList = resourceCenterMapper.getResourceListByIdList(idList, TenantContext.get().getDataDbName());
-                if (CollectionUtils.isNotEmpty(resourceVoList)) {
-                    resourceCenterResourceService.addResourceAccount(idList, resourceVoList);
-                    resourceCenterResourceService.addResourceTag(idList, resourceVoList);
-                }
-                for (int i = 0; i < resourceVoList.size(); i++) {
-                    ResourceVo resourceVo3 = resourceVoList3.get(i);
-                    ResourceVo resourceVo = resourceVoList.get(i);
-                    if (!Objects.equals(JSONObject.toJSONString(resourceVo3), JSONObject.toJSONString(resourceVo))) {
-                        System.out.println("resourceVo3[" + i + "]=" + JSONObject.toJSONString(resourceVo3));
-                        System.out.println("resourceVo [" + i + "]=" + JSONObject.toJSONString(resourceVo));
+                    resourceVoList = resourceCenterMapper.getResourceListByIdListNew(sql);
+                    if (CollectionUtils.isNotEmpty(resourceVoList)) {
+                        resourceCenterResourceService.addResourceAccount(idList, resourceVoList);
+                        resourceCenterResourceService.addResourceTag(idList, resourceVoList);
                     }
                 }
             }
@@ -246,13 +212,24 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
         return TableResultUtil.getResult(resourceVoList, searchVo);
     }
 
+    /**
+     * 拼装查询总数sql语句
+     * @param filterPlainSelect
+     * @return
+     */
     private String getResourceCountSql(PlainSelect filterPlainSelect) {
         Table fromTable = (Table)filterPlainSelect.getFromItem();
         filterPlainSelect.setSelectItems(Arrays.asList(new SelectExpressionItem(new Function().withName("COUNT").withDistinct(true).withParameters(new ExpressionList(Arrays.asList(new Column(fromTable, "id")))))));
         return filterPlainSelect.toString();
     }
 
-    public String getResourceIdListSql(PlainSelect filterPlainSelect, ResourceSearchVo searchVo) {
+    /**
+     * 拼装查询当前页id列表sql语句
+     * @param filterPlainSelect
+     * @param searchVo
+     * @return
+     */
+    private String getResourceIdListSql(PlainSelect filterPlainSelect, ResourceSearchVo searchVo) {
         Table fromTable = (Table)filterPlainSelect.getFromItem();
         List<OrderByElement> orderByElements = new ArrayList<>();
         OrderByElement orderByElement = new OrderByElement();
@@ -451,7 +428,6 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
             Join join1 = new Join().withRightItem(table).addOnExpression(new AndExpression(equalsTo, inExpression));
             plainSelect.addJoins(join1);
         }
-//        System.out.println(plainSelect.toString()+ ";");
         String keyword = searchVo.getKeyword();
         if (StringUtils.isNotBlank(keyword)) {
             keyword = "%" + keyword + "%";
@@ -475,12 +451,10 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
     /**
      * 根据需要查询的列，生成对应的sql语句
      * @param idList
-     * @param mainResourceId
-     * @param theadList
      * @param resourceSearchGenerateSqlUtil
      * @return
      */
-    public String getResourceListByIdListSql(List<Long> idList, String mainResourceId, List<ResourceInfo> theadList, ResourceSearchGenerateSqlUtil resourceSearchGenerateSqlUtil) {
+    public String getResourceListByIdListSql(List<Long> idList, ResourceSearchGenerateSqlUtil resourceSearchGenerateSqlUtil) {
         PlainSelect plainSelect = resourceSearchGenerateSqlUtil.initPlainSelectByMainResourceId(mainResourceId);
         if (plainSelect == null) {
             return null;
@@ -488,7 +462,6 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
         for (ResourceInfo resourceInfo : theadList) {
             resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo);
             resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
-//            System.out.println(plainSelect.toString()+ ";");
         }
         if (CollectionUtils.isNotEmpty(idList)) {
             InExpression inExpression = new InExpression();
