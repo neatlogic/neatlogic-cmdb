@@ -82,13 +82,22 @@ public class SyncServiceImpl implements SyncService {
     public List<SyncCiCollectionVo> searchSyncCiCollection(SyncCiCollectionVo syncCiCollectionVo) {
         List<SyncCiCollectionVo> syncCiCollectionList = syncMapper.searchSyncCiCollection(syncCiCollectionVo);
         if (CollectionUtils.isNotEmpty(syncCiCollectionList)) {
-            int rowNum = syncMapper.searchSyncCiCollectionCount(syncCiCollectionVo);
-            syncCiCollectionVo.setRowNum(rowNum);
+            if (CollectionUtils.isEmpty(syncCiCollectionVo.getIdList())) {
+                int rowNum = syncMapper.searchSyncCiCollectionCount(syncCiCollectionVo);
+                syncCiCollectionVo.setRowNum(rowNum);
+            } else {
+                syncCiCollectionVo.setRowNum(syncCiCollectionList.size());
+            }
             for (SyncCiCollectionVo ciCollectionVo : syncCiCollectionList) {
                 SyncAuditVo syncAuditVo = new SyncAuditVo();
                 syncAuditVo.setPageSize(100);
                 syncAuditVo.setCiCollectionId(ciCollectionVo.getId());
-                ciCollectionVo.setExecCount(syncAuditMapper.searchSyncAudit(syncAuditVo).size());
+                List<SyncAuditVo> syncAuditList = syncAuditMapper.searchSyncAudit(syncAuditVo);
+                if (syncAuditList.size() > 0) {
+                    ciCollectionVo.setStatus(syncAuditList.get(0).getStatus());
+                    ciCollectionVo.setError(syncAuditList.get(0).getError());
+                }
+                ciCollectionVo.setExecCount(syncAuditList.size());
             }
         }
         return syncCiCollectionList;

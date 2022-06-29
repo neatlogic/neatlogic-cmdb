@@ -40,6 +40,8 @@ public interface SyncMapper {
 
     SyncCiCollectionVo getSyncCiCollectionById(Long id);
 
+    List<SyncCiCollectionVo> getSyncCiCollectionByIdList(@Param("idList") List<Long> idList);
+
     List<SyncCiCollectionVo> getSyncCiCollectionByCollectionName(String collectionName);
 
     SyncCiCollectionVo getSyncCiCollectionByCiIdAndCollectionName(@Param("ciId") Long ciId, @Param("collectionName") String collectionName);

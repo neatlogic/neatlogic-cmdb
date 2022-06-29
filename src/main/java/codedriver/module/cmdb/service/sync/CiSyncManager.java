@@ -390,6 +390,13 @@ public class CiSyncManager {
                                          */
                                         SyncCiCollectionVo subSyncCiCollectionVo = getSyncCiCollection(attrVo.getTargetCiId(), syncCiCollectionVo.getCollectionName(), mappingVo.getField(parentKey));
                                         if (subSyncCiCollectionVo != null) {
+                                            CiVo subCiVo = getCi(subSyncCiCollectionVo.getCiId());
+                                            if (subCiVo.getIsVirtual().equals(1)) {
+                                                throw new CiIsVirtualException(subCiVo.getLabel() + "(" + subCiVo.getName() + ")");
+                                            }
+                                            if (subCiVo.getIsAbstract().equals(1)) {
+                                                throw new CiIsAbstractedException(subCiVo.getLabel() + "(" + subCiVo.getName() + ")");
+                                            }
                                             //补充所有普通值数据进数据集，方便子对象引用父模型属性
                                             JSONObject subDataWithPK = new JSONObject();
                                             for (String subKey : subData.keySet()) {
@@ -535,6 +542,13 @@ public class CiSyncManager {
                                                     subSyncCiCollectionVo = getSyncCiCollection(ciId, syncCiCollectionVo.getCollectionName(), mappingVo.getField(parentKey));
                                                 }
                                                 if (subSyncCiCollectionVo != null) {
+                                                    CiVo subCiVo = getCi(subSyncCiCollectionVo.getCiId());
+                                                    if (subCiVo.getIsVirtual().equals(1)) {
+                                                        throw new CiIsVirtualException(subCiVo.getLabel() + "(" + subCiVo.getName() + ")");
+                                                    }
+                                                    if (subCiVo.getIsAbstract().equals(1)) {
+                                                        throw new CiIsAbstractedException(subCiVo.getLabel() + "(" + subCiVo.getName() + ")");
+                                                    }
                                                     JSONObject subDataWithPK = new JSONObject();
                                                     for (String subKey : subData.keySet()) {
                                                         subDataWithPK.put(mappingVo.getField(parentKey) + "." + subKey, subData.get(subKey));
@@ -653,8 +667,17 @@ public class CiSyncManager {
         private void executeByBatchMode() {
             if (CollectionUtils.isNotEmpty(syncCiCollectionList)) {
                 for (SyncCiCollectionVo syncCiCollectionVo : syncCiCollectionList) {
-                    CollectionVo collectionVo = getCollectionByName(syncCiCollectionVo.getCollectionName());
                     try {
+                        CollectionVo collectionVo = getCollectionByName(syncCiCollectionVo.getCollectionName());
+
+                        CiVo ciVo = getCi(syncCiCollectionVo.getCiId());
+                        if (ciVo.getIsVirtual().equals(1)) {
+                            throw new CiIsVirtualException(ciVo.getLabel() + "(" + ciVo.getName() + ")");
+                        }
+                        if (ciVo.getIsAbstract().equals(1)) {
+                            throw new CiIsAbstractedException(ciVo.getLabel() + "(" + ciVo.getName() + ")");
+                        }
+
                         Criteria finalCriteria = new Criteria();
                         List<Criteria> criteriaList = new ArrayList<>();
                         criteriaList.add(collectionVo.getFilterCriteria());

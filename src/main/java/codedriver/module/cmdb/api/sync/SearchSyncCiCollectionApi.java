@@ -53,8 +53,10 @@ public class SearchSyncCiCollectionApi extends PrivateApiComponentBase {
     }
 
     @Input({@Param(name = "ciId", type = ApiParamType.LONG, desc = "模型id"),
+            @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "id列表，用于精确刷新状态"),
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字"),
             @Param(name = "isShowPhysicalType", type = ApiParamType.INTEGER, desc = "是否显示物理集合数据"),
+            @Param(name = "collectMode", type = ApiParamType.ENUM, rule = "initiative,passive", desc = "采集方式"),
             @Param(name = "collectionType", type = ApiParamType.STRING, desc = "集合类型"),
             @Param(name = "collectionName", type = ApiParamType.STRING, desc = "集合名称")})
     @Output({@Param(explode = BasePageVo.class)})

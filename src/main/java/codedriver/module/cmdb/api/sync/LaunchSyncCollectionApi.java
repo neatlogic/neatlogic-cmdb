@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -9,18 +9,22 @@ import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo;
 import codedriver.framework.cmdb.exception.sync.SyncCiCollectionNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CI_MODIFY;
 import codedriver.module.cmdb.dao.mapper.sync.SyncMapper;
 import codedriver.module.cmdb.service.sync.CiSyncManager;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @AuthAction(action = CI_MODIFY.class)
@@ -46,18 +50,27 @@ public class LaunchSyncCollectionApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "id")})
+    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "采集id"), @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "采集id列表")})
     @Description(desc = "执行自动采集接口，采集会在后台执行")
     @ResubmitInterval(value = 5)
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");
-        SyncCiCollectionVo syncCiCollectionVo = syncMapper.getSyncCiCollectionById(id);
-        if (syncCiCollectionVo == null) {
-            throw new SyncCiCollectionNotFoundException(id);
+        JSONArray idList = jsonObj.getJSONArray("idList");
+        if (id == null && CollectionUtils.isEmpty(idList)) {
+            throw new ParamNotExistsException("id", "idList");
         }
         List<SyncCiCollectionVo> syncCiCollectionList = new ArrayList<>();
-        syncCiCollectionList.add(syncCiCollectionVo);
+        if (id != null) {
+            SyncCiCollectionVo syncCiCollectionVo = syncMapper.getSyncCiCollectionById(id);
+            if (syncCiCollectionVo == null) {
+                throw new SyncCiCollectionNotFoundException(id);
+            }
+            syncCiCollectionList.add(syncCiCollectionVo);
+        } else if (CollectionUtils.isNotEmpty(idList)) {
+            List<Long> pIdList = idList.stream().map(d -> Long.parseLong(d.toString())).collect(Collectors.toList());
+            syncCiCollectionList = syncMapper.getSyncCiCollectionByIdList(pIdList);
+        }
         CiSyncManager.doSync(syncCiCollectionList);
         return null;
     }

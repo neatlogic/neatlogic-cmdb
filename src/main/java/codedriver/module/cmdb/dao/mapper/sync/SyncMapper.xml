@@ -186,6 +186,10 @@
 
     <sql id="searchSyncCiCollectionSql">
         <where>
+            <if test="idList != null and idList.size() > 0">
+                AND a.id in
+                <foreach collection="idList" item="item" separator="," open="(" close=")">#{item}</foreach>
+            </if>
             <if test="ciId != null">
                 AND a.ci_id = #{ciId}
             </if>
@@ -299,25 +303,54 @@
                a.collection_name AS collectionName,
                a.collect_mode    AS collectMode,
                a.is_auto_commit  AS isAutoCommit,
-               a.last_sync_date  AS lastSyncDate,
-               a.match_mode      AS matchMode,
-               a.parent_key      AS parentKey,
+               a.last_sync_date AS lastSyncDate,
+               a.match_mode     AS matchMode,
+               a.parent_key     AS parentKey,
                a.description,
-               a.fcd             AS fcd,
-               a.fcu             AS fcu,
-               a.lcd             AS lcd,
-               a.lcu             AS lcu,
-               csm.id            AS mappingId,
-               csm.attr_id       AS attrId,
-               csm.rel_id        AS relId,
+               a.fcd            AS fcd,
+               a.fcu            AS fcu,
+               a.lcd            AS lcd,
+               a.lcu            AS lcu,
+               csm.id           AS mappingId,
+               csm.attr_id      AS attrId,
+               csm.rel_id       AS relId,
                csm.direction,
                csm.field,
-               csu.attr_id       AS uniqueAttrId,
-               csm.action        as relAction
+               csu.attr_id      AS uniqueAttrId,
+               csm.action       as relAction
         FROM cmdb_sync_ci_collection a
                  JOIN cmdb_sync_mapping csm on a.id = csm.ci_collection_id
                  LEFT JOIN cmdb_sync_unique csu on a.id = csu.ci_collection_id
         WHERE a.id = #{value}
+    </select>
+
+    <select id="getSyncCiCollectionByIdList"
+            resultMap="syncCiCollectionResultMap">
+        SELECT a.id,
+        a.ci_id AS ciId,
+        a.collection_name AS collectionName,
+        a.collect_mode AS collectMode,
+        a.is_auto_commit AS isAutoCommit,
+        a.last_sync_date AS lastSyncDate,
+        a.match_mode AS matchMode,
+        a.parent_key AS parentKey,
+        a.description,
+        a.fcd AS fcd,
+        a.fcu AS fcu,
+        a.lcd AS lcd,
+        a.lcu AS lcu,
+        csm.id AS mappingId,
+        csm.attr_id AS attrId,
+        csm.rel_id AS relId,
+        csm.direction,
+        csm.field,
+        csu.attr_id AS uniqueAttrId,
+        csm.action as relAction
+        FROM cmdb_sync_ci_collection a
+        JOIN cmdb_sync_mapping csm on a.id = csm.ci_collection_id
+        LEFT JOIN cmdb_sync_unique csu on a.id = csu.ci_collection_id
+        WHERE a.id in
+        <foreach collection="idList" item="item" open="(" close=")" separator=",">#{item}</foreach>
     </select>
 
     <update id="updateSyncCiCollection" parameterType="codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo">
