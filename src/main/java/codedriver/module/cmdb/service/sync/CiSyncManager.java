@@ -542,13 +542,6 @@ public class CiSyncManager {
                                                     subSyncCiCollectionVo = getSyncCiCollection(ciId, syncCiCollectionVo.getCollectionName(), mappingVo.getField(parentKey));
                                                 }
                                                 if (subSyncCiCollectionVo != null) {
-                                                    CiVo subCiVo = getCi(subSyncCiCollectionVo.getCiId());
-                                                    if (subCiVo.getIsVirtual().equals(1)) {
-                                                        throw new CiIsVirtualException(subCiVo.getLabel() + "(" + subCiVo.getName() + ")");
-                                                    }
-                                                    if (subCiVo.getIsAbstract().equals(1)) {
-                                                        throw new CiIsAbstractedException(subCiVo.getLabel() + "(" + subCiVo.getName() + ")");
-                                                    }
                                                     JSONObject subDataWithPK = new JSONObject();
                                                     for (String subKey : subData.keySet()) {
                                                         subDataWithPK.put(mappingVo.getField(parentKey) + "." + subKey, subData.get(subKey));
@@ -560,6 +553,13 @@ public class CiSyncManager {
                                                         }
                                                     }
                                                     //切换关系原始模型id为真正的子模型id，否则数据找不到真正的模型id
+                                                    CiVo subCiVo = getCi(subCiId);
+                                                    if (subCiVo.getIsVirtual().equals(1)) {
+                                                        throw new CiIsVirtualException(subCiVo.getLabel() + "(" + subCiVo.getName() + ")");
+                                                    }
+                                                    if (subCiVo.getIsAbstract().equals(1)) {
+                                                        throw new CiIsAbstractedException(subCiVo.getLabel() + "(" + subCiVo.getName() + ")");
+                                                    }
                                                     subSyncCiCollectionVo.setCiId(subCiId);
                                                     CiEntityTransactionVo subCiEntityTransactionVo = generateCiEntityTransaction(subDataWithPK, subSyncCiCollectionVo, ciEntityTransactionMap, mappingVo.getField());
                                                     if (subCiEntityTransactionVo != null) {
