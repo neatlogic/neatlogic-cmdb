@@ -91,7 +91,7 @@
         <result property="createTime" column="createTime"/>
         <result property="commitTime" column="commitTime"/>
         <result property="recoverTime" column="recoverTime"/>
-        <result property="error" column="error" typeHandler="CompressHandler"/>
+        <result property="error" column="error" typeHandler="codedriver.framework.dao.plugin.CompressHandler"/>
         <result property="description" column="description"/>
         <result property="transactionGroupId" column="transactionGroupId"/>
         <association property="ciEntityTransactionVo"
@@ -103,8 +103,9 @@
             <result property="ciId" column="ciId"/>
             <result property="action" column="action"/>
             <result property="editMode" column="editMode"/>
-            <result property="snapshot" column="snapshot" typeHandler="compressHandler"/>
-            <result property="content" column="content" typeHandler="compressHandler"/>
+            <result property="snapshot" column="snapshot"
+                    typeHandler="codedriver.framework.dao.plugin.CompressHandler"/>
+            <result property="content" column="content" typeHandler="codedriver.framework.dao.plugin.CompressHandler"/>
         </association>
     </resultMap>
 

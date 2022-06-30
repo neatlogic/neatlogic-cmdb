@@ -8,7 +8,6 @@ package codedriver.module.cmdb.api.cientity;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.enums.CiAuthType;
-import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -52,27 +51,30 @@ public class GetCiEntityAuthApi extends PrivateApiComponentBase {
     }
 
     @Input({@Param(name = "ciEntityId", type = ApiParamType.LONG, isRequired = true, desc = "配置项id"),
+            @Param(name = "ciId", type = ApiParamType.LONG, desc = "模型id"),
             @Param(name = "authList", type = ApiParamType.JSONARRAY, rule = "cientityinsert,cientitydelete,cimanage,transactionmanage,cientityrecover,passwordview", desc = "需要判断的权限列表")})
     @Output({@Param(explode = CiEntityVo.class)})
     @Description(desc = "获取配置项权限信息接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         CiEntityVo ciEntityVo = ciEntityService.getCiEntityBaseInfoById(jsonObj.getLong("ciEntityId"));
-        if (ciEntityVo == null) {
-            throw new CiEntityNotFoundException(jsonObj.getLong("ciEntityId"));
-        }
-        JSONArray authList = jsonObj.getJSONArray("authList");
+        //如果需要获取恢复权限，配置项已经被删除，需要改用模型id获取权限
+        Long ciId = (ciEntityVo != null ? ciEntityVo.getCiId() : jsonObj.getLong("ciId"));
         Map<String, Boolean> authMap = new HashMap<>();
-        if (CollectionUtils.isNotEmpty(authList)) {
-            for (int i = 0; i < authList.size(); i++) {
-                CiAuthType auth = CiAuthType.get(authList.getString(i));
-                if (auth != null) {
-                    authMap.put(authList.getString(i), CiAuthChecker.chain().checkAuth(ciEntityVo.getCiId(), ciEntityVo.getId(), auth).check());
+        if (ciId != null) {
+            JSONArray authList = jsonObj.getJSONArray("authList");
+            if (CollectionUtils.isNotEmpty(authList)) {
+                for (int i = 0; i < authList.size(); i++) {
+                    String authString = authList.getString(i);
+                    CiAuthType auth = CiAuthType.get(authString);
+                    if (auth != null) {
+                        authMap.put(authString, CiAuthChecker.chain().checkAuth(ciId, auth).check());
+                    }
                 }
-            }
-        } else {
-            for (CiAuthType auth : CiAuthType.values()) {
-                authMap.put(auth.getValue(), CiAuthChecker.chain().checkAuth(ciEntityVo.getCiId(), ciEntityVo.getId(), auth).check());
+            } else {
+                for (CiAuthType auth : CiAuthType.values()) {
+                    authMap.put(auth.getValue(), CiAuthChecker.chain().checkAuth(ciId, auth).check());
+                }
             }
         }
         return authMap;

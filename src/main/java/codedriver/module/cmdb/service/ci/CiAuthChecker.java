@@ -200,7 +200,7 @@ public class CiAuthChecker {
             return this;
         }
 
-        public Chain checkAuth(Long ciId, Long ciEntityId, CiAuthType auth) {
+        public Chain checkAuth(Long ciId, CiAuthType auth) {
             if (auth == CiAuthType.CIMANAGE) {
                 return checkCiManagePrivilege(ciId);
             } else if (auth == CiAuthType.CIENTITYINSERT) {
