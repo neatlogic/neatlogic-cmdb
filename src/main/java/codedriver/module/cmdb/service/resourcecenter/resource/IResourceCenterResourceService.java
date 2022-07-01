@@ -9,6 +9,8 @@ import codedriver.framework.cmdb.crossover.IResourceCenterResourceCrossoverServi
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
+import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceInfo;
+import codedriver.framework.cmdb.utils.ResourceSearchGenerateSqlUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
@@ -57,4 +59,28 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
      * @return
      */
     public String getResourceTypeName(List<CiVo> resourceCiVoList, CiVo resourceCiVo);
+
+    /**
+     * 根据查询条件组装查询资源总个数的sql语句
+     * @param searchVo
+     * @return
+     */
+    String getResourceCountSql(ResourceSearchVo searchVo, String mainResourceId);
+
+    /**
+     * 根据查询条件组装查询当前页id列表的sql语句
+     * @param searchVo
+     * @param mainResourceId
+     * @return
+     */
+    String getResourceIdListSql(ResourceSearchVo searchVo, String mainResourceId);
+
+    /**
+     * 根据需要查询的列，生成对应的sql语句
+     * @param theadList
+     * @param idList
+     * @param unavailableResourceInfoList
+     * @return
+     */
+    String getResourceListByIdListSql(List<ResourceInfo> theadList, List<Long> idList, List<ResourceInfo> unavailableResourceInfoList, String mainResourceId);
 }

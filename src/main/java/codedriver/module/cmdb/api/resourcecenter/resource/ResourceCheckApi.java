@@ -9,6 +9,7 @@ import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.autoexec.exception.AutoexecCombopProtocolCannotBeEmptyException;
 import codedriver.framework.cmdb.crossover.IResourceCenterAccountCrossoverService;
+import codedriver.framework.cmdb.crossover.IResourceCenterResourceCrossoverService;
 import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountProtocolVo;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
@@ -141,8 +142,10 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
             // 如果filter不为空，说明是在执行页带有过滤器的校验输入目标，把过滤器作为进一步的筛选条件
             if (MapUtils.isNotEmpty(filter)) {
                 searchVo = resourceCenterResourceService.assembleResourceSearchVo(filter);
+                IResourceCenterResourceCrossoverService resourceCenterResourceCrossoverService = CrossoverServiceFactory.getApi(IResourceCenterResourceCrossoverService.class);
+                String sql = resourceCenterResourceCrossoverService.getResourceCountSql(searchVo, "resource_ipobject");
                 // 如果过滤器下没有任何目标，不再进行下一步校验
-                if (resourceCenterMapper.getResourceCount(searchVo) == 0) {
+                if (resourceCenterMapper.getResourceCountNew(sql) == 0) {
                     JSONObject resourceIsEmpty = new JSONObject();
                     resourceIsEmpty.put("type", "resourceIsEmpty");
                     resultArray.add(resourceIsEmpty);
@@ -173,14 +176,25 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
             }
         } else if (MapUtils.isNotEmpty(filter)) {
             ResourceSearchVo searchVo = resourceCenterResourceService.assembleResourceSearchVo(filter);
-            int rowNum = resourceCenterMapper.getResourceCount(searchVo);
+            IResourceCenterResourceCrossoverService resourceCenterResourceCrossoverService = CrossoverServiceFactory.getApi(IResourceCenterResourceCrossoverService.class);
+            String sql = resourceCenterResourceCrossoverService.getResourceCountSql(searchVo, "resource_ipobject");
+            if (StringUtils.isBlank(sql)) {
+                return false;
+            }
+            int rowNum = resourceCenterMapper.getResourceCountNew(sql);
+//            int rowNum = resourceCenterMapper.getResourceCount(searchVo);
             // 先检查过滤器下是否存在资源
             if (rowNum > 0) {
                 searchVo.setRowNum(rowNum);
                 searchVo.setPageSize(100);
                 for (int i = 1; i <= searchVo.getPageCount(); i++) {
                     searchVo.setCurrentPage(i);
-                    List<Long> idList = resourceCenterMapper.getResourceIdList(searchVo);
+                    sql = resourceCenterResourceCrossoverService.getResourceIdListSql(searchVo, "resource_ipobject");
+                    if (StringUtils.isBlank(sql)) {
+                        continue;
+                    }
+                    List<Long> idList = resourceCenterMapper.getResourceIdListNew(sql);
+//                    List<Long> idList = resourceCenterMapper.getResourceIdList(searchVo);
                     addException(executeUser, protocolId, executeUserIsNotFoundInResourceList, protocolIsNotFoundInResourceList, protocolVoList, idList);
                 }
             } else {
