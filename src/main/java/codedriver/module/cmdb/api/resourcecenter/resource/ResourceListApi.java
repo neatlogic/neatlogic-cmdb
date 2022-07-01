@@ -134,14 +134,63 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
         if (filterPlainSelect == null) {
             return TableResultUtil.getResult(resourceVoList, searchVo);
         }
-        String sql = getResourceCountSql(filterPlainSelect);
+        String sql = resourceCenterResourceService.getResourceCountSql(searchVo, "resource_ipobject");
         int rowNum = resourceCenterMapper.getResourceCount(sql);
         if (rowNum > 0) {
             searchVo.setRowNum(rowNum);
-            sql = getResourceIdListSql(filterPlainSelect, searchVo);
+            sql = resourceCenterResourceService.getResourceIdListSql(searchVo, "resource_ipobject");
             List<Long> idList = resourceCenterMapper.getResourceIdList(sql);
             if (CollectionUtils.isNotEmpty(idList)) {
-                sql = getResourceListByIdListSql(idList, resourceSearchGenerateSqlUtil, unavailableResourceInfoList);
+                List<ResourceInfo> theadList = new ArrayList<>();
+                theadList.add(new ResourceInfo("resource_ipobject", "id"));
+                //1.IP地址:端口
+                theadList.add(new ResourceInfo("resource_ipobject", "ip"));
+                theadList.add(new ResourceInfo("resource_softwareservice", "port"));
+                //2.类型
+                theadList.add(new ResourceInfo("resource_ipobject", "type_id"));
+                theadList.add(new ResourceInfo("resource_ipobject", "type_name"));
+                theadList.add(new ResourceInfo("resource_ipobject", "type_label"));
+                //3.名称
+                theadList.add(new ResourceInfo("resource_ipobject", "name"));
+                //4.监控状态
+                theadList.add(new ResourceInfo("resource_ipobject", "monitor_status"));
+                theadList.add(new ResourceInfo("resource_ipobject", "monitor_time"));
+                //5.巡检状态
+                theadList.add(new ResourceInfo("resource_ipobject", "inspect_status"));
+                theadList.add(new ResourceInfo("resource_ipobject", "inspect_time"));
+                //12.网络区域
+                theadList.add(new ResourceInfo("resource_ipobject", "network_area"));
+                //14.维护窗口
+                theadList.add(new ResourceInfo("resource_ipobject", "maintenance_window"));
+                //16.描述
+                theadList.add(new ResourceInfo("resource_ipobject", "description"));
+                //6.模块
+                theadList.add(new ResourceInfo("resource_ipobject_appmodule", "app_module_id"));
+                theadList.add(new ResourceInfo("resource_ipobject_appmodule", "app_module_name"));
+                theadList.add(new ResourceInfo("resource_ipobject_appmodule", "app_module_abbr_name"));
+                //7.应用
+                theadList.add(new ResourceInfo("resource_appmodule_appsystem", "app_system_id"));
+                theadList.add(new ResourceInfo("resource_appmodule_appsystem", "app_system_name"));
+                theadList.add(new ResourceInfo("resource_appmodule_appsystem", "app_system_abbr_name"));
+                //8.IP列表
+                theadList.add(new ResourceInfo("resource_ipobject_allip", "allip_id"));
+                theadList.add(new ResourceInfo("resource_ipobject_allip", "allip_ip"));
+                theadList.add(new ResourceInfo("resource_ipobject_allip", "allip_label"));
+                //9.所属部门
+                theadList.add(new ResourceInfo("resource_ipobject_bg", "bg_id"));
+                theadList.add(new ResourceInfo("resource_ipobject_bg", "bg_name"));
+                //10.所有者
+                theadList.add(new ResourceInfo("resource_ipobject_owner", "user_id"));
+                theadList.add(new ResourceInfo("resource_ipobject_owner", "user_uuid"));
+                theadList.add(new ResourceInfo("resource_ipobject_owner", "user_name"));
+                //11.资产状态
+                theadList.add(new ResourceInfo("resource_ipobject_state", "state_id"));
+                theadList.add(new ResourceInfo("resource_ipobject_state", "state_name"));
+                theadList.add(new ResourceInfo("resource_ipobject_state", "state_label"));
+                //环境状态
+//        theadList.add(new ResourceInfo("resource_softwareservice_env", "env_id"));
+//        theadList.add(new ResourceInfo("resource_softwareservice_env", "env_name"));
+                sql = resourceCenterResourceService.getResourceListByIdListSql(theadList, idList, unavailableResourceInfoList, "resource_ipobject");
                 if (StringUtils.isNotBlank(sql)) {
                     resourceVoList = resourceCenterMapper.getResourceListByIdList(sql);
                     if (CollectionUtils.isNotEmpty(resourceVoList)) {
