@@ -137,12 +137,12 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
         resourceIsNotFoundObj.put("list", resourceIsNotFoundList);
 
         List<AccountProtocolVo> protocolVoList = resourceCenterMapper.searchAccountProtocolListByProtocolName(new AccountProtocolVo());
+        IResourceCenterResourceCrossoverService resourceCenterResourceCrossoverService = CrossoverServiceFactory.getApi(IResourceCenterResourceCrossoverService.class);
         if (CollectionUtils.isNotEmpty(jsonObj.getJSONArray("inputNodeList"))) {
             ResourceSearchVo searchVo = null;
             // 如果filter不为空，说明是在执行页带有过滤器的校验输入目标，把过滤器作为进一步的筛选条件
             if (MapUtils.isNotEmpty(filter)) {
                 searchVo = resourceCenterResourceService.assembleResourceSearchVo(filter);
-                IResourceCenterResourceCrossoverService resourceCenterResourceCrossoverService = CrossoverServiceFactory.getApi(IResourceCenterResourceCrossoverService.class);
                 String sql = resourceCenterResourceCrossoverService.getResourceCountSql(searchVo, "resource_ipobject");
                 // 如果过滤器下没有任何目标，不再进行下一步校验
                 if (resourceCenterMapper.getResourceCountNew(sql) == 0) {
@@ -176,7 +176,6 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
             }
         } else if (MapUtils.isNotEmpty(filter)) {
             ResourceSearchVo searchVo = resourceCenterResourceService.assembleResourceSearchVo(filter);
-            IResourceCenterResourceCrossoverService resourceCenterResourceCrossoverService = CrossoverServiceFactory.getApi(IResourceCenterResourceCrossoverService.class);
             String sql = resourceCenterResourceCrossoverService.getResourceCountSql(searchVo, "resource_ipobject");
             if (StringUtils.isBlank(sql)) {
                 return false;
