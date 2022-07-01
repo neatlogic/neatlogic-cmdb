@@ -292,7 +292,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                     if (StringUtils.isBlank(sql)) {
                         return new ArrayList<>();
                     }
-                    return resourceCenterMapper.getResourceListByIdListNew(sql);
+                    return resourceCenterMapper.getResourceListByIdList(sql);
                 }
             }
             return new ArrayList<>();

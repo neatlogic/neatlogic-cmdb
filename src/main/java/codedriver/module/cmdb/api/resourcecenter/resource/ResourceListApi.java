@@ -135,15 +135,15 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
             return TableResultUtil.getResult(resourceVoList, searchVo);
         }
         String sql = getResourceCountSql(filterPlainSelect);
-        int rowNum = resourceCenterMapper.getResourceCountNew(sql);
+        int rowNum = resourceCenterMapper.getResourceCount(sql);
         if (rowNum > 0) {
             searchVo.setRowNum(rowNum);
             sql = getResourceIdListSql(filterPlainSelect, searchVo);
-            List<Long> idList = resourceCenterMapper.getResourceIdListNew(sql);
+            List<Long> idList = resourceCenterMapper.getResourceIdList(sql);
             if (CollectionUtils.isNotEmpty(idList)) {
                 sql = getResourceListByIdListSql(idList, resourceSearchGenerateSqlUtil, unavailableResourceInfoList);
                 if (StringUtils.isNotBlank(sql)) {
-                    resourceVoList = resourceCenterMapper.getResourceListByIdListNew(sql);
+                    resourceVoList = resourceCenterMapper.getResourceListByIdList(sql);
                     if (CollectionUtils.isNotEmpty(resourceVoList)) {
                         resourceCenterResourceService.addResourceAccount(idList, resourceVoList);
                         resourceCenterResourceService.addResourceTag(idList, resourceVoList);

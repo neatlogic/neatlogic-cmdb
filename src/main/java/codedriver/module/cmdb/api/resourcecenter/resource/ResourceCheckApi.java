@@ -145,7 +145,7 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
                 searchVo = resourceCenterResourceService.assembleResourceSearchVo(filter);
                 String sql = resourceCenterResourceCrossoverService.getResourceCountSql(searchVo, "resource_ipobject");
                 // 如果过滤器下没有任何目标，不再进行下一步校验
-                if (resourceCenterMapper.getResourceCountNew(sql) == 0) {
+                if (resourceCenterMapper.getResourceCount(sql) == 0) {
                     JSONObject resourceIsEmpty = new JSONObject();
                     resourceIsEmpty.put("type", "resourceIsEmpty");
                     resultArray.add(resourceIsEmpty);
@@ -180,7 +180,7 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
             if (StringUtils.isBlank(sql)) {
                 return false;
             }
-            int rowNum = resourceCenterMapper.getResourceCountNew(sql);
+            int rowNum = resourceCenterMapper.getResourceCount(sql);
 //            int rowNum = resourceCenterMapper.getResourceCount(searchVo);
             // 先检查过滤器下是否存在资源
             if (rowNum > 0) {
@@ -192,7 +192,7 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
                     if (StringUtils.isBlank(sql)) {
                         continue;
                     }
-                    List<Long> idList = resourceCenterMapper.getResourceIdListNew(sql);
+                    List<Long> idList = resourceCenterMapper.getResourceIdList(sql);
 //                    List<Long> idList = resourceCenterMapper.getResourceIdList(searchVo);
                     addException(executeUser, protocolId, executeUserIsNotFoundInResourceList, protocolIsNotFoundInResourceList, protocolVoList, idList);
                 }
