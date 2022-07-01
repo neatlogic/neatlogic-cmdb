@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -11,6 +11,7 @@ import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.ci.RelVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.enums.EditModeType;
+import codedriver.framework.cmdb.enums.RelActionType;
 import codedriver.framework.cmdb.enums.RelDirectionType;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.cmdb.exception.cientity.CiEntityNotFoundException;
@@ -51,7 +52,7 @@ public class BatchSaveCiEntityPublicApi extends PublicApiComponentBase implement
 
     @Override
     public String getName() {
-        return "保存配置项public";
+        return "保存配置项";
     }
 
     @Override
@@ -62,7 +63,7 @@ public class BatchSaveCiEntityPublicApi extends PublicApiComponentBase implement
 
     @Input({@Param(name = "ciEntityList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "配置项数据"),
             @Param(name = "needCommit", type = ApiParamType.BOOLEAN, isRequired = true, desc = "是否需要提交")})
-    @Description(desc = "保存配置项public 简化接口，attrEntityData 仅需传 属性name:属性value。注意：默认为局部修改，如需要全部修改则需要在每个entity对象声明 editMode=global")
+    @Description(desc = "保存配置项接口，attrEntityData 仅需传 属性name:属性value。注意：默认为局部修改，如需要全部修改则需要在每个entity对象声明 editMode=global")
     @Example(example = "{\"ciEntityList\":[{\"entityData\":{\"name\":[\"名称s4\"],\"description\":[\"描述s\"],\"state\":[\"下线\"],\"APPComponent\":[\"应用模块11\"],\"owner\":[\"林邦泉2\"],\"bg\":[\"部门1\"],\"data_center\":[\"MAIN\"],\"maintenance_window\":[\"20:00~22:00\"],\"APPIns\":[\"a\"]},\"ciName\":\"APP\",\"name\":\"名称s3\",\"editMode\":\"global\"}],\"needCommit\":true}")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
@@ -193,6 +194,7 @@ public class BatchSaveCiEntityPublicApi extends PublicApiComponentBase implement
                                 valueRel.put("ciId", entity.getCiId());
                                 valueRel.put("ciEntityId", entity.getId());
                                 valueRel.put("ciEntityName", entity.getName());
+                                valueRel.put("action", RelActionType.REPLACE.getValue());
                             }
                         } else {
                             throw new CiEntityNotFoundException(value);
