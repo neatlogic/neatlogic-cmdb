@@ -24,7 +24,6 @@ import codedriver.framework.restful.core.privateapi.PrivateBinaryStreamApiCompon
 import codedriver.framework.util.RegexUtils;
 import codedriver.module.cmdb.auth.label.CI_MODIFY;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
-import codedriver.module.cmdb.dao.mapper.ci.CiTypeMapper;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
 import codedriver.module.cmdb.service.attr.AttrService;
 import codedriver.module.cmdb.service.ci.CiService;
@@ -32,6 +31,7 @@ import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
@@ -47,9 +47,6 @@ import java.util.zip.ZipInputStream;
 public class ImportCiApi extends PrivateBinaryStreamApiComponentBase {
     @Resource
     private CiService ciService;
-
-    @Resource
-    private CiTypeMapper ciTypeMapper;
 
     @Resource
     private AttrService attrService;
@@ -81,6 +78,7 @@ public class ImportCiApi extends PrivateBinaryStreamApiComponentBase {
             @Param(name = "typeId", type = ApiParamType.LONG, desc = "类型id", isRequired = true),
             @Param(name = "icon", type = ApiParamType.STRING, isRequired = true, desc = "图标"), @Param(name = "file", type = ApiParamType.FILE, isRequired = true, desc = "模型文件")})
     @Description(desc = "导入配置项模型接口")
+    @Transactional
     @Override
     public Object myDoService(JSONObject paramObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
@@ -94,9 +92,8 @@ public class ImportCiApi extends PrivateBinaryStreamApiComponentBase {
                 ciVo.setName(newCiVo.getName());
                 ciVo.setIcon(newCiVo.getIcon());
                 ciVo.setLabel(newCiVo.getLabel());
+                ciVo.setTypeId(newCiVo.getTypeId());
                 zin.closeEntry();
-                //检查类型是否存在
-                ciTypeMapper.getCiTypeByName(ciVo.getTypeName());
                 //检查父模型是否存在
                 if (StringUtils.isNotBlank(ciVo.getParentCiName())) {
                     CiVo parentCiVo = ciMapper.getCiByName(ciVo.getParentCiName());
@@ -123,6 +120,8 @@ public class ImportCiApi extends PrivateBinaryStreamApiComponentBase {
                     for (RelVo relVo : ciVo.getRelList()) {
                         if (relVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
                             relVo.setFromCiId(ciVo.getId());
+                            relVo.setFromName(ciVo.getName());
+                            relVo.setFromLabel(ciVo.getLabel());
                             CiVo toCiVo = ciMapper.getCiByName(relVo.getToCiName());
                             if (toCiVo == null) {
                                 throw new RelCiNotFoundException(relVo.getToName(), relVo.getToCiName());
@@ -130,6 +129,8 @@ public class ImportCiApi extends PrivateBinaryStreamApiComponentBase {
                             relVo.setToCiId(toCiVo.getId());
                         } else if (relVo.getDirection().equals(RelDirectionType.TO.getValue())) {
                             relVo.setToCiId(ciVo.getId());
+                            relVo.setToName(ciVo.getName());
+                            relVo.setToLabel(ciVo.getLabel());
                             CiVo fromCiVo = ciMapper.getCiByName(relVo.getFromCiName());
                             if (fromCiVo == null) {
                                 throw new RelCiNotFoundException(relVo.getFromName(), relVo.getFromCiName());

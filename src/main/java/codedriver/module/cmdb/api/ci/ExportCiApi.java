@@ -77,6 +77,7 @@ public class ExportCiApi extends PrivateBinaryStreamApiComponentBase {
                 ciVo.getAttrList().removeIf(d -> d.getIsExtended().equals(1));
                 for (AttrVo attrVo : ciVo.getAttrList()) {
                     attrVo.setCiId(null);
+                    attrVo.setId(null);
                 }
             }
             if (CollectionUtils.isNotEmpty(ciVo.getRelList())) {
@@ -84,6 +85,7 @@ public class ExportCiApi extends PrivateBinaryStreamApiComponentBase {
                 for (RelVo relVo : ciVo.getRelList()) {
                     relVo.setToCiId(null);
                     relVo.setFromCiId(null);
+                    relVo.setId(null);
                 }
             }
             response.setContentType("application/octet-stream");
