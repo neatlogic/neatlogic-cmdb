@@ -1,34 +1,29 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
 package codedriver.module.cmdb.dao.mapper.ci;
 
-import java.util.List;
-
 import codedriver.framework.cmdb.dto.ci.CiTypeVo;
 
-/**
- * 
- * @Author:chenqiwei
- * @Time:Aug 15, 2020
- * @ClassName: CiMapper
- * @Description: TODO
- */
+import java.util.List;
+
 public interface CiTypeMapper {
 
-    public Integer getMaxSort();
+    Integer getMaxSort();
 
-    public int checkCiTypeNameIsExists(CiTypeVo ciTypeVo);
+    int checkCiTypeNameIsExists(CiTypeVo ciTypeVo);
 
-    public CiTypeVo getCiTypeById(Long ciTypeId);
+    CiTypeVo getCiTypeById(Long ciTypeId);
 
-    public List<CiTypeVo> searchCiType(CiTypeVo ciTypeVo);
+    CiTypeVo getCiTypeByName(String ciTypeName);
 
-    public int insertCiType(CiTypeVo ciTypeVo);
+    List<CiTypeVo> searchCiType(CiTypeVo ciTypeVo);
 
-    public int updateCiType(CiTypeVo ciTypeVo);
+    int insertCiType(CiTypeVo ciTypeVo);
 
-    public int deleteCiTypeById(Long ciTypeId);
+    int updateCiType(CiTypeVo ciTypeVo);
+
+    int deleteCiTypeById(Long ciTypeId);
 }

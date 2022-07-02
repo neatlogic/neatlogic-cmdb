@@ -18,8 +18,6 @@ import codedriver.framework.exception.core.ApiRuntimeException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.auth.label.CIENTITY_MODIFY;
-import codedriver.module.cmdb.auth.label.CI_MODIFY;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
@@ -37,8 +35,6 @@ import java.util.*;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
-@AuthAction(action = CI_MODIFY.class)
-@AuthAction(action = CIENTITY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 @Transactional
 public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
@@ -63,6 +59,44 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
     @Override
     public String getConfig() {
         return null;
+    }
+
+    @Override
+    public JSONObject example() {
+        String json = "{\n" +
+                "  \"ciEntityList\": [\n" +
+                "    {\n" +
+                "      \"editMode\": \"global|partial\",\n" +
+                "      \"attrEntityData\": {\n" +
+                "        \"attr_323010784722944\": {\n" +
+                "          \"valueList\": [\"测试环境\"],\n" +
+                "          \"name\": \"label\",\n" +
+                "          \"label\": \"显示名\",\n" +
+                "          \"type\": \"text\",\n" +
+                "          \"saveMode\": \"merge\"\n" +
+                "        },\n" +
+                "        \"attr_323010700836864\": {\n" +
+                "          \"valueList\": [\"stg33\"],\n" +
+                "          \"name\": \"name\",\n" +
+                "          \"label\": \"唯一标识\",\n" +
+                "          \"type\": \"text\"\n" +
+                "        }\n" +
+                "      },\n" +
+                "      \"relEntityData\": {\n" +
+                "        \"relfrom_323010784722234\": {\n" +
+                "          \"valueList\": [{\"ciEntityId\":123131231233,\"action\":\"insert|delete|replace，默认是insert，如果有一个成员的action等于replace，代表所有成员都是replace\"}]\n" +
+                "        },\n" +
+                "        \"relto_3230107847222234\": {\n" +
+                "          \"valueList\": [{\"ciEntityUuid\":\"abcdedljklsjdfjlaskdf1233\"}]\n" +
+                "        }\n" +
+                "      },\n" +
+                "      \"ciId\": 323010541453312,\n" +
+                "      \"id\": 330340423237635,\n" +
+                "      \"uuid\": \"3e3e74b1947b400aa34d7c6964f79168\"\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n";
+        return JSONObject.parseObject(json);
     }
 
     @Input({@Param(name = "ciEntityList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "配置项数据"),

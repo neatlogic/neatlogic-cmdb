@@ -61,8 +61,7 @@ public class BatchSaveCiEntityPublicApi extends PublicApiComponentBase implement
     }
 
 
-    @Input({@Param(name = "ciEntityList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "配置项数据"),
-            @Param(name = "needCommit", type = ApiParamType.BOOLEAN, isRequired = true, desc = "是否需要提交")})
+    @Input({@Param(name = "ciEntityList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "配置项数据"), @Param(name = "needCommit", type = ApiParamType.BOOLEAN, isRequired = true, desc = "是否需要提交")})
     @Description(desc = "保存配置项接口，attrEntityData 仅需传 属性name:属性value。注意：默认为局部修改，如需要全部修改则需要在每个entity对象声明 editMode=global")
     @Example(example = "{\"ciEntityList\":[{\"entityData\":{\"name\":[\"名称s4\"],\"description\":[\"描述s\"],\"state\":[\"下线\"],\"APPComponent\":[\"应用模块11\"],\"owner\":[\"林邦泉2\"],\"bg\":[\"部门1\"],\"data_center\":[\"MAIN\"],\"maintenance_window\":[\"20:00~22:00\"],\"APPIns\":[\"a\"]},\"ciName\":\"APP\",\"name\":\"名称s3\",\"editMode\":\"global\"}],\"needCommit\":true}")
     @Override

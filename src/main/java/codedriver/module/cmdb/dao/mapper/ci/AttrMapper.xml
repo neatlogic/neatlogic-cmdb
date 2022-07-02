@@ -228,6 +228,7 @@
         cv.`handler` AS validatorHandler,
         attr.`target_ci_id` AS targetCiId,
         targetci.is_virtual AS targetIsVirtual,
+        targetci.name AS targetCiName,
         attr.`is_required` AS isRequired,
         attr.`is_unique` AS isUnique,
         attr.`input_type` AS inputType,

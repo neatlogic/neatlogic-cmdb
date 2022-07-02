@@ -17,7 +17,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.RegexUtils;
-import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.module.cmdb.auth.label.CI_MODIFY;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.service.ci.CiService;
 import com.alibaba.fastjson.JSONObject;
@@ -30,7 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 @Service
-@AuthAction(action = CMDB_BASE.class)
+@AuthAction(action = CI_MODIFY.class)
 @OperationType(type = OperationTypeEnum.CREATE)
 public class SaveCiApi extends PrivateApiComponentBase {
 
@@ -57,11 +57,11 @@ public class SaveCiApi extends PrivateApiComponentBase {
     }
 
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "id，不提供代表新增模型"),
-            @Param(name = "name", type = ApiParamType.REGEX, rule = RegexUtils.ENGLISH_NUMBER_NAME, xss = true, isRequired = true, maxLength = 25, desc = "英文名称"),
+            @Param(name = "name", type = ApiParamType.REGEX, rule = RegexUtils.ENGLISH_NUMBER_NAME, xss = true, isRequired = true, maxLength = 25, desc = "唯一标识"),
             @Param(name = "label", type = ApiParamType.STRING, desc = "中文名称", xss = true, maxLength = 100,
                     isRequired = true),
             @Param(name = "description", type = ApiParamType.STRING, desc = "备注", maxLength = 500, xss = true),
-            @Param(name = "icon", type = ApiParamType.STRING, desc = "图标"),
+            @Param(name = "icon", type = ApiParamType.STRING, isRequired = true, desc = "图标"),
             @Param(name = "typeId", type = ApiParamType.LONG, desc = "类型id", isRequired = true),
             @Param(name = "parentCiId", type = ApiParamType.LONG, desc = "父配置项id"),
             @Param(name = "isAbstract", type = ApiParamType.INTEGER, defaultValue = "0", desc = "是否抽象模型"),

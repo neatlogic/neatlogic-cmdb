@@ -349,6 +349,7 @@
         <result column="description" property="description"></result>
         <result column="icon" property="icon"></result>
         <result column="typeId" property="typeId"></result>
+        <result column="typeName" property="typeName"/>
         <result column="isPrivate" property="isPrivate"></result>
         <result column="isMenu" property="isMenu"></result>
         <result column="parentCiId" property="parentCiId"></result>
@@ -373,6 +374,7 @@
                a.`description`,
                a.`icon`,
                a.`type_id`      AS typeId,
+               d.`name`         AS typeName,
                a.`is_private`   AS isPrivate,
                a.`is_menu`      AS isMenu,
                a.`parent_ci_id` AS parentCiId,
@@ -388,6 +390,7 @@
         FROM `cmdb_ci` a
                  LEFT JOIN `cmdb_ci_unique` b ON a.id = b.ci_id
                  LEFT JOIN `cmdb_ci` c ON a.`parent_ci_id` = c.id
+                 LEFT JOIN `cmdb_citype` d ON a.`type_id` = d.id
         WHERE a.id = #{value}
     </select>
 
@@ -399,6 +402,7 @@
                a.`description`,
                a.`icon`,
                a.`type_id`      AS typeId,
+               d.`name`         AS typeName,
                a.`is_private`   AS isPrivate,
                a.`is_menu`      AS isMenu,
                a.`parent_ci_id` AS parentCiId,
@@ -414,6 +418,7 @@
         FROM `cmdb_ci` a
                  LEFT JOIN `cmdb_ci_unique` b ON a.id = b.ci_id
                  LEFT JOIN `cmdb_ci` c ON a.`parent_ci_id` = c.id
+                 LEFT JOIN `cmdb_citype` d ON a.`type_id` = d.id
         WHERE a.name = #{value}
     </select>
 
@@ -425,6 +430,7 @@
                a.`description`,
                a.`icon`,
                a.`type_id`      AS typeId,
+               d.`name`         AS typeName,
                a.`is_private`   AS isPrivate,
                a.`is_menu`      AS isMenu,
                a.`parent_ci_id` AS parentCiId,
@@ -440,6 +446,7 @@
         FROM `cmdb_ci` a
                  LEFT JOIN `cmdb_ci_unique` b ON a.id = b.ci_id
                  LEFT JOIN `cmdb_ci` c ON a.`parent_ci_id` = c.id
+                 LEFT JOIN `cmdb_citype` d ON a.`type_id` = d.id
         WHERE a.label = #{value}
     </select>
 
