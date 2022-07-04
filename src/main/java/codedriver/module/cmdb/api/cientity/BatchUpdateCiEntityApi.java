@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -65,12 +65,7 @@ public class BatchUpdateCiEntityApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
-            @Param(name = "ciEntityIdList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "被修改配置项id"),
-            @Param(name = "attrEntityData", type = ApiParamType.JSONOBJECT, desc = "需要修改的属性"),
-            @Param(name = "relEntityData", type = ApiParamType.JSONOBJECT, desc = "需要修改的关系"),
-            @Param(name = "needCommit", type = ApiParamType.BOOLEAN, desc = "是否提交"),
-            @Param(name = "description", type = ApiParamType.STRING, desc = "备注")})
+    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"), @Param(name = "ciEntityIdList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "被修改配置项id"), @Param(name = "attrEntityData", type = ApiParamType.JSONOBJECT, desc = "需要修改的属性"), @Param(name = "relEntityData", type = ApiParamType.JSONOBJECT, desc = "需要修改的关系"), @Param(name = "needCommit", type = ApiParamType.BOOLEAN, desc = "是否提交"), @Param(name = "description", type = ApiParamType.STRING, desc = "备注")})
     @Description(desc = "批量修改配置项接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
@@ -88,15 +83,12 @@ public class BatchUpdateCiEntityApi extends PrivateApiComponentBase {
         }
 
         JSONObject attrObj = jsonObj.getJSONObject("attrEntityData");
-        //修正新配置项的uuid为id
         if (MapUtils.isNotEmpty(attrObj)) {
             for (String key : attrObj.keySet()) {
                 JSONObject obj = attrObj.getJSONObject(key);
                 JSONArray valueList = obj.getJSONArray("valueList");
-                //删除没用的属性
                 obj.remove("actualValueList");
                 if (CollectionUtils.isNotEmpty(valueList)) {
-                    //因为可能需要删除某些成员，所以需要倒着循环
                     for (int i = valueList.size() - 1; i >= 0; i--) {
                         if (valueList.get(i) instanceof JSONObject) {
                             JSONObject valueObj = valueList.getJSONObject(i);
