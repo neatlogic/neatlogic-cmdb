@@ -742,4 +742,14 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         }
         return plainSelect;
     }
+
+    @Override
+    public List<ResourceEntityVo> getResourceEntityList() {
+        ResourceCenterConfigVo configVo = resourceCenterConfigMapper.getResourceCenterConfig();
+        if (configVo == null) {
+            throw new ResourceCenterConfigNotFoundException();
+        }
+        ResourceEntityViewBuilder builder = new ResourceEntityViewBuilder(configVo.getConfig());
+        return builder.getResourceEntityList();
+    }
 }

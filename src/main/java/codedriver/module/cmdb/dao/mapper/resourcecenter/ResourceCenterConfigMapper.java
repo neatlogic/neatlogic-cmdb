@@ -6,7 +6,6 @@
 package codedriver.module.cmdb.dao.mapper.resourcecenter;
 
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceCenterConfigVo;
-import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 
 public interface ResourceCenterConfigMapper {
 
