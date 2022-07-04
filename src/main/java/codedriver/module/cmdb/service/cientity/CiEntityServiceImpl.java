@@ -95,6 +95,15 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
     }
 
     @Override
+    public String getCiEntityNameByCiEntityId(Long ciEntityId) {
+        CiEntityVo entity = ciEntityMapper.getCiEntityBaseInfoById(ciEntityId);
+        if (entity != null) {
+            return entity.getName();
+        }
+        return null;
+    }
+
+    @Override
     public List<CiEntityVo> getCiEntityBaseInfoByName(Long ciId, String name) {
         CiEntityVo ciEntityVo = new CiEntityVo();
         ciEntityVo.setCiId(ciId);
