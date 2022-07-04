@@ -93,6 +93,14 @@
         ORDER BY a.sort
     </select>
 
+    <select id="checkCustomViewNameIsExists" parameterType="codedriver.framework.cmdb.dto.customview.CustomViewVo"
+            resultType="int">
+        select count(1)
+        from cmdb_customview
+        where name = #{name}
+          and id != #{id}
+    </select>
+
     <select id="getCustomViewAttrByCustomViewId"
             parameterType="codedriver.framework.cmdb.dto.customview.CustomViewAttrVo" resultMap="customViewAttrMap">
         SELECT
@@ -117,6 +125,29 @@
             AND a.is_hidden = #{isHidden}
         </if>
         ORDER BY a.sort
+    </select>
+
+    <select id="getCustomViewByName" parameterType="java.lang.String" resultMap="customViewMap">
+        SELECT a.id,
+               a.name,
+               a.is_private  AS isPrivate,
+               a.is_active   AS isActive,
+               a.fcu,
+               a.fcd,
+               a.lcu,
+               a.lcd,
+               a.icon        AS icon,
+               a.description AS description,
+               a.config      AS configStr,
+               b.auth_type   AS authType,
+               b.auth_uuid   AS authUuid,
+               d.id          AS tagId,
+               d.name        AS tagName
+        FROM cmdb_customview a
+                 LEFT JOIN cmdb_customview_auth b ON a.id = b.customview_id
+                 LEFT JOIN cmdb_customview_tag c ON a.id = c.customview_id
+                 LEFT JOIN cmdb_tag d ON c.tag_id = d.id
+        WHERE a.name = #{value}
     </select>
 
     <select id="getCustomViewById" parameterType="java.lang.Long" resultMap="customViewMap">

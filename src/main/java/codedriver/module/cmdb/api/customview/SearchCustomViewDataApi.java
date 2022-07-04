@@ -8,8 +8,11 @@ package codedriver.module.cmdb.api.customview;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.customview.CustomViewAttrVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewConditionVo;
+import codedriver.framework.cmdb.dto.customview.CustomViewVo;
 import codedriver.framework.cmdb.enums.customview.SearchMode;
+import codedriver.framework.cmdb.exception.customview.CustomViewNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -49,7 +52,8 @@ public class SearchCustomViewDataApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "视图id", isRequired = true),
+    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "视图id"),
+            @Param(name = "name", type = ApiParamType.STRING, desc = "视图名称"),
             @Param(name = "searchMode", type = ApiParamType.ENUM, rule = "normal,group", isRequired = true, desc = "搜索模式：normal或group"),
             @Param(name = "groupBy", type = ApiParamType.STRING, desc = "分组属性的uuid"),
             @Param(name = "attrFilterList", type = ApiParamType.JSONARRAY, desc = "属性过滤条件"),
@@ -64,12 +68,29 @@ public class SearchCustomViewDataApi extends PrivateApiComponentBase {
     @Description(desc = "查询自定义视图数据接口")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
+        Long id = paramObj.getLong("id");
+        String name = paramObj.getString("name");
+        if (id == null && StringUtils.isBlank(name)) {
+            throw new ParamNotExistsException("id", "name");
+        }
         String mode = paramObj.getString("mode");
         if (StringUtils.isBlank(mode)) {
             mode = "page";
         }
         CustomViewConditionVo customViewConditionVo = JSONObject.toJavaObject(paramObj, CustomViewConditionVo.class);
-        customViewConditionVo.setCustomViewId(paramObj.getLong("id"));
+        CustomViewVo customViewVo = null;
+        if (id != null) {
+            customViewVo = customViewMapper.getCustomViewById(id);
+            if (customViewVo == null) {
+                throw new CustomViewNotFoundException(id);
+            }
+        } else if (StringUtils.isNotBlank(name)) {
+            customViewVo = customViewMapper.getCustomViewByName(name);
+            if (customViewVo == null) {
+                throw new CustomViewNotFoundException(name);
+            }
+        }
+        customViewConditionVo.setCustomViewId(customViewVo.getId());
         JSONObject returnObj = new JSONObject();
         if (customViewConditionVo.getSearchMode().equals(SearchMode.NORMAL.getValue())) {
             returnObj.put("dataList", customViewDataService.searchCustomViewData(customViewConditionVo));

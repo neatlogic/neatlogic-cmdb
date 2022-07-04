@@ -17,6 +17,8 @@ public interface CustomViewMapper {
 
     CustomViewVo getCustomViewById(Long customViewId);
 
+    CustomViewVo getCustomViewByName(String customViewName);
+
     List<CustomViewVo> searchCustomView(CustomViewVo customViewVo);
 
     List<CustomViewCiVo> getCustomViewCiByCustomViewId(Long customViewId);
@@ -26,6 +28,8 @@ public interface CustomViewMapper {
     List<CustomViewConstAttrVo> getCustomViewConstAttrByCustomViewId(CustomViewConstAttrVo customViewConstAttrVo);
 
     List<CustomViewLinkVo> getCustomViewLinkByCustomViewId(Long customViewId);
+
+    int checkCustomViewNameIsExists(CustomViewVo customViewVo);
 
     int searchCustomViewCount(CustomViewVo customViewVo);
 

@@ -12,6 +12,7 @@ import codedriver.framework.cmdb.dto.customview.*;
 import codedriver.framework.cmdb.enums.customview.RelType;
 import codedriver.framework.cmdb.exception.customview.CustomViewCiNotFoundException;
 import codedriver.framework.cmdb.exception.customview.CustomViewEmptyException;
+import codedriver.framework.cmdb.exception.customview.CustomViewNameIsExistsException;
 import codedriver.framework.cmdb.exception.customview.CustomViewPrivilegeException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
@@ -19,6 +20,7 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.auth.label.CUSTOMVIEW_MODIFY;
+import codedriver.module.cmdb.dao.mapper.customview.CustomViewMapper;
 import codedriver.module.cmdb.service.customview.CustomViewService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -27,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,6 +41,8 @@ import java.util.Map;
 @Transactional
 public class SaveCustomViewApi extends PrivateApiComponentBase {
 
+    @Resource
+    private CustomViewMapper customViewMapper;
     @Autowired
     private CustomViewService customViewService;
 
@@ -87,6 +92,9 @@ public class SaveCustomViewApi extends PrivateApiComponentBase {
         }
         JSONObject config = jsonObj.getJSONObject("config");
         CustomViewVo customViewVo = JSONObject.toJavaObject(jsonObj, CustomViewVo.class);
+        if (customViewMapper.checkCustomViewNameIsExists(customViewVo) > 0) {
+            throw new CustomViewNameIsExistsException(customViewVo.getName());
+        }
         if (isPrivate == 1) {
             //私有视图默认都是激活
             customViewVo.setIsActive(1);
