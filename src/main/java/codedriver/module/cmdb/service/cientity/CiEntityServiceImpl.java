@@ -29,7 +29,6 @@ import codedriver.framework.cmdb.exception.transaction.TransactionStatusIrregula
 import codedriver.framework.cmdb.utils.RelUtil;
 import codedriver.framework.cmdb.validator.core.IValidator;
 import codedriver.framework.cmdb.validator.core.ValidatorFactory;
-import codedriver.framework.common.util.TransactionDebugUtils;
 import codedriver.framework.exception.core.ApiRuntimeException;
 import codedriver.framework.fulltextindex.core.FullTextIndexHandlerFactory;
 import codedriver.framework.fulltextindex.core.IFullTextIndexHandler;
@@ -1819,8 +1818,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         rebuildRelEntityList.add(new RelEntityVo(relEntityTransactionVo));
                         //删除级联关系
                         RelativeRelManager.delete(relEntityVo);
-                    } else if (relEntityTransactionVo.getAction().equals(RelActionType.INSERT.getValue()) ||
-                            relEntityTransactionVo.getAction().equals(RelActionType.REPLACE.getValue())) {
+                    } else if (relEntityTransactionVo.getAction().equals(RelActionType.INSERT.getValue()) || relEntityTransactionVo.getAction().equals(RelActionType.REPLACE.getValue())) {
                         RelEntityVo newRelEntityVo = new RelEntityVo(relEntityTransactionVo);
                         if (relEntityMapper.checkRelEntityIsExists(newRelEntityVo) == 0) {
                             relEntityMapper.insertRelEntity(newRelEntityVo);
@@ -1905,7 +1903,6 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
     @Override
     public void rebuildRelEntityIndex(RelDirectionType direction, Long relId, Long ciEntityId) {
         List<RelEntityVo> relEntityList;
-        TransactionDebugUtils.printTransactionInfo("REL");
         if (direction == RelDirectionType.FROM) {
             relEntityMapper.clearRelEntityFromIndex(relId, ciEntityId);
             relEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(ciEntityId, relId, Math.max(CiEntityVo.MAX_RELENTITY_COUNT + 1, 50));
