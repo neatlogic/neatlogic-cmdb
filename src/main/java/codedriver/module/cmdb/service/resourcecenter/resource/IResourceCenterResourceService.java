@@ -9,8 +9,8 @@ import codedriver.framework.cmdb.crossover.IResourceCenterResourceCrossoverServi
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
+import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceInfo;
-import codedriver.framework.cmdb.utils.ResourceSearchGenerateSqlUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
@@ -83,4 +83,10 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
      * @return
      */
     String getResourceListByIdListSql(List<ResourceInfo> theadList, List<Long> idList, List<ResourceInfo> unavailableResourceInfoList, String mainResourceId);
+
+    /**
+     * 获取数据初始化配置信息中的视图列表信息
+     * @return
+     */
+    List<ResourceEntityVo> getResourceEntityList();
 }

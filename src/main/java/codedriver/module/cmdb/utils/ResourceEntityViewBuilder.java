@@ -47,14 +47,10 @@ public class ResourceEntityViewBuilder {
 
     private final static List<String> defaultAttrList = Arrays.asList("_id", "_uuid", "_name", "_fcu", "_fcd", "_lcu", "_lcd", "_inspectStatus", "_inspectTime", "_monitorStatus", "_monitorTime", "_typeId", "_typeName", "_typeLabel");
 
-    private List<ResourceEntityVo> resourceEntityList;
+    private final List<ResourceEntityVo> resourceEntityList = new ArrayList<>();
 
     public List<ResourceEntityVo> getResourceEntityList() {
         return resourceEntityList;
-    }
-
-    public void setResourceEntityList(List<ResourceEntityVo> resourceEntityList) {
-        this.resourceEntityList = resourceEntityList;
     }
 
     private final Map<String, CiVo> ciMap = new HashMap<>();
@@ -99,13 +95,15 @@ public class ResourceEntityViewBuilder {
     public ResourceEntityViewBuilder(String xml) {
         try {
             Map<String, List<Element>> elementMap = new HashMap<>();
-            resourceEntityList = ResourceEntityFactory.getResourceEntityList();
+            List<ResourceEntityVo> resourceEntityVoList = ResourceEntityFactory.getResourceEntityList();
 //            List<ResourceEntityVo> oldResourceEntityList = resourceEntityMapper.getAllResourceEntity();
 //            oldResourceEntityList.removeAll(resourceEntityList);
-            if (CollectionUtils.isNotEmpty(resourceEntityList)) {
+            if (CollectionUtils.isNotEmpty(resourceEntityVoList)) {
                 Document document = DocumentHelper.parseText(xml);
                 Element root = document.getRootElement();
-                for (ResourceEntityVo resourceEntityVo : resourceEntityList) {
+                for (ResourceEntityVo resourceEntity : resourceEntityVoList) {
+                    ResourceEntityVo resourceEntityVo = createResourceEntityVo(resourceEntity);
+                    this.resourceEntityList.add(resourceEntityVo);
                     try {
                         Optional<Element> resourceOp = root.elements("resource").stream().filter(e -> e.attributeValue("id").equalsIgnoreCase(resourceEntityVo.getName())).findFirst();
                         if (resourceOp.isPresent()) {
@@ -283,6 +281,20 @@ public class ResourceEntityViewBuilder {
         }
     }
 
+    private ResourceEntityVo createResourceEntityVo(ResourceEntityVo resourceEntityVo) {
+        ResourceEntityVo resourceEntity = new ResourceEntityVo();
+        resourceEntity.setName(resourceEntityVo.getName());
+        resourceEntity.setLabel(resourceEntityVo.getLabel());
+        Set<ResourceEntityAttrVo> attrList = resourceEntityVo.getAttrList();
+        if (CollectionUtils.isNotEmpty(attrList)) {
+            for (ResourceEntityAttrVo resourceEntityAttrVo : attrList) {
+                ResourceEntityAttrVo attrVo = new ResourceEntityAttrVo();
+                attrVo.setField(resourceEntityAttrVo.getField());
+                resourceEntity.addAttr(attrVo);
+            }
+        }
+        return resourceEntity;
+    }
     /**
      * 检查模型中是否存在对应属性
      * @param ciVo
