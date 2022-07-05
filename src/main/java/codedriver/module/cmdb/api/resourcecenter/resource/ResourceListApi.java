@@ -130,10 +130,10 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
         ResourceSearchGenerateSqlUtil resourceSearchGenerateSqlUtil = new ResourceSearchGenerateSqlUtil(resourceEntityList);
 
         List<ResourceInfo> unavailableResourceInfoList = new ArrayList<>();
-        PlainSelect filterPlainSelect = getPlainSelectBySearchCondition(searchVo, resourceSearchGenerateSqlUtil, unavailableResourceInfoList);
-        if (filterPlainSelect == null) {
-            return TableResultUtil.getResult(resourceVoList, searchVo);
-        }
+//        PlainSelect filterPlainSelect = getPlainSelectBySearchCondition(searchVo, resourceSearchGenerateSqlUtil, unavailableResourceInfoList);
+//        if (filterPlainSelect == null) {
+//            return TableResultUtil.getResult(resourceVoList, searchVo);
+//        }
         String sql = resourceCenterResourceService.getResourceCountSql(searchVo, "resource_ipobject");
         int rowNum = resourceCenterMapper.getResourceCount(sql);
         if (rowNum > 0) {
