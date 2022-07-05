@@ -121,6 +121,36 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
     }
 
     @Override
+    public Map<Long, List<AccountVo>> getResourceAccountByResourceIdList(List<Long> idList) {
+        Map<Long, List<AccountVo>> resourceAccountVoMap = new HashMap<>();
+        List<ResourceAccountVo> resourceAccountVoList = resourceCenterMapper.getResourceAccountListByResourceIdList(idList);
+        if (CollectionUtils.isNotEmpty(resourceAccountVoList)) {
+            Set<Long> accountIdSet = resourceAccountVoList.stream().map(ResourceAccountVo::getAccountId).collect(Collectors.toSet());
+            List<AccountVo> accountList = resourceCenterMapper.getAccountListByIdList(new ArrayList<>(accountIdSet));
+            Map<Long, AccountVo> accountMap = accountList.stream().collect(Collectors.toMap(AccountVo::getId, e -> e));
+            for (ResourceAccountVo resourceAccountVo : resourceAccountVoList) {
+                resourceAccountVoMap.computeIfAbsent(resourceAccountVo.getResourceId(), k -> new ArrayList<>()).add(accountMap.get(resourceAccountVo.getAccountId()));
+            }
+        }
+        return resourceAccountVoMap;
+    }
+
+    @Override
+    public Map<Long, List<TagVo>> getResourceTagByResourceIdList(List<Long> idList) {
+        Map<Long, List<TagVo>> resourceTagVoMap = new HashMap<>();
+        List<ResourceTagVo> resourceTagVoList = resourceCenterMapper.getResourceTagListByResourceIdList(idList);
+        if (CollectionUtils.isNotEmpty(resourceTagVoList)) {
+            Set<Long> tagIdSet = resourceTagVoList.stream().map(ResourceTagVo::getTagId).collect(Collectors.toSet());
+            List<TagVo> tagList = resourceCenterMapper.getTagListByIdList(new ArrayList<>(tagIdSet));
+            Map<Long, TagVo> tagMap = tagList.stream().collect(Collectors.toMap(TagVo::getId, e -> e));
+            for (ResourceTagVo resourceTagVo : resourceTagVoList) {
+                resourceTagVoMap.computeIfAbsent(resourceTagVo.getResourceId(), k -> new ArrayList<>()).add(tagMap.get(resourceTagVo.getTagId()));
+            }
+        }
+        return resourceTagVoMap;
+    }
+
+    @Override
     public void addResourceAccount(List<Long> idList, List<ResourceVo> resourceVoList) {
         Map<Long, List<AccountVo>> resourceAccountVoMap = new HashMap<>();
         List<ResourceAccountVo> resourceAccountVoList = resourceCenterMapper.getResourceAccountListByResourceIdList(idList);

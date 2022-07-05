@@ -7,14 +7,17 @@ package codedriver.module.cmdb.service.resourcecenter.resource;
 
 import codedriver.framework.cmdb.crossover.IResourceCenterResourceCrossoverService;
 import codedriver.framework.cmdb.dto.ci.CiVo;
+import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceInfo;
+import codedriver.framework.cmdb.dto.tag.TagVo;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -24,6 +27,20 @@ import java.util.List;
 public interface IResourceCenterResourceService extends IResourceCenterResourceCrossoverService {
 
     ResourceSearchVo assembleResourceSearchVo(JSONObject jsonObj);
+
+    /**
+     * 获取资产的账号信息
+     *
+     * @param idList
+     */
+    Map<Long, List<AccountVo>> getResourceAccountByResourceIdList(List<Long> idList);
+
+    /**
+     * 获取资产的标签信息
+     *
+     * @param idList
+     */
+    Map<Long, List<TagVo>> getResourceTagByResourceIdList(List<Long> idList);
 
     /**
      * 补充资产的账号信息
