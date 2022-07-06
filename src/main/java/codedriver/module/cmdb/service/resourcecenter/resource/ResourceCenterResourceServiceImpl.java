@@ -121,6 +121,21 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
     }
 
     @Override
+    public List<Long> getDownwardCiIdListByCiIdList(List<Long> idList) {
+        Set<Long> ciIdSet = new HashSet<>();
+        for (Long ciId : idList) {
+            CiVo ciVo = ciMapper.getCiById(ciId);
+            if (ciVo == null) {
+                throw new CiNotFoundException(ciId);
+            }
+            List<CiVo> ciList = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
+            List<Long> ciIdList = ciList.stream().map(CiVo::getId).collect(Collectors.toList());
+            ciIdSet.addAll(ciIdList);
+        }
+        return new ArrayList<>(ciIdSet);
+    }
+
+    @Override
     public Map<Long, List<AccountVo>> getResourceAccountByResourceIdList(List<Long> idList) {
         Map<Long, List<AccountVo>> resourceAccountVoMap = new HashMap<>();
         List<ResourceAccountVo> resourceAccountVoList = resourceCenterMapper.getResourceAccountListByResourceIdList(idList);
