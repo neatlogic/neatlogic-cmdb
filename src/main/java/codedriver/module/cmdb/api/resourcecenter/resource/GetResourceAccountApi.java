@@ -18,7 +18,7 @@ import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
-import codedriver.framework.restful.core.publicapi.PublicApiComponentBase;
+import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -28,7 +28,7 @@ import javax.annotation.Resource;
 import java.util.List;
 
 @Service
-public class ResourceAccountGetPublicApi extends PublicApiComponentBase {
+public class GetResourceAccountApi extends PrivateApiComponentBase {
     @Resource
     ResourceCenterMapper resourceCenterMapper;
 
