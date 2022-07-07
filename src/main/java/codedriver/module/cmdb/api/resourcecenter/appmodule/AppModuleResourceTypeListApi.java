@@ -113,10 +113,10 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
                 Set<Long> resourceTypeIdSet = resourceCenterMapper.getIpObjectResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
                 resourceTypeIdList.addAll(resourceTypeIdSet);
                 Set<CiVo> returnCiVoSet = new HashSet<>();
-                if (CollectionUtils.isNotEmpty(resourceTypeIdSet)) {
-                    resourceTypeIdSet = resourceCenterMapper.getOsResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
-                    resourceTypeIdList.addAll(resourceTypeIdSet);
-                }
+//                if (CollectionUtils.isNotEmpty(resourceTypeIdSet)) {
+//                    resourceTypeIdSet = resourceCenterMapper.getOsResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
+//                    resourceTypeIdList.addAll(resourceTypeIdSet);
+//                }
 
                 //循环resourceTypeIdList，将其父级模型的name存在于resourceTypeNameList中的 模型 返回给前端
                 if (CollectionUtils.isNotEmpty(resourceTypeIdList)) {

@@ -256,14 +256,14 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         } else {
             Set<Long> resourceTypeIdSet = resourceCenterMapper.getIpObjectResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
             resourceTypeIdList.addAll(resourceTypeIdSet);
-            if (CollectionUtils.isNotEmpty(resourceTypeIdSet)) {
-                resourceTypeIdSet = resourceCenterMapper.getOsResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
-                resourceTypeIdList.addAll(resourceTypeIdSet);
-//                if (CollectionUtils.isNotEmpty(resourceTypeIdSet)) {
-//                    resourceTypeIdSet = resourceCenterMapper.getNetWorkDeviceResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
-//                    resourceTypeIdList.addAll(resourceTypeIdSet);
-//                }
-            }
+//            if (CollectionUtils.isNotEmpty(resourceTypeIdSet)) {
+//                resourceTypeIdSet = resourceCenterMapper.getOsResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
+//                resourceTypeIdList.addAll(resourceTypeIdSet);
+////                if (CollectionUtils.isNotEmpty(resourceTypeIdSet)) {
+////                    resourceTypeIdSet = resourceCenterMapper.getNetWorkDeviceResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
+////                    resourceTypeIdList.addAll(resourceTypeIdSet);
+////                }
+//            }
         }
 
         if (CollectionUtils.isNotEmpty(resourceTypeIdList)) {
@@ -307,6 +307,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                     theadList.add(new ResourceInfo("resource_softwareservice", "port"));
                     //3.名称
                     theadList.add(new ResourceInfo("resource_ipobject", "name"));
+                    theadList.add(new ResourceInfo("resource_ipobject", "type_id"));
                     //4.监控状态
                     theadList.add(new ResourceInfo("resource_ipobject", "monitor_status"));
                     theadList.add(new ResourceInfo("resource_ipobject", "monitor_time"));
@@ -319,6 +320,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                     theadList.add(new ResourceInfo("resource_ipobject", "maintenance_window"));
                     //16.描述
                     theadList.add(new ResourceInfo("resource_ipobject", "description"));
+                    //9.数据中心
+                    theadList.add(new ResourceInfo("resource_ipobject_datacenter", "datacenter_id"));
+                    theadList.add(new ResourceInfo("resource_ipobject_datacenter", "datacenter_name"));
                     //9.所属部门
                     theadList.add(new ResourceInfo("resource_ipobject_bg", "bg_id"));
                     theadList.add(new ResourceInfo("resource_ipobject_bg", "bg_name"));
@@ -342,17 +346,18 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             }
             return new ArrayList<>();
         });
-        searchMap.put("OS", (searchVo) -> {
-            int rowNum = resourceCenterMapper.getOsResourceCountByAppModuleIdAndEnvIdAndTypeId(searchVo);
-            if (rowNum > 0) {
-                searchVo.setRowNum(rowNum);
-                List<Long> idList = resourceCenterMapper.getOsResourceIdListByAppModuleIdAndEnvIdAndTypeId(searchVo);
-                if (CollectionUtils.isNotEmpty(idList)) {
-                    return resourceCenterMapper.getOsResourceListByIdList(idList, TenantContext.get().getDataDbName());
-                }
-            }
-            return new ArrayList<>();
-        });
+        //2022-07-06 产品经理决定不用显示系统模型下的数据
+//        searchMap.put("OS", (searchVo) -> {
+//            int rowNum = resourceCenterMapper.getOsResourceCountByAppModuleIdAndEnvIdAndTypeId(searchVo);
+//            if (rowNum > 0) {
+//                searchVo.setRowNum(rowNum);
+//                List<Long> idList = resourceCenterMapper.getOsResourceIdListByAppModuleIdAndEnvIdAndTypeId(searchVo);
+//                if (CollectionUtils.isNotEmpty(idList)) {
+//                    return resourceCenterMapper.getOsResourceListByIdList(idList, TenantContext.get().getDataDbName());
+//                }
+//            }
+//            return new ArrayList<>();
+//        });
 
 //        searchMap.put("StorageDevice", (searchVo) -> {
 //            int rowNum = resourceCenterMapper.getStorageResourceCount(searchVo);
@@ -384,7 +389,65 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 searchVo.setRowNum(rowNum);
                 List<Long> idList = resourceCenterMapper.getIpObjectResourceIdListByAppModuleIdAndTypeIdAndEnvIdAndTypeId(searchVo);
                 if (CollectionUtils.isNotEmpty(idList)) {
-                    return resourceCenterMapper.getAppInstanceResourceListByIdList(idList, TenantContext.get().getDataDbName());
+                    List<ResourceInfo> unavailableResourceInfoList = new ArrayList<>();
+                    List<ResourceInfo> theadList = new ArrayList<>();
+                    theadList.add(new ResourceInfo("resource_appinstance", "id"));
+                    //1.IP地址:端口
+                    theadList.add(new ResourceInfo("resource_appinstance", "ip"));
+                    theadList.add(new ResourceInfo("resource_softwareservice", "port"));
+                    //3.名称
+                    theadList.add(new ResourceInfo("resource_appinstance", "name"));
+                    theadList.add(new ResourceInfo("resource_ipobject", "type_id"));
+                    //4.监控状态
+                    theadList.add(new ResourceInfo("resource_appinstance", "monitor_status"));
+                    theadList.add(new ResourceInfo("resource_appinstance", "monitor_time"));
+                    //5.巡检状态
+                    theadList.add(new ResourceInfo("resource_appinstance", "inspect_status"));
+                    theadList.add(new ResourceInfo("resource_appinstance", "inspect_time"));
+                    //12.网络区域
+                    theadList.add(new ResourceInfo("resource_appinstance", "network_area"));
+                    //14.维护窗口
+                    theadList.add(new ResourceInfo("resource_appinstance", "maintenance_window"));
+                    //16.描述
+                    theadList.add(new ResourceInfo("resource_appinstance", "description"));
+                    //9.数据中心
+                    theadList.add(new ResourceInfo("resource_ipobject_datacenter", "datacenter_id"));
+                    theadList.add(new ResourceInfo("resource_ipobject_datacenter", "datacenter_name"));
+                    //9.所属部门
+                    theadList.add(new ResourceInfo("resource_ipobject_bg", "bg_id"));
+                    theadList.add(new ResourceInfo("resource_ipobject_bg", "bg_name"));
+                    //10.所有者
+                    theadList.add(new ResourceInfo("resource_ipobject_owner", "user_id"));
+                    theadList.add(new ResourceInfo("resource_ipobject_owner", "user_uuid"));
+                    theadList.add(new ResourceInfo("resource_ipobject_owner", "user_name"));
+                    //11.资产状态
+                    theadList.add(new ResourceInfo("resource_ipobject_state", "state_id"));
+                    theadList.add(new ResourceInfo("resource_ipobject_state", "state_name"));
+                    theadList.add(new ResourceInfo("resource_ipobject_state", "state_label"));
+                    //环境状态
+                    theadList.add(new ResourceInfo("resource_softwareservice_env", "env_id"));
+                    theadList.add(new ResourceInfo("resource_softwareservice_env", "env_name"));
+                    //所在集群
+                    theadList.add(new ResourceInfo("resource_appinstance_appinstancecluster", "cluster_id"));
+                    theadList.add(new ResourceInfo("resource_appinstance_appinstancecluster", "cluster_type_id"));
+                    theadList.add(new ResourceInfo("resource_appinstance_appinstancecluster", "cluster_name"));
+                    String sql = getResourceListByIdListSql(theadList, idList, unavailableResourceInfoList, "resource_appinstance");
+                    if (StringUtils.isBlank(sql)) {
+                        return new ArrayList<>();
+                    }
+//                    System.out.println("APPIns:" + sql + ";");
+                    List<ResourceVo> resourceList = resourceCenterMapper.getResourceListByIdList(sql);
+//                    List<ResourceVo> resourceList2 = resourceCenterMapper.getAppInstanceResourceListByIdList(idList, TenantContext.get().getDataDbName());
+//                    for (int i = 0; i < idList.size(); i++) {
+//                        String resourceVoString = JSONObject.toJSONString(resourceList.get(i));
+//                        String resourceVo2String = JSONObject.toJSONString(resourceList2.get(i));
+//                        if (!Objects.equals(resourceVoString, resourceVo2String)) {
+//                            System.out.println("resourceVoString=" + resourceVoString);
+//                            System.out.println("resourceVo2String=" + resourceVo2String);
+//                        }
+//                    }
+                    return resourceList;
+//                    return resourceCenterMapper.getAppInstanceResourceListByIdList(idList, TenantContext.get().getDataDbName());
                 }
             }
             return new ArrayList<>();
@@ -408,7 +471,65 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 searchVo.setRowNum(rowNum);
                 List<Long> idList = resourceCenterMapper.getIpObjectResourceIdListByAppModuleIdAndTypeIdAndEnvIdAndTypeId(searchVo);
                 if (CollectionUtils.isNotEmpty(idList)) {
-                    return resourceCenterMapper.getDbInstanceResourceListByIdList(idList, TenantContext.get().getDataDbName());
+                    List<ResourceInfo> unavailableResourceInfoList = new ArrayList<>();
+                    List<ResourceInfo> theadList = new ArrayList<>();
+                    theadList.add(new ResourceInfo("resource_dbinstance", "id"));
+                    //1.IP地址:端口
+                    theadList.add(new ResourceInfo("resource_dbinstance", "ip"));
+                    theadList.add(new ResourceInfo("resource_softwareservice", "port"));
+                    //3.名称
+                    theadList.add(new ResourceInfo("resource_dbinstance", "name"));
+                    theadList.add(new ResourceInfo("resource_ipobject", "type_id"));
+                    //4.监控状态
+                    theadList.add(new ResourceInfo("resource_dbinstance", "monitor_status"));
+                    theadList.add(new ResourceInfo("resource_dbinstance", "monitor_time"));
+                    //5.巡检状态
+                    theadList.add(new ResourceInfo("resource_dbinstance", "inspect_status"));
+                    theadList.add(new ResourceInfo("resource_dbinstance", "inspect_time"));
+                    //12.网络区域
+                    theadList.add(new ResourceInfo("resource_dbinstance", "network_area"));
+                    //14.维护窗口
+                    theadList.add(new ResourceInfo("resource_dbinstance", "maintenance_window"));
+                    //16.描述
+                    theadList.add(new ResourceInfo("resource_dbinstance", "description"));
+                    //9.数据中心
+                    theadList.add(new ResourceInfo("resource_ipobject_datacenter", "datacenter_id"));
+                    theadList.add(new ResourceInfo("resource_ipobject_datacenter", "datacenter_name"));
+                    //9.所属部门
+                    theadList.add(new ResourceInfo("resource_ipobject_bg", "bg_id"));
+                    theadList.add(new ResourceInfo("resource_ipobject_bg", "bg_name"));
+                    //10.所有者
+                    theadList.add(new ResourceInfo("resource_ipobject_owner", "user_id"));
+                    theadList.add(new ResourceInfo("resource_ipobject_owner", "user_uuid"));
+                    theadList.add(new ResourceInfo("resource_ipobject_owner", "user_name"));
+                    //11.资产状态
+                    theadList.add(new ResourceInfo("resource_ipobject_state", "state_id"));
+                    theadList.add(new ResourceInfo("resource_ipobject_state", "state_name"));
+                    theadList.add(new ResourceInfo("resource_ipobject_state", "state_label"));
+                    //环境状态
+                    theadList.add(new ResourceInfo("resource_softwareservice_env", "env_id"));
+                    theadList.add(new ResourceInfo("resource_softwareservice_env", "env_name"));
+                    //所在集群
+                    theadList.add(new ResourceInfo("resource_dbinstance_dbcluster", "cluster_id"));
+                    theadList.add(new ResourceInfo("resource_dbinstance_dbcluster", "cluster_type_id"));
+                    theadList.add(new ResourceInfo("resource_dbinstance_dbcluster", "cluster_name"));
+                    String sql = getResourceListByIdListSql(theadList, idList, unavailableResourceInfoList, "resource_dbinstance");
+                    if (StringUtils.isBlank(sql)) {
+                        return new ArrayList<>();
+                    }
+//                    System.out.println("DBIns:" + sql + ";");
+                    List<ResourceVo> resourceList = resourceCenterMapper.getResourceListByIdList(sql);
+//                    List<ResourceVo> resourceList2 = resourceCenterMapper.getDbInstanceResourceListByIdList(idList, TenantContext.get().getDataDbName());
+//                    for (int i = 0; i < idList.size(); i++) {
+//                        String resourceVoString = JSONObject.toJSONString(resourceList.get(i));
+//                        String resourceVo2String = JSONObject.toJSONString(resourceList2.get(i));
+//                        if (!Objects.equals(resourceVoString, resourceVo2String)) {
+//                            System.out.println("resourceVoString=" + resourceVoString);
+//                            System.out.println("resourceVo2String=" + resourceVo2String);
+//                        }
+//                    }
+                    return resourceList;
+//                    return resourceCenterMapper.getDbInstanceResourceListByIdList(idList, TenantContext.get().getDataDbName());
                 }
             }
             return new ArrayList<>();
