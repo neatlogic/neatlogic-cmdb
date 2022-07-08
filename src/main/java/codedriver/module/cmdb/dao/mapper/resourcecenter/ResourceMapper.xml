@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceMapper">
+
+    <resultMap id="resourceCenterMap" type="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="abbr_name" property="abbrName"/>
+        <result column="type_id" property="typeId"/>
+        <result column="type_name" property="typeName"/>
+        <result column="type_label" property="typeLabel"/>
+        <result column="inspect_status" property="inspectStatus"/>
+        <result column="inspect_time" property="inspectTime"/>
+        <result column="monitor_status" property="monitorStatus"/>
+        <result column="monitor_time" property="monitorTime"/>
+        <result column="maintenance_window" property="maintenanceWindow"/>
+        <result column="description" property="description"/>
+        <result column="fcu" property="fcu"/>
+        <result column="fcd" property="fcd"/>
+        <result column="lcu" property="lcu"/>
+        <result column="lcd" property="lcd"/>
+        <result column="network_area" property="networkArea"/>
+        <result column="port" property="port"/>
+        <result column="ip" property="ip"/>
+        <result column="state_id" property="stateId"/>
+        <result column="state_name" property="stateName"/>
+        <result column="state_label" property="stateLabel"/>
+        <result column="datacenter_id" property="dataCenterId"/>
+        <result column="datacenter_name" property="dataCenterName"/>
+        <result column="env_id" property="envId"/>
+        <result column="env_name" property="envName"/>
+        <result column="app_module_id" property="appModuleId"/>
+        <result column="app_module_name" property="appModuleName"/>
+        <result column="app_module_abbr_name" property="appModuleAbbrName"/>
+        <result column="app_system_id" property="appSystemId"/>
+        <result column="app_system_name" property="appSystemName"/>
+        <result column="app_system_abbr_name" property="appSystemAbbrName"/>
+        <result column="cluster_id" property="clusterId"/>
+        <result column="cluster_name" property="clusterName"/>
+        <result column="cluster_type_id" property="clusterTypeId"/>
+        <collection property="bgList" ofType="codedriver.framework.cmdb.dto.resourcecenter.BgVo">
+            <id column="bg_id" property="bgId"/>
+            <result column="bg_name" property="bgName"/>
+        </collection>
+        <collection property="ownerList" ofType="codedriver.framework.cmdb.dto.resourcecenter.OwnerVo">
+            <id column="user_id" property="userId"/>
+            <result column="user_uuid" property="uuid"/>
+            <result column="user_name" property="userName"/>
+        </collection>
+        <collection property="allIp" ofType="codedriver.framework.cmdb.dto.resourcecenter.IpVo">
+            <id column="allip_id" property="id"/>
+            <result column="allip_ip" property="ip"/>
+            <result column="allip_label" property="label"/>
+        </collection>
+    </resultMap>
+
+    <select id="getResourceCount" parameterType="java.lang.String" resultType="int">
+        ${sql}
+    </select>
+
+    <select id="getResourceIdList" parameterType="java.lang.String" resultType="java.lang.Long">
+        ${sql}
+    </select>
+
+    <select id="getResourceId" parameterType="java.lang.String" resultType="java.lang.Long">
+        ${sql}
+    </select>
+
+    <select id="getResourceListByIdList" parameterType="java.lang.String" resultMap="resourceCenterMap">
+        ${sql}
+    </select>
+
+</mapper>

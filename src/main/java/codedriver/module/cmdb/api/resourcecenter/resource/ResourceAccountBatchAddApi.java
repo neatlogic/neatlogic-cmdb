@@ -25,6 +25,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.RESOURCECENTER_MODIFY;
 import codedriver.module.cmdb.service.resourcecenter.account.ResourceCenterAccountService;
 import codedriver.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
+import codedriver.module.cmdb.service.resourcecenter.resource.ResourceCenterCommonGenerateSqlService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -50,6 +51,8 @@ public class ResourceAccountBatchAddApi extends PrivateApiComponentBase {
     private ResourceCenterMapper resourceCenterMapper;
     @Resource
     private IResourceCenterResourceService resourceCenterResourceService;
+    @Resource
+    private ResourceCenterCommonGenerateSqlService resourceCenterCommonGenerateSqlService;
     @Resource
     private ResourceCenterAccountService resourceCenterAccountService;
 
@@ -96,9 +99,9 @@ public class ResourceAccountBatchAddApi extends PrivateApiComponentBase {
         theadList.add(new ResourceInfo("resource_ipobject", "id"));
         theadList.add(new ResourceInfo("resource_ipobject", "name"));
         theadList.add(new ResourceInfo("resource_ipobject", "ip"));
-        String sql = resourceCenterResourceService.getResourceListByIdListSql(theadList, resourceIdList, unavailableResourceInfoList, "resource_ipobject");
+        String sql = resourceCenterCommonGenerateSqlService.getResourceListByIdListSql(theadList, resourceIdList, unavailableResourceInfoList, "resource_ipobject");
         if (StringUtils.isNotBlank(sql)) {
-            resourceVoList = resourceCenterMapper.getResourceListByIdList(sql);
+            resourceVoList = resourceCenterCommonGenerateSqlService.getResourceList(sql);
         }
 //        List<ResourceVo> resourceVoList = resourceCenterMapper.getResourceListByIdList(resourceIdList, schemaName);
         for (ResourceVo resourceVo : resourceVoList) {

@@ -55,7 +55,6 @@ public class CreateResourceViewStartupHandler extends StartupBase {
      */
     @Override
     public void executeForCurrentTenant() {
-        List<ICustomView> custonViewList = ResourceCustomViewFactory.getCustomViewList();
         List<ResourceEntityVo> resourceEntityList = ResourceEntityFactory.getResourceEntityList();
         if (CollectionUtils.isNotEmpty(resourceEntityList)) {
             List<ResourceEntityVo> newResourceEntityList = new ArrayList<>();
@@ -108,20 +107,21 @@ public class CreateResourceViewStartupHandler extends StartupBase {
             }
         }
         // 创建自定义视图
-        for (ICustomView custonView : custonViewList) {
-            String selectBody = custonView.getSelectBody();
-            if (StringUtils.isNotBlank(selectBody)) {
-                try {
-                    String sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + "." + custonView.getName() + " AS " + selectBody;
-                    if (logger.isDebugEnabled()) {
-                        logger.debug(sql);
-                    }
-                    schemaMapper.insertView(sql);
-                } catch (Exception ex) {
-                    logger.error(ex.getMessage(), ex);
-                }
-            }
-        }
+//        List<ICustomView> custonViewList = ResourceCustomViewFactory.getCustomViewList();
+//        for (ICustomView custonView : custonViewList) {
+//            String selectBody = custonView.getSelectBody();
+//            if (StringUtils.isNotBlank(selectBody)) {
+//                try {
+//                    String sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + "." + custonView.getName() + " AS " + selectBody;
+//                    if (logger.isDebugEnabled()) {
+//                        logger.debug(sql);
+//                    }
+//                    schemaMapper.insertView(sql);
+//                } catch (Exception ex) {
+//                    logger.error(ex.getMessage(), ex);
+//                }
+//            }
+//        }
     }
 
     @Override
