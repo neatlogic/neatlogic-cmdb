@@ -1,11 +1,12 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
 package codedriver.module.cmdb.dao.mapper.cischema;
 
 import codedriver.framework.cmdb.dto.ci.AttrVo;
+import codedriver.framework.cmdb.dto.ci.CiVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -43,6 +44,8 @@ public interface CiSchemaMapper {
     //void replaceSchemaAudit(SchemaAuditVo schemaAuditvo);
 
     void deleteAttrFromCiTable(@Param("tableName") String tableName, @Param("attrVo") AttrVo attrVo);
+
+    void initCiTable(CiVo ciVo);
 
     void deleteCiTable(@Param("tableName") String tableName);
 
