@@ -8,8 +8,6 @@ package codedriver.module.cmdb.service.resourcecenter.resource;
 import codedriver.framework.cmdb.crossover.IResourceCenterCustomGenerateSqlCrossoverService;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceInfo;
 import codedriver.framework.cmdb.utils.ResourceSearchGenerateSqlUtil;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
@@ -35,12 +33,11 @@ import java.util.function.BiConsumer;
 @Service
 public class ResourceCenterCustomGenerateSqlServiceImpl implements ResourceCenterCustomGenerateSqlService, IResourceCenterCustomGenerateSqlCrossoverService {
     @Override
-    public BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> getBiConsumerByProtocolIdList(JSONObject paramObj, List<ResourceInfo> unavailableResourceInfoList) {
+    public BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> getBiConsumerByProtocolIdList(List<Long> protocolIdList, List<ResourceInfo> unavailableResourceInfoList) {
         BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> biConsumer = new BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>() {
             @Override
             public void accept(ResourceSearchGenerateSqlUtil resourceSearchGenerateSqlUtil, PlainSelect plainSelect) {
-                JSONArray protocolIdArray = paramObj.getJSONArray("protocolIdList");
-                if (CollectionUtils.isNotEmpty(protocolIdArray)) {
+                if (CollectionUtils.isNotEmpty(protocolIdList)) {
                     Table mainTable = (Table) plainSelect.getFromItem();
                     Table table = new Table("cmdb_resourcecenter_resource_account").withAlias(new Alias("b").withUseAs(false));
                     EqualsTo equalsTo = new EqualsTo()
@@ -56,7 +53,6 @@ public class ResourceCenterCustomGenerateSqlServiceImpl implements ResourceCente
                     InExpression inExpression = new InExpression();
                     inExpression.setLeftExpression(new Column(table2, "protocol_id"));
                     ExpressionList expressionList = new ExpressionList();
-                    List<Long> protocolIdList = protocolIdArray.toJavaList(Long.class);
                     for (Long protocolId : protocolIdList) {
                         expressionList.addExpressions(new LongValue(protocolId));
                     }
@@ -70,12 +66,11 @@ public class ResourceCenterCustomGenerateSqlServiceImpl implements ResourceCente
     }
 
     @Override
-    public BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> getBiConsumerByTagIdList(JSONObject paramObj, List<ResourceInfo> unavailableResourceInfoList) {
+    public BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> getBiConsumerByTagIdList(List<Long> tagIdList, List<ResourceInfo> unavailableResourceInfoList) {
         BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> biConsumer = new BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>() {
             @Override
             public void accept(ResourceSearchGenerateSqlUtil resourceSearchGenerateSqlUtil, PlainSelect plainSelect) {
-                JSONArray tagIdArray = paramObj.getJSONArray("tagIdList");
-                if (CollectionUtils.isNotEmpty(tagIdArray)) {
+                if (CollectionUtils.isNotEmpty(tagIdList)) {
                     Table mainTable = (Table) plainSelect.getFromItem();
                     Table table = new Table("cmdb_resourcecenter_resource_tag").withAlias(new Alias("d").withUseAs(false));
                     EqualsTo equalsTo = new EqualsTo()
@@ -84,7 +79,6 @@ public class ResourceCenterCustomGenerateSqlServiceImpl implements ResourceCente
                     InExpression inExpression = new InExpression();
                     inExpression.setLeftExpression(new Column(table, "tag_id"));
                     ExpressionList expressionList = new ExpressionList();
-                    List<Long> tagIdList = tagIdArray.toJavaList(Long.class);
                     for (Long tagId : tagIdList) {
                         expressionList.addExpressions(new LongValue(tagId));
                     }
@@ -98,22 +92,21 @@ public class ResourceCenterCustomGenerateSqlServiceImpl implements ResourceCente
     }
 
     @Override
-    public BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> getBiConsumerByKeyword(JSONObject paramObj, List<ResourceInfo> unavailableResourceInfoList) {
+    public BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> getBiConsumerByKeyword(String keyword, List<ResourceInfo> unavailableResourceInfoList) {
         BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> biConsumer = new BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>() {
             @Override
             public void accept(ResourceSearchGenerateSqlUtil resourceSearchGenerateSqlUtil, PlainSelect plainSelect) {
-                String keyword = paramObj.getString("keyword");
                 if (StringUtils.isNotBlank(keyword)) {
                     List<ResourceInfo> keywordList = new ArrayList<>();
                     keywordList.add(new ResourceInfo("resource_ipobject", "name"));
                     keywordList.add(new ResourceInfo("resource_ipobject", "ip"));
                     keywordList.add(new ResourceInfo("resource_softwareservice", "port"));
-                    keyword = "%" + keyword + "%";
+                    StringValue stringValue = new StringValue("%" + keyword + "%");
                     List<Expression> expressionList = new ArrayList<>();
                     for (ResourceInfo resourceInfo : keywordList) {
                         if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
                             Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
-                            expressionList.add(new LikeExpression().withLeftExpression(column).withRightExpression(new StringValue(keyword)));
+                            expressionList.add(new LikeExpression().withLeftExpression(column).withRightExpression(stringValue));
                         } else {
                             unavailableResourceInfoList.add(resourceInfo);
                         }
@@ -124,5 +117,59 @@ public class ResourceCenterCustomGenerateSqlServiceImpl implements ResourceCente
             }
         };
         return biConsumer;
+    }
+
+    @Override
+    public List<ResourceInfo> getTheadList() {
+        List<ResourceInfo> theadList = new ArrayList<>();
+        theadList.add(new ResourceInfo("resource_ipobject", "id"));
+        //1.IP地址:端口
+        theadList.add(new ResourceInfo("resource_ipobject", "ip"));
+        theadList.add(new ResourceInfo("resource_softwareservice", "port"));
+        //2.类型
+        theadList.add(new ResourceInfo("resource_ipobject", "type_id"));
+        theadList.add(new ResourceInfo("resource_ipobject", "type_name"));
+        theadList.add(new ResourceInfo("resource_ipobject", "type_label"));
+        //3.名称
+        theadList.add(new ResourceInfo("resource_ipobject", "name"));
+        //4.监控状态
+        theadList.add(new ResourceInfo("resource_ipobject", "monitor_status"));
+        theadList.add(new ResourceInfo("resource_ipobject", "monitor_time"));
+        //5.巡检状态
+        theadList.add(new ResourceInfo("resource_ipobject", "inspect_status"));
+        theadList.add(new ResourceInfo("resource_ipobject", "inspect_time"));
+        //12.网络区域
+        theadList.add(new ResourceInfo("resource_ipobject", "network_area"));
+        //14.维护窗口
+        theadList.add(new ResourceInfo("resource_ipobject", "maintenance_window"));
+        //16.描述
+        theadList.add(new ResourceInfo("resource_ipobject", "description"));
+        //6.模块
+        theadList.add(new ResourceInfo("resource_ipobject_appmodule", "app_module_id"));
+        theadList.add(new ResourceInfo("resource_ipobject_appmodule", "app_module_name"));
+        theadList.add(new ResourceInfo("resource_ipobject_appmodule", "app_module_abbr_name"));
+        //7.应用
+        theadList.add(new ResourceInfo("resource_appmodule_appsystem", "app_system_id"));
+        theadList.add(new ResourceInfo("resource_appmodule_appsystem", "app_system_name"));
+        theadList.add(new ResourceInfo("resource_appmodule_appsystem", "app_system_abbr_name"));
+        //8.IP列表
+        theadList.add(new ResourceInfo("resource_ipobject_allip", "allip_id"));
+        theadList.add(new ResourceInfo("resource_ipobject_allip", "allip_ip"));
+        theadList.add(new ResourceInfo("resource_ipobject_allip", "allip_label"));
+        //9.所属部门
+        theadList.add(new ResourceInfo("resource_ipobject_bg", "bg_id"));
+        theadList.add(new ResourceInfo("resource_ipobject_bg", "bg_name"));
+        //10.所有者
+        theadList.add(new ResourceInfo("resource_ipobject_owner", "user_id"));
+        theadList.add(new ResourceInfo("resource_ipobject_owner", "user_uuid"));
+        theadList.add(new ResourceInfo("resource_ipobject_owner", "user_name"));
+        //11.资产状态
+        theadList.add(new ResourceInfo("resource_ipobject_state", "state_id"));
+        theadList.add(new ResourceInfo("resource_ipobject_state", "state_name"));
+        theadList.add(new ResourceInfo("resource_ipobject_state", "state_label"));
+        //环境状态
+//        theadList.add(new ResourceInfo("resource_softwareservice_env", "env_id"));
+//        theadList.add(new ResourceInfo("resource_softwareservice_env", "env_name"));
+        return theadList;
     }
 }

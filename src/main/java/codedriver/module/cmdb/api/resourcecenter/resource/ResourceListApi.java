@@ -127,10 +127,10 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
         JSONObject paramObj = (JSONObject) JSONObject.toJSON(searchVo);
         List<BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>> biConsumerList = new ArrayList<>();
         biConsumerList.add(resourceCenterCommonGenerateSqlService.getBiConsumerByCommonCondition(paramObj, unavailableResourceInfoList));
-        biConsumerList.add(resourceCenterCustomGenerateSqlService.getBiConsumerByProtocolIdList(paramObj, unavailableResourceInfoList));
-        biConsumerList.add(resourceCenterCustomGenerateSqlService.getBiConsumerByTagIdList(paramObj, unavailableResourceInfoList));
-        biConsumerList.add(resourceCenterCustomGenerateSqlService.getBiConsumerByKeyword(paramObj, unavailableResourceInfoList));
-        resourceVoList = resourceCenterCommonGenerateSqlService.getResourceList(biConsumerList, searchVo, unavailableResourceInfoList);
+        biConsumerList.add(resourceCenterCustomGenerateSqlService.getBiConsumerByProtocolIdList(searchVo.getProtocolIdList(), unavailableResourceInfoList));
+        biConsumerList.add(resourceCenterCustomGenerateSqlService.getBiConsumerByTagIdList(searchVo.getTagIdList(), unavailableResourceInfoList));
+        biConsumerList.add(resourceCenterCustomGenerateSqlService.getBiConsumerByKeyword(searchVo.getKeyword(), unavailableResourceInfoList));
+        resourceVoList = resourceCenterCommonGenerateSqlService.getResourceList(biConsumerList, searchVo, unavailableResourceInfoList, "resource_ipobject", resourceCenterCustomGenerateSqlService.getTheadList());
         if (CollectionUtils.isNotEmpty(resourceVoList)) {
             List<Long> idList = resourceVoList.stream().map(ResourceVo::getId).collect(Collectors.toList());
             resourceCenterResourceService.addResourceAccount(idList, resourceVoList);

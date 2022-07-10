@@ -124,8 +124,8 @@ public class ResourceCenterCommonGenerateSqlServiceImpl implements ResourceCente
     }
 
     @Override
-    public String getResourceIdSql(List<BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>> biConsumerList) {
-        return getResourceIdListSql("resource_ipobject", biConsumerList, 0, 1);
+    public String getResourceIdSql(String mainResourceId, List<BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>> biConsumerList) {
+        return getResourceIdListSql(mainResourceId, biConsumerList, 0, 1);
     }
 
     @Override
@@ -152,131 +152,15 @@ public class ResourceCenterCommonGenerateSqlServiceImpl implements ResourceCente
     }
 
     @Override
-    public String getResourceListByIdListSql(List<Long> idList, List<ResourceInfo> unavailableResourceInfoList) {
-        List<ResourceInfo> theadList = new ArrayList<>();
-        theadList.add(new ResourceInfo("resource_ipobject", "id"));
-        //1.IP地址:端口
-        theadList.add(new ResourceInfo("resource_ipobject", "ip"));
-        theadList.add(new ResourceInfo("resource_softwareservice", "port"));
-        //2.类型
-        theadList.add(new ResourceInfo("resource_ipobject", "type_id"));
-        theadList.add(new ResourceInfo("resource_ipobject", "type_name"));
-        theadList.add(new ResourceInfo("resource_ipobject", "type_label"));
-        //3.名称
-        theadList.add(new ResourceInfo("resource_ipobject", "name"));
-        //4.监控状态
-        theadList.add(new ResourceInfo("resource_ipobject", "monitor_status"));
-        theadList.add(new ResourceInfo("resource_ipobject", "monitor_time"));
-        //5.巡检状态
-        theadList.add(new ResourceInfo("resource_ipobject", "inspect_status"));
-        theadList.add(new ResourceInfo("resource_ipobject", "inspect_time"));
-        //12.网络区域
-        theadList.add(new ResourceInfo("resource_ipobject", "network_area"));
-        //14.维护窗口
-        theadList.add(new ResourceInfo("resource_ipobject", "maintenance_window"));
-        //16.描述
-        theadList.add(new ResourceInfo("resource_ipobject", "description"));
-        //6.模块
-        theadList.add(new ResourceInfo("resource_ipobject_appmodule", "app_module_id"));
-        theadList.add(new ResourceInfo("resource_ipobject_appmodule", "app_module_name"));
-        theadList.add(new ResourceInfo("resource_ipobject_appmodule", "app_module_abbr_name"));
-        //7.应用
-        theadList.add(new ResourceInfo("resource_appmodule_appsystem", "app_system_id"));
-        theadList.add(new ResourceInfo("resource_appmodule_appsystem", "app_system_name"));
-        theadList.add(new ResourceInfo("resource_appmodule_appsystem", "app_system_abbr_name"));
-        //8.IP列表
-        theadList.add(new ResourceInfo("resource_ipobject_allip", "allip_id"));
-        theadList.add(new ResourceInfo("resource_ipobject_allip", "allip_ip"));
-        theadList.add(new ResourceInfo("resource_ipobject_allip", "allip_label"));
-        //9.所属部门
-        theadList.add(new ResourceInfo("resource_ipobject_bg", "bg_id"));
-        theadList.add(new ResourceInfo("resource_ipobject_bg", "bg_name"));
-        //10.所有者
-        theadList.add(new ResourceInfo("resource_ipobject_owner", "user_id"));
-        theadList.add(new ResourceInfo("resource_ipobject_owner", "user_uuid"));
-        theadList.add(new ResourceInfo("resource_ipobject_owner", "user_name"));
-        //11.资产状态
-        theadList.add(new ResourceInfo("resource_ipobject_state", "state_id"));
-        theadList.add(new ResourceInfo("resource_ipobject_state", "state_name"));
-        theadList.add(new ResourceInfo("resource_ipobject_state", "state_label"));
-        //环境状态
-//        theadList.add(new ResourceInfo("resource_softwareservice_env", "env_id"));
-//        theadList.add(new ResourceInfo("resource_softwareservice_env", "env_name"));
-        return getResourceListByIdListSql(theadList, idList, unavailableResourceInfoList);
-    }
-
-    @Override
-    public String getResourceListByIdListSql(List<Long> idList, List<ResourceInfo> unavailableResourceInfoList, String mainResourceId) {
-        List<ResourceInfo> theadList = new ArrayList<>();
-        theadList.add(new ResourceInfo("resource_ipobject", "id"));
-        //1.IP地址:端口
-        theadList.add(new ResourceInfo("resource_ipobject", "ip"));
-        theadList.add(new ResourceInfo("resource_softwareservice", "port"));
-        //2.类型
-        theadList.add(new ResourceInfo("resource_ipobject", "type_id"));
-        theadList.add(new ResourceInfo("resource_ipobject", "type_name"));
-        theadList.add(new ResourceInfo("resource_ipobject", "type_label"));
-        //3.名称
-        theadList.add(new ResourceInfo("resource_ipobject", "name"));
-        //4.监控状态
-        theadList.add(new ResourceInfo("resource_ipobject", "monitor_status"));
-        theadList.add(new ResourceInfo("resource_ipobject", "monitor_time"));
-        //5.巡检状态
-        theadList.add(new ResourceInfo("resource_ipobject", "inspect_status"));
-        theadList.add(new ResourceInfo("resource_ipobject", "inspect_time"));
-        //12.网络区域
-        theadList.add(new ResourceInfo("resource_ipobject", "network_area"));
-        //14.维护窗口
-        theadList.add(new ResourceInfo("resource_ipobject", "maintenance_window"));
-        //16.描述
-        theadList.add(new ResourceInfo("resource_ipobject", "description"));
-        //6.模块
-        theadList.add(new ResourceInfo("resource_ipobject_appmodule", "app_module_id"));
-        theadList.add(new ResourceInfo("resource_ipobject_appmodule", "app_module_name"));
-        theadList.add(new ResourceInfo("resource_ipobject_appmodule", "app_module_abbr_name"));
-        //7.应用
-        theadList.add(new ResourceInfo("resource_appmodule_appsystem", "app_system_id"));
-        theadList.add(new ResourceInfo("resource_appmodule_appsystem", "app_system_name"));
-        theadList.add(new ResourceInfo("resource_appmodule_appsystem", "app_system_abbr_name"));
-        //8.IP列表
-        theadList.add(new ResourceInfo("resource_ipobject_allip", "allip_id"));
-        theadList.add(new ResourceInfo("resource_ipobject_allip", "allip_ip"));
-        theadList.add(new ResourceInfo("resource_ipobject_allip", "allip_label"));
-        //9.所属部门
-        theadList.add(new ResourceInfo("resource_ipobject_bg", "bg_id"));
-        theadList.add(new ResourceInfo("resource_ipobject_bg", "bg_name"));
-        //10.所有者
-        theadList.add(new ResourceInfo("resource_ipobject_owner", "user_id"));
-        theadList.add(new ResourceInfo("resource_ipobject_owner", "user_uuid"));
-        theadList.add(new ResourceInfo("resource_ipobject_owner", "user_name"));
-        //11.资产状态
-        theadList.add(new ResourceInfo("resource_ipobject_state", "state_id"));
-        theadList.add(new ResourceInfo("resource_ipobject_state", "state_name"));
-        theadList.add(new ResourceInfo("resource_ipobject_state", "state_label"));
-        //环境状态
-//        theadList.add(new ResourceInfo("resource_softwareservice_env", "env_id"));
-//        theadList.add(new ResourceInfo("resource_softwareservice_env", "env_name"));
-        return getResourceListByIdListSql(theadList, idList, unavailableResourceInfoList, mainResourceId);
-    }
-
-    @Override
-    public String getResourceListByIdListSql(List<ResourceInfo> theadList, List<Long> idList, List<ResourceInfo> unavailableResourceInfoList) {
-        return getResourceListByIdListSql(theadList, idList, unavailableResourceInfoList, "resource_ipobject");
-    }
-
-    @Override
     public String getResourceListByIdListSql(List<ResourceInfo> theadList, List<Long> idList, List<ResourceInfo> unavailableResourceInfoList, String mainResourceId) {
         if (CollectionUtils.isEmpty(idList)) {
             return null;
         }
-        long startTime = System.currentTimeMillis();
         ResourceCenterConfigVo configVo = resourceCenterConfigMapper.getResourceCenterConfig();
         if (configVo == null) {
             throw new ResourceCenterConfigNotFoundException();
         }
-        System.out.println("A=" + (System.currentTimeMillis() - startTime));
         ResourceEntityViewBuilder builder = new ResourceEntityViewBuilder(configVo.getConfig());
-        System.out.println("B=" + (System.currentTimeMillis() - startTime));
         List<ResourceEntityVo> resourceEntityList = builder.getResourceEntityList();
         ResourceSearchGenerateSqlUtil resourceSearchGenerateSqlUtil = new ResourceSearchGenerateSqlUtil(resourceEntityList);
         PlainSelect plainSelect = resourceSearchGenerateSqlUtil.initPlainSelectByMainResourceId(mainResourceId);
@@ -306,7 +190,14 @@ public class ResourceCenterCommonGenerateSqlServiceImpl implements ResourceCente
     }
 
     @Override
-    public List<ResourceVo> getResourceList(List<BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>> biConsumerList, BasePageVo basePageVo, List<ResourceInfo> unavailableResourceInfoList, String mainResourceId, List<ResourceInfo> theadList) {
+    public List<ResourceVo> getResourceList(
+            List<BiConsumer<ResourceSearchGenerateSqlUtil,
+                    PlainSelect>> biConsumerList,
+            BasePageVo basePageVo,
+            List<ResourceInfo> unavailableResourceInfoList,
+            String mainResourceId,
+            List<ResourceInfo> theadList
+    ) {
         List<ResourceVo> resourceList = new ArrayList<>();
         PlainSelect plainSelect = getResourceCountPlainSelect(mainResourceId, biConsumerList);
         if (plainSelect == null) {
@@ -322,7 +213,7 @@ public class ResourceCenterCommonGenerateSqlServiceImpl implements ResourceCente
         if (CollectionUtils.isEmpty(idList)) {
             return resourceList;
         }
-        sql = getResourceListByIdListSql(theadList, idList, unavailableResourceInfoList);
+        sql = getResourceListByIdListSql(theadList, idList, unavailableResourceInfoList, mainResourceId);
         if (StringUtils.isBlank(sql)) {
             return resourceList;
         }
@@ -331,57 +222,31 @@ public class ResourceCenterCommonGenerateSqlServiceImpl implements ResourceCente
     }
 
     @Override
-    public List<ResourceVo> getResourceList(List<BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>> biConsumerList, BasePageVo basePageVo, List<ResourceInfo> unavailableResourceInfoList) {
-        List<ResourceInfo> theadList = new ArrayList<>();
-        theadList.add(new ResourceInfo("resource_ipobject", "id"));
-        //1.IP地址:端口
-        theadList.add(new ResourceInfo("resource_ipobject", "ip"));
-        theadList.add(new ResourceInfo("resource_softwareservice", "port"));
-        //2.类型
-        theadList.add(new ResourceInfo("resource_ipobject", "type_id"));
-        theadList.add(new ResourceInfo("resource_ipobject", "type_name"));
-        theadList.add(new ResourceInfo("resource_ipobject", "type_label"));
-        //3.名称
-        theadList.add(new ResourceInfo("resource_ipobject", "name"));
-        //4.监控状态
-        theadList.add(new ResourceInfo("resource_ipobject", "monitor_status"));
-        theadList.add(new ResourceInfo("resource_ipobject", "monitor_time"));
-        //5.巡检状态
-        theadList.add(new ResourceInfo("resource_ipobject", "inspect_status"));
-        theadList.add(new ResourceInfo("resource_ipobject", "inspect_time"));
-        //12.网络区域
-        theadList.add(new ResourceInfo("resource_ipobject", "network_area"));
-        //14.维护窗口
-        theadList.add(new ResourceInfo("resource_ipobject", "maintenance_window"));
-        //16.描述
-        theadList.add(new ResourceInfo("resource_ipobject", "description"));
-        //6.模块
-        theadList.add(new ResourceInfo("resource_ipobject_appmodule", "app_module_id"));
-        theadList.add(new ResourceInfo("resource_ipobject_appmodule", "app_module_name"));
-        theadList.add(new ResourceInfo("resource_ipobject_appmodule", "app_module_abbr_name"));
-        //7.应用
-        theadList.add(new ResourceInfo("resource_appmodule_appsystem", "app_system_id"));
-        theadList.add(new ResourceInfo("resource_appmodule_appsystem", "app_system_name"));
-        theadList.add(new ResourceInfo("resource_appmodule_appsystem", "app_system_abbr_name"));
-        //8.IP列表
-        theadList.add(new ResourceInfo("resource_ipobject_allip", "allip_id"));
-        theadList.add(new ResourceInfo("resource_ipobject_allip", "allip_ip"));
-        theadList.add(new ResourceInfo("resource_ipobject_allip", "allip_label"));
-        //9.所属部门
-        theadList.add(new ResourceInfo("resource_ipobject_bg", "bg_id"));
-        theadList.add(new ResourceInfo("resource_ipobject_bg", "bg_name"));
-        //10.所有者
-        theadList.add(new ResourceInfo("resource_ipobject_owner", "user_id"));
-        theadList.add(new ResourceInfo("resource_ipobject_owner", "user_uuid"));
-        theadList.add(new ResourceInfo("resource_ipobject_owner", "user_name"));
-        //11.资产状态
-        theadList.add(new ResourceInfo("resource_ipobject_state", "state_id"));
-        theadList.add(new ResourceInfo("resource_ipobject_state", "state_name"));
-        theadList.add(new ResourceInfo("resource_ipobject_state", "state_label"));
-        //环境状态
-//        theadList.add(new ResourceInfo("resource_softwareservice_env", "env_id"));
-//        theadList.add(new ResourceInfo("resource_softwareservice_env", "env_name"));
-        return getResourceList(biConsumerList, basePageVo, unavailableResourceInfoList, "resource_ipobject", theadList);
+    public String getResourceListSql(
+            List<BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>> biConsumerList,
+            List<ResourceInfo> unavailableResourceInfoList,
+            String mainResourceId,
+            List<ResourceInfo> theadList) {
+        PlainSelect plainSelect = getResourceCountPlainSelect(mainResourceId, biConsumerList);
+        if (plainSelect == null) {
+            return null;
+        }
+        ResourceCenterConfigVo configVo = resourceCenterConfigMapper.getResourceCenterConfig();
+        if (configVo == null) {
+            throw new ResourceCenterConfigNotFoundException();
+        }
+        ResourceEntityViewBuilder builder = new ResourceEntityViewBuilder(configVo.getConfig());
+        List<ResourceEntityVo> resourceEntityList = builder.getResourceEntityList();
+        ResourceSearchGenerateSqlUtil resourceSearchGenerateSqlUtil = new ResourceSearchGenerateSqlUtil(resourceEntityList);
+        plainSelect.setSelectItems(null);
+        for (ResourceInfo resourceInfo : theadList) {
+            if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
+                resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
+            } else {
+                unavailableResourceInfoList.add(resourceInfo);
+            }
+        }
+        return plainSelect.toString();
     }
 
     @Override
@@ -529,7 +394,7 @@ public class ResourceCenterCommonGenerateSqlServiceImpl implements ResourceCente
                     if (StringUtils.isNotBlank(port)) {
                         resourceSearchGenerateSqlUtil.addWhere(plainSelect, column, new EqualsTo(), port);
                     } else {
-                        resourceSearchGenerateSqlUtil.addWhere(plainSelect, column, new IsNullExpression(), null);
+                        resourceSearchGenerateSqlUtil.addWhere(plainSelect, column, new IsNullExpression());
                     }
                 } else {
                     unavailableResourceInfoList.add(resourceInfo);
