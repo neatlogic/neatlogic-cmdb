@@ -38,6 +38,11 @@ public class CmdbAfterInitialDataImportHandler implements IAfterInitialDataImpor
     }
 
     @Override
+    public String getDescription() {
+        return "根据模型生成数据表和视图";
+    }
+
+    @Override
     public void execute() {
         List<CiVo> ciList = ciMapper.searchCi(new CiVo());
         for (CiVo ciVo : ciList) {
