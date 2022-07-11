@@ -975,6 +975,13 @@
         limit #{size}
     </select>
 
+    <select id="getCiEntityIdByCiNameAndCiEntityName" resultType="java.lang.Long">
+        select a.`id`
+        from `cmdb_cientity` a
+        where a.`name` = #{ciEntityName}
+        and a.`ci_id` = (select `id` from `cmdb_ci` where `name` = #{ciName} limit 1)
+        limit 1
+    </select>
 
     <update id="updateCiEntityBaseInfo" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
         UPDATE `cmdb_cientity`
