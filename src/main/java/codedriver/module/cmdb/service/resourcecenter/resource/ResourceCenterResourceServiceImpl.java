@@ -9,32 +9,16 @@ import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.resourcecenter.*;
-import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceCenterConfigVo;
-import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceInfo;
 import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.cmdb.enums.resourcecenter.AppModuleResourceType;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.cmdb.exception.resourcecenter.AppModuleNotFoundException;
-import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterConfigNotFoundException;
-import codedriver.framework.cmdb.utils.ResourceSearchGenerateSqlUtil;
 import codedriver.framework.util.TableResultUtil;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
-import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceCenterConfigMapper;
-import codedriver.module.cmdb.utils.ResourceEntityViewBuilder;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import net.sf.jsqlparser.expression.*;
-import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
-import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
-import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.InExpression;
-import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
-import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.select.*;
-import net.sf.jsqlparser.util.cnfexpression.MultiOrExpression;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -42,7 +26,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.*;
-import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 /**
@@ -62,9 +45,6 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 
     @Resource
     private CiEntityMapper ciEntityMapper;
-
-    @Resource
-    private ResourceCenterConfigMapper resourceCenterConfigMapper;
 
     public static final Map<String, Action<ResourceSearchVo>> searchMap = new HashMap<>();
 
@@ -219,34 +199,11 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
     @Override
     public JSONArray getAppModuleResourceList(ResourceSearchVo searchVo) {
         JSONArray tableList = new JSONArray();
-//        String schemaName = TenantContext.get().getDataDbName();
         Long appModuleId = searchVo.getAppModuleId();
         CiEntityVo ciEntityVo = ciEntityMapper.getCiEntityBaseInfoById(appModuleId);
         if (ciEntityVo == null) {
             throw new AppModuleNotFoundException(appModuleId);
         }
-//        if (resourceCenterMapper.checkAppModuleIsExists(appModuleId, schemaName) == 0) {
-//            throw new AppModuleNotFoundException(appModuleId);
-//        }
-        //20220302跟产品确认应用清单的模块中不需要出现“网络设备”和“存储设备StorageDevice”
-//        List<String> resourceTypeNameList = Arrays.asList("OS", "StorageDevice", "NetworkDevice", "APPIns", "APPInsCluster", "DBIns", "DBCluster", "AccessEndPoint", "Database");
-//        Map<String, String> typeNameActionMap = new HashMap<>();
-//        typeNameActionMap.put("OS", "OS");
-//        typeNameActionMap.put("APPIns", "APPIns");
-//        typeNameActionMap.put("APPInsCluster", "ipObject");
-//        typeNameActionMap.put("DBIns", "DBIns");
-//        typeNameActionMap.put("DBCluster", "ipObject");
-//        typeNameActionMap.put("AccessEndPoint", "ipObject");
-//        typeNameActionMap.put("Database", "ipObject");
-//        List<CiVo> resourceCiVoList = new ArrayList<>();
-//        Map<Long, CiVo> ciVoMap = new HashMap<>();
-//        List<CiVo> ciVoList = ciMapper.getAllCi(null);
-//        for (CiVo ciVo : ciVoList) {
-//            ciVoMap.put(ciVo.getId(), ciVo);
-//            if (typeNameActionMap.containsKey(ciVo.getName())) {
-//                resourceCiVoList.add(ciVo);
-//            }
-//        }
         List<CiVo> resourceCiVoList = ciMapper.getCiListByNameList(AppModuleResourceType.getNameList());
         List<Long> resourceTypeIdList = new ArrayList<>();
         Long typeId = searchVo.getTypeId();
@@ -277,15 +234,12 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 if (StringUtils.isBlank(resourceTypeName)) {
                     continue;
                 }
-//                String actionKey = typeNameActionMap.get(resourceTypeName);
                 String actionKey = AppModuleResourceType.getAction(resourceTypeName);
                 if (StringUtils.isBlank(actionKey)) {
                     continue;
                 }
                 searchVo.setTypeId(ciVo.getId());
-                long startTime = System.currentTimeMillis();
                 List<ResourceVo> returnList = searchMap.get(actionKey).execute(searchVo);
-                System.out.println(actionKey + "=" + (System.currentTimeMillis() - startTime));
                 if (CollectionUtils.isNotEmpty(returnList)) {
                     JSONObject tableObj =TableResultUtil.getResult(returnList, searchVo);
                     tableObj.put("type", resourceTypeVo);
@@ -458,18 +412,6 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             return new ArrayList<>();
         });
 
-//        searchMap.put("APPInsCluster", (searchVo) -> {
-//            int rowNum = resourceCenterMapper.getIpObjectResourceCountByAppModuleIdAndTypeIdAndEnvId(searchVo);
-//            if (rowNum > 0) {
-//                searchVo.setRowNum(rowNum);
-//                List<Long> idList = resourceCenterMapper.getIpObjectResourceIdListByAppModuleIdAndTypeIdAndEnvId(searchVo);
-//                if (CollectionUtils.isNotEmpty(idList)) {
-//                    return resourceCenterMapper.getResourceListByIdList(idList, TenantContext.get().getDataDbName());
-//                }
-//            }
-//            return new ArrayList<>();
-//        });
-
         searchMap.put("DBIns", (searchVo) -> {
             int rowNum = resourceCenterMapper.getIpObjectResourceCountByAppModuleIdAndTypeIdAndEnvIdAndTypeId(searchVo);
             if (rowNum > 0) {
@@ -539,41 +481,6 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             }
             return new ArrayList<>();
         });
-
-//        searchMap.put("DBCluster", (searchVo) -> {
-//            int rowNum = resourceCenterMapper.getIpObjectResourceCountByAppModuleIdAndTypeIdAndEnvId(searchVo);
-//            if (rowNum > 0) {
-//                searchVo.setRowNum(rowNum);
-//                List<Long> idList = resourceCenterMapper.getIpObjectResourceIdListByAppModuleIdAndTypeIdAndEnvId(searchVo);
-//                if (CollectionUtils.isNotEmpty(idList)) {
-//                    return resourceCenterMapper.getResourceListByIdList(idList, TenantContext.get().getDataDbName());
-//                }
-//            }
-//            return new ArrayList<>();
-//        });
-//
-//        searchMap.put("AccessEndPoint", (searchVo) -> {
-//            int rowNum = resourceCenterMapper.getIpObjectResourceCountByAppModuleIdAndTypeIdAndEnvId(searchVo);
-//            if (rowNum > 0) {
-//                searchVo.setRowNum(rowNum);
-//                List<Long> idList = resourceCenterMapper.getIpObjectResourceIdListByAppModuleIdAndTypeIdAndEnvId(searchVo);
-//                if (CollectionUtils.isNotEmpty(idList)) {
-//                    return resourceCenterMapper.getResourceListByIdList(idList, TenantContext.get().getDataDbName());
-//                }
-//            }
-//            return new ArrayList<>();
-//        });
-//        searchMap.put("Database", (searchVo) -> {
-//            int rowNum = resourceCenterMapper.getIpObjectResourceCountByAppModuleIdAndTypeIdAndEnvId(searchVo);
-//            if (rowNum > 0) {
-//                searchVo.setRowNum(rowNum);
-//                List<Long> idList = resourceCenterMapper.getIpObjectResourceIdListByAppModuleIdAndTypeIdAndEnvId(searchVo);
-//                if (CollectionUtils.isNotEmpty(idList)) {
-//                    return resourceCenterMapper.getResourceListByIdList(idList, TenantContext.get().getDataDbName());
-//                }
-//            }
-//            return new ArrayList<>();
-//        });
 
     }
 

@@ -158,9 +158,6 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
                 biConsumerList.add(resourceCenterCustomGenerateSqlService.getBiConsumerByTagIdList(searchVo.getTagIdList(), unavailableResourceInfoList));
                 biConsumerList.add(resourceCenterCustomGenerateSqlService.getBiConsumerByKeyword(searchVo.getKeyword(), unavailableResourceInfoList));
                 String sql = resourceCenterCommonGenerateSqlService.getResourceCountSql("resource_ipobject", biConsumerList);
-//                if (StringUtils.isBlank(sql)) {
-//                }
-//                String sql = resourceCenterResourceService.getResourceCountSql(searchVo, "resource_ipobject");
                 // 如果过滤器下没有任何目标，不再进行下一步校验
                 if (resourceCenterCommonGenerateSqlService.getCount(sql) == 0) {
                     JSONObject resourceIsEmpty = new JSONObject();
@@ -209,7 +206,6 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
             }
         } else if (MapUtils.isNotEmpty(filter)) {
             ResourceSearchVo searchVo = resourceCenterResourceService.assembleResourceSearchVo(filter);
-//            String sql = resourceCenterResourceCrossoverService.getResourceCountSql(searchVo, "resource_ipobject");
             List<ResourceInfo> unavailableResourceInfoList = new ArrayList<>();
             JSONObject paramObj = (JSONObject) JSONObject.toJSON(searchVo);
             List<BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>> biConsumerList = new ArrayList<>();
@@ -229,7 +225,6 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
                 searchVo.setPageSize(100);
                 for (int i = 1; i <= searchVo.getPageCount(); i++) {
                     searchVo.setCurrentPage(i);
-//                    sql = resourceCenterResourceCrossoverService.getResourceIdListSql(searchVo, "resource_ipobject");
                     String sql = resourceCenterCommonGenerateSqlService.getResourceIdListSql(plainSelect);
                     if (StringUtils.isBlank(sql)) {
                         continue;

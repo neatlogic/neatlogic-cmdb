@@ -23,8 +23,6 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.RESOURCECENTER_MODIFY;
-import codedriver.module.cmdb.service.resourcecenter.account.ResourceCenterAccountService;
-import codedriver.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import codedriver.module.cmdb.service.resourcecenter.resource.ResourceCenterCommonGenerateSqlService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -50,11 +48,7 @@ public class ResourceAccountBatchAddApi extends PrivateApiComponentBase {
     @Resource
     private ResourceCenterMapper resourceCenterMapper;
     @Resource
-    private IResourceCenterResourceService resourceCenterResourceService;
-    @Resource
     private ResourceCenterCommonGenerateSqlService resourceCenterCommonGenerateSqlService;
-    @Resource
-    private ResourceCenterAccountService resourceCenterAccountService;
 
     @Override
     public String getToken() {
@@ -89,7 +83,6 @@ public class ResourceAccountBatchAddApi extends PrivateApiComponentBase {
             throw new ParamNotExistsException("accountIdList");
         }
 
-        String schemaName = TenantContext.get().getDataDbName();
         List<Long> resourceIdList = resourceIdArray.toJavaList(Long.class);
         Map<Long, ResourceVo> resourceVoMap = new HashMap<>();
         List<Long> existResourceIdList = new ArrayList<>();
