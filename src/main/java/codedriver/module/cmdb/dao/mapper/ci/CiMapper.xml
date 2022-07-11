@@ -50,7 +50,6 @@
         a.`parent_ci_id` AS parentCiId,
         a.`is_abstract` AS isAbstract,
         a.`is_virtual` AS isVirtual,
-        a.`file_id` AS fileId,
         a.`lft`,
         a.`rht`
         FROM cmdb_cientity b JOIN cmdb_ci a ON b.ci_id = a.id
@@ -72,7 +71,6 @@
                a.`is_menu`      AS isMenu,
                a.`is_abstract`  AS isAbstract,
                a.`is_virtual`   AS isVirtual,
-               a.`file_id`      AS fileId,
                a.`lft`          AS lft,
                a.`rht`          AS rht
         FROM `cmdb_ci` a
@@ -93,7 +91,6 @@
                a.`is_menu`      AS isMenu,
                a.`is_abstract`  AS isAbstract,
                a.`is_virtual`   AS isVirtual,
-               a.`file_id`      AS fileId,
                a.`lft`          AS lft,
                a.`rht`          AS rht
         FROM `cmdb_ci` a
@@ -115,7 +112,6 @@
         a.`is_menu` AS isMenu,
         a.`is_abstract` AS isAbstract,
         a.`is_virtual` AS isVirtual,
-        a.`file_id` AS fileId,
         a.`lft` AS lft,
         a.`rht` AS rht
         FROM `cmdb_ci` a
@@ -142,7 +138,6 @@
         a.`is_menu` AS isMenu,
         a.`is_abstract` AS isAbstract,
         a.`is_virtual` AS isVirtual,
-        a.`file_id` AS fileId,
         a.`lft` AS lft,
         a.`rht` AS rht
         FROM `cmdb_ci` a
@@ -165,8 +160,7 @@
                a.`is_menu`      AS isMenu,
                a.`parent_ci_id` AS parentCiId,
                a.`is_abstract`  AS isAbstract,
-               a.`is_virtual`   AS isVirtual,
-               a.`file_id`      AS fileId
+               a.`is_virtual`   AS isVirtual
         FROM `cmdb_ci` a
                  JOIN `cmdb_attr` b ON a.id = b.ci_id
         WHERE b.target_ci_id = #{value}
@@ -185,8 +179,7 @@
                a.`is_menu`      AS isMenu,
                a.`parent_ci_id` AS parentCiId,
                a.`is_abstract`  AS isAbstract,
-               a.`is_virtual`   AS isVirtual,
-               a.`file_id`      AS fileId
+               a.`is_virtual`   AS isVirtual
         FROM `cmdb_ci` a
                  JOIN `cmdb_rel` b ON a.id = b.to_ci_id
         WHERE b.from_ci_id = #{value}
@@ -205,8 +198,7 @@
                a.`is_menu`      AS isMenu,
                a.`parent_ci_id` AS parentCiId,
                a.`is_abstract`  AS isAbstract,
-               a.`is_virtual`   AS isVirtual,
-               a.`file_id`      AS fileId
+               a.`is_virtual`   AS isVirtual
         FROM `cmdb_ci` a
                  JOIN `cmdb_rel` b ON a.id = b.from_ci_id
         WHERE b.to_ci_id = #{value}
@@ -269,7 +261,6 @@
         b.`parent_ci_id` AS parentCiId,
         b.`is_abstract` AS isAbstract,
         b.`is_virtual` AS isVirtual,
-        b.`file_id` AS fileId,
         a.`id` AS ciTypeId,
         a.`name` AS ciTypeName,
         a.`is_menu` AS ciTypeIsMenu,
@@ -317,8 +308,7 @@
         `type_id` AS typeId,
         `parent_ci_id` AS parentCiId,
         `is_abstract` AS isAbstract,
-        `is_virtual` AS isVirtual,
-        `file_id` AS fileId
+        `is_virtual` AS isVirtual
         from cmdb_ci
         <where>
             <if test="keyword != null and keyword != ''">
@@ -338,8 +328,7 @@
         `is_private` AS isPrivate,
         `is_menu` AS isMenu,
         `is_abstract` AS isAbstract,
-        `is_virtual` AS isVirtual,
-        `file_id` AS fileId
+        `is_virtual` AS isVirtual
         FROM
         `cmdb_ci`
         WHERE id IN
@@ -388,7 +377,6 @@
                c.name           AS parentCiName,
                a.`is_abstract`  AS isAbstract,
                a.`is_virtual`   AS isVirtual,
-               a.`file_id`      AS fileId,
                a.`name_attr_id` AS nameAttrId,
                a.`lft`          AS lft,
                a.`rht`          AS rht,
@@ -416,7 +404,6 @@
                c.name           AS parentCiName,
                a.`is_abstract`  AS isAbstract,
                a.`is_virtual`   AS isVirtual,
-               a.`file_id`      AS fileId,
                a.`name_attr_id` AS nameAttrId,
                a.`lft`          AS lft,
                a.`rht`          AS rht,
@@ -444,7 +431,6 @@
                c.name           AS parentCiName,
                a.`is_abstract`  AS isAbstract,
                a.`is_virtual`   AS isVirtual,
-               a.`file_id`      AS fileId,
                a.`name_attr_id` AS nameAttrId,
                a.`lft`          AS lft,
                a.`rht`          AS rht,
@@ -476,7 +462,6 @@
             `parent_ci_id` = #{parentCiId},
             `is_abstract`  = #{isAbstract},
             `is_virtual`   = #{isVirtual},
-            `file_id`      = #{fileId},
             `xml`          = #{viewXml, typeHandler=CompressHandler}
         WHERE `id` = #{id}
     </update>
@@ -494,7 +479,6 @@
                                `is_virtual`,
                                `parent_ci_id`,
                                `name_attr_id`,
-                               `file_id`,
                                `lft`,
                                `rht`,
                                `xml`)
@@ -510,7 +494,6 @@
                 #{isVirtual},
                 #{parentCiId},
                 #{nameAttrId},
-                #{fileId},
                 #{lft},
                 #{rht},
                 #{viewXml,typeHandler=CompressHandler})
