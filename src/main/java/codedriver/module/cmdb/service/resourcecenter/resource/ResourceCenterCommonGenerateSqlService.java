@@ -19,58 +19,58 @@ public interface ResourceCenterCommonGenerateSqlService {
 
     /**
      * 根据查询条件组装查询资源总个数的PlainSelect对象
-     * @param mainResourceId
-     * @param biConsumerList
+     * @param mainResourceId 视图名
+     * @param biConsumerList 过滤条件列表
      * @return
      */
     PlainSelect getResourceCountPlainSelect(String mainResourceId, List<BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>> biConsumerList);
 
     /**
      * 根据查询条件组装查询资源总个数的sql语句
-     * @param mainResourceId
-     * @param biConsumerList
+     * @param mainResourceId 视图名
+     * @param biConsumerList 过滤条件列表
      * @return
      */
     String getResourceCountSql(String mainResourceId, List<BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>> biConsumerList);
 
     /**
      * 根据查询条件组装查询当前页id列表的sql语句
-     * @param mainResourceId
-     * @param biConsumerList
-     * @param startNum
-     * @param pageSize
+     * @param mainResourceId 视图名
+     * @param biConsumerList 过滤条件列表
+     * @param startNum 分页开始偏移量
+     * @param pageSize 页大小
      * @return
      */
     String getResourceIdListSql(String mainResourceId, List<BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>> biConsumerList, int startNum, int pageSize);
 
     /**
      * 根据查询条件组装查询当前页id列表的sql语句
-     * @param plainSelect
+     * @param plainSelect sql语句
      * @return
      */
     String getResourceIdListSql(PlainSelect plainSelect);
 
     /**
      * 根据查询条件组装查询当前页id列表的sql语句
-     * @param plainSelect
-     * @param startNum
-     * @param pageSize
+     * @param plainSelect sql语句
+     * @param startNum 分页开始偏移量
+     * @param pageSize 页大小
      * @return
      */
     String getResourceIdListSql(PlainSelect plainSelect, int startNum, int pageSize);
 
     /**
      * 根据查询条件组装查询只返回一个id的sql语句
-     * @param mainResourceId
-     * @param biConsumerList
+     * @param mainResourceId 视图名
+     * @param biConsumerList 过滤条件列表
      * @return
      */
     String getResourceIdSql(String mainResourceId, List<BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>> biConsumerList);
 
     /**
      * 根据需要查询的列，生成对应的sql语句
-     * @param plainSelect
-     * @param theadList
+     * @param plainSelect sql语句
+     * @param theadList 需要查询数据字段列表
      * @param unavailableResourceInfoList
      * @return
      */
@@ -78,9 +78,9 @@ public interface ResourceCenterCommonGenerateSqlService {
 
     /**
      * 根据需要查询的列，生成对应的sql语句
-     * @param mainResourceId
-     * @param theadList
-     * @param idList
+     * @param mainResourceId 视图名
+     * @param theadList 需要查询数据字段列表
+     * @param idList id列表
      * @param unavailableResourceInfoList
      * @return
      */
@@ -88,10 +88,10 @@ public interface ResourceCenterCommonGenerateSqlService {
 
     /**
      * 根据需要查询的列和查询条件，生成对应的sql语句执行，返回ResourceVo列表
-     * @param mainResourceId
-     * @param theadList
-     * @param biConsumerList
-     * @param basePageVo
+     * @param mainResourceId 视图名
+     * @param theadList 需要查询数据字段列表
+     * @param biConsumerList 过滤条件列表
+     * @param basePageVo 分页信息
      * @param unavailableResourceInfoList
      * @return
      */
@@ -99,9 +99,9 @@ public interface ResourceCenterCommonGenerateSqlService {
 
     /**
      * 根据需要查询的列和查询条件，生成对应的sql语句
-     * @param mainResourceId
-     * @param theadList
-     * @param biConsumerList
+     * @param mainResourceId 视图名
+     * @param theadList 需要查询数据字段列表
+     * @param biConsumerList 过滤条件列表
      * @param unavailableResourceInfoList
      * @return
      */
@@ -118,28 +118,28 @@ public interface ResourceCenterCommonGenerateSqlService {
 
     /**
      * 查询个数
-     * @param sql
+     * @param sql 完整sql语句
      * @return
      */
     int getCount(String sql);
 
     /**
      * 查询id列表
-     * @param sql
+     * @param sql 完整sql语句
      * @return
      */
     List<Long> getIdList(String sql);
 
     /**
      * 查询id
-     * @param sql
+     * @param sql 完整sql语句
      * @return
      */
     Long getId(String sql);
 
     /**
      * 查询资源列表
-     * @param sql
+     * @param sql 完整sql语句
      * @return
      */
     List<ResourceVo> getResourceList(String sql);

@@ -35,8 +35,8 @@ import java.util.function.BiConsumer;
 public class ResourceCenterCustomGenerateSqlServiceImpl implements ResourceCenterCustomGenerateSqlService, IResourceCenterCustomGenerateSqlCrossoverService {
     /**
      * 资产清单中协议过滤条件
-     * @param protocolIdList
-     * @param unavailableResourceInfoList
+     * @param protocolIdList 协议id列表
+     * @param unavailableResourceInfoList 资源中心数据初始化配置中没有定义的字段集合
      * @return
      */
     @Override
@@ -74,8 +74,8 @@ public class ResourceCenterCustomGenerateSqlServiceImpl implements ResourceCente
 
     /**
      * 资产清单中标签过滤条件
-     * @param tagIdList
-     * @param unavailableResourceInfoList
+     * @param tagIdList 标签id列表
+     * @param unavailableResourceInfoList 资源中心数据初始化配置中没有定义的字段集合
      * @return
      */
     @Override
@@ -106,8 +106,8 @@ public class ResourceCenterCustomGenerateSqlServiceImpl implements ResourceCente
 
     /**
      * 资产清单中关键字过滤条件
-     * @param keyword
-     * @param unavailableResourceInfoList
+     * @param keyword 关键字
+     * @param unavailableResourceInfoList 资源中心数据初始化配置中没有定义的字段集合
      * @return
      */
     @Override
@@ -140,8 +140,8 @@ public class ResourceCenterCustomGenerateSqlServiceImpl implements ResourceCente
 
     /**
      * 资产清单中端口过滤条件
-     * @param port
-     * @param unavailableResourceInfoList
+     * @param port 端口
+     * @param unavailableResourceInfoList 资源中心数据初始化配置中没有定义的字段集合
      * @return
      */
     public BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> getBiConsumerByPort(String port, List<ResourceInfo> unavailableResourceInfoList) {
@@ -224,8 +224,8 @@ public class ResourceCenterCustomGenerateSqlServiceImpl implements ResourceCente
 
     /**
      * 资产清单中常用的过滤条件，类型、状态、环境、系统、模块、巡检状态、名称、IP地址
-     * @param paramObj
-     * @param unavailableResourceInfoList
+     * @param paramObj 数据集合
+     * @param unavailableResourceInfoList 资源中心数据初始化配置中没有定义的字段集合
      * @return
      */
     @Override

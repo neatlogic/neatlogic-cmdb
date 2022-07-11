@@ -41,8 +41,8 @@ public class ResourceCenterCommonGenerateSqlServiceImpl implements ResourceCente
 
     /**
      * 根据查询条件组装查询资源总个数的PlainSelect对象
-     * @param mainResourceId
-     * @param biConsumerList
+     * @param mainResourceId 视图名
+     * @param biConsumerList 过滤条件列表
      * @return
      */
     @Override
@@ -70,8 +70,8 @@ public class ResourceCenterCommonGenerateSqlServiceImpl implements ResourceCente
 
     /**
      * 根据查询条件组装查询资源总个数的sql语句
-     * @param mainResourceId
-     * @param biConsumerList
+     * @param mainResourceId 视图名
+     * @param biConsumerList 过滤条件列表
      * @return
      */
     @Override
@@ -85,10 +85,10 @@ public class ResourceCenterCommonGenerateSqlServiceImpl implements ResourceCente
 
     /**
      * 根据查询条件组装查询当前页id列表的sql语句
-     * @param mainResourceId
-     * @param biConsumerList
-     * @param startNum
-     * @param pageSize
+     * @param mainResourceId 视图名
+     * @param biConsumerList 过滤条件列表
+     * @param startNum 分页开始偏移量
+     * @param pageSize 页大小
      * @return
      */
     @Override
@@ -110,7 +110,7 @@ public class ResourceCenterCommonGenerateSqlServiceImpl implements ResourceCente
 
     /**
      * 根据查询条件组装查询当前页id列表的sql语句
-     * @param plainSelect
+     * @param plainSelect sql语句
      * @return
      */
     @Override
@@ -127,9 +127,9 @@ public class ResourceCenterCommonGenerateSqlServiceImpl implements ResourceCente
 
     /**
      * 根据查询条件组装查询当前页id列表的sql语句
-     * @param plainSelect
-     * @param startNum
-     * @param pageSize
+     * @param plainSelect sql语句
+     * @param startNum 分页开始偏移量
+     * @param pageSize 页大小
      * @return
      */
     @Override
@@ -141,8 +141,8 @@ public class ResourceCenterCommonGenerateSqlServiceImpl implements ResourceCente
 
     /**
      * 根据查询条件组装查询只返回一个id的sql语句
-     * @param mainResourceId
-     * @param biConsumerList
+     * @param mainResourceId 视图名
+     * @param biConsumerList 过滤条件列表
      * @return
      */
     @Override
@@ -152,21 +152,18 @@ public class ResourceCenterCommonGenerateSqlServiceImpl implements ResourceCente
 
     /**
      * 根据需要查询的列，生成对应的sql语句
-     * @param plainSelect
-     * @param theadList
-     * @param unavailableResourceInfoList
+     * @param plainSelect sql语句
+     * @param theadList 需要查询数据字段列表
+     * @param unavailableResourceInfoList 资源中心数据初始化配置中没有定义的字段集合
      * @return
      */
     @Override
     public String getResourceListSql(PlainSelect plainSelect, List<ResourceInfo> theadList, List<ResourceInfo> unavailableResourceInfoList) {
-        long startTime = System.currentTimeMillis();
         ResourceCenterConfigVo configVo = resourceCenterConfigMapper.getResourceCenterConfig();
         if (configVo == null) {
             throw new ResourceCenterConfigNotFoundException();
         }
-        System.out.println("A=" + (System.currentTimeMillis() - startTime));
         ResourceEntityViewBuilder builder = new ResourceEntityViewBuilder(configVo.getConfig());
-        System.out.println("B=" + (System.currentTimeMillis() - startTime));
         List<ResourceEntityVo> resourceEntityList = builder.getResourceEntityList();
         ResourceSearchGenerateSqlUtil resourceSearchGenerateSqlUtil = new ResourceSearchGenerateSqlUtil(resourceEntityList);
         plainSelect.setSelectItems(null);
@@ -182,10 +179,10 @@ public class ResourceCenterCommonGenerateSqlServiceImpl implements ResourceCente
 
     /**
      * 根据需要查询的列，生成对应的sql语句
-     * @param mainResourceId
-     * @param theadList
-     * @param idList
-     * @param unavailableResourceInfoList
+     * @param mainResourceId 视图名
+     * @param theadList 需要查询数据字段列表
+     * @param idList id列表
+     * @param unavailableResourceInfoList 资源中心数据初始化配置中没有定义的字段集合
      * @return
      */
     @Override
@@ -228,11 +225,11 @@ public class ResourceCenterCommonGenerateSqlServiceImpl implements ResourceCente
 
     /**
      * 根据需要查询的列和查询条件，生成对应的sql语句执行，返回ResourceVo列表
-     * @param mainResourceId
-     * @param theadList
-     * @param biConsumerList
-     * @param basePageVo
-     * @param unavailableResourceInfoList
+     * @param mainResourceId 视图名
+     * @param theadList 需要查询数据字段列表
+     * @param biConsumerList 过滤条件列表
+     * @param basePageVo 分页信息
+     * @param unavailableResourceInfoList 资源中心数据初始化配置中没有定义的字段集合
      * @return
      */
     @Override
@@ -268,10 +265,10 @@ public class ResourceCenterCommonGenerateSqlServiceImpl implements ResourceCente
 
     /**
      * 根据需要查询的列和查询条件，生成对应的sql语句
-     * @param mainResourceId
-     * @param theadList
-     * @param biConsumerList
-     * @param unavailableResourceInfoList
+     * @param mainResourceId 视图名
+     * @param theadList 需要查询数据字段列表
+     * @param biConsumerList 过滤条件列表
+     * @param unavailableResourceInfoList 资源中心数据初始化配置中没有定义的字段集合
      * @return
      */
     @Override
@@ -318,7 +315,7 @@ public class ResourceCenterCommonGenerateSqlServiceImpl implements ResourceCente
 
     /**
      * 查询个数
-     * @param sql
+     * @param sql 完整sql语句
      * @return
      */
     @Override
@@ -328,7 +325,7 @@ public class ResourceCenterCommonGenerateSqlServiceImpl implements ResourceCente
 
     /**
      * 查询id列表
-     * @param sql
+     * @param sql 完整sql语句
      * @return
      */
     @Override
@@ -338,7 +335,7 @@ public class ResourceCenterCommonGenerateSqlServiceImpl implements ResourceCente
 
     /**
      * 查询id
-     * @param sql
+     * @param sql 完整sql语句
      * @return
      */
     @Override
@@ -348,7 +345,7 @@ public class ResourceCenterCommonGenerateSqlServiceImpl implements ResourceCente
 
     /**
      * 查询资源列表
-     * @param sql
+     * @param sql 完整sql语句
      * @return
      */
     @Override
