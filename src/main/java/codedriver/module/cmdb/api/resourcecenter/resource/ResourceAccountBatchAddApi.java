@@ -99,7 +99,7 @@ public class ResourceAccountBatchAddApi extends PrivateApiComponentBase {
         theadList.add(new ResourceInfo("resource_ipobject", "id"));
         theadList.add(new ResourceInfo("resource_ipobject", "name"));
         theadList.add(new ResourceInfo("resource_ipobject", "ip"));
-        String sql = resourceCenterCommonGenerateSqlService.getResourceListByIdListSql(theadList, resourceIdList, unavailableResourceInfoList, "resource_ipobject");
+        String sql = resourceCenterCommonGenerateSqlService.getResourceListByIdListSql("resource_ipobject", theadList, resourceIdList, unavailableResourceInfoList);
         if (StringUtils.isNotBlank(sql)) {
             resourceVoList = resourceCenterCommonGenerateSqlService.getResourceList(sql);
         }

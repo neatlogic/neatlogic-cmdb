@@ -7,6 +7,7 @@ package codedriver.module.cmdb.service.resourcecenter.resource;
 
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceInfo;
 import codedriver.framework.cmdb.utils.ResourceSearchGenerateSqlUtil;
+import com.alibaba.fastjson.JSONObject;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 import java.util.List;
@@ -21,5 +22,7 @@ public interface ResourceCenterCustomGenerateSqlService {
     BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> getBiConsumerByKeyword(String keyword, List<ResourceInfo> unavailableResourceInfoList);
 
     List<ResourceInfo> getTheadList();
+
+    BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> getBiConsumerByCommonCondition(JSONObject paramObj, List<ResourceInfo> unavailableResourceInfoList);
 
 }

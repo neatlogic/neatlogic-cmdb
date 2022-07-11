@@ -342,7 +342,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                     //环境状态
                     theadList.add(new ResourceInfo("resource_softwareservice_env", "env_id"));
                     theadList.add(new ResourceInfo("resource_softwareservice_env", "env_name"));
-                    String sql = resourceCenterCommonGenerateSqlService.getResourceListByIdListSql(theadList, idList, unavailableResourceInfoList, "resource_ipobject");
+                    String sql = resourceCenterCommonGenerateSqlService.getResourceListByIdListSql("resource_ipobject", theadList, idList, unavailableResourceInfoList);
                     if (StringUtils.isBlank(sql)) {
                         return new ArrayList<>();
                     }
@@ -436,7 +436,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                     theadList.add(new ResourceInfo("resource_appinstance_appinstancecluster", "cluster_id"));
                     theadList.add(new ResourceInfo("resource_appinstance_appinstancecluster", "cluster_type_id"));
                     theadList.add(new ResourceInfo("resource_appinstance_appinstancecluster", "cluster_name"));
-                    String sql = resourceCenterCommonGenerateSqlService.getResourceListByIdListSql(theadList, idList, unavailableResourceInfoList, "resource_appinstance");
+                    String sql = resourceCenterCommonGenerateSqlService.getResourceListByIdListSql("resource_appinstance", theadList, idList, unavailableResourceInfoList);
                     if (StringUtils.isBlank(sql)) {
                         return new ArrayList<>();
                     }
@@ -518,7 +518,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                     theadList.add(new ResourceInfo("resource_dbinstance_dbcluster", "cluster_id"));
                     theadList.add(new ResourceInfo("resource_dbinstance_dbcluster", "cluster_type_id"));
                     theadList.add(new ResourceInfo("resource_dbinstance_dbcluster", "cluster_name"));
-                    String sql = resourceCenterCommonGenerateSqlService.getResourceListByIdListSql(theadList, idList, unavailableResourceInfoList, "resource_dbinstance");
+                    String sql = resourceCenterCommonGenerateSqlService.getResourceListByIdListSql("resource_dbinstance", theadList, idList, unavailableResourceInfoList);
                     if (StringUtils.isBlank(sql)) {
                         return new ArrayList<>();
                     }

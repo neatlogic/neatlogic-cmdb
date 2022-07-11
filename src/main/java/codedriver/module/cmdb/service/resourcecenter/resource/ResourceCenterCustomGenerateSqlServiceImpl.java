@@ -8,15 +8,14 @@ package codedriver.module.cmdb.service.resourcecenter.resource;
 import codedriver.framework.cmdb.crossover.IResourceCenterCustomGenerateSqlCrossoverService;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceInfo;
 import codedriver.framework.cmdb.utils.ResourceSearchGenerateSqlUtil;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
-import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
-import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.InExpression;
-import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
+import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.Join;
@@ -27,7 +26,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 
 @Service
@@ -171,5 +172,137 @@ public class ResourceCenterCustomGenerateSqlServiceImpl implements ResourceCente
 //        theadList.add(new ResourceInfo("resource_softwareservice_env", "env_id"));
 //        theadList.add(new ResourceInfo("resource_softwareservice_env", "env_name"));
         return theadList;
+    }
+
+    @Override
+    public BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> getBiConsumerByCommonCondition(JSONObject paramObj, List<ResourceInfo> unavailableResourceInfoList) {
+        BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> biConsumer = new BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>() {
+            @Override
+            public void accept(ResourceSearchGenerateSqlUtil resourceSearchGenerateSqlUtil, PlainSelect plainSelect) {
+                Map<String, ResourceInfo> searchConditionMappingMap = new HashMap<>();
+                searchConditionMappingMap.put("typeIdList", new ResourceInfo("resource_ipobject","type_id", false));
+                searchConditionMappingMap.put("stateIdList", new ResourceInfo("resource_ipobject_state","state_id", false));
+                searchConditionMappingMap.put("envIdList", new ResourceInfo("resource_softwareservice_env","env_id", false));
+                searchConditionMappingMap.put("appSystemIdList", new ResourceInfo("resource_appmodule_appsystem","app_system_id", false));
+                searchConditionMappingMap.put("appModuleIdList", new ResourceInfo("resource_ipobject_appmodule","app_module_id", false));
+                searchConditionMappingMap.put("defaultValue", new ResourceInfo("resource_ipobject","id", false));
+                searchConditionMappingMap.put("inspectStatusList", new ResourceInfo("resource_ipobject","inspect_status", false));
+                searchConditionMappingMap.put("name", new ResourceInfo("resource_ipobject","name", false));
+                searchConditionMappingMap.put("ip", new ResourceInfo("resource_ipobject","ip", false));
+                searchConditionMappingMap.put("port", new ResourceInfo("resource_softwareservice","port", false));
+
+                JSONArray defaultValue = paramObj.getJSONArray("defaultValue");
+                if (CollectionUtils.isNotEmpty(defaultValue)) {
+                    List<Long> idList = defaultValue.toJavaList(Long.class);
+                    ResourceInfo resourceInfo = searchConditionMappingMap.get("defaultValue");
+                    if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
+                        Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
+                        resourceSearchGenerateSqlUtil.addWhere(plainSelect, column, new InExpression(), idList);
+                    } else {
+                        unavailableResourceInfoList.add(resourceInfo);
+                    }
+                }
+
+                JSONArray typeIdList = paramObj.getJSONArray("typeIdList");
+                if (CollectionUtils.isNotEmpty(typeIdList)) {
+                    ResourceInfo resourceInfo = searchConditionMappingMap.get("typeIdList");
+                    if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
+                        Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
+                        resourceSearchGenerateSqlUtil.addWhere(plainSelect, column, new InExpression(), typeIdList);
+                    }else {
+                        unavailableResourceInfoList.add(resourceInfo);
+                    }
+                }
+
+                JSONArray inspectStatusList = paramObj.getJSONArray("inspectStatusList");
+                if (CollectionUtils.isNotEmpty(inspectStatusList)) {
+                    ResourceInfo resourceInfo = searchConditionMappingMap.get("inspectStatusList");
+                    if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
+                        Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
+                        resourceSearchGenerateSqlUtil.addWhere(plainSelect, column, new InExpression(), inspectStatusList);
+                    } else {
+                        unavailableResourceInfoList.add(resourceInfo);
+                    }
+                }
+
+                JSONArray stateIdList = paramObj.getJSONArray("stateIdList");
+                if (CollectionUtils.isNotEmpty(stateIdList)) {
+                    ResourceInfo resourceInfo = searchConditionMappingMap.get("stateIdList");
+                    if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
+                        Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
+                        resourceSearchGenerateSqlUtil.addWhere(plainSelect, column, new InExpression(), stateIdList);
+                    } else {
+                        unavailableResourceInfoList.add(resourceInfo);
+                    }
+                }
+
+                JSONArray envIdList = paramObj.getJSONArray("envIdList");
+                if (CollectionUtils.isNotEmpty(envIdList)) {
+                    ResourceInfo resourceInfo = searchConditionMappingMap.get("envIdList");
+                    if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
+                        Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
+                        resourceSearchGenerateSqlUtil.addWhere(plainSelect, column, new InExpression(), envIdList);
+                    } else {
+                        unavailableResourceInfoList.add(resourceInfo);
+                    }
+                }
+
+                JSONArray appModuleIdList = paramObj.getJSONArray("appModuleIdList");
+                JSONArray appSystemIdList = paramObj.getJSONArray("appSystemIdList");
+                if (CollectionUtils.isNotEmpty(appModuleIdList) || CollectionUtils.isNotEmpty(appSystemIdList)) {
+                    ResourceInfo resourceInfo = searchConditionMappingMap.get("appModuleIdList");
+                    if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
+                        Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
+                        if (CollectionUtils.isNotEmpty(appModuleIdList)) {
+                            resourceSearchGenerateSqlUtil.addWhere(plainSelect, column, new InExpression(), appModuleIdList);
+                        }
+                    } else {
+                        unavailableResourceInfoList.add(resourceInfo);
+                    }
+                }
+                if (CollectionUtils.isNotEmpty(appSystemIdList)) {
+                    ResourceInfo resourceInfo = searchConditionMappingMap.get("appSystemIdList");
+                    if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
+                        Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
+                        resourceSearchGenerateSqlUtil.addWhere(plainSelect, column, new InExpression(), appSystemIdList);
+                    } else {
+                        unavailableResourceInfoList.add(resourceInfo);
+                    }
+                }
+                String name = paramObj.getString("name");
+                if (StringUtils.isNotBlank(name)) {
+                    ResourceInfo resourceInfo = searchConditionMappingMap.get("name");
+                    if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
+                        Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
+                        resourceSearchGenerateSqlUtil.addWhere(plainSelect, column, new EqualsTo(), name);
+                    } else {
+                        unavailableResourceInfoList.add(resourceInfo);
+                    }
+                }
+                String ip = paramObj.getString("ip");
+                if (StringUtils.isNotBlank(ip)) {
+                    ResourceInfo resourceInfo = searchConditionMappingMap.get("ip");
+                    if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
+                        Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
+                        resourceSearchGenerateSqlUtil.addWhere(plainSelect, column, new EqualsTo(), ip);
+                    } else {
+                        unavailableResourceInfoList.add(resourceInfo);
+                    }
+                }
+                String port = paramObj.getString("port");
+                ResourceInfo resourceInfo = searchConditionMappingMap.get("port");
+                if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
+                    Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
+                    if (StringUtils.isNotBlank(port)) {
+                        resourceSearchGenerateSqlUtil.addWhere(plainSelect, column, new EqualsTo(), port);
+                    } else {
+                        resourceSearchGenerateSqlUtil.addWhere(plainSelect, column, new IsNullExpression());
+                    }
+                } else {
+                    unavailableResourceInfoList.add(resourceInfo);
+                }
+            }
+        };
+        return biConsumer;
     }
 }

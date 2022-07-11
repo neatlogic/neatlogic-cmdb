@@ -153,7 +153,7 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
                 List<ResourceInfo> unavailableResourceInfoList = new ArrayList<>();
                 JSONObject paramObj = (JSONObject) JSONObject.toJSON(searchVo);
                 List<BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>> biConsumerList = new ArrayList<>();
-                biConsumerList.add(resourceCenterCommonGenerateSqlService.getBiConsumerByCommonCondition(paramObj, unavailableResourceInfoList));
+                biConsumerList.add(resourceCenterCustomGenerateSqlService.getBiConsumerByCommonCondition(paramObj, unavailableResourceInfoList));
                 biConsumerList.add(resourceCenterCustomGenerateSqlService.getBiConsumerByProtocolIdList(searchVo.getProtocolIdList(), unavailableResourceInfoList));
                 biConsumerList.add(resourceCenterCustomGenerateSqlService.getBiConsumerByTagIdList(searchVo.getTagIdList(), unavailableResourceInfoList));
                 biConsumerList.add(resourceCenterCustomGenerateSqlService.getBiConsumerByKeyword(searchVo.getKeyword(), unavailableResourceInfoList));
@@ -181,7 +181,7 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
                     List<ResourceInfo> unavailableResourceInfoList = new ArrayList<>();
                     JSONObject paramObj = (JSONObject) JSONObject.toJSON(searchVo);
                     List<BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>> biConsumerList = new ArrayList<>();
-                    biConsumerList.add(resourceCenterCommonGenerateSqlService.getBiConsumerByCommonCondition(paramObj, unavailableResourceInfoList));
+                    biConsumerList.add(resourceCenterCustomGenerateSqlService.getBiConsumerByCommonCondition(paramObj, unavailableResourceInfoList));
                     biConsumerList.add(resourceCenterCustomGenerateSqlService.getBiConsumerByProtocolIdList(searchVo.getProtocolIdList(), unavailableResourceInfoList));
                     biConsumerList.add(resourceCenterCustomGenerateSqlService.getBiConsumerByTagIdList(searchVo.getTagIdList(), unavailableResourceInfoList));
                     biConsumerList.add(resourceCenterCustomGenerateSqlService.getBiConsumerByKeyword(searchVo.getKeyword(), unavailableResourceInfoList));
@@ -212,7 +212,7 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
             List<ResourceInfo> unavailableResourceInfoList = new ArrayList<>();
             JSONObject paramObj = (JSONObject) JSONObject.toJSON(searchVo);
             List<BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>> biConsumerList = new ArrayList<>();
-            biConsumerList.add(resourceCenterCommonGenerateSqlService.getBiConsumerByCommonCondition(paramObj, unavailableResourceInfoList));
+            biConsumerList.add(resourceCenterCustomGenerateSqlService.getBiConsumerByCommonCondition(paramObj, unavailableResourceInfoList));
             biConsumerList.add(resourceCenterCustomGenerateSqlService.getBiConsumerByProtocolIdList(searchVo.getProtocolIdList(), unavailableResourceInfoList));
             biConsumerList.add(resourceCenterCustomGenerateSqlService.getBiConsumerByTagIdList(searchVo.getTagIdList(), unavailableResourceInfoList));
             biConsumerList.add(resourceCenterCustomGenerateSqlService.getBiConsumerByKeyword(searchVo.getKeyword(), unavailableResourceInfoList));

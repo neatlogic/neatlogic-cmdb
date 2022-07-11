@@ -16,13 +16,9 @@ import codedriver.framework.common.dto.BasePageVo;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceCenterConfigMapper;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import codedriver.module.cmdb.utils.ResourceEntityViewBuilder;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import net.sf.jsqlparser.expression.*;
-import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
-import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
@@ -43,6 +39,12 @@ public class ResourceCenterCommonGenerateSqlServiceImpl implements ResourceCente
     @Resource
     private ResourceMapper resourceMapper;
 
+    /**
+     * 根据查询条件组装查询资源总个数的PlainSelect对象
+     * @param mainResourceId
+     * @param biConsumerList
+     * @return
+     */
     @Override
     public PlainSelect getResourceCountPlainSelect(String mainResourceId, List<BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>> biConsumerList) {
         ResourceCenterConfigVo configVo = resourceCenterConfigMapper.getResourceCenterConfig();
@@ -66,32 +68,34 @@ public class ResourceCenterCommonGenerateSqlServiceImpl implements ResourceCente
         return plainSelect;
     }
 
+    /**
+     * 根据查询条件组装查询资源总个数的sql语句
+     * @param mainResourceId
+     * @param biConsumerList
+     * @return
+     */
     @Override
     public String getResourceCountSql(String mainResourceId, List<BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>> biConsumerList) {
-        PlainSelect filterPlainSelect = getResourceCountPlainSelect(mainResourceId, biConsumerList);
-        if (filterPlainSelect == null) {
-            return null;
-        }
-        return filterPlainSelect.toString();
-    }
-
-    @Override
-    public String getResourceIdListSql(String mainResourceId, List<BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>> biConsumerList, int startNum, int pageSize) {
-        ResourceCenterConfigVo configVo = resourceCenterConfigMapper.getResourceCenterConfig();
-        if (configVo == null) {
-            throw new ResourceCenterConfigNotFoundException();
-        }
-        ResourceEntityViewBuilder builder = new ResourceEntityViewBuilder(configVo.getConfig());
-        List<ResourceEntityVo> resourceEntityList = builder.getResourceEntityList();
-        ResourceSearchGenerateSqlUtil resourceSearchGenerateSqlUtil = new ResourceSearchGenerateSqlUtil(resourceEntityList);
-        PlainSelect plainSelect = resourceSearchGenerateSqlUtil.initPlainSelectByMainResourceId(mainResourceId);
+        PlainSelect plainSelect = getResourceCountPlainSelect(mainResourceId, biConsumerList);
         if (plainSelect == null) {
             return null;
         }
-        if (CollectionUtils.isNotEmpty(biConsumerList)) {
-            for (BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> biConsumer : biConsumerList) {
-                biConsumer.accept(resourceSearchGenerateSqlUtil, plainSelect);
-            }
+        return plainSelect.toString();
+    }
+
+    /**
+     * 根据查询条件组装查询当前页id列表的sql语句
+     * @param mainResourceId
+     * @param biConsumerList
+     * @param startNum
+     * @param pageSize
+     * @return
+     */
+    @Override
+    public String getResourceIdListSql(String mainResourceId, List<BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>> biConsumerList, int startNum, int pageSize) {
+        PlainSelect plainSelect = getResourceCountPlainSelect(mainResourceId, biConsumerList);
+        if (plainSelect == null) {
+            return null;
         }
         Table mainTable = (Table)plainSelect.getFromItem();
         List<OrderByElement> orderByElements = new ArrayList<>();
@@ -104,6 +108,11 @@ public class ResourceCenterCommonGenerateSqlServiceImpl implements ResourceCente
         return plainSelect.toString();
     }
 
+    /**
+     * 根据查询条件组装查询当前页id列表的sql语句
+     * @param plainSelect
+     * @return
+     */
     @Override
     public String getResourceIdListSql(PlainSelect plainSelect) {
         Table mainTable = (Table)plainSelect.getFromItem();
@@ -116,6 +125,13 @@ public class ResourceCenterCommonGenerateSqlServiceImpl implements ResourceCente
         return plainSelect.toString();
     }
 
+    /**
+     * 根据查询条件组装查询当前页id列表的sql语句
+     * @param plainSelect
+     * @param startNum
+     * @param pageSize
+     * @return
+     */
     @Override
     public String getResourceIdListSql(PlainSelect plainSelect, int startNum, int pageSize) {
         getResourceIdListSql(plainSelect);
@@ -123,13 +139,26 @@ public class ResourceCenterCommonGenerateSqlServiceImpl implements ResourceCente
         return plainSelect.toString();
     }
 
+    /**
+     * 根据查询条件组装查询只返回一个id的sql语句
+     * @param mainResourceId
+     * @param biConsumerList
+     * @return
+     */
     @Override
     public String getResourceIdSql(String mainResourceId, List<BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>> biConsumerList) {
         return getResourceIdListSql(mainResourceId, biConsumerList, 0, 1);
     }
 
+    /**
+     * 根据需要查询的列，生成对应的sql语句
+     * @param plainSelect
+     * @param theadList
+     * @param unavailableResourceInfoList
+     * @return
+     */
     @Override
-    public String getResourceListSql(PlainSelect plainSelect, List<ResourceInfo> unavailableResourceInfoList, List<ResourceInfo> theadList) {
+    public String getResourceListSql(PlainSelect plainSelect, List<ResourceInfo> theadList, List<ResourceInfo> unavailableResourceInfoList) {
         long startTime = System.currentTimeMillis();
         ResourceCenterConfigVo configVo = resourceCenterConfigMapper.getResourceCenterConfig();
         if (configVo == null) {
@@ -151,8 +180,16 @@ public class ResourceCenterCommonGenerateSqlServiceImpl implements ResourceCente
         return plainSelect.toString();
     }
 
+    /**
+     * 根据需要查询的列，生成对应的sql语句
+     * @param mainResourceId
+     * @param theadList
+     * @param idList
+     * @param unavailableResourceInfoList
+     * @return
+     */
     @Override
-    public String getResourceListByIdListSql(List<ResourceInfo> theadList, List<Long> idList, List<ResourceInfo> unavailableResourceInfoList, String mainResourceId) {
+    public String getResourceListByIdListSql(String mainResourceId, List<ResourceInfo> theadList, List<Long> idList, List<ResourceInfo> unavailableResourceInfoList) {
         if (CollectionUtils.isEmpty(idList)) {
             return null;
         }
@@ -189,14 +226,22 @@ public class ResourceCenterCommonGenerateSqlServiceImpl implements ResourceCente
         return plainSelect.toString();
     }
 
+    /**
+     * 根据需要查询的列和查询条件，生成对应的sql语句执行，返回ResourceVo列表
+     * @param mainResourceId
+     * @param theadList
+     * @param biConsumerList
+     * @param basePageVo
+     * @param unavailableResourceInfoList
+     * @return
+     */
     @Override
     public List<ResourceVo> getResourceList(
-            List<BiConsumer<ResourceSearchGenerateSqlUtil,
-                    PlainSelect>> biConsumerList,
-            BasePageVo basePageVo,
-            List<ResourceInfo> unavailableResourceInfoList,
             String mainResourceId,
-            List<ResourceInfo> theadList
+            List<ResourceInfo> theadList,
+            List<BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>> biConsumerList,
+            BasePageVo basePageVo,
+            List<ResourceInfo> unavailableResourceInfoList
     ) {
         List<ResourceVo> resourceList = new ArrayList<>();
         PlainSelect plainSelect = getResourceCountPlainSelect(mainResourceId, biConsumerList);
@@ -213,7 +258,7 @@ public class ResourceCenterCommonGenerateSqlServiceImpl implements ResourceCente
         if (CollectionUtils.isEmpty(idList)) {
             return resourceList;
         }
-        sql = getResourceListByIdListSql(theadList, idList, unavailableResourceInfoList, mainResourceId);
+        sql = getResourceListByIdListSql(mainResourceId, theadList, idList, unavailableResourceInfoList);
         if (StringUtils.isBlank(sql)) {
             return resourceList;
         }
@@ -221,12 +266,20 @@ public class ResourceCenterCommonGenerateSqlServiceImpl implements ResourceCente
         return resourceList;
     }
 
+    /**
+     * 根据需要查询的列和查询条件，生成对应的sql语句
+     * @param mainResourceId
+     * @param theadList
+     * @param biConsumerList
+     * @param unavailableResourceInfoList
+     * @return
+     */
     @Override
     public String getResourceListSql(
-            List<BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>> biConsumerList,
-            List<ResourceInfo> unavailableResourceInfoList,
             String mainResourceId,
-            List<ResourceInfo> theadList) {
+            List<ResourceInfo> theadList,
+            List<BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>> biConsumerList,
+            List<ResourceInfo> unavailableResourceInfoList) {
         PlainSelect plainSelect = getResourceCountPlainSelect(mainResourceId, biConsumerList);
         if (plainSelect == null) {
             return null;
@@ -249,6 +302,10 @@ public class ResourceCenterCommonGenerateSqlServiceImpl implements ResourceCente
         return plainSelect.toString();
     }
 
+    /**
+     * 获取数据初始化配置信息中的视图列表信息
+     * @return
+     */
     @Override
     public List<ResourceEntityVo> getResourceEntityList() {
         ResourceCenterConfigVo configVo = resourceCenterConfigMapper.getResourceCenterConfig();
@@ -259,166 +316,41 @@ public class ResourceCenterCommonGenerateSqlServiceImpl implements ResourceCente
         return builder.getResourceEntityList();
     }
 
-    @Override
-    public BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> getBiConsumerByCommonCondition(JSONObject paramObj, List<ResourceInfo> unavailableResourceInfoList) {
-        BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> biConsumer = new BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>() {
-            @Override
-            public void accept(ResourceSearchGenerateSqlUtil resourceSearchGenerateSqlUtil, PlainSelect plainSelect) {
-                Map<String, ResourceInfo> searchConditionMappingMap = new HashMap<>();
-                searchConditionMappingMap.put("typeIdList", new ResourceInfo("resource_ipobject","type_id", false));
-                searchConditionMappingMap.put("stateIdList", new ResourceInfo("resource_ipobject_state","state_id", false));
-                searchConditionMappingMap.put("envIdList", new ResourceInfo("resource_softwareservice_env","env_id", false));
-                searchConditionMappingMap.put("appSystemIdList", new ResourceInfo("resource_appmodule_appsystem","app_system_id", false));
-                searchConditionMappingMap.put("appModuleIdList", new ResourceInfo("resource_ipobject_appmodule","app_module_id", false));
-                searchConditionMappingMap.put("defaultValue", new ResourceInfo("resource_ipobject","id", false));
-                searchConditionMappingMap.put("inspectStatusList", new ResourceInfo("resource_ipobject","inspect_status", false));
-                searchConditionMappingMap.put("name", new ResourceInfo("resource_ipobject","name", false));
-                searchConditionMappingMap.put("ip", new ResourceInfo("resource_ipobject","ip", false));
-                searchConditionMappingMap.put("port", new ResourceInfo("resource_softwareservice","port", false));
-//        for (Map.Entry<String, ResourceInfo> entry : searchConditionMappingMap.entrySet()) {
-//            String key = entry.getKey();
-//            JSONArray jsonArray = paramObj.getJSONArray(key);
-//            if (CollectionUtils.isNotEmpty(jsonArray)) {
-//                ResourceInfo resourceInfo = entry.getValue();
-//                if (additionalInformation(resourceInfo)) {
-//                    Column column = addJoinTableByResourceInfo(resourceInfo, plainSelect);
-//                    addWhere(plainSelect, column, new InExpression(), jsonArray);
-//                } else {
-//                    unavailableResourceInfoList.add(resourceInfo);
-//                }
-//            }
-//        }
-
-                JSONArray defaultValue = paramObj.getJSONArray("defaultValue");
-                if (CollectionUtils.isNotEmpty(defaultValue)) {
-                    List<Long> idList = defaultValue.toJavaList(Long.class);
-                    ResourceInfo resourceInfo = searchConditionMappingMap.get("defaultValue");
-                    if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
-                        Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
-                        resourceSearchGenerateSqlUtil.addWhere(plainSelect, column, new InExpression(), idList);
-                    } else {
-                        unavailableResourceInfoList.add(resourceInfo);
-                    }
-                }
-
-                JSONArray typeIdList = paramObj.getJSONArray("typeIdList");
-                if (CollectionUtils.isNotEmpty(typeIdList)) {
-                    ResourceInfo resourceInfo = searchConditionMappingMap.get("typeIdList");
-                    if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
-                        Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
-                        resourceSearchGenerateSqlUtil.addWhere(plainSelect, column, new InExpression(), typeIdList);
-                    }else {
-                        unavailableResourceInfoList.add(resourceInfo);
-                    }
-                }
-
-                JSONArray inspectStatusList = paramObj.getJSONArray("inspectStatusList");
-                if (CollectionUtils.isNotEmpty(inspectStatusList)) {
-                    ResourceInfo resourceInfo = searchConditionMappingMap.get("inspectStatusList");
-                    if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
-                        Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
-                        resourceSearchGenerateSqlUtil.addWhere(plainSelect, column, new InExpression(), inspectStatusList);
-                    } else {
-                        unavailableResourceInfoList.add(resourceInfo);
-                    }
-                }
-
-                JSONArray stateIdList = paramObj.getJSONArray("stateIdList");
-                if (CollectionUtils.isNotEmpty(stateIdList)) {
-                    ResourceInfo resourceInfo = searchConditionMappingMap.get("stateIdList");
-                    if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
-                        Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
-                        resourceSearchGenerateSqlUtil.addWhere(plainSelect, column, new InExpression(), stateIdList);
-                    } else {
-                        unavailableResourceInfoList.add(resourceInfo);
-                    }
-                }
-
-                JSONArray envIdList = paramObj.getJSONArray("envIdList");
-                if (CollectionUtils.isNotEmpty(envIdList)) {
-                    ResourceInfo resourceInfo = searchConditionMappingMap.get("envIdList");
-                    if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
-                        Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
-                        resourceSearchGenerateSqlUtil.addWhere(plainSelect, column, new InExpression(), envIdList);
-                    } else {
-                        unavailableResourceInfoList.add(resourceInfo);
-                    }
-                }
-
-                JSONArray appModuleIdList = paramObj.getJSONArray("appModuleIdList");
-                JSONArray appSystemIdList = paramObj.getJSONArray("appSystemIdList");
-                if (CollectionUtils.isNotEmpty(appModuleIdList) || CollectionUtils.isNotEmpty(appSystemIdList)) {
-                    ResourceInfo resourceInfo = searchConditionMappingMap.get("appModuleIdList");
-                    if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
-                        Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
-                        if (CollectionUtils.isNotEmpty(appModuleIdList)) {
-                            resourceSearchGenerateSqlUtil.addWhere(plainSelect, column, new InExpression(), appModuleIdList);
-                        }
-                    } else {
-                        unavailableResourceInfoList.add(resourceInfo);
-                    }
-                }
-                if (CollectionUtils.isNotEmpty(appSystemIdList)) {
-                    ResourceInfo resourceInfo = searchConditionMappingMap.get("appSystemIdList");
-                    if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
-                        Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
-                        resourceSearchGenerateSqlUtil.addWhere(plainSelect, column, new InExpression(), appSystemIdList);
-                    } else {
-                        unavailableResourceInfoList.add(resourceInfo);
-                    }
-                }
-                String name = paramObj.getString("name");
-                if (StringUtils.isNotBlank(name)) {
-                    ResourceInfo resourceInfo = searchConditionMappingMap.get("name");
-                    if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
-                        Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
-                        resourceSearchGenerateSqlUtil.addWhere(plainSelect, column, new EqualsTo(), name);
-                    } else {
-                        unavailableResourceInfoList.add(resourceInfo);
-                    }
-                }
-                String ip = paramObj.getString("ip");
-                if (StringUtils.isNotBlank(ip)) {
-                    ResourceInfo resourceInfo = searchConditionMappingMap.get("ip");
-                    if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
-                        Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
-                        resourceSearchGenerateSqlUtil.addWhere(plainSelect, column, new EqualsTo(), ip);
-                    } else {
-                        unavailableResourceInfoList.add(resourceInfo);
-                    }
-                }
-                String port = paramObj.getString("port");
-                ResourceInfo resourceInfo = searchConditionMappingMap.get("port");
-                if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
-                    Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
-                    if (StringUtils.isNotBlank(port)) {
-                        resourceSearchGenerateSqlUtil.addWhere(plainSelect, column, new EqualsTo(), port);
-                    } else {
-                        resourceSearchGenerateSqlUtil.addWhere(plainSelect, column, new IsNullExpression());
-                    }
-                } else {
-                    unavailableResourceInfoList.add(resourceInfo);
-                }
-                    }
-                };
-        return biConsumer;
-    }
-
+    /**
+     * 查询个数
+     * @param sql
+     * @return
+     */
     @Override
     public int getCount(String sql) {
         return resourceMapper.getResourceCount(sql);
     }
 
+    /**
+     * 查询id列表
+     * @param sql
+     * @return
+     */
     @Override
     public List<Long> getIdList(String sql) {
         return resourceMapper.getResourceIdList(sql);
     }
 
+    /**
+     * 查询id
+     * @param sql
+     * @return
+     */
     @Override
     public Long getId(String sql) {
         return resourceMapper.getResourceId(sql);
     }
 
+    /**
+     * 查询资源列表
+     * @param sql
+     * @return
+     */
     @Override
     public List<ResourceVo> getResourceList(String sql) {
         return resourceMapper.getResourceListByIdList(sql);
