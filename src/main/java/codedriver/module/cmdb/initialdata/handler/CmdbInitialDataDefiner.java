@@ -26,7 +26,13 @@ public class CmdbInitialDataDefiner implements IInitialDataDefiner {
                 "cmdb_reltype",
                 "cmdb_relativerel",
                 "cmdb_view",
-                "cmdb_viewconst"
+                "cmdb_viewconst",
+                "cmdb_validator",
+                "cmdb_sync_ci_collection",
+                "cmdb_sync_mapping",
+                "cmdb_sync_policy",
+                "cmdb_sync_schedule",
+                "cmdb_sync_unique"
         };
     }
 }
