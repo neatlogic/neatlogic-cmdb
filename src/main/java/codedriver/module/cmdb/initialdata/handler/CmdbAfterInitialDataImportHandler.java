@@ -59,5 +59,6 @@ public class CmdbAfterInitialDataImportHandler implements IAfterInitialDataImpor
                 }
             }
         }
+
     }
 }
