@@ -256,7 +256,6 @@ public class ResourceDetailView implements ICustomView {
                 resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
             }
         }
-        System.out.println(TenantContext.get().getTenantUuid() + "a=" + plainSelect.toString());
         return plainSelect.toString();
     }
 
