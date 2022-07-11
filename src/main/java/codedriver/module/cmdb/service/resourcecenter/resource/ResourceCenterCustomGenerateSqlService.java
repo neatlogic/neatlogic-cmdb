@@ -40,13 +40,21 @@ public interface ResourceCenterCustomGenerateSqlService {
     BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> getBiConsumerByKeyword(String keyword, List<ResourceInfo> unavailableResourceInfoList);
 
     /**
+     * 资产清单中端口过滤条件
+     * @param port
+     * @param unavailableResourceInfoList
+     * @return
+     */
+    BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> getBiConsumerByPort(String port, List<ResourceInfo> unavailableResourceInfoList);
+
+    /**
      * 资产清单中需要显示的字段列表
      * @return
      */
     List<ResourceInfo> getTheadList();
 
     /**
-     * 资产清单中常用的过滤条件，类型、状态、环境、系统、模块、巡检状态、名称、IP地址、端口
+     * 资产清单中常用的过滤条件，类型、状态、环境、系统、模块、巡检状态、名称、IP地址
      * @param paramObj
      * @param unavailableResourceInfoList
      * @return

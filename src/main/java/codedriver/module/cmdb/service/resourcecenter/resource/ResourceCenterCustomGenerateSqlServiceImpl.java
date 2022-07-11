@@ -139,6 +139,32 @@ public class ResourceCenterCustomGenerateSqlServiceImpl implements ResourceCente
     }
 
     /**
+     * 资产清单中端口过滤条件
+     * @param port
+     * @param unavailableResourceInfoList
+     * @return
+     */
+    public BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> getBiConsumerByPort(String port, List<ResourceInfo> unavailableResourceInfoList) {
+        BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> biConsumer = new BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>() {
+            @Override
+            public void accept(ResourceSearchGenerateSqlUtil resourceSearchGenerateSqlUtil, PlainSelect plainSelect) {
+                ResourceInfo resourceInfo = new ResourceInfo("resource_softwareservice","port");
+                if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
+                    Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
+                    if (StringUtils.isNotBlank(port)) {
+                        resourceSearchGenerateSqlUtil.addWhere(plainSelect, column, new EqualsTo(), port);
+                    } else {
+                        resourceSearchGenerateSqlUtil.addWhere(plainSelect, column, new IsNullExpression());
+                    }
+                } else {
+                    unavailableResourceInfoList.add(resourceInfo);
+                }
+            }
+        };
+        return biConsumer;
+    }
+
+    /**
      * 资产清单中需要显示的字段列表
      * @return
      */
@@ -197,7 +223,7 @@ public class ResourceCenterCustomGenerateSqlServiceImpl implements ResourceCente
     }
 
     /**
-     * 资产清单中常用的过滤条件，类型、状态、环境、系统、模块、巡检状态、名称、IP地址、端口
+     * 资产清单中常用的过滤条件，类型、状态、环境、系统、模块、巡检状态、名称、IP地址
      * @param paramObj
      * @param unavailableResourceInfoList
      * @return
@@ -217,7 +243,6 @@ public class ResourceCenterCustomGenerateSqlServiceImpl implements ResourceCente
                 searchConditionMappingMap.put("inspectStatusList", new ResourceInfo("resource_ipobject","inspect_status", false));
                 searchConditionMappingMap.put("name", new ResourceInfo("resource_ipobject","name", false));
                 searchConditionMappingMap.put("ip", new ResourceInfo("resource_ipobject","ip", false));
-                searchConditionMappingMap.put("port", new ResourceInfo("resource_softwareservice","port", false));
 
                 JSONArray defaultValue = paramObj.getJSONArray("defaultValue");
                 if (CollectionUtils.isNotEmpty(defaultValue)) {
@@ -316,18 +341,6 @@ public class ResourceCenterCustomGenerateSqlServiceImpl implements ResourceCente
                     } else {
                         unavailableResourceInfoList.add(resourceInfo);
                     }
-                }
-                String port = paramObj.getString("port");
-                ResourceInfo resourceInfo = searchConditionMappingMap.get("port");
-                if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
-                    Column column = resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
-                    if (StringUtils.isNotBlank(port)) {
-                        resourceSearchGenerateSqlUtil.addWhere(plainSelect, column, new EqualsTo(), port);
-                    } else {
-                        resourceSearchGenerateSqlUtil.addWhere(plainSelect, column, new IsNullExpression());
-                    }
-                } else {
-                    unavailableResourceInfoList.add(resourceInfo);
                 }
             }
         };

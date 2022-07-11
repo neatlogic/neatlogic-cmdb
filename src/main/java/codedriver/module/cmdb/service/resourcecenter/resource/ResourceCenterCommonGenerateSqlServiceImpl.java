@@ -65,6 +65,7 @@ public class ResourceCenterCommonGenerateSqlServiceImpl implements ResourceCente
         }
         Table fromTable = (Table)plainSelect.getFromItem();
         plainSelect.setSelectItems(Arrays.asList(new SelectExpressionItem(new Function().withName("COUNT").withDistinct(true).withParameters(new ExpressionList(Arrays.asList(new Column(fromTable, "id")))))));
+        System.out.println(plainSelect.toString() + ";");
         return plainSelect;
     }
 

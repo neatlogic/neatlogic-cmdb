@@ -184,6 +184,7 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
                     biConsumerList.add(resourceCenterCustomGenerateSqlService.getBiConsumerByCommonCondition(paramObj, unavailableResourceInfoList));
                     biConsumerList.add(resourceCenterCustomGenerateSqlService.getBiConsumerByProtocolIdList(searchVo.getProtocolIdList(), unavailableResourceInfoList));
                     biConsumerList.add(resourceCenterCustomGenerateSqlService.getBiConsumerByTagIdList(searchVo.getTagIdList(), unavailableResourceInfoList));
+                    biConsumerList.add(resourceCenterCustomGenerateSqlService.getBiConsumerByPort(searchVo.getPort(), unavailableResourceInfoList));
                     biConsumerList.add(resourceCenterCustomGenerateSqlService.getBiConsumerByKeyword(searchVo.getKeyword(), unavailableResourceInfoList));
                     String sql = resourceCenterCommonGenerateSqlService.getResourceIdSql("resource_ipobject", biConsumerList);
 //                    String sql = getResourceIdByIpAndPortAndNameWithFilter(searchVo);
