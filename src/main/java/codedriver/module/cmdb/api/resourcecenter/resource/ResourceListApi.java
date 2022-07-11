@@ -5,15 +5,16 @@
 
 package codedriver.module.cmdb.api.resourcecenter.resource;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.crossover.IResourceListApiCrossoverService;
+import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
+import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
-import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceCenterConfigVo;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceInfo;
-import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterConfigNotFoundException;
-import codedriver.framework.cmdb.utils.ResourceSearchGenerateSqlUtil;
+import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.restful.annotation.*;
@@ -21,21 +22,14 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
-import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceCenterConfigMapper;
 import codedriver.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
-import codedriver.module.cmdb.service.resourcecenter.resource.ResourceCenterCommonGenerateSqlService;
-import codedriver.module.cmdb.service.resourcecenter.resource.ResourceCenterCustomGenerateSqlService;
-import codedriver.module.cmdb.utils.ResourceEntityViewBuilder;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import net.sf.jsqlparser.statement.select.*;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.*;
-import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 /**
@@ -53,13 +47,7 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
     private IResourceCenterResourceService resourceCenterResourceService;
 
     @Resource
-    private ResourceCenterCommonGenerateSqlService resourceCenterCommonGenerateSqlService;
-
-    @Resource
-    private ResourceCenterCustomGenerateSqlService resourceCenterCustomGenerateSqlService;
-
-    @Resource
-    private ResourceCenterConfigMapper resourceCenterConfigMapper;
+    private ResourceCenterMapper resourceCenterMapper;
 
     @Override
     public String getToken() {
@@ -106,7 +94,7 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
     @Description(desc = "查询资源中心数据列表")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        List<ResourceVo> resourceVoList = new ArrayList<>();
+        List<ResourceVo> resourceList = new ArrayList<>();
         ResourceSearchVo searchVo;
         JSONArray defaultValue = jsonObj.getJSONArray("defaultValue");
         if (CollectionUtils.isNotEmpty(defaultValue)) {
@@ -116,40 +104,32 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
             searchVo = resourceCenterResourceService.assembleResourceSearchVo(jsonObj);
         }
 
-        ResourceCenterConfigVo configVo = resourceCenterConfigMapper.getResourceCenterConfig();
-        if (configVo == null) {
-            throw new ResourceCenterConfigNotFoundException();
+        int rowNum = resourceCenterMapper.getResourceCount(searchVo);
+        if (rowNum == 0) {
+            return TableResultUtil.getResult(resourceList, searchVo);
         }
-        ResourceEntityViewBuilder builder = new ResourceEntityViewBuilder(configVo.getConfig());
-        List<ResourceEntityVo> resourceEntityList = builder.getResourceEntityList();
-
-        List<ResourceInfo> unavailableResourceInfoList = new ArrayList<>();
-        JSONObject paramObj = (JSONObject) JSONObject.toJSON(searchVo);
-        List<BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>> biConsumerList = new ArrayList<>();
-        biConsumerList.add(resourceCenterCustomGenerateSqlService.getBiConsumerByCommonCondition(paramObj, unavailableResourceInfoList));
-        biConsumerList.add(resourceCenterCustomGenerateSqlService.getBiConsumerByProtocolIdList(searchVo.getProtocolIdList(), unavailableResourceInfoList));
-        biConsumerList.add(resourceCenterCustomGenerateSqlService.getBiConsumerByTagIdList(searchVo.getTagIdList(), unavailableResourceInfoList));
-        biConsumerList.add(resourceCenterCustomGenerateSqlService.getBiConsumerByKeyword(searchVo.getKeyword(), unavailableResourceInfoList));
-        resourceVoList = resourceCenterCommonGenerateSqlService.getResourceList("resource_ipobject", resourceCenterCustomGenerateSqlService.getTheadList(), biConsumerList, searchVo, unavailableResourceInfoList);
-        if (CollectionUtils.isNotEmpty(resourceVoList)) {
-            List<Long> idList = resourceVoList.stream().map(ResourceVo::getId).collect(Collectors.toList());
-            resourceCenterResourceService.addResourceAccount(idList, resourceVoList);
-            resourceCenterResourceService.addResourceTag(idList, resourceVoList);
+        searchVo.setRowNum(rowNum);
+        List<Long> idList = resourceCenterMapper.getResourceIdList(searchVo);
+        if (CollectionUtils.isEmpty(idList)) {
+            return TableResultUtil.getResult(resourceList, searchVo);
         }
-        JSONObject resultObj = TableResultUtil.getResult(resourceVoList, searchVo);
-        List<ResourceEntityVo> errorList = new ArrayList<>();
-        for (ResourceEntityVo resourceEntityVo : resourceEntityList) {
-            if (StringUtils.isNotBlank(resourceEntityVo.getError())) {
-                errorList.add(resourceEntityVo);
+        resourceList = resourceCenterMapper.getResourceListByIdList(idList, TenantContext.get().getDataDbName());
+        if (CollectionUtils.isNotEmpty(resourceList)) {
+            Map<Long, List<AccountVo>> accountMap = resourceCenterResourceService.getResourceAccountByResourceIdList(idList);
+            Map<Long, List<TagVo>> tagMap = resourceCenterResourceService.getResourceTagByResourceIdList(idList);
+            for (ResourceVo resourceVo : resourceList) {
+                Long id = resourceVo.getId();
+                List<AccountVo> accountList = accountMap.get(id);
+                if (CollectionUtils.isNotEmpty(accountList)) {
+                    resourceVo.setAccountList(accountList);
+                }
+                List<TagVo> tagList = tagMap.get(id);
+                if (CollectionUtils.isNotEmpty(tagList)) {
+                    resourceVo.setTagList(tagList.stream().map(TagVo::getName).collect(Collectors.toList()));
+                }
             }
         }
-        if (CollectionUtils.isNotEmpty(errorList)) {
-            resultObj.put("errorList", errorList);
-        }
-        if (CollectionUtils.isNotEmpty(unavailableResourceInfoList)) {
-            resultObj.put("unavailableResourceInfoList", unavailableResourceInfoList);
-        }
-        return resultObj;
+        return TableResultUtil.getResult(resourceList, searchVo);
     }
 
 }

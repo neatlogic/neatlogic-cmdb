@@ -8,8 +8,10 @@ package codedriver.module.cmdb.startup.handler;
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityAttrVo;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
+import codedriver.framework.cmdb.dto.resourcecenter.customview.ICustomView;
 import codedriver.framework.dao.mapper.SchemaMapper;
 import codedriver.framework.startup.StartupBase;
+import codedriver.framework.cmdb.dto.resourcecenter.customview.ResourceCustomViewFactory;
 import codedriver.module.cmdb.utils.ResourceEntityFactory;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
@@ -103,21 +105,21 @@ public class CreateResourceViewStartupHandler extends StartupBase {
             }
         }
         // 创建自定义视图
-//        List<ICustomView> custonViewList = ResourceCustomViewFactory.getCustomViewList();
-//        for (ICustomView custonView : custonViewList) {
-//            String selectBody = custonView.getSelectBody();
-//            if (StringUtils.isNotBlank(selectBody)) {
-//                try {
-//                    String sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + "." + custonView.getName() + " AS " + selectBody;
-//                    if (logger.isDebugEnabled()) {
-//                        logger.debug(sql);
-//                    }
-//                    schemaMapper.insertView(sql);
-//                } catch (Exception ex) {
-//                    logger.error(ex.getMessage(), ex);
-//                }
-//            }
-//        }
+        List<ICustomView> custonViewList = ResourceCustomViewFactory.getCustomViewList();
+        for (ICustomView custonView : custonViewList) {
+            String selectBody = custonView.getSelectBody();
+            if (StringUtils.isNotBlank(selectBody)) {
+                try {
+                    String sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + "." + custonView.getName() + " AS " + selectBody;
+                    if (logger.isDebugEnabled()) {
+                        logger.debug(sql);
+                    }
+                    schemaMapper.insertView(sql);
+                } catch (Exception ex) {
+                    logger.error(ex.getMessage(), ex);
+                }
+            }
+        }
     }
 
     @Override
