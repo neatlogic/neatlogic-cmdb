@@ -33,6 +33,12 @@ import java.util.function.BiConsumer;
 
 @Service
 public class ResourceCenterCustomGenerateSqlServiceImpl implements ResourceCenterCustomGenerateSqlService, IResourceCenterCustomGenerateSqlCrossoverService {
+    /**
+     * 资产清单中协议过滤条件
+     * @param protocolIdList
+     * @param unavailableResourceInfoList
+     * @return
+     */
     @Override
     public BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> getBiConsumerByProtocolIdList(List<Long> protocolIdList, List<ResourceInfo> unavailableResourceInfoList) {
         BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> biConsumer = new BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>() {
@@ -66,6 +72,12 @@ public class ResourceCenterCustomGenerateSqlServiceImpl implements ResourceCente
         return biConsumer;
     }
 
+    /**
+     * 资产清单中标签过滤条件
+     * @param tagIdList
+     * @param unavailableResourceInfoList
+     * @return
+     */
     @Override
     public BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> getBiConsumerByTagIdList(List<Long> tagIdList, List<ResourceInfo> unavailableResourceInfoList) {
         BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> biConsumer = new BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>() {
@@ -92,6 +104,12 @@ public class ResourceCenterCustomGenerateSqlServiceImpl implements ResourceCente
         return biConsumer;
     }
 
+    /**
+     * 资产清单中关键字过滤条件
+     * @param keyword
+     * @param unavailableResourceInfoList
+     * @return
+     */
     @Override
     public BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> getBiConsumerByKeyword(String keyword, List<ResourceInfo> unavailableResourceInfoList) {
         BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> biConsumer = new BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>() {
@@ -120,6 +138,10 @@ public class ResourceCenterCustomGenerateSqlServiceImpl implements ResourceCente
         return biConsumer;
     }
 
+    /**
+     * 资产清单中需要显示的字段列表
+     * @return
+     */
     @Override
     public List<ResourceInfo> getTheadList() {
         List<ResourceInfo> theadList = new ArrayList<>();
@@ -174,6 +196,12 @@ public class ResourceCenterCustomGenerateSqlServiceImpl implements ResourceCente
         return theadList;
     }
 
+    /**
+     * 资产清单中常用的过滤条件，类型、状态、环境、系统、模块、巡检状态、名称、IP地址、端口
+     * @param paramObj
+     * @param unavailableResourceInfoList
+     * @return
+     */
     @Override
     public BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> getBiConsumerByCommonCondition(JSONObject paramObj, List<ResourceInfo> unavailableResourceInfoList) {
         BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> biConsumer = new BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect>() {

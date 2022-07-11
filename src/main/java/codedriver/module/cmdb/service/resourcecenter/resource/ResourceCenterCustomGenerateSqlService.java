@@ -15,14 +15,42 @@ import java.util.function.BiConsumer;
 
 public interface ResourceCenterCustomGenerateSqlService {
 
+    /**
+     * 资产清单中协议过滤条件
+     * @param protocolIdList
+     * @param unavailableResourceInfoList
+     * @return
+     */
     BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> getBiConsumerByProtocolIdList(List<Long> protocolIdList, List<ResourceInfo> unavailableResourceInfoList);
 
+    /**
+     * 资产清单中标签过滤条件
+     * @param tagIdList
+     * @param unavailableResourceInfoList
+     * @return
+     */
     BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> getBiConsumerByTagIdList(List<Long> tagIdList, List<ResourceInfo> unavailableResourceInfoList);
 
+    /**
+     * 资产清单中关键字过滤条件
+     * @param keyword
+     * @param unavailableResourceInfoList
+     * @return
+     */
     BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> getBiConsumerByKeyword(String keyword, List<ResourceInfo> unavailableResourceInfoList);
 
+    /**
+     * 资产清单中需要显示的字段列表
+     * @return
+     */
     List<ResourceInfo> getTheadList();
 
+    /**
+     * 资产清单中常用的过滤条件，类型、状态、环境、系统、模块、巡检状态、名称、IP地址、端口
+     * @param paramObj
+     * @param unavailableResourceInfoList
+     * @return
+     */
     BiConsumer<ResourceSearchGenerateSqlUtil, PlainSelect> getBiConsumerByCommonCondition(JSONObject paramObj, List<ResourceInfo> unavailableResourceInfoList);
 
 }
