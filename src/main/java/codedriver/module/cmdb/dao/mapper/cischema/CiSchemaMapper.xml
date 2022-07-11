@@ -82,6 +82,45 @@
           DEFAULT CHARSET = utf8mb4
     </insert>
 
+    <insert id="initCiTable" parameterType="codedriver.framework.cmdb.dto.ci.CiVo">
+        CREATE TABLE IF NOT EXISTS ${ciTableName}
+        (
+        `cientity_id` bigint(20) NOT NULL COMMENT '配置项id',
+        <if test="attrList!=null and attrList.size() > 0">
+            <foreach collection="attrList" item="attrVo">
+                <if test="attrVo.ciId == id and attrVo.targetCiId == null">
+                    `${attrVo.id}`
+                    <choose>
+                        <when test="attrVo.type == 'number'">
+                            decimal(50,4)
+                        </when>
+                        <when test="attrVo.type == 'date'">
+                            date
+                        </when>
+                        <when test="attrVo.type == 'time'">
+                            time
+                        </when>
+                        <when test="attrVo.type == 'datetime'">
+                            timestamp
+                        </when>
+                        <when test="attrVo.type == 'enum'">
+                            char(30)
+                        </when>
+                        <when test="attrVo.type == 'hyperlink'">
+                            varchar(500)
+                        </when>
+                        <otherwise>TEXT</otherwise>
+                    </choose>
+                    NULL COMMENT '${attrVo.label}',
+                    `${attrVo.id}_hash` CHAR(32) NULL COMMENT '${attrVo.label}值散列码',
+                </if>
+            </foreach>
+        </if>
+        PRIMARY KEY (`cientity_id`)
+        ) ENGINE = INNODB
+        DEFAULT CHARSET = utf8mb4
+    </insert>
+
 
     <delete id="deleteAttrFromCiTable">
         ALTER TABLE ${tableName}

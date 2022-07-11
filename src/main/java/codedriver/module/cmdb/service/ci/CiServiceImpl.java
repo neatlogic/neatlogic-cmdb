@@ -141,7 +141,8 @@ public class CiServiceImpl implements CiService {
         }).execute();
     }
 
-    private void buildCiView(CiVo ciVo) {
+    @Override
+    public void buildCiView(CiVo ciVo) {
         VirtualCiSqlBuilder viewBuilder = new VirtualCiSqlBuilder(ciVo.getViewXml());
         viewBuilder.setCiId(ciVo.getId());
 
