@@ -5,10 +5,8 @@
 
 package codedriver.module.cmdb.api.resourcecenter.resource;
 
-import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.exception.resourcecenter.AppEnvNotFoundException;
 import codedriver.framework.cmdb.exception.resourcecenter.AppModuleNotFoundException;
 import codedriver.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
@@ -22,8 +20,6 @@ import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
-
 /**
  * 根据应用名称、模块名称环境名称查询应用ID、模块ID、环境ID
  *
@@ -34,9 +30,6 @@ import javax.annotation.Resource;
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class GetAppSystemIdAndModuleIdAndEnvIdApi extends PrivateApiComponentBase {
-
-    @Resource
-    private ResourceCenterMapper resourceCenterMapper;
 
     @Override
     public String getToken() {
@@ -72,18 +65,18 @@ public class GetAppSystemIdAndModuleIdAndEnvIdApi extends PrivateApiComponentBas
         String sysName = jsonObj.getString("sysName");
         String moduleName = jsonObj.getString("moduleName");
         String envName = jsonObj.getString("envName");
-        Long systemId = resourceCenterMapper.getAppSystemIdBySystemName(TenantContext.get().getDataDbName(), sysName);
+        ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
+        Long systemId = ciEntityCrossoverMapper.getCiEntityIdByCiNameAndCiEntityName("APP", sysName);
         if (systemId == null) {
             throw new AppSystemNotFoundException(sysName);
         }
-        Long moduleId = resourceCenterMapper.getAppModuleIdByModuleName(TenantContext.get().getDataDbName(), moduleName);
+        Long moduleId = ciEntityCrossoverMapper.getCiEntityIdByCiNameAndCiEntityName("APPComponent", moduleName);
         if (moduleId == null) {
             throw new AppModuleNotFoundException(moduleName);
         }
         result.put("sysId", systemId);
         result.put("moduleId", moduleId);
         if (StringUtils.isNotBlank(envName)) {
-            ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
             Long envId = ciEntityCrossoverMapper.getCiEntityIdByCiNameAndCiEntityName("APPEnv", envName);
             if (envId == null) {
                 throw new AppEnvNotFoundException(envName);
