@@ -11,7 +11,6 @@ import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceAccountVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
-import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceInfo;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterAccountNotFoundException;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -23,13 +22,10 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.RESOURCECENTER_MODIFY;
-import codedriver.module.cmdb.service.resourcecenter.account.ResourceCenterAccountService;
-import codedriver.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,10 +44,6 @@ public class ResourceAccountBatchAddApi extends PrivateApiComponentBase {
 
     @Resource
     private ResourceCenterMapper resourceCenterMapper;
-    @Resource
-    private IResourceCenterResourceService resourceCenterResourceService;
-    @Resource
-    private ResourceCenterAccountService resourceCenterAccountService;
 
     @Override
     public String getToken() {
@@ -86,21 +78,10 @@ public class ResourceAccountBatchAddApi extends PrivateApiComponentBase {
             throw new ParamNotExistsException("accountIdList");
         }
 
-        String schemaName = TenantContext.get().getDataDbName();
         List<Long> resourceIdList = resourceIdArray.toJavaList(Long.class);
         Map<Long, ResourceVo> resourceVoMap = new HashMap<>();
         List<Long> existResourceIdList = new ArrayList<>();
-        List<ResourceVo> resourceVoList = new ArrayList<>();
-        List<ResourceInfo> unavailableResourceInfoList = new ArrayList<>();
-        List<ResourceInfo> theadList = new ArrayList<>();
-        theadList.add(new ResourceInfo("resource_ipobject", "id"));
-        theadList.add(new ResourceInfo("resource_ipobject", "name"));
-        theadList.add(new ResourceInfo("resource_ipobject", "ip"));
-        String sql = resourceCenterResourceService.getResourceListByIdListSql(theadList, resourceIdList, unavailableResourceInfoList, "resource_ipobject");
-        if (StringUtils.isNotBlank(sql)) {
-            resourceVoList = resourceCenterMapper.getResourceListByIdList(sql);
-        }
-//        List<ResourceVo> resourceVoList = resourceCenterMapper.getResourceListByIdList(resourceIdList, schemaName);
+        List<ResourceVo> resourceVoList = resourceCenterMapper.getResourceListByIdList(resourceIdList, TenantContext.get().getDataDbName());
         for (ResourceVo resourceVo : resourceVoList) {
             resourceVoMap.put(resourceVo.getId(), resourceVo);
             existResourceIdList.add(resourceVo.getId());

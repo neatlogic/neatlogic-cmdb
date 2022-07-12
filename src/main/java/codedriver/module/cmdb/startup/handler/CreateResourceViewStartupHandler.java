@@ -10,15 +10,13 @@ import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityAttrVo;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import codedriver.framework.cmdb.dto.resourcecenter.customview.ICustomView;
 import codedriver.framework.dao.mapper.SchemaMapper;
-import codedriver.framework.startup.IStartup;
 import codedriver.framework.startup.StartupBase;
-import codedriver.module.cmdb.utils.ResourceCustomViewFactory;
+import codedriver.framework.cmdb.dto.resourcecenter.customview.ResourceCustomViewFactory;
 import codedriver.module.cmdb.utils.ResourceEntityFactory;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
-import net.sf.jsqlparser.statement.select.PlainSelect;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -55,7 +53,6 @@ public class CreateResourceViewStartupHandler extends StartupBase {
      */
     @Override
     public void executeForCurrentTenant() {
-        List<ICustomView> custonViewList = ResourceCustomViewFactory.getCustomViewList();
         List<ResourceEntityVo> resourceEntityList = ResourceEntityFactory.getResourceEntityList();
         if (CollectionUtils.isNotEmpty(resourceEntityList)) {
             List<ResourceEntityVo> newResourceEntityList = new ArrayList<>();
@@ -108,6 +105,7 @@ public class CreateResourceViewStartupHandler extends StartupBase {
             }
         }
         // 创建自定义视图
+        List<ICustomView> custonViewList = ResourceCustomViewFactory.getCustomViewList();
         for (ICustomView custonView : custonViewList) {
             String selectBody = custonView.getSelectBody();
             if (StringUtils.isNotBlank(selectBody)) {
