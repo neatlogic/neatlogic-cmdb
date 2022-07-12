@@ -7,6 +7,7 @@ package codedriver.module.cmdb.api.sync;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo;
+import codedriver.framework.cmdb.enums.sync.CollectMode;
 import codedriver.framework.cmdb.exception.sync.SyncCiCollectionNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.exception.type.ParamNotExistsException;
@@ -50,15 +51,16 @@ public class LaunchSyncCollectionApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "采集id"), @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "采集id列表")})
+    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "采集id"), @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "采集id列表"), @Param(name = "isAll", type = ApiParamType.INTEGER, desc = "是否执行所有主动采集，不提供id或idList参数下此参数才有效")})
     @Description(desc = "执行自动采集接口，采集会在后台执行")
     @ResubmitInterval(value = 5)
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");
+        Integer isAll = jsonObj.getInteger("isAll");
         JSONArray idList = jsonObj.getJSONArray("idList");
-        if (id == null && CollectionUtils.isEmpty(idList)) {
-            throw new ParamNotExistsException("id", "idList");
+        if (id == null && CollectionUtils.isEmpty(idList) && isAll == null) {
+            throw new ParamNotExistsException("id", "idList", "isAll");
         }
         List<SyncCiCollectionVo> syncCiCollectionList = new ArrayList<>();
         if (id != null) {
@@ -70,8 +72,21 @@ public class LaunchSyncCollectionApi extends PrivateApiComponentBase {
         } else if (CollectionUtils.isNotEmpty(idList)) {
             List<Long> pIdList = idList.stream().map(d -> Long.parseLong(d.toString())).collect(Collectors.toList());
             syncCiCollectionList = syncMapper.getSyncCiCollectionByIdList(pIdList);
+        } else if (isAll.equals(1)) {
+            SyncCiCollectionVo p = new SyncCiCollectionVo();
+            p.setCollectMode(CollectMode.INITIATIVE.getValue());
+            p.setPageSize(100);
+            p.setCurrentPage(1);
+            List<SyncCiCollectionVo> sList = syncMapper.searchSyncCiCollection(p);
+            while (CollectionUtils.isNotEmpty(sList)) {
+                syncCiCollectionList.addAll(sList);
+                p.setCurrentPage(p.getCurrentPage() + 1);
+                sList = syncMapper.searchSyncCiCollection(p);
+            }
         }
-        CiSyncManager.doSync(syncCiCollectionList);
+        if (CollectionUtils.isNotEmpty(syncCiCollectionList)) {
+            CiSyncManager.doSync(syncCiCollectionList);
+        }
         return null;
     }
 

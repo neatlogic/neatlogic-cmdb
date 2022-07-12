@@ -235,9 +235,13 @@
             <result column="ciIsMenu" property="isMenu"/>
             <result column="typeId" property="typeId"/>
             <result column="parentCiId" property="parentCiId"/>
+            <result column="parentCiIcon" property="parentCiIcon"/>
+            <result column="parentCiName" property="parentCiName"/>
+            <result column="parentCiLabel" property="parentCiLabel"/>
             <result column="isAbstract" property="isAbstract"/>
             <result column="isVirtual" property="isVirtual"/>
             <result column="fileId" property="fileId"/>
+            <result column="syncPolicyCount" property="syncPolicyCount"/>
             <collection property="authList" ofType="codedriver.framework.cmdb.dto.ci.CiAuthVo">
                 <result column="authCiId" property="ciId"/>
                 <result column="authType" property="authType"/>
@@ -259,6 +263,9 @@
         b.`is_menu` AS ciIsMenu,
         b.`type_id` AS typeId,
         b.`parent_ci_id` AS parentCiId,
+        d.`name` AS parentCiName,
+        d.`icon` AS parentCiIcon,
+        d.`label` AS parentCiLabel,
         b.`is_abstract` AS isAbstract,
         b.`is_virtual` AS isVirtual,
         a.`id` AS ciTypeId,
@@ -268,9 +275,13 @@
         c.ci_id AS authCiId,
         c.auth_type AS authType,
         c.action AS authAction,
-        c.auth_uuid AS authUuid
+        c.auth_uuid AS authUuid,
+        (select count(1) FROM `cmdb_sync_policy` csp WHERE csp.ci_id = b.id) AS syncPolicyCount
         FROM
-        `cmdb_citype` a LEFT JOIN `cmdb_ci` b ON a.id = b.type_id LEFT JOIN `cmdb_ci_auth` c ON b.id = c.ci_id
+        `cmdb_citype` a
+        LEFT JOIN `cmdb_ci` b ON a.id = b.type_id
+        LEFT JOIN `cmdb_ci_auth` c ON b.id = c.ci_id
+        LEFT JOIN `cmdb_ci` d ON b.`parent_ci_id` = d.`id`
         <where>
             <if test="isTypeShowInTopo != null">
                 AND a.is_showintopo = #{isTypeShowInTopo}
