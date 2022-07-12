@@ -11,7 +11,7 @@ import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
-import codedriver.framework.restful.core.publicapi.PublicApiComponentBase;
+import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
@@ -21,7 +21,7 @@ import java.util.Date;
 
 @Service
 @OperationType(type = OperationTypeEnum.UPDATE)
-public class UpdateCiEntityInspectStatusApi extends PublicApiComponentBase {
+public class UpdateCiEntityInspectStatusApi extends PrivateApiComponentBase {
 
 
     @Resource
