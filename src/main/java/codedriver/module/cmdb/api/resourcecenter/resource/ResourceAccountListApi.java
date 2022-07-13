@@ -43,7 +43,8 @@ public class ResourceAccountListApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "resourceId", type = ApiParamType.LONG, isRequired = true, desc = "资源id")
+            @Param(name = "resourceId", type = ApiParamType.LONG, isRequired = true, desc = "资源id"),
+            @Param(name = "protocol", type = ApiParamType.STRING, desc = "协议名称"),
     })
     @Output({
             @Param(explode = AccountVo[].class, desc = "账号列表")})
@@ -55,7 +56,7 @@ public class ResourceAccountListApi extends PrivateApiComponentBase {
         if (resourceCenterMapper.checkResourceIsExists(resourceId, schemaName) == 0) {
             throw new ResourceNotFoundException(resourceId);
         }
-        return resourceCenterMapper.getResourceAccountListByResourceId(resourceId);
+        return resourceCenterMapper.getResourceAccountListByResourceId(resourceId ,paramObj.getString("protocol"));
     }
 
 }
