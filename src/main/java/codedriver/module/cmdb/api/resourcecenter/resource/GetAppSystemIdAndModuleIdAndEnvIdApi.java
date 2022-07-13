@@ -33,7 +33,7 @@ public class GetAppSystemIdAndModuleIdAndEnvIdApi extends PrivateApiComponentBas
 
     @Override
     public String getToken() {
-        return "resourcecenter/resource/sysidmoduleidenvid/get";
+        return "resourcecenter/resource/appidmoduleidenvid/get";
     }
 
     @Override
