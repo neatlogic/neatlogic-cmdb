@@ -102,7 +102,7 @@ public class GetCiTopoApi extends PrivateApiComponentBase {
         System.out.println(gb.build().toString());
     }
 
-    @Input({@Param(name = "layout", type = ApiParamType.ENUM, rule = "dot,circo,fdp,neato,osage,patchwork,twopi", isRequired = true),
+    @Input({@Param(name = "layout", type = ApiParamType.ENUM, member = LayoutType.class, isRequired = true),
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字"),
             @Param(name = "typeId", type = ApiParamType.LONG, desc = "类型id")})
     @Output({@Param(name = "topo", type = ApiParamType.STRING)})

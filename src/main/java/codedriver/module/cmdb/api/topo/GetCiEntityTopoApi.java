@@ -251,7 +251,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
 
 
             String dot = gb.build().toString();
-            System.out.println(dot);
+            //System.out.println(dot);
             if (logger.isDebugEnabled()) {
                 logger.debug(dot);
             }
