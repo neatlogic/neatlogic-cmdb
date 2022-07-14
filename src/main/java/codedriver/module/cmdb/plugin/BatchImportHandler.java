@@ -450,11 +450,13 @@ public class BatchImportHandler {
                                             }
                                         } catch (Exception e) {
                                             failedCount += 1;
+                                            logger.error(e.getMessage(), e);
                                             rowError.put(r, e.getMessage());
                                         }
                                     }
                                 } catch (Exception e) {
                                     failedCount += 1;
+                                    logger.error(e.getMessage(), e);
                                     rowError.put(r, e.getMessage());
                                 } finally {
                                     // String err = "";

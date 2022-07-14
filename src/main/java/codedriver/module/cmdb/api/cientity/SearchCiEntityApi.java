@@ -18,9 +18,11 @@ import codedriver.framework.cmdb.dto.cientity.SortVo;
 import codedriver.framework.cmdb.enums.CiAuthType;
 import codedriver.framework.cmdb.enums.ShowType;
 import codedriver.framework.cmdb.enums.group.GroupType;
+import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.cmdb.utils.RelUtil;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
+import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -83,7 +85,8 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
         return null;
     }
 
-    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
+    @Input({@Param(name = "ciId", type = ApiParamType.LONG, desc = "模型id"),
+            @Param(name = "ciName", type = ApiParamType.STRING, desc = "模型唯一标识"),
             @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "关键字"),
             @Param(name = "dsl", type = ApiParamType.STRING, desc = "DSL语句"),
             @Param(name = "groupId", type = ApiParamType.LONG, desc = "团体id"),
@@ -115,6 +118,18 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
     @Description(desc = "查询配置项接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
+        Long ciId = jsonObj.getLong("ciId");
+        String ciName = jsonObj.getString("ciName");
+        if (ciId == null && StringUtils.isBlank(ciName)) {
+            throw new ParamNotExistsException("ciId", "ciName");
+        }
+        if (ciId == null && StringUtils.isNotBlank(ciName)) {
+            CiVo ciVo = ciMapper.getCiByName(ciName);
+            if (ciVo == null) {
+                throw new CiNotFoundException(ciName);
+            }
+            jsonObj.put("ciId", ciVo.getId());
+        }
         CiEntityVo ciEntityVo = JSONObject.toJavaObject(jsonObj, CiEntityVo.class);
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciEntityVo.getCiId());
         Map<Long, AttrVo> attrMap = new HashMap<>();
