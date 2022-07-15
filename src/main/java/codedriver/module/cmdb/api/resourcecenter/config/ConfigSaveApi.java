@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author linbq
@@ -63,6 +64,16 @@ public class ConfigSaveApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         ResourceCenterConfigVo resourceCenterConfigVo = paramObj.toJavaObject(ResourceCenterConfigVo.class);
+        ResourceCenterConfigVo oldResourceCenterConfigVo = resourceCenterConfigMapper.getResourceCenterConfigLimitOne();
+        if (oldResourceCenterConfigVo != null) {
+            //如果配置没有修改，不重新生成视图
+            if (Objects.equals(oldResourceCenterConfigVo.getConfig(), resourceCenterConfigVo.getConfig())) {
+                List<ResourceEntityVo> resourceEntityList = resourceEntityMapper.getAllResourceEntity();
+                resourceCenterConfigVo.setResourceEntityList(resourceEntityList);
+                resourceCenterConfigVo.setConfig(null);
+                return resourceCenterConfigVo;
+            }
+        }
         Long id = paramObj.getLong("id");
         if (id == null) {
             resourceCenterConfigMapper.insertResourceCenterConfig(resourceCenterConfigVo);

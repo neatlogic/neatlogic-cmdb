@@ -305,7 +305,7 @@ public class ResourceEntityViewBuilder {
                 Map<String, SceneEntityJoinVo> relFromCiJoinMap = new HashMap<>();
                 Map<String, SceneEntityJoinVo> relToCiJoinMap = new HashMap<>();
                 //分析连接查询
-                List<SceneEntityJoinVo> sceneEntityJoinSet = new ArrayList<>();
+                Set<SceneEntityJoinVo> sceneEntityJoinSet = new HashSet<>();
                 sceneEntityVo.setJoinList(sceneEntityJoinSet);
                 //先分析<join>标签内容，因为后面分析<attr>和<rel>标签时需要从<join>标签中补充默认信息
                 List<Element> joinElementList = resourceElement.elements("join");
@@ -407,7 +407,7 @@ public class ResourceEntityViewBuilder {
                         attrElementList = getAllChildElement(resourceElement, "attr");
                         elementMap.put(viewName + "_attr", attrElementList);
                     }
-                    List<SceneEntityAttrVo> sceneEntityAttrSet = new ArrayList<>();
+                    Set<SceneEntityAttrVo> sceneEntityAttrSet = new HashSet<>();
                     sceneEntityVo.setAttrList(sceneEntityAttrSet);
                     for (Element attrElement : attrElementList) {
                         SceneEntityAttrVo entityAttrVo = convertToSceneEntityAttrVo(viewName, attrElement, JoinType.ATTR);
@@ -867,6 +867,7 @@ public class ResourceEntityViewBuilder {
             ResourceEntityVo resourceEntityVo = new ResourceEntityVo();
             resourceEntityVo.setName(sceneEntityVo.getName());
             resourceEntityVo.setLabel(sceneEntityVo.getLabel());
+            resourceEntityVo.setCiId(sceneEntityVo.getCiId());
             if (StringUtils.isNotBlank(sceneEntityVo.getError())) {
                 resourceEntityVo.setError(sceneEntityVo.getError());
                 resourceEntityVo.setStatus(Status.ERROR.getValue());
