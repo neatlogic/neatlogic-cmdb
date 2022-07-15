@@ -19,8 +19,6 @@ public interface ResourceEntityMapper {
 
     void insertResourceEntity(ResourceEntityVo resourceEntityVo);
 
-    void insertSceneEntity(SceneEntityVo sceneEntityVo);
-
     void updateResourceEntity(ResourceEntityVo resourceEntityVo);
 
 //    void insertResourceEntityAttr(ResourceEntityAttrVo resourceEntityAttrVo);

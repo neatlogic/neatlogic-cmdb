@@ -332,7 +332,6 @@ public class ResourceEntityViewBuilder {
                             String fromCi = joinVo.getFromCi();
                             if (StringUtils.isBlank(fromCi)) {
                                 fromCi = ciName;
-                                joinVo.setFromCi(fromCi);
                             }
                             CiVo fromCiVo = getCiByName(fromCi);
                             if (fromCiVo == null) {
@@ -347,9 +346,6 @@ public class ResourceEntityViewBuilder {
                                         throw new AttrNotFoundException(fromCi, fromAttr);
                                     }
                                     joinVo.setFromAttrVo(attrVo);
-//                                    joinVo.setFromAttrId(attrVo.getId());
-//                                    joinVo.setFromAttrCiId(attrVo.getCiId());
-//                                    joinVo.setFromAttrCiName(attrVo.getCiName());
                                 }
                             } else if (attrElement.getParent().getName().equalsIgnoreCase("join")) {
                                 joinVo.setFromAttr("_id");
@@ -378,7 +374,6 @@ public class ResourceEntityViewBuilder {
                                 String fromCi = joinVo.getFromCi();
                                 if (StringUtils.isBlank(fromCi)) {
                                     fromCi = ciName;
-                                    joinVo.setFromCi(fromCi);
                                 }
                                 CiVo fromCiVo = getCiByName(fromCi);
                                 if (fromCiVo == null) {
@@ -399,7 +394,6 @@ public class ResourceEntityViewBuilder {
                                 String toCi = joinVo.getToCi();
                                 if (StringUtils.isBlank(toCi)) {
                                     toCi = ciName;
-                                    joinVo.setToCi(toCi);
                                 }
                                 CiVo toCiVo = getCiByName(toCi);
                                 if (toCiVo == null) {
@@ -426,14 +420,12 @@ public class ResourceEntityViewBuilder {
                         String fromCi = entityAttrVo.getFromCi();
                         if (StringUtils.isBlank(fromCi)) {
                             fromCi = ciName;
-                            entityAttrVo.setFromCi(fromCi);
                         }
                         CiVo fromCiVo = getCiByName(fromCi);
                         if (fromCiVo == null) {
                             throw new CiNotFoundException(fromCi);
                         }
                         entityAttrVo.setFromCiVo(fromCiVo);
-//                        entityAttrVo.setFromCiId(fromCiVo.getId());
                         String fromAttr = entityAttrVo.getFromAttr();
                         if (StringUtils.isNotBlank(fromAttr)) {
                             if (!fromAttr.startsWith("_")) {
@@ -442,9 +434,6 @@ public class ResourceEntityViewBuilder {
                                     throw new AttrNotFoundException(fromCi, fromAttr);
                                 }
                                 entityAttrVo.setFromAttrVo(attrVo);
-//                                entityAttrVo.setFromAttrId(attrVo.getId());
-//                                entityAttrVo.setFromAttrCiId(attrVo.getCiId());
-//                                entityAttrVo.setFromAttrCiName(attrVo.getCiName());
                             }
                         } else if (attrElement.getParent().getName().equalsIgnoreCase("join")) {
                             entityAttrVo.setFromAttr("_id");
@@ -457,7 +446,6 @@ public class ResourceEntityViewBuilder {
                                 throw new CiNotFoundException(toCi);
                             }
                             entityAttrVo.setToCiVo(toCiVo);
-//                            entityAttrVo.setToCiId(toCiVo.getId());
                             String toAttr = entityAttrVo.getToAttr();
                             if (StringUtils.isNotBlank(toAttr)) {
                                 if (!toAttr.startsWith("_")) {
@@ -466,9 +454,6 @@ public class ResourceEntityViewBuilder {
                                         throw new AttrNotFoundException(toCi, toAttr);
                                     }
                                     entityAttrVo.setToAttrVo(attrVo);
-//                                    entityAttrVo.setToAttrId(attrVo.getId());
-//                                    entityAttrVo.setToAttrCiId(attrVo.getCiId());
-//                                    entityAttrVo.setToAttrCiName(attrVo.getCiName());
                                 }
                             } else if (attrElement.getParent().getName().equalsIgnoreCase("join")) {
                                 entityAttrVo.setToAttr("_id");
@@ -476,7 +461,6 @@ public class ResourceEntityViewBuilder {
                                 throw new ResourceCenterConfigIrregularException(viewName, "attr", entityAttrVo.getField(), "toAttr");
                             }
                             Integer toCiIsVirtual = toCiVo.getIsVirtual();
-//                            entityAttrVo.setToCiIsVirtual(toCiIsVirtual);
                             if (Objects.equals(toCiIsVirtual, 1)) {
                                 entityAttrVo.setToAttrCiId(toCiVo.getId());
                                 entityAttrVo.setToAttrCiName(toCiVo.getName());
@@ -484,14 +468,8 @@ public class ResourceEntityViewBuilder {
                             if (StringUtils.isBlank(fromAttr)) {
                                 SceneEntityJoinVo joinVo = attToCiJoinMap.get(toCi);
                                 if (joinVo != null) {
-                                    entityAttrVo.setFromCi(joinVo.getFromCi());
-//                                    entityAttrVo.setFromCiId(joinVo.getFromCiVo().getId());
                                     entityAttrVo.setFromCiVo(joinVo.getFromCiVo());
-                                    entityAttrVo.setFromAttr(joinVo.getFromAttr());
                                     entityAttrVo.setFromAttrVo(joinVo.getFromAttrVo());
-//                                    entityAttrVo.setFromAttrCiId(joinVo.getFromAttrCiId());
-//                                    entityAttrVo.setFromAttrCiName(joinVo.getFromAttrCiName());
-//                                    entityAttrVo.setFromAttrId(joinVo.getFromAttrId());
                                 }
                             }
                         }
@@ -530,19 +508,15 @@ public class ResourceEntityViewBuilder {
                                 throw new CiNotFoundException(toCi);
                             }
                             entityAttrVo.setToCiVo(toCiVo);
-//                            entityAttrVo.setToCiId(toCiVo.getId());
                             if (StringUtils.isBlank(fromCi)) {
                                 SceneEntityJoinVo joinVo = relToCiJoinMap.get(toCi);
-                                entityAttrVo.setFromCi(joinVo.getFromCi());
                                 entityAttrVo.setFromCiVo(joinVo.getFromCiVo());
-//                                entityAttrVo.setFromCiId(joinVo.getFromCiVo().getId());
                             } else {
                                 CiVo fromCiVo = getCiByName(fromCi);
                                 if (fromCiVo == null) {
                                     throw new CiNotFoundException(fromCi);
                                 }
                                 entityAttrVo.setFromCiVo(fromCiVo);
-//                                entityAttrVo.setFromCiId(fromCiVo.getId());
                             }
                         } else if (Objects.equals(RelDirectionType.TO.getValue(), direction)) {
                             if (StringUtils.isBlank(fromCi)) {
@@ -553,19 +527,15 @@ public class ResourceEntityViewBuilder {
                                 throw new CiNotFoundException(fromCi);
                             }
                             entityAttrVo.setFromCiVo(fromCiVo);
-//                            entityAttrVo.setFromCiId(fromCiVo.getId());
                             if (StringUtils.isBlank(toCi)) {
                                 SceneEntityJoinVo joinVo = relFromCiJoinMap.get(fromCi);
                                 entityAttrVo.setToCiVo(joinVo.getToCiVo());
-//                                entityAttrVo.setToCiId(joinVo.getToCiVo().getId());
-                                entityAttrVo.setToCi(joinVo.getToCi());
                             } else {
                                 CiVo toCiVo = getCiByName(toCi);
                                 if (toCiVo == null) {
                                     throw new CiNotFoundException(toCi);
                                 }
                                 entityAttrVo.setToCiVo(toCiVo);
-//                                entityAttrVo.setToCiId(toCiVo.getId());
                             }
                         }
 
@@ -579,9 +549,6 @@ public class ResourceEntityViewBuilder {
                                         throw new AttrNotFoundException(fromCi, fromAttr);
                                     }
                                     entityAttrVo.setFromAttrVo(attrVo);
-//                                    entityAttrVo.setFromAttrId(attrVo.getId());
-//                                    entityAttrVo.setFromAttrCiId(attrVo.getCiId());
-//                                    entityAttrVo.setFromAttrCiName(attrVo.getCiName());
                                 }
                             } else if (relElement.getParent().getName().equalsIgnoreCase("join")) {
                                 entityAttrVo.setFromAttr("_id");
@@ -598,9 +565,6 @@ public class ResourceEntityViewBuilder {
                                         throw new AttrNotFoundException(toCi, toAttr);
                                     }
                                     entityAttrVo.setToAttrVo(attrVo);
-//                                    entityAttrVo.setToAttrId(attrVo.getId());
-//                                    entityAttrVo.setToAttrCiId(attrVo.getCiId());
-//                                    entityAttrVo.setToAttrCiName(attrVo.getCiName());
                                 }
                             } else if (relElement.getParent().getName().equalsIgnoreCase("join")) {
                                 entityAttrVo.setToAttr("_id");
@@ -613,7 +577,6 @@ public class ResourceEntityViewBuilder {
                 }
                 sceneEntityVo.setStatus(Status.PENDING.getValue());
             } catch (Exception ex) {
-                logger.error(ex.getMessage(), ex);
                 sceneEntityVo.setStatus(Status.ERROR.getValue());
                 sceneEntityVo.setError(ex.getMessage());
             }
@@ -907,9 +870,13 @@ public class ResourceEntityViewBuilder {
 
         //创建场景视图
         for (SceneEntityVo sceneEntityVo : sceneEntityList) {
+            ResourceEntityVo resourceEntityVo = new ResourceEntityVo();
+            resourceEntityVo.setName(sceneEntityVo.getName());
+            resourceEntityVo.setLabel(sceneEntityVo.getLabel());
             if (StringUtils.isNotBlank(sceneEntityVo.getError())) {
-                sceneEntityVo.setStatus(Status.ERROR.getValue());
-                resourceEntityMapper.insertSceneEntity(sceneEntityVo);
+                resourceEntityVo.setError(sceneEntityVo.getError());
+                resourceEntityVo.setStatus(Status.ERROR.getValue());
+                resourceEntityMapper.insertResourceEntity(resourceEntityVo);
                 continue;
             }
             String name = sceneEntityVo.getName();
@@ -922,17 +889,16 @@ public class ResourceEntityViewBuilder {
                 }
                 schemaMapper.deleteTable(TenantContext.get().getDataDbName() + "." + name);
                 schemaMapper.insertView(sql);
-                sceneEntityVo.setError("");
-                sceneEntityVo.setStatus(Status.READY.getValue());
+                resourceEntityVo.setError("");
+                resourceEntityVo.setStatus(Status.READY.getValue());
             } catch (Exception ex) {
-                sceneEntityVo.setError(ex.getMessage());
-                sceneEntityVo.setStatus(Status.ERROR.getValue());
+                resourceEntityVo.setError(ex.getMessage());
+                resourceEntityVo.setStatus(Status.ERROR.getValue());
             } finally {
-                resourceEntityMapper.insertSceneEntity(sceneEntityVo);
+                resourceEntityMapper.insertResourceEntity(resourceEntityVo);
             }
         }
     }
-
 
     private Select buildSubSelectForCi(CiVo ciVo) {
         if (CollectionUtils.isNotEmpty(ciVo.getUpwardCiList())) {
