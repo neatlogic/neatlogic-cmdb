@@ -334,7 +334,7 @@ public class BatchImportHandler {
                                         boolean isEmptyRow = true;
                                         for (Integer index : cellIndex) {
                                             Cell cell = row.getCell(index);
-                                            if (StringUtils.isNotBlank(getCellContent(cell))) {
+                                            if (cell != null && StringUtils.isNotBlank(getCellContent(cell))) {
                                                 isEmptyRow = false;
                                                 break;
                                             }
