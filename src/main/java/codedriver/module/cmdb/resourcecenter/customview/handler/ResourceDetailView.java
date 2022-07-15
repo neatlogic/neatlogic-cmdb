@@ -25,7 +25,7 @@ import java.util.List;
  * @author linbq
  * @since 2022/2/8 17:03
  **/
-@Component
+//@Component
 public class ResourceDetailView implements ICustomView {
     @Resource
     private ResourceCenterConfigMapper resourceCenterConfigMapper;
