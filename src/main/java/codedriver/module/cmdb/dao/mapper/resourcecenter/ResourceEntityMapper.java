@@ -6,7 +6,6 @@
 package codedriver.module.cmdb.dao.mapper.resourcecenter;
 
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
-import codedriver.framework.cmdb.dto.resourcecenter.config.SceneEntityVo;
 
 import java.util.List;
 

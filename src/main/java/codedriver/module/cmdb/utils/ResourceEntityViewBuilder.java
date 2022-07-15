@@ -21,7 +21,6 @@ import codedriver.framework.cmdb.utils.SceneEntityGenerateSqlUtil;
 import codedriver.framework.dao.mapper.SchemaMapper;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import codedriver.module.cmdb.service.ci.CiService;
-import com.alibaba.fastjson.JSONObject;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
@@ -40,7 +39,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.xlsx4j.sml.Col;
 
 import java.util.*;
 
@@ -56,10 +54,6 @@ public class ResourceEntityViewBuilder {
 
     public List<ResourceEntityVo> getResourceEntityList() {
         return resourceEntityList;
-    }
-
-    public List<SceneEntityVo> getSceneEntityList() {
-        return sceneEntityList;
     }
 
     private final Map<String, CiVo> ciMap = new HashMap<>();

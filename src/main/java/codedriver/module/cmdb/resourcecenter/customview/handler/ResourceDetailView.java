@@ -31,7 +31,7 @@ public class ResourceDetailView implements ICustomView {
     private ResourceCenterConfigMapper resourceCenterConfigMapper;
     @Override
     public String getName() {
-        return "resource_ipobject_detail2";
+        return "resource_ipobject_detail";
     }
 
     @Override
