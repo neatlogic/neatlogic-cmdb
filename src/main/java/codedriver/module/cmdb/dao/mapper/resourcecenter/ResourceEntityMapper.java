@@ -6,6 +6,7 @@
 package codedriver.module.cmdb.dao.mapper.resourcecenter;
 
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
+import codedriver.framework.cmdb.dto.resourcecenter.config.SceneEntityVo;
 
 import java.util.List;
 
@@ -17,6 +18,8 @@ public interface ResourceEntityMapper {
 //    void insertResourceEntityView(String sql);
 
     void insertResourceEntity(ResourceEntityVo resourceEntityVo);
+
+    void insertSceneEntity(SceneEntityVo sceneEntityVo);
 
     void updateResourceEntity(ResourceEntityVo resourceEntityVo);
 

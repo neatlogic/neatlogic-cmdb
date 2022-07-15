@@ -32,6 +32,16 @@
                                 `ci_id`     = #{ciId}
     </insert>
 
+    <insert id="insertSceneEntity"
+            parameterType="codedriver.framework.cmdb.dto.resourcecenter.config.SceneEntityVo">
+        INSERT INTO cmdb_resourcecenter_entity (`name`, `label`, `status`, `error`, `init_time`, `ci_id`)
+        VALUES (#{name}, #{label}, #{status}, #{error}, NOW(3), #{ciId})
+        ON DUPLICATE KEY UPDATE `error`     = #{error},
+                                `status`    = #{status},
+                                `init_time` = NOW(3),
+                                `ci_id`     = #{ciId}
+    </insert>
+
     <update id="updateResourceEntity"
             parameterType="codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
         UPDATE cmdb_resourcecenter_entity
