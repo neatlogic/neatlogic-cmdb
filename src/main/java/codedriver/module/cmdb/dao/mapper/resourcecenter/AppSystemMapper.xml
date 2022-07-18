@@ -43,6 +43,18 @@
     <!--        </where>-->
     <!--    </select>-->
 
+    <select id="getAppSystemByAbbrName" resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemVo">
+        select `name`, `id`
+        from ${schemaName}.resource_appsystem
+        where `abbr_name` = #{abbrName}
+    </select>
+
+    <select id="getAppModuleByAbbrName" resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppModuleVo">
+        select `name`, `id`
+        from ${schemaName}.resource_appmodule
+        where `abbr_name` = #{abbrName}
+    </select>
+
     <select id="getAppEnvListByAppSystemIdAndModuleIdList"
             resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo">
         SELECT DISTINCT
@@ -54,7 +66,7 @@
         JOIN ${schemaName}.resource_softwareservice_env rse ON ria.resource_id = rse.resource_id
         <where>
             <if test="appResourceId != null">
-                  raa.resource_id = #{appResourceId}
+                raa.resource_id = #{appResourceId}
             </if>
             <if test="moduleResourceIdList != null and moduleResourceIdList.size() > 0">
                 and ria.app_module_id in
@@ -68,7 +80,7 @@
     <select id="getAppSystemIdListCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultType="java.lang.Integer">
         SELECT count(distinct ra.`id`) FROM ${schemaName}.`resource_appsystem` ra
-        left join ${schemaName}.`resource_appsystem_appmodule` raa  on raa.resource_id = ra.id
+        left join ${schemaName}.`resource_appsystem_appmodule` raa on raa.resource_id = ra.id
         <where>
             <if test="keyword != null and keyword != ''">
                 ra.`name` LIKE concat('%', #{keyword}, '%') or raa.app_module_name LIKE concat('%', #{keyword}, '%')
@@ -78,10 +90,10 @@
 
     <select id="getAppSystemIdListByAppModuleName" resultType="java.lang.Long">
         SELECT raa.`resource_id` FROM
-          ${schemaName}.`resource_appsystem_appmodule` raa
+        ${schemaName}.`resource_appsystem_appmodule` raa
         <where>
             <if test="keyword != null and keyword != ''">
-               raa.app_module_name LIKE concat('%',#{keyword}, '%')
+                raa.app_module_name LIKE concat('%',#{keyword}, '%')
             </if>
         </where>
     </select>
