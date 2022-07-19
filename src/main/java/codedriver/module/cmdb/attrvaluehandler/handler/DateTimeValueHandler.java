@@ -96,17 +96,21 @@ public class DateTimeValueHandler implements IAttrValueHandler {
             }
         }
         if (CollectionUtils.isNotEmpty(valueList)) {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String format = "yyyy-MM-dd HH:mm:ss";
+            if (MapUtils.isNotEmpty(attrVo.getConfig()) && StringUtils.isNotBlank(attrVo.getConfig().getString("format"))) {
+                format = attrVo.getConfig().getString("format");
+            }
+            SimpleDateFormat sdf = new SimpleDateFormat(format);
             for (int i = 0; i < valueList.size(); i++) {
                 try {
                     //如果前端什么都不修改传回来的值就是Long，所以要转换一下
                     if (valueList.get(i) instanceof Long) {
                         valueList.set(i, sdf.format(new Date(valueList.getLong(i))));
                     } else {
-                        DateUtils.parseDate(valueList.getString(i), "yyyy-MM-dd HH:mm:ss");
+                        DateUtils.parseDate(valueList.getString(i), format);
                     }
                 } catch (ParseException e) {
-                    throw new DatetimeAttrFormatIrregularException(attrVo, valueList.getString(i), "yyyy-MM-dd HH:mm:ss");
+                    throw new DatetimeAttrFormatIrregularException(attrVo, valueList.getString(i), format);
                 }
             }
         }
