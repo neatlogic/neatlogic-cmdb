@@ -10,8 +10,9 @@ import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.enums.SearchExpression;
 import codedriver.framework.cmdb.exception.validator.DatetimeAttrFormatIrregularException;
 import com.alibaba.fastjson.JSONArray;
-import com.alibaba.nacos.common.utils.CollectionUtils;
-import com.alibaba.nacos.common.utils.StringUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.stereotype.Service;
 
@@ -95,18 +96,56 @@ public class DateTimeValueHandler implements IAttrValueHandler {
             }
         }
         if (CollectionUtils.isNotEmpty(valueList)) {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String format = "yyyy-MM-dd HH:mm:ss";
+            SimpleDateFormat sdf = new SimpleDateFormat(format);
             for (int i = 0; i < valueList.size(); i++) {
                 try {
                     //如果前端什么都不修改传回来的值就是Long，所以要转换一下
                     if (valueList.get(i) instanceof Long) {
                         valueList.set(i, sdf.format(new Date(valueList.getLong(i))));
                     } else {
-                        DateUtils.parseDate(valueList.getString(i), "yyyy-MM-dd HH:mm:ss");
+                        DateUtils.parseDate(valueList.getString(i), format);
                     }
                 } catch (ParseException e) {
-                    throw new DatetimeAttrFormatIrregularException(attrVo, valueList.getString(i), "yyyy-MM-dd HH:mm:ss");
+                    throw new DatetimeAttrFormatIrregularException(attrVo, valueList.getString(i), format);
                 }
+            }
+        }
+    }
+
+    @Override
+    public JSONArray getActualValueList(AttrVo attrVo, JSONArray valueList) {
+        JSONArray returnList = new JSONArray();
+        for (int i = 0; i < valueList.size(); i++) {
+            String v = valueList.getString(i);
+            try {
+                if (MapUtils.isNotEmpty(attrVo.getConfig()) && StringUtils.isNotBlank(attrVo.getConfig().getString("format"))) {
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    SimpleDateFormat sdf2 = new SimpleDateFormat(attrVo.getConfig().getString("format"));
+                    Date d = sdf.parse(v);
+                    returnList.add(sdf2.format(d));
+                } else {
+                    returnList.add(v);
+                }
+            } catch (Exception ignored) {
+                returnList.add(v);
+            }
+        }
+        return returnList;
+    }
+
+    @Override
+    public void transferValueListToDisplay(AttrVo attrVo, JSONArray valueList) {
+        for (int i = 0; i < valueList.size(); i++) {
+            String v = valueList.getString(i);
+            try {
+                if (MapUtils.isNotEmpty(attrVo.getConfig()) && StringUtils.isNotBlank(attrVo.getConfig().getString("format"))) {
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    SimpleDateFormat sdf2 = new SimpleDateFormat(attrVo.getConfig().getString("format"));
+                    Date d = sdf.parse(v);
+                    valueList.set(i, sdf2.format(d));
+                }
+            } catch (Exception ignored) {
             }
         }
     }
