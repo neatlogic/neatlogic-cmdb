@@ -97,9 +97,6 @@ public class DateTimeValueHandler implements IAttrValueHandler {
         }
         if (CollectionUtils.isNotEmpty(valueList)) {
             String format = "yyyy-MM-dd HH:mm:ss";
-            if (MapUtils.isNotEmpty(attrVo.getConfig()) && StringUtils.isNotBlank(attrVo.getConfig().getString("format"))) {
-                format = attrVo.getConfig().getString("format");
-            }
             SimpleDateFormat sdf = new SimpleDateFormat(format);
             for (int i = 0; i < valueList.size(); i++) {
                 try {
