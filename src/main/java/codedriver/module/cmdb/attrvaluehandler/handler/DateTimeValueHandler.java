@@ -133,6 +133,22 @@ public class DateTimeValueHandler implements IAttrValueHandler {
         return returnList;
     }
 
+    @Override
+    public void transferValueListToDisplay(AttrVo attrVo, JSONArray valueList) {
+        for (int i = 0; i < valueList.size(); i++) {
+            String v = valueList.getString(i);
+            try {
+                if (MapUtils.isNotEmpty(attrVo.getConfig()) && StringUtils.isNotBlank(attrVo.getConfig().getString("format"))) {
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    SimpleDateFormat sdf2 = new SimpleDateFormat(attrVo.getConfig().getString("format"));
+                    Date d = sdf.parse(v);
+                    valueList.set(i, sdf2.format(d));
+                }
+            } catch (Exception ignored) {
+            }
+        }
+    }
+
 
     @Override
     public int getSort() {
