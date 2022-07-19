@@ -8,7 +8,6 @@ package codedriver.module.cmdb.attrvaluehandler.handler;
 import codedriver.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.enums.SearchExpression;
-import codedriver.framework.common.constvalue.CiphertextPrefix;
 import codedriver.framework.common.util.RC4Util;
 import com.alibaba.fastjson.JSONArray;
 import org.apache.commons.collections4.CollectionUtils;
@@ -89,9 +88,7 @@ public class PasswordValueHandler implements IAttrValueHandler {
         if (CollectionUtils.isNotEmpty(valueList)) {
             for (int i = 0; i < valueList.size(); i++) {
                 String value = valueList.getString(i);
-                if (!value.startsWith(CiphertextPrefix.RC4.getValue())) {
-                    valueList.set(i, CiphertextPrefix.RC4.getValue() + RC4Util.encrypt(value));
-                }
+                valueList.set(i, RC4Util.encrypt(value));
             }
         }
     }
@@ -107,9 +104,7 @@ public class PasswordValueHandler implements IAttrValueHandler {
         if (CollectionUtils.isNotEmpty(valueList)) {
             for (int i = 0; i < valueList.size(); i++) {
                 String value = valueList.getString(i);
-                if (value.startsWith(CiphertextPrefix.RC4.getValue())) {
-                    valueList.set(i, RC4Util.decrypt(value.substring(4)));
-                }
+                valueList.set(i, RC4Util.decrypt(value));
             }
         }
     }
