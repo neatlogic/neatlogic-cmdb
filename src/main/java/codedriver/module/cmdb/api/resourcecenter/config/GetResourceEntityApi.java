@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSureCo.,Ltd.AllRightsReserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -26,18 +26,18 @@ import javax.annotation.Resource;
 @Service
 @AuthAction(action = RESOURCECENTER_MODIFY.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class GetResourceViewApi extends PrivateApiComponentBase {
+public class GetResourceEntityApi extends PrivateApiComponentBase {
     @Resource
     private ResourceEntityMapper resourceEntityMapper;
 
     @Override
     public String getToken() {
-        return "resourcecenter/view/get";
+        return "resourcecenter/resourceentity/get";
     }
 
     @Override
     public String getName() {
-        return "查询资源中心配置信息";
+        return "获取资源配置信息";
     }
 
     @Override
@@ -51,7 +51,7 @@ public class GetResourceViewApi extends PrivateApiComponentBase {
     @Output({
             @Param(name = "Return", explode = ResourceEntityVo.class, desc = "配置信息")
     })
-    @Description(desc = "查询资源中心配置信息")
+    @Description(desc = "获取资源配置信息")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         String name = paramObj.getString("name");
