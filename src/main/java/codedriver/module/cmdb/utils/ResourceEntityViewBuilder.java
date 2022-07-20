@@ -147,7 +147,6 @@ public class ResourceEntityViewBuilder {
         Map<String, List<Element>> elementMap = new HashMap<>();
         try {
             String viewName = resourceEntityVo.getName();
-//            Element resourceElement = root.element("resource");
             String ciName = resourceElement.attributeValue("ci");
             if (StringUtils.isBlank(ciName)) {
                 throw new ResourceCenterConfigIrregularException(viewName, "ci");
@@ -309,7 +308,6 @@ public class ResourceEntityViewBuilder {
         Map<String, List<Element>> elementMap = new HashMap<>();
         try {
             String viewName = sceneEntityVo.getName();
-//            Element resourceElement = root.element("scene");
             String ciName = resourceElement.attributeValue("ci");
             if (StringUtils.isBlank(ciName)) {
                 throw new ResourceCenterConfigIrregularException(viewName, "ci");
