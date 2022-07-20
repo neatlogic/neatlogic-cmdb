@@ -60,12 +60,12 @@ public class InitResourceCenterApi extends PrivateApiComponentBase {
     @Description(desc = "初始化资源中心配置接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        ResourceCenterConfigVo configVo = resourceCenterConfigMapper.getResourceCenterConfig();
-        if (configVo == null) {
-            throw new ResourceCenterConfigNotFoundException();
-        }
-        ResourceEntityViewBuilder builder = new ResourceEntityViewBuilder(configVo.getConfig());
-        builder.buildView();
+//        ResourceCenterConfigVo configVo = resourceCenterConfigMapper.getResourceCenterConfig();
+//        if (configVo == null) {
+//            throw new ResourceCenterConfigNotFoundException();
+//        }
+//        ResourceEntityViewBuilder builder = new ResourceEntityViewBuilder(configVo.getConfig());
+//        builder.buildView();
         // 创建自定义视图
 //        List<ICustomView> custonViewList = ResourceCustomViewFactory.getCustomViewList();
 //        for (ICustomView custonView : custonViewList) {

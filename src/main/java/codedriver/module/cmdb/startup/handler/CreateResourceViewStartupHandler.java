@@ -9,15 +9,20 @@ import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityAttrVo;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import codedriver.framework.cmdb.dto.resourcecenter.customview.ICustomView;
+import codedriver.framework.cmdb.enums.resourcecenter.ScenceView;
+import codedriver.framework.cmdb.enums.resourcecenter.Status;
+import codedriver.framework.cmdb.enums.resourcecenter.ViewType;
 import codedriver.framework.dao.mapper.SchemaMapper;
 import codedriver.framework.startup.StartupBase;
 import codedriver.framework.cmdb.dto.resourcecenter.customview.ResourceCustomViewFactory;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import codedriver.module.cmdb.utils.ResourceEntityFactory;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +43,8 @@ public class CreateResourceViewStartupHandler extends StartupBase {
 
     @Resource
     private SchemaMapper schemaMapper;
+    @Resource
+    private ResourceEntityMapper resourceEntityMapper;
     /**
      * 作业名称
      *
@@ -54,6 +61,26 @@ public class CreateResourceViewStartupHandler extends StartupBase {
     @Override
     public void executeForCurrentTenant() {
         List<ResourceEntityVo> resourceEntityList = ResourceEntityFactory.getResourceEntityList();
+        List<ResourceEntityVo> oldResourceEntityList = resourceEntityMapper.getAllResourceEntity();
+        List<ResourceEntityVo> scenceEntityList = new ArrayList<>();
+        for (ScenceView scenceView : ScenceView.values()) {
+            ResourceEntityVo resourceEntityVo = new ResourceEntityVo();
+            resourceEntityVo.setName(scenceView.name());
+            resourceEntityVo.setLabel(scenceView.getText());
+            resourceEntityVo.setType(ViewType.SCENE.getValue());
+            resourceEntityVo.setStatus(Status.PENDING.getValue());
+            scenceEntityList.add(resourceEntityVo);
+        }
+        List<ResourceEntityVo> needDeleteList = ListUtils.removeAll(oldResourceEntityList, resourceEntityList);
+        needDeleteList = ListUtils.removeAll(needDeleteList, scenceEntityList);
+//        oldResourceEntityList.removeAll(resourceEntityList);
+//        oldResourceEntityList.retainAll(scenceEntityList);
+        if (CollectionUtils.isNotEmpty(needDeleteList)) {
+            for (ResourceEntityVo entity : needDeleteList) {
+                resourceEntityMapper.deleteResourceEntityByName(entity.getName());
+                schemaMapper.deleteView(TenantContext.get().getDataDbName() + "." + entity.getName());
+            }
+        }
         if (CollectionUtils.isNotEmpty(resourceEntityList)) {
             List<ResourceEntityVo> newResourceEntityList = new ArrayList<>();
             for (ResourceEntityVo resourceEntity : resourceEntityList) {
@@ -101,7 +128,16 @@ public class CreateResourceViewStartupHandler extends StartupBase {
                     createTable.setIfNotExists(true);
                     logger.debug("创建表：" + resourceEntity.getName());
                     schemaMapper.insertView(createTable.toString());
+                    ResourceEntityVo resourceEntityVo = new ResourceEntityVo();
+                    resourceEntityVo.setType(ViewType.RESOURCE.getValue());
+                    resourceEntityVo.setName(resourceEntity.getName());
+                    resourceEntityVo.setStatus(Status.PENDING.getValue());
+                    resourceEntityMapper.insertResourceEntity(resourceEntityVo);
                 }
+            }
+            List<ResourceEntityVo> needInsertList = ListUtils.removeAll(scenceEntityList, oldResourceEntityList);
+            for (ResourceEntityVo resourceEntityVo : needInsertList) {
+                resourceEntityMapper.insertResourceEntity(resourceEntityVo);
             }
         }
         // 创建自定义视图

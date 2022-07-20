@@ -187,76 +187,77 @@ public class ResourceDetailView implements ICustomView {
 //        return plainSelect.toString();
 
 
-        List<ResourceInfo> theadList = new ArrayList<>();
-        theadList.add(new ResourceInfo("resource_ipobject", "id"));
-        //3.名称
-        theadList.add(new ResourceInfo("resource_ipobject", "name"));
-        //2.类型
-        theadList.add(new ResourceInfo("resource_ipobject", "type_id"));
-        theadList.add(new ResourceInfo("resource_ipobject", "type_name"));
-        theadList.add(new ResourceInfo("resource_ipobject", "type_label"));
-        //14.维护窗口
-        theadList.add(new ResourceInfo("resource_ipobject", "maintenance_window"));
-        //16.描述
-        theadList.add(new ResourceInfo("resource_ipobject", "description"));
-        //12.网络区域
-        theadList.add(new ResourceInfo("resource_ipobject", "network_area"));
-        //1.IP地址:端口
-        theadList.add(new ResourceInfo("resource_ipobject", "ip"));
-        theadList.add(new ResourceInfo("resource_softwareservice", "port"));
-        //4.监控状态
-        theadList.add(new ResourceInfo("resource_ipobject", "monitor_status"));
-        theadList.add(new ResourceInfo("resource_ipobject", "monitor_time"));
-        //5.巡检状态
-        theadList.add(new ResourceInfo("resource_ipobject", "inspect_status"));
-        theadList.add(new ResourceInfo("resource_ipobject", "inspect_time"));
-        //9.所属部门
-        theadList.add(new ResourceInfo("resource_ipobject_bg", "bg_id"));
-        theadList.add(new ResourceInfo("resource_ipobject_bg", "bg_name"));
-        //8.IP列表
-        theadList.add(new ResourceInfo("resource_ipobject_allip", "allip_id"));
-        theadList.add(new ResourceInfo("resource_ipobject_allip", "allip_ip"));
-        theadList.add(new ResourceInfo("resource_ipobject_allip", "allip_label"));
-        //10.所有者
-        theadList.add(new ResourceInfo("resource_ipobject_owner", "user_id"));
-        theadList.add(new ResourceInfo("resource_ipobject_owner", "user_uuid"));
-        theadList.add(new ResourceInfo("resource_ipobject_owner", "user_name"));
-        //11.资产状态
-        theadList.add(new ResourceInfo("resource_ipobject_state", "state_id"));
-        theadList.add(new ResourceInfo("resource_ipobject_state", "state_name"));
-        theadList.add(new ResourceInfo("resource_ipobject_state", "state_label"));
-        //环境状态
-        theadList.add(new ResourceInfo("resource_ipobject_datacenter", "datacenter_id"));
-        theadList.add(new ResourceInfo("resource_ipobject_datacenter", "datacenter_name"));
-        //环境状态
-        theadList.add(new ResourceInfo("resource_softwareservice_env", "env_id"));
-        theadList.add(new ResourceInfo("resource_softwareservice_env", "env_name"));
-        //6.模块
-        theadList.add(new ResourceInfo("resource_ipobject_appmodule", "app_module_id"));
-        theadList.add(new ResourceInfo("resource_ipobject_appmodule", "app_module_name"));
-        theadList.add(new ResourceInfo("resource_ipobject_appmodule", "app_module_abbr_name"));
-        //7.应用
-        theadList.add(new ResourceInfo("resource_appmodule_appsystem", "app_system_id"));
-        theadList.add(new ResourceInfo("resource_appmodule_appsystem", "app_system_name"));
-        theadList.add(new ResourceInfo("resource_appmodule_appsystem", "app_system_abbr_name"));
-
-        ResourceCenterConfigVo configVo = resourceCenterConfigMapper.getResourceCenterConfig();
-        if (configVo == null) {
-            throw new ResourceCenterConfigNotFoundException();
-        }
-        ResourceEntityViewBuilder builder = new ResourceEntityViewBuilder(configVo.getConfig());
-        List<ResourceEntityVo> resourceEntityList = builder.getResourceEntityList();
-        ResourceSearchGenerateSqlUtil resourceSearchGenerateSqlUtil = new ResourceSearchGenerateSqlUtil(resourceEntityList);
-        PlainSelect plainSelect = resourceSearchGenerateSqlUtil.initPlainSelectByMainResourceId("resource_ipobject");
-        if (plainSelect == null) {
-            return null;
-        }
-        for (ResourceInfo resourceInfo : theadList) {
-            if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
-                resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
-            }
-        }
-        return plainSelect.toString();
+//        List<ResourceInfo> theadList = new ArrayList<>();
+//        theadList.add(new ResourceInfo("resource_ipobject", "id"));
+//        //3.名称
+//        theadList.add(new ResourceInfo("resource_ipobject", "name"));
+//        //2.类型
+//        theadList.add(new ResourceInfo("resource_ipobject", "type_id"));
+//        theadList.add(new ResourceInfo("resource_ipobject", "type_name"));
+//        theadList.add(new ResourceInfo("resource_ipobject", "type_label"));
+//        //14.维护窗口
+//        theadList.add(new ResourceInfo("resource_ipobject", "maintenance_window"));
+//        //16.描述
+//        theadList.add(new ResourceInfo("resource_ipobject", "description"));
+//        //12.网络区域
+//        theadList.add(new ResourceInfo("resource_ipobject", "network_area"));
+//        //1.IP地址:端口
+//        theadList.add(new ResourceInfo("resource_ipobject", "ip"));
+//        theadList.add(new ResourceInfo("resource_softwareservice", "port"));
+//        //4.监控状态
+//        theadList.add(new ResourceInfo("resource_ipobject", "monitor_status"));
+//        theadList.add(new ResourceInfo("resource_ipobject", "monitor_time"));
+//        //5.巡检状态
+//        theadList.add(new ResourceInfo("resource_ipobject", "inspect_status"));
+//        theadList.add(new ResourceInfo("resource_ipobject", "inspect_time"));
+//        //9.所属部门
+//        theadList.add(new ResourceInfo("resource_ipobject_bg", "bg_id"));
+//        theadList.add(new ResourceInfo("resource_ipobject_bg", "bg_name"));
+//        //8.IP列表
+//        theadList.add(new ResourceInfo("resource_ipobject_allip", "allip_id"));
+//        theadList.add(new ResourceInfo("resource_ipobject_allip", "allip_ip"));
+//        theadList.add(new ResourceInfo("resource_ipobject_allip", "allip_label"));
+//        //10.所有者
+//        theadList.add(new ResourceInfo("resource_ipobject_owner", "user_id"));
+//        theadList.add(new ResourceInfo("resource_ipobject_owner", "user_uuid"));
+//        theadList.add(new ResourceInfo("resource_ipobject_owner", "user_name"));
+//        //11.资产状态
+//        theadList.add(new ResourceInfo("resource_ipobject_state", "state_id"));
+//        theadList.add(new ResourceInfo("resource_ipobject_state", "state_name"));
+//        theadList.add(new ResourceInfo("resource_ipobject_state", "state_label"));
+//        //环境状态
+//        theadList.add(new ResourceInfo("resource_ipobject_datacenter", "datacenter_id"));
+//        theadList.add(new ResourceInfo("resource_ipobject_datacenter", "datacenter_name"));
+//        //环境状态
+//        theadList.add(new ResourceInfo("resource_softwareservice_env", "env_id"));
+//        theadList.add(new ResourceInfo("resource_softwareservice_env", "env_name"));
+//        //6.模块
+//        theadList.add(new ResourceInfo("resource_ipobject_appmodule", "app_module_id"));
+//        theadList.add(new ResourceInfo("resource_ipobject_appmodule", "app_module_name"));
+//        theadList.add(new ResourceInfo("resource_ipobject_appmodule", "app_module_abbr_name"));
+//        //7.应用
+//        theadList.add(new ResourceInfo("resource_appmodule_appsystem", "app_system_id"));
+//        theadList.add(new ResourceInfo("resource_appmodule_appsystem", "app_system_name"));
+//        theadList.add(new ResourceInfo("resource_appmodule_appsystem", "app_system_abbr_name"));
+//
+//        ResourceCenterConfigVo configVo = resourceCenterConfigMapper.getResourceCenterConfig();
+//        if (configVo == null) {
+//            throw new ResourceCenterConfigNotFoundException();
+//        }
+//        ResourceEntityViewBuilder builder = new ResourceEntityViewBuilder(configVo.getConfig());
+//        List<ResourceEntityVo> resourceEntityList = builder.getResourceEntityList();
+//        ResourceSearchGenerateSqlUtil resourceSearchGenerateSqlUtil = new ResourceSearchGenerateSqlUtil(resourceEntityList);
+//        PlainSelect plainSelect = resourceSearchGenerateSqlUtil.initPlainSelectByMainResourceId("resource_ipobject");
+//        if (plainSelect == null) {
+//            return null;
+//        }
+//        for (ResourceInfo resourceInfo : theadList) {
+//            if (resourceSearchGenerateSqlUtil.additionalInformation(resourceInfo)) {
+//                resourceSearchGenerateSqlUtil.addJoinTableByResourceInfo(resourceInfo, plainSelect);
+//            }
+//        }
+//        return plainSelect.toString();
+        return null;
     }
 
 }

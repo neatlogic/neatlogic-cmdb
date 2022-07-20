@@ -8,13 +8,13 @@
 <mapper namespace="codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper">
     <select id="getResourceEntityByName" parameterType="java.lang.String"
             resultType="codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
-        SELECT name, label, status, error, init_time AS initTime, ci_id AS ciId
-        FROM cmdb_resourcecenter_entity
-        WHERE name = #{value}
+        SELECT `name`, `label`, `status`, `error`, `init_time` AS initTime, `ci_id` AS ciId, `type`, `xml`, `description`
+        FROM `cmdb_resourcecenter_entity`
+        WHERE `name` = #{value}
     </select>
 
     <select id="getAllResourceEntity" resultType="codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
-        SELECT name, label, status, error, init_time AS initTime
+        SELECT `name`, `label`, `status`, `error`, `init_time` AS initTime, `ci_id` AS ciId, `type`, `xml`, `description`
         FROM cmdb_resourcecenter_entity
     </select>
 
@@ -24,12 +24,25 @@
 
     <insert id="insertResourceEntity"
             parameterType="codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
-        INSERT INTO cmdb_resourcecenter_entity (`name`, `label`, `status`, `error`, `init_time`, `ci_id`)
-        VALUES (#{name}, #{label}, #{status}, #{error}, NOW(3), #{ciId})
-        ON DUPLICATE KEY UPDATE `error`     = #{error},
-                                `status`    = #{status},
-                                `init_time` = NOW(3),
-                                `ci_id`     = #{ciId}
+        INSERT INTO cmdb_resourcecenter_entity (`name`, `label`, `status`, `error`, `init_time`, `ci_id`, `type`, `xml`, `description`)
+        VALUES (#{name}, #{label}, #{status}, #{error}, NOW(3), #{ciId}, #{type}, #{xml}, #{description})
+        ON DUPLICATE KEY UPDATE
+        <if test="error != null">
+            `error` = #{error},
+        </if>
+        <if test="status != null">
+            `status` = #{status},
+        </if>
+        <if test="xml != null">
+            `xml` = #{xml},
+        </if>
+        <if test="description != null">
+            `description`= #{description},
+        </if>
+        <if test="ciId != null">
+            `ci_id` = #{ciId},
+        </if>
+        `init_time` = NOW(3)
     </insert>
 
     <update id="updateResourceEntity"
@@ -37,6 +50,17 @@
         UPDATE cmdb_resourcecenter_entity
         SET `status`    = #{status},
             `error`     = #{error},
+            `xml`       = #{xml},
+            `description`= #{description},
+            `init_time` = NOW(3)
+        WHERE `name` = #{name}
+    </update>
+
+    <update id="updateResourceEntityDescription"
+            parameterType="codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
+        UPDATE cmdb_resourcecenter_entity
+        SET
+            `description`= #{description},
             `init_time` = NOW(3)
         WHERE `name` = #{name}
     </update>
