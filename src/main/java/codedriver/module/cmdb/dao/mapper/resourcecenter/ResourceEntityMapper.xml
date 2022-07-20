@@ -69,10 +69,11 @@
         WHERE `name` = #{name}
     </update>
 
-    <update id="updateResourceEntityDescription"
+    <update id="updateResourceEntityLabelAndDescription"
             parameterType="codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
         UPDATE cmdb_resourcecenter_entity
         SET
+            `label`= #{label},
             `description`= #{description},
             `init_time` = NOW(3)
         WHERE `name` = #{name}

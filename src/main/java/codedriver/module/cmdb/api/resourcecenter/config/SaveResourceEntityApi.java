@@ -64,9 +64,10 @@ public class SaveResourceEntityApi extends PrivateApiComponentBase {
         if (oldResourceEntityVo == null) {
             throw new ResourceCenterResourceFoundException(resourceEntityVo.getName());
         }
+        boolean labelEquals = Objects.equals(resourceEntityVo.getLabel(), oldResourceEntityVo.getLabel());
         boolean xmlEquals = Objects.equals(resourceEntityVo.getXml(), oldResourceEntityVo.getXml());
         boolean descriptionEquals = Objects.equals(resourceEntityVo.getDescription(), oldResourceEntityVo.getDescription());
-        if (xmlEquals && descriptionEquals) {
+        if (labelEquals && xmlEquals && descriptionEquals) {
             return null;
         }
         if (!xmlEquals) {
@@ -77,7 +78,7 @@ public class SaveResourceEntityApi extends PrivateApiComponentBase {
             ResourceEntityViewBuilder builder = new ResourceEntityViewBuilder(resourceEntityVo);
             builder.buildView();
         } else {
-            resourceEntityMapper.updateResourceEntity(resourceEntityVo);
+            resourceEntityMapper.updateResourceEntityLabelAndDescription(resourceEntityVo);
         }
         return null;
     }

@@ -22,7 +22,7 @@ public interface ResourceEntityMapper {
 
     void updateResourceEntityStatusAndError(ResourceEntityVo resourceEntityVo);
 
-    void updateResourceEntityDescription(ResourceEntityVo resourceEntityVo);
+    void updateResourceEntityLabelAndDescription(ResourceEntityVo resourceEntityVo);
 
 //    void insertResourceEntityAttr(ResourceEntityAttrVo resourceEntityAttrVo);
 
