@@ -140,14 +140,13 @@ public class ResourceEntityViewBuilder {
 
     /**
      * 将<scene></scene>标签内容转换成ResourceEntityVo
-     * @param root
+     * @param resourceElement
      * @return
      */
-    private void convertToResourceEntityVo(Element root) {
+    private void convertToResourceEntityVo(Element resourceElement) {
         Map<String, List<Element>> elementMap = new HashMap<>();
         try {
             String viewName = resourceEntityVo.getName();
-            Element resourceElement = root.element("resource");
             String ciName = resourceElement.attributeValue("ci");
             if (StringUtils.isBlank(ciName)) {
                 throw new ResourceCenterConfigIrregularException(viewName, "ci");
@@ -302,14 +301,13 @@ public class ResourceEntityViewBuilder {
     }
     /**
      * 将<scene></scene>标签内容转换成SceneEntityVo
-     * @param root
+     * @param resourceElement
      * @return
      */
-    private void convertToSceneEntityVo(Element root) {
+    private void convertToSceneEntityVo(Element resourceElement) {
         Map<String, List<Element>> elementMap = new HashMap<>();
         try {
             String viewName = sceneEntityVo.getName();
-            Element resourceElement = root.element("scene");
             String ciName = resourceElement.attributeValue("ci");
             if (StringUtils.isBlank(ciName)) {
                 throw new ResourceCenterConfigIrregularException(viewName, "ci");
