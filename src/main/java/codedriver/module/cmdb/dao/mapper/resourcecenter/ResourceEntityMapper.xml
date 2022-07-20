@@ -13,8 +13,7 @@
         WHERE `name` = #{value}
     </select>
 
-    <select id="getResourceEntityXmlByName" parameterType="java.lang.String"
-            resultType="java.lang.String">
+    <select id="getResourceEntityXmlByName" parameterType="java.lang.String" resultType="java.lang.String">
         SELECT `xml`
         FROM `cmdb_resourcecenter_entity`
         WHERE `name` = #{value}
@@ -24,10 +23,6 @@
         SELECT `name`, `label`, `status`, `error`, `init_time` AS initTime, `ci_id` AS ciId, `type`, `description`
         FROM `cmdb_resourcecenter_entity`
     </select>
-
-    <!--<insert id="insertResourceEntityView" parameterType="java.lang.String">
-        ${value}
-    </insert>-->
 
     <insert id="insertResourceEntity"
             parameterType="codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
@@ -86,25 +81,9 @@
         WHERE `name` = #{name}
     </update>
 
-    <!--<insert id="insertResourceEntityAttr"
-            parameterType="codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityAttrVo">
-        INSERT INTO cmdb_resourcecenter_field (`entity_name`, `field_name`, `ci_id`, `attr_id`)
-        VALUES (#{entity}, #{field}, #{ciId}, #{attrId})
-    </insert>-->
-
-    <!--<delete id="deleteResourceEntityAttrByEntity" parameterType="java.lang.String">
-        DELETE
-        FROM cmdb_resourcecenter_field
-        WHERE entity_name = #{value}
-    </delete>-->
-
     <delete id="deleteResourceEntityByName" parameterType="java.lang.String">
         DELETE
         FROM cmdb_resourcecenter_entity
         WHERE name = #{value}
     </delete>
-
-    <!--<delete id="deleteResourceEntityView" parameterType="java.lang.String">
-        DROP VIEW IF EXISTS ${value}
-    </delete>-->
 </mapper>

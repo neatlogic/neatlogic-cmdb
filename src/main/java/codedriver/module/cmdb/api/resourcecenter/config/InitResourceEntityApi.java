@@ -20,6 +20,7 @@ import codedriver.module.cmdb.auth.label.RESOURCECENTER_MODIFY;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import codedriver.module.cmdb.utils.ResourceEntityViewBuilder;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,11 +64,13 @@ public class InitResourceEntityApi extends PrivateApiComponentBase {
         for (ResourceEntityVo resourceEntityVo : resourceEntityList) {
             resourceEntityVo.setError("");
             resourceEntityVo.setStatus(Status.PENDING.getValue());
-            resourceEntityMapper.updateResourceEntity(resourceEntityVo);
-            String xml = resourceEntityMapper.getResourceEntityXmlByName(resourceEntityVo.getXml());
-            resourceEntityVo.setXml(xml);
-            ResourceEntityViewBuilder builder = new ResourceEntityViewBuilder(resourceEntityVo);
-            builder.buildView();
+            resourceEntityMapper.updateResourceEntityStatusAndError(resourceEntityVo);
+            String xml = resourceEntityMapper.getResourceEntityXmlByName(resourceEntityVo.getName());
+            if (StringUtils.isNotBlank(xml)) {
+                resourceEntityVo.setXml(xml);
+                ResourceEntityViewBuilder builder = new ResourceEntityViewBuilder(resourceEntityVo);
+                builder.buildView();
+            }
         }
         return resourceEntityMapper.getAllResourceEntity();
     }
