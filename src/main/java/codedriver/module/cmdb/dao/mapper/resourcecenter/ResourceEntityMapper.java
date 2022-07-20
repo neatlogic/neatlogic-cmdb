@@ -20,6 +20,8 @@ public interface ResourceEntityMapper {
 
     void updateResourceEntity(ResourceEntityVo resourceEntityVo);
 
+    void updateResourceEntityDescription(ResourceEntityVo resourceEntityVo);
+
 //    void insertResourceEntityAttr(ResourceEntityAttrVo resourceEntityAttrVo);
 
     void deleteResourceEntityByName(String name);

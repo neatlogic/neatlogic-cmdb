@@ -10,6 +10,7 @@ import codedriver.framework.cmdb.annotation.ResourceType;
 import codedriver.framework.cmdb.annotation.ResourceTypes;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityAttrVo;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
+import codedriver.framework.cmdb.enums.resourcecenter.ViewType;
 import org.apache.commons.lang3.StringUtils;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
@@ -58,6 +59,7 @@ public class ResourceEntityFactory {
                     }
                 }
             }
+            resourceEntityVo.setType(ViewType.RESOURCE.getValue());
             resourceEntityList.add(resourceEntityVo);
         }
         classList = ref.getTypesAnnotatedWith(ResourceTypes.class, true);
@@ -78,6 +80,7 @@ public class ResourceEntityFactory {
                             }
                         }
                     }
+                    resourceEntityVo.setType(ViewType.RESOURCE.getValue());
                     resourceEntityList.add(resourceEntityVo);
                 }
             }

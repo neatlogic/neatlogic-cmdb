@@ -84,8 +84,8 @@ public class ConfigSaveApi extends PrivateApiComponentBase {
                 resourceCenterConfigMapper.updateResourceCenterConfig(resourceCenterConfigVo);
             }
         }
-        ResourceEntityViewBuilder builder = new ResourceEntityViewBuilder(resourceCenterConfigVo.getConfig());
-        builder.buildView();
+//        ResourceEntityViewBuilder builder = new ResourceEntityViewBuilder(resourceCenterConfigVo.getConfig());
+//        builder.buildView();
         List<ResourceEntityVo> resourceEntityList = resourceEntityMapper.getAllResourceEntity();
         resourceCenterConfigVo.setResourceEntityList(resourceEntityList);
         resourceCenterConfigVo.setConfig(null);
