@@ -12,9 +12,9 @@ import java.util.List;
 public interface ResourceEntityMapper {
     ResourceEntityVo getResourceEntityByName(String name);
 
-    List<ResourceEntityVo> getAllResourceEntity();
+    String getResourceEntityXmlByName(String xml);
 
-//    void insertResourceEntityView(String sql);
+    List<ResourceEntityVo> getAllResourceEntity();
 
     void insertResourceEntity(ResourceEntityVo resourceEntityVo);
 
@@ -24,11 +24,5 @@ public interface ResourceEntityMapper {
 
     void updateResourceEntityLabelAndDescription(ResourceEntityVo resourceEntityVo);
 
-//    void insertResourceEntityAttr(ResourceEntityAttrVo resourceEntityAttrVo);
-
     void deleteResourceEntityByName(String name);
-
-//    void deleteResourceEntityView(String viewName);
-
-//    void deleteResourceEntityAttrByEntity(String entityName);
 }

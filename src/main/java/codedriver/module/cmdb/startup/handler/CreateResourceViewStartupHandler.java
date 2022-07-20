@@ -63,7 +63,7 @@ public class CreateResourceViewStartupHandler extends StartupBase {
         List<ResourceEntityVo> scenceEntityList = new ArrayList<>();
         for (ScenceView scenceView : ScenceView.values()) {
             ResourceEntityVo resourceEntityVo = new ResourceEntityVo();
-            resourceEntityVo.setName(scenceView.name());
+            resourceEntityVo.setName(scenceView.getValue());
             resourceEntityVo.setLabel(scenceView.getText());
             resourceEntityVo.setType(ViewType.SCENE.getValue());
             resourceEntityVo.setStatus(Status.PENDING.getValue());

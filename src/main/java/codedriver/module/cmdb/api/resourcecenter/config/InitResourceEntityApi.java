@@ -64,6 +64,8 @@ public class InitResourceEntityApi extends PrivateApiComponentBase {
             resourceEntityVo.setError("");
             resourceEntityVo.setStatus(Status.PENDING.getValue());
             resourceEntityMapper.updateResourceEntity(resourceEntityVo);
+            String xml = resourceEntityMapper.getResourceEntityXmlByName(resourceEntityVo.getXml());
+            resourceEntityVo.setXml(xml);
             ResourceEntityViewBuilder builder = new ResourceEntityViewBuilder(resourceEntityVo);
             builder.buildView();
         }
