@@ -49,18 +49,11 @@ public class ResourceEntityViewBuilder {
 
     private final static List<String> defaultAttrList = Arrays.asList("_id", "_uuid", "_name", "_fcu", "_fcd", "_lcu", "_lcd", "_inspectStatus", "_inspectTime", "_monitorStatus", "_monitorTime", "_typeId", "_typeName", "_typeLabel");
 
-//    private final List<ResourceEntityVo> resourceEntityList = new ArrayList<>();
-
     private ResourceEntityVo resourceEntityVo;
 
     private SceneEntityVo sceneEntityVo;
 
     private String type;
-//    private final List<SceneEntityVo> sceneEntityList = new ArrayList<>();
-
-//    public List<ResourceEntityVo> getResourceEntityList() {
-//        return resourceEntityList;
-//    }
 
     private final Map<String, CiVo> ciMap = new HashMap<>();
     private static SchemaMapper schemaMapper;
@@ -101,183 +94,6 @@ public class ResourceEntityViewBuilder {
         return returnList;
     }
 
-//    public ResourceEntityViewBuilder(String xml) {
-//        try {
-//            Map<String, List<Element>> elementMap = new HashMap<>();
-//            List<ResourceEntityVo> resourceEntityVoList = ResourceEntityFactory.getResourceEntityList();
-//            if (CollectionUtils.isNotEmpty(resourceEntityVoList)) {
-//                Document document = DocumentHelper.parseText(xml);
-//                Element root = document.getRootElement();
-//                for (ResourceEntityVo resourceEntity : resourceEntityVoList) {
-//                    ResourceEntityVo resourceEntityVo = createResourceEntityVo(resourceEntity);
-//                    this.resourceEntityList.add(resourceEntityVo);
-//                    try {
-//                        Optional<Element> resourceOp = root.elements("resource").stream().filter(e -> e.attributeValue("id").equalsIgnoreCase(resourceEntityVo.getName())).findFirst();
-//                        if (resourceOp.isPresent()) {
-//                            Element resourceElement = resourceOp.get();
-//                            String ciName = resourceElement.attributeValue("ci");
-//                            if (StringUtils.isNotBlank(ciName)) {
-//                                CiVo ciVo = getCiByName(ciName);
-//                                if (ciVo != null) {
-//                                    resourceEntityVo.setCi(ciVo);
-//                                    resourceEntityVo.setJoinList(null);
-//                                    if (CollectionUtils.isNotEmpty(resourceEntityVo.getAttrList())) {
-//                                        //分析属性
-//                                        for (ResourceEntityAttrVo attr : resourceEntityVo.getAttrList()) {
-//                                            if (!elementMap.containsKey(resourceEntityVo.getName() + "_attr")) {
-//                                                elementMap.put(resourceEntityVo.getName() + "_attr", getAllChildElement(resourceElement, "attr"));
-//                                            }
-//                                            List<Element> attrElementList = elementMap.get(resourceEntityVo.getName() + "_attr");
-//                                            Optional<Element> attrOp = attrElementList.stream().filter(e -> e.attributeValue("field").equalsIgnoreCase(attr.getField())).findFirst();
-//                                            if (attrOp.isPresent()) {
-//                                                Element attrElement = attrOp.get();
-//                                                String attrName = attrElement.attributeValue("attr");
-//                                                String attrCiName = attrElement.attributeValue("ci");
-//                                                CiVo attrCiVo = null;
-//                                                if (StringUtils.isNotBlank(attrCiName)) {
-//                                                    attrCiVo = getCiByName(attrCiName);
-//                                                    if (attrCiVo == null) {
-//                                                        throw new CiNotFoundException(attrCiName);
-//                                                    }
-//                                                }
-//                                                if (StringUtils.isNotBlank(attrName)) {
-//                                                    attr.setAttr(attrName);
-//                                                    if (attrCiVo == null) {
-//                                                        checkAttrIsExists(ciVo, attrName);
-//                                                        attr.setCiId(ciVo.getId());
-//                                                        attr.setCiName(ciName);
-//                                                        attr.setTableAlias(resourceEntityVo.getName());
-//                                                    } else {
-//                                                        checkAttrIsExists(attrCiVo, attrName);
-//                                                        attr.setCiName(attrCiName);
-//                                                        attr.setCiId(attrCiVo.getId());
-//                                                        attr.setCi(attrCiVo);
-//                                                        attr.setTableAlias("target_cientity_" + attrCiName.toLowerCase(Locale.ROOT));
-//                                                    }
-//
-//                                                    if (!attrName.startsWith("_")) {
-//                                                        AttrVo attrVo = getCiByName(attr.getCiName()).getAttrByName(attrName);
-//                                                        if (attrVo == null) {
-//                                                            throw new AttrNotFoundException(attr.getCiName(), attrName);
-//                                                        }
-//                                                        attr.setAttrId(attrVo.getId());
-//                                                    }
-//                                                } else if (attrElement.getParent().getName().equalsIgnoreCase("join")) {
-//                                                    if (attrCiVo != null) {
-//                                                        attr.setAttr("_id");
-//                                                        attr.setCiId(attrCiVo.getId());
-//                                                        attr.setCi(attrCiVo);
-//                                                        attr.setCiName(attrCiName);
-//                                                        attr.setTableAlias("target_cientity_" + attrCiName.toLowerCase(Locale.ROOT));
-//                                                    } else {
-//                                                        throw new ResourceCenterConfigIrregularException(resourceEntityVo.getName(), "attr", attr.getField(), "ci");
-//                                                    }
-//                                                } else {
-//                                                    throw new ResourceCenterConfigIrregularException(resourceEntityVo.getName(), "attr", attr.getField(), "attr");
-//                                                }
-//                                            } else {
-//                                                if (!elementMap.containsKey(resourceEntityVo.getName() + "_rel")) {
-//                                                    elementMap.put(resourceEntityVo.getName() + "_rel", getAllChildElement(resourceElement, "rel"));
-//                                                }
-//                                                List<Element> relElementList = elementMap.get(resourceEntityVo.getName() + "_rel");
-//                                                Optional<Element> relOp = relElementList.stream().filter(e -> e.attributeValue("field").equalsIgnoreCase(attr.getField())).findFirst();
-//                                                if (relOp.isPresent()) {
-//                                                    Element attrElement = relOp.get();
-//                                                    String attrCiName = attrElement.attributeValue("ci");
-//                                                    CiVo attrCiVo = null;
-//                                                    if (StringUtils.isNotBlank(attrCiName)) {
-//                                                        attrCiVo = getCiByName(attrCiName);
-//                                                        if (attrCiVo == null) {
-//                                                            throw new CiNotFoundException(attrCiName);
-//                                                        }
-//                                                    }
-//                                                    if (attrCiVo != null) {
-//                                                        attr.setAttr("_id");
-//                                                        attr.setCiId(attrCiVo.getId());
-//                                                        attr.setCi(attrCiVo);
-//                                                        attr.setCiName(attrCiName);
-//                                                        attr.setTableAlias("target_cientity_" + attrCiName.toLowerCase(Locale.ROOT));
-//                                                    } else {
-//                                                        throw new ResourceCenterConfigIrregularException(resourceEntityVo.getName(), "rel", attr.getField(), "ci");
-//                                                    }
-//                                                } else {
-//                                                    throw new ResourceCenterConfigIrregularException(resourceEntityVo.getName(), "attr或rel", attr.getField());
-//                                                }
-//                                            }
-//                                        }
-//                                        //分析连接查询
-//                                        Element joinElement = resourceElement.element("join");
-//                                        if (joinElement != null) {
-//                                            List<Element> attrElementList = joinElement.elements("attr");
-//                                            if (CollectionUtils.isNotEmpty(attrElementList)) {
-//                                                for (Element attrElement : attrElementList) {
-//                                                    String attrCiName = attrElement.attributeValue("ci");
-//                                                    String attrFieldName = attrElement.attributeValue("field");
-//                                                    String joinAttrName = attrElement.attributeValue("joinAttrName");
-//                                                    if (StringUtils.isBlank(joinAttrName)) {
-//                                                        throw new ResourceCenterConfigIrregularException(resourceEntityVo.getName(), "attr", attrFieldName, "joinAttrName");
-//                                                    }
-//                                                    checkAttrIsExists(ciVo, joinAttrName);
-//                                                    if (StringUtils.isNotBlank(attrCiName)) {
-//                                                        CiVo joinCiVo = getCiByName(attrCiName);
-//                                                        if (joinCiVo == null) {
-//                                                            throw new CiNotFoundException(attrCiName);
-//                                                        }
-//                                                        ResourceEntityJoinVo joinVo = new ResourceEntityJoinVo(JoinType.ATTR);
-//                                                        joinVo.setCi(joinCiVo);
-//                                                        joinVo.setCiName(joinCiVo.getName());
-//                                                        joinVo.setField(attrFieldName);
-//                                                        joinVo.setJoinAttrName(joinAttrName);
-//                                                        resourceEntityVo.addJoin(joinVo);
-//                                                    }
-//                                                }
-//                                            }
-//
-//                                            List<Element> relElementList = joinElement.elements("rel");
-//                                            if (CollectionUtils.isNotEmpty(relElementList)) {
-//                                                for (Element relElement : relElementList) {
-//                                                    String relCiName = relElement.attributeValue("ci");
-//                                                    String relFieldName = relElement.attributeValue("field");
-//                                                    String relDirection = relElement.attributeValue("direction");
-//                                                    if (StringUtils.isNotBlank(relCiName)) {
-//                                                        CiVo joinCiVo = getCiByName(relCiName);
-//                                                        if (joinCiVo == null) {
-//                                                            throw new CiNotFoundException(relCiName);
-//                                                        }
-//                                                        ResourceEntityJoinVo joinVo = new ResourceEntityJoinVo(JoinType.REL);
-//                                                        joinVo.setCi(joinCiVo);
-//                                                        joinVo.setCiName(joinCiVo.getName());
-//                                                        joinVo.setField(relFieldName);
-//                                                        if (StringUtils.isNotBlank(relDirection)) {
-//                                                            joinVo.setDirection(relDirection);
-//                                                        }
-//                                                        resourceEntityVo.addJoin(joinVo);
-//                                                    }
-//                                                }
-//                                            }
-//                                        }
-//                                    }
-//                                } else {
-//                                    throw new CiNotFoundException(ciName);
-//                                }
-//                            } else {
-//                                throw new ResourceCenterConfigIrregularException(resourceEntityVo.getName(), "ci");
-//                            }
-//                        } else {
-//                            throw new ResourceCenterConfigIrregularException(resourceEntityVo.getName());
-//                        }
-//                        resourceEntityVo.setStatus(Status.PENDING.getValue());
-//                    } catch (Exception ex) {
-//                        resourceEntityVo.setStatus(Status.ERROR.getValue());
-//                        resourceEntityVo.setError(ex.getMessage());
-//                    }
-//                }
-//                convertToSceneEntityVo(root);
-//            }
-//        } catch (DocumentException e) {
-//            throw new ResourceCenterConfigIrregularException(e);
-//        }
-//    }
     public ResourceEntityViewBuilder(ResourceEntityVo resourceEntity) {
         try {
             String name = resourceEntity.getName();
@@ -491,17 +307,7 @@ public class ResourceEntityViewBuilder {
      */
     private void convertToSceneEntityVo(Element root) {
         Map<String, List<Element>> elementMap = new HashMap<>();
-//        String viewName = scenceView.getValue();
-//        SceneEntityVo sceneEntityVo = new SceneEntityVo();
-//        sceneEntityVo.setName(viewName);
-//        sceneEntityVo.setLabel(scenceView.getText());
-//        sceneEntityList.add(sceneEntityVo);
         try {
-//            Optional<Element> resourceOp = root.elements("scene").stream().filter(e -> e.attributeValue("id").equalsIgnoreCase(scenceView.getValue())).findFirst();
-//            if (!resourceOp.isPresent()) {
-//                throw new ResourceCenterConfigIrregularException(scenceView.getValue());
-//            }
-//            Element resourceElement = resourceOp.get();
             String viewName = sceneEntityVo.getName();
             Element resourceElement = root.element("scene");
             String ciName = resourceElement.attributeValue("ci");
@@ -918,7 +724,11 @@ public class ResourceEntityViewBuilder {
     }
 
     private void buildResource() {
-        ResourceEntityVo resourceEntity = this.resourceEntityVo;
+        if (StringUtils.isNotBlank(resourceEntityVo.getError())) {
+            resourceEntityVo.setStatus(Status.ERROR.getValue());
+            resourceEntityMapper.updateResourceEntityStatusAndError(resourceEntityVo);
+            return;
+        }
         Table mainTable = new Table();
         mainTable.setSchemaName(TenantContext.get().getDbName());
         mainTable.setName("cmdb_cientity");
@@ -930,17 +740,17 @@ public class ResourceEntityViewBuilder {
 
         plainSelect.addJoins(new Join()
                 .withRightItem(new SubSelect()
-                        .withSelectBody(buildSubSelectForCi(resourceEntity.getCi()).getSelectBody())
-                        .withAlias(new Alias(resourceEntity.getName().toLowerCase(Locale.ROOT))))
+                        .withSelectBody(buildSubSelectForCi(resourceEntityVo.getCi()).getSelectBody())
+                        .withAlias(new Alias(resourceEntityVo.getName().toLowerCase(Locale.ROOT))))
                 .withOnExpression(new EqualsTo().withLeftExpression(new Column()
                         .withTable(new Table("ci_base"))
                         .withColumnName("id"))
                         .withRightExpression(new Column()
-                                .withTable(new Table(resourceEntity.getName()))
+                                .withTable(new Table(resourceEntityVo.getName()))
                                 .withColumnName("id"))));
 
-        if (CollectionUtils.isNotEmpty(resourceEntity.getAttrList())) {
-            for (ResourceEntityAttrVo entityAttr : resourceEntity.getAttrList()) {
+        if (CollectionUtils.isNotEmpty(resourceEntityVo.getAttrList())) {
+            for (ResourceEntityAttrVo entityAttr : resourceEntityVo.getAttrList()) {
                 SelectExpressionItem selectItem = new SelectExpressionItem();
                 if (entityAttr.getAttr().startsWith("_")) {
                     selectItem.setExpression(new Column(entityAttr.getTableAlias() + "." + entityAttr.getAttr().substring(1)));
@@ -952,9 +762,9 @@ public class ResourceEntityViewBuilder {
             }
         }
 
-        if (CollectionUtils.isNotEmpty(resourceEntity.getJoinList())) {
+        if (CollectionUtils.isNotEmpty(resourceEntityVo.getJoinList())) {
             List<Join> joinList = new ArrayList<>();
-            for (ResourceEntityJoinVo entityJoin : resourceEntity.getJoinList()) {
+            for (ResourceEntityJoinVo entityJoin : resourceEntityVo.getJoinList()) {
                 if (entityJoin.getJoinType() == JoinType.ATTR) {
                     plainSelect.addJoins(new Join()
                             //.withLeft(true)
@@ -1034,22 +844,22 @@ public class ResourceEntityViewBuilder {
             }
         }
         try {
-            String sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + "." + resourceEntity.getName() + " AS " + select;
+            String sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + "." + resourceEntityVo.getName() + " AS " + select;
             if (logger.isDebugEnabled()) {
                 logger.debug(sql);
             }
-            schemaMapper.deleteTable(TenantContext.get().getDataDbName() + "." + resourceEntity.getName());
+            schemaMapper.deleteTable(TenantContext.get().getDataDbName() + "." + resourceEntityVo.getName());
             schemaMapper.insertView(sql);
-            resourceEntity.setError("");
-            resourceEntity.setStatus(Status.READY.getValue());
+            resourceEntityVo.setError("");
+            resourceEntityVo.setStatus(Status.READY.getValue());
         } catch (Exception ex) {
-            resourceEntity.setError(ex.getMessage());
-            resourceEntity.setStatus(Status.ERROR.getValue());
+            resourceEntityVo.setError(ex.getMessage());
+            resourceEntityVo.setStatus(Status.ERROR.getValue());
             Table table = new Table();
-            table.setName(resourceEntity.getName());
+            table.setName(resourceEntityVo.getName());
             table.setSchemaName(TenantContext.get().getDataDbName());
             List<ColumnDefinition> columnDefinitions = new ArrayList<>();
-            Set<ResourceEntityAttrVo> attrList = resourceEntity.getAttrList();
+            Set<ResourceEntityAttrVo> attrList = resourceEntityVo.getAttrList();
             for (ResourceEntityAttrVo attrVo : attrList) {
                 ColumnDefinition columnDefinition = new ColumnDefinition();
                 columnDefinition.setColumnName(attrVo.getField());
@@ -1062,7 +872,7 @@ public class ResourceEntityViewBuilder {
             createTable.setIfNotExists(true);
             schemaMapper.insertView(createTable.toString());
         } finally {
-            resourceEntityMapper.insertResourceEntity(resourceEntity);
+            resourceEntityMapper.updateResourceEntityStatusAndError(resourceEntityVo);
         }
     }
     private void buildScene() {
@@ -1074,7 +884,7 @@ public class ResourceEntityViewBuilder {
         if (StringUtils.isNotBlank(sceneEntityVo.getError())) {
             resourceEntityVo.setError(sceneEntityVo.getError());
             resourceEntityVo.setStatus(Status.ERROR.getValue());
-            resourceEntityMapper.insertResourceEntity(resourceEntityVo);
+            resourceEntityMapper.updateResourceEntityStatusAndError(resourceEntityVo);
             return;
         }
         String name = sceneEntityVo.getName();
@@ -1093,7 +903,7 @@ public class ResourceEntityViewBuilder {
             resourceEntityVo.setError(ex.getMessage());
             resourceEntityVo.setStatus(Status.ERROR.getValue());
         } finally {
-            resourceEntityMapper.insertResourceEntity(resourceEntityVo);
+            resourceEntityMapper.updateResourceEntityStatusAndError(resourceEntityVo);
         }
     }
     private Select buildSubSelectForCi(CiVo ciVo) {

@@ -27,6 +27,9 @@
         INSERT INTO cmdb_resourcecenter_entity (`name`, `label`, `status`, `error`, `init_time`, `ci_id`, `type`, `xml`, `description`)
         VALUES (#{name}, #{label}, #{status}, #{error}, NOW(3), #{ciId}, #{type}, #{xml}, #{description})
         ON DUPLICATE KEY UPDATE
+        <if test="label != null">
+            `label` = #{label},
+        </if>
         <if test="error != null">
             `error` = #{error},
         </if>
@@ -49,6 +52,7 @@
             parameterType="codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
         UPDATE cmdb_resourcecenter_entity
         SET `status`    = #{status},
+            `label`     = #{label},
             `error`     = #{error},
             `xml`       = #{xml},
             `description`= #{description},
@@ -56,10 +60,20 @@
         WHERE `name` = #{name}
     </update>
 
-    <update id="updateResourceEntityDescription"
+    <update id="updateResourceEntityStatusAndError"
+            parameterType="codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
+        UPDATE cmdb_resourcecenter_entity
+        SET `status`    = #{status},
+            `error`     = #{error},
+            `init_time` = NOW(3)
+        WHERE `name` = #{name}
+    </update>
+
+    <update id="updateResourceEntityLabelAndDescription"
             parameterType="codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
         UPDATE cmdb_resourcecenter_entity
         SET
+            `label`= #{label},
             `description`= #{description},
             `init_time` = NOW(3)
         WHERE `name` = #{name}
