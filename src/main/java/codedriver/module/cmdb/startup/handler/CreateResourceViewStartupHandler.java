@@ -8,13 +8,11 @@ package codedriver.module.cmdb.startup.handler;
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityAttrVo;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
-import codedriver.framework.cmdb.dto.resourcecenter.customview.ICustomView;
 import codedriver.framework.cmdb.enums.resourcecenter.ScenceView;
 import codedriver.framework.cmdb.enums.resourcecenter.Status;
 import codedriver.framework.cmdb.enums.resourcecenter.ViewType;
 import codedriver.framework.dao.mapper.SchemaMapper;
 import codedriver.framework.startup.StartupBase;
-import codedriver.framework.cmdb.dto.resourcecenter.customview.ResourceCustomViewFactory;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import codedriver.module.cmdb.utils.ResourceEntityFactory;
 import net.sf.jsqlparser.schema.Table;
@@ -73,8 +71,6 @@ public class CreateResourceViewStartupHandler extends StartupBase {
         }
         List<ResourceEntityVo> needDeleteList = ListUtils.removeAll(oldResourceEntityList, resourceEntityList);
         needDeleteList = ListUtils.removeAll(needDeleteList, scenceEntityList);
-//        oldResourceEntityList.removeAll(resourceEntityList);
-//        oldResourceEntityList.retainAll(scenceEntityList);
         if (CollectionUtils.isNotEmpty(needDeleteList)) {
             for (ResourceEntityVo entity : needDeleteList) {
                 resourceEntityMapper.deleteResourceEntityByName(entity.getName());
@@ -140,22 +136,6 @@ public class CreateResourceViewStartupHandler extends StartupBase {
                 resourceEntityMapper.insertResourceEntity(resourceEntityVo);
             }
         }
-        // 创建自定义视图
-//        List<ICustomView> custonViewList = ResourceCustomViewFactory.getCustomViewList();
-//        for (ICustomView custonView : custonViewList) {
-//            String selectBody = custonView.getSelectBody();
-//            if (StringUtils.isNotBlank(selectBody)) {
-//                try {
-//                    String sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + "." + custonView.getName() + " AS " + selectBody;
-//                    if (logger.isDebugEnabled()) {
-//                        logger.debug(sql);
-//                    }
-//                    schemaMapper.insertView(sql);
-//                } catch (Exception ex) {
-//                    logger.error(ex.getMessage(), ex);
-//                }
-//            }
-//        }
     }
 
     @Override

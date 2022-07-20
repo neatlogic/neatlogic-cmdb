@@ -7,6 +7,7 @@ package codedriver.module.cmdb.api.resourcecenter.config;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
+import codedriver.framework.cmdb.enums.resourcecenter.Status;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterResourceFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
@@ -69,10 +70,14 @@ public class SaveResourceEntityApi extends PrivateApiComponentBase {
             return null;
         }
         if (!xmlEquals) {
+            resourceEntityVo.setType(oldResourceEntityVo.getType());
+            resourceEntityVo.setError("");
+            resourceEntityVo.setStatus(Status.PENDING.getValue());
+            resourceEntityMapper.updateResourceEntity(resourceEntityVo);
             ResourceEntityViewBuilder builder = new ResourceEntityViewBuilder(resourceEntityVo);
             builder.buildView();
         } else {
-            resourceEntityMapper.updateResourceEntityDescription(resourceEntityVo);
+            resourceEntityMapper.updateResourceEntity(resourceEntityVo);
         }
         return null;
     }
