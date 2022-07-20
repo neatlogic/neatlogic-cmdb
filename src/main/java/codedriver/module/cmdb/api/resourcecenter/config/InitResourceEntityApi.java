@@ -29,7 +29,7 @@ import java.util.Objects;
 
 /**
  * @author linbq
- * @since 2021/11/9 11:26
+ * @since 2022/07/20 17:19
  **/
 @Service
 @AuthAction(action = RESOURCECENTER_MODIFY.class)
@@ -56,7 +56,7 @@ public class InitResourceEntityApi extends PrivateApiComponentBase {
 
     @Input({
     })
-    @Description(desc = "保存资源配置信息接口")
+    @Description(desc = "初始化资源配置信息")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         List<ResourceEntityVo> resourceEntityList = resourceEntityMapper.getAllResourceEntity();
