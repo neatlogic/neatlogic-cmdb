@@ -63,7 +63,7 @@ public class CreateResourceViewStartupHandler extends StartupBase {
         List<ResourceEntityVo> scenceEntityList = new ArrayList<>();
         for (ScenceView scenceView : ScenceView.values()) {
             ResourceEntityVo resourceEntityVo = new ResourceEntityVo();
-            resourceEntityVo.setName(scenceView.name());
+            resourceEntityVo.setName(scenceView.getValue());
             resourceEntityVo.setLabel(scenceView.getText());
             resourceEntityVo.setType(ViewType.SCENE.getValue());
             resourceEntityVo.setStatus(Status.PENDING.getValue());
@@ -127,14 +127,15 @@ public class CreateResourceViewStartupHandler extends StartupBase {
                     ResourceEntityVo resourceEntityVo = new ResourceEntityVo();
                     resourceEntityVo.setType(ViewType.RESOURCE.getValue());
                     resourceEntityVo.setName(resourceEntity.getName());
+                    resourceEntityVo.setLabel(resourceEntity.getLabel());
                     resourceEntityVo.setStatus(Status.PENDING.getValue());
                     resourceEntityMapper.insertResourceEntity(resourceEntityVo);
                 }
             }
-            List<ResourceEntityVo> needInsertList = ListUtils.removeAll(scenceEntityList, oldResourceEntityList);
-            for (ResourceEntityVo resourceEntityVo : needInsertList) {
-                resourceEntityMapper.insertResourceEntity(resourceEntityVo);
-            }
+        }
+        List<ResourceEntityVo> needInsertList = ListUtils.removeAll(scenceEntityList, oldResourceEntityList);
+        for (ResourceEntityVo resourceEntityVo : needInsertList) {
+            resourceEntityMapper.insertResourceEntity(resourceEntityVo);
         }
     }
 

@@ -14,7 +14,7 @@ public interface ResourceEntityMapper {
 
     List<ResourceEntityVo> getAllResourceEntity();
 
-//    void insertResourceEntityView(String sql);
+    String getResourceEntityXmlByName(String xml);
 
     void insertResourceEntity(ResourceEntityVo resourceEntityVo);
 
@@ -24,11 +24,5 @@ public interface ResourceEntityMapper {
 
     void updateResourceEntityLabelAndDescription(ResourceEntityVo resourceEntityVo);
 
-//    void insertResourceEntityAttr(ResourceEntityAttrVo resourceEntityAttrVo);
-
     void deleteResourceEntityByName(String name);
-
-//    void deleteResourceEntityView(String viewName);
-
-//    void deleteResourceEntityAttrByEntity(String entityName);
 }
