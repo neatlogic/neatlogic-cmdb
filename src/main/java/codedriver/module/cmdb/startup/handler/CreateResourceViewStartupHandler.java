@@ -127,14 +127,15 @@ public class CreateResourceViewStartupHandler extends StartupBase {
                     ResourceEntityVo resourceEntityVo = new ResourceEntityVo();
                     resourceEntityVo.setType(ViewType.RESOURCE.getValue());
                     resourceEntityVo.setName(resourceEntity.getName());
+                    resourceEntityVo.setLabel(resourceEntity.getLabel());
                     resourceEntityVo.setStatus(Status.PENDING.getValue());
                     resourceEntityMapper.insertResourceEntity(resourceEntityVo);
                 }
             }
-            List<ResourceEntityVo> needInsertList = ListUtils.removeAll(scenceEntityList, oldResourceEntityList);
-            for (ResourceEntityVo resourceEntityVo : needInsertList) {
-                resourceEntityMapper.insertResourceEntity(resourceEntityVo);
-            }
+        }
+        List<ResourceEntityVo> needInsertList = ListUtils.removeAll(scenceEntityList, oldResourceEntityList);
+        for (ResourceEntityVo resourceEntityVo : needInsertList) {
+            resourceEntityMapper.insertResourceEntity(resourceEntityVo);
         }
     }
 
