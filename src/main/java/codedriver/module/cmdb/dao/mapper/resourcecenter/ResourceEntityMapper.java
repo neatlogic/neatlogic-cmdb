@@ -12,9 +12,9 @@ import java.util.List;
 public interface ResourceEntityMapper {
     ResourceEntityVo getResourceEntityByName(String name);
 
-    String getResourceEntityXmlByName(String xml);
-
     List<ResourceEntityVo> getAllResourceEntity();
+
+    String getResourceEntityXmlByName(String xml);
 
     void insertResourceEntity(ResourceEntityVo resourceEntityVo);
 
