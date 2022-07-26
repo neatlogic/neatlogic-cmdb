@@ -6,12 +6,14 @@
 
 package codedriver.module.cmdb.publicapi;
 
+import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.cientity.CiEntityInspectVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ import javax.annotation.Resource;
 import java.util.Date;
 
 @Service
+@AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class UpdateCiEntityInspectStatusApi extends PrivateApiComponentBase {
 
