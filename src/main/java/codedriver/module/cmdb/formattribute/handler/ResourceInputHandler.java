@@ -5,17 +5,16 @@
 
 package codedriver.module.cmdb.formattribute.handler;
 
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import codedriver.framework.common.constvalue.ParamType;
 import codedriver.framework.form.attribute.core.FormHandlerBase;
 import codedriver.framework.form.constvalue.FormConditionModel;
 import codedriver.framework.form.dto.AttributeDataVo;
 import codedriver.framework.form.exception.AttributeValidException;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -30,7 +29,7 @@ import java.util.List;
 public class ResourceInputHandler extends FormHandlerBase {
 
     @Resource
-    private ResourceCenterMapper resourceCenterMapper;
+    private ResourceMapper resourceMapper;
 
     @Override
     public String getHandler() {
@@ -112,7 +111,7 @@ public class ResourceInputHandler extends FormHandlerBase {
             List<ResourceSearchVo> resourceIsNotFoundList = new ArrayList<>();
             List<ResourceSearchVo> inputNodeList = dataObj.toJavaList(ResourceSearchVo.class);
             for (ResourceSearchVo searchVo : inputNodeList) {
-                Long resourceId = resourceCenterMapper.getResourceIdByIpAndPortAndName(searchVo);
+                Long resourceId = resourceMapper.getResourceIdByIpAndPortAndName(searchVo);
                 if (resourceId == null) {
                     resourceIsNotFoundList.add(searchVo);
                 }

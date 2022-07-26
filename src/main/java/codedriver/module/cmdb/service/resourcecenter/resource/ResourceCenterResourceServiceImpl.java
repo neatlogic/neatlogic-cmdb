@@ -6,7 +6,6 @@
 package codedriver.module.cmdb.service.resourcecenter.resource;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.resourcecenter.*;
@@ -17,6 +16,9 @@ import codedriver.framework.cmdb.exception.resourcecenter.AppModuleNotFoundExcep
 import codedriver.framework.util.TableResultUtil;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceTagMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -35,7 +37,11 @@ import java.util.stream.Collectors;
 @Service
 public class ResourceCenterResourceServiceImpl implements IResourceCenterResourceService {
     @Resource
-    ResourceCenterMapper resourceCenterMapper;
+    ResourceMapper resourceMapper;
+    @Resource
+    ResourceTagMapper resourceTagMapper;
+    @Resource
+    ResourceAccountMapper resourceAccountMapper;
 
     @Resource
     private CiMapper ciMapper;
@@ -118,10 +124,10 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
     @Override
     public Map<Long, List<AccountVo>> getResourceAccountByResourceIdList(List<Long> idList) {
         Map<Long, List<AccountVo>> resourceAccountVoMap = new HashMap<>();
-        List<ResourceAccountVo> resourceAccountVoList = resourceCenterMapper.getResourceAccountListByResourceIdList(idList);
+        List<ResourceAccountVo> resourceAccountVoList = resourceAccountMapper.getResourceAccountListByResourceIdList(idList);
         if (CollectionUtils.isNotEmpty(resourceAccountVoList)) {
             Set<Long> accountIdSet = resourceAccountVoList.stream().map(ResourceAccountVo::getAccountId).collect(Collectors.toSet());
-            List<AccountVo> accountList = resourceCenterMapper.getAccountListByIdList(new ArrayList<>(accountIdSet));
+            List<AccountVo> accountList = resourceAccountMapper.getAccountListByIdList(new ArrayList<>(accountIdSet));
             Map<Long, AccountVo> accountMap = accountList.stream().collect(Collectors.toMap(AccountVo::getId, e -> e));
             for (ResourceAccountVo resourceAccountVo : resourceAccountVoList) {
                 resourceAccountVoMap.computeIfAbsent(resourceAccountVo.getResourceId(), k -> new ArrayList<>()).add(accountMap.get(resourceAccountVo.getAccountId()));
@@ -133,10 +139,10 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
     @Override
     public Map<Long, List<TagVo>> getResourceTagByResourceIdList(List<Long> idList) {
         Map<Long, List<TagVo>> resourceTagVoMap = new HashMap<>();
-        List<ResourceTagVo> resourceTagVoList = resourceCenterMapper.getResourceTagListByResourceIdList(idList);
+        List<ResourceTagVo> resourceTagVoList = resourceTagMapper.getResourceTagListByResourceIdList(idList);
         if (CollectionUtils.isNotEmpty(resourceTagVoList)) {
             Set<Long> tagIdSet = resourceTagVoList.stream().map(ResourceTagVo::getTagId).collect(Collectors.toSet());
-            List<TagVo> tagList = resourceCenterMapper.getTagListByIdList(new ArrayList<>(tagIdSet));
+            List<TagVo> tagList = resourceTagMapper.getTagListByIdList(new ArrayList<>(tagIdSet));
             Map<Long, TagVo> tagMap = tagList.stream().collect(Collectors.toMap(TagVo::getId, e -> e));
             for (ResourceTagVo resourceTagVo : resourceTagVoList) {
                 resourceTagVoMap.computeIfAbsent(resourceTagVo.getResourceId(), k -> new ArrayList<>()).add(tagMap.get(resourceTagVo.getTagId()));
@@ -148,10 +154,10 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
     @Override
     public void addResourceAccount(List<Long> idList, List<ResourceVo> resourceVoList) {
         Map<Long, List<AccountVo>> resourceAccountVoMap = new HashMap<>();
-        List<ResourceAccountVo> resourceAccountVoList = resourceCenterMapper.getResourceAccountListByResourceIdList(idList);
+        List<ResourceAccountVo> resourceAccountVoList = resourceAccountMapper.getResourceAccountListByResourceIdList(idList);
         if (CollectionUtils.isNotEmpty(resourceAccountVoList)) {
             Set<Long> accountIdSet = resourceAccountVoList.stream().map(ResourceAccountVo::getAccountId).collect(Collectors.toSet());
-            List<AccountVo> accountList = resourceCenterMapper.getAccountListByIdList(new ArrayList<>(accountIdSet));
+            List<AccountVo> accountList = resourceAccountMapper.getAccountListByIdList(new ArrayList<>(accountIdSet));
             Map<Long, AccountVo> accountMap = accountList.stream().collect(Collectors.toMap(AccountVo::getId, e -> e));
             for (ResourceAccountVo resourceAccountVo : resourceAccountVoList) {
                 resourceAccountVoMap.computeIfAbsent(resourceAccountVo.getResourceId(), k -> new ArrayList<>()).add(accountMap.get(resourceAccountVo.getAccountId()));
@@ -168,10 +174,10 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
     @Override
     public void addResourceTag(List<Long> idList, List<ResourceVo> resourceVoList) {
         Map<Long, List<TagVo>> resourceTagVoMap = new HashMap<>();
-        List<ResourceTagVo> resourceTagVoList = resourceCenterMapper.getResourceTagListByResourceIdList(idList);
+        List<ResourceTagVo> resourceTagVoList = resourceTagMapper.getResourceTagListByResourceIdList(idList);
         if (CollectionUtils.isNotEmpty(resourceTagVoList)) {
             Set<Long> tagIdSet = resourceTagVoList.stream().map(ResourceTagVo::getTagId).collect(Collectors.toSet());
-            List<TagVo> tagList = resourceCenterMapper.getTagListByIdList(new ArrayList<>(tagIdSet));
+            List<TagVo> tagList = resourceTagMapper.getTagListByIdList(new ArrayList<>(tagIdSet));
             Map<Long, TagVo> tagMap = tagList.stream().collect(Collectors.toMap(TagVo::getId, e -> e));
             for (ResourceTagVo resourceTagVo : resourceTagVoList) {
                 resourceTagVoMap.computeIfAbsent(resourceTagVo.getResourceId(), k -> new ArrayList<>()).add(tagMap.get(resourceTagVo.getTagId()));
@@ -211,7 +217,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             }
             resourceTypeIdList.add(typeId);
         } else {
-            Set<Long> resourceTypeIdSet = resourceCenterMapper.getIpObjectResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
+            Set<Long> resourceTypeIdSet = resourceMapper.getIpObjectResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
             resourceTypeIdList.addAll(resourceTypeIdSet);
 //            if (CollectionUtils.isNotEmpty(resourceTypeIdSet)) {
 //                resourceTypeIdSet = resourceCenterMapper.getOsResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
@@ -250,12 +256,12 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
     @PostConstruct
     public void searchDispatcherInit() {
         searchMap.put("ipObject", (searchVo) -> {
-            int rowNum = resourceCenterMapper.getIpObjectResourceCountByAppModuleIdAndTypeIdAndEnvIdAndTypeId(searchVo);
+            int rowNum = resourceMapper.getIpObjectResourceCountByAppModuleIdAndTypeIdAndEnvIdAndTypeId(searchVo);
             if (rowNum > 0) {
                 searchVo.setRowNum(rowNum);
-                List<Long> idList = resourceCenterMapper.getIpObjectResourceIdListByAppModuleIdAndTypeIdAndEnvIdAndTypeId(searchVo);
+                List<Long> idList = resourceMapper.getIpObjectResourceIdListByAppModuleIdAndTypeIdAndEnvIdAndTypeId(searchVo);
                 if (CollectionUtils.isNotEmpty(idList)) {
-                    return resourceCenterMapper.getAppInstanceResourceListByIdList(idList, TenantContext.get().getDataDbName());
+                    return resourceMapper.getAppInstanceResourceListByIdList(idList, TenantContext.get().getDataDbName());
                 }
             }
             return new ArrayList<>();
@@ -298,24 +304,24 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 //        });
 
         searchMap.put("APPIns", (searchVo) -> {
-            int rowNum = resourceCenterMapper.getIpObjectResourceCountByAppModuleIdAndTypeIdAndEnvIdAndTypeId(searchVo);
+            int rowNum = resourceMapper.getIpObjectResourceCountByAppModuleIdAndTypeIdAndEnvIdAndTypeId(searchVo);
             if (rowNum > 0) {
                 searchVo.setRowNum(rowNum);
-                List<Long> idList = resourceCenterMapper.getIpObjectResourceIdListByAppModuleIdAndTypeIdAndEnvIdAndTypeId(searchVo);
+                List<Long> idList = resourceMapper.getIpObjectResourceIdListByAppModuleIdAndTypeIdAndEnvIdAndTypeId(searchVo);
                 if (CollectionUtils.isNotEmpty(idList)) {
-                    return resourceCenterMapper.getAppInstanceResourceListByIdList(idList, TenantContext.get().getDataDbName());
+                    return resourceMapper.getAppInstanceResourceListByIdList(idList, TenantContext.get().getDataDbName());
                 }
             }
             return new ArrayList<>();
         });
 
         searchMap.put("DBIns", (searchVo) -> {
-            int rowNum = resourceCenterMapper.getIpObjectResourceCountByAppModuleIdAndTypeIdAndEnvIdAndTypeId(searchVo);
+            int rowNum = resourceMapper.getIpObjectResourceCountByAppModuleIdAndTypeIdAndEnvIdAndTypeId(searchVo);
             if (rowNum > 0) {
                 searchVo.setRowNum(rowNum);
-                List<Long> idList = resourceCenterMapper.getIpObjectResourceIdListByAppModuleIdAndTypeIdAndEnvIdAndTypeId(searchVo);
+                List<Long> idList = resourceMapper.getIpObjectResourceIdListByAppModuleIdAndTypeIdAndEnvIdAndTypeId(searchVo);
                 if (CollectionUtils.isNotEmpty(idList)) {
-                    return resourceCenterMapper.getDbInstanceResourceListByIdList(idList, TenantContext.get().getDataDbName());
+                    return resourceMapper.getDbInstanceResourceListByIdList(idList, TenantContext.get().getDataDbName());
                 }
             }
             return new ArrayList<>();

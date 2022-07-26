@@ -7,7 +7,6 @@ package codedriver.module.cmdb.api.resourcecenter.resource;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterAccountNotFoundException;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -19,7 +18,8 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.RESOURCECENTER_MODIFY;
-import codedriver.module.cmdb.service.resourcecenter.account.ResourceCenterAccountService;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -41,10 +41,9 @@ import java.util.List;
 public class ResourceAccountBatchDeleteApi extends PrivateApiComponentBase {
 
     @Resource
-    private ResourceCenterMapper resourceCenterMapper;
-
+    private ResourceMapper resourceMapper;
     @Resource
-    private ResourceCenterAccountService resourceCenterAccountService;
+    private ResourceAccountMapper resourceAccountMapper;
 
     @Override
     public String getToken() {
@@ -79,7 +78,7 @@ public class ResourceAccountBatchDeleteApi extends PrivateApiComponentBase {
 
         String schemaName = TenantContext.get().getDataDbName();
         List<Long> resourceIdList = resourceIdArray.toJavaList(Long.class);
-        List<Long> existResourceIdList = resourceCenterMapper.checkResourceIdListIsExists(resourceIdList, schemaName);
+        List<Long> existResourceIdList = resourceMapper.checkResourceIdListIsExists(resourceIdList, schemaName);
         if (resourceIdList.size() > existResourceIdList.size()) {
             List<Long> notFoundIdList = ListUtils.removeAll(resourceIdList, existResourceIdList);
             if (CollectionUtils.isNotEmpty(notFoundIdList)) {
@@ -94,7 +93,7 @@ public class ResourceAccountBatchDeleteApi extends PrivateApiComponentBase {
         }
 
         List<Long> accountIdList = accountIdArray.toJavaList(Long.class);
-        List<Long> existAccountIdList = resourceCenterMapper.checkAccountIdListIsExists(accountIdList);
+        List<Long> existAccountIdList = resourceAccountMapper.checkAccountIdListIsExists(accountIdList);
         if (accountIdList.size() > existAccountIdList.size()) {
             List<Long> notFoundIdList = ListUtils.removeAll(accountIdList, existAccountIdList);
             if (CollectionUtils.isNotEmpty(notFoundIdList)) {
@@ -107,7 +106,7 @@ public class ResourceAccountBatchDeleteApi extends PrivateApiComponentBase {
                 throw new ResourceCenterAccountNotFoundException(stringBuilder.toString());
             }
         }
-        resourceCenterMapper.deleteResourceAccountByResourceIdListAndAccountIdList(resourceIdList, accountIdList);
+        resourceAccountMapper.deleteResourceAccountByResourceIdListAndAccountIdList(resourceIdList, accountIdList);
         return null;
     }
 }

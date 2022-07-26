@@ -6,7 +6,6 @@
 package codedriver.module.cmdb.api.resourcecenter.tag;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterTagHasBeenReferredException;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterTagNotFoundException;
@@ -15,6 +14,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.RESOURCECENTER_TAG_MODIFY;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceTagMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +26,7 @@ import javax.annotation.Resource;
 public class TagDeleteApi extends PrivateApiComponentBase {
 
     @Resource
-    private ResourceCenterMapper resourceCenterMapper;
+    private ResourceTagMapper resourceTagMapper;
 
     @Override
     public String getToken() {
@@ -52,14 +52,14 @@ public class TagDeleteApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long id = paramObj.getLong("id");
-        TagVo tag = resourceCenterMapper.getTagById(id);
+        TagVo tag = resourceTagMapper.getTagById(id);
         if (tag == null) {
             throw new ResourceCenterTagNotFoundException(id);
         }
-        if (resourceCenterMapper.checkTagHasBeenReferredById(id) > 0) {
+        if (resourceTagMapper.checkTagHasBeenReferredById(id) > 0) {
             throw new ResourceCenterTagHasBeenReferredException(tag.getName());
         }
-        resourceCenterMapper.deleteTagById(id);
+        resourceTagMapper.deleteTagById(id);
         return null;
     }
 

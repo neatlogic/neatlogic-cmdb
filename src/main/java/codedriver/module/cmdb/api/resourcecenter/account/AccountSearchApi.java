@@ -6,7 +6,6 @@
 package codedriver.module.cmdb.api.resourcecenter.account;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountTagVo;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
 import codedriver.framework.cmdb.dto.tag.TagVo;
@@ -17,10 +16,11 @@ import codedriver.framework.dependency.core.DependencyManager;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.framework.tagent.dao.mapper.TagentMapper;
 import codedriver.framework.tagent.enums.TagentFromType;
 import codedriver.framework.util.TableResultUtil;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceTagMapper;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -36,10 +36,10 @@ import java.util.stream.Collectors;
 public class AccountSearchApi extends PrivateApiComponentBase {
 
     @Resource
-    private ResourceCenterMapper resourceCenterMapper;
+    private ResourceTagMapper resourceTagMapper;
 
     @Resource
-    private TagentMapper tagentMapper;
+    private ResourceAccountMapper resourceAccountMapper;
 
     @Override
     public String getToken() {
@@ -73,19 +73,19 @@ public class AccountSearchApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         List<AccountVo> returnAccountVoList = null;
         AccountVo paramAccountVo = JSON.toJavaObject(paramObj, AccountVo.class);
-        int accountCount = resourceCenterMapper.searchAccountCount(paramAccountVo);
+        int accountCount = resourceAccountMapper.searchAccountCount(paramAccountVo);
         if (accountCount > 0) {
             paramAccountVo.setRowNum(accountCount);
-            returnAccountVoList = resourceCenterMapper.searchAccount(paramAccountVo);
+            returnAccountVoList = resourceAccountMapper.searchAccount(paramAccountVo);
             List<Long> accountIdList = returnAccountVoList.stream().map(AccountVo::getId).collect(Collectors.toList());
             if (CollectionUtils.isNotEmpty(accountIdList)) {
 
                 //查询账号关联的标签
-                List<AccountTagVo> accountTagVoList = resourceCenterMapper.getAccountTagListByAccountIdList(accountIdList);
+                List<AccountTagVo> accountTagVoList = resourceAccountMapper.getAccountTagListByAccountIdList(accountIdList);
                 Map<Long, List<TagVo>> AccountTagVoMap = new HashMap<>();
                 if (CollectionUtils.isNotEmpty(accountTagVoList)) {
                     Set<Long> tagIdSet = accountTagVoList.stream().map(AccountTagVo::getTagId).collect(Collectors.toSet());
-                    List<TagVo> tagList = resourceCenterMapper.getTagListByIdList(new ArrayList<>(tagIdSet));
+                    List<TagVo> tagList = resourceTagMapper.getTagListByIdList(new ArrayList<>(tagIdSet));
                     Map<Long, TagVo> tagMap = tagList.stream().collect(Collectors.toMap(TagVo::getId, e -> e));
                     for (AccountTagVo accountTagVo : accountTagVoList) {
                         AccountTagVoMap.computeIfAbsent(accountTagVo.getAccountId(), k -> new ArrayList<>()).add(tagMap.get(accountTagVo.getTagId()));

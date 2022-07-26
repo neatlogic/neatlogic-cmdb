@@ -7,7 +7,6 @@ package codedriver.module.cmdb.api.resourcecenter.resource;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceTagVo;
 import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceNotFoundException;
@@ -20,6 +19,8 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.RESOURCECENTER_MODIFY;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceTagMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -43,7 +44,9 @@ import java.util.stream.Collectors;
 public class ResourceTagBatchAddApi extends PrivateApiComponentBase {
 
     @Resource
-    private ResourceCenterMapper resourceCenterMapper;
+    private ResourceMapper resourceMapper;
+    @Resource
+    private ResourceTagMapper resourceTagMapper;
 
     @Override
     public String getToken() {
@@ -78,7 +81,7 @@ public class ResourceTagBatchAddApi extends PrivateApiComponentBase {
 
         String schemaName = TenantContext.get().getDataDbName();
         List<Long> resourceIdList = resourceIdArray.toJavaList(Long.class);
-        List<Long> existResourceIdList = resourceCenterMapper.checkResourceIdListIsExists(resourceIdList, schemaName);
+        List<Long> existResourceIdList = resourceMapper.checkResourceIdListIsExists(resourceIdList, schemaName);
         if (resourceIdList.size() > existResourceIdList.size()) {
             List<Long> notFoundIdList = ListUtils.removeAll(resourceIdList, existResourceIdList);
             if (CollectionUtils.isNotEmpty(notFoundIdList)) {
@@ -92,14 +95,14 @@ public class ResourceTagBatchAddApi extends PrivateApiComponentBase {
             }
         }
         List<String> tagList = tagArray.toJavaList(String.class);
-        List<TagVo> existTagList = resourceCenterMapper.getTagListByTagNameList(tagList);
+        List<TagVo> existTagList = resourceTagMapper.getTagListByTagNameList(tagList);
         List<Long> tagIdList = existTagList.stream().map(TagVo::getId).collect(Collectors.toList());
         if (tagList.size() > existTagList.size()) {
             List<String> existTagNameList = existTagList.stream().map(TagVo::getName).collect(Collectors.toList());
             tagList.removeAll(existTagNameList);
             for (String tagName : tagList) {
                 TagVo tagVo = new TagVo(tagName);
-                resourceCenterMapper.insertTag(tagVo);
+                resourceTagMapper.insertTag(tagVo);
                 tagIdList.add(tagVo.getId());
             }
         }
@@ -109,13 +112,13 @@ public class ResourceTagBatchAddApi extends PrivateApiComponentBase {
             for (Long tagId : tagIdList) {
                 resourceTagVoList.add(new ResourceTagVo(resourceId, tagId));
                 if (resourceTagVoList.size() > 100) {
-                    resourceCenterMapper.insertIgnoreResourceTag(resourceTagVoList);
+                    resourceTagMapper.insertIgnoreResourceTag(resourceTagVoList);
                     resourceTagVoList.clear();
                 }
             }
         }
         if (CollectionUtils.isNotEmpty(resourceTagVoList)) {
-            resourceCenterMapper.insertIgnoreResourceTag(resourceTagVoList);
+            resourceTagMapper.insertIgnoreResourceTag(resourceTagVoList);
         }
         return null;
     }

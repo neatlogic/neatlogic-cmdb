@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceTagMapper">
+
+    <select id="getTagCount" parameterType="codedriver.framework.cmdb.dto.tag.TagVo" resultType="int">
+        SELECT COUNT(1) FROM `cmdb_tag`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` like concat('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="getTagListForSelect" parameterType="codedriver.framework.cmdb.dto.tag.TagVo"
+            resultType="codedriver.framework.cmdb.dto.tag.TagVo">
+        SELECT `id`, `name` FROM `cmdb_tag`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and `name` like concat('%', #{keyword}, '%')
+            </if>
+            <if test="defaultValue != null and defaultValue.size() > 0">
+                and `id` in
+                <foreach collection="defaultValue" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="getTagNameListForSelect" parameterType="codedriver.framework.cmdb.dto.tag.TagVo"
+            resultType="java.lang.String">
+        SELECT `name` FROM `cmdb_tag`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and `name` like concat('%', #{keyword}, '%')
+            </if>
+        </where>
+        ORDER BY `name`
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="checkTagNameIsRepeats" parameterType="codedriver.framework.cmdb.dto.tag.TagVo" resultType="int">
+        select count(1)
+        from `cmdb_tag`
+        where `name` = #{name}
+          and `id` != #{id}
+    </select>
+
+    <select id="checkTagIsExistsById" parameterType="java.lang.Long" resultType="int">
+        select count(1)
+        from `cmdb_tag`
+        where `id` = #{value}
+    </select>
+
+    <select id="searchTagCount" parameterType="codedriver.framework.cmdb.dto.tag.TagVo" resultType="int">
+        select count(1)
+        from `cmdb_tag`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` like concat('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="searchTag" parameterType="codedriver.framework.cmdb.dto.tag.TagVo"
+            resultType="codedriver.framework.cmdb.dto.tag.TagVo">
+        select
+        `id`,
+        `name`,
+        `description`,
+        (select count(1) from `cmdb_resourcecenter_resource_tag` where `tag_id` = `id`) as assetsCount
+        from `cmdb_tag`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` like concat('%', #{keyword}, '%')
+            </if>
+        </where>
+        order by `id` desc
+        <if test="needPage == true">
+            limit #{startNum}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="getTagById" parameterType="java.lang.Long" resultType="codedriver.framework.cmdb.dto.tag.TagVo">
+        select `id`, `name`, `description`
+        from `cmdb_tag`
+        where `id` = #{value}
+    </select>
+
+    <select id="checkTagHasBeenReferredById" parameterType="java.lang.Long" resultType="int">
+        select count(1)
+        from `cmdb_resourcecenter_resource_tag`
+        where `tag_id` = #{value}
+    </select>
+
+    <select id="getTagListByTagNameList" parameterType="java.util.List"
+            resultType="codedriver.framework.cmdb.dto.tag.TagVo">
+        SELECT
+        `id`,
+        `name`,
+        `description`
+        FROM `cmdb_tag`
+        WHERE `name` IN
+        <foreach collection="list" item="name" open="(" separator="," close=")">
+            #{name}
+        </foreach>
+    </select>
+    <select id="getTagListByIdList" parameterType="java.util.List" resultType="codedriver.framework.cmdb.dto.tag.TagVo">
+        SELECT
+        `id`,
+        `name`,
+        `description`
+        FROM `cmdb_tag`
+        WHERE `id` IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getResourceTagListByResourceIdList" parameterType="java.util.List"
+            resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceTagVo">
+        SELECT
+        `resource_id` AS resourceId,
+        `tag_id` AS tagId
+        FROM `cmdb_resourcecenter_resource_tag`
+        WHERE `resource_id` in
+        <foreach collection="list" item="resourceId" open="(" separator="," close=")">
+            #{resourceId}
+        </foreach>
+    </select>
+
+    <select id="searchTagListByIdList" parameterType="java.util.List"
+            resultType="codedriver.framework.cmdb.dto.tag.TagVo">
+        SELECT
+        `id`,
+        `name`,
+        `description`
+        FROM `cmdb_tag`
+        WHERE `id` IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <insert id="insertIgnoreResourceTag" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceTagVo">
+        INSERT IGNORE INTO `cmdb_resourcecenter_resource_tag` (`resource_id`, `tag_id`) VALUES
+        <foreach collection="list" item="resourceTag" separator=",">
+            (#{resourceTag.resourceId}, #{resourceTag.tagId})
+        </foreach>
+    </insert>
+
+    <update id="updateTag" parameterType="codedriver.framework.cmdb.dto.tag.TagVo">
+        update `cmdb_tag`
+        set `name`        = #{name},
+            `description` = #{description}
+        where `id` = #{id}
+    </update>
+
+    <insert id="insertTag" parameterType="codedriver.framework.cmdb.dto.tag.TagVo">
+        insert into `cmdb_tag` (`id`,
+                                `name`,
+                                `description`)
+        values (#{id},
+                #{name},
+                #{description})
+    </insert>
+
+    <delete id="deleteTagById" parameterType="java.lang.Long">
+        delete
+        from `cmdb_tag`
+        where `id` = #{value}
+    </delete>
+
+    <delete id="deleteResourceTagByResourceId" parameterType="java.lang.Long">
+        DELETE
+        FROM `cmdb_resourcecenter_resource_tag`
+        WHERE `resource_id` = #{value}
+    </delete>
+
+    <delete id="deleteResourceTagByResourceIdAndTagIdList">
+        DELETE FROM `cmdb_resourcecenter_resource_tag`
+        WHERE `resource_id` IN
+        <foreach collection="resourceIdList" item="resourceId" open="(" separator="," close=")">
+            #{resourceId}
+        </foreach>
+        AND `tag_id` IN
+        <foreach collection="tagIdList" item="tagId" open="(" separator="," close=")">
+            #{tagId}
+        </foreach>
+    </delete>
+
+</mapper>

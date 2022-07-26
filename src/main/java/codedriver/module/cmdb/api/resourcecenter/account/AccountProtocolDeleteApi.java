@@ -1,7 +1,6 @@
 package codedriver.module.cmdb.api.resourcecenter.account;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountProtocolVo;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterAccountProtocolHasBeenReferredException;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterAccountProtocolNotFoundException;
@@ -10,6 +9,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.RESOURCECENTER_ACCOUNT_MODIFY;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +21,7 @@ import javax.annotation.Resource;
 public class AccountProtocolDeleteApi extends PrivateApiComponentBase {
 
     @Resource
-    private ResourceCenterMapper resourceCenterMapper;
+    private ResourceAccountMapper resourceAccountMapper;
 
     @Override
     public String getName() {
@@ -47,14 +47,14 @@ public class AccountProtocolDeleteApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long id = paramObj.getLong("id");
-        AccountProtocolVo accountProtocolVo = resourceCenterMapper.getAccountProtocolVoByProtocolId(id);
+        AccountProtocolVo accountProtocolVo = resourceAccountMapper.getAccountProtocolVoByProtocolId(id);
         if (accountProtocolVo == null) {
             throw new ResourceCenterAccountProtocolNotFoundException(id);
         }
-        if (resourceCenterMapper.checkAccountProtocolHasBeenReferredByProtocolId(id) > 0) {
+        if (resourceAccountMapper.checkAccountProtocolHasBeenReferredByProtocolId(id) > 0) {
             throw new ResourceCenterAccountProtocolHasBeenReferredException(accountProtocolVo.getName());
         }
-        resourceCenterMapper.deleteResourceAccountProtocolById(id);
+        resourceAccountMapper.deleteResourceAccountProtocolById(id);
         return null;
     }
 }

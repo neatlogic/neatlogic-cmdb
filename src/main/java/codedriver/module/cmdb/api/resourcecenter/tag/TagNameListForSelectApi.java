@@ -6,7 +6,6 @@
 package codedriver.module.cmdb.api.resourcecenter.tag;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
@@ -15,6 +14,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceTagMapper;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -28,13 +28,14 @@ import java.util.List;
 /**
  * @author linbq
  * @since 2021/7/7 10:15
- **/@Service
+ **/
+@Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class TagNameListForSelectApi extends PrivateApiComponentBase {
 
     @Resource
-    private ResourceCenterMapper resourceCenterMapper;
+    private ResourceTagMapper resourceTagMapper;
 
     @Override
     public String getToken() {
@@ -77,10 +78,10 @@ public class TagNameListForSelectApi extends PrivateApiComponentBase {
             return resultObj;
         }
         TagVo searchVo = JSON.toJavaObject(paramObj, TagVo.class);
-        int rowNum = resourceCenterMapper.getTagCount(searchVo);
+        int rowNum = resourceTagMapper.getTagCount(searchVo);
         if (rowNum > 0) {
             searchVo.setRowNum(rowNum);
-            List<String> tagNameList = resourceCenterMapper.getTagNameListForSelect(searchVo);
+            List<String> tagNameList = resourceTagMapper.getTagNameListForSelect(searchVo);
             if (CollectionUtils.isNotEmpty(tagNameList)) {
                 for (String tagName : tagNameList) {
                     tbodyList.add(new ValueTextVo(tagName, tagName));

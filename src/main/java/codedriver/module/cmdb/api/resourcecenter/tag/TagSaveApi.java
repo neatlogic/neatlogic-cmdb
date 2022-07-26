@@ -6,10 +6,6 @@
 package codedriver.module.cmdb.api.resourcecenter.tag;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
-import codedriver.framework.cmdb.dto.tag.TagVo;
-import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterTagNameRepeatsException;
-import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterTagNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.dto.FieldValidResultVo;
 import codedriver.framework.restful.annotation.*;
@@ -17,19 +13,13 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.IValid;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.RESOURCECENTER_TAG_MODIFY;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.Resource;
 
 @Service
 @AuthAction(action = RESOURCECENTER_TAG_MODIFY.class)
 @OperationType(type = OperationTypeEnum.OPERATE)
 public class TagSaveApi extends PrivateApiComponentBase {
-
-    @Resource
-    private ResourceCenterMapper resourceCenterMapper;
 
     @Override
     public String getToken() {
@@ -57,28 +47,28 @@ public class TagSaveApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONObject resultObj = new JSONObject();
-        TagVo tagVo = JSON.toJavaObject(paramObj, TagVo.class);
-        Long id = paramObj.getLong("id");
-        if (resourceCenterMapper.checkTagNameIsRepeats(tagVo) > 0) {
-            throw new ResourceCenterTagNameRepeatsException(tagVo.getName());
-        }
-        if (id != null) {
-            if (resourceCenterMapper.checkTagIsExistsById(id) == 0) {
-                throw new ResourceCenterTagNotFoundException(id);
-            }
-            resourceCenterMapper.updateTag(tagVo);
-        } else {
-            resourceCenterMapper.insertTag(tagVo);
-        }
+//        TagVo tagVo = JSON.toJavaObject(paramObj, TagVo.class);
+//        Long id = paramObj.getLong("id");
+//        if (resourceCenterMapper.checkTagNameIsRepeats(tagVo) > 0) {
+//            throw new ResourceCenterTagNameRepeatsException(tagVo.getName());
+//        }
+//        if (id != null) {
+//            if (resourceCenterMapper.checkTagIsExistsById(id) == 0) {
+//                throw new ResourceCenterTagNotFoundException(id);
+//            }
+//            resourceCenterMapper.updateTag(tagVo);
+//        } else {
+//            resourceCenterMapper.insertTag(tagVo);
+//        }
         return resultObj;
     }
 
     public IValid name() {
         return value -> {
-            TagVo vo = JSON.toJavaObject(value, TagVo.class);
-            if (resourceCenterMapper.checkTagNameIsRepeats(vo) > 0) {
-                return new FieldValidResultVo(new ResourceCenterTagNameRepeatsException(vo.getName()));
-            }
+//            TagVo vo = JSON.toJavaObject(value, TagVo.class);
+//            if (resourceCenterMapper.checkTagNameIsRepeats(vo) > 0) {
+//                return new FieldValidResultVo(new ResourceCenterTagNameRepeatsException(vo.getName()));
+//            }
             return new FieldValidResultVo();
         };
     }

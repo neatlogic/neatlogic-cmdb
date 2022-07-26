@@ -5,10 +5,10 @@
 
 package codedriver.module.cmdb.tagent.register.handler;
 
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountIpVo;
 import codedriver.framework.tagent.dto.TagentVo;
 import codedriver.framework.tagent.register.core.AfterRegisterBase;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +21,7 @@ import javax.annotation.Resource;
 public class AddAccountResourceRelHandler extends AfterRegisterBase {
 
     @Resource
-    private ResourceCenterMapper resourceCenterMapper;
+    private ResourceAccountMapper resourceAccountMapper;
 
     /**
      * 提前写入关系，当资源中心ready后自然就关联上账号，每次注册都会写入新的resource_id，所以关系表可能会存在垃圾数据，暂时没有好办法解决
@@ -32,7 +32,7 @@ public class AddAccountResourceRelHandler extends AfterRegisterBase {
     @Override
     public void myExecute(TagentVo tagentVo) {
         if (tagentVo != null && StringUtils.isNotBlank(tagentVo.getIp()) && tagentVo.getAccountId() != null) {
-            resourceCenterMapper.insertAccountIp(new AccountIpVo(tagentVo.getAccountId(), tagentVo.getIp()));
+            resourceAccountMapper.insertAccountIp(new AccountIpVo(tagentVo.getAccountId(), tagentVo.getIp()));
         }
     }
 }
