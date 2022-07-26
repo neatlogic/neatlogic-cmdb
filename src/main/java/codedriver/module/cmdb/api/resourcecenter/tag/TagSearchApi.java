@@ -6,7 +6,6 @@
 package codedriver.module.cmdb.api.resourcecenter.tag;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
@@ -15,6 +14,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceTagMapper;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
@@ -28,7 +28,7 @@ import java.util.List;
 public class TagSearchApi extends PrivateApiComponentBase {
 
     @Resource
-    private ResourceCenterMapper resourceCenterMapper;
+    private ResourceTagMapper resourceTagMapper;
 
     @Override
     public String getToken() {
@@ -60,7 +60,7 @@ public class TagSearchApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONObject resultObj = new JSONObject();
         TagVo tagVo = JSON.toJavaObject(paramObj, TagVo.class);
-        List<TagVo> tagList = resourceCenterMapper.searchTag(tagVo);
+        List<TagVo> tagList = resourceTagMapper.searchTag(tagVo);
         resultObj.put("tbodyList", tagList);
         /*if (CollectionUtils.isNotEmpty(tagList)) {
             Boolean hasAuth = AuthActionChecker.check(RESOURCECENTER_TAG_MODIFY.class.getSimpleName());
@@ -78,7 +78,7 @@ public class TagSearchApi extends PrivateApiComponentBase {
                 }
             });
         }*/
-        int rowNum = resourceCenterMapper.searchTagCount(tagVo);
+        int rowNum = resourceTagMapper.searchTagCount(tagVo);
         tagVo.setRowNum(rowNum);
         resultObj.put("rowNum", rowNum);
         resultObj.put("pageCount", PageUtil.getPageCount(rowNum, tagVo.getPageSize()));

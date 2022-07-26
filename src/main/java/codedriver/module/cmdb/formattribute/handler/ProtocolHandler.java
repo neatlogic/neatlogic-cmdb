@@ -5,7 +5,6 @@
 
 package codedriver.module.cmdb.formattribute.handler;
 
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountProtocolVo;
 import codedriver.framework.cmdb.enums.FormHandler;
 import codedriver.framework.common.constvalue.ParamType;
@@ -13,6 +12,7 @@ import codedriver.framework.form.attribute.core.FormHandlerBase;
 import codedriver.framework.form.constvalue.FormConditionModel;
 import codedriver.framework.form.dto.AttributeDataVo;
 import codedriver.framework.form.exception.AttributeValidException;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Component;
 
@@ -27,7 +27,7 @@ import java.util.List;
 public class ProtocolHandler extends FormHandlerBase {
 
     @Resource
-    private ResourceCenterMapper resourceCenterMapper;
+    private ResourceAccountMapper resourceAccountMapper;
 
     @Override
     public String getHandler() {
@@ -157,7 +157,7 @@ public class ProtocolHandler extends FormHandlerBase {
         String protocolIdStr = (String) attributeDataVo.getDataObj();
         Long protocolId = Long.valueOf(protocolIdStr);
         resultObj.put("value", protocolId);
-        AccountProtocolVo protocolVo = resourceCenterMapper.getAccountProtocolVoByProtocolId(protocolId);
+        AccountProtocolVo protocolVo = resourceAccountMapper.getAccountProtocolVoByProtocolId(protocolId);
         if (protocolVo != null) {
             resultObj.put("name", protocolVo.getName());
             resultObj.put("port", protocolVo.getPort());

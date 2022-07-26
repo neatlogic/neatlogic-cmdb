@@ -5,7 +5,6 @@
 
 package codedriver.module.cmdb.formattribute.handler;
 
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountProtocolVo;
@@ -19,6 +18,9 @@ import codedriver.framework.form.dto.AttributeDataVo;
 import codedriver.framework.form.exception.AttributeValidException;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceTagMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -39,7 +41,11 @@ import java.util.stream.Collectors;
 public class ResourcesHandler extends FormHandlerBase {
 
     @Resource
-    private ResourceCenterMapper resourceCenterMapper;
+    private ResourceMapper resourceMapper;
+    @Resource
+    private ResourceAccountMapper resourceAccountMapper;
+    @Resource
+    private ResourceTagMapper resourceTagMapper;
 
     @Resource
     private CiEntityMapper ciEntityMapper;
@@ -129,7 +135,7 @@ public class ResourcesHandler extends FormHandlerBase {
                 List<ResourceSearchVo> resourceIsNotFoundList = new ArrayList<>();
                 List<ResourceSearchVo> inputNodeList = inputNodeArray.toJavaList(ResourceSearchVo.class);
                 for (ResourceSearchVo node : inputNodeList) {
-                    Long resourceId = resourceCenterMapper.getResourceIdByIpAndPortAndName(node);
+                    Long resourceId = resourceMapper.getResourceIdByIpAndPortAndName(node);
                     if (resourceId == null) {
                         resourceIsNotFoundList.add(node);
                     }
@@ -443,7 +449,7 @@ public class ResourcesHandler extends FormHandlerBase {
                     jsonObj.put("valueList", protocolIdList);
                     List<String> textList = new ArrayList<>();
                     List<Long> idList = protocolIdList.toJavaList(Long.class);
-                    List<AccountProtocolVo> accountProtocolList = resourceCenterMapper.getAccountProtocolListByIdList(idList);
+                    List<AccountProtocolVo> accountProtocolList = resourceAccountMapper.getAccountProtocolListByIdList(idList);
                     Map<Long, String> nameMap = accountProtocolList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e.getName()));
                     for (Long id : idList) {
                         String name = nameMap.get(id);
@@ -535,7 +541,7 @@ public class ResourcesHandler extends FormHandlerBase {
                     List<Long> idList = appModuleIdList.toJavaList(Long.class);
                     TagVo searchVo = new TagVo();
                     searchVo.setDefaultValue(tagIdList);
-                    List<TagVo> tagVoList = resourceCenterMapper.getTagListForSelect(searchVo);
+                    List<TagVo> tagVoList = resourceTagMapper.getTagListForSelect(searchVo);
                     Map<Long, String> nameMap = tagVoList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e.getName()));
                     for (Long id : idList) {
                         String name = nameMap.get(id);

@@ -6,7 +6,6 @@
 package codedriver.module.cmdb.api.resourcecenter.tag;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
@@ -15,6 +14,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceTagMapper;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
@@ -35,7 +35,7 @@ import java.util.List;
 public class TagListForSelectApi extends PrivateApiComponentBase {
 
     @Resource
-    private ResourceCenterMapper resourceCenterMapper;
+    private ResourceTagMapper resourceTagMapper;
 
     @Override
     public String getToken() {
@@ -69,10 +69,10 @@ public class TagListForSelectApi extends PrivateApiComponentBase {
         JSONObject resultObj = new JSONObject();
         int pageCount = 0;
         TagVo searchVo = JSON.toJavaObject(paramObj, TagVo.class);
-        int rowNum = resourceCenterMapper.getTagCount(searchVo);
+        int rowNum = resourceTagMapper.getTagCount(searchVo);
         if (rowNum > 0) {
             pageCount = PageUtil.getPageCount(rowNum, searchVo.getPageSize());
-            List<TagVo> tagVoList = resourceCenterMapper.getTagListForSelect(searchVo);
+            List<TagVo> tagVoList = resourceTagMapper.getTagListForSelect(searchVo);
             resultObj.put("tbodyList", tagVoList);
         } else {
             resultObj.put("tbodyList", new ArrayList<>());

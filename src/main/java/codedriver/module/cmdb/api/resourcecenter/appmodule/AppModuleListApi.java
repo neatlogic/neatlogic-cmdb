@@ -6,7 +6,6 @@
 package codedriver.module.cmdb.api.resourcecenter.appmodule;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -15,11 +14,11 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.List;
 
 /**
  * @author linbq
@@ -30,7 +29,7 @@ import java.util.List;
 public class AppModuleListApi extends PrivateApiComponentBase {
 
     @Resource
-    private ResourceCenterMapper resourceCenterMapper;
+    private ResourceMapper resourceMapper;
 
     @Override
     public String getToken() {
@@ -62,10 +61,10 @@ public class AppModuleListApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         ResourceSearchVo searchVo = paramObj.toJavaObject(ResourceSearchVo.class);
-        int count = resourceCenterMapper.searchAppModuleCount(searchVo, TenantContext.get().getDataDbName());
+        int count = resourceMapper.searchAppModuleCount(searchVo, TenantContext.get().getDataDbName());
         if (count > 0) {
             searchVo.setRowNum(count);
-            return TableResultUtil.getResult(resourceCenterMapper.searchAppModule(searchVo, TenantContext.get().getDataDbName()), searchVo);
+            return TableResultUtil.getResult(resourceMapper.searchAppModule(searchVo, TenantContext.get().getDataDbName()), searchVo);
         }
         return null;
     }

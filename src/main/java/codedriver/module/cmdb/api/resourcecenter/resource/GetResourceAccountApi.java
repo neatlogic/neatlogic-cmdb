@@ -6,7 +6,6 @@
 package codedriver.module.cmdb.api.resourcecenter.resource;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterAccountNotFoundException;
@@ -17,6 +16,8 @@ import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.Output;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -27,7 +28,9 @@ import java.util.List;
 @Service
 public class GetResourceAccountApi extends PrivateApiComponentBase {
     @Resource
-    ResourceCenterMapper resourceCenterMapper;
+    ResourceMapper resourceMapper;
+    @Resource
+    ResourceAccountMapper resourceAccountMapper;
 
     @Override
     public String getName() {
@@ -71,14 +74,14 @@ public class GetResourceAccountApi extends PrivateApiComponentBase {
         String username = paramObj.getString("username");
 
         if (resourceId == null) {
-            ResourceVo resourceVo = resourceCenterMapper.getResourceByIpAndPortAndNameAndTypeName(TenantContext.get().getDataDbName(), ip, port, nodeName, nodeType);
+            ResourceVo resourceVo = resourceMapper.getResourceByIpAndPortAndNameAndTypeName(TenantContext.get().getDataDbName(), ip, port, nodeName, nodeType);
             if (resourceVo == null) {
                 throw new ResourceNotFoundException();
             }
             resourceId = resourceVo.getId();
         }
 
-        List<AccountVo> accountVoList = resourceCenterMapper.getResourceAccountByResourceIdAndProtocolAndProtocolPortAndUsername(resourceId, protocol, protocolPort, username);
+        List<AccountVo> accountVoList = resourceAccountMapper.getResourceAccountByResourceIdAndProtocolAndProtocolPortAndUsername(resourceId, protocol, protocolPort, username);
         if (CollectionUtils.isEmpty(accountVoList)) {
             throw new ResourceCenterAccountNotFoundException();
         }
