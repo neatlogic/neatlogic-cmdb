@@ -76,7 +76,7 @@ public class SearchDiscoveryJobApi extends PrivateApiComponentBase {
         sourceList.add("discovery");
         jobVo.setSourceList(sourceList);
         IAutoexecJobCrossoverService iAutoexecJobCrossoverService = CrossoverServiceFactory.getApi(IAutoexecJobCrossoverService.class);
-        return TableResultUtil.getResult(iAutoexecJobCrossoverService.getJobList(jobVo), jobVo);
+        return TableResultUtil.getResult(iAutoexecJobCrossoverService.searchJob(jobVo), jobVo);
     }
 
 }
