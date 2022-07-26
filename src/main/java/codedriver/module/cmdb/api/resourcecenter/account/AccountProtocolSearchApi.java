@@ -1,7 +1,6 @@
 package codedriver.module.cmdb.api.resourcecenter.account;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountProtocolVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
@@ -9,6 +8,7 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
@@ -22,7 +22,7 @@ import java.util.List;
 public class AccountProtocolSearchApi extends PrivateApiComponentBase {
 
     @Resource
-    private ResourceCenterMapper resourceCenterMapper;
+    private ResourceAccountMapper resourceAccountMapper;
 
     @Override
     public String getName() {
@@ -49,7 +49,7 @@ public class AccountProtocolSearchApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         AccountProtocolVo searchVo = JSON.toJavaObject(paramObj, AccountProtocolVo.class);
-        List<AccountProtocolVo> accountProtocolList = resourceCenterMapper.searchAccountProtocolListByProtocolName(searchVo);
+        List<AccountProtocolVo> accountProtocolList = resourceAccountMapper.searchAccountProtocolListByProtocolName(searchVo);
         return TableResultUtil.getResult(accountProtocolList, searchVo);
     }
 

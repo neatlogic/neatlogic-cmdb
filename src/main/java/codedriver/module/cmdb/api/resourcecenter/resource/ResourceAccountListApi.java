@@ -2,7 +2,6 @@ package codedriver.module.cmdb.api.resourcecenter.resource;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -10,6 +9,8 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +26,9 @@ import javax.annotation.Resource;
 public class ResourceAccountListApi extends PrivateApiComponentBase {
 
     @Resource
-    private ResourceCenterMapper resourceCenterMapper;
+    private ResourceMapper resourceMapper;
+    @Resource
+    private ResourceAccountMapper resourceAccountMapper;
 
     @Override
     public String getName() {
@@ -53,10 +56,10 @@ public class ResourceAccountListApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long resourceId = paramObj.getLong("resourceId");
         String schemaName = TenantContext.get().getDataDbName();
-        if (resourceCenterMapper.checkResourceIsExists(resourceId, schemaName) == 0) {
+        if (resourceMapper.checkResourceIsExists(resourceId, schemaName) == 0) {
             throw new ResourceNotFoundException(resourceId);
         }
-        return resourceCenterMapper.getResourceAccountListByResourceId(resourceId ,paramObj.getString("protocol"));
+        return resourceAccountMapper.getResourceAccountListByResourceId(resourceId ,paramObj.getString("protocol"));
     }
 
 }

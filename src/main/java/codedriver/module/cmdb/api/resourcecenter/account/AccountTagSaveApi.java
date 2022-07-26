@@ -1,7 +1,6 @@
 package codedriver.module.cmdb.api.resourcecenter.account;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountTagVo;
 import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterAccountNotFoundException;
@@ -14,6 +13,8 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.RESOURCECENTER_ACCOUNT_MODIFY;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceTagMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -30,7 +31,9 @@ import java.util.stream.Collectors;
 public class AccountTagSaveApi extends PrivateApiComponentBase {
 
     @Resource
-    private ResourceCenterMapper resourceCenterMapper;
+    private ResourceAccountMapper resourceAccountMapper;
+    @Resource
+    private ResourceTagMapper resourceTagMapper;
 
     @Override
     public String getToken() {
@@ -59,32 +62,32 @@ public class AccountTagSaveApi extends PrivateApiComponentBase {
             throw new ParamNotExistsException("tagList");
         }
         Long accountId = paramObj.getLong("accountId");
-        if (resourceCenterMapper.checkAccountIsExists(accountId) == 0) {
+        if (resourceAccountMapper.checkAccountIsExists(accountId) == 0) {
             throw new ResourceCenterAccountNotFoundException(accountId);
         }
         List<String> tagList = tagArray.toJavaList(String.class);
-        List<TagVo> existTagList = resourceCenterMapper.getTagListByTagNameList(tagList);
+        List<TagVo> existTagList = resourceTagMapper.getTagListByTagNameList(tagList);
         List<Long> tagIdList = existTagList.stream().map(TagVo::getId).collect(Collectors.toList());
         if (tagList.size() > existTagList.size()) {
             List<String> existTagNameList = existTagList.stream().map(TagVo::getName).collect(Collectors.toList());
             tagList.removeAll(existTagNameList);
             for (String tagName : tagList) {
                 TagVo tagVo = new TagVo(tagName);
-                resourceCenterMapper.insertTag(tagVo);
+                resourceTagMapper.insertTag(tagVo);
                 tagIdList.add(tagVo.getId());
             }
         }
-        resourceCenterMapper.deleteAccountTagByAccountId(accountId);
+        resourceAccountMapper.deleteAccountTagByAccountId(accountId);
         List<AccountTagVo> accountTagVoList = new ArrayList<>();
         for (Long tagId : tagIdList) {
             accountTagVoList.add(new AccountTagVo(accountId, tagId));
             if (accountTagVoList.size() > 100) {
-                resourceCenterMapper.insertIgnoreAccountTag(accountTagVoList);
+                resourceAccountMapper.insertIgnoreAccountTag(accountTagVoList);
                 accountTagVoList.clear();
             }
         }
         if (CollectionUtils.isNotEmpty(accountTagVoList)) {
-            resourceCenterMapper.insertIgnoreAccountTag(accountTagVoList);
+            resourceAccountMapper.insertIgnoreAccountTag(accountTagVoList);
         }
         return null;
     }

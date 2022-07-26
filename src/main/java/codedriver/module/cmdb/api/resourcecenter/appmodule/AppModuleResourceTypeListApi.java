@@ -1,7 +1,6 @@
 package codedriver.module.cmdb.api.resourcecenter.appmodule;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
@@ -14,6 +13,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import codedriver.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -39,7 +39,7 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
     private CiEntityMapper ciEntityMapper;
 
     @Resource
-    ResourceCenterMapper resourceCenterMapper;
+    ResourceMapper resourceMapper;
 
     @Resource
     private IResourceCenterResourceService resourceCenterResourceService;
@@ -110,7 +110,7 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
                 searchVo.setEnvId(envCiEntity.getId());
                 //根据模块id和环境id，获取当前环境下含有资产的 模型idList（resourceTypeIdList）
                 List<Long> resourceTypeIdList = new ArrayList<>();
-                Set<Long> resourceTypeIdSet = resourceCenterMapper.getIpObjectResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
+                Set<Long> resourceTypeIdSet = resourceMapper.getIpObjectResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
                 resourceTypeIdList.addAll(resourceTypeIdSet);
                 Set<CiVo> returnCiVoSet = new HashSet<>();
 //                if (CollectionUtils.isNotEmpty(resourceTypeIdSet)) {

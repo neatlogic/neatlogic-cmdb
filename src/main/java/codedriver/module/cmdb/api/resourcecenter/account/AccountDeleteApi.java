@@ -6,7 +6,6 @@
 package codedriver.module.cmdb.api.resourcecenter.account;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterAccountNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -14,6 +13,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.RESOURCECENTER_ACCOUNT_MODIFY;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import codedriver.module.cmdb.service.resourcecenter.account.ResourceCenterAccountService;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
@@ -30,7 +30,7 @@ import java.util.List;
 public class AccountDeleteApi extends PrivateApiComponentBase {
 
     @Resource
-    private ResourceCenterMapper resourceCenterMapper;
+    private ResourceAccountMapper resourceAccountMapper;
 
     @Resource
     private ResourceCenterAccountService accountService;
@@ -59,7 +59,7 @@ public class AccountDeleteApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long id = paramObj.getLong("id");
-        AccountVo account = resourceCenterMapper.getAccountById(id);
+        AccountVo account = resourceAccountMapper.getAccountById(id);
         if (account == null) {
             throw new ResourceCenterAccountNotFoundException(id);
         }

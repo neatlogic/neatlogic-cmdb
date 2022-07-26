@@ -7,7 +7,6 @@ package codedriver.module.cmdb.api.resourcecenter.account;
 
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountProtocolVo;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountTagVo;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
@@ -20,6 +19,8 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.IValid;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.RESOURCECENTER_ACCOUNT_MODIFY;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceTagMapper;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
@@ -40,7 +41,9 @@ import java.util.stream.Collectors;
 public class AccountSaveApi extends PrivateApiComponentBase {
 
     @Resource
-    private ResourceCenterMapper resourceCenterMapper;
+    private ResourceTagMapper resourceTagMapper;
+    @Resource
+    private ResourceAccountMapper resourceAccountMapper;
 
     @Override
     public String getToken() {
@@ -74,14 +77,14 @@ public class AccountSaveApi extends PrivateApiComponentBase {
         AccountVo vo = JSON.toJavaObject(paramObj, AccountVo.class);
         Long id = paramObj.getLong("id");
 
-        AccountProtocolVo protocolVo = resourceCenterMapper.getAccountProtocolVoByProtocolId(vo.getProtocolId());
+        AccountProtocolVo protocolVo = resourceAccountMapper.getAccountProtocolVoByProtocolId(vo.getProtocolId());
         if (protocolVo == null) {
             throw new ResourceCenterAccountProtocolNotFoundException(vo.getProtocolId());
         }
         if (!StringUtils.equals(protocolVo.getName(), "tagent") && StringUtils.isEmpty(paramObj.getString("account"))) {
             throw new ResourceCenterAccountNameIsNotNullException();
         }
-        if (resourceCenterMapper.checkAccountNameIsRepeats(vo) > 0) {
+        if (resourceAccountMapper.checkAccountNameIsRepeats(vo) > 0) {
             throw new ResourceCenterAccountNameRepeatsException(vo.getName());
         }
         List<Long> tagIdList = vo.getTagIdList();
@@ -91,7 +94,7 @@ public class AccountSaveApi extends PrivateApiComponentBase {
             List<Long> searchTagIdList = null;
             List<Long> insertTagIdList = new ArrayList<>();
             insertTagIdList.addAll(tagIdList);
-            List<TagVo> tagVoList = resourceCenterMapper.searchTagListByIdList(tagIdList);
+            List<TagVo> tagVoList = resourceTagMapper.searchTagListByIdList(tagIdList);
             searchTagIdList = tagVoList.stream().map(TagVo::getId).collect(Collectors.toList());
             insertTagIdList.removeAll(searchTagIdList);
             if (!CollectionUtils.isEmpty(insertTagIdList)) {
@@ -100,32 +103,32 @@ public class AccountSaveApi extends PrivateApiComponentBase {
                     throw new ResourceCenterTagNotFoundException(notFoundTagIdList);
                 }
             }
-            resourceCenterMapper.deleteAccountTagByAccountId(vo.getId());
+            resourceAccountMapper.deleteAccountTagByAccountId(vo.getId());
             for (Long tagId : tagIdList) {
                 accountTagVoList.add(new AccountTagVo(vo.getId(), tagId));
                 if (accountTagVoList.size() > 100) {
-                    resourceCenterMapper.insertIgnoreAccountTag(accountTagVoList);
+                    resourceAccountMapper.insertIgnoreAccountTag(accountTagVoList);
                     accountTagVoList.clear();
                 }
             }
             if (!CollectionUtils.isEmpty(accountTagVoList)) {
-                resourceCenterMapper.insertIgnoreAccountTag(accountTagVoList);
+                resourceAccountMapper.insertIgnoreAccountTag(accountTagVoList);
             }
         }
         vo.setLcu(UserContext.get().getUserUuid());
         if (id != null) {
-            AccountVo oldVo = resourceCenterMapper.getAccountById(id);
+            AccountVo oldVo = resourceAccountMapper.getAccountById(id);
             if (oldVo == null) {
                 throw new ResourceCenterAccountNotFoundException(id);
             }
             vo.setProtocolId(protocolVo.getId());
-            resourceCenterMapper.updateAccount(vo);
+            resourceAccountMapper.updateAccount(vo);
         } else {
             if (Objects.equals(protocolVo.getName(), "tagent")) {
                 throw new ResourceCenterAccountNotCreateTagentAccountException();
             }
             vo.setFcu(UserContext.get().getUserUuid());
-            resourceCenterMapper.insertAccount(vo);
+            resourceAccountMapper.insertAccount(vo);
         }
         return null;
     }
@@ -133,7 +136,7 @@ public class AccountSaveApi extends PrivateApiComponentBase {
     public IValid name() {
         return value -> {
             AccountVo vo = JSON.toJavaObject(value, AccountVo.class);
-            if (resourceCenterMapper.checkAccountNameIsRepeats(vo) > 0) {
+            if (resourceAccountMapper.checkAccountNameIsRepeats(vo) > 0) {
                 return new FieldValidResultVo(new ResourceCenterAccountNameRepeatsException(vo.getName()));
             }
             return new FieldValidResultVo();

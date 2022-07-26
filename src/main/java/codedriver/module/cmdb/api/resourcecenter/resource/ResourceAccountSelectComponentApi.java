@@ -2,7 +2,6 @@ package codedriver.module.cmdb.api.resourcecenter.resource;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountComponentVo;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -11,6 +10,7 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
@@ -24,7 +24,7 @@ import java.util.List;
 public class ResourceAccountSelectComponentApi extends PrivateApiComponentBase {
 
     @Resource
-    ResourceCenterMapper resourceCenterMapper;
+    ResourceMapper resourceMapper;
 
     @Override
     public String getToken() {
@@ -56,8 +56,8 @@ public class ResourceAccountSelectComponentApi extends PrivateApiComponentBase {
         AccountComponentVo searchVo = JSON.toJavaObject(paramObj, AccountComponentVo.class);
         List<AccountComponentVo> accountComponentVoList = null;
         String schemaName = TenantContext.get().getDataDbName();
-        accountComponentVoList = resourceCenterMapper.searchAccountComponent(searchVo, schemaName);
-        Integer rowNum = resourceCenterMapper.searchAccountComponentCount(searchVo, schemaName);
+        accountComponentVoList = resourceMapper.searchAccountComponent(searchVo, schemaName);
+        Integer rowNum = resourceMapper.searchAccountComponentCount(searchVo, schemaName);
         searchVo.setRowNum(rowNum);
         return TableResultUtil.getResult(accountComponentVoList, searchVo);
 

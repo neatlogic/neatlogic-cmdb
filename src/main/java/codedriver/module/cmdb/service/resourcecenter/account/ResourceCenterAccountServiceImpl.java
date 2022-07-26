@@ -7,11 +7,12 @@ package codedriver.module.cmdb.service.resourcecenter.account;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.cmdb.crossover.IResourceCenterAccountCrossoverService;
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.*;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterAccountHasBeenReferredException;
 import codedriver.framework.tagent.dao.mapper.TagentMapper;
 import codedriver.framework.tagent.dto.TagentVo;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
@@ -29,52 +30,54 @@ import java.util.stream.Collectors;
 @Service
 public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountService, IResourceCenterAccountCrossoverService {
     @Resource
-    ResourceCenterMapper resourceCenterMapper;
+    ResourceMapper resourceMapper;
+    @Resource
+    ResourceAccountMapper resourceAccountMapper;
     @Resource
     TagentMapper tagentMapper;
 
     @Override
     public void refreshAccountIpByAccountId(Long accountId) {
-        resourceCenterMapper.deleteAccountIpByAccountId(accountId);
+        resourceAccountMapper.deleteAccountIpByAccountId(accountId);
         //账号是否被resource引用
-        List<ResourceAccountVo> resourceAccountVoList = resourceCenterMapper.getResourceAccountListByAccountId(accountId);
+        List<ResourceAccountVo> resourceAccountVoList = resourceAccountMapper.getResourceAccountListByAccountId(accountId);
         if (CollectionUtils.isNotEmpty(resourceAccountVoList)) {
-            List<ResourceVo> resourceVoList = resourceCenterMapper.getResourceByIdList(resourceAccountVoList.stream().map(ResourceAccountVo::getResourceId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
+            List<ResourceVo> resourceVoList = resourceMapper.getResourceByIdList(resourceAccountVoList.stream().map(ResourceAccountVo::getResourceId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
             for (ResourceVo resourceVo : resourceVoList) {
-                resourceCenterMapper.insertAccountIp(new AccountIpVo(accountId, resourceVo.getIp()));
+                resourceAccountMapper.insertAccountIp(new AccountIpVo(accountId, resourceVo.getIp()));
             }
         }
         //账号是否被tagent引用
         List<TagentVo> tagentVoList = tagentMapper.getTagentByAccountId(accountId);
         if (CollectionUtils.isNotEmpty(tagentVoList)) {
             for (TagentVo tagentVo : tagentVoList) {
-                resourceCenterMapper.insertAccountIp(new AccountIpVo(tagentVo.getAccountId(), tagentVo.getIp()));
+                resourceAccountMapper.insertAccountIp(new AccountIpVo(tagentVo.getAccountId(), tagentVo.getIp()));
             }
         }
     }
 
     @Override
     public void refreshAccountIpByResourceIdList(List<Long> resourceIdList) {
-        List<ResourceAccountVo> resourceAccountVoList = resourceCenterMapper.getResourceAccountListByResourceIdList(resourceIdList);
-        List<ResourceVo> resourceVoList = resourceCenterMapper.getResourceByIdList(resourceAccountVoList.stream().map(ResourceAccountVo::getResourceId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
+        List<ResourceAccountVo> resourceAccountVoList = resourceAccountMapper.getResourceAccountListByResourceIdList(resourceIdList);
+        List<ResourceVo> resourceVoList = resourceMapper.getResourceByIdList(resourceAccountVoList.stream().map(ResourceAccountVo::getResourceId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
         //账号是否被resource引用
         if (CollectionUtils.isNotEmpty(resourceVoList)) {
             List<String> resourceIpList = resourceVoList.stream().map(ResourceVo::getIp).collect(Collectors.toList());
-            resourceCenterMapper.deleteAccountIpByIpList(resourceIpList);
+            resourceAccountMapper.deleteAccountIpByIpList(resourceIpList);
             HashMap<Long, ResourceVo> resourceVoHashMap = new HashMap<>();
             for (ResourceVo resourceVo : resourceVoList) {
                 resourceVoHashMap.put(resourceVo.getId(), resourceVo);
             }
             for (ResourceAccountVo resourceAccountVo : resourceAccountVoList) {
                 if (resourceVoHashMap.containsKey(resourceAccountVo.getResourceId())) {
-                    resourceCenterMapper.insertAccountIp(new AccountIpVo(resourceAccountVo.getAccountId(), resourceVoHashMap.get(resourceAccountVo.getResourceId()).getIp()));
+                    resourceAccountMapper.insertAccountIp(new AccountIpVo(resourceAccountVo.getAccountId(), resourceVoHashMap.get(resourceAccountVo.getResourceId()).getIp()));
                 }
             }
             //账号是否被tagent引用
             List<TagentVo> tagentVoList = tagentMapper.getTagentByIpList(resourceIpList);
             if (CollectionUtils.isNotEmpty(tagentVoList)) {
                 for (TagentVo tagentVo : tagentVoList) {
-                    resourceCenterMapper.insertAccountIp(new AccountIpVo(tagentVo.getAccountId(), tagentVo.getIp()));
+                    resourceAccountMapper.insertAccountIp(new AccountIpVo(tagentVo.getAccountId(), tagentVo.getIp()));
                 }
             }
         }
@@ -133,15 +136,15 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
                     throw new ResourceCenterAccountHasBeenReferredException("tagent");
                 }
                 //判断是否被资产引用
-                List<ResourceAccountVo> resourceAccountVoList = resourceCenterMapper.getResourceAccountListByAccountId(accountId);
+                List<ResourceAccountVo> resourceAccountVoList = resourceAccountMapper.getResourceAccountListByAccountId(accountId);
                 if (CollectionUtils.isNotEmpty(resourceAccountVoList)) {
                     throw new ResourceCenterAccountHasBeenReferredException("resource");
                 }
             }
-            resourceCenterMapper.deleteAccountById(accountId);
-            resourceCenterMapper.deleteResourceAccountByAccountId(accountId);
-            resourceCenterMapper.deleteAccountTagByAccountId(accountId);
-            resourceCenterMapper.deleteAccountIpByAccountId(accountId);
+            resourceAccountMapper.deleteAccountById(accountId);
+            resourceAccountMapper.deleteResourceAccountByAccountId(accountId);
+            resourceAccountMapper.deleteAccountTagByAccountId(accountId);
+            resourceAccountMapper.deleteAccountIpByAccountId(accountId);
         }
     }
 }

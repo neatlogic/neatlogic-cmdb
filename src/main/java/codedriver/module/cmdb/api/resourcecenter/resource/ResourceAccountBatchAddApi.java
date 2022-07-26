@@ -7,7 +7,6 @@ package codedriver.module.cmdb.api.resourcecenter.resource;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceAccountVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
@@ -22,6 +21,8 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.RESOURCECENTER_MODIFY;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -43,7 +44,9 @@ import java.util.*;
 public class ResourceAccountBatchAddApi extends PrivateApiComponentBase {
 
     @Resource
-    private ResourceCenterMapper resourceCenterMapper;
+    private ResourceMapper resourceMapper;
+    @Resource
+    private ResourceAccountMapper resourceAccountMapper;
 
     @Override
     public String getToken() {
@@ -81,7 +84,7 @@ public class ResourceAccountBatchAddApi extends PrivateApiComponentBase {
         List<Long> resourceIdList = resourceIdArray.toJavaList(Long.class);
         Map<Long, ResourceVo> resourceVoMap = new HashMap<>();
         List<Long> existResourceIdList = new ArrayList<>();
-        List<ResourceVo> resourceVoList = resourceCenterMapper.getResourceListByIdList(resourceIdList, TenantContext.get().getDataDbName());
+        List<ResourceVo> resourceVoList = resourceMapper.getResourceListByIdList(resourceIdList, TenantContext.get().getDataDbName());
         for (ResourceVo resourceVo : resourceVoList) {
             resourceVoMap.put(resourceVo.getId(), resourceVo);
             existResourceIdList.add(resourceVo.getId());
@@ -103,7 +106,7 @@ public class ResourceAccountBatchAddApi extends PrivateApiComponentBase {
         Map<String, AccountVo> accountVoMap = new HashMap<>();
         List<Long> existAccountIdList = new ArrayList<>();
         Set<Long> excludeAccountIdSet = new HashSet<>();
-        List<AccountVo> accountVoList = resourceCenterMapper.getAccountListByIdList(accountIdList);
+        List<AccountVo> accountVoList = resourceAccountMapper.getAccountListByIdList(accountIdList);
         for (AccountVo accountVo : accountVoList) {
             existAccountIdList.add(accountVo.getId());
             String key = accountVo.getProtocol() + "#" + accountVo.getAccount();
@@ -135,23 +138,23 @@ public class ResourceAccountBatchAddApi extends PrivateApiComponentBase {
                 if (excludeAccountIdSet.contains(accountVo.getId())) {
                     continue;
                 }
-                Long accountId = resourceCenterMapper.checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol(resourceId, accountVo.getAccount(), accountVo.getProtocol());
+                Long accountId = resourceAccountMapper.checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol(resourceId, accountVo.getAccount(), accountVo.getProtocol());
                 if (accountId != null) {
                     ResourceVo resourecVo = resourceVoMap.get(resourceId);
-                    AccountVo account = resourceCenterMapper.getAccountById(accountId);
+                    AccountVo account = resourceAccountMapper.getAccountById(accountId);
                     failureReasonList.add(resourecVo.getName() + "（" + resourecVo.getIp() + "）'已绑定账号\"" + account.getName() + "（" + account.getProtocol() + "/" + account.getAccount() + "）\"，同一资产不可绑定多个协议相同且用户名相同的账号");
                     continue;
                 }
                 resourceAccountVoList.add(new ResourceAccountVo(resourceId, accountVo.getId()));
                 successCount++;
                 if (resourceAccountVoList.size() > 100) {
-                    resourceCenterMapper.insertIgnoreResourceAccount(resourceAccountVoList);
+                    resourceAccountMapper.insertIgnoreResourceAccount(resourceAccountVoList);
                     resourceAccountVoList.clear();
                 }
             }
         }
         if (CollectionUtils.isNotEmpty(resourceAccountVoList)) {
-            resourceCenterMapper.insertIgnoreResourceAccount(resourceAccountVoList);
+            resourceAccountMapper.insertIgnoreResourceAccount(resourceAccountVoList);
         }
 
         JSONObject resultObj = new JSONObject();

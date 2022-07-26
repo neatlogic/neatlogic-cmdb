@@ -9,7 +9,6 @@ import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.autoexec.exception.AutoexecCombopProtocolCannotBeEmptyException;
 import codedriver.framework.cmdb.crossover.IResourceCenterAccountCrossoverService;
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountProtocolVo;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
@@ -21,6 +20,8 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import codedriver.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -45,7 +46,9 @@ import java.util.stream.Collectors;
 public class ResourceCheckApi extends PrivateApiComponentBase {
 
     @Resource
-    private ResourceCenterMapper resourceCenterMapper;
+    private ResourceMapper resourceMapper;
+    @Resource
+    private ResourceAccountMapper resourceAccountMapper;
 
     @Resource
     private IResourceCenterResourceService resourceCenterResourceService;
@@ -88,7 +91,7 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
         JSONObject filter = jsonObj.getJSONObject("filter");
         String protocol = null;
         if (protocolId != null) {
-            AccountProtocolVo protocolVo = resourceCenterMapper.getAccountProtocolVoByProtocolId(protocolId);
+            AccountProtocolVo protocolVo = resourceAccountMapper.getAccountProtocolVoByProtocolId(protocolId);
             if(protocolVo == null){
                 throw new AutoexecCombopProtocolCannotBeEmptyException();
             }
@@ -98,7 +101,7 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
             }
             // 协议和用户同时填了，才校验是否合法，协议为tagent时，无需校验用户名
             if (StringUtils.isNotBlank(executeUser)) {
-                List<Long> accountIdList = resourceCenterMapper.getAccountIdListByAccountAndProtocol(executeUser, protocol);
+                List<Long> accountIdList = resourceAccountMapper.getAccountIdListByAccountAndProtocol(executeUser, protocol);
                 if (CollectionUtils.isEmpty(accountIdList)) {
                     JSONObject executeUserIsNotFoundInProtocolObj = new JSONObject();
                     executeUserIsNotFoundInProtocolObj.put("type", "executeUserIsNotFoundInProtocol");
@@ -132,14 +135,14 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
         resourceIsNotFoundObj.put("type", "resourceIsNotFound");
         resourceIsNotFoundObj.put("list", resourceIsNotFoundList);
 
-        List<AccountProtocolVo> protocolVoList = resourceCenterMapper.searchAccountProtocolListByProtocolName(new AccountProtocolVo());
+        List<AccountProtocolVo> protocolVoList = resourceAccountMapper.searchAccountProtocolListByProtocolName(new AccountProtocolVo());
         if (CollectionUtils.isNotEmpty(jsonObj.getJSONArray("inputNodeList"))) {
             ResourceSearchVo searchVo = null;
             // 如果filter不为空，说明是在执行页带有过滤器的校验输入目标，把过滤器作为进一步的筛选条件
             if (MapUtils.isNotEmpty(filter)) {
                 searchVo = resourceCenterResourceService.assembleResourceSearchVo(filter);
 //                // 如果过滤器下没有任何目标，不再进行下一步校验
-                if (resourceCenterMapper.getResourceCount(searchVo) == 0) {
+                if (resourceMapper.getResourceCount(searchVo) == 0) {
                     JSONObject resourceIsEmpty = new JSONObject();
                     resourceIsEmpty.put("type", "resourceIsEmpty");
                     resultArray.add(resourceIsEmpty);
@@ -155,9 +158,9 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
                     searchVo.setIp(node.getIp());
                     searchVo.setPort(node.getPort());
                     searchVo.setName(node.getName());
-                    resourceId = resourceCenterMapper.getResourceIdByIpAndPortAndNameWithFilter(searchVo);
+                    resourceId = resourceMapper.getResourceIdByIpAndPortAndNameWithFilter(searchVo);
                 } else {
-                    resourceId = resourceCenterMapper.getResourceIdByIpAndPortAndName(node);
+                    resourceId = resourceMapper.getResourceIdByIpAndPortAndName(node);
                 }
                 if (resourceId == null) {
                     resourceIsNotFoundList.add(node);
@@ -170,14 +173,14 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
             }
         } else if (MapUtils.isNotEmpty(filter)) {
             ResourceSearchVo searchVo = resourceCenterResourceService.assembleResourceSearchVo(filter);
-            int rowNum = resourceCenterMapper.getResourceCount(searchVo);
+            int rowNum = resourceMapper.getResourceCount(searchVo);
             // 先检查过滤器下是否存在资源
             if (rowNum > 0) {
                 searchVo.setRowNum(rowNum);
                 searchVo.setPageSize(100);
                 for (int i = 1; i <= searchVo.getPageCount(); i++) {
                     searchVo.setCurrentPage(i);
-                    List<Long> idList = resourceCenterMapper.getResourceIdList(searchVo);
+                    List<Long> idList = resourceMapper.getResourceIdList(searchVo);
                     addException(executeUser, protocolId, executeUserIsNotFoundInResourceList, protocolIsNotFoundInResourceList, protocolVoList, idList);
                 }
             } else {
@@ -212,10 +215,10 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
 
     private void addException(String executeUser, Long protocolId, List<ResourceVo> executeUserIsNotFoundInResourceList, List<ResourceVo> protocolIsNotFoundInResourceList, List<AccountProtocolVo> protocolVoList, List<Long> idList) {
         IResourceCenterAccountCrossoverService accountService = CrossoverServiceFactory.getApi(IResourceCenterAccountCrossoverService.class);
-        List<ResourceVo> resourceVoList = resourceCenterMapper.getResourceByIdList(idList, TenantContext.get().getDataDbName());
+        List<ResourceVo> resourceVoList = resourceMapper.getResourceByIdList(idList, TenantContext.get().getDataDbName());
         if(CollectionUtils.isNotEmpty(resourceVoList)) {
-            List<AccountVo> accountVoList = resourceCenterMapper.getResourceAccountListByResourceIdAndProtocolAndAccount(idList, protocolId, executeUser);
-            List<AccountVo> allAccountVoList = resourceCenterMapper.getAccountListByIpList(resourceVoList.stream().map(ResourceVo::getIp).collect(Collectors.toList()));
+            List<AccountVo> accountVoList = resourceAccountMapper.getResourceAccountListByResourceIdAndProtocolAndAccount(idList, protocolId, executeUser);
+            List<AccountVo> allAccountVoList = resourceAccountMapper.getAccountListByIpList(resourceVoList.stream().map(ResourceVo::getIp).collect(Collectors.toList()));
             for (ResourceVo vo : resourceVoList) {
                 Optional<AccountVo> accountOp = accountService.filterAccountByRules(accountVoList, allAccountVoList, protocolVoList, vo.getId(), protocolId, vo.getIp(), vo.getPort());
                 if (!accountOp.isPresent()) {

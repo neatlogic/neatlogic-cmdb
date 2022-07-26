@@ -8,7 +8,6 @@ package codedriver.module.cmdb.api.resourcecenter.resource;
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.crossover.IResourceListApiCrossoverService;
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
@@ -22,6 +21,7 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import codedriver.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -47,7 +47,7 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
     private IResourceCenterResourceService resourceCenterResourceService;
 
     @Resource
-    private ResourceCenterMapper resourceCenterMapper;
+    private ResourceMapper resourceMapper;
 
     @Override
     public String getToken() {
@@ -104,16 +104,16 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
             searchVo = resourceCenterResourceService.assembleResourceSearchVo(jsonObj);
         }
 
-        int rowNum = resourceCenterMapper.getResourceCount(searchVo);
+        int rowNum = resourceMapper.getResourceCount(searchVo);
         if (rowNum == 0) {
             return TableResultUtil.getResult(resourceList, searchVo);
         }
         searchVo.setRowNum(rowNum);
-        List<Long> idList = resourceCenterMapper.getResourceIdList(searchVo);
+        List<Long> idList = resourceMapper.getResourceIdList(searchVo);
         if (CollectionUtils.isEmpty(idList)) {
             return TableResultUtil.getResult(resourceList, searchVo);
         }
-        resourceList = resourceCenterMapper.getResourceListByIdList(idList, TenantContext.get().getDataDbName());
+        resourceList = resourceMapper.getResourceListByIdList(idList, TenantContext.get().getDataDbName());
         if (CollectionUtils.isNotEmpty(resourceList)) {
             Map<Long, List<AccountVo>> accountMap = resourceCenterResourceService.getResourceAccountByResourceIdList(idList);
             Map<Long, List<TagVo>> tagMap = resourceCenterResourceService.getResourceTagByResourceIdList(idList);

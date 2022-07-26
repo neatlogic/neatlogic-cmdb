@@ -7,7 +7,6 @@ package codedriver.module.cmdb.api.resourcecenter.resource;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.dao.mapper.resourcecenter.ResourceCenterMapper;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.exception.type.ParamNotExistsException;
@@ -18,6 +17,8 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.RESOURCECENTER_MODIFY;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
+import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceTagMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -39,7 +40,9 @@ import java.util.List;
 public class ResourceTagBatchDeleteApi extends PrivateApiComponentBase {
 
     @Resource
-    private ResourceCenterMapper resourceCenterMapper;
+    private ResourceMapper resourceMapper;
+    @Resource
+    private ResourceTagMapper resourceTagMapper;
 
     @Override
     public String getToken() {
@@ -74,7 +77,7 @@ public class ResourceTagBatchDeleteApi extends PrivateApiComponentBase {
 
         String schemaName = TenantContext.get().getDataDbName();
         List<Long> resourceIdList = resourceIdArray.toJavaList(Long.class);
-        List<Long> existResourceIdList = resourceCenterMapper.checkResourceIdListIsExists(resourceIdList, schemaName);
+        List<Long> existResourceIdList = resourceMapper.checkResourceIdListIsExists(resourceIdList, schemaName);
         if (resourceIdList.size() > existResourceIdList.size()) {
             List<Long> notFoundIdList = ListUtils.removeAll(resourceIdList, existResourceIdList);
             if (CollectionUtils.isNotEmpty(notFoundIdList)) {
@@ -88,7 +91,7 @@ public class ResourceTagBatchDeleteApi extends PrivateApiComponentBase {
             }
         }
         List<Long> tagList = tagArray.toJavaList(Long.class);
-        resourceCenterMapper.deleteResourceTagByResourceIdAndTagIdList(resourceIdList, tagList);
+        resourceTagMapper.deleteResourceTagByResourceIdAndTagIdList(resourceIdList, tagList);
         return null;
     }
 }

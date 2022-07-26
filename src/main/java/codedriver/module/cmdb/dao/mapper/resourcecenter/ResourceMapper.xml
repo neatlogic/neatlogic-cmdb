@@ -7,6 +7,93 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceMapper">
 
+    <sql id="resource_ipobject_where">
+        <if test="keyword != null and keyword != ''">
+            AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%') OR a.`port`
+            LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <if test="typeIdList != null and typeIdList.size() > 0">
+            AND a.`type_id` IN
+            <foreach collection="typeIdList" item="typeId" open="(" separator="," close=")">
+                #{typeId}
+            </foreach>
+        </if>
+        <if test="stateIdList != null and stateIdList.size() > 0">
+            AND a.`state_id` IN
+            <foreach collection="stateIdList" item="stateId" open="(" separator="," close=")">
+                #{stateId}
+            </foreach>
+        </if>
+        <if test="envIdList != null and envIdList.size() > 0">
+            AND a.`env_id` IN
+            <foreach collection="envIdList" item="envId" open="(" separator="," close=")">
+                #{envId}
+            </foreach>
+        </if>
+        <if test="appSystemIdList != null and appSystemIdList.size() > 0">
+            AND a.`app_system_id` IN
+            <foreach collection="appSystemIdList" item="appSystemId" open="(" separator="," close=")">
+                #{appSystemId}
+            </foreach>
+        </if>
+        <if test="appModuleIdList != null and appModuleIdList.size() > 0">
+            AND a.`app_module_id` IN
+            <foreach collection="appModuleIdList" item="appModuleId" open="(" separator="," close=")">
+                #{appModuleId}
+            </foreach>
+        </if>
+        <if test="defaultValue != null and defaultValue.size() > 0">
+            AND a.`id` IN
+            <foreach collection="defaultValue" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+        <if test="inspectStatusList != null and inspectStatusList.size() > 0">
+            AND a.`inspect_status` IN
+            <foreach collection="inspectStatusList" item="inspectStatus" open="(" separator="," close=")">
+                #{inspectStatus}
+            </foreach>
+        </if>
+        <if test="protocolIdList != null and protocolIdList.size() > 0">
+            AND c.`protocol_id` IN
+            <foreach collection="protocolIdList" item="protocolId" open="(" separator="," close=")">
+                #{protocolId}
+            </foreach>
+        </if>
+        <if test="tagIdList != null and tagIdList.size() > 0">
+            AND d.`tag_id` IN
+            <foreach collection="tagIdList" item="tagId" open="(" separator="," close=")">
+                #{tagId}
+            </foreach>
+        </if>
+    </sql>
+
+    <select id="getResourceCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+            resultType="int">
+        SELECT COUNT(DISTINCT a.`id`)
+        FROM ${schemaName}.`resource_ipobject_detail` a
+        LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
+        LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
+        LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+        <where>
+            <include refid="resource_ipobject_where"/>
+        </where>
+    </select>
+
+    <select id="getResourceIdList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+            resultType="java.lang.Long">
+        SELECT DISTINCT a.`id`
+        FROM ${schemaName}.`resource_ipobject_detail` a
+        LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
+        LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
+        LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+        <where>
+            <include refid="resource_ipobject_where"/>
+        </where>
+        ORDER BY a.`id`
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
     <resultMap id="resourceCenterMap" type="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
         <id column="id" property="id"/>
         <result column="name" property="name"/>
@@ -59,20 +146,561 @@
         </collection>
     </resultMap>
 
-    <select id="getResourceCount" parameterType="java.lang.String" resultType="int">
-        ${sql}
+    <select id="getResourceListByIdList" resultMap="resourceCenterMap">
+        SELECT
+        a.`id`,
+        a.`ip`,
+        a.`port`,
+        a.`type_id`,
+        a.`type_name`,
+        a.`type_label`,
+        a.`name`,
+        a.`monitor_status`,
+        a.`monitor_time`,
+        a.`inspect_status`,
+        a.`inspect_time`,
+        a.`network_area`,
+        a.`maintenance_window`,
+        a.`description`,
+        a.`app_module_id`,
+        a.`app_module_name`,
+        a.`app_module_abbr_name`,
+        a.`app_system_id`,
+        a.`app_system_name`,
+        a.`app_system_abbr_name`,
+        a.`allip_id`,
+        a.`allip_ip`,
+        a.`allip_label`,
+        a.`bg_id`,
+        a.`bg_name`,
+        a.`user_id`,
+        a.`user_uuid`,
+        a.`user_name`,
+        a.`state_id`,
+        a.`state_name`,
+        a.`state_label`,
+        a.`env_id`,
+        a.`env_name`
+        FROM ${schemaName}.`resource_ipobject_detail` a
+        WHERE a.`id` IN
+        <foreach collection="idList" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+    <select id="getIpObjectResourceCountByAppModuleIdAndTypeIdAndEnvIdAndTypeId"
+            parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="int">
+        SELECT COUNT(1)
+        FROM ${schemaName}.`resource_ipobject` a
+        <if test="envId != null">
+            JOIN ${schemaName}.`resource_softwareservice_env` h on h.`resource_id` = a.`id` AND h.`env_id` = #{envId}
+        </if>
+        JOIN ${schemaName}.`resource_ipobject_appmodule` i on i.`resource_id` = a.`id` AND i.`app_module_id` =
+        #{appModuleId}
+        WHERE a.`type_id` = #{typeId}
     </select>
 
-    <select id="getResourceIdList" parameterType="java.lang.String" resultType="java.lang.Long">
-        ${sql}
+    <select id="getIpObjectResourceIdListByAppModuleIdAndTypeIdAndEnvIdAndTypeId"
+            parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
+        SELECT a.`id`
+        FROM ${schemaName}.`resource_ipobject` a
+        <if test="envId != null">
+            JOIN ${schemaName}.`resource_softwareservice_env` h on h.`resource_id` = a.`id` AND h.`env_id` = #{envId}
+        </if>
+        JOIN ${schemaName}.`resource_ipobject_appmodule` i on i.`resource_id` = a.`id` AND i.`app_module_id` =
+        #{appModuleId}
+        WHERE a.`type_id` = #{typeId}
+        ORDER BY a.`id` DESC
+        LIMIT #{startNum}, #{pageSize}
     </select>
 
-    <select id="getResourceId" parameterType="java.lang.String" resultType="java.lang.Long">
-        ${sql}
+    <select id="getAppInstanceResourceListByIdList" resultMap="resourceCenterMap">
+        SELECT
+        a.`id`,
+        a.`ip`,
+        a.`port`,
+        a.`name`,
+        a.`type_id`,
+        a.`monitor_status`,
+        a.`monitor_time`,
+        a.`inspect_status`,
+        a.`inspect_time`,
+        a.`network_area`,
+        a.`maintenance_window`,
+        a.`description`,
+        a.`bg_id`,
+        a.`bg_name`,
+        a.`user_id`,
+        a.`user_uuid`,
+        a.`user_name`,
+        a.`state_id`,
+        a.`state_name`,
+        a.`state_label`,
+        a.`env_id`,
+        a.`env_name`,
+        n.`cluster_id`,
+        n.`cluster_type_id`,
+        n.`cluster_name`
+        FROM ${schemaName}.`resource_ipobject_detail` a
+        LEFT JOIN ${schemaName}.`resource_appinstance_appinstancecluster` n ON n.`resource_id` = a.`id`
+        WHERE a.`id` IN
+        <foreach collection="idList" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
     </select>
 
-    <select id="getResourceListByIdList" parameterType="java.lang.String" resultMap="resourceCenterMap">
-        ${sql}
+    <select id="getAppInstanceResourceListByIdListSimple" resultMap="resourceCenterMap">
+        SELECT
+        a.`id`,
+        a.`ip`,
+        a.`port`,
+        a.`name`,
+        a.`type_id`,
+        a.`monitor_status`,
+        a.`monitor_time`,
+        a.`inspect_status`,
+        a.`inspect_time`,
+        a.`network_area`,
+        a.`maintenance_window`,
+        a.`description`,
+        a.`bg_id`,
+        a.`bg_name`,
+        a.`user_id`,
+        a.`user_uuid`,
+        a.`user_name`,
+        a.`state_id`,
+        a.`state_name`,
+        a.`state_label`,
+        a.`env_id`,
+        a.`env_name`
+        FROM ${schemaName}.`resource_ipobject_detail` a
+        WHERE a.`id` IN
+        <foreach collection="idList" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
     </select>
+
+    <select id="getDbInstanceResourceListByIdList" resultMap="resourceCenterMap">
+        SELECT
+        a.`id`,
+        a.`ip`,
+        a.`port`,
+        a.`name`,
+        a.`type_id`,
+        a.`monitor_status`,
+        a.`monitor_time`,
+        a.`inspect_status`,
+        a.`inspect_time`,
+        a.`network_area`,
+        a.`maintenance_window`,
+        a.`description`,
+        a.`bg_id`,
+        a.`bg_name`,
+        a.`user_id`,
+        a.`user_uuid`,
+        a.`user_name`,
+        a.`state_id`,
+        a.`state_name`,
+        a.`state_label`,
+        a.`env_id`,
+        a.`env_name`,
+        n.`cluster_id`,
+        n.`cluster_type_id`,
+        n.`cluster_name`
+        FROM ${schemaName}.`resource_ipobject_detail` a
+        LEFT JOIN ${schemaName}.`resource_dbinstance_dbcluster` n ON n.`resource_id` = a.`id`
+        WHERE a.`id` IN
+        <foreach collection="idList" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getResourceIdByIpAndPortAndName"
+            parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
+        SELECT a.`id`
+        FROM ${schemaName}.`resource_ipobject` a
+        LEFT JOIN ${schemaName}.`resource_softwareservice` b on b.`id` = a.`id`
+        WHERE a.`ip` = #{ip}
+        <choose>
+            <when test="port != null and port != ''">
+                AND b.`port` = #{port}
+            </when>
+            <otherwise>
+                AND b.`port` is null
+            </otherwise>
+        </choose>
+        <if test="name != null and name != ''">
+            and a.`name` = #{name}
+        </if>
+        LIMIT 1
+    </select>
+
+    <select id="getResourceByIdList" resultMap="resourceCenterMap">
+        SELECT a.`id`, a.`name`, a.`ip`,a.`type_id`
+        FROM ${schemaName}.`resource_ipobject` a
+        where a.`id` in
+        <foreach collection="idList" item="id" separator="," close=")" open="(">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getResourceById" resultMap="resourceCenterMap">
+        SELECT a.`id`, a.`name`, a.`ip`
+        FROM ${schemaName}.`resource_ipobject` a
+        where a.`id` = #{id}
+    </select>
+
+    <select id="getResourceFromSoftwareServiceByIdList" resultMap="resourceCenterMap">
+        SELECT a.`id`, a.`name`, a.`ip`, a.`port`
+        FROM ${schemaName}.`resource_softwareservice` a
+        where a.`id` in
+        <foreach collection="idList" item="id" separator="," close=")" open="(">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="checkResourceIsExists" resultType="int">
+        SELECT COUNT(DISTINCT a.`id`)
+        FROM ${schemaName}.`resource_ipobject` a
+        where a.`id` = #{id}
+    </select>
+
+    <select id="checkResourceIdListIsExists" resultType="java.lang.Long">
+        SELECT a.`id`
+        FROM ${schemaName}.`resource_ipobject` a
+        WHERE a.`id` IN
+        <foreach collection="idList" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getHasModuleAppSystemIdListByAppSystemIdList"
+            parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+            resultType="java.lang.Long">
+        SELECT `resource_id` FROM `resource_appsystem_appmodule`
+        <where>
+            `resource_id` IN
+            <foreach collection="appSystemIdList" item="appSystemId" open="(" separator="," close=")">
+                #{appSystemId}
+            </foreach>
+        </where>
+    </select>
+
+    <select id="getHasEnvAppSystemIdListByAppSystemIdList"
+            parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+            resultType="java.lang.Long">
+        SELECT raa.resource_id
+        FROM resource_appsystem_appmodule raa
+        JOIN resource_ipobject_appmodule ria ON raa.app_module_id = ria.app_module_id
+        JOIN resource_softwareservice_env rse ON ria.resource_id = rse.resource_id
+        <where>
+            raa.resource_id IN
+            <foreach collection="appSystemIdList" item="appSystemId" open="(" separator="," close=")">
+                #{appSystemId}
+            </foreach>
+        </where>
+    </select>
+
+    <sql id="searchAppModuleWhere">
+        <where>
+            <if test="searchVo.keyword != null and searchVo.keyword != ''">
+                AND a.`name` LIKE concat('%', #{searchVo.keyword}, '%')
+            </if>
+            <if test="searchVo.appSystemIdList != null and searchVo.appSystemIdList.size() > 0">
+                AND EXISTS (
+                SELECT 1 FROM ${schemaName}.`resource_appsystem_appmodule` b
+                WHERE b.`app_module_id` = a.`id`
+                AND b.`resource_id` IN
+                <foreach collection="searchVo.appSystemIdList" item="appSystemId" open="(" separator="," close=")">
+                    #{appSystemId}
+                </foreach>
+                )
+            </if>
+        </where>
+    </sql>
+
+    <select id="searchAppModuleCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+            resultType="java.lang.Integer">
+        SELECT count(1)
+        FROM ${schemaName}.`resource_appmodule` a
+        <include refid="searchAppModuleWhere"/>
+    </select>
+
+    <select id="searchAppModule"
+            parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+            resultMap="resourceCenterMap">
+        SELECT a.`id`, a.`name`, a.`abbr_name`, a.`maintenance_window`, a.`description`,
+        a.`inspect_status`, a.`inspect_time`, a.`monitor_status`, a.`monitor_time`,
+        a.`fcu`, a.`fcd`, a.`lcu`, a.`lcd`
+        FROM ${schemaName}.`resource_appmodule` a
+        <include refid="searchAppModuleWhere"/>
+        ORDER BY `id` DESC
+        LIMIT #{searchVo.startNum}, #{searchVo.pageSize}
+    </select>
+
+    <select id="getAppSystemModuleIdListByAppSystemId"
+            resultType="java.lang.Long">
+        SELECT `app_module_id` FROM `resource_appsystem_appmodule`
+        <where>
+            `resource_id` = #{appSystemId}
+        </where>
+    </select>
+
+    <select id="getAppModuleListByAppSystemIdList"
+            parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+            resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.ModuleVo">
+        SELECT
+        `resource_id` AS resourceId,
+        `app_module_id` AS appModuleId,
+        `app_module_name` AS appModuleName,
+        `app_module_abbr_name` AS appModuleAbbrName
+        FROM ${schemaName}.`resource_appsystem_appmodule`
+        <where>
+            `resource_id` IN
+            <foreach collection="appSystemIdList" item="appSystemId" open="(" separator="," close=")">
+                #{appSystemId}
+            </foreach>
+        </where>
+    </select>
+
+    <select id="getAppModuleListByIdListSimple" parameterType="java.util.List" resultMap="resourceCenterMap">
+        SELECT
+        a.`id`, a.`name`, a.`abbr_name`, a.`maintenance_window`, a.`description`,
+        a.`inspect_status`, a.`inspect_time`, a.`monitor_status`, a.`monitor_time`,
+        a.`fcu`, a.`fcd`, a.`lcu`, a.`lcd`
+        FROM `resource_appmodule` a
+        WHERE a.`id` IN
+        <foreach collection="idList" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        order by CONVERT(a.`name` USING gbk) COLLATE gbk_chinese_ci ASC
+    </select>
+
+    <select id="getIpObjectResourceTypeIdListByAppModuleIdAndEnvId"
+            parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
+        SELECT a.`type_id`
+        FROM ${schemaName}.`resource_ipobject` a
+        <if test="envId != null">
+            JOIN ${schemaName}.`resource_softwareservice_env` b ON b.`resource_id` = a.`id` AND b.`env_id` = #{envId}
+        </if>
+        JOIN ${schemaName}.`resource_ipobject_appmodule` c ON c.`resource_id` = a.`id` AND c.`app_module_id` =
+        #{appModuleId}
+    </select>
+
+    <select id="getResourceListByResourceVoList" resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
+        SELECT ri.name,ri.`ip`,ri.id,rs.port,ri.type_name as typeName
+        FROM ${schemaName}.`resource_ipobject` ri
+        LEFT JOIN ${schemaName}.`resource_softwareservice` rs ON ri.`id` = rs.`id`
+        WHERE
+        <foreach collection="resourceList" item="resource" separator="or" open="(" close=")">
+            ri.ip = #{resource.ip}
+            <if test="resource.port != null">
+                and rs.port = #{resource.port}
+            </if>
+            <if test="resource.port == null">
+                and rs.port is null
+            </if>
+            <if test="resource.name != null">
+                and ri.name = #{resource.name}
+            </if>
+        </foreach>
+    </select>
+
+    <select id="getResourceIdListByAppSystemIdAndModuleIdAndEnvId"
+            resultType="java.lang.Long">
+        SELECT rse.resource_id
+        FROM ${schemaName}.resource_appsystem_appmodule raa
+                 JOIN ${schemaName}.resource_ipobject_appmodule ria ON raa.app_module_id = ria.app_module_id
+                 JOIN ${schemaName}.resource_softwareservice_env rse ON ria.resource_id = rse.resource_id
+        WHERE raa.resource_id = #{resourceVo.appSystemId}
+          AND ria.app_module_id = #{resourceVo.appModuleId}
+          AND rse.env_id = #{resourceVo.envId}
+        ORDER BY rse.resource_id DESC
+            LIMIT #{resourceVo.startNum}, #{resourceVo.pageSize}
+    </select>
+
+    <select id="getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId"
+            resultType="java.lang.Long">
+        SELECT rse.resource_id
+        FROM ${schemaName}.resource_appsystem_appmodule raa
+        JOIN ${schemaName}.resource_ipobject_appmodule ria ON raa.app_module_id = ria.app_module_id
+        JOIN ${schemaName}.resource_softwareservice_env rse ON ria.resource_id = rse.resource_id
+        JOIN ${schemaName}.resource_appinstance ra ON ra.id = rse.resource_id
+        <where>
+            <if test="resourceVo.appSystemId != null">
+                AND raa.resource_id = #{resourceVo.appSystemId}
+            </if>
+            <if test="resourceVo.appModuleId != null">
+                AND ria.app_module_id = #{resourceVo.appModuleId}
+            </if>
+            <if test="resourceVo.envId != null">
+                AND rse.env_id = #{resourceVo.envId}
+            </if>
+        </where>
+        ORDER BY rse.resource_id DESC
+        <if test="resourceVo.needPage">
+            LIMIT #{resourceVo.startNum}, #{resourceVo.pageSize}
+        </if>
+    </select>
+
+    <select id="getResourceIdByIpAndPortAndNameWithFilter"
+            parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
+        SELECT a.`id`
+        FROM ${schemaName}.`resource_ipobject_detail` a
+        LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
+        LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
+        LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+        WHERE a.`ip` = #{ip}
+        <include refid="resource_ipobject_where"/>
+        <choose>
+            <when test="port != null and port != ''">
+                AND a.`port` = #{port}
+            </when>
+            <otherwise>
+                AND a.`port` is null
+            </otherwise>
+        </choose>
+        <if test="name != null and name != ''">
+            and a.`name` = #{name}
+        </if>
+        limit 1
+    </select>
+
+    <select id="getResourceListByTypeIdListAndIpList"
+            resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
+        SELECT a.`id`, a.`ip`, a.`name`
+        FROM ${schemaName}.`resource_ipobject` a
+        WHERE a.`type_id` IN
+        <foreach collection="typeIdList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        AND a.`ip` IN
+        <foreach collection="ipList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <!--<select id="getResourceByIpAndPort" resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
+        SELECT a.`id`, a.`ip`, a.`name`
+        FROM ${schemaName}.`resource_ipobject` a
+        LEFT JOIN ${schemaName}.`resource_softwareservice` b on b.`id` = a.`id`
+        WHERE a.`ip` = #{ip} and
+        <if test="port == null">
+            b.`port` is null
+        </if>
+        <if test="port != null">
+            b.`port` = #{port}
+        </if>
+    </select>-->
+    <select id="getResourceByIpAndPortAndNameAndTypeName"
+            resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
+        SELECT
+        ri.NAME,
+        ri.`ip`,
+        ri.id,
+        rs.PORT,
+        ri.type_name AS typeName
+        FROM
+        ${schemaName}.`resource_ipobject` ri
+        LEFT JOIN ${schemaName}.`resource_softwareservice` rs ON ri.`id` = rs.`id`
+        WHERE
+        ri.ip = #{ip}
+        <if test="typeName != null and typeName != ''">
+            and ri.type_name = #{typeName}
+        </if>
+        <if test="port != null">
+            and rs.port = #{port}
+        </if>
+        <if test="port == null">
+            and rs.port is null
+        </if>
+        <if test="name != null and typeName != ''">
+            and ri.name = #{name}
+        </if>
+    </select>
+
+    <select id="getAppSystemById" resultMap="resourceCenterMap">
+        select `id`,
+               `name`,
+               `abbr_name`,
+               `type_id`,
+               `type_name`,
+               `type_label`,
+               `fcu`,
+               `fcd`,
+               `lcu`,
+               `lcd`,
+               `maintenance_window`,
+               `description`,
+               `inspect_status`,
+               `inspect_time`,
+               `monitor_status`,
+               `monitor_time`
+        from `${schemaName}`.`resource_appsystem`
+        where `id` = #{id}
+    </select>
+
+    <select id="getAppModuleById" resultMap="resourceCenterMap">
+        select `id`,
+               `name`,
+               `abbr_name`,
+               `fcu`,
+               `fcd`,
+               `lcu`,
+               `lcd`,
+               `maintenance_window`,
+               `description`,
+               `inspect_status`,
+               `inspect_time`,
+               `monitor_status`,
+               `monitor_time`
+        from `${schemaName}`.`resource_appmodule`
+        where `id` = #{id}
+    </select>
+
+    <select id="getAppEnvById" resultMap="resourceCenterMap">
+        select `id`,
+               `name`,
+               `description`
+        from `${schemaName}`.`resource_env`
+        where `id` = #{id}
+    </select>
+
+    <select id="searchAccountComponent" resultType="codedriver.framework.cmdb.dto.resourcecenter.AccountComponentVo">
+        SELECT
+        a.id as id,
+        a.name as name,
+        a.ip as ip,
+        b.id as accountId,
+        b.name as accountName,
+        b.account as account,
+        d.id as protocolId,
+        d.name as protocol,
+        d.port as port
+        FROM `cmdb_resourcecenter_resource_account` c
+        JOIN ${schemaName}.`resource_ipobject` a ON a.id = c.resource_id
+        JOIN `cmdb_resourcecenter_account` b ON b.id = c.account_id
+        JOIN `cmdb_resourcecenter_account_protocol` d ON d.id = b.protocol_id
+        <where>
+            <if test="accountComponentVo.keyword != null and accountComponentVo.keyword != ''">
+                a.`name` like concat('%', #{accountComponentVo.keyword}, '%') or a.`ip` =#{accountComponentVo.keyword}
+            </if>
+        </where>
+        LIMIT #{accountComponentVo.startNum}, #{accountComponentVo.pageSize}
+    </select>
+
+    <select id="searchAccountComponentCount" resultType="int">
+        SELECT
+        count(DISTINCT a.id)
+        FROM `cmdb_resourcecenter_resource_account` c
+        JOIN ${schemaName}.`resource_ipobject` a ON a.id = c.resource_id
+        JOIN `cmdb_resourcecenter_account` b ON b.id = c.account_id
+        JOIN `cmdb_resourcecenter_account_protocol` d ON d.id = b.protocol_id
+        <where>
+            <if test="accountComponentVo.keyword != null and accountComponentVo.keyword != ''">
+                a.`name` like concat('%', #{accountComponentVo.keyword}, '%') or a.`ip` =#{accountComponentVo.keyword}
+            </if>
+        </where>
+    </select>
+
 
 </mapper>
