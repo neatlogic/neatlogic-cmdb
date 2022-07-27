@@ -83,7 +83,11 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     ResourceVo getAppSystemById(@Param("id") Long id, @Param("schemaName") String schemaName);
 
+    ResourceVo getAppSystemByName(@Param("name") String name, @Param("schemaName") String schemaName);
+
     ResourceVo getAppModuleById(@Param("id") Long id, @Param("schemaName") String schemaName);
+
+    ResourceVo getAppModuleByName(@Param("name") String name, @Param("schemaName") String schemaName);
 
     ResourceVo getAppEnvById(@Param("id") Long id, @Param("schemaName") String schemaName);
 

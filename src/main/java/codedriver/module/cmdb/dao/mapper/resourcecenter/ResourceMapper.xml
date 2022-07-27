@@ -701,6 +701,43 @@
             </if>
         </where>
     </select>
+    <select id="getAppSystemByName" resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
+        select `id`,
+               `name`,
+               `abbr_name`,
+               `type_id`,
+               `type_name`,
+               `type_label`,
+               `fcu`,
+               `fcd`,
+               `lcu`,
+               `lcd`,
+               `maintenance_window`,
+               `description`,
+               `inspect_status`,
+               `inspect_time`,
+               `monitor_status`,
+               `monitor_time`
+        from `${schemaName}`.`resource_appsystem`
+        where `abbr_name` = #{name}
+    </select>
+    <select id="getAppModuleByName" resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
+        select `id`,
+               `name`,
+               `abbr_name`,
+               `fcu`,
+               `fcd`,
+               `lcu`,
+               `lcd`,
+               `maintenance_window`,
+               `description`,
+               `inspect_status`,
+               `inspect_time`,
+               `monitor_status`,
+               `monitor_time`
+        from `${schemaName}`.`resource_appmodule`
+        where `abbr_name` = #{name}
+    </select>
 
 
 </mapper>
