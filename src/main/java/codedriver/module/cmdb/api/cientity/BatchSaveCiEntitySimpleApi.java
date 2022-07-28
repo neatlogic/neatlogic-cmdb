@@ -62,7 +62,7 @@ public class BatchSaveCiEntitySimpleApi extends PrivateApiComponentBase implemen
 
     @Override
     public String getToken() {
-        return "/cmdb/cientity/batchsave";
+        return "/cmdb/cientity/simple/batchsave";
     }
 
     @Input({@Param(name = "ciEntityList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "配置项数据"), @Param(name = "needCommit", type = ApiParamType.BOOLEAN, isRequired = true, desc = "是否需要提交")})
