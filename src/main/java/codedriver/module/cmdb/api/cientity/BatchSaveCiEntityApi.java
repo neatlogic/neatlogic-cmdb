@@ -6,6 +6,7 @@
 package codedriver.module.cmdb.api.cientity;
 
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.crossover.IBatchSaveCiEntityApiCrossoverService;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.transaction.CiEntityTransactionVo;
@@ -37,7 +38,7 @@ import java.util.*;
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 @Transactional
-public class BatchSaveCiEntityApi extends PrivateApiComponentBase {
+public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBatchSaveCiEntityApiCrossoverService {
     //static Logger logger = LoggerFactory.getLogger(BatchSaveCiEntityApi.class);
 
     @Autowired
