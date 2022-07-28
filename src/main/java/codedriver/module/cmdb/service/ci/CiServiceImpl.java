@@ -6,6 +6,7 @@
 package codedriver.module.cmdb.service.ci;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
+import codedriver.framework.cmdb.crossover.ICiCrossoverService;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.CiViewVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
@@ -46,7 +47,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
-public class CiServiceImpl implements CiService {
+public class CiServiceImpl implements CiService, ICiCrossoverService {
     private final static Logger logger = LoggerFactory.getLogger(CiServiceImpl.class);
 
     @Resource
