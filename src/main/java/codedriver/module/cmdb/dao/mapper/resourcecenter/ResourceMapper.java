@@ -81,6 +81,8 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     ResourceVo getResourceByIpAndPortAndNameAndTypeName(@Param("schemaName") String dataDbName, @Param("ip") String ip, @Param("port") Integer port, @Param("name") String nodeName, @Param("typeName") String nodeType);
 
+    ResourceVo getResourceByIpAndPort(@Param("schemaName") String dataDbName, @Param("ip") String ip, @Param("port") Integer port);
+
     ResourceVo getAppSystemById(@Param("id") Long id, @Param("schemaName") String schemaName);
 
     ResourceVo getAppSystemByName(@Param("name") String name, @Param("schemaName") String schemaName);

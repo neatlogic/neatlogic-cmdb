@@ -934,6 +934,27 @@
         </if>
     </select>
 
+    <select id="getResourceByIpAndPort"
+            resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
+        SELECT
+        ri.NAME,
+        ri.`ip`,
+        ri.id,
+        rs.PORT,
+        ri.type_name AS typeName
+        FROM
+        ${schemaName}.`resource_ipobject` ri
+        LEFT JOIN ${schemaName}.`resource_softwareservice` rs ON ri.`id` = rs.`id`
+        WHERE
+        ri.ip = #{ip}
+        <if test="port != null">
+            and rs.port = #{port}
+        </if>
+        <if test="port == null">
+            and rs.port is null
+        </if>
+    </select>
+
     <select id="getAppSystemById" resultMap="resourceCenterMap">
         select `id`,
                `name`,
