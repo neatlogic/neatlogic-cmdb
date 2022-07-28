@@ -19,8 +19,8 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.MyApiComponent;
+import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentFactory;
-import codedriver.framework.restful.core.publicapi.PublicApiComponentBase;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import codedriver.module.cmdb.service.ci.CiService;
@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 @Service
 @OperationType(type = OperationTypeEnum.UPDATE)
 @Transactional
-public class BatchSaveCiEntityPublicApi extends PublicApiComponentBase implements IBatchSaveCiEntityPublicApiCrossoverService {
+public class BatchSaveCiEntitySimpleApi extends PrivateApiComponentBase implements IBatchSaveCiEntityPublicApiCrossoverService {
     @Resource
     private CiService ciService;
 
@@ -60,6 +60,10 @@ public class BatchSaveCiEntityPublicApi extends PublicApiComponentBase implement
         return null;
     }
 
+    @Override
+    public String getToken() {
+        return "/cmdb/cientity/batchsave";
+    }
 
     @Input({@Param(name = "ciEntityList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "配置项数据"), @Param(name = "needCommit", type = ApiParamType.BOOLEAN, isRequired = true, desc = "是否需要提交")})
     @Description(desc = "保存配置项接口，attrEntityData 仅需传 属性name:属性value。注意：默认为局部修改，如需要全部修改则需要在每个entity对象声明 editMode=global")
@@ -227,6 +231,53 @@ public class BatchSaveCiEntityPublicApi extends PublicApiComponentBase implement
         } else {
             return ciEntityMapper.getVirtualCiEntityBaseInfoByName(ciEntityVo);
         }
+    }
+
+    @Override
+    public JSONObject example() {
+        String json = "{\n" +
+                "  \"needCommit\": true,\n" +
+                "  \"ciEntityList\": [\n" +
+                "    {\n" +
+                "      \"editMode\": \"partial\",\n" +
+                "      \"name\": \"名称20220719\",\n" +
+                "      \"ciName\": \"APP\",\n" +
+                "      \"entityData\": {\n" +
+                "        \"owner\": [\n" +
+                "          \"杨化志(0008035)(运维管理中心)\"\n" +
+                "        ],\n" +
+                "        \"bg\": [\n" +
+                "          \"运维管理中心\"\n" +
+                "        ],\n" +
+                "        \"maintenance_window\": [\n" +
+                "          \"2022-07-20\"\n" +
+                "        ],\n" +
+                "        \"abbrName\": [\n" +
+                "          \"system20220719\"\n" +
+                "        ],\n" +
+                "        \"name\": [\n" +
+                "          \"名称20220719\"\n" +
+                "        ],\n" +
+                "        \"description\": [\n" +
+                "          \"描述s\"\n" +
+                "        ],\n" +
+                "        \"data_center\": [\n" +
+                "          \"MAIN\"\n" +
+                "        ],\n" +
+                "        \"APPIns\": [\n" +
+                "          \"a\"\n" +
+                "        ],\n" +
+                "        \"state\": [\n" +
+                "          \"下线中\"\n" +
+                "        ],\n" +
+                "        \"APPComponent\": [\n" +
+                "          \"20220719\"\n" +
+                "        ]\n" +
+                "      }\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}";
+        return JSONObject.parseObject(json);
     }
 
 }
