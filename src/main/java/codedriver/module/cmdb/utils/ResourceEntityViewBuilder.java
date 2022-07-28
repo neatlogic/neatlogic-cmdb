@@ -322,8 +322,8 @@ public class ResourceEntityViewBuilder {
             Map<String, SceneEntityJoinVo> relFromCiJoinMap = new HashMap<>();
             Map<String, SceneEntityJoinVo> relToCiJoinMap = new HashMap<>();
             //分析连接查询
-            Set<SceneEntityJoinVo> sceneEntityJoinSet = new HashSet<>();
-            sceneEntityVo.setJoinList(sceneEntityJoinSet);
+            List<SceneEntityJoinVo> sceneEntityJoinList = new ArrayList<>();
+            sceneEntityVo.setJoinList(sceneEntityJoinList);
             //先分析<join>标签内容，因为后面分析<attr>和<rel>标签时需要从<join>标签中补充默认信息
             List<Element> joinElementList = resourceElement.elements("join");
             for (Element joinElement : joinElementList) {
@@ -363,7 +363,9 @@ public class ResourceEntityViewBuilder {
                         } else {
                             throw new ResourceCenterConfigIrregularException(viewName, "attr", joinVo.getField(), "fromAttr");
                         }
-                        sceneEntityJoinSet.add(joinVo);
+                        if (!sceneEntityJoinList.contains(joinVo)) {
+                            sceneEntityJoinList.add(joinVo);
+                        }
                         attToCiJoinMap.put(toCi, joinVo);
                     }
                 }
@@ -413,7 +415,9 @@ public class ResourceEntityViewBuilder {
                             joinVo.setToCiVo(toCiVo);
                             relFromCiJoinMap.put(fromCi, joinVo);
                         }
-                        sceneEntityJoinSet.add(joinVo);
+                        if (!sceneEntityJoinList.contains(joinVo)) {
+                            sceneEntityJoinList.add(joinVo);
+                        }
                     }
                 }
             }
@@ -424,8 +428,8 @@ public class ResourceEntityViewBuilder {
                     attrElementList = getAllChildElement(resourceElement, "attr");
                     elementMap.put(viewName + "_attr", attrElementList);
                 }
-                Set<SceneEntityAttrVo> sceneEntityAttrSet = new HashSet<>();
-                sceneEntityVo.setAttrList(sceneEntityAttrSet);
+                List<SceneEntityAttrVo> sceneEntityAttrList = new ArrayList<>();
+                sceneEntityVo.setAttrList(sceneEntityAttrList);
                 for (Element attrElement : attrElementList) {
                     SceneEntityAttrVo entityAttrVo = convertToSceneEntityAttrVo(viewName, attrElement, JoinType.ATTR);
                     String fromCi = entityAttrVo.getFromCi();
@@ -484,7 +488,9 @@ public class ResourceEntityViewBuilder {
                             }
                         }
                     }
-                    sceneEntityAttrSet.add(entityAttrVo);
+                    if (!sceneEntityAttrList.contains(entityAttrVo)) {
+                        sceneEntityAttrList.add(entityAttrVo);
+                    }
                 }
                 List<Element> relElementList = elementMap.get(viewName + "_rel");
                 if (relElementList == null) {
@@ -583,7 +589,9 @@ public class ResourceEntityViewBuilder {
                             throw new ResourceCenterConfigIrregularException(viewName, "rel", entityAttrVo.getField(), "toAttr");
                         }
                     }
-                    sceneEntityAttrSet.add(entityAttrVo);
+                    if (!sceneEntityAttrList.contains(entityAttrVo)) {
+                        sceneEntityAttrList.add(entityAttrVo);
+                    }
                 }
             }
             sceneEntityVo.setStatus(Status.PENDING.getValue());
