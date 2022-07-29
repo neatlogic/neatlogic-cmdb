@@ -101,4 +101,8 @@ public interface ResourceAccountMapper extends IResourceAccountCrossoverMapper {
     int deleteResourceAccountByAccountId(Long accountId);
 
     int deleteAccountIpByIpList(@Param("ipList") List<String> resourceIpList);
+
+
+    //TODO 临时存放 应该放ResourceMapper
+    ResourceVo getAppEnvByName(@Param("name") String name, @Param("schemaName") String schemaName);
 }
