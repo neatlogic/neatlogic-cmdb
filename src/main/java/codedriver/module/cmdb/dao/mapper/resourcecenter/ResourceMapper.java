@@ -93,6 +93,8 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     ResourceVo getAppEnvById(@Param("id") Long id, @Param("schemaName") String schemaName);
 
+    ResourceVo getAppEnvByName(@Param("name") String name, @Param("schemaName") String schemaName);
+
     List<AccountComponentVo> searchAccountComponent(@Param("accountComponentVo") AccountComponentVo accountComponentVo, @Param("schemaName") String schemaName);
 
     Integer searchAccountComponentCount(@Param("accountComponentVo") AccountComponentVo accountComponentVo, @Param("schemaName") String schemaName);

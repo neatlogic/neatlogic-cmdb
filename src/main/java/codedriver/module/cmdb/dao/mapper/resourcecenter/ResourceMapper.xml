@@ -1203,5 +1203,12 @@
         from `${schemaName}`.`scence_appmodule`
         where `abbr_name` = #{name}
     </select>
+    <select id="getAppEnvByName" resultMap="resourceCenterMap">
+        select `id`,
+               `name`,
+               `description`
+        from `${schemaName}`.`resource_env`
+        where `name` = #{name}
+    </select>
 
 </mapper>
