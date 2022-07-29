@@ -187,7 +187,7 @@
             #{id}
         </foreach>
     </select>
-    <select id="getIpObjectResourceCountByAppModuleIdAndTypeIdAndEnvIdAndTypeId"
+    <!--<select id="getIpObjectResourceCountByAppModuleIdAndTypeIdAndEnvIdAndTypeIdOld"
             parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="int">
         SELECT COUNT(1)
         FROM ${schemaName}.`resource_ipobject` a
@@ -197,8 +197,8 @@
         JOIN ${schemaName}.`resource_ipobject_appmodule` i on i.`resource_id` = a.`id` AND i.`app_module_id` =
         #{appModuleId}
         WHERE a.`type_id` = #{typeId}
-    </select>
-    <select id="getIpObjectResourceCountByAppModuleIdAndTypeIdAndEnvIdAndTypeIdNew2"
+    </select>-->
+    <select id="getIpObjectResourceCountByAppModuleIdAndTypeIdAndEnvIdAndTypeId"
             parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="int">
         SELECT COUNT(1)
         FROM ${schemaName}.`scence_ipobject_env_appmodule` a
@@ -208,24 +208,24 @@
             AND a.`env_id` = #{envId}
         </if>
     </select>
+
+    <!--<select id="getIpObjectResourceIdListByAppModuleIdAndTypeIdAndEnvIdAndTypeIdOld"
+            parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
+        SELECT a.`id`
+        FROM ${schemaName}.`resource_ipobject` a
+        <if test="envId != null">
+            JOIN ${schemaName}.`resource_softwareservice_env` h on h.`resource_id` = a.`id` AND h.`env_id` = #{envId}
+        </if>
+        JOIN ${schemaName}.`resource_ipobject_appmodule` i on i.`resource_id` = a.`id` AND i.`app_module_id` =
+        #{appModuleId}
+        WHERE a.`type_id` = #{typeId}
+        ORDER BY a.`id` DESC
+        LIMIT #{startNum}, #{pageSize}
+    </select>-->
 
     <select id="getIpObjectResourceIdListByAppModuleIdAndTypeIdAndEnvIdAndTypeId"
             parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
         SELECT a.`id`
-        FROM ${schemaName}.`resource_ipobject` a
-        <if test="envId != null">
-            JOIN ${schemaName}.`resource_softwareservice_env` h on h.`resource_id` = a.`id` AND h.`env_id` = #{envId}
-        </if>
-        JOIN ${schemaName}.`resource_ipobject_appmodule` i on i.`resource_id` = a.`id` AND i.`app_module_id` =
-        #{appModuleId}
-        WHERE a.`type_id` = #{typeId}
-        ORDER BY a.`id` DESC
-        LIMIT #{startNum}, #{pageSize}
-    </select>
-
-    <select id="getIpObjectResourceIdListByAppModuleIdAndTypeIdAndEnvIdAndTypeIdNew2"
-            parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
-        SELECT a.`id`
         FROM ${schemaName}.`scence_ipobject_env_appmodule` a
         WHERE a.`type_id` = #{typeId}
         AND a.`app_module_id` = #{appModuleId}
@@ -235,7 +235,7 @@
         ORDER BY a.`id` DESC
         LIMIT #{startNum}, #{pageSize}
     </select>
-    <select id="getAppInstanceResourceListByIdList" resultMap="resourceCenterMap">
+    <!--<select id="getAppInstanceResourceListByIdListOld" resultMap="resourceCenterMap">
         SELECT
         a.`id`,
         a.`ip`,
@@ -268,9 +268,9 @@
         <foreach collection="idList" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
-    </select>
+    </select>-->
 
-    <select id="getAppInstanceResourceListByIdListNew" resultMap="resourceCenterMap">
+    <select id="getAppInstanceResourceListByIdList" resultMap="resourceCenterMap">
         SELECT
         a.`id`,
         a.`ip`,
@@ -337,7 +337,7 @@
         </foreach>
     </select>
 
-    <select id="getDbInstanceResourceListByIdList" resultMap="resourceCenterMap">
+    <!--<select id="getDbInstanceResourceListByIdListOld" resultMap="resourceCenterMap">
         SELECT
         a.`id`,
         a.`ip`,
@@ -370,8 +370,8 @@
         <foreach collection="idList" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
-    </select>
-    <select id="getDbInstanceResourceListByIdListNew" resultMap="resourceCenterMap">
+    </select>-->
+    <select id="getDbInstanceResourceListByIdList" resultMap="resourceCenterMap">
         SELECT
         a.`id`,
         a.`ip`,
@@ -407,7 +407,7 @@
         </foreach>
     </select>
 
-    <select id="getResourceIdByIpAndPortAndName"
+    <!--<select id="getResourceIdByIpAndPortAndNameOld"
             parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
         SELECT a.`id`
         FROM ${schemaName}.`resource_ipobject` a
@@ -425,8 +425,8 @@
             and a.`name` = #{name}
         </if>
         LIMIT 1
-    </select>
-    <select id="getResourceIdByIpAndPortAndNameNew2"
+    </select>-->
+    <select id="getResourceIdByIpAndPortAndName"
             parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
         SELECT a.`id`
         FROM ${schemaName}.`scence_ipobject_ip_port` a
@@ -445,16 +445,16 @@
         LIMIT 1
     </select>
 
-    <select id="getResourceByIdList" resultMap="resourceCenterMap">
+    <!--<select id="getResourceByIdListOld" resultMap="resourceCenterMap">
         SELECT a.`id`, a.`name`, a.`ip`,a.`type_id`
         FROM ${schemaName}.`resource_ipobject` a
         where a.`id` in
         <foreach collection="idList" item="id" separator="," close=")" open="(">
             #{id}
         </foreach>
-    </select>
+    </select>-->
 
-    <select id="getResourceByIdListNew2" resultMap="resourceCenterMap">
+    <select id="getResourceByIdList" resultMap="resourceCenterMap">
         SELECT a.`id`, a.`name`, a.`ip`,a.`type_id`
         FROM ${schemaName}.`scence_ipobject_ip_port` a
         where a.`id` in
@@ -462,29 +462,29 @@
             #{id}
         </foreach>
     </select>
+
+    <!--<select id="getResourceByIdOld" resultMap="resourceCenterMap">
+        SELECT a.`id`, a.`name`, a.`ip`
+        FROM ${schemaName}.`resource_ipobject` a
+        where a.`id` = #{id}
+    </select>-->
 
     <select id="getResourceById" resultMap="resourceCenterMap">
         SELECT a.`id`, a.`name`, a.`ip`
-        FROM ${schemaName}.`resource_ipobject` a
-        where a.`id` = #{id}
-    </select>
-
-    <select id="getResourceByIdNew2" resultMap="resourceCenterMap">
-        SELECT a.`id`, a.`name`, a.`ip`
         FROM ${schemaName}.`scence_ipobject_ip_port` a
         where a.`id` = #{id}
     </select>
 
-    <select id="getResourceFromSoftwareServiceByIdList" resultMap="resourceCenterMap">
+    <!--<select id="getResourceFromSoftwareServiceByIdListOld" resultMap="resourceCenterMap">
         SELECT a.`id`, a.`name`, a.`ip`, a.`port`
         FROM ${schemaName}.`resource_softwareservice` a
         where a.`id` in
         <foreach collection="idList" item="id" separator="," close=")" open="(">
             #{id}
         </foreach>
-    </select>
+    </select>-->
 
-    <select id="getResourceFromSoftwareServiceByIdListNew2" resultMap="resourceCenterMap">
+    <select id="getResourceFromSoftwareServiceByIdList" resultMap="resourceCenterMap">
         SELECT a.`id`, a.`name`, a.`ip`, a.`port`
         FROM ${schemaName}.`scence_softwareservice_ip_port` a
         where a.`id` in
@@ -493,29 +493,29 @@
         </foreach>
     </select>
 
-    <select id="checkResourceIsExists" resultType="int">
+    <!--<select id="checkResourceIsExistsOld" resultType="int">
         SELECT COUNT(DISTINCT a.`id`)
         FROM ${schemaName}.`resource_ipobject` a
         where a.`id` = #{id}
-    </select>
+    </select>-->
 
-    <select id="checkResourceIsExistsNew2" resultType="int">
+    <select id="checkResourceIsExists" resultType="int">
         SELECT COUNT(DISTINCT a.`id`)
         FROM ${schemaName}.`scence_ipobject_id` a
         where a.`id` = #{id}
     </select>
+
+    <!--<select id="checkResourceIdListIsExistsOld" resultType="java.lang.Long">
+        SELECT a.`id`
+        FROM ${schemaName}.`resource_ipobject` a
+        WHERE a.`id` IN
+        <foreach collection="idList" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>-->
 
     <select id="checkResourceIdListIsExists" resultType="java.lang.Long">
         SELECT a.`id`
-        FROM ${schemaName}.`resource_ipobject` a
-        WHERE a.`id` IN
-        <foreach collection="idList" item="id" open="(" separator="," close=")">
-            #{id}
-        </foreach>
-    </select>
-
-    <select id="checkResourceIdListIsExistsNew2" resultType="java.lang.Long">
-        SELECT a.`id`
         FROM ${schemaName}.`scence_ipobject_id` a
         WHERE a.`id` IN
         <foreach collection="idList" item="id" open="(" separator="," close=")">
@@ -523,7 +523,7 @@
         </foreach>
     </select>
 
-    <select id="getHasModuleAppSystemIdListByAppSystemIdList"
+    <!--<select id="getHasModuleAppSystemIdListByAppSystemIdListOld"
             parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultType="java.lang.Long">
         SELECT `resource_id` FROM `resource_appsystem_appmodule`
@@ -533,9 +533,9 @@
                 #{appSystemId}
             </foreach>
         </where>
-    </select>
+    </select>-->
 
-    <select id="getHasModuleAppSystemIdListByAppSystemIdListNew2"
+    <select id="getHasModuleAppSystemIdListByAppSystemIdList"
             parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultType="java.lang.Long">
         SELECT `id` FROM `scence_appsystem_appmodule`
@@ -546,7 +546,7 @@
         </foreach>
     </select>
 
-    <select id="getHasEnvAppSystemIdListByAppSystemIdList"
+    <!--<select id="getHasEnvAppSystemIdListByAppSystemIdListOld"
             parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultType="java.lang.Long">
         SELECT raa.resource_id
@@ -559,9 +559,9 @@
                 #{appSystemId}
             </foreach>
         </where>
-    </select>
+    </select>-->
 
-    <select id="getHasEnvAppSystemIdListByAppSystemIdListNew2"
+    <select id="getHasEnvAppSystemIdListByAppSystemIdList"
             parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultType="java.lang.Long">
         SELECT a.`app_system_id`
@@ -611,21 +611,21 @@
         LIMIT #{searchVo.startNum}, #{searchVo.pageSize}
     </select>
 
-    <select id="getAppSystemModuleIdListByAppSystemId"
+    <!--<select id="getAppSystemModuleIdListByAppSystemIdOld"
             resultType="java.lang.Long">
         SELECT `app_module_id` FROM `resource_appsystem_appmodule`
         <where>
             `resource_id` = #{appSystemId}
         </where>
-    </select>
+    </select>-->
 
-    <select id="getAppSystemModuleIdListByAppSystemIdNew2"
+    <select id="getAppSystemModuleIdListByAppSystemId"
             resultType="java.lang.Long">
         SELECT `app_module_id` FROM `scence_appsystem_appmodule`
         WHERE `id` = #{appSystemId}
     </select>
 
-    <select id="getAppModuleListByAppSystemIdList"
+    <!--<select id="getAppModuleListByAppSystemIdListOld"
             parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.ModuleVo">
         SELECT
@@ -640,9 +640,9 @@
                 #{appSystemId}
             </foreach>
         </where>
-    </select>
+    </select>-->
 
-    <select id="getAppModuleListByAppSystemIdListNew2"
+    <select id="getAppModuleListByAppSystemIdList"
             parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.ModuleVo">
         SELECT
@@ -660,7 +660,7 @@
         </where>
     </select>
 
-    <select id="getAppModuleListByIdListSimple" parameterType="java.util.List" resultMap="resourceCenterMap">
+    <!--<select id="getAppModuleListByIdListSimpleOld" parameterType="java.util.List" resultMap="resourceCenterMap">
         SELECT
         a.`id`, a.`name`, a.`abbr_name`, a.`maintenance_window`, a.`description`,
         a.`inspect_status`, a.`inspect_time`, a.`monitor_status`, a.`monitor_time`,
@@ -671,8 +671,8 @@
             #{id}
         </foreach>
         order by CONVERT(a.`name` USING gbk) COLLATE gbk_chinese_ci ASC
-    </select>
-    <select id="getAppModuleListByIdListSimpleNew2" parameterType="java.util.List" resultMap="resourceCenterMap">
+    </select>-->
+    <select id="getAppModuleListByIdListSimple" parameterType="java.util.List" resultMap="resourceCenterMap">
         SELECT
         a.`id`, a.`name`, a.`abbr_name`, a.`maintenance_window`, a.`description`,
         a.`inspect_status`, a.`inspect_time`, a.`monitor_status`, a.`monitor_time`,
@@ -685,7 +685,7 @@
         order by CONVERT(a.`name` USING gbk) COLLATE gbk_chinese_ci ASC
     </select>
 
-    <select id="getIpObjectResourceTypeIdListByAppModuleIdAndEnvId"
+    <!--<select id="getIpObjectResourceTypeIdListByAppModuleIdAndEnvIdOld"
             parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
         SELECT a.`type_id`
         FROM ${schemaName}.`resource_ipobject` a
@@ -694,8 +694,8 @@
         </if>
         JOIN ${schemaName}.`resource_ipobject_appmodule` c ON c.`resource_id` = a.`id` AND c.`app_module_id` =
         #{appModuleId}
-    </select>
-    <select id="getIpObjectResourceTypeIdListByAppModuleIdAndEnvIdNew2"
+    </select>-->
+    <select id="getIpObjectResourceTypeIdListByAppModuleIdAndEnvId"
             parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
         SELECT a.`type_id`
         FROM ${schemaName}.`scence_ipobject_env_appmodule` a
@@ -705,7 +705,7 @@
         </if>
     </select>
 
-    <select id="getResourceListByResourceVoList" resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
+    <!--<select id="getResourceListByResourceVoListOld" resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
         SELECT ri.name,ri.`ip`,ri.id,rs.port,ri.type_name as typeName
         FROM ${schemaName}.`resource_ipobject` ri
         LEFT JOIN ${schemaName}.`resource_softwareservice` rs ON ri.`id` = rs.`id`
@@ -722,8 +722,8 @@
                 and ri.name = #{resource.name}
             </if>
         </foreach>
-    </select>
-    <select id="getResourceListByResourceVoListNew2" resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
+    </select>-->
+    <select id="getResourceListByResourceVoList" resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
         SELECT a.name,a.`ip`,a.id,a.port,a.type_name as typeName
         FROM ${schemaName}.`scence_ipobject_ip_port` a
         WHERE
@@ -741,7 +741,7 @@
         </foreach>
     </select>
 
-    <select id="getResourceIdListByAppSystemIdAndModuleIdAndEnvId"
+    <!--<select id="getResourceIdListByAppSystemIdAndModuleIdAndEnvIdOld"
             resultType="java.lang.Long">
         SELECT rse.resource_id
         FROM ${schemaName}.resource_appsystem_appmodule raa
@@ -752,9 +752,9 @@
           AND rse.env_id = #{resourceVo.envId}
         ORDER BY rse.resource_id DESC
             LIMIT #{resourceVo.startNum}, #{resourceVo.pageSize}
-    </select>
+    </select>-->
 
-    <select id="getResourceIdListByAppSystemIdAndModuleIdAndEnvIdNew2"
+    <select id="getResourceIdListByAppSystemIdAndModuleIdAndEnvId"
             resultType="java.lang.Long">
         SELECT a.`id`
         FROM ${schemaName}.`scence_ipobject_env_appmodule_appsystem` a
@@ -765,7 +765,7 @@
         LIMIT #{resourceVo.startNum}, #{resourceVo.pageSize}
     </select>
 
-    <select id="getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId"
+    <!--<select id="getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvIdOld"
             resultType="java.lang.Long">
         SELECT rse.resource_id
         FROM ${schemaName}.resource_appsystem_appmodule raa
@@ -787,37 +787,31 @@
         <if test="resourceVo.needPage">
             LIMIT #{resourceVo.startNum}, #{resourceVo.pageSize}
         </if>
-    </select>
-    <select id="getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvIdNew2"
+    </select>-->
+    <select id="getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId"
             resultType="java.lang.Long">
         SELECT a.`id`
-        FROM ${schemaName}.`scence_ipobject_env_appmodule_appsystem` a
+        FROM ${schemaName}.`scence_appinstance_env_appmodule_appsystem` a
         <where>
-            <if test="typeIdList != null and typeIdList.size() > 0">
-                a.`type_id` IN
-                <foreach collection="typeIdList" item="typeId" open="(" separator="," close=")">
-                    #{typeId}
-                </foreach>
-            </if>
             <choose>
-                <when test="appSystemId != null">
-                    AND a.`app_system_id` = #{appSystemId}
+                <when test="resourceVo.appSystemId != null">
+                    AND a.`app_system_id` = #{resourceVo.appSystemId}
                 </when>
                 <otherwise>
                     AND a.`app_system_id` IS NOT NULL
                 </otherwise>
             </choose>
             <choose>
-                <when test="appModuleId != null">
-                    AND a.`app_module_id` = #{appModuleId}
+                <when test="resourceVo.appModuleId != null">
+                    AND a.`app_module_id` = #{resourceVo.appModuleId}
                 </when>
                 <otherwise>
                     AND a.`app_module_id` IS NOT NULL
                 </otherwise>
             </choose>
             <choose>
-                <when test="envId != null">
-                    AND a.`env_id` = #{envId}
+                <when test="resourceVo.envId != null">
+                    AND a.`env_id` = #{resourceVo.envId}
                 </when>
                 <otherwise>
                     AND a.`env_id` IS NOT NULL
@@ -825,8 +819,8 @@
             </choose>
         </where>
         ORDER BY a.`id` DESC
-        <if test="needPage">
-            LIMIT #{startNum}, #{pageSize}
+        <if test="resourceVo.needPage">
+            LIMIT #{resourceVo.startNum}, #{resourceVo.pageSize}
         </if>
     </select>
 
@@ -853,7 +847,7 @@
         limit 1
     </select>
 
-    <select id="getResourceListByTypeIdListAndIpList"
+    <!--<select id="getResourceListByTypeIdListAndIpListOld"
             resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
         SELECT a.`id`, a.`ip`, a.`name`
         FROM ${schemaName}.`resource_ipobject` a
@@ -865,9 +859,9 @@
         <foreach collection="ipList" item="item" open="(" separator="," close=")">
             #{item}
         </foreach>
-    </select>
+    </select>-->
 
-    <select id="getResourceListByTypeIdListAndIpListNew2"
+    <select id="getResourceListByTypeIdListAndIpList"
             resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
         SELECT a.`id`, a.`ip`, a.`name`
         FROM ${schemaName}.`scence_ipobject_ip_port` a
@@ -881,7 +875,7 @@
         </foreach>
     </select>
 
-    <select id="getResourceByIpAndPortAndNameAndTypeName"
+    <!--<select id="getResourceByIpAndPortAndNameAndTypeNameOld"
             resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
         SELECT
         ri.NAME,
@@ -903,12 +897,12 @@
         <if test="port == null">
             and rs.port is null
         </if>
-        <if test="name != null and typeName != ''">
+        <if test="name != null and name != ''">
             and ri.name = #{name}
         </if>
-    </select>
+    </select>-->
 
-    <select id="getResourceByIpAndPortAndNameAndTypeNameNew2"
+    <select id="getResourceByIpAndPortAndNameAndTypeName"
             resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
         SELECT
         a.`name`,
@@ -929,12 +923,12 @@
         <if test="port == null">
             and a.`port` is null
         </if>
-        <if test="name != null and typeName != ''">
+        <if test="name != null and name != ''">
             and a.`name` = #{name}
         </if>
     </select>
 
-    <select id="getResourceByIpAndPort"
+    <!--<select id="getResourceByIpAndPortOld"
             resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
         SELECT
         ri.NAME,
@@ -953,9 +947,29 @@
         <if test="port == null">
             and rs.port is null
         </if>
+    </select>-->
+
+    <select id="getResourceByIpAndPort"
+            resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
+        SELECT
+        a.`name`,
+        a.`ip`,
+        a.`id`,
+        a.`port`,
+        a.`type_name` AS typeName
+        FROM
+        ${schemaName}.`scence_ipobject_ip_port` a
+        WHERE
+        a.`ip` = #{ip}
+        <if test="port != null">
+            and a.`port` = #{port}
+        </if>
+        <if test="port == null">
+            and a.`port` is null
+        </if>
     </select>
 
-    <select id="getAppSystemById" resultMap="resourceCenterMap">
+    <!--<select id="getAppSystemByIdOld" resultMap="resourceCenterMap">
         select `id`,
                `name`,
                `abbr_name`,
@@ -974,9 +988,9 @@
                `monitor_time`
         from `${schemaName}`.`resource_appsystem`
         where `id` = #{id}
-    </select>
+    </select>-->
 
-    <select id="getAppSystemByIdNew2" resultMap="resourceCenterMap">
+    <select id="getAppSystemById" resultMap="resourceCenterMap">
         select `id`,
                `name`,
                `abbr_name`,
@@ -997,7 +1011,7 @@
         where `id` = #{id}
     </select>
 
-    <select id="getAppModuleById" resultMap="resourceCenterMap">
+    <!--<select id="getAppModuleByIdOld" resultMap="resourceCenterMap">
         select `id`,
                `name`,
                `abbr_name`,
@@ -1013,9 +1027,9 @@
                `monitor_time`
         from `${schemaName}`.`resource_appmodule`
         where `id` = #{id}
-    </select>
+    </select>-->
 
-    <select id="getAppModuleByIdNew2" resultMap="resourceCenterMap">
+    <select id="getAppModuleById" resultMap="resourceCenterMap">
         select `id`,
                `name`,
                `abbr_name`,
@@ -1041,7 +1055,7 @@
         where `id` = #{id}
     </select>
 
-    <select id="searchAccountComponent" resultType="codedriver.framework.cmdb.dto.resourcecenter.AccountComponentVo">
+    <!--<select id="searchAccountComponentOld" resultType="codedriver.framework.cmdb.dto.resourcecenter.AccountComponentVo">
         SELECT
         a.id as id,
         a.name as name,
@@ -1062,9 +1076,9 @@
             </if>
         </where>
         LIMIT #{accountComponentVo.startNum}, #{accountComponentVo.pageSize}
-    </select>
+    </select>-->
 
-    <select id="searchAccountComponentNew2" resultType="codedriver.framework.cmdb.dto.resourcecenter.AccountComponentVo">
+    <select id="searchAccountComponent" resultType="codedriver.framework.cmdb.dto.resourcecenter.AccountComponentVo">
         SELECT
         a.id as id,
         a.name as name,
@@ -1087,7 +1101,7 @@
         LIMIT #{accountComponentVo.startNum}, #{accountComponentVo.pageSize}
     </select>
 
-    <select id="searchAccountComponentCount" resultType="int">
+    <!--<select id="searchAccountComponentCountOld" resultType="int">
         SELECT
         count(DISTINCT a.id)
         FROM `cmdb_resourcecenter_resource_account` c
@@ -1099,8 +1113,23 @@
                 a.`name` like concat('%', #{accountComponentVo.keyword}, '%') or a.`ip` =#{accountComponentVo.keyword}
             </if>
         </where>
+    </select>-->
+
+    <select id="searchAccountComponentCount" resultType="int">
+        SELECT
+        count(DISTINCT a.id)
+        FROM `cmdb_resourcecenter_resource_account` c
+        JOIN ${schemaName}.`scence_ipobject_ip_port` a ON a.id = c.resource_id
+        JOIN `cmdb_resourcecenter_account` b ON b.id = c.account_id
+        JOIN `cmdb_resourcecenter_account_protocol` d ON d.id = b.protocol_id
+        <where>
+            <if test="accountComponentVo.keyword != null and accountComponentVo.keyword != ''">
+                a.`name` like concat('%', #{accountComponentVo.keyword}, '%') or a.`ip` =#{accountComponentVo.keyword}
+            </if>
+        </where>
     </select>
-    <select id="getAppSystemByName" resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
+
+    <!--<select id="getAppSystemByNameOld" resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
         select `id`,
                `name`,
                `abbr_name`,
@@ -1119,8 +1148,28 @@
                `monitor_time`
         from `${schemaName}`.`resource_appsystem`
         where `abbr_name` = #{name}
+    </select>-->
+    <select id="getAppSystemByName" resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
+        select `id`,
+               `name`,
+               `abbr_name`,
+               `type_id`,
+               `type_name`,
+               `type_label`,
+               `fcu`,
+               `fcd`,
+               `lcu`,
+               `lcd`,
+               `maintenance_window`,
+               `description`,
+               `inspect_status`,
+               `inspect_time`,
+               `monitor_status`,
+               `monitor_time`
+        from `${schemaName}`.`scence_appsystem`
+        where `abbr_name` = #{name}
     </select>
-    <select id="getAppModuleByName" resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
+    <!--<select id="getAppModuleByNameOld" resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
         select `id`,
                `name`,
                `abbr_name`,
@@ -1136,20 +1185,23 @@
                `monitor_time`
         from `${schemaName}`.`resource_appmodule`
         where `abbr_name` = #{name}
-    </select>
-
-    <select id="searchAccountComponentCountNew2" resultType="int">
-        SELECT
-        count(DISTINCT a.id)
-        FROM `cmdb_resourcecenter_resource_account` c
-        JOIN ${schemaName}.`scence_ipobject_ip_port` a ON a.id = c.resource_id
-        JOIN `cmdb_resourcecenter_account` b ON b.id = c.account_id
-        JOIN `cmdb_resourcecenter_account_protocol` d ON d.id = b.protocol_id
-        <where>
-            <if test="accountComponentVo.keyword != null and accountComponentVo.keyword != ''">
-                a.`name` like concat('%', #{accountComponentVo.keyword}, '%') or a.`ip` =#{accountComponentVo.keyword}
-            </if>
-        </where>
+    </select>-->
+    <select id="getAppModuleByName" resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
+        select `id`,
+               `name`,
+               `abbr_name`,
+               `fcu`,
+               `fcd`,
+               `lcu`,
+               `lcd`,
+               `maintenance_window`,
+               `description`,
+               `inspect_status`,
+               `inspect_time`,
+               `monitor_status`,
+               `monitor_time`
+        from `${schemaName}`.`scence_appmodule`
+        where `abbr_name` = #{name}
     </select>
 
 </mapper>
