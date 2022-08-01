@@ -55,6 +55,12 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     List<ResourceVo> searchAppModule(@Param("searchVo") ResourceSearchVo searchVo, @Param("schemaName") String schemaName);
 
+    int searchAppModuleCountNew(ResourceSearchVo searchVo);
+
+    List<Long> searchAppModuleIdListNew(ResourceSearchVo searchVo);
+
+    List<ResourceVo> searchAppModuleNew(@Param("idList") List<Long> idList, @Param("schemaName") String schemaName);
+
     List<Long> getAppSystemModuleIdListByAppSystemId(@Param("appSystemId") Long appSystemId);
 
     List<ModuleVo> getAppModuleListByAppSystemIdList(ResourceSearchVo searchVo);

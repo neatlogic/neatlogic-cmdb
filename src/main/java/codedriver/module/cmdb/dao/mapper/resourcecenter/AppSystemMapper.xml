@@ -48,10 +48,21 @@
         from ${schemaName}.resource_appsystem
         where `abbr_name` = #{abbrName}
     </select>
+    <select id="getAppSystemByAbbrNameNew" resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemVo">
+        select `name`, `id`
+        from ${schemaName}.`scence_appsystem`
+        where `abbr_name` = #{abbrName}
+    </select>
 
     <select id="getAppModuleByAbbrName" resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppModuleVo">
         select `name`, `id`
-        from ${schemaName}.resource_appmodule
+        from ${schemaName}.`resource_appmodule`
+        where `abbr_name` = #{abbrName}
+    </select>
+
+    <select id="getAppModuleByAbbrNameNew" resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppModuleVo">
+        select `name`, `id`
+        from ${schemaName}.`scence_appmodule`
         where `abbr_name` = #{abbrName}
     </select>
 
@@ -77,13 +88,54 @@
         </where>
     </select>
 
+    <select id="getAppEnvListByAppSystemIdAndModuleIdListNew"
+            resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo">
+        SELECT DISTINCT
+        rse.env_id AS envId,
+        rse.env_name AS envName
+        FROM ${schemaName}.`scence_ipobject_env_appmodule_appsystem` a
+        <where>
+            <choose>
+                <when test="appResourceId != null">
+                    and a.`app_system_id` = #{appResourceId}
+                </when>
+                <otherwise>
+                    and a.`app_system_id` is not null
+                </otherwise>
+            </choose>
+            <choose>
+            <when test="moduleResourceIdList != null and moduleResourceIdList.size() > 0">
+                and a.`app_module_id` in
+                <foreach collection="moduleResourceIdList" item="moduleResourceId" separator="," open="(" close=")">
+                    #{moduleResourceId}
+                </foreach>
+            </when>
+            <otherwise>
+                and a.`app_module_id` is not null
+            </otherwise>
+            </choose>
+        </where>
+    </select>
+
     <select id="getAppSystemIdListCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultType="java.lang.Integer">
-        SELECT count(distinct ra.`id`) FROM ${schemaName}.`resource_appsystem` ra
+        SELECT count(distinct ra.`id`)
+        FROM ${schemaName}.`resource_appsystem` ra
         left join ${schemaName}.`resource_appsystem_appmodule` raa on raa.resource_id = ra.id
         <where>
             <if test="keyword != null and keyword != ''">
                 ra.`name` LIKE concat('%', #{keyword}, '%') or raa.app_module_name LIKE concat('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="getAppSystemIdListCountNew" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+            resultType="java.lang.Integer">
+        SELECT count(distinct a.`id`)
+        FROM ${schemaName}.`scence_appsystem_appmodule` a
+        <where>
+            <if test="keyword != null and keyword != ''">
+                a.`name` LIKE concat('%', #{keyword}, '%') or a.`app_module_name` LIKE concat('%', #{keyword}, '%')
             </if>
         </where>
     </select>
@@ -94,6 +146,17 @@
         <where>
             <if test="keyword != null and keyword != ''">
                 raa.app_module_name LIKE concat('%',#{keyword}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="getAppSystemIdListByAppModuleNameNew" resultType="java.lang.Long">
+        SELECT a.`id` FROM
+        ${schemaName}.`scence_appsystem_appmodule` a
+        <where>
+            and a.`app_module_id` IS NOT NULL
+            <if test="keyword != null and keyword != ''">
+                a.app_module_name LIKE concat('%',#{keyword}, '%')
             </if>
         </where>
     </select>

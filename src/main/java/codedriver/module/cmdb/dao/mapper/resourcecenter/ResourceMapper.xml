@@ -611,6 +611,65 @@
         LIMIT #{searchVo.startNum}, #{searchVo.pageSize}
     </select>
 
+    <select id="searchAppModuleCountNew" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+            resultType="java.lang.Integer">
+        SELECT COUNT(DISTINCT a.`app_module_id`)
+        FROM ${schemaName}.`scence_appsystem_appmodule` a
+        WHERE a.`app_module_id` IS NOT NULL
+        <if test="keyword != null and keyword != ''">
+          AND a.`app_module_name` LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        <if test="appSystemIdList != null and appSystemIdList.size() > 0">
+            AND a.`id` IN
+            <foreach collection="appSystemIdList" item="appSystemId" open="(" separator="," close=")">
+                #{appSystemId}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="searchAppModuleIdListNew" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+            resultType="java.lang.Long">
+        SELECT DISTINCT a.`app_module_id`
+        FROM ${schemaName}.`scence_appsystem_appmodule` a
+        WHERE a.`app_module_id` IS NOT NULL
+        <if test="keyword != null and keyword != ''">
+          AND a.`app_module_name` LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        <if test="appSystemIdList != null and appSystemIdList.size() > 0">
+            AND a.`id` IN
+            <foreach collection="appSystemIdList" item="appSystemId" open="(" separator="," close=")">
+                #{appSystemId}
+            </foreach>
+        </if>
+        ORDER BY a.`app_module_id` DESC
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="searchAppModuleNew"
+            parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+            resultMap="resourceCenterMap">
+        SELECT
+               a.`id`,
+               a.`name`,
+               a.`abbr_name`,
+               a.`maintenance_window`,
+               a.`description`,
+               a.`inspect_status`,
+               a.`inspect_time`,
+               a.`monitor_status`,
+               a.`monitor_time`,
+               a.`fcu`,
+               a.`fcd`,
+               a.`lcu`,
+               a.`lcd`
+        FROM ${schemaName}.`scence_appmodule` a
+        WHERE a.`id` IN
+        <foreach collection="idList" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        ORDER BY a.`id` DESC
+    </select>
+
     <!--<select id="getAppSystemModuleIdListByAppSystemIdOld"
             resultType="java.lang.Long">
         SELECT `app_module_id` FROM `resource_appsystem_appmodule`
@@ -1207,7 +1266,7 @@
         select `id`,
                `name`,
                `description`
-        from `${schemaName}`.`resource_env`
+        from `${schemaName}`.`scence_env`
         where `name` = #{name}
     </select>
 
