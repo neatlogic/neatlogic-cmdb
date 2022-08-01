@@ -574,7 +574,7 @@
             </foreach>
     </select>
 
-    <sql id="searchAppModuleWhere">
+    <!--<sql id="searchAppModuleWhereOld">
         <where>
             <if test="searchVo.keyword != null and searchVo.keyword != ''">
                 AND a.`name` LIKE concat('%', #{searchVo.keyword}, '%')
@@ -590,28 +590,28 @@
                 )
             </if>
         </where>
-    </sql>
+    </sql>-->
 
-    <select id="searchAppModuleCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+    <!--<select id="searchAppModuleCountOld" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultType="java.lang.Integer">
         SELECT count(1)
         FROM ${schemaName}.`resource_appmodule` a
-        <include refid="searchAppModuleWhere"/>
-    </select>
+        <include refid="searchAppModuleWhereOld"/>
+    </select>-->
 
-    <select id="searchAppModule"
+    <!--<select id="searchAppModuleOld"
             parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultMap="resourceCenterMap">
         SELECT a.`id`, a.`name`, a.`abbr_name`, a.`maintenance_window`, a.`description`,
         a.`inspect_status`, a.`inspect_time`, a.`monitor_status`, a.`monitor_time`,
         a.`fcu`, a.`fcd`, a.`lcu`, a.`lcd`
         FROM ${schemaName}.`resource_appmodule` a
-        <include refid="searchAppModuleWhere"/>
+        <include refid="searchAppModuleWhereOld"/>
         ORDER BY `id` DESC
         LIMIT #{searchVo.startNum}, #{searchVo.pageSize}
-    </select>
+    </select>-->
 
-    <select id="searchAppModuleCountNew" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+    <select id="searchAppModuleCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultType="java.lang.Integer">
         SELECT COUNT(DISTINCT a.`app_module_id`)
         FROM ${schemaName}.`scence_appsystem_appmodule` a
@@ -627,7 +627,7 @@
         </if>
     </select>
 
-    <select id="searchAppModuleIdListNew" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+    <select id="searchAppModuleIdList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultType="java.lang.Long">
         SELECT DISTINCT a.`app_module_id`
         FROM ${schemaName}.`scence_appsystem_appmodule` a
@@ -645,7 +645,7 @@
         LIMIT #{startNum}, #{pageSize}
     </select>
 
-    <select id="searchAppModuleNew"
+    <select id="searchAppModule"
             parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultMap="resourceCenterMap">
         SELECT

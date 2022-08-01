@@ -18,6 +18,7 @@ import codedriver.framework.util.TableResultUtil;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -66,24 +67,14 @@ public class AppModuleListApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         ResourceSearchVo searchVo = paramObj.toJavaObject(ResourceSearchVo.class);
-        int count = resourceMapper.searchAppModuleCount(searchVo, TenantContext.get().getDataDbName());
-        int count2 = resourceMapper.searchAppModuleCountNew(searchVo);
-        System.out.println(count);
-        System.out.println(count2);
-        if (!Objects.equals(count, count2)) {
-            System.out.println("a");
-        }
+        int count = resourceMapper.searchAppModuleCount(searchVo);
         if (count > 0) {
             searchVo.setRowNum(count);
-            List<Long> idList = resourceMapper.searchAppModuleIdListNew(searchVo);
-            List<ResourceVo> resourceList2 = resourceMapper.searchAppModuleNew(idList, TenantContext.get().getDataDbName());
-            List<ResourceVo> resourceList = resourceMapper.searchAppModule(searchVo, TenantContext.get().getDataDbName());
-            System.out.println(JSONObject.toJSONString(resourceList));
-            System.out.println(JSONObject.toJSONString(resourceList2));
-            if (!Objects.equals(JSONObject.toJSONString(resourceList), JSONObject.toJSONString(resourceList2))) {
-                System.out.println("b");
+            List<Long> idList = resourceMapper.searchAppModuleIdList(searchVo);
+            if (CollectionUtils.isNotEmpty(idList)) {
+                List<ResourceVo> resourceList = resourceMapper.searchAppModule(idList, TenantContext.get().getDataDbName());
+                return TableResultUtil.getResult(resourceList, searchVo);
             }
-            return TableResultUtil.getResult(resourceList, searchVo);
         }
         return null;
     }
