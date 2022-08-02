@@ -18,9 +18,11 @@ import codedriver.framework.util.TableResultUtil;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @author linbq
@@ -64,10 +66,14 @@ public class AppModuleListApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         ResourceSearchVo searchVo = paramObj.toJavaObject(ResourceSearchVo.class);
-        int count = resourceMapper.searchAppModuleCount(searchVo, TenantContext.get().getDataDbName());
+        int count = resourceMapper.searchAppModuleCount(searchVo);
         if (count > 0) {
             searchVo.setRowNum(count);
-            return TableResultUtil.getResult(resourceMapper.searchAppModule(searchVo, TenantContext.get().getDataDbName()), searchVo);
+            List<Long> idList = resourceMapper.searchAppModuleIdList(searchVo);
+            if (CollectionUtils.isNotEmpty(idList)) {
+                List<ResourceVo> resourceList = resourceMapper.searchAppModule(idList, TenantContext.get().getDataDbName());
+                return TableResultUtil.getResult(resourceList, searchVo);
+            }
         }
         return null;
     }
