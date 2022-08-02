@@ -63,9 +63,9 @@
         SELECT a.`id` FROM
         ${schemaName}.`scence_appsystem_appmodule` a
         <where>
-            and a.`app_module_id` IS NOT NULL
+             a.`app_module_id` IS NOT NULL
             <if test="keyword != null and keyword != ''">
-                a.`app_module_name` LIKE concat('%',#{keyword}, '%')
+              and  a.`app_module_name` LIKE concat('%',#{keyword}, '%')
             </if>
         </where>
     </select>
