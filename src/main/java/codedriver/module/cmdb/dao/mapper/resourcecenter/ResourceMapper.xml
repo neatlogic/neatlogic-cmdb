@@ -212,7 +212,7 @@
         LIMIT #{startNum}, #{pageSize}
     </select>
 
-    <select id="getAppInstanceResourceListByIdList" resultMap="resourceCenterMap">
+    <sql id="getAppInstanceResourceListByIdList">
         SELECT
         a.`id`,
         a.`ip`,
@@ -246,6 +246,17 @@
         <foreach collection="idList" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
+    </sql>
+
+    <select id="getAppInstanceResourceListByIdList" resultMap="resourceCenterMap">
+        <include refid="getAppInstanceResourceListByIdList"/>
+    </select>
+
+    <select id="getAppInstanceResourceListByIdListAndKeyword" resultMap="resourceCenterMap">
+        <include refid="getAppInstanceResourceListByIdList"/>
+        <if test="keyword != null and keyword != ''">
+            and (a.`ip` like CONCAT('%', #{keyword}, '%') or a.`name` like CONCAT('%', #{keyword}, '%'))
+        </if>
     </select>
 
     <select id="getAppInstanceResourceListByIdListSimple" resultMap="resourceCenterMap">
