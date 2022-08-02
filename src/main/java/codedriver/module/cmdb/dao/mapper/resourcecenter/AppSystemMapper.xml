@@ -22,8 +22,8 @@
     <select id="getAppEnvListByAppSystemIdAndModuleIdList"
             resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo">
         SELECT DISTINCT
-        rse.env_id AS envId,
-        rse.env_name AS envName
+        a.env_id AS envId,
+        a.env_name AS envName
         FROM ${schemaName}.`scence_ipobject_env_appmodule_appsystem` a
         <where>
             <choose>
