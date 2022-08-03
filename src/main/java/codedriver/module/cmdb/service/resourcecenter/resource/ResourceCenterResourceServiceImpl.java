@@ -337,4 +337,25 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         }
         return null;
     }
+
+    /**
+     * 添加标签和账号信息
+     * @param resourceList
+     */
+    public void addTagAndAccountInformation (List<ResourceVo> resourceList) {
+        List<Long> idList = resourceList.stream().map(ResourceVo::getId).collect(Collectors.toList());
+        Map<Long, List<AccountVo>> accountMap = getResourceAccountByResourceIdList(idList);
+        Map<Long, List<TagVo>> tagMap = getResourceTagByResourceIdList(idList);
+        for (ResourceVo resourceVo : resourceList) {
+            Long id = resourceVo.getId();
+            List<AccountVo> accountList = accountMap.get(id);
+            if (CollectionUtils.isNotEmpty(accountList)) {
+                resourceVo.setAccountList(accountList);
+            }
+            List<TagVo> tagList = tagMap.get(id);
+            if (CollectionUtils.isNotEmpty(tagList)) {
+                resourceVo.setTagList(tagList.stream().map(TagVo::getName).collect(Collectors.toList()));
+            }
+        }
+    }
 }

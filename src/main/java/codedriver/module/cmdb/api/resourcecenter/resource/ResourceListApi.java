@@ -115,19 +115,7 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
         }
         resourceList = resourceMapper.getResourceListByIdList(idList, TenantContext.get().getDataDbName());
         if (CollectionUtils.isNotEmpty(resourceList)) {
-            Map<Long, List<AccountVo>> accountMap = resourceCenterResourceService.getResourceAccountByResourceIdList(idList);
-            Map<Long, List<TagVo>> tagMap = resourceCenterResourceService.getResourceTagByResourceIdList(idList);
-            for (ResourceVo resourceVo : resourceList) {
-                Long id = resourceVo.getId();
-                List<AccountVo> accountList = accountMap.get(id);
-                if (CollectionUtils.isNotEmpty(accountList)) {
-                    resourceVo.setAccountList(accountList);
-                }
-                List<TagVo> tagList = tagMap.get(id);
-                if (CollectionUtils.isNotEmpty(tagList)) {
-                    resourceVo.setTagList(tagList.stream().map(TagVo::getName).collect(Collectors.toList()));
-                }
-            }
+            resourceCenterResourceService.addTagAndAccountInformation(resourceList);
         }
         return TableResultUtil.getResult(resourceList, searchVo);
     }
