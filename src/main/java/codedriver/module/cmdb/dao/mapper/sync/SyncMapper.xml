@@ -6,12 +6,12 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.sync.SyncMapper">
-
-
     <select id="getPassiveSyncCiCollectionByCiId" parameterType="java.lang.Long"
             resultMap="syncCiCollectionResultMap">
         SELECT a.id,
                a.ci_id           AS ciId,
+               cc.name           AS ciName,
+               cc.label          AS ciLabel,
                a.collection_name AS collectionName,
                a.parent_key      AS parentKey,
                a.collect_mode    AS collectMode,
@@ -28,6 +28,7 @@
                csm.action        as relAction
         FROM cmdb_sync_ci_collection a
                  JOIN cmdb_sync_mapping csm on a.id = csm.ci_collection_id
+                 JOIN cmdb_ci cc ON a.ci_id = cc.id
                  LEFT JOIN cmdb_sync_unique csu on a.id = csu.ci_collection_id
         WHERE a.ci_id = #{value}
           AND a.collect_mode = 'passive'
@@ -214,6 +215,8 @@
     <resultMap id="syncCiCollectionResultMap" type="codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo">
         <id property="id" column="id"/>
         <result property="ciId" column="ciId"/>
+        <result property="ciName" column="ciName"/>
+        <result property="ciLabel" column="ciLabel"/>
         <result property="collectionName" column="collectionName"/>
         <result property="collectMode" column="collectMode"/>
         <result property="isAutoCommit" column="isAutoCommit"/>
@@ -243,6 +246,8 @@
             resultMap="syncCiCollectionResultMap">
         SELECT a.id,
                a.ci_id           AS ciId,
+               cc.name           AS ciName,
+               cc.label          AS ciLabel,
                a.collection_name AS collectionName,
                a.collect_mode    AS collectMode,
                a.is_auto_commit  AS isAutoCommit,
@@ -263,6 +268,7 @@
                csm.action        as relAction
         FROM cmdb_sync_ci_collection a
                  JOIN cmdb_sync_mapping csm on a.id = csm.ci_collection_id
+                 JOIN cmdb_ci cc ON a.ci_id = cc.id
                  LEFT JOIN cmdb_sync_unique csu on a.id = csu.ci_collection_id
         WHERE a.collection_name = #{value}
     </select>
@@ -271,6 +277,8 @@
             resultMap="syncCiCollectionResultMap">
         SELECT a.id,
                a.ci_id           AS ciId,
+               cc.name           AS ciName,
+               cc.label          AS ciLabel,
                a.collection_name AS collectionName,
                a.collect_mode    AS collectMode,
                a.is_auto_commit  AS isAutoCommit,
@@ -291,6 +299,7 @@
                csm.action        as relAction
         FROM cmdb_sync_ci_collection a
                  JOIN cmdb_sync_mapping csm on a.id = csm.ci_collection_id
+                 JOIN cmdb_ci cc ON a.ci_id = cc.id
                  LEFT JOIN cmdb_sync_unique csu on a.id = csu.ci_collection_id
         WHERE a.ci_id = #{ciId}
           AND a.collection_name = #{collectionName}
@@ -300,34 +309,39 @@
             resultMap="syncCiCollectionResultMap">
         SELECT a.id,
                a.ci_id           AS ciId,
+               cc.name           AS ciName,
+               cc.label          AS ciLabel,
                a.collection_name AS collectionName,
                a.collect_mode    AS collectMode,
                a.is_auto_commit  AS isAutoCommit,
-               a.last_sync_date AS lastSyncDate,
-               a.match_mode     AS matchMode,
-               a.parent_key     AS parentKey,
+               a.last_sync_date  AS lastSyncDate,
+               a.match_mode      AS matchMode,
+               a.parent_key      AS parentKey,
                a.description,
-               a.fcd            AS fcd,
-               a.fcu            AS fcu,
-               a.lcd            AS lcd,
-               a.lcu            AS lcu,
-               csm.id           AS mappingId,
-               csm.attr_id      AS attrId,
-               csm.rel_id       AS relId,
+               a.fcd             AS fcd,
+               a.fcu             AS fcu,
+               a.lcd             AS lcd,
+               a.lcu             AS lcu,
+               csm.id            AS mappingId,
+               csm.attr_id       AS attrId,
+               csm.rel_id        AS relId,
                csm.direction,
                csm.field,
-               csu.attr_id      AS uniqueAttrId,
-               csm.action       as relAction
+               csu.attr_id       AS uniqueAttrId,
+               csm.action        as relAction
         FROM cmdb_sync_ci_collection a
                  JOIN cmdb_sync_mapping csm on a.id = csm.ci_collection_id
+                 JOIN cmdb_ci cc ON a.ci_id = cc.id
                  LEFT JOIN cmdb_sync_unique csu on a.id = csu.ci_collection_id
         WHERE a.id = #{value}
     </select>
 
-    <select id="getSyncCiCollectionByIdList"
-            resultMap="syncCiCollectionResultMap">
-        SELECT a.id,
+    <select id="getSyncCiCollectionByIdList" resultMap="syncCiCollectionResultMap">
+        SELECT
+        a.id,
         a.ci_id AS ciId,
+        cc.name AS ciName,
+        cc.label AS ciLabel,
         a.collection_name AS collectionName,
         a.collect_mode AS collectMode,
         a.is_auto_commit AS isAutoCommit,
@@ -348,6 +362,7 @@
         csm.action as relAction
         FROM cmdb_sync_ci_collection a
         JOIN cmdb_sync_mapping csm on a.id = csm.ci_collection_id
+        JOIN cmdb_ci cc ON a.ci_id = cc.id
         LEFT JOIN cmdb_sync_unique csu on a.id = csu.ci_collection_id
         WHERE a.id in
         <foreach collection="idList" item="item" open="(" close=")" separator=",">#{item}</foreach>
