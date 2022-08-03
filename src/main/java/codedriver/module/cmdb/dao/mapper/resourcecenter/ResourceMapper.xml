@@ -501,7 +501,7 @@
         <foreach collection="idList" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
-        order by CONVERT(a.`name` USING gbk) COLLATE gbk_chinese_ci ASC
+        order by CONVERT(a.abbr_name USING gbk) COLLATE gbk_chinese_ci ASC
     </select>
 
     <select id="getIpObjectResourceTypeIdListByAppModuleIdAndEnvId"
