@@ -81,4 +81,10 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
      * @return
      */
     public String getResourceTypeName(List<CiVo> resourceCiVoList, CiVo resourceCiVo);
+
+    /**
+     * 添加标签和账号信息
+     * @param resourceList
+     */
+    void addTagAndAccountInformation (List<ResourceVo> resourceList);
 }

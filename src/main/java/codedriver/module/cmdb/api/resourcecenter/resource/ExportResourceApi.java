@@ -124,7 +124,7 @@ public class ExportResourceApi extends PrivateBinaryStreamApiComponentBase {
         if (CollectionUtils.isNotEmpty(defaultValue)) {
             List<Long> idList = defaultValue.toJavaList(Long.class);
             resourceList = resourceMapper.getResourceListByIdList(idList, TenantContext.get().getDataDbName());
-            addTagAndAccountInformation(resourceList);
+            resourceCenterResourceService.addTagAndAccountInformation(resourceList);
             for (ResourceVo resourceVo : resourceList) {
                 Map<String, Object> dataMap = resourceConvertDataMap(resourceVo);
                 sheetBuilder.addData(dataMap);
@@ -141,7 +141,7 @@ public class ExportResourceApi extends PrivateBinaryStreamApiComponentBase {
                     List<Long> idList = resourceMapper.getResourceIdList(searchVo);
                     if (CollectionUtils.isNotEmpty(idList)) {
                         resourceList = resourceMapper.getResourceListByIdList(idList, TenantContext.get().getDataDbName());
-                        addTagAndAccountInformation(resourceList);
+                        resourceCenterResourceService.addTagAndAccountInformation(resourceList);
                         for (ResourceVo resourceVo : resourceList) {
                             Map<String, Object> dataMap = resourceConvertDataMap(resourceVo);
                             sheetBuilder.addData(dataMap);
@@ -156,27 +156,6 @@ public class ExportResourceApi extends PrivateBinaryStreamApiComponentBase {
             logger.error(e.getMessage(), e);
         }
         return null;
-    }
-
-    /**
-     * 添加标签和账号信息
-     * @param resourceList
-     */
-    private void addTagAndAccountInformation (List<ResourceVo> resourceList) {
-        List<Long> idList = resourceList.stream().map(ResourceVo::getId).collect(Collectors.toList());
-        Map<Long, List<AccountVo>> accountMap = resourceCenterResourceService.getResourceAccountByResourceIdList(idList);
-        Map<Long, List<TagVo>> tagMap = resourceCenterResourceService.getResourceTagByResourceIdList(idList);
-        for (ResourceVo resourceVo : resourceList) {
-            Long id = resourceVo.getId();
-            List<AccountVo> accountList = accountMap.get(id);
-            if (CollectionUtils.isNotEmpty(accountList)) {
-                resourceVo.setAccountList(accountList);
-            }
-            List<TagVo> tagList = tagMap.get(id);
-            if (CollectionUtils.isNotEmpty(tagList)) {
-                resourceVo.setTagList(tagList.stream().map(TagVo::getName).collect(Collectors.toList()));
-            }
-        }
     }
 
     /**
