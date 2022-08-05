@@ -8,15 +8,27 @@
 <mapper namespace="codedriver.module.cmdb.dao.mapper.resourcecenter.AppSystemMapper">
 
     <select id="getAppSystemByAbbrName" resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemVo">
-        select `name`, `id`
+        select `name`, `id`, `abbr_name` as abbrName
         from ${schemaName}.`scence_appsystem`
         where `abbr_name` = #{abbrName}
     </select>
 
+    <select id="getAppSystemById" resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemVo">
+        select `name`, `id`, `abbr_name` as abbrName
+        from ${schemaName}.`scence_appsystem`
+        where `id` = #{id}
+    </select>
+
     <select id="getAppModuleByAbbrName" resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppModuleVo">
-        select `name`, `id`
+        select `name`, `id`, `abbr_name` as abbrName
         from ${schemaName}.`scence_appmodule`
         where `abbr_name` = #{abbrName}
+    </select>
+
+    <select id="getAppModuleById" resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppModuleVo">
+        select `name`, `id`, `abbr_name` as abbrName
+        from ${schemaName}.`scence_appmodule`
+        where `id` = #{id}
     </select>
 
     <select id="getAppEnvListByAppSystemIdAndModuleIdList"
@@ -35,15 +47,15 @@
                 </otherwise>
             </choose>
             <choose>
-            <when test="moduleResourceIdList != null and moduleResourceIdList.size() > 0">
-                and a.`app_module_id` in
-                <foreach collection="moduleResourceIdList" item="moduleResourceId" separator="," open="(" close=")">
-                    #{moduleResourceId}
-                </foreach>
-            </when>
-            <otherwise>
-                and a.`app_module_id` is not null
-            </otherwise>
+                <when test="moduleResourceIdList != null and moduleResourceIdList.size() > 0">
+                    and a.`app_module_id` in
+                    <foreach collection="moduleResourceIdList" item="moduleResourceId" separator="," open="(" close=")">
+                        #{moduleResourceId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    and a.`app_module_id` is not null
+                </otherwise>
             </choose>
         </where>
     </select>
@@ -63,9 +75,9 @@
         SELECT a.`id` FROM
         ${schemaName}.`scence_appsystem_appmodule` a
         <where>
-             a.`app_module_id` IS NOT NULL
+            a.`app_module_id` IS NOT NULL
             <if test="keyword != null and keyword != ''">
-              and  a.`app_module_name` LIKE concat('%',#{keyword}, '%')
+                and a.`app_module_name` LIKE concat('%',#{keyword}, '%')
             </if>
         </where>
     </select>
