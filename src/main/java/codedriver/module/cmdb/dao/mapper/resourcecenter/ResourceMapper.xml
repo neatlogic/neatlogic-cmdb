@@ -458,8 +458,16 @@
                a.`fcu`,
                a.`fcd`,
                a.`lcu`,
-               a.`lcd`
-        FROM ${schemaName}.`scence_appmodule` a
+               a.`lcd`,
+               a.`app_system_id`,
+               a.`app_system_name`,
+               a.`app_system_abbr_name`,
+               a.`bg_id`,
+               a.`bg_name`,
+               a.`user_id`,
+               a.`user_uuid`,
+               a.`user_name`
+        FROM ${schemaName}.`scence_appmodule_appsystem` a
         WHERE a.`id` IN
         <foreach collection="idList" item="id" open="(" separator="," close=")">
             #{id}
