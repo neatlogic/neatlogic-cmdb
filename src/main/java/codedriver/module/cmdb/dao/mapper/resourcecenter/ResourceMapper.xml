@@ -481,6 +481,22 @@
         WHERE `id` = #{appSystemId}
     </select>
 
+    <select id="getAppSystemModuleIdListByAppSystemIdAndAppModuleIdList"
+            resultType="java.lang.Long">
+        SELECT `app_module_id` FROM `scence_appsystem_appmodule`
+       <where>
+        <if test="appSystemId != null">
+            And `id` = #{appSystemId}
+        </if>
+        <if test="appModuleIdList != null and appModuleIdList.size() > 0">
+            And app_module_id in
+            <foreach collection="appModuleIdList" open="(" separator="," close=")" item="moduleId">
+                #{moduleId}
+            </foreach>
+        </if>
+       </where>
+    </select>
+
     <select id="getAppModuleListByAppSystemIdList"
             parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.ModuleVo">
