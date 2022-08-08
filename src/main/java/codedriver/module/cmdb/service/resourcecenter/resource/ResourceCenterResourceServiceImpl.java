@@ -130,7 +130,10 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             List<AccountVo> accountList = resourceAccountMapper.getAccountListByIdList(new ArrayList<>(accountIdSet));
             Map<Long, AccountVo> accountMap = accountList.stream().collect(Collectors.toMap(AccountVo::getId, e -> e));
             for (ResourceAccountVo resourceAccountVo : resourceAccountVoList) {
-                resourceAccountVoMap.computeIfAbsent(resourceAccountVo.getResourceId(), k -> new ArrayList<>()).add(accountMap.get(resourceAccountVo.getAccountId()));
+                AccountVo accountVo = accountMap.get(resourceAccountVo.getAccountId());
+                if (accountVo != null) {
+                    resourceAccountVoMap.computeIfAbsent(resourceAccountVo.getResourceId(), k -> new ArrayList<>()).add(accountVo);
+                }
             }
         }
         return resourceAccountVoMap;
