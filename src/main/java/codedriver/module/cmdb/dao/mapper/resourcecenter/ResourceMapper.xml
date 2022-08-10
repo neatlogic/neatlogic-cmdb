@@ -817,4 +817,12 @@
         where `name` = #{name}
     </select>
 
+    <select id="getAllAppEnv"
+            resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo">
+        select `id` as envId,
+               `name` as envName,
+               `env_seq_no` as envSeqNo
+        from `${schemaName}`.`scence_env`
+    </select>
+
 </mapper>
