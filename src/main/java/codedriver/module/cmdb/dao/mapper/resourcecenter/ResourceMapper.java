@@ -9,6 +9,7 @@ import codedriver.framework.cmdb.crossover.IResourceCrossoverMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountComponentVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
+import codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo;
 import codedriver.framework.cmdb.dto.resourcecenter.entity.ModuleVo;
 import com.alibaba.fastjson.JSONArray;
 import org.apache.ibatis.annotations.Param;
@@ -101,6 +102,8 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
     ResourceVo getAppEnvById(@Param("id") Long id, @Param("schemaName") String schemaName);
 
     ResourceVo getAppEnvByName(@Param("name") String name, @Param("schemaName") String schemaName);
+
+    List<AppEnvironmentVo> getAllAppEnv(@Param("schemaName") String schemaName);
 
     List<AccountComponentVo> searchAccountComponent(@Param("accountComponentVo") AccountComponentVo accountComponentVo, @Param("schemaName") String schemaName);
 
