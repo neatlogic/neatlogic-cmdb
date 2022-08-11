@@ -825,4 +825,128 @@
         from `${schemaName}`.`scence_env`
     </select>
 
+    <select id="searchAppEnvCount" parameterType="codedriver.framework.common.dto.BasePageVo" resultType="int">
+        SELECT
+            COUNT(1)
+        FROM `scence_env`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` LIKE CONCAT('%', #{keyword}, '%')
+                OR `description` LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="searchAppEnvIdList" parameterType="codedriver.framework.common.dto.BasePageVo" resultType="java.lang.Long">
+        SELECT
+            `id`
+        FROM `scence_env`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` LIKE CONCAT('%', #{keyword}, '%')
+                OR `description` LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="searchAppEnvListByIdList" parameterType="java.lang.Long" resultMap="resourceCenterMap">
+        SELECT
+            `id`,
+            `name`,
+            `description`,
+            `env_seq_no`
+        FROM `scence_env`
+        WHERE `id` IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="searchAppSystemCount" parameterType="codedriver.framework.common.dto.BasePageVo" resultType="int">
+        SELECT
+            COUNT(1)
+        FROM `scence_appsystem`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` LIKE CONCAT('%', #{keyword}, '%')
+                OR `abbr_name` LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="searchAppSystemIdList" parameterType="codedriver.framework.common.dto.BasePageVo" resultType="java.lang.Long">
+        SELECT
+            `id`
+        FROM `scence_appsystem`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` LIKE CONCAT('%', #{keyword}, '%')
+                OR `abbr_name` LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="searchAppSystemListByIdList" parameterType="java.lang.Long" resultMap="resourceCenterMap">
+        SELECT
+            `id`,
+            `name`,
+            `abbr_name`,
+            `type_id`,
+            `type_name`,
+            `type_label`,
+            `fcu`,
+            `fcd`,
+            `lcu`,
+            `lcd`,
+            `maintenance_window`,
+            `description`,
+            `inspect_status`,
+            `inspect_time`,
+            `monitor_status`,
+            `monitor_time`
+        FROM `scence_appsystem`
+        WHERE `id` IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="searchStateCount" parameterType="codedriver.framework.common.dto.BasePageVo" resultType="int">
+        SELECT
+            COUNT(1)
+        FROM `scence_state`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` LIKE CONCAT('%', #{keyword}, '%')
+                OR `description` LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="searchStateIdList" parameterType="codedriver.framework.common.dto.BasePageVo" resultType="java.lang.Long">
+        SELECT
+            `id`
+        FROM `scence_state`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` LIKE CONCAT('%', #{keyword}, '%')
+                OR `description` LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="searchStateListByIdList" parameterType="java.lang.Long" resultMap="resourceCenterMap">
+        SELECT
+        `id`,
+        `name`,
+        `description`
+        FROM `scence_state`
+        WHERE `id` IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
 </mapper>

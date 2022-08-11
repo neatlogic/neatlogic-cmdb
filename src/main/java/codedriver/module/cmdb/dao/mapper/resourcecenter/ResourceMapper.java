@@ -11,6 +11,7 @@ import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo;
 import codedriver.framework.cmdb.dto.resourcecenter.entity.ModuleVo;
+import codedriver.framework.common.dto.BasePageVo;
 import com.alibaba.fastjson.JSONArray;
 import org.apache.ibatis.annotations.Param;
 
@@ -108,4 +109,22 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
     List<AccountComponentVo> searchAccountComponent(@Param("accountComponentVo") AccountComponentVo accountComponentVo, @Param("schemaName") String schemaName);
 
     Integer searchAccountComponentCount(@Param("accountComponentVo") AccountComponentVo accountComponentVo, @Param("schemaName") String schemaName);
+
+    int searchAppEnvCount(BasePageVo searchVo);
+
+    List<Long> searchAppEnvIdList(BasePageVo searchVo);
+
+    List<ResourceVo> searchAppEnvListByIdList(List<Long> idList);
+
+    int searchAppSystemCount(BasePageVo searchVo);
+
+    List<Long> searchAppSystemIdList(BasePageVo searchVo);
+
+    List<ResourceVo> searchAppSystemListByIdList(List<Long> idList);
+
+    int searchStateCount(BasePageVo searchVo);
+
+    List<Long> searchStateIdList(BasePageVo searchVo);
+
+    List<ResourceVo> searchStateListByIdList(List<Long> idList);
 }
