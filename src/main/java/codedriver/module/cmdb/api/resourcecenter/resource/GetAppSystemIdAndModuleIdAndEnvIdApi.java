@@ -5,8 +5,11 @@
 
 package codedriver.module.cmdb.api.resourcecenter.resource;
 
+import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.crossover.ICiEntityCrossoverMapper;
+import codedriver.framework.cmdb.crossover.IResourceCrossoverMapper;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.exception.resourcecenter.AppEnvNotFoundException;
 import codedriver.framework.cmdb.exception.resourcecenter.AppModuleNotFoundException;
 import codedriver.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
@@ -65,18 +68,19 @@ public class GetAppSystemIdAndModuleIdAndEnvIdApi extends PrivateApiComponentBas
         String sysName = jsonObj.getString("sysName");
         String moduleName = jsonObj.getString("moduleName");
         String envName = jsonObj.getString("envName");
-        ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
-        Long systemId = ciEntityCrossoverMapper.getCiEntityIdByCiNameAndCiEntityName("APP", sysName);
-        if (systemId == null) {
+        IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
+        ResourceVo appSystem = resourceCrossoverMapper.getAppSystemByName(sysName, TenantContext.get().getDataDbName());
+        if (appSystem == null) {
             throw new AppSystemNotFoundException(sysName);
         }
-        Long moduleId = ciEntityCrossoverMapper.getCiEntityIdByCiNameAndCiEntityName("APPComponent", moduleName);
-        if (moduleId == null) {
+        ResourceVo appModule = resourceCrossoverMapper.getAppModuleByName(moduleName, TenantContext.get().getDataDbName());
+        if (appModule == null) {
             throw new AppModuleNotFoundException(moduleName);
         }
-        result.put("sysId", systemId);
-        result.put("moduleId", moduleId);
+        result.put("sysId", appSystem.getId());
+        result.put("moduleId", appModule.getId());
         if (StringUtils.isNotBlank(envName)) {
+            ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
             Long envId = ciEntityCrossoverMapper.getCiEntityIdByCiNameAndCiEntityName("APPEnv", envName);
             if (envId == null) {
                 throw new AppEnvNotFoundException(envName);
