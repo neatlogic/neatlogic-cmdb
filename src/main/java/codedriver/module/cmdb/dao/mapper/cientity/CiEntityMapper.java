@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.List;
 
 public interface CiEntityMapper extends ICiEntityCrossoverMapper {
+    List<Long> searchCiEntityIdBySql(String sql);
+
     /**
      * 查询没有创建索引的配置项id
      *

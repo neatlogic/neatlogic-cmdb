@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -20,6 +20,7 @@ import codedriver.framework.cmdb.exception.attr.AttrNotFoundException;
 import codedriver.framework.cmdb.exception.dsl.DslSyntaxIrregularException;
 import codedriver.module.cmdb.dao.mapper.ci.AttrMapper;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
+import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import codedriver.module.cmdb.service.ci.CiService;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
@@ -52,6 +53,8 @@ public class DslSearchManager {
     private static CiService ciService;
     private static AttrMapper attrMapper;
     private static RelMapper relMapper;
+
+    private static CiEntityMapper ciEntityMapper;
     private String dsl;
     private Long ciId;
     private final Map<String, SearchItem> searchItemMap = new HashMap<>();
@@ -59,15 +62,30 @@ public class DslSearchManager {
     private final Map<Integer, CalculateExpression> calculateExpressionMap = new HashMap<>();
 
     @Autowired
-    public DslSearchManager(CiService _ciService, AttrMapper _attrMapper, RelMapper _relMapper) {
+    public DslSearchManager(CiService _ciService, AttrMapper _attrMapper, RelMapper _relMapper, CiEntityMapper _ciEntityMapper) {
         ciService = _ciService;
         attrMapper = _attrMapper;
         relMapper = _relMapper;
+        ciEntityMapper = _ciEntityMapper;
     }
 
     private DslSearchManager(Long ciId, String dsl) {
         this.dsl = dsl;
         this.ciId = ciId;
+        CharStream input = CharStreams.fromString(dsl);
+        CmdbDSLLexer lexer = new CmdbDSLLexer(input);
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        CmdbDSLParser parser = new CmdbDSLParser(tokens);
+        parser.removeErrorListeners();
+        parser.addErrorListener(new BaseErrorListener() {
+            @Override
+            public void syntaxError(Recognizer<?, ?> recognizer, Object o, int row, int col, String s, RecognitionException e) {
+                throw new DslSyntaxIrregularException(row, col, s);
+            }
+        });
+        ParseTree tree = parser.expressions();
+        DslVisitor visitor = new DslVisitor(this);
+        visitor.visit(tree);
     }
 
     /**
@@ -235,27 +253,15 @@ public class DslSearchManager {
     }
 
 
-    public DslSearchManager search() {
-        CharStream input = CharStreams.fromString(dsl);
-        CmdbDSLLexer lexer = new CmdbDSLLexer(input);
-        CommonTokenStream tokens = new CommonTokenStream(lexer);
-        CmdbDSLParser parser = new CmdbDSLParser(tokens);
-        parser.removeErrorListeners();
-        parser.addErrorListener(new BaseErrorListener() {
-            @Override
-            public void syntaxError(Recognizer<?, ?> recognizer, Object o, int row, int col, String s, RecognitionException e) {
-                throw new DslSyntaxIrregularException(row, col, s);
-            }
-        });
-        ParseTree tree = parser.expressions();
-        DslVisitor visitor = new DslVisitor(this);
-        visitor.visit(tree);
-        return this;
+    public List<Long> search() {
+        String sql = this.buildSql();
+        return ciEntityMapper.searchCiEntityIdBySql(sql);
     }
 
     public String getSql() {
         return this.buildSql();
     }
+
 
     //保存模型的子查询SQL
     private final Map<String, SelectFragment> ciSelectMap = new HashMap<>();
