@@ -64,17 +64,6 @@
         </if>
     </sql>
 
-    <select id="getResourceCountByPortKeyword" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
-            resultType="int">
-        SELECT COUNT(DISTINCT a.`id`)
-        FROM ${schemaName}.`scence_ipobject_detail` a
-        LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
-        LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
-        LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
-        WHERE a.`port` LIKE CONCAT('%', #{keyword}, '%')
-        <include refid="resource_ipobject_where"/>
-    </select>
-
     <select id="getResourceCountByNameKeyword" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultType="int">
         SELECT COUNT(DISTINCT a.`id`)
@@ -106,8 +95,7 @@
         LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
         <where>
             <if test="keyword != null and keyword != ''">
-                AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%') OR a.`port`
-                LIKE CONCAT('%', #{keyword}, '%'))
+                AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%'))
             </if>
             <include refid="resource_ipobject_where"/>
         </where>
@@ -122,8 +110,7 @@
         LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
         <where>
             <if test="keyword != null and keyword != ''">
-                AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%') OR a.`port`
-                LIKE CONCAT('%', #{keyword}, '%'))
+                AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%'))
             </if>
             <include refid="resource_ipobject_where"/>
         </where>
@@ -133,9 +120,6 @@
             </when>
             <when test="isIpFieldSort != null and isNameFieldSort == 1">
                 ORDER BY LENGTH(a.`ip`)
-            </when>
-            <when test="isPortFieldSort != null and isNameFieldSort == 1">
-                ORDER BY LENGTH(a.`port`)
             </when>
             <otherwise>
                 ORDER BY a.`id`

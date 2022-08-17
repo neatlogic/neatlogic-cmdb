@@ -20,8 +20,6 @@ import java.util.Set;
 
 public interface ResourceMapper extends IResourceCrossoverMapper {
 
-    int getResourceCountByPortKeyword(ResourceSearchVo searchVo);
-
     int getResourceCountByNameKeyword(ResourceSearchVo searchVo);
 
     int getResourceCountByIpKeyword(ResourceSearchVo searchVo);

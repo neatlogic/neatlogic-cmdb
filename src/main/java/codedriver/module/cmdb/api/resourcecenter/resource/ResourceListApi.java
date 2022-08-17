@@ -108,18 +108,13 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
         }
         searchVo.setRowNum(rowNum);
         if (StringUtils.isNotBlank(searchVo.getKeyword())) {
-            int portKeywordcount = resourceMapper.getResourceCountByPortKeyword(searchVo);
-            if (portKeywordcount > 0) {
-                searchVo.setIsPortFieldSort(1);
+            int nameKeywordCount = resourceMapper.getResourceCountByNameKeyword(searchVo);
+            if (nameKeywordCount > 0) {
+                searchVo.setIsNameFieldSort(1);
             } else {
-                int nameKeywordCount = resourceMapper.getResourceCountByNameKeyword(searchVo);
-                if (nameKeywordCount > 0) {
-                    searchVo.setIsNameFieldSort(1);
-                } else {
-                    int ipKeywordCount = resourceMapper.getResourceCountByIpKeyword(searchVo);
-                    if (ipKeywordCount > 0) {
-                        searchVo.setIsIpFieldSort(1);
-                    }
+                int ipKeywordCount = resourceMapper.getResourceCountByIpKeyword(searchVo);
+                if (ipKeywordCount > 0) {
+                    searchVo.setIsIpFieldSort(1);
                 }
             }
         }
