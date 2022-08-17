@@ -328,7 +328,7 @@
         cra.`lcu`,
         cra.`lcd`
         FROM cmdb_resourcecenter_resource_account crra
-        left join cmdb_resourcecenter_account cra on cra.id = crra.account_id
+        join cmdb_resourcecenter_account cra on cra.id = crra.account_id
         left join cmdb_resourcecenter_account_protocol crap on crap.id = cra.protocol_id
         WHERE crra.resource_id = #{resourceId}
         <if test="protocol != null">
