@@ -391,6 +391,7 @@
                a.`name_attr_id` AS nameAttrId,
                a.`lft`          AS lft,
                a.`rht`          AS rht,
+               a.`file_id`      AS fileId,
                b.`attr_id`      AS uniqueAttrId
         FROM `cmdb_ci` a
                  LEFT JOIN `cmdb_ci_unique` b ON a.id = b.ci_id
@@ -492,6 +493,7 @@
                                `name_attr_id`,
                                `lft`,
                                `rht`,
+                               `file_id`,
                                `xml`)
         VALUES (#{id},
                 #{name},
@@ -507,6 +509,7 @@
                 #{nameAttrId},
                 #{lft},
                 #{rht},
+                #{fileId},
                 #{viewXml,typeHandler=CompressHandler})
     </insert>
 

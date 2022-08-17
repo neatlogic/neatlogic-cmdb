@@ -11,6 +11,7 @@ import codedriver.framework.cmdb.enums.CiAuthType;
 import codedriver.framework.cmdb.enums.group.GroupType;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.file.dao.mapper.FileMapper;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -18,12 +19,13 @@ import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import com.alibaba.fastjson.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
@@ -31,9 +33,11 @@ import java.util.Map;
 @Transactional // 需要启用事务，以便查询权限时激活一级缓存
 public class GetCiApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private CiMapper ciMapper;
 
+    @Resource
+    private FileMapper fileMapper;
 
     @Override
     public String getToken() {
@@ -60,6 +64,9 @@ public class GetCiApi extends PrivateApiComponentBase {
         CiVo ciVo = ciMapper.getCiById(ciId);
         if (ciVo == null) {
             throw new CiNotFoundException(ciId);
+        }
+        if (Objects.equals(ciVo.getIsVirtual(), 1) && ciVo.getFileId() != null) {
+            ciVo.setFileVo(fileMapper.getFileById(ciVo.getFileId()));
         }
         boolean needAction = jsonObj.getBooleanValue("needAction");
         if (needAction) {
