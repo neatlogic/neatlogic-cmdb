@@ -108,13 +108,13 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
         }
         searchVo.setRowNum(rowNum);
         if (StringUtils.isNotBlank(searchVo.getKeyword())) {
-            int nameKeywordCount = resourceMapper.getResourceCountByNameKeyword(searchVo);
-            if (nameKeywordCount > 0) {
-                searchVo.setIsNameFieldSort(1);
+            int ipKeywordCount = resourceMapper.getResourceCountByIpKeyword(searchVo);
+            if (ipKeywordCount > 0) {
+                searchVo.setIsIpFieldSort(1);
             } else {
-                int ipKeywordCount = resourceMapper.getResourceCountByIpKeyword(searchVo);
-                if (ipKeywordCount > 0) {
-                    searchVo.setIsIpFieldSort(1);
+                int nameKeywordCount = resourceMapper.getResourceCountByNameKeyword(searchVo);
+                if (nameKeywordCount > 0) {
+                    searchVo.setIsNameFieldSort(1);
                 }
             }
         }
@@ -122,11 +122,22 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
         if (CollectionUtils.isEmpty(idList)) {
             return TableResultUtil.getResult(resourceList, searchVo);
         }
+        System.out.println(idList);
         resourceList = resourceMapper.getResourceListByIdList(idList, TenantContext.get().getDataDbName());
         if (CollectionUtils.isNotEmpty(resourceList)) {
             resourceCenterResourceService.addTagAndAccountInformation(resourceList);
         }
-        return TableResultUtil.getResult(resourceList, searchVo);
+        //排序
+        List<ResourceVo> resultList = new ArrayList<>();
+        for (Long id : idList) {
+            for (ResourceVo resourceVo : resourceList) {
+                if (Objects.equals(id, resourceVo.getId())) {
+                    resultList.add(resourceVo);
+                    break;
+                }
+            }
+        }
+        return TableResultUtil.getResult(resultList, searchVo);
     }
 
 }

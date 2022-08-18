@@ -118,7 +118,7 @@
             <when test="isNameFieldSort != null and isNameFieldSort == 1">
                 ORDER BY LENGTH(a.`name`)
             </when>
-            <when test="isIpFieldSort != null and isNameFieldSort == 1">
+            <when test="isIpFieldSort != null and isIpFieldSort == 1">
                 ORDER BY LENGTH(a.`ip`)
             </when>
             <otherwise>
@@ -646,8 +646,7 @@
         LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
         WHERE a.`ip` = #{ip}
         <if test="keyword != null and keyword != ''">
-            AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%') OR a.`port`
-            LIKE CONCAT('%', #{keyword}, '%'))
+            AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%'))
         </if>
         <include refid="resource_ipobject_where"/>
         <choose>
