@@ -60,7 +60,7 @@ public class GetResourceAccountApi extends PrivateApiComponentBase {
             @Param(name = "username", type = ApiParamType.STRING, desc = "账号名", isRequired = true)
     })
     @Output({
-            @Param(name = "name", explode = AccountVo[].class, desc = "账号"),
+            @Param(type = ApiParamType.STRING, desc = "密码"),
     })
     @Description(desc = "根据资产id、账号名和协议获取账号密码")
     @Override
