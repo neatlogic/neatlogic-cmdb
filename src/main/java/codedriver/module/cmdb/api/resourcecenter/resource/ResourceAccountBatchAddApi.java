@@ -13,7 +13,6 @@ import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterAccountNotFoundException;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
@@ -64,22 +63,17 @@ public class ResourceAccountBatchAddApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "resourceIdList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "资源id列表"),
-            @Param(name = "accountIdList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "账号id列表")
+            @Param(name = "resourceIdList", type = ApiParamType.JSONARRAY, isRequired = true, minSize = 1, desc = "资源id列表"),
+            @Param(name = "accountIdList", type = ApiParamType.JSONARRAY, isRequired = true, minSize = 1, desc = "账号id列表")
     })
     @Description(desc = "批量添加资源账号")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         int successCount = 0;
         List<String> failureReasonList = new ArrayList<>();
+        failureReasonList.add("同一资产不可绑定多个协议相同且用户名相同的账号");
         JSONArray resourceIdArray = paramObj.getJSONArray("resourceIdList");
-        if (CollectionUtils.isEmpty(resourceIdArray)) {
-            throw new ParamNotExistsException("resourceIdList");
-        }
         JSONArray accountIdArray = paramObj.getJSONArray("accountIdList");
-        if (CollectionUtils.isEmpty(accountIdArray)) {
-            throw new ParamNotExistsException("accountIdList");
-        }
 
         List<Long> resourceIdList = resourceIdArray.toJavaList(Long.class);
         Map<Long, ResourceVo> resourceVoMap = new HashMap<>();
@@ -114,7 +108,7 @@ public class ResourceAccountBatchAddApi extends PrivateApiComponentBase {
             if (account == null) {
                 accountVoMap.put(key, accountVo);
             } else {
-                failureReasonList.add("选中项中\"" + accountVo.getName() + "（" + accountVo.getProtocol() + "/" + accountVo.getAccount() + "）\"与\"" + account.getName() + "（" + account.getProtocol() + "/" + account.getAccount() + "）\"的协议相同且用户名相同，同一资产不可绑定多个协议相同且用户名相同的账号");
+                failureReasonList.add("选中项中\"" + accountVo.getName() + "（" + accountVo.getProtocol() + "/" + accountVo.getAccount() + "）\"与\"" + account.getName() + "（" + account.getProtocol() + "/" + account.getAccount() + "）\"");
                 excludeAccountIdSet.add(accountVo.getId());
                 excludeAccountIdSet.add(account.getId());
             }
@@ -142,7 +136,7 @@ public class ResourceAccountBatchAddApi extends PrivateApiComponentBase {
                 if (accountId != null) {
                     ResourceVo resourecVo = resourceVoMap.get(resourceId);
                     AccountVo account = resourceAccountMapper.getAccountById(accountId);
-                    failureReasonList.add(resourecVo.getName() + "（" + resourecVo.getIp() + "）'已绑定账号\"" + account.getName() + "（" + account.getProtocol() + "/" + account.getAccount() + "）\"，同一资产不可绑定多个协议相同且用户名相同的账号");
+                    failureReasonList.add(resourecVo.getName() + "（" + resourecVo.getIp() + "）'已绑定账号\"" + account.getName() + "（" + account.getProtocol() + "/" + account.getAccount() + "）\"");
                     continue;
                 }
                 resourceAccountVoList.add(new ResourceAccountVo(resourceId, accountVo.getId()));
@@ -159,8 +153,12 @@ public class ResourceAccountBatchAddApi extends PrivateApiComponentBase {
 
         JSONObject resultObj = new JSONObject();
         resultObj.put("successCount", successCount);
-        resultObj.put("failureCount", failureReasonList.size());
-        resultObj.put("failureReasonList", failureReasonList);
+        resultObj.put("failureCount", failureReasonList.size() - 1);
+        if (failureReasonList.size() > 1) {
+            resultObj.put("failureReasonList", failureReasonList);
+        } else {
+            resultObj.put("failureReasonList", new ArrayList<>());
+        }
         return resultObj;
     }
 }
