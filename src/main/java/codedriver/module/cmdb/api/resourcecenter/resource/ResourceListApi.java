@@ -122,7 +122,6 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
         if (CollectionUtils.isEmpty(idList)) {
             return TableResultUtil.getResult(resourceList, searchVo);
         }
-        System.out.println(idList);
         resourceList = resourceMapper.getResourceListByIdList(idList, TenantContext.get().getDataDbName());
         if (CollectionUtils.isNotEmpty(resourceList)) {
             resourceCenterResourceService.addTagAndAccountInformation(resourceList);
