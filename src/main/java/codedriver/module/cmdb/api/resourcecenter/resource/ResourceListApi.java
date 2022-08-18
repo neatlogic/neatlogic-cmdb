@@ -8,12 +8,10 @@ package codedriver.module.cmdb.api.resourcecenter.resource;
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.crossover.IResourceListApiCrossoverService;
-import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import codedriver.framework.cmdb.dto.resourcecenter.config.ResourceInfo;
-import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
 import codedriver.framework.restful.annotation.*;
@@ -26,11 +24,11 @@ import codedriver.module.cmdb.service.resourcecenter.resource.IResourceCenterRes
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * 查询资源中心数据列表接口
@@ -109,6 +107,17 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
             return TableResultUtil.getResult(resourceList, searchVo);
         }
         searchVo.setRowNum(rowNum);
+        if (StringUtils.isNotBlank(searchVo.getKeyword())) {
+            int ipKeywordCount = resourceMapper.getResourceCountByIpKeyword(searchVo);
+            if (ipKeywordCount > 0) {
+                searchVo.setIsIpFieldSort(1);
+            } else {
+                int nameKeywordCount = resourceMapper.getResourceCountByNameKeyword(searchVo);
+                if (nameKeywordCount > 0) {
+                    searchVo.setIsNameFieldSort(1);
+                }
+            }
+        }
         List<Long> idList = resourceMapper.getResourceIdList(searchVo);
         if (CollectionUtils.isEmpty(idList)) {
             return TableResultUtil.getResult(resourceList, searchVo);
@@ -117,7 +126,17 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
         if (CollectionUtils.isNotEmpty(resourceList)) {
             resourceCenterResourceService.addTagAndAccountInformation(resourceList);
         }
-        return TableResultUtil.getResult(resourceList, searchVo);
+        //排序
+        List<ResourceVo> resultList = new ArrayList<>();
+        for (Long id : idList) {
+            for (ResourceVo resourceVo : resourceList) {
+                if (Objects.equals(id, resourceVo.getId())) {
+                    resultList.add(resourceVo);
+                    break;
+                }
+            }
+        }
+        return TableResultUtil.getResult(resultList, searchVo);
     }
 
 }

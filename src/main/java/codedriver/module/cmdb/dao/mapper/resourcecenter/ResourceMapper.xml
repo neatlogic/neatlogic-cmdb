@@ -8,10 +8,6 @@
 <mapper namespace="codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceMapper">
 
     <sql id="resource_ipobject_where">
-        <if test="keyword != null and keyword != ''">
-            AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%') OR a.`port`
-            LIKE CONCAT('%', #{keyword}, '%'))
-        </if>
         <if test="typeIdList != null and typeIdList.size() > 0">
             AND a.`type_id` IN
             <foreach collection="typeIdList" item="typeId" open="(" separator="," close=")">
@@ -68,6 +64,28 @@
         </if>
     </sql>
 
+    <select id="getResourceCountByNameKeyword" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+            resultType="int">
+        SELECT COUNT(DISTINCT a.`id`)
+        FROM ${schemaName}.`scence_ipobject_detail` a
+        LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
+        LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
+        LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+        WHERE a.`name` LIKE CONCAT('%', #{keyword}, '%')
+        <include refid="resource_ipobject_where"/>
+    </select>
+
+    <select id="getResourceCountByIpKeyword" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+            resultType="int">
+        SELECT COUNT(DISTINCT a.`id`)
+        FROM ${schemaName}.`scence_ipobject_detail` a
+        LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
+        LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
+        LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+        WHERE a.`ip` LIKE CONCAT('%', #{keyword}, '%')
+        <include refid="resource_ipobject_where"/>
+    </select>
+
     <select id="getResourceCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultType="int">
         SELECT COUNT(DISTINCT a.`id`)
@@ -76,6 +94,9 @@
         LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
         LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
         <where>
+            <if test="keyword != null and keyword != ''">
+                AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
             <include refid="resource_ipobject_where"/>
         </where>
     </select>
@@ -88,9 +109,22 @@
         LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
         LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
         <where>
+            <if test="keyword != null and keyword != ''">
+                AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
             <include refid="resource_ipobject_where"/>
         </where>
-        ORDER BY a.`id`
+        <choose>
+            <when test="isNameFieldSort != null and isNameFieldSort == 1">
+                ORDER BY LENGTH(a.`name`)
+            </when>
+            <when test="isIpFieldSort != null and isIpFieldSort == 1">
+                ORDER BY LENGTH(a.`ip`)
+            </when>
+            <otherwise>
+                ORDER BY a.`id`
+            </otherwise>
+        </choose>
         LIMIT #{startNum}, #{pageSize}
     </select>
 
@@ -611,6 +645,9 @@
         LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
         LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
         WHERE a.`ip` = #{ip}
+        <if test="keyword != null and keyword != ''">
+            AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
         <include refid="resource_ipobject_where"/>
         <choose>
             <when test="port != null and port != ''">
