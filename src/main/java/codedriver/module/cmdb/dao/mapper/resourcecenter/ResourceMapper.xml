@@ -103,7 +103,8 @@
 
     <select id="getResourceIdList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultType="java.lang.Long">
-        SELECT DISTINCT a.`id`
+        SELECT m.`id` FROM (
+        SELECT DISTINCT a.`id`, a.`name`, a.`ip`
         FROM ${schemaName}.`scence_ipobject_detail` a
         LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
         LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
@@ -126,6 +127,7 @@
             </otherwise>
         </choose>
         LIMIT #{startNum}, #{pageSize}
+        ) m
     </select>
 
     <resultMap id="resourceCenterMap" type="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
