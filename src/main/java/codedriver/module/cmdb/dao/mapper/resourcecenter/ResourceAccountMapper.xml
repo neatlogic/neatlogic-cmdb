@@ -71,25 +71,24 @@
 
     <sql id="searchAccount">
         FROM `cmdb_resourcecenter_account` a JOIN `cmdb_resourcecenter_account_protocol` b ON b.`id`=a.`protocol_id`
-        <where>
-            <if test="keyword != null and keyword != ''">
-                and (a.`name` like concat('%', #{keyword}, '%')
-                or b.`name` like concat('%', #{keyword}, '%')
-                or a.`account` like concat('%', #{keyword}, '%'))
-            </if>
-            <if test="protocolIdList != null and protocolIdList.size() > 0">
-                and b.id in
-                <foreach collection="protocolIdList" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="defaultValue != null and defaultValue.size() > 0">
-                and a.`id` in
-                <foreach collection="defaultValue" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-        </where>
+        WHERE b.`name` != 'tagent'
+        <if test="keyword != null and keyword != ''">
+            and (a.`name` like concat('%', #{keyword}, '%')
+            or b.`name` like concat('%', #{keyword}, '%')
+            or a.`account` like concat('%', #{keyword}, '%'))
+        </if>
+        <if test="protocolIdList != null and protocolIdList.size() > 0">
+            and b.id in
+            <foreach collection="protocolIdList" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="defaultValue != null and defaultValue.size() > 0">
+            and a.`id` in
+            <foreach collection="defaultValue" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
     </sql>
 
     <resultMap id="accountMap" type="codedriver.framework.cmdb.dto.resourcecenter.AccountVo">
@@ -270,10 +269,13 @@
         `port`
         from `cmdb_resourcecenter_account_protocol`
         <where>
+            <if test="excludeTagent != null and excludeTagent == 1">
+                and `name` != 'tagent'
+            </if>
             <if test="keyword != null and keyword != ''">
-                `name` like concat('%', #{keyword}, '%')
+                and (`name` like concat('%', #{keyword}, '%')
                 or
-                `port` like concat('%', #{keyword}, '%')
+                `port` like concat('%', #{keyword}, '%'))
             </if>
         </where>
         order by lcd desc
