@@ -50,7 +50,7 @@ public class AccountProtocolSearchApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         AccountProtocolVo searchVo = JSON.toJavaObject(paramObj, AccountProtocolVo.class);
         // 排除tagent
-        searchVo.setExcludeTagent(1);
+        searchVo.setIsExcludeTagent(1);
         List<AccountProtocolVo> accountProtocolList = resourceAccountMapper.searchAccountProtocolListByProtocolName(searchVo);
         return TableResultUtil.getResult(accountProtocolList, searchVo);
     }

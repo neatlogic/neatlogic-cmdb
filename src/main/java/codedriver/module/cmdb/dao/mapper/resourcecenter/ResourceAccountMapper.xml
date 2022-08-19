@@ -269,7 +269,7 @@
         `port`
         from `cmdb_resourcecenter_account_protocol`
         <where>
-            <if test="excludeTagent != null and excludeTagent == 1">
+            <if test="isExcludeTagent != null and isExcludeTagent == 1">
                 and `name` != 'tagent'
             </if>
             <if test="keyword != null and keyword != ''">
