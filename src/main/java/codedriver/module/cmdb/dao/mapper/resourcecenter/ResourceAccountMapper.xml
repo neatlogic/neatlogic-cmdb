@@ -71,25 +71,24 @@
 
     <sql id="searchAccount">
         FROM `cmdb_resourcecenter_account` a JOIN `cmdb_resourcecenter_account_protocol` b ON b.`id`=a.`protocol_id`
-        <where>
-            <if test="keyword != null and keyword != ''">
-                and (a.`name` like concat('%', #{keyword}, '%')
-                or b.`name` like concat('%', #{keyword}, '%')
-                or a.`account` like concat('%', #{keyword}, '%'))
-            </if>
-            <if test="protocolIdList != null and protocolIdList.size() > 0">
-                and b.id in
-                <foreach collection="protocolIdList" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="defaultValue != null and defaultValue.size() > 0">
-                and a.`id` in
-                <foreach collection="defaultValue" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-        </where>
+        WHERE b.`name` != 'tagent'
+        <if test="keyword != null and keyword != ''">
+            and (a.`name` like concat('%', #{keyword}, '%')
+            or b.`name` like concat('%', #{keyword}, '%')
+            or a.`account` like concat('%', #{keyword}, '%'))
+        </if>
+        <if test="protocolIdList != null and protocolIdList.size() > 0">
+            and b.id in
+            <foreach collection="protocolIdList" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="defaultValue != null and defaultValue.size() > 0">
+            and a.`id` in
+            <foreach collection="defaultValue" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
     </sql>
 
     <resultMap id="accountMap" type="codedriver.framework.cmdb.dto.resourcecenter.AccountVo">
@@ -270,10 +269,13 @@
         `port`
         from `cmdb_resourcecenter_account_protocol`
         <where>
+            <if test="isExcludeTagent != null and isExcludeTagent == 1">
+                and `name` != 'tagent'
+            </if>
             <if test="keyword != null and keyword != ''">
-                `name` like concat('%', #{keyword}, '%')
+                and (`name` like concat('%', #{keyword}, '%')
                 or
-                `port` like concat('%', #{keyword}, '%')
+                `port` like concat('%', #{keyword}, '%'))
             </if>
         </where>
         order by lcd desc
@@ -300,6 +302,13 @@
                `account_id`  AS accountId
         FROM `cmdb_resourcecenter_resource_account`
         WHERE `account_id` = #{value}
+    </select>
+
+    <select id="getResourceIdListByAccountIdWithPage" resultType="java.lang.Long">
+        SELECT `resource_id`
+        FROM `cmdb_resourcecenter_resource_account`
+        WHERE `account_id` = #{accountId}
+        LIMIT #{startNum}, #{pageSize}
     </select>
 
     <select id="getResourceAccountByIpAndPort"
@@ -476,6 +485,15 @@
         where `id` = #{value}
     </delete>
 
+    <delete id="deleteAccountByIdList" parameterType="java.util.List">
+        delete
+        from `cmdb_resourcecenter_account`
+        where `id` in
+        <foreach collection="list" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+    </delete>
+
     <delete id="deleteResourceAccountByResourceId" parameterType="java.lang.Long">
         DELETE
         FROM `cmdb_resourcecenter_resource_account`
@@ -500,21 +518,51 @@
         WHERE `account_id` = #{value}
     </delete>
 
+    <delete id="deleteAccountTagByAccountIdList" parameterType="java.util.List">
+        DELETE
+        FROM `cmdb_resourcecenter_account_tag`
+        WHERE `account_id` in
+        <foreach collection="list" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+    </delete>
+
     <delete id="deleteResourceAccountProtocolById">
         delete
         from `cmdb_resourcecenter_account_protocol`
         where `id` = #{value}
     </delete>
+
     <delete id="deleteAccountIpByAccountId" parameterType="java.lang.Long">
         DELETE
         FROM `cmdb_resourcecenter_account_ip`
         WHERE `account_id` = #{value}
     </delete>
+
+    <delete id="deleteAccountIpByAccountIdList" parameterType="java.util.List">
+        DELETE
+        FROM `cmdb_resourcecenter_account_ip`
+        WHERE `account_id` in
+        <foreach collection="list" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+    </delete>
+
     <delete id="deleteResourceAccountByAccountId">
         DELETE
         FROM `cmdb_resourcecenter_resource_account`
         WHERE `account_id` = #{value}
     </delete>
+
+    <delete id="deleteResourceAccountByAccountIdList" parameterType="java.util.List">
+        DELETE
+        FROM `cmdb_resourcecenter_resource_account`
+        WHERE `account_id` in
+        <foreach collection="list" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+    </delete>
+
     <delete id="deleteAccountIpByIpList">
         DELETE
         FROM `cmdb_resourcecenter_account_ip`

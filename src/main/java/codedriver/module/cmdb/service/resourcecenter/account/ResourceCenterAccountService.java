@@ -31,5 +31,5 @@ public interface ResourceCenterAccountService {
      *
      * @param accountIdList 账号idList
      */
-    void deleteAccount(List<Long> accountIdList, boolean isTagent);
+    void deleteAccount(List<Long> accountIdList);
 }
