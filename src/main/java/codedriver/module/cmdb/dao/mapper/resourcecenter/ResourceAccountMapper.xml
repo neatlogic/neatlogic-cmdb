@@ -302,6 +302,13 @@
         WHERE `account_id` = #{value}
     </select>
 
+    <select id="getResourceIdListByAccountIdWithPage" resultType="java.lang.Long">
+        SELECT `resource_id`
+        FROM `cmdb_resourcecenter_resource_account`
+        WHERE `account_id` = #{accountId}
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
     <select id="getResourceAccountByIpAndPort"
             resultType="codedriver.framework.cmdb.dto.resourcecenter.AccountVo">
         SELECT cra.id,
