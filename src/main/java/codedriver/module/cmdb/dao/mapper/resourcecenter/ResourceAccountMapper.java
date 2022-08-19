@@ -90,7 +90,11 @@ public interface ResourceAccountMapper extends IResourceAccountCrossoverMapper {
 
     int deleteAccountIpByAccountId(Long value);
 
+    int deleteAccountIpByAccountIdList(List<Long> list);
+
     int deleteAccountById(Long id);
+
+    int deleteAccountByIdList(List<Long> list);
 
     int deleteResourceAccountByResourceId(Long resourceId);
 
@@ -98,9 +102,13 @@ public interface ResourceAccountMapper extends IResourceAccountCrossoverMapper {
 
     int deleteAccountTagByAccountId(Long accountId);
 
+    int deleteAccountTagByAccountIdList(List<Long> list);
+
     int deleteResourceAccountProtocolById(Long id);
 
     int deleteResourceAccountByAccountId(Long accountId);
+
+    int deleteResourceAccountByAccountIdList(List<Long> list);
 
     int deleteAccountIpByIpList(@Param("ipList") List<String> resourceIpList);
 

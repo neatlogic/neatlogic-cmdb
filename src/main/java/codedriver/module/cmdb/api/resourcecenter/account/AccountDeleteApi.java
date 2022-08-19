@@ -65,7 +65,7 @@ public class AccountDeleteApi extends PrivateApiComponentBase {
         }
         List<Long> idList = new ArrayList<>();
         idList.add(id);
-        accountService.deleteAccount(idList, false);
+        accountService.deleteAccount(idList);
         return null;
     }
 

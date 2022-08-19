@@ -8,7 +8,6 @@ package codedriver.module.cmdb.service.resourcecenter.account;
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.cmdb.crossover.IResourceCenterAccountCrossoverService;
 import codedriver.framework.cmdb.dto.resourcecenter.*;
-import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterAccountHasBeenReferredException;
 import codedriver.framework.tagent.dao.mapper.TagentMapper;
 import codedriver.framework.tagent.dto.TagentVo;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
@@ -121,30 +120,12 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
      * @param accountIdList 账号idList
      */
     @Override
-    public void deleteAccount(List<Long> accountIdList, boolean isTagent) {
-        for (Long accountId : accountIdList) {
-            //如果是tagent 无需判断直接删除账号相关信息
-            if (!isTagent) {
-                //判断是否为tagent包含ip的账号
-                List<TagentVo> tagentList = tagentMapper.getTagentListByAccountId(accountId);
-                if (CollectionUtils.isNotEmpty(tagentList)) {
-                    throw new ResourceCenterAccountHasBeenReferredException("tagent");
-                }
-                //判断是否为tagent的账号
-                List<TagentVo> tagentVoList = tagentMapper.getTagentByAccountId(accountId);
-                if (CollectionUtils.isNotEmpty(tagentVoList)) {
-                    throw new ResourceCenterAccountHasBeenReferredException("tagent");
-                }
-                //判断是否被资产引用
-                List<ResourceAccountVo> resourceAccountVoList = resourceAccountMapper.getResourceAccountListByAccountId(accountId);
-                if (CollectionUtils.isNotEmpty(resourceAccountVoList)) {
-                    throw new ResourceCenterAccountHasBeenReferredException("resource");
-                }
-            }
-            resourceAccountMapper.deleteAccountById(accountId);
-            resourceAccountMapper.deleteResourceAccountByAccountId(accountId);
-            resourceAccountMapper.deleteAccountTagByAccountId(accountId);
-            resourceAccountMapper.deleteAccountIpByAccountId(accountId);
+    public void deleteAccount(List<Long> accountIdList) {
+        if (CollectionUtils.isNotEmpty(accountIdList)) {
+            resourceAccountMapper.deleteAccountByIdList(accountIdList);
+            resourceAccountMapper.deleteResourceAccountByAccountIdList(accountIdList);
+            resourceAccountMapper.deleteAccountTagByAccountIdList(accountIdList);
+            resourceAccountMapper.deleteAccountIpByAccountIdList(accountIdList);
         }
     }
 }
