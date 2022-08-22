@@ -17,6 +17,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
@@ -63,11 +64,24 @@ public class ResourceAccountAccessTestApi extends PrivateApiComponentBase {
         if (resource == null) {
             throw new ResourceNotFoundException(resourceId);
         }
-        String host = resource.getIp();
-        String nodeName = resource.getName();
-        String nodeType = resource.getTypeName();
+        JSONArray list = new JSONArray();
         List<AccountVo> accountList = resourceAccountMapper.getResourceAccountListByResourceId(resourceId, null);
-
+        if (accountList.size() > 0) {
+            for (AccountVo vo : accountList) {
+                list.add(new JSONObject() {
+                    {
+                        this.put("resourceId", resourceId);
+                        this.put("host", resource.getIp());
+                        this.put("protocolPort", vo.getProtocolPort());
+                        this.put("protocol", vo.getProtocol());
+                        this.put("nodeName", resource.getName());
+                        this.put("nodeType", resource.getTypeName());
+                        this.put("username", vo.getAccount());
+                        this.put("password", vo.getPasswordCipher());
+                    }
+                });
+            }
+        }
         return null;
     }
 
