@@ -83,6 +83,12 @@
                 #{item}
             </foreach>
         </if>
+        <if test="protocolList != null and protocolList.size() > 0">
+            and b.name in
+            <foreach collection="protocolList" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
         <if test="defaultValue != null and defaultValue.size() > 0">
             and a.`id` in
             <foreach collection="defaultValue" item="item" open="(" separator="," close=")">
