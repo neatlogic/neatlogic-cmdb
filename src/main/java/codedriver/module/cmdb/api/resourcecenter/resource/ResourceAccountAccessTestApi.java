@@ -110,7 +110,7 @@ public class ResourceAccountAccessTestApi extends PrivateApiComponentBase {
                         this.put("protocol", vo.getProtocol() != null ? vo.getProtocol() : "");
                         this.put("nodeName", resource.getName() != null ? resource.getName() : "");
                         this.put("nodeType", resource.getTypeName() != null ? resource.getTypeName() : "");
-                        this.put("username", vo.getAccount() != null ? vo.getAccount() : null);
+                        this.put("username", vo.getAccount() != null ? vo.getAccount() : "");
                         this.put("password", vo.getPasswordCipher() != null ? vo.getPasswordCipher() : "");
                     }
                 });
