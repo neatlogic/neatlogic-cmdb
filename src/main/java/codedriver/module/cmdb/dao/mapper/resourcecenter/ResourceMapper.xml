@@ -391,7 +391,7 @@
     </select>
 
     <select id="getResourceById" resultMap="resourceCenterMap">
-        SELECT a.`id`, a.`name`, a.`ip`, a.`type_name` as typeName
+        SELECT a.`id`, a.`name`, a.`ip`
         FROM ${schemaName}.`scence_ipobject_ip_port` a
         where a.`id` = #{id}
     </select>
