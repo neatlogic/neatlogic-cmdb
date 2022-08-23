@@ -41,6 +41,7 @@ public class AccountProtocolSearchApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "关键词"),
+            @Param(name = "isExcludeTagent", rule = "0,1", type = ApiParamType.ENUM, defaultValue = "0", desc = "是否排除tagent"),
     })
     @Output({
             @Param(name = "tbodyList", explode = AccountProtocolVo[].class, desc = "协议列表")
@@ -49,8 +50,6 @@ public class AccountProtocolSearchApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         AccountProtocolVo searchVo = JSON.toJavaObject(paramObj, AccountProtocolVo.class);
-        // 排除tagent
-        searchVo.setIsExcludeTagent(1);
         List<AccountProtocolVo> accountProtocolList = resourceAccountMapper.searchAccountProtocolListByProtocolName(searchVo);
         return TableResultUtil.getResult(accountProtocolList, searchVo);
     }
