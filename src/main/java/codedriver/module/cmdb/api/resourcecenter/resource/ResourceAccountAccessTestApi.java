@@ -7,8 +7,7 @@ package codedriver.module.cmdb.api.resourcecenter.resource;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.exception.runner.RunnerGroupRunnerNotFoundException;
-import codedriver.framework.exception.runner.RunnerNotMatchException;
+import codedriver.framework.cmdb.dto.resourcecenter.AccountAccessTestVo;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceAccountAccessTestException;
@@ -19,6 +18,8 @@ import codedriver.framework.dao.mapper.runner.RunnerMapper;
 import codedriver.framework.dto.runner.GroupNetworkVo;
 import codedriver.framework.dto.runner.RunnerGroupVo;
 import codedriver.framework.dto.runner.RunnerMapVo;
+import codedriver.framework.exception.runner.RunnerGroupRunnerNotFoundException;
+import codedriver.framework.exception.runner.RunnerNotMatchException;
 import codedriver.framework.integration.authentication.enums.AuthenticateType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
@@ -27,13 +28,13 @@ import codedriver.framework.util.HttpRequestUtil;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -97,27 +98,22 @@ public class ResourceAccountAccessTestApi extends PrivateApiComponentBase {
         // 随机分配runner
         int runnerMapIndex = (int) (Math.random() * runnerMapList.size());
         RunnerMapVo runnerMapVo = runnerMapList.get(runnerMapIndex);
-        JSONArray list = new JSONArray();
+        List<AccountAccessTestVo> accessTestVoList = new ArrayList<>();
         List<AccountVo> accountList = resourceAccountMapper.getResourceAccountListByResourceId(resourceId, null);
         if (accountList.size() > 0) {
-            for (AccountVo vo : accountList) {
-                list.add(new JSONObject() {
-                    {
-                        this.put("host", resource.getIp() != null ? resource.getIp() : "");
-                        this.put("port", resource.getPort() != null ? resource.getPort() : "");
-                        this.put("protocolPort", vo.getProtocolPort() != null ? vo.getProtocolPort() : "");
-                        this.put("protocol", vo.getProtocol() != null ? vo.getProtocol() : "");
-                        this.put("nodeName", resource.getName() != null ? resource.getName() : "");
-                        this.put("nodeType", resource.getTypeName() != null ? resource.getTypeName() : "");
-                        this.put("username", vo.getAccount() != null ? vo.getAccount() : "");
-                        this.put("password", vo.getPasswordCipher() != null ? vo.getPasswordCipher() : "");
-                    }
-                });
-            }
+            accountList.forEach(vo -> accessTestVoList.add(new AccountAccessTestVo(resource.getIp()
+                    , resource.getPort()
+                    , vo.getProtocolPort()
+                    , vo.getProtocol()
+                    , resource.getName()
+                    , resource.getTypeName()
+                    , vo.getAccount()
+                    , vo.getPasswordCipher()))
+            );
         }
         String url = runnerMapVo.getUrl() + "api/rest/account/accesstest";
         JSONObject paramJson = new JSONObject();
-        paramJson.put("accountList", list);
+        paramJson.put("accountList", accessTestVoList);
         HttpRequestUtil request = HttpRequestUtil.post(url).setPayload(paramJson.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
         JSONObject resultJson = request.getResultJson();
         String error = request.getError();
