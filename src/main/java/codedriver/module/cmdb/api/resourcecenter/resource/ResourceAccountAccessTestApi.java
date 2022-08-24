@@ -103,9 +103,8 @@ public class ResourceAccountAccessTestApi extends PrivateApiComponentBase {
             for (AccountVo vo : accountList) {
                 list.add(new JSONObject() {
                     {
-                        this.put("resourceId", resourceId);
                         this.put("host", resource.getIp() != null ? resource.getIp() : "");
-                        this.put("port", vo.getProtocolPort() != null ? vo.getProtocolPort() : "");
+                        this.put("port", resource.getPort() != null ? resource.getPort() : "");
                         this.put("protocolPort", vo.getProtocolPort() != null ? vo.getProtocolPort() : "");
                         this.put("protocol", vo.getProtocol() != null ? vo.getProtocol() : "");
                         this.put("nodeName", resource.getName() != null ? resource.getName() : "");
