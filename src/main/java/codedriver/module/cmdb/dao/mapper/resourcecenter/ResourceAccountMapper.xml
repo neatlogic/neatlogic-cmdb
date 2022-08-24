@@ -336,6 +336,7 @@
         SELECT cra.id,
         cra.name,
         cra.account,
+        cra.`password`,
         crap.`name` as protocol,
         crap.`port` as protocolPort,
         cra.`fcu`,
