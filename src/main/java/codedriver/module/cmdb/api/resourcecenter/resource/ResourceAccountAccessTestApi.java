@@ -7,8 +7,8 @@ package codedriver.module.cmdb.api.resourcecenter.resource;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.autoexec.exception.AutoexecJobRunnerGroupRunnerNotFoundException;
-import codedriver.framework.autoexec.exception.AutoexecJobRunnerNotMatchException;
+import codedriver.framework.exception.runner.RunnerGroupRunnerNotFoundException;
+import codedriver.framework.exception.runner.RunnerNotMatchException;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceAccountAccessTestException;
@@ -86,13 +86,13 @@ public class ResourceAccountAccessTestApi extends PrivateApiComponentBase {
             if (IpUtil.isBelongSegment(resource.getIp(), networkVo.getNetworkIp(), networkVo.getMask())) {
                 RunnerGroupVo groupVo = runnerMapper.getRunnerMapGroupById(networkVo.getGroupId());
                 if (CollectionUtils.isEmpty(groupVo.getRunnerMapList())) {
-                    throw new AutoexecJobRunnerGroupRunnerNotFoundException(groupVo.getName() + "(" + networkVo.getGroupId() + ") ");
+                    throw new RunnerGroupRunnerNotFoundException(groupVo.getName() + "(" + networkVo.getGroupId() + ") ");
                 }
                 runnerMapList = groupVo.getRunnerMapList();
             }
         }
         if (CollectionUtils.isEmpty(runnerMapList)) {
-            throw new AutoexecJobRunnerNotMatchException();
+            throw new RunnerNotMatchException();
         }
         // 随机分配runner
         int runnerMapIndex = (int) (Math.random() * runnerMapList.size());
