@@ -221,27 +221,27 @@ public class ListRelativeRelApi extends PrivateApiComponentBase {
                         if (op.isPresent()) {
                             RelVo rel = op.get();
                             //如果关系两端其中之一是抽象模型，则不能作为关联关系
-                            CiVo fromCi = ciMapper.getCiById(rel.getFromCiId());
-                            CiVo toCi = ciMapper.getCiById(rel.getToCiId());
-                            if (fromCi.getIsAbstract().equals(0) && toCi.getIsAbstract().equals(0)) {
-                                //排除当前模型的关系
-                                //if (ciRelList.stream().noneMatch(d -> d.getId().equals(rel.getId()))) {
-                                RelativeRelVo relativeRelVo = new RelativeRelVo();
-                                relativeRelVo.setRelativeRelId(rel.getId());
-                                relativeRelVo.setRelativeRelLabel(rel.getFromLabel() + "->" + rel.getToLabel());
-                                relativeRelVo.setFromPath(f.getPath());
-                                relativeRelVo.setToPath(t.getPath());
-                                if (!relativeRelMap.containsKey(relativeRelVo.getRelId())) {
-                                    relativeRelMap.put(relativeRelVo.getRelativeRelId(), relativeRelVo);
-                                } else {
+                            //CiVo fromCi = ciMapper.getCiById(rel.getFromCiId());
+                            //CiVo toCi = ciMapper.getCiById(rel.getToCiId());
+                            //if (fromCi.getIsAbstract().equals(0) && toCi.getIsAbstract().equals(0)) {
+                            //排除当前模型的关系
+                            //if (ciRelList.stream().noneMatch(d -> d.getId().equals(rel.getId()))) {
+                            RelativeRelVo relativeRelVo = new RelativeRelVo();
+                            relativeRelVo.setRelativeRelId(rel.getId());
+                            relativeRelVo.setRelativeRelLabel(rel.getFromLabel() + "->" + rel.getToLabel());
+                            relativeRelVo.setFromPath(f.getPath());
+                            relativeRelVo.setToPath(t.getPath());
+                            if (!relativeRelMap.containsKey(relativeRelVo.getRelId())) {
+                                relativeRelMap.put(relativeRelVo.getRelativeRelId(), relativeRelVo);
+                            } else {
                                     //比较路径长度，用路径比较短的关系代替路径比较长的关系
                                     if ((relativeRelMap.get(relativeRelVo.getRelativeRelId()).getFromPath().split("[>|<]").length + relativeRelMap.get(relativeRelVo.getRelativeRelId()).getToPath().split("[>|<]").length)
                                             > (relativeRelVo.getFromPath().split("[>|<]").length + relativeRelVo.getToPath().split("[>|<]").length)) {
                                         relativeRelMap.put(relativeRelVo.getRelativeRelId(), relativeRelVo);
                                     }
                                 }
-                                //}
-                            }
+                            //}
+                            //}
                         }
                     }
                 }

@@ -332,9 +332,8 @@ public class LegalValidManager {
                 if (relVo.getToIsUnique().equals(1)) {
                     for (RelEntityVo fromRelEntityVo : fromRelEntityList) {
                         List<RelEntityVo> checkFromRelEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(fromRelEntityVo.getToCiEntityId(), relVo.getId(), null);
-                        if (checkFromRelEntityList.stream().anyMatch(r -> !r.getFromCiEntityId().equals(ciEntityVo.getId()))) {
-                            errorList.add(new RelEntityIsUsedException(RelDirectionType.FROM, relVo));
-                        }
+                        Optional<RelEntityVo> op = checkFromRelEntityList.stream().filter(r -> !r.getFromCiEntityId().equals(ciEntityVo.getId())).findFirst();
+                        op.ifPresent(relEntityVo -> errorList.add(new RelEntityIsUsedException(RelDirectionType.FROM, relVo, relEntityVo)));
                     }
                 }
             }
@@ -357,8 +356,9 @@ public class LegalValidManager {
                 if (relVo.getFromIsUnique().equals(1)) {
                     for (RelEntityVo toRelEntityVo : toRelEntityList) {
                         List<RelEntityVo> checkFromRelEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(toRelEntityVo.getFromCiEntityId(), relVo.getId(), null);
-                        if (checkFromRelEntityList.stream().anyMatch(r -> !r.getToCiEntityId().equals(ciEntityVo.getId()))) {
-                            throw new RelEntityIsUsedException(RelDirectionType.TO, relVo);
+                        Optional<RelEntityVo> op = checkFromRelEntityList.stream().filter(r -> !r.getToCiEntityId().equals(ciEntityVo.getId())).findFirst();
+                        if (op.isPresent()) {
+                            throw new RelEntityIsUsedException(RelDirectionType.TO, relVo, op.get());
                         }
                     }
                 }

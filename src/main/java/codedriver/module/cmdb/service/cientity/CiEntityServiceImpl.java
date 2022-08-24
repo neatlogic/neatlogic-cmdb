@@ -930,8 +930,9 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     if (relVo.getToIsUnique().equals(1)) {
                         for (RelEntityTransactionVo fromRelEntityVo : fromRelEntityTransactionList) {
                             List<RelEntityVo> checkFromRelEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(fromRelEntityVo.getToCiEntityId(), relVo.getId(), null);
-                            if (checkFromRelEntityList.stream().anyMatch(r -> !r.getFromCiEntityId().equals(ciEntityTransactionVo.getCiEntityId()))) {
-                                throw new RelEntityIsUsedException(RelDirectionType.FROM, relVo);
+                            Optional<RelEntityVo> op = checkFromRelEntityList.stream().filter(r -> !r.getFromCiEntityId().equals(ciEntityTransactionVo.getCiEntityId())).findFirst();
+                            if (op.isPresent()) {
+                                throw new RelEntityIsUsedException(RelDirectionType.FROM, relVo, op.get());
                             }
                         }
                     }
@@ -958,8 +959,9 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     if (relVo.getFromIsUnique().equals(1)) {
                         for (RelEntityTransactionVo toRelEntityVo : toRelEntityTransactionList) {
                             List<RelEntityVo> checkFromRelEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(toRelEntityVo.getFromCiEntityId(), relVo.getId(), null);
-                            if (checkFromRelEntityList.stream().anyMatch(r -> !r.getToCiEntityId().equals(ciEntityTransactionVo.getCiEntityId()))) {
-                                throw new RelEntityIsUsedException(RelDirectionType.TO, relVo);
+                            Optional<RelEntityVo> op = checkFromRelEntityList.stream().filter(r -> !r.getToCiEntityId().equals(ciEntityTransactionVo.getCiEntityId())).findFirst();
+                            if (op.isPresent()) {
+                                throw new RelEntityIsUsedException(RelDirectionType.TO, relVo, op.get());
                             }
                         }
                     }
@@ -1011,8 +1013,9 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     if (relVo.getToIsUnique().equals(1)) {
                         for (RelEntityTransactionVo fromRelEntityVo : fromRelEntityTransactionList) {
                             List<RelEntityVo> checkFromRelEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(fromRelEntityVo.getToCiEntityId(), relVo.getId(), null);
-                            if (checkFromRelEntityList.stream().anyMatch(r -> !r.getFromCiEntityId().equals(ciEntityTransactionVo.getCiEntityId()))) {
-                                throw new RelEntityIsUsedException(RelDirectionType.FROM, relVo);
+                            Optional<RelEntityVo> op = checkFromRelEntityList.stream().filter(r -> !r.getFromCiEntityId().equals(ciEntityTransactionVo.getCiEntityId())).findFirst();
+                            if (op.isPresent()) {
+                                throw new RelEntityIsUsedException(RelDirectionType.FROM, relVo, op.get());
                             }
                         }
                     }
@@ -1062,8 +1065,9 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     if (relVo.getFromIsUnique().equals(1)) {
                         for (RelEntityTransactionVo toRelEntityVo : toRelEntityTransactionList) {
                             List<RelEntityVo> checkFromRelEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(toRelEntityVo.getFromCiEntityId(), relVo.getId(), null);
-                            if (checkFromRelEntityList.stream().anyMatch(r -> !r.getToCiEntityId().equals(ciEntityTransactionVo.getCiEntityId()))) {
-                                throw new RelEntityIsUsedException(RelDirectionType.TO, relVo);
+                            Optional<RelEntityVo> op = checkFromRelEntityList.stream().filter(r -> !r.getToCiEntityId().equals(ciEntityTransactionVo.getCiEntityId())).findFirst();
+                            if (op.isPresent()) {
+                                throw new RelEntityIsUsedException(RelDirectionType.TO, relVo, op.get());
                             }
                         }
                     }
@@ -1526,8 +1530,9 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         if (relVo.getToIsUnique().equals(1)) {
                             for (RelEntityTransactionVo fromRelEntityVo : fromRelEntityTransactionList) {
                                 List<RelEntityVo> checkFromRelEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(fromRelEntityVo.getToCiEntityId(), relVo.getId(), null);
-                                if (checkFromRelEntityList.stream().anyMatch(r -> !r.getFromCiEntityId().equals(ciEntityTransactionVo.getCiEntityId()))) {
-                                    throw new RelEntityIsUsedException(RelDirectionType.FROM, relVo);
+                                Optional<RelEntityVo> op = checkFromRelEntityList.stream().filter(r -> !r.getFromCiEntityId().equals(ciEntityTransactionVo.getCiEntityId())).findFirst();
+                                if (op.isPresent()) {
+                                    throw new RelEntityIsUsedException(RelDirectionType.FROM, relVo, op.get());
                                 }
                             }
                         }
@@ -1572,8 +1577,9 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         if (relVo.getFromIsUnique().equals(1)) {
                             for (RelEntityTransactionVo toRelEntityVo : toRelEntityTransactionList) {
                                 List<RelEntityVo> checkFromRelEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(toRelEntityVo.getFromCiEntityId(), relVo.getId(), null);
-                                if (checkFromRelEntityList.stream().anyMatch(r -> !r.getToCiEntityId().equals(ciEntityTransactionVo.getCiEntityId()))) {
-                                    throw new RelEntityIsUsedException(RelDirectionType.TO, relVo);
+                                Optional<RelEntityVo> op = checkFromRelEntityList.stream().filter(r -> !r.getToCiEntityId().equals(ciEntityTransactionVo.getCiEntityId())).findFirst();
+                                if (op.isPresent()) {
+                                    throw new RelEntityIsUsedException(RelDirectionType.TO, relVo, op.get());
                                 }
                             }
                         }
