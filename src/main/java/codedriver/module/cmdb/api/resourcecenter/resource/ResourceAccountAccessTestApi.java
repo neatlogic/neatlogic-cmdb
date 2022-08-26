@@ -108,7 +108,8 @@ public class ResourceAccountAccessTestApi extends PrivateApiComponentBase {
                     , resource.getName()
                     , resource.getTypeName()
                     , vo.getAccount()
-                    , vo.getPasswordCipher()))
+                    , vo.getPasswordCipher()
+                    , vo.getName()))
             );
         }
         String url = runnerMapVo.getUrl() + "api/rest/account/accesstest";
