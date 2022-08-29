@@ -68,6 +68,7 @@ public class ResourceAccountAccessTestApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "resourceId", type = ApiParamType.LONG, isRequired = true, desc = "资源id"),
+            @Param(name = "accountIdList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "账号ID列表"),
     })
     @Output({
             @Param(explode = AccountVo.class),
@@ -76,6 +77,7 @@ public class ResourceAccountAccessTestApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long resourceId = paramObj.getLong("resourceId");
+        List<Long> accountIdList = paramObj.getJSONArray("accountIdList").toJavaList(Long.class);
         ResourceVo resource = resourceMapper.getResourceById(resourceId, TenantContext.get().getDataDbName());
         if (resource == null) {
             throw new ResourceNotFoundException(resourceId);
@@ -99,7 +101,7 @@ public class ResourceAccountAccessTestApi extends PrivateApiComponentBase {
         int runnerMapIndex = (int) (Math.random() * runnerMapList.size());
         RunnerMapVo runnerMapVo = runnerMapList.get(runnerMapIndex);
         List<AccountAccessTestVo> accessTestVoList = new ArrayList<>();
-        List<AccountVo> accountList = resourceAccountMapper.getResourceAccountListByResourceId(resourceId, null);
+        List<AccountVo> accountList = resourceAccountMapper.getAccountListByIdList(accountIdList);
         if (accountList.size() > 0) {
             accountList.forEach(vo -> accessTestVoList.add(new AccountAccessTestVo(resource.getIp()
                     , resource.getPort()
