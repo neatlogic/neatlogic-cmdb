@@ -17,6 +17,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,24 +55,48 @@ public class ListAllCiRelApi extends PrivateApiComponentBase {
     }
 
     @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
+            @Param(name = "ciIdList", type = ApiParamType.JSONARRAY, desc = "路径包含的模型id"),
             @Param(name = "direction", type = ApiParamType.ENUM, isRequired = true, desc = "方向", member = RelDirectionType.class)})
     @Output({@Param(explode = RelVo[].class)})
     @Description(desc = "获取模型所有关系列表接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("ciId");
+        JSONArray ciIdListJson = jsonObj.getJSONArray("ciIdList");
+        List<Long> ciIdList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(ciIdListJson)) {
+            for (int i = 0; i < ciIdListJson.size(); i++) {
+                ciIdList.add(ciIdListJson.getLong(i));
+            }
+        }
         List<CiRelVo> path = new ArrayList<>();
         List<List<CiRelVo>> pathList = new ArrayList<>();
         RelDirectionType directionType = RelDirectionType.get(jsonObj.getString("direction"));
         if (directionType != null) {
             getRelPathByCiId(directionType, ciId, path, pathList);
+            if (CollectionUtils.isNotEmpty(pathList) && CollectionUtils.isNotEmpty(ciIdList)) {
+                for (int i = pathList.size() - 1; i >= 0; i--) {
+                    List<CiRelVo> pList = pathList.get(i);
+                    boolean allMatch = true;
+                    for (Long cId : ciIdList) {
+                        if (pList.stream().noneMatch(d -> d.getCiId().equals(cId))) {
+                            allMatch = false;
+                            break;
+                        }
+                    }
+                    if (!allMatch) {
+                        pathList.remove(i);
+                    }
+                }
+            }
+/*
             for (List<CiRelVo> p : pathList) {
                 StringBuilder ps = new StringBuilder();
                 for (CiRelVo ciRelVo : p) {
                     ps.append(ciRelVo.getCiLabel()).append("->");
                 }
                 System.out.println(ps);
-            }
+            }*/
         }
         return pathList;
     }
