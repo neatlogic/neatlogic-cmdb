@@ -89,15 +89,23 @@ public class ListAllCiRelApi extends PrivateApiComponentBase {
             if (CollectionUtils.isNotEmpty(finalRelList)) {
                 for (RelVo relVo : finalRelList) {
                     CiRelVo ciRelVo = new CiRelVo();
-                    ciRelVo.setCiId(relVo.getFromCiId());
-                    ciRelVo.setCiName(relVo.getFromCiName());
-                    ciRelVo.setCiLabel(relVo.getFromCiLabel());
                     ciRelVo.setRelId(relVo.getId());
-                    ciRelVo.setRelName(relVo.getToName());
-                    ciRelVo.setRelLabel(relVo.getToLabel());
+                    if (direction == RelDirectionType.FROM) {
+                        ciRelVo.setCiId(relVo.getFromCiId());
+                        ciRelVo.setCiName(relVo.getFromCiName());
+                        ciRelVo.setCiLabel(relVo.getFromCiLabel());
+                        ciRelVo.setRelName(relVo.getToName());
+                        ciRelVo.setRelLabel(relVo.getToLabel());
+                    } else {
+                        ciRelVo.setCiId(relVo.getToCiId());
+                        ciRelVo.setCiName(relVo.getToCiName());
+                        ciRelVo.setCiLabel(relVo.getToCiLabel());
+                        ciRelVo.setRelName(relVo.getFromName());
+                        ciRelVo.setRelLabel(relVo.getFromLabel());
+                    }
                     List<CiRelVo> newpath = new ArrayList<>(path);
                     newpath.add(ciRelVo);
-                    getRelPathByCiId(direction, relVo.getToCiId(), newpath, pathList);
+                    getRelPathByCiId(direction, direction == RelDirectionType.FROM ? relVo.getToCiId() : relVo.getFromCiId(), newpath, pathList);
                 }
             } else {
                 CiVo ciVo = ciMapper.getCiById(ciId);
