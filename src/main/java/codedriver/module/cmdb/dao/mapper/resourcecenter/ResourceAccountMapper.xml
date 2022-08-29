@@ -43,7 +43,7 @@
         a.`account`,
         a.`password` as passwordCipher,
         b.name as protocol,
-        b.`port`,
+        b.`port` as protocolPort,
         a.`fcu`,
         a.`fcd`,
         a. `lcu`,
