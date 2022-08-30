@@ -63,9 +63,9 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
             @Param(name = "ciEntityId", type = ApiParamType.LONG, isRequired = true, desc = "配置项id"),
-            @Param(name = "limitRelEntity", type = ApiParamType.BOOLEAN, desc = "是否限制关系数量"),
-            @Param(name = "limitAttrEntity", type = ApiParamType.BOOLEAN, desc = "是否限制引用属性数量"),
-            @Param(name = "showAttrRelList", type = ApiParamType.JSONARRAY, desc = "需要显示的字段列表，包括属性关系和常量"),
+            @Param(name = "limitRelEntity", type = ApiParamType.BOOLEAN, isRequired = true, desc = "是否限制关系数量，默认值是:true"),
+            @Param(name = "limitAttrEntity", type = ApiParamType.BOOLEAN, isRequired = true, desc = "是否限制引用属性数量，默认值是:true"),
+            @Param(name = "showAttrRelList", type = ApiParamType.JSONARRAY, desc = "需要显示的字段列表，包括属性关系和常量，格式：attr_xxx,relfrom_xxx或relto_xxx，xxx是对应id"),
             @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "是否需要操作列，如果需要检查操作权限，会根据结果返回action列")})
     @Output({@Param(explode = CiEntityVo.class)})
     @Description(desc = "获取配置项详细信息接口")
@@ -75,6 +75,12 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
         Long ciId = jsonObj.getLong("ciId");
         Boolean limitRelEntity = jsonObj.getBoolean("limitRelEntity");
         Boolean limitAttrEntity = jsonObj.getBoolean("limitAttrEntity");
+        if (limitRelEntity == null) {
+            limitRelEntity = true;
+        }
+        if (limitAttrEntity == null) {
+            limitAttrEntity = true;
+        }
         JSONArray showAttrRelList = jsonObj.getJSONArray("showAttrRelList");
         Set<String> showAttrRelSet = new HashSet<>();
         if (CollectionUtils.isNotEmpty(showAttrRelList)) {
@@ -87,12 +93,8 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
         CiEntityVo pCiEntityVo = new CiEntityVo();
         pCiEntityVo.setId(ciEntityId);
         pCiEntityVo.setCiId(ciId);
-        if (limitRelEntity != null) {
-            pCiEntityVo.setLimitRelEntity(limitRelEntity);
-        }
-        if (limitAttrEntity != null) {
-            pCiEntityVo.setLimitAttrEntity(limitAttrEntity);
-        }
+        pCiEntityVo.setLimitRelEntity(limitRelEntity);
+        pCiEntityVo.setLimitAttrEntity(limitAttrEntity);
         CiEntityVo ciEntityVo = ciEntityService.getCiEntityById(pCiEntityVo);
         if (ciEntityVo == null) {
             throw new CiEntityNotFoundException(ciEntityId);

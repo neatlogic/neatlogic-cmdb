@@ -1,10 +1,12 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
 package codedriver.module.cmdb.relativerel;
 
+import codedriver.framework.asynchronization.thread.CodeDriverThread;
+import codedriver.framework.asynchronization.threadpool.CachedThreadPool;
 import codedriver.framework.cmdb.dto.ci.RelativeRelItemVo;
 import codedriver.framework.cmdb.dto.ci.RelativeRelVo;
 import codedriver.framework.cmdb.dto.cientity.RelEntityVo;
@@ -81,67 +83,96 @@ public class RelativeRelManager {
     private static final Pattern p = Pattern.compile("(([<|>])([^<>]+))");
 
 
+    public static void rebuild(Long relId) {
+        CachedThreadPool.execute(new CodeDriverThread("RELATIVE-RELENTITY-REBUILD-" + relId, true) {
+            @Override
+            protected void execute() {
+                List<RelativeRelVo> relativeRelList = relMapper.getRelativeRelByRelId(relId);
+                if (CollectionUtils.isNotEmpty(relativeRelList)) {
+                    RelEntityVo pRelEntityVo = new RelEntityVo();
+                    pRelEntityVo.setRelId(relId);
+                    pRelEntityVo.setPageSize(100);
+                    pRelEntityVo.setCurrentPage(1);
+                    List<RelEntityVo> relEntityList = relEntityMapper.getRelEntityByRelId(pRelEntityVo);
+                    while (CollectionUtils.isNotEmpty(relEntityList)) {
+                        for (RelEntityVo relEntityVo : relEntityList) {
+                            buildSingleRelEntity(relativeRelList, relEntityVo);
+                        }
+                        pRelEntityVo.setCurrentPage(pRelEntityVo.getCurrentPage() + 1);
+                        relEntityList = relEntityMapper.getRelEntityByRelId(pRelEntityVo);
+                    }
+                }
+            }
+        });
+
+    }
+
+    private static void buildSingleRelEntity(List<RelativeRelVo> relativeRelList, RelEntityVo relEntityVo) {
+        for (RelativeRelVo relativeRelVo : relativeRelList) {
+            List<Long> fromCiEntityIdList = new ArrayList<>();
+            if (StringUtils.isNotBlank(relativeRelVo.getFromPath())) {
+                Matcher fromMatch = p.matcher(relativeRelVo.getFromPath());
+                List<RelativeRelItemVo> fromItemList = new ArrayList<>();
+                while (fromMatch.find()) {
+                    RelativeRelItemVo relativeRelItemVo = new RelativeRelItemVo();
+                    String direction = fromMatch.group(2).equals(">") ? "to" : "from";
+                    relativeRelItemVo.setRelId(Long.parseLong(fromMatch.group(3)));
+                    relativeRelItemVo.setDirection(direction);
+                    fromItemList.add(relativeRelItemVo);
+                }
+                fromCiEntityIdList = relEntityMapper.getCiEntityIdByRelativeRelPath(fromItemList, relEntityVo.getId(), "from");
+            } else {
+                fromCiEntityIdList.add(relEntityVo.getFromCiEntityId());
+            }
+
+            List<RelEntityVo> newRelEntityList = new ArrayList<>();
+            if (CollectionUtils.isNotEmpty(fromCiEntityIdList)) {
+                List<Long> toCiEntityIdList = new ArrayList<>();
+                if (StringUtils.isNotBlank(relativeRelVo.getToPath())) {
+                    Matcher toMatch = p.matcher(relativeRelVo.getToPath());
+                    List<RelativeRelItemVo> toItemList = new ArrayList<>();
+                    while (toMatch.find()) {
+                        RelativeRelItemVo relativeRelItemVo = new RelativeRelItemVo();
+                        String direction = toMatch.group(2).equals(">") ? "to" : "from";
+                        relativeRelItemVo.setRelId(Long.parseLong(toMatch.group(3)));
+                        relativeRelItemVo.setDirection(direction);
+                        toItemList.add(relativeRelItemVo);
+                    }
+                    toCiEntityIdList = relEntityMapper.getCiEntityIdByRelativeRelPath(toItemList, relEntityVo.getId(), "to");
+                } else {
+                    toCiEntityIdList.add(relEntityVo.getToCiEntityId());
+                }
+                if (CollectionUtils.isNotEmpty(toCiEntityIdList)) {
+                    for (Long fromCiEntityId : fromCiEntityIdList) {
+                        for (Long toCiEntityId : toCiEntityIdList) {
+                            if (relEntityMapper.getRelEntityByFromCiEntityIdAndToCiEntityIdAndRelId(fromCiEntityId, toCiEntityId, relativeRelVo.getRelativeRelId()) == null) {
+                                RelEntityVo newRelEntityVo = new RelEntityVo();
+                                newRelEntityVo.setFromCiEntityId(fromCiEntityId);
+                                newRelEntityVo.setToCiEntityId(toCiEntityId);
+                                newRelEntityVo.setRelId(relativeRelVo.getRelativeRelId());
+                                newRelEntityVo.setSourceRelEntityId(relEntityVo.getId());
+                                newRelEntityVo.setRelativeRelHash(relativeRelVo.getHash());
+                                newRelEntityList.add(newRelEntityVo);
+                                relEntityMapper.insertRelEntity(newRelEntityVo);
+                            }
+                        }
+                    }
+                }
+            }
+            if (CollectionUtils.isNotEmpty(newRelEntityList)) {
+                rebuildRelEntityIndex(newRelEntityList);
+            }
+        }
+
+    }
+
     public static void insert(RelEntityVo sourceRelEntityVo) {
         if (sourceRelEntityVo != null) {
             AfterTransactionJob<RelEntityVo> job = new AfterTransactionJob<>("RELATIVE-RELENTITY-APPENDER");
             job.execute(sourceRelEntityVo, relEntityVo -> {
                 List<RelativeRelVo> relativeRelList = relMapper.getRelativeRelByRelId(relEntityVo.getRelId());
                 if (CollectionUtils.isNotEmpty(relativeRelList)) {
-                    for (RelativeRelVo relativeRelVo : relativeRelList) {
-                        List<Long> fromCiEntityIdList = new ArrayList<>();
-                        if (StringUtils.isNotBlank(relativeRelVo.getFromPath())) {
-                            Matcher fromMatch = p.matcher(relativeRelVo.getFromPath());
-                            List<RelativeRelItemVo> fromItemList = new ArrayList<>();
-                            while (fromMatch.find()) {
-                                RelativeRelItemVo relativeRelItemVo = new RelativeRelItemVo();
-                                String direction = fromMatch.group(2).equals(">") ? "to" : "from";
-                                relativeRelItemVo.setRelId(Long.parseLong(fromMatch.group(3)));
-                                relativeRelItemVo.setDirection(direction);
-                                fromItemList.add(relativeRelItemVo);
-                            }
-                            fromCiEntityIdList = relEntityMapper.getCiEntityIdByRelativeRelPath(fromItemList, relEntityVo.getId(), "from");
-                        } else {
-                            fromCiEntityIdList.add(relEntityVo.getFromCiEntityId());
-                        }
-
-                        List<RelEntityVo> newRelEntityList = new ArrayList<>();
-                        if (CollectionUtils.isNotEmpty(fromCiEntityIdList)) {
-                            List<Long> toCiEntityIdList = new ArrayList<>();
-                            if (StringUtils.isNotBlank(relativeRelVo.getToPath())) {
-                                Matcher toMatch = p.matcher(relativeRelVo.getToPath());
-                                List<RelativeRelItemVo> toItemList = new ArrayList<>();
-                                while (toMatch.find()) {
-                                    RelativeRelItemVo relativeRelItemVo = new RelativeRelItemVo();
-                                    String direction = toMatch.group(2).equals(">") ? "to" : "from";
-                                    relativeRelItemVo.setRelId(Long.parseLong(toMatch.group(3)));
-                                    relativeRelItemVo.setDirection(direction);
-                                    toItemList.add(relativeRelItemVo);
-                                }
-                                toCiEntityIdList = relEntityMapper.getCiEntityIdByRelativeRelPath(toItemList, relEntityVo.getId(), "to");
-                            } else {
-                                toCiEntityIdList.add(relEntityVo.getToCiEntityId());
-                            }
-                            if (CollectionUtils.isNotEmpty(toCiEntityIdList)) {
-                                for (Long fromCiEntityId : fromCiEntityIdList) {
-                                    for (Long toCiEntityId : toCiEntityIdList) {
-                                        if (relEntityMapper.getRelEntityByFromCiEntityIdAndToCiEntityIdAndRelId(fromCiEntityId, toCiEntityId, relativeRelVo.getRelativeRelId()) == null) {
-                                            RelEntityVo newRelEntityVo = new RelEntityVo();
-                                            newRelEntityVo.setFromCiEntityId(fromCiEntityId);
-                                            newRelEntityVo.setToCiEntityId(toCiEntityId);
-                                            newRelEntityVo.setRelId(relativeRelVo.getRelativeRelId());
-                                            newRelEntityVo.setSourceRelEntityId(relEntityVo.getId());
-                                            newRelEntityVo.setRelativeRelHash(relativeRelVo.getHash());
-                                            newRelEntityList.add(newRelEntityVo);
-                                            relEntityMapper.insertRelEntity(newRelEntityVo);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        if (CollectionUtils.isNotEmpty(newRelEntityList)) {
-                            rebuildRelEntityIndex(newRelEntityList);
-                        }
-                    }
+                    buildSingleRelEntity(relativeRelList, relEntityVo);
                 }
             });
         }
