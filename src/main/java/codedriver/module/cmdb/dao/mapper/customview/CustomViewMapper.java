@@ -39,6 +39,8 @@ public interface CustomViewMapper {
 
     void insertCustomViewRel(CustomViewRelVo customViewRelVo);
 
+    void insertCiCustomView(@Param("ciId") Long ciId, @Param("customViewId") Long customViewId);
+
     void insertCustomView(CustomViewVo customViewVo);
 
     void insertCustomViewCi(CustomViewCiVo customViewCiVo);

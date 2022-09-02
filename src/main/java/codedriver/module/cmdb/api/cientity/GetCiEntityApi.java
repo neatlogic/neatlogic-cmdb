@@ -107,6 +107,7 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
         if (needAction && ciVo.getIsVirtual().equals(0) && ciVo.getIsAbstract().equals(0)) {
             ciEntityVo.setAuthData(new HashMap<String, Boolean>() {
                 {
+                    this.put(CiAuthType.CIMANAGE.getValue(), CiAuthChecker.chain().checkCiManagePrivilege(ciEntityVo.getCiId()).check());
                     this.put(CiAuthType.CIENTITYUPDATE.getValue(), CiAuthChecker.chain().checkCiEntityUpdatePrivilege(ciEntityVo.getCiId()).checkCiEntityIsInGroup(ciEntityVo.getId(), GroupType.MAINTAIN)
                             .check());
                     this.put(CiAuthType.PASSWORDVIEW.getValue(), CiAuthChecker.chain().checkViewPasswordPrivilege(ciEntityVo.getCiId()).checkCiEntityIsInGroup(ciEntityVo.getId(), GroupType.READONLY, GroupType.MAINTAIN)

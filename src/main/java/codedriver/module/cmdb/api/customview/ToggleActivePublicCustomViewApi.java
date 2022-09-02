@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -7,6 +7,7 @@ package codedriver.module.cmdb.api.customview;
 
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.customview.CustomViewVo;
+import codedriver.framework.cmdb.enums.customview.CustomViewType;
 import codedriver.framework.cmdb.exception.customview.CustomViewIsPrivateException;
 import codedriver.framework.cmdb.exception.customview.CustomViewNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -54,7 +55,7 @@ public class ToggleActivePublicCustomViewApi extends PrivateApiComponentBase {
         if (customViewVo == null) {
             throw new CustomViewNotFoundException(id);
         }
-        if (customViewVo.getIsPrivate().equals(1)) {
+        if (!customViewVo.getType().equals(CustomViewType.PUBLIC.getValue())) {
             throw new CustomViewIsPrivateException(customViewVo);
         }
         customViewVo.setIsActive(paramObj.getInteger("isActive"));

@@ -9,18 +9,21 @@ import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.cmdb.dto.customview.*;
+import codedriver.framework.cmdb.enums.customview.CustomViewType;
 import codedriver.framework.cmdb.enums.customview.RelType;
 import codedriver.framework.cmdb.exception.customview.CustomViewCiNotFoundException;
 import codedriver.framework.cmdb.exception.customview.CustomViewEmptyException;
 import codedriver.framework.cmdb.exception.customview.CustomViewNameIsExistsException;
 import codedriver.framework.cmdb.exception.customview.CustomViewPrivilegeException;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.auth.label.CUSTOMVIEW_MODIFY;
 import codedriver.module.cmdb.dao.mapper.customview.CustomViewMapper;
+import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.service.customview.CustomViewService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -62,19 +65,23 @@ public class SaveCustomViewApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "视图id，不提供代表新增"),
-            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, xss = true, maxLength = 50, desc = "名称"),
-            @Param(name = "icon", type = ApiParamType.STRING, desc = "图标"),
-            @Param(name = "isActive", type = ApiParamType.INTEGER, isRequired = true, desc = "是否激活"),
-            @Param(name = "isPrivate", type = ApiParamType.INTEGER, isRequired = true, desc = "是否私有视图"),
-            @Param(name = "config", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "拓扑图配置")})
+    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "视图id，不提供代表新增"), @Param(name = "ciId", type = ApiParamType.LONG, desc = "模型id，保存场景视图时需要提供"), @Param(name = "name", type = ApiParamType.STRING, isRequired = true, xss = true, maxLength = 50, desc = "名称"), @Param(name = "icon", type = ApiParamType.STRING, desc = "图标"), @Param(name = "isActive", type = ApiParamType.INTEGER, isRequired = true, desc = "是否激活"), @Param(name = "type", type = ApiParamType.ENUM, member = CustomViewType.class, isRequired = true, desc = "类型"), @Param(name = "config", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "拓扑图配置")})
     @Output({@Param(name = "Return", type = ApiParamType.LONG, desc = "视图id")})
     @Description(desc = "保存自定义视图接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        int isPrivate = jsonObj.getIntValue("isPrivate");
-        if (isPrivate == 0) {
+        String type = jsonObj.getString("type");
+        Long ciId = null;
+        if (type.equals(CustomViewType.PUBLIC.getValue())) {
             if (!AuthActionChecker.check(CUSTOMVIEW_MODIFY.class.getSimpleName())) {
+                throw new CustomViewPrivilegeException(CustomViewPrivilegeException.Action.SAVE);
+            }
+        } else if (type.equals(CustomViewType.SCENE.getValue())) {
+            ciId = jsonObj.getLong("ciId");
+            if (ciId == null) {
+                throw new ParamNotExistsException("ciId");
+            }
+            if (!CiAuthChecker.chain().checkCiManagePrivilege(ciId).check()) {
                 throw new CustomViewPrivilegeException(CustomViewPrivilegeException.Action.SAVE);
             }
         }
@@ -84,7 +91,7 @@ public class SaveCustomViewApi extends PrivateApiComponentBase {
             if (checkView == null) {
                 throw new CustomViewCiNotFoundException();
             }
-            if (isPrivate == 1) {
+            if (type.equals(CustomViewType.PRIVATE.getValue())) {
                 if (!checkView.getFcu().equalsIgnoreCase(UserContext.get().getUserUuid(true))) {
                     throw new CustomViewPrivilegeException(CustomViewPrivilegeException.Action.SAVE);
                 }
@@ -95,7 +102,7 @@ public class SaveCustomViewApi extends PrivateApiComponentBase {
         if (customViewMapper.checkCustomViewNameIsExists(customViewVo) > 0) {
             throw new CustomViewNameIsExistsException(customViewVo.getName());
         }
-        if (isPrivate == 1) {
+        if (type.equals(CustomViewType.PRIVATE.getValue())) {
             //私有视图默认都是激活
             customViewVo.setIsActive(1);
         }
@@ -223,6 +230,9 @@ public class SaveCustomViewApi extends PrivateApiComponentBase {
             if (id == null) {
                 customViewVo.setFcu(UserContext.get().getUserUuid(true));
                 customViewService.insertCustomView(customViewVo);
+                if (customViewVo.getType().equals(CustomViewType.SCENE.getValue()) && ciId != null) {
+                    customViewMapper.insertCiCustomView(ciId, customViewVo.getId());
+                }
             } else {
                 customViewVo.setLcu(UserContext.get().getUserUuid(true));
                 customViewService.updateCustomView(customViewVo);

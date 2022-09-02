@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -9,6 +9,7 @@ import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.auth.core.AuthActionChecker;
 import codedriver.framework.cmdb.dto.customview.CustomViewVo;
+import codedriver.framework.cmdb.enums.customview.CustomViewType;
 import codedriver.framework.cmdb.exception.customview.CustomViewCiNotFoundException;
 import codedriver.framework.cmdb.exception.customview.CustomViewPrivilegeException;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -51,11 +52,11 @@ public class DeleteCustomViewApi extends PrivateApiComponentBase {
         if (customViewVo == null) {
             throw new CustomViewCiNotFoundException();
         }
-        if (customViewVo.getIsPrivate().equals(0)) {
+        if (customViewVo.getType().equals(CustomViewType.PUBLIC.getValue())) {
             if (!AuthActionChecker.check("CUSTOMVIEW_MODIFY")) {
                 throw new CustomViewPrivilegeException(CustomViewPrivilegeException.Action.DELETE);
             }
-        } else {
+        } else if (customViewVo.getType().equals(CustomViewType.PRIVATE.getValue())) {
             if (!customViewVo.getFcu().equalsIgnoreCase(UserContext.get().getUserUuid(true))) {
                 throw new CustomViewPrivilegeException(CustomViewPrivilegeException.Action.DELETE);
             }

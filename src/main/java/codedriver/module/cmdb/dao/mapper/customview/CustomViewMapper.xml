@@ -37,8 +37,8 @@
     <resultMap id="customViewMap" type="codedriver.framework.cmdb.dto.customview.CustomViewVo">
         <id property="id" column="id"/>
         <result property="name" column="name"/>
-        <result property="isPrivate" column="isPrivate"/>
         <result property="isActive" column="isActive"/>
+        <result property="type" column="type"/>
         <result property="fcu" column="fcu"/>
         <result property="fcd" column="fcd"/>
         <result property="lcu" column="lcu"/>
@@ -130,8 +130,8 @@
     <select id="getCustomViewByName" parameterType="java.lang.String" resultMap="customViewMap">
         SELECT a.id,
                a.name,
-               a.is_private  AS isPrivate,
                a.is_active   AS isActive,
+               a.type        AS type,
                a.fcu,
                a.fcd,
                a.lcu,
@@ -153,8 +153,8 @@
     <select id="getCustomViewById" parameterType="java.lang.Long" resultMap="customViewMap">
         SELECT a.id,
                a.name,
-               a.is_private  AS isPrivate,
                a.is_active   AS isActive,
+               a.type        AS type,
                a.fcu,
                a.fcd,
                a.lcu,
@@ -237,19 +237,23 @@
             <if test="isActive != null">
                 AND cc.is_active = #{isActive}
             </if>
+            <if test="ciId != null">
+                AND ccc.ci_id = #{ciId}
+            </if>
             <choose>
-                <when test="isPrivate == 0">
-                    AND cc.is_private = 0
-                </when>
-                <otherwise>
+                <!--不提供type代表是最低权限的搜索，需要返回私有视图和有权限查看的公共视图-->
+                <when test="type == null or type == ''">
                     <choose>
                         <when test="isAdmin == true">
-                            AND (cc.is_private = 0 OR (cc.is_private = 1 AND cc.fcu = #{fcu}))
+                            AND (cc.type = 'public' OR (cc.type = 'private' AND cc.fcu = #{fcu}))
                         </when>
                         <otherwise>
-                            AND cc.is_private = 1 AND cc.fcu = #{fcu}
+                            AND cc.type = 'private' AND cc.fcu = #{fcu}
                         </otherwise>
                     </choose>
+                </when>
+                <otherwise>
+                    AND cc.type = #{type}
                 </otherwise>
             </choose>
         </where>
@@ -260,8 +264,8 @@
         SELECT
         a.id,
         a.name,
-        a.is_private AS isPrivate,
         a.is_active AS isActive,
+        a.type AS type,
         a.fcu,
         a.fcd,
         a.lcu,
@@ -276,7 +280,9 @@
         FROM (
         SELECT
         DISTINCT cc.*
-        FROM cmdb_customview cc LEFT JOIN cmdb_customview_tag cct ON cc.id = cct.customview_id
+        FROM cmdb_customview cc
+        LEFT JOIN cmdb_customview_tag cct ON cc.id = cct.customview_id
+        LEFT JOIN cmdb_ci_customview ccc ON cc.id = ccc.customview_id
         <include refid="searchCustomViewSql"></include>
         ORDER BY id desc
         LIMIT #{startNum},#{pageSize}
@@ -292,6 +298,7 @@
         SELECT
         COUNT(DISTINCT cc.id)
         FROM cmdb_customview cc LEFT JOIN cmdb_customview_tag cct ON cc.id = cct.customview_id
+        LEFT JOIN cmdb_ci_customview ccc ON cc.id = ccc.customview_id
         <include refid="searchCustomViewSql"></include>
     </select>
 
@@ -329,6 +336,11 @@
         WHERE id = #{id}
     </update>
 
+    <insert id="insertCiCustomView" parameterType="codedriver.framework.cmdb.dto.customview.CiCustomViewVo">
+        INSERT IGNORE INTO cmdb_ci_customview (ci_id, customview_id)
+        VALUES (#{ciId}, #{customViewId})
+    </insert>
+
     <insert id="insertCustomViewRel" parameterType="codedriver.framework.cmdb.dto.customview.CustomViewRelVo">
         INSERT cmdb_customview_rel (`customview_id`,
                                     `customview_ci_uuid`,
@@ -343,19 +355,19 @@
     <insert id="insertCustomView" parameterType="codedriver.framework.cmdb.dto.customview.CustomViewVo">
         INSERT INTO cmdb_customview (id,
                                      `name`,
-                                     is_private,
                                      `icon`,
                                      `description`,
                                      is_active,
+                                     type,
                                      fcu,
                                      fcd,
                                      config)
         VALUES (#{id},
                 #{name},
-                #{isPrivate},
                 #{icon},
                 #{description},
                 #{isActive},
+                #{type},
                 #{fcu},
                 now(),
                 #{configStr,typeHandler=CompressHandler})

@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -8,7 +8,6 @@ package codedriver.module.cmdb.api.customview;
 import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.auth.core.AuthActionChecker;
-import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
@@ -56,8 +55,7 @@ public class SearchCustomViewApi extends PrivateApiComponentBase {
                     desc = "是否需要分页，默认true")
     })
     @Output({@Param(explode = BasePageVo.class),
-            @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = CiEntityVo[].class),
-            @Param(name = "theadList", type = ApiParamType.JSONARRAY, desc = "表头信息")})
+            @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = CustomViewVo[].class)})
     @Description(desc = "根据用户权限查询自定义视图，包括用户的个人视图和公共视图")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {

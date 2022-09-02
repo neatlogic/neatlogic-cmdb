@@ -201,7 +201,7 @@ public class CustomViewBuilder {
             plainSelect.setGroupByElement(groupBy);
             */
         String sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + ".customview_" + customViewVo.getId() + " AS " + select;
-        System.out.println(sql);
+        //System.out.println(sql);
         if (logger.isDebugEnabled()) {
             logger.debug(sql);
         }
