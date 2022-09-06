@@ -64,7 +64,8 @@
         </if>
     </sql>
 
-    <select id="getResourceCountByNameKeyword" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+    <select id="getResourceCountByNameKeyword"
+            parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultType="int">
         SELECT COUNT(DISTINCT a.`id`)
         FROM ${schemaName}.`scence_ipobject_detail` a
@@ -75,7 +76,8 @@
         <include refid="resource_ipobject_where"/>
     </select>
 
-    <select id="getResourceCountByIpKeyword" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+    <select id="getResourceCountByIpKeyword"
+            parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultType="int">
         SELECT COUNT(DISTINCT a.`id`)
         FROM ${schemaName}.`scence_ipobject_detail` a
@@ -391,13 +393,13 @@
     </select>
 
     <select id="getResourceById" resultMap="resourceCenterMap">
-        SELECT a.`id`, a.`name`, a.`ip`, a.`port`, a.`type_name`
+        SELECT a.`id`, a.`name`, a.`ip`, a.`port`, a.`type_id`, a.`type_name`
         FROM ${schemaName}.`scence_ipobject_ip_port` a
         where a.`id` = #{id}
     </select>
 
     <select id="getResourceFromSoftwareServiceByIdList" resultMap="resourceCenterMap">
-        SELECT a.`id`, a.`name`, a.`ip`, a.`port`
+        SELECT a.`id`, a.`name`, a.`ip`, a.`port`,a.`type_id`, a.`type_name`
         FROM ${schemaName}.`scence_softwareservice_ip_port` a
         where a.`id` in
         <foreach collection="idList" item="id" separator="," close=")" open="(">
@@ -439,9 +441,9 @@
         WHERE a.env_id IS NOT NULL
         AND a.`app_module_id` IS NOT NULL
         AND a.`app_system_id` IN
-            <foreach collection="appSystemIdList" item="appSystemId" open="(" separator="," close=")">
-                #{appSystemId}
-            </foreach>
+        <foreach collection="appSystemIdList" item="appSystemId" open="(" separator="," close=")">
+            #{appSystemId}
+        </foreach>
     </select>
 
     <select id="searchAppModuleCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
@@ -450,7 +452,7 @@
         FROM ${schemaName}.`scence_appsystem_appmodule` a
         WHERE a.`app_module_id` IS NOT NULL
         <if test="keyword != null and keyword != ''">
-          AND a.`app_module_name` LIKE CONCAT('%', #{keyword}, '%')
+            AND a.`app_module_name` LIKE CONCAT('%', #{keyword}, '%')
         </if>
         <if test="appSystemIdList != null and appSystemIdList.size() > 0">
             AND a.`id` IN
@@ -466,7 +468,7 @@
         FROM ${schemaName}.`scence_appsystem_appmodule` a
         WHERE a.`app_module_id` IS NOT NULL
         <if test="keyword != null and keyword != ''">
-          AND a.`app_module_name` LIKE CONCAT('%', #{keyword}, '%')
+            AND a.`app_module_name` LIKE CONCAT('%', #{keyword}, '%')
         </if>
         <if test="appSystemIdList != null and appSystemIdList.size() > 0">
             AND a.`id` IN
@@ -482,27 +484,27 @@
             parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultMap="resourceCenterMap">
         SELECT
-               a.`id`,
-               a.`name`,
-               a.`abbr_name`,
-               a.`maintenance_window`,
-               a.`description`,
-               a.`inspect_status`,
-               a.`inspect_time`,
-               a.`monitor_status`,
-               a.`monitor_time`,
-               a.`fcu`,
-               a.`fcd`,
-               a.`lcu`,
-               a.`lcd`,
-               a.`app_system_id`,
-               a.`app_system_name`,
-               a.`app_system_abbr_name`,
-               a.`bg_id`,
-               a.`bg_name`,
-               a.`user_id`,
-               a.`user_uuid`,
-               a.`user_name`
+        a.`id`,
+        a.`name`,
+        a.`abbr_name`,
+        a.`maintenance_window`,
+        a.`description`,
+        a.`inspect_status`,
+        a.`inspect_time`,
+        a.`monitor_status`,
+        a.`monitor_time`,
+        a.`fcu`,
+        a.`fcd`,
+        a.`lcu`,
+        a.`lcd`,
+        a.`app_system_id`,
+        a.`app_system_name`,
+        a.`app_system_abbr_name`,
+        a.`bg_id`,
+        a.`bg_name`,
+        a.`user_id`,
+        a.`user_uuid`,
+        a.`user_name`
         FROM ${schemaName}.`scence_appmodule_appsystem` a
         WHERE a.`id` IN
         <foreach collection="idList" item="id" open="(" separator="," close=")">
@@ -513,24 +515,25 @@
 
     <select id="getAppSystemModuleIdListByAppSystemId"
             resultType="java.lang.Long">
-        SELECT `app_module_id` FROM `scence_appsystem_appmodule`
+        SELECT `app_module_id`
+        FROM `scence_appsystem_appmodule`
         WHERE `id` = #{appSystemId}
     </select>
 
     <select id="getAppSystemModuleIdListByAppSystemIdAndAppModuleIdList"
             resultType="java.lang.Long">
         SELECT `app_module_id` FROM `scence_appsystem_appmodule`
-       <where>
-        <if test="appSystemId != null">
-            And `id` = #{appSystemId}
-        </if>
-        <if test="appModuleIdList != null and appModuleIdList.size() > 0">
-            And app_module_id in
-            <foreach collection="appModuleIdList" open="(" separator="," close=")" item="moduleId">
-                #{moduleId}
-            </foreach>
-        </if>
-       </where>
+        <where>
+            <if test="appSystemId != null">
+                And `id` = #{appSystemId}
+            </if>
+            <if test="appModuleIdList != null and appModuleIdList.size() > 0">
+                And app_module_id in
+                <foreach collection="appModuleIdList" open="(" separator="," close=")" item="moduleId">
+                    #{moduleId}
+                </foreach>
+            </if>
+        </where>
     </select>
 
     <select id="getAppModuleListByAppSystemIdList"
@@ -858,15 +861,15 @@
 
     <select id="getAllAppEnv"
             resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo">
-        select `id` as envId,
-               `name` as envName,
+        select `id`         as envId,
+               `name`       as envName,
                `env_seq_no` as envSeqNo
         from `${schemaName}`.`scence_env`
     </select>
 
     <select id="searchAppEnvCount" parameterType="codedriver.framework.common.dto.BasePageVo" resultType="int">
         SELECT
-            COUNT(1)
+        COUNT(1)
         FROM `scence_env`
         <where>
             <if test="keyword != null and keyword != ''">
@@ -876,9 +879,10 @@
         </where>
     </select>
 
-    <select id="searchAppEnvIdList" parameterType="codedriver.framework.common.dto.BasePageVo" resultType="java.lang.Long">
+    <select id="searchAppEnvIdList" parameterType="codedriver.framework.common.dto.BasePageVo"
+            resultType="java.lang.Long">
         SELECT
-            `id`
+        `id`
         FROM `scence_env`
         <where>
             <if test="keyword != null and keyword != ''">
@@ -891,10 +895,10 @@
 
     <select id="searchAppEnvListByIdList" parameterType="java.lang.Long" resultMap="resourceCenterMap">
         SELECT
-            `id`,
-            `name`,
-            `description`,
-            `env_seq_no`
+        `id`,
+        `name`,
+        `description`,
+        `env_seq_no`
         FROM `scence_env`
         WHERE `id` IN
         <foreach collection="list" item="id" open="(" separator="," close=")">
@@ -904,7 +908,7 @@
 
     <select id="searchAppSystemCount" parameterType="codedriver.framework.common.dto.BasePageVo" resultType="int">
         SELECT
-            COUNT(1)
+        COUNT(1)
         FROM `scence_appsystem`
         <where>
             <if test="keyword != null and keyword != ''">
@@ -914,9 +918,10 @@
         </where>
     </select>
 
-    <select id="searchAppSystemIdList" parameterType="codedriver.framework.common.dto.BasePageVo" resultType="java.lang.Long">
+    <select id="searchAppSystemIdList" parameterType="codedriver.framework.common.dto.BasePageVo"
+            resultType="java.lang.Long">
         SELECT
-            `id`
+        `id`
         FROM `scence_appsystem`
         <where>
             <if test="keyword != null and keyword != ''">
@@ -929,22 +934,22 @@
 
     <select id="searchAppSystemListByIdList" parameterType="java.lang.Long" resultMap="resourceCenterMap">
         SELECT
-            `id`,
-            `name`,
-            `abbr_name`,
-            `type_id`,
-            `type_name`,
-            `type_label`,
-            `fcu`,
-            `fcd`,
-            `lcu`,
-            `lcd`,
-            `maintenance_window`,
-            `description`,
-            `inspect_status`,
-            `inspect_time`,
-            `monitor_status`,
-            `monitor_time`
+        `id`,
+        `name`,
+        `abbr_name`,
+        `type_id`,
+        `type_name`,
+        `type_label`,
+        `fcu`,
+        `fcd`,
+        `lcu`,
+        `lcd`,
+        `maintenance_window`,
+        `description`,
+        `inspect_status`,
+        `inspect_time`,
+        `monitor_status`,
+        `monitor_time`
         FROM `scence_appsystem`
         WHERE `id` IN
         <foreach collection="list" item="id" open="(" separator="," close=")">
@@ -954,7 +959,7 @@
 
     <select id="searchStateCount" parameterType="codedriver.framework.common.dto.BasePageVo" resultType="int">
         SELECT
-            COUNT(1)
+        COUNT(1)
         FROM `scence_state`
         <where>
             <if test="keyword != null and keyword != ''">
@@ -964,9 +969,10 @@
         </where>
     </select>
 
-    <select id="searchStateIdList" parameterType="codedriver.framework.common.dto.BasePageVo" resultType="java.lang.Long">
+    <select id="searchStateIdList" parameterType="codedriver.framework.common.dto.BasePageVo"
+            resultType="java.lang.Long">
         SELECT
-            `id`
+        `id`
         FROM `scence_state`
         <where>
             <if test="keyword != null and keyword != ''">
