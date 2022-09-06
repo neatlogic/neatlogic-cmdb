@@ -17,6 +17,8 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.module.cmdb.dao.mapper.customview.CustomViewMapper;
+import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.service.customview.CustomViewService;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,9 @@ public class DeleteCustomViewApi extends PrivateApiComponentBase {
 
     @Resource
     private CustomViewService customViewService;
+
+    @Resource
+    private CustomViewMapper customViewMapper;
 
     @Override
     public String getName() {
@@ -59,6 +64,13 @@ public class DeleteCustomViewApi extends PrivateApiComponentBase {
         } else if (customViewVo.getType().equals(CustomViewType.PRIVATE.getValue())) {
             if (!customViewVo.getFcu().equalsIgnoreCase(UserContext.get().getUserUuid(true))) {
                 throw new CustomViewPrivilegeException(CustomViewPrivilegeException.Action.DELETE);
+            }
+        } else if (customViewVo.getType().equals(CustomViewType.SCENE.getValue())) {
+            Long ciId = customViewMapper.getCiIdByCustomViewId(id);
+            if (ciId != null) {
+                if (!CiAuthChecker.chain().checkCiManagePrivilege(ciId).check()) {
+                    throw new CustomViewPrivilegeException(CustomViewPrivilegeException.Action.DELETE);
+                }
             }
         }
         customViewService.deleteCustomView(id);

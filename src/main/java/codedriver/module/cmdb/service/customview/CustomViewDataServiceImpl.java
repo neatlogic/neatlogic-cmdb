@@ -152,8 +152,8 @@ public class CustomViewDataServiceImpl implements CustomViewDataService {
 
     @Override
     public List<CustomViewDataGroupVo> searchCustomViewDataGroup(CustomViewConditionVo customViewConditionVo) {
-        CustomViewAttrVo customViewAttrVo = customViewMapper.getCustomViewAttrByUuid(customViewConditionVo.getGroupBy());
-        CustomViewConstAttrVo customViewConstAttrVo = customViewMapper.getCustomViewConstAttrByUuid(customViewConditionVo.getGroupBy());
+        CustomViewAttrVo customViewAttrVo = customViewMapper.getCustomViewAttrByUuid(customViewConditionVo.getCustomViewId(), customViewConditionVo.getGroupBy());
+        CustomViewConstAttrVo customViewConstAttrVo = customViewMapper.getCustomViewConstAttrByUuid(customViewConditionVo.getCustomViewId(), customViewConditionVo.getGroupBy());
         List<CustomViewAttrVo> customViewAttrList = customViewMapper.getCustomViewAttrByCustomViewId(new CustomViewAttrVo(customViewConditionVo.getCustomViewId()));
         List<CustomViewConstAttrVo> customViewConstAttrList = customViewMapper.getCustomViewConstAttrByCustomViewId(new CustomViewConstAttrVo(customViewConditionVo.getCustomViewId()));
         Map<String, AttrVo> attrMap = new HashMap<>();

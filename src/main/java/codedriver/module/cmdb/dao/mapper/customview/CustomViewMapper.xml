@@ -6,8 +6,14 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.customview.CustomViewMapper">
+    <select id="getCiIdByCustomViewId" parameterType="java.lang.Long" resultType="java.lang.Long">
+        SELECT ci_id
+        FROM cmdb_ci_customview
+        WHERE customview_id = #{value}
+        LIMIT 1
+    </select>
 
-    <select id="getCustomViewConstAttrByUuid" parameterType="java.lang.String"
+    <select id="getCustomViewConstAttrByUuid"
             resultType="codedriver.framework.cmdb.dto.customview.CustomViewConstAttrVo">
         SELECT customview_id      AS customViewId,
                customview_ci_uuid AS customViewCiUuid,
@@ -17,10 +23,11 @@
                sort,
                is_hidden          AS isHidden
         FROM `cmdb_customview_constattr`
-        WHERE uuid = #{value}
+        WHERE customview_id = #{customViewId}
+          and uuid = #{uuid}
     </select>
 
-    <select id="getCustomViewAttrByUuid" parameterType="java.lang.String"
+    <select id="getCustomViewAttrByUuid"
             resultType="codedriver.framework.cmdb.dto.customview.CustomViewAttrVo">
         SELECT customview_id      AS customViewId,
                customview_ci_uuid AS customViewCiUuid,
@@ -31,7 +38,8 @@
                is_hidden          AS isHidden,
                `condition`        AS conditionStr
         FROM `cmdb_customview_attr`
-        WHERE uuid = #{value}
+        WHERE customview_id = #{customViewId}
+          and uuid = #{uuid}
     </select>
 
     <resultMap id="customViewMap" type="codedriver.framework.cmdb.dto.customview.CustomViewVo">
@@ -220,8 +228,8 @@
                c.customview_id      AS relCustomViewId,
                c.customview_ci_uuid AS relCustomViewCiUuid
         FROM cmdb_customview_ci a
-                 LEFT JOIN cmdb_customview_attr b ON a.uuid = b.customview_ci_uuid
-                 LEFT JOIN cmdb_customview_rel c ON a.uuid = c.customview_ci_uuid
+                 LEFT JOIN cmdb_customview_attr b ON a.uuid = b.customview_ci_uuid AND b.customview_id = a.customview_id
+                 LEFT JOIN cmdb_customview_rel c ON a.uuid = c.customview_ci_uuid AND c.customview_id = a.customview_id
         WHERE a.customview_id = #{value}
     </select>
 
@@ -460,6 +468,12 @@
     <delete id="deleteCustomViewTagByCustomViewId" parameterType="java.lang.Long">
         DELETE
         FROM cmdb_customview_tag
+        WHERE customview_id = #{value}
+    </delete>
+
+    <delete id="deleteCiCustomViewByCustomViewId" parameterType="java.lang.Long">
+        DELETE
+        FROM cmdb_ci_customview
         WHERE customview_id = #{value}
     </delete>
 

@@ -153,6 +153,7 @@ public class CustomViewServiceImpl implements CustomViewService, ICustomViewCros
         customViewMapper.deleteCustomViewRelByCustomViewId(id);
         customViewMapper.deleteCustomViewLinkByCustomViewId(id);
         customViewMapper.deleteCustomViewTagByCustomViewId(id);
+        customViewMapper.deleteCiCustomViewByCustomViewId(id);
         customViewMapper.deleteCustomViewById(id);
         EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
             customViewMapper.dropCustomView(TenantContext.get().getDataDbName() + ".`customview_" + id + "`");

@@ -27,7 +27,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
@@ -56,8 +55,9 @@ public class ListAllCiRelApi extends PrivateApiComponentBase {
     }
 
     @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
-            @Param(name = "ciIdList", type = ApiParamType.JSONARRAY, desc = "路径包含的模型id"),
-            @Param(name = "direction", type = ApiParamType.ENUM, isRequired = true, desc = "方向", member = RelDirectionType.class)})
+            @Param(name = "ciIdList", type = ApiParamType.JSONARRAY, desc = "路径包含的模型id")
+            //@Param(name = "direction", type = ApiParamType.ENUM, isRequired = true, desc = "方向", member = RelDirectionType.class),
+    })
     @Output({@Param(explode = RelVo[].class)})
     @Description(desc = "获取模型所有关系列表接口")
     @Override
@@ -72,24 +72,24 @@ public class ListAllCiRelApi extends PrivateApiComponentBase {
         }
         List<CiRelVo> path = new ArrayList<>();
         List<CiRelPathVo> pathList = new ArrayList<>();
-        RelDirectionType directionType = RelDirectionType.get(jsonObj.getString("direction"));
-        if (directionType != null) {
-            getRelPathByCiId(directionType, ciId, path, pathList);
-            if (CollectionUtils.isNotEmpty(pathList) && CollectionUtils.isNotEmpty(ciIdList)) {
-                for (int i = pathList.size() - 1; i >= 0; i--) {
-                    List<CiRelVo> pList = pathList.get(i).getCiRelList();
-                    boolean allMatch = true;
-                    for (Long cId : ciIdList) {
-                        if (pList.stream().noneMatch(d -> d.getCiId().equals(cId))) {
-                            allMatch = false;
-                            break;
-                        }
-                    }
-                    if (!allMatch) {
-                        pathList.remove(i);
+        //RelDirectionType directionType = RelDirectionType.get(jsonObj.getString("direction"));
+        //if (directionType != null) {
+        getRelPathByCiId(ciId, path, pathList);
+        if (CollectionUtils.isNotEmpty(pathList) && CollectionUtils.isNotEmpty(ciIdList)) {
+            for (int i = pathList.size() - 1; i >= 0; i--) {
+                List<CiRelVo> pList = pathList.get(i).getCiRelList();
+                boolean allMatch = true;
+                for (Long cId : ciIdList) {
+                    if (pList.stream().noneMatch(d -> d.getCiId().equals(cId))) {
+                        allMatch = false;
+                        break;
                     }
                 }
+                if (!allMatch) {
+                    pathList.remove(i);
+                }
             }
+        }
 /*
             for (List<CiRelVo> p : pathList) {
                 StringBuilder ps = new StringBuilder();
@@ -98,25 +98,26 @@ public class ListAllCiRelApi extends PrivateApiComponentBase {
                 }
                 System.out.println(ps);
             }*/
-        }
+        //}
         return pathList;
     }
 
 
-    private void getRelPathByCiId(RelDirectionType direction, Long ciId, List<CiRelVo> ciRelList, List<CiRelPathVo> pathList) {
+    private void getRelPathByCiId(Long ciId, List<CiRelVo> ciRelList, List<CiRelPathVo> pathList) {
         if (!ciRelList.contains(new CiRelVo(ciId))) {// 出现回环，中断递归
             List<RelVo> relList = relMapper.getRelByCiId(ciId);
-            List<RelVo> finalRelList = null;
-            if (direction == RelDirectionType.FROM) {
+            // List<RelVo> finalRelList = null;
+           /* if (direction == RelDirectionType.FROM) {
                 finalRelList = relList.stream().filter(d -> d.getDirection().equals(RelDirectionType.FROM.getValue())).collect(Collectors.toList());
             } else if (direction == RelDirectionType.TO) {
                 finalRelList = relList.stream().filter(d -> d.getDirection().equals(RelDirectionType.TO.getValue())).collect(Collectors.toList());
-            }
-            if (CollectionUtils.isNotEmpty(finalRelList)) {
-                for (RelVo relVo : finalRelList) {
+            }*/
+            if (CollectionUtils.isNotEmpty(relList)) {
+                for (RelVo relVo : relList) {
                     CiRelVo ciRelVo = new CiRelVo();
                     ciRelVo.setRelId(relVo.getId());
-                    if (direction == RelDirectionType.FROM) {
+                    ciRelVo.setDirection(relVo.getDirection());
+                    if (relVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
                         ciRelVo.setCiId(relVo.getFromCiId());
                         ciRelVo.setCiName(relVo.getFromCiName());
                         ciRelVo.setCiLabel(relVo.getFromCiLabel());
@@ -131,7 +132,7 @@ public class ListAllCiRelApi extends PrivateApiComponentBase {
                     }
                     List<CiRelVo> newCiRelList = new ArrayList<>(ciRelList);
                     newCiRelList.add(ciRelVo);
-                    getRelPathByCiId(direction, direction == RelDirectionType.FROM ? relVo.getToCiId() : relVo.getFromCiId(), newCiRelList, pathList);
+                    getRelPathByCiId(relVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiId() : relVo.getFromCiId(), newCiRelList, pathList);
                 }
             } else {
                 CiVo ciVo = ciMapper.getCiById(ciId);

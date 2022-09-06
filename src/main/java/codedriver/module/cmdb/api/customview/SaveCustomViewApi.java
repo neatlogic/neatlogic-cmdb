@@ -65,7 +65,13 @@ public class SaveCustomViewApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "视图id，不提供代表新增"), @Param(name = "ciId", type = ApiParamType.LONG, desc = "模型id，保存场景视图时需要提供"), @Param(name = "name", type = ApiParamType.STRING, isRequired = true, xss = true, maxLength = 50, desc = "名称"), @Param(name = "icon", type = ApiParamType.STRING, desc = "图标"), @Param(name = "isActive", type = ApiParamType.INTEGER, isRequired = true, desc = "是否激活"), @Param(name = "type", type = ApiParamType.ENUM, member = CustomViewType.class, isRequired = true, desc = "类型"), @Param(name = "config", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "拓扑图配置")})
+    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "视图id，不提供代表新增"),
+            @Param(name = "ciId", type = ApiParamType.LONG, desc = "模型id，保存场景视图时需要提供"),
+            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, xss = true, maxLength = 50, desc = "名称"),
+            @Param(name = "icon", type = ApiParamType.STRING, desc = "图标"),
+            @Param(name = "isActive", type = ApiParamType.INTEGER, isRequired = true, desc = "是否激活"),
+            @Param(name = "type", type = ApiParamType.ENUM, member = CustomViewType.class, isRequired = true, desc = "类型"),
+            @Param(name = "config", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "拓扑图配置")})
     @Output({@Param(name = "Return", type = ApiParamType.LONG, desc = "视图id")})
     @Description(desc = "保存自定义视图接口")
     @Override
@@ -73,7 +79,7 @@ public class SaveCustomViewApi extends PrivateApiComponentBase {
         String type = jsonObj.getString("type");
         Long ciId = null;
         if (type.equals(CustomViewType.PUBLIC.getValue())) {
-            if (!AuthActionChecker.check(CUSTOMVIEW_MODIFY.class.getSimpleName())) {
+            if (!AuthActionChecker.check(CUSTOMVIEW_MODIFY.class)) {
                 throw new CustomViewPrivilegeException(CustomViewPrivilegeException.Action.SAVE);
             }
         } else if (type.equals(CustomViewType.SCENE.getValue())) {

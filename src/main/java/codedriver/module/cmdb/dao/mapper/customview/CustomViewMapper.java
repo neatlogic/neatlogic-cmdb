@@ -11,9 +11,11 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface CustomViewMapper {
-    CustomViewConstAttrVo getCustomViewConstAttrByUuid(String uuid);
+    Long getCiIdByCustomViewId(Long customViewId);
 
-    CustomViewAttrVo getCustomViewAttrByUuid(String uuid);
+    CustomViewConstAttrVo getCustomViewConstAttrByUuid(@Param("customViewId") Long customViewId, @Param("uuid") String uuid);
+
+    CustomViewAttrVo getCustomViewAttrByUuid(@Param("customViewId") Long customViewId, @Param("uuid") String uuid);
 
     CustomViewVo getCustomViewById(Long customViewId);
 
@@ -64,6 +66,8 @@ public interface CustomViewMapper {
     void deleteCustomViewTagByCustomViewId(Long customViewId);
 
     void deleteCustomViewRelByCustomViewId(Long customViewId);
+
+    void deleteCiCustomViewByCustomViewId(Long customViewId);
 
     void deleteCustomViewById(Long customViewId);
 
