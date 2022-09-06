@@ -382,7 +382,7 @@
     </select>
 
     <select id="getResourceByIdList" resultMap="resourceCenterMap">
-        SELECT a.`id`, a.`name`, a.`ip`,a.`type_id`
+        SELECT a.`id`, a.`name`, a.`ip`,a.`type_id`, a.`type_name`
         FROM ${schemaName}.`scence_ipobject_ip_port` a
         where a.`id` in
         <foreach collection="idList" item="id" separator="," close=")" open="(">
