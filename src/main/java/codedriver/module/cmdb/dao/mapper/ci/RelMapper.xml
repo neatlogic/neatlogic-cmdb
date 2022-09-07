@@ -220,6 +220,7 @@
 
     <resultMap id="relDetailMap" type="codedriver.framework.cmdb.dto.ci.RelVo">
         <id property="id" column="id"/>
+        <id property="direction" column="direction"/><!--自己引用自己时需要使用方向作为key-->
         <result property="typeId" column="typeId"/>
         <result property="typeText" column="typeText"/>
         <result property="inputType" column="inputType"/>
@@ -248,7 +249,6 @@
         <result property="toIsRequired" column="toIsRequired"/>
         <result property="toGroupName" column="toGroupName"/>
         <result property="toIsVirtual" column="toIsVirtual"/>
-        <result property="direction" column="direction"/>
         <result property="allowEdit" column="allowEdit"/>
         <collection property="relativeRelList" ofType="codedriver.framework.cmdb.dto.ci.RelativeRelVo">
             <id property="relativeRelId" column="relativeRelId"/>
