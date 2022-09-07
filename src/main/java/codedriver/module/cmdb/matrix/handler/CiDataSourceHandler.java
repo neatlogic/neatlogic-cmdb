@@ -778,6 +778,8 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             if (CollectionUtils.isNotEmpty(defaultValue)) {
                 for (String value : defaultValue.toJavaList(String.class)) {
                     if (value.contains(SELECT_COMPOSE_JOINER)) {
+                        List<AttrFilterVo> attrFilters = new ArrayList<>();
+                        List<RelFilterVo> relFilters = new ArrayList<>();
                         String[] split = value.split(SELECT_COMPOSE_JOINER);
                         //当下拉框配置的值和显示文字列为同一列时，value值是这样的20210101&=&20210101，split数组第一和第二个元素相同，这时需要去重
                         List<String> splitList = new ArrayList<>();
@@ -798,15 +800,17 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                                 }
                                 List<String> valueList = new ArrayList<>();
                                 valueList.add(splitList.get(i));
-                                if (!conversionFilter(label, valueList, attrMap, relMap, ciView, attrFilterList, relFilterList, ciEntityVo)) {
+                                if (!conversionFilter(label, valueList, attrMap, relMap, ciView, attrFilters, relFilters, ciEntityVo)) {
                                     needAccessApi = false;
                                     break;
                                 }
                             }
                         }
                         if (needAccessApi) {
-                            ciEntityVo.setAttrFilterList(attrFilterList);
-                            ciEntityVo.setRelFilterList(relFilterList);
+                            attrFilters.addAll(attrFilterList);
+                            relFilters.addAll(relFilterList);
+                            ciEntityVo.setAttrFilterList(attrFilters);
+                            ciEntityVo.setRelFilterList(relFilters);
                             JSONArray tbodyArray = accessSearchCiEntity(matrixUuid, ciEntityVo);
                             resultList.addAll(getCmdbCiDataTbodyList(tbodyArray, columnList, matrixUuid));
                         }
