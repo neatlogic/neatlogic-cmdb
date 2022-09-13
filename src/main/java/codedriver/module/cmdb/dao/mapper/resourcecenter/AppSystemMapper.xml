@@ -19,6 +19,15 @@
         where `id` = #{id}
     </select>
 
+    <select id="getAppSystemListByIdList" resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemVo">
+        select `name`, `id`, `abbr_name` as abbrName
+        from @{DATA_SCHEMA}.`scence_appsystem`
+        where `id` IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
     <select id="getAppModuleByAbbrName" resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppModuleVo">
         select `name`, `id`, `abbr_name` as abbrName
         from ${schemaName}.`scence_appmodule`
@@ -29,6 +38,15 @@
         select `name`, `id`, `abbr_name` as abbrName
         from ${schemaName}.`scence_appmodule`
         where `id` = #{id}
+    </select>
+
+    <select id="getAppModuleListByIdList" resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppModuleVo">
+        select `name`, `id`, `abbr_name` as abbrName
+        from @{DATA_SCHEMA}.`scence_appmodule`
+        where `id` IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
     </select>
 
     <select id="getAppEnvListByAppSystemIdAndModuleIdList"

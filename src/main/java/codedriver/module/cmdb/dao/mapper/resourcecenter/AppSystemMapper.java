@@ -21,9 +21,13 @@ public interface AppSystemMapper extends IAppSystemMapper {
 
     AppSystemVo getAppSystemById(@Param("id")Long id, @Param("schemaName") String schemaName);
 
+    List<AppSystemVo> getAppSystemListByIdList(List<Long> idList);
+
     AppModuleVo getAppModuleByAbbrName(@Param("abbrName")String abbrName, @Param("schemaName") String schemaName);
 
     AppModuleVo getAppModuleById(@Param("id")Long id, @Param("schemaName") String schemaName);
+
+    List<AppModuleVo> getAppModuleListByIdList(List<Long> idList);
 
     List<AppEnvironmentVo> getAppEnvListByAppSystemIdAndModuleIdList(@Param("appResourceId") Long appResourceId, @Param("moduleResourceIdList") List<Long> moduleIdList, @Param("schemaName") String schemaName);
 
