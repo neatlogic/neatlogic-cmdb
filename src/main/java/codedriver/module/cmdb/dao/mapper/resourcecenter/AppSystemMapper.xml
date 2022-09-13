@@ -23,7 +23,7 @@
         select `name`, `id`, `abbr_name` as abbrName
         from @{DATA_SCHEMA}.`scence_appsystem`
         where `id` IN
-        <foreach collection="idList" item="id" open="(" separator="," close=")">
+        <foreach collection="list" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
     </select>
@@ -44,7 +44,7 @@
         select `name`, `id`, `abbr_name` as abbrName
         from @{DATA_SCHEMA}.`scence_appmodule`
         where `id` IN
-        <foreach collection="idList" item="id" open="(" separator="," close=")">
+        <foreach collection="list" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
     </select>
