@@ -554,6 +554,21 @@
         </where>
     </select>
 
+    <select id="getAppModuleListByModuleIdList"
+            parameterType="java.util.List"
+            resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.ModuleVo">
+        SELECT
+        `id` AS resourceId,
+        `app_module_id` AS appModuleId,
+        `app_module_name` AS appModuleName,
+        `app_module_abbr_name` AS appModuleAbbrName
+        FROM @{DATA_SCHEMA}.`scence_appsystem_appmodule`
+        where `app_module_id` IN
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+                #{item}
+        </foreach>
+    </select>
+
     <select id="getAppModuleListByIdListSimple" parameterType="java.util.List" resultMap="resourceCenterMap">
         SELECT
         a.`id`, a.`name`, a.`abbr_name`, a.`maintenance_window`, a.`description`,
