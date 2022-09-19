@@ -564,7 +564,7 @@
         <foreach collection="idList" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
-        <if test="needOrder != null and needOrder">
+        <if test="needOrder != null and needOrder == true">
             order by CONVERT(a.abbr_name USING gbk) COLLATE gbk_chinese_ci ASC
         </if>
     </select>
