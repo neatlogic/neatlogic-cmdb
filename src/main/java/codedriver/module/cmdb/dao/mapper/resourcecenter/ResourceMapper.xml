@@ -522,7 +522,7 @@
 
     <select id="getAppSystemModuleIdListByAppSystemIdAndAppModuleIdList"
             resultType="java.lang.Long">
-        SELECT `app_module_id` FROM `scence_appsystem_appmodule`
+        SELECT `app_module_id` FROM @{DATA_SCHEMA}.`scence_appsystem_appmodule`
         <where>
             <if test="appSystemId != null">
                 And `id` = #{appSystemId}
@@ -554,17 +554,19 @@
         </where>
     </select>
 
-    <select id="getAppModuleListByIdListSimple" parameterType="java.util.List" resultMap="resourceCenterMap">
+    <select id="getAppModuleListByIdListSimple" resultMap="resourceCenterMap">
         SELECT
         a.`id`, a.`name`, a.`abbr_name`, a.`maintenance_window`, a.`description`,
         a.`inspect_status`, a.`inspect_time`, a.`monitor_status`, a.`monitor_time`,
         a.`fcu`, a.`fcd`, a.`lcu`, a.`lcd`
-        FROM `scence_appmodule` a
+        FROM @{DATA_SCHEMA}.`scence_appmodule` a
         WHERE a.`id` IN
         <foreach collection="idList" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
-        order by CONVERT(a.abbr_name USING gbk) COLLATE gbk_chinese_ci ASC
+        <if test="needOrder != null and needOrder == true">
+            order by CONVERT(a.abbr_name USING gbk) COLLATE gbk_chinese_ci ASC
+        </if>
     </select>
 
     <select id="getIpObjectResourceTypeIdListByAppModuleIdAndEnvId"

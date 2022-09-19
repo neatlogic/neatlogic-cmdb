@@ -72,7 +72,7 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     List<ModuleVo> getAppModuleListByAppSystemIdList(ResourceSearchVo searchVo);
 
-    List<ResourceVo> getAppModuleListByIdListSimple(@Param("idList") List<Long> idList);
+    List<ResourceVo> getAppModuleListByIdListSimple(@Param("idList") List<Long> idList, @Param("needOrder") boolean needOrder);
 
     Set<Long> getIpObjectResourceTypeIdListByAppModuleIdAndEnvId(ResourceSearchVo searchVo);
 
