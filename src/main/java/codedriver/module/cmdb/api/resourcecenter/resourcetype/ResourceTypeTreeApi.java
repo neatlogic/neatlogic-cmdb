@@ -12,10 +12,8 @@ import codedriver.framework.cmdb.crossover.IResourceTypeTreeApiCrossoverService;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceTypeVo;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
-import codedriver.framework.restful.annotation.Description;
-import codedriver.framework.restful.annotation.OperationType;
-import codedriver.framework.restful.annotation.Output;
-import codedriver.framework.restful.annotation.Param;
+import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
@@ -88,12 +86,19 @@ public class ResourceTypeTreeApi extends PrivateApiComponentBase implements IRes
         return null;
     }
 
+    @Input({
+            @Param(name = "keyword", type = ApiParamType.STRING, desc = "名称模糊匹配")
+    })
     @Output({
             @Param(explode = ResourceTypeVo[].class, desc = "资源类型树列表")
     })
     @Description(desc = "查询资源类型树列表")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
+        String keyword = jsonObj.getString("keyword");
+        if (StringUtils.isNotBlank(keyword)) {
+            keyword = keyword.toLowerCase();
+        }
         List<ResourceTypeVo> resultList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(resourceTypeList)) {
             List<CiVo> ciVoList = new ArrayList<>();
@@ -115,12 +120,54 @@ public class ResourceTypeTreeApi extends PrivateApiComponentBase implements IRes
                     resourceTypeMap.put(resourceTypeVo.getId(), resourceTypeVo);
                     resourceTypeVoList.add(resourceTypeVo);
                 }
+                if (StringUtils.isNotBlank(keyword)) {
+                    for (ResourceTypeVo resourceType : resourceTypeVoList) {
+                        if (resourceType.getParentId() != null) {
+                            ResourceTypeVo parentResourceType = resourceTypeMap.get(resourceType.getParentId());
+                            if (parentResourceType != null) {
+                                resourceType.setParent(parentResourceType);
+                                parentResourceType.addChild(resourceType);
+                            }
+                        }
+                    }
+                    for (ResourceTypeVo resourceType : resourceTypeVoList) {
+                        if (resourceType.getLabel().toLowerCase().contains(keyword)) {
+                            if (resourceType.getIsKeywordMatch() == null) {
+                                resourceType.setIsKeywordMatch(1);
+                                resourceType.setUpwardIsKeywordMatch(1);
+                                resourceType.setDownwardIsKeywordMatch(1);
+                            }
+                        } else {
+                            if (resourceType.getIsKeywordMatch() == null) {
+                                resourceType.setIsKeywordMatch(0);
+                            }
+                        }
+                    }
+                    Iterator<ResourceTypeVo> iterator = resourceTypeVoList.iterator();
+                    while (iterator.hasNext()) {
+                        ResourceTypeVo resourceType = iterator.next();
+                        if (Objects.equals(resourceType.getIsKeywordMatch(), 0)) {
+                            ResourceTypeVo parent = resourceType.getParent();
+                            if (parent != null) {
+                                parent.removeChild(resourceType);
+                            }
+                            iterator.remove();
+                        }
+                    }
+                } else {
+                    for (ResourceTypeVo resourceType : resourceTypeVoList) {
+                        if (resourceType.getParentId() != null) {
+                            ResourceTypeVo parentResourceType = resourceTypeMap.get(resourceType.getParentId());
+                            if (parentResourceType != null) {
+                                parentResourceType.addChild(resourceType);
+                            }
+                        }
+                    }
+                }
                 for (ResourceTypeVo resourceType : resourceTypeVoList) {
                     if (resourceType.getParentId() != null) {
                         ResourceTypeVo parentResourceType = resourceTypeMap.get(resourceType.getParentId());
-                        if (parentResourceType != null) {
-                            parentResourceType.addChild(resourceType);
-                        } else {
+                        if (parentResourceType == null) {
                             resultList.add(resourceType);
                         }
                     }
