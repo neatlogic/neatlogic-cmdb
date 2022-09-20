@@ -121,6 +121,7 @@ public class ResourceTypeTreeApi extends PrivateApiComponentBase implements IRes
                     resourceTypeVoList.add(resourceTypeVo);
                 }
                 if (StringUtils.isNotBlank(keyword)) {
+                    // 建立父子关系
                     for (ResourceTypeVo resourceType : resourceTypeVoList) {
                         if (resourceType.getParentId() != null) {
                             ResourceTypeVo parentResourceType = resourceTypeMap.get(resourceType.getParentId());
@@ -130,6 +131,7 @@ public class ResourceTypeTreeApi extends PrivateApiComponentBase implements IRes
                             }
                         }
                     }
+                    // 判断节点名称是否与关键字keyword匹配，如果匹配就将该节点及其父子节点的isKeywordMatch字段值设置为1，否则设置为0。
                     for (ResourceTypeVo resourceType : resourceTypeVoList) {
                         if (resourceType.getLabel().toLowerCase().contains(keyword)) {
                             if (resourceType.getIsKeywordMatch() == null) {
@@ -143,6 +145,7 @@ public class ResourceTypeTreeApi extends PrivateApiComponentBase implements IRes
                             }
                         }
                     }
+                    // 将isKeywordMatch字段值为0的节点从其父级中移除。
                     Iterator<ResourceTypeVo> iterator = resourceTypeVoList.iterator();
                     while (iterator.hasNext()) {
                         ResourceTypeVo resourceType = iterator.next();
