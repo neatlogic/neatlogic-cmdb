@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -23,18 +23,18 @@ import codedriver.module.cmdb.auth.label.SYNC_MODIFY;
 import codedriver.module.cmdb.service.sync.SyncService;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.common.utils.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 
 @Service
 @AuthAction(action = SYNC_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveSyncPolicyApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private SyncService syncService;
-
-    @Autowired
+    @Resource
     private SchedulerManager schedulerManager;
 
 

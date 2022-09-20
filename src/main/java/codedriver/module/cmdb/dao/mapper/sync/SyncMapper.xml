@@ -152,8 +152,39 @@
           and a.collect_mode = 'initiative'
     </select>
 
+    <resultMap id="syncCiCollectionMap" type="codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo">
+        <id property="id" column="id"/>
+        <result property="ciId" column="ciId"/>
+        <result property="ciLabel" column="ciLabel"/>
+        <result property="ciName" column="ciName"/>
+        <result property="collectionName" column="collectionName"/>
+        <result property="collectMode" column="collectMode"/>
+        <result property="isAutoCommit" column="isAutoCommit"/>
+        <result property="matchMode" column="matchMode"/>
+        <result property="parentKey" column="parentKey"/>
+        <result property="fcu" column="fcu"/>
+        <result property="fcd" column="fcd"/>
+        <result property="lcu" column="lcu"/>
+        <result property="lcd" column="lcd"/>
+        <result property="lastSyncDate" column="lastSyncDate"/>
+        <result property="description" column="description"/>
+        <collection property="syncPolicyList" ofType="codedriver.framework.cmdb.dto.sync.SyncPolicyVo">
+            <id property="id" column="policyId"/>
+            <result property="name" column="policyName"/>
+            <result property="isActive" column="policyIsActive"/>
+            <collection property="cronList" ofType="codedriver.framework.cmdb.dto.sync.SyncScheduleVo">
+                <result property="cron" column="cron"/>
+            </collection>
+        </collection>
+    </resultMap>
+
     <select id="searchSyncCiCollection" parameterType="codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo"
-            resultType="codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo">
+            resultType="codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo" resultMap="syncCiCollectionMap">
+        SELECT t.*,
+        c.id as policyId,
+        c.name AS policyName,
+        c.is_active AS policyIsActive,
+        d.cron FROM (
         SELECT
         a.id,
         a.ci_id AS ciId,
@@ -175,6 +206,8 @@
         <include refid="searchSyncCiCollectionSql"></include>
         ORDER BY a.collection_name ,a.collect_mode
         LIMIT #{startNum}, #{pageSize}
+        ) t LEFT JOIN cmdb_sync_policy c ON t.id = c.ci_collection_id
+        LEFT JOIN cmdb_sync_schedule d ON c.id = d.policy_id
     </select>
 
     <select id="searchSyncCiCollectionCount" parameterType="codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo"

@@ -9,6 +9,7 @@ import codedriver.framework.asynchronization.threadlocal.UserContext;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.sync.*;
 import codedriver.framework.cmdb.exception.sync.SyncCiCollectionIsExistsException;
+import codedriver.framework.cmdb.exception.sync.SyncCiCollectionNotFoundException;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.sync.SyncAuditMapper;
 import codedriver.module.cmdb.dao.mapper.sync.SyncMapper;
@@ -30,6 +31,11 @@ public class SyncServiceImpl implements SyncService {
     private CiMapper ciMapper;
 
     public void saveSyncPolicy(SyncPolicyVo syncPolicyVo) {
+        SyncCiCollectionVo syncCiCollectionVo = syncMapper.getSyncCiCollectionById(syncPolicyVo.getCiCollectionId());
+        if (syncCiCollectionVo == null) {
+            throw new SyncCiCollectionNotFoundException(syncPolicyVo.getCiCollectionId());
+        }
+        syncPolicyVo.setCiId(syncCiCollectionVo.getCiId());
         SyncPolicyVo vo = syncMapper.getSyncPolicyById(syncPolicyVo.getId());
         if (vo == null) {
             syncMapper.insertSyncPolicy(syncPolicyVo);
