@@ -98,7 +98,7 @@ public class CmdbCientityHandler extends FormHandlerBase {
 
     @Override
     public int getSort() {
-        return 18;
+        return 15;
     }
 
     @Override

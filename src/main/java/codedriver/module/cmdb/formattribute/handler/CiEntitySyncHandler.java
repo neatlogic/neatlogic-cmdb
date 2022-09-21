@@ -170,7 +170,7 @@ public class CiEntitySyncHandler extends FormHandlerBase {
 
     @Override
     public int getSort() {
-        return 10;
+        return 14;
     }
 
     @Override
