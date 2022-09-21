@@ -102,6 +102,14 @@ public class ListAllCiRelApi extends PrivateApiComponentBase {
         return pathList;
     }
 
+    public static void main(String[] a) {
+        List<CiRelVo> ciRelList = new ArrayList<>();
+        CiRelVo ciRelVo = new CiRelVo(123L);
+        ciRelVo.setCiName("adsafdf");
+        ciRelList.add(ciRelVo);
+        System.out.println(ciRelList.contains(new CiRelVo(123L)));
+    }
+
 
     private void getRelPathByCiId(Long ciId, List<CiRelVo> ciRelList, List<CiRelPathVo> pathList) {
         if (!ciRelList.contains(new CiRelVo(ciId))) {// 出现回环，中断递归
@@ -130,9 +138,18 @@ public class ListAllCiRelApi extends PrivateApiComponentBase {
                         ciRelVo.setRelName(relVo.getFromName());
                         ciRelVo.setRelLabel(relVo.getFromLabel());
                     }
-                    List<CiRelVo> newCiRelList = new ArrayList<>(ciRelList);
-                    newCiRelList.add(ciRelVo);
-                    getRelPathByCiId(relVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiId() : relVo.getFromCiId(), newCiRelList, pathList);
+                    if (!ciRelList.contains(ciRelVo)) {
+                        List<CiRelVo> newCiRelList = new ArrayList<>(ciRelList);
+                        newCiRelList.add(ciRelVo);
+                        getRelPathByCiId(relVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiId() : relVo.getFromCiId(), newCiRelList, pathList);
+                    } else {
+                        //如果path中已经存在了ciId，代表当前关系链已经构建完成
+                        CiRelPathVo ciRelPathVo = new CiRelPathVo();
+                        ciRelPathVo.setCiRelList(ciRelList);
+                        if (!pathList.contains(ciRelPathVo)) {
+                            pathList.add(ciRelPathVo);
+                        }
+                    }
                 }
             } else {
                 CiVo ciVo = ciMapper.getCiById(ciId);
