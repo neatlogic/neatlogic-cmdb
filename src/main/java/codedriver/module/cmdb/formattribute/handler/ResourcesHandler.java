@@ -166,7 +166,7 @@ public class ResourcesHandler extends FormHandlerBase {
 
     @Override
     public int getSort() {
-        return 21;
+        return 17;
     }
 
     //表单组件配置信息

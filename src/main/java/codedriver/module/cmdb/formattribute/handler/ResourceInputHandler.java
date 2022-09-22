@@ -130,6 +130,11 @@ public class ResourceInputHandler extends FormHandlerBase {
     }
 
     @Override
+    public int getSort() {
+        return -1;
+    }
+
+    @Override
     public Object valueConversionText(AttributeDataVo attributeDataVo, JSONObject configObj) {
         return attributeDataVo.getDataObj();
     }

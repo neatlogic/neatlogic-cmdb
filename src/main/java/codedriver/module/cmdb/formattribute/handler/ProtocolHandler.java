@@ -121,7 +121,7 @@ public class ProtocolHandler extends FormHandlerBase {
 
     @Override
     public int getSort() {
-        return 22;
+        return 19;
     }
 
     //表单组件配置信息
