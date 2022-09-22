@@ -78,7 +78,7 @@ public class ResourceAccountAccessTestApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long resourceId = paramObj.getLong("resourceId");
         List<Long> accountIdList = paramObj.getJSONArray("accountIdList").toJavaList(Long.class);
-        ResourceVo resource = resourceMapper.getResourceById(resourceId, TenantContext.get().getDataDbName());
+        ResourceVo resource = resourceMapper.getResourceById(resourceId);
         if (resource == null) {
             throw new ResourceNotFoundException(resourceId);
         }

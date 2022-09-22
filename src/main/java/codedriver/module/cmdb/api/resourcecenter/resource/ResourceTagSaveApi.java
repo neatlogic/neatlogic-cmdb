@@ -74,8 +74,7 @@ public class ResourceTagSaveApi extends PrivateApiComponentBase {
         if (CollectionUtils.isEmpty(tagArray)) {
             return null;
         }
-        String schemaName = TenantContext.get().getDataDbName();
-        if (resourceMapper.checkResourceIsExists(resourceId, schemaName) == 0) {
+        if (resourceMapper.checkResourceIsExists(resourceId) == 0) {
             throw new ResourceNotFoundException(resourceId);
         }
         List<String> tagList = tagArray.toJavaList(String.class);

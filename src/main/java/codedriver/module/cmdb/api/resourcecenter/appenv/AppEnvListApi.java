@@ -65,6 +65,6 @@ public class AppEnvListApi extends PrivateApiComponentBase {
             appModuleIdList = appModuleIdArray.toJavaList(Long.class);
         }
         Long appSystemId = paramObj.getLong("appSystemId");
-        return appSystemMapper.getAppEnvListByAppSystemIdAndModuleIdList(appSystemId, appModuleIdList, TenantContext.get().getDataDbName());
+        return appSystemMapper.getAppEnvListByAppSystemIdAndModuleIdList(appSystemId, appModuleIdList);
     }
 }

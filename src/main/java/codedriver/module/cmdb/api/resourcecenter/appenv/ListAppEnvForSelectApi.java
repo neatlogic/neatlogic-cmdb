@@ -62,7 +62,6 @@ public class ListAppEnvForSelectApi extends PrivateApiComponentBase {
     @Description(desc = "查询资源环境列表")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        TenantContext.get().switchDataDatabase();
         BasePageVo searchVo = paramObj.toJavaObject(BasePageVo.class);
         JSONArray defaultValue = searchVo.getDefaultValue();
         if (CollectionUtils.isNotEmpty(defaultValue)) {
@@ -89,7 +88,6 @@ public class ListAppEnvForSelectApi extends PrivateApiComponentBase {
                 }
             }
         }
-        TenantContext.get().switchDefaultDatabase();
         return null;
     }
 }

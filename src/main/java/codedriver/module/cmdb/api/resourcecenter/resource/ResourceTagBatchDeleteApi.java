@@ -75,9 +75,8 @@ public class ResourceTagBatchDeleteApi extends PrivateApiComponentBase {
             throw new ParamNotExistsException("tagList");
         }
 
-        String schemaName = TenantContext.get().getDataDbName();
         List<Long> resourceIdList = resourceIdArray.toJavaList(Long.class);
-        List<Long> existResourceIdList = resourceMapper.checkResourceIdListIsExists(resourceIdList, schemaName);
+        List<Long> existResourceIdList = resourceMapper.checkResourceIdListIsExists(resourceIdList);
         if (resourceIdList.size() > existResourceIdList.size()) {
             List<Long> notFoundIdList = ListUtils.removeAll(resourceIdList, existResourceIdList);
             if (CollectionUtils.isNotEmpty(notFoundIdList)) {

@@ -32,13 +32,11 @@ public class CIEntitySyncProcessUtilHandler extends ProcessStepInternalHandlerBa
 
     @Override
     public Object getHandlerStepInfo(ProcessTaskStepVo currentProcessTaskStepVo) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public Object getHandlerStepInitInfo(ProcessTaskStepVo currentProcessTaskStepVo) {
-        // TODO Auto-generated method stub
         return null;
     }
 
@@ -111,7 +109,6 @@ public class CIEntitySyncProcessUtilHandler extends ProcessStepInternalHandlerBa
 
     @Override
     public void updateProcessTaskStepUserAndWorker(Long processTaskId, Long processTaskStepId) {
-        // TODO Auto-generated method stub
 
     }
     @SuppressWarnings("serial")

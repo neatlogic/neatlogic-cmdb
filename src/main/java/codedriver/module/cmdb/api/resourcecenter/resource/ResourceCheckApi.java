@@ -215,7 +215,7 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
 
     private void addException(String executeUser, Long protocolId, List<ResourceVo> executeUserIsNotFoundInResourceList, List<ResourceVo> protocolIsNotFoundInResourceList, List<AccountProtocolVo> protocolVoList, List<Long> idList) {
         IResourceCenterAccountCrossoverService accountService = CrossoverServiceFactory.getApi(IResourceCenterAccountCrossoverService.class);
-        List<ResourceVo> resourceVoList = resourceMapper.getResourceByIdList(idList, TenantContext.get().getDataDbName());
+        List<ResourceVo> resourceVoList = resourceMapper.getResourceByIdList(idList);
         if(CollectionUtils.isNotEmpty(resourceVoList)) {
             List<AccountVo> accountVoList = resourceAccountMapper.getResourceAccountListByResourceIdAndProtocolAndAccount(idList, protocolId, executeUser);
             List<AccountVo> allAccountVoList = resourceAccountMapper.getAccountListByIpList(resourceVoList.stream().map(ResourceVo::getIp).collect(Collectors.toList()));

@@ -7,16 +7,16 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="codedriver.module.cmdb.dao.mapper.resourcecenter.AppSystemMapper">
 
-    <select id="getAppSystemByAbbrName" resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemVo">
+    <select id="getAppSystemByAbbrName" parameterType="java.lang.String" resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemVo">
         select `name`, `id`, `abbr_name` as abbrName
-        from ${schemaName}.`scence_appsystem`
-        where `abbr_name` = #{abbrName}
+        from @{DATA_SCHEMA}.`scence_appsystem`
+        where `abbr_name` = #{value}
     </select>
 
-    <select id="getAppSystemById" resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemVo">
+    <select id="getAppSystemById" parameterType="java.lang.Long" resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemVo">
         select `name`, `id`, `abbr_name` as abbrName
-        from ${schemaName}.`scence_appsystem`
-        where `id` = #{id}
+        from @{DATA_SCHEMA}.`scence_appsystem`
+        where `id` = #{value}
     </select>
 
     <select id="getAppSystemListByIdList" resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppSystemVo">
@@ -28,16 +28,16 @@
         </foreach>
     </select>
 
-    <select id="getAppModuleByAbbrName" resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppModuleVo">
+    <select id="getAppModuleByAbbrName" parameterType="java.lang.String" resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppModuleVo">
         select `name`, `id`, `abbr_name` as abbrName
-        from ${schemaName}.`scence_appmodule`
-        where `abbr_name` = #{abbrName}
+        from @{DATA_SCHEMA}.`scence_appmodule`
+        where `abbr_name` = #{value}
     </select>
 
-    <select id="getAppModuleById" resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppModuleVo">
+    <select id="getAppModuleById" parameterType="java.lang.Long" resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppModuleVo">
         select `name`, `id`, `abbr_name` as abbrName
-        from ${schemaName}.`scence_appmodule`
-        where `id` = #{id}
+        from @{DATA_SCHEMA}.`scence_appmodule`
+        where `id` = #{value}
     </select>
 
     <select id="getAppModuleListByIdList" resultType="codedriver.framework.cmdb.dto.resourcecenter.entity.AppModuleVo">
@@ -54,7 +54,7 @@
         SELECT DISTINCT
         a.env_id AS envId,
         a.env_name AS envName
-        FROM ${schemaName}.`scence_ipobject_env_appmodule_appsystem` a
+        FROM @{DATA_SCHEMA}.`scence_ipobject_env_appmodule_appsystem` a
         <where>
             <choose>
                 <when test="appResourceId != null">
@@ -75,28 +75,6 @@
                     and a.`app_module_id` is not null
                 </otherwise>
             </choose>
-        </where>
-    </select>
-
-    <select id="getAppSystemIdListCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
-            resultType="java.lang.Integer">
-        SELECT count(distinct a.`id`)
-        FROM ${schemaName}.`scence_appsystem_appmodule` a
-        <where>
-            <if test="keyword != null and keyword != ''">
-                a.`name` LIKE concat('%', #{keyword}, '%') or a.`app_module_name` LIKE concat('%', #{keyword}, '%')
-            </if>
-        </where>
-    </select>
-
-    <select id="getAppSystemIdListByAppModuleName" resultType="java.lang.Long">
-        SELECT a.`id` FROM
-        ${schemaName}.`scence_appsystem_appmodule` a
-        <where>
-            a.`app_module_id` IS NOT NULL
-            <if test="keyword != null and keyword != ''">
-                and a.`app_module_name` LIKE concat('%',#{keyword}, '%')
-            </if>
         </where>
     </select>
 </mapper>

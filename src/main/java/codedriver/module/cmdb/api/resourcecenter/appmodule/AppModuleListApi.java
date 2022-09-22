@@ -71,7 +71,7 @@ public class AppModuleListApi extends PrivateApiComponentBase {
             searchVo.setRowNum(count);
             List<Long> idList = resourceMapper.searchAppModuleIdList(searchVo);
             if (CollectionUtils.isNotEmpty(idList)) {
-                List<ResourceVo> resourceList = resourceMapper.searchAppModule(idList, TenantContext.get().getDataDbName());
+                List<ResourceVo> resourceList = resourceMapper.searchAppModule(idList);
                 return TableResultUtil.getResult(resourceList, searchVo);
             }
         }
