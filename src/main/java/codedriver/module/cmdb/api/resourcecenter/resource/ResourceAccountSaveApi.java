@@ -75,9 +75,8 @@ public class ResourceAccountSaveApi extends PrivateApiComponentBase {
         if (CollectionUtils.isEmpty(accountIdArray)) {
             throw new ParamNotExistsException("accountIdList");
         }
-        String schemaName = TenantContext.get().getDataDbName();
         Long resourceId = paramObj.getLong("resourceId");
-        if (resourceMapper.checkResourceIsExists(resourceId, schemaName) == 0) {
+        if (resourceMapper.checkResourceIsExists(resourceId) == 0) {
             throw new ResourceNotFoundException(resourceId);
         }
         List<Long> accountIdList = accountIdArray.toJavaList(Long.class);

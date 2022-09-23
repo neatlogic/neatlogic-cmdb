@@ -28,33 +28,31 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     List<Long> getResourceIdList(ResourceSearchVo searchVo);
 
-    List<ResourceVo> getResourceListByIdList(@Param("idList") List<Long> idList, @Param("schemaName") String schemaName);
+    List<ResourceVo> getResourceListByIdList(List<Long> idList);
 
     int getIpObjectResourceCountByAppModuleIdAndTypeIdAndEnvIdAndTypeId(ResourceSearchVo searchVo);
 
     List<Long> getIpObjectResourceIdListByAppModuleIdAndTypeIdAndEnvIdAndTypeId(ResourceSearchVo searchVo);
 
-    List<ResourceVo> getAppInstanceResourceListByIdList(@Param("idList") List<Long> idList, @Param("schemaName") String schemaName);
+    List<ResourceVo> getAppInstanceResourceListByIdList(List<Long> idList);
 
-    List<ResourceVo> getAppInstanceResourceListByIdListAndKeyword(@Param("idList") List<Long> idList, @Param("keyword") String keyword, @Param("schemaName") String schemaName);
+    List<ResourceVo> getAppInstanceResourceListByIdListAndKeyword(@Param("idList") List<Long> idList, @Param("keyword") String keyword);
 
-    List<ResourceVo> getAppInstanceResourceListByIdListSimple(@Param("idList") List<Long> idList, @Param("schemaName") String schemaName);
+    List<ResourceVo> getAppInstanceResourceListByIdListSimple(List<Long> idList);
 
-    List<ResourceVo> getDbInstanceResourceListByIdList(@Param("idList") List<Long> idList, @Param("schemaName") String schemaName);
+    List<ResourceVo> getDbInstanceResourceListByIdList(List<Long> idList);
 
     Long getResourceIdByIpAndPortAndName(ResourceSearchVo searchVo);
 
     Long getResourceIdByIpAndPortAndNameWithFilter(ResourceSearchVo searchVo);
 
-    List<ResourceVo> getResourceByIdList(@Param("idList") List<Long> idList, @Param("schemaName") String schemaName);
+    List<ResourceVo> getResourceByIdList(List<Long> idList);
 
-    ResourceVo getResourceById(@Param("id") Long id, @Param("schemaName") String schemaName);
+    ResourceVo getResourceById(Long id);
 
-    List<ResourceVo> getResourceFromSoftwareServiceByIdList(@Param("idList") List<Long> idList, @Param("schemaName") String schemaName);
+    int checkResourceIsExists(Long id);
 
-    int checkResourceIsExists(@Param("id") Long id, @Param("schemaName") String schemaName);
-
-    List<Long> checkResourceIdListIsExists(@Param("idList") List<Long> idList, @Param("schemaName") String schemaName);
+    List<Long> checkResourceIdListIsExists(List<Long> idList);
 
     List<Long> getHasModuleAppSystemIdListByAppSystemIdList(@Param("appSystemIdList") List<Long> appSystemIdList);
 
@@ -64,9 +62,9 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     List<Long> searchAppModuleIdList(ResourceSearchVo searchVo);
 
-    List<ResourceVo> searchAppModule(@Param("idList") List<Long> idList, @Param("schemaName") String schemaName);
+    List<ResourceVo> searchAppModule(List<Long> idList);
 
-    List<Long> getAppSystemModuleIdListByAppSystemId(@Param("appSystemId") Long appSystemId);
+    List<Long> getAppSystemModuleIdListByAppSystemId(Long appSystemId);
 
     List<Long> getAppSystemModuleIdListByAppSystemIdAndAppModuleIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleIdList") JSONArray appModuleIdList);
 
@@ -76,43 +74,42 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     Set<Long> getIpObjectResourceTypeIdListByAppModuleIdAndEnvId(ResourceSearchVo searchVo);
 
-    List<ResourceVo> getResourceListByResourceVoList(@Param("resourceList") List<ResourceVo> resourceList, @Param("schemaName") String schemaName);
+    List<ResourceVo> getResourceListByResourceVoList(@Param("resourceList") List<ResourceVo> resourceList);
 
-    List<Long> getResourceIdListByAppSystemIdAndModuleIdAndEnvId(@Param("resourceVo") ResourceVo resourceVo, @Param("schemaName") String schemaName);
+    List<Long> getResourceIdListByAppSystemIdAndModuleIdAndEnvId(ResourceVo resourceVo);
 
-    List<Long> getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId(@Param("resourceVo") ResourceVo resourceVo, @Param("schemaName") String schemaName);
+    List<Long> getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId(ResourceVo resourceVo);
 
     /**
      * 根据类型和IP列表查询资源
      *
-     * @param schemaName
      * @param typeIdList
      * @param ipList
      * @return
      */
-    List<ResourceVo> getResourceListByTypeIdListAndIpList(@Param("schemaName") String schemaName, @Param("typeIdList") List<Long> typeIdList, @Param("ipList") List<String> ipList);
+    List<ResourceVo> getResourceListByTypeIdListAndIpList(@Param("typeIdList") List<Long> typeIdList, @Param("ipList") List<String> ipList);
 
-    ResourceVo getResourceByIpAndPortAndNameAndTypeName(@Param("schemaName") String dataDbName, @Param("ip") String ip, @Param("port") Integer port, @Param("name") String nodeName, @Param("typeName") String nodeType);
+    ResourceVo getResourceByIpAndPortAndNameAndTypeName(@Param("ip") String ip, @Param("port") Integer port, @Param("name") String nodeName, @Param("typeName") String nodeType);
 
-    ResourceVo getResourceByIpAndPort(@Param("schemaName") String dataDbName, @Param("ip") String ip, @Param("port") Integer port);
+    ResourceVo getResourceByIpAndPort(@Param("ip") String ip, @Param("port") Integer port);
 
-    ResourceVo getAppSystemById(@Param("id") Long id, @Param("schemaName") String schemaName);
+    ResourceVo getAppSystemById(Long id);
 
-    ResourceVo getAppSystemByName(@Param("name") String name, @Param("schemaName") String schemaName);
+    ResourceVo getAppSystemByName(String name);
 
-    ResourceVo getAppModuleById(@Param("id") Long id, @Param("schemaName") String schemaName);
+    ResourceVo getAppModuleById(Long id);
 
-    ResourceVo getAppModuleByName(@Param("name") String name, @Param("schemaName") String schemaName);
+    ResourceVo getAppModuleByName(String name);
 
-    ResourceVo getAppEnvById(@Param("id") Long id, @Param("schemaName") String schemaName);
+    ResourceVo getAppEnvById(Long id);
 
-    ResourceVo getAppEnvByName(@Param("name") String name, @Param("schemaName") String schemaName);
+    ResourceVo getAppEnvByName(String name);
 
-    List<AppEnvironmentVo> getAllAppEnv(@Param("schemaName") String schemaName);
+    List<AppEnvironmentVo> getAllAppEnv();
 
-    List<AccountComponentVo> searchAccountComponent(@Param("accountComponentVo") AccountComponentVo accountComponentVo, @Param("schemaName") String schemaName);
+    List<AccountComponentVo> searchAccountComponent(AccountComponentVo accountComponentVo);
 
-    Integer searchAccountComponentCount(@Param("accountComponentVo") AccountComponentVo accountComponentVo, @Param("schemaName") String schemaName);
+    Integer searchAccountComponentCount(AccountComponentVo accountComponentVo);
 
     int searchAppEnvCount(BasePageVo searchVo);
 

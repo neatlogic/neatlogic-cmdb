@@ -123,7 +123,7 @@ public class ExportResourceApi extends PrivateBinaryStreamApiComponentBase {
         JSONArray defaultValue = searchVo.getDefaultValue();
         if (CollectionUtils.isNotEmpty(defaultValue)) {
             List<Long> idList = defaultValue.toJavaList(Long.class);
-            resourceList = resourceMapper.getResourceListByIdList(idList, TenantContext.get().getDataDbName());
+            resourceList = resourceMapper.getResourceListByIdList(idList);
             resourceCenterResourceService.addTagAndAccountInformation(resourceList);
             for (ResourceVo resourceVo : resourceList) {
                 Map<String, Object> dataMap = resourceConvertDataMap(resourceVo);
@@ -140,7 +140,7 @@ public class ExportResourceApi extends PrivateBinaryStreamApiComponentBase {
                     searchVo.setCurrentPage(i);
                     List<Long> idList = resourceMapper.getResourceIdList(searchVo);
                     if (CollectionUtils.isNotEmpty(idList)) {
-                        resourceList = resourceMapper.getResourceListByIdList(idList, TenantContext.get().getDataDbName());
+                        resourceList = resourceMapper.getResourceListByIdList(idList);
                         resourceCenterResourceService.addTagAndAccountInformation(resourceList);
                         for (ResourceVo resourceVo : resourceList) {
                             Map<String, Object> dataMap = resourceConvertDataMap(resourceVo);

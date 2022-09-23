@@ -54,10 +54,8 @@ public class ResourceAccountSelectComponentApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         AccountComponentVo searchVo = JSON.toJavaObject(paramObj, AccountComponentVo.class);
-        List<AccountComponentVo> accountComponentVoList = null;
-        String schemaName = TenantContext.get().getDataDbName();
-        accountComponentVoList = resourceMapper.searchAccountComponent(searchVo, schemaName);
-        Integer rowNum = resourceMapper.searchAccountComponentCount(searchVo, schemaName);
+        List<AccountComponentVo> accountComponentVoList = resourceMapper.searchAccountComponent(searchVo);
+        Integer rowNum = resourceMapper.searchAccountComponentCount(searchVo);
         searchVo.setRowNum(rowNum);
         return TableResultUtil.getResult(accountComponentVoList, searchVo);
 

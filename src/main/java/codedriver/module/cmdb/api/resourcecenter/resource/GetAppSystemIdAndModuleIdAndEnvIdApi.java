@@ -69,11 +69,11 @@ public class GetAppSystemIdAndModuleIdAndEnvIdApi extends PrivateApiComponentBas
         String moduleName = jsonObj.getString("moduleName");
         String envName = jsonObj.getString("envName");
         IResourceCrossoverMapper resourceCrossoverMapper = CrossoverServiceFactory.getApi(IResourceCrossoverMapper.class);
-        ResourceVo appSystem = resourceCrossoverMapper.getAppSystemByName(sysName, TenantContext.get().getDataDbName());
+        ResourceVo appSystem = resourceCrossoverMapper.getAppSystemByName(sysName);
         if (appSystem == null) {
             throw new AppSystemNotFoundException(sysName);
         }
-        ResourceVo appModule = resourceCrossoverMapper.getAppModuleByName(moduleName, TenantContext.get().getDataDbName());
+        ResourceVo appModule = resourceCrossoverMapper.getAppModuleByName(moduleName);
         if (appModule == null) {
             throw new AppModuleNotFoundException(moduleName);
         }

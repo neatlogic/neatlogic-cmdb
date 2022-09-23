@@ -73,7 +73,7 @@ public class ResourceAccountDependencyHandler extends CustomTableDependencyHandl
         List<DependencyInfoVo> resultList = new ArrayList<>();
         List<Long> resourceIdList = resourceAccountMapper.getResourceIdListByAccountIdWithPage((Long) from, startNum, pageSize);
         if (resourceIdList.size() > 0) {
-            List<ResourceVo> resourceList = resourceMapper.getResourceListByIdList(resourceIdList, TenantContext.get().getDataDbName());
+            List<ResourceVo> resourceList = resourceMapper.getResourceListByIdList(resourceIdList);
             for (ResourceVo vo : resourceList) {
                 DependencyInfoVo dependencyInfoVo = parse(vo);
                 if (dependencyInfoVo != null) {

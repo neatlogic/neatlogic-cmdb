@@ -41,7 +41,7 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
         //账号是否被resource引用
         List<ResourceAccountVo> resourceAccountVoList = resourceAccountMapper.getResourceAccountListByAccountId(accountId);
         if (CollectionUtils.isNotEmpty(resourceAccountVoList)) {
-            List<ResourceVo> resourceVoList = resourceMapper.getResourceByIdList(resourceAccountVoList.stream().map(ResourceAccountVo::getResourceId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
+            List<ResourceVo> resourceVoList = resourceMapper.getResourceByIdList(resourceAccountVoList.stream().map(ResourceAccountVo::getResourceId).collect(Collectors.toList()));
             for (ResourceVo resourceVo : resourceVoList) {
                 resourceAccountMapper.insertAccountIp(new AccountIpVo(accountId, resourceVo.getIp()));
             }
@@ -58,7 +58,7 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
     @Override
     public void refreshAccountIpByResourceIdList(List<Long> resourceIdList) {
         List<ResourceAccountVo> resourceAccountVoList = resourceAccountMapper.getResourceAccountListByResourceIdList(resourceIdList);
-        List<ResourceVo> resourceVoList = resourceMapper.getResourceByIdList(resourceAccountVoList.stream().map(ResourceAccountVo::getResourceId).collect(Collectors.toList()), TenantContext.get().getDataDbName());
+        List<ResourceVo> resourceVoList = resourceMapper.getResourceByIdList(resourceAccountVoList.stream().map(ResourceAccountVo::getResourceId).collect(Collectors.toList()));
         //账号是否被resource引用
         if (CollectionUtils.isNotEmpty(resourceVoList)) {
             List<String> resourceIpList = resourceVoList.stream().map(ResourceVo::getIp).collect(Collectors.toList());

@@ -26,7 +26,6 @@ public class CiEntitySyncNotifyHandler extends NotifyPolicyHandlerBase {
 
     @Override
     protected List<NotifyTriggerVo> myNotifyTriggerList() {
-        // TODO Auto-generated method stub
         return null;
     }
 
@@ -37,19 +36,16 @@ public class CiEntitySyncNotifyHandler extends NotifyPolicyHandlerBase {
 
     @Override
     protected List<ConditionParamVo> mySystemParamList() {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     protected List<ConditionParamVo> mySystemConditionOptionList() {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     protected void myAuthorityConfig(JSONObject config) {
-        // TODO Auto-generated method stub
 
     }
 

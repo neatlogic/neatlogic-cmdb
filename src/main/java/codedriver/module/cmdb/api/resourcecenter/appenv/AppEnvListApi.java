@@ -5,7 +5,6 @@
 
 package codedriver.module.cmdb.api.resourcecenter.appenv;
 
-import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -65,6 +64,6 @@ public class AppEnvListApi extends PrivateApiComponentBase {
             appModuleIdList = appModuleIdArray.toJavaList(Long.class);
         }
         Long appSystemId = paramObj.getLong("appSystemId");
-        return appSystemMapper.getAppEnvListByAppSystemIdAndModuleIdList(appSystemId, appModuleIdList, TenantContext.get().getDataDbName());
+        return appSystemMapper.getAppEnvListByAppSystemIdAndModuleIdList(appSystemId, appModuleIdList);
     }
 }

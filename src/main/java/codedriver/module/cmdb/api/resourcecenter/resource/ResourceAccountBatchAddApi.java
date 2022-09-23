@@ -78,7 +78,7 @@ public class ResourceAccountBatchAddApi extends PrivateApiComponentBase {
         List<Long> resourceIdList = resourceIdArray.toJavaList(Long.class);
         Map<Long, ResourceVo> resourceVoMap = new HashMap<>();
         List<Long> existResourceIdList = new ArrayList<>();
-        List<ResourceVo> resourceVoList = resourceMapper.getResourceListByIdList(resourceIdList, TenantContext.get().getDataDbName());
+        List<ResourceVo> resourceVoList = resourceMapper.getResourceListByIdList(resourceIdList);
         for (ResourceVo resourceVo : resourceVoList) {
             resourceVoMap.put(resourceVo.getId(), resourceVo);
             existResourceIdList.add(resourceVo.getId());

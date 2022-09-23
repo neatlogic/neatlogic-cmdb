@@ -15,24 +15,19 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface AppSystemMapper extends IAppSystemMapper {
-//    List<AppSystemVo> searchAppSystem(AppSystemVo appSystemVo);
 
-    AppSystemVo getAppSystemByAbbrName(@Param("abbrName")String abbrName, @Param("schemaName") String schemaName);
+    AppSystemVo getAppSystemByAbbrName(String abbrName);
 
-    AppSystemVo getAppSystemById(@Param("id")Long id, @Param("schemaName") String schemaName);
+    AppSystemVo getAppSystemById(Long id);
 
     List<AppSystemVo> getAppSystemListByIdList(List<Long> idList);
 
-    AppModuleVo getAppModuleByAbbrName(@Param("abbrName")String abbrName, @Param("schemaName") String schemaName);
+    AppModuleVo getAppModuleByAbbrName(String abbrName);
 
-    AppModuleVo getAppModuleById(@Param("id")Long id, @Param("schemaName") String schemaName);
+    AppModuleVo getAppModuleById(Long id);
 
     List<AppModuleVo> getAppModuleListByIdList(List<Long> idList);
 
-    List<AppEnvironmentVo> getAppEnvListByAppSystemIdAndModuleIdList(@Param("appResourceId") Long appResourceId, @Param("moduleResourceIdList") List<Long> moduleIdList, @Param("schemaName") String schemaName);
-
-    Integer getAppSystemIdListCount(ResourceSearchVo searchVo);
-
-    List<Long> getAppSystemIdListByAppModuleName(@Param("keyword") String keyword, @Param("schemaName") String schemaName);
+    List<AppEnvironmentVo> getAppEnvListByAppSystemIdAndModuleIdList(@Param("appResourceId") Long appResourceId, @Param("moduleResourceIdList") List<Long> moduleIdList);
 
 }

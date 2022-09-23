@@ -55,8 +55,7 @@ public class ResourceAccountListApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long resourceId = paramObj.getLong("resourceId");
-        String schemaName = TenantContext.get().getDataDbName();
-        if (resourceMapper.checkResourceIsExists(resourceId, schemaName) == 0) {
+        if (resourceMapper.checkResourceIsExists(resourceId) == 0) {
             throw new ResourceNotFoundException(resourceId);
         }
         return resourceAccountMapper.getResourceAccountListByResourceId(resourceId ,paramObj.getString("protocol"));

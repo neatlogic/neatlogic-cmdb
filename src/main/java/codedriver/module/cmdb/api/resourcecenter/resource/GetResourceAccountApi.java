@@ -76,7 +76,7 @@ public class GetResourceAccountApi extends PrivateApiComponentBase {
         String username = paramObj.getString("username");
 
         if (resourceId == null) {
-            ResourceVo resourceVo = resourceMapper.getResourceByIpAndPortAndNameAndTypeName(TenantContext.get().getDataDbName(), ip, port, nodeName, nodeType);
+            ResourceVo resourceVo = resourceMapper.getResourceByIpAndPortAndNameAndTypeName(ip, port, nodeName, nodeType);
             if (resourceVo == null) {
                 throw new ResourceNotFoundException();
             }
