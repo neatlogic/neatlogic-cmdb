@@ -16,6 +16,17 @@
         <include refid="searchIllegalCiEntityCondition"/>
     </select>
 
+    <select id="searchIllegalCiEntityId" parameterType="codedriver.framework.cmdb.dto.legalvalid.IllegalCiEntityVo"
+            resultType="java.lang.Long">
+        SELECT
+        a.id as ciEntityId,
+        from cmdb_cientity a
+        join cmdb_ci b on a.ci_id = b.id
+        join cmdb_cientity_illegal cci on a.id = cci.cientity_id
+        left join cmdb_legalvalid cl on cci.legalvalid_id = cl.id
+        <include refid="searchIllegalCiEntityCondition"/>
+    </select>
+
     <select id="searchIllegalCiEntity" parameterType="codedriver.framework.cmdb.dto.legalvalid.IllegalCiEntityVo"
             resultType="codedriver.framework.cmdb.dto.legalvalid.IllegalCiEntityVo">
         SELECT

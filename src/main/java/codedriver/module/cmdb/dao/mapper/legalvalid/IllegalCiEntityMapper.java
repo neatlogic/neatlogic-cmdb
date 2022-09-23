@@ -22,6 +22,8 @@ public interface IllegalCiEntityMapper {
 
     List<IllegalCiEntityVo> searchIllegalCiEntity(IllegalCiEntityVo illegalCiEntityVo);
 
+    List<Long> searchIllegalCiEntityId(IllegalCiEntityVo illegalCiEntityVo);
+
     int searchIllegalCiEntityCount(IllegalCiEntityVo illegalCiEntityVo);
 
     void insertCiEntityIllegal(IllegalCiEntityVo illegalCiEntityVo);
