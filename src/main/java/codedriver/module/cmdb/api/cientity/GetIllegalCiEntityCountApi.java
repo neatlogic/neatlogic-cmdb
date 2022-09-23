@@ -1,11 +1,12 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
 package codedriver.module.cmdb.api.cientity;
 
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.dto.legalvalid.LegalValidVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
@@ -40,7 +41,7 @@ public class GetIllegalCiEntityCountApi extends PrivateApiComponentBase {
     }
 
     @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id")})
-    @Output({@Param(type = ApiParamType.INTEGER, desc = "不合规配置项数量")})
+    @Output({@Param(explode = LegalValidVo[].class)})
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long ciId = paramObj.getLong("ciId");

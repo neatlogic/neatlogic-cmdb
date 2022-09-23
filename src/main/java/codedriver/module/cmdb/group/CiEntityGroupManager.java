@@ -248,11 +248,13 @@ public class CiEntityGroupManager {
 
                 }
 
-                JSONObject paramObj = new JSONObject();
                 //将配置项参数处理成指定格式，格式和表达式相关，不能随意修改格式
+                JSONObject paramObj = new JSONObject();
                 JSONObject dataObj = new JSONObject();
+                JSONObject defineObj = new JSONObject();
                 if (MapUtils.isNotEmpty(ciEntityVo.getAttrEntityData())) {
                     for (String key : ciEntityVo.getAttrEntityData().keySet()) {
+                        defineObj.put(key, ciEntityVo.getAttrEntityData().getJSONObject(key).getString("label"));
                         dataObj.put(key, ciEntityVo.getAttrEntityData().getJSONObject(key).getJSONArray("valueList"));
                     }
                 }
@@ -266,9 +268,11 @@ public class CiEntityGroupManager {
                                 valueList.add(entityObj.getLong("ciEntityId"));
                             }
                         }
+                        defineObj.put(key, ciEntityVo.getRelEntityData().getJSONObject(key).getString("label"));
                         dataObj.put(key, valueList);
                     }
                 }
+                paramObj.put("define", defineObj);
                 paramObj.put("data", dataObj);
                 paramObj.put("condition", conditionObj);
                 try {

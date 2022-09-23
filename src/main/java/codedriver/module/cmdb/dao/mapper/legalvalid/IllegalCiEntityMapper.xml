@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!--
-  ~ Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+  ~ Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
   ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
   -->
 
@@ -64,10 +64,15 @@
         </where>
     </sql>
 
-    <select id="getIllegalCiEntityCountByCiId" parameterType="java.lang.Long" resultType="int">
-        SELECT count(*)
-        FROM cmdb_cientity_illegal
-        where ci_id = #{value}
+    <select id="getIllegalCiEntityCountByCiId" parameterType="java.lang.Long"
+            resultType="codedriver.framework.cmdb.dto.legalvalid.LegalValidVo">
+        SELECT count(a.cientity_id) as illegalCiEntityCount,
+               b.id,
+               b.name
+        FROM cmdb_cientity_illegal a
+                 JOIN cmdb_legalvalid b ON a.legalvalid_id = b.id
+        where b.ci_id = #{value}
+        group by b.id
     </select>
 
     <insert id="insertCiEntityIllegal" parameterType="codedriver.framework.cmdb.dto.legalvalid.IllegalCiEntityVo">
