@@ -1,8 +1,8 @@
 package codedriver.module.cmdb.api.resourcecenter.resource;
 
-import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
+import codedriver.framework.cmdb.enums.resourcecenter.AccountType;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
@@ -47,6 +47,7 @@ public class ResourceAccountListApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "resourceId", type = ApiParamType.LONG, isRequired = true, desc = "资源id"),
+            @Param(name = "type", type = ApiParamType.ENUM, member = AccountType.class, isRequired = true, desc = "账号类型"),
             @Param(name = "protocol", type = ApiParamType.STRING, desc = "协议名称"),
     })
     @Output({
@@ -58,7 +59,7 @@ public class ResourceAccountListApi extends PrivateApiComponentBase {
         if (resourceMapper.checkResourceIsExists(resourceId) == 0) {
             throw new ResourceNotFoundException(resourceId);
         }
-        return resourceAccountMapper.getResourceAccountListByResourceId(resourceId ,paramObj.getString("protocol"));
+        return resourceAccountMapper.getResourceAccountListByResourceId(resourceId, paramObj.getString("type"),paramObj.getString("protocol"));
     }
 
 }

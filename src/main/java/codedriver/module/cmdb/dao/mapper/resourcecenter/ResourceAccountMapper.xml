@@ -26,6 +26,7 @@
                b.name       as protocol,
                b.id         as protocolId,
                b.`port`     as protocolPort,
+               a.`type`,
                a.`fcu`,
                a.`fcd`,
                a.`lcu`,
@@ -48,7 +49,8 @@
         a.`fcd`,
         a. `lcu`,
         a.`lcd`
-        FROM `cmdb_resourcecenter_account` a JOIN `cmdb_resourcecenter_account_protocol` b ON a.`protocol_id`=b.`id`
+        FROM `cmdb_resourcecenter_account` a
+        JOIN `cmdb_resourcecenter_account_protocol` b ON a.`protocol_id`=b.`id`
         WHERE a.`id` IN
         <foreach collection="list" item="id" open="(" separator="," close=")">
             #{id}
@@ -70,12 +72,16 @@
     </select>
 
     <sql id="searchAccount">
-        FROM `cmdb_resourcecenter_account` a JOIN `cmdb_resourcecenter_account_protocol` b ON b.`id`=a.`protocol_id`
+        FROM `cmdb_resourcecenter_account` a
+        JOIN `cmdb_resourcecenter_account_protocol` b ON b.`id`=a.`protocol_id`
         WHERE b.`name` != 'tagent'
         <if test="keyword != null and keyword != ''">
             and (a.`name` like concat('%', #{keyword}, '%')
             or b.`name` like concat('%', #{keyword}, '%')
             or a.`account` like concat('%', #{keyword}, '%'))
+        </if>
+        <if test="type != null and type != ''">
+            AND a.`type` = #{type}
         </if>
         <if test="protocolIdList != null and protocolIdList.size() > 0">
             and b.id in
@@ -86,12 +92,6 @@
         <if test="protocolList != null and protocolList.size() > 0">
             and b.name in
             <foreach collection="protocolList" item="item" open="(" separator="," close=")">
-                #{item}
-            </foreach>
-        </if>
-        <if test="defaultValue != null and defaultValue.size() > 0">
-            and a.`id` in
-            <foreach collection="defaultValue" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
         </if>
@@ -343,10 +343,13 @@
         cra.`fcd`,
         cra.`lcu`,
         cra.`lcd`
-        FROM cmdb_resourcecenter_resource_account crra
-        join cmdb_resourcecenter_account cra on cra.id = crra.account_id
-        left join cmdb_resourcecenter_account_protocol crap on crap.id = cra.protocol_id
+        FROM `cmdb_resourcecenter_resource_account` crra
+        join `cmdb_resourcecenter_account` cra on cra.id = crra.account_id
+        left join `cmdb_resourcecenter_account_protocol` crap on crap.id = cra.protocol_id
         WHERE crra.resource_id = #{resourceId}
+        <if test="type != null">
+            And cra.`type` = #{type}
+        </if>
         <if test="protocol != null">
             And crap.name = #{protocol}
         </if>
@@ -357,15 +360,15 @@
                cra.name,
                cra.account,
                cra.password as passwordCipher
-        from cmdb_resourcecenter_account cra
+        from `cmdb_resourcecenter_account` cra
     </select>
 
     <select id="getAccountByTagentIpAndPort" resultMap="accountMap">
         SELECT a.`id`,
                a.`name`,
                a.`password`
-        FROM cmdb_resourcecenter_account a
-                 JOIN tagent t on t.account_id = a.id
+        FROM `cmdb_resourcecenter_account` a
+                 JOIN `tagent` t on t.account_id = a.id
         WHERE t.ip = #{ip}
           AND t.port = #{port}
     </select>
@@ -380,9 +383,9 @@
         cra.`fcd`,
         cra.`lcu`,
         cra.`lcd`
-        from cmdb_resourcecenter_resource_account crra
-        left join cmdb_resourcecenter_account cra on crra.account_id = cra.id
-        LEFT JOIN cmdb_resourcecenter_account_protocol crap on cra.protocol_id = crap.id
+        from `cmdb_resourcecenter_resource_account` crra
+        left join `cmdb_resourcecenter_account` cra on crra.account_id = cra.id
+        LEFT JOIN `cmdb_resourcecenter_account_protocol` crap on cra.protocol_id = crap.id
         where crra.resource_id = #{resourceId}
         and crap.`name` = #{protocol}
         <if test="protocolPort != null">
@@ -438,6 +441,7 @@
             `password`,
         </if>
         `protocol_id` ,
+        `type` ,
         `lcu`,
         `lcd`,
         `fcu`,
@@ -451,6 +455,7 @@
             #{passwordCipher},
         </if>
         #{protocolId},
+        #{type},
         #{lcu},
         now(3),
         #{fcu},
