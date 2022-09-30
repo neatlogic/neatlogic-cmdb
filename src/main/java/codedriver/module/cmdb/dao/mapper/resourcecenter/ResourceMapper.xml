@@ -384,7 +384,7 @@
     </select>
 
     <select id="getResourceByIdList" parameterType="java.lang.Long" resultMap="resourceCenterMap">
-        SELECT a.`id`, a.`name`, a.`ip`,a.`type_id`, a.`type_name`
+        SELECT a.`id`, a.`name`, a.`ip`,a.`port`,a.`type_id`, a.`type_name`
         FROM @{DATA_SCHEMA}.`scence_ipobject_ip_port` a
         where a.`id` in
         <foreach collection="list" item="id" separator="," close=")" open="(">
@@ -568,7 +568,8 @@
         </if>
     </select>
 
-    <select id="getResourceListByResourceVoList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo" resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
+    <select id="getResourceListByResourceVoList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo"
+            resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
         SELECT a.name,a.`ip`,a.id,a.port,a.type_name as typeName
         FROM @{DATA_SCHEMA}.`scence_ipobject_ip_port` a
         WHERE
@@ -586,18 +587,21 @@
         </foreach>
     </select>
 
-    <select id="getResourceIdListByAppSystemIdAndModuleIdAndEnvId" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo"
+    <select id="getResourceIdListByAppSystemIdAndModuleIdAndEnvId"
+            parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo"
             resultType="java.lang.Long">
         SELECT a.`id`
         FROM @{DATA_SCHEMA}.`scence_ipobject_env_appmodule_appsystem` a
         WHERE a.`app_system_id` = #{appSystemId}
           AND a.`app_module_id` = #{appModuleId}
           AND a.`env_id` = #{envId}
-        ORDER BY a.`id` DESC
-        LIMIT #{startNum}, #{pageSize}
+        ORDER BY a.`id`
+        DESC
+            LIMIT #{startNum}, #{pageSize}
     </select>
 
-    <select id="getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo"
+    <select id="getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId"
+            parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo"
             resultType="java.lang.Long">
         SELECT a.`id`
         FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
@@ -766,7 +770,8 @@
         where `id` = #{value}
     </select>
 
-    <select id="searchAccountComponent" parameterType="codedriver.framework.cmdb.dto.resourcecenter.AccountComponentVo" resultType="codedriver.framework.cmdb.dto.resourcecenter.AccountComponentVo">
+    <select id="searchAccountComponent" parameterType="codedriver.framework.cmdb.dto.resourcecenter.AccountComponentVo"
+            resultType="codedriver.framework.cmdb.dto.resourcecenter.AccountComponentVo">
         SELECT
         a.id as id,
         a.name as name,
@@ -789,7 +794,8 @@
         LIMIT #{startNum}, #{pageSize}
     </select>
 
-    <select id="searchAccountComponentCount" parameterType="codedriver.framework.cmdb.dto.resourcecenter.AccountComponentVo" resultType="int">
+    <select id="searchAccountComponentCount"
+            parameterType="codedriver.framework.cmdb.dto.resourcecenter.AccountComponentVo" resultType="int">
         SELECT
         count(DISTINCT a.id)
         FROM `cmdb_resourcecenter_resource_account` c
@@ -803,7 +809,8 @@
         </where>
     </select>
 
-    <select id="getAppSystemByName" parameterType="java.lang.String" resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
+    <select id="getAppSystemByName" parameterType="java.lang.String"
+            resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
         select `id`,
                `name`,
                `abbr_name`,
@@ -824,7 +831,8 @@
         where `abbr_name` = #{value}
     </select>
 
-    <select id="getAppModuleByName" parameterType="java.lang.String" resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
+    <select id="getAppModuleByName" parameterType="java.lang.String"
+            resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
         select `id`,
                `name`,
                `abbr_name`,
