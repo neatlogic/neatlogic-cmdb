@@ -73,6 +73,7 @@ public class AccountSaveApi extends PrivateApiComponentBase {
             @Param(name = "resourceId", type = ApiParamType.LONG, desc = "资产ID")
     })
     @Output({
+            @Param(name = "id", type = ApiParamType.LONG, desc = "账号ID")
     })
     @Description(desc = "保存资源中心账号")
     @Override
@@ -151,7 +152,9 @@ public class AccountSaveApi extends PrivateApiComponentBase {
             vo.setFcu(UserContext.get().getUserUuid());
             resourceAccountMapper.insertAccount(vo);
         }
-        return null;
+        JSONObject resultObj = new JSONObject();
+        resultObj.put("id", vo.getId());
+        return resultObj;
     }
 
     public IValid name() {
