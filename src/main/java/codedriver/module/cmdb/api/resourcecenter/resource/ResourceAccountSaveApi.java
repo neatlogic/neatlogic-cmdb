@@ -5,10 +5,10 @@
 
 package codedriver.module.cmdb.api.resourcecenter.resource;
 
-import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceAccountVo;
+import codedriver.framework.cmdb.enums.resourcecenter.AccountType;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterAccountNotFoundException;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -31,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author linbq
@@ -108,8 +109,12 @@ public class ResourceAccountSaveApi extends PrivateApiComponentBase {
                 throw new ResourceCenterAccountNotFoundException(stringBuilder.toString());
             }
         }
-
-        resourceAccountMapper.deleteResourceAccountByResourceId(resourceId);
+        // 查询该资产绑定的公有账号列表，再根据账号ID解绑
+        List<AccountVo> accountList = resourceAccountMapper.getResourceAccountListByResourceId(resourceId, AccountType.PUBLIC.getValue(), null);
+        if (CollectionUtils.isNotEmpty(accountList)) {
+            List<Long> idList = accountList.stream().map(AccountVo::getId).collect(Collectors.toList());
+            resourceAccountMapper.deleteResourceAccountByAccountIdList(idList);
+        }
         accountIdList.removeAll(excludeAccountIdSet);
         List<ResourceAccountVo> resourceAccountVoList = new ArrayList<>();
         for (Long accountId : accountIdList) {
