@@ -12,6 +12,7 @@ import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -59,7 +60,12 @@ public class ResourceAccountListApi extends PrivateApiComponentBase {
         if (resourceMapper.checkResourceIsExists(resourceId) == 0) {
             throw new ResourceNotFoundException(resourceId);
         }
-        return resourceAccountMapper.getResourceAccountListByResourceIdAndTypeAndProtocol(resourceId, paramObj.getString("type"),paramObj.getString("protocol"));
+        String protocol = paramObj.getString("protocol");
+        if (StringUtils.isNotBlank(protocol)) {
+            return resourceAccountMapper.getResourceAccountListByResourceIdAndTypeAndProtocol(resourceId, paramObj.getString("type"), protocol);
+        } else {
+            return resourceAccountMapper.getResourceAccountListByResourceIdAndType(resourceId, paramObj.getString("type"));
+        }
     }
 
 }
