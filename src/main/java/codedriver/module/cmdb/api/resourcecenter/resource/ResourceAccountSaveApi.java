@@ -110,7 +110,7 @@ public class ResourceAccountSaveApi extends PrivateApiComponentBase {
             }
         }
         // 查询该资产绑定的公有账号列表，再根据账号ID解绑
-        List<AccountVo> accountList = resourceAccountMapper.getResourceAccountListByResourceId(resourceId, AccountType.PUBLIC.getValue(), null);
+        List<AccountVo> accountList = resourceAccountMapper.getResourceAccountListByResourceIdAndType(resourceId, AccountType.PUBLIC.getValue());
         if (CollectionUtils.isNotEmpty(accountList)) {
             List<Long> idList = accountList.stream().map(AccountVo::getId).collect(Collectors.toList());
             resourceAccountMapper.deleteResourceAccountByAccountIdList(idList);

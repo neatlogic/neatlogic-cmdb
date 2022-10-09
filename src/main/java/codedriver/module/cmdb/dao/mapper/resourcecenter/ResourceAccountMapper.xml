@@ -332,7 +332,7 @@
           AND crap.port = #{port}
     </select>
 
-    <select id="getResourceAccountListByResourceId"
+    <select id="getResourceAccountListByResourceIdAndTypeAndProtocol"
             resultMap="accountMap">
         SELECT cra.id,
         cra.name,
@@ -348,12 +348,45 @@
         join `cmdb_resourcecenter_account` cra on cra.id = crra.account_id
         left join `cmdb_resourcecenter_account_protocol` crap on crap.id = cra.protocol_id
         WHERE crra.resource_id = #{resourceId}
-        <if test="type != null">
-            And cra.`type` = #{type}
-        </if>
-        <if test="protocol != null">
-            And crap.name = #{protocol}
-        </if>
+          And cra.`type` = #{type}
+          And crap.name = #{protocol}
+    </select>
+
+    <select id="getResourceAccountListByResourceIdAndType"
+            resultMap="accountMap">
+        SELECT cra.id,
+        cra.name,
+        cra.account,
+        cra.`password`,
+        crap.`name` as protocol,
+        crap.`port` as protocolPort,
+        cra.`fcu`,
+        cra.`fcd`,
+        cra.`lcu`,
+        cra.`lcd`
+        FROM `cmdb_resourcecenter_resource_account` crra
+        join `cmdb_resourcecenter_account` cra on cra.id = crra.account_id
+        left join `cmdb_resourcecenter_account_protocol` crap on crap.id = cra.protocol_id
+        WHERE crra.resource_id = #{resourceId}
+        And cra.`type` = #{type}
+    </select>
+
+    <select id="getResourceAccountListByResourceId"
+            resultMap="accountMap">
+        SELECT cra.id,
+        cra.name,
+        cra.account,
+        cra.`password`,
+        crap.`name` as protocol,
+        crap.`port` as protocolPort,
+        cra.`fcu`,
+        cra.`fcd`,
+        cra.`lcu`,
+        cra.`lcd`
+        FROM `cmdb_resourcecenter_resource_account` crra
+        join `cmdb_resourcecenter_account` cra on cra.id = crra.account_id
+        left join `cmdb_resourcecenter_account_protocol` crap on crap.id = cra.protocol_id
+        WHERE crra.resource_id = #{value}
     </select>
 
     <select id="getAllAccountList" resultType="codedriver.framework.cmdb.dto.resourcecenter.AccountVo">

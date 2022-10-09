@@ -99,7 +99,7 @@ public class AccountSaveApi extends PrivateApiComponentBase {
             if (resourceId == null) {
                 throw new ParamNotExistsException("资产ID（resourceId）");
             }
-            List<AccountVo> accountVoList = resourceAccountMapper.getResourceAccountListByResourceId(resourceId, null,null);
+            List<AccountVo> accountVoList = resourceAccountMapper.getResourceAccountListByResourceId(resourceId);
             for (AccountVo accountVo : accountVoList) {
                 if (Objects.equals(vo.getName(), accountVo.getName()) && !Objects.equals(vo.getId(), accountVo.getId())) {
                     new ResourceCenterAccountNameRepeatsException(vo.getName());
@@ -182,7 +182,7 @@ public class AccountSaveApi extends PrivateApiComponentBase {
                 if (resourceId == null) {
                     throw new ParamNotExistsException("资产ID（resourceId）");
                 }
-                List<AccountVo> accountVoList = resourceAccountMapper.getResourceAccountListByResourceId(resourceId, null,null);
+                List<AccountVo> accountVoList = resourceAccountMapper.getResourceAccountListByResourceId(resourceId);
                 for (AccountVo accountVo : accountVoList) {
                     if (Objects.equals(vo.getName(), accountVo.getName()) && !Objects.equals(vo.getId(), accountVo.getId())) {
                         return new FieldValidResultVo(new ResourceCenterAccountNameRepeatsException(vo.getName()));
@@ -202,7 +202,7 @@ public class AccountSaveApi extends PrivateApiComponentBase {
     private List<String> check(Long resourceId, AccountVo newAccountVo) {
         List<String> failureReasonList = new ArrayList<>();
         Map<String, AccountVo> accountVoMap = new HashMap<>();
-        List<AccountVo> accountVoList = resourceAccountMapper.getResourceAccountListByResourceId(resourceId, null,null);
+        List<AccountVo> accountVoList = resourceAccountMapper.getResourceAccountListByResourceId(resourceId);
         Iterator<AccountVo> iterator = accountVoList.iterator();
         while(iterator.hasNext()) {
             AccountVo accountVo = iterator.next();
