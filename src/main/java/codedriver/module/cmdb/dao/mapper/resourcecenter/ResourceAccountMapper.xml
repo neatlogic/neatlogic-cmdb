@@ -62,6 +62,7 @@
         SELECT COUNT(1)
         FROM `cmdb_resourcecenter_account`
         WHERE `name` = #{name}
+          and `type` = #{type}
           and `id` != #{id}
     </select>
 
