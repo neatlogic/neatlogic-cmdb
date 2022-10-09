@@ -89,11 +89,24 @@ public class AccountSaveApi extends PrivateApiComponentBase {
         if (!StringUtils.equals(protocolVo.getName(), "tagent") && StringUtils.isEmpty(paramObj.getString("account"))) {
             throw new ResourceCenterAccountNameIsNotNullException();
         }
-        if (resourceAccountMapper.checkAccountNameIsRepeats(vo) > 0) {
-            throw new ResourceCenterAccountNameRepeatsException(vo.getName());
+        String type = vo.getType();
+        if (Objects.equals(type, AccountType.PUBLIC.getValue())) {
+            if (resourceAccountMapper.checkAccountNameIsRepeats(vo) > 0) {
+                throw new ResourceCenterAccountNameRepeatsException(vo.getName());
+            }
+        } else {
+            Long resourceId = vo.getResourceId();
+            if (resourceId == null) {
+                throw new ParamNotExistsException("资产ID（resourceId）");
+            }
+            List<AccountVo> accountVoList = resourceAccountMapper.getResourceAccountListByResourceId(resourceId);
+            for (AccountVo accountVo : accountVoList) {
+                if (Objects.equals(vo.getName(), accountVo.getName()) && !Objects.equals(vo.getId(), accountVo.getId())) {
+                    new ResourceCenterAccountNameRepeatsException(vo.getName());
+                }
+            }
         }
         // 如果是私有类型账号，需要校验该资产中所有公有和私有账号中是否存在账号及协议都相同的，如果存在则不能更新
-        String type = vo.getType();
         if (Objects.equals(type, AccountType.PRIVATE.getValue())) {
             Long resourceId = paramObj.getLong("resourceId");
             if (resourceId == null) {
@@ -111,7 +124,7 @@ public class AccountSaveApi extends PrivateApiComponentBase {
         }
         List<Long> tagIdList = vo.getTagIdList();
         List<AccountTagVo> accountTagVoList = new ArrayList<>();
-        if (!CollectionUtils.isEmpty(tagIdList)) {
+        if (CollectionUtils.isNotEmpty(tagIdList)) {
             List<Long> notFoundTagIdList = new ArrayList<>();
             List<Long> searchTagIdList = null;
             List<Long> insertTagIdList = new ArrayList<>();
@@ -119,9 +132,9 @@ public class AccountSaveApi extends PrivateApiComponentBase {
             List<TagVo> tagVoList = resourceTagMapper.searchTagListByIdList(tagIdList);
             searchTagIdList = tagVoList.stream().map(TagVo::getId).collect(Collectors.toList());
             insertTagIdList.removeAll(searchTagIdList);
-            if (!CollectionUtils.isEmpty(insertTagIdList)) {
+            if (CollectionUtils.isNotEmpty(insertTagIdList)) {
                 notFoundTagIdList.addAll(insertTagIdList);
-                if (!CollectionUtils.isEmpty(notFoundTagIdList)) {
+                if (CollectionUtils.isNotEmpty(notFoundTagIdList)) {
                     throw new ResourceCenterTagNotFoundException(notFoundTagIdList);
                 }
             }
@@ -133,7 +146,7 @@ public class AccountSaveApi extends PrivateApiComponentBase {
                     accountTagVoList.clear();
                 }
             }
-            if (!CollectionUtils.isEmpty(accountTagVoList)) {
+            if (CollectionUtils.isNotEmpty(accountTagVoList)) {
                 resourceAccountMapper.insertIgnoreAccountTag(accountTagVoList);
             }
         }
@@ -160,8 +173,21 @@ public class AccountSaveApi extends PrivateApiComponentBase {
     public IValid name() {
         return value -> {
             AccountVo vo = JSON.toJavaObject(value, AccountVo.class);
-            if (resourceAccountMapper.checkAccountNameIsRepeats(vo) > 0) {
-                return new FieldValidResultVo(new ResourceCenterAccountNameRepeatsException(vo.getName()));
+            if (Objects.equals(AccountType.PUBLIC.getValue(), vo.getType())) {
+                if (resourceAccountMapper.checkAccountNameIsRepeats(vo) > 0) {
+                    return new FieldValidResultVo(new ResourceCenterAccountNameRepeatsException(vo.getName()));
+                }
+            } else {
+                Long resourceId = vo.getResourceId();
+                if (resourceId == null) {
+                    throw new ParamNotExistsException("资产ID（resourceId）");
+                }
+                List<AccountVo> accountVoList = resourceAccountMapper.getResourceAccountListByResourceId(resourceId);
+                for (AccountVo accountVo : accountVoList) {
+                    if (Objects.equals(vo.getName(), accountVo.getName()) && !Objects.equals(vo.getId(), accountVo.getId())) {
+                        return new FieldValidResultVo(new ResourceCenterAccountNameRepeatsException(vo.getName()));
+                    }
+                }
             }
             return new FieldValidResultVo();
         };
@@ -176,7 +202,14 @@ public class AccountSaveApi extends PrivateApiComponentBase {
     private List<String> check(Long resourceId, AccountVo newAccountVo) {
         List<String> failureReasonList = new ArrayList<>();
         Map<String, AccountVo> accountVoMap = new HashMap<>();
-        List<AccountVo> accountVoList = resourceAccountMapper.getResourceAccountListByResourceId(resourceId, null,null);
+        List<AccountVo> accountVoList = resourceAccountMapper.getResourceAccountListByResourceId(resourceId);
+        Iterator<AccountVo> iterator = accountVoList.iterator();
+        while(iterator.hasNext()) {
+            AccountVo accountVo = iterator.next();
+            if (Objects.equals(accountVo.getId(), newAccountVo.getId())) {
+                iterator.remove();
+            }
+        }
         accountVoList.add(newAccountVo);
         for (AccountVo accountVo : accountVoList) {
             String key = accountVo.getProtocol() + "#" + accountVo.getAccount();

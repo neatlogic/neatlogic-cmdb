@@ -59,7 +59,7 @@ public class ResourceAccountListApi extends PrivateApiComponentBase {
         if (resourceMapper.checkResourceIsExists(resourceId) == 0) {
             throw new ResourceNotFoundException(resourceId);
         }
-        return resourceAccountMapper.getResourceAccountListByResourceId(resourceId, paramObj.getString("type"),paramObj.getString("protocol"));
+        return resourceAccountMapper.getResourceAccountListByResourceIdAndTypeAndProtocol(resourceId, paramObj.getString("type"),paramObj.getString("protocol"));
     }
 
 }
