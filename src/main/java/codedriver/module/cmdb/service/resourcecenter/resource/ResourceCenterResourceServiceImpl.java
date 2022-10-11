@@ -5,7 +5,6 @@
 
 package codedriver.module.cmdb.service.resourcecenter.resource;
 
-import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.resourcecenter.*;
@@ -247,7 +246,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 searchVo.setTypeId(ciVo.getId());
                 List<ResourceVo> returnList = searchMap.get(actionKey).execute(searchVo);
                 if (CollectionUtils.isNotEmpty(returnList)) {
-                    JSONObject tableObj =TableResultUtil.getResult(returnList, searchVo);
+                    JSONObject tableObj = TableResultUtil.getResult(returnList, searchVo);
                     tableObj.put("type", resourceTypeVo);
                     tableList.add(tableObj);
                 }
@@ -343,9 +342,10 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 
     /**
      * 添加标签和账号信息
+     *
      * @param resourceList
      */
-    public void addTagAndAccountInformation (List<ResourceVo> resourceList) {
+    public void addTagAndAccountInformation(List<ResourceVo> resourceList) {
         List<Long> idList = resourceList.stream().map(ResourceVo::getId).collect(Collectors.toList());
         Map<Long, List<AccountVo>> accountMap = getResourceAccountByResourceIdList(idList);
         Map<Long, List<TagVo>> tagMap = getResourceTagByResourceIdList(idList);
@@ -360,5 +360,18 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 resourceVo.setTagList(tagList.stream().map(TagVo::getName).collect(Collectors.toList()));
             }
         }
+    }
+
+    @Override
+    public List<ResourceVo> getAppModuleList(ResourceSearchVo searchVo) {
+        int count = resourceMapper.searchAppModuleCount(searchVo);
+        if (count > 0) {
+            searchVo.setRowNum(count);
+            List<Long> idList = resourceMapper.searchAppModuleIdList(searchVo);
+            if (CollectionUtils.isNotEmpty(idList)) {
+                return resourceMapper.searchAppModule(idList);
+            }
+        }
+        return new ArrayList<>();
     }
 }
