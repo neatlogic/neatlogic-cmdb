@@ -12,7 +12,7 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.auth.label.RESOURCECENTER_MODIFY;
+import codedriver.module.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
@@ -24,7 +24,7 @@ import javax.annotation.Resource;
  * @since 2021/11/9 11:28
  **/
 @Service
-@AuthAction(action = RESOURCECENTER_MODIFY.class)
+@AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class GetResourceEntityApi extends PrivateApiComponentBase {
     @Resource

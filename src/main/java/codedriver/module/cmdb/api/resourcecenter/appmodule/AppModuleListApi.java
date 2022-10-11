@@ -5,7 +5,6 @@
 
 package codedriver.module.cmdb.api.resourcecenter.appmodule;
 
-import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
@@ -15,14 +14,12 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
-import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.List;
 
 /**
  * @author linbq
@@ -34,7 +31,7 @@ import java.util.List;
 public class AppModuleListApi extends PrivateApiComponentBase {
 
     @Resource
-    private ResourceMapper resourceMapper;
+    private IResourceCenterResourceService resourceCenterResourceService;
 
     @Override
     public String getToken() {
@@ -66,15 +63,6 @@ public class AppModuleListApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         ResourceSearchVo searchVo = paramObj.toJavaObject(ResourceSearchVo.class);
-        int count = resourceMapper.searchAppModuleCount(searchVo);
-        if (count > 0) {
-            searchVo.setRowNum(count);
-            List<Long> idList = resourceMapper.searchAppModuleIdList(searchVo);
-            if (CollectionUtils.isNotEmpty(idList)) {
-                List<ResourceVo> resourceList = resourceMapper.searchAppModule(idList);
-                return TableResultUtil.getResult(resourceList, searchVo);
-            }
-        }
-        return null;
+        return TableResultUtil.getResult(resourceCenterResourceService.getAppModuleList(searchVo), searchVo);
     }
 }
