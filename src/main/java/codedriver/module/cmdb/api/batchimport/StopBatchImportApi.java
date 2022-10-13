@@ -5,7 +5,7 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.auth.label.CIENTITY_BATCH_IMPORT;
+import codedriver.framework.cmdb.auth.label.CIENTITY_BATCH_IMPORT;
 import codedriver.module.cmdb.plugin.BatchImportHandler;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;

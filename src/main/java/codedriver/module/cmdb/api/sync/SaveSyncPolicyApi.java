@@ -19,7 +19,7 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.scheduler.core.IJob;
 import codedriver.framework.scheduler.core.SchedulerManager;
 import codedriver.framework.scheduler.dto.JobObject;
-import codedriver.module.cmdb.auth.label.SYNC_MODIFY;
+import codedriver.framework.cmdb.auth.label.SYNC_MODIFY;
 import codedriver.module.cmdb.service.sync.SyncService;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.common.utils.CollectionUtils;

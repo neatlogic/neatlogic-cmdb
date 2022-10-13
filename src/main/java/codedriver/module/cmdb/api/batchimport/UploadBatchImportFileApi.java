@@ -22,7 +22,7 @@ import codedriver.framework.file.dto.FileVo;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
-import codedriver.module.cmdb.auth.label.CIENTITY_BATCH_IMPORT;
+import codedriver.framework.cmdb.auth.label.CIENTITY_BATCH_IMPORT;
 import codedriver.module.cmdb.dao.mapper.batchimport.ImportMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;

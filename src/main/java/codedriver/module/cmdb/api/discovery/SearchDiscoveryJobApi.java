@@ -16,7 +16,7 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
 import codedriver.framework.util.TimeUtil;
-import codedriver.module.cmdb.auth.label.SYNC_MODIFY;
+import codedriver.framework.cmdb.auth.label.SYNC_MODIFY;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;

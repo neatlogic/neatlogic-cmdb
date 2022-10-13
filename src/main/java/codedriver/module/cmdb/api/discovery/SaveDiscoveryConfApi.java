@@ -15,7 +15,7 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.SnowflakeUtil;
-import codedriver.module.cmdb.auth.label.SYNC_MODIFY;
+import codedriver.framework.cmdb.auth.label.SYNC_MODIFY;
 import codedriver.module.cmdb.dao.mapper.discovery.DiscoveryMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
