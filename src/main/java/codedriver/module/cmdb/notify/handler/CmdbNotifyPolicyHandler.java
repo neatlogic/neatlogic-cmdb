@@ -11,7 +11,7 @@ import codedriver.framework.notify.core.NotifyHandlerType;
 import codedriver.framework.notify.core.NotifyPolicyHandlerBase;
 import codedriver.framework.notify.dto.NotifyTriggerTemplateVo;
 import codedriver.framework.notify.dto.NotifyTriggerVo;
-import codedriver.module.cmdb.auth.label.CI_MODIFY;
+import codedriver.framework.cmdb.auth.label.CI_MODIFY;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Component;
 

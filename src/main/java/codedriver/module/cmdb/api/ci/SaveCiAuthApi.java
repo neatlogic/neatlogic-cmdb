@@ -16,7 +16,7 @@ import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.framework.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.CiAuthMapper;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import com.alibaba.fastjson.JSONArray;

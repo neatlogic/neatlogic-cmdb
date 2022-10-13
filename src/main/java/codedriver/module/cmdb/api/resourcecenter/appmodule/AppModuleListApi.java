@@ -14,7 +14,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
-import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.framework.cmdb.auth.label.CMDB;
 import codedriver.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
@@ -26,7 +26,7 @@ import javax.annotation.Resource;
  * @since 2021/6/16 15:04
  **/
 @Service
-@AuthAction(action = CMDB_BASE.class)
+@AuthAction(action = CMDB.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class AppModuleListApi extends PrivateApiComponentBase {
 

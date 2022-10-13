@@ -22,7 +22,7 @@ import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
 import codedriver.framework.util.RegexUtils;
-import codedriver.module.cmdb.auth.label.CI_MODIFY;
+import codedriver.framework.cmdb.auth.label.CI_MODIFY;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
 import codedriver.module.cmdb.service.attr.AttrService;

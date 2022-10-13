@@ -14,7 +14,7 @@ import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.auth.label.CI_MODIFY;
+import codedriver.framework.cmdb.auth.label.CI_MODIFY;
 import codedriver.module.cmdb.dao.mapper.sync.SyncMapper;
 import codedriver.module.cmdb.service.sync.CiSyncManager;
 import com.alibaba.fastjson.JSONArray;

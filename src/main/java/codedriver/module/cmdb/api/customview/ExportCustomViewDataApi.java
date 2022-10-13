@@ -17,7 +17,7 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
 import codedriver.framework.util.excel.ExcelBuilder;
 import codedriver.framework.util.excel.SheetBuilder;
-import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.framework.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.customview.CustomViewMapper;
 import codedriver.module.cmdb.service.customview.CustomViewDataService;
 import com.alibaba.fastjson.JSONObject;

@@ -13,7 +13,7 @@ import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.auth.label.RELTYPE_MODIFY;
+import codedriver.framework.cmdb.auth.label.RELTYPE_MODIFY;
 import codedriver.module.cmdb.dao.mapper.ci.RelTypeMapper;
 import codedriver.framework.cmdb.exception.reltype.RelTypeIsInUsedException;
 import com.alibaba.fastjson.JSONObject;

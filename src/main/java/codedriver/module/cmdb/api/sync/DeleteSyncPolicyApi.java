@@ -15,7 +15,7 @@ import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.auth.label.SYNC_MODIFY;
+import codedriver.framework.cmdb.auth.label.SYNC_MODIFY;
 import codedriver.module.cmdb.dao.mapper.sync.SyncMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;

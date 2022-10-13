@@ -13,7 +13,7 @@ import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.auth.label.CI_MODIFY;
+import codedriver.framework.cmdb.auth.label.CI_MODIFY;
 import codedriver.module.cmdb.dao.mapper.legalvalid.LegalValidMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;

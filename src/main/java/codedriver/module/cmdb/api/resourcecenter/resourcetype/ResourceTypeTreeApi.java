@@ -16,7 +16,7 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.framework.cmdb.auth.label.CMDB;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -36,7 +36,7 @@ import java.util.*;
  * @since 2021/5/27 16:14
  **/
 @Service
-@AuthAction(action = CMDB_BASE.class)
+@AuthAction(action = CMDB.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ResourceTypeTreeApi extends PrivateApiComponentBase implements IResourceTypeTreeApiCrossoverService {
 

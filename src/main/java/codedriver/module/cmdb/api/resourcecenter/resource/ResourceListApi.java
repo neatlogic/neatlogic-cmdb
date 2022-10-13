@@ -5,7 +5,6 @@
 
 package codedriver.module.cmdb.api.resourcecenter.resource;
 
-import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.crossover.IResourceListApiCrossoverService;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
@@ -18,7 +17,7 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
-import codedriver.module.cmdb.auth.label.CMDB_BASE;
+import codedriver.framework.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import codedriver.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import com.alibaba.fastjson.JSONArray;

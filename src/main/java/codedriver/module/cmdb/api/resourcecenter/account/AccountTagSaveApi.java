@@ -12,7 +12,7 @@ import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.auth.label.RESOURCECENTER_ACCOUNT_MODIFY;
+import codedriver.framework.cmdb.auth.label.RESOURCECENTER_ACCOUNT_MODIFY;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceTagMapper;
 import com.alibaba.fastjson.JSONArray;
