@@ -6,23 +6,26 @@
 package codedriver.module.cmdb.api.resourcecenter.resource;
 
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.auth.label.CMDB_BASE;
+import codedriver.framework.cmdb.crossover.IResourceAccountCrossoverMapper;
 import codedriver.framework.cmdb.dto.resourcecenter.AccountVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceCenterAccountNotFoundException;
 import codedriver.framework.cmdb.exception.resourcecenter.ResourceNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.crossover.CrossoverServiceFactory;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
-import codedriver.framework.cmdb.auth.label.CMDB_BASE;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
@@ -74,18 +77,37 @@ public class GetResourceAccountApi extends PrivateApiComponentBase {
         Integer protocolPort = paramObj.getInteger("protocolPort");
         String username = paramObj.getString("username");
 
+
+        ResourceVo resourceVo = null;
         if (resourceId == null) {
-            ResourceVo resourceVo = resourceMapper.getResourceByIpAndPortAndNameAndTypeName(ip, port, nodeName, nodeType);
+            resourceVo = resourceMapper.getResourceByIpAndPortAndNameAndTypeName(ip, port, nodeName, nodeType);
             if (resourceVo == null) {
                 throw new ResourceNotFoundException();
             }
-            resourceId = resourceVo.getId();
+        } else {
+            resourceVo = resourceMapper.getResourceById(resourceId);
         }
 
-        List<AccountVo> accountVoList = resourceAccountMapper.getResourceAccountByResourceIdAndProtocolAndProtocolPortAndUsername(resourceId, protocol, protocolPort, username);
-        if (CollectionUtils.isEmpty(accountVoList)) {
-            throw new ResourceCenterAccountNotFoundException();
+        //根据资产绑定的账号找
+        List<AccountVo> accountList = resourceAccountMapper.getResourceAccountByResourceIdAndProtocolAndProtocolPortAndUsername(resourceVo.getId(), protocol, protocolPort, username);
+        if (CollectionUtils.isNotEmpty(accountList)) {
+            return accountList.get(0).getPasswordCipher();
         }
-        return accountVoList.get(0).getPasswordCipher();
+        //根据ip、protocol、username、protocolPort找
+        if (Objects.equals("tagent", protocol)) {
+            username = null;
+        }
+        IResourceAccountCrossoverMapper resourceAccountCrossoverMapper = CrossoverServiceFactory.getApi(IResourceAccountCrossoverMapper.class);
+        accountList = resourceAccountCrossoverMapper.getAccountListByIpAndProtocolNameAndAccountAndProtocolPort(ip, protocol, username, protocolPort);
+        if (CollectionUtils.isNotEmpty(accountList)) {
+            return accountList.get(0).getPasswordCipher();
+        }
+        //根据protocol、username、protocolPort找
+        accountList = resourceAccountCrossoverMapper.getAccountListByProtocolNameAndAccountAndProtocolPort(protocol, username, protocolPort);
+        if (CollectionUtils.isNotEmpty(accountList)) {
+            return accountList.get(0).getPasswordCipher();
+        }
+
+        throw new ResourceCenterAccountNotFoundException();
     }
 }
