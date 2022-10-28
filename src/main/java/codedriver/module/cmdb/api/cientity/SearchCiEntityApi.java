@@ -92,7 +92,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
             @Param(name = "groupId", type = ApiParamType.LONG, desc = "团体id"),
             @Param(name = "attrFilterList", type = ApiParamType.JSONARRAY, desc = "属性过滤条件"),
             @Param(name = "relFilterList", type = ApiParamType.JSONARRAY, desc = "关系过滤条件"),
-            @Param(name = "showAttrRelList", type = ApiParamType.JSONARRAY, desc = "需要显示的字段列表，包括属性关系和常量"),
+            @Param(name = "showAttrRelList", type = ApiParamType.JSONARRAY, desc = "需要显示的字段列表，包括属性关系和常量，范例：[\"attr_xxx\":\"keyword\",\"relfrom_xxx\":\"keyword\",\"relto_xxx\":\"keyword\",\"const_ciid\":\"keyword\"]，xxx代表对应属性或关系id"),
             @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "需要查询的配置项id列表）"),
             @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "是否需要操作列，如果需要则根据用户权限返回操作列"),
             @Param(name = "needCheck", type = ApiParamType.BOOLEAN, desc = "是否需要复选列"),
