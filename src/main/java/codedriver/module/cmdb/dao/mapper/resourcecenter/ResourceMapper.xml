@@ -62,6 +62,17 @@
                 #{tagId}
             </foreach>
         </if>
+        <if test="searchValueList != null and searchValueList.size() > 0 and searchField != null and searchField != ''">
+            <if test="searchField == 'name'">
+                and a.`name` IN
+            </if>
+            <if test="searchField == 'ip'">
+                and a.`ip` IN
+            </if>
+            <foreach collection="searchValueList" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
     </sql>
 
     <select id="getResourceCountByNameKeyword"
