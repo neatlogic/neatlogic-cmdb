@@ -8,6 +8,7 @@ package codedriver.module.cmdb.api.resourcecenter.appmodule;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.exception.type.ParamNotExistsException;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -26,8 +27,6 @@ import javax.annotation.Resource;
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class AppModuleResourceListApi extends PrivateApiComponentBase {
-
-//    private static Map<String, JSONArray> theadListMap = new HashMap<>();
 
     @Resource
     private IResourceCenterResourceService resourceCenterResourceService;
@@ -48,7 +47,8 @@ public class AppModuleResourceListApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appModuleId", type = ApiParamType.LONG, isRequired = true, desc = "应用模块id"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用id"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "应用模块id"),
             @Param(name = "envId", type = ApiParamType.LONG, desc = "环境id"),
             @Param(name = "typeId", type = ApiParamType.LONG, desc = "类型id"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
@@ -63,6 +63,9 @@ public class AppModuleResourceListApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONObject resultObj = new JSONObject();
         ResourceSearchVo searchVo = paramObj.toJavaObject(ResourceSearchVo.class);
+        if (searchVo.getAppSystemId() == null && searchVo.getAppModuleId() == null) {
+            throw new ParamNotExistsException("应用id（appSystemId）", "应用模块id（appModuleId）");
+        }
         resultObj.put("tableList", resourceCenterResourceService.getAppModuleResourceList(searchVo));
         return resultObj;
     }

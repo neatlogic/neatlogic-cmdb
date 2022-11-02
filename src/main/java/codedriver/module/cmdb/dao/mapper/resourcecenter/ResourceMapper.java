@@ -6,9 +6,7 @@
 package codedriver.module.cmdb.dao.mapper.resourcecenter;
 
 import codedriver.framework.cmdb.crossover.IResourceCrossoverMapper;
-import codedriver.framework.cmdb.dto.resourcecenter.AccountComponentVo;
-import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
-import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
+import codedriver.framework.cmdb.dto.resourcecenter.*;
 import codedriver.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo;
 import codedriver.framework.cmdb.dto.resourcecenter.entity.ModuleVo;
 import codedriver.framework.common.dto.BasePageVo;
@@ -74,6 +72,8 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     Set<Long> getIpObjectResourceTypeIdListByAppModuleIdAndEnvId(ResourceSearchVo searchVo);
 
+    Set<Long> getIpObjectResourceTypeIdListByAppSystemIdAndEnvId(ResourceSearchVo searchVo);
+
     List<ResourceVo> getResourceListByResourceVoList(@Param("resourceList") List<ResourceVo> resourceList);
 
     List<Long> getResourceIdListByAppSystemIdAndModuleIdAndEnvId(ResourceVo resourceVo);
@@ -128,4 +128,14 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
     List<Long> searchStateIdList(BasePageVo searchVo);
 
     List<ResourceVo> searchStateListByIdList(List<Long> idList);
+
+    int getAppSystemIdListCountByKeyword(String keyword);
+
+    List<Long> getAppSystemIdListByKeyword(BasePageVo searchVo);
+
+    List<AppSystemVo> getAppSystemListByIdList(List<Long> appSystemIdList);
+
+    List<AppModuleVo> getAppModuleListByKeywordAndAppSystemIdList(@Param("keyword") String keyword, @Param("appSystemIdList") List<Long> appSystemIdList);
+
+    List<AppModuleVo> getAppModuleListByAppSystemId(Long appSystemId);
 }
