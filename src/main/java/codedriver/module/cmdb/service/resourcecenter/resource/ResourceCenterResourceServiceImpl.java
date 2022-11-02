@@ -12,6 +12,7 @@ import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.cmdb.enums.resourcecenter.AppModuleResourceType;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.cmdb.exception.resourcecenter.AppModuleNotFoundException;
+import codedriver.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
 import codedriver.framework.util.TableResultUtil;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
@@ -204,13 +205,10 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
     @Override
     public JSONArray getAppModuleResourceList(ResourceSearchVo searchVo) {
         JSONArray tableList = new JSONArray();
-        Long appModuleId = searchVo.getAppModuleId();
-        CiEntityVo ciEntityVo = ciEntityMapper.getCiEntityBaseInfoById(appModuleId);
-        if (ciEntityVo == null) {
-            throw new AppModuleNotFoundException(appModuleId);
-        }
         List<CiVo> resourceCiVoList = ciMapper.getCiListByNameList(AppModuleResourceType.getNameList());
         List<Long> resourceTypeIdList = new ArrayList<>();
+        Long appSystemId = searchVo.getAppSystemId();
+        Long appModuleId = searchVo.getAppModuleId();
         Long typeId = searchVo.getTypeId();
         if (typeId != null) {
             CiVo ciVo = ciMapper.getCiById(typeId);
@@ -218,7 +216,11 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 throw new CiNotFoundException(typeId);
             }
             resourceTypeIdList.add(typeId);
-        } else {
+        } else if (appModuleId != null) {
+            CiEntityVo ciEntityVo = ciEntityMapper.getCiEntityBaseInfoById(appModuleId);
+            if (ciEntityVo == null) {
+                throw new AppModuleNotFoundException(appModuleId);
+            }
             Set<Long> resourceTypeIdSet = resourceMapper.getIpObjectResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
             resourceTypeIdList.addAll(resourceTypeIdSet);
 //            if (CollectionUtils.isNotEmpty(resourceTypeIdSet)) {
@@ -229,6 +231,13 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 ////                    resourceTypeIdList.addAll(resourceTypeIdSet);
 ////                }
 //            }
+        } else if (appSystemId != null) {
+            CiEntityVo ciEntityVo = ciEntityMapper.getCiEntityBaseInfoById(appSystemId);
+            if (ciEntityVo == null) {
+                throw new AppSystemNotFoundException(appSystemId);
+            }
+            Set<Long> resourceTypeIdSet = resourceMapper.getIpObjectResourceTypeIdListByAppSystemIdAndEnvId(searchVo);
+            resourceTypeIdList.addAll(resourceTypeIdSet);
         }
 
         if (CollectionUtils.isNotEmpty(resourceTypeIdList)) {

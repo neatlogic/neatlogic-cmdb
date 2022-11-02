@@ -579,6 +579,16 @@
         </if>
     </select>
 
+    <select id="getIpObjectResourceTypeIdListByAppSystemIdAndEnvId"
+            parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
+        SELECT a.`type_id`
+        FROM @{DATA_SCHEMA}.`scence_ipobject_env_appmodule_appsystem` a
+        WHERE a.`app_appSystem_id` = #{appSystemId}
+        <if test="envId != null">
+            AND a.`env_id` = #{envId}
+        </if>
+    </select>
+
     <select id="getResourceListByResourceVoList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo"
             resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
         SELECT a.name,a.`ip`,a.id,a.port,a.type_name as typeName
@@ -1003,5 +1013,69 @@
         <foreach collection="list" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
+    </select>
+
+    <select id="getAppSystemIdListCountByKeyword" parameterType="java.lang.String" resultType="int">
+        SELECT COUNT(DISTINCT `id`)
+        FROM @{DATA_SCHEMA}.`scence_appsystem_appmodule`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                (`name` LIKE concat('%', #{keyword}, '%') or `app_module_name` LIKE concat('%', #{keyword}, '%')
+                or `abbr_name` LIKE concat('%', #{keyword}, '%') or `app_module_abbr_name` LIKE concat('%', #{keyword}, '%'))
+            </if>
+        </where>
+    </select>
+
+    <select id="getAppSystemIdListByKeyword" parameterType="codedriver.framework.common.dto.BasePageVo" resultType="java.lang.Long">
+        SELECT DISTINCT a.`id` from (
+            SELECT `id`
+            FROM @{DATA_SCHEMA}.`scence_appsystem_appmodule`
+            <where>
+                <if test="keyword != null and keyword != ''">
+                    `name` LIKE concat('%', #{keyword}, '%') or `app_module_name` LIKE concat('%', #{keyword}, '%')
+                    or `abbr_name` LIKE concat('%', #{keyword}, '%') or `app_module_abbr_name` LIKE concat('%', #{keyword}, '%')
+                </if>
+            </where>
+            ORDER BY CONVERT(`abbr_name` USING gbk) COLLATE gbk_chinese_ci ASC
+        ) a
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="getAppSystemListByIdList" parameterType="java.lang.Long" resultType="codedriver.framework.cmdb.dto.resourcecenter.AppSystemVo">
+        SELECT
+            `id`,
+            `name`,
+            `abbr_name` AS abbrName
+        from @{DATA_SCHEMA}.`scence_appsystem`
+        where `id` in
+        <foreach collection="list" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getAppModuleListByKeywordAndAppSystemIdList" resultType="codedriver.framework.cmdb.dto.resourcecenter.AppModuleVo">
+        SELECT
+        `id`,
+        `name`,
+        `abbr_name` AS abbrName,
+        `app_system_id` AS appSystemId
+        FROM @{DATA_SCHEMA}.`scence_appmodule_appsystem`
+        WHERE (`name` LIKE concat('%', #{keyword}, '%') OR `abbr_name` LIKE concat('%', #{keyword}, '%'))
+        AND `app_system_id` IN
+        <foreach collection="appSystemIdList" item="appSystemId" open="(" separator="," close=")">
+            #{appSystemId}
+        </foreach>
+        ORDER BY CONVERT(`abbr_name` USING gbk) COLLATE gbk_chinese_ci ASC
+    </select>
+
+    <select id="getAppModuleListByAppSystemId" parameterType="java.lang.Long" resultType="codedriver.framework.cmdb.dto.resourcecenter.AppModuleVo">
+        SELECT
+        `id`,
+        `name`,
+        `abbr_name` AS abbrName,
+        `app_system_id` AS appSystemId
+        FROM @{DATA_SCHEMA}.`scence_appmodule_appsystem`
+        WHERE `app_system_id` = #{value}
+        ORDER BY CONVERT(`abbr_name` USING gbk) COLLATE gbk_chinese_ci ASC
     </select>
 </mapper>
