@@ -28,8 +28,6 @@ import javax.annotation.Resource;
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class AppModuleResourceListApi extends PrivateApiComponentBase {
 
-//    private static Map<String, JSONArray> theadListMap = new HashMap<>();
-
     @Resource
     private IResourceCenterResourceService resourceCenterResourceService;
 
