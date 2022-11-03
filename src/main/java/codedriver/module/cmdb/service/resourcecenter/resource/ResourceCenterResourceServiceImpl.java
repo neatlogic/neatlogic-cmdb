@@ -223,14 +223,10 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             }
             Set<Long> resourceTypeIdSet = resourceMapper.getIpObjectResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
             resourceTypeIdList.addAll(resourceTypeIdSet);
-//            if (CollectionUtils.isNotEmpty(resourceTypeIdSet)) {
-//                resourceTypeIdSet = resourceCenterMapper.getOsResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
-//                resourceTypeIdList.addAll(resourceTypeIdSet);
-////                if (CollectionUtils.isNotEmpty(resourceTypeIdSet)) {
-////                    resourceTypeIdSet = resourceCenterMapper.getNetWorkDeviceResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
-////                    resourceTypeIdList.addAll(resourceTypeIdSet);
-////                }
-//            }
+            if (CollectionUtils.isNotEmpty(resourceTypeIdSet)) {
+                resourceTypeIdSet = resourceMapper.getOsResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
+                resourceTypeIdList.addAll(resourceTypeIdSet);
+            }
         } else if (appSystemId != null) {
             CiEntityVo ciEntityVo = ciEntityMapper.getCiEntityBaseInfoById(appSystemId);
             if (ciEntityVo == null) {
@@ -238,6 +234,10 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             }
             Set<Long> resourceTypeIdSet = resourceMapper.getIpObjectResourceTypeIdListByAppSystemIdAndEnvId(searchVo);
             resourceTypeIdList.addAll(resourceTypeIdSet);
+            if (CollectionUtils.isNotEmpty(resourceTypeIdSet)) {
+                resourceTypeIdSet = resourceMapper.getOsResourceTypeIdListByAppSystemIdAndEnvId(searchVo);
+                resourceTypeIdList.addAll(resourceTypeIdSet);
+            }
         }
 
         if (CollectionUtils.isNotEmpty(resourceTypeIdList)) {
@@ -267,28 +267,28 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
     @PostConstruct
     public void searchDispatcherInit() {
         searchMap.put("ipObject", (searchVo) -> {
-            int rowNum = resourceMapper.getIpObjectResourceCountByAppModuleIdAndTypeIdAndEnvIdAndTypeId(searchVo);
+            int rowNum = resourceMapper.getIpObjectResourceCountByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(searchVo);
             if (rowNum > 0) {
                 searchVo.setRowNum(rowNum);
-                List<Long> idList = resourceMapper.getIpObjectResourceIdListByAppModuleIdAndTypeIdAndEnvIdAndTypeId(searchVo);
+                List<Long> idList = resourceMapper.getIpObjectResourceIdListByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(searchVo);
                 if (CollectionUtils.isNotEmpty(idList)) {
                     return resourceMapper.getAppInstanceResourceListByIdList(idList);
                 }
             }
             return new ArrayList<>();
         });
-        //2022-07-06 产品经理决定不用显示系统模型下的数据
-//        searchMap.put("OS", (searchVo) -> {
-//            int rowNum = resourceCenterMapper.getOsResourceCountByAppModuleIdAndEnvIdAndTypeId(searchVo);
-//            if (rowNum > 0) {
-//                searchVo.setRowNum(rowNum);
-//                List<Long> idList = resourceCenterMapper.getOsResourceIdListByAppModuleIdAndEnvIdAndTypeId(searchVo);
-//                if (CollectionUtils.isNotEmpty(idList)) {
-//                    return resourceCenterMapper.getOsResourceListByIdList(idList, TenantContext.get().getDataDbName());
-//                }
-//            }
-//            return new ArrayList<>();
-//        });
+
+        searchMap.put("OS", (searchVo) -> {
+            int rowNum = resourceMapper.getOsResourceCountByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(searchVo);
+            if (rowNum > 0) {
+                searchVo.setRowNum(rowNum);
+                List<Long> idList = resourceMapper.getOsResourceIdListByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(searchVo);
+                if (CollectionUtils.isNotEmpty(idList)) {
+                    return resourceMapper.getOsResourceListByIdList(idList);
+                }
+            }
+            return new ArrayList<>();
+        });
 
 //        searchMap.put("StorageDevice", (searchVo) -> {
 //            int rowNum = resourceCenterMapper.getStorageResourceCount(searchVo);
@@ -315,10 +315,10 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 //        });
 
         searchMap.put("APPIns", (searchVo) -> {
-            int rowNum = resourceMapper.getIpObjectResourceCountByAppModuleIdAndTypeIdAndEnvIdAndTypeId(searchVo);
+            int rowNum = resourceMapper.getIpObjectResourceCountByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(searchVo);
             if (rowNum > 0) {
                 searchVo.setRowNum(rowNum);
-                List<Long> idList = resourceMapper.getIpObjectResourceIdListByAppModuleIdAndTypeIdAndEnvIdAndTypeId(searchVo);
+                List<Long> idList = resourceMapper.getIpObjectResourceIdListByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(searchVo);
                 if (CollectionUtils.isNotEmpty(idList)) {
                     return resourceMapper.getAppInstanceResourceListByIdList(idList);
                 }
@@ -327,10 +327,10 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         });
 
         searchMap.put("DBIns", (searchVo) -> {
-            int rowNum = resourceMapper.getIpObjectResourceCountByAppModuleIdAndTypeIdAndEnvIdAndTypeId(searchVo);
+            int rowNum = resourceMapper.getIpObjectResourceCountByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(searchVo);
             if (rowNum > 0) {
                 searchVo.setRowNum(rowNum);
-                List<Long> idList = resourceMapper.getIpObjectResourceIdListByAppModuleIdAndTypeIdAndEnvIdAndTypeId(searchVo);
+                List<Long> idList = resourceMapper.getIpObjectResourceIdListByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(searchVo);
                 if (CollectionUtils.isNotEmpty(idList)) {
                     return resourceMapper.getDbInstanceResourceListByIdList(idList);
                 }
