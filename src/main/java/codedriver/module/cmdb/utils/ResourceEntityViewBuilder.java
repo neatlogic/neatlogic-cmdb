@@ -1240,7 +1240,6 @@ public class ResourceEntityViewBuilder {
             if (logger.isDebugEnabled()) {
                 logger.debug(sql);
             }
-
             schemaMapper.deleteTable(TenantContext.get().getDataDbName() + "." + name);
             schemaMapper.insertView(sql);
             resourceEntityVo.setError("");
