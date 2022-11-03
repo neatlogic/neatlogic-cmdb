@@ -277,7 +277,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             }
             return new ArrayList<>();
         });
-        //2022-07-06 产品经理决定不用显示系统模型下的数据
+
         searchMap.put("OS", (searchVo) -> {
             int rowNum = resourceMapper.getOsResourceCountByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(searchVo);
             if (rowNum > 0) {
