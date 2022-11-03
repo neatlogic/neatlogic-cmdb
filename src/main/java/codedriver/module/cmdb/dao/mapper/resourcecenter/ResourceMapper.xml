@@ -583,7 +583,7 @@
             parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
         SELECT a.`type_id`
         FROM @{DATA_SCHEMA}.`scence_ipobject_env_appmodule_appsystem` a
-        WHERE a.`app_appSystem_id` = #{appSystemId}
+        WHERE a.`app_system_id` = #{appSystemId}
         <if test="envId != null">
             AND a.`env_id` = #{envId}
         </if>
