@@ -81,6 +81,14 @@ public interface CiEntityMapper extends ICiEntityCrossoverMapper {
     CiEntityVo getCiEntityBaseInfoById(Long ciEntityId);
 
     /**
+     * 获取配置项基本信息
+     *
+     * @param uuid 配置项uuid
+     * @return CiEntityVo
+     */
+    CiEntityVo getCiEntityBaseInfoByUuid(String uuid);
+
+    /**
      * 根据配置项名称获取配置项
      *
      * @param ciEntityVo 配置项名称
