@@ -50,7 +50,7 @@ public class GetAppSystemApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "id", type = ApiParamType.LONG, desc = "应用ID"),
-            @Param(name = "uuid", type = ApiParamType.LONG, desc = "应用UUID"),
+            @Param(name = "uuid", type = ApiParamType.STRING, desc = "应用UUID"),
     })
     @Output({
            @Param(explode = AppSystemVo.class, desc = "应用信息")

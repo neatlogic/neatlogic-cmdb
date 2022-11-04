@@ -52,7 +52,7 @@ public class GetAppModuleApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "id", type = ApiParamType.LONG, desc = "模块ID"),
-            @Param(name = "uuid", type = ApiParamType.LONG, desc = "模块UUID"),
+            @Param(name = "uuid", type = ApiParamType.STRING, desc = "模块UUID"),
     })
     @Output({
             @Param(explode = AppModuleVo.class, desc = "模块信息")
