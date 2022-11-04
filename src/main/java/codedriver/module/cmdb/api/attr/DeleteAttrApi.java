@@ -34,10 +34,8 @@ public class DeleteAttrApi extends PrivateApiComponentBase {
 
     @Autowired
     private AttrService attrService;
-
     @Autowired
     private AttrMapper attrMapper;
-
 
     @Override
     public String getToken() {
