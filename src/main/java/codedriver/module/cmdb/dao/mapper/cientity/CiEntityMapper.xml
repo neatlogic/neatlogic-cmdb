@@ -219,6 +219,21 @@
         WHERE id = #{value}
     </select>
 
+    <select id="getCiEntityBaseInfoByUuid" parameterType="java.lang.String"
+            resultType="codedriver.framework.cmdb.dto.cientity.CiEntityVo" useCache="false">
+        SELECT id,
+               uuid,
+               ci_id AS ciId,
+               `name`,
+               `status`,
+               fcu,
+               fcd,
+               lcu,
+               lcd
+        FROM cmdb_cientity
+        WHERE uuid = #{value}
+    </select>
+
     <sql id="ciEntityColumnSql">
         <foreach collection="attrList" item="attr">
             <if test="@codedriver.framework.cmdb.dao.ognl.IsAttrInAttrIdList@isExists(attr, attrIdList)">
