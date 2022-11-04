@@ -229,6 +229,14 @@
         where `name` = #{value}
     </select>
 
+    <select id="getAccountProtocolVoByNameAndPort"
+            resultType="codedriver.framework.cmdb.dto.resourcecenter.AccountProtocolVo">
+        select `id`, `name`, `port`
+        from `cmdb_resourcecenter_account_protocol`
+        where `name` = #{name}
+        and `port` = #{port}
+    </select>
+
     <select id="getAccountListByIpList" resultType="codedriver.framework.cmdb.dto.resourcecenter.AccountVo">
         SELECT a.`id`,
         a.`name`,
