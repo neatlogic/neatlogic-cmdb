@@ -251,6 +251,12 @@
         <if test="envId != null">
             AND a.`env_id` = #{envId}
         </if>
+        <if test="inspectStatusList != null and inspectStatusList.size() > 0">
+            AND a.`inspect_status` IN
+            <foreach collection="inspectStatusList" item="inspectStatus" open="(" separator="," close=")">
+                #{inspectStatus}
+            </foreach>
+        </if>
     </select>
 
     <select id="getIpObjectResourceIdListByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId"
@@ -267,6 +273,12 @@
         <if test="envId != null">
             AND a.`env_id` = #{envId}
         </if>
+        <if test="inspectStatusList != null and inspectStatusList.size() > 0">
+            AND a.`inspect_status` IN
+            <foreach collection="inspectStatusList" item="inspectStatus" open="(" separator="," close=")">
+                #{inspectStatus}
+            </foreach>
+        </if>
         ORDER BY a.`id` DESC
         LIMIT #{startNum}, #{pageSize}
     </select>
@@ -275,6 +287,12 @@
             parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="int">
         SELECT COUNT(1)
         FROM @{DATA_SCHEMA}.`scence_os_softwareservice_env_appmodule_appsystem` a
+        <if test="inspectStatusList != null and inspectStatusList.size() > 0">
+            JOIN `cmdb_cientity` b on b.`id` = a.`resource_id` and b.`inspect_status` IN
+            <foreach collection="inspectStatusList" item="inspectStatus" open="(" separator="," close=")">
+                #{inspectStatus}
+            </foreach>
+        </if>
         WHERE a.`type_id` = #{typeId}
         <if test="appSystemId != null">
             AND a.`app_system_id` = #{appSystemId}
@@ -291,6 +309,12 @@
             parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
         SELECT a.`id`
         FROM @{DATA_SCHEMA}.`scence_os_softwareservice_env_appmodule_appsystem` a
+        <if test="inspectStatusList != null and inspectStatusList.size() > 0">
+            JOIN `cmdb_cientity` b on b.`id` = a.`resource_id` and b.`inspect_status` IN
+            <foreach collection="inspectStatusList" item="inspectStatus" open="(" separator="," close=")">
+                #{inspectStatus}
+            </foreach>
+        </if>
         WHERE a.`type_id` = #{typeId}
         <if test="appSystemId != null">
             AND a.`app_system_id` = #{appSystemId}
