@@ -288,7 +288,7 @@
         SELECT COUNT(1)
         FROM @{DATA_SCHEMA}.`scence_os_softwareservice_env_appmodule_appsystem` a
         <if test="inspectStatusList != null and inspectStatusList.size() > 0">
-            JOIN @{DATA_SCHEMA}.`scence_ipobject_id` b on b.`id` = a.`resource_id` and b.`inspect_status` IN
+            JOIN `cmdb_cientity` b on b.`id` = a.`resource_id` and b.`inspect_status` IN
             <foreach collection="inspectStatusList" item="inspectStatus" open="(" separator="," close=")">
                 #{inspectStatus}
             </foreach>
@@ -310,7 +310,7 @@
         SELECT a.`id`
         FROM @{DATA_SCHEMA}.`scence_os_softwareservice_env_appmodule_appsystem` a
         <if test="inspectStatusList != null and inspectStatusList.size() > 0">
-            JOIN @{DATA_SCHEMA}.`scence_ipobject_id` b on b.`id` = a.`resource_id` and b.`inspect_status` IN
+            JOIN `cmdb_cientity` b on b.`id` = a.`resource_id` and b.`inspect_status` IN
             <foreach collection="inspectStatusList" item="inspectStatus" open="(" separator="," close=")">
                 #{inspectStatus}
             </foreach>
