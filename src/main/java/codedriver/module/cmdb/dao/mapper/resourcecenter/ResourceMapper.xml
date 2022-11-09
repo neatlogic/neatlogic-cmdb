@@ -1205,7 +1205,7 @@
         FROM @{DATA_SCHEMA}.`scence_appsystem`
         <where>
             <if test="keyword != null and keyword != ''">
-                (`name` LIKE concat('%', #{keyword}, '%') or `abbr_name` LIKE concat('%', #{keyword}, '%')
+                `name` LIKE concat('%', #{keyword}, '%') or `abbr_name` LIKE concat('%', #{keyword}, '%')
             </if>
         </where>
     </select>
@@ -1218,7 +1218,7 @@
         FROM @{DATA_SCHEMA}.`scence_appsystem`
         <where>
             <if test="keyword != null and keyword != ''">
-                (`name` LIKE concat('%', #{keyword}, '%') or `abbr_name` LIKE concat('%', #{keyword}, '%')
+                `name` LIKE concat('%', #{keyword}, '%') or `abbr_name` LIKE concat('%', #{keyword}, '%')
             </if>
         </where>
         ORDER BY CONVERT(`abbr_name` USING gbk) COLLATE gbk_chinese_ci ASC
