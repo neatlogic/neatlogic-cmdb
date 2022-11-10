@@ -1199,4 +1199,29 @@
         WHERE `app_system_id` = #{value}
         ORDER BY CONVERT(`abbr_name` USING gbk) COLLATE gbk_chinese_ci ASC
     </select>
+
+    <select id="getAppSystemCountByKeyword" parameterType="codedriver.framework.common.dto.BasePageVo" resultType="int">
+        SELECT COUNT(1)
+        FROM @{DATA_SCHEMA}.`scence_appsystem`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` LIKE concat('%', #{keyword}, '%') or `abbr_name` LIKE concat('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="getAppSystemListByKeyword" parameterType="codedriver.framework.common.dto.BasePageVo" resultType="codedriver.framework.cmdb.dto.resourcecenter.AppSystemVo">
+        SELECT
+        `id`,
+        `name`,
+        `abbr_name` AS abbrName
+        FROM @{DATA_SCHEMA}.`scence_appsystem`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` LIKE concat('%', #{keyword}, '%') or `abbr_name` LIKE concat('%', #{keyword}, '%')
+            </if>
+        </where>
+        ORDER BY CONVERT(`abbr_name` USING gbk) COLLATE gbk_chinese_ci ASC
+        LIMIT #{startNum}, #{pageSize}
+    </select>
 </mapper>

@@ -148,4 +148,8 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
     List<AppModuleVo> getAppModuleListByKeywordAndAppSystemIdList(@Param("keyword") String keyword, @Param("appSystemIdList") List<Long> appSystemIdList);
 
     List<AppModuleVo> getAppModuleListByAppSystemId(Long appSystemId);
+
+    int getAppSystemCountByKeyword(BasePageVo searchVo);
+
+    List<AppSystemVo> getAppSystemListByKeyword(BasePageVo searchVo);
 }
