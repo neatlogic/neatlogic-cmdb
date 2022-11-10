@@ -18,10 +18,12 @@ import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 @Service
 @AuthAction(action = CMDB.class)
@@ -78,6 +80,10 @@ public class GetAppSystemApi extends PrivateApiComponentBase {
         appSystemVo.setId(resourceVo.getId());
         appSystemVo.setName(resourceVo.getName());
         appSystemVo.setAbbrName(resourceVo.getAbbrName());
+        List<Long> appModuleIdList = resourceMapper.getAppSystemModuleIdListByAppSystemId(resourceVo.getId());
+        if (CollectionUtils.isNotEmpty(appModuleIdList)) {
+            appSystemVo.setIsHasModule(1);
+        }
         return appSystemVo;
     }
 }
