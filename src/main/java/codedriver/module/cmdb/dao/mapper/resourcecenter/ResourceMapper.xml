@@ -619,6 +619,7 @@
         SELECT `app_module_id`
         FROM @{DATA_SCHEMA}.`scence_appsystem_appmodule`
         WHERE `id` = #{value}
+        AND `app_module_id` IS NOT NULL
     </select>
 
     <select id="getAppSystemModuleIdListByAppSystemIdAndAppModuleIdList"
