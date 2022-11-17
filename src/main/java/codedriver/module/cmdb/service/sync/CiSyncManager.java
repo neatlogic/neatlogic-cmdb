@@ -130,7 +130,7 @@ public class CiSyncManager {
                             ciEntityCache.put(hash, ciEntityList);
                         }
                     } else {
-                        //用一个新的list去存放新的配置项对象是为了确保第一次为空时能返回一个空的列表，让系统能正常Insert第一个空配置项，后续添加都是使用cache
+                        //如果存在多次引用某个hash一样的新配置项，则需要将其加入到cache列表，避免重复添加导致添加失败。
                         List<CiEntityVo> tmpCiEntityList = new ArrayList<>();
                         tmpCiEntityList.add(conditionVo);
                         synchronized (ciEntityCache) {
