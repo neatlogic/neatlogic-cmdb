@@ -4,7 +4,7 @@ build1:
   stage: build
   only:
     - /^develop.*$/
-    - /^master.*$/
+    - /^release.*$/
   script:
     - echo "git clone success!"
 
@@ -12,6 +12,6 @@ deploy1:
   stage: deploy
   only:
     - /^develop.*$/
-    - /^master.*$/
+    - /^release.*$/
   script:
     - mvn deploy -e --settings /home/gitlab-runner/.m2/settings.xml
