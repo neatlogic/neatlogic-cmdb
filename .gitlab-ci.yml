@@ -5,6 +5,7 @@ build1:
   only:
     - /^develop.*$/
     - /^master.*$/
+    - /^develop-formbuilder.*$/
   script:
     - echo "git clone success!"
 
@@ -13,5 +14,6 @@ deploy1:
   only:
     - /^develop.*$/
     - /^master.*$/
+    - /^develop-formbuilder.*$/
   script:
     - mvn deploy -e --settings /home/gitlab-runner/.m2/settings.xml
