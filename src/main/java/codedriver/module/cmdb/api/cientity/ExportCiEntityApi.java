@@ -8,6 +8,7 @@ package codedriver.module.cmdb.api.cientity;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
 import codedriver.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
+import codedriver.framework.cmdb.auth.label.CMDB_BASE;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.CiViewVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
@@ -22,7 +23,6 @@ import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
 import codedriver.framework.util.excel.ExcelBuilder;
 import codedriver.framework.util.excel.SheetBuilder;
-import codedriver.framework.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiViewMapper;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
@@ -45,7 +45,6 @@ import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
@@ -173,7 +172,16 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
                             JSONArray valueList = attrObj.getJSONArray("valueList");
                             handler.transferValueListToExport(attrVo, valueList);
                             if (CollectionUtils.isNotEmpty(valueList)) {
-                                dataMap.put(column, valueList.stream().map(Object::toString).collect(Collectors.joining(",")));
+                                String tmpValue = "";
+                                for (int v = 0; v < valueList.size(); v++) {
+                                    if (valueList.get(v) != null) {
+                                        if (StringUtils.isNotBlank(tmpValue)) {
+                                            tmpValue += ",";
+                                        }
+                                        tmpValue += valueList.getString(v);
+                                    }
+                                }
+                                dataMap.put(column, tmpValue);
                             }
                         }
                     } else if (entity.getRelEntityData().containsKey(column)) {
