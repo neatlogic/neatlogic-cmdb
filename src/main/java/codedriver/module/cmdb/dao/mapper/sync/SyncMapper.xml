@@ -259,9 +259,6 @@
             <if test="collectMode != null and collectMode != ''">
                 AND a.collect_mode = #{collectMode}
             </if>
-              <if test="ciName != null and ciName != ''">
-                AND b.name = #{ciName}
-            </if>
         </where>
     </sql>
 
