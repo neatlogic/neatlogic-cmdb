@@ -78,7 +78,7 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
             @Param(name = "tagIdList", type = ApiParamType.JSONARRAY, desc = "标签id列表"),
             @Param(name = "inspectStatusList", type = ApiParamType.JSONARRAY, desc = "巡检状态列表"),
             @Param(name = "searchField", type = ApiParamType.STRING, desc = "批量搜索字段"),
-            @Param(name = "searchValue", type = ApiParamType.STRING, desc = "批量搜索值"),
+            @Param(name = "batchSearchList", type = ApiParamType.JSONARRAY, desc = "批量搜索值"),
             @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "用于回显的资源ID列表"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
