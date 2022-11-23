@@ -12,7 +12,7 @@
         <version>[1.0.0, 2.0.0]</version>
     </parent>
     <artifactId>codedriver-cmdb</artifactId>
-    <version>develop-formbuilder</version>
+    <version>develop-formbuilder-SNAPSHOT</version>
     <build>
         <resources>
             <resource>
@@ -37,12 +37,12 @@
         <dependency>
             <groupId>com.techsure</groupId>
             <artifactId>codedriver-cmdb-base</artifactId>
-            <version>develop-formbuilder</version>
+            <version>develop-formbuilder-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.techsure</groupId>
             <artifactId>codedriver-framework</artifactId>
-            <version>develop-formbuilder</version>
+            <version>develop-formbuilder-SNAPSHOT</version>
             <optional>true</optional>
         </dependency>
         <dependency>
