@@ -5,13 +5,12 @@
 
 package codedriver.module.cmdb.service.sync;
 
-import codedriver.framework.cmdb.crossover.ISyncCrossoverService;
 import codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo;
 import codedriver.framework.cmdb.dto.sync.SyncPolicyVo;
 
 import java.util.List;
 
-public interface SyncService  extends ISyncCrossoverService {
+public interface SyncService {
     void saveSyncPolicy(SyncPolicyVo syncPolicyVo);
 
     void saveSyncCiCollection(SyncCiCollectionVo syncCiCollectionVo);
