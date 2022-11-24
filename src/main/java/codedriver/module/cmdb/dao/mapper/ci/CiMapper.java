@@ -16,6 +16,8 @@ import java.util.List;
 public interface CiMapper extends ICiCrossoverMapper {
     String getCiViewXmlById(Long ciId);
 
+    List<Long> getCiUniqueByCiId(Long ciId);
+
     int getAttrCountByCiId(Long ciId);
 
     int getRelCountByCiId(Long ciId);
