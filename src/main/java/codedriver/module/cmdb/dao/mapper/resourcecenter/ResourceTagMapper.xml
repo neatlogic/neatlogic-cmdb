@@ -93,6 +93,12 @@
         where `id` = #{value}
     </select>
 
+    <select id="getTagByName" parameterType="java.lang.String" resultType="codedriver.framework.cmdb.dto.tag.TagVo">
+        select `id`, `name`, `description`
+        from `cmdb_tag`
+        where `name` = #{value}
+    </select>
+
     <select id="checkTagHasBeenReferredById" parameterType="java.lang.Long" resultType="int">
         select count(1)
         from `cmdb_resourcecenter_resource_tag`
