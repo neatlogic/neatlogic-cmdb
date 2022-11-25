@@ -13,6 +13,12 @@
         where id = #{value}
     </select>
 
+    <select id="getCiUniqueByCiId" parameterType="java.lang.Long" resultType="java.lang.Long">
+        select attr_id
+        from cmdb_ci_unique
+        where ci_id = #{value}
+    </select>
+
     <select id="getAttrCountByCiId" parameterType="java.lang.Long" resultType="int" useCache="false">
         select count(1)
         from cmdb_attr
