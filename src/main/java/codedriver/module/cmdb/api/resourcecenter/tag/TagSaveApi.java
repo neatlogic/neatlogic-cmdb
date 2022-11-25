@@ -55,7 +55,6 @@ public class TagSaveApi extends PrivateApiComponentBase {
     @Description(desc = "保存资源中心标签")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        JSONObject resultObj = new JSONObject();
         TagVo tagVo = JSONObject.toJavaObject(paramObj, TagVo.class);
         Long id = paramObj.getLong("id");
         if (resourceTagMapper.checkTagNameIsRepeats(tagVo) > 0) {
@@ -69,7 +68,7 @@ public class TagSaveApi extends PrivateApiComponentBase {
         } else {
             resourceTagMapper.insertTag(tagVo);
         }
-        return resultObj;
+        return tagVo;
     }
 
     public IValid name() {
