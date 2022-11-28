@@ -5,20 +5,25 @@
 
 package codedriver.module.cmdb.formattribute.handler;
 
+import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.enums.FormHandler;
 import codedriver.framework.common.constvalue.ParamType;
 import codedriver.framework.form.attribute.core.FormHandlerBase;
 import codedriver.framework.form.constvalue.FormConditionModel;
 import codedriver.framework.form.dto.AttributeDataVo;
 import codedriver.framework.form.exception.AttributeValidException;
+import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author linbq
@@ -26,6 +31,10 @@ import java.util.List;
  **/
 @Component
 public class CiEntitySelectorHandler extends FormHandlerBase {
+
+    @Resource
+    private CiEntityMapper ciEntityMapper;
+
     @Override
     public String getHandler() {
         return FormHandler.FORMCIENTITYSELECTOR.getHandler();
@@ -58,21 +67,13 @@ public class CiEntitySelectorHandler extends FormHandlerBase {
 
     @Override
     public Object valueConversionText(AttributeDataVo attributeDataVo, JSONObject configObj) {
-        List<String> resultList = new ArrayList<>();
-        JSONObject dataObj = (JSONObject) attributeDataVo.getDataObj();
-        if (MapUtils.isNotEmpty(dataObj)) {
-            JSONArray selectedCiEntityList = dataObj.getJSONArray("selectedCiEntityList");
-            for (int i = 0; i < selectedCiEntityList.size(); i++) {
-                JSONObject selectedCiEntityObj = selectedCiEntityList.getJSONObject(i);
-                if (MapUtils.isNotEmpty(selectedCiEntityObj)) {
-                    String name = selectedCiEntityObj.getString("name");
-                    if (StringUtils.isNotBlank(name)) {
-                        resultList.add(name);
-                    }
-                }
-            }
+        JSONArray dataObj = (JSONArray) attributeDataVo.getDataObj();
+        if (CollectionUtils.isNotEmpty(dataObj)) {
+            List<Long> idList = dataObj.toJavaList(Long.class);
+            List<CiEntityVo> ciEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(idList);
+            return ciEntityList.stream().map(CiEntityVo::getName).collect(Collectors.toList());
         }
-        return resultList;
+        return new ArrayList<>();
     }
 
     @Override
