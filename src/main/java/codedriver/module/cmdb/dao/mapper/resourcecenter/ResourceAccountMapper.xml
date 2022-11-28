@@ -398,7 +398,7 @@
                cra.`protocol_id` as protocolId,
                crap.`port`       as protocolPort
         from cmdb_resourcecenter_account_ip crai
-                 LEFT JOIN `cmdb_resourcecenter_account` cra ON crai.`account_id` = cra.`id`
+                 JOIN `cmdb_resourcecenter_account` cra ON crai.`account_id` = cra.`id`
                  LEFT JOIN `cmdb_resourcecenter_account_protocol` crap ON crap.`id` = cra.`protocol_id`
         WHERE crai.ip = #{host}
           AND crap.port = #{port}
