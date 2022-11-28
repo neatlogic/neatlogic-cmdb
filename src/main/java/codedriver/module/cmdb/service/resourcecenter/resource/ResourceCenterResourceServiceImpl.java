@@ -148,7 +148,10 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             List<TagVo> tagList = resourceTagMapper.getTagListByIdList(new ArrayList<>(tagIdSet));
             Map<Long, TagVo> tagMap = tagList.stream().collect(Collectors.toMap(TagVo::getId, e -> e));
             for (ResourceTagVo resourceTagVo : resourceTagVoList) {
-                resourceTagVoMap.computeIfAbsent(resourceTagVo.getResourceId(), k -> new ArrayList<>()).add(tagMap.get(resourceTagVo.getTagId()));
+                TagVo tagVo = tagMap.get(resourceTagVo.getTagId());
+                if (tagVo != null) {
+                    resourceTagVoMap.computeIfAbsent(resourceTagVo.getResourceId(), k -> new ArrayList<>()).add(tagVo);
+                }
             }
         }
         return resourceTagVoMap;
