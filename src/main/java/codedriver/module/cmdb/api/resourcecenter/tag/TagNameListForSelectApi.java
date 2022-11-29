@@ -6,6 +6,7 @@
 package codedriver.module.cmdb.api.resourcecenter.tag;
 
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.auth.label.CMDB;
 import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
@@ -13,7 +14,6 @@ import codedriver.framework.common.dto.ValueTextVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.framework.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceTagMapper;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -30,7 +30,7 @@ import java.util.List;
  * @since 2021/7/7 10:15
  **/
 @Service
-@AuthAction(action = CMDB_BASE.class)
+@AuthAction(action = CMDB.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class TagNameListForSelectApi extends PrivateApiComponentBase {
 
