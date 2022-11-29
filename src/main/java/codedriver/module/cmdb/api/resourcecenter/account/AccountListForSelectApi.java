@@ -28,9 +28,10 @@ import java.util.List;
  * @author linbq
  * @since 2021/5/30 14:42
  **/
-@Service
+//@Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
+@Deprecated
 public class AccountListForSelectApi extends PrivateApiComponentBase {
 
     @Resource
