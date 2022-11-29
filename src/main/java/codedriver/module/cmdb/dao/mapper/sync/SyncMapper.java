@@ -5,6 +5,7 @@
 
 package codedriver.module.cmdb.dao.mapper.sync;
 
+import codedriver.framework.cmdb.crossover.ISyncCrossoverMapper;
 import codedriver.framework.cmdb.dto.sync.SyncCiCollectionVo;
 import codedriver.framework.cmdb.dto.sync.SyncMappingVo;
 import codedriver.framework.cmdb.dto.sync.SyncPolicyVo;
@@ -13,7 +14,7 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
-public interface SyncMapper {
+public interface SyncMapper extends ISyncCrossoverMapper {
     List<SyncCiCollectionVo> getPassiveSyncCiCollectionByCiId(Long ciId);
 
     SyncCiCollectionVo getInitiativeSyncCiCollectionByCollectName(String collectName);
@@ -37,6 +38,8 @@ public interface SyncMapper {
     List<SyncCiCollectionVo> searchSyncCiCollection(SyncCiCollectionVo syncCiCollectionVo);
 
     int searchSyncCiCollectionCount(SyncCiCollectionVo syncCiCollectionVo);
+
+    List<String> getSyncCiCollectionNameListByCiNameListAndCollectMode(@Param("ciNameList") List<String> ciNameList, @Param("collectMode") String collectMode);
 
     SyncCiCollectionVo getSyncCiCollectionById(Long id);
 
