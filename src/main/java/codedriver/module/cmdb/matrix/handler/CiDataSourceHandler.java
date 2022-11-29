@@ -428,6 +428,9 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                         if (StringUtils.isNotBlank(uuid)) {
                             rowDataMap.put(uuid, matrixAttributeValueHandle(null, entry.getValue()));
                         }
+                        if ("const_id".equals(entry.getKey())) {
+                            rowDataMap.put("uuid", matrixAttributeValueHandle(null, entry.getValue()));
+                        }
                     }
                     tbodyList.add(rowDataMap);
                 }
@@ -543,6 +546,9 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                                 String uuid = attributeUuidMap.get(entry.getKey());
                                 if (StringUtils.isNotBlank(uuid)) {
                                     rowDataMap.put(uuid, matrixAttributeValueHandle(null, entry.getValue()));
+                                }
+                                if ("const_id".equals(entry.getKey())) {
+                                    rowDataMap.put("uuid", matrixAttributeValueHandle(null, entry.getValue()));
                                 }
                             }
                             tbodyList.add(rowDataMap);
