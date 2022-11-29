@@ -1,6 +1,7 @@
 package codedriver.module.cmdb.api.resourcecenter.appmodule;
 
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.auth.label.CMDB;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
@@ -10,7 +11,6 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.framework.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
@@ -28,7 +28,7 @@ import java.util.*;
  * @date 2022/3/2 4:10 下午
  */
 @Service
-@AuthAction(action = CMDB_BASE.class)
+@AuthAction(action = CMDB.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
 
