@@ -25,9 +25,10 @@ import java.util.List;
  * @author linbq
  * @since 2021/6/16 15:04
  **/
-@Service
+//@Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
+@Deprecated
 public class AppEnvListApi extends PrivateApiComponentBase {
 
     @Resource
