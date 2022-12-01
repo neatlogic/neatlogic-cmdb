@@ -156,4 +156,8 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
     int getAppSystemCountByKeyword(BasePageVo searchVo);
 
     List<AppSystemVo> getAppSystemListByKeyword(BasePageVo searchVo);
+
+    List<AppEnvVo> getOsEnvListByAppSystemIdAndTypeId(ResourceSearchVo searchVo);
+
+    List<AppEnvVo> getIpObjectEnvListByAppSystemIdAndTypeId(ResourceSearchVo searchVo);
 }
