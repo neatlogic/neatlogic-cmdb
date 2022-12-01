@@ -34,7 +34,7 @@ public class SyncCiEntityScheduleJob extends JobBase {
 
 
     @Override
-    public Boolean isHealthy(JobObject jobObject) {
+    public Boolean isMyHealthy(JobObject jobObject) {
         SyncScheduleVo jobVo = syncMapper.getSyncScheduleById(Long.valueOf(jobObject.getJobName()));
         if (jobVo != null && jobVo.getIsActive().equals(1)) {
             return jobVo.getCron().equals(jobObject.getCron());
