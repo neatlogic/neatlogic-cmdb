@@ -13,6 +13,10 @@ import java.util.List;
 public interface CustomViewMapper {
     Long getCiIdByCustomViewId(Long customViewId);
 
+    CustomViewTemplateVo getCustomViewTemplateById(Long customViewId);
+
+    int checkCustomViewAttrIsExists(CustomViewAttrVo customViewAttrVo);
+
     CustomViewConstAttrVo getCustomViewConstAttrByUuid(@Param("customViewId") Long customViewId, @Param("uuid") String uuid);
 
     CustomViewAttrVo getCustomViewAttrByUuid(@Param("customViewId") Long customViewId, @Param("uuid") String uuid);
@@ -42,6 +46,8 @@ public interface CustomViewMapper {
     void insertCustomViewRel(CustomViewRelVo customViewRelVo);
 
     void insertCiCustomView(@Param("ciId") Long ciId, @Param("customViewId") Long customViewId);
+
+    void insertCustomViewTemplate(CustomViewTemplateVo customViewTemplateVo);
 
     void insertCustomView(CustomViewVo customViewVo);
 
@@ -74,4 +80,6 @@ public interface CustomViewMapper {
     void buildCustomView(String sql);
 
     void dropCustomView(String viewName);
+
+    void deleteCustomViewTemplateById(Long customViewId);
 }
