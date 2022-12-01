@@ -389,11 +389,6 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 
     @Override
     public Collection<AppEnvVo> getAppEnvList(ResourceSearchVo searchVo) {
-        Map<Long, AppEnvVo> returnEnvMap = new HashMap<>();
-        Map<Long, Set<Long>> envIdModuleIdSetMap = new HashMap<>();
-        Map<Long, List<AppModuleVo>> envModuleListMap = new HashMap<>();
-        Map<Long, Set<Long>> envModuleIdCiIdSetMap = new HashMap<>();
-        Map<Long, List<CiVo>> envModuleIdCiListMap = new HashMap<>();
         CiEntityVo ciEntityVo = ciEntityMapper.getCiEntityBaseInfoById(searchVo.getAppSystemId());
         if (ciEntityVo == null) {
             throw new AppSystemNotFoundException(searchVo.getAppSystemId());
@@ -406,6 +401,11 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         }
 
         if (CollectionUtils.isNotEmpty(resourceTypeIdList)) {
+            Map<Long, AppEnvVo> returnEnvMap = new HashMap<>();
+            Map<Long, Set<Long>> envIdModuleIdSetMap = new HashMap<>();
+            Map<Long, List<AppModuleVo>> envIdModuleListMap = new HashMap<>();
+            Map<Long, Set<Long>> envModuleIdCiIdSetMap = new HashMap<>();
+            Map<Long, List<CiVo>> envModuleIdCiListMap = new HashMap<>();
             List<CiVo> ciList = ciMapper.getAllCi(resourceTypeIdList);
             List<CiVo> resourceCiVoList = ciMapper.getCiListByNameList(AppModuleResourceType.getNameList());
 
@@ -426,8 +426,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                     appEnvList.addAll(resourceMapper.getIpObjectEnvListByAppSystemIdAndTypeId(searchVo));
                 }
 
-                //数据处理
-                /*
+                /*数据处理
                 1、returnEnvMap           环境List
                 2、envIdModuleIdSetMap    环境id对应的 模块id列表
                 3、envModuleIdCiIdSetMap  环境id+模块id对应的 模型id列表
@@ -439,7 +438,6 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                         List<AppModuleVo> appModuleList = envVo.getAppModuleList();
                         Set<Long> appModuleIdSet = appModuleList.stream().map(AppModuleVo::getId).collect(Collectors.toSet());
                         if (envIdModuleIdSetMap.containsKey(envId)) {
-                            //环境id存在
                             for (AppModuleVo moduleVo : appModuleList) {
                                 if (envIdModuleIdSetMap.get(envId).contains(moduleVo.getId())) {
                                     List<CiVo> ciVoList = moduleVo.getCiVoList();
@@ -449,7 +447,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                                     }
                                 } else {
                                     envIdModuleIdSetMap.get(envId).add(moduleVo.getId());
-                                    envModuleListMap.get(envId).add(moduleVo);
+                                    envIdModuleListMap.get(envId).add(moduleVo);
                                     envModuleIdCiIdSetMap.put(envId + moduleVo.getId(), moduleVo.getCiVoList().stream().map(CiVo::getId).collect(Collectors.toSet()));
                                     envModuleIdCiListMap.put(envId + moduleVo.getId(), moduleVo.getCiVoList());
                                 }
@@ -457,7 +455,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                             envIdModuleIdSetMap.get(envId).addAll(appModuleIdSet);
                         } else {
                             envIdModuleIdSetMap.put(envId, appModuleIdSet);
-                            envModuleListMap.put(envId, appModuleList);
+                            envIdModuleListMap.put(envId, appModuleList);
                             for (AppModuleVo moduleVo : appModuleList) {
                                 envModuleIdCiIdSetMap.put(envId + moduleVo.getId(), moduleVo.getCiVoList().stream().map(CiVo::getId).collect(Collectors.toSet()));
                                 envModuleIdCiListMap.put(envId + moduleVo.getId(), moduleVo.getCiVoList());
@@ -467,14 +465,14 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 }
             }
             for (Map.Entry<Long, AppEnvVo> entry : returnEnvMap.entrySet()) {
-                List<AppModuleVo> appModuleVoList = envModuleListMap.get(entry.getKey());
+                List<AppModuleVo> appModuleVoList = envIdModuleListMap.get(entry.getKey());
                 for (AppModuleVo appModuleVo : appModuleVoList) {
                     List<CiVo> ciVoList = envModuleIdCiListMap.get(entry.getKey() + appModuleVo.getId());
                     appModuleVo.setCiVoList(ciVoList);
                 }
                 entry.getValue().setAppModuleList(appModuleVoList);
             }
-            return  returnEnvMap.values();
+            return returnEnvMap.values();
         }
         return null;
     }
