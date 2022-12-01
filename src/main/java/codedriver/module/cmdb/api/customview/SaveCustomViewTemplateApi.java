@@ -56,7 +56,11 @@ public class SaveCustomViewTemplateApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "customViewId", type = ApiParamType.LONG, isRequired = true, desc = "视图id"), @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "名称"), @Param(name = "isActive", type = ApiParamType.INTEGER, isRequired = true, desc = "是否激活"), @Param(name = "template", type = ApiParamType.STRING, isRequired = true, desc = "模板内容"), @Param(name = "config", type = ApiParamType.STRING, isRequired = true, desc = "配置")})
+    @Input({@Param(name = "customViewId", type = ApiParamType.LONG, isRequired = true, desc = "视图id"),
+            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "名称"),
+            @Param(name = "isActive", type = ApiParamType.INTEGER, isRequired = true, desc = "是否激活"),
+            @Param(name = "template", type = ApiParamType.STRING, isRequired = true, desc = "模板内容"),
+            @Param(name = "config", type = ApiParamType.STRING, desc = "配置")})
     @Description(desc = "保存自定义视图自定义模板接口")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
