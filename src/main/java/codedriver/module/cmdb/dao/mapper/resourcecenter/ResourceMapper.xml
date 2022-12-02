@@ -1245,7 +1245,7 @@
             <id column="moduleId" property="id"/>
             <result column="moduleName" property="name"/>
             <result column="moduleAbbrName" property="abbrName"/>
-            <collection property="ciVoList" ofType="codedriver.framework.cmdb.dto.ci.CiVo">
+            <collection property="ciList" ofType="codedriver.framework.cmdb.dto.ci.CiVo">
                 <id column="typeId" property="id"/>
                 <id column="typeName" property="name"/>
                 <id column="typeLabel" property="label"/>

@@ -440,7 +440,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                         if (envIdModuleIdSetMap.containsKey(envId)) {
                             for (AppModuleVo moduleVo : appModuleList) {
                                 if (envIdModuleIdSetMap.get(envId).contains(moduleVo.getId())) {
-                                    List<CiVo> ciVoList = moduleVo.getCiVoList();
+                                    List<CiVo> ciVoList = moduleVo.getCiList();
                                     for (CiVo ci : ciVoList) {
                                         envModuleIdCiIdSetMap.get(envId + moduleVo.getId()).add(ci.getId());
                                         envModuleIdCiListMap.get(envId + moduleVo.getId()).add(ci);
@@ -448,8 +448,8 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                                 } else {
                                     envIdModuleIdSetMap.get(envId).add(moduleVo.getId());
                                     envIdModuleListMap.get(envId).add(moduleVo);
-                                    envModuleIdCiIdSetMap.put(envId + moduleVo.getId(), moduleVo.getCiVoList().stream().map(CiVo::getId).collect(Collectors.toSet()));
-                                    envModuleIdCiListMap.put(envId + moduleVo.getId(), moduleVo.getCiVoList());
+                                    envModuleIdCiIdSetMap.put(envId + moduleVo.getId(), moduleVo.getCiList().stream().map(CiVo::getId).collect(Collectors.toSet()));
+                                    envModuleIdCiListMap.put(envId + moduleVo.getId(), moduleVo.getCiList());
                                 }
                             }
                             envIdModuleIdSetMap.get(envId).addAll(appModuleIdSet);
@@ -457,8 +457,8 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                             envIdModuleIdSetMap.put(envId, appModuleIdSet);
                             envIdModuleListMap.put(envId, appModuleList);
                             for (AppModuleVo moduleVo : appModuleList) {
-                                envModuleIdCiIdSetMap.put(envId + moduleVo.getId(), moduleVo.getCiVoList().stream().map(CiVo::getId).collect(Collectors.toSet()));
-                                envModuleIdCiListMap.put(envId + moduleVo.getId(), moduleVo.getCiVoList());
+                                envModuleIdCiIdSetMap.put(envId + moduleVo.getId(), moduleVo.getCiList().stream().map(CiVo::getId).collect(Collectors.toSet()));
+                                envModuleIdCiListMap.put(envId + moduleVo.getId(), moduleVo.getCiList());
                             }
                         }
                     }
@@ -468,7 +468,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 List<AppModuleVo> appModuleVoList = envIdModuleListMap.get(entry.getKey());
                 for (AppModuleVo appModuleVo : appModuleVoList) {
                     List<CiVo> ciVoList = envModuleIdCiListMap.get(entry.getKey() + appModuleVo.getId());
-                    appModuleVo.setCiVoList(ciVoList);
+                    appModuleVo.setCiList(ciVoList);
                 }
                 entry.getValue().setAppModuleList(appModuleVoList);
             }
