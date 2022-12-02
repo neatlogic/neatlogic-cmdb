@@ -1237,4 +1237,49 @@
         ORDER BY CONVERT(`abbr_name` USING gbk) COLLATE gbk_chinese_ci ASC
         LIMIT #{startNum}, #{pageSize}
     </select>
+
+    <resultMap id="appEnvMap" type="codedriver.framework.cmdb.dto.resourcecenter.AppEnvVo">
+        <result column="id" property="id"/>
+        <result column="name" property="name"/>
+        <collection property="appModuleList" ofType="codedriver.framework.cmdb.dto.resourcecenter.AppModuleVo">
+            <id column="moduleId" property="id"/>
+            <result column="moduleName" property="name"/>
+            <result column="moduleAbbrName" property="abbrName"/>
+            <collection property="ciList" ofType="codedriver.framework.cmdb.dto.ci.CiVo">
+                <id column="typeId" property="id"/>
+                <id column="typeName" property="name"/>
+                <id column="typeLabel" property="label"/>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <select id="getOsEnvListByAppSystemIdAndTypeId" resultMap="appEnvMap">
+        SELECT a.env_id               as id,
+               a.env_name             as name,
+               a.app_module_id           moduleId,
+               a.app_module_name      as moduleName,
+               a.app_module_abbr_name as moduleAbbrName,
+               a.type_id              as typeId,
+               a.type_name            as typeName,
+               a.type_label           as typeLabel
+        FROM @{DATA_SCHEMA}.`scence_os_softwareservice_env_appmodule_appsystem` a
+        WHERE a.`type_id` = #{typeId}
+        AND a.`app_system_id` = #{appSystemId}
+        AND a.app_module_id is not null
+    </select>
+
+    <select id="getIpObjectEnvListByAppSystemIdAndTypeId"  resultMap="appEnvMap">
+        SELECT a.env_id               as id,
+               a.env_name             as name,
+               a.app_module_id           moduleId,
+               a.app_module_name      as moduleName,
+               a.app_module_abbr_name as moduleAbbrName,
+               a.type_id              as typeId,
+               a.type_name            as typeName,
+               a.type_label           as typeLabel
+        FROM @{DATA_SCHEMA}.`scence_ipobject_env_appmodule_appsystem` a
+        WHERE a.`type_id` = #{typeId}
+          AND a.`app_system_id` = #{appSystemId}
+          AND a.app_module_id is not null
+    </select>
 </mapper>
