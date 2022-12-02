@@ -34,7 +34,7 @@ public class LegalValidScheduleJob extends JobBase {
 
 
     @Override
-    public Boolean isHealthy(JobObject jobObject) {
+    public Boolean isMyHealthy(JobObject jobObject) {
         LegalValidVo jobVo = legalValidMapper.getLegalValidById(Long.valueOf(jobObject.getJobName()));
         if (jobVo != null && jobVo.getIsActive().equals(1)) {
             return jobVo.getCron().equals(jobObject.getCron());
