@@ -13,12 +13,28 @@
         LIMIT 1
     </select>
 
+    <select id="getCustomViewTemplateById" parameterType="java.lang.Long"
+            resultType="codedriver.framework.cmdb.dto.customview.CustomViewTemplateVo">
+        SELECT customview_id as customViewId, name, template, config, is_active AS isActive
+        FROM cmdb_customview_template
+        WHERE customview_id = #{value}
+    </select>
+
+    <select id="checkCustomViewAttrIsExists" parameterType="codedriver.framework.cmdb.dto.customview.CustomViewAttrVo"
+            resultType="int">
+        SELECT count(1)
+        FROM `cmdb_customview_attr`
+        WHERE customview_id = #{customViewId}
+          and name = #{name}
+    </select>
+
     <select id="getCustomViewConstAttrByUuid"
             resultType="codedriver.framework.cmdb.dto.customview.CustomViewConstAttrVo">
         SELECT customview_id      AS customViewId,
                customview_ci_uuid AS customViewCiUuid,
                uuid,
                const_name         AS constName,
+               name,
                alias,
                sort,
                is_hidden          AS isHidden
@@ -33,6 +49,7 @@
                customview_ci_uuid AS customViewCiUuid,
                uuid,
                attr_id            AS attrId,
+               name,
                alias,
                sort,
                is_hidden          AS isHidden,
@@ -54,6 +71,12 @@
         <result property="icon" column="icon"/>
         <result property="description" column="description"/>
         <result property="configStr" column="configStr" typeHandler="CompressHandler"/>
+        <association property="customViewTemplate"
+                     javaType="codedriver.framework.cmdb.dto.customview.CustomViewTemplateVo">
+            <id property="customViewId" column="customViewId"/>
+            <result property="isActive" column="customViewTemplateIsActive"/>
+            <result property="name" column="customViewTemplateName"/>
+        </association>
         <collection property="authList" ofType="codedriver.framework.cmdb.dto.customview.CustomViewAuthVo">
             <id property="authUuid" column="authUuid"/>
             <result property="authType" column="authType"/>
@@ -70,6 +93,7 @@
         <result property="customViewId" column="customViewId"/>
         <result property="attrId" column="attrId"/>
         <result property="alias" column="alias"/>
+        <result property="name" column="name"/>
         <result property="sort" column="sort"/>
         <result property="isHidden" column="isHidden"/>
         <result property="conditionStr" column="conditionStr"/>
@@ -91,6 +115,7 @@
         a.uuid,
         a.const_name AS constName,
         a.alias,
+        a.name,
         a.sort,
         a.is_hidden AS isHidden
         from cmdb_customview_constattr a
@@ -120,6 +145,7 @@
         a.sort,
         a.is_hidden AS isHidden,
         a.`condition` AS conditionStr,
+        a.`name` AS name,
         b.`name` AS attrName,
         b.`label` AS attrLabel,
         b.`ci_id` AS ciId,
@@ -138,46 +164,54 @@
     <select id="getCustomViewByName" parameterType="java.lang.String" resultMap="customViewMap">
         SELECT a.id,
                a.name,
-               a.is_active   AS isActive,
-               a.type        AS type,
+               a.is_active     AS isActive,
+               a.type          AS type,
                a.fcu,
                a.fcd,
                a.lcu,
                a.lcd,
-               a.icon        AS icon,
-               a.description AS description,
-               a.config      AS configStr,
-               b.auth_type   AS authType,
-               b.auth_uuid   AS authUuid,
-               d.id          AS tagId,
-               d.name        AS tagName
+               a.icon          AS icon,
+               a.description   AS description,
+               a.config        AS configStr,
+               b.auth_type     AS authType,
+               b.auth_uuid     AS authUuid,
+               d.id            AS tagId,
+               d.name          AS tagName,
+               e.customview_id AS customViewId,
+               e.is_active     AS customViewTemplateIsActive,
+               e.name          AS customViewTemplateName
         FROM cmdb_customview a
                  LEFT JOIN cmdb_customview_auth b ON a.id = b.customview_id
                  LEFT JOIN cmdb_customview_tag c ON a.id = c.customview_id
                  LEFT JOIN cmdb_tag d ON c.tag_id = d.id
+                 LEFT JOIN cmdb_customview_template e ON a.id = e.customview_id
         WHERE a.name = #{value}
     </select>
 
     <select id="getCustomViewById" parameterType="java.lang.Long" resultMap="customViewMap">
         SELECT a.id,
                a.name,
-               a.is_active   AS isActive,
-               a.type        AS type,
+               a.is_active     AS isActive,
+               a.type          AS type,
                a.fcu,
                a.fcd,
                a.lcu,
                a.lcd,
-               a.icon        AS icon,
-               a.description AS description,
-               a.config      AS configStr,
-               b.auth_type   AS authType,
-               b.auth_uuid   AS authUuid,
-               d.id          AS tagId,
-               d.name        AS tagName
+               a.icon          AS icon,
+               a.description   AS description,
+               a.config        AS configStr,
+               b.auth_type     AS authType,
+               b.auth_uuid     AS authUuid,
+               d.id            AS tagId,
+               d.name          AS tagName,
+               e.customview_id AS customViewId,
+               e.is_active     AS customViewTemplateIsActive,
+               e.name          AS customViewTemplateName
         FROM cmdb_customview a
                  LEFT JOIN cmdb_customview_auth b ON a.id = b.customview_id
                  LEFT JOIN cmdb_customview_tag c ON a.id = c.customview_id
                  LEFT JOIN cmdb_tag d ON c.tag_id = d.id
+                 LEFT JOIN cmdb_customview_template e ON a.id = e.customview_id
         WHERE a.id = #{value}
     </select>
 
@@ -192,6 +226,7 @@
         <collection property="attrList" ofType="codedriver.framework.cmdb.dto.customview.CustomViewAttrVo">
             <id property="uuid" column="attrUuid"/>
             <result property="alias" column="attrAlias"/>
+            <result property="name" column="attrName"/>
             <result property="attrId" column="attrId"/>
             <result property="conditionStr" column="conditionStr"/>
             <result property="customViewCiUuid" column="attrCustomViewCiUuid"/>
@@ -215,6 +250,7 @@
                a.is_hidden          AS isHidden,
                a.is_start           AS isStart,
                a.alias              AS alias,
+               b.name               AS attrName,
                b.alias              AS attrAlias,
                b.attr_id            AS attrId,
                b.`condition`        AS conditionStr,
@@ -284,7 +320,10 @@
         b.auth_type AS authType,
         b.auth_uuid AS authUuid,
         d.id AS tagId,
-        d.name AS tagName
+        d.name AS tagName,
+        e.customview_id AS customViewId,
+        e.is_active AS customViewTemplateIsActive,
+        e.name AS customViewTemplateName
         FROM (
         SELECT
         DISTINCT cc.*
@@ -298,6 +337,7 @@
         LEFT JOIN cmdb_customview_auth b ON a.id = b.customview_id
         LEFT JOIN cmdb_customview_tag c ON a.id = c.customview_id
         LEFT JOIN cmdb_tag d ON c.tag_id = d.id
+        LEFT JOIN cmdb_customview_template e ON a.id = e.customview_id
         ORDER BY a.id desc
     </select>
 
@@ -343,6 +383,16 @@
         SET is_active = #{isActive}
         WHERE id = #{id}
     </update>
+
+    <insert id="insertCustomViewTemplate" parameterType="codedriver.framework.cmdb.dto.customview.CustomViewTemplateVo">
+        INSERT INTO cmdb_customview_template
+            (`customview_id`, `name`, `template`, `config`, `is_active`)
+        VALUES (#{customViewId}, #{name}, #{template}, #{config}, #{isActive})
+        ON DUPLICATE KEY UPDATE `name`      = #{name},
+                                `template`  = #{template},
+                                `config`    = #{config},
+                                `is_active` = #{isActive}
+    </insert>
 
     <insert id="insertCiCustomView" parameterType="codedriver.framework.cmdb.dto.customview.CiCustomViewVo">
         INSERT IGNORE INTO cmdb_ci_customview (ci_id, customview_id)
@@ -394,6 +444,7 @@
          uuid,
          const_name,
          alias,
+         name,
          sort,
          is_hidden)
         VALUES (#{customViewId},
@@ -401,6 +452,7 @@
                 #{uuid},
                 #{constName},
                 #{alias},
+                #{name},
                 #{sort},
                 #{isHidden})
     </insert>
@@ -412,6 +464,7 @@
          uuid,
          attr_id,
          alias,
+         name,
          sort,
          is_hidden,
          `condition`)
@@ -420,6 +473,7 @@
                 #{uuid},
                 #{attrId},
                 #{alias},
+                #{name},
                 #{sort},
                 #{isHidden},
                 #{conditionStr})
@@ -509,5 +563,11 @@
 
     <delete id="dropCustomView" parameterType="java.lang.String">
         DROP VIEW IF EXISTS ${value}
+    </delete>
+
+    <delete id="deleteCustomViewTemplateById" parameterType="java.lang.Long">
+        DELETE
+        FROM cmdb_customview_template
+        WHERE customview_id = #{value}
     </delete>
 </mapper>

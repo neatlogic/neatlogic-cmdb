@@ -62,14 +62,14 @@
                 #{tagId}
             </foreach>
         </if>
-        <if test="searchValueList != null and searchValueList.size() > 0 and searchField != null and searchField != ''">
+        <if test="batchSearchList != null and batchSearchList.size() > 0 and searchField != null and searchField != ''">
             <if test="searchField == 'name'">
                 and a.`name` IN
             </if>
             <if test="searchField == 'ip'">
                 and a.`ip` IN
             </if>
-            <foreach collection="searchValueList" item="item" open="(" separator="," close=")">
+            <foreach collection="batchSearchList" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
         </if>
@@ -285,7 +285,7 @@
 
     <select id="getOsResourceCountByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId"
             parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="int">
-        SELECT COUNT(1)
+        SELECT COUNT(distinct a.`id`)
         FROM @{DATA_SCHEMA}.`scence_os_softwareservice_env_appmodule_appsystem` a
         <if test="inspectStatusList != null and inspectStatusList.size() > 0">
             JOIN `cmdb_cientity` b on b.`id` = a.`resource_id` and b.`inspect_status` IN
@@ -307,7 +307,7 @@
 
     <select id="getOsResourceIdListByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId"
             parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
-        SELECT a.`id`
+        SELECT distinct a.`id`
         FROM @{DATA_SCHEMA}.`scence_os_softwareservice_env_appmodule_appsystem` a
         <if test="inspectStatusList != null and inspectStatusList.size() > 0">
             JOIN `cmdb_cientity` b on b.`id` = a.`resource_id` and b.`inspect_status` IN
@@ -505,7 +505,7 @@
     </select>
 
     <select id="getResourceById" parameterType="java.lang.Long" resultMap="resourceCenterMap">
-        SELECT a.`id`, a.`name`, a.`ip`, a.`port`, a.`type_id`, a.`type_name`
+        SELECT a.`id`, a.`name`, a.`ip`, a.`port`, a.`type_id`, a.`type_name`, a.`type_label`
         FROM @{DATA_SCHEMA}.`scence_ipobject_ip_port` a
         where a.`id` = #{value}
     </select>
@@ -711,6 +711,12 @@
         </if>
     </select>
 
+    <select id="getOsResourceAppSystemIdListByOsId" parameterType="java.lang.Long" resultType="java.lang.Long">
+        SELECT a.`app_system_id`
+        FROM @{DATA_SCHEMA}.`scence_os_softwareservice_env_appmodule_appsystem` a
+        WHERE a.`id` = #{id}
+    </select>
+
     <select id="getResourceListByResourceVoList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo"
             resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
         SELECT a.name,a.`ip`,a.id,a.port,a.type_name as typeName
@@ -728,6 +734,12 @@
                 and a.name = #{resource.name}
             </if>
         </foreach>
+    </select>
+
+    <select id="getAppSystemIdByResourceId"  parameterType="java.lang.Long"  resultType="java.lang.Long">
+        SELECT a.`app_system_id`
+        FROM @{DATA_SCHEMA}.`scence_ipobject_env_appmodule_appsystem` a
+        WHERE a.`id` = #{id}
     </select>
 
     <select id="getResourceIdListByAppSystemIdAndModuleIdAndEnvId"
@@ -1224,5 +1236,50 @@
         </where>
         ORDER BY CONVERT(`abbr_name` USING gbk) COLLATE gbk_chinese_ci ASC
         LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <resultMap id="appEnvMap" type="codedriver.framework.cmdb.dto.resourcecenter.AppEnvVo">
+        <result column="id" property="id"/>
+        <result column="name" property="name"/>
+        <collection property="appModuleList" ofType="codedriver.framework.cmdb.dto.resourcecenter.AppModuleVo">
+            <id column="moduleId" property="id"/>
+            <result column="moduleName" property="name"/>
+            <result column="moduleAbbrName" property="abbrName"/>
+            <collection property="ciList" ofType="codedriver.framework.cmdb.dto.ci.CiVo">
+                <id column="typeId" property="id"/>
+                <id column="typeName" property="name"/>
+                <id column="typeLabel" property="label"/>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <select id="getOsEnvListByAppSystemIdAndTypeId" resultMap="appEnvMap">
+        SELECT a.env_id               as id,
+               a.env_name             as name,
+               a.app_module_id           moduleId,
+               a.app_module_name      as moduleName,
+               a.app_module_abbr_name as moduleAbbrName,
+               a.type_id              as typeId,
+               a.type_name            as typeName,
+               a.type_label           as typeLabel
+        FROM @{DATA_SCHEMA}.`scence_os_softwareservice_env_appmodule_appsystem` a
+        WHERE a.`type_id` = #{typeId}
+        AND a.`app_system_id` = #{appSystemId}
+        AND a.app_module_id is not null
+    </select>
+
+    <select id="getIpObjectEnvListByAppSystemIdAndTypeId"  resultMap="appEnvMap">
+        SELECT a.env_id               as id,
+               a.env_name             as name,
+               a.app_module_id           moduleId,
+               a.app_module_name      as moduleName,
+               a.app_module_abbr_name as moduleAbbrName,
+               a.type_id              as typeId,
+               a.type_name            as typeName,
+               a.type_label           as typeLabel
+        FROM @{DATA_SCHEMA}.`scence_ipobject_env_appmodule_appsystem` a
+        WHERE a.`type_id` = #{typeId}
+          AND a.`app_system_id` = #{appSystemId}
+          AND a.app_module_id is not null
     </select>
 </mapper>

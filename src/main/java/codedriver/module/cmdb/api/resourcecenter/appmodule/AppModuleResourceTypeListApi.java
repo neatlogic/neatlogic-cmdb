@@ -1,6 +1,7 @@
 package codedriver.module.cmdb.api.resourcecenter.appmodule;
 
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.auth.label.CMDB;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
@@ -10,7 +11,6 @@ import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.framework.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
@@ -28,7 +28,7 @@ import java.util.*;
  * @date 2022/3/2 4:10 下午
  */
 @Service
-@AuthAction(action = CMDB_BASE.class)
+@AuthAction(action = CMDB.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
 
@@ -113,10 +113,10 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
                 Set<Long> resourceTypeIdSet = resourceMapper.getIpObjectResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
                 resourceTypeIdList.addAll(resourceTypeIdSet);
                 Set<CiVo> returnCiVoSet = new HashSet<>();
-//                if (CollectionUtils.isNotEmpty(resourceTypeIdSet)) {
-//                    resourceTypeIdSet = resourceCenterMapper.getOsResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
-//                    resourceTypeIdList.addAll(resourceTypeIdSet);
-//                }
+                if (CollectionUtils.isNotEmpty(resourceTypeIdSet)) {
+                    resourceTypeIdSet = resourceMapper.getOsResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
+                    resourceTypeIdList.addAll(resourceTypeIdSet);
+                }
 
                 //循环resourceTypeIdList，将其父级模型的name存在于resourceTypeNameList中的 模型 返回给前端
                 if (CollectionUtils.isNotEmpty(resourceTypeIdList)) {

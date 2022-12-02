@@ -6,16 +6,18 @@
 package codedriver.module.cmdb.service.customview;
 
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
+import codedriver.framework.cmdb.crossover.ICustomViewCrossoverService;
 import codedriver.framework.cmdb.dto.customview.*;
 import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.cmdb.exception.customview.CreateCustomViewFailedException;
+import codedriver.framework.cmdb.exception.customview.CustomViewAttrNameIsExistsException;
 import codedriver.framework.cmdb.exception.customview.DeleteCustomViewFailedException;
-import codedriver.framework.cmdb.crossover.ICustomViewCrossoverService;
 import codedriver.framework.transaction.core.EscapeTransactionJob;
 import codedriver.module.cmdb.dao.mapper.customview.CustomViewMapper;
 import codedriver.module.cmdb.dao.mapper.tag.CmdbTagMapper;
 import codedriver.module.cmdb.utils.CustomViewBuilder;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -97,6 +99,9 @@ public class CustomViewServiceImpl implements CustomViewService, ICustomViewCros
                 customViewMapper.insertCustomViewCi(customViewCiVo);
                 if (CollectionUtils.isNotEmpty(customViewCiVo.getAttrList())) {
                     for (CustomViewAttrVo customViewAttrVo : customViewCiVo.getAttrList()) {
+                        if (StringUtils.isNotBlank(customViewAttrVo.getName()) && customViewMapper.checkCustomViewAttrIsExists(customViewAttrVo) > 0) {
+                            throw new CustomViewAttrNameIsExistsException(customViewAttrVo);
+                        }
                         customViewAttrVo.setCustomViewId(customViewVo.getId());
                         customViewAttrVo.setCustomViewCiUuid(customViewCiVo.getUuid());
                         customViewMapper.insertCustomViewAttr(customViewAttrVo);

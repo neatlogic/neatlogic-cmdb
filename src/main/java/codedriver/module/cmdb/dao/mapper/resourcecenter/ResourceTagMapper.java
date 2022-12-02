@@ -29,6 +29,8 @@ public interface ResourceTagMapper {
 
     TagVo getTagById(Long id);
 
+    TagVo getTagByName(String name);
+
     int checkTagHasBeenReferredById(Long id);
 
     List<TagVo> getTagListByTagNameList(List<String> tagNameList);
