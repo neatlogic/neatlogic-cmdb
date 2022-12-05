@@ -14,4 +14,5 @@ deploy1:
     - /^develop.*$/
     - /^release.*$/
   script:
+    - echo $CI_COMMIT_REF_NAME
     - mvn deploy -e --settings /home/gitlab-runner/.m2/settings.xml -P$CI_COMMIT_REF_NAME
