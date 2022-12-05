@@ -17,6 +17,8 @@ public interface TransactionMapper {
 
     List<TransactionVo> getUnCommitTransactionByCiEntityIdAndAction(@Param("ciEntityId") Long ciEntityId, @Param("action") String action);
 
+    List<Long> getBrotherTransactionIdByTransactionGroupId(@Param("transactionId") Long transactionId, @Param("transactionGroupId") Long transactionGroupId);
+
     int getBrotherTransactionCountByTransactionGroupId(@Param("transactionId") Long transactionId, @Param("transactionGroupId") Long transactionGroupId);
 
     List<TransactionVo> getTransactionByGroupId(Long transactionGroupId);
