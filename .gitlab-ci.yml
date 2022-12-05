@@ -14,4 +14,4 @@ deploy1:
     - /^develop.*$/
     - /^release.*$/
   script:
-    - mvn deploy -e --settings /home/gitlab-runner/.m2/settings.xml -P$CI_BUILDS_DIR
+    - mvn deploy -e --settings /home/gitlab-runner/.m2/settings.xml -P$CI_SERVER
