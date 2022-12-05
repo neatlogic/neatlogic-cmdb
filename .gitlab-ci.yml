@@ -14,4 +14,6 @@ deploy1:
     - /^develop.*$/
     - /^release.*$/
   script:
-    - mvn deploy -e --settings /home/gitlab-runner/.m2/settings.xml
+    - export ENV_NAME="develop";
+    - if [ "${CI_COMMIT_REF_NAME}" = "release" ]; then ENV_NAME="release"; fi;
+    - mvn deploy -e --settings /home/gitlab-runner/.m2/settings.xml -P${ENV_NAME}
