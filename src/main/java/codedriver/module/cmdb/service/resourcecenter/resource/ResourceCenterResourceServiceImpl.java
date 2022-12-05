@@ -275,7 +275,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 searchVo.setRowNum(rowNum);
                 List<Long> idList = resourceMapper.getIpObjectResourceIdListByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(searchVo);
                 if (CollectionUtils.isNotEmpty(idList)) {
-                    return resourceMapper.getAppInstanceResourceListByIdList(idList);
+                    return resourceMapper.getResourceListByIdList(idList);
                 }
             }
             return new ArrayList<>();

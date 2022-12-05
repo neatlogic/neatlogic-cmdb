@@ -1203,7 +1203,7 @@
     </select>
 
     <select id="getAppModuleListByAppSystemId" parameterType="java.lang.Long" resultType="codedriver.framework.cmdb.dto.resourcecenter.AppModuleVo">
-        SELECT
+        SELECT distinct
         `id`,
         `name`,
         `abbr_name` AS abbrName,
