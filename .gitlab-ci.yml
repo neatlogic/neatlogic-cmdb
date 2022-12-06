@@ -6,7 +6,7 @@ build1:
     - /^develop.*$/
     - /^release.*$/
   script:
-    - git --version
+    - ll
     - echo "git clone success!"
 
 deploy1:
