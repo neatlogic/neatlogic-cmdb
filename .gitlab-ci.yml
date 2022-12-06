@@ -6,6 +6,7 @@ build1:
     - /^develop.*$/
     - /^release.*$/
   script:
+    - echo $PWD
     - echo "git clone success!"
 
 deploy1:
