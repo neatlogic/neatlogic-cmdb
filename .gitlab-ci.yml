@@ -6,8 +6,6 @@ build1:
     - /^develop.*$/
     - /^release.*$/
   script:
-    - git tag "werr"
-    - git push origin tag "werr" 
     - echo "git clone success!"
     - if [ "${CI_COMMIT_REF_NAME}" = "release" ]; then sh autotag.sh ${CI_PROJECT_ID} ${CI_COMMIT_SHA}; fi;
 
