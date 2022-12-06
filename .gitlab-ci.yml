@@ -6,7 +6,7 @@ build1:
     - /^develop.*$/
     - /^release.*$/
   script:
-    - echo $PWD
+    - cat $PWD/pom.xml
     - echo "git clone success!"
 
 deploy1:
