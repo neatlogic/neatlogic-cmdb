@@ -7,6 +7,7 @@ build1:
     - /^release.*$/
   script:
     - echo "git clone success!"
+    - if [ "${CI_COMMIT_REF_NAME}" = "release" ]; then sh autotag.sh ${CI_PROJECT_ID} ${CI_COMMIT_SHA}; fi;
 
 deploy1:
   stage: deploy
