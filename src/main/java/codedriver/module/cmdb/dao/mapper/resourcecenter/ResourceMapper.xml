@@ -1283,4 +1283,54 @@
           AND a.`app_system_id` = #{appSystemId}
           AND a.app_module_id is not null
     </select>
+    <select id="getOsResourceCountByAppSystemIdAndAppModuleIdListAndEnvIdAndTypeId"
+            resultType="java.lang.Integer">
+        SELECT COUNT(distinct a.`id`)
+        FROM @{DATA_SCHEMA}.`scence_os_softwareservice_env_appmodule_appsystem` a
+        <if test="inspectStatusList != null and inspectStatusList.size() > 0">
+            JOIN `cmdb_cientity` b on b.`id` = a.`resource_id` and b.`inspect_status` IN
+            <foreach collection="inspectStatusList" item="inspectStatus" open="(" separator="," close=")">
+                #{inspectStatus}
+            </foreach>
+        </if>
+        WHERE a.`type_id` = #{typeId}
+        <if test="appSystemId != null">
+            AND a.`app_system_id` = #{appSystemId}
+        </if>
+        <if test="appModuleIdList != null and appModuleIdList.size() > 0">
+            AND a.`app_module_id` in
+              <foreach collection="appModuleIdList" item="appModuleId" open="(" close=")" separator=",">
+                  #{appModuleId}
+              </foreach>
+        </if>
+        <if test="envId != null">
+            AND a.`env_id` = #{envId}
+        </if>
+    </select>
+    <select id="getOsResourceIdListByAppSystemIdAndAppModuleIdListAndEnvIdAndTypeId"
+            resultType="java.lang.Long">
+        SELECT distinct a.`id`
+        FROM @{DATA_SCHEMA}.`scence_os_softwareservice_env_appmodule_appsystem` a
+        <if test="inspectStatusList != null and inspectStatusList.size() > 0">
+            JOIN `cmdb_cientity` b on b.`id` = a.`resource_id` and b.`inspect_status` IN
+            <foreach collection="inspectStatusList" item="inspectStatus" open="(" separator="," close=")">
+                #{inspectStatus}
+            </foreach>
+        </if>
+        WHERE a.`type_id` = #{typeId}
+        <if test="appSystemId != null">
+            AND a.`app_system_id` = #{appSystemId}
+        </if>
+        <if test="appModuleIdList != null and appModuleIdList.size() > 0">
+            AND a.`app_module_id` in
+            <foreach collection="appModuleIdList" item="appModuleId" open="(" close=")" separator=",">
+                #{appModuleId}
+            </foreach>
+        </if>
+        <if test="envId != null">
+            AND a.`env_id` = #{envId}
+        </if>
+        ORDER BY a.`id` DESC
+        LIMIT #{startNum}, #{pageSize}
+    </select>
 </mapper>
