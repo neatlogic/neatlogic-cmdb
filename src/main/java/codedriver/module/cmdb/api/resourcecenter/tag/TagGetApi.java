@@ -6,7 +6,7 @@
 package codedriver.module.cmdb.api.resourcecenter.tag;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.auth.label.CMDB_BASE;
+import codedriver.framework.cmdb.auth.label.CMDB;
 import codedriver.framework.cmdb.dto.tag.TagVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.restful.annotation.*;
@@ -20,7 +20,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 
 @Service
-@AuthAction(action = CMDB_BASE.class)
+@AuthAction(action = CMDB.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class TagGetApi extends PrivateApiComponentBase {
 
