@@ -1282,6 +1282,7 @@
         WHERE a.`type_id` = #{typeId}
           AND a.`app_system_id` = #{appSystemId}
           AND a.app_module_id is not null
+          AND a.env_id is not null
     </select>
     <select id="getOsResourceCountByAppSystemIdAndAppModuleIdListAndEnvIdAndTypeId"
             resultType="java.lang.Integer">
