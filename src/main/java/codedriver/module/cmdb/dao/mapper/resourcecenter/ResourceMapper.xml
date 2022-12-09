@@ -1203,7 +1203,7 @@
     </select>
 
     <select id="getAppModuleListByAppSystemId" parameterType="java.lang.Long" resultType="codedriver.framework.cmdb.dto.resourcecenter.AppModuleVo">
-        SELECT
+        SELECT distinct
         `id`,
         `name`,
         `abbr_name` AS abbrName,
@@ -1266,6 +1266,7 @@
         WHERE a.`type_id` = #{typeId}
         AND a.`app_system_id` = #{appSystemId}
         AND a.app_module_id is not null
+        AND a.env_id is not null
     </select>
 
     <select id="getIpObjectEnvListByAppSystemIdAndTypeId"  resultMap="appEnvMap">

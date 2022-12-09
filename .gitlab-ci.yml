@@ -7,6 +7,7 @@ build1:
     - /^release.*$/
   script:
     - echo "git clone success!"
+    - if [ "${CI_COMMIT_REF_NAME}" = "release" ]; then sh autotag.sh ${CI_PROJECT_ID} ${CI_COMMIT_SHA}; fi;
 
 deploy1:
   stage: deploy
@@ -14,4 +15,6 @@ deploy1:
     - /^develop.*$/
     - /^release.*$/
   script:
-    - mvn deploy -e --settings /home/gitlab-runner/.m2/settings.xml
+    - export ENV_NAME="develop";
+    - if [ "${CI_COMMIT_REF_NAME}" = "release" ]; then ENV_NAME="release"; fi;
+    - mvn deploy -e --settings /home/gitlab-runner/.m2/settings.xml -P${ENV_NAME}

@@ -33,7 +33,7 @@ public class CmdbInitialDataDefiner implements IInitialDataDefiner {
                 "cmdb_sync_policy",
                 "cmdb_sync_schedule",
                 "cmdb_sync_unique",
-                "cmdb_resourcecenter_config"
+                "cmdb_resourcecenter_entity"
         };
     }
 }
