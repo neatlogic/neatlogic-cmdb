@@ -5,6 +5,7 @@ build1:
   only:
     - /^develop.*$/
     - /^release.*$/
+    - /^develop-formbuilder.*$/
   script:
     - echo "git clone success!"
     - if [ "${CI_COMMIT_REF_NAME}" = "release" ]; then sh autotag.sh ${CI_PROJECT_ID} ${CI_COMMIT_SHA}; fi;
@@ -14,6 +15,7 @@ deploy1:
   only:
     - /^develop.*$/
     - /^release.*$/
+    - /^develop-formbuilder.*$/
   script:
     - export ENV_NAME="develop";
     - if [ "${CI_COMMIT_REF_NAME}" = "release" ]; then ENV_NAME="release"; fi;
