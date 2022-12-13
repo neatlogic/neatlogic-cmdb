@@ -153,6 +153,11 @@
         FROM `cmdb_attrentity`
         WHERE attr_id = #{attrId}
         AND from_cientity_id = #{fromCiEntityId}
+        AND ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+        `cmdb_attrentity`.to_cientity_id) or exists
+        (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+        `cmdb_attrentity`.to_cientity_id
+        and xx.expired_time &gt;= NOW()))
         ORDER BY from_index
         <if test="limit != null">
             LIMIT #{limit}
@@ -422,6 +427,11 @@
             <if test="attr.needTargetCi == true and ( @codedriver.framework.cmdb.dao.ognl.IsAttrExistsInFilter@isExists(attr, attrFilterList) or @codedriver.framework.cmdb.dao.ognl.IsAttrInAttrIdList@isExists(attr, attrIdList))">
                 LEFT JOIN `cmdb_attrentity` `cmdb_attrentity_${attr.id}` ON `ci_base`.id =
                 `cmdb_attrentity_${attr.id}`.from_cientity_id AND `cmdb_attrentity_${attr.id}`.attr_id = #{attr.id}
+                AND ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                `cmdb_attrentity_${attr.id}`.to_cientity_id) or exists
+                (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                `cmdb_attrentity_${attr.id}`.to_cientity_id
+                and xx.expired_time &gt;= NOW()))
                 <if test="limitAttrEntity == true">
                     AND `cmdb_attrentity_${attr.id}`.`from_index` &lt;= (#{attr.maxAttrEntityCount} + 1)
                 </if>
@@ -454,6 +464,11 @@
                     LEFT JOIN `cmdb_relentity` `cmdb_relentity_${rel.id}_${rel.direction}` ON `ci_base`.id =
                     `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
                     AND `cmdb_relentity_${rel.id}_${rel.direction}`.rel_id = #{rel.id}
+                    AND ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                    `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id) or exists
+                    (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                    `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
+                    and xx.expired_time &gt;= NOW()))
                     <if test="limitRelEntity == true">
                         AND `cmdb_relentity_${rel.id}_${rel.direction}`.`from_index` &lt;= (#{rel.maxRelEntityCount}
                         +
@@ -476,6 +491,11 @@
                     LEFT JOIN `cmdb_relentity` `cmdb_relentity_${rel.id}_${rel.direction}` ON `ci_base`.id =
                     `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
                     AND `cmdb_relentity_${rel.id}_${rel.direction}`.rel_id = #{rel.id}
+                    AND ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                    `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id) or exists
+                    (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                    `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
+                    and xx.expired_time &gt;= NOW()))
                     <if test="limitRelEntity == true">
                         AND `cmdb_relentity_${rel.id}_${rel.direction}`.`to_index` &lt;= (#{rel.maxRelEntityCount} +
                         1)
@@ -514,6 +534,10 @@
 
     <sql id="ciEntityConditionSql">
         <where>
+            <!-- (`ci_base`.expired_time is null or `ci_base`.expired_time &gt;= NOW())-->
+            (not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id = `ci_base`.id) or exists
+            (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id = `ci_base`.id
+            and xx.expired_time &gt;= NOW()))
             <if test="name != null and name != ''">
                 AND `ci_base`.`name` LIKE CONCAT('%',#{name},'%')
             </if>
@@ -1111,6 +1135,20 @@
                    `inspect_time`   = #{inspectTime}
     </insert>
 
+    <insert id="insertCiEntityExpiredTime" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
+        INSERT INTO cmdb_cientity_expiredtime (cientity_id, ci_id, expired_day, expired_time)
+        VALUES (#{id}, #{ciId}, #{expiredDay}, DATE_ADD(NOW(3), INTERVAL #{expiredDay} DAY))
+        ON DUPLICATE KEY
+            UPDATE `expired_day`  = #{expiredDay},
+                   `expired_time` = DATE_ADD(NOW(3), INTERVAL #{expiredDay} DAY)
+    </insert>
+
+    <delete id="deleteCiEntityExpiredTime" parameterType="java.lang.Long">
+        DELETE
+        FROM cmdb_cientity_expiredtime
+        WHERE cientity_id = #{value}
+    </delete>
+
     <delete id="deleteAttrEntityByFromCiEntityIdAndAttrId">
         DELETE
         FROM cmdb_attrentity
@@ -1146,6 +1184,7 @@
                  LEFT JOIN cmdb_cientity_group e
                            ON a.id =
                               e.cientity_id
+                 LEFT JOIN cmdb_cientity_expiredtime f ON a.id = f.cientity_id
         WHERE a.id =
               #{id}
     </delete>

@@ -1744,6 +1744,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
              */
             CiVo ciVo = ciMapper.getCiById(ciEntityTransactionVo.getCiId());
             CiEntityVo ciEntityVo = new CiEntityVo(ciEntityTransactionVo);
+            ciEntityVo.setExpiredDay(ciVo.getExpiredDay());
             List<AttrEntityVo> rebuildAttrEntityList = new ArrayList<>();
             for (AttrEntityTransactionVo attrEntityTransactionVo : ciEntityTransactionVo.getAttrEntityTransactionList()) {
                 AttrEntityVo attrEntityVo = new AttrEntityVo(attrEntityTransactionVo);
@@ -2032,6 +2033,12 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         CiVo ciVo = ciMapper.getCiById(ciEntityVo.getCiId());
         List<CiVo> ciList = ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht());
         ciEntityMapper.insertCiEntityBaseInfo(ciEntityVo);
+        if (ciEntityVo.getExpiredDay() != null && ciEntityVo.getExpiredDay() > 0) {
+            ciEntityMapper.insertCiEntityExpiredTime(ciEntityVo);
+        } else {
+            ciEntityMapper.deleteCiEntityExpiredTime(ciEntityVo.getId());
+        }
+
         for (CiVo ci : ciList) {
             ciEntityVo.setCiId(ci.getId());
             ciEntityMapper.insertCiEntity(ciEntityVo);
@@ -2051,6 +2058,11 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         CiVo ciVo = ciMapper.getCiById(ciEntityVo.getCiId());
         List<CiVo> ciList = ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht());
         ciEntityMapper.updateCiEntityBaseInfo(ciEntityVo);
+        if (ciEntityVo.getExpiredDay() != null && ciEntityVo.getExpiredDay() > 0) {
+            ciEntityMapper.insertCiEntityExpiredTime(ciEntityVo);
+        } else {
+            ciEntityMapper.deleteCiEntityExpiredTime(ciEntityVo.getId());
+        }
         for (CiVo ci : ciList) {
             if (ciEntityVo.getAttrEntityList().stream().anyMatch(attr -> !attr.isNeedTargetCi() && attr.getFromCiId().equals(ci.getId()))) {
                 ciEntityVo.setCiId(ci.getId());
