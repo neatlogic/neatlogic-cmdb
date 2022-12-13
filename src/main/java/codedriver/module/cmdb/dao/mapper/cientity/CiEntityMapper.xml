@@ -62,7 +62,8 @@
         uuid,
         ci_id AS ciId,
         `name`,
-        `status`
+        `status`,
+        `renew_time` AS renewTime
         FROM cmdb_cientity
         <include refid="searchCiEntityBaseInfoSql">
         </include>
@@ -1137,13 +1138,33 @@
 
     <insert id="insertCiEntityExpiredTime" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
         INSERT INTO cmdb_cientity_expiredtime (cientity_id, ci_id, expired_day, expired_time)
-        VALUES (#{id}, #{ciId}, #{expiredDay}, DATE_ADD(NOW(3), INTERVAL #{expiredDay} DAY))
+        VALUES (#{id}, #{ciId}, #{expiredDay},
+        <choose>
+            <when test="expiredTime == null">DATE_ADD(NOW(3), INTERVAL #{expiredDay} DAY)</when>
+            <otherwise>
+                #{expiredTime}
+            </otherwise>
+        </choose>
+        )
         ON DUPLICATE KEY
-            UPDATE `expired_day`  = #{expiredDay},
-                   `expired_time` = DATE_ADD(NOW(3), INTERVAL #{expiredDay} DAY)
+        UPDATE `ci_id` = #{ciId},
+        `expired_day` = #{expiredDay},
+        `expired_time` =
+        <choose>
+            <when test="expiredTime == null">DATE_ADD(NOW(3), INTERVAL #{expiredDay} DAY)</when>
+            <otherwise>
+                #{expiredTime}
+            </otherwise>
+        </choose>
     </insert>
 
-    <delete id="deleteCiEntityExpiredTime" parameterType="java.lang.Long">
+    <delete id="deleteCiEntityExpiredTimeByCiId" parameterType="java.lang.Long">
+        DELETE
+        FROM cmdb_cientity_expiredtime
+        WHERE ci_id = #{value}
+    </delete>
+
+    <delete id="deleteCiEntityExpiredTimeByCiEntityId" parameterType="java.lang.Long">
         DELETE
         FROM cmdb_cientity_expiredtime
         WHERE cientity_id = #{value}

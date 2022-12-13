@@ -29,7 +29,6 @@ import codedriver.framework.cmdb.exception.transaction.TransactionStatusIrregula
 import codedriver.framework.cmdb.utils.RelUtil;
 import codedriver.framework.cmdb.validator.core.IValidator;
 import codedriver.framework.cmdb.validator.core.ValidatorFactory;
-import codedriver.framework.exception.core.ApiRuntimeException;
 import codedriver.framework.fulltextindex.core.FullTextIndexHandlerFactory;
 import codedriver.framework.fulltextindex.core.IFullTextIndexHandler;
 import codedriver.framework.mq.core.ITopic;
@@ -974,7 +973,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     检查是否有action=replace的关系，action=replace的数据来自自动发现同步，只要有一个是replace，所有都是replace，以下逻辑都是基于这个规则编写
                      */
                     boolean isReplace = fromRelEntityTransactionList.stream().anyMatch(d -> d.getAction().equals(RelActionType.REPLACE.getValue()));
-                    List<RelEntityVo> fromRelEntityList = null;
+                    List<RelEntityVo> fromRelEntityList;
                     if (isReplace) {
                        /*
                        如果是replace模式，旧的关系数据需要清理掉，替换成新的关系数据
@@ -1026,7 +1025,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     检查是否有action=replace的关系，action=replace的数据来自自动发现同步，只要有一个是replace，所有都是replace，以下逻辑都是基于这个规则编写
                      */
                     boolean isReplace = toRelEntityTransactionList.stream().anyMatch(d -> d.getAction().equals(RelActionType.REPLACE.getValue()));
-                    List<RelEntityVo> toRelEntityList = null;
+                    List<RelEntityVo> toRelEntityList;
                     if (isReplace) {
                        /*
                        如果是replace模式，旧的关系数据需要清理掉，替换成新的关系数据
@@ -2036,7 +2035,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         if (ciEntityVo.getExpiredDay() != null && ciEntityVo.getExpiredDay() > 0) {
             ciEntityMapper.insertCiEntityExpiredTime(ciEntityVo);
         } else {
-            ciEntityMapper.deleteCiEntityExpiredTime(ciEntityVo.getId());
+            ciEntityMapper.deleteCiEntityExpiredTimeByCiEntityId(ciEntityVo.getId());
         }
 
         for (CiVo ci : ciList) {
@@ -2061,7 +2060,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         if (ciEntityVo.getExpiredDay() != null && ciEntityVo.getExpiredDay() > 0) {
             ciEntityMapper.insertCiEntityExpiredTime(ciEntityVo);
         } else {
-            ciEntityMapper.deleteCiEntityExpiredTime(ciEntityVo.getId());
+            ciEntityMapper.deleteCiEntityExpiredTimeByCiEntityId(ciEntityVo.getId());
         }
         for (CiVo ci : ciList) {
             if (ciEntityVo.getAttrEntityList().stream().anyMatch(attr -> !attr.isNeedTargetCi() && attr.getFromCiId().equals(ci.getId()))) {
@@ -2115,7 +2114,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 AfterTransactionJob<TransactionVo> job = new AfterTransactionJob<>("CIENTITY-UPDATE-TRANSACTION-STATUS");
                 job.execute(transactionVo, t -> {
                 }, t -> {
-                    t.setError(ex instanceof ApiRuntimeException ? ((ApiRuntimeException) ex).getMessage() : ex.getMessage());
+                    t.setError(ex.getMessage());
                     t.setStatus(TransactionStatus.UNCOMMIT.getValue());
                     transactionMapper.updateTransactionStatus(t);
                 });

@@ -213,7 +213,9 @@ public interface CiEntityMapper extends ICiEntityCrossoverMapper {
 
     void deleteCiEntityBaseInfo(CiEntityVo ciEntityVo);
 
-    void deleteCiEntityExpiredTime(Long ciEntityId);
+    void deleteCiEntityExpiredTimeByCiEntityId(Long ciEntityId);
+
+    void deleteCiEntityExpiredTimeByCiId(Long ciId);
 
     void deleteCiEntity(CiEntityVo ciEntityVo);
 
