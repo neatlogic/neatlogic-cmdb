@@ -1026,6 +1026,14 @@
         limit 1
     </select>
 
+    <select id="searchExpiredCiEntityId" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo"
+            resultType="java.lang.Long">
+        select cientity_id
+        from cmdb_cientity_expiredtime
+        where expired_time &lt; now(3)
+        LIMIT #{startNum} , #{pageSize}
+    </select>
+
     <update id="updateCiEntityBaseInfo" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
         UPDATE `cmdb_cientity`
         SET lcu        = #{lcu},
@@ -1191,7 +1199,7 @@
 
     <delete id="deleteCiEntityBaseInfo" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
         DELETE
-            a,b,c,d,e
+            a,b,c,d,e,f
         FROM cmdb_cientity a
                  LEFT JOIN cmdb_attrentity b
                            ON a.id =
@@ -1240,4 +1248,6 @@
             #{parentCi.id} AND `ci_${parentCi.id}_attrentity`.`from_cientity_id` = `ci`.`cientity_id`
         </foreach>
     </delete>
+
+
 </mapper>

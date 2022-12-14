@@ -1680,8 +1680,9 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                                 toTransactionVo.setCiId(ciId);
                                 toTransactionVo.setInputFrom(transactionVo.getInputFrom());
                                 toTransactionVo.setStatus(TransactionStatus.COMMITED.getValue());
-                                toTransactionVo.setCreateUser(UserContext.get().getUserUuid(true));
-                                toTransactionVo.setCommitUser(UserContext.get().getUserUuid(true));
+                                toTransactionVo.setCreateUser(transactionVo.getCreateUser());
+                                toTransactionVo.setCommitUser(transactionVo.getCommitUser());
+                                toTransactionVo.setDescription(transactionVo.getDescription());
                                 CiEntityTransactionVo endCiEntityTransactionVo = new CiEntityTransactionVo();
                                 CiEntityVo oldCiEntityVo = this.getCiEntityByIdLite(ciId, ciEntityId, true, false, false);
                                 endCiEntityTransactionVo.setCiEntityId(ciEntityId);
@@ -1823,8 +1824,9 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                             toTransactionVo.setCiId(ciId);
                             toTransactionVo.setInputFrom(transactionVo.getInputFrom());
                             toTransactionVo.setStatus(TransactionStatus.COMMITED.getValue());
-                            toTransactionVo.setCreateUser(UserContext.get().getUserUuid(true));
-                            toTransactionVo.setCommitUser(UserContext.get().getUserUuid(true));
+                            toTransactionVo.setCreateUser(transactionVo.getCreateUser());
+                            toTransactionVo.setCommitUser(transactionVo.getCommitUser());
+                            toTransactionVo.setDescription(transactionVo.getDescription());
                             transactionMapper.insertTransaction(toTransactionVo);
                             transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), toTransactionVo.getId());
                             CiEntityTransactionVo endCiEntityTransactionVo = new CiEntityTransactionVo();
