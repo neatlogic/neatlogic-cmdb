@@ -1225,6 +1225,13 @@
         where id = #{id}
     </update>
 
+    <update id="updateCiEntityMonitorStatus" parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
+        update cmdb_cientity
+        set monitor_status = #{monitorStatus},
+            monitor_time   = #{monitorTime}
+        where id = #{id}
+    </update>
+
     <update id="updateCiEntityLockById"
             parameterType="codedriver.framework.cmdb.dto.cientity.CiEntityVo">
         UPDATE
