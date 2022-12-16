@@ -433,8 +433,13 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                  */
                 if (CollectionUtils.isNotEmpty(appEnvList)) {
                     for (AppEnvVo envVo : appEnvList) {
-                        returnEnvMap.put(envVo.getId(), envVo);
+                        //未配置情况，环境id设为-2，因为id为-1的一般都是代表 所有 的意思
+                        if (envVo.getId() == null) {
+                            envVo.setId(-2L);
+                            envVo.setName("未配置");
+                        }
                         Long envId = envVo.getId();
+                        returnEnvMap.put(envId, envVo);
                         List<AppModuleVo> appModuleList = envVo.getAppModuleList();
                         Set<Long> appModuleIdSet = appModuleList.stream().map(AppModuleVo::getId).collect(Collectors.toSet());
                         if (envIdModuleIdSetMap.containsKey(envId)) {
