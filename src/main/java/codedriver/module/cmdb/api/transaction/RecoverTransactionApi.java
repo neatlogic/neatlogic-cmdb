@@ -1,24 +1,25 @@
 /*
- * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
 package codedriver.module.cmdb.api.transaction;
 
 import codedriver.framework.auth.core.AuthAction;
-import codedriver.framework.cmdb.auth.label.CMDB_BASE;
 import codedriver.framework.cmdb.dto.transaction.TransactionVo;
-import codedriver.framework.cmdb.enums.TransactionStatus;
 import codedriver.framework.cmdb.enums.group.GroupType;
+import codedriver.framework.cmdb.enums.TransactionStatus;
 import codedriver.framework.cmdb.exception.transaction.TransactionAuthException;
 import codedriver.framework.cmdb.exception.transaction.TransactionStatusIrregularException;
 import codedriver.framework.common.constvalue.ApiParamType;
+import codedriver.framework.exception.core.ApiRuntimeException;
 import codedriver.framework.restful.annotation.Description;
 import codedriver.framework.restful.annotation.Input;
 import codedriver.framework.restful.annotation.OperationType;
 import codedriver.framework.restful.annotation.Param;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
+import codedriver.framework.cmdb.auth.label.CMDB_BASE;
 import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import codedriver.module.cmdb.service.ci.CiAuthChecker;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
@@ -70,13 +71,13 @@ public class RecoverTransactionApi extends PrivateApiComponentBase {
             throw new TransactionAuthException();
         }
         try {
-            if (transactionVo.getTransactionGroupId() == null) {
-                ciEntityService.recoverCiEntity(transactionVo);
-            } else {
-                ciEntityService.recoverTransactionGroup(transactionVo.getTransactionGroupId());
-            }
+            ciEntityService.recoverCiEntity(transactionVo);
         } catch (Exception ex) {
-            transactionVo.setError(ex.getMessage());
+            if (ex instanceof ApiRuntimeException) {
+                transactionVo.setError(((ApiRuntimeException) ex).getMessage());
+            } else {
+                transactionVo.setError(ex.getMessage());
+            }
             transactionMapper.updateTransactionStatus(transactionVo);
             throw ex;
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -65,7 +65,6 @@ public class SaveRelApi extends PrivateApiComponentBase {
             @Param(name = "fromRule", type = ApiParamType.ENUM, rule = "O,N", isRequired = true, desc = "来源规则"),
             @Param(name = "fromIsUnique", type = ApiParamType.INTEGER, isRequired = true, desc = "上游端是否唯一"),
             @Param(name = "fromIsRequired", type = ApiParamType.INTEGER, isRequired = true, desc = "上游端是否必填"),
-            @Param(name = "fromIsCascadeDelete", type = ApiParamType.INTEGER, isRequired = true, desc = "上游端是否级联删除"),
             @Param(name = "toLabel", type = ApiParamType.STRING, isRequired = true, xss = true, desc = "目标标签",
                     maxLength = 200),
             @Param(name = "toTypeId", type = ApiParamType.LONG, desc = "目标类型id"),
@@ -73,7 +72,6 @@ public class SaveRelApi extends PrivateApiComponentBase {
             @Param(name = "toRule", type = ApiParamType.ENUM, rule = "O,N", isRequired = true, desc = "目标规则"),
             @Param(name = "toIsUnique", type = ApiParamType.INTEGER, isRequired = true, desc = "下游端是否唯一"),
             @Param(name = "toIsRequired", type = ApiParamType.INTEGER, isRequired = true, desc = "下游端是否必填"),
-            @Param(name = "toIsCascadeDelete", type = ApiParamType.INTEGER, isRequired = true, desc = "下游端是否级联删除"),
             @Param(name = "relativeRelList", type = ApiParamType.JSONARRAY, desc = "级联关系配置")})
     @Description(desc = "保存模型关系接口")
     @Override
