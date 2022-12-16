@@ -243,13 +243,6 @@
         </where>
     </sql>
 
-    <select id="getBrotherTransactionIdByTransactionGroupId" resultType="java.lang.Long">
-        SELECT id
-        FROM cmdb_transactiongroup
-        where id = #{transactionGroupId}
-          AND transaction_id != #{transactionId}
-    </select>
-
     <select id="getBrotherTransactionCountByTransactionGroupId" resultType="int">
         SELECT count(1)
         FROM cmdb_transactiongroup
@@ -329,7 +322,7 @@
             resultType="codedriver.framework.cmdb.dto.transaction.TransactionGroupVo">
         SELECT id
         FROM cmdb_transactiongroup
-        WHERE transaction_id = #{value}
+        WHERE transaction_id = #{vakue}
     </select>
 
 
