@@ -197,6 +197,11 @@
         JOIN `cmdb_cientity` c ON a.`to_cientity_id` = c.id
         WHERE a.to_cientity_id = #{toCiEntityId}
         AND a.rel_id = #{relId}
+        AND ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+        a.from_cientity_id) or exists
+        (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+        a.from_cientity_id
+        and xx.expired_time &gt;= NOW()))
         <if test="limit != null">
             LIMIT #{limit}
         </if>
@@ -240,6 +245,11 @@
         JOIN `cmdb_cientity` c ON a.`to_cientity_id` = c.id
         WHERE a.from_cientity_id = #{fromCiEntityId}
         AND a.rel_id = #{relId}
+        AND ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+        a.to_cientity_id) or exists
+        (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+        a.to_cientity_id
+        and xx.expired_time &gt;= NOW()))
         <if test="limit != null">
             LIMIT #{limit}
         </if>

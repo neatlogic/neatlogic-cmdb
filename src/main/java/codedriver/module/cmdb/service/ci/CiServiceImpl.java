@@ -11,6 +11,7 @@ import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.CiViewVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.ci.RelVo;
+import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewVo;
 import codedriver.framework.cmdb.exception.attr.AttrIsUsedInExpressionException;
 import codedriver.framework.cmdb.exception.attr.AttrIsUsedInUniqueRuleException;
@@ -25,30 +26,21 @@ import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
 import codedriver.module.cmdb.dao.mapper.ci.CiViewMapper;
 import codedriver.module.cmdb.dao.mapper.ci.RelMapper;
 import codedriver.module.cmdb.dao.mapper.cientity.CiEntityMapper;
-import codedriver.module.cmdb.dao.mapper.cientity.RelEntityMapper;
 import codedriver.module.cmdb.dao.mapper.cischema.CiSchemaMapper;
-import codedriver.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import codedriver.module.cmdb.service.cientity.CiEntityService;
-import codedriver.module.cmdb.service.rel.RelService;
 import codedriver.module.cmdb.utils.VirtualCiSqlBuilder;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class CiServiceImpl implements CiService, ICiCrossoverService {
-    private final static Logger logger = LoggerFactory.getLogger(CiServiceImpl.class);
 
     @Resource
     private CiViewMapper ciViewMapper;
@@ -59,11 +51,6 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
     @Autowired
     private CiEntityMapper ciEntityMapper;
 
-    @Autowired
-    private TransactionMapper transactionMapper;
-
-    @Autowired
-    private RelEntityMapper relEntityMapper;
 
     @Autowired
     private AttrMapper attrMapper;
@@ -71,8 +58,6 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
     @Autowired
     private RelMapper relMapper;
 
-    @Autowired
-    private RelService relService;
 
     @Autowired
     private CiSchemaMapper ciSchemaMapper;
@@ -220,50 +205,9 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
     public void updateCiNameAttrId(CiVo ciVo) {
         ciMapper.updateCiNameAttrId(ciVo);
         AfterTransactionJob<CiVo> job = new AfterTransactionJob<>("UPDATE-CIENTITY-NAME-" + ciVo.getId());
-        job.execute(ciVo, dataCiVo -> {
-            ciEntityService.updateCiEntityNameForCi(dataCiVo);
-        });
+        job.execute(ciVo, dataCiVo -> ciEntityService.updateCiEntityNameForCi(dataCiVo));
     }
 
-    @Override
-    @Transactional
-    public void updateCiNameExpression(Long ciId, String nameExpression) {
-        List<AttrVo> attrList = attrMapper.getAttrByCiId(ciId);
-        CiVo ciVo = ciMapper.getCiById(ciId);
-        //ciMapper.deleteCiNameExpressionByCiId(ciId);
-       /* if (!nameExpression.equals(ciVo.getNameExpression())) {
-            if (StringUtils.isNotEmpty(nameExpression)) {
-                //检查表达式中所有属性是否存在当前模型的属性列表里
-                String regex = "\\{([^}]+?)}";
-                Matcher matcher = Pattern.compile(regex).matcher(nameExpression);
-                Set<String> labelSet = new HashSet<>();
-                while (matcher.find()) {
-                    labelSet.add(matcher.group(1));
-                }
-                for (String label : labelSet) {
-                    Optional<AttrVo> opAttr = attrList.stream().filter(attr -> attr.getName().equalsIgnoreCase(label)).findFirst();
-                    if (!opAttr.isPresent()) {
-                        throw new CiNameExpressionHasNotExistsAttrException(label);
-                    } else {
-                        AttrVo attrVo = opAttr.get();
-                        if (!attrVo.getType().equals("text")) {
-                            throw new CiNameExpressionAttrTypeNotSupportedException(label);
-                        }
-                        ciMapper.insertCiNameExpression(ciId, opAttr.get().getId());
-                    }
-                }
-            }
-            ciMapper.updateCiNameExpression(ciId, nameExpression);
-            //修正配置项的名字表达式
-            ciVo.setNameExpression(nameExpression);
-            AfterTransactionJob<CiVo> job = new AfterTransactionJob<>();
-            job.execute(ciVo, dataCiVo -> {
-                Thread.currentThread().setName("UPDATE-CIENTITY-NAME-" + dataCiVo.getId());
-                ciEntityService.updateCiEntityName(dataCiVo);
-            });
-        }*/
-
-    }
 
     @Override
     @Transactional
@@ -355,6 +299,36 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
         if (needRebuildLRCode) {
             //重建所有左右编码，性能差点但可靠
             LRCodeManager.rebuildLeftRightCode("cmdb_ci", "id", "parent_ci_id");
+        }
+        if (checkCiVo.getExpiredDay() != ciVo.getExpiredDay()) {
+            AfterTransactionJob<CiVo> job = new AfterTransactionJob<>("REFRESH-CIENTITY-EXPIREDTIME-" + ciVo.getId());
+            job.execute(ciVo, _ciVo -> {
+                //修正配置项超时数据
+                if (_ciVo.getExpiredDay() == 0) {
+                    ciEntityMapper.deleteCiEntityExpiredTimeByCiId(_ciVo.getId());
+                } else {
+                    CiEntityVo pCiEntityVo = new CiEntityVo();
+                    pCiEntityVo.setCiId(_ciVo.getId());
+                    pCiEntityVo.setPageSize(100);
+                    pCiEntityVo.setCurrentPage(1);
+                    List<CiEntityVo> ciEntityList = ciEntityMapper.searchCiEntityBaseInfo(pCiEntityVo);
+                    while (CollectionUtils.isNotEmpty(ciEntityList)) {
+                        for (CiEntityVo cientity : ciEntityList) {
+                            if (cientity.getRenewTime() != null) {
+                                Calendar c = Calendar.getInstance();
+                                c.setTime(cientity.getRenewTime());
+                                c.add(Calendar.DAY_OF_YEAR, ciVo.getExpiredDay());
+                                cientity.setExpiredTime(c.getTime());
+                                cientity.setExpiredDay(ciVo.getExpiredDay());
+                                ciEntityMapper.insertCiEntityExpiredTime(cientity);
+                            }
+                        }
+                        pCiEntityVo.setCurrentPage(pCiEntityVo.getCurrentPage() + 1);
+                        ciEntityList = ciEntityMapper.searchCiEntityBaseInfo(pCiEntityVo);
+                    }
+                }
+            });
+
         }
     }
 
