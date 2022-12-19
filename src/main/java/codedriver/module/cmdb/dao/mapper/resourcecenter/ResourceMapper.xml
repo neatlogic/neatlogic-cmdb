@@ -360,7 +360,7 @@
         a.`cluster_name`
         FROM @{DATA_SCHEMA}.`scence_appinstance_detail_cluster` a
         WHERE a.`id` IN
-        <foreach collection="list" item="id" open="(" separator="," close=")">
+        <foreach collection="idList" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
     </sql>
