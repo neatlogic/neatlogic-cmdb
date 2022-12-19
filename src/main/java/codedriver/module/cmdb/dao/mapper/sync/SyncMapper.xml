@@ -235,6 +235,14 @@
         </where>
     </select>
 
+    <select id="getSyncCiCollectionNameListByCiNameAndCollectMode" resultType="java.lang.String">
+        SELECT distinct a.collection_name
+        FROM cmdb_sync_ci_collection a
+                 JOIN cmdb_ci b ON a.ci_id = b.id
+        where b.name = #{ciName}
+          AND a.collect_mode = #{collectMode}
+    </select>
+
     <sql id="searchSyncCiCollectionSql">
         <where>
             <if test="idList != null and idList.size() > 0">
