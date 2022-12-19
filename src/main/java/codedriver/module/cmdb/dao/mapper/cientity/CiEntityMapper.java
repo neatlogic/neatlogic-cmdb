@@ -191,13 +191,9 @@ public interface CiEntityMapper extends ICiEntityCrossoverMapper {
 
     List<CiEntityVo> getCiEntityListByCiIdListAndName(CiEntityVo ciEntityVo);
 
-    List<Long> searchExpiredCiEntityId(CiEntityVo ciEntityVo);
-
     Long getCiEntityIdByCiNameAndCiEntityName(@Param("ciName") String ciName, @Param("ciEntityName") String ciEntityName);
 
     void deleteAttrEntityByFromCiEntityIdAndAttrId(@Param("fromCiEntityId") Long fromCiEntityId, @Param("attrId") Long attrId);
-
-    void insertCiEntityExpiredTime(CiEntityVo ciEntityVo);
 
     void updateCiEntityBaseInfo(CiEntityVo ciEntityVo);
 
@@ -214,10 +210,6 @@ public interface CiEntityMapper extends ICiEntityCrossoverMapper {
     void insertCiEntityInspect(CiEntityInspectVo ciEntityInspectVo);
 
     void deleteCiEntityBaseInfo(CiEntityVo ciEntityVo);
-
-    void deleteCiEntityExpiredTimeByCiEntityId(Long ciEntityId);
-
-    void deleteCiEntityExpiredTimeByCiId(Long ciId);
 
     void deleteCiEntity(CiEntityVo ciEntityVo);
 

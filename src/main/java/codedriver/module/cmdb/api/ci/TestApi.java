@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -20,13 +20,13 @@ import javax.annotation.Resource;
 
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
-public class Test2Api extends PrivateApiComponentBase {
+public class TestApi extends PrivateApiComponentBase {
     @Resource
     private CiMapper ciMapper;
 
     @Override
     public String getName() {
-        return "测试Tagent注册2";
+        return "测试Tagent注册";
     }
 
     @Override
@@ -34,7 +34,7 @@ public class Test2Api extends PrivateApiComponentBase {
         return null;
     }
 
-    @Description(desc = "测试Tagent注册2")
+    @Description(desc = "测试Tagent注册")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         TagentVo tagentVo = new TagentVo();

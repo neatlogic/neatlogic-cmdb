@@ -77,7 +77,6 @@
                a.`is_menu`      AS isMenu,
                a.`is_abstract`  AS isAbstract,
                a.`is_virtual`   AS isVirtual,
-               a.`expired_day`  AS expiredDay,
                a.`lft`          AS lft,
                a.`rht`          AS rht
         FROM `cmdb_ci` a
@@ -98,7 +97,6 @@
                a.`is_menu`      AS isMenu,
                a.`is_abstract`  AS isAbstract,
                a.`is_virtual`   AS isVirtual,
-               a.`expired_day`  AS expiredDay,
                a.`lft`          AS lft,
                a.`rht`          AS rht
         FROM `cmdb_ci` a
@@ -120,7 +118,6 @@
         a.`is_menu` AS isMenu,
         a.`is_abstract` AS isAbstract,
         a.`is_virtual` AS isVirtual,
-        a.`expired_day` AS expiredDay,
         a.`lft` AS lft,
         a.`rht` AS rht
         FROM `cmdb_ci` a
@@ -328,8 +325,7 @@
         `type_id` AS typeId,
         `parent_ci_id` AS parentCiId,
         `is_abstract` AS isAbstract,
-        `is_virtual` AS isVirtual,
-        `expired_day` AS expiredDay
+        `is_virtual` AS isVirtual
         from cmdb_ci
         <where>
             <if test="keyword != null and keyword != ''">
@@ -375,7 +371,6 @@
         <result column="isVirtual" property="isVirtual"></result>
         <result column="fileId" property="fileId"></result>
         <result column="nameAttrId" property="nameAttrId"></result>
-        <result column="expiredDay" property="expiredDay"></result>
         <result column="lft" property="lft"></result>
         <result column="rht" property="rht"></result>
         <collection property="uniqueAttrIdList" ofType="java.lang.Long">
@@ -399,7 +394,6 @@
                c.name           AS parentCiName,
                a.`is_abstract`  AS isAbstract,
                a.`is_virtual`   AS isVirtual,
-               a.`expired_day`  AS expiredDay,
                a.`name_attr_id` AS nameAttrId,
                a.`lft`          AS lft,
                a.`rht`          AS rht,
@@ -428,7 +422,6 @@
                c.name           AS parentCiName,
                a.`is_abstract`  AS isAbstract,
                a.`is_virtual`   AS isVirtual,
-               a.`expired_day`  AS expiredDay,
                a.`name_attr_id` AS nameAttrId,
                a.`lft`          AS lft,
                a.`rht`          AS rht,
@@ -456,7 +449,6 @@
                c.name           AS parentCiName,
                a.`is_abstract`  AS isAbstract,
                a.`is_virtual`   AS isVirtual,
-               a.`expired_day`  AS expiredDay,
                a.`name_attr_id` AS nameAttrId,
                a.`lft`          AS lft,
                a.`rht`          AS rht,
@@ -489,7 +481,6 @@
             `is_abstract`  = #{isAbstract},
             `is_virtual`   = #{isVirtual},
             `file_id`      = #{fileId},
-            `expired_day`  = #{expiredDay},
             `xml`          = #{viewXml, typeHandler=CompressHandler}
         WHERE `id` = #{id}
     </update>
@@ -510,7 +501,6 @@
                                `lft`,
                                `rht`,
                                `file_id`,
-                               `expired_day`,
                                `xml`)
         VALUES (#{id},
                 #{name},
@@ -527,7 +517,6 @@
                 #{lft},
                 #{rht},
                 #{fileId},
-                #{expiredDay},
                 #{viewXml,typeHandler=CompressHandler})
     </insert>
 
