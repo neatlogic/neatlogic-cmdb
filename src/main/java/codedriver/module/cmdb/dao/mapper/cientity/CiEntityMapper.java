@@ -223,6 +223,8 @@ public interface CiEntityMapper extends ICiEntityCrossoverMapper {
 
     void updateCiEntityInspectStatus(CiEntityVo ciEntityVo);
 
+    void updateCiEntityMonitorStatus(CiEntityVo ciEntityVo);
+
     void updateCiEntityLockById(CiEntityVo ciEntityVo);
 
     int searchCiEntityIdCount(CiEntityVo ciEntityVo);
