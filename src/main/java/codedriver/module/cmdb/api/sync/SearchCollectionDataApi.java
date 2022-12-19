@@ -139,7 +139,6 @@ public class SearchCollectionDataApi extends PrivateApiComponentBase {
                 resultObj.put("pageSize", pageVo.getPageSize());
                 resultObj.put("pageCount", pageVo.getPageCount());
                 resultObj.put("rowNum", pageVo.getRowNum());
-
             }
         }
         return resultObj;
