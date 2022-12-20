@@ -962,7 +962,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                     }
                     String label = attributeLabelMap.get(uuid);
                     CiViewVo ciView = ciViewMap.get(label);
-                    if (ciView != null) {
+                    if (ciView == null) {
                         continue;
                     }
                     List<String> valueList = matrixFilterVo.getValueList();
@@ -996,15 +996,15 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                             if (relVo != null) {
                                 RelFilterVo relFilterVo = convertFromRelFilter(relVo, valueList, "to");
                                 if (relFilterVo != null) {
-
+                                    relFilters.add(relFilterVo);
                                 }
                             }
                             break;
                         case "const":
                             //固化属性需要特殊处理
-                            if ("id".equals(label)) {
+                            if ("const_id".equals(label)) {
                                 ciEntityVo.setFilterCiEntityId(Long.valueOf(valueList.get(0)));
-                            } else if ("ciLabel".equals(label)) {
+                            } else if ("const_ciLabel".equals(label)) {
                                 String ciLabel = valueList.get(0);
                                 CiVo ciVo = ciMapper.getCiByLabel(ciLabel);
                                 if (ciVo != null) {
@@ -1041,7 +1041,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                     }
                     String label = attributeLabelMap.get(uuid);
                     CiViewVo ciView = ciViewMap.get(label);
-                    if (ciView != null) {
+                    if (ciView == null) {
                         continue;
                     }
                     List<String> valueList = matrixFilterVo.getValueList();
@@ -1075,15 +1075,15 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                             if (relVo != null) {
                                 RelFilterVo relFilterVo = convertFromRelFilter(relVo, valueList, "to");
                                 if (relFilterVo != null) {
-
+                                    relFilters.add(relFilterVo);
                                 }
                             }
                             break;
                         case "const":
                             //固化属性需要特殊处理
-                            if ("id".equals(label)) {
+                            if ("const_id".equals(label)) {
                                 ciEntityVo.setFilterCiEntityId(Long.valueOf(valueList.get(0)));
-                            } else if ("ciLabel".equals(label)) {
+                            } else if ("const_ciLabel".equals(label)) {
                                 String ciLabel = valueList.get(0);
                                 CiVo ciVo = ciMapper.getCiByLabel(ciLabel);
                                 if (ciVo != null) {
@@ -1126,7 +1126,6 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                 }
             }
         }
-        deduplicateData(columnList, tbodyList);
         resultList.addAll(tbodyList);
         return resultList;
     }
@@ -1202,14 +1201,16 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                     return null;
                 }
                 for (RelEntityVo relEntity : relEntityList) {
-                    if (value.equals(relEntity.getToCiEntityName())) {
-                        ciEntityIdList.add(relEntity.getToCiEntityId());
-                        if ("from".equals(direction)) {
+                    if ("from".equals(direction)) {
+                        if (value.equals(relEntity.getToCiEntityName())) {
                             ciEntityIdList.add(relEntity.getToCiEntityId());
-                        } else if ("to".equals(direction)) {
-                            ciEntityIdList.add(relEntity.getFromCiEntityId());
+                            break;
                         }
-                        break;
+                    } else if ("to".equals(direction)) {
+                        if (value.equals(relEntity.getFromCiEntityName())) {
+                            ciEntityIdList.add(relEntity.getFromCiEntityId());
+                            break;
+                        }
                     }
                 }
             }
