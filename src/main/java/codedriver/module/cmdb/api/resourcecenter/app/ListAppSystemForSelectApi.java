@@ -78,6 +78,7 @@ public class ListAppSystemForSelectApi extends PrivateApiComponentBase {
                     List<ResourceVo> allResourceList = new ArrayList<>();
                     int pageCount = searchVo.getPageCount();
                     for (int currentPage = 1; currentPage <= pageCount; currentPage++) {
+                        searchVo.setCurrentPage(currentPage);
                         List<Long> idList = resourceMapper.searchAppSystemIdList(searchVo);
                         List<ResourceVo> resourceList = resourceMapper.searchAppSystemListByIdList(idList);
                         allResourceList.addAll(resourceList);

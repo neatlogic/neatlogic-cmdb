@@ -3,9 +3,10 @@
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
-package codedriver.module.cmdb.api.resourcecenter.appenv;
+package codedriver.module.cmdb.api.resourcecenter.vendor;
 
 import codedriver.framework.auth.core.AuthAction;
+import codedriver.framework.cmdb.auth.label.CMDB;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.common.constvalue.ApiParamType;
 import codedriver.framework.common.dto.BasePageVo;
@@ -13,7 +14,6 @@ import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
 import codedriver.framework.util.TableResultUtil;
-import codedriver.framework.cmdb.auth.label.CMDB;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -27,19 +27,18 @@ import java.util.List;
 @Service
 @AuthAction(action = CMDB.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class ListAppEnvForSelectApi extends PrivateApiComponentBase {
+public class ListVendorForSelectApi extends PrivateApiComponentBase {
 
     @Resource
     private ResourceMapper resourceMapper;
 
     @Override
     public String getToken() {
-        return "resourcecenter/appenv/list/forselect";
+        return "resourcecenter/vendor/list/forselect";
     }
-
     @Override
     public String getName() {
-        return "查询资源环境列表";
+        return "查询厂商列表";
     }
 
     @Override
@@ -56,32 +55,32 @@ public class ListAppEnvForSelectApi extends PrivateApiComponentBase {
     })
     @Output({
             @Param(explode = BasePageVo.class),
-            @Param(name = "tbodyList", explode = ResourceVo[].class, desc = "资源环境列表")
+            @Param(name = "tbodyList", explode = ResourceVo[].class, desc = "资源状态列表")
     })
-    @Description(desc = "查询资源环境列表")
+    @Description(desc = "查询资源状态列表")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         BasePageVo searchVo = paramObj.toJavaObject(BasePageVo.class);
         JSONArray defaultValue = searchVo.getDefaultValue();
         if (CollectionUtils.isNotEmpty(defaultValue)) {
             List<Long> idList = defaultValue.toJavaList(Long.class);
-            List<ResourceVo> resourceList = resourceMapper.searchAppEnvListByIdList(idList);
+            List<ResourceVo> resourceList = resourceMapper.searchVendorListByIdList(idList);
             return TableResultUtil.getResult(resourceList);
         } else {
-            int rowNum = resourceMapper.searchAppEnvCount(searchVo);
+            int rowNum = resourceMapper.searchVendorCount(searchVo);
             if (rowNum > 0) {
                 searchVo.setRowNum(rowNum);
                 if (searchVo.getNeedPage()) {
-                    List<Long> idList = resourceMapper.searchAppEnvIdList(searchVo);
-                    List<ResourceVo> resourceList = resourceMapper.searchAppEnvListByIdList(idList);
+                    List<Long> idList = resourceMapper.searchVendorIdList(searchVo);
+                    List<ResourceVo> resourceList = resourceMapper.searchVendorListByIdList(idList);
                     return TableResultUtil.getResult(resourceList, searchVo);
                 } else {
                     List<ResourceVo> allResourceList = new ArrayList<>();
                     int pageCount = searchVo.getPageCount();
                     for (int currentPage = 1; currentPage <= pageCount; currentPage++) {
                         searchVo.setCurrentPage(currentPage);
-                        List<Long> idList = resourceMapper.searchAppEnvIdList(searchVo);
-                        List<ResourceVo> resourceList = resourceMapper.searchAppEnvListByIdList(idList);
+                        List<Long> idList = resourceMapper.searchVendorIdList(searchVo);
+                        List<ResourceVo> resourceList = resourceMapper.searchVendorListByIdList(idList);
                         allResourceList.addAll(resourceList);
                     }
                     return TableResultUtil.getResult(allResourceList, searchVo);
