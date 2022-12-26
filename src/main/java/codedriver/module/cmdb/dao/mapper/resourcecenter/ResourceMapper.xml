@@ -248,8 +248,11 @@
         <if test="appModuleId != null">
         AND a.`app_module_id` = #{appModuleId}
         </if>
-        <if test="envId != null">
+        <if test="envId != null and envId != -2">
             AND a.`env_id` = #{envId}
+        </if>
+        <if test="envId != null and envId == -2">
+            AND a.`env_id` is null
         </if>
         <if test="inspectStatusList != null and inspectStatusList.size() > 0">
             AND a.`inspect_status` IN
@@ -270,8 +273,11 @@
         <if test="appModuleId != null">
             AND a.`app_module_id` = #{appModuleId}
         </if>
-        <if test="envId != null">
+        <if test="envId != null and envId != -2">
             AND a.`env_id` = #{envId}
+        </if>
+        <if test="envId != null and envId == -2">
+            AND a.`env_id` is null
         </if>
         <if test="inspectStatusList != null and inspectStatusList.size() > 0">
             AND a.`inspect_status` IN
@@ -300,8 +306,11 @@
         <if test="appModuleId != null">
             AND a.`app_module_id` = #{appModuleId}
         </if>
-        <if test="envId != null">
+        <if test="envId != null and envId != -2">
             AND a.`env_id` = #{envId}
+        </if>
+        <if test="envId != null and envId == -2">
+            AND a.`env_id` is null
         </if>
     </select>
 
@@ -322,8 +331,11 @@
         <if test="appModuleId != null">
             AND a.`app_module_id` = #{appModuleId}
         </if>
-        <if test="envId != null">
+        <if test="envId != null and envId != -2">
             AND a.`env_id` = #{envId}
+        </if>
+        <if test="envId != null and envId == -2">
+            AND a.`env_id` is null
         </if>
         ORDER BY a.`id` DESC
         LIMIT #{startNum}, #{pageSize}
@@ -676,8 +688,11 @@
         SELECT a.`type_id`
         FROM @{DATA_SCHEMA}.`scence_ipobject_env_appmodule` a
         WHERE a.`app_module_id` = #{appModuleId}
-        <if test="envId != null">
+        <if test="envId != null and envId != -2">
             AND a.`env_id` = #{envId}
+        </if>
+        <if test="envId != null and envId == -2">
+            AND a.`env_id` is null
         </if>
     </select>
 
@@ -686,8 +701,11 @@
         SELECT a.`type_id`
         FROM @{DATA_SCHEMA}.`scence_os_softwareservice_env_appmodule` a
         WHERE a.`app_module_id` = #{appModuleId}
-        <if test="envId != null">
+        <if test="envId != null and envId != -2">
             AND a.`env_id` = #{envId}
+        </if>
+        <if test="envId != null and envId == -2">
+            AND a.`env_id` is null
         </if>
     </select>
 
@@ -696,8 +714,11 @@
         SELECT a.`type_id`
         FROM @{DATA_SCHEMA}.`scence_ipobject_env_appmodule_appsystem` a
         WHERE a.`app_system_id` = #{appSystemId}
-        <if test="envId != null">
+        <if test="envId != null and envId != -2">
             AND a.`env_id` = #{envId}
+        </if>
+        <if test="envId != null and envId == -2">
+            AND a.`env_id` is null
         </if>
     </select>
 
@@ -706,8 +727,11 @@
         SELECT a.`type_id`
         FROM @{DATA_SCHEMA}.`scence_os_softwareservice_env_appmodule_appsystem` a
         WHERE a.`app_system_id` = #{appSystemId}
-        <if test="envId != null">
+        <if test="envId != null and envId != -2">
             AND a.`env_id` = #{envId}
+        </if>
+        <if test="envId != null and envId == -2">
+            AND a.`env_id` is null
         </if>
     </select>
 
