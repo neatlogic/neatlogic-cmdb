@@ -251,7 +251,7 @@
         <if test="envId != null and envId != -2">
             AND a.`env_id` = #{envId}
         </if>
-        <if test="envId != null and envId == -2">
+        <if test="envId == -2">
             AND a.`env_id` is null
         </if>
         <if test="inspectStatusList != null and inspectStatusList.size() > 0">
@@ -276,7 +276,7 @@
         <if test="envId != null and envId != -2">
             AND a.`env_id` = #{envId}
         </if>
-        <if test="envId != null and envId == -2">
+        <if test="envId == -2">
             AND a.`env_id` is null
         </if>
         <if test="inspectStatusList != null and inspectStatusList.size() > 0">
@@ -309,7 +309,7 @@
         <if test="envId != null and envId != -2">
             AND a.`env_id` = #{envId}
         </if>
-        <if test="envId != null and envId == -2">
+        <if test="envId == -2">
             AND a.`env_id` is null
         </if>
     </select>
@@ -334,7 +334,7 @@
         <if test="envId != null and envId != -2">
             AND a.`env_id` = #{envId}
         </if>
-        <if test="envId != null and envId == -2">
+        <if test="envId == -2">
             AND a.`env_id` is null
         </if>
         ORDER BY a.`id` DESC
@@ -691,7 +691,7 @@
         <if test="envId != null and envId != -2">
             AND a.`env_id` = #{envId}
         </if>
-        <if test="envId != null and envId == -2">
+        <if test="envId == -2">
             AND a.`env_id` is null
         </if>
     </select>
@@ -704,7 +704,7 @@
         <if test="envId != null and envId != -2">
             AND a.`env_id` = #{envId}
         </if>
-        <if test="envId != null and envId == -2">
+        <if test="envId == -2">
             AND a.`env_id` is null
         </if>
     </select>
@@ -717,7 +717,7 @@
         <if test="envId != null and envId != -2">
             AND a.`env_id` = #{envId}
         </if>
-        <if test="envId != null and envId == -2">
+        <if test="envId == -2">
             AND a.`env_id` is null
         </if>
     </select>
@@ -730,7 +730,7 @@
         <if test="envId != null and envId != -2">
             AND a.`env_id` = #{envId}
         </if>
-        <if test="envId != null and envId == -2">
+        <if test="envId == -2">
             AND a.`env_id` is null
         </if>
     </select>
