@@ -147,6 +147,12 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     List<ResourceVo> searchStateListByIdList(List<Long> idList);
 
+    int searchVendorCount(BasePageVo searchVo);
+
+    List<Long> searchVendorIdList(BasePageVo searchVo);
+
+    List<ResourceVo> searchVendorListByIdList(List<Long> idList);
+
     int getAppSystemIdListCountByKeyword(String keyword);
 
     List<Long> getAppSystemIdListByKeyword(BasePageVo searchVo);
