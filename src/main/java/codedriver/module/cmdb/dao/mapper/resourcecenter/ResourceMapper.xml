@@ -32,6 +32,9 @@
                 #{envId}
             </foreach>
         </if>
+        <if test="isExistNoEnv">
+            AND a.`env_id` is null
+        </if>
         <if test="appSystemIdList != null and appSystemIdList.size() > 0">
             AND a.`app_system_id` IN
             <foreach collection="appSystemIdList" item="appSystemId" open="(" separator="," close=")">
