@@ -20,6 +20,12 @@
                 #{stateId}
             </foreach>
         </if>
+        <if test="vendorIdList != null and vendorIdList.size() > 0">
+            AND a.`vendor_id` IN
+            <foreach collection="vendorIdList" item="vendorId" open="(" separator="," close=")">
+                #{vendorId}
+            </foreach>
+        </if>
         <if test="envIdList != null and envIdList.size() > 0">
             AND a.`env_id` IN
             <foreach collection="envIdList" item="envId" open="(" separator="," close=")">
@@ -248,8 +254,11 @@
         <if test="appModuleId != null">
         AND a.`app_module_id` = #{appModuleId}
         </if>
-        <if test="envId != null">
+        <if test="envId != null and envId != -2">
             AND a.`env_id` = #{envId}
+        </if>
+        <if test="envId == -2">
+            AND a.`env_id` is null
         </if>
         <if test="inspectStatusList != null and inspectStatusList.size() > 0">
             AND a.`inspect_status` IN
@@ -270,8 +279,11 @@
         <if test="appModuleId != null">
             AND a.`app_module_id` = #{appModuleId}
         </if>
-        <if test="envId != null">
+        <if test="envId != null and envId != -2">
             AND a.`env_id` = #{envId}
+        </if>
+        <if test="envId == -2">
+            AND a.`env_id` is null
         </if>
         <if test="inspectStatusList != null and inspectStatusList.size() > 0">
             AND a.`inspect_status` IN
@@ -300,8 +312,11 @@
         <if test="appModuleId != null">
             AND a.`app_module_id` = #{appModuleId}
         </if>
-        <if test="envId != null">
+        <if test="envId != null and envId != -2">
             AND a.`env_id` = #{envId}
+        </if>
+        <if test="envId == -2">
+            AND a.`env_id` is null
         </if>
     </select>
 
@@ -322,8 +337,11 @@
         <if test="appModuleId != null">
             AND a.`app_module_id` = #{appModuleId}
         </if>
-        <if test="envId != null">
+        <if test="envId != null and envId != -2">
             AND a.`env_id` = #{envId}
+        </if>
+        <if test="envId == -2">
+            AND a.`env_id` is null
         </if>
         ORDER BY a.`id` DESC
         LIMIT #{startNum}, #{pageSize}
@@ -676,8 +694,11 @@
         SELECT a.`type_id`
         FROM @{DATA_SCHEMA}.`scence_ipobject_env_appmodule` a
         WHERE a.`app_module_id` = #{appModuleId}
-        <if test="envId != null">
+        <if test="envId != null and envId != -2">
             AND a.`env_id` = #{envId}
+        </if>
+        <if test="envId == -2">
+            AND a.`env_id` is null
         </if>
     </select>
 
@@ -686,8 +707,11 @@
         SELECT a.`type_id`
         FROM @{DATA_SCHEMA}.`scence_os_softwareservice_env_appmodule` a
         WHERE a.`app_module_id` = #{appModuleId}
-        <if test="envId != null">
+        <if test="envId != null and envId != -2">
             AND a.`env_id` = #{envId}
+        </if>
+        <if test="envId == -2">
+            AND a.`env_id` is null
         </if>
     </select>
 
@@ -696,8 +720,11 @@
         SELECT a.`type_id`
         FROM @{DATA_SCHEMA}.`scence_ipobject_env_appmodule_appsystem` a
         WHERE a.`app_system_id` = #{appSystemId}
-        <if test="envId != null">
+        <if test="envId != null and envId != -2">
             AND a.`env_id` = #{envId}
+        </if>
+        <if test="envId == -2">
+            AND a.`env_id` is null
         </if>
     </select>
 
@@ -706,8 +733,11 @@
         SELECT a.`type_id`
         FROM @{DATA_SCHEMA}.`scence_os_softwareservice_env_appmodule_appsystem` a
         WHERE a.`app_system_id` = #{appSystemId}
-        <if test="envId != null">
+        <if test="envId != null and envId != -2">
             AND a.`env_id` = #{envId}
+        </if>
+        <if test="envId == -2">
+            AND a.`env_id` is null
         </if>
     </select>
 
@@ -1143,6 +1173,44 @@
         `name`,
         `description`
         FROM @{DATA_SCHEMA}.`scence_state`
+        WHERE `id` IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="searchVendorCount" parameterType="codedriver.framework.common.dto.BasePageVo" resultType="int">
+        SELECT
+        COUNT(1)
+        FROM @{DATA_SCHEMA}.`scence_vendor`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` LIKE CONCAT('%', #{keyword}, '%')
+                OR `description` LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="searchVendorIdList" parameterType="codedriver.framework.common.dto.BasePageVo"
+            resultType="java.lang.Long">
+        SELECT
+        `id`
+        FROM @{DATA_SCHEMA}.`scence_vendor`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` LIKE CONCAT('%', #{keyword}, '%')
+                OR `description` LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="searchVendorListByIdList" parameterType="java.lang.Long" resultMap="resourceCenterMap">
+        SELECT
+        `id`,
+        `name`,
+        `description`
+        FROM @{DATA_SCHEMA}.`scence_vendor`
         WHERE `id` IN
         <foreach collection="list" item="id" open="(" separator="," close=")">
             #{id}

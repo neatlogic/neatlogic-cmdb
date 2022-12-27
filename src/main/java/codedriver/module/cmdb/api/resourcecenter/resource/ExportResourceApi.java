@@ -81,6 +81,7 @@ public class ExportResourceApi extends PrivateBinaryStreamApiComponentBase {
             @Param(name = "typeId", type = ApiParamType.LONG, isRequired = true,  desc = "类型id"),
             @Param(name = "protocolIdList", type = ApiParamType.JSONARRAY, desc = "协议id列表"),
             @Param(name = "stateIdList", type = ApiParamType.JSONARRAY, desc = "状态id列表"),
+            @Param(name = "vendorIdList", type = ApiParamType.JSONARRAY, desc = "厂商id列表"),
             @Param(name = "envIdList", type = ApiParamType.JSONARRAY, desc = "环境id列表"),
             @Param(name = "appSystemIdList", type = ApiParamType.JSONARRAY, desc = "应用系统id列表"),
             @Param(name = "appModuleIdList", type = ApiParamType.JSONARRAY, desc = "应用模块id列表"),
