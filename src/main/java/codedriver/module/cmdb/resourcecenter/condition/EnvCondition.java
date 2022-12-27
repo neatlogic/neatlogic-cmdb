@@ -12,21 +12,26 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 
 @Component
-public class AppSystemCondition extends ResourcecenterConditionBase {
-
+public class EnvCondition extends ResourcecenterConditionBase {
+    private String formHandlerType = FormHandlerType.SELECT.toString();
     @Override
     public String getName() {
-        return "appSystemIdList";
+        return "envIdList";
     }
 
     @Override
     public String getDisplayName() {
-        return "应用";
+        return "环境";
     }
 
 	@Override
 	public String getHandler(FormConditionModel formConditionModel) {
-		return FormHandlerType.SELECT.toString();
+        if (FormConditionModel.SIMPLE == formConditionModel) {
+            formHandlerType = FormHandlerType.CHECKBOX.toString();
+        } else {
+            formHandlerType = FormHandlerType.SELECT.toString();
+        }
+        return formHandlerType;
 	}
 	
 	@Override
@@ -37,15 +42,17 @@ public class AppSystemCondition extends ResourcecenterConditionBase {
     @Override
     public JSONObject getConfig(ConditionConfigType type) {
         JSONObject config = new JSONObject();
-        config.put("type", FormHandlerType.SELECT.toString());
+        config.put("type", formHandlerType);
         config.put("search", true);
         config.put("multiple", true);
         config.put("transfer", true);
+        config.put("className", "block-span");
         config.put("value", "");
         config.put("defaultValue", new ArrayList<String>());
-        config.put("dynamicUrl", "/api/rest/resourcecenter/appsystem/list/forselect");
+        config.put("dynamicUrl", "/api/rest/resourcecenter/appenv/list/forselect");
         config.put("rootName", "tbodyList");
-        config.put("dealDataByUrl","getAppForselect");
+        config.put("textName","name");
+        config.put("valueName","id");
         return config;
     }
 

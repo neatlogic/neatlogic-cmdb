@@ -2,31 +2,27 @@ package codedriver.module.cmdb.resourcecenter.condition;
 
 import codedriver.framework.cmdb.enums.resourcecenter.condition.ConditionConfigType;
 import codedriver.framework.cmdb.resourcecenter.condition.ResourcecenterConditionBase;
-import codedriver.framework.common.constvalue.FormHandlerType;
 import codedriver.framework.common.constvalue.ParamType;
 import codedriver.framework.form.constvalue.FormConditionModel;
 import codedriver.framework.process.constvalue.ProcessFieldType;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-
 @Component
-public class AppSystemCondition extends ResourcecenterConditionBase {
-
+public class BatchSearchCondition extends ResourcecenterConditionBase {
     @Override
     public String getName() {
-        return "appSystemIdList";
+        return "batchSearchList";
     }
 
     @Override
     public String getDisplayName() {
-        return "应用";
+        return "批量搜索";
     }
 
 	@Override
 	public String getHandler(FormConditionModel formConditionModel) {
-		return FormHandlerType.SELECT.toString();
+        return "slot";
 	}
 	
 	@Override
@@ -37,15 +33,9 @@ public class AppSystemCondition extends ResourcecenterConditionBase {
     @Override
     public JSONObject getConfig(ConditionConfigType type) {
         JSONObject config = new JSONObject();
-        config.put("type", FormHandlerType.SELECT.toString());
-        config.put("search", true);
-        config.put("multiple", true);
-        config.put("transfer", true);
-        config.put("value", "");
-        config.put("defaultValue", new ArrayList<String>());
-        config.put("dynamicUrl", "/api/rest/resourcecenter/appsystem/list/forselect");
-        config.put("rootName", "tbodyList");
-        config.put("dealDataByUrl","getAppForselect");
+        config.put("type", "slot");
+        config.put("labelWidth", "0px");
+        config.put("labelPosition", "left");
         return config;
     }
 

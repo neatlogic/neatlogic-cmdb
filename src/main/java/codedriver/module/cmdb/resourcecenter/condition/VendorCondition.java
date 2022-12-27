@@ -12,16 +12,16 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 
 @Component
-public class AppSystemCondition extends ResourcecenterConditionBase {
+public class VendorCondition extends ResourcecenterConditionBase {
 
     @Override
     public String getName() {
-        return "appSystemIdList";
+        return "vendorIdList";
     }
 
     @Override
     public String getDisplayName() {
-        return "应用";
+        return "厂商";
     }
 
 	@Override
@@ -43,9 +43,13 @@ public class AppSystemCondition extends ResourcecenterConditionBase {
         config.put("transfer", true);
         config.put("value", "");
         config.put("defaultValue", new ArrayList<String>());
-        config.put("dynamicUrl", "/api/rest/resourcecenter/appsystem/list/forselect");
+        config.put("dynamicUrl", "/api/rest/resourcecenter/vendor/list/forselect");
+        config.put("params", new JSONObject(){{
+            put("needPage",false);
+        }});
         config.put("rootName", "tbodyList");
-        config.put("dealDataByUrl","getAppForselect");
+        config.put("textName","description");
+        config.put("valueName","id");
         return config;
     }
 
