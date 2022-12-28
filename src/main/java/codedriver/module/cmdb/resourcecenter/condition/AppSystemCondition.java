@@ -2,14 +2,17 @@ package codedriver.module.cmdb.resourcecenter.condition;
 
 import codedriver.framework.cmdb.enums.resourcecenter.condition.ConditionConfigType;
 import codedriver.framework.cmdb.resourcecenter.condition.ResourcecenterConditionBase;
+import codedriver.framework.cmdb.resourcecenter.table.ScenceIpobjectDetailTable;
 import codedriver.framework.common.constvalue.FormHandlerType;
 import codedriver.framework.common.constvalue.ParamType;
+import codedriver.framework.dto.condition.ConditionVo;
 import codedriver.framework.form.constvalue.FormConditionModel;
 import codedriver.framework.process.constvalue.ProcessFieldType;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class AppSystemCondition extends ResourcecenterConditionBase {
@@ -65,4 +68,8 @@ public class AppSystemCondition extends ResourcecenterConditionBase {
         return value;
     }
 
+    @Override
+    public void getSqlConditionWhere(List<ConditionVo> conditionList, Integer index, StringBuilder sqlSb) {
+        getSimpleSqlConditionWhere(conditionList.get(index), sqlSb, new ScenceIpobjectDetailTable().getShortName(), ScenceIpobjectDetailTable.FieldEnum.APP_SYSTEM_ID.getValue());
+    }
 }

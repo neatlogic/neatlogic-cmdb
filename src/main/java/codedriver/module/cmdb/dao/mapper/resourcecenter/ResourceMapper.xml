@@ -149,6 +149,23 @@
         ) m
     </select>
 
+    <select id="getResourceIdListByDynamicCondition" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+            resultType="java.lang.Long">
+        SELECT DISTINCT sid.`id`
+        FROM @{DATA_SCHEMA}.`scence_ipobject_detail` sid
+        LEFT JOIN `cmdb_resourcecenter_resource_account` crra ON crra.`resource_id` = sid.`id`
+        LEFT JOIN `cmdb_resourcecenter_account` cra ON cra.`id` = crra.`account_id`
+        LEFT JOIN `cmdb_resourcecenter_resource_tag` crrt ON crrt.`resource_id` = sid.`id`
+        <where>
+            <if test="searchVo.keyword != null and searchVo.keyword != ''">
+                AND (sid.`name` LIKE CONCAT('%', #{searchVo.keyword}, '%') OR sid.`ip` LIKE CONCAT('%', #{searchVo.keyword}, '%'))
+            </if>
+            ${conditionSql}
+        </where>
+        ORDER BY sid.`id`
+        LIMIT #{searchVo.startNum}, #{searchVo.pageSize}
+    </select>
+
     <resultMap id="resourceCenterMap" type="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
         <id column="id" property="id"/>
         <result column="name" property="name"/>
