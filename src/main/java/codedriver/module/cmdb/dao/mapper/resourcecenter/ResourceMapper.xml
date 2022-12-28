@@ -20,11 +20,20 @@
                 #{stateId}
             </foreach>
         </if>
+        <if test="vendorIdList != null and vendorIdList.size() > 0">
+            AND a.`vendor_id` IN
+            <foreach collection="vendorIdList" item="vendorId" open="(" separator="," close=")">
+                #{vendorId}
+            </foreach>
+        </if>
         <if test="envIdList != null and envIdList.size() > 0">
             AND a.`env_id` IN
             <foreach collection="envIdList" item="envId" open="(" separator="," close=")">
                 #{envId}
             </foreach>
+        </if>
+        <if test="isExistNoEnv">
+            AND a.`env_id` is null
         </if>
         <if test="appSystemIdList != null and appSystemIdList.size() > 0">
             AND a.`app_system_id` IN
@@ -1169,6 +1178,44 @@
         `name`,
         `description`
         FROM @{DATA_SCHEMA}.`scence_state`
+        WHERE `id` IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="searchVendorCount" parameterType="codedriver.framework.common.dto.BasePageVo" resultType="int">
+        SELECT
+        COUNT(1)
+        FROM @{DATA_SCHEMA}.`scence_vendor`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` LIKE CONCAT('%', #{keyword}, '%')
+                OR `description` LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="searchVendorIdList" parameterType="codedriver.framework.common.dto.BasePageVo"
+            resultType="java.lang.Long">
+        SELECT
+        `id`
+        FROM @{DATA_SCHEMA}.`scence_vendor`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` LIKE CONCAT('%', #{keyword}, '%')
+                OR `description` LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="searchVendorListByIdList" parameterType="java.lang.Long" resultMap="resourceCenterMap">
+        SELECT
+        `id`,
+        `name`,
+        `description`
+        FROM @{DATA_SCHEMA}.`scence_vendor`
         WHERE `id` IN
         <foreach collection="list" item="id" open="(" separator="," close=")">
             #{id}

@@ -78,6 +78,7 @@ public class ListStateForSelectApi extends PrivateApiComponentBase {
                     List<ResourceVo> allResourceList = new ArrayList<>();
                     int pageCount = searchVo.getPageCount();
                     for (int currentPage = 1; currentPage <= pageCount; currentPage++) {
+                        searchVo.setCurrentPage(currentPage);
                         List<Long> idList = resourceMapper.searchStateIdList(searchVo);
                         List<ResourceVo> resourceList = resourceMapper.searchStateListByIdList(idList);
                         allResourceList.addAll(resourceList);
