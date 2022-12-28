@@ -55,7 +55,7 @@ public class TagCondition extends ResourcecenterConditionBase {
 
     @Override
     public Integer getSort() {
-        return 1;
+        return 6;
     }
 
     @Override

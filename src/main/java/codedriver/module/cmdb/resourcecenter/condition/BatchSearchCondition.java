@@ -45,7 +45,7 @@ public class BatchSearchCondition extends ResourcecenterConditionBase {
 
     @Override
     public Integer getSort() {
-        return 1;
+        return 10;
     }
 
     @Override

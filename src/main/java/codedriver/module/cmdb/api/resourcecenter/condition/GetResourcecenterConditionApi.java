@@ -62,7 +62,6 @@ public class GetResourcecenterConditionApi extends PrivateApiComponentBase {
             JSONObject commonObj = new JSONObject();
             commonObj.put("handler", condition.getName());
             commonObj.put("handlerName", condition.getDisplayName());
-            commonObj.put("handlerType", condition.getHandler(formConditionModel));
             commonObj.put("conditionModel", condition.getHandler(formConditionModel));
             commonObj.put("type", condition.getType());
             commonObj.put("config", config);

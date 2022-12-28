@@ -58,7 +58,7 @@ public class VendorCondition extends ResourcecenterConditionBase {
 
     @Override
     public Integer getSort() {
-        return 1;
+        return 8;
     }
 
     @Override

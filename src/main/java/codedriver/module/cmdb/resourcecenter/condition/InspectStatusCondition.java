@@ -61,7 +61,7 @@ public class InspectStatusCondition extends ResourcecenterConditionBase {
 
     @Override
     public Integer getSort() {
-        return 1;
+        return 9;
     }
 
     @Override

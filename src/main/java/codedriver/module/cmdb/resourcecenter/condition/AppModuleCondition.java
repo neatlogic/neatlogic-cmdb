@@ -54,7 +54,7 @@ public class AppModuleCondition extends ResourcecenterConditionBase {
 
     @Override
     public Integer getSort() {
-        return 1;
+        return 3;
     }
 
     @Override

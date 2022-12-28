@@ -61,7 +61,7 @@ public class EnvCondition extends ResourcecenterConditionBase {
 
     @Override
     public Integer getSort() {
-        return 1;
+        return 4;
     }
 
     @Override
