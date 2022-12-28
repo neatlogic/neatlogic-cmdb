@@ -46,10 +46,7 @@ public class CIEntitySyncProcessUtilHandler extends ProcessStepInternalHandlerBa
         JSONObject notifyPolicyConfig = stepConfigObj.getJSONObject("notifyPolicyConfig");
         NotifyPolicyConfigVo notifyPolicyConfigVo = JSONObject.toJavaObject(notifyPolicyConfig, NotifyPolicyConfigVo.class);
         if (notifyPolicyConfigVo != null) {
-            Long policyId = notifyPolicyConfigVo.getPolicyId();
-            if (policyId != null) {
-                processStepVo.setNotifyPolicyId(policyId);
-            }
+            processStepVo.setNotifyPolicyConfig(notifyPolicyConfigVo);
         }
 
         JSONObject actionConfig = stepConfigObj.getJSONObject("actionConfig");
