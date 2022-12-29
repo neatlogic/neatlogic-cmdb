@@ -52,7 +52,7 @@ public class EnvCondition extends ResourcecenterConditionBase {
         config.put("className", "block-span");
         config.put("value", "");
         config.put("defaultValue", new ArrayList<String>());
-        config.put("dynamicUrl", "/api/rest/resourcecenter/appenv/list/forselect");
+        config.put("url", "/api/rest/resourcecenter/appenv/list/forselect");
         config.put("rootName", "tbodyList");
         config.put("textName","name");
         config.put("valueName","id");

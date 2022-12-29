@@ -52,7 +52,7 @@ public class InspectStatusCondition extends ResourcecenterConditionBase {
         config.put("className", "block-span");
         config.put("value", "");
         config.put("defaultValue", new ArrayList<String>());
-        config.put("dynamicUrl", "/api/rest/universal/enum/get");
+        config.put("url", "/api/rest/universal/enum/get");
         config.put("params", new JSONObject(){{
             put("enumClass","codedriver.framework.common.constvalue.InspectStatus");
         }});
