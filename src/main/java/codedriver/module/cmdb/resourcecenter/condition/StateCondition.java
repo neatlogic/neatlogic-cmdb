@@ -16,7 +16,7 @@ import java.util.List;
 
 @Component
 public class StateCondition extends ResourcecenterConditionBase {
-
+    private String formHandlerType = FormHandlerType.SELECT.toString();
     @Override
     public String getName() {
         return "stateIdList";
@@ -29,7 +29,12 @@ public class StateCondition extends ResourcecenterConditionBase {
 
 	@Override
 	public String getHandler(FormConditionModel formConditionModel) {
-		return FormHandlerType.SELECT.toString();
+        if (FormConditionModel.SIMPLE == formConditionModel) {
+            formHandlerType = FormHandlerType.CHECKBOX.toString();
+        } else {
+            formHandlerType = FormHandlerType.SELECT.toString();
+        }
+        return formHandlerType;
 	}
 	
 	@Override
@@ -40,13 +45,13 @@ public class StateCondition extends ResourcecenterConditionBase {
     @Override
     public JSONObject getConfig(ConditionConfigType type) {
         JSONObject config = new JSONObject();
-        config.put("type", FormHandlerType.SELECT.toString());
+        config.put("type", formHandlerType);
         config.put("search", true);
         config.put("multiple", true);
         config.put("transfer", true);
         config.put("value", "");
         config.put("defaultValue", new ArrayList<String>());
-        config.put("dynamicUrl", "/api/rest/resourcecenter/state/list/forselect");
+        config.put("url", "/api/rest/resourcecenter/state/list/forselect");
         config.put("rootName", "tbodyList");
         config.put("textName","description");
         config.put("valueName","id");

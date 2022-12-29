@@ -11,30 +11,24 @@ import codedriver.framework.process.constvalue.ProcessFieldType;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class InspectStatusCondition extends ResourcecenterConditionBase {
-    private String formHandlerType = FormHandlerType.SELECT.toString();
+public class OwnerCondition extends ResourcecenterConditionBase {
+
     @Override
     public String getName() {
-        return "inspectStatusList";
+        return "ownerList";
     }
 
     @Override
     public String getDisplayName() {
-        return "巡检状态";
+        return "所有者";
     }
 
 	@Override
 	public String getHandler(FormConditionModel formConditionModel) {
-        if (FormConditionModel.SIMPLE == formConditionModel) {
-            formHandlerType = FormHandlerType.CHECKBOX.toString();
-        } else {
-            formHandlerType = FormHandlerType.SELECT.toString();
-        }
-        return formHandlerType;
+		return FormHandlerType.SELECT.toString();
 	}
 	
 	@Override
@@ -45,23 +39,20 @@ public class InspectStatusCondition extends ResourcecenterConditionBase {
     @Override
     public JSONObject getConfig(ConditionConfigType type) {
         JSONObject config = new JSONObject();
-        config.put("type", formHandlerType);
+        config.put("type", FormHandlerType.SELECT.toString());
         config.put("search", true);
         config.put("multiple", true);
         config.put("transfer", true);
-        config.put("className", "block-span");
-        config.put("value", "");
-        config.put("defaultValue", new ArrayList<String>());
-        config.put("url", "/api/rest/universal/enum/get");
+        config.put("dynamicUrl", "/api/rest/user/search/forselect");
         config.put("params", new JSONObject(){{
-            put("enumClass","codedriver.framework.common.constvalue.InspectStatus");
+            put("needPage",true);
         }});
         return config;
     }
 
     @Override
     public Integer getSort() {
-        return 9;
+        return 16;
     }
 
     @Override
@@ -77,6 +68,6 @@ public class InspectStatusCondition extends ResourcecenterConditionBase {
 
     @Override
     public void getSqlConditionWhere(List<ConditionVo> conditionList, Integer index, StringBuilder sqlSb) {
-        getSimpleSqlConditionWhere(conditionList.get(index), sqlSb, new ScenceIpobjectDetailTable().getShortName(), ScenceIpobjectDetailTable.FieldEnum.INSPECT_STATUS.getValue());
+        getSimpleSqlConditionWhere(conditionList.get(index), sqlSb, new ScenceIpobjectDetailTable().getShortName(), ScenceIpobjectDetailTable.FieldEnum.USER_UUID.getValue());
     }
 }
