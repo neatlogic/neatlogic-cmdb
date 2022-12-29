@@ -66,7 +66,7 @@ public class ListResourceCustomApi extends PrivateApiComponentBase {
         List<ResourceVo> resourceList = new ArrayList<>();
         StringBuilder sqlSb = new StringBuilder();
         resourceSearch.buildConditionWhereSql(sqlSb, resourceSearch);
-        int rowNum = resourceMapper.getResourceCount(resourceSearch);
+        int rowNum = resourceMapper.getResourceCountByDynamicCondition(resourceSearch, sqlSb.toString());
         if (rowNum == 0) {
             return TableResultUtil.getResult(resourceList, resourceSearch);
         }

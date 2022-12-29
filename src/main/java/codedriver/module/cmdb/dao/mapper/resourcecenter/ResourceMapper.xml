@@ -1442,4 +1442,18 @@
         ORDER BY a.`id` DESC
         LIMIT #{startNum}, #{pageSize}
     </select>
+    <select id="getResourceCountByDynamicCondition" resultType="java.lang.Integer">
+        SELECT COUNT(DISTINCT sid.`id`)
+        FROM @{DATA_SCHEMA}.`scence_ipobject_detail` sid
+        LEFT JOIN `cmdb_resourcecenter_resource_account` crra ON crra.`resource_id` = sid.`id`
+        LEFT JOIN `cmdb_resourcecenter_account` cra ON cra.`id` = crra.`account_id`
+        LEFT JOIN `cmdb_resourcecenter_resource_tag` crrt ON crrt.`resource_id` = sid.`id`
+        <where>
+            <if test="searchVo.keyword != null and searchVo.keyword != ''">
+                AND (sid.`name` LIKE CONCAT('%', #{searchVo.keyword}, '%') OR sid.`ip` LIKE CONCAT('%',
+                #{searchVo.keyword}, '%'))
+            </if>
+            ${conditionSql}
+        </where>
+    </select>
 </mapper>
