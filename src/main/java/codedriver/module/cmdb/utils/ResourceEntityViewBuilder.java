@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -1087,9 +1087,9 @@ public class ResourceEntityViewBuilder {
                 .withRightItem(new SubSelect()
                         .withSelectBody(buildSubSelectForCi(resourceEntityVo.getCi()).getSelectBody())
                         .withAlias(new Alias(resourceEntityVo.getName().toLowerCase(Locale.ROOT))))
-                .withOnExpression(new EqualsTo().withLeftExpression(new Column()
-                        .withTable(new Table("ci_base"))
-                        .withColumnName("id"))
+                .addOnExpression(new EqualsTo().withLeftExpression(new Column()
+                                .withTable(new Table("ci_base"))
+                                .withColumnName("id"))
                         .withRightExpression(new Column()
                                 .withTable(new Table(resourceEntityVo.getName()))
                                 .withColumnName("id"))));
@@ -1117,7 +1117,7 @@ public class ResourceEntityViewBuilder {
                                     .withName("cmdb_attrentity")
                                     .withSchemaName(TenantContext.get().getDbName())
                                     .withAlias(new Alias("cmdb_attrentity_" + entityJoin.getField().toLowerCase(Locale.ROOT))))
-                            .withOnExpression(new EqualsTo()
+                            .addOnExpression(new EqualsTo()
                                     .withLeftExpression(new Column()
                                             .withTable(new Table("ci_base"))
                                             .withColumnName("id"))
@@ -1130,7 +1130,7 @@ public class ResourceEntityViewBuilder {
                                         .withName("cmdb_attr")
                                         .withSchemaName(TenantContext.get().getDbName())
                                         .withAlias(new Alias("cmdb_attr_" + entityJoin.getJoinAttrName().toLowerCase(Locale.ROOT)))
-                                ).withOnExpression(new AndExpression()
+                                ).addOnExpression(new AndExpression()
                                         .withLeftExpression(new EqualsTo()
                                                 .withLeftExpression(new Column()
                                                         .withTable(new Table("cmdb_attr_" + entityJoin.getJoinAttrName().toLowerCase(Locale.ROOT)))
@@ -1150,7 +1150,7 @@ public class ResourceEntityViewBuilder {
                             .withRightItem(new SubSelect()
                                     .withSelectBody(buildSubSelectForCi(entityJoin.getCi()).getSelectBody())
                                     .withAlias(new Alias("target_cientity_" + entityJoin.getCi().getName().toLowerCase(Locale.ROOT)))
-                            ).withOnExpression(new EqualsTo()
+                            ).addOnExpression(new EqualsTo()
                                     .withLeftExpression(new Column()
                                             .withTable(new Table("cmdb_attrentity_" + entityJoin.getField()))
                                             .withColumnName("to_cientity_id"))
@@ -1163,7 +1163,7 @@ public class ResourceEntityViewBuilder {
                                     .withName("cmdb_relentity")
                                     .withSchemaName(TenantContext.get().getDbName())
                                     .withAlias(new Alias("cmdb_relentity_" + entityJoin.getField().toLowerCase(Locale.ROOT))))
-                            .withOnExpression(new EqualsTo()
+                            .addOnExpression(new EqualsTo()
                                     .withLeftExpression(new Column()
                                             .withTable(new Table("ci_base"))
                                             .withColumnName("id"))
@@ -1175,7 +1175,7 @@ public class ResourceEntityViewBuilder {
                             .withRightItem(new SubSelect()
                                     .withSelectBody(buildSubSelectForCi(entityJoin.getCi()).getSelectBody())
                                     .withAlias(new Alias("target_cientity_" + entityJoin.getCi().getName().toLowerCase(Locale.ROOT)))
-                            ).withOnExpression(new EqualsTo()
+                            ).addOnExpression(new EqualsTo()
                                     .withLeftExpression(new Column()
                                             .withTable(new Table("cmdb_relentity_" + entityJoin.getField().toLowerCase(Locale.ROOT)))
                                             .withColumnName(entityJoin.getDirection().equals(RelDirectionType.FROM.getValue()) ? "to_cientity_id" : "from_cientity_id"))
