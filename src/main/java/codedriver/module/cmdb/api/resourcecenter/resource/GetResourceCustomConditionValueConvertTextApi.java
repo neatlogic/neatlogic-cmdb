@@ -8,32 +8,24 @@ package codedriver.module.cmdb.api.resourcecenter.resource;
 import codedriver.framework.auth.core.AuthAction;
 import codedriver.framework.cmdb.auth.label.CMDB_BASE;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
+import codedriver.framework.cmdb.resourcecenter.condition.IResourcecenterCondition;
+import codedriver.framework.cmdb.resourcecenter.condition.ResourcecenterConditionFactory;
 import codedriver.framework.common.constvalue.ApiParamType;
-import codedriver.framework.condition.core.ConditionHandlerFactory;
-import codedriver.framework.condition.core.IConditionHandler;
 import codedriver.framework.dto.condition.ConditionGroupVo;
 import codedriver.framework.dto.condition.ConditionVo;
 import codedriver.framework.restful.annotation.*;
 import codedriver.framework.restful.constvalue.OperationTypeEnum;
 import codedriver.framework.restful.core.privateapi.PrivateApiComponentBase;
-import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
-import codedriver.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.List;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class GetResourceCustomConditionApi extends PrivateApiComponentBase {
-    @Resource
-    ResourceMapper resourceMapper;
-
-    @Resource
-    private IResourceCenterResourceService resourceCenterResourceService;
+public class GetResourceCustomConditionValueConvertTextApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
@@ -64,14 +56,11 @@ public class GetResourceCustomConditionApi extends PrivateApiComponentBase {
                 List<ConditionVo> conditionList = conditionGroup.getConditionList();
                 if (CollectionUtils.isNotEmpty(conditionList)) {
                     for (ConditionVo condition : conditionList) {
-                        if (condition.getType().equalsIgnoreCase("common")) {
-                            IConditionHandler conditionHandler = ConditionHandlerFactory.getHandler(condition.getName());
-                            if (conditionHandler != null) {
-                                Object textList = conditionHandler.valueConversionText(condition.getValueList(), null);
-                                condition.setText(textList);
-                                condition.setExpressionList(conditionHandler.getExpressionList());
-                                condition.setLabel(conditionHandler.getDisplayName());
-                            }
+                        IResourcecenterCondition conditionHandler = ResourcecenterConditionFactory.getHandler(condition.getName());
+                        if (conditionHandler != null) {
+                            Object textList = conditionHandler.valueConversionText(condition.getValueList(), null);
+                            condition.setText(textList);
+                            condition.setLabel(conditionHandler.getDisplayName());
                         }
                     }
                 }
@@ -84,6 +73,6 @@ public class GetResourceCustomConditionApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "resourcecenter/resource/custom/condition/get";
+        return "resourcecenter/custom/condition/valueconverttext/get";
     }
 }

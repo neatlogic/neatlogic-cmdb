@@ -1,14 +1,9 @@
 package codedriver.module.cmdb.resourcecenter.condition;
 
 import codedriver.framework.cmdb.dto.resourcecenter.AccountProtocolVo;
-import codedriver.framework.cmdb.enums.resourcecenter.condition.ConditionConfigType;
 import codedriver.framework.cmdb.resourcecenter.condition.ResourcecenterConditionBase;
 import codedriver.framework.cmdb.resourcecenter.table.CmdbResourcecenterAccountTable;
-import codedriver.framework.common.constvalue.FormHandlerType;
-import codedriver.framework.common.constvalue.ParamType;
 import codedriver.framework.dto.condition.ConditionVo;
-import codedriver.framework.form.constvalue.FormConditionModel;
-import codedriver.framework.process.constvalue.ProcessFieldType;
 import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -33,42 +28,6 @@ public class ProtocolCondition extends ResourcecenterConditionBase {
     @Override
     public String getDisplayName() {
         return "连接协议";
-    }
-
-	@Override
-	public String getHandler(FormConditionModel formConditionModel) {
-		return FormHandlerType.SELECT.toString();
-	}
-	
-	@Override
-	public String getType() {
-		return ProcessFieldType.COMMON.getValue();
-	}
-
-    @Override
-    public JSONObject getConfig(ConditionConfigType type) {
-        JSONObject config = new JSONObject();
-        config.put("type", FormHandlerType.SELECT.toString());
-        config.put("search", true);
-        config.put("multiple", true);
-        config.put("transfer", true);
-        config.put("value", "");
-        config.put("defaultValue", new ArrayList<String>());
-        config.put("dynamicUrl", "/api/rest/resourcecenter/account/protocol/search");
-        config.put("rootName", "tbodyList");
-        config.put("dealDataByUrl","getProtocolDataList");
-        config.put("className","block-span");
-        return config;
-    }
-
-    @Override
-    public Integer getSort() {
-        return 5;
-    }
-
-    @Override
-    public ParamType getParamType() {
-        return ParamType.ARRAY;
     }
 
     @Override
