@@ -1353,7 +1353,7 @@
     <resultMap id="appEnvMap" type="codedriver.framework.cmdb.dto.resourcecenter.AppEnvVo">
         <result column="id" property="id"/>
         <result column="name" property="name"/>
-        <result column="envSeqNo" property="envSeqNo"/>
+        <result column="seqNo" property="seqNo"/>
         <collection property="appModuleList" ofType="codedriver.framework.cmdb.dto.resourcecenter.AppModuleVo">
             <id column="moduleId" property="id"/>
             <result column="moduleName" property="name"/>
@@ -1369,7 +1369,7 @@
     <select id="getOsEnvListByAppSystemIdAndTypeId" resultMap="appEnvMap">
         SELECT a.env_id               as id,
                a.env_name             as name,
-               a.env_seq_no             as envSeqNo,
+               a.env_seq_no             as seqNo,
                a.app_module_id           moduleId,
                a.app_module_name      as moduleName,
                a.app_module_abbr_name as moduleAbbrName,
@@ -1385,7 +1385,7 @@
     <select id="getIpObjectEnvListByAppSystemIdAndTypeId" resultMap="appEnvMap">
         SELECT a.env_id               as id,
                a.env_name             as name,
-               a.env_seq_no             as envSeqNo,
+               a.env_seq_no             as seqNo,
                a.app_module_id           moduleId,
                a.app_module_name      as moduleName,
                a.app_module_abbr_name as moduleAbbrName,

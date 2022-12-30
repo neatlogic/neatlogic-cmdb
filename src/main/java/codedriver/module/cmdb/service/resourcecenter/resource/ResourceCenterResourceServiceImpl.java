@@ -437,7 +437,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                         if (envVo.getId() == null) {
                             envVo.setId(-2L);
                             envVo.setName("未配置");
-                            envVo.setEnvSeqNo(9999);
+                            envVo.setSeqNo(9999);
                         }
                         Long envId = envVo.getId();
                         returnEnvMap.put(envId, envVo);
@@ -478,7 +478,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 }
                 entry.getValue().setAppModuleList(appModuleVoList);
             }
-            return returnEnvMap.values().stream().sorted(Comparator.comparing(AppEnvVo::getEnvSeqNo)).collect(Collectors.toList());
+            return returnEnvMap.values().stream().sorted(Comparator.comparing(AppEnvVo::getSeqNo)).collect(Collectors.toList());
         }
         return null;
     }
