@@ -20,8 +20,11 @@ import codedriver.module.cmdb.service.ci.CiService;
 import codedriver.module.cmdb.service.customview.CustomViewService;
 import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
+import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
@@ -110,6 +113,7 @@ public class CustomViewBuilder {
                 }
             }
         }
+
         plainSelect.addJoins(new Join().withRightItem(new SubSelect().withSelectBody(buildSubSelectForCi(startCustomViewCiVo).getSelectBody()).withAlias(new Alias("ci_" + startCustomViewCiVo.getUuid()))).addOnExpression(new EqualsTo().withLeftExpression(new Column().withTable(new Table("ci_base")).withColumnName("id")).withRightExpression(new Column().withTable(new Table("ci_" + startCustomViewCiVo.getUuid())).withColumnName("id"))));
         for (CustomViewAttrVo attrVo : customViewVo.getAttrList()) {
             plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getUuid() + "`")));
@@ -310,6 +314,9 @@ public class CustomViewBuilder {
             for (CiVo ci : ciVo.getUpwardCiList()) {
                 plainSelect.addJoins(new Join().withRightItem(new Table().withName("cmdb_" + ci.getId()).withSchemaName(TenantContext.get().getDataDbName()).withAlias(new Alias("cmdb_" + ci.getId()))).addOnExpression(new EqualsTo().withLeftExpression(new Column().withTable(new Table("ci_base")).withColumnName("id")).withRightExpression(new Column().withTable(new Table("cmdb_" + ci.getId())).withColumnName(ci.getIsVirtual().equals(0) ? "cientity_id" : "id"))));
             }
+            //隐藏超时数据
+            plainSelect.withWhere(getExpiredExpression());
+
             //增加where条件，限制数据在自己模型，不要查出子模型数据
             /*plainSelect.withWhere(new EqualsTo()
                     .withLeftExpression(new Column().withTable(new Table("ci_base")).withColumnName("ci_id"))
@@ -374,8 +381,32 @@ public class CustomViewBuilder {
                     }
                 }
             }
+            //隐藏超时数据
+            plainSelect.withWhere(getExpiredExpression());
             return select;
         }
+    }
+
+    private Expression getExpiredExpression() {
+          /*
+               (not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id = `ci_base`.id) or exists
+            (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id = `ci_base`.id
+            and xx.expired_time &gt;= NOW()))
+             */
+        return new OrExpression()
+                .withLeftExpression(new ExistsExpression()
+                        .withNot(true)
+                        .withRightExpression(new SubSelect()
+                                .withSelectBody(new PlainSelect()
+                                        .withFromItem(new Table("cmdb_cientity_expiredtime").withAlias(new Alias("ex")))
+                                        .addSelectItems(new SelectExpressionItem(new Column("1")))
+                                        .withWhere(new EqualsTo(new Column("ex.cientity_id"), new Column("ci_base.id"))))))
+                .withRightExpression(new ExistsExpression().withRightExpression(new SubSelect()
+                        .withSelectBody((new PlainSelect()
+                                .withFromItem(new Table("cmdb_cientity_expiredtime").withAlias(new Alias("ex")))
+                                .addSelectItems(new SelectExpressionItem(new Column("1")))
+                                .withWhere(new AndExpression().withLeftExpression(new EqualsTo(new Column("ex.cientity_id"), new Column("ci_base.id")))
+                                        .withRightExpression(new GreaterThanEquals().withLeftExpression(new Column("ex.expired_time")).withRightExpression(new Function().withName("now"))))))));
     }
 
 }
