@@ -38,14 +38,21 @@ public class GetCustomViewAttrApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "视图id", isRequired = true)})
+    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "视图id", isRequired = true), @Param(name = "isHidden", type = ApiParamType.INTEGER, desc = "属性是否隐藏，1是，0否")})
     @Output({@Param(name = "attrList", explode = CustomViewAttrVo[].class), @Param(name = "constAttrList", explode = CustomViewConstAttrVo[].class)})
     @Description(desc = "获取自定义视图属性列表接口")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long id = paramObj.getLong("id");
-        List<CustomViewConstAttrVo> constAttrList = customViewMapper.getCustomViewConstAttrByCustomViewId(new CustomViewConstAttrVo(id));
-        List<CustomViewAttrVo> attrList = customViewMapper.getCustomViewAttrByCustomViewId(new CustomViewAttrVo(id));
+        Integer isHidden = paramObj.getInteger("isHidden");
+        CustomViewConstAttrVo customViewConstAttrVo = new CustomViewConstAttrVo(id);
+        CustomViewAttrVo customViewAttrVo = new CustomViewAttrVo(id);
+        if (isHidden != null) {
+            customViewConstAttrVo.setIsHidden(isHidden);
+            customViewAttrVo.setIsHidden(isHidden);
+        }
+        List<CustomViewConstAttrVo> constAttrList = customViewMapper.getCustomViewConstAttrByCustomViewId(customViewConstAttrVo);
+        List<CustomViewAttrVo> attrList = customViewMapper.getCustomViewAttrByCustomViewId(customViewAttrVo);
         JSONObject returnObj = new JSONObject();
         returnObj.put("constAttrList", constAttrList);
         returnObj.put("attrList", attrList);

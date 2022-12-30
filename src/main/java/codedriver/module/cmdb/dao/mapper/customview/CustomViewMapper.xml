@@ -37,7 +37,8 @@
                name,
                alias,
                sort,
-               is_hidden          AS isHidden
+               is_hidden          AS isHidden,
+               is_primary         AS isPrimary
         FROM `cmdb_customview_constattr`
         WHERE customview_id = #{customViewId}
           and uuid = #{uuid}
@@ -53,6 +54,7 @@
                alias,
                sort,
                is_hidden          AS isHidden,
+               is_primary         AS isPrimary,
                `condition`        AS conditionStr
         FROM `cmdb_customview_attr`
         WHERE customview_id = #{customViewId}
@@ -117,7 +119,8 @@
         a.alias,
         a.name,
         a.sort,
-        a.is_hidden AS isHidden
+        a.is_hidden AS isHidden,
+        a.is_primary AS isPrimary
         from cmdb_customview_constattr a
         where a.customview_id = #{customViewId}
         <if test="isHidden != null">
@@ -144,6 +147,7 @@
         a.alias,
         a.sort,
         a.is_hidden AS isHidden,
+        a.is_primary AS isPrimary,
         a.`condition` AS conditionStr,
         a.`name` AS name,
         b.`name` AS attrName,
@@ -231,7 +235,19 @@
             <result property="conditionStr" column="conditionStr"/>
             <result property="customViewCiUuid" column="attrCustomViewCiUuid"/>
             <result property="customViewId" column="attrCustomViewId"/>
+            <result property="isHidden" column="attrIsHidden"/>
+            <result property="isPrimary" column="attrIsPrimary"/>
             <result property="sort" column="attrSort"/>
+        </collection>
+        <collection property="constAttrList" ofType="codedriver.framework.cmdb.dto.customview.CustomViewConstAttrVo">
+            <id property="uuid" column="constAttrUuid"/>
+            <result property="alias" column="constAttrAlias"/>
+            <result property="name" column="constAttrName"/>
+            <result property="customViewCiUuid" column="constAttrCustomViewCiUuid"/>
+            <result property="customViewId" column="constAttrCustomViewId"/>
+            <result property="isHidden" column="constAttrIsHidden"/>
+            <result property="isPrimary" column="constAttrIsPrimary"/>
+            <result property="sort" column="constAttrSort"/>
         </collection>
         <collection property="relList" ofType="codedriver.framework.cmdb.dto.customview.CustomViewRelVo">
             <id property="uuid" column="relUuid"/>
@@ -257,8 +273,17 @@
                b.customview_ci_uuid AS attrCustomViewCiUuid,
                b.customview_id      AS attrCustomViewId,
                b.is_hidden          AS attrIsHidden,
+               b.is_primary         AS attrIsPrimary,
                b.sort               AS attrSort,
                b.uuid               AS attrUuid,
+               d.name               AS constAttrName,
+               d.alias              AS constAttrAlias,
+               d.customview_ci_uuid AS constAttrCustomViewCiUuid,
+               d.customview_id      AS constAttrCustomViewId,
+               d.is_hidden          AS constAttrIsHidden,
+               d.is_primary         AS constAttrIsPrimary,
+               d.sort               AS constAttrSort,
+               d.uuid               AS constAttrUuid,
                c.rel_id             AS relId,
                c.uuid               AS relUuid,
                c.customview_id      AS relCustomViewId,
@@ -266,6 +291,8 @@
         FROM cmdb_customview_ci a
                  LEFT JOIN cmdb_customview_attr b ON a.uuid = b.customview_ci_uuid AND b.customview_id = a.customview_id
                  LEFT JOIN cmdb_customview_rel c ON a.uuid = c.customview_ci_uuid AND c.customview_id = a.customview_id
+                 LEFT JOIN cmdb_customview_constattr d
+                           ON a.uuid = d.customview_ci_uuid AND d.customview_id = a.customview_id
         WHERE a.customview_id = #{value}
     </select>
 
@@ -446,7 +473,8 @@
          alias,
          name,
          sort,
-         is_hidden)
+         is_hidden,
+         is_primary)
         VALUES (#{customViewId},
                 #{customViewCiUuid},
                 #{uuid},
@@ -454,7 +482,8 @@
                 #{alias},
                 #{name},
                 #{sort},
-                #{isHidden})
+                #{isHidden},
+                #{isPrimary})
     </insert>
 
     <insert id="insertCustomViewAttr" parameterType="codedriver.framework.cmdb.dto.customview.CustomViewAttrVo">
@@ -467,6 +496,7 @@
          name,
          sort,
          is_hidden,
+         is_primary,
          `condition`)
         VALUES (#{customViewId},
                 #{customViewCiUuid},
@@ -476,6 +506,7 @@
                 #{name},
                 #{sort},
                 #{isHidden},
+                #{isPrimary},
                 #{conditionStr})
     </insert>
 

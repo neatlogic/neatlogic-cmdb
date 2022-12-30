@@ -54,7 +54,7 @@ public class SearchCustomViewDataApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "视图id"),
             @Param(name = "name", type = ApiParamType.STRING, desc = "视图名称"),
-            @Param(name = "searchMode", type = ApiParamType.ENUM, rule = "normal,group,data", isRequired = true, desc = "搜索模式：normal或group"),
+            @Param(name = "searchMode", type = ApiParamType.ENUM, rule = "normal,group,data", isRequired = true, desc = "normal:视图列表模式、group:视图列表分组模式、data:数据模式"),
             @Param(name = "groupBy", type = ApiParamType.STRING, desc = "分组属性的uuid"),
             @Param(name = "attrFilterList", type = ApiParamType.JSONARRAY, desc = "属性过滤条件"),
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字"),

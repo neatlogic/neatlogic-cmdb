@@ -32,14 +32,15 @@ public class CustomViewServiceImpl implements CustomViewService, ICustomViewCros
     @Resource
     private CmdbTagMapper cmdbTagMapper;
 
-    @Override
-    public List<CustomViewCiVo> getCustomViewCiByCustomViewId(Long viewId) {
-        return customViewMapper.getCustomViewCiByCustomViewId(viewId);
-    }
 
     @Override
     public List<CustomViewAttrVo> getCustomViewAttrByCustomViewId(CustomViewAttrVo customViewAttrVo) {
         return customViewMapper.getCustomViewAttrByCustomViewId(customViewAttrVo);
+    }
+
+    @Override
+    public List<CustomViewConstAttrVo> getCustomViewConstAttrByCustomViewId(CustomViewConstAttrVo customViewConstAttrVo) {
+        return customViewMapper.getCustomViewConstAttrByCustomViewId(customViewConstAttrVo);
     }
 
 
