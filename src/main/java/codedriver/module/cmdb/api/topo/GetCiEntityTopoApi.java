@@ -129,7 +129,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                     CiEntityVo pCiEntityVo = new CiEntityVo();
                     pCiEntityVo.setIdList(ciCiEntityIdMap.get(ciId));
                     pCiEntityVo.setCiId(ciId);
-                    pCiEntityVo.setMaxRelEntityCount(100L);
+                    pCiEntityVo.setMaxRelEntityCount(50L);
                     //不需要多余的属性
                     pCiEntityVo.setAttrIdList(new ArrayList<Long>() {{
                         this.add(0L);
