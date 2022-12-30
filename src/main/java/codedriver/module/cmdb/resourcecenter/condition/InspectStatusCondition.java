@@ -4,11 +4,14 @@ import codedriver.framework.cmdb.enums.resourcecenter.condition.ConditionConfigT
 import codedriver.framework.cmdb.resourcecenter.condition.ResourcecenterConditionBase;
 import codedriver.framework.cmdb.resourcecenter.table.ScenceIpobjectDetailTable;
 import codedriver.framework.common.constvalue.FormHandlerType;
+import codedriver.framework.common.constvalue.InspectStatus;
 import codedriver.framework.common.constvalue.ParamType;
 import codedriver.framework.dto.condition.ConditionVo;
 import codedriver.framework.form.constvalue.FormConditionModel;
 import codedriver.framework.process.constvalue.ProcessFieldType;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -71,7 +74,21 @@ public class InspectStatusCondition extends ResourcecenterConditionBase {
 
     @Override
     public Object valueConversionText(Object value, JSONObject config) {
-
+        if (value != null) {
+            List<String> valueList = new ArrayList<>();
+            List<String> textList = new ArrayList<>();
+            if (value instanceof String) {
+                valueList.add(value.toString());
+            } else if (value instanceof List) {
+                valueList = JSON.parseArray(JSON.toJSONString(value), String.class);
+            }
+            for (String valueTmp : valueList){
+                textList.add(InspectStatus.getText(valueTmp));
+            }
+            if(CollectionUtils.isNotEmpty(textList)) {
+                return String.join("、", textList);
+            }
+        }
         return value;
     }
 

@@ -56,7 +56,6 @@ public class MaintenanceWindowCondition extends ResourcecenterConditionBase {
 
     @Override
     public Object valueConversionText(Object value, JSONObject config) {
-
         return value;
     }
 

@@ -125,6 +125,8 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     ResourceVo getAppEnvById(Long id);
 
+    List<ResourceVo> getAppEnvListByIdList(List<Long> idList);
+
     ResourceVo getAppEnvByName(String name);
 
     List<AppEnvironmentVo> getAllAppEnv();

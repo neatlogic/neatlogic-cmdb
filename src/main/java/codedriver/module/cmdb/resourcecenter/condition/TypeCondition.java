@@ -11,6 +11,7 @@ import codedriver.framework.dto.condition.ConditionVo;
 import codedriver.framework.form.constvalue.FormConditionModel;
 import codedriver.framework.process.constvalue.ProcessFieldType;
 import codedriver.module.cmdb.dao.mapper.ci.CiMapper;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
@@ -73,7 +74,18 @@ public class TypeCondition extends ResourcecenterConditionBase {
 
     @Override
     public Object valueConversionText(Object value, JSONObject config) {
-
+        if (value != null) {
+            List<Long> valueList = new ArrayList<>();
+            if (value instanceof String) {
+                valueList.add(Long.valueOf(value.toString()));
+            } else if (value instanceof List) {
+                valueList = JSON.parseArray(JSON.toJSONString(value), Long.class);
+            }
+            List<CiVo> cis = ciMapper.getCiByIdList(valueList);
+            if(CollectionUtils.isNotEmpty(cis)) {
+                return cis.stream().map(CiVo::getName).collect(Collectors.joining("、"));
+            }
+        }
         return value;
     }
 

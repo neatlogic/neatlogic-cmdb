@@ -6,16 +6,26 @@ import codedriver.framework.cmdb.resourcecenter.table.ScenceIpobjectDetailTable;
 import codedriver.framework.common.constvalue.FormHandlerType;
 import codedriver.framework.common.constvalue.ParamType;
 import codedriver.framework.common.constvalue.TeamLevel;
+import codedriver.framework.dao.mapper.TeamMapper;
+import codedriver.framework.dto.TeamVo;
 import codedriver.framework.dto.condition.ConditionVo;
 import codedriver.framework.form.constvalue.FormConditionModel;
 import codedriver.framework.process.constvalue.ProcessFieldType;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class BgCondition extends ResourcecenterConditionBase {
+
+    @Resource
+    TeamMapper teamMapper;
 
     @Override
     public String getName() {
@@ -64,7 +74,18 @@ public class BgCondition extends ResourcecenterConditionBase {
 
     @Override
     public Object valueConversionText(Object value, JSONObject config) {
-
+        if (value != null) {
+            List<String> valueList = new ArrayList<>();
+            if (value instanceof String) {
+                valueList.add(value.toString());
+            } else if (value instanceof List) {
+                valueList = JSON.parseArray(JSON.toJSONString(value), String.class);
+            }
+            List<TeamVo> bgs = teamMapper.getTeamByUuidList(valueList);
+            if (CollectionUtils.isNotEmpty(bgs)) {
+                return bgs.stream().map(TeamVo::getName).collect(Collectors.joining("、"));
+            }
+        }
         return value;
     }
 

@@ -54,7 +54,6 @@ public class PortCondition extends ResourcecenterConditionBase {
 
     @Override
     public Object valueConversionText(Object value, JSONObject config) {
-
         return value;
     }
 

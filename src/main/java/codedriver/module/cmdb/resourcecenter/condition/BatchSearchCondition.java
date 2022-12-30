@@ -55,7 +55,6 @@ public class BatchSearchCondition extends ResourcecenterConditionBase {
 
     @Override
     public Object valueConversionText(Object value, JSONObject config) {
-
         return value;
     }
 

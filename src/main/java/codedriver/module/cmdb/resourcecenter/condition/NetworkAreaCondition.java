@@ -54,7 +54,6 @@ public class NetworkAreaCondition extends ResourcecenterConditionBase {
 
     @Override
     public Object valueConversionText(Object value, JSONObject config) {
-
         return value;
     }
 
