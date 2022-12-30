@@ -50,8 +50,8 @@ public class SearchCollectionDataApi extends PrivateApiComponentBase {
     @Input({@Param(name = "collection", type = ApiParamType.STRING, isRequired = true, desc = "集合名"),
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数量"),
-            @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字")})
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数量")
+    })
     @Output({@Param(explode = BasePageVo.class),
             @Param(name = "subTheadData", type = ApiParamType.JSONOBJECT, desc = "子属性表头定义"),
             @Param(name = "theadList", type = ApiParamType.JSONARRAY, desc = "表头数据"),
@@ -139,7 +139,6 @@ public class SearchCollectionDataApi extends PrivateApiComponentBase {
                 resultObj.put("pageSize", pageVo.getPageSize());
                 resultObj.put("pageCount", pageVo.getPageCount());
                 resultObj.put("rowNum", pageVo.getRowNum());
-
             }
         }
         return resultObj;

@@ -7,6 +7,7 @@ package codedriver.module.cmdb.service.customview;
 
 import codedriver.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
 import codedriver.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
+import codedriver.framework.cmdb.crossover.ICustomViewDataCrossoverService;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.customview.*;
@@ -27,7 +28,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-public class CustomViewDataServiceImpl implements CustomViewDataService {
+public class CustomViewDataServiceImpl implements CustomViewDataService, ICustomViewDataCrossoverService {
     @Resource
     private CustomViewDataMapper customViewDataMapper;
 

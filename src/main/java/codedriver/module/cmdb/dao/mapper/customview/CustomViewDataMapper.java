@@ -5,7 +5,6 @@
 
 package codedriver.module.cmdb.dao.mapper.customview;
 
-import codedriver.framework.cmdb.crossover.ICustomViewDataCrossoverService;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewConditionVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewDataGroupVo;
@@ -13,7 +12,7 @@ import codedriver.framework.cmdb.dto.customview.CustomViewDataGroupVo;
 import java.util.List;
 import java.util.Map;
 
-public interface CustomViewDataMapper extends ICustomViewDataCrossoverService {
+public interface CustomViewDataMapper {
 
     List<Map<String, Object>> searchCustomViewDataFlatten(CustomViewConditionVo customViewConditionVo);
 

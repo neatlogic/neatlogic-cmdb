@@ -3,7 +3,7 @@
 # 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
 #
 
-POM_VERSION=`cat pom.xml|grep version|sed -n '2p'`
+POM_VERSION=`cat pom.xml|grep "<version>"|sed -n '2p'`
 POM_VERSION=${POM_VERSION#*>}
 POM_VERSION=${POM_VERSION%<*}
 if [ $POM_VERSION != "" ]; then

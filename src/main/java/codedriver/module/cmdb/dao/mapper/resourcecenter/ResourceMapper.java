@@ -24,7 +24,11 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     int getResourceCount(ResourceSearchVo searchVo);
 
+    int getResourceCountByDynamicCondition(@Param("searchVo") ResourceSearchVo searchVo, @Param("conditionSql")String conditionSql);
+
     List<Long> getResourceIdList(ResourceSearchVo searchVo);
+
+    List<Long> getResourceIdListByDynamicCondition(@Param("searchVo") ResourceSearchVo searchVo, @Param("conditionSql")String conditionSql);
 
     List<ResourceVo> getResourceListByIdList(List<Long> idList);
 
@@ -40,7 +44,7 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     List<Long> getOsResourceIdListByAppSystemIdAndAppModuleIdListAndEnvIdAndTypeId(ResourceSearchVo searchVo);
 
-    List<ResourceVo> getAppInstanceResourceListByIdList(List<Long> idList);
+    List<ResourceVo> getAppInstanceResourceListByIdList(@Param("idList")List<Long> idList);
 
     List<ResourceVo> getAppInstanceResourceListByIdListAndKeyword(@Param("idList") List<Long> idList, @Param("keyword") String keyword);
 
@@ -146,6 +150,12 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
     List<Long> searchStateIdList(BasePageVo searchVo);
 
     List<ResourceVo> searchStateListByIdList(List<Long> idList);
+
+    int searchVendorCount(BasePageVo searchVo);
+
+    List<Long> searchVendorIdList(BasePageVo searchVo);
+
+    List<ResourceVo> searchVendorListByIdList(List<Long> idList);
 
     int getAppSystemIdListCountByKeyword(String keyword);
 
