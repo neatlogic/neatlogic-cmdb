@@ -194,6 +194,7 @@
         <result column="type_label" property="typeLabel"/>
         <result column="inspect_status" property="inspectStatus"/>
         <result column="inspect_time" property="inspectTime"/>
+        <result column="env_seq_no" property="envSeqNo"/>
         <result column="monitor_status" property="monitorStatus"/>
         <result column="monitor_time" property="monitorTime"/>
         <result column="maintenance_window" property="maintenanceWindow"/>
@@ -1124,6 +1125,7 @@
         <foreach collection="list" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
+        ORDER BY `env_seq_no` ASC
     </select>
 
     <select id="searchAppSystemCount" parameterType="codedriver.framework.common.dto.BasePageVo" resultType="int">
@@ -1351,6 +1353,7 @@
     <resultMap id="appEnvMap" type="codedriver.framework.cmdb.dto.resourcecenter.AppEnvVo">
         <result column="id" property="id"/>
         <result column="name" property="name"/>
+        <result column="seqNo" property="seqNo"/>
         <collection property="appModuleList" ofType="codedriver.framework.cmdb.dto.resourcecenter.AppModuleVo">
             <id column="moduleId" property="id"/>
             <result column="moduleName" property="name"/>
@@ -1366,6 +1369,7 @@
     <select id="getOsEnvListByAppSystemIdAndTypeId" resultMap="appEnvMap">
         SELECT a.env_id               as id,
                a.env_name             as name,
+               a.env_seq_no             as seqNo,
                a.app_module_id           moduleId,
                a.app_module_name      as moduleName,
                a.app_module_abbr_name as moduleAbbrName,
@@ -1381,6 +1385,7 @@
     <select id="getIpObjectEnvListByAppSystemIdAndTypeId" resultMap="appEnvMap">
         SELECT a.env_id               as id,
                a.env_name             as name,
+               a.env_seq_no             as seqNo,
                a.app_module_id           moduleId,
                a.app_module_name      as moduleName,
                a.app_module_abbr_name as moduleAbbrName,
