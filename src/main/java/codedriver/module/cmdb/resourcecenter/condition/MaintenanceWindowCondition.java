@@ -19,7 +19,7 @@ import java.util.List;
 public class MaintenanceWindowCondition extends ResourcecenterConditionBase {
     @Override
     public String getName() {
-        return "networkArea";
+        return "maintenanceWindow";
     }
 
     @Override
