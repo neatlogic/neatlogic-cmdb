@@ -5,6 +5,7 @@ import codedriver.framework.cmdb.auth.label.CMDB;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
+import codedriver.framework.cmdb.dto.resourcecenter.ResourceVo;
 import codedriver.framework.cmdb.enums.resourcecenter.AppModuleResourceType;
 import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.common.constvalue.ApiParamType;
@@ -80,57 +81,57 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
         if (envCiVo == null) {
             throw new CiNotFoundException("APPEnv");
         }
-        //获取应用环境实例个数
-        int envCount = ciEntityMapper.getCiEntityIdCountByCiId(envCiVo.getId());
-        if (envCount > 0) {
-            //定义需要采集的模型
-//            List<String> resourceTypeNameList = Arrays.asList("OS", "APPIns", "APPInsCluster", "DBIns", "DBCluster", "AccessEndPoint", "Database");
-            List<String> resourceTypeNameList = AppModuleResourceType.getNameList();
-            List<CiVo> resourceCiVoList = new ArrayList<>();
-            //获取应用环境实例list
-            CiEntityVo envCiEntityVo = new CiEntityVo();
-            envCiEntityVo.setCiId(envCiVo.getId());
-            List<Long> envIdList = ciEntityMapper.getCiEntityIdByCiId(envCiEntityVo);
-            List<CiEntityVo> envCiEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(envIdList);
-            //获取数据库所有的模型，用于通过id去获得对应的模型
-            Map<Long, CiVo> allCiVoMap = new HashMap<>();
-            List<CiVo> allCiVoList = ciMapper.getAllCi(null);
-            for (CiVo ci : allCiVoList) {
-                allCiVoMap.put(ci.getId(), ci);
-                if (resourceTypeNameList.contains(ci.getName())) {
-                    resourceCiVoList.add(ci);
-                }
+        //获取需要采集的模型
+        List<String> resourceTypeNameList = AppModuleResourceType.getNameList();
+        List<CiVo> resourceCiVoList = new ArrayList<>();
+        //获取应用环境实例list
+        CiEntityVo envCiEntityVo = new CiEntityVo();
+        envCiEntityVo.setCiId(envCiVo.getId());
+        List<Long> envIdList = ciEntityMapper.getCiEntityIdByCiId(envCiEntityVo);
+        List<ResourceVo> envResourceList = resourceMapper.searchAppEnvListByIdList(envIdList);
+        //获取数据库所有的模型，用于通过id去获得对应的模型
+        Map<Long, CiVo> allCiVoMap = new HashMap<>();
+        List<CiVo> allCiVoList = ciMapper.getAllCi(null);
+        for (CiVo ci : allCiVoList) {
+            allCiVoMap.put(ci.getId(), ci);
+            if (resourceTypeNameList.contains(ci.getName())) {
+                resourceCiVoList.add(ci);
+            }
+        }
+        ResourceSearchVo searchVo = new ResourceSearchVo();
+        searchVo.setAppModuleId(appModuleId);
+        //无配置环境
+        ResourceVo noSettingEnvResourceVo = new ResourceVo();
+        noSettingEnvResourceVo.setId(-2L);
+        noSettingEnvResourceVo.setName("未配置");
+        envResourceList.add(noSettingEnvResourceVo);
+        for (ResourceVo envResource : envResourceList) {
+            JSONObject returnObj = new JSONObject();
+            searchVo.setEnvId(envResource.getId());
+            //根据模块id和环境id，获取当前环境下含有资产的 模型idList（resourceTypeIdList）
+            Set<Long> resourceTypeIdSet = resourceMapper.getIpObjectResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
+            List<Long> resourceTypeIdList = new ArrayList<>(resourceTypeIdSet);
+            Set<CiVo> returnCiVoSet = new HashSet<>();
+            if (CollectionUtils.isNotEmpty(resourceTypeIdSet)) {
+                resourceTypeIdSet = resourceMapper.getOsResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
+                resourceTypeIdList.addAll(resourceTypeIdSet);
             }
 
-            ResourceSearchVo searchVo = new ResourceSearchVo();
-            searchVo.setAppModuleId(appModuleId);
-            for (CiEntityVo envCiEntity : envCiEntityList) {
-                JSONObject returnObj = new JSONObject();
-                returnObj.put("env", envCiEntity);
-                searchVo.setEnvId(envCiEntity.getId());
-                //根据模块id和环境id，获取当前环境下含有资产的 模型idList（resourceTypeIdList）
-                List<Long> resourceTypeIdList = new ArrayList<>();
-                Set<Long> resourceTypeIdSet = resourceMapper.getIpObjectResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
-                resourceTypeIdList.addAll(resourceTypeIdSet);
-                Set<CiVo> returnCiVoSet = new HashSet<>();
-                if (CollectionUtils.isNotEmpty(resourceTypeIdSet)) {
-                    resourceTypeIdSet = resourceMapper.getOsResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
-                    resourceTypeIdList.addAll(resourceTypeIdSet);
-                }
-
-                //循环resourceTypeIdList，将其父级模型的name存在于resourceTypeNameList中的 模型 返回给前端
-                if (CollectionUtils.isNotEmpty(resourceTypeIdList)) {
-                    for (Long resourceTypeId : resourceTypeIdList) {
-                        CiVo ciVo = allCiVoMap.get(resourceTypeId);
-                        if (ciVo == null) {
-                            throw new CiNotFoundException(resourceTypeId);
-                        }
-                        String resourceTypeName = resourceCenterResourceService.getResourceTypeName(resourceCiVoList, ciVo);
-                        if (resourceTypeNameList.contains(resourceTypeName)) {
-                            returnCiVoSet.add(ciVo);
-                        }
+            //循环resourceTypeIdList，将其父级模型的name存在于resourceTypeNameList中的 模型 返回给前端
+            if (CollectionUtils.isNotEmpty(resourceTypeIdList)) {
+                for (Long resourceTypeId : resourceTypeIdList) {
+                    CiVo ciVo = allCiVoMap.get(resourceTypeId);
+                    if (ciVo == null) {
+                        throw new CiNotFoundException(resourceTypeId);
+                    }
+                    String resourceTypeName = resourceCenterResourceService.getResourceTypeName(resourceCiVoList, ciVo);
+                    if (resourceTypeNameList.contains(resourceTypeName)) {
+                        returnCiVoSet.add(ciVo);
                     }
                 }
+            }
+            if (CollectionUtils.isNotEmpty(returnCiVoSet)) {
+                returnObj.put("env", envResource);
                 returnObj.put("ciVoList", returnCiVoSet);
                 returnArray.add(returnObj);
             }
