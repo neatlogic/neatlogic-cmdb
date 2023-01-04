@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2023 TechSure Co., Ltd. All Rights Reserved.
  * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
  */
 
@@ -391,7 +391,12 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
     @Transactional
     @Override
     public Long deleteCiEntity(CiEntityVo ciEntityVo, Boolean allowCommit) {
-        return deleteCiEntity(ciEntityVo, allowCommit, new TransactionGroupVo());
+        TransactionGroupVo transactionGroupVo = new TransactionGroupVo();
+        Long transactionId = deleteCiEntity(ciEntityVo, allowCommit, transactionGroupVo);
+        if (transactionId > 0L) {
+            transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), transactionId);
+        }
+        return transactionId;
     }
 
     /**
@@ -1673,7 +1678,11 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                                 //级联删除
                                 //将当前配置项加入忽略列表，这样做级联删除时，关联的配置项就不会通过反查找回当前配置项，从而产生一个不必要的修改事务
                                 transactionGroupVo.addExclude(ciEntityTransactionVo.getCiEntityId());
-                                deleteCiEntity(new CiEntityVo(ciEntityId), true, transactionGroupVo);
+                                Long cascadeTransactionId = deleteCiEntity(new CiEntityVo(ciEntityId), true, transactionGroupVo);
+                                //由于有级联删除的需要，所以需要在这里建立事务和事务组的关系
+                                if (cascadeTransactionId > 0L) {
+                                    transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), cascadeTransactionId);
+                                }
                             } else {
                                 //补充关系对端事务
                                 TransactionVo toTransactionVo = new TransactionVo();
@@ -1717,8 +1726,6 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             this.updateInvokedExpressionAttr(deleteCiEntityVo);
 
             this.deleteCiEntity(deleteCiEntityVo);
-            //添加当前删除事务到事务组
-            transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), transactionVo.getId());
 
             //修改事务状态
             transactionVo.setCommitUser(UserContext.get().getUserId(true));
