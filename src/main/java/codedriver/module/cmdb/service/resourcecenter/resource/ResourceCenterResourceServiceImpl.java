@@ -448,8 +448,10 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                                 if (envIdModuleIdSetMap.get(envId).contains(moduleVo.getId())) {
                                     List<CiVo> ciVoList = moduleVo.getCiList();
                                     for (CiVo ci : ciVoList) {
-                                        envModuleIdCiIdSetMap.get(envId + moduleVo.getId()).add(ci.getId());
-                                        envModuleIdCiListMap.get(envId + moduleVo.getId()).add(ci);
+                                        if (CollectionUtils.isNotEmpty(envModuleIdCiIdSetMap.get(envId + moduleVo.getId())) && !envModuleIdCiIdSetMap.get(envId + moduleVo.getId()).contains(ci.getId())) {
+                                            envModuleIdCiIdSetMap.get(envId + moduleVo.getId()).add(ci.getId());
+                                            envModuleIdCiListMap.get(envId + moduleVo.getId()).add(ci);
+                                        }
                                     }
                                 } else {
                                     envIdModuleIdSetMap.get(envId).add(moduleVo.getId());
