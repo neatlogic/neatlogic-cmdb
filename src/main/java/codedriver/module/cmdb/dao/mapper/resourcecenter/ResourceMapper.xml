@@ -778,10 +778,20 @@
         </if>
     </select>
 
-    <select id="getOsResourceAppSystemIdListByOsId" parameterType="java.lang.Long" resultType="java.lang.Long">
+    <select id="getResourceAppSystemIdListByResourceId" parameterType="java.lang.Long" resultType="java.lang.Long">
         SELECT a.`app_system_id`
         FROM @{DATA_SCHEMA}.`scence_os_softwareservice_env_appmodule_appsystem` a
         WHERE a.`id` = #{id}
+    </select>
+
+    <select id="getResourceAppSystemListByResourceIdList" parameterType="java.lang.Long"
+            resultType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo">
+        SELECT a.`app_system_id` as appSystemId,a.id
+        FROM @{DATA_SCHEMA}.`scence_os_softwareservice_env_appmodule_appsystem` a
+        WHERE a.`id` in
+        <foreach collection="list" item="id" close=")" separator="," open="(">
+            #{id}
+        </foreach>
     </select>
 
     <select id="getResourceListByResourceVoList" parameterType="codedriver.framework.cmdb.dto.resourcecenter.ResourceVo"
