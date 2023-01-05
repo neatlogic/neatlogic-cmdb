@@ -39,9 +39,11 @@ public class ProtocolCondition extends ResourcecenterConditionBase {
             } else if (value instanceof List) {
                 valueList = JSON.parseArray(JSON.toJSONString(value), Long.class);
             }
-            List<AccountProtocolVo> protocolVos = resourceAccountMapper.getAccountProtocolListByIdList(valueList);
-            if (CollectionUtils.isNotEmpty(protocolVos)) {
-                return protocolVos.stream().map(AccountProtocolVo::getName).collect(Collectors.joining("、"));
+            if(CollectionUtils.isNotEmpty(valueList)) {
+                List<AccountProtocolVo> protocolVos = resourceAccountMapper.getAccountProtocolListByIdList(valueList);
+                if (CollectionUtils.isNotEmpty(protocolVos)) {
+                    return protocolVos.stream().map(AccountProtocolVo::getName).collect(Collectors.joining("、"));
+                }
             }
         }
         return value;

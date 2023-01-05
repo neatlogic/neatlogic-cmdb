@@ -39,9 +39,11 @@ public class VendorCondition extends ResourcecenterConditionBase {
             } else if (value instanceof List) {
                 valueList = JSON.parseArray(JSON.toJSONString(value), Long.class);
             }
-            List<ResourceVo> vendors = resourceMapper.searchVendorListByIdList(valueList);
-            if(CollectionUtils.isNotEmpty(vendors)) {
-                return vendors.stream().map(ResourceVo::getName).collect(Collectors.joining("、"));
+            if(CollectionUtils.isNotEmpty(valueList)) {
+                List<ResourceVo> vendors = resourceMapper.searchVendorListByIdList(valueList);
+                if (CollectionUtils.isNotEmpty(vendors)) {
+                    return vendors.stream().map(ResourceVo::getName).collect(Collectors.joining("、"));
+                }
             }
         }
         return value;

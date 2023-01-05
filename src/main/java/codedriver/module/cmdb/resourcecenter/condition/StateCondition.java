@@ -40,9 +40,11 @@ public class StateCondition extends ResourcecenterConditionBase {
             } else if (value instanceof List) {
                 valueList = JSON.parseArray(JSON.toJSONString(value), Long.class);
             }
-            List<ResourceVo> states = resourceMapper.searchStateListByIdList(valueList);
-            if(CollectionUtils.isNotEmpty(states)) {
-                return states.stream().map(ResourceVo::getDescription).collect(Collectors.joining("、"));
+            if(CollectionUtils.isNotEmpty(valueList)) {
+                List<ResourceVo> states = resourceMapper.searchStateListByIdList(valueList);
+                if (CollectionUtils.isNotEmpty(states)) {
+                    return states.stream().map(ResourceVo::getDescription).collect(Collectors.joining("、"));
+                }
             }
         }
         return value;

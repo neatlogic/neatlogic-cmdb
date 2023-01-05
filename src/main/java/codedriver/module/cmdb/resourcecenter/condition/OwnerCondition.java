@@ -39,9 +39,11 @@ public class OwnerCondition extends ResourcecenterConditionBase {
             } else if (value instanceof List) {
                 valueList = JSON.parseArray(JSON.toJSONString(value), String.class);
             }
-            List<UserVo> users = userMapper.getUserByUserUuidList(valueList);
-            if (CollectionUtils.isNotEmpty(users)) {
-                return users.stream().map(UserVo::getName).collect(Collectors.joining("、"));
+            if(CollectionUtils.isNotEmpty(valueList)) {
+                List<UserVo> users = userMapper.getUserByUserUuidList(valueList);
+                if (CollectionUtils.isNotEmpty(users)) {
+                    return users.stream().map(UserVo::getName).collect(Collectors.joining("、"));
+                }
             }
         }
         return value;

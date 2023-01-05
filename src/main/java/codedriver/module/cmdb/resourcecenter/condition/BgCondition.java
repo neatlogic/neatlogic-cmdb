@@ -40,9 +40,11 @@ public class BgCondition extends ResourcecenterConditionBase {
             } else if (value instanceof List) {
                 valueList = JSON.parseArray(JSON.toJSONString(value), String.class);
             }
-            List<TeamVo> bgs = teamMapper.getTeamByUuidList(valueList);
-            if (CollectionUtils.isNotEmpty(bgs)) {
-                return bgs.stream().map(TeamVo::getName).collect(Collectors.joining("、"));
+            if(CollectionUtils.isNotEmpty(valueList)) {
+                List<TeamVo> bgs = teamMapper.getTeamByUuidList(valueList);
+                if (CollectionUtils.isNotEmpty(bgs)) {
+                    return bgs.stream().map(TeamVo::getName).collect(Collectors.joining("、"));
+                }
             }
         }
         return value;

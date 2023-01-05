@@ -43,9 +43,11 @@ public class TypeCondition extends ResourcecenterConditionBase {
             } else if (value instanceof List) {
                 valueList = JSON.parseArray(JSON.toJSONString(value), Long.class);
             }
-            List<CiVo> cis = ciMapper.getCiByIdList(valueList);
-            if(CollectionUtils.isNotEmpty(cis)) {
-                return cis.stream().map(CiVo::getName).collect(Collectors.joining("、"));
+            if(CollectionUtils.isNotEmpty(valueList)) {
+                List<CiVo> cis = ciMapper.getCiByIdList(valueList);
+                if (CollectionUtils.isNotEmpty(cis)) {
+                    return cis.stream().map(CiVo::getName).collect(Collectors.joining("、"));
+                }
             }
         }
         return value;

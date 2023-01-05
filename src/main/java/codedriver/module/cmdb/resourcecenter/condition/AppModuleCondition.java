@@ -40,9 +40,11 @@ public class AppModuleCondition extends ResourcecenterConditionBase {
             } else if (value instanceof List) {
                 valueList = JSON.parseArray(JSON.toJSONString(value), Long.class);
             }
-            List<ResourceVo> appModules = resourceMapper.getAppModuleListByIdListSimple(valueList, false);
-            if (CollectionUtils.isNotEmpty(appModules)) {
-                return appModules.stream().map(o->String.format("%s(%s)",o.getAbbrName(),o.getName())).collect(Collectors.joining("、"));
+            if(CollectionUtils.isNotEmpty(valueList)) {
+                List<ResourceVo> appModules = resourceMapper.getAppModuleListByIdListSimple(valueList, false);
+                if (CollectionUtils.isNotEmpty(appModules)) {
+                    return appModules.stream().map(o -> String.format("%s(%s)", o.getAbbrName(), o.getName())).collect(Collectors.joining("、"));
+                }
             }
         }
         return value;

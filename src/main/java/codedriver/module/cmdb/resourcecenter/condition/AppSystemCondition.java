@@ -40,9 +40,11 @@ public class AppSystemCondition extends ResourcecenterConditionBase {
             } else if (value instanceof List) {
                 valueList = JSON.parseArray(JSON.toJSONString(value), Long.class);
             }
-            List<AppSystemVo> appSystemVos = resourceMapper.getAppSystemListByIdList(valueList);
-            if(CollectionUtils.isNotEmpty(appSystemVos)) {
-                return appSystemVos.stream().map(o->String.format("%s(%s)",o.getAbbrName(),o.getName())).collect(Collectors.joining("、"));
+            if(CollectionUtils.isNotEmpty(valueList)) {
+                List<AppSystemVo> appSystemVos = resourceMapper.getAppSystemListByIdList(valueList);
+                if (CollectionUtils.isNotEmpty(appSystemVos)) {
+                    return appSystemVos.stream().map(o -> String.format("%s(%s)", o.getAbbrName(), o.getName())).collect(Collectors.joining("、"));
+                }
             }
         }
         return value;
