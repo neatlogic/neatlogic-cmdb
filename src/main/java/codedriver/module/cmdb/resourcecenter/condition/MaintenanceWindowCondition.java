@@ -2,6 +2,7 @@ package codedriver.module.cmdb.resourcecenter.condition;
 
 import codedriver.framework.cmdb.resourcecenter.condition.ResourcecenterConditionBase;
 import codedriver.framework.cmdb.resourcecenter.table.ScenceIpobjectDetailTable;
+import codedriver.framework.common.constvalue.Expression;
 import codedriver.framework.dto.condition.ConditionVo;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -37,6 +38,6 @@ public class MaintenanceWindowCondition extends ResourcecenterConditionBase {
             List<String> values = JSON.parseArray(JSON.toJSONString(condition.getValueList()), String.class);
             value = String.join(",", values);
         }
-        sqlSb.append(String.format("%s.%s = '%s'", new ScenceIpobjectDetailTable().getShortName(), ScenceIpobjectDetailTable.FieldEnum.MAINTENANCE_WINDOW.getValue(), value.toString()));
+        sqlSb.append(Expression.getExpressionSql(condition.getExpression(), new ScenceIpobjectDetailTable().getShortName(), ScenceIpobjectDetailTable.FieldEnum.MAINTENANCE_WINDOW.getValue(), value.toString()));
     }
 }
