@@ -43,7 +43,7 @@ public class StateCondition extends ResourcecenterConditionBase {
             if(CollectionUtils.isNotEmpty(valueList)) {
                 List<ResourceVo> states = resourceMapper.searchStateListByIdList(valueList);
                 if (CollectionUtils.isNotEmpty(states)) {
-                    return states.stream().map(ResourceVo::getDescription).collect(Collectors.joining("、"));
+                    return states.stream().map(ResourceVo::getDescription).collect(Collectors.toList());
                 }
             }
         }

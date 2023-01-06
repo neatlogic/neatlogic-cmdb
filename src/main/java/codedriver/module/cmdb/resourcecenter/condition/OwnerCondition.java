@@ -42,7 +42,7 @@ public class OwnerCondition extends ResourcecenterConditionBase {
             if(CollectionUtils.isNotEmpty(valueList)) {
                 List<UserVo> users = userMapper.getUserByUserUuidList(valueList);
                 if (CollectionUtils.isNotEmpty(users)) {
-                    return users.stream().map(UserVo::getName).collect(Collectors.joining("、"));
+                    return users.stream().map(UserVo::getName).collect(Collectors.toList());
                 }
             }
         }

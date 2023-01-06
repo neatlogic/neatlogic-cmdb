@@ -42,7 +42,7 @@ public class TagCondition extends ResourcecenterConditionBase {
             if(CollectionUtils.isNotEmpty(valueList)) {
                 List<TagVo> tags = resourceTagMapper.getTagListByIdList(valueList);
                 if (CollectionUtils.isNotEmpty(tags)) {
-                    return tags.stream().map(TagVo::getName).collect(Collectors.joining("、"));
+                    return tags.stream().map(TagVo::getName).collect(Collectors.toList());
                 }
             }
         }

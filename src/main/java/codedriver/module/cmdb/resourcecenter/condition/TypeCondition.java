@@ -46,7 +46,7 @@ public class TypeCondition extends ResourcecenterConditionBase {
             if(CollectionUtils.isNotEmpty(valueList)) {
                 List<CiVo> cis = ciMapper.getCiByIdList(valueList);
                 if (CollectionUtils.isNotEmpty(cis)) {
-                    return cis.stream().map(CiVo::getName).collect(Collectors.joining("、"));
+                    return cis.stream().map(CiVo::getLabel).collect(Collectors.toList());
                 }
             }
         }

@@ -42,7 +42,7 @@ public class ProtocolCondition extends ResourcecenterConditionBase {
             if(CollectionUtils.isNotEmpty(valueList)) {
                 List<AccountProtocolVo> protocolVos = resourceAccountMapper.getAccountProtocolListByIdList(valueList);
                 if (CollectionUtils.isNotEmpty(protocolVos)) {
-                    return protocolVos.stream().map(AccountProtocolVo::getName).collect(Collectors.joining("、"));
+                    return protocolVos.stream().map(AccountProtocolVo::getName).collect(Collectors.toList());
                 }
             }
         }

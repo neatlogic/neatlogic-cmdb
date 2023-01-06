@@ -43,7 +43,7 @@ public class AppSystemCondition extends ResourcecenterConditionBase {
             if(CollectionUtils.isNotEmpty(valueList)) {
                 List<AppSystemVo> appSystemVos = resourceMapper.getAppSystemListByIdList(valueList);
                 if (CollectionUtils.isNotEmpty(appSystemVos)) {
-                    return appSystemVos.stream().map(o -> String.format("%s(%s)", o.getAbbrName(), o.getName())).collect(Collectors.joining("、"));
+                    return appSystemVos.stream().map(o -> String.format("%s(%s)", o.getAbbrName(), o.getName())).collect(Collectors.toList());
                 }
             }
         }

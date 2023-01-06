@@ -43,7 +43,7 @@ public class AppModuleCondition extends ResourcecenterConditionBase {
             if(CollectionUtils.isNotEmpty(valueList)) {
                 List<ResourceVo> appModules = resourceMapper.getAppModuleListByIdListSimple(valueList, false);
                 if (CollectionUtils.isNotEmpty(appModules)) {
-                    return appModules.stream().map(o -> String.format("%s(%s)", o.getAbbrName(), o.getName())).collect(Collectors.joining("、"));
+                    return appModules.stream().map(o -> String.format("%s(%s)", o.getAbbrName(), o.getName())).collect(Collectors.toList());
                 }
             }
         }

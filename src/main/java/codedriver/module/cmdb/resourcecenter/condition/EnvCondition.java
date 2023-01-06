@@ -42,7 +42,7 @@ public class EnvCondition extends ResourcecenterConditionBase {
             if(CollectionUtils.isNotEmpty(valueList)) {
                 List<ResourceVo> appSystemVos = resourceMapper.getAppEnvListByIdList(valueList);
                 if (CollectionUtils.isNotEmpty(appSystemVos)) {
-                    return appSystemVos.stream().map(ResourceVo::getName).collect(Collectors.joining("、"));
+                    return appSystemVos.stream().map(ResourceVo::getName).collect(Collectors.toList());
                 }
             }
         }
