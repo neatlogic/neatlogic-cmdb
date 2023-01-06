@@ -35,8 +35,8 @@ public class MaintenanceWindowCondition extends ResourcecenterConditionBase {
             value = condition.getValueList();
         } else if (condition.getValueList() instanceof List) {
             List<String> values = JSON.parseArray(JSON.toJSONString(condition.getValueList()), String.class);
-            value = String.join("','", values);
+            value = String.join(",", values);
         }
-        sqlSb.append(String.format("%s.%s = %s", new ScenceIpobjectDetailTable().getShortName(), ScenceIpobjectDetailTable.FieldEnum.MAINTENANCE_WINDOW.getValue(), value.toString()));
+        sqlSb.append(String.format("%s.%s = '%s'", new ScenceIpobjectDetailTable().getShortName(), ScenceIpobjectDetailTable.FieldEnum.MAINTENANCE_WINDOW.getValue(), value.toString()));
     }
 }
