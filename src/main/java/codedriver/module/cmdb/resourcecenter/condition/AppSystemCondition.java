@@ -8,6 +8,7 @@ import codedriver.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -43,7 +44,7 @@ public class AppSystemCondition extends ResourcecenterConditionBase {
             if(CollectionUtils.isNotEmpty(valueList)) {
                 List<AppSystemVo> appSystemVos = resourceMapper.getAppSystemListByIdList(valueList);
                 if (CollectionUtils.isNotEmpty(appSystemVos)) {
-                    return appSystemVos.stream().map(o -> String.format("%s(%s)", o.getAbbrName(), o.getName())).collect(Collectors.toList());
+                    return appSystemVos.stream().map(o -> StringUtils.isNotBlank(o.getName())?String.format("%s(%s)", o.getAbbrName(), o.getName()):o.getAbbrName()).collect(Collectors.toList());
                 }
             }
         }
