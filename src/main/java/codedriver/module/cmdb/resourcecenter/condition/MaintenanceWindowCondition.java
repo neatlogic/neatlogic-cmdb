@@ -29,7 +29,7 @@ public class MaintenanceWindowCondition extends ResourcecenterConditionBase {
     }
 
     @Override
-    public void getSqlConditionWhere(List<ConditionVo> conditionList, Integer index, StringBuilder sqlSb) {
+    public void getSqlConditionWhere(List<ConditionVo> conditionList, Integer index, StringBuilder sqlSb, String searchMode) {
         ConditionVo condition = conditionList.get(index);
         Object value = StringUtils.EMPTY;
         if (condition.getValueList() instanceof String) {

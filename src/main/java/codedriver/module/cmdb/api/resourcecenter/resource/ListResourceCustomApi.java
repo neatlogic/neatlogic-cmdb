@@ -50,6 +50,7 @@ public class ListResourceCustomApi extends PrivateApiComponentBase {
     }
 
     @Input({
+            @Param(name = "searchMode", type = ApiParamType.STRING, xss = true, desc = "搜索模式：value|text，默认搜索value"),
             @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "模糊搜索"),
             @Param(name = "conditionGroupList", type = ApiParamType.JSONARRAY, desc = "条件组"),
             @Param(name = "conditionGroupRelList", type = ApiParamType.JSONARRAY, desc = "条件组之间的关系"),

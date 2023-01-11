@@ -50,7 +50,7 @@ public class TagCondition extends ResourcecenterConditionBase {
     }
 
     @Override
-    public void getSqlConditionWhere(List<ConditionVo> conditionList, Integer index, StringBuilder sqlSb) {
+    public void getSqlConditionWhere(List<ConditionVo> conditionList, Integer index, StringBuilder sqlSb, String searchMode) {
         getSimpleSqlConditionWhere(conditionList.get(index), sqlSb, new CmdbResourcecenterResourceTagTable().getShortName(), CmdbResourcecenterResourceTagTable.FieldEnum.TAG_ID.getValue());
     }
 }
