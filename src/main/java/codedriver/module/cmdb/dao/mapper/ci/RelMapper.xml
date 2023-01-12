@@ -26,6 +26,7 @@
                a.`from_group_id`                                                 AS fromGroupId,
                a.`from_is_unique`                                                AS fromIsUnique,
                a.`from_is_required`                                              AS fromIsRequired,
+               a.`from_is_cascade_delete`                                        AS fromIsCascadeDelete,
                (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`from_group_id`) AS fromGroupName,
                t.id                                                              AS toCiId,
                t.icon                                                            AS toCiIcon,
@@ -38,6 +39,7 @@
                a.`to_group_id`                                                   AS toGroupId,
                a.`to_is_unique`                                                  AS toIsUnique,
                a.`to_is_required`                                                AS toIsRequired,
+               a.`to_is_cascade_delete`                                          AS toIsCascadeDelete,
                (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`to_group_id`)   AS toGroupName,
                'from'                                                            AS direction
         FROM `cmdb_rel` a
@@ -63,6 +65,7 @@
                a.`from_group_id`                                                 AS fromGroupId,
                a.`from_is_unique`                                                AS fromIsUnique,
                a.`from_is_required`                                              AS fromIsRequired,
+               a.`from_is_cascade_delete`                                        AS fromIsCascadeDelete,
                (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`from_group_id`) AS fromGroupName,
                t.id                                                              AS toCiId,
                t.icon                                                            AS toCiIcon,
@@ -75,6 +78,7 @@
                a.`to_group_id`                                                   AS toGroupId,
                a.`to_is_unique`                                                  AS toIsUnique,
                a.`to_is_required`                                                AS toIsRequired,
+               a.`to_is_cascade_delete`                                          AS toIsCascadeDelete,
                (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`to_group_id`)   AS toGroupName,
                'to'                                                              AS direction
         FROM `cmdb_rel` a
@@ -119,6 +123,7 @@
                rel.`from_group_id`                                            AS fromGroupId,
                rel.`from_is_unique`                                           AS fromIsUnique,
                rel.`from_is_required`                                         AS fromIsRequired,
+               rel.`from_is_cascade_delete`                                   AS fromIsCascadeDelete,
                rel.`to_ci_id`                                                 AS toCiId,
                rel.`to_name`                                                  AS toName,
                rel.`to_label`                                                 AS toLabel,
@@ -126,6 +131,7 @@
                rel.`to_group_id`                                              AS toGroupId,
                rel.`to_is_unique`                                             AS toIsUnique,
                rel.`to_is_required`                                           AS toIsRequired,
+               rel.`to_is_cascade_delete`                                     AS toIsCascadeDelete,
                from_ci.`name`                                                 AS fromCiName,
                from_ci.`label`                                                AS fromCiLabel,
                to_ci.`name`                                                   AS toCiName,
@@ -199,6 +205,7 @@
         a.`from_group_id` AS fromGroupId,
         a.`from_is_unique` AS fromIsUnique,
         a.`from_is_required` AS fromIsRequired,
+        a.`from_is_cascade_delete` AS fromIsCascadeDelete,
         (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`from_group_id`) AS fromGroupName,
         a.`to_ci_id` AS toCiId,
         t.icon AS toCiIcon,
@@ -210,6 +217,7 @@
         a.`to_group_id` AS toGroupId,
         a.`to_is_unique` AS toIsUnique,
         a.`to_is_required` AS toIsRequired,
+        a.`to_is_cascade_delete` AS toIsCascadeDelete,
         (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`to_group_id`) AS toGroupName
         FROM `cmdb_rel` a
         JOIN cmdb_ci f ON a.from_ci_id = f.id
@@ -235,6 +243,7 @@
         <result property="fromGroupId" column="fromGroupId"/>
         <result property="fromIsUnique" column="fromIsUnique"/>
         <result property="fromIsRequired" column="fromIsRequired"/>
+        <result property="fromIsCascadeDelete" column="fromIsCascadeDelete"/>
         <result property="fromGroupName" column="fromGroupName"/>
         <result property="fromIsVirtual" column="fromIsVirtual"/>
         <result property="toCiId" column="toCiId"/>
@@ -247,6 +256,7 @@
         <result property="toGroupId" column="toGroupId"/>
         <result property="toIsUnique" column="toIsUnique"/>
         <result property="toIsRequired" column="toIsRequired"/>
+        <result property="toIsCascadeDelete" column="toIsCascadeDelete"/>
         <result property="toGroupName" column="toGroupName"/>
         <result property="toIsVirtual" column="toIsVirtual"/>
         <result property="allowEdit" column="allowEdit"/>
@@ -274,6 +284,7 @@
                a.`from_group_id`                                                 AS fromGroupId,
                a.`from_is_unique`                                                AS fromIsUnique,
                a.`from_is_required`                                              AS fromIsRequired,
+               a.`from_is_cascade_delete`                                        AS fromIsCascadeDelete,
                (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`from_group_id`) AS fromGroupName,
                a.`to_ci_id`                                                      AS toCiId,
                t.icon                                                            AS toCiIcon,
@@ -286,6 +297,7 @@
                a.`to_group_id`                                                   AS toGroupId,
                a.`to_is_unique`                                                  AS toIsUnique,
                a.`to_is_required`                                                AS toIsRequired,
+               a.`to_is_cascade_delete`                                          AS toIsCascadeDelete,
                (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`to_group_id`)   AS toGroupName,
                relativerel.relative_rel_id                                       AS relativeRelId,
                relativerel.from_path                                             AS relativeFromPath,
@@ -315,6 +327,7 @@
                a.`from_group_id`                                                 AS fromGroupId,
                a.`from_is_unique`                                                AS fromIsUnique,
                a.`from_is_required`                                              AS fromIsRequired,
+               a.`from_is_cascade_delete`                                        AS fromIsCascadeDelete,
                (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`from_group_id`) AS fromGroupName,
                t.id                                                              AS toCiId,
                t.icon                                                            AS toCiIcon,
@@ -327,6 +340,7 @@
                a.`to_group_id`                                                   AS toGroupId,
                a.`to_is_unique`                                                  AS toIsUnique,
                a.`to_is_required`                                                AS toIsRequired,
+               a.`to_is_cascade_delete`                                          AS toIsCascadeDelete,
                (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`to_group_id`)   AS toGroupName,
                'from'                                                            AS direction,
                cview.sort                                                        AS sort,
@@ -359,6 +373,7 @@
                a.`from_group_id`                                                 AS fromGroupId,
                a.`from_is_unique`                                                AS fromIsUnique,
                a.`from_is_required`                                              AS fromIsRequired,
+               a.`from_is_cascade_delete`                                        AS fromIsCascadeDelete,
                (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`from_group_id`) AS fromGroupName,
                t.id                                                              AS toCiId,
                t.icon                                                            AS toCiIcon,
@@ -371,6 +386,7 @@
                a.`to_group_id`                                                   AS toGroupId,
                a.`to_is_unique`                                                  AS toIsUnique,
                a.`to_is_required`                                                AS toIsRequired,
+               a.`to_is_cascade_delete`                                          AS toIsCascadeDelete,
                (SELECT name FROM cmdb_relgroup g WHERE g.id = a.`to_group_id`)   AS toGroupName,
                'to'                                                              AS direction,
                cview.sort                                                        AS sort,
@@ -391,22 +407,24 @@
     <update id="updateRel" parameterType="codedriver.framework.cmdb.dto.ci.RelVo">
         UPDATE
             `cmdb_rel`
-        SET `type_id`          = #{typeId},
-            `input_type`       = #{inputType},
-            `from_ci_id`       = #{fromCiId},
-            `from_name`        = #{fromName},
-            `from_label`       = #{fromLabel},
-            `from_rule`        = #{fromRule},
-            `from_group_id`    = #{fromGroupId},
-            `from_is_unique`   = #{fromIsUnique},
-            `from_is_required` = #{fromIsRequired},
-            `to_ci_id`         = #{toCiId},
-            `to_name`          = #{toName},
-            `to_label`         = #{toLabel},
-            `to_rule`          = #{toRule},
-            `to_group_id`      = #{toGroupId},
-            `to_is_unique`     = #{toIsUnique},
-            `to_is_required`   = #{toIsRequired}
+        SET `type_id`                = #{typeId},
+            `input_type`             = #{inputType},
+            `from_ci_id`             = #{fromCiId},
+            `from_name`              = #{fromName},
+            `from_label`             = #{fromLabel},
+            `from_rule`              = #{fromRule},
+            `from_group_id`          = #{fromGroupId},
+            `from_is_unique`         = #{fromIsUnique},
+            `from_is_required`       = #{fromIsRequired},
+            `from_is_cascade_delete` = #{fromIsCascadeDelete},
+            `to_ci_id`               = #{toCiId},
+            `to_name`                = #{toName},
+            `to_label`               = #{toLabel},
+            `to_rule`                = #{toRule},
+            `to_group_id`            = #{toGroupId},
+            `to_is_unique`           = #{toIsUnique},
+            `to_is_required`         = #{toIsRequired},
+            `to_is_cascade_delete`   = #{toIsCascadeDelete}
         WHERE `id` = #{id}
     </update>
 
@@ -433,13 +451,15 @@
                                 `from_group_id`,
                                 `from_is_unique`,
                                 `from_is_required`,
+                                `from_is_cascade_delete`,
                                 `to_ci_id`,
                                 `to_name`,
                                 `to_label`,
                                 `to_rule`,
                                 `to_group_id`,
                                 `to_is_unique`,
-                                `to_is_required`)
+                                `to_is_required`,
+                                `to_is_cascade_delete`)
         VALUES (#{id},
                 #{typeId},
                 #{inputType},
@@ -450,13 +470,15 @@
                 #{fromGroupId},
                 #{fromIsUnique},
                 #{fromIsRequired},
+                #{fromIsCascadeDelete},
                 #{toCiId},
                 #{toName},
                 #{toLabel},
                 #{toRule},
                 #{toGroupId},
                 #{toIsUnique},
-                #{toIsRequired})
+                #{toIsRequired},
+                #{toIsCascadeDelete})
     </insert>
 
     <insert id="insertRelativeRel" parameterType="codedriver.framework.cmdb.dto.ci.RelativeRelVo">

@@ -11,6 +11,7 @@ import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.CiViewVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.ci.RelVo;
+import codedriver.framework.cmdb.dto.cientity.CiEntityVo;
 import codedriver.framework.cmdb.dto.customview.CustomViewVo;
 import codedriver.framework.cmdb.exception.attr.AttrIsUsedInExpressionException;
 import codedriver.framework.cmdb.exception.attr.AttrIsUsedInUniqueRuleException;
@@ -40,10 +41,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -220,9 +218,7 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
     public void updateCiNameAttrId(CiVo ciVo) {
         ciMapper.updateCiNameAttrId(ciVo);
         AfterTransactionJob<CiVo> job = new AfterTransactionJob<>("UPDATE-CIENTITY-NAME-" + ciVo.getId());
-        job.execute(ciVo, dataCiVo -> {
-            ciEntityService.updateCiEntityNameForCi(dataCiVo);
-        });
+        job.execute(ciVo, dataCiVo -> ciEntityService.updateCiEntityNameForCi(dataCiVo));
     }
 
     @Override
@@ -355,6 +351,36 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
         if (needRebuildLRCode) {
             //重建所有左右编码，性能差点但可靠
             LRCodeManager.rebuildLeftRightCode("cmdb_ci", "id", "parent_ci_id");
+        }
+        if (checkCiVo.getExpiredDay() != ciVo.getExpiredDay()) {
+            AfterTransactionJob<CiVo> job = new AfterTransactionJob<>("REFRESH-CIENTITY-EXPIREDTIME-" + ciVo.getId());
+            job.execute(ciVo, _ciVo -> {
+                //修正配置项超时数据
+                if (_ciVo.getExpiredDay() == 0) {
+                    ciEntityMapper.deleteCiEntityExpiredTimeByCiId(_ciVo.getId());
+                } else {
+                    CiEntityVo pCiEntityVo = new CiEntityVo();
+                    pCiEntityVo.setCiId(_ciVo.getId());
+                    pCiEntityVo.setPageSize(100);
+                    pCiEntityVo.setCurrentPage(1);
+                    List<CiEntityVo> ciEntityList = ciEntityMapper.searchCiEntityBaseInfo(pCiEntityVo);
+                    while (CollectionUtils.isNotEmpty(ciEntityList)) {
+                        for (CiEntityVo cientity : ciEntityList) {
+                            if (cientity.getRenewTime() != null) {
+                                Calendar c = Calendar.getInstance();
+                                c.setTime(cientity.getRenewTime());
+                                c.add(Calendar.DAY_OF_YEAR, ciVo.getExpiredDay());
+                                cientity.setExpiredTime(c.getTime());
+                                cientity.setExpiredDay(ciVo.getExpiredDay());
+                                ciEntityMapper.insertCiEntityExpiredTime(cientity);
+                            }
+                        }
+                        pCiEntityVo.setCurrentPage(pCiEntityVo.getCurrentPage() + 1);
+                        ciEntityList = ciEntityMapper.searchCiEntityBaseInfo(pCiEntityVo);
+                    }
+                }
+            });
+
         }
     }
 

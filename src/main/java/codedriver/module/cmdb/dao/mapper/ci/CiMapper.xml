@@ -77,6 +77,7 @@
                a.`is_menu`      AS isMenu,
                a.`is_abstract`  AS isAbstract,
                a.`is_virtual`   AS isVirtual,
+               a.`expired_day`  AS expiredDay,
                a.`lft`          AS lft,
                a.`rht`          AS rht
         FROM `cmdb_ci` a
@@ -97,6 +98,7 @@
                a.`is_menu`      AS isMenu,
                a.`is_abstract`  AS isAbstract,
                a.`is_virtual`   AS isVirtual,
+               a.`expired_day`  AS expiredDay,
                a.`lft`          AS lft,
                a.`rht`          AS rht
         FROM `cmdb_ci` a
@@ -118,6 +120,7 @@
         a.`is_menu` AS isMenu,
         a.`is_abstract` AS isAbstract,
         a.`is_virtual` AS isVirtual,
+        a.`expired_day` AS expiredDay,
         a.`lft` AS lft,
         a.`rht` AS rht
         FROM `cmdb_ci` a
@@ -325,7 +328,8 @@
         `type_id` AS typeId,
         `parent_ci_id` AS parentCiId,
         `is_abstract` AS isAbstract,
-        `is_virtual` AS isVirtual
+        `is_virtual` AS isVirtual,
+        `expired_day` AS expiredDay
         from cmdb_ci
         <where>
             <if test="keyword != null and keyword != ''">
@@ -371,6 +375,7 @@
         <result column="isVirtual" property="isVirtual"></result>
         <result column="fileId" property="fileId"></result>
         <result column="nameAttrId" property="nameAttrId"></result>
+        <result column="expiredDay" property="expiredDay"></result>
         <result column="lft" property="lft"></result>
         <result column="rht" property="rht"></result>
         <collection property="uniqueAttrIdList" ofType="java.lang.Long">
@@ -394,6 +399,7 @@
                c.name           AS parentCiName,
                a.`is_abstract`  AS isAbstract,
                a.`is_virtual`   AS isVirtual,
+               a.`expired_day`  AS expiredDay,
                a.`name_attr_id` AS nameAttrId,
                a.`lft`          AS lft,
                a.`rht`          AS rht,
@@ -422,6 +428,7 @@
                c.name           AS parentCiName,
                a.`is_abstract`  AS isAbstract,
                a.`is_virtual`   AS isVirtual,
+               a.`expired_day`  AS expiredDay,
                a.`name_attr_id` AS nameAttrId,
                a.`lft`          AS lft,
                a.`rht`          AS rht,
@@ -449,6 +456,7 @@
                c.name           AS parentCiName,
                a.`is_abstract`  AS isAbstract,
                a.`is_virtual`   AS isVirtual,
+               a.`expired_day`  AS expiredDay,
                a.`name_attr_id` AS nameAttrId,
                a.`lft`          AS lft,
                a.`rht`          AS rht,
@@ -481,6 +489,7 @@
             `is_abstract`  = #{isAbstract},
             `is_virtual`   = #{isVirtual},
             `file_id`      = #{fileId},
+            `expired_day`  = #{expiredDay},
             `xml`          = #{viewXml, typeHandler=CompressHandler}
         WHERE `id` = #{id}
     </update>
@@ -501,6 +510,7 @@
                                `lft`,
                                `rht`,
                                `file_id`,
+                               `expired_day`,
                                `xml`)
         VALUES (#{id},
                 #{name},
@@ -517,6 +527,7 @@
                 #{lft},
                 #{rht},
                 #{fileId},
+                #{expiredDay},
                 #{viewXml,typeHandler=CompressHandler})
     </insert>
 
@@ -528,27 +539,26 @@
 
     <delete id="deleteCiById" parameterType="java.lang.Long">
         DELETE a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s
-        FROM
-            `cmdb_ci` a
-            LEFT JOIN `cmdb_attr` b
-        ON a.`id` = b.`ci_id`
-            LEFT JOIN `cmdb_rel` c ON a.`id` = c.`from_ci_id`
-            LEFT JOIN `cmdb_rel` d ON a.`id` = d.`to_ci_id`
-            LEFT JOIN `cmdb_ci_auth` e ON a.id = e.`ci_id`
-            LEFT JOIN `cmdb_relgroup` f ON a.id = f.`ci_id`
-            LEFT JOIN `cmdb_view` g ON a.id = g.`ci_id`
-            LEFT JOIN `cmdb_ci_unique` h ON a.id = h.`ci_id`
-            LEFT JOIN `cmdb_legalvalid` i ON a.id = i.`ci_id`
-            LEFT JOIN `cmdb_sync_ci_collection` j ON a.id = j.`ci_id`
-            LEFT JOIN `cmdb_sync_audit` k ON j.id = k.`ci_collection_id`
-            LEFT JOIN `cmdb_sync_mapping` l ON j.id = l.`ci_collection_id`
-            LEFT JOIN `cmdb_sync_policy` m ON j.id = m.`ci_collection_id`
-            LEFT JOIN `cmdb_sync_schedule` n ON m.id = n.`policy_id`
-            LEFT JOIN `cmdb_attrexpression_rebuild_audit` o ON a.id = o.`ci_id`
-            LEFT JOIN `cmdb_ci_group` p ON a.id = p.`ci_id`
-            LEFT JOIN `cmdb_import_audit` q ON a.id = q.`ci_id`
-            LEFT JOIN `cmdb_relativerel` r ON c.`id` = r.`rel_id`
-            LEFT JOIN `cmdb_relativerel` s ON d.`id` = s.`rel_id`
+        FROM `cmdb_ci` a
+                 LEFT JOIN `cmdb_attr` b
+                           ON a.`id` = b.`ci_id`
+                 LEFT JOIN `cmdb_rel` c ON a.`id` = c.`from_ci_id`
+                 LEFT JOIN `cmdb_rel` d ON a.`id` = d.`to_ci_id`
+                 LEFT JOIN `cmdb_ci_auth` e ON a.id = e.`ci_id`
+                 LEFT JOIN `cmdb_relgroup` f ON a.id = f.`ci_id`
+                 LEFT JOIN `cmdb_view` g ON a.id = g.`ci_id`
+                 LEFT JOIN `cmdb_ci_unique` h ON a.id = h.`ci_id`
+                 LEFT JOIN `cmdb_legalvalid` i ON a.id = i.`ci_id`
+                 LEFT JOIN `cmdb_sync_ci_collection` j ON a.id = j.`ci_id`
+                 LEFT JOIN `cmdb_sync_audit` k ON j.id = k.`ci_collection_id`
+                 LEFT JOIN `cmdb_sync_mapping` l ON j.id = l.`ci_collection_id`
+                 LEFT JOIN `cmdb_sync_policy` m ON j.id = m.`ci_collection_id`
+                 LEFT JOIN `cmdb_sync_schedule` n ON m.id = n.`policy_id`
+                 LEFT JOIN `cmdb_attrexpression_rebuild_audit` o ON a.id = o.`ci_id`
+                 LEFT JOIN `cmdb_ci_group` p ON a.id = p.`ci_id`
+                 LEFT JOIN `cmdb_import_audit` q ON a.id = q.`ci_id`
+                 LEFT JOIN `cmdb_relativerel` r ON c.`id` = r.`rel_id`
+                 LEFT JOIN `cmdb_relativerel` s ON d.`id` = s.`rel_id`
         WHERE a.id = #{value}
     </delete>
 

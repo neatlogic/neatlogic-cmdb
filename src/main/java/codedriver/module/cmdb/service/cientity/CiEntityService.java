@@ -141,4 +141,6 @@ public interface CiEntityService {
     @Transactional
     void recoverCiEntity(TransactionVo transactionVo);
 
+    @Transactional
+    void recoverTransactionGroup(Long transactionGroupId);
 }
