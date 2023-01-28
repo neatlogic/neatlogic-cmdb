@@ -9,15 +9,16 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class BatchSearchCondition extends ResourcecenterConditionBase {
+public class IpCondition extends ResourcecenterConditionBase {
+
     @Override
     public String getName() {
-        return "batchSearchList";
+        return "ip";
     }
 
     @Override
     public String getDisplayName() {
-        return "批量搜索";
+        return "ip";
     }
 
     @Override
@@ -29,5 +30,4 @@ public class BatchSearchCondition extends ResourcecenterConditionBase {
     public void getSqlConditionWhere(List<ConditionVo> conditionList, Integer index, StringBuilder sqlSb, String searchMode) {
         getSimpleSqlConditionWhere(conditionList.get(index), sqlSb, new ScenceIpobjectDetailTable().getShortName(), ScenceIpobjectDetailTable.FieldEnum.IP.getValue());
     }
-
 }
