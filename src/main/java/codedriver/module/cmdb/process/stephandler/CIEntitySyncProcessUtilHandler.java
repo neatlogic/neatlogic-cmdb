@@ -6,7 +6,7 @@ import codedriver.framework.process.dto.ProcessStepWorkerPolicyVo;
 import codedriver.framework.process.dto.ProcessTaskStepVo;
 import codedriver.framework.process.dto.processconfig.ActionConfigActionVo;
 import codedriver.framework.process.dto.processconfig.ActionConfigVo;
-import codedriver.framework.process.dto.processconfig.NotifyPolicyConfigVo;
+import codedriver.framework.notify.dto.InvokeNotifyPolicyConfigVo;
 import codedriver.framework.process.stephandler.core.ProcessStepInternalHandlerBase;
 import codedriver.framework.process.util.ProcessConfigUtil;
 import codedriver.module.cmdb.process.notifyhandler.CiEntitySyncNotifyHandler;
@@ -44,9 +44,9 @@ public class CIEntitySyncProcessUtilHandler extends ProcessStepInternalHandlerBa
     public void makeupProcessStep(ProcessStepVo processStepVo, JSONObject stepConfigObj) {
         /** 组装通知策略id **/
         JSONObject notifyPolicyConfig = stepConfigObj.getJSONObject("notifyPolicyConfig");
-        NotifyPolicyConfigVo notifyPolicyConfigVo = JSONObject.toJavaObject(notifyPolicyConfig, NotifyPolicyConfigVo.class);
-        if (notifyPolicyConfigVo != null) {
-            processStepVo.setNotifyPolicyConfig(notifyPolicyConfigVo);
+        InvokeNotifyPolicyConfigVo invokeNotifyPolicyConfigVo = JSONObject.toJavaObject(notifyPolicyConfig, InvokeNotifyPolicyConfigVo.class);
+        if (invokeNotifyPolicyConfigVo != null) {
+            processStepVo.setNotifyPolicyConfig(invokeNotifyPolicyConfigVo);
         }
 
         JSONObject actionConfig = stepConfigObj.getJSONObject("actionConfig");
@@ -153,12 +153,12 @@ public class CIEntitySyncProcessUtilHandler extends ProcessStepInternalHandlerBa
 
         /** 通知 **/
         JSONObject notifyPolicyConfig = configObj.getJSONObject("notifyPolicyConfig");
-        NotifyPolicyConfigVo notifyPolicyConfigVo = JSONObject.toJavaObject(notifyPolicyConfig, NotifyPolicyConfigVo.class);
-        if (notifyPolicyConfigVo == null) {
-            notifyPolicyConfigVo = new NotifyPolicyConfigVo();
+        InvokeNotifyPolicyConfigVo invokeNotifyPolicyConfigVo = JSONObject.toJavaObject(notifyPolicyConfig, InvokeNotifyPolicyConfigVo.class);
+        if (invokeNotifyPolicyConfigVo == null) {
+            invokeNotifyPolicyConfigVo = new InvokeNotifyPolicyConfigVo();
         }
-        notifyPolicyConfigVo.setHandler(CiEntitySyncNotifyHandler.class.getName());
-        resultObj.put("notifyPolicyConfig", notifyPolicyConfigVo);
+        invokeNotifyPolicyConfigVo.setHandler(CiEntitySyncNotifyHandler.class.getName());
+        resultObj.put("notifyPolicyConfig", invokeNotifyPolicyConfigVo);
         return resultObj;
     }
 
@@ -187,12 +187,12 @@ public class CIEntitySyncProcessUtilHandler extends ProcessStepInternalHandlerBa
 
         /** 通知 **/
         JSONObject notifyPolicyConfig = configObj.getJSONObject("notifyPolicyConfig");
-        NotifyPolicyConfigVo notifyPolicyConfigVo = JSONObject.toJavaObject(notifyPolicyConfig, NotifyPolicyConfigVo.class);
-        if (notifyPolicyConfigVo == null) {
-            notifyPolicyConfigVo = new NotifyPolicyConfigVo();
+        InvokeNotifyPolicyConfigVo invokeNotifyPolicyConfigVo = JSONObject.toJavaObject(notifyPolicyConfig, InvokeNotifyPolicyConfigVo.class);
+        if (invokeNotifyPolicyConfigVo == null) {
+            invokeNotifyPolicyConfigVo = new InvokeNotifyPolicyConfigVo();
         }
-        notifyPolicyConfigVo.setHandler(CiEntitySyncNotifyHandler.class.getName());
-        resultObj.put("notifyPolicyConfig", notifyPolicyConfigVo);
+        invokeNotifyPolicyConfigVo.setHandler(CiEntitySyncNotifyHandler.class.getName());
+        resultObj.put("notifyPolicyConfig", invokeNotifyPolicyConfigVo);
 
         /** 动作 **/
         JSONObject actionConfig = configObj.getJSONObject("actionConfig");
