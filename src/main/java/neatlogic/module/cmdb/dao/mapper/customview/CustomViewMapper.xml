@@ -1,0 +1,604 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="neatlogic.module.cmdb.dao.mapper.customview.CustomViewMapper">
+    <select id="getCiIdByCustomViewId" parameterType="java.lang.Long" resultType="java.lang.Long">
+        SELECT ci_id
+        FROM cmdb_ci_customview
+        WHERE customview_id = #{value}
+        LIMIT 1
+    </select>
+
+    <select id="getCustomViewTemplateById" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.customview.CustomViewTemplateVo">
+        SELECT customview_id as customViewId, name, template, config, is_active AS isActive
+        FROM cmdb_customview_template
+        WHERE customview_id = #{value}
+    </select>
+
+    <select id="checkCustomViewAttrIsExists" parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewAttrVo"
+            resultType="int">
+        SELECT count(1)
+        FROM `cmdb_customview_attr`
+        WHERE customview_id = #{customViewId}
+          and name = #{name}
+    </select>
+
+    <select id="getCustomViewConstAttrByUuid"
+            resultType="neatlogic.framework.cmdb.dto.customview.CustomViewConstAttrVo">
+        SELECT customview_id      AS customViewId,
+               customview_ci_uuid AS customViewCiUuid,
+               uuid,
+               const_name         AS constName,
+               name,
+               alias,
+               sort,
+               is_hidden          AS isHidden,
+               is_primary         AS isPrimary
+        FROM `cmdb_customview_constattr`
+        WHERE customview_id = #{customViewId}
+          and uuid = #{uuid}
+    </select>
+
+    <select id="getCustomViewAttrByUuid"
+            resultType="neatlogic.framework.cmdb.dto.customview.CustomViewAttrVo">
+        SELECT customview_id      AS customViewId,
+               customview_ci_uuid AS customViewCiUuid,
+               uuid,
+               attr_id            AS attrId,
+               name,
+               alias,
+               sort,
+               is_hidden          AS isHidden,
+               is_primary         AS isPrimary,
+               `condition`        AS conditionStr
+        FROM `cmdb_customview_attr`
+        WHERE customview_id = #{customViewId}
+          and uuid = #{uuid}
+    </select>
+
+    <resultMap id="customViewMap" type="neatlogic.framework.cmdb.dto.customview.CustomViewVo">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="isActive" column="isActive"/>
+        <result property="type" column="type"/>
+        <result property="fcu" column="fcu"/>
+        <result property="fcd" column="fcd"/>
+        <result property="lcu" column="lcu"/>
+        <result property="lcd" column="lcd"/>
+        <result property="icon" column="icon"/>
+        <result property="description" column="description"/>
+        <result property="configStr" column="configStr" typeHandler="CompressHandler"/>
+        <association property="customViewTemplate"
+                     javaType="neatlogic.framework.cmdb.dto.customview.CustomViewTemplateVo">
+            <id property="customViewId" column="customViewId"/>
+            <result property="isActive" column="customViewTemplateIsActive"/>
+            <result property="name" column="customViewTemplateName"/>
+        </association>
+        <collection property="authList" ofType="neatlogic.framework.cmdb.dto.customview.CustomViewAuthVo">
+            <id property="authUuid" column="authUuid"/>
+            <result property="authType" column="authType"/>
+        </collection>
+        <collection property="tagList" ofType="neatlogic.framework.cmdb.dto.tag.TagVo">
+            <id property="id" column="tagId"/>
+            <result property="name" column="tagName"/>
+        </collection>
+    </resultMap>
+
+    <resultMap id="customViewAttrMap" type="neatlogic.framework.cmdb.dto.customview.CustomViewAttrVo">
+        <id property="uuid" column="uuid"/>
+        <result property="customViewCiUuid" column="customViewCiUuid"/>
+        <result property="customViewId" column="customViewId"/>
+        <result property="attrId" column="attrId"/>
+        <result property="alias" column="alias"/>
+        <result property="name" column="name"/>
+        <result property="sort" column="sort"/>
+        <result property="isHidden" column="isHidden"/>
+        <result property="conditionStr" column="conditionStr"/>
+        <association property="attrVo" javaType="neatlogic.framework.cmdb.dto.ci.AttrVo">
+            <id property="id" column="attrId"/>
+            <result property="name" column="attrName"/>
+            <result property="label" column="attrLabel"/>
+            <result property="type" column="attrType"/>
+            <result property="targetCiId" column="targetCiId"/>
+            <result property="configStr" column="configStr"/>
+        </association>
+    </resultMap>
+
+    <select id="getCustomViewConstAttrByCustomViewId"
+            parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewConstAttrVo"
+            resultType="neatlogic.framework.cmdb.dto.customview.CustomViewConstAttrVo">
+        select a.customview_id AS customViewId,
+        a.customview_ci_uuid AS customViewCiUuid,
+        a.uuid,
+        a.const_name AS constName,
+        a.alias,
+        a.name,
+        a.sort,
+        a.is_hidden AS isHidden,
+        a.is_primary AS isPrimary
+        from cmdb_customview_constattr a
+        where a.customview_id = #{customViewId}
+        <if test="isHidden != null">
+            AND a.is_hidden = #{isHidden}
+        </if>
+        ORDER BY a.sort
+    </select>
+
+    <select id="checkCustomViewNameIsExists" parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewVo"
+            resultType="int">
+        select count(1)
+        from cmdb_customview
+        where name = #{name}
+          and id != #{id}
+    </select>
+
+    <select id="getCustomViewAttrByCustomViewId"
+            parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewAttrVo" resultMap="customViewAttrMap">
+        SELECT
+        a.customview_id AS customViewId,
+        a.customview_ci_uuid AS customViewCiUuid,
+        a.uuid,
+        a.attr_id AS attrId,
+        a.alias,
+        a.sort,
+        a.is_hidden AS isHidden,
+        a.is_primary AS isPrimary,
+        a.`condition` AS conditionStr,
+        a.`name` AS name,
+        b.`name` AS attrName,
+        b.`label` AS attrLabel,
+        b.`ci_id` AS ciId,
+        b.`type` AS attrType,
+        b.`target_ci_id` AS targetCiId,
+        b.`config` AS configStr
+        FROM `cmdb_customview_attr` a
+        JOIN `cmdb_attr` b ON a.attr_id = b.id
+        WHERE a.customview_id = #{customViewId}
+        <if test="isHidden != null">
+            AND a.is_hidden = #{isHidden}
+        </if>
+        ORDER BY a.sort
+    </select>
+
+    <select id="getCustomViewByName" parameterType="java.lang.String" resultMap="customViewMap">
+        SELECT a.id,
+               a.name,
+               a.is_active     AS isActive,
+               a.type          AS type,
+               a.fcu,
+               a.fcd,
+               a.lcu,
+               a.lcd,
+               a.icon          AS icon,
+               a.description   AS description,
+               a.config        AS configStr,
+               b.auth_type     AS authType,
+               b.auth_uuid     AS authUuid,
+               d.id            AS tagId,
+               d.name          AS tagName,
+               e.customview_id AS customViewId,
+               e.is_active     AS customViewTemplateIsActive,
+               e.name          AS customViewTemplateName
+        FROM cmdb_customview a
+                 LEFT JOIN cmdb_customview_auth b ON a.id = b.customview_id
+                 LEFT JOIN cmdb_customview_tag c ON a.id = c.customview_id
+                 LEFT JOIN cmdb_tag d ON c.tag_id = d.id
+                 LEFT JOIN cmdb_customview_template e ON a.id = e.customview_id
+        WHERE a.name = #{value}
+    </select>
+
+    <select id="getCustomViewById" parameterType="java.lang.Long" resultMap="customViewMap">
+        SELECT a.id,
+               a.name,
+               a.is_active     AS isActive,
+               a.type          AS type,
+               a.fcu,
+               a.fcd,
+               a.lcu,
+               a.lcd,
+               a.icon          AS icon,
+               a.description   AS description,
+               a.config        AS configStr,
+               b.auth_type     AS authType,
+               b.auth_uuid     AS authUuid,
+               d.id            AS tagId,
+               d.name          AS tagName,
+               e.customview_id AS customViewId,
+               e.is_active     AS customViewTemplateIsActive,
+               e.name          AS customViewTemplateName
+        FROM cmdb_customview a
+                 LEFT JOIN cmdb_customview_auth b ON a.id = b.customview_id
+                 LEFT JOIN cmdb_customview_tag c ON a.id = c.customview_id
+                 LEFT JOIN cmdb_tag d ON c.tag_id = d.id
+                 LEFT JOIN cmdb_customview_template e ON a.id = e.customview_id
+        WHERE a.id = #{value}
+    </select>
+
+    <resultMap id="customViewCiMap" type="neatlogic.framework.cmdb.dto.customview.CustomViewCiVo">
+        <id property="uuid" column="uuid"/>
+        <result property="customViewId" column="customViewId"/>
+        <result property="sort" column="sort"/>
+        <result property="ciId" column="ciId"/>
+        <result property="isHidden" column="isHidden"/>
+        <result property="isStart" column="isStart"/>
+        <result property="alias" column="alias"/>
+        <collection property="attrList" ofType="neatlogic.framework.cmdb.dto.customview.CustomViewAttrVo">
+            <id property="uuid" column="attrUuid"/>
+            <result property="alias" column="attrAlias"/>
+            <result property="name" column="attrName"/>
+            <result property="attrId" column="attrId"/>
+            <result property="conditionStr" column="conditionStr"/>
+            <result property="customViewCiUuid" column="attrCustomViewCiUuid"/>
+            <result property="customViewId" column="attrCustomViewId"/>
+            <result property="isHidden" column="attrIsHidden"/>
+            <result property="isPrimary" column="attrIsPrimary"/>
+            <result property="sort" column="attrSort"/>
+        </collection>
+        <collection property="constAttrList" ofType="neatlogic.framework.cmdb.dto.customview.CustomViewConstAttrVo">
+            <id property="uuid" column="constAttrUuid"/>
+            <result property="alias" column="constAttrAlias"/>
+            <result property="name" column="constAttrName"/>
+            <result property="customViewCiUuid" column="constAttrCustomViewCiUuid"/>
+            <result property="customViewId" column="constAttrCustomViewId"/>
+            <result property="isHidden" column="constAttrIsHidden"/>
+            <result property="isPrimary" column="constAttrIsPrimary"/>
+            <result property="sort" column="constAttrSort"/>
+        </collection>
+        <collection property="relList" ofType="neatlogic.framework.cmdb.dto.customview.CustomViewRelVo">
+            <id property="uuid" column="relUuid"/>
+            <result property="relId" column="relId"/>
+            <result property="customViewCiUuid" column="relCustomViewCiUuid"/>
+            <result property="customViewId" column="relCustomViewId"/>
+        </collection>
+    </resultMap>
+
+    <select id="getCustomViewCiByCustomViewId" parameterType="java.lang.Long"
+            resultMap="customViewCiMap">
+        SELECT a.customview_id      AS customViewId,
+               a.`uuid`,
+               a.ci_id              AS ciId,
+               a.`sort`,
+               a.is_hidden          AS isHidden,
+               a.is_start           AS isStart,
+               a.alias              AS alias,
+               b.name               AS attrName,
+               b.alias              AS attrAlias,
+               b.attr_id            AS attrId,
+               b.`condition`        AS conditionStr,
+               b.customview_ci_uuid AS attrCustomViewCiUuid,
+               b.customview_id      AS attrCustomViewId,
+               b.is_hidden          AS attrIsHidden,
+               b.is_primary         AS attrIsPrimary,
+               b.sort               AS attrSort,
+               b.uuid               AS attrUuid,
+               d.name               AS constAttrName,
+               d.alias              AS constAttrAlias,
+               d.customview_ci_uuid AS constAttrCustomViewCiUuid,
+               d.customview_id      AS constAttrCustomViewId,
+               d.is_hidden          AS constAttrIsHidden,
+               d.is_primary         AS constAttrIsPrimary,
+               d.sort               AS constAttrSort,
+               d.uuid               AS constAttrUuid,
+               c.rel_id             AS relId,
+               c.uuid               AS relUuid,
+               c.customview_id      AS relCustomViewId,
+               c.customview_ci_uuid AS relCustomViewCiUuid
+        FROM cmdb_customview_ci a
+                 LEFT JOIN cmdb_customview_attr b ON a.uuid = b.customview_ci_uuid AND b.customview_id = a.customview_id
+                 LEFT JOIN cmdb_customview_rel c ON a.uuid = c.customview_ci_uuid AND c.customview_id = a.customview_id
+                 LEFT JOIN cmdb_customview_constattr d
+                           ON a.uuid = d.customview_ci_uuid AND d.customview_id = a.customview_id
+        WHERE a.customview_id = #{value}
+    </select>
+
+
+    <sql id="searchCustomViewSql">
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND cc.name LIKE CONCAT('%',#{keyword},'%')
+            </if>
+            <if test="tagId != null">
+                AND cct.tag_id = #{tagId}
+            </if>
+            <if test="isActive != null">
+                AND cc.is_active = #{isActive}
+            </if>
+            <if test="ciId != null">
+                AND ccc.ci_id = #{ciId}
+            </if>
+            <choose>
+                <!--不提供type代表是最低权限的搜索，需要返回私有视图和有权限查看的公共视图-->
+                <when test="type == null or type == ''">
+                    <choose>
+                        <when test="isAdmin == true">
+                            AND (cc.type = 'public' OR (cc.type = 'private' AND cc.fcu = #{fcu}))
+                        </when>
+                        <otherwise>
+                            AND cc.type = 'private' AND cc.fcu = #{fcu}
+                        </otherwise>
+                    </choose>
+                </when>
+                <otherwise>
+                    AND cc.type = #{type}
+                </otherwise>
+            </choose>
+        </where>
+    </sql>
+
+    <select id="searchCustomView" parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewVo"
+            resultMap="customViewMap">
+        SELECT
+        a.id,
+        a.name,
+        a.is_active AS isActive,
+        a.type AS type,
+        a.fcu,
+        a.fcd,
+        a.lcu,
+        a.lcd,
+        a.icon AS icon,
+        a.description AS description,
+        a.config AS configStr,
+        b.auth_type AS authType,
+        b.auth_uuid AS authUuid,
+        d.id AS tagId,
+        d.name AS tagName,
+        e.customview_id AS customViewId,
+        e.is_active AS customViewTemplateIsActive,
+        e.name AS customViewTemplateName
+        FROM (
+        SELECT
+        DISTINCT cc.*
+        FROM cmdb_customview cc
+        LEFT JOIN cmdb_customview_tag cct ON cc.id = cct.customview_id
+        LEFT JOIN cmdb_ci_customview ccc ON cc.id = ccc.customview_id
+        <include refid="searchCustomViewSql"></include>
+        ORDER BY id desc
+        LIMIT #{startNum},#{pageSize}
+        ) a
+        LEFT JOIN cmdb_customview_auth b ON a.id = b.customview_id
+        LEFT JOIN cmdb_customview_tag c ON a.id = c.customview_id
+        LEFT JOIN cmdb_tag d ON c.tag_id = d.id
+        LEFT JOIN cmdb_customview_template e ON a.id = e.customview_id
+        ORDER BY a.id desc
+    </select>
+
+    <select id="searchCustomViewCount" parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewVo"
+            resultType="int">
+        SELECT
+        COUNT(DISTINCT cc.id)
+        FROM cmdb_customview cc LEFT JOIN cmdb_customview_tag cct ON cc.id = cct.customview_id
+        LEFT JOIN cmdb_ci_customview ccc ON cc.id = ccc.customview_id
+        <include refid="searchCustomViewSql"></include>
+    </select>
+
+    <select id="getCustomViewLinkByCustomViewId" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.customview.CustomViewLinkVo">
+        SELECT `customview_id` AS customViewId,
+               `name`,
+               `uuid`,
+               `from_uuid`     AS fromUuid,
+               `to_uuid`       AS toUuid,
+               `from_type`     AS fromType,
+               `to_type`       AS toType,
+               `join_type`     AS joinType,
+               `from_ci_uuid`  AS fromCustomViewCiUuid,
+               `to_ci_uuid`    AS toCustomViewCiUuid
+        FROM cmdb_customview_link
+        WHERE customview_id = #{value}
+    </select>
+
+    <update id="updateCustomView" parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewVo">
+        UPDATE cmdb_customview
+        SET name          = #{name},
+            is_active     = #{isActive},
+            icon          = #{icon},
+            `description` = #{description},
+            config        = #{configStr,typeHandler=CompressHandler},
+            lcd           = NOW(),
+            lcu           = #{lcu}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateCustomViewActive" parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewVo">
+        UPDATE cmdb_customview
+        SET is_active = #{isActive}
+        WHERE id = #{id}
+    </update>
+
+    <insert id="insertCustomViewTemplate" parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewTemplateVo">
+        INSERT INTO cmdb_customview_template
+            (`customview_id`, `name`, `template`, `config`, `is_active`)
+        VALUES (#{customViewId}, #{name}, #{template}, #{config}, #{isActive})
+        ON DUPLICATE KEY UPDATE `name`      = #{name},
+                                `template`  = #{template},
+                                `config`    = #{config},
+                                `is_active` = #{isActive}
+    </insert>
+
+    <insert id="insertCiCustomView" parameterType="neatlogic.framework.cmdb.dto.customview.CiCustomViewVo">
+        INSERT IGNORE INTO cmdb_ci_customview (ci_id, customview_id)
+        VALUES (#{ciId}, #{customViewId})
+    </insert>
+
+    <insert id="insertCustomViewRel" parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewRelVo">
+        INSERT cmdb_customview_rel (`customview_id`,
+                                    `customview_ci_uuid`,
+                                    `uuid`,
+                                    `rel_id`)
+        VALUES (#{customViewId},
+                #{customViewCiUuid},
+                #{uuid},
+                #{relId})
+    </insert>
+
+    <insert id="insertCustomView" parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewVo">
+        INSERT INTO cmdb_customview (id,
+                                     `name`,
+                                     `icon`,
+                                     `description`,
+                                     is_active,
+                                     type,
+                                     fcu,
+                                     fcd,
+                                     config)
+        VALUES (#{id},
+                #{name},
+                #{icon},
+                #{description},
+                #{isActive},
+                #{type},
+                #{fcu},
+                now(),
+                #{configStr,typeHandler=CompressHandler})
+    </insert>
+
+    <insert id="insertCustomViewCi" parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewCiVo">
+        INSERT INTO cmdb_customview_ci (customview_id, uuid, ci_id, sort, is_hidden, is_start, alias)
+        VALUES (#{customViewId}, #{uuid}, #{ciId}, #{sort}, #{isHidden}, #{isStart}, #{alias})
+    </insert>
+
+    <insert id="insertCustomViewConstAttr"
+            parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewConstAttrVo">
+        INSERT INTO cmdb_customview_constattr
+        (customview_id,
+         customview_ci_uuid,
+         uuid,
+         const_name,
+         alias,
+         name,
+         sort,
+         is_hidden,
+         is_primary)
+        VALUES (#{customViewId},
+                #{customViewCiUuid},
+                #{uuid},
+                #{constName},
+                #{alias},
+                #{name},
+                #{sort},
+                #{isHidden},
+                #{isPrimary})
+    </insert>
+
+    <insert id="insertCustomViewAttr" parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewAttrVo">
+        INSERT INTO cmdb_customview_attr
+        (customview_id,
+         customview_ci_uuid,
+         uuid,
+         attr_id,
+         alias,
+         name,
+         sort,
+         is_hidden,
+         is_primary,
+         `condition`)
+        VALUES (#{customViewId},
+                #{customViewCiUuid},
+                #{uuid},
+                #{attrId},
+                #{alias},
+                #{name},
+                #{sort},
+                #{isHidden},
+                #{isPrimary},
+                #{conditionStr})
+    </insert>
+
+    <insert id="insertCustomViewLink" parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewLinkVo">
+        INSERT
+        INTO cmdb_customview_link (customview_id,
+                                   `name`,
+                                   uuid,
+                                   from_uuid,
+                                   to_uuid,
+                                   from_type,
+                                   to_type,
+                                   join_type,
+                                   from_ci_uuid,
+                                   to_ci_uuid)
+        VALUES (#{customViewId},
+                #{name},
+                #{uuid},
+                #{fromUuid},
+                #{toUuid},
+                #{fromType},
+                #{toType},
+                #{joinType},
+                #{fromCustomViewCiUuid},
+                #{toCustomViewCiUuid})
+    </insert>
+
+
+    <insert id="buildCustomView" parameterType="java.lang.String">
+        ${value}
+    </insert>
+
+    <insert id="insertCustomViewTag">
+        INSERT INTO cmdb_customview_tag (customview_id, tag_id)
+        VALUES (#{customViewId}, #{tagId})
+    </insert>
+
+    <delete id="deleteCustomViewRelByCustomViewId" parameterType="java.lang.Long">
+        DELETE
+        FROM cmdb_customview_rel
+        WHERE customview_id = #{value}
+    </delete>
+
+    <delete id="deleteCustomViewTagByCustomViewId" parameterType="java.lang.Long">
+        DELETE
+        FROM cmdb_customview_tag
+        WHERE customview_id = #{value}
+    </delete>
+
+    <delete id="deleteCiCustomViewByCustomViewId" parameterType="java.lang.Long">
+        DELETE
+        FROM cmdb_ci_customview
+        WHERE customview_id = #{value}
+    </delete>
+
+    <delete id="deleteCustomViewCiByCustomViewId" parameterType="java.lang.Long">
+        DELETE
+        FROM cmdb_customview_ci
+        WHERE customview_id = #{value}
+    </delete>
+
+    <delete id="deleteCustomViewAttrByCustomViewId" parameterType="java.lang.Long">
+        DELETE
+        FROM cmdb_customview_attr
+        WHERE customview_id = #{value}
+    </delete>
+
+    <delete id="deleteCustomViewConstAttrByCustomViewId" parameterType="java.lang.Long">
+        DELETE
+        FROM cmdb_customview_constattr
+        WHERE customview_id = #{value}
+    </delete>
+
+    <delete id="deleteCustomViewLinkByCustomViewId" parameterType="java.lang.Long">
+        DELETE
+        FROM cmdb_customview_link
+        WHERE customview_id = #{value}
+    </delete>
+
+    <delete id="deleteCustomViewById" parameterType="java.lang.Long">
+        DELETE
+        FROM cmdb_customview
+        WHERE id = #{value}
+    </delete>
+
+    <delete id="dropCustomView" parameterType="java.lang.String">
+        DROP VIEW IF EXISTS ${value}
+    </delete>
+
+    <delete id="deleteCustomViewTemplateById" parameterType="java.lang.Long">
+        DELETE
+        FROM cmdb_customview_template
+        WHERE customview_id = #{value}
+    </delete>
+</mapper>

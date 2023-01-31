@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="neatlogic.module.cmdb.dao.mapper.ci.RelTypeMapper">
+    <cache-ref namespace="neatlogic.module.cmdb.dao.mapper.ci.CiMapper"/>
+
+    <select id="checkRelTypeIsInUsed" parameterType="java.lang.Long" resultType="int" useCache="false">
+        SELECT COUNT(1)
+        FROM cmdb_rel
+        WHERE type_id = #{value}
+    </select>
+
+    <select id="checkRelTypeNameIsExists" parameterType="neatlogic.framework.cmdb.dto.ci.RelTypeVo" resultType="int"
+            useCache="false">
+        SELECT COUNT(1)
+        FROM cmdb_reltype
+        WHERE name = #{name}
+          AND id != #{id}
+    </select>
+
+    <select id="getRelTypeById" parameterType="java.lang.Long" resultType="neatlogic.framework.cmdb.dto.ci.RelTypeVo"
+            useCache="false">
+        SELECT `id`,
+               `name`,
+               `is_showintopo` AS isShowInTopo,
+               `description`
+        FROM `cmdb_reltype`
+        WHERE id = #{value}
+    </select>
+
+    <select id="getAllRelType" resultType="neatlogic.framework.cmdb.dto.ci.RelTypeVo" useCache="false">
+        SELECT `id`,
+               `name`,
+               `is_showintopo`                                              AS isShowInTopo,
+               `description`,
+               (SELECT COUNT(1) FROM cmdb_rel rel WHERE rel.type_id = a.id) AS invokeCount
+        FROM `cmdb_reltype` a
+        ORDER BY id DESC
+    </select>
+
+    <insert id="insertRelType" parameterType="neatlogic.framework.cmdb.dto.ci.RelTypeVo">
+        INSERT INTO cmdb_reltype
+            (id, name, is_showintopo, description)
+        VALUES (#{id}, #{name}, #{isShowInTopo}, #{description})
+    </insert>
+
+    <update id="updateRelType" parameterType="neatlogic.framework.cmdb.dto.ci.RelTypeVo">
+        UPDATE cmdb_reltype
+        SET name           = #{name},
+            `is_showintopo`= #{isShowInTopo},
+            description    = #{description}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateRelTypeIsShow" parameterType="neatlogic.framework.cmdb.dto.ci.RelTypeVo">
+        UPDATE cmdb_reltype
+        SET `is_showintopo`= #{isShowInTopo}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteRelTypeById" parameterType="java.lang.Long">
+        DELETE
+        FROM cmdb_reltype
+        WHERE id = #{value}
+    </delete>
+
+</mapper>

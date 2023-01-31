@@ -1,0 +1,1485 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper">
+
+    <sql id="resource_ipobject_where">
+        <if test="typeIdList != null and typeIdList.size() > 0">
+            AND a.`type_id` IN
+            <foreach collection="typeIdList" item="typeId" open="(" separator="," close=")">
+                #{typeId}
+            </foreach>
+        </if>
+        <if test="stateIdList != null and stateIdList.size() > 0">
+            AND a.`state_id` IN
+            <foreach collection="stateIdList" item="stateId" open="(" separator="," close=")">
+                #{stateId}
+            </foreach>
+        </if>
+        <if test="vendorIdList != null and vendorIdList.size() > 0">
+            AND a.`vendor_id` IN
+            <foreach collection="vendorIdList" item="vendorId" open="(" separator="," close=")">
+                #{vendorId}
+            </foreach>
+        </if>
+        <if test="envIdList != null and envIdList.size() > 0">
+            AND a.`env_id` IN
+            <foreach collection="envIdList" item="envId" open="(" separator="," close=")">
+                #{envId}
+            </foreach>
+        </if>
+        <if test="isExistNoEnv">
+            AND a.`env_id` is null
+        </if>
+        <if test="appSystemIdList != null and appSystemIdList.size() > 0">
+            AND a.`app_system_id` IN
+            <foreach collection="appSystemIdList" item="appSystemId" open="(" separator="," close=")">
+                #{appSystemId}
+            </foreach>
+        </if>
+        <if test="appModuleIdList != null and appModuleIdList.size() > 0">
+            AND a.`app_module_id` IN
+            <foreach collection="appModuleIdList" item="appModuleId" open="(" separator="," close=")">
+                #{appModuleId}
+            </foreach>
+        </if>
+        <if test="defaultValue != null and defaultValue.size() > 0">
+            AND a.`id` IN
+            <foreach collection="defaultValue" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+        <if test="inspectStatusList != null and inspectStatusList.size() > 0">
+            AND a.`inspect_status` IN
+            <foreach collection="inspectStatusList" item="inspectStatus" open="(" separator="," close=")">
+                #{inspectStatus}
+            </foreach>
+        </if>
+        <if test="protocolIdList != null and protocolIdList.size() > 0">
+            AND c.`protocol_id` IN
+            <foreach collection="protocolIdList" item="protocolId" open="(" separator="," close=")">
+                #{protocolId}
+            </foreach>
+        </if>
+        <if test="tagIdList != null and tagIdList.size() > 0">
+            AND d.`tag_id` IN
+            <foreach collection="tagIdList" item="tagId" open="(" separator="," close=")">
+                #{tagId}
+            </foreach>
+        </if>
+        <if test="batchSearchList != null and batchSearchList.size() > 0 and searchField != null and searchField != ''">
+            <if test="searchField == 'name'">
+                and a.`name` IN
+            </if>
+            <if test="searchField == 'ip'">
+                and a.`ip` IN
+            </if>
+            <foreach collection="batchSearchList" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="inspectJobPhaseNodeStatusList !=null and inspectJobPhaseNodeStatusList.size() > 0">
+            AND ajpn.status in
+            <foreach collection="inspectJobPhaseNodeStatusList" item="status" open="(" close=")" separator=",">
+                #{status}
+            </foreach>
+        </if>
+    </sql>
+
+    <select id="getResourceCountByNameKeyword"
+            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+            resultType="int">
+        SELECT COUNT(DISTINCT a.`id`)
+        FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
+        LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
+        LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
+        LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+        WHERE a.`name` LIKE CONCAT('%', #{keyword}, '%')
+        <include refid="resource_ipobject_where"/>
+    </select>
+
+    <select id="getResourceCountByIpKeyword"
+            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+            resultType="int">
+        SELECT COUNT(DISTINCT a.`id`)
+        FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
+        LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
+        LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
+        LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+        WHERE a.`ip` LIKE CONCAT('%', #{keyword}, '%')
+        <include refid="resource_ipobject_where"/>
+    </select>
+
+    <select id="getResourceCount" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+            resultType="int">
+        SELECT COUNT(DISTINCT a.`id`)
+        FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
+        LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
+        LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
+        LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+        <if test="inspectJobPhaseNodeStatusList !=null and inspectJobPhaseNodeStatusList.size() > 0">
+            left join autoexec_job_resource_inspect ajri on ajri.resource_id=a.id
+            left join autoexec_job_phase_node ajpn on ajpn.job_phase_id =ajri.phase_id AND ajpn.resource_id = a.id
+        </if>
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <include refid="resource_ipobject_where"/>
+        </where>
+    </select>
+
+    <select id="getResourceIdList" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+            resultType="java.lang.Long">
+        SELECT m.`id` FROM (
+        SELECT DISTINCT a.`id`, a.`name`, a.`ip`
+        FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
+        LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
+        LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
+        LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+        <if test="inspectJobPhaseNodeStatusList !=null and inspectJobPhaseNodeStatusList.size() > 0">
+            left join autoexec_job_resource_inspect ajri on ajri.resource_id=a.id
+            left join autoexec_job_phase_node ajpn on ajpn.job_phase_id =ajri.phase_id AND ajpn.resource_id = a.id
+        </if>
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <include refid="resource_ipobject_where"/>
+        </where>
+        <choose>
+            <when test="isNameFieldSort != null and isNameFieldSort == 1">
+                ORDER BY LENGTH(a.`name`)
+            </when>
+            <when test="isIpFieldSort != null and isIpFieldSort == 1">
+                ORDER BY LENGTH(a.`ip`)
+            </when>
+            <otherwise>
+                ORDER BY a.`id`
+            </otherwise>
+        </choose>
+        LIMIT #{startNum}, #{pageSize}
+        ) m
+    </select>
+
+    <select id="getResourceIdListByDynamicCondition"
+            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+            resultType="java.lang.Long">
+        SELECT DISTINCT sid.`id`
+        FROM @{DATA_SCHEMA}.`scence_ipobject_detail` sid
+        LEFT JOIN `cmdb_resourcecenter_resource_account` crra ON crra.`resource_id` = sid.`id`
+        LEFT JOIN `cmdb_resourcecenter_account` cra ON cra.`id` = crra.`account_id`
+        LEFT JOIN `cmdb_resourcecenter_resource_tag` crrt ON crrt.`resource_id` = sid.`id`
+        <where>
+            <if test="searchVo.keyword != null and searchVo.keyword != ''">
+                AND (sid.`name` LIKE CONCAT('%', #{searchVo.keyword}, '%') OR sid.`ip` LIKE CONCAT('%',
+                #{searchVo.keyword}, '%'))
+            </if>
+            ${conditionSql}
+        </where>
+        ORDER BY sid.`id`
+        LIMIT #{searchVo.startNum}, #{searchVo.pageSize}
+    </select>
+
+    <resultMap id="resourceCenterMap" type="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="abbr_name" property="abbrName"/>
+        <result column="type_id" property="typeId"/>
+        <result column="type_name" property="typeName"/>
+        <result column="type_label" property="typeLabel"/>
+        <result column="inspect_status" property="inspectStatus"/>
+        <result column="inspect_time" property="inspectTime"/>
+        <result column="env_seq_no" property="envSeqNo"/>
+        <result column="monitor_status" property="monitorStatus"/>
+        <result column="monitor_time" property="monitorTime"/>
+        <result column="maintenance_window" property="maintenanceWindow"/>
+        <result column="description" property="description"/>
+        <result column="fcu" property="fcu"/>
+        <result column="fcd" property="fcd"/>
+        <result column="lcu" property="lcu"/>
+        <result column="lcd" property="lcd"/>
+        <result column="network_area" property="networkArea"/>
+        <result column="port" property="port"/>
+        <result column="ip" property="ip"/>
+        <result column="state_id" property="stateId"/>
+        <result column="state_name" property="stateName"/>
+        <result column="state_label" property="stateLabel"/>
+        <result column="datacenter_id" property="dataCenterId"/>
+        <result column="datacenter_name" property="dataCenterName"/>
+        <result column="env_id" property="envId"/>
+        <result column="env_name" property="envName"/>
+        <result column="app_module_id" property="appModuleId"/>
+        <result column="app_module_name" property="appModuleName"/>
+        <result column="app_module_abbr_name" property="appModuleAbbrName"/>
+        <result column="app_system_id" property="appSystemId"/>
+        <result column="app_system_name" property="appSystemName"/>
+        <result column="app_system_abbr_name" property="appSystemAbbrName"/>
+        <result column="cluster_id" property="clusterId"/>
+        <result column="cluster_name" property="clusterName"/>
+        <result column="cluster_type_id" property="clusterTypeId"/>
+        <collection property="bgList" ofType="neatlogic.framework.cmdb.dto.resourcecenter.BgVo">
+            <id column="bg_id" property="bgId"/>
+            <result column="bg_name" property="bgName"/>
+        </collection>
+        <collection property="ownerList" ofType="neatlogic.framework.cmdb.dto.resourcecenter.OwnerVo">
+            <id column="user_id" property="userId"/>
+            <result column="user_uuid" property="uuid"/>
+            <result column="user_name" property="userName"/>
+        </collection>
+        <collection property="allIp" ofType="neatlogic.framework.cmdb.dto.resourcecenter.IpVo">
+            <id column="allip_id" property="id"/>
+            <result column="allip_ip" property="ip"/>
+            <result column="allip_label" property="label"/>
+        </collection>
+    </resultMap>
+
+    <select id="getResourceListByIdList" resultMap="resourceCenterMap">
+        SELECT
+        a.`id`,
+        a.`ip`,
+        a.`port`,
+        a.`type_id`,
+        a.`type_name`,
+        a.`type_label`,
+        a.`name`,
+        a.`monitor_status`,
+        a.`monitor_time`,
+        a.`inspect_status`,
+        a.`inspect_time`,
+        a.`network_area`,
+        a.`maintenance_window`,
+        a.`description`,
+        a.`app_module_id`,
+        a.`app_module_name`,
+        a.`app_module_abbr_name`,
+        a.`app_system_id`,
+        a.`app_system_name`,
+        a.`app_system_abbr_name`,
+        a.`allip_id`,
+        a.`allip_ip`,
+        a.`allip_label`,
+        a.`bg_id`,
+        a.`bg_name`,
+        a.`user_id`,
+        a.`user_uuid`,
+        a.`user_name`,
+        a.`state_id`,
+        a.`state_name`,
+        a.`state_label`,
+        a.`env_id`,
+        a.`env_name`
+        FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
+        WHERE a.`id` IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getIpObjectResourceCountByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId"
+            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="int">
+        SELECT COUNT(1)
+        FROM @{DATA_SCHEMA}.`scence_ipobject_env_appmodule_appsystem` a
+        WHERE a.`type_id` = #{typeId}
+        <if test="appSystemId != null">
+            AND a.`app_system_id` = #{appSystemId}
+        </if>
+        <if test="appModuleId != null">
+            AND a.`app_module_id` = #{appModuleId}
+        </if>
+        <if test="envId != null and envId != -2">
+            AND a.`env_id` = #{envId}
+        </if>
+        <if test="envId == -2">
+            AND a.`env_id` is null
+        </if>
+        <if test="inspectStatusList != null and inspectStatusList.size() > 0">
+            AND a.`inspect_status` IN
+            <foreach collection="inspectStatusList" item="inspectStatus" open="(" separator="," close=")">
+                #{inspectStatus}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="getIpObjectResourceIdListByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId"
+            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
+        SELECT a.`id`
+        FROM @{DATA_SCHEMA}.`scence_ipobject_env_appmodule_appsystem` a
+        WHERE a.`type_id` = #{typeId}
+        <if test="appSystemId != null">
+            AND a.`app_system_id` = #{appSystemId}
+        </if>
+        <if test="appModuleId != null">
+            AND a.`app_module_id` = #{appModuleId}
+        </if>
+        <if test="envId != null and envId != -2">
+            AND a.`env_id` = #{envId}
+        </if>
+        <if test="envId == -2">
+            AND a.`env_id` is null
+        </if>
+        <if test="inspectStatusList != null and inspectStatusList.size() > 0">
+            AND a.`inspect_status` IN
+            <foreach collection="inspectStatusList" item="inspectStatus" open="(" separator="," close=")">
+                #{inspectStatus}
+            </foreach>
+        </if>
+        ORDER BY a.`id` DESC
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="getOsResourceCountByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId"
+            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="int">
+        SELECT COUNT(distinct a.`id`)
+        FROM @{DATA_SCHEMA}.`scence_os_softwareservice_env_appmodule_appsystem` a
+        <if test="inspectStatusList != null and inspectStatusList.size() > 0">
+            JOIN `cmdb_cientity` b on b.`id` = a.`resource_id` and b.`inspect_status` IN
+            <foreach collection="inspectStatusList" item="inspectStatus" open="(" separator="," close=")">
+                #{inspectStatus}
+            </foreach>
+        </if>
+        WHERE a.`type_id` = #{typeId}
+        <if test="appSystemId != null">
+            AND a.`app_system_id` = #{appSystemId}
+        </if>
+        <if test="appModuleId != null">
+            AND a.`app_module_id` = #{appModuleId}
+        </if>
+        <if test="envId != null and envId != -2">
+            AND a.`env_id` = #{envId}
+        </if>
+        <if test="envId == -2">
+            AND a.`env_id` is null
+        </if>
+    </select>
+
+    <select id="getOsResourceIdListByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId"
+            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
+        SELECT distinct a.`id`
+        FROM @{DATA_SCHEMA}.`scence_os_softwareservice_env_appmodule_appsystem` a
+        <if test="inspectStatusList != null and inspectStatusList.size() > 0">
+            JOIN `cmdb_cientity` b on b.`id` = a.`resource_id` and b.`inspect_status` IN
+            <foreach collection="inspectStatusList" item="inspectStatus" open="(" separator="," close=")">
+                #{inspectStatus}
+            </foreach>
+        </if>
+        WHERE a.`type_id` = #{typeId}
+        <if test="appSystemId != null">
+            AND a.`app_system_id` = #{appSystemId}
+        </if>
+        <if test="appModuleId != null">
+            AND a.`app_module_id` = #{appModuleId}
+        </if>
+        <if test="envId != null and envId != -2">
+            AND a.`env_id` = #{envId}
+        </if>
+        <if test="envId == -2">
+            AND a.`env_id` is null
+        </if>
+        ORDER BY a.`id` DESC
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <sql id="getAppInstanceResourceListByIdList">
+        SELECT
+        a.`id`,
+        a.`ip`,
+        a.`port`,
+        a.`name`,
+        a.`type_id`,
+        a.`monitor_status`,
+        a.`monitor_time`,
+        a.`inspect_status`,
+        a.`inspect_time`,
+        a.`network_area`,
+        a.`maintenance_window`,
+        a.`description`,
+        a.`bg_id`,
+        a.`bg_name`,
+        a.`user_id`,
+        a.`user_uuid`,
+        a.`user_name`,
+        a.`state_id`,
+        a.`state_name`,
+        a.`state_label`,
+        a.`env_id`,
+        a.`env_name`,
+        a.`datacenter_id`,
+        a.`datacenter_name`,
+        a.`cluster_id`,
+        a.`cluster_type_id`,
+        a.`cluster_name`
+        FROM @{DATA_SCHEMA}.`scence_appinstance_detail_cluster` a
+        WHERE a.`id` IN
+        <foreach collection="idList" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </sql>
+
+    <select id="getAppInstanceResourceListByIdList" parameterType="java.lang.Long" resultMap="resourceCenterMap">
+        <include refid="getAppInstanceResourceListByIdList"/>
+    </select>
+
+    <select id="getAppInstanceResourceListByIdListAndKeyword" resultMap="resourceCenterMap">
+        <include refid="getAppInstanceResourceListByIdList"/>
+        <if test="keyword != null and keyword != ''">
+            and (a.`ip` like CONCAT('%', #{keyword}, '%') or a.`name` like CONCAT('%', #{keyword}, '%'))
+        </if>
+    </select>
+
+    <select id="getAppInstanceResourceListByIdListSimple" parameterType="java.lang.Long" resultMap="resourceCenterMap">
+        SELECT
+        a.`id`,
+        a.`ip`,
+        a.`port`,
+        a.`name`,
+        a.`type_id`,
+        a.`monitor_status`,
+        a.`monitor_time`,
+        a.`inspect_status`,
+        a.`inspect_time`,
+        a.`network_area`,
+        a.`maintenance_window`,
+        a.`description`,
+        a.`bg_id`,
+        a.`bg_name`,
+        a.`user_id`,
+        a.`user_uuid`,
+        a.`user_name`,
+        a.`state_id`,
+        a.`state_name`,
+        a.`state_label`,
+        a.`env_id`,
+        a.`env_name`
+        FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
+        WHERE a.`id` IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getDbInstanceResourceListByIdList" resultMap="resourceCenterMap">
+        SELECT
+        a.`id`,
+        a.`ip`,
+        a.`port`,
+        a.`name`,
+        a.`type_id`,
+        a.`monitor_status`,
+        a.`monitor_time`,
+        a.`inspect_status`,
+        a.`inspect_time`,
+        a.`network_area`,
+        a.`maintenance_window`,
+        a.`description`,
+        a.`bg_id`,
+        a.`bg_name`,
+        a.`user_id`,
+        a.`user_uuid`,
+        a.`user_name`,
+        a.`state_id`,
+        a.`state_name`,
+        a.`state_label`,
+        a.`env_id`,
+        a.`env_name`,
+        a.`datacenter_id`,
+        a.`datacenter_name`,
+        a.`cluster_id`,
+        a.`cluster_type_id`,
+        a.`cluster_name`
+        FROM @{DATA_SCHEMA}.`scence_dbinstance_detail_cluster` a
+        WHERE a.`id` IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getOsResourceListByIdList" resultMap="resourceCenterMap">
+        SELECT
+        a.`id`,
+        a.`ip`,
+        a.`name`,
+        a.`type_id`,
+        a.`monitor_status`,
+        a.`monitor_time`,
+        a.`inspect_status`,
+        a.`inspect_time`,
+        a.`network_area`,
+        a.`maintenance_window`,
+        a.`description`,
+        a.`bg_id`,
+        a.`bg_name`,
+        a.`user_id`,
+        a.`user_uuid`,
+        a.`user_name`,
+        a.`state_id`,
+        a.`state_name`,
+        a.`state_label`,
+        a.`datacenter_id`,
+        a.`datacenter_name`,
+        a.`cluster_id`,
+        a.`cluster_type_id`,
+        a.`cluster_name`
+        FROM @{DATA_SCHEMA}.`scence_os_detail_cluster` a
+        WHERE a.`id` IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getResourceIdByIpAndPortAndName"
+            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
+        SELECT a.`id`
+        FROM @{DATA_SCHEMA}.`scence_ipobject_ip_port` a
+        WHERE a.`ip` = #{ip}
+        <choose>
+            <when test="port != null and port != ''">
+                AND a.`port` = #{port}
+            </when>
+            <otherwise>
+                AND a.`port` is null
+            </otherwise>
+        </choose>
+        <if test="name != null and name != ''">
+            and a.`name` = #{name}
+        </if>
+        LIMIT 1
+    </select>
+
+    <select id="getResourceByIdList" parameterType="java.lang.Long" resultMap="resourceCenterMap">
+        SELECT a.`id`, a.`name`, a.`ip`,a.`port`,a.`type_id`, a.`type_name`
+        FROM @{DATA_SCHEMA}.`scence_ipobject_ip_port` a
+        where a.`id` in
+        <foreach collection="list" item="id" separator="," close=")" open="(">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getResourceById" parameterType="java.lang.Long" resultMap="resourceCenterMap">
+        SELECT a.`id`, a.`name`, a.`ip`, a.`port`, a.`type_id`, a.`type_name`, a.`type_label`
+        FROM @{DATA_SCHEMA}.`scence_ipobject_ip_port` a
+        where a.`id` = #{value}
+    </select>
+
+    <select id="checkResourceIsExists" parameterType="java.lang.Long" resultType="int">
+        SELECT COUNT(DISTINCT a.`id`)
+        FROM @{DATA_SCHEMA}.`scence_ipobject_id` a
+        where a.`id` = #{value}
+    </select>
+
+    <select id="checkResourceIdListIsExists" parameterType="java.lang.Long" resultType="java.lang.Long">
+        SELECT a.`id`
+        FROM @{DATA_SCHEMA}.`scence_ipobject_id` a
+        WHERE a.`id` IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getHasModuleAppSystemIdListByAppSystemIdList"
+            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+            resultType="java.lang.Long">
+        SELECT `id` FROM @{DATA_SCHEMA}.`scence_appsystem_appmodule`
+        WHERE `app_module_id` IS NOT NULL
+        AND `id` IN
+        <foreach collection="appSystemIdList" item="appSystemId" open="(" separator="," close=")">
+            #{appSystemId}
+        </foreach>
+    </select>
+
+    <select id="getHasEnvAppSystemIdListByAppSystemIdList"
+            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+            resultType="java.lang.Long">
+        SELECT a.`app_system_id`
+        FROM @{DATA_SCHEMA}.`scence_ipobject_env_appmodule_appsystem` a
+        WHERE a.env_id IS NOT NULL
+        AND a.`app_module_id` IS NOT NULL
+        AND a.`app_system_id` IN
+        <foreach collection="appSystemIdList" item="appSystemId" open="(" separator="," close=")">
+            #{appSystemId}
+        </foreach>
+    </select>
+
+    <select id="searchAppModuleCount" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+            resultType="java.lang.Integer">
+        SELECT COUNT(DISTINCT a.`app_module_id`)
+        FROM @{DATA_SCHEMA}.`scence_appsystem_appmodule` a
+        WHERE a.`app_module_id` IS NOT NULL
+        <if test="keyword != null and keyword != ''">
+            AND a.`app_module_name` LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        <if test="appSystemIdList != null and appSystemIdList.size() > 0">
+            AND a.`id` IN
+            <foreach collection="appSystemIdList" item="appSystemId" open="(" separator="," close=")">
+                #{appSystemId}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="searchAppModuleIdList" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+            resultType="java.lang.Long">
+        SELECT DISTINCT a.`app_module_id`
+        FROM @{DATA_SCHEMA}.`scence_appsystem_appmodule` a
+        WHERE a.`app_module_id` IS NOT NULL
+        <if test="keyword != null and keyword != ''">
+            AND a.`app_module_name` LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        <if test="appSystemIdList != null and appSystemIdList.size() > 0">
+            AND a.`id` IN
+            <foreach collection="appSystemIdList" item="appSystemId" open="(" separator="," close=")">
+                #{appSystemId}
+            </foreach>
+        </if>
+        ORDER BY a.`app_module_id` DESC
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="searchAppModule" parameterType="java.lang.Long" resultMap="resourceCenterMap">
+        SELECT
+        a.`id`,
+        a.`name`,
+        a.`abbr_name`,
+        a.`maintenance_window`,
+        a.`description`,
+        a.`inspect_status`,
+        a.`inspect_time`,
+        a.`monitor_status`,
+        a.`monitor_time`,
+        a.`fcu`,
+        a.`fcd`,
+        a.`lcu`,
+        a.`lcd`,
+        a.`app_system_id`,
+        a.`app_system_name`,
+        a.`app_system_abbr_name`,
+        a.`bg_id`,
+        a.`bg_name`,
+        a.`user_id`,
+        a.`user_uuid`,
+        a.`user_name`
+        FROM @{DATA_SCHEMA}.`scence_appmodule_appsystem` a
+        WHERE a.`id` IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        ORDER BY a.`id` DESC
+    </select>
+
+    <select id="getAppSystemModuleIdListByAppSystemId"
+            resultType="java.lang.Long">
+        SELECT `app_module_id`
+        FROM @{DATA_SCHEMA}.`scence_appsystem_appmodule`
+        WHERE `id` = #{value}
+          AND `app_module_id` IS NOT NULL
+    </select>
+
+    <select id="getAppSystemModuleIdListByAppSystemIdAndAppModuleIdList"
+            resultType="java.lang.Long">
+        SELECT `app_module_id` FROM @{DATA_SCHEMA}.`scence_appsystem_appmodule`
+        <where>
+            <if test="appSystemId != null">
+                And `id` = #{appSystemId}
+            </if>
+            <if test="appModuleIdList != null and appModuleIdList.size() > 0">
+                And app_module_id in
+                <foreach collection="appModuleIdList" open="(" separator="," close=")" item="moduleId">
+                    #{moduleId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getAppModuleListByAppSystemIdList"
+            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.entity.ModuleVo">
+        SELECT
+        `id` AS resourceId,
+        `app_module_id` AS appModuleId,
+        `app_module_name` AS appModuleName,
+        `app_module_abbr_name` AS appModuleAbbrName
+        FROM @{DATA_SCHEMA}.`scence_appsystem_appmodule`
+        <where>
+            and `app_module_id` IS NOT NULL
+            and `id` IN
+            <foreach collection="appSystemIdList" item="appSystemId" open="(" separator="," close=")">
+                #{appSystemId}
+            </foreach>
+        </where>
+    </select>
+
+    <select id="getAppModuleListByIdListSimple" resultMap="resourceCenterMap">
+        SELECT
+        a.`id`, a.`name`, a.`abbr_name`, a.`maintenance_window`, a.`description`,
+        a.`inspect_status`, a.`inspect_time`, a.`monitor_status`, a.`monitor_time`,
+        a.`fcu`, a.`fcd`, a.`lcu`, a.`lcd`
+        FROM @{DATA_SCHEMA}.`scence_appmodule` a
+        WHERE a.`id` IN
+        <foreach collection="idList" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        <if test="needOrder != null and needOrder == true">
+            order by CONVERT(a.abbr_name USING gbk) COLLATE gbk_chinese_ci ASC
+        </if>
+    </select>
+
+    <select id="getIpObjectResourceTypeIdListByAppModuleIdAndEnvId"
+            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
+        SELECT a.`type_id`
+        FROM @{DATA_SCHEMA}.`scence_ipobject_env_appmodule` a
+        WHERE a.`app_module_id` = #{appModuleId}
+        <if test="envId != null and envId != -2">
+            AND a.`env_id` = #{envId}
+        </if>
+        <if test="envId == -2">
+            AND a.`env_id` is null
+        </if>
+    </select>
+
+    <select id="getOsResourceTypeIdListByAppModuleIdAndEnvId"
+            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
+        SELECT a.`type_id`
+        FROM @{DATA_SCHEMA}.`scence_os_softwareservice_env_appmodule` a
+        WHERE a.`app_module_id` = #{appModuleId}
+        <if test="envId != null and envId != -2">
+            AND a.`env_id` = #{envId}
+        </if>
+        <if test="envId == -2">
+            AND a.`env_id` is null
+        </if>
+    </select>
+
+    <select id="getIpObjectResourceTypeIdListByAppSystemIdAndEnvId"
+            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
+        SELECT a.`type_id`
+        FROM @{DATA_SCHEMA}.`scence_ipobject_env_appmodule_appsystem` a
+        WHERE a.`app_system_id` = #{appSystemId}
+        <if test="envId != null and envId != -2">
+            AND a.`env_id` = #{envId}
+        </if>
+        <if test="envId == -2">
+            AND a.`env_id` is null
+        </if>
+    </select>
+
+    <select id="getOsResourceTypeIdListByAppSystemIdAndEnvId"
+            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
+        SELECT a.`type_id`
+        FROM @{DATA_SCHEMA}.`scence_os_softwareservice_env_appmodule_appsystem` a
+        WHERE a.`app_system_id` = #{appSystemId}
+        <if test="envId != null and envId != -2">
+            AND a.`env_id` = #{envId}
+        </if>
+        <if test="envId == -2">
+            AND a.`env_id` is null
+        </if>
+    </select>
+
+    <select id="getResourceAppSystemIdListByResourceId" parameterType="java.lang.Long" resultType="java.lang.Long">
+        SELECT a.`app_system_id`
+        FROM @{DATA_SCHEMA}.`scence_os_softwareservice_env_appmodule_appsystem` a
+        WHERE a.`id` = #{id}
+    </select>
+
+    <select id="getResourceAppSystemListByResourceIdList" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo">
+        SELECT a.`app_system_id` as appSystemId,a.id
+        FROM @{DATA_SCHEMA}.`scence_os_softwareservice_env_appmodule_appsystem` a
+        WHERE a.`id` in
+        <foreach collection="list" item="id" close=")" separator="," open="(">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getResourceListByResourceVoList" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo">
+        SELECT a.name,a.`ip`,a.id,a.port,a.type_name as typeName
+        FROM @{DATA_SCHEMA}.`scence_ipobject_ip_port` a
+        WHERE
+        <foreach collection="resourceList" item="resource" separator="or" open="(" close=")">
+            a.ip = #{resource.ip}
+            <if test="resource.port != null">
+                and a.port = #{resource.port}
+            </if>
+            <if test="resource.port == null">
+                and a.port is null
+            </if>
+            <if test="resource.name != null">
+                and a.name = #{resource.name}
+            </if>
+        </foreach>
+    </select>
+
+    <select id="getAppSystemIdByResourceId" parameterType="java.lang.Long" resultType="java.lang.Long">
+        SELECT a.`app_system_id`
+        FROM @{DATA_SCHEMA}.`scence_ipobject_env_appmodule_appsystem` a
+        WHERE a.`id` = #{id}
+    </select>
+
+    <select id="getResourceIdListByAppSystemIdAndModuleIdAndEnvId"
+            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo"
+            resultType="java.lang.Long">
+        SELECT a.`id`
+        FROM @{DATA_SCHEMA}.`scence_ipobject_env_appmodule_appsystem` a
+        WHERE a.`app_system_id` = #{appSystemId}
+          AND a.`app_module_id` = #{appModuleId}
+          AND a.`env_id` = #{envId}
+        ORDER BY a.`id`
+        DESC
+            LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId"
+            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo"
+            resultType="java.lang.Long">
+        SELECT a.`id`
+        FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
+        <where>
+            <choose>
+                <when test="appSystemId != null">
+                    AND a.`app_system_id` = #{appSystemId}
+                </when>
+                <otherwise>
+                    AND a.`app_system_id` IS NOT NULL
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="appModuleId != null">
+                    AND a.`app_module_id` = #{appModuleId}
+                </when>
+                <otherwise>
+                    AND a.`app_module_id` IS NOT NULL
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="envId != null">
+                    AND a.`env_id` = #{envId}
+                </when>
+                <otherwise>
+                    AND a.`env_id` IS NOT NULL
+                </otherwise>
+            </choose>
+        </where>
+        ORDER BY a.`id` DESC
+        <if test="needPage">
+            LIMIT #{startNum}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="getResourceIdByIpAndPortAndNameWithFilter"
+            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
+        SELECT a.`id`
+        FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
+        LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
+        LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
+        LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+        WHERE a.`ip` = #{ip}
+        <if test="keyword != null and keyword != ''">
+            AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <include refid="resource_ipobject_where"/>
+        <choose>
+            <when test="port != null and port != ''">
+                AND a.`port` = #{port}
+            </when>
+            <otherwise>
+                AND a.`port` is null
+            </otherwise>
+        </choose>
+        <if test="name != null and name != ''">
+            and a.`name` = #{name}
+        </if>
+        limit 1
+    </select>
+
+    <select id="getResourceListByTypeIdListAndIpList"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo">
+        SELECT a.`id`, a.`ip`, a.`name`
+        FROM @{DATA_SCHEMA}.`scence_ipobject_ip_port` a
+        WHERE a.`type_id` IN
+        <foreach collection="typeIdList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        AND a.`ip` IN
+        <foreach collection="ipList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <select id="getResourceByIpAndPortAndNameAndTypeName"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo">
+        SELECT
+        a.`name`,
+        a.`ip`,
+        a.id,
+        a.`port`,
+        a.`type_name` AS typeName
+        FROM
+        @{DATA_SCHEMA}.`scence_ipobject_ip_port` a
+        WHERE
+        a.`ip` = #{ip}
+        <if test="typeName != null and typeName != ''">
+            and a.`type_name` = #{typeName}
+        </if>
+        <if test="port != null">
+            and a.`port` = #{port}
+        </if>
+        <if test="port == null">
+            and a.`port` is null
+        </if>
+        <if test="name != null and name != ''">
+            and a.`name` = #{name}
+        </if>
+    </select>
+
+    <select id="getResourceByIpAndPort"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo">
+        SELECT
+        a.`name`,
+        a.`ip`,
+        a.`id`,
+        a.`port`,
+        a.`type_name` AS typeName
+        FROM
+        @{DATA_SCHEMA}.`scence_ipobject_ip_port` a
+        WHERE
+        a.`ip` = #{ip}
+        <if test="port != null">
+            and a.`port` = #{port}
+        </if>
+        <if test="port == null">
+            and a.`port` is null
+        </if>
+    </select>
+
+    <select id="getAppSystemById" parameterType="java.lang.Long" resultMap="resourceCenterMap">
+        select `id`,
+               `name`,
+               `abbr_name`,
+               `type_id`,
+               `type_name`,
+               `type_label`,
+               `fcu`,
+               `fcd`,
+               `lcu`,
+               `lcd`,
+               `maintenance_window`,
+               `description`,
+               `inspect_status`,
+               `inspect_time`,
+               `monitor_status`,
+               `monitor_time`
+        from `@{DATA_SCHEMA}`.`scence_appsystem`
+        where `id` = #{value}
+    </select>
+
+    <select id="getAppModuleById" parameterType="java.lang.Long" resultMap="resourceCenterMap">
+        select `id`,
+               `name`,
+               `abbr_name`,
+               `fcu`,
+               `fcd`,
+               `lcu`,
+               `lcd`,
+               `maintenance_window`,
+               `description`,
+               `inspect_status`,
+               `inspect_time`,
+               `monitor_status`,
+               `monitor_time`
+        from `@{DATA_SCHEMA}`.`scence_appmodule`
+        where `id` = #{value}
+    </select>
+
+    <select id="getAppEnvById" parameterType="java.lang.Long" resultMap="resourceCenterMap">
+        select `id`,
+               `name`,
+               `description`
+        from `@{DATA_SCHEMA}`.`scence_env`
+        where `id` = #{value}
+    </select>
+
+    <select id="getAppEnvListByIdList" parameterType="java.lang.Long" resultMap="resourceCenterMap">
+        select `id`,
+        `name`,
+        `description`
+        from `@{DATA_SCHEMA}`.`scence_env`
+        where `id` in
+        <foreach collection="list" open="(" separator="," close=")" item="value">
+            #{value}
+        </foreach>
+    </select>
+
+    <select id="searchAccountComponent" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.AccountComponentVo"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.AccountComponentVo">
+        SELECT
+        a.id as id,
+        a.name as name,
+        a.ip as ip,
+        b.id as accountId,
+        b.name as accountName,
+        b.account as account,
+        d.id as protocolId,
+        d.name as protocol,
+        d.port as port
+        FROM `cmdb_resourcecenter_resource_account` c
+        JOIN @{DATA_SCHEMA}.`scence_ipobject_ip_port` a ON a.id = c.resource_id
+        JOIN `cmdb_resourcecenter_account` b ON b.id = c.account_id
+        JOIN `cmdb_resourcecenter_account_protocol` d ON d.id = b.protocol_id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                a.`name` like concat('%', #{keyword}, '%') or a.`ip` =#{keyword}
+            </if>
+        </where>
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="searchAccountComponentCount"
+            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.AccountComponentVo" resultType="int">
+        SELECT
+        count(DISTINCT a.id)
+        FROM `cmdb_resourcecenter_resource_account` c
+        JOIN @{DATA_SCHEMA}.`scence_ipobject_ip_port` a ON a.id = c.resource_id
+        JOIN `cmdb_resourcecenter_account` b ON b.id = c.account_id
+        JOIN `cmdb_resourcecenter_account_protocol` d ON d.id = b.protocol_id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                a.`name` like concat('%', #{keyword}, '%') or a.`ip` =#{keyword}
+            </if>
+        </where>
+    </select>
+
+    <select id="getAppSystemByName" parameterType="java.lang.String"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo">
+        select `id`,
+               `name`,
+               `abbr_name`,
+               `type_id`,
+               `type_name`,
+               `type_label`,
+               `fcu`,
+               `fcd`,
+               `lcu`,
+               `lcd`,
+               `maintenance_window`,
+               `description`,
+               `inspect_status`,
+               `inspect_time`,
+               `monitor_status`,
+               `monitor_time`
+        from `@{DATA_SCHEMA}`.`scence_appsystem`
+        where `abbr_name` = #{value}
+    </select>
+
+    <select id="getAppModuleByName" parameterType="java.lang.String"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo">
+        select `id`,
+               `name`,
+               `abbr_name`,
+               `fcu`,
+               `fcd`,
+               `lcu`,
+               `lcd`,
+               `maintenance_window`,
+               `description`,
+               `inspect_status`,
+               `inspect_time`,
+               `monitor_status`,
+               `monitor_time`
+        from `@{DATA_SCHEMA}`.`scence_appmodule`
+        where `abbr_name` = #{value}
+    </select>
+
+    <select id="getAppEnvByName" parameterType="java.lang.String" resultMap="resourceCenterMap">
+        select `id`,
+               `name`,
+               `description`
+        from `@{DATA_SCHEMA}`.`scence_env`
+        where `name` = #{value}
+    </select>
+
+    <select id="getAllAppEnv"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo">
+        select `id`         as envId,
+               `name`       as envName,
+               `env_seq_no` as envSeqNo
+        from `@{DATA_SCHEMA}`.`scence_env`
+    </select>
+
+    <select id="searchAppEnvCount" parameterType="neatlogic.framework.common.dto.BasePageVo" resultType="int">
+        SELECT
+        COUNT(1)
+        FROM @{DATA_SCHEMA}.`scence_env`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` LIKE CONCAT('%', #{keyword}, '%')
+                OR `description` LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="searchAppEnvIdList" parameterType="neatlogic.framework.common.dto.BasePageVo"
+            resultType="java.lang.Long">
+        SELECT
+        `id`
+        FROM @{DATA_SCHEMA}.`scence_env`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` LIKE CONCAT('%', #{keyword}, '%')
+                OR `description` LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="searchAppEnvListByIdList" parameterType="java.lang.Long" resultMap="resourceCenterMap">
+        SELECT
+        `id`,
+        `name`,
+        `description`,
+        `env_seq_no`
+        FROM @{DATA_SCHEMA}.`scence_env`
+        WHERE `id` IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        ORDER BY `env_seq_no` ASC
+    </select>
+
+    <select id="searchAppSystemCount" parameterType="neatlogic.framework.common.dto.BasePageVo" resultType="int">
+        SELECT
+        COUNT(1)
+        FROM @{DATA_SCHEMA}.`scence_appsystem`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` LIKE CONCAT('%', #{keyword}, '%')
+                OR `abbr_name` LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="searchAppSystemIdList" parameterType="neatlogic.framework.common.dto.BasePageVo"
+            resultType="java.lang.Long">
+        SELECT
+        `id`
+        FROM @{DATA_SCHEMA}.`scence_appsystem`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` LIKE CONCAT('%', #{keyword}, '%')
+                OR `abbr_name` LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="searchAppSystemListByIdList" parameterType="java.lang.Long" resultMap="resourceCenterMap">
+        SELECT
+        `id`,
+        `name`,
+        `abbr_name`,
+        `type_id`,
+        `type_name`,
+        `type_label`,
+        `fcu`,
+        `fcd`,
+        `lcu`,
+        `lcd`,
+        `maintenance_window`,
+        `description`,
+        `inspect_status`,
+        `inspect_time`,
+        `monitor_status`,
+        `monitor_time`
+        FROM @{DATA_SCHEMA}.`scence_appsystem`
+        WHERE `id` IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="searchStateCount" parameterType="neatlogic.framework.common.dto.BasePageVo" resultType="int">
+        SELECT
+        COUNT(1)
+        FROM @{DATA_SCHEMA}.`scence_state`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` LIKE CONCAT('%', #{keyword}, '%')
+                OR `description` LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="searchStateIdList" parameterType="neatlogic.framework.common.dto.BasePageVo"
+            resultType="java.lang.Long">
+        SELECT
+        `id`
+        FROM @{DATA_SCHEMA}.`scence_state`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` LIKE CONCAT('%', #{keyword}, '%')
+                OR `description` LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="searchStateListByIdList" parameterType="java.lang.Long" resultMap="resourceCenterMap">
+        SELECT
+        `id`,
+        `name`,
+        `description`
+        FROM @{DATA_SCHEMA}.`scence_state`
+        WHERE `id` IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="searchVendorCount" parameterType="neatlogic.framework.common.dto.BasePageVo" resultType="int">
+        SELECT
+        COUNT(1)
+        FROM @{DATA_SCHEMA}.`scence_vendor`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` LIKE CONCAT('%', #{keyword}, '%')
+                OR `description` LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="searchVendorIdList" parameterType="neatlogic.framework.common.dto.BasePageVo"
+            resultType="java.lang.Long">
+        SELECT
+        `id`
+        FROM @{DATA_SCHEMA}.`scence_vendor`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` LIKE CONCAT('%', #{keyword}, '%')
+                OR `description` LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="searchVendorListByIdList" parameterType="java.lang.Long" resultMap="resourceCenterMap">
+        SELECT
+        `id`,
+        `name`,
+        `description`
+        FROM @{DATA_SCHEMA}.`scence_vendor`
+        WHERE `id` IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getAppSystemIdListCountByKeyword" parameterType="java.lang.String" resultType="int">
+        SELECT COUNT(DISTINCT `id`)
+        FROM @{DATA_SCHEMA}.`scence_appsystem_appmodule`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                (`name` LIKE concat('%', #{keyword}, '%') or `app_module_name` LIKE concat('%', #{keyword}, '%')
+                or `abbr_name` LIKE concat('%', #{keyword}, '%') or `app_module_abbr_name` LIKE concat('%', #{keyword},
+                '%'))
+            </if>
+        </where>
+    </select>
+
+    <select id="getAppSystemIdListByKeyword" parameterType="neatlogic.framework.common.dto.BasePageVo"
+            resultType="java.lang.Long">
+        SELECT DISTINCT a.`id` from (
+        SELECT `id`
+        FROM @{DATA_SCHEMA}.`scence_appsystem_appmodule`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` LIKE concat('%', #{keyword}, '%') or `app_module_name` LIKE concat('%', #{keyword}, '%')
+                or `abbr_name` LIKE concat('%', #{keyword}, '%') or `app_module_abbr_name` LIKE concat('%', #{keyword},
+                '%')
+            </if>
+        </where>
+        ORDER BY CONVERT(`abbr_name` USING gbk) COLLATE gbk_chinese_ci ASC
+        ) a
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="getAppSystemListByIdList" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.AppSystemVo">
+        SELECT
+        `id`,
+        `name`,
+        `abbr_name` AS abbrName
+        from @{DATA_SCHEMA}.`scence_appsystem`
+        where `id` in
+        <foreach collection="list" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getAppModuleListByKeywordAndAppSystemIdList"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.AppModuleVo">
+        SELECT
+        `id`,
+        `name`,
+        `abbr_name` AS abbrName,
+        `app_system_id` AS appSystemId
+        FROM @{DATA_SCHEMA}.`scence_appmodule_appsystem`
+        WHERE (`name` LIKE concat('%', #{keyword}, '%') OR `abbr_name` LIKE concat('%', #{keyword}, '%'))
+        AND `app_system_id` IN
+        <foreach collection="appSystemIdList" item="appSystemId" open="(" separator="," close=")">
+            #{appSystemId}
+        </foreach>
+        ORDER BY CONVERT(`abbr_name` USING gbk) COLLATE gbk_chinese_ci ASC
+    </select>
+
+    <select id="getAppModuleListByAppSystemId" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.AppModuleVo">
+        SELECT distinct `id`,
+                        `name`,
+                        `abbr_name`     AS abbrName,
+                        `app_system_id` AS appSystemId
+        FROM @{DATA_SCHEMA}.`scence_appmodule_appsystem`
+        WHERE `app_system_id` = #{value}
+        ORDER BY CONVERT (`abbr_name` USING gbk) COLLATE gbk_chinese_ci ASC
+    </select>
+
+    <select id="getAppSystemCountByKeyword" parameterType="neatlogic.framework.common.dto.BasePageVo" resultType="int">
+        SELECT COUNT(1)
+        FROM @{DATA_SCHEMA}.`scence_appsystem`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` LIKE concat('%', #{keyword}, '%') or `abbr_name` LIKE concat('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="getAppSystemListByKeyword" parameterType="neatlogic.framework.common.dto.BasePageVo"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.AppSystemVo">
+        SELECT
+        `id`,
+        `name`,
+        `abbr_name` AS abbrName
+        FROM @{DATA_SCHEMA}.`scence_appsystem`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` LIKE concat('%', #{keyword}, '%') or `abbr_name` LIKE concat('%', #{keyword}, '%')
+            </if>
+        </where>
+        ORDER BY CONVERT(`abbr_name` USING gbk) COLLATE gbk_chinese_ci ASC
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <resultMap id="appEnvMap" type="neatlogic.framework.cmdb.dto.resourcecenter.AppEnvVo">
+        <result column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="seqNo" property="seqNo"/>
+        <collection property="appModuleList" ofType="neatlogic.framework.cmdb.dto.resourcecenter.AppModuleVo">
+            <id column="moduleId" property="id"/>
+            <result column="moduleName" property="name"/>
+            <result column="moduleAbbrName" property="abbrName"/>
+            <collection property="ciList" ofType="neatlogic.framework.cmdb.dto.ci.CiVo">
+                <id column="typeId" property="id"/>
+                <id column="typeName" property="name"/>
+                <id column="typeLabel" property="label"/>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <select id="getOsEnvListByAppSystemIdAndTypeId" resultMap="appEnvMap">
+        SELECT a.env_id               as id,
+               a.env_name             as name,
+               a.env_seq_no           as seqNo,
+               a.app_module_id           moduleId,
+               a.app_module_name      as moduleName,
+               a.app_module_abbr_name as moduleAbbrName,
+               a.type_id              as typeId,
+               a.type_name            as typeName,
+               a.type_label           as typeLabel
+        FROM @{DATA_SCHEMA}.`scence_os_softwareservice_env_appmodule_appsystem` a
+        WHERE a.`type_id` = #{typeId}
+          AND a.`app_system_id` = #{appSystemId}
+          AND a.app_module_id is not null
+    </select>
+
+    <select id="getIpObjectEnvListByAppSystemIdAndTypeId" resultMap="appEnvMap">
+        SELECT a.env_id               as id,
+               a.env_name             as name,
+               a.env_seq_no           as seqNo,
+               a.app_module_id           moduleId,
+               a.app_module_name      as moduleName,
+               a.app_module_abbr_name as moduleAbbrName,
+               a.type_id              as typeId,
+               a.type_name            as typeName,
+               a.type_label           as typeLabel
+        FROM @{DATA_SCHEMA}.`scence_ipobject_env_appmodule_appsystem` a
+        WHERE a.`type_id` = #{typeId}
+          AND a.`app_system_id` = #{appSystemId}
+          AND a.app_module_id is not null
+    </select>
+    <select id="getOsResourceCountByAppSystemIdAndAppModuleIdListAndEnvIdAndTypeId"
+            resultType="java.lang.Integer">
+        SELECT COUNT(distinct a.`id`)
+        FROM @{DATA_SCHEMA}.`scence_os_softwareservice_env_appmodule_appsystem` a
+        <if test="inspectStatusList != null and inspectStatusList.size() > 0">
+            JOIN `cmdb_cientity` b on b.`id` = a.`resource_id` and b.`inspect_status` IN
+            <foreach collection="inspectStatusList" item="inspectStatus" open="(" separator="," close=")">
+                #{inspectStatus}
+            </foreach>
+        </if>
+        WHERE a.`type_id` = #{typeId}
+        <if test="appSystemId != null">
+            AND a.`app_system_id` = #{appSystemId}
+        </if>
+        <if test="appModuleIdList != null and appModuleIdList.size() > 0">
+            AND a.`app_module_id` in
+            <foreach collection="appModuleIdList" item="appModuleId" open="(" close=")" separator=",">
+                #{appModuleId}
+            </foreach>
+        </if>
+        <if test="envId != null">
+            AND a.`env_id` = #{envId}
+        </if>
+    </select>
+    <select id="getOsResourceIdListByAppSystemIdAndAppModuleIdListAndEnvIdAndTypeId"
+            resultType="java.lang.Long">
+        SELECT distinct a.`id`
+        FROM @{DATA_SCHEMA}.`scence_os_softwareservice_env_appmodule_appsystem` a
+        <if test="inspectStatusList != null and inspectStatusList.size() > 0">
+            JOIN `cmdb_cientity` b on b.`id` = a.`resource_id` and b.`inspect_status` IN
+            <foreach collection="inspectStatusList" item="inspectStatus" open="(" separator="," close=")">
+                #{inspectStatus}
+            </foreach>
+        </if>
+        WHERE a.`type_id` = #{typeId}
+        <if test="appSystemId != null">
+            AND a.`app_system_id` = #{appSystemId}
+        </if>
+        <if test="appModuleIdList != null and appModuleIdList.size() > 0">
+            AND a.`app_module_id` in
+            <foreach collection="appModuleIdList" item="appModuleId" open="(" close=")" separator=",">
+                #{appModuleId}
+            </foreach>
+        </if>
+        <if test="envId != null">
+            AND a.`env_id` = #{envId}
+        </if>
+        ORDER BY a.`id` DESC
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+    <select id="getResourceCountByDynamicCondition" resultType="java.lang.Integer">
+        SELECT COUNT(DISTINCT sid.`id`)
+        FROM @{DATA_SCHEMA}.`scence_ipobject_detail` sid
+        LEFT JOIN `cmdb_resourcecenter_resource_account` crra ON crra.`resource_id` = sid.`id`
+        LEFT JOIN `cmdb_resourcecenter_account` cra ON cra.`id` = crra.`account_id`
+        LEFT JOIN `cmdb_resourcecenter_resource_tag` crrt ON crrt.`resource_id` = sid.`id`
+        <where>
+            <if test="searchVo.keyword != null and searchVo.keyword != ''">
+                AND (sid.`name` LIKE CONCAT('%', #{searchVo.keyword}, '%') OR sid.`ip` LIKE CONCAT('%',
+                #{searchVo.keyword}, '%'))
+            </if>
+            ${conditionSql}
+        </where>
+    </select>
+</mapper>

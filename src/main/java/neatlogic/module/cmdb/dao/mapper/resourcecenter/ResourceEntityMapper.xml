@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper">
+    <select id="getResourceEntityByName" parameterType="java.lang.String"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
+        SELECT `name`, `label`, `status`, `error`, `init_time` AS initTime, `ci_id` AS ciId, `type`, `xml`, `description`
+        FROM `cmdb_resourcecenter_entity`
+        WHERE `name` = #{value}
+    </select>
+
+    <select id="getAllResourceEntity" resultType="neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
+        SELECT `name`, `label`, `status`, `error`, `init_time` AS initTime, `ci_id` AS ciId, `type`, `description`
+        FROM `cmdb_resourcecenter_entity`
+    </select>
+
+    <select id="getResourceEntityXmlByName" parameterType="java.lang.String" resultType="java.lang.String">
+        SELECT `xml`
+        FROM `cmdb_resourcecenter_entity`
+        WHERE `name` = #{value}
+    </select>
+
+    <insert id="insertResourceEntity"
+            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
+        INSERT INTO cmdb_resourcecenter_entity (`name`, `label`, `status`, `error`, `init_time`, `ci_id`, `type`, `xml`, `description`)
+        VALUES (#{name}, #{label}, #{status}, #{error}, NOW(3), #{ciId}, #{type}, #{xml}, #{description})
+        ON DUPLICATE KEY UPDATE
+        <if test="label != null">
+            `label` = #{label},
+        </if>
+        <if test="error != null">
+            `error` = #{error},
+        </if>
+        <if test="status != null">
+            `status` = #{status},
+        </if>
+        <if test="xml != null">
+            `xml` = #{xml},
+        </if>
+        <if test="description != null">
+            `description`= #{description},
+        </if>
+        <if test="ciId != null">
+            `ci_id` = #{ciId},
+        </if>
+        `init_time` = NOW(3)
+    </insert>
+
+    <update id="updateResourceEntity"
+            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
+        UPDATE cmdb_resourcecenter_entity
+        SET `status`    = #{status},
+            `label`     = #{label},
+            `error`     = #{error},
+            `xml`       = #{xml},
+            `description`= #{description},
+            `init_time` = NOW(3)
+        WHERE `name` = #{name}
+    </update>
+
+    <update id="updateResourceEntityStatusAndError"
+            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
+        UPDATE cmdb_resourcecenter_entity
+        SET `status`    = #{status},
+            `error`     = #{error},
+            `init_time` = NOW(3)
+        WHERE `name` = #{name}
+    </update>
+
+    <update id="updateResourceEntityLabelAndDescription"
+            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
+        UPDATE cmdb_resourcecenter_entity
+        SET
+            `label`= #{label},
+            `description`= #{description},
+            `init_time` = NOW(3)
+        WHERE `name` = #{name}
+    </update>
+
+    <delete id="deleteResourceEntityByName" parameterType="java.lang.String">
+        DELETE
+        FROM cmdb_resourcecenter_entity
+        WHERE name = #{value}
+    </delete>
+</mapper>

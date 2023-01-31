@@ -1,0 +1,520 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="neatlogic.module.cmdb.dao.mapper.sync.SyncMapper">
+    <select id="getPassiveSyncCiCollectionByCiId" parameterType="java.lang.Long"
+            resultMap="syncCiCollectionResultMap">
+        SELECT a.id,
+               a.ci_id           AS ciId,
+               cc.name           AS ciName,
+               cc.label          AS ciLabel,
+               a.collection_name AS collectionName,
+               a.parent_key      AS parentKey,
+               a.collect_mode    AS collectMode,
+               a.is_auto_commit  AS isAutoCommit,
+               a.last_sync_date  AS lastSyncDate,
+               a.match_mode      AS matchMode,
+               a.description,
+               csm.id            AS mappingId,
+               csm.attr_id       AS attrId,
+               csm.rel_id        AS relId,
+               csm.direction,
+               csm.field,
+               csu.attr_id       AS uniqueAttrId,
+               csm.action        as relAction
+        FROM cmdb_sync_ci_collection a
+                 JOIN cmdb_sync_mapping csm on a.id = csm.ci_collection_id
+                 JOIN cmdb_ci cc ON a.ci_id = cc.id
+                 LEFT JOIN cmdb_sync_unique csu on a.id = csu.ci_collection_id
+        WHERE a.ci_id = #{value}
+          AND a.collect_mode = 'passive'
+    </select>
+
+
+    <select id="getSyncPolicyByCiCollectionId" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.sync.SyncPolicyVo">
+        SELECT a.id, a.is_active as isActive, a.name, a.ci_id as ciId, a.`condition` as conditionStr
+        from cmdb_sync_policy a
+        WHERE a.ci_collection_id = #{value}
+    </select>
+
+    <select id="getAllActivePolicySchedule" resultType="neatlogic.framework.cmdb.dto.sync.SyncScheduleVo">
+        SELECT a.id, a.cron, a.policy_id AS policyId
+        FROM cmdb_sync_schedule a
+                 join cmdb_sync_policy csp on a.policy_id = csp.id and csp.is_active = 1
+    </select>
+
+    <select id="getSyncScheduleById" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.sync.SyncScheduleVo">
+        SELECT a.id, a.cron, a.policy_id AS policyId, csp.is_active as isActive
+        FROM cmdb_sync_schedule a
+                 join cmdb_sync_policy csp on a.policy_id = csp.id
+        WHERE a.id = #{value}
+    </select>
+
+    <select id="searchSyncPolicy" parameterType="neatlogic.framework.cmdb.dto.sync.SyncPolicyVo"
+            resultType="neatlogic.framework.cmdb.dto.sync.SyncPolicyVo">
+        SELECT a.id,
+        a.ci_collection_id as ciCollectionId,
+        a.`condition` AS conditionStr,
+        a.is_active as isActive,
+        a.name,
+        a.ci_id AS ciId
+        from cmdb_sync_policy a
+        <where>
+            <if test="ciId != null">
+                and a.ci_id = #{ciId}
+            </if>
+        </where>
+    </select>
+    <select id="checkSyncCiCollectionIsExists" parameterType="neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo"
+            resultType="int">
+        SELECT COUNT(1)
+        FROM cmdb_sync_ci_collection
+        WHERE ci_id = #{ciId}
+          AND collection_name = #{collectionName}
+          AND parent_key = #{parentKey}
+          AND id != #{id}
+    </select>
+
+    <select id="checkCiHasSyncCiCollection" parameterType="java.lang.Long" resultType="int">
+        SELECT COUNT(1)
+        FROM cmdb_sync_ci_collection
+        WHERE ci_id = #{value}
+    </select>
+
+    <resultMap id="policyMap" type="neatlogic.framework.cmdb.dto.sync.SyncPolicyVo">
+        <id property="id" column="id"/>
+        <result property="ciCollectionId" column="ciCollectionId"/>
+        <result property="isActive" column="isActive"/>
+        <result property="conditionStr" column="conditionStr"/>
+        <result property="name" column="name"/>
+        <result property="ciId" column="ciId"/>
+        <result property="collectionName" column="collectionName"/>
+        <collection property="cronList" ofType="neatlogic.framework.cmdb.dto.sync.SyncScheduleVo">
+            <id property="id" column="cronId"/>
+            <result property="cron" column="cron"/>
+            <result property="policyId" column="cronPolicyId"/>
+        </collection>
+
+    </resultMap>
+
+    <select id="getSyncPolicyById" parameterType="java.lang.Long"
+            resultMap="policyMap">
+        SELECT a.id,
+               a.ci_collection_id AS ciCollectionId,
+               a.is_active        AS isActive,
+               a.`condition`      AS conditionStr,
+               a.name,
+               a.ci_id            AS ciId,
+               b.collection_name  AS collectionName,
+               c.id               AS cronId,
+               c.cron             AS cron,
+               c.policy_id        AS cronPolicyId
+        FROM cmdb_sync_policy a
+                 JOIN cmdb_sync_ci_collection b on a.ci_collection_id = b.id
+                 LEFT JOIN cmdb_sync_schedule c ON a.id = c.policy_id
+        WHERE a.id = #{value}
+    </select>
+
+
+    <select id="checkInitiativeSyncCiCollectionIsExists"
+            parameterType="neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo"
+            resultType="int">
+        SELECT count(1)
+        FROM cmdb_sync_ci_collection
+        where collection_name = #{collectionName}
+          and collect_mode = #{collectMode}
+          and id != #{id}
+    </select>
+
+    <select id="getInitiativeSyncCiCollectionByCollectName" parameterType="java.lang.String"
+            resultType="neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo">
+        SELECT a.id,
+               a.ci_id           AS ciId,
+               b.label           AS ciLabel,
+               b.name            AS ciName,
+               a.collection_name AS collectionName,
+               a.collect_mode    AS collectMode,
+               a.is_auto_commit  AS isAutoCommit,
+               a.match_mode      AS matchMode,
+               a.fcu,
+               a.fcd,
+               a.lcu,
+               a.lcd
+        FROM cmdb_sync_ci_collection a
+                 JOIN cmdb_ci b ON a.ci_id = b.id
+        WHERE a.collection_name = #{value}
+          and a.collect_mode = 'initiative'
+    </select>
+
+    <resultMap id="syncCiCollectionMap" type="neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo">
+        <id property="id" column="id"/>
+        <result property="ciId" column="ciId"/>
+        <result property="ciLabel" column="ciLabel"/>
+        <result property="ciName" column="ciName"/>
+        <result property="collectionName" column="collectionName"/>
+        <result property="collectMode" column="collectMode"/>
+        <result property="isAutoCommit" column="isAutoCommit"/>
+        <result property="matchMode" column="matchMode"/>
+        <result property="parentKey" column="parentKey"/>
+        <result property="fcu" column="fcu"/>
+        <result property="fcd" column="fcd"/>
+        <result property="lcu" column="lcu"/>
+        <result property="lcd" column="lcd"/>
+        <result property="lastSyncDate" column="lastSyncDate"/>
+        <result property="description" column="description"/>
+        <collection property="syncPolicyList" ofType="neatlogic.framework.cmdb.dto.sync.SyncPolicyVo">
+            <id property="id" column="policyId"/>
+            <result property="name" column="policyName"/>
+            <result property="isActive" column="policyIsActive"/>
+            <collection property="cronList" ofType="neatlogic.framework.cmdb.dto.sync.SyncScheduleVo">
+                <result property="cron" column="cron"/>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <select id="searchSyncCiCollection" parameterType="neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo"
+            resultType="neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo" resultMap="syncCiCollectionMap">
+        SELECT t.*,
+        c.id as policyId,
+        c.name AS policyName,
+        c.is_active AS policyIsActive,
+        d.cron FROM (
+        SELECT
+        a.id,
+        a.ci_id AS ciId,
+        b.label AS ciLabel,
+        b.name AS ciName,
+        a.collection_name AS collectionName,
+        a.collect_mode AS collectMode,
+        a.is_auto_commit AS isAutoCommit,
+        a.match_mode AS matchMode,
+        a.parent_key AS parentKey,
+        a.fcu,
+        a.fcd,
+        a.lcu,
+        a.lcd,
+        a.last_sync_date AS lastSyncDate,
+        a.description
+        FROM cmdb_sync_ci_collection a
+        JOIN cmdb_ci b ON a.ci_id = b.id
+        <include refid="searchSyncCiCollectionSql"></include>
+        ORDER BY a.collection_name ,a.collect_mode
+        LIMIT #{startNum}, #{pageSize}
+        ) t LEFT JOIN cmdb_sync_policy c ON t.id = c.ci_collection_id
+        LEFT JOIN cmdb_sync_schedule d ON c.id = d.policy_id
+    </select>
+
+    <select id="searchSyncCiCollectionCount" parameterType="neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo"
+            resultType="int">
+        SELECT COUNT(1)
+        FROM cmdb_sync_ci_collection a
+        JOIN cmdb_ci b ON a.ci_id = b.id
+        <include refid="searchSyncCiCollectionSql"></include>
+    </select>
+
+    <select id="getSyncCiCollectionNameListByCiNameListAndCollectMode" resultType="java.lang.String">
+        SELECT distinct a.collection_name
+        FROM cmdb_sync_ci_collection a
+        JOIN cmdb_ci b ON a.ci_id = b.id
+        <where>
+            <if test="collectMode != null and collectMode != ''">
+                AND a.collect_mode = #{collectMode}
+            </if>
+            <if test="ciNameList != null and ciNameList.size() > 0">
+                AND b.name in
+                <foreach collection="ciNameList" open="(" close=")" separator="," item="ciName">
+                    #{ciName}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getSyncCiCollectionNameListByCiNameAndCollectMode" resultType="java.lang.String">
+        SELECT distinct a.collection_name
+        FROM cmdb_sync_ci_collection a
+                 JOIN cmdb_ci b ON a.ci_id = b.id
+        where b.name = #{ciName}
+          AND a.collect_mode = #{collectMode}
+    </select>
+
+    <sql id="searchSyncCiCollectionSql">
+        <where>
+            <if test="idList != null and idList.size() > 0">
+                AND a.id in
+                <foreach collection="idList" item="item" separator="," open="(" close=")">#{item}</foreach>
+            </if>
+            <if test="ciId != null">
+                AND a.ci_id = #{ciId}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (a.collection_name LIKE CONCAT('%',#{keyword},'%')
+                OR b.name LIKE CONCAT('%',#{keyword},'%')
+                OR b.label LIKE CONCAT('%',#{keyword},'%'))
+            </if>
+            <if test="collectionName != null and collectionName != ''">
+                AND a.collection_name = #{collectionName}
+            </if>
+            <if test="collectionNameList != null and collectionNameList.size() > 0">
+                AND a.collection_name IN
+                <foreach collection="collectionNameList" item="item" open="(" close=")" separator=",">#{item}</foreach>
+            </if>
+            <if test="collectMode != null and collectMode != ''">
+                AND a.collect_mode = #{collectMode}
+            </if>
+        </where>
+    </sql>
+
+    <resultMap id="syncCiCollectionResultMap" type="neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo">
+        <id property="id" column="id"/>
+        <result property="ciId" column="ciId"/>
+        <result property="ciName" column="ciName"/>
+        <result property="ciLabel" column="ciLabel"/>
+        <result property="collectionName" column="collectionName"/>
+        <result property="collectMode" column="collectMode"/>
+        <result property="isAutoCommit" column="isAutoCommit"/>
+        <result property="lastSyncDate" column="lastSyncDate"/>
+        <result property="matchMode" column="matchMode"/>
+        <result property="parentKey" column="parentKey"/>
+        <result property="description" column="description"/>
+        <result property="fcd" column="fcd"/>
+        <result property="fcu" column="fcu"/>
+        <result property="lcd" column="lcd"/>
+        <result property="lcu" column="lcu"/>
+        <collection property="mappingList" ofType="neatlogic.framework.cmdb.dto.sync.SyncMappingVo">
+            <id property="id" column="mappingId"/>
+            <result property="attrId" column="attrId"/>
+            <result property="relId" column="relId"/>
+            <result property="direction" column="direction"/>
+            <result property="field" column="field"/>
+            <result property="matchMode" column="matchMode"/>
+            <result property="action" column="relAction"/>
+        </collection>
+        <collection property="uniqueAttrIdList" ofType="java.lang.Long">
+            <result column="uniqueAttrId"/>
+        </collection>
+    </resultMap>
+
+    <select id="getSyncCiCollectionByCollectionName" parameterType="java.lang.String"
+            resultMap="syncCiCollectionResultMap">
+        SELECT a.id,
+               a.ci_id           AS ciId,
+               cc.name           AS ciName,
+               cc.label          AS ciLabel,
+               a.collection_name AS collectionName,
+               a.collect_mode    AS collectMode,
+               a.is_auto_commit  AS isAutoCommit,
+               a.last_sync_date  AS lastSyncDate,
+               a.match_mode      AS matchMode,
+               a.parent_key      AS parentKey,
+               a.description,
+               a.fcd             AS fcd,
+               a.fcu             AS fcu,
+               a.lcd             AS lcd,
+               a.lcu             AS lcu,
+               csm.id            AS mappingId,
+               csm.attr_id       AS attrId,
+               csm.rel_id        AS relId,
+               csm.direction,
+               csm.field,
+               csu.attr_id       AS uniqueAttrId,
+               csm.action        as relAction
+        FROM cmdb_sync_ci_collection a
+                 JOIN cmdb_sync_mapping csm on a.id = csm.ci_collection_id
+                 JOIN cmdb_ci cc ON a.ci_id = cc.id
+                 LEFT JOIN cmdb_sync_unique csu on a.id = csu.ci_collection_id
+        WHERE a.collection_name = #{value}
+    </select>
+
+    <select id="getSyncCiCollectionByCiIdAndCollectionName"
+            resultMap="syncCiCollectionResultMap">
+        SELECT a.id,
+               a.ci_id           AS ciId,
+               cc.name           AS ciName,
+               cc.label          AS ciLabel,
+               a.collection_name AS collectionName,
+               a.collect_mode    AS collectMode,
+               a.is_auto_commit  AS isAutoCommit,
+               a.last_sync_date  AS lastSyncDate,
+               a.match_mode      AS matchMode,
+               a.parent_key      AS parentKey,
+               a.description,
+               a.fcd             AS fcd,
+               a.fcu             AS fcu,
+               a.lcd             AS lcd,
+               a.lcu             AS lcu,
+               csm.id            AS mappingId,
+               csm.attr_id       AS attrId,
+               csm.rel_id        AS relId,
+               csm.direction,
+               csm.field,
+               csu.attr_id       AS uniqueAttrId,
+               csm.action        as relAction
+        FROM cmdb_sync_ci_collection a
+                 JOIN cmdb_sync_mapping csm on a.id = csm.ci_collection_id
+                 JOIN cmdb_ci cc ON a.ci_id = cc.id
+                 LEFT JOIN cmdb_sync_unique csu on a.id = csu.ci_collection_id
+        WHERE a.ci_id = #{ciId}
+          AND a.collection_name = #{collectionName}
+    </select>
+
+    <select id="getSyncCiCollectionById" parameterType="java.lang.Long"
+            resultMap="syncCiCollectionResultMap">
+        SELECT a.id,
+               a.ci_id           AS ciId,
+               cc.name           AS ciName,
+               cc.label          AS ciLabel,
+               a.collection_name AS collectionName,
+               a.collect_mode    AS collectMode,
+               a.is_auto_commit  AS isAutoCommit,
+               a.last_sync_date  AS lastSyncDate,
+               a.match_mode      AS matchMode,
+               a.parent_key      AS parentKey,
+               a.description,
+               a.fcd             AS fcd,
+               a.fcu             AS fcu,
+               a.lcd             AS lcd,
+               a.lcu             AS lcu,
+               csm.id            AS mappingId,
+               csm.attr_id       AS attrId,
+               csm.rel_id        AS relId,
+               csm.direction,
+               csm.field,
+               csu.attr_id       AS uniqueAttrId,
+               csm.action        as relAction
+        FROM cmdb_sync_ci_collection a
+                 JOIN cmdb_sync_mapping csm on a.id = csm.ci_collection_id
+                 JOIN cmdb_ci cc ON a.ci_id = cc.id
+                 LEFT JOIN cmdb_sync_unique csu on a.id = csu.ci_collection_id
+        WHERE a.id = #{value}
+    </select>
+
+    <select id="getSyncCiCollectionByIdList" resultMap="syncCiCollectionResultMap">
+        SELECT
+        a.id,
+        a.ci_id AS ciId,
+        cc.name AS ciName,
+        cc.label AS ciLabel,
+        a.collection_name AS collectionName,
+        a.collect_mode AS collectMode,
+        a.is_auto_commit AS isAutoCommit,
+        a.last_sync_date AS lastSyncDate,
+        a.match_mode AS matchMode,
+        a.parent_key AS parentKey,
+        a.description,
+        a.fcd AS fcd,
+        a.fcu AS fcu,
+        a.lcd AS lcd,
+        a.lcu AS lcu,
+        csm.id AS mappingId,
+        csm.attr_id AS attrId,
+        csm.rel_id AS relId,
+        csm.direction,
+        csm.field,
+        csu.attr_id AS uniqueAttrId,
+        csm.action as relAction
+        FROM cmdb_sync_ci_collection a
+        JOIN cmdb_sync_mapping csm on a.id = csm.ci_collection_id
+        JOIN cmdb_ci cc ON a.ci_id = cc.id
+        LEFT JOIN cmdb_sync_unique csu on a.id = csu.ci_collection_id
+        WHERE a.id in
+        <foreach collection="idList" item="item" open="(" close=")" separator=",">#{item}</foreach>
+    </select>
+
+    <update id="updateSyncCiCollection" parameterType="neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo">
+        update cmdb_sync_ci_collection
+        SET collect_mode   = #{collectMode},
+            is_auto_commit = #{isAutoCommit},
+            parent_key     = #{parentKey},
+            match_mode     = #{matchMode},
+            lcd            = NOW(3),
+            lcu            = #{lcu},
+            description    = #{description},
+            last_sync_date = null
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateSyncCiCollectionLastSyncDate" parameterType="java.lang.Long">
+        update cmdb_sync_ci_collection
+        SET last_sync_date = NOW(3)
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateSyncPolicy" parameterType="neatlogic.framework.cmdb.dto.sync.SyncPolicyVo">
+        update cmdb_sync_policy
+        set ci_collection_id = #{ciCollectionId},
+            is_active        = #{isActive},
+            `condition`      = #{conditionStr},
+            name             = #{name}
+        WHERE id = #{id}
+    </update>
+
+    <insert id="insertSyncSchedule" parameterType="neatlogic.framework.cmdb.dto.sync.SyncScheduleVo">
+        insert into cmdb_sync_schedule (id, cron, policy_id)
+        values (#{id}, #{cron}, #{policyId})
+    </insert>
+
+    <insert id="insertSyncCiCollection" parameterType="neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo">
+        insert into cmdb_sync_ci_collection (id, ci_id, collection_name, parent_key, match_mode, collect_mode,
+                                             is_auto_commit, description, fcd,
+                                             fcu)
+        values (#{id}, #{ciId}, #{collectionName}, #{parentKey}, #{matchMode}, #{collectMode}, #{isAutoCommit},
+                #{description}, NOW(3),
+                #{fcu})
+    </insert>
+
+    <insert id="insertSyncMapping" parameterType="neatlogic.framework.cmdb.dto.sync.SyncMappingVo">
+        insert into cmdb_sync_mapping (id, ci_collection_id, rel_id, direction, attr_id, field, action)
+        values (#{id}, #{ciCollectionId}, #{relId}, #{direction}, #{attrId}, #{field}, #{action})
+    </insert>
+
+    <insert id="insertSyncUnique">
+        insert into cmdb_sync_unique(ci_collection_id, attr_id)
+        values (#{ciCollectionId}, #{attrId})
+    </insert>
+
+    <insert id="insertSyncPolicy" parameterType="neatlogic.framework.cmdb.dto.sync.SyncPolicyVo">
+        insert into cmdb_sync_policy (id, ci_id, ci_collection_id, is_active, `condition`, name)
+        VALUES (#{id}, #{ciId}, #{ciCollectionId}, #{isActive}, #{conditionStr}, #{name})
+    </insert>
+
+    <delete id="deleteSyncScheduleByPolicyId" parameterType="java.lang.Long">
+        delete
+        from cmdb_sync_schedule
+        where policy_id = #{value}
+    </delete>
+
+    <delete id="deleteSyncPolicyById" parameterType="java.lang.Long">
+        delete a,b
+        from cmdb_sync_policy a
+                 LEFT JOIN cmdb_sync_schedule b ON a.id = b.policy_id
+        where a.id = #{value}
+    </delete>
+
+    <delete id="deleteSyncCiCollectionById" parameterType="java.lang.Long">
+        delete a,b,c,d,csa
+        from cmdb_sync_ci_collection a
+                 left join cmdb_sync_mapping b on a.id = b.ci_collection_id
+                 left join cmdb_sync_policy c on a.id = c.ci_collection_id
+                 left join cmdb_sync_schedule d on c.id = d.policy_id
+                 left join cmdb_sync_audit csa on a.id = csa.ci_collection_id
+        where a.id = #{value}
+    </delete>
+
+    <delete id="deleteSyncMappingByCiCollectionId" parameterType="java.lang.Long">
+        delete
+        from cmdb_sync_mapping
+        where ci_collection_id = #{value}
+    </delete>
+
+    <delete id="deleteSyncUniqueByCiCollectionId" parameterType="java.lang.Long">
+        delete
+        from cmdb_sync_unique
+        where ci_collection_id = #{value}
+    </delete>
+</mapper>

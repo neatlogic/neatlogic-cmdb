@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="neatlogic.module.cmdb.dao.mapper.sync.SyncAuditMapper">
+
+    <sql id="searchSyncAuditCondition">
+        <where>
+            <if test="idList != null and idList.size() > 0">
+                and a.id in
+                <foreach collection="idList" item="item" open="(" close=")" separator=",">#{item}</foreach>
+            </if>
+            <if test="ciCollectionId != null">
+                and a.ci_collection_id= #{ciCollectionId}
+            </if>
+            <if test="status != null and status != ''">
+                and a.status = #{status}
+            </if>
+            <if test="inputFrom != null and inputFrom != ''">
+                and a.input_from = #{inputFrom}
+            </if>
+            <choose>
+                <when test="hasError == true">
+                    and a.error is not null
+                </when>
+                <when test="hasError == false">
+                    and a.error is null
+                </when>
+            </choose>
+            <if test="startTimeRange != null">
+                <if test="startTimeRange.size() > 0">
+                    AND a.start_time &gt;= STR_TO_DATE(#{startTimeRange[0]},'%Y-%m-%d')
+                </if>
+                <if test="startTimeRange.size() > 1">
+                    AND a.start_time &lt;= STR_TO_DATE(#{startTimeRange[1]},'%Y-%m-%d')
+                </if>
+            </if>
+            <if test="endTimeRange != null">
+                <if test="endTimeRange.size() > 0">
+                    AND a.end_time &gt;= STR_TO_DATE(#{endTimeRange[0]},'%Y-%m-%d')
+                </if>
+                <if test="endTimeRange.size() > 1">
+                    AND a.end_time &lt;= STR_TO_DATE(#{endTimeRange[1]},'%Y-%m-%d')
+                </if>
+            </if>
+        </where>
+    </sql>
+
+    <select id="searchSyncAuditCount" parameterType="neatlogic.framework.cmdb.dto.sync.SyncAuditVo" resultType="int">
+        select count(a.id)
+        from cmdb_sync_audit a
+        join cmdb_sync_ci_collection b on
+        a.ci_collection_id = b.id
+        <include refid="searchSyncAuditCondition"></include>
+    </select>
+
+    <select id="searchSyncAudit" parameterType="neatlogic.framework.cmdb.dto.sync.SyncAuditVo"
+            resultType="neatlogic.framework.cmdb.dto.sync.SyncAuditVo">
+        select a.id,
+        a.ci_collection_id AS ciCollectionId,
+        a.start_time AS startTime,
+        a.end_time AS endTime,
+        (UNIX_TIMESTAMP(IFNULL(end_time, NOW(3)))*1000 - UNIX_TIMESTAMP(start_time)*1000) AS timeCost,
+        a.input_from AS inputFrom,
+        a.status,
+        a.transaction_group_id AS transactionGroupId,
+        a.server_id AS serverId,
+        a.data_count AS dataCount,
+        a.error AS error
+        from cmdb_sync_audit a
+        join cmdb_sync_ci_collection b on
+        a.ci_collection_id = b.id
+        <include refid="searchSyncAuditCondition"></include>
+        order by id desc
+        <if test="idList == null or idList.size() == 0">
+            limit #{startNum}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="getDoingSyncByServerId" parameterType="java.lang.Integer"
+            resultType="neatlogic.framework.cmdb.dto.sync.SyncAuditVo">
+        select a.id,
+               a.ci_collection_id     AS ciCollectionId,
+               a.start_time           AS startTime,
+               a.end_time             AS endTime,
+               a.input_from           AS inputFrom,
+               a.status,
+               a.transaction_group_id AS transactionGroupId,
+               a.server_id            AS serverId,
+               a.error                AS error
+        from cmdb_sync_audit a
+        where a.server_id = #{value}
+          and a.status = 'doing'
+    </select>
+
+    <select id="getDoingSyncByCiId" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.sync.SyncAuditVo">
+        select a.id,
+               a.ci_collection_id     AS ciCollectionId,
+               a.start_time           AS startTime,
+               a.end_time             AS endTime,
+               a.input_from           AS inputFrom,
+               a.status,
+               a.transaction_group_id AS transactionGroupId,
+               a.server_id            AS serverId,
+               a.error                AS error
+        from cmdb_sync_audit a
+                 join cmdb_sync_ci_collection b on
+            a.ci_collection_id = b.id
+        where b.ci_id = #{value}
+          and a.status = 'doing'
+    </select>
+
+    <update id="updateSyncAuditStatus" parameterType="neatlogic.framework.cmdb.dto.sync.SyncAuditVo">
+        UPDATE
+        cmdb_sync_audit
+        SET
+        end_time = NOW(3),
+        status = #{status},
+        data_count=#{dataCount}
+        <if test="error != null and error != ''">
+            ,error = #{error,typeHandler=CompressHandler}
+        </if>
+        WHERE id = #{id}
+    </update>
+
+    <insert id="insertSyncAudit" parameterType="neatlogic.framework.cmdb.dto.sync.SyncAuditVo">
+        INSERT INTO cmdb_sync_audit (id,
+                                     ci_collection_id,
+                                     start_time,
+                                     input_from,
+                                     status,
+                                     transaction_group_id,
+                                     server_id)
+        VALUES (#{id},
+                #{ciCollectionId},
+                NOW(3),
+                #{inputFrom},
+                #{status},
+                #{transactionGroupId},
+                #{serverId})
+    </insert>
+
+    <delete id="deleteSyncAuditById" parameterType="java.lang.Long">
+        delete
+        from cmdb_sync_audit
+        where id = #{value}
+    </delete>
+
+    <delete id="deleteAuditByDayBefore" parameterType="int">
+        delete
+        from cmdb_sync_audit
+        where end_time &lt; DATE_SUB(CURRENT_DATE, INTERVAL #{value} DAY)
+    </delete>
+</mapper>

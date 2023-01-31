@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright(c) 2022 TechSure Co., Ltd. All Rights Reserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="neatlogic.module.cmdb.dao.mapper.discovery.DiscoveryMapper">
+    <select id="getDiscoveryConfCombopByConfId"
+            parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.discovery.DiscoverConfCombopVo">
+        select conf_id AS confId, combop_id AS combopId
+        from discovery_conf_combop
+        where conf_id = #{value}
+    </select>
+
+    <insert id="insertDiscoveryConfCombop" parameterType="neatlogic.framework.cmdb.dto.discovery.DiscoverConfCombopVo">
+        insert into discovery_conf_combop (conf_id, combop_id)
+        values (#{confId}, #{combopId})
+    </insert>
+
+    <delete id="deleteDiscoveryConfCombopByConfId" parameterType="java.lang.Long">
+        delete
+        from discovery_conf_combop
+        where conf_id = #{value}
+    </delete>
+</mapper>

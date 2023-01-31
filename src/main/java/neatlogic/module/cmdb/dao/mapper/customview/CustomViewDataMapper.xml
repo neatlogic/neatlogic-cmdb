@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright(c) 2023 TechSure Co., Ltd. All Rights Reserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="neatlogic.module.cmdb.dao.mapper.customview.CustomViewDataMapper">
+    <select id="searchCustomViewDataGroup"
+            parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewConditionVo"
+            resultType="neatlogic.framework.cmdb.dto.customview.CustomViewDataGroupVo">
+        SELECT DISTINCT (CASE
+        WHEN `${groupBy}` IS NULL THEN '【空值】'
+        WHEN `${groupBy}` = '' THEN '【空值】'
+        ELSE `${groupBy}` END) AS `value`,
+        MIN(CASE
+        WHEN `${groupBy}_hash` IS NULL THEN 'isnull'
+        ELSE `${groupBy}_hash` END) AS valueHash,
+        count((CASE
+        WHEN `${groupBy}` IS NULL THEN '【空值】'
+        WHEN `${groupBy}` = '' THEN '【空值】'
+        ELSE `${groupBy}` END)) AS `count`
+        FROM
+        (<include refid="searchCustomViewDataSql"/>) t
+        <where>
+            <if test="valueFilterList != null and valueFilterList.size() > 0">
+                <foreach collection="valueFilterList" item="valueFilter">
+                    <if test="valueFilter.value != null and valueFilter.value != '' and valueFilter.value != 'isnull'">
+                        AND `${valueFilter.uuid}_hash` = #{valueFilter.value}
+                    </if>
+                    <if test="valueFilter.value == 'isnull'">
+                        AND `${valueFilter.uuid}_hash` IS NULL
+                    </if>
+                </foreach>
+            </if>
+        </where>
+        GROUP BY
+        `value`
+        LIMIT #{startNum}, #{pageSizePlus}
+    </select>
+
+    <sql id="searchCustomViewDataSql">
+        SELECT
+        id
+        <if test="fieldList != null and fieldList.size() > 0">
+            ,
+            <foreach collection="fieldList" item="field" separator=",">
+                GROUP_CONCAT(distinct `${field.name}`) AS `${field.name}`,
+                MD5(GROUP_CONCAT(distinct `${field.name}`)) AS `${field.name}_hash`
+            </foreach>
+        </if>
+        FROM ${viewName}
+        <where>
+            <if test="keyword != null and keyword != '' and fieldList != null and fieldList.size() > 0">
+                AND
+                <foreach collection="fieldList" item="field" separator="OR" open="(" close=")">
+                    <if test="field.type == 'attr' or field.type == 'constattr'">
+                        `${field.name}` LIKE CONCAT('%', #{keyword},'%')
+                    </if>
+                </foreach>
+            </if>
+            <if test="attrFilterList != null and attrFilterList.size() > 0">
+                <foreach collection="attrFilterList" item="attrFilter">
+                    <if test="(attrFilter.value != null and attrFilter.value != '') or attrFilter.expression == 'is-null' or attrFilter.expression == 'is-not-null'">
+                        AND
+                        <choose>
+                            <when test="attrFilter.expression == 'equal'">
+                                <choose>
+                                    <when test="attrFilter.type == 'attr'">
+                                        `${attrFilter.attrUuid}_hash` = #{attrFilter.value,typeHandler=Md5Handler}
+                                    </when>
+                                    <otherwise>
+                                        `${attrFilter.attrUuid}` = #{attrFilter.value}
+                                    </otherwise>
+                                </choose>
+                            </when>
+                            <when test="attrFilter.expression == 'notequal'">
+                                <choose>
+                                    <when test="attrFilter.type == 'attr'">
+                                        `${attrFilter.attrUuid}_hash` != #{attrFilter.value,typeHandler=Md5Handler}
+                                    </when>
+                                    <otherwise>
+                                        `${attrFilter.attrUuid}` != #{attrFilter.value}
+                                    </otherwise>
+                                </choose>
+                            </when>
+                            <when test="attrFilter.expression == 'like'">
+                                `${attrFilter.attrUuid}` LIKE
+                                CONCAT('%',#{attrFilter.value},'%')
+                            </when>
+                            <when test="attrFilter.expression == 'notlike'">
+                                `${attrFilter.attrUuid}` NOT LIKE
+                                CONCAT('%',#{attrFilter.value},'%')
+                            </when>
+                            <when test="attrFilter.expression == 'is-null'">
+                                (`${attrFilter.attrUuid}` IS NULL OR
+                                `${attrFilter.attrUuid}` = '')
+                            </when>
+                            <when test="attrFilter.expression == 'is-not-null'">
+                                (`${attrFilter.attrUuid}` IS NOT NULL AND
+                                `${attrFilter.attrUuid}` != '')
+                            </when>
+                        </choose>
+                    </if>
+                </foreach>
+            </if>
+        </where>
+        GROUP BY id
+    </sql>
+
+    <select id="searchCustomViewDataFlatten"
+            parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewConditionVo" resultType="java.util.Map">
+        SELECT distinct a.id
+        <if test="fieldList != null and fieldList.size() > 0">
+            <foreach collection="fieldList" item="field">
+                ,`${field.name}` AS `${field.alias}`
+            </foreach>
+        </if>
+        FROM ${viewName} a JOIN (
+        SELECT distinct(id) FROM ${viewName}
+        <where>
+            <if test="keyword != null and keyword != '' and fieldList != null and fieldList.size() > 0">
+                AND
+                <foreach collection="fieldList" item="field" separator="OR" open="(" close=")">
+                    <if test="field.type == 'attr' or field.type == 'constattr'">
+                        `${field.name}` LIKE CONCAT('%', #{keyword},'%')
+                    </if>
+                </foreach>
+            </if>
+            <if test="attrFilterList != null and attrFilterList.size() > 0">
+                <foreach collection="attrFilterList" item="attrFilter">
+                    <if test="(attrFilter.value != null and attrFilter.value != '') or attrFilter.expression == 'is-null' or attrFilter.expression == 'is-not-null'">
+                        AND
+                        <choose>
+                            <when test="attrFilter.expression == 'equal'">
+                                <choose>
+                                    <when test="attrFilter.type == 'attr'">
+                                        `${attrFilter.attrUuid}_hash` = #{attrFilter.value,typeHandler=Md5Handler}
+                                    </when>
+                                    <otherwise>
+                                        `${attrFilter.attrUuid}` = #{attrFilter.value}
+                                    </otherwise>
+                                </choose>
+                            </when>
+                            <when test="attrFilter.expression == 'notequal'">
+                                <choose>
+                                    <when test="attrFilter.type == 'attr'">
+                                        `${attrFilter.attrUuid}_hash` != #{attrFilter.value,typeHandler=Md5Handler}
+                                    </when>
+                                    <otherwise>
+                                        `${attrFilter.attrUuid}` != #{attrFilter.value}
+                                    </otherwise>
+                                </choose>
+                            </when>
+                            <when test="attrFilter.expression == 'like'">
+                                `${attrFilter.attrUuid}` LIKE
+                                CONCAT('%',#{attrFilter.value},'%')
+                            </when>
+                            <when test="attrFilter.expression == 'notlike'">
+                                `${attrFilter.attrUuid}` NOT LIKE
+                                CONCAT('%',#{attrFilter.value},'%')
+                            </when>
+                            <when test="attrFilter.expression == 'is-null'">
+                                (`${attrFilter.attrUuid}` IS NULL OR
+                                `${attrFilter.attrUuid}` = '')
+                            </when>
+                            <when test="attrFilter.expression == 'is-not-null'">
+                                (`${attrFilter.attrUuid}` IS NOT NULL AND
+                                `${attrFilter.attrUuid}` != '')
+                            </when>
+                        </choose>
+                    </if>
+                </foreach>
+            </if>
+        </where>
+        LIMIT
+        #{startNum},
+        #{pageSizePlus}
+        ) t ON a.id = t.id
+    </select>
+
+    <select id="searchCustomViewData" parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewConditionVo"
+            resultType="java.util.Map">
+        SELECT * FROM (
+        <include refid="searchCustomViewDataSql"></include>
+        ) t
+        <where>
+            <if test="valueFilterList != null and valueFilterList.size() > 0">
+                <foreach collection="valueFilterList" item="valueFilter">
+                    <if test="valueFilter.value != null and valueFilter.value != '' and valueFilter.value != 'isnull'">
+                        AND `${valueFilter.uuid}_hash` = #{valueFilter.value}
+                    </if>
+                    <if test="valueFilter.value == 'isnull'">
+                        AND `${valueFilter.uuid}_hash` IS NULL
+                    </if>
+                </foreach>
+            </if>
+        </where>
+        LIMIT
+        #{startNum},
+        #{pageSizePlus}
+    </select>
+
+    <select id="getCustomViewCiEntityById"
+            parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewConditionVo"
+            resultType="java.util.Map">
+        SELECT DISTINCT id
+        <foreach collection="fieldList" item="field" separator="," open=",">
+            <choose>
+                <when test="field.type == 'id'">
+                    `${field.name}_id`
+                </when>
+                <when test="field.type == 'name'">
+                    `${field.name}_name`
+                </when>
+            </choose><!--customview ci uuid-->
+        </foreach>
+        FROM ${viewName}
+        WHERE
+        id = #{ciEntityId}
+    </select>
+
+    <select id="searchCustomViewCiEntity"
+            parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewConditionVo"
+            resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo">
+        SELECT DISTINCT id,name
+        FROM ${viewName}
+        <where>
+            <!--<if test="keyword != null and keyword != '' and fieldList != null and fieldList.size() > 0">
+                <foreach collection="fieldList" item="field" separator="OR" open="AND (" close=")">
+                    <if test="field.type == 'attr'">
+                        `${field.name}` LIKE CONCAT('%', #{keyword},'%')
+                    </if>
+                </foreach>
+            </if>-->
+            <if test="keyword != null and keyword != ''">
+                name LIKE CONCAT('%', #{keyword},'%')
+            </if>
+        </where>
+        <choose>
+            <when test="keyword != null and keyword != ''">
+                ORDER BY length(name),name
+            </when>
+            <otherwise>ORDER BY name</otherwise>
+        </choose>
+        LIMIT
+        #{startNum},
+        #{pageSizePlus}
+    </select>
+</mapper>
+

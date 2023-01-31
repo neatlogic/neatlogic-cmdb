@@ -1,0 +1,72 @@
+/*
+ * Copyright(c) 2021. TechSure Co., Ltd. All Rights Reserved.
+ * 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+ */
+
+package neatlogic.module.cmdb.api.resourcecenter.account;
+
+import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.dto.resourcecenter.AccountVo;
+import neatlogic.framework.cmdb.exception.resourcecenter.ResourceCenterAccountNotFoundException;
+import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.restful.annotation.*;
+import neatlogic.framework.restful.constvalue.OperationTypeEnum;
+import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.framework.cmdb.auth.label.RESOURCECENTER_ACCOUNT_MODIFY;
+import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
+import neatlogic.module.cmdb.service.resourcecenter.account.ResourceCenterAccountService;
+import com.alibaba.fastjson.JSONObject;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+@Transactional
+@AuthAction(action = RESOURCECENTER_ACCOUNT_MODIFY.class)
+@OperationType(type = OperationTypeEnum.DELETE)
+public class AccountDeleteApi extends PrivateApiComponentBase {
+
+    @Resource
+    private ResourceAccountMapper resourceAccountMapper;
+
+    @Resource
+    private ResourceCenterAccountService accountService;
+
+    @Override
+    public String getToken() {
+        return "resourcecenter/account/delete";
+    }
+
+    @Override
+    public String getName() {
+        return "删除资源中心账号";
+    }
+
+    @Override
+    public String getConfig() {
+        return null;
+    }
+
+    @Input({
+            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "账号ID")
+    })
+    @Output({
+    })
+    @Description(desc = "删除资源中心账号")
+    @Override
+    public Object myDoService(JSONObject paramObj) throws Exception {
+        Long id = paramObj.getLong("id");
+        AccountVo account = resourceAccountMapper.getAccountById(id);
+        if (account == null) {
+            throw new ResourceCenterAccountNotFoundException(id);
+        }
+        List<Long> idList = new ArrayList<>();
+        idList.add(id);
+        accountService.deleteAccount(idList);
+        return null;
+    }
+
+}

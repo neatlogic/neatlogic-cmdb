@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="neatlogic.module.cmdb.dao.mapper.legalvalid.LegalValidMapper">
+
+    <select id="getLegalValidById" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.legalvalid.LegalValidVo">
+        select id,
+               ci_id     as ciId,
+               name,
+               rule      as ruleStr,
+               cron,
+               type,
+               is_active as isActive
+        from cmdb_legalvalid
+        where id = #{value}
+    </select>
+
+    <select id="searchLegalValid" parameterType="neatlogic.framework.cmdb.dto.legalvalid.LegalValidVo"
+            resultType="neatlogic.framework.cmdb.dto.legalvalid.LegalValidVo">
+        select
+        id,
+        ci_id as ciId,
+        name,
+        rule as ruleStr,
+        cron,
+        type,
+        is_active as isActive
+        from cmdb_legalvalid
+        <where>
+            <if test="ciId != null">
+                and ci_id = #{ciId}
+            </if>
+            <if test="isActive != null">
+                and is_active = #{isActive}
+            </if>
+        </where>
+    </select>
+
+    <update id="updateLegalValid" parameterType="neatlogic.framework.cmdb.dto.legalvalid.LegalValidVo">
+        update cmdb_legalvalid
+        set name      = #{name},
+            rule      = #{ruleStr,typeHandler=CompressHandler},
+            cron      = #{cron},
+            type      = #{type},
+            is_active = #{isActive}
+        where id = #{id}
+    </update>
+
+
+    <insert id="insertLegalValid" parameterType="neatlogic.framework.cmdb.dto.legalvalid.LegalValidVo">
+        insert into cmdb_legalvalid
+        (id,
+         ci_id,
+         name,
+         rule,
+         cron,
+         type,
+         is_active)
+        values (#{id},
+                #{ciId},
+                #{name},
+                #{ruleStr,typeHandler=CompressHandler},
+                #{cron},
+                #{type},
+                #{isActive})
+    </insert>
+
+    <delete id="deleteLegalValidById" parameterType="java.lang.Long">
+        delete a,cci
+        from cmdb_legalvalid a
+                 left join cmdb_cientity_illegal cci on a.id = cci.legalvalid_id
+        where a.id = #{value}
+    </delete>
+</mapper>

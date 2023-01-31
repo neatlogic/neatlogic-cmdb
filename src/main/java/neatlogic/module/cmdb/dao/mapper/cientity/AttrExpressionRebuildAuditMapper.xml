@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright(c) 2021 TechSure Co., Ltd. All Rights Reserved.
+  ~ 本内容仅限于深圳市赞悦科技有限公司内部传阅，禁止外泄以及用于其他的商业项目。
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="neatlogic.module.cmdb.dao.mapper.cientity.AttrExpressionRebuildAuditMapper">
+
+    <select id="getAttrExpressionRebuildAuditByServerId" parameterType="java.lang.Integer"
+            resultType="neatlogic.framework.cmdb.dto.attrexpression.RebuildAuditVo">
+        SELECT id,
+               ci_id             AS ciId,
+               cientity_id       AS ciEntityId,
+               attr_id           AS attrId,
+               cientity_id_start AS ciEntityIdStart,
+               type              AS `type`
+        FROM cmdb_attrexpression_rebuild_audit
+        WHERE server_id = #{value}
+    </select>
+
+    <update id="updateAttrExpressionRebuildAuditCiEntityIdStartById"
+            parameterType="neatlogic.framework.cmdb.dto.attrexpression.RebuildAuditVo">
+        UPDATE `cmdb_attrexpression_rebuild_audit`
+        SET `cientity_id_start` = #{ciEntityIdStart}
+        WHERE `id` = #{id}
+    </update>
+
+    <insert id="insertAttrExpressionRebuildAudit"
+            parameterType="neatlogic.framework.cmdb.dto.attrexpression.RebuildAuditVo">
+        INSERT IGNORE INTO cmdb_attrexpression_rebuild_audit
+        (id,
+         ci_id,
+         cientity_id,
+         attr_id,
+         cientity_id_start,
+         type,
+         server_id)
+        VALUES (#{id},
+                #{ciId},
+                #{ciEntityId},
+                #{attrIds},
+                #{ciEntityIdStart},
+                #{type},
+                #{serverId})
+    </insert>
+
+    <delete id="deleteAttrExpressionRebuildAuditById" parameterType="java.lang.Long">
+        DELETE
+        FROM cmdb_attrexpression_rebuild_audit
+        WHERE id = #{value}
+    </delete>
+
+</mapper>
