@@ -5,11 +5,29 @@
 
 package codedriver.module.cmdb.utils;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import codedriver.framework.asynchronization.threadlocal.TenantContext;
 import codedriver.framework.cmdb.dto.ci.AttrVo;
 import codedriver.framework.cmdb.dto.ci.CiVo;
 import codedriver.framework.cmdb.dto.ci.RelVo;
-import codedriver.framework.cmdb.dto.customview.*;
+import codedriver.framework.cmdb.dto.customview.CustomViewAttrVo;
+import codedriver.framework.cmdb.dto.customview.CustomViewCiVo;
+import codedriver.framework.cmdb.dto.customview.CustomViewConstAttrVo;
+import codedriver.framework.cmdb.dto.customview.CustomViewLinkVo;
+import codedriver.framework.cmdb.dto.customview.CustomViewRelVo;
+import codedriver.framework.cmdb.dto.customview.CustomViewVo;
 import codedriver.framework.cmdb.enums.RelDirectionType;
 import codedriver.framework.cmdb.enums.customview.JoinType;
 import codedriver.framework.cmdb.enums.customview.RelType;
@@ -18,7 +36,11 @@ import codedriver.framework.cmdb.exception.ci.CiNotFoundException;
 import codedriver.framework.cmdb.exception.rel.RelNotFoundException;
 import codedriver.module.cmdb.service.ci.CiService;
 import codedriver.module.cmdb.service.customview.CustomViewService;
-import net.sf.jsqlparser.expression.*;
+import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.expression.LongValue;
+import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
@@ -27,15 +49,13 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.select.*;
+import net.sf.jsqlparser.statement.select.Join;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectBody;
+import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.util.SelectUtils;
-import org.apache.commons.collections4.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.*;
 
 @Component
 public class CustomViewBuilder {
@@ -245,27 +265,43 @@ public class CustomViewBuilder {
             PlainSelect plainSelect = (PlainSelect) selectBody;
             plainSelect.addSelectItems(new SelectExpressionItem(new Column("id").withTable(new Table("ci_base"))));
             plainSelect.addSelectItems(new SelectExpressionItem(new Column("name").withTable(new Table("ci_base"))));
-            plainSelect.addSelectItems(new SelectExpressionItem(new StringValue(ciVo.getName())).withAlias(new Alias("ciName")));
+            //plainSelect.addSelectItems(new SelectExpressionItem(new StringValue(ciVo.getName())).withAlias(new Alias("ciName")));
+            plainSelect.addSelectItems(new SelectExpressionItem(new Column("label").withTable(new Table("ci_info"))).withAlias(new Alias("ciName")));
+            Function lcdFuc = new Function();
+            lcdFuc.setName("DATE_FORMAT");
+            ExpressionList lcdExpressionList = new ExpressionList();
+            lcdExpressionList.addExpressions(new Column("lcd").withTable(new Table("ci_base")));
+            lcdExpressionList.addExpressions(new StringValue("%Y-%m-%d"));
+            lcdFuc.setParameters(lcdExpressionList);
+            plainSelect.addSelectItems(new SelectExpressionItem(lcdFuc).withAlias(new Alias("lcd")));
+            Function fcdFuc = new Function();
+            fcdFuc.setName("DATE_FORMAT");
+            ExpressionList fcdExpressionList = new ExpressionList();
+            fcdExpressionList.addExpressions(new Column("fcd").withTable(new Table("ci_base")));
+            fcdExpressionList.addExpressions(new StringValue("%Y-%m-%d"));
+            fcdFuc.setParameters(fcdExpressionList);
+            plainSelect.addSelectItems(new SelectExpressionItem(fcdFuc).withAlias(new Alias("fcd")));
             //plainSelect.addSelectItems(new SelectExpressionItem(new Column("name").withTable(new Table("cmdb_ci"))).withAlias(new Alias("ciName")));
             plainSelect.addSelectItems(new SelectExpressionItem(new Column("uuid").withTable(new Table("ci_base"))));
 
-            /*plainSelect.addJoins(new Join()
+            plainSelect.addJoins(new Join()
                     .withRightItem(new Table()
                             .withName("cmdb_ci")
+                            .withAlias(new Alias("ci_info"))
                             .withSchemaName(TenantContext.get().getDbName()))
                     .addOnExpression(new EqualsTo()
                             .withLeftExpression(new Column()
                                     .withTable(new Table("ci_base"))
                                     .withColumnName("ci_id"))
                             .withRightExpression(new Column()
-                                    .withTable(new Table("cmdb_ci"))
-                                    .withColumnName("id"))));*/
+                                    .withTable(new Table("ci_info"))
+                                    .withColumnName("id"))));
 
             for (CustomViewConstAttrVo viewConstAttrVo : customViewCiVo.getConstAttrList()) {
                 //由于内部属性来自不同的表，暂时先特殊处理
                 if (viewConstAttrVo.getConstName().equalsIgnoreCase("ciName")) {
-                    //plainSelect.addSelectItems(new SelectExpressionItem(new Column("name").withTable(new Table("cmdb_ci"))).withAlias(new Alias("`" + viewConstAttrVo.getUuid() + "`")));
-                    plainSelect.addSelectItems(new SelectExpressionItem(new StringValue(ciVo.getName())).withAlias(new Alias("`" + viewConstAttrVo.getUuid() + "`")));
+                    plainSelect.addSelectItems(new SelectExpressionItem(new Column("label").withTable(new Table("ci_info"))).withAlias(new Alias("`" + viewConstAttrVo.getUuid() + "`")));
+                    //plainSelect.addSelectItems(new SelectExpressionItem(new StringValue(ciVo.getName())).withAlias(new Alias("`" + viewConstAttrVo.getUuid() + "`")));
                     Function function = new Function();
                     function.setName("md5");
                     ExpressionList expressionList = new ExpressionList();
@@ -331,13 +367,17 @@ public class CustomViewBuilder {
             PlainSelect plainSelect = (PlainSelect) selectBody;
             plainSelect.addSelectItems(new SelectExpressionItem(new Column("id")));
             plainSelect.addSelectItems(new SelectExpressionItem(new Column("name")));
-            plainSelect.addSelectItems(new SelectExpressionItem(new StringValue(ciVo.getName())).withAlias(new Alias("ciName")));
+            //plainSelect.addSelectItems(new SelectExpressionItem(new StringValue(ciVo.getName())).withAlias(new Alias("ciName")));
+            plainSelect.addSelectItems(new SelectExpressionItem(new Column("label").withTable(new Table("ci_info"))).withAlias(new Alias("ciName")));
+
             plainSelect.addSelectItems(new SelectExpressionItem(new Column("uuid")));
 
             for (CustomViewConstAttrVo viewConstAttrVo : customViewCiVo.getConstAttrList()) {
                 //由于内部属性来自不同的表，暂时先特殊处理
                 if (viewConstAttrVo.getConstName().equalsIgnoreCase("ciName")) {
-                    plainSelect.addSelectItems(new SelectExpressionItem(new StringValue(ciVo.getName())).withAlias(new Alias("`" + viewConstAttrVo.getUuid() + "`")));
+                    //plainSelect.addSelectItems(new SelectExpressionItem(new StringValue(ciVo.getName())).withAlias(new Alias("`" + viewConstAttrVo.getUuid() + "`")));
+                    plainSelect.addSelectItems(new SelectExpressionItem(new Column("label").withTable(new Table("ci_info"))).withAlias(new Alias("`" + viewConstAttrVo.getUuid() + "`")));
+
                     Function function = new Function();
                     function.setName("md5");
                     ExpressionList expressionList = new ExpressionList();
