@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright(c) 2023 NeatLogic Co., Ltd. All Rights Reserved.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<beans default-lazy-init="false" xmlns="http://www.springframework.org/schema/beans"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:neatlogic="http://neatlogic.com/schema/neatlogic"
+       xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+       xsi:schemaLocation="http://www.springframework.org/schema/aop
+		http://www.springframework.org/schema/aop/spring-aop.xsd 
+		http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans.xsd 
+		http://www.springframework.org/schema/context 
+		http://www.springframework.org/schema/context/spring-context.xsd 
+		http://www.springframework.org/schema/mvc 
+		http://www.springframework.org/schema/mvc/spring-mvc.xsd 
+		http://www.springframework.org/schema/tx 
+		http://www.springframework.org/schema/tx/spring-tx.xsd
+		http://neatlogic.com/schema/neatlogic
+		https://neatlogic.com/schema/neatlogic.xsd
+        http://www.springframework.org/schema/data/mongo
+        https://www.springframework.org/schema/data/mongo/spring-mongo.xsd">
+
+    <neatlogic:module id="cmdb" name="配置管理模块" groupName="配置管理" group="cmdb" groupSort="3"
+                      groupDescription="配置管理平台"/>
+
+    <context:component-scan base-package="neatlogic.module.cmdb">
+    </context:component-scan>
+
+
+    <context:annotation-config/>
+
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+
+    <aop:aspectj-autoproxy expose-proxy="true" proxy-target-class="false"/>
+
+    <mvc:annotation-driven/>
+
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="neatlogic.module.cmdb.dao.mapper"/>
+    </bean>
+
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="configLocation" value="classpath:neatlogic/framework/dao/config/mybatis-config.xml"/>
+        <property name="dataSource" ref="dataSource"/>
+        <property name="mapperLocations">
+            <list>
+                <value>classpath:neatlogic/module/cmdb/dao/mapper/**/*.xml</value>
+            </list>
+        </property>
+    </bean>
+
+    <mongo:repositories base-package="neatlogic.module.cmdb.repository"/>
+
+
+</beans>

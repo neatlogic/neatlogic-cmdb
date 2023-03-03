@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+Copyright(c) $today.year NeatLogic Co., Ltd. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="neatlogic.module.cmdb.dao.mapper.cischema.CiSchemaMapper">
+    <select id="testCiViewSql" parameterType="java.lang.String" resultType="java.util.Map">
+        ${value}
+    </select>
+
+    <select id="checkTableHasData" parameterType="java.lang.String" resultType="int">
+        SELECT COUNT(1)
+        FROM ${value}
+        LIMIT 1
+    </select>
+
+    <select id="checkTableIsExists" resultType="int">
+        select count(1)
+        from information_schema.tables a
+        where a.TABLE_SCHEMA = #{schemaName}
+          and a.TABLE_NAME = #{tableName}
+    </select>
+
+    <select id="checkSchemaIsExists" parameterType="java.lang.String" resultType="int">
+        SELECT COUNT(1)
+        FROM information_schema.`SCHEMATA`
+        WHERE schema_name = #{value}
+    </select>
+
+    <update id="updateSchemaAuditIsFailed" parameterType="java.lang.Long">
+        UPDATE cmdb_schema_audit
+        SET is_failed = 1
+        WHERE id = #{value}
+    </update>
+
+    <insert id="insertCiView" parameterType="java.lang.String">
+        ${value}
+    </insert>
+
+    <insert id="insertAttrToCiTable">
+        ALTER TABLE ${tableName}
+        ADD COLUMN `${attrVo.id}`
+        <choose>
+            <when test="attrVo.type == 'number'">
+                decimal(50,4)
+            </when>
+            <when test="attrVo.type == 'date'">
+                date
+            </when>
+            <when test="attrVo.type == 'time'">
+                time
+            </when>
+            <when test="attrVo.type == 'datetime'">
+                timestamp
+            </when>
+            <when test="attrVo.type == 'enum'">
+                char(30)
+            </when>
+            <when test="attrVo.type == 'hyperlink'">
+                varchar(500)
+            </when>
+            <otherwise>TEXT</otherwise>
+        </choose>
+        NULL COMMENT '${attrVo.label}',
+        ADD COLUMN `${attrVo.id}_hash` CHAR(32) NULL COMMENT '${attrVo.label}值散列码',
+        <choose>
+            <when test="attrVo.type == 'number' or attrVo.type == 'date' or attrVo.type == 'time' or attrVo.type == 'datetime' or attrVo.type == 'enum'">
+                ADD KEY `index_${attrVo.id}` (`${attrVo.id}`),
+            </when>
+        </choose>
+        ADD KEY `index_${attrVo.id}_hash` (`${attrVo.id}_hash`);
+    </insert>
+
+    <insert id="insertCiTable">
+        CREATE TABLE IF NOT EXISTS ${tableName}
+        (
+            `cientity_id` bigint(20) NOT NULL COMMENT '配置项id',
+            PRIMARY KEY (`cientity_id`)
+        ) ENGINE = INNODB
+          DEFAULT CHARSET = utf8mb4
+    </insert>
+
+    <insert id="initCiTable" parameterType="neatlogic.framework.cmdb.dto.ci.CiVo">
+        CREATE TABLE IF NOT EXISTS ${ciTableName}
+        (
+        `cientity_id` bigint(20) NOT NULL COMMENT '配置项id',
+        <if test="attrList!=null and attrList.size() > 0">
+            <foreach collection="attrList" item="attrVo">
+                <if test="attrVo.ciId == id and attrVo.targetCiId == null">
+                    `${attrVo.id}`
+                    <choose>
+                        <when test="attrVo.type == 'number'">
+                            decimal(50,4)
+                        </when>
+                        <when test="attrVo.type == 'date'">
+                            date
+                        </when>
+                        <when test="attrVo.type == 'time'">
+                            time
+                        </when>
+                        <when test="attrVo.type == 'datetime'">
+                            timestamp
+                        </when>
+                        <when test="attrVo.type == 'enum'">
+                            char(30)
+                        </when>
+                        <when test="attrVo.type == 'hyperlink'">
+                            varchar(500)
+                        </when>
+                        <otherwise>TEXT</otherwise>
+                    </choose>
+                    NULL COMMENT '${attrVo.label}',
+                    `${attrVo.id}_hash` CHAR(32) NULL COMMENT '${attrVo.label}值散列码',
+                </if>
+            </foreach>
+        </if>
+        PRIMARY KEY (`cientity_id`)
+        ) ENGINE = INNODB
+        DEFAULT CHARSET = utf8mb4
+    </insert>
+
+
+    <delete id="deleteAttrFromCiTable">
+        ALTER TABLE ${tableName}
+            DROP
+                COLUMN `${attrVo.id}_hash`,
+            DROP
+                COLUMN `${attrVo.id}`
+    </delete>
+
+    <delete id="deleteCiTable">
+        DROP TABLE IF EXISTS ${tableName}
+    </delete>
+
+    <delete id="deleteCiView">
+        DROP VIEW IF EXISTS ${tableName}
+    </delete>
+
+
+</mapper>

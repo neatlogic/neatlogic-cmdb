@@ -1,0 +1,21 @@
+# see https://docs.gitlab.com/ce/ci/yaml/README.html for all available options
+
+build1:
+  stage: build
+  only:
+    - /^develop.*$/
+    - /^release.*$/
+  script:
+    - echo "git clone success!"
+    - if [[ "${CI_COMMIT_REF_NAME}" == "release"* ]]; then sh autotag.sh ${CI_PROJECT_ID} ${CI_COMMIT_SHA}; fi;
+
+deploy1:
+  stage: deploy
+  only:
+    - /^develop.*$/
+    - /^release.*$/
+  script:
+    - export ENV_NAME="develop";
+    - if [[ "${CI_COMMIT_REF_NAME}" == "release"* ]]; then ENV_NAME="release"; fi;
+    - mvn deploy -e --settings /home/gitlab-runner/.m2/settings.xml -P${ENV_NAME}
+

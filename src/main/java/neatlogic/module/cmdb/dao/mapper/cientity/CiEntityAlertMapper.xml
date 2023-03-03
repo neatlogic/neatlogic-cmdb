@@ -1,0 +1,157 @@
+<!--
+  ~ Copyright(c) 2023 NeatLogic Co., Ltd. All Rights Reserved.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="neatlogic.module.cmdb.dao.mapper.cientity.CiEntityAlertMapper">
+    <resultMap id="ciEntityStatusMap" type="neatlogic.framework.cmdb.dto.cientity.CiEntityStatusVo">
+        <id property="ciEntityId" column="ciEntityId"/>
+        <collection property="alertList" ofType="neatlogic.framework.cmdb.dto.cientity.CiEntityAlertVo">
+            <id property="id" column="id"/>
+            <result property="level" column="level"/>
+            <result property="levelName" column="levelName"/>
+            <result property="levelColor" column="levelColor"/>
+            <result property="metricName" column="metricName"/>
+            <result property="metricValue" column="metricValue"/>
+            <result property="alertLink" column="alertLink"/>
+            <result property="alertMessage" column="alertMessage"/>
+        </collection>
+    </resultMap>
+
+    <select id="listCiEntityStatus" resultMap="ciEntityStatusMap">
+        select
+        a.id,
+        a.cientity_id as ciEntityId,
+        a.cientity_uuid as ciEntityUuid,
+        a.ip as ip,
+        a.level as level,
+        b.name as levelName,
+        b.color as levelColor,
+        a.alert_time as alertTime,
+        a.metric_name as metricName,
+        a.metric_value as metricValue,
+        a.alert_message as alertMessage,
+        a.alert_link as alertLink
+        from cmdb_cientity_alert a left join cmdb_cientity_alertlevel b on a.level = b.level
+        where
+        a.cientity_id in
+        <foreach collection="ciEntityIdList" item="item" separator="," open="(" close=")">#{item}</foreach>
+        order by a.id desc,a.level desc
+    </select>
+
+    <sql id="searchCiEntityAlertCondition">
+        <where>
+            <if test="ciEntityIdList != null and ciEntityIdList.size() > 0">
+                and a.cientity_id in
+                <foreach collection="ciEntityIdList" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </sql>
+
+    <select id="searchCiEntityAlertCount" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityAlertVo"
+            resultType="int">
+        select count(1)
+        from cmdb_cientity_alert a
+        join cmdb_cientity b on a.cientity_id = b.id
+        <include refid="searchCiEntityAlertCondition"></include>
+    </select>
+
+    <select id="searchCiEntityAlert" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityAlertVo"
+            resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityAlertVo">
+        select
+        a.id,
+        b.ci_id as ciId,
+        a.cientity_id as ciEntityId,
+        b.name as ciEntityName,
+        a.cientity_uuid as ciEntityUuid,
+        a.ip as ip,
+        a.level as level,
+        c.name as levelName,
+        c.color as levelColor,
+        a.alert_time as alertTime,
+        a.metric_name as metricName,
+        a.metric_value as metricValue,
+        a.alert_message as alertMessage,
+        a.alert_link as alertLink
+        from cmdb_cientity_alert a
+        join cmdb_cientity b on a.cientity_id = b.id
+        left join cmdb_cientity_alertlevel c on a.level = c.level
+        <include refid="searchCiEntityAlertCondition"></include>
+        limit #{startNum},#{pageSize}
+    </select>
+
+    <select id="getCiEntityAlert" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityAlertVo"
+            resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityAlertVo">
+        select id,
+               cientity_id   as ciEntityId,
+               cientity_uuid as ciEntityUuid,
+               ip            as ip,
+               level         as level,
+               alert_time    as alertTime,
+               metric_name   as metricName,
+               metric_value  as metricValue,
+               alert_message as alertMessage,
+               alert_link    as alertLink
+        from cmdb_cientity_alert
+        where cientity_id = #{ciEntityId}
+          and metric_name = #{metricName}
+    </select>
+
+    <update id="updateCiEntityAlert" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityAlertVo">
+        update cmdb_cientity_alert
+        set cientity_id   = #{ciEntityId},
+            cientity_uuid = #{ciEntityUuid},
+            ip            = #{ip},
+            level         = #{level},
+            alert_time    = #{alertTime},
+            metric_name   = #{metricName},
+            metric_value  = #{metricValue},
+            alert_message = #{alertMessage},
+            alert_link    = #{alertLink}
+        where id = #{id}
+    </update>
+
+    <insert id="insertCiEntityAlert" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityAlertVo">
+        insert into cmdb_cientity_alert
+        (id,
+         cientity_id,
+         cientity_uuid,
+         ip,
+         level,
+         alert_time,
+         metric_name,
+         metric_value,
+         alert_message,
+         alert_link)
+        values (#{id},
+                #{ciEntityId},
+                #{ciEntityUuid},
+                #{ip},
+                #{level},
+                #{alertTime},
+                #{metricName},
+                #{metricValue},
+                #{alertMessage},
+                #{alertLink})
+    </insert>
+
+    <delete id="deleteCiEntityAlertById" parameterType="java.lang.Long">
+        delete
+        from cmdb_cientity_alert
+        where id = #{value}
+    </delete>
+</mapper>

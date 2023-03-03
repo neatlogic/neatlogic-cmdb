@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+Copyright(c) $today.year NeatLogic Co., Ltd. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="neatlogic.module.cmdb.dao.mapper.ci.CiTypeMapper">
+
+    <select id="getMaxSort" resultType="java.lang.Integer">
+        SELECT max(sort)
+        FROM cmdb_citype
+    </select>
+
+    <select id="checkCiTypeNameIsExists" parameterType="neatlogic.framework.cmdb.dto.ci.CiTypeVo" resultType="int">
+        SELECT count(1)
+        FROM cmdb_citype
+        WHERE name = #{name}
+          AND id != #{id}
+    </select>
+
+    <select id="searchCiType" parameterType="neatlogic.framework.cmdb.dto.ci.CiTypeVo"
+            resultType="neatlogic.framework.cmdb.dto.ci.CiTypeVo">
+        SELECT
+        `id`,
+        `name`,
+        `sort`,
+        `is_menu` AS isMenu,
+        `is_showintopo` AS isShowInTopo,
+        `icon`,
+        (SELECT
+        COUNT(1)
+        FROM
+        cmdb_ci ci WHERE ci.type_id = a.id) AS ciCount
+        FROM
+        `cmdb_citype` a
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND name LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+            <if test="isShowInTopo != null">
+                AND `is_showintopo` = #{isShowInTopo}
+            </if>
+        </where>
+        ORDER BY sort
+    </select>
+
+    <select id="getCiTypeByName" parameterType="java.lang.String"
+            resultType="neatlogic.framework.cmdb.dto.ci.CiTypeVo">
+        SELECT `id`,
+               `name`,
+               `sort`,
+               `is_menu`       AS isMenu,
+               `icon`,
+               `is_showintopo` AS isShowInTopo
+        FROM `cmdb_citype`
+        WHERE name = #{value}
+    </select>
+
+    <select id="getCiTypeById" parameterType="java.lang.Long" resultType="neatlogic.framework.cmdb.dto.ci.CiTypeVo">
+        SELECT `id`,
+               `name`,
+               `sort`,
+               `is_menu`       AS isMenu,
+               `icon`,
+               `is_showintopo` AS isShowInTopo
+        FROM `cmdb_citype`
+        WHERE id = #{value}
+    </select>
+
+    <update id="updateCiType" parameterType="neatlogic.framework.cmdb.dto.ci.CiTypeVo">
+        UPDATE
+            `cmdb_citype`
+        SET `name`          = #{name},
+            `sort`          = #{sort},
+            `is_menu`       = #{isMenu},
+            `icon`          = #{icon},
+            `is_showintopo` = #{isShowInTopo}
+        WHERE `id` = #{id}
+    </update>
+
+    <insert id="insertCiType" parameterType="neatlogic.framework.cmdb.dto.ci.CiTypeVo">
+        INSERT INTO `cmdb_citype` (`id`,
+                                   `name`,
+                                   `sort`,
+                                   `is_menu`,
+                                   `icon`,
+                                   `is_showintopo`)
+        VALUES (#{id},
+                #{name},
+                #{sort},
+                #{isMenu},
+                #{icon},
+                #{isShowInTopo})
+    </insert>
+
+    <delete id="deleteCiTypeById" parameterType="java.lang.Long">
+        delete
+        from cmdb_citype
+        where id = #{value}
+    </delete>
+</mapper>

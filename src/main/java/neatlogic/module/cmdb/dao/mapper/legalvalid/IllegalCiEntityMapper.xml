@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+Copyright(c) $today.year NeatLogic Co., Ltd. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="neatlogic.module.cmdb.dao.mapper.legalvalid.IllegalCiEntityMapper">
+
+    <select id="searchIllegalCiEntityCount" parameterType="neatlogic.framework.cmdb.dto.legalvalid.IllegalCiEntityVo"
+            resultType="int">
+        SELECT count(*)
+        from cmdb_cientity a
+        join cmdb_cientity_illegal cci on a.id = cci.cientity_id
+        left join cmdb_legalvalid cl on cci.legalvalid_id = cl.id
+        <include refid="searchIllegalCiEntityCondition"/>
+    </select>
+
+    <select id="searchIllegalCiEntityId" parameterType="neatlogic.framework.cmdb.dto.legalvalid.IllegalCiEntityVo"
+            resultType="java.lang.Long">
+        SELECT
+        a.id as ciEntityId,
+        from cmdb_cientity a
+        join cmdb_ci b on a.ci_id = b.id
+        join cmdb_cientity_illegal cci on a.id = cci.cientity_id
+        left join cmdb_legalvalid cl on cci.legalvalid_id = cl.id
+        <include refid="searchIllegalCiEntityCondition"/>
+    </select>
+
+    <select id="searchIllegalCiEntity" parameterType="neatlogic.framework.cmdb.dto.legalvalid.IllegalCiEntityVo"
+            resultType="neatlogic.framework.cmdb.dto.legalvalid.IllegalCiEntityVo">
+        SELECT
+        a.ci_id as ciId,
+        a.id as ciEntityId,
+        a.name as ciEntityName,
+        b.name as ciName,
+        b.label as ciLabel,
+        cl.name as legalValidName,
+        cl.type as legalValidType,
+        cci.legalvalid_id as legalValidId,
+        cci.error as errorStr,
+        cci.valid_time as validTime
+        from cmdb_cientity a
+        join cmdb_ci b on a.ci_id = b.id
+        join cmdb_cientity_illegal cci on a.id = cci.cientity_id
+        left join cmdb_legalvalid cl on cci.legalvalid_id = cl.id
+        <include refid="searchIllegalCiEntityCondition"/>
+        order by valid_time desc
+        limit #{startNum}, #{pageSize}
+    </select>
+
+    <sql id="searchIllegalCiEntityCondition">
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and a.name like concat('%',#{keyword},'%')
+            </if>
+            <if test="legalValidType != null and legalValidType != ''">
+                and cl.type = #{legalValidType}
+            </if>
+            <if test="ciIdList != null and ciIdList.size() > 0">
+                and a.ci_id in
+                <foreach collection="ciIdList" item="item" open="(" close=")" separator=",">#{item}</foreach>
+            </if>
+            <if test="legalValidId != null">
+                and cci.legalvalid_id = #{legalValidId}
+            </if>
+            <if test="validTimeRange != null">
+                <if test="validTimeRange.size() > 0">
+                    AND cci.valid_time &gt;= STR_TO_DATE(#{validTimeRange[0]},'%Y-%m-%d')
+                </if>
+                <if test="validTimeRange.size() > 1">
+                    AND cci.valid_time &lt;= STR_TO_DATE(#{validTimeRange[1]},'%Y-%m-%d')
+                </if>
+            </if>
+        </where>
+    </sql>
+
+    <select id="getIllegalCiEntityCountByCiId" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.legalvalid.LegalValidVo">
+        SELECT count(a.cientity_id) as illegalCiEntityCount,
+               b.id,
+               b.name
+        FROM cmdb_cientity_illegal a
+                 JOIN cmdb_legalvalid b ON a.legalvalid_id = b.id
+        where b.ci_id = #{value}
+        group by b.id
+    </select>
+
+    <insert id="insertCiEntityIllegal" parameterType="neatlogic.framework.cmdb.dto.legalvalid.IllegalCiEntityVo">
+        insert ignore into cmdb_cientity_illegal (ci_id, cientity_id, legalvalid_id, valid_time, error)
+        values (#{ciId}, #{ciEntityId}, #{legalValidId}, now(3), #{errorStr,typeHandler=CompressHandler})
+    </insert>
+
+    <delete id="deleteCiEntityIllegal">
+        delete
+        from cmdb_cientity_illegal
+        where cientity_id = #{ciEntityId}
+          and legalvalid_id = #{legalValidId}
+    </delete>
+</mapper>

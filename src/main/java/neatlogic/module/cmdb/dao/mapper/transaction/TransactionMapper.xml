@@ -1,0 +1,461 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+Copyright(c) $today.year NeatLogic Co., Ltd. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="neatlogic.module.cmdb.dao.mapper.transaction.TransactionMapper">
+    <select id="getUnCommitTransactionByCiEntityIdAndAction"
+            resultType="neatlogic.framework.cmdb.dto.transaction.TransactionVo">
+        select b.id, b.ci_id as ciId
+        from cmdb_cientity_transaction a
+                 join cmdb_transaction b on a.transaction_id = b.id
+        where a.ci_entity_id = #{ciEntityId}
+          and a.action = #{action}
+          and b.status = 'uncommit'
+    </select>
+
+    <select id="getCiEntityTransactionByTransactionIdList"
+            resultType="neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo">
+        SELECT
+        `id`,
+        `ci_id` AS ciId,
+        `ci_entity_id` AS ciEntityId,
+        `ci_entity_uuid` AS ciEntityUuid,
+        `name` AS name,
+        `action`,
+        `transaction_id` AS transactionId,
+        `snapshot` AS snapshot,
+        `content` AS content,
+        `edit_mode` AS editMode
+        FROM
+        `cmdb_cientity_transaction`
+        WHERE ci_entity_id = #{ciEntityId} AND transaction_id IN
+        <foreach collection="transactionIdList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <update id="updateCiEntityTransactionContent"
+            parameterType="neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo">
+        UPDATE `cmdb_cientity_transaction`
+        SET content = #{content,typeHandler=compressHandler}
+        WHERE id = #{id}
+    </update>
+
+    <insert id="insertCiEntityTransaction"
+            parameterType="neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo">
+        INSERT INTO `cmdb_cientity_transaction` (`id`,
+                                                 `ci_entity_uuid`,
+                                                 `ci_id`,
+                                                 `ci_entity_id`,
+                                                 `name`,
+                                                 `action`,
+                                                 `transaction_id`,
+                                                 `content`,
+                                                 `snapshot`,
+                                                 `edit_mode`)
+        VALUES (#{id},
+                #{ciEntityUuid},
+                #{ciId},
+                #{ciEntityId},
+                #{name},
+                #{action},
+                #{transactionId},
+                #{content,typeHandler=compressHandler},
+                #{snapshot,typeHandler=compressHandler},
+                #{editMode})
+    </insert>
+
+
+    <!--old-->
+    <resultMap id="transactionDetailMap" type="neatlogic.framework.cmdb.dto.transaction.TransactionVo">
+        <id property="id" column="id"/>
+        <result property="ciId" column="ciId"/>
+        <result property="ciLabel" column="ciLabel"/>
+        <result property="ciName" column="ciName"/>
+        <result property="ciEntityId" column="ciEntityId"/>
+        <result property="ciEntityName" column="ciEntityName"/>
+        <result property="status" column="status"/>
+        <result property="createUser" column="createUser"/>
+        <result property="commitUser" column="commitUser"/>
+        <result property="recoverUser" column="recoverUser"/>
+        <result property="createUserName" column="createUserName"/>
+        <result property="commitUserName" column="commitUserName"/>
+        <result property="recoverUserName" column="recoverUserName"/>
+        <result property="inputFrom" column="inputFrom"/>
+        <result property="action" column="action"/>
+        <result property="source" column="source"/>
+        <result property="expireTime" column="expireTime"/>
+        <result property="createTime" column="createTime"/>
+        <result property="commitTime" column="commitTime"/>
+        <result property="recoverTime" column="recoverTime"/>
+        <result property="error" column="error" typeHandler="neatlogic.framework.dao.plugin.CompressHandler"/>
+        <result property="description" column="description"/>
+        <result property="transactionGroupId" column="transactionGroupId"/>
+        <association property="ciEntityTransactionVo"
+                     javaType="neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo">
+            <id property="ciEntityId" column="ciEntityId"/>
+            <result property="ciEntityUuid" column="ciEntityUuid"/>
+            <result property="name" column="ciEntityName"/>
+            <result property="transactionId" column="ciEntityTransactionId"/>
+            <result property="ciId" column="ciId"/>
+            <result property="action" column="action"/>
+            <result property="editMode" column="editMode"/>
+            <result property="snapshot" column="snapshot"
+                    typeHandler="neatlogic.framework.dao.plugin.CompressHandler"/>
+            <result property="content" column="content" typeHandler="neatlogic.framework.dao.plugin.CompressHandler"/>
+        </association>
+    </resultMap>
+
+    <select id="getTransactionCountByGroupId" parameterType="java.lang.Long" resultType="int">
+        SELECT count(*)
+        FROM cmdb_transactiongroup
+        WHERE id = #{value}
+    </select>
+
+    <select id="getTransactionByGroupId" parameterType="java.lang.Long" resultMap="transactionDetailMap">
+        SELECT a.id,
+               a.ci_id                                                    AS ciId,
+               a.`status`,
+               create_user                                                AS createUser,
+               (SELECT user_name FROM user u WHERE u.uuid = create_user)  AS createUserName,
+               commit_user                                                AS commitUser,
+               (SELECT user_name FROM user u WHERE u.uuid = commit_user)  AS commitUserName,
+               recover_user                                               AS recoverUser,
+               (SELECT user_name FROM user u WHERE u.uuid = recover_user) AS recoverUserName,
+               input_from                                                 AS inputFrom,
+               source,
+               expire_time                                                AS expireTime,
+               create_time                                                AS createTime,
+               commit_time                                                AS commitTime,
+               recover_time                                               AS recoverTime,
+               error,
+               a.description,
+               b.action                                                   AS action,
+               b.transaction_id                                           AS ciEntityTransactionId,
+               b.ci_entity_id                                             AS ciEntityId,
+               b.ci_entity_uuid                                           AS ciEntityUuid,
+               b.edit_mode                                                AS editMode,
+               b.snapshot                                                 AS snapshot,
+               b.content                                                  AS content,
+               c.id                                                       AS transactionGroupId
+        FROM cmdb_transaction a
+                 JOIN cmdb_cientity_transaction b ON a.id = b.`transaction_id`
+                 JOIN cmdb_transactiongroup c ON a.id = c.transaction_id
+        WHERE c.id = #{value}
+        ORDER BY a.id
+    </select>
+
+    <select id="getTransactionById" parameterType="java.lang.Long" resultMap="transactionDetailMap">
+        SELECT a.id,
+               a.ci_id                                                    AS ciId,
+               a.`status`,
+               create_user                                                AS createUser,
+               (SELECT user_name FROM user u WHERE u.uuid = create_user)  AS createUserName,
+               commit_user                                                AS commitUser,
+               (SELECT user_name FROM user u WHERE u.uuid = commit_user)  AS commitUserName,
+               recover_user                                               AS recoverUser,
+               (SELECT user_name FROM user u WHERE u.uuid = recover_user) AS recoverUserName,
+               input_from                                                 AS inputFrom,
+               source,
+               expire_time                                                AS expireTime,
+               create_time                                                AS createTime,
+               commit_time                                                AS commitTime,
+               recover_time                                               AS recoverTime,
+               error,
+               a.description,
+               b.action                                                   AS action,
+               b.transaction_id                                           AS ciEntityTransactionId,
+               b.ci_entity_id                                             AS ciEntityId,
+               b.ci_entity_uuid                                           AS ciEntityUuid,
+               b.edit_mode                                                AS editMode,
+               b.snapshot                                                 AS snapshot,
+               b.content                                                  AS content,
+               ct.id                                                      AS transactionGroupId
+        FROM cmdb_transaction a
+                 JOIN cmdb_cientity_transaction b
+                      ON a.id = b.`transaction_id`
+                 LEFT JOIN cmdb_transactiongroup ct on b.transaction_id = ct.transaction_id
+        WHERE a.id = #{value}
+    </select>
+
+    <sql id="searchTransactionCondition">
+        <where>
+            <if test="transactionId != null">
+                AND a.id = #{transactionId}
+            </if>
+            <if test="ciEntityId != null">
+                AND b.`ci_entity_id` = #{ciEntityId}
+            </if>
+            <if test="ciId != null">
+                AND a.ci_id = #{ciId}
+            </if>
+            <if test="statusList != null and statusList.size() > 0">
+                AND a.status IN
+                <foreach collection="statusList" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="status != null and status != ''">
+                AND a.status = #{status}
+            </if>
+            <if test="inputFrom != null and inputFrom != ''">
+                AND a.input_from = #{inputFrom}
+            </if>
+            <if test="action != null and action != ''">
+                AND b.action = #{action}
+            </if>
+            <if test="hasError == 1">
+                AND a.error is not null
+            </if>
+            <if test="hasError == 0">
+                AND a.error is null
+            </if>
+            <if test="transactionGroupId != null">
+                AND t.id = #{transactionGroupId}
+            </if>
+            <if test="createTimeRange != null">
+                <if test="createTimeRange.size() > 0">
+                    AND a.create_time &gt;= STR_TO_DATE(#{createTimeRange[0]},'%Y-%m-%d')
+                </if>
+                <if test="createTimeRange.size() > 1">
+                    AND a.create_time &lt;= STR_TO_DATE(#{createTimeRange[1]},'%Y-%m-%d')
+                </if>
+            </if>
+            <if test="commitTimeRange != null">
+                <if test="commitTimeRange.size() > 0">
+                    AND a.commit_time &gt;= STR_TO_DATE(#{commitTimeRange[0]},'%Y-%m-%d')
+                </if>
+                <if test="commitTimeRange.size() > 1">
+                    AND a.commit_time &lt;= STR_TO_DATE(#{commitTimeRange[1]},'%Y-%m-%d')
+                </if>
+            </if>
+            <if test="recoverTimeRange != null">
+                <if test="recoverTimeRange.size() > 0">
+                    AND a.recover_time &gt;= STR_TO_DATE(#{recoverTimeRange[0]},'%Y-%m-%d')
+                </if>
+                <if test="recoverTimeRange.size() > 1">
+                    AND a.recover_time &lt;= STR_TO_DATE(#{recoverTimeRange[1]},'%Y-%m-%d')
+                </if>
+            </if>
+        </where>
+    </sql>
+
+    <select id="getBrotherTransactionIdByTransactionGroupId" resultType="java.lang.Long">
+        SELECT id
+        FROM cmdb_transactiongroup
+        where id = #{transactionGroupId}
+          AND transaction_id != #{transactionId}
+    </select>
+
+    <select id="getBrotherTransactionCountByTransactionGroupId" resultType="int">
+        SELECT count(1)
+        FROM cmdb_transactiongroup
+        where id = #{transactionGroupId}
+          AND transaction_id != #{transactionId}
+    </select>
+
+    <select id="searchTransaction" parameterType="neatlogic.framework.cmdb.dto.transaction.TransactionVo"
+            resultMap="transactionDetailMap">
+        SELECT
+        a.id,
+        a.ci_id AS ciId,
+        ci.name as ciName,
+        ci.label as ciLabel,
+        a.`status`,
+        create_user AS createUser,
+        (SELECT user_name FROM `user` u WHERE u.uuid = create_user) AS createUserName,
+        commit_user AS commitUser,
+        (SELECT user_name FROM `user` u WHERE u.uuid = commit_user) AS commitUserName,
+        recover_user AS recoverUser,
+        (SELECT user_name FROM `user` u WHERE u.uuid = recover_user) AS recoverUserName,
+        input_from AS inputFrom,
+        source,
+        expire_time AS expireTime,
+        create_time AS createTime,
+        commit_time AS commitTime,
+        recover_time AS recoverTime,
+        a.error,
+        a.description AS description,
+        b.action AS action,
+        b.ci_entity_id AS ciEntityId,
+        b.ci_entity_uuid AS ciEntityUuid,
+        b.transaction_id AS ciEntityTransactionId,
+        b.snapshot,
+        b.content,
+        c.name AS ciEntityName,
+        t.id AS transactionGroupId
+        FROM
+        cmdb_transaction a
+        JOIN cmdb_ci ci ON a.ci_id = ci.id
+        JOIN cmdb_cientity_transaction b ON a.id = b.`transaction_id` and b.ci_id = a.ci_id
+        LEFT JOIN cmdb_cientity c ON b.ci_entity_id = c.id and b.ci_id = c.ci_id
+        LEFT JOIN cmdb_transactiongroup t on a.id = t.transaction_id
+        <include refid="searchTransactionCondition"></include>
+        ORDER BY b.id DESC
+        <if test="needPage == true">
+            LIMIT #{startNum}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="searchTransactionCount" parameterType="neatlogic.framework.cmdb.dto.transaction.TransactionVo"
+            resultType="int">
+        SELECT
+        COUNT(1)
+        FROM
+        cmdb_transaction a
+        JOIN cmdb_ci ci ON a.ci_id = ci.id
+        JOIN cmdb_cientity_transaction b ON a.id = b.`transaction_id` and b.ci_id = a.ci_id
+        <!-- LEFT JOIN cmdb_cientity c ON b.ci_entity_id = c.id  条件用不到所以注释-->
+        <if test="transactionGroupId != null">
+            LEFT JOIN cmdb_transactiongroup t on a.id = t.transaction_id
+        </if>
+        <include refid="searchTransactionCondition"></include>
+    </select>
+
+    <resultMap id="attrEntityTransactionMap" type="neatlogic.framework.cmdb.dto.transaction.AttrEntityTransactionVo">
+        <id property="attrId" column="attrId"/>
+        <result property="ciEntityId" column="ciEntityId"/>
+        <result property="attrLabel" column="attrLabel"/>
+        <result property="attrName" column="attrName"/>
+        <collection property="valueList" ofType="java.lang.String">
+            <result column="valueHash"/>
+        </collection>
+    </resultMap>
+
+    <select id="getTransactionGroupByTransactionId" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.transaction.TransactionGroupVo">
+        SELECT id
+        FROM cmdb_transactiongroup
+        WHERE transaction_id = #{value}
+    </select>
+
+
+    <select id="getCiEntityTransactionByTransactionGroupIdAndCiEntityId"
+            resultType="neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo">
+        SELECT a.`id`,
+               a.`ci_id`          AS ciId,
+               a.`ci_entity_id`   AS ciEntityId,
+               a.`ci_entity_uuid` AS ciEntityUuid,
+               a.`name`           AS `name`,
+               a.`action`,
+               a.`transaction_id` AS transactionId,
+               a.`snapshot`       AS `snapshot`,
+               a.`content`        AS content
+        FROM `cmdb_cientity_transaction` a
+                 JOIN `cmdb_transactiongroup` b ON a.transaction_id = b.transaction_id
+        WHERE b.id = #{transactionGroupId}
+          AND a.ci_entity_id = #{ciEntityId}
+    </select>
+
+    <select id="getCiEntityTransactionByTransactionIdAndCiEntityId"
+            resultType="neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo">
+        SELECT `id`,
+               `ci_id`          AS ciId,
+               `ci_entity_id`   AS ciEntityId,
+               `ci_entity_uuid` AS ciEntityUuid,
+               `name`           AS name,
+               `action`,
+               `transaction_id` AS transactionId,
+               `snapshot`       AS snapshot,
+               `content`        AS content
+        FROM `cmdb_cientity_transaction`
+        WHERE transaction_id = #{transactionId}
+          AND ci_entity_id = #{ciEntityId}
+    </select>
+
+    <update id="updateTransactionStatus" parameterType="neatlogic.framework.cmdb.dto.transaction.TransactionVo">
+        UPDATE
+        `cmdb_transaction`
+        SET
+        <choose>
+            <when test="status != null and status == 'commited'">
+                `commit_time` = NOW(3),
+                `commit_user` = #{commitUser},
+            </when>
+            <when test="status != null and status == 'recover'">
+                `recover_time` = NOW(3),
+                `recover_user` = #{recoverUser},
+            </when>
+        </choose>
+        `status` = #{status},
+        `error` = #{error, typeHandler=CompressHandler}
+        WHERE `id` = #{id}
+    </update>
+
+    <insert id="insertTransactionGroup">
+        INSERT INTO cmdb_transactiongroup
+            (id, transaction_id)
+        VALUES (#{transactionGroupId},
+                #{transactionId})
+    </insert>
+
+    <insert id="insertTransaction" parameterType="neatlogic.framework.cmdb.dto.transaction.TransactionVo">
+        INSERT INTO `cmdb_transaction` (`ci_id`,
+        `id`,
+        `status`,
+        `create_user`,
+        `input_from`,
+        `source`,
+        `description`,
+        `expire_time`,
+        `create_time`
+        <if test="status == 'commited'">
+            ,`commit_time`
+        </if>)
+        VALUES (#{ciId},
+        #{id},
+        #{status},
+        #{createUser},
+        #{inputFrom},
+        #{source},
+        #{description},
+        #{expireTime},
+        NOW(3)
+        <if test="status == 'commited'">
+            , NOW(3)
+        </if>)
+    </insert>
+
+    <delete id="deleteTransactionByCiId" parameterType="java.lang.Long">
+        DELETE
+            a,b,c
+        FROM cmdb_transaction a
+                 LEFT JOIN cmdb_cientity_transaction b ON a.`id` = b.`transaction_id`
+                 LEFT JOIN cmdb_transactiongroup c ON a.`id` = c.`transaction_id`
+        WHERE a.`ci_id` =
+              #{value}
+    </delete>
+
+    <delete id="deleteTransactionByDayBefore" parameterType="int">
+        DELETE
+            a,b,c
+        FROM cmdb_transaction a
+                 LEFT JOIN cmdb_cientity_transaction b ON a.`id` = b.`transaction_id`
+                 LEFT JOIN cmdb_transactiongroup c ON a.`id` = c.`transaction_id`
+        WHERE commit_time &lt; DATE_SUB(CURRENT_DATE, INTERVAL #{value} DAY)
+    </delete>
+
+    <delete id="deleteTransactionById" parameterType="java.lang.Long">
+        DELETE
+            a,b,c
+        FROM cmdb_transaction a
+                 LEFT JOIN cmdb_cientity_transaction b ON a.`id` = b.`transaction_id`
+                 LEFT JOIN cmdb_transactiongroup c ON a.`id` = c.`transaction_id`
+        WHERE a.`id` =
+              #{value}
+    </delete>
+</mapper>

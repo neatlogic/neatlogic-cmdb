@@ -1,0 +1,1270 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright(c) 2023 NeatLogic Co., Ltd. All Rights Reserved.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper">
+    <!-- <cache-ref namespace="neatlogic.module.cmdb.dao.mapper.ci.CiMapper"/>
+     <cache type="neatlogic.framework.dao.cache.NeatLogicCache" flushInterval="30000" size="500"></cache>-->
+    <select id="searchCiEntityIdBySql" parameterType="java.lang.String" resultType="java.lang.Long">
+        ${value}
+    </select>
+
+    <select id="getNotIndexCiEntityIdList"
+            parameterType="neatlogic.framework.fulltextindex.dto.fulltextindex.FullTextIndexTypeVo"
+            resultType="java.lang.Long" useCache="false">
+        select a.id
+        from cmdb_cientity a
+                 left join fulltextindex_target_cmdb b
+                           on a.id = b.target_id and b.target_type = #{type}
+        where b.target_id is null
+        limit #{pageSize}
+    </select>
+
+    <select id="getAttrEntityCountByFromCiIdAndAttrId" resultType="int" useCache="false">
+        SELECT count(1)
+        FROM cmdb_attrentity
+        WHERE from_ci_id = #{fromCiId}
+          AND attr_id = #{attrId}
+    </select>
+
+    <sql id="searchCiEntityBaseInfoSql">
+        <where>
+            <choose>
+                <when test="ciId != null">
+                    and ci_id = #{ciId}
+                </when>
+                <when test="ciIdList != null and ciIdList.size > 0">
+                    and ci_id in
+                    <foreach collection="ciIdList" item="item" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
+                </when>
+            </choose>
+            <if test="ciEntityIdStart != null">
+                and id &gt; #{ciEntityIdStart}
+            </if>
+            <if test="idList != null and idList.size() > 0">
+                and id in
+                <foreach collection="idList" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </sql>
+
+    <select id="searchCiEntityBaseInfo" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo"
+            resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo" useCache="false">
+        SELECT
+        id,
+        uuid,
+        ci_id AS ciId,
+        `name`,
+        `status`,
+        `renew_time` AS renewTime
+        FROM cmdb_cientity
+        <include refid="searchCiEntityBaseInfoSql">
+        </include>
+        ORDER BY id<!--这个排序不能删除-->
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="searchCiEntityBaseInfoCount" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo"
+            resultType="int" useCache="false">
+        SELECT
+        COUNT(*)
+        FROM cmdb_cientity
+        <include refid="searchCiEntityBaseInfoSql">
+        </include>
+    </select>
+
+
+    <select id="getDownwardCiEntityCountByLR" resultType="int" useCache="false">
+        SELECT count(1)
+        FROM `cmdb_cientity` a
+                 JOIN `cmdb_ci` b ON a.ci_id = b.id
+        WHERE b.lft &gt;= #{lft}
+          AND b.rht &lt;= #{rht}
+    </select>
+
+    <select id="getVirtualCiEntityBaseInfoByName" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo"
+            resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo" useCache="false">
+        SELECT id, `name`
+        FROM ${ciTableName}
+        WHERE name = #{name}
+    </select>
+
+    <select id="getCiEntityBaseInfoByName" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo"
+            resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo" useCache="false">
+        SELECT id,
+               uuid,
+               ci_id AS ciId,
+               `name`,
+               `status`,
+               fcu,
+               fcd,
+               lcu,
+               lcd
+        FROM cmdb_cientity
+        WHERE ci_id = #{ciId}
+          AND name = #{name}
+    </select>
+
+    <select id="getCiEntityBaseInfoByAttrIdAndFromCiEntityId"
+            resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo"
+            useCache="false">
+        SELECT a.id,
+               a.uuid,
+               a.ci_id AS ciId,
+               a.`name`,
+               a.`status`,
+               a.fcu,
+               a.fcd,
+               a.lcu,
+               a.lcd
+        FROM cmdb_cientity a
+                 JOIN `cmdb_attrentity` b ON a.ci_id = b.to_cientity_id
+        WHERE b.attr_id = #{attrId}
+          AND b.from_cientity_id = #{fromCiEntityId}
+    </select>
+
+    <select id="getAttrListByToCiEntityId" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.ci.AttrVo" useCache="false">
+        SELECT distinct a.label AS ciLabel,
+                        a.name  AS ciName,
+                        b.id    AS id,
+                        b.name  AS name,
+                        b.label AS label
+        FROM cmdb_ci a
+                 JOIN cmdb_attr b ON a.id = b.ci_id
+                 JOIN cmdb_attrentity c ON b.id = c.attr_id
+        WHERE c.to_cientity_id = #{value}
+    </select>
+
+    <select id="getAttrEntityByAttrIdAndFromCiEntityId" resultType="neatlogic.framework.cmdb.dto.cientity.AttrEntityVo"
+            useCache="false">
+        SELECT id,
+        from_cientity_id AS fromCiEntityId,
+        to_cientity_id AS toCiEntityId,
+        attr_id AS attrId,
+        from_ci_id AS fromCiId,
+        to_ci_id AS toCiId
+        FROM `cmdb_attrentity`
+        WHERE attr_id = #{attrId}
+        AND from_cientity_id = #{fromCiEntityId}
+        AND ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+        `cmdb_attrentity`.to_cientity_id) or exists
+        (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+        `cmdb_attrentity`.to_cientity_id
+        and xx.expired_time &gt;= NOW()))
+        ORDER BY from_index
+        <if test="limit != null">
+            LIMIT #{limit}
+        </if>
+    </select>
+
+    <select id="getCiEntityCountByAttrIdAndValue" resultType="int" useCache="false">
+        SELECT count(cientity_id)
+        FROM ${attrVo.ciTableName}
+        WHERE cientity_id != #{ciEntityId}
+          AND `${attrVo.id}_hash` = #{value,typeHandler=Md5Handler}
+    </select>
+
+    <select id="getAttrEntityCountByAttrIdAndValue" resultType="int" useCache="false">
+        SELECT count(id) FROM cmdb_attrentity WHERE attr_id = #{attrId} AND from_cientity_id != #{ciEntityId} AND
+        to_cientity_id IN
+        <foreach collection="toCiEntityIdList" item="value" open="(" close=")" separator=",">
+            #{value}
+        </foreach>
+    </select>
+
+    <select id="getVirtualCiEntityBaseInfoByIdList" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo"
+            resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo" useCache="false">
+        SELECT id, name, ci_id AS ciId
+        FROM ${ciTableName} WHERE id IN
+        <foreach collection="idList" item="value" open="(" close=")" separator=",">
+            #{value}
+        </foreach>
+    </select>
+
+    <select id="getCiEntityBaseInfoByIdList" resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo"
+            useCache="false">
+        SELECT
+        a.id,
+        a.uuid,
+        a.ci_id AS ciId,
+        a.`name`,
+        a.`status`,
+        b.type_id AS typeId,
+        b.icon AS ciIcon,
+        a.fcu,
+        a.fcd,
+        a.lcu,
+        a.lcd
+        FROM cmdb_cientity a JOIN cmdb_ci b ON a.ci_id = b.id
+        WHERE a.id IN
+        <foreach collection="ciEntityIdList" item="value" open="(" close=")" separator=",">
+            #{value}
+        </foreach>
+    </select>
+
+    <select id="getCiEntityBaseInfoById" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo" useCache="false">
+        SELECT id,
+               uuid,
+               ci_id AS ciId,
+               `name`,
+               `status`,
+               fcu,
+               fcd,
+               lcu,
+               lcd
+        FROM cmdb_cientity
+        WHERE id = #{value}
+    </select>
+
+    <select id="getCiEntityBaseInfoByUuid" parameterType="java.lang.String"
+            resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo" useCache="false">
+        SELECT id,
+        uuid,
+        ci_id AS ciId,
+        `name`,
+        `status`,
+        fcu,
+        fcd,
+        lcu,
+        lcd
+        FROM cmdb_cientity
+        WHERE uuid = #{value} limit 1
+        <!--数据库不做约束，但查询时只会返回一条数据，如果uuid的来源是外部，只能由外部保证数据唯一性-->
+    </select>
+
+    <sql id="ciEntityColumnSql">
+        <foreach collection="attrList" item="attr">
+            <if test="@neatlogic.framework.cmdb.dao.ognl.IsAttrInAttrIdList@isExists(attr, attrIdList)">
+                <choose>
+                    <when test="attr.needTargetCi == true ">
+                        `cmdb_attrentity_${attr.id}`.`to_cientity_id` AS `attr_${attr.id}`,
+                    </when>
+                    <otherwise>
+                        ${attr.ciTableName}.`${attr.id}` AS `attr_${attr.id}`,
+                    </otherwise>
+                </choose>
+            </if>
+        </foreach>
+        <foreach collection="relList" item="rel">
+            <if test="@neatlogic.framework.cmdb.dao.ognl.IsRelInRelIdList@isExists(rel, relIdList)">
+                <choose>
+                    <when test="rel.direction == 'from'">
+                        `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id AS `relfrom_${rel.id}`,
+                        `cmdb_relentity_${rel.id}_${rel.direction}`.id AS `relfrom_${rel.id}#id`,
+                        `cmdb_relentity_${rel.id}_${rel.direction}`.valid_day AS `relfrom_${rel.id}#validDay`,
+                        `cmdb_rel_cientity_${rel.id}_${rel.direction}`.name AS `relfrom_${rel.id}#name`,
+                        `cmdb_rel_cientity_${rel.id}_${rel.direction}`.ci_id AS `relfrom_${rel.id}#ciId`,
+                    </when>
+                    <otherwise>
+                        `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id AS `relto_${rel.id}`,
+                        `cmdb_relentity_${rel.id}_${rel.direction}`.id AS `relto_${rel.id}#id`,
+                        `cmdb_relentity_${rel.id}_${rel.direction}`.valid_day AS `relto_${rel.id}#validDay`,
+                        `cmdb_rel_cientity_${rel.id}_${rel.direction}`.name AS `relto_${rel.id}#name`,
+                        `cmdb_rel_cientity_${rel.id}_${rel.direction}`.ci_id AS `relto_${rel.id}#ciId`,
+                    </otherwise>
+                </choose>
+            </if>
+        </foreach>
+        `ci_base`.`id` AS `id`,
+        `ci_base`.`uuid` AS `uuid`,
+        `ci_base`.`name` AS `name`,
+        `ci_base`.`ci_id` AS ciId,
+        <choose>
+            <when test="ciList.size == 1 and ciList[0].isVirtual == 1">
+                null as inspectTime,
+                null as inspectStatus,
+                null as monitorTime,
+                null as monitorStatus,
+                null as renewTime,
+                null AS lcd,
+                null AS lcu,
+                null AS fcd,
+                null AS fcu,
+            </when>
+            <otherwise>
+                ROUND(UNIX_TIMESTAMP(`ci_base`.`inspect_time`) * 1000) AS inspectTime,
+                `ci_base`.`inspect_status` AS inspectStatus,
+                ROUND(UNIX_TIMESTAMP(`ci_base`.`monitor_time`) * 1000) AS monitorTime,
+                `ci_base`.`monitor_status` AS monitorStatus,
+                ROUND(UNIX_TIMESTAMP(`ci_base`.`renew_time`) * 1000) AS renewTime,
+                `ci_base`.`lcd` AS lcd,
+                `ci_base`.`lcu` AS lcu,
+                `ci_base`.`fcd` AS fcd,
+                `ci_base`.`fcu` AS fcu,
+            </otherwise>
+        </choose>
+        `ci`.`type_id` AS `typeId`,
+        (SELECT name FROM cmdb_citype WHERE id = `ci`.`type_id`) AS `typeName`,
+        `ci`.`name` AS `ciName`,
+        `ci`.`icon` AS `ciIcon`,
+        `ci`.`label` AS `ciLabel`
+    </sql>
+
+    <sql id="ciEntityJoinLiteSql">
+        <!--这个SQL给searchCiEntityId和searchCiEntityIdCount专用，因为这两个sql不需要关注返回什么属性-->
+        <foreach collection="ciList" item="ci">
+            <choose>
+                <when test="ci.isVirtual == 0">
+                    JOIN ${ci.ciTableName} ON `ci_base`.id = ${ci.ciTableName}.cientity_id
+                </when>
+                <otherwise>
+                    JOIN ${ci.ciTableName} ON `ci_base`.id = ${ci.ciTableName}.id
+                </otherwise>
+            </choose>
+        </foreach>
+        <foreach collection="attrList" item="attr">
+            <if test="attr.needTargetCi == true and @neatlogic.framework.cmdb.dao.ognl.IsAttrExistsInFilter@isExists(attr, attrFilterList)">
+                LEFT JOIN `cmdb_attrentity` `cmdb_attrentity_${attr.id}` ON `ci_base`.id =
+                `cmdb_attrentity_${attr.id}`.from_cientity_id AND `cmdb_attrentity_${attr.id}`.attr_id = #{attr.id}
+                <if test="limitAttrEntity == true">
+                    AND `cmdb_attrentity_${attr.id}`.`from_index` &lt;= (#{attr.maxAttrEntityCount} + 1)
+                </if>
+                <!--由于select部分语句并没有涉及以下表，而且是left join查询，去掉可以提升性能
+                <choose>
+                    <when test="attr.targetIsVirtual != 1">
+                        LEFT JOIN `cmdb_cientity` `cmdb_attr_cientity_${attr.id}` ON
+                        `cmdb_attrentity_${attr.id}`.to_cientity_id
+                        = `cmdb_attr_cientity_${attr.id}`.id
+                    </when>
+                    <otherwise>
+                        LEFT JOIN ${attr.targetCiTableName} `cmdb_attr_cientity_${attr.id}` ON
+                        `cmdb_attrentity_${attr.id}`.to_cientity_id
+                        = `cmdb_attr_cientity_${attr.id}`.id
+                    </otherwise>
+                </choose>-->
+            </if>
+        </foreach>
+        <if test="attrCiEntityFilter != null ">
+            JOIN `cmdb_attrentity` `cmdb_attrentity_${attrCiEntityFilter.attrId}` ON
+            `cmdb_attrentity_${attrCiEntityFilter.attrId}`.`attr_id` = #{attrCiEntityFilter.attrId} and
+            `cmdb_attrentity_${attrCiEntityFilter.attrId}`.`from_cientity_id` = #{attrCiEntityFilter.fromCiEntityId} and
+            `ci_base`.`id`=
+            `cmdb_attrentity_${attrCiEntityFilter.attrId}`.to_cientity_id
+        </if>
+        <foreach collection="relList" item="rel">
+            <choose>
+                <when test="rel.direction=='from' and ( @neatlogic.framework.cmdb.dao.ognl.IsRelExistsInFilter@isExists(rel, relFilterList) or @neatlogic.framework.cmdb.dao.ognl.IsRelExistsInCiEntityFilter@isExists(rel, relCiEntityFilterList))">
+                    LEFT JOIN `cmdb_relentity` `cmdb_relentity_${rel.id}_${rel.direction}` ON `ci_base`.id =
+                    `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
+                    AND `cmdb_relentity_${rel.id}_${rel.direction}`.rel_id = #{rel.id}
+                    <if test="limitRelEntity == true">
+                        AND `cmdb_relentity_${rel.id}_${rel.direction}`.`from_index` &lt;= (#{rel.maxRelEntityCount}
+                        +
+                        1)
+                    </if>
+                    <choose>
+                        <when test="rel.toIsVirtual == 0">
+                            LEFT JOIN `cmdb_cientity` `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
+                            `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
+                            `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
+                        </when>
+                        <otherwise>
+                            LEFT JOIN ${rel.toCiTableName} `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
+                            `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
+                            `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
+                        </otherwise>
+                    </choose>
+                </when>
+                <when test="rel.direction=='to' and ( @neatlogic.framework.cmdb.dao.ognl.IsRelExistsInFilter@isExists(rel, relFilterList) or @neatlogic.framework.cmdb.dao.ognl.IsRelExistsInCiEntityFilter@isExists(rel, relCiEntityFilterList))">
+                    LEFT JOIN `cmdb_relentity` `cmdb_relentity_${rel.id}_${rel.direction}` ON `ci_base`.id =
+                    `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
+                    AND `cmdb_relentity_${rel.id}_${rel.direction}`.rel_id = #{rel.id}
+                    <if test="limitRelEntity == true">
+                        AND `cmdb_relentity_${rel.id}_${rel.direction}`.`to_index` &lt;= (#{rel.maxRelEntityCount} +
+                        1)
+                    </if>
+                    <choose>
+                        <when test="rel.fromIsVirtual == 0">
+                            LEFT JOIN `cmdb_cientity` `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
+                            `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
+                            `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
+                        </when>
+                        <otherwise>
+                            LEFT JOIN ${rel.fromCiTableName} `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
+                            `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
+                            `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
+                        </otherwise>
+                    </choose>
+                </when>
+            </choose>
+        </foreach>
+        <if test="groupIdList != null and groupIdList.size() > 0">
+            JOIN `cmdb_cientity_group` `ccg` ON `ci_base`.id = `ccg`.cientity_id AND `ccg`.group_id IN
+            <foreach collection="groupIdList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <if test="keywordList != null and keywordList.size() > 0">
+            JOIN fulltextindex_field_cmdb ffc ON ffc.target_id = `ci_base`.id JOIN fulltextindex_word fw ON ffc.word_id
+            = fw.id AND (fw.word IN
+            <foreach collection="keywordList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+            OR `ci_base`.id = #{keyword} OR `ci_base`.`name` LIKE CONCAT('%',#{keyword},'%')
+            )
+        </if>
+    </sql>
+
+    <sql id="ciEntityJoinSql">
+        <foreach collection="ciList" item="ci">
+            <choose>
+                <when test="ci.isVirtual == 0">
+                    JOIN ${ci.ciTableName} ON `ci_base`.id = ${ci.ciTableName}.cientity_id
+                </when>
+                <otherwise>
+                    JOIN ${ci.ciTableName} ON `ci_base`.id = ${ci.ciTableName}.id
+                </otherwise>
+            </choose>
+        </foreach>
+        <foreach collection="attrList" item="attr">
+            <if test="attr.needTargetCi == true and ( @neatlogic.framework.cmdb.dao.ognl.IsAttrExistsInFilter@isExists(attr, attrFilterList) or @neatlogic.framework.cmdb.dao.ognl.IsAttrInAttrIdList@isExists(attr, attrIdList))">
+                LEFT JOIN `cmdb_attrentity` `cmdb_attrentity_${attr.id}` ON `ci_base`.id =
+                `cmdb_attrentity_${attr.id}`.from_cientity_id AND `cmdb_attrentity_${attr.id}`.attr_id = #{attr.id}
+                AND ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                `cmdb_attrentity_${attr.id}`.to_cientity_id) or exists
+                (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                `cmdb_attrentity_${attr.id}`.to_cientity_id
+                and xx.expired_time &gt;= NOW()))
+                <if test="limitAttrEntity == true">
+                    AND `cmdb_attrentity_${attr.id}`.`from_index` &lt;= (#{attr.maxAttrEntityCount} + 1)
+                </if>
+                <!--由于select部分语句并没有涉及以下表，而且是left join查询，去掉可以提升性能
+               <choose>
+                   <when test="attr.targetIsVirtual != 1">
+                       LEFT JOIN `cmdb_cientity` `cmdb_attr_cientity_${attr.id}` ON
+                       `cmdb_attrentity_${attr.id}`.to_cientity_id
+                       = `cmdb_attr_cientity_${attr.id}`.id
+                   </when>
+                   <otherwise>
+                       LEFT JOIN ${attr.targetCiTableName} `cmdb_attr_cientity_${attr.id}` ON
+                       `cmdb_attrentity_${attr.id}`.to_cientity_id
+                       = `cmdb_attr_cientity_${attr.id}`.id
+                   </otherwise>
+               </choose>
+               -->
+            </if>
+        </foreach>
+        <if test="attrCiEntityFilter != null ">
+            JOIN `cmdb_attrentity` `cmdb_attrentity_${attrCiEntityFilter.attrId}` ON
+            `cmdb_attrentity_${attrCiEntityFilter.attrId}`.`attr_id` = #{attrCiEntityFilter.attrId} and
+            `cmdb_attrentity_${attrCiEntityFilter.attrId}`.`from_cientity_id` = #{attrCiEntityFilter.fromCiEntityId} and
+            `ci_base`.`id`=
+            `cmdb_attrentity_${attrCiEntityFilter.attrId}`.to_cientity_id
+        </if>
+        <foreach collection="relList" item="rel">
+            <choose>
+                <when test="rel.direction=='from' and (@neatlogic.framework.cmdb.dao.ognl.IsRelInRelIdList@isExists(rel, relIdList) or @neatlogic.framework.cmdb.dao.ognl.IsRelExistsInFilter@isExists(rel, relFilterList) or @neatlogic.framework.cmdb.dao.ognl.IsRelExistsInCiEntityFilter@isExists(rel, relCiEntityFilterList))">
+                    LEFT JOIN `cmdb_relentity` `cmdb_relentity_${rel.id}_${rel.direction}` ON `ci_base`.id =
+                    `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
+                    AND `cmdb_relentity_${rel.id}_${rel.direction}`.rel_id = #{rel.id}
+                    AND ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                    `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id) or exists
+                    (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                    `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
+                    and xx.expired_time &gt;= NOW()))
+                    <if test="limitRelEntity == true">
+                        AND `cmdb_relentity_${rel.id}_${rel.direction}`.`from_index` &lt;= (#{rel.maxRelEntityCount}
+                        +
+                        1)
+                    </if>
+                    <choose>
+                        <when test="rel.toIsVirtual == 0">
+                            LEFT JOIN `cmdb_cientity` `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
+                            `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
+                            `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
+                        </when>
+                        <otherwise>
+                            LEFT JOIN ${rel.toCiTableName} `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
+                            `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
+                            `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
+                        </otherwise>
+                    </choose>
+                </when>
+                <when test="rel.direction=='to' and (@neatlogic.framework.cmdb.dao.ognl.IsRelInRelIdList@isExists(rel, relIdList) or @neatlogic.framework.cmdb.dao.ognl.IsRelExistsInFilter@isExists(rel, relFilterList) or @neatlogic.framework.cmdb.dao.ognl.IsRelExistsInCiEntityFilter@isExists(rel, relCiEntityFilterList))">
+                    LEFT JOIN `cmdb_relentity` `cmdb_relentity_${rel.id}_${rel.direction}` ON `ci_base`.id =
+                    `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
+                    AND `cmdb_relentity_${rel.id}_${rel.direction}`.rel_id = #{rel.id}
+                    AND ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                    `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id) or exists
+                    (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                    `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
+                    and xx.expired_time &gt;= NOW()))
+                    <if test="limitRelEntity == true">
+                        AND `cmdb_relentity_${rel.id}_${rel.direction}`.`to_index` &lt;= (#{rel.maxRelEntityCount} +
+                        1)
+                    </if>
+                    <choose>
+                        <when test="rel.fromIsVirtual == 0">
+                            LEFT JOIN `cmdb_cientity` `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
+                            `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
+                            `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
+                        </when>
+                        <otherwise>
+                            LEFT JOIN ${rel.fromCiTableName} `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
+                            `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
+                            `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
+                        </otherwise>
+                    </choose>
+                </when>
+            </choose>
+        </foreach>
+        <if test="groupIdList != null and groupIdList.size() > 0">
+            JOIN `cmdb_cientity_group` `ccg` ON `ci_base`.id = `ccg`.cientity_id AND `ccg`.group_id IN
+            <foreach collection="groupIdList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <if test="keywordList != null and keywordList.size() > 0">
+            JOIN fulltextindex_field_cmdb ffc ON ffc.target_id = `ci_base`.id JOIN fulltextindex_word fw ON ffc.word_id
+            = fw.id AND (fw.word IN
+            <foreach collection="keywordList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+            OR `ci_base`.id = #{keyword} OR `ci_base`.`name` LIKE CONCAT('%',#{keyword},'%')
+            )
+        </if>
+    </sql>
+
+    <sql id="ciEntityConditionSql">
+        <where>
+            <!-- (`ci_base`.expired_time is null or `ci_base`.expired_time &gt;= NOW())-->
+            (not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id = `ci_base`.id) or exists
+            (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id = `ci_base`.id
+            and xx.expired_time &gt;= NOW()))
+            <if test="name != null and name != ''">
+                AND `ci_base`.`name` LIKE CONCAT('%',#{name},'%')
+            </if>
+            <if test="filterCiId != null">
+                AND `ci_base`.ci_id = #{filterCiId}
+            </if>
+            <!--有全文检索就不需要
+            <if test="keyword != null and keyword != ''">
+                AND (`ci_base`.id = #{keyword} OR `ci_base`.`name` LIKE CONCAT('%',#{keyword},'%'))
+            </if>-->
+            <if test="attrFilterList != null and attrFilterList.size() > 0">
+                <foreach collection="attrFilterList" item="attrFilter">
+                    <if test="(attrFilter.valueList != null and attrFilter.valueList.size() > 0) or attrFilter.expression == 'is-null' or attrFilter.expression == 'is-not-null'">
+                        <choose>
+                            <when test="attrFilter.needTargetCi == true">
+                                AND
+                                <choose>
+                                    <when test="attrFilter.expression == 'like' or attrFilter.expression == 'equal'">
+                                        `cmdb_attrentity_${attrFilter.attrId}`.to_cientity_id IN
+                                        <foreach collection="attrFilter.valueList" item="value" separator="," open="("
+                                                 close=")">
+                                            #{value}
+                                        </foreach>
+                                    </when>
+                                    <when test="attrFilter.expression == 'notlike' or attrFilter.expression == 'notequal'">
+                                        `cmdb_attrentity_${attrFilter.attrId}`.to_cientity_id NOT IN
+                                        <foreach collection="attrFilter.valueList" item="value" separator="," open="("
+                                                 close=")">
+                                            #{value}
+                                        </foreach>
+                                    </when>
+                                    <when test="attrFilter.expression == 'is-null'">
+                                        `cmdb_attrentity_${attrFilter.attrId}`.to_cientity_id IS NULL
+                                    </when>
+                                    <when test="attrFilter.expression == 'is-not-null'">
+                                        `cmdb_attrentity_${attrFilter.attrId}`.to_cientity_id IS NOT NULL
+                                    </when>
+                                </choose>
+                            </when>
+                            <otherwise>
+                                <choose>
+                                    <when test="attrFilter.expression == 'equal'">
+                                        <choose>
+                                            <when test="attrFilter.valueList.size > 1">
+                                                AND ${attrFilter.ciTableName}.`${attrFilter.attrId}_hash` in
+                                                <foreach collection="attrFilter.valueList" item="item" open="("
+                                                         close=")" separator=",">
+                                                    #{item,typeHandler=Md5Handler}
+                                                </foreach>
+                                            </when>
+                                            <otherwise>
+                                                <choose>
+                                                    <!--如果是空值需要兼容两种情况-->
+                                                    <when test="attrFilter.value == ''">
+                                                        AND (${attrFilter.ciTableName}.`${attrFilter.attrId}` = '' OR
+                                                        ${attrFilter.ciTableName}.`${attrFilter.attrId}` is null)
+                                                    </when>
+                                                    <otherwise>
+                                                        AND ${attrFilter.ciTableName}.`${attrFilter.attrId}_hash` =
+                                                        #{attrFilter.value,typeHandler=Md5Handler}
+                                                    </otherwise>
+                                                </choose>
+                                            </otherwise>
+                                        </choose>
+                                    </when>
+                                    <when test="attrFilter.expression == 'notequal'">
+                                        <choose>
+                                            <when test="attrFilter.valueList.size > 1">
+                                                AND ${attrFilter.ciTableName}.`${attrFilter.attrId}_hash` not in
+                                                <foreach collection="attrFilter.valueList" item="item" open="("
+                                                         close=")" separator=",">
+                                                    #{item,typeHandler=Md5Handler}
+                                                </foreach>
+                                            </when>
+                                            <otherwise>
+                                                AND (${attrFilter.ciTableName}.`${attrFilter.attrId}_hash` !=
+                                                #{attrFilter.value,typeHandler=Md5Handler} or
+                                                ${attrFilter.ciTableName}.`${attrFilter.attrId}` is null
+                                                )
+                                            </otherwise>
+                                        </choose>
+                                    </when>
+                                    <when test="attrFilter.expression == 'like'">
+                                        AND ${attrFilter.ciTableName}.`${attrFilter.attrId}` LIKE
+                                        CONCAT('%',#{attrFilter.value},'%')
+                                    </when>
+                                    <when test="attrFilter.expression == 'notlike'">
+                                        AND ${attrFilter.ciTableName}.`${attrFilter.attrId}` NOT LIKE
+                                        CONCAT('%',#{attrFilter.value},'%')
+                                    </when>
+                                    <when test="attrFilter.expression == 'is-null'">
+                                        AND (${attrFilter.ciTableName}.`${attrFilter.attrId}` IS NULL)
+                                    </when>
+                                    <when test="attrFilter.expression == 'is-not-null'">
+                                        AND (${attrFilter.ciTableName}.`${attrFilter.attrId}` IS NOT NULL)
+                                    </when>
+                                    <when test="attrFilter.expression == 'between' and (@neatlogic.framework.cmdb.dao.ognl.Between@parse(attrFilter.type, attrFilter.value)[0] != null or @neatlogic.framework.cmdb.dao.ognl.Between@parse(attrFilter.type, attrFilter.value)[1] != null)">
+                                        AND
+                                        <if test="@neatlogic.framework.cmdb.dao.ognl.Between@parse(attrFilter.type, attrFilter.value)[0] != null">
+                                            ${attrFilter.ciTableName}.`${attrFilter.attrId}` &gt;=
+                                            ${@neatlogic.framework.cmdb.dao.ognl.Between@parse(attrFilter.type, attrFilter.value)[0]}
+                                        </if>
+                                        <if test="@neatlogic.framework.cmdb.dao.ognl.Between@parse(attrFilter.type, attrFilter.value)[0] != null and @neatlogic.framework.cmdb.dao.ognl.Between@parse(attrFilter.type, attrFilter.value)[1] != null">
+                                            and
+                                        </if>
+                                        <if test="@neatlogic.framework.cmdb.dao.ognl.Between@parse(attrFilter.type, attrFilter.value)[1] != null">
+                                            ${attrFilter.ciTableName}.`${attrFilter.attrId}` &lt;=
+                                            ${@neatlogic.framework.cmdb.dao.ognl.Between@parse(attrFilter.type, attrFilter.value)[1]}
+                                        </if>
+                                    </when>
+                                </choose>
+                            </otherwise>
+                        </choose>
+                    </if>
+                </foreach>
+            </if>
+            <if test="relFilterList != null and relFilterList.size() > 0">
+                <foreach collection="relFilterList" item="relFilter">
+                    <if test="(relFilter.valueList != null and relFilter.valueList.size() > 0) or relFilter.expression == 'is-null' or relFilter.expression == 'is-not-null'">
+                        AND
+                        <choose>
+                            <when test="relFilter.expression == 'like'">
+                                <choose>
+                                    <when test="relFilter.direction=='from'">
+                                        `cmdb_relentity_${relFilter.relId}_${relFilter.direction}`.to_cientity_id
+                                        IN
+                                        <foreach collection="relFilter.valueList" item="value" separator="," open="("
+                                                 close=")">
+                                            #{value}
+                                        </foreach>
+                                    </when>
+                                    <otherwise>
+                                        `cmdb_relentity_${relFilter.relId}_${relFilter.direction}`.from_cientity_id
+                                        IN
+                                        <foreach collection="relFilter.valueList" item="value" separator="," open="("
+                                                 close=")">
+                                            #{value}
+                                        </foreach>
+                                    </otherwise>
+                                </choose>
+                            </when>
+                            <when test="relFilter.expression == 'notlike'">
+                                <choose>
+                                    <when test="relFilter.direction=='from'">
+                                        `cmdb_relentity_${relFilter.relId}_${relFilter.direction}`.to_cientity_id
+                                        NOT IN
+                                        <foreach collection="relFilter.valueList" item="value" separator="," open="("
+                                                 close=")">
+                                            #{value}
+                                        </foreach>
+                                    </when>
+                                    <otherwise>
+                                        `cmdb_relentity_${relFilter.relId}_${relFilter.direction}`.from_cientity_id
+                                        NOT IN
+                                        <foreach collection="relFilter.valueList" item="value" separator="," open="("
+                                                 close=")">
+                                            #{value}
+                                        </foreach>
+                                    </otherwise>
+                                </choose>
+                            </when>
+                            <when test="relFilter.expression == 'is-null'">
+                                <choose>
+                                    <when test="relFilter.direction=='from'">
+                                        `cmdb_relentity_${relFilter.relId}_${relFilter.direction}`.to_cientity_id IS
+                                        NULL
+                                    </when>
+                                    <otherwise>
+                                        `cmdb_relentity_${relFilter.relId}_${relFilter.direction}`.from_cientity_id IS
+                                        NULL
+                                    </otherwise>
+                                </choose>
+                            </when>
+                            <when test="relFilter.expression == 'is-not-null'">
+                                <choose>
+                                    <when test="relFilter.direction=='from'">
+                                        `cmdb_relentity_${relFilter.relId}_${relFilter.direction}`.to_cientity_id IS
+                                        NOT
+                                        NULL
+                                    </when>
+                                    <otherwise>
+                                        `cmdb_relentity_${relFilter.relId}_${relFilter.direction}`.from_cientity_id IS
+                                        NOT
+                                        NULL
+                                    </otherwise>
+                                </choose>
+                            </when>
+                        </choose>
+                    </if>
+                </foreach>
+            </if>
+            <if test="relCiEntityFilterList != null and relCiEntityFilterList.size() > 0">
+                <foreach collection="relCiEntityFilterList" item="relCiEntity">
+                    <choose>
+                        <when test="relCiEntity.direction=='from'">
+                            AND `cmdb_relentity_${relCiEntity.relId}_${relCiEntity.direction}`.to_cientity_id =
+                            #{relCiEntity.ciEntityId}
+                        </when>
+                        <otherwise>
+                            AND `cmdb_relentity_${relCiEntity.relId}_${relCiEntity.direction}`.from_cientity_id =
+                            #{relCiEntity.ciEntityId}
+                        </otherwise>
+                    </choose>
+                </foreach>
+            </if>
+        </where>
+    </sql>
+
+    <sql id="ciEntityDriverSql">
+        <choose>
+            <when test="ciList.size > 1">
+                FROM cmdb_cientity `ci_base` JOIN cmdb_ci `ci` ON ci_base.ci_id = ci.id
+            </when>
+            <when test="ciList.size == 1">
+                <foreach collection="ciList" item="ci">
+                    <choose>
+                        <when test="ci.isVirtual == 1">
+                            <!--虚拟模型没有实体表，所以驱动表要换成对应的模型视图-->
+                            FROM ${ci.ciTableName} `ci_base` JOIN cmdb_ci `ci` ON ci_base.ci_id = ci.id
+                        </when>
+                        <otherwise>
+                            FROM cmdb_cientity `ci_base` JOIN cmdb_ci `ci` ON ci_base.ci_id = ci.id
+                        </otherwise>
+                    </choose>
+                </foreach>
+            </when>
+        </choose>
+    </sql>
+
+    <sql id="ciEntityColumnSqlLite">
+        <foreach collection="attrList" item="attr">
+            <if test="attr.needTargetCi == false ">
+                ${attr.ciTableName}.`${attr.id}` AS `attr_${attr.id}`,
+            </if>
+        </foreach>
+        `ci_base`.`id` AS `id`,
+        `ci_base`.`uuid` AS `uuid`,
+        `ci_base`.`name` AS `name`,
+        `ci_base`.`ci_id` AS ciId,
+        <choose>
+            <when test="ciList.size == 1 and ciList[0].isVirtual == 1">
+                null as inspectTime,
+                null as inspectStatus,
+                null as monitorTime,
+                null as monitorStatus,
+                null as renewTime,
+                null AS lcd,
+                null AS lcu,
+                null AS fcd,
+                null AS fcu,
+            </when>
+            <otherwise>
+                ROUND(UNIX_TIMESTAMP(`ci_base`.`inspect_time`) * 1000) AS inspectTime,
+                `ci_base`.`inspect_status` AS inspectStatus,
+                ROUND(UNIX_TIMESTAMP(`ci_base`.`monitor_time`) * 1000) AS monitorTime,
+                `ci_base`.`monitor_status` AS monitorStatus,
+                ROUND(UNIX_TIMESTAMP(`ci_base`.`renew_time`) * 1000) AS renewTime,
+                `ci_base`.`lcd` AS lcd,
+                `ci_base`.`lcu` AS lcu,
+                `ci_base`.`fcd` AS fcd,
+                `ci_base`.`fcu` AS fcu,
+            </otherwise>
+        </choose>
+        `ci`.`type_id` AS `typeId`,
+        (SELECT name FROM cmdb_citype WHERE id = `ci`.`type_id`) AS `typeName`,
+        `ci`.`name` AS `ciName`,
+        `ci`.`icon` AS `ciIcon`,
+        `ci`.`label` AS `ciLabel`
+    </sql>
+
+    <sql id="ciEntityDriverSqlLite">
+        <choose>
+            <when test="ciList.size > 1">
+                FROM cmdb_cientity `ci_base` JOIN cmdb_ci `ci` ON ci_base.ci_id = ci.id
+            </when>
+            <when test="ciList.size == 1">
+                <foreach collection="ciList" item="ci">
+                    <choose>
+                        <when test="ci.isVirtual == 1">
+                            <!--虚拟模型没有实体表，所以驱动表要换成对应的模型视图-->
+                            FROM ${ci.ciTableName} `ci_base` JOIN cmdb_ci `ci` ON ci_base.ci_id = ci.id
+                        </when>
+                        <otherwise>
+                            FROM cmdb_cientity `ci_base` JOIN cmdb_ci `ci` ON ci_base.ci_id = ci.id
+                        </otherwise>
+                    </choose>
+                </foreach>
+            </when>
+        </choose>
+    </sql>
+
+    <sql id="ciEntityJoinSqlLite">
+        <foreach collection="ciList" item="ci">
+            <choose>
+                <when test="ci.isVirtual == 0">
+                    JOIN ${ci.ciTableName} ON `ci_base`.id = ${ci.ciTableName}.cientity_id
+                </when>
+                <otherwise>
+                    JOIN ${ci.ciTableName} ON `ci_base`.id = ${ci.ciTableName}.id
+                </otherwise>
+            </choose>
+        </foreach>
+    </sql>
+
+    <!--精简版，不会查询关系和引用型属性 -->
+    <select id="getCiEntityByIdLite" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo"
+            resultType="java.util.HashMap" useCache="false">
+        SELECT
+        <include refid="ciEntityColumnSqlLite">
+        </include>
+        <include refid="ciEntityDriverSqlLite">
+        </include>
+        <include refid="ciEntityJoinSqlLite">
+        </include>
+        WHERE ci_base.id = #{id}
+    </select>
+
+    <select id="getCiEntityById" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo"
+            resultType="java.util.HashMap" useCache="false">
+        SELECT
+        <include refid="ciEntityColumnSql">
+        </include>
+        <include refid="ciEntityDriverSql">
+        </include>
+        <include refid="ciEntityJoinSql">
+        </include>
+        WHERE ci_base.id = #{id}
+    </select>
+
+
+    <select id="searchCiEntityId" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo"
+            resultType="java.lang.Long" useCache="true">
+        SELECT id from (
+        SELECT
+        DISTINCT ci_base.id AS id
+        <if test="sortList != null and sortList.size() > 0">
+            <foreach collection="sortList" item="sort">
+                ,${sort.ciTableName}.`${sort.attrId}`
+            </foreach>
+        </if>
+        <include refid="ciEntityDriverSql">
+        </include>
+        <include refid="ciEntityJoinLiteSql">
+        </include>
+        <include refid="ciEntityConditionSql">
+        </include>
+        <choose>
+            <when test="sortList != null and sortList.size() > 0">
+                ORDER BY
+                <foreach collection="sortList" item="sort" separator=",">
+                    ${sort.ciTableName}.`${sort.attrId}` ${sort.type}
+                </foreach>
+            </when>
+            <otherwise>
+                ORDER BY ci_base.id DESC
+            </otherwise>
+        </choose>
+        LIMIT #{startNum}, #{pageSize}
+        ) t
+    </select>
+
+    <select id="searchCiEntityIdCount" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo"
+            resultType="int" useCache="true">
+        SELECT
+        COUNT(DISTINCT ci_base.id)
+        <include refid="ciEntityDriverSql">
+        </include>
+        <include refid="ciEntityJoinLiteSql">
+        </include>
+        <include refid="ciEntityConditionSql">
+        </include>
+    </select>
+
+
+    <select id="searchCiEntity" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo"
+            resultType="java.util.HashMap" useCache="true">
+        SELECT
+        <include refid="ciEntityColumnSql">
+        </include>
+        <include refid="ciEntityDriverSql">
+        </include>
+        <include refid="ciEntityJoinSql">
+        </include>
+        WHERE ci_base.id IN
+        <foreach collection="idList" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        <choose>
+            <when test="sortList != null and sortList.size() > 0">
+                ORDER BY
+                <foreach collection="sortList" item="sort" separator=",">
+                    ${sort.ciTableName}.`${sort.attrId}` ${sort.type}
+                </foreach>
+            </when>
+            <otherwise>
+                ORDER BY ci_base.id DESC
+            </otherwise>
+        </choose>
+    </select>
+
+
+    <select id="getCiEntityIdCountByCiId" parameterType="java.lang.Long" resultType="int" useCache="false">
+        SELECT COUNT(1)
+        FROM `cmdb_cientity`
+        WHERE `ci_id` = #{value}
+    </select>
+
+    <select id="getCiEntityIdCountByCiIdAndKeyword" resultType="int">
+        SELECT COUNT(1)
+        FROM `cmdb_cientity`
+        WHERE `ci_id` = #{id}
+        <if test="keyword != null and keyword != ''">
+            AND name LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+    </select>
+
+    <select id="getCiEntityIdListCountByCiName" resultType="int">
+        SELECT COUNT(a.id)
+        FROM `cmdb_cientity` a
+                 JOIN `cmdb_ci` b ON a.ci_id = b.id
+        where b.name = #{ciName}
+    </select>
+
+    <select id="getCiEntityIdByCiId" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo"
+            resultType="java.lang.Long" useCache="false">
+        SELECT id
+        FROM cmdb_cientity
+        WHERE ci_id = #{ciId}
+        <if test="keyword != null and keyword != ''">
+            AND name LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        LIMIT #{startNum} , #{pageSize}
+    </select>
+
+    <select id="getIdByCiIdAndName" resultType="java.lang.Long" useCache="false">
+        SELECT `id`
+        from `cmdb_cientity`
+        where `ci_id` = #{ciId}
+          and `name` = #{name}
+        limit 1
+    </select>
+
+    <select id="getCiEntityListByCiIdListAndName" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo"
+            resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo" useCache="false">
+        SELECT `id`,
+        `uuid`,
+        `ci_id` AS ciId,
+        `name`,
+        `status`,
+        `fcu`,
+        `fcd`,
+        `lcu`,
+        `lcd`
+        FROM `cmdb_cientity`
+        WHERE `ci_id` in
+        <foreach collection="idList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        AND `name` = #{name}
+    </select>
+
+    <select id="getDownwardCiEntityByLRLimitSize" resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo"
+            useCache="false">
+        SELECT a.`id`,
+               a.`uuid`,
+               a.`ci_id` AS ciId,
+               a.`name`,
+               a.`status`,
+               a.`fcu`,
+               a.`fcd`,
+               a.`lcu`,
+               a.`lcd`
+        FROM `cmdb_cientity` a
+                 JOIN `cmdb_ci` b ON a.ci_id = b.id
+        WHERE b.lft &gt;= #{lft}
+          AND b.rht &lt;= #{rht}
+        limit #{size}
+    </select>
+
+    <select id="getCiEntityIdByCiNameAndCiEntityName" resultType="java.lang.Long">
+        select a.`id`
+        from `cmdb_cientity` a
+        where a.`name` = #{ciEntityName}
+          and a.`ci_id` = (select `id` from `cmdb_ci` where `name` = #{ciName} limit 1)
+        limit 1
+    </select>
+
+    <select id="searchExpiredCiEntityId" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo"
+            resultType="java.lang.Long">
+        select cientity_id
+        from cmdb_cientity_expiredtime
+        where expired_time &lt; now(3)
+        LIMIT #{startNum} , #{pageSize}
+    </select>
+
+    <update id="updateCiEntityBaseInfo" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo">
+        UPDATE `cmdb_cientity`
+        SET lcu        = #{lcu},
+            lcd        = now(3),
+            renew_time = now(3)
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateCiEntityName" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo">
+        UPDATE `cmdb_cientity`
+        SET name = #{name}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateCiEntity" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo">
+        UPDATE ${ciTableName}
+        SET
+        <foreach collection="attrEntityList" item="attr">
+            <if test="attr.isNeedTargetCi == false and attr.fromCiId == ciId">
+                `${attr.attrId}` = #{attr.value},
+                `${attr.attrId}_hash` = #{attr.value,typeHandler=Md5Handler},
+            </if>
+        </foreach>
+        cientity_id = #{id}
+        WHERE
+        cientity_id = #{id}
+    </update>
+
+    <insert id="insertCiEntity" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo">
+        INSERT INTO ${ciTableName} (
+        <foreach collection="attrEntityList" item="attr">
+            <if test="attr.isNeedTargetCi == false and attr.fromCiId == ciId">
+                `${attr.attrId}`,
+                `${attr.attrId}_hash`,
+            </if>
+        </foreach>
+        cientity_id)
+        VALUES (
+        <foreach collection="attrEntityList" item="attr">
+            <if test="attr.isNeedTargetCi == false and attr.fromCiId == ciId">
+                #{attr.value},
+                #{attr.value,typeHandler=Md5Handler},
+            </if>
+        </foreach>
+        #{id})
+    </insert>
+
+    <insert id="insertAttrEntity" parameterType="neatlogic.framework.cmdb.dto.cientity.AttrEntityVo">
+        INSERT IGNORE INTO `cmdb_attrentity` (
+        `from_cientity_id`,
+        `from_ci_id`,
+        `attr_id`,
+        `to_cientity_id`,
+        `to_ci_id`,
+        `transaction_id`
+        )
+        VALUES
+        <foreach collection="valueList" item="item" separator=",">
+            (
+            #{fromCiEntityId},
+            #{fromCiId},
+            #{attrId},
+            #{item},
+            #{toCiId},
+            #{transactionId}
+            )
+        </foreach>
+    </insert>
+
+    <insert id="insertCiEntityBaseInfo" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo">
+        INSERT INTO `cmdb_cientity` (`id`,
+                                     `uuid`,
+                                     `ci_id`,
+                                     `name`,
+                                     `fcu`,
+                                     `fcd`,
+                                     `lcu`,
+                                     `lcd`,
+                                     `renew_time`,
+                                     `status`,
+                                     `is_locked`)
+        VALUES (#{id},
+                #{uuid},
+                #{ciId},
+                #{name},
+                #{fcu},
+                now(3),
+                #{fcu},
+                now(3),
+                now(3),
+                #{status},
+                #{isLocked})
+    </insert>
+
+    <insert id="insertCiEntityInspect" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityInspectVo">
+        INSERT INTO `cmdb_cientity_inspect` (`id`,
+                                             `job_id`,
+                                             `ci_entity_id`,
+                                             `inspect_status`,
+                                             `inspect_time`)
+        VALUES (#{id},
+                #{jobId},
+                #{ciEntityId},
+                #{inspectStatus},
+                #{inspectTime})
+        ON DUPLICATE KEY
+            UPDATE `inspect_status` = #{inspectStatus},
+                   `inspect_time`   = #{inspectTime}
+    </insert>
+
+    <insert id="insertCiEntityExpiredTime" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo">
+        INSERT INTO cmdb_cientity_expiredtime (cientity_id, ci_id, expired_day, expired_time)
+        VALUES (#{id}, #{ciId}, #{expiredDay},
+        <choose>
+            <when test="expiredTime == null">DATE_ADD(NOW(3), INTERVAL #{expiredDay} DAY)</when>
+            <otherwise>
+                #{expiredTime}
+            </otherwise>
+        </choose>
+        )
+        ON DUPLICATE KEY
+        UPDATE `ci_id` = #{ciId},
+        `expired_day` = #{expiredDay},
+        `expired_time` =
+        <choose>
+            <when test="expiredTime == null">DATE_ADD(NOW(3), INTERVAL #{expiredDay} DAY)</when>
+            <otherwise>
+                #{expiredTime}
+            </otherwise>
+        </choose>
+    </insert>
+
+    <delete id="deleteCiEntityExpiredTimeByCiId" parameterType="java.lang.Long">
+        DELETE
+        FROM cmdb_cientity_expiredtime
+        WHERE ci_id = #{value}
+    </delete>
+
+    <delete id="deleteCiEntityExpiredTimeByCiEntityId" parameterType="java.lang.Long">
+        DELETE
+        FROM cmdb_cientity_expiredtime
+        WHERE cientity_id = #{value}
+    </delete>
+
+    <delete id="deleteAttrEntityByFromCiEntityIdAndAttrId">
+        DELETE
+        FROM cmdb_attrentity
+        WHERE from_cientity_id = #{fromCiEntityId}
+          AND attr_id = #{attrId}
+    </delete>
+
+    <delete id="deleteCiEntity" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo">
+        DELETE
+        FROM ${ciTableName}
+        WHERE cientity_id = #{id}
+    </delete>
+
+    <delete id="deleteAttrEntityByAttrId" parameterType="java.lang.Long">
+        DELETE
+        FROM cmdb_attrentity
+        WHERE attr_id = #{value}
+    </delete>
+
+    <delete id="deleteCiEntityBaseInfo" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo">
+        DELETE
+            a,b,c,d,e,f
+        FROM cmdb_cientity a
+                 LEFT JOIN cmdb_attrentity b
+                           ON a.id =
+                              b.`from_cientity_id`
+                 LEFT JOIN cmdb_relentity c
+                           ON a.id =
+                              c.`from_cientity_id`
+                 LEFT JOIN cmdb_relentity d
+                           ON a.id =
+                              c.`to_cientity_id`
+                 LEFT JOIN cmdb_cientity_group e
+                           ON a.id =
+                              e.cientity_id
+                 LEFT JOIN cmdb_cientity_expiredtime f ON a.id = f.cientity_id
+        WHERE a.id =
+              #{id}
+    </delete>
+
+    <update id="updateCiEntityInspectStatus" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo">
+        update cmdb_cientity
+        set inspect_status = #{inspectStatus},
+            inspect_time   = #{inspectTime}
+        where id = #{id}
+    </update>
+
+    <update id="updateCiEntityMonitorStatus" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo">
+        update cmdb_cientity
+        set monitor_status = #{monitorStatus},
+            monitor_time   = #{monitorTime}
+        where id = #{id}
+    </update>
+
+    <update id="updateCiEntityLockById"
+            parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo">
+        UPDATE
+            `cmdb_cientity`
+        SET `is_locked` = #{isLocked}
+        WHERE `id` = #{id}
+    </update>
+
+
+    <delete id="deleteParentCiEntity">
+        DELETE
+        <foreach collection="parentCiList" item="parentCi" separator=",">
+            `ci_${parentCi.id}`,`ci_${parentCi.id}_attrentity`
+        </foreach>
+        FROM
+        ${currentCi.ciTableName} `ci`
+        <foreach collection="parentCiList" item="parentCi">
+            LEFT JOIN ${parentCi.ciTableName} `ci_${parentCi.id}` ON `ci`.`cientity_id` =
+            `ci_${parentCi.id}`.`cientity_id`
+            LEFT JOIN `cmdb_attrentity` `ci_${parentCi.id}_attrentity` ON `ci_${parentCi.id}_attrentity`.`from_ci_id` =
+            #{parentCi.id} AND `ci_${parentCi.id}_attrentity`.`from_cientity_id` = `ci`.`cientity_id`
+        </foreach>
+    </delete>
+</mapper>

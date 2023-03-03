@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright(c) 2023 NeatLogic Co., Ltd. All Rights Reserved.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="neatlogic.module.cmdb.dao.mapper.graph.GraphMapper">
+    <resultMap id="graphResultMap" type="neatlogic.framework.cmdb.dto.graph.GraphVo">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="icon" column="icon"/>
+        <result property="description" column="description"/>
+        <result property="type" column="type"/>
+        <result property="isActive" column="isActive"/>
+        <result property="configStr" column="configStr"/>
+        <result property="fcu" column="fcu"/>
+        <result property="fcd" column="fcd"/>
+        <result property="lcu" column="lcu"/>
+        <result property="lcd" column="lcd"/>
+        <collection property="graphAuthList" ofType="neatlogic.framework.cmdb.dto.graph.GraphAuthVo">
+            <id property="graphId" column="authGraphId"/>
+            <result property="type" column="authType"/>
+            <result property="uuid" column="authUuid"/>
+        </collection>
+    </resultMap>
+
+    <select id="getGraphById" parameterType="java.lang.Long" resultMap="graphResultMap">
+        select a.id,
+               a.name,
+               a.icon,
+               a.description,
+               a.type,
+               a.is_active as isActive,
+               a.config    as configStr,
+               a.fcu,
+               a.fcd,
+               a.lcu,
+               a.lcd,
+               b.graph_id  as authGraphId,
+               b.auth_type as authType,
+               b.auth_uuid as authUuid
+        from cmdb_graph a
+                 left join cmdb_graph_auth b on a.id = b.graph_id
+        where a.id = #{value}
+    </select>
+
+    <select id="getGraphByIdList" resultMap="graphResultMap">
+        select a.id,
+        a.name,
+        a.icon,
+        a.description,
+        a.type,
+        a.is_active as isActive,
+        a.config as configStr,
+        a.fcu,
+        a.fcd,
+        a.lcu,
+        a.lcd,
+        b.graph_id as authGraphId,
+        b.auth_type as authType,
+        b.auth_uuid as authUuid
+        from cmdb_graph a
+        left join cmdb_graph_auth b on a.id = b.graph_id
+        where a.id in
+        <foreach collection="graphIdList" item="item" open="(" close=")" separator=",">#{item}</foreach>
+    </select>
+
+    <select id="getGraphRelByIdList" resultType="neatlogic.framework.cmdb.dto.graph.GraphRelVo">
+        select from_graph_id as fromGraphId, to_graph_id as toGraphId
+        from cmdb_graph_rel where
+        from_graph_id in
+        <foreach collection="graphIdList" item="item" open="(" close=")" separator=",">#{item}</foreach>
+        or to_graph_id in
+        <foreach collection="graphIdList" item="item" open="(" close=")" separator=",">#{item}</foreach>
+    </select>
+
+    <sql id="searchGraphCondition">
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and cg.name like concat('%',#{keyword},'%')
+            </if>
+            <if test="isActive !=null">
+                and cg.is_active = #{isActive}
+            </if>
+            <if test="excludeId != null">
+                and cg.id != #{excludeId}
+            </if>
+            <if test="hasParent != null">
+                <choose>
+                    <when test="hasParent == true">
+                        and exists (select 1 from cmdb_graph_rel cgr where cgr.to_graph_id = cg.id)
+                    </when>
+                    <otherwise>
+                        and not exists (select 1 from cmdb_graph_rel cgr where cgr.to_graph_id = cg.id)
+                    </otherwise>
+                </choose>
+            </if>
+            <choose>
+                <!--不提供type代表是最低权限的搜索，需要返回私有视图和有权限查看的公共视图-->
+                <when test="type == null or type == ''">
+                    <choose>
+                        <when test="isAdmin == true">
+                            AND (cg.type = 'public' OR (cg.type = 'private' AND cg.fcu = #{fcu}))
+                        </when>
+                        <otherwise>
+                            AND (
+                            (cg.type = 'private' AND cg.fcu = #{fcu})
+                            OR
+                            (cga.`auth_type` = 'common' AND cga.`auth_uuid` = 'alluser')
+                            <if test="userUuid != null and userUuid != ''">
+                                OR (cga.`auth_type` = 'user' AND cga.`auth_uuid` = #{userUuid})
+                            </if>
+                            <if test="teamUuidList != null and teamUuidList.size() > 0">
+                                OR (cga.`auth_type` = 'team' AND cga.`auth_uuid` IN
+                                <foreach collection="teamUuidList" item="teamUuid" open="(" separator="," close=")">
+                                    #{teamUuid}
+                                </foreach>
+                                )
+                            </if>
+                            <if test="roleUuidList != null and roleUuidList.size() > 0">
+                                OR (cga.`auth_type` = 'role' AND cga.`auth_uuid` IN
+                                <foreach collection="roleUuidList" item="roleUuid" open="(" separator="," close=")">
+                                    #{roleUuid}
+                                </foreach>
+                                )
+                            </if>
+                            )
+                        </otherwise>
+                    </choose>
+                </when>
+                <otherwise>
+                    AND cg.type = #{type}
+                </otherwise>
+            </choose>
+        </where>
+    </sql>
+
+    <select id="searchGraph" parameterType="neatlogic.framework.cmdb.dto.graph.GraphVo"
+            resultMap="graphResultMap">
+        select
+        a.id,
+        a.name,
+        a.icon,
+        a.type,
+        a.description,
+        a.is_active as isActive,
+        a.fcd,
+        a.fcu,
+        a.lcd,
+        a.lcu,
+        b.graph_id as authGraphId,
+        b.auth_type as authType,
+        b.auth_uuid as authUuid
+        from (select distinct cg.* from cmdb_graph cg left join cmdb_graph_auth cga on cg.id = cga.graph_id
+        <include refid="searchGraphCondition"></include>
+        order by cg.id desc
+        limit #{startNum},#{pageSize}) a
+        left join cmdb_graph_auth b on a.id = b.graph_id
+        order by a.id desc
+    </select>
+
+    <select id="searchGraphCount" parameterType="neatlogic.framework.cmdb.dto.graph.GraphVo" resultType="int">
+        select count(distinct cg.id) from cmdb_graph cg left join cmdb_graph_auth cga on cg.id = cga.graph_id
+        <include refid="searchGraphCondition"></include>
+    </select>
+
+    <select id="getGraphListByToGraphId" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.graph.GraphVo">
+        select a.id,
+               a.name,
+               a.icon,
+               a.type,
+               a.description,
+               a.is_active as isActive,
+               a.fcd,
+               a.fcu,
+               a.lcd,
+               a.lcu
+        from cmdb_graph a
+                 join cmdb_graph_rel b on a.id = b.from_graph_id
+        where b.to_graph_id = #{value}
+    </select>
+
+    <select id="checkGraphIsInvoked" parameterType="java.lang.Long" resultType="int">
+        select count(1)
+        from cmdb_graph_rel
+        where to_graph_id = #{value}
+    </select>
+
+    <select id="getCiEntityIdByGraphId" parameterType="java.lang.Long" resultType="java.lang.Long">
+        select cientity_id
+        from cmdb_graph_cientity
+        where graph_id = #{value}
+    </select>
+
+    <select id="getCiEntityIdByGraphIdList" resultType="java.lang.Long">
+        select cientity_id from cmdb_graph_cientity
+        where graph_id in
+        <foreach collection="graphIdList" open="(" close=")" separator="," item="item">#{item}</foreach>
+    </select>
+
+    <select id="getToGraphIdByFromGraphId" parameterType="java.lang.Long" resultType="java.lang.Long">
+        select to_graph_id
+        from cmdb_graph_rel
+        where from_graph_id = #{value}
+    </select>
+
+    <select id="getFromGraphIdByToGraphId" parameterType="java.lang.Long" resultType="java.lang.Long">
+        select from_graph_id
+        from cmdb_graph_rel
+        where to_graph_id = #{value}
+    </select>
+
+
+    <select id="getToGraphIdByFromGraphIdList" resultType="java.lang.Long">
+        select to_graph_id
+        from cmdb_graph_rel
+        where from_graph_id in
+        <foreach collection="graphIdList" item="item" open="(" close=")" separator=",">#{item}</foreach>
+    </select>
+
+    <select id="getFromGraphIdByToGraphIdList" resultType="java.lang.Long">
+        select from_graph_id
+        from cmdb_graph_rel
+        where to_graph_id in
+        <foreach collection="graphIdList" item="item" open="(" close=")" separator=",">#{item}</foreach>
+    </select>
+
+    <update id="updateGraph" parameterType="neatlogic.framework.cmdb.dto.graph.GraphVo">
+        update cmdb_graph
+        set name        = #{name},
+            description = #{description},
+            is_active   = #{isActive},
+            icon        = #{icon},
+            config      = #{configStr,typeHandler=CompressHandler},
+            lcd         = now(3),
+            lcu         = #{lcu}
+        where id = #{id}
+    </update>
+
+    <insert id="insertGraph" parameterType="neatlogic.framework.cmdb.dto.graph.GraphVo">
+        insert into cmdb_graph (id,
+                                name,
+                                description,
+                                is_active,
+                                icon,
+                                type,
+                                config,
+                                fcd,
+                                fcu)
+        values (#{id},
+                #{name},
+                #{description},
+                #{isActive},
+                #{icon},
+                #{type},
+                #{configStr,typeHandler=CompressHandler},
+                now(3),
+                #{fcu})
+    </insert>
+
+    <insert id="insertGraphAuth" parameterType="neatlogic.framework.cmdb.dto.graph.GraphAuthVo">
+        insert ignore into cmdb_graph_auth (graph_id, auth_type, auth_uuid)
+        values (#{graphId}, #{type}, #{uuid})
+    </insert>
+
+    <insert id="insertGraphRel">
+        insert ignore into cmdb_graph_rel (from_graph_id, to_graph_id)
+        values (#{fromGraphId}, #{toGraphId})
+    </insert>
+
+    <insert id="insertGraphCiEntity">
+        insert ignore into cmdb_graph_cientity(graph_id, cientity_id)
+        values (#{graphId}, #{ciEntityId})
+    </insert>
+
+    <delete id="deleteGraphCiEntityByGraphId" parameterType="java.lang.Long">
+        delete
+        from cmdb_graph_cientity
+        where graph_id = #{value}
+    </delete>
+
+    <delete id="deleteGraphAuthByGraphId" parameterType="java.lang.Long">
+        delete
+        from cmdb_graph_auth
+        where graph_id = #{value}
+    </delete>
+
+    <delete id="deleteGraphRelByFromGraphId" parameterType="java.lang.Long">
+        delete
+        from cmdb_graph_rel
+        where from_graph_id = #{value}
+    </delete>
+
+    <delete id="deleteGraphById" parameterType="java.lang.Long">
+        delete
+        from cmdb_graph
+        where id = #{value}
+    </delete>
+
+</mapper>

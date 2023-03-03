@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  Copyright(c) $today.year NeatLogic Co., Ltd. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="neatlogic.module.cmdb.dao.mapper.globalsearch.GlobalSearchMapper">
+    <select id="searchCiEntityCountByWord" resultType="neatlogic.framework.cmdb.dto.ci.CiVo">
+        select count(distinct cientity.id) as ciEntityCount,
+        ci.id as id,
+        ci.name as name,
+        ci.label as label,
+        ci.icon as icon
+        from cmdb_ci ci
+        join cmdb_cientity cientity on ci.id = cientity.ci_id
+        join fulltextindex_target_cmdb b on cientity.id = b.target_id and b.target_type = 'cientity'
+        join fulltextindex_field_cmdb c on b.target_id = c.target_id
+        join fulltextindex_word d on c.word_id = d.id
+        where d.word in
+        <foreach collection="wordList" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+        group by ci.id
+    </select>
+</mapper>

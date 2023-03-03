@@ -1,0 +1,741 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+Copyright(c) $today.year NeatLogic Co., Ltd. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper">
+
+    <select id="getAccountCount" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.AccountVo"
+            resultType="int">
+        SELECT COUNT(1) FROM `cmdb_resourcecenter_account`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` like concat('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="getAccountById" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.AccountVo">
+        select a.`id`,
+               a.`name`,
+               a.`account`,
+               a.`password`   as passwordCipher,
+               b.name         as protocol,
+               b.id           as protocolId,
+               b.`port`       as protocolPort,
+               a.`is_default` as isDefault,
+               a.`type`,
+               a.`fcu`,
+               a.`fcd`,
+               a.`lcu`,
+               a.`lcd`
+        from `cmdb_resourcecenter_account` a
+                 JOIN `cmdb_resourcecenter_account_protocol` b ON a.`protocol_id` = b.`id`
+        where a.`id` = #{value}
+    </select>
+
+    <select id="getAccountListByIdList" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.AccountVo">
+        SELECT
+        a.`id`,
+        a.`name`,
+        a.`account`,
+        a.`password` as passwordCipher,
+        b.name as protocol,
+        b.`port` as protocolPort,
+        a.`fcu`,
+        a.`fcd`,
+        a. `lcu`,
+        a.`lcd`
+        FROM `cmdb_resourcecenter_account` a
+        JOIN `cmdb_resourcecenter_account_protocol` b ON a.`protocol_id`=b.`id`
+        WHERE a.`id` IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="checkAccountNameIsRepeats" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.AccountVo"
+            resultType="int">
+        SELECT COUNT(1)
+        FROM `cmdb_resourcecenter_account`
+        WHERE `name` = #{name}
+          and `type` = #{type}
+          and `id` != #{id}
+    </select>
+
+    <select id="searchAccountCount" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.AccountVo"
+            resultType="int">
+        SELECT COUNT(1)
+        <include refid="searchAccount"></include>
+    </select>
+
+    <sql id="searchAccount">
+        FROM `cmdb_resourcecenter_account` a
+        JOIN `cmdb_resourcecenter_account_protocol` b ON b.`id`=a.`protocol_id`
+        WHERE b.`name` != 'tagent'
+        <if test="keyword != null and keyword != ''">
+            and (a.`name` like concat('%', #{keyword}, '%')
+            or b.`name` like concat('%', #{keyword}, '%')
+            or a.`account` like concat('%', #{keyword}, '%'))
+        </if>
+        <if test="type != null and type != ''">
+            AND a.`type` = #{type}
+        </if>
+        <if test="protocolIdList != null and protocolIdList.size() > 0">
+            and b.id in
+            <foreach collection="protocolIdList" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="protocolList != null and protocolList.size() > 0">
+            and b.name in
+            <foreach collection="protocolList" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </sql>
+
+    <resultMap id="accountMap" type="neatlogic.framework.cmdb.dto.resourcecenter.AccountVo">
+        <result column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="account" property="account"/>
+        <result column="password" property="passwordCipher"/>
+        <result column="protocolId" property="protocolId"/>
+        <result column="protocol" property="protocol"/>
+        <result column="protocolPort" property="protocolPort"/>
+        <result column="fcu" property="fcu"/>
+        <result column="fcd" property="fcd"/>
+        <result column="lcu" property="lcu"/>
+        <result column="lcd" property="lcd"/>
+    </resultMap>
+
+    <select id="searchAccount" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.AccountVo"
+            resultMap="accountMap">
+        SELECT
+        a.`id`,
+        a.`name`,
+        a.`account`,
+        b.name as protocol,
+        b.`port` as protocolPort,
+        a.`fcu`,
+        a.`fcd`,
+        a.`lcu`,
+        a.`lcd`
+        <include refid="searchAccount"></include>
+        order by a.`lcd` desc
+        <if test="needPage == true">
+            limit #{startNum}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="getAccountListForSelect" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.AccountVo"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.AccountVo">
+        SELECT `id`, `name` FROM `cmdb_resourcecenter_account`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                `name` like concat('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="getAccountIdListByAccountAndProtocol" resultType="java.lang.Long">
+        SELECT a.`id`
+        FROM `cmdb_resourcecenter_account` a
+                 JOIN `cmdb_resourcecenter_account_protocol` b ON b.`id` = a.`protocol_id`
+        where a.`account` = #{account}
+          and b.`name` = #{protocol}
+    </select>
+
+    <select id="checkResourceIsExistsCorrespondingAccountByResourceIdAndAccountIdAndProtocol"
+            resultType="java.lang.Long">
+        SELECT c.`id`
+        FROM `cmdb_resourcecenter_resource_account` b
+        JOIN `cmdb_resourcecenter_account` c on c.`id` = b.`account_id`
+        <if test="account != null and account != ''">
+            and c.`account` = #{account}
+        </if>
+        JOIN `cmdb_resourcecenter_account_protocol` d ON d.`id` = c.`protocol_id`
+        and d.name = #{protocol}
+        WHERE b.`resource_id` = #{resourceId}
+        LIMIT 1
+    </select>
+
+    <select id="checkAccountIdListIsExists" parameterType="java.util.List" resultType="java.lang.Long">
+        SELECT `id`
+        FROM `cmdb_resourcecenter_account`
+        WHERE `id` IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getResourceAccountListByResourceIdList" parameterType="java.util.List"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceAccountVo">
+        SELECT
+        `resource_id` AS resourceId,
+        `account_id` AS accountId
+        FROM `cmdb_resourcecenter_resource_account`
+        WHERE `resource_id` in
+        <foreach collection="list" item="resourceId" open="(" separator="," close=")">
+            #{resourceId}
+        </foreach>
+    </select>
+
+    <select id="getResourceAccountListByResourceIdAndProtocolAndAccount"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.AccountVo">
+        SELECT crap.name as protocol,cra.id,cra.`account` ,cra.`password` as passwordCipher,crra.`resource_id`
+        resourceId,crap.port as protocolPort,cra.`protocol_id` as protocolId
+        FROM `cmdb_resourcecenter_resource_account` crra
+        LEFT JOIN `cmdb_resourcecenter_account` cra ON crra.`account_id` = cra.`id`
+        LEFT JOIN `cmdb_resourcecenter_account_protocol` crap ON crap.`id`=cra.`protocol_id`
+        WHERE crra.`resource_id` in
+        <foreach collection="resourceIdList" item="resourceId" open="(" close=")" separator=",">
+            #{resourceId}
+        </foreach>
+        AND crap.id = #{protocolId}
+        <if test="userName != null">
+            AND cra.`account` = #{userName}
+        </if>
+        <if test="userName == null">
+            AND cra.`account` is null
+        </if>
+
+    </select>
+
+    <select id="getAccountProtocolVoByProtocolId"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.AccountProtocolVo">
+        select `id`, `name`, `port`
+        from `cmdb_resourcecenter_account_protocol`
+        where `id` = #{value}
+    </select>
+
+    <select id="getAccountProtocolListByIdList"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.AccountProtocolVo">
+        select `id`, `name`, `port`
+        from `cmdb_resourcecenter_account_protocol`
+        where `id` in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getAccountProtocolVoByProtocolName"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.AccountProtocolVo" parameterType="string">
+        select `id`, `name`, `port`
+        from `cmdb_resourcecenter_account_protocol`
+        where `name` = #{value}
+    </select>
+
+    <select id="getAccountProtocolVoByNameAndPort"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.AccountProtocolVo">
+        select `id`, `name`, `port`
+        from `cmdb_resourcecenter_account_protocol`
+        where `name` = #{name}
+          and `port` = #{port}
+    </select>
+
+    <select id="getAccountListByIpList" resultType="neatlogic.framework.cmdb.dto.resourcecenter.AccountVo">
+        SELECT a.`id`,
+        a.`name`,
+        a.`account`,
+        a.`protocol_id` AS protocolId,
+        a.`password` as passwordCipher,
+        crap.`name` as protocol,
+        crap.`port` as protocolPort,
+        a.`fcu`,
+        a.`fcd`,
+        a.`lcu`,
+        crai.`ip`,
+        a.`lcd`
+        FROM `cmdb_resourcecenter_account` a
+        left join `cmdb_resourcecenter_account_protocol` crap on a.protocol_id = crap.id
+        left join `cmdb_resourcecenter_account_ip` crai on a.id = crai.`account_id`
+        WHERE crai.`ip` IN
+        <foreach collection="ipList" item="ip" open="(" close=")" separator=",">
+            #{ip}
+        </foreach>
+    </select>
+
+    <select id="getAccountListByIpAndProtocolNameAndAccountAndProtocolPort"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.AccountVo">
+        SELECT a.`id`,
+        a.`name`,
+        a.`account`,
+        a.`protocol_id` AS protocolId,
+        a.`password` as passwordCipher,
+        crap.`name` as protocol,
+        crap.`port` as protocolPort,
+        a.`fcu`,
+        a.`fcd`,
+        a.`lcu`,
+        crai.`ip`,
+        a.`lcd`
+        FROM `cmdb_resourcecenter_account` a
+        left join `cmdb_resourcecenter_account_protocol` crap on a.protocol_id = crap.id
+        left join `cmdb_resourcecenter_account_ip` crai on a.id = crai.`account_id`
+        <where>
+            crap.`name` = #{protocolName}
+            and crai.ip = #{ip}
+            <if test="account != null">
+                and a.`account` is not null
+            </if>
+            <if test="account == null">
+                and a.`account` is null
+            </if>
+            <if test="protocolPort != null">
+                and crap.`port` = #{protocolPort}
+            </if>
+        </where>
+    </select>
+
+    <select id="getAccountListByProtocolNameAndAccountAndProtocolPort"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.AccountVo">
+        SELECT a.`id`,
+        a.`name`,
+        a.`account`,
+        a.`protocol_id` AS protocolId,
+        a.`password` as passwordCipher,
+        crap.`name` as protocol,
+        crap.`port` as protocolPort,
+        a.`fcu`,
+        a.`fcd`,
+        a.`lcu`,
+        crai.`ip`,
+        a.`lcd`
+        FROM `cmdb_resourcecenter_account` a
+        left join `cmdb_resourcecenter_account_protocol` crap on a.protocol_id = crap.id
+        left join `cmdb_resourcecenter_account_ip` crai on a.id = crai.`account_id`
+        <where>
+            crap.`name` = #{protocolName}
+            <if test="account != null">
+                and a.`account` is not null
+            </if>
+            <if test="account == null">
+                and a.`account` is null
+            </if>
+            <if test="protocolPort != null">
+                and crap.`port` = #{protocolPort}
+            </if>
+        </where>
+    </select>
+
+    <select id="getAccountTagListByAccountIdList" parameterType="java.util.List"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.AccountTagVo">
+        SELECT
+        `account_id` AS accountId,
+        `tag_id` AS tagId
+        FROM `cmdb_resourcecenter_account_tag`
+        WHERE `account_id` in
+        <foreach collection="list" item="accountId" open="(" separator="," close=")">
+            #{accountId}
+        </foreach>
+    </select>
+
+    <select id="checkAccountIsExists" resultType="int" parameterType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM `cmdb_resourcecenter_account` a
+        where a.`id` = #{value}
+    </select>
+
+    <select id="searchAccountProtocolListByProtocolName"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.AccountProtocolVo">
+        select
+        `id`,
+        `name`,
+        `port`
+        from `cmdb_resourcecenter_account_protocol`
+        <where>
+            <if test="isExcludeTagent != null and isExcludeTagent == 1">
+                and `name` != 'tagent'
+            </if>
+            <if test="keyword != null and keyword != ''">
+                and (`name` like concat('%', #{keyword}, '%')
+                or
+                `port` like concat('%', #{keyword}, '%'))
+            </if>
+        </where>
+        order by lcd desc
+    </select>
+
+    <select id="getAllAccountProtocolList"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.AccountProtocolVo">
+        select
+        `id`,
+        `name`,
+        `port`
+        from `cmdb_resourcecenter_account_protocol`
+    </select>
+
+    <select id="checkAccountProtocolIsRepeats" resultType="int"
+            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.AccountProtocolVo">
+        SELECT COUNT(1)
+        FROM `cmdb_resourcecenter_account_protocol`
+        WHERE `name` = #{name}
+          AND `id` != #{id}
+    </select>
+
+    <select id="checkAccountProtocolHasBeenReferredByProtocolId" parameterType="java.lang.Long" resultType="int">
+        select count(1)
+        from `cmdb_resourcecenter_account` a
+        where a.protocol_id = #{value}
+    </select>
+
+    <select id="getResourceAccountListByAccountId"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceAccountVo">
+        SELECT `resource_id` AS resourceId,
+               `account_id`  AS accountId
+        FROM `cmdb_resourcecenter_resource_account`
+        WHERE `account_id` = #{value}
+    </select>
+
+    <select id="getResourceIdListByAccountIdWithPage" resultType="java.lang.Long">
+        SELECT `resource_id`
+        FROM `cmdb_resourcecenter_resource_account`
+        WHERE `account_id` = #{accountId}
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="getResourceAccountByIpAndPort"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.AccountVo">
+        SELECT cra.id,
+               cra.`account`,
+               cra.`password`    as passwordCipher,
+               cra.`protocol_id` as protocolId,
+               crap.`port`       as protocolPort
+        from cmdb_resourcecenter_account_ip crai
+                 JOIN `cmdb_resourcecenter_account` cra ON crai.`account_id` = cra.`id`
+                 LEFT JOIN `cmdb_resourcecenter_account_protocol` crap ON crap.`id` = cra.`protocol_id`
+        WHERE crai.ip = #{host}
+          AND crap.port = #{port}
+    </select>
+
+    <select id="getResourceAccountListByResourceIdAndTypeAndProtocol"
+            resultMap="accountMap">
+        SELECT cra.id,
+               cra.name,
+               cra.account,
+               cra.`password`,
+               crap.`name` as protocol,
+               crap.`port` as protocolPort,
+               cra.`fcu`,
+               cra.`fcd`,
+               cra.`lcu`,
+               cra.`lcd`
+        FROM `cmdb_resourcecenter_resource_account` crra
+                 join `cmdb_resourcecenter_account` cra on cra.id = crra.account_id
+                 left join `cmdb_resourcecenter_account_protocol` crap on crap.id = cra.protocol_id
+        WHERE crra.resource_id = #{resourceId}
+          And cra.`type` = #{type}
+          And crap.name = #{protocol}
+    </select>
+
+    <select id="getResourceAccountListByResourceIdAndType"
+            resultMap="accountMap">
+        SELECT cra.id,
+               cra.name,
+               cra.account,
+               cra.`password`,
+               crap.`name` as protocol,
+               crap.`port` as protocolPort,
+               cra.`fcu`,
+               cra.`fcd`,
+               cra.`lcu`,
+               cra.`lcd`
+        FROM `cmdb_resourcecenter_resource_account` crra
+                 join `cmdb_resourcecenter_account` cra on cra.id = crra.account_id
+                 left join `cmdb_resourcecenter_account_protocol` crap on crap.id = cra.protocol_id
+        WHERE crra.resource_id = #{resourceId}
+          And cra.`type` = #{type}
+    </select>
+
+    <select id="getResourceAccountListByResourceId"
+            resultMap="accountMap">
+        SELECT cra.id,
+               cra.name,
+               cra.account,
+               cra.`password`,
+               crap.`name` as protocol,
+               crap.`port` as protocolPort,
+               cra.`fcu`,
+               cra.`fcd`,
+               cra.`lcu`,
+               cra.`lcd`
+        FROM `cmdb_resourcecenter_resource_account` crra
+                 join `cmdb_resourcecenter_account` cra on cra.id = crra.account_id
+                 left join `cmdb_resourcecenter_account_protocol` crap on crap.id = cra.protocol_id
+        WHERE crra.resource_id = #{value}
+    </select>
+
+    <select id="getAllAccountList" resultType="neatlogic.framework.cmdb.dto.resourcecenter.AccountVo">
+        SELECT cra.id,
+               cra.name,
+               cra.account,
+               cra.password as passwordCipher
+        from `cmdb_resourcecenter_account` cra
+    </select>
+
+    <select id="getAccountByTagentIpAndPort" resultMap="accountMap">
+        SELECT a.`id`,
+               a.`name`,
+               a.`password`
+        FROM `cmdb_resourcecenter_account` a
+                 JOIN `tagent` t on t.account_id = a.id
+        WHERE t.ip = #{ip}
+          AND t.port = #{port}
+    </select>
+    <select id="getResourceAccountByResourceIdAndProtocolAndProtocolPortAndUsername"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.AccountVo">
+        select
+        cra.`id`,
+        cra.`name`,
+        cra.`account`,
+        cra.`password` as passwordCipher,
+        cra.`fcu`,
+        cra.`fcd`,
+        cra.`lcu`,
+        cra.`lcd`
+        from `cmdb_resourcecenter_resource_account` crra
+        left join `cmdb_resourcecenter_account` cra on crra.account_id = cra.id
+        LEFT JOIN `cmdb_resourcecenter_account_protocol` crap on cra.protocol_id = crap.id
+        where crra.resource_id = #{resourceId}
+        and crap.`name` = #{protocol}
+        <if test="protocolPort != null">
+            and crap.`port` = #{protocolPort}
+        </if>
+        and cra.account = #{username}
+    </select>
+
+    <select id="getTagListByAccountId" resultType="neatlogic.framework.cmdb.dto.tag.TagVo">
+        select a.`id`,
+               a.`name`,
+               a.`description`
+        from `cmdb_tag` a
+                 JOIN `cmdb_resourcecenter_account_tag` c ON c.tag_id = a.id
+        where c.`account_id` = #{value}
+    </select>
+    <select id="getDefaultAccountListByProtocolIdListAndAccount"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.AccountVo">
+        select
+        cra.`id`,
+        cra.`name`,
+        cra.`password` as passwordCipher,
+        cra.`protocol_id` as protocolId,
+        crap.`name` as protocol,
+        crap.`port` as protocolPort
+        from `cmdb_resourcecenter_account` cra
+        LEFT JOIN `cmdb_resourcecenter_account_protocol` crap on cra.protocol_id = crap.id
+        where cra.`protocol_id` in
+        <foreach collection="list" item="protocolId" open="(" close=")" separator=",">
+            #{protocolId}
+        </foreach>
+        and cra.`is_default` = 1
+        and cra.`account` = #{account}
+    </select>
+
+    <update id="updateAccount" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.AccountVo">
+        update `cmdb_resourcecenter_account` a set
+        <if test="name != null">
+            a.`name` = #{name},
+        </if>
+        a.`account` = #{account},
+        <if test="passwordCipher != null">
+            a.`password` = #{passwordCipher},
+        </if>
+        a.protocol_id = #{protocolId},
+        <if test="isDefault != null">
+            a.`is_default` = #{isDefault},
+        </if>
+        a.`lcu` = #{lcu},
+        a.`lcd` = now(3)
+        where a.`id` = #{id}
+    </update>
+
+    <update id="updateAccountProtocol" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.AccountProtocolVo">
+        update `cmdb_resourcecenter_account_protocol`
+        set `name` = #{name},
+            `port` = #{port},
+            `lcd`  = now(3),
+            `lcu`  = #{lcu}
+        where `id` = #{id}
+    </update>
+    <update id="updateAccountPasswordById">
+        update `cmdb_resourcecenter_account`
+        set password = #{password}
+        where id = #{id}
+    </update>
+    <update id="resetAccountDefaultByProtocolId">
+        update `cmdb_resourcecenter_account`
+        set is_default = 0
+        where protocol_id = #{value}
+          and is_default = 1
+    </update>
+
+    <insert id="insertAccount" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.AccountVo">
+        insert ignore into `cmdb_resourcecenter_account` (
+        `id`,
+        `name`,
+        `account`,
+        <if test="passwordCipher != null">
+            `password`,
+        </if>
+        `protocol_id` ,
+        `type` ,
+        `is_default`,
+        `lcu`,
+        `lcd`,
+        `fcu`,
+        `fcd`
+        )
+        values (
+        #{id},
+        #{name},
+        #{account},
+        <if test="passwordCipher != null">
+            #{passwordCipher},
+        </if>
+        #{protocolId},
+        #{type},
+        #{isDefault},
+        #{lcu},
+        now(3),
+        #{fcu},
+        now(3)
+        )
+    </insert>
+
+    <insert id="insertIgnoreResourceAccount"
+            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceAccountVo">
+        INSERT IGNORE INTO `cmdb_resourcecenter_resource_account` (`resource_id`, `account_id`) VALUES
+        <foreach collection="list" item="resourceAccount" separator=",">
+            (#{resourceAccount.resourceId}, #{resourceAccount.accountId})
+        </foreach>
+    </insert>
+
+    <insert id="insertIgnoreAccountTag" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.AccountTagVo">
+        INSERT IGNORE INTO `cmdb_resourcecenter_account_tag` (`account_id`, `tag_id`) VALUES
+        <foreach collection="list" item="accountTag" separator=",">
+            (#{accountTag.accountId}, #{accountTag.tagId})
+        </foreach>
+    </insert>
+
+    <insert id="insertAccountProtocol" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.AccountProtocolVo">
+        insert into `cmdb_resourcecenter_account_protocol` (`id`, `name`, `port`, `fcd`, `fcu`, `lcd`, `lcu`)
+        values (#{id}, #{name}, #{port}, now(3), #{fcu}, now(3), #{fcu})
+    </insert>
+
+    <insert id="insertAccountIp">
+        INSERT
+            IGNORE
+        INTO `cmdb_resourcecenter_account_ip` (`account_id`, `ip`)
+        VALUES (#{accountId},
+                #{ip})
+    </insert>
+
+    <delete id="deleteAccountById" parameterType="java.lang.Long">
+        delete
+        from `cmdb_resourcecenter_account`
+        where `id` = #{value}
+    </delete>
+
+    <delete id="deleteAccountByIdList" parameterType="java.util.List">
+        delete
+        from `cmdb_resourcecenter_account`
+        where `id` in
+        <foreach collection="list" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+    </delete>
+
+    <delete id="deleteResourceAccountByResourceId" parameterType="java.lang.Long">
+        DELETE
+        FROM `cmdb_resourcecenter_resource_account`
+        WHERE `resource_id` = #{value}
+    </delete>
+
+    <delete id="deleteResourceAccountByResourceIdListAndAccountIdList">
+        DELETE FROM `cmdb_resourcecenter_resource_account`
+        WHERE `resource_id` IN
+        <foreach collection="resourceIdList" item="resourceId" open="(" separator="," close=")">
+            #{resourceId}
+        </foreach>
+        AND `account_id` IN
+        <foreach collection="accountIdList" item="accountId" open="(" separator="," close=")">
+            #{accountId}
+        </foreach>
+    </delete>
+
+    <delete id="deleteAccountTagByAccountId" parameterType="java.lang.Long">
+        DELETE
+        FROM `cmdb_resourcecenter_account_tag`
+        WHERE `account_id` = #{value}
+    </delete>
+
+    <delete id="deleteAccountTagByAccountIdList" parameterType="java.util.List">
+        DELETE
+        FROM `cmdb_resourcecenter_account_tag`
+        WHERE `account_id` in
+        <foreach collection="list" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+    </delete>
+
+    <delete id="deleteResourceAccountProtocolById">
+        delete
+        from `cmdb_resourcecenter_account_protocol`
+        where `id` = #{value}
+    </delete>
+
+    <delete id="deleteAccountIpByAccountId" parameterType="java.lang.Long">
+        DELETE
+        FROM `cmdb_resourcecenter_account_ip`
+        WHERE `account_id` = #{value}
+    </delete>
+
+    <delete id="deleteAccountIpByAccountIdList" parameterType="java.util.List">
+        DELETE
+        FROM `cmdb_resourcecenter_account_ip`
+        WHERE `account_id` in
+        <foreach collection="list" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+    </delete>
+
+    <delete id="deleteResourceAccountByAccountId">
+        DELETE
+        FROM `cmdb_resourcecenter_resource_account`
+        WHERE `account_id` = #{value}
+    </delete>
+
+    <delete id="deleteResourceAccountByAccountIdList" parameterType="java.util.List">
+        DELETE
+        FROM `cmdb_resourcecenter_resource_account`
+        WHERE `account_id` in
+        <foreach collection="list" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+    </delete>
+
+    <delete id="deleteAccountIpByIpList">
+        DELETE
+        FROM `cmdb_resourcecenter_account_ip`
+        WHERE `ip` in
+        <foreach collection="ipList" open="(" close=")" separator="," item="ip">
+            #{ip}
+        </foreach>
+    </delete>
+</mapper>

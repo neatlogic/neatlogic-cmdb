@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+Copyright(c) $today.year NeatLogic Co., Ltd. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="neatlogic.module.cmdb.dao.mapper.ci.AttrMapper">
+    <cache-ref namespace="neatlogic.module.cmdb.dao.mapper.ci.CiMapper"/>
+
+    <select id="getAttrByCiIdAndName" resultType="neatlogic.framework.cmdb.dto.ci.AttrVo"
+            useCache="true">
+        SELECT ci.`id`                   AS ciId,
+               ci.`name`                 AS ciName,
+               ci.`label`                AS ciLabel,
+               attr.`id`,
+               attr.`type`,
+               attr.`config`             AS configStr,
+               attr.`name`,
+               attr.`label`,
+               attr.`description`,
+               attr.`validator_id`       AS validatorId,
+               attr.`target_ci_id`       AS targetCiId,
+               attr.`is_required`        AS isRequired,
+               attr.`is_unique`          AS isUnique,
+               attr.`input_type`         AS inputType,
+               attr.`group_name`         AS groupName,
+               attr.`is_private`         AS isPrivate,
+               if(ci.id = #{ciId}, 0, 1) AS `isExtended`
+        FROM `cmdb_ci` ci
+                 JOIN `cmdb_attr` attr ON ci.id = attr.ci_id
+        WHERE ci.lft &lt;= (SELECT lft FROM `cmdb_ci` WHERE id = #{ciId})
+          AND ci.rht &gt;= (SELECT rht FROM `cmdb_ci` WHERE id = #{ciId})
+          AND attr.name = #{attrName}
+        LIMIT 1
+    </select>
+
+
+    <select id="getAllNeedTargetCiAttrList" resultType="neatlogic.framework.cmdb.dto.ci.AttrVo" useCache="false">
+        SELECT `id`, ci_id AS ciId
+        FROM `cmdb_attr`
+        where target_ci_id is not null
+    </select>
+
+    <select id="searchAttr" parameterType="neatlogic.framework.cmdb.dto.ci.AttrVo"
+            resultType="neatlogic.framework.cmdb.dto.ci.AttrVo" useCache="false">
+        SELECT a.`id`,
+        a.`ci_id` AS ciId,
+        a.`name`,
+        a.`label`,
+        a.`description`,
+        b.name as ciName,
+        b.label as ciLabel
+        FROM `cmdb_attr` a
+        join `cmdb_ci` b on a.ci_id = b.id
+        <include refid="searchAttrCondition"></include>
+    </select>
+
+    <select id="searchAttrCount" parameterType="neatlogic.framework.cmdb.dto.ci.AttrVo"
+            resultType="int" useCache="false">
+        SELECT count(1)
+        FROM `cmdb_attr` a
+        <include refid="searchAttrCondition"></include>
+    </select>
+
+    <sql id="searchAttrCondition">
+        <where>
+            <if test="validatorId != null">
+                a.validator_id = #{validatorId}
+            </if>
+        </where>
+    </sql>
+
+    <select id="getAttrByValidatorId" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.ci.AttrVo" useCache="false">
+        SELECT a.`id`,
+               a.`ci_id` AS ciId,
+               a.`name`,
+               a.`label`,
+               a.`description`,
+               b.name    as ciName,
+               b.label   as ciLabel
+        FROM `cmdb_attr` a
+                 join `cmdb_ci` b on a.ci_id = b.id
+        WHERE a.validator_id = #{value}
+    </select>
+
+
+    <select id="getExpressionCiIdByValueCiId" parameterType="java.lang.Long"
+            resultType="java.lang.Long" useCache="false">
+        SELECT DISTINCT expression_ci_id
+        FROM cmdb_attrexpression_rel
+        WHERE value_ci_id = #{value}
+    </select>
+
+    <select id="getExpressionAttrByValueAttrId" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.ci.AttrVo" useCache="false">
+        SELECT a.`id`,
+               a.`ci_id`                                                       AS ciId,
+               a.`type`,
+               a.`target_ci_id`                                                AS targetCiId,
+               a.`name`,
+               a.`label`,
+               a.`description`,
+               a.`validator_id`                                                AS validatorId,
+               (SELECT name FROM cmdb_validator x WHERE x.id = a.validator_id) AS validatorName,
+               a.`is_required`                                                 AS isRequired,
+               a.`is_unique`                                                   AS isUnique,
+               a.`input_type`                                                  AS inputType,
+               a.`group_name`                                                  AS groupName,
+               a.`is_private`                                                  AS isPrivate,
+               a.`config`                                                      AS configStr
+        FROM `cmdb_attr` a
+                 JOIN cmdb_attrexpression_rel b ON a.id = b.expression_attr_id
+        WHERE b.value_attr_id = #{value}
+    </select>
+
+    <select id="getExpressionAttrByValueCiIdAndAttrIdList"
+            resultType="neatlogic.framework.cmdb.dto.ci.AttrVo" useCache="false">
+        SELECT
+        DISTINCT a.`id`,
+        a.`ci_id` AS ciId,
+        a.`type`,
+        a.`target_ci_id` AS targetCiId,
+        a.`name`,
+        a.`label`,
+        a.`description`,
+        a.`validator_id` AS validatorId,
+        (SELECT name FROM cmdb_validator x WHERE x.id = a.validator_id) AS validatorName,
+        a.`is_required` AS isRequired,
+        a.`is_unique` AS isUnique,
+        a.`input_type` AS inputType,
+        a.`group_name` AS groupName,
+        a.`is_private` AS isPrivate,
+        a.`config` AS configStr
+        FROM `cmdb_attr` a
+        JOIN `cmdb_attrexpression_rel` b ON a.id = b.expression_attr_id
+        WHERE
+        b.value_ci_id = #{valueCiId}
+        AND b.value_attr_id in
+        <foreach collection="valueAttrIdList" item="attrId" open="(" close=")" separator=",">
+            #{attrId}
+        </foreach>
+    </select>
+
+
+    <select id="getExpressionAttrRelByValueCiIdAndAttrIdList" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.attrexpression.AttrExpressionRelVo" useCache="false">
+        SELECT DISTINCT
+        a.expression_ci_id AS expressionCiId,
+        a.expression_attr_id AS expressAttrId,
+        a.value_ci_id AS valueCiId,
+        a.value_attr_id AS valueAttrId
+        FROM
+        cmdb_attrexpression_rel a
+        WHERE
+        a.value_ci_id = #{valueCiId} AND
+        a.value_attr_id in
+        <foreach collection="valueAttrIdList" item="attrId" open="(" close=")" separator=",">
+            #{attrId}
+        </foreach>
+    </select>
+
+    <select id="getAttrById" parameterType="java.lang.Long" resultType="neatlogic.framework.cmdb.dto.ci.AttrVo"
+            useCache="true">
+        SELECT `id`,
+               `ci_id`                                                       AS ciId,
+               `type`,
+               `target_ci_id`                                                AS targetCiId,
+               `name`,
+               `label`,
+               `description`,
+               `validator_id`                                                AS validatorId,
+               (SELECT name FROM cmdb_validator x WHERE x.id = validator_id) AS validatorName,
+               `is_required`                                                 AS isRequired,
+               `is_unique`                                                   AS isUnique,
+               `input_type`                                                  AS inputType,
+               `group_name`                                                  AS groupName,
+               `is_private`                                                  AS isPrivate,
+               `config`                                                      AS configStr
+        FROM `cmdb_attr`
+        WHERE id = #{value}
+    </select>
+
+    <select id="getAttrByIdList" resultType="neatlogic.framework.cmdb.dto.ci.AttrVo"
+            useCache="true">
+        SELECT `id`,
+        `ci_id` AS ciId,
+        `type`,
+        `target_ci_id` AS targetCiId,
+        `name`,
+        `label`,
+        `description`,
+        `validator_id` AS validatorId,
+        (SELECT name FROM cmdb_validator x WHERE x.id = validator_id) AS validatorName,
+        `is_required` AS isRequired,
+        `is_unique` AS isUnique,
+        `input_type` AS inputType,
+        `group_name` AS groupName,
+        `is_private` AS isPrivate,
+        `config` AS configStr
+        FROM `cmdb_attr`
+        WHERE id IN
+        <foreach collection="attrIdList" item="item" open="(" close=")" separator=",">#{item}</foreach>
+    </select>
+
+    <select id="getAttrGroupByCiId" parameterType="java.lang.Long" resultType="java.lang.String" useCache="true">
+        SELECT DISTINCT group_name
+        FROM cmdb_attr
+        WHERE ci_id = #{value}
+          AND group_name is not null
+    </select>
+
+    <select id="getAttrByCiId" parameterType="java.lang.Long" resultType="neatlogic.framework.cmdb.dto.ci.AttrVo"
+            useCache="true">
+        SELECT
+        ci.`id` AS ciId,
+        ci.`name` AS ciName,
+        ci.`label` AS ciLabel,
+        attr.`id`,
+        attr.`type`,
+        attr.`config` AS configStr,
+        attr.`name`,
+        attr.`label`,
+        attr.`description`,
+        attr.`validator_id` AS validatorId,
+        cv.`name` AS validatorName,
+        cv.`handler` AS validatorHandler,
+        attr.`target_ci_id` AS targetCiId,
+        targetci.is_virtual AS targetIsVirtual,
+        targetci.name AS targetCiName,
+        attr.`is_required` AS isRequired,
+        attr.`is_unique` AS isUnique,
+        attr.`input_type` AS inputType,
+        attr.`group_name` AS groupName,
+        attr.`is_private` AS isPrivate,
+        if(ci.id = #{value}, 0, 1) AS `isExtended`,
+        IFNULL(cview.sort, 999999) AS `sort`,
+        cview.`allow_edit` AS allowEdit,
+        IF(ccu.attr_id is null, 0, 1) AS isCiUnique
+        FROM
+        `cmdb_ci` ci
+        JOIN `cmdb_attr` attr ON ci.id = attr.ci_id
+        LEFT JOIN cmdb_ci targetci ON attr.target_ci_id = targetci.id
+        LEFT JOIN cmdb_validator cv ON attr.`validator_id` = cv.id
+        LEFT JOIN cmdb_view cview ON attr.id = cview.item_id AND cview.type = 'attr' AND cview.ci_id = #{value}
+        LEFT JOIN cmdb_ci_unique ccu ON attr.id = ccu.attr_id AND ccu.ci_id = #{value}
+        WHERE
+        ci.lft &lt;= ( SELECT lft FROM `cmdb_ci` WHERE id = #{value} )
+        AND ci.rht &gt;= ( SELECT rht FROM `cmdb_ci` WHERE id = #{value} )
+        ORDER BY
+        sort,
+        id<!-- 按照视图设置的排序 -->
+    </select>
+
+    <select id="checkAttrNameIsRepeat" parameterType="neatlogic.framework.cmdb.dto.ci.AttrVo" resultType="int"
+            useCache="false">
+        SELECT COUNT(1)
+        FROM `cmdb_attr`
+        WHERE `name` = #{name}
+          AND `ci_id` = #{ciId}
+          AND `id` != #{id}
+    </select>
+
+
+    <update id="updateAttr" parameterType="neatlogic.framework.cmdb.dto.ci.AttrVo">
+        UPDATE
+            `cmdb_attr`
+        SET `type`         = #{type},
+            `expression`   = #{expression},
+            `target_ci_id` = #{targetCiId},
+            `name`         = #{name},
+            `label`        = #{label},
+            `description`  = #{description},
+            `validator_id` = #{validatorId},
+            `is_required`  = #{isRequired},
+            `is_unique`    = #{isUnique},
+            `input_type`   = #{inputType},
+            `group_name`   = #{groupName},
+            `config`       = #{configStr,typeHandler=compressHandler}
+        WHERE id = #{id}
+    </update>
+
+    <insert id="insertAttrExpressionRel">
+        INSERT IGNORE INTO cmdb_attrexpression_rel (expression_ci_id,
+                                                    expression_attr_id,
+                                                    value_attr_id,
+                                                    value_ci_id)
+        VALUES (#{expressionCiId},
+                #{expressionAttrId},
+                #{valueAttrId},
+                #{valueCiId})
+    </insert>
+
+    <insert id="insertAttr" parameterType="neatlogic.framework.cmdb.dto.ci.AttrVo">
+        INSERT INTO `cmdb_attr` (`id`,
+                                 `ci_id`,
+                                 `type`,
+                                 `target_ci_id`,
+                                 `config`,
+                                 `name`,
+                                 `label`,
+                                 `description`,
+                                 `validator_id`,
+                                 `is_required`,
+                                 `is_unique`,
+                                 `input_type`,
+                                 `group_name`,
+                                 `is_private`)
+        VALUES (#{id},
+                #{ciId},
+                #{type},
+                #{targetCiId},
+                #{configStr,typeHandler=compressHandler},
+                #{name},
+                #{label},
+                #{description},
+                #{validatorId},
+                #{isRequired},
+                #{isUnique},
+                #{inputType},
+                #{groupName},
+                #{isPrivate})
+    </insert>
+
+    <delete id="deleteAttrExpressionRelByExpressionAttrId" parameterType="java.lang.Long">
+        DELETE
+        FROM cmdb_attrexpression_rel
+        WHERE expression_attr_id = #{value}
+    </delete>
+
+    <delete id="deleteAttrExpressionRelByValueAttrId" parameterType="java.lang.Long">
+        DELETE
+        FROM cmdb_attrexpression_rel
+        WHERE value_attr_id = #{value}
+    </delete>
+
+    <delete id="deleteAttrById" parameterType="java.lang.Long">
+        DELETE a,b
+        FROM `cmdb_attr` a
+                 LEFT JOIN `cmdb_ci_unique` b ON a.id = b.attr_id
+        WHERE a.id = #{value}
+    </delete>
+
+
+</mapper>

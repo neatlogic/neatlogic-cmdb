@@ -1,0 +1,10 @@
+target
+*.iml
+bin
+.class
+.svn
+.project
+.settings
+.classpath
+.externalToolBuilders
+.idea

@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+Copyright(c) $today.year NeatLogic Co., Ltd. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="neatlogic.module.cmdb.dao.mapper.ci.CiViewMapper">
+    <cache-ref namespace="neatlogic.module.cmdb.dao.mapper.ci.CiMapper"/>
+
+    <select id="getCiViewBaseInfoByCiId" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.ci.CiViewVo">
+        select ci_id as ciId, item_id as itemId, type, sort, show_type, allow_edit as allowEdit
+        from cmdb_view
+        where ci_id = #{value}
+    </select>
+
+    <select id="getCiViewConstByCiId" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.view.ViewConstVo" useCache="false">
+        SELECT id
+             , name
+             , label
+             , IFNULL(cview.sort, 999999) AS `sort`
+        FROM cmdb_viewconst a
+                 LEFT JOIN cmdb_view cview ON a.id = cview.item_id AND cview.type = 'const' AND cview.ci_id = #{ciId}
+        ORDER BY sort
+    </select>
+    <select id="getAllCiViewConstList" resultType="neatlogic.framework.cmdb.dto.view.ViewConstVo" useCache="false">
+        SELECT `id`, `name`, `label`
+        FROM `cmdb_viewconst`
+        ORDER BY `id`
+    </select>
+
+    <select id="getCiViewByCiId" parameterType="neatlogic.framework.cmdb.dto.ci.CiViewVo"
+            resultType="neatlogic.framework.cmdb.dto.ci.CiViewVo" useCache="false">
+        SELECT * FROM (
+        SELECT
+        attr.id AS itemId,
+        attr.`name` AS itemName,
+        attr.`label` AS itemLabel,
+        'attr' AS type,
+        v.show_type AS showType,
+        v.allow_edit AS allowEdit,
+        IFNULL(v.sort, 999999) AS sort,
+        if(ci.id = #{ciId}, 0, 1) AS isExtended,
+        '' AS uniqueKey
+        FROM
+        cmdb_ci ci
+        JOIN cmdb_attr attr ON ci.id = attr.ci_id
+        LEFT JOIN cmdb_view v ON attr.`id` = v.`item_id` AND v.`ci_id` = #{ciId} AND v.`type` = 'attr'
+        WHERE
+        ci.lft &lt;= ( SELECT lft FROM `cmdb_ci` WHERE id = #{ciId} )
+        AND ci.rht &gt;= ( SELECT rht FROM `cmdb_ci` WHERE id = #{ciId} )
+        UNION
+        SELECT
+        rel.id AS itemId,
+        rel.to_name AS itemName,
+        rel.to_label AS itemLabel,<!-- 当前模型作为上游时需要显示下游目标名称 -->
+        'relfrom' AS type,
+        v.show_type AS showType,
+        v.allow_edit AS allowEdit,
+        IFNULL(v.sort, 999999) AS sort,
+        if(ci.id = #{ciId}, 0, 1) AS isExtended,
+        CONCAT(rel.from_ci_id,'-',rel.to_ci_id) AS uniqueKey
+        FROM
+        cmdb_rel rel
+        JOIN cmdb_ci ci ON rel.from_ci_id = ci.id
+        LEFT JOIN cmdb_view v ON rel.id = v.`item_id` AND v.`type` = 'relfrom' AND v.ci_id = #{ciId}
+        WHERE ci.lft &lt;= ( SELECT lft FROM `cmdb_ci` WHERE id = #{ciId} )
+        AND ci.rht &gt;= ( SELECT rht FROM `cmdb_ci` WHERE id = #{ciId} )
+        UNION
+        SELECT
+        rel.id AS itemId,
+        rel.from_name AS itemName,
+        rel.from_label AS itemLabel,<!-- 当前模型作为下游时需要显示上游目标名称 -->
+        'relto' AS type,
+        v.show_type AS showType,
+        v.allow_edit AS allowEdit,
+        IFNULL(v.sort, 999999) AS sort,
+        if(ci.id = #{ciId}, 0, 1) AS isExtended,
+        CONCAT(rel.from_ci_id,'-',rel.to_ci_id) AS uniqueKey
+        FROM
+        cmdb_rel rel
+        JOIN cmdb_ci ci ON rel.to_ci_id = ci.id
+        LEFT JOIN cmdb_view v
+        ON rel.id = v.`item_id`
+        AND v.`type` = 'relto'
+        AND v.ci_id = #{ciId}
+        WHERE ci.lft &lt;= ( SELECT lft FROM `cmdb_ci` WHERE id = #{ciId} )
+        AND ci.rht &gt;= ( SELECT rht FROM `cmdb_ci` WHERE id = #{ciId} )
+        UNION
+        SELECT
+        const.id AS itemId,
+        const.name AS itemName,
+        const.label AS itemLabel,
+        'const' AS type,
+        IFNULL(v.show_type,'none') AS showType,
+        v.allow_edit AS allowEdit,
+        IFNULL(v.sort, 999999) as sort,
+        0 AS isExtended,
+        '' AS uniqueKey
+        FROM cmdb_viewconst const
+        LEFT JOIN cmdb_view v ON const.id = v.`item_id` AND v.`type` = 'const' AND v.ci_id = #{ciId}
+        ) t
+        <where>
+            <if test="showTypeList != null and showTypeList.size() > 0">
+                (t.showType IN
+                <foreach collection="showTypeList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+                OR t.showType is NULL
+                )
+            </if>
+        </where>
+        ORDER BY sort,type,itemId
+        <!-- 按照sort,type,itemId进行排序，当sort为空时，得到的是自然顺序 -->
+    </select>
+
+    <insert id="insertCiView" parameterType="neatlogic.framework.cmdb.dto.ci.CiViewVo">
+        INSERT INTO `cmdb_view` (`ci_id`,
+                                 `item_id`,
+                                 `type`,
+                                 `sort`,
+                                 `show_type`,
+                                 `allow_edit`)
+        VALUES (#{ciId},
+                #{itemId},
+                #{type},
+                #{sort},
+                #{showType},
+                #{allowEdit})
+    </insert>
+
+    <delete id="deleteCiViewByCiId" parameterType="java.lang.Long">
+        DELETE
+        FROM cmdb_view
+        WHERE ci_id = #{value}
+    </delete>
+</mapper>
