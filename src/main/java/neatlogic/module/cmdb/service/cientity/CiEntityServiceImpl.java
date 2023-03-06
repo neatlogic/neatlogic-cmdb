@@ -585,6 +585,11 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             ciEntityMapper.updateCiEntityLockById(ciEntityTransactionVo.getOldCiEntityVo());
         }
 
+        //如果是添加配置项，则锁定模型，防止高并发时导致重复数据添加进来
+        if (ciEntityTransactionVo.getAction().equals(TransactionActionType.INSERT.getValue())) {
+            ciMapper.getCiLock(ciEntityTransactionVo.getCiId());
+        }
+
         TransactionVo transactionVo = new TransactionVo();
         transactionVo.setCiId(ciEntityTransactionVo.getCiId());
         transactionVo.setInputFrom(InputFromContext.get().getInputFrom());
