@@ -19,7 +19,7 @@
 <mapper namespace="neatlogic.module.cmdb.dao.mapper.ci.CiMapper">
     <cache type="neatlogic.framework.dao.cache.NeatLogicCache" flushInterval="30000" size="500"></cache>
 
-    <select id="getCiLock" parameterType="java.lang.Long" resultType="java.lang.Long" useCache="fale">
+    <select id="getCiLock" parameterType="java.lang.Long" resultType="java.lang.Long" useCache="false">
         select id
         from cmdb_ci
         where id = #{value} for
