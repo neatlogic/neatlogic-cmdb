@@ -25,10 +25,10 @@ import neatlogic.framework.form.dto.AttributeDataVo;
 import neatlogic.framework.form.exception.AttributeValidException;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.List;
 
 /**
  * @author linbq
@@ -77,12 +77,16 @@ public class ProtocolNewHandler extends FormHandlerBase {
 
     @Override
     public Object valueConversionText(AttributeDataVo attributeDataVo, JSONObject configObj) {
-        return "已更新";
+        JSONObject dataObj = getMyDetailedData(attributeDataVo, configObj);
+        if (MapUtils.isNotEmpty(dataObj)) {
+            return dataObj.getString("name");
+        }
+        return null;
     }
 
     @Override
     public Object dataTransformationForEmail(AttributeDataVo attributeDataVo, JSONObject configObj) {
-        return null;
+        return valueConversionText(attributeDataVo, configObj);
     }
 
     @Override
@@ -97,33 +101,44 @@ public class ProtocolNewHandler extends FormHandlerBase {
         return accountProtocolVo.getId();
     }
 
-    //表单组件配置信息
-//    {
-//        "handler": "protocol",
-//        "label": "连接协议_1",
-//        "type": "form",
-//        "uuid": "d9a91e90f2b94171883b8092bdddd384",
-//        "config": {
-//            "isRequired": false,
-//            "ruleList": [],
-//            "width": "100%",
-//            "validList": [],
-//            "quoteUuid": "",
-//            "defaultValueType": "self",
-//            "placeholder": "选择连接协议",
-//            "authorityConfig": [
-//                "common#alluser"
-//            ]
-//        }
-//    }
-//保存数据
-//    478184378212353
-//返回数据结构
-//    {
-//        "value": 478184378212353,
-//        "name": "tagent",
-//        "port": 3939
-//    }
+    /*
+    表单组件配置信息
+    {
+        "handler": "formprotocol",
+        "reaction": {
+            "hide": {},
+            "readonly": {},
+            "display": {}
+        },
+        "override_config": {},
+        "icon": "tsfont-zirenwu",
+        "hasValue": true,
+        "label": "连接协议_15",
+        "type": "form",
+        "category": "autoexec",
+        "config": {
+            "isRequired": false,
+            "disableDefaultValue": true,
+            "isMask": false,
+            "width": "100%",
+            "description": "",
+            "isHide": false
+        },
+        "uuid": "7f960f1045e24c128e7673913d3f1572"
+    }
+     */
+    /*
+    保存数据结构
+    478219912355840
+     */
+    /*
+    返回数据结构
+    {
+        "value": 478219912355840,
+        "name": "tagent",
+        "port": 3939
+    }
+     */
     @Override
     protected JSONObject getMyDetailedData(AttributeDataVo attributeDataVo, JSONObject configObj) {
         JSONObject resultObj = new JSONObject();
