@@ -33,6 +33,12 @@ limitations under the License.
                     <include>META-INF/**</include>
                 </includes>
             </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>neatlogic/**</include>
+                </includes>
+            </resource>
         </resources>
     </build>
     <dependencies>
