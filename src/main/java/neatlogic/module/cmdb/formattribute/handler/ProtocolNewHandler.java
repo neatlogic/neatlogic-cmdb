@@ -142,8 +142,10 @@ public class ProtocolNewHandler extends FormHandlerBase {
     @Override
     protected JSONObject getMyDetailedData(AttributeDataVo attributeDataVo, JSONObject configObj) {
         JSONObject resultObj = new JSONObject();
-        String protocolIdStr = (String) attributeDataVo.getDataObj();
-        Long protocolId = Long.valueOf(protocolIdStr);
+        Long protocolId = (Long) attributeDataVo.getDataObj();
+        if (protocolId == null) {
+            return resultObj;
+        }
         resultObj.put("value", protocolId);
         AccountProtocolVo protocolVo = resourceAccountMapper.getAccountProtocolVoByProtocolId(protocolId);
         if (protocolVo != null) {
