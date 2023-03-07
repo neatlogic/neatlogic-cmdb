@@ -424,8 +424,8 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
 
             //判断权限
             if (ciEntityTransactionVo.getAction().equals(TransactionActionType.INSERT.getValue())) {
-                boolean isInGroup = false;
-                CiEntityVo newCiEntityVo = new CiEntityVo(ciEntityTransactionVo);
+                //boolean isInGroup = false;
+                //CiEntityVo newCiEntityVo = new CiEntityVo(ciEntityTransactionVo);
                 if (!CiAuthChecker.chain().checkCiEntityInsertPrivilege(ciId).checkCiIsInGroup(ciId, GroupType.MAINTAIN).check()) {
                     CiVo ciVo = ciMapper.getCiById(ciId);
                     throw new CiEntityAuthException(ciVo.getLabel(), TransactionActionType.INSERT.getText());
@@ -442,8 +442,9 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
                     allowCommit = false;
                 }
             }
-
-            ciEntityTransactionList.add(ciEntityTransactionVo);
+            if (!ciEntityTransactionList.contains(ciEntityTransactionVo)) {
+                ciEntityTransactionList.add(ciEntityTransactionVo);
+            }
         }
         if (CollectionUtils.isNotEmpty(ciEntityTransactionList)) {
             for (CiEntityTransactionVo t : ciEntityTransactionList) {
