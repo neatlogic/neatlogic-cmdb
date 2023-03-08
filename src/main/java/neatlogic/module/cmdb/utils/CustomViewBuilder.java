@@ -115,7 +115,10 @@ public class CustomViewBuilder {
         PlainSelect plainSelect = (PlainSelect) selectBody;
         plainSelect.addSelectItems(new SelectExpressionItem(new Column("id").withTable(new Table("ci_base"))));
         plainSelect.addSelectItems(new SelectExpressionItem(new Column("name").withTable(new Table("ci_base"))));
+       // Map<String, Boolean> ciHiddenMap = new HashMap<>();
         for (CustomViewCiVo ciVo : customViewVo.getCiList()) {
+            //ciHiddenMap.put(ciVo.getUuid(), ciVo.getIsHidden().equals(1));
+            //if (ciVo.getIsHidden().equals(0)) {
             plainSelect.addSelectItems(new SelectExpressionItem(new Column("`id`").withTable(new Table("ci_" + ciVo.getUuid()))).withAlias(new Alias("`" + ciVo.getUuid() + "_id`")));
             plainSelect.addSelectItems(new SelectExpressionItem(new Column("`name`").withTable(new Table("ci_" + ciVo.getUuid()))).withAlias(new Alias("`" + ciVo.getUuid() + "_name`")));
             if (CollectionUtils.isNotEmpty(ciVo.getConstAttrList())) {
@@ -123,12 +126,15 @@ public class CustomViewBuilder {
                     plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + constAttr.getConstName() + "`").withTable(new Table("ci_" + ciVo.getUuid()))).withAlias(new Alias("`" + constAttr.getUuid() + "`")));
                 }
             }
+            //}
         }
 
         plainSelect.addJoins(new Join().withRightItem(new SubSelect().withSelectBody(buildSubSelectForCi(startCustomViewCiVo).getSelectBody()).withAlias(new Alias("ci_" + startCustomViewCiVo.getUuid()))).addOnExpression(new EqualsTo().withLeftExpression(new Column().withTable(new Table("ci_base")).withColumnName("id")).withRightExpression(new Column().withTable(new Table("ci_" + startCustomViewCiVo.getUuid())).withColumnName("id"))));
         for (CustomViewAttrVo attrVo : customViewVo.getAttrList()) {
+            //if (!ciHiddenMap.get(attrVo.getCustomViewCiUuid())) {
             plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getUuid() + "`")));
             plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getUuid() + "_hash`")));
+            //}
         }
 
 

@@ -60,6 +60,8 @@ public class SearchCustomViewApi extends PrivateApiComponentBase {
     @Input({@Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字", xss = true),
             @Param(name = "tagId", type = ApiParamType.LONG, desc = "标签"),
             @Param(name = "isActive", type = ApiParamType.INTEGER, desc = "是否激活"),
+            @Param(name = "ciId", type = ApiParamType.LONG, desc = "模型id", help = "查询场景自定义视图时才需要提供"),
+            @Param(name = "startCiId", type = ApiParamType.LONG, desc = "起始模型id"),
             @Param(name = "currentPage",
                     type = ApiParamType.INTEGER,
                     desc = "当前页"),

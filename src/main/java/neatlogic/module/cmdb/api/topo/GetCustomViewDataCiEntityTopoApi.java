@@ -16,10 +16,11 @@
 
 package neatlogic.module.cmdb.api.topo;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.ci.CiTypeVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
-import neatlogic.framework.cmdb.dto.cientity.RelEntityVo;
 import neatlogic.framework.cmdb.dto.customview.CustomViewCiVo;
 import neatlogic.framework.cmdb.dto.customview.CustomViewConditionVo;
 import neatlogic.framework.cmdb.dto.customview.CustomViewLinkVo;
@@ -33,11 +34,9 @@ import neatlogic.framework.graphviz.enums.LayoutType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.module.cmdb.dao.mapper.ci.CiTypeMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.service.customview.CustomViewDataService;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -47,10 +46,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -99,17 +95,24 @@ public class GetCustomViewDataCiEntityTopoApi extends PrivateApiComponentBase {
         CustomViewVo customViewVo = customViewDataService.getCustomViewCiEntityById(customViewConditionVo);
         //提取cientityid，补充层次等属性
         Set<Long> ciEntityIdList = new HashSet<>();
+        Map<Long, Boolean> isHiddenMap = new HashMap<>();
         for (CustomViewCiVo ciVo : customViewVo.getCiList()) {
-            if (CollectionUtils.isNotEmpty(ciVo.getCiEntityList())) {
+            if (ciVo.getIsHidden().equals(0) && CollectionUtils.isNotEmpty(ciVo.getCiEntityList())) {
                 ciEntityIdList.addAll(ciVo.getCiEntityList().stream().map(cientity -> cientity.getLong("id")).collect(Collectors.toList()));
             }
+            isHiddenMap.put(ciVo.getCiId(), ciVo.getIsHidden().equals(1));
+        }
+        if (CollectionUtils.isEmpty(ciEntityIdList)) {
+            //如果没有数据，至少查出自己的信息
+            ciEntityIdList.add(jsonObj.getLong("ciEntityId"));
         }
         List<CiEntityVo> ciEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(new ArrayList<>(ciEntityIdList));
-
         // 所有需要绘制的层次
         Set<Long> ciTypeIdSet = new HashSet<>();
         for (CiEntityVo ciEntityVo : ciEntityList) {
-            ciTypeIdSet.add(ciEntityVo.getTypeId());
+            if (!isHiddenMap.get(ciEntityVo.getCiId())) {
+                ciTypeIdSet.add(ciEntityVo.getTypeId());
+            }
         }
         JSONObject returnObj = new JSONObject();
         Long ciEntityId = jsonObj.getLong("ciEntityId");
@@ -177,6 +180,41 @@ public class GetCustomViewDataCiEntityTopoApi extends PrivateApiComponentBase {
                     gb.addLayer(lb.build());
                 }
             }
+            //如果存在隐藏模型，则需要修正关系列表，裁剪隐藏模型的关系
+            if (CollectionUtils.isNotEmpty(customViewVo.getLinkList())) {
+                for (CustomViewCiVo ciVo : customViewVo.getCiList()) {
+                    if (ciVo.getIsHidden().equals(1)) {
+                        List<CustomViewLinkVo> tempLinkList = new ArrayList<>();
+                        Iterator<CustomViewLinkVo> itLink = customViewVo.getLinkList().iterator();
+                        while (itLink.hasNext()) {
+                            CustomViewLinkVo link = itLink.next();
+                            if (link.getFromCustomViewCiUuid().equals(ciVo.getUuid()) || link.getToCustomViewCiUuid().equals(ciVo.getUuid())) {
+                                itLink.remove();
+                                CustomViewLinkVo newLink = new CustomViewLinkVo();
+                                if (link.getFromCustomViewCiUuid().equals(ciVo.getUuid())) {
+                                    newLink.setToCustomViewCiUuid(link.getToCustomViewCiUuid());
+                                } else {
+                                    newLink.setFromCustomViewCiUuid(link.getFromCustomViewCiUuid());
+                                }
+                                tempLinkList.add(newLink);
+                            }
+                        }
+                        if (CollectionUtils.isNotEmpty(tempLinkList)) {
+                            List<CustomViewLinkVo> fromTempLinkList = tempLinkList.stream().filter(d -> StringUtils.isNotBlank(d.getFromCustomViewCiUuid())).collect(Collectors.toList());
+                            List<CustomViewLinkVo> toTempLinkList = tempLinkList.stream().filter(d -> StringUtils.isNotBlank(d.getToCustomViewCiUuid())).collect(Collectors.toList());
+                            for (CustomViewLinkVo tmpFromLink : fromTempLinkList) {
+                                for (CustomViewLinkVo tmpToLink : toTempLinkList) {
+                                    CustomViewLinkVo newLink = new CustomViewLinkVo();
+                                    newLink.setFromCustomViewCiUuid(tmpFromLink.getFromCustomViewCiUuid());
+                                    newLink.setToCustomViewCiUuid(tmpToLink.getToCustomViewCiUuid());
+                                    customViewVo.getLinkList().add(newLink);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            Set<String> uniqueLinkSet = new HashSet<>();
             if (CollectionUtils.isNotEmpty(customViewVo.getLinkList())) {
                 for (CustomViewLinkVo linkVo : customViewVo.getLinkList()) {
                     CustomViewCiVo fromCi = customViewVo.getCustomCiByUuid(linkVo.getFromCustomViewCiUuid());
@@ -185,7 +223,7 @@ public class GetCustomViewDataCiEntityTopoApi extends PrivateApiComponentBase {
                         for (JSONObject fromCiEntityObj : fromCi.getCiEntityList()) {
                             for (JSONObject toCiEntityObj : toCi.getCiEntityList()) {
                                 if (ciEntityNodeSet.contains("CiEntity_" + fromCiEntityObj.getLong("id")) &&
-                                        ciEntityNodeSet.contains("CiEntity_" + toCiEntityObj.getLong("id"))) {
+                                        ciEntityNodeSet.contains("CiEntity_" + toCiEntityObj.getLong("id")) && !uniqueLinkSet.contains(fromCiEntityObj.getLong("id") + "-" + toCiEntityObj.getLong("id"))) {
                                     Link.Builder lb = new Link.Builder(
                                             "CiEntity_" + fromCiEntityObj.getLong("id"),
                                             "CiEntity_" + toCiEntityObj.getLong("id"));
@@ -194,6 +232,7 @@ public class GetCustomViewDataCiEntityTopoApi extends PrivateApiComponentBase {
                                     }
                                     lb.setFontSize(9);
                                     gb.addLink(lb.build());
+                                    uniqueLinkSet.add(fromCiEntityObj.getLong("id") + "-" + toCiEntityObj.getLong("id"));
                                 }
                             }
                         }
@@ -220,22 +259,5 @@ public class GetCustomViewDataCiEntityTopoApi extends PrivateApiComponentBase {
         return returnObj;
     }
 
-    public static void main(String[] argv) {
-        RelEntityVo relEntityVo = new RelEntityVo();
-        relEntityVo.setRelId(1L);
-        relEntityVo.setFromCiEntityId(1L);
-        relEntityVo.setToCiEntityId(2L);
-        relEntityVo.setDirection("from");
-
-        RelEntityVo relEntityVo2 = new RelEntityVo();
-        relEntityVo2.setRelId(1L);
-        relEntityVo2.setFromCiEntityId(1L);
-        relEntityVo2.setToCiEntityId(2L);
-        relEntityVo2.setDirection("from");
-        Set<RelEntityVo> set = new HashSet<>();
-        set.add(relEntityVo);
-        set.add(relEntityVo2);
-        System.out.println(set.size());
-    }
 
 }
