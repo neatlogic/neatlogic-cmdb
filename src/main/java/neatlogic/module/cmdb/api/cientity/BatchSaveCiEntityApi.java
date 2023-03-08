@@ -152,7 +152,7 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
         simpleJson.put("ciEntityList", new JSONArray() {
             {
                 this.add(new JSONObject() {{
-                    this.put("ciId", 323010541453312L);
+                    this.put("ciName", "模型唯一标识");
                     this.put("uuid", "2d327f1213d542bd8a26ace1efb5ab41");
                     this.put("editMode", "global|partial");
                     this.put("entityData", new JSONObject() {{
@@ -284,8 +284,9 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
     }
 
     @Input({@Param(name = "ciEntityList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "配置项数据"), @Param(name = "needCommit", type = ApiParamType.BOOLEAN, isRequired = true, desc = "是否需要提交"), @Param(name = "isSimple", type = ApiParamType.BOOLEAN, desc = "数据是否简易模式", help = "简易模式主要给第三方系统使用，true：简易模式，false：正常模式")})
+    @Output({@Param(name = "transactionGroupId", type = ApiParamType.LONG, desc = "事务组id"),
+            @Param(name = "commited", type = ApiParamType.BOOLEAN, desc = "是否提交")})
     @Description(desc = "保存配置项接口")
-    @Example(example = "{\"ciEntityList\":[{\"editMode\":\"global|partial\",\"attrEntityData\":{\"attr_323010784722944\":{\"valueList\":[\"测试环境\"],\"name\":\"label\",\"label\":\"显示名\",\"type\":\"text\",\"saveMode\":\"merge\"},\"attr_323010700836864\":{\"valueList\":[\"stg33\"],\"name\":\"name\",\"label\":\"唯一标识\",\"type\":\"text\"}},\"ciId\":323010541453312,\"id\":330340423237635,\"uuid\":\"3e3e74b1947b400aa34d7c6964f79168\"}]}")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         boolean needCommit = jsonObj.getBooleanValue("needCommit");
@@ -424,8 +425,8 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
 
             //判断权限
             if (ciEntityTransactionVo.getAction().equals(TransactionActionType.INSERT.getValue())) {
-                boolean isInGroup = false;
-                CiEntityVo newCiEntityVo = new CiEntityVo(ciEntityTransactionVo);
+                //boolean isInGroup = false;
+                //CiEntityVo newCiEntityVo = new CiEntityVo(ciEntityTransactionVo);
                 if (!CiAuthChecker.chain().checkCiEntityInsertPrivilege(ciId).checkCiIsInGroup(ciId, GroupType.MAINTAIN).check()) {
                     CiVo ciVo = ciMapper.getCiById(ciId);
                     throw new CiEntityAuthException(ciVo.getLabel(), TransactionActionType.INSERT.getText());
@@ -442,8 +443,9 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
                     allowCommit = false;
                 }
             }
-
-            ciEntityTransactionList.add(ciEntityTransactionVo);
+            if (!ciEntityTransactionList.contains(ciEntityTransactionVo)) {
+                ciEntityTransactionList.add(ciEntityTransactionVo);
+            }
         }
         if (CollectionUtils.isNotEmpty(ciEntityTransactionList)) {
             for (CiEntityTransactionVo t : ciEntityTransactionList) {

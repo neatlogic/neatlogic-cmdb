@@ -25,6 +25,9 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface CiMapper extends ICiCrossoverMapper {
+
+    Long getCiLock(Long ciId);
+
     String getCiViewXmlById(Long ciId);
 
     List<Long> getCiUniqueByCiId(Long ciId);

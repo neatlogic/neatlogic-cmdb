@@ -45,6 +45,7 @@ import neatlogic.framework.fulltextindex.core.IFullTextIndexHandler;
 import neatlogic.framework.mq.core.ITopic;
 import neatlogic.framework.mq.core.TopicFactory;
 import neatlogic.framework.transaction.core.AfterTransactionJob;
+import neatlogic.framework.util.I18nUtils;
 import neatlogic.module.cmdb.attrexpression.AttrExpressionRebuildManager;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
@@ -585,6 +586,11 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             ciEntityMapper.updateCiEntityLockById(ciEntityTransactionVo.getOldCiEntityVo());
         }
 
+        //如果是添加配置项，则锁定模型，防止高并发时导致重复数据添加进来
+        if (ciEntityTransactionVo.getAction().equals(TransactionActionType.INSERT.getValue())) {
+            ciMapper.getCiLock(ciEntityTransactionVo.getCiId());
+        }
+
         TransactionVo transactionVo = new TransactionVo();
         transactionVo.setCiId(ciEntityTransactionVo.getCiId());
         transactionVo.setInputFrom(InputFromContext.get().getInputFrom());
@@ -801,7 +807,8 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                                 if (cientity != null) {
                                     valueObj.put("ciEntityName", cientity.getName());
                                 } else {
-                                    relEntityData.getJSONArray("valueList").remove(i);
+                                    //relEntityData.getJSONArray("valueList").remove(i);
+                                    valueObj.put("ciEntityName", I18nUtils.getMessage("term.cmdb.newcientity"));
                                 }
                             }
                         }
