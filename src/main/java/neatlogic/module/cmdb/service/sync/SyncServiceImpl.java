@@ -25,6 +25,7 @@ import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.sync.SyncAuditMapper;
 import neatlogic.module.cmdb.dao.mapper.sync.SyncMapper;
 import com.alibaba.nacos.common.utils.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -69,7 +70,12 @@ public class SyncServiceImpl implements SyncService {
             CiVo ciVo = ciMapper.getCiById(syncCiCollectionVo.getCiId());
             syncCiCollectionVo.setCiLabel(ciVo.getLabel());
             syncCiCollectionVo.setCiName(ciVo.getName());
-            throw new SyncCiCollectionIsExistsException(syncCiCollectionVo);
+            if (StringUtils.isNotEmpty(syncCiCollectionVo.getParentKey())) {
+                throw new SyncCiCollectionIsExistsException(syncCiCollectionVo, true);
+
+            } else {
+                throw new SyncCiCollectionIsExistsException(syncCiCollectionVo);
+            }
         }
         SyncCiCollectionVo oldSyncCiCollectionVo = syncMapper.getSyncCiCollectionById(syncCiCollectionVo.getId());
         if (oldSyncCiCollectionVo == null) {

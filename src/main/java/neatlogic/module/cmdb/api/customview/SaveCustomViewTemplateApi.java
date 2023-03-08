@@ -16,6 +16,7 @@
 
 package neatlogic.module.cmdb.api.customview;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.auth.core.AuthActionChecker;
@@ -25,7 +26,7 @@ import neatlogic.framework.cmdb.dto.customview.CustomViewTemplateVo;
 import neatlogic.framework.cmdb.dto.customview.CustomViewVo;
 import neatlogic.framework.cmdb.enums.customview.CustomViewType;
 import neatlogic.framework.cmdb.exception.customview.CustomViewNotFoundException;
-import neatlogic.framework.cmdb.exception.customview.CustomViewPrivilegeException;
+import neatlogic.framework.cmdb.exception.customview.CustomViewPrivilegeSaveException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.exception.type.ParamNotExistsException;
 import neatlogic.framework.restful.annotation.Description;
@@ -36,7 +37,6 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.customview.CustomViewMapper;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
-import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -84,7 +84,7 @@ public class SaveCustomViewTemplateApi extends PrivateApiComponentBase {
 
         if (customViewVo.getType().equals(CustomViewType.PUBLIC.getValue())) {
             if (!AuthActionChecker.check(CUSTOMVIEW_MODIFY.class)) {
-                throw new CustomViewPrivilegeException(CustomViewPrivilegeException.Action.SAVE);
+                throw new CustomViewPrivilegeSaveException();
             }
         } else if (customViewVo.getType().equals(CustomViewType.SCENE.getValue())) {
             Long ciId = jsonObj.getLong("ciId");
@@ -92,11 +92,11 @@ public class SaveCustomViewTemplateApi extends PrivateApiComponentBase {
                 throw new ParamNotExistsException("ciId");
             }
             if (!CiAuthChecker.chain().checkCiManagePrivilege(ciId).check()) {
-                throw new CustomViewPrivilegeException(CustomViewPrivilegeException.Action.SAVE);
+                throw new CustomViewPrivilegeSaveException();
             }
         } else if (customViewVo.getType().equals(CustomViewType.PRIVATE.getValue())) {
             if (!customViewVo.getFcu().equalsIgnoreCase(UserContext.get().getUserUuid(true))) {
-                throw new CustomViewPrivilegeException(CustomViewPrivilegeException.Action.SAVE);
+                throw new CustomViewPrivilegeSaveException();
             }
         }
         customViewMapper.insertCustomViewTemplate(customViewTemplateVo);

@@ -27,7 +27,7 @@ import neatlogic.framework.cmdb.dto.graph.GraphVo;
 import neatlogic.framework.cmdb.enums.customview.CustomViewType;
 import neatlogic.framework.cmdb.enums.graph.GraphType;
 import neatlogic.framework.cmdb.exception.graph.GraphNotFoundException;
-import neatlogic.framework.cmdb.exception.graph.GraphPrivilegeException;
+import neatlogic.framework.cmdb.exception.graph.GraphPrivilegeSaveException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
@@ -80,7 +80,7 @@ public class SaveGraphApi extends PrivateApiComponentBase {
         String type = jsonObj.getString("type");
         if (type.equals(GraphType.PUBLIC.getValue())) {
             if (!AuthActionChecker.check(GRAPH_MODIFY.class)) {
-                throw new GraphPrivilegeException(GraphPrivilegeException.Action.SAVE);
+                throw new GraphPrivilegeSaveException();
             }
         }
         GraphVo graphVo = JSONObject.toJavaObject(jsonObj, GraphVo.class);
@@ -91,7 +91,7 @@ public class SaveGraphApi extends PrivateApiComponentBase {
             }
             if (oldGraphVo.getType().equals(CustomViewType.PRIVATE.getValue())) {
                 if (!oldGraphVo.getFcu().equalsIgnoreCase(UserContext.get().getUserUuid(true))) {
-                    throw new GraphPrivilegeException(GraphPrivilegeException.Action.SAVE);
+                    throw new GraphPrivilegeSaveException();
                 }
             }
             graphVo.setLcu(UserContext.get().getUserUuid(true));
