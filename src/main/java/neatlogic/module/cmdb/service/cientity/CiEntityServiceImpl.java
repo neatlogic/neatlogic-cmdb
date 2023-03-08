@@ -45,6 +45,7 @@ import neatlogic.framework.fulltextindex.core.IFullTextIndexHandler;
 import neatlogic.framework.mq.core.ITopic;
 import neatlogic.framework.mq.core.TopicFactory;
 import neatlogic.framework.transaction.core.AfterTransactionJob;
+import neatlogic.framework.util.I18nUtils;
 import neatlogic.module.cmdb.attrexpression.AttrExpressionRebuildManager;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
@@ -806,7 +807,8 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                                 if (cientity != null) {
                                     valueObj.put("ciEntityName", cientity.getName());
                                 } else {
-                                    relEntityData.getJSONArray("valueList").remove(i);
+                                    //relEntityData.getJSONArray("valueList").remove(i);
+                                    valueObj.put("ciEntityName", I18nUtils.getMessage("term.cmdb.newcientity"));
                                 }
                             }
                         }
