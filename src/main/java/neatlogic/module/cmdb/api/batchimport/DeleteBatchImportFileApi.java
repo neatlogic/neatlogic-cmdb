@@ -24,6 +24,7 @@ import neatlogic.framework.exception.file.FileAccessDeniedException;
 import neatlogic.framework.exception.file.FileNotFoundException;
 import neatlogic.framework.exception.file.FileTypeHandlerNotFoundException;
 import neatlogic.framework.exception.user.NoTenantException;
+import neatlogic.framework.file.core.FileOperationType;
 import neatlogic.framework.file.core.FileTypeHandlerFactory;
 import neatlogic.framework.file.core.IFileTypeHandler;
 import neatlogic.framework.file.dao.mapper.FileMapper;
@@ -81,7 +82,7 @@ public class DeleteBatchImportFileApi extends PrivateApiComponentBase {
                 if (fileTypeHandler.valid(UserContext.get().getUserUuid(), fileVo, null)) {
                     fileTypeHandler.deleteFile(fileVo, null);
                 } else {
-                    throw new FileAccessDeniedException(fileVo.getName(), OperationTypeEnum.DELETE.getText());
+                    throw new FileAccessDeniedException(fileVo.getName(), FileOperationType.DELETE.getText());
                 }
             } else {
                 throw new FileTypeHandlerNotFoundException(fileVo.getType());

@@ -18,6 +18,7 @@ package neatlogic.module.cmdb.api.cientity;
 
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
+import neatlogic.framework.cmdb.enums.TransactionActionType;
 import neatlogic.framework.cmdb.exception.cientity.CiEntityAuthException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
@@ -92,7 +93,7 @@ public class GetCiEntityListApi extends PrivateApiComponentBase {
                 ciEntityVo.setLimitAttrEntity(true);
                 return ciEntityService.getCiEntityByIdList(ciEntityVo);
             } else {
-                throw new CiEntityAuthException("查看");
+                throw new CiEntityAuthException(TransactionActionType.VIEW.getText());
             }
         } else {
             return ciEntityService.getCiEntityByIdList(ciId, idList);
