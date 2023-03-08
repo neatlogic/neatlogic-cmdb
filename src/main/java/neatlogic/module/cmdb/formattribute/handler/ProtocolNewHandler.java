@@ -86,7 +86,11 @@ public class ProtocolNewHandler extends FormHandlerBase {
 
     @Override
     public Object dataTransformationForEmail(AttributeDataVo attributeDataVo, JSONObject configObj) {
-        return valueConversionText(attributeDataVo, configObj);
+        JSONObject dataObj = getMyDetailedData(attributeDataVo, configObj);
+        if (MapUtils.isNotEmpty(dataObj)) {
+            return dataObj.getString("name");
+        }
+        return null;
     }
 
     @Override

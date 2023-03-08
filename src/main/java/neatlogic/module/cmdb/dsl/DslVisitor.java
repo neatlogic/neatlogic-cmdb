@@ -18,7 +18,8 @@ package neatlogic.module.cmdb.dsl;
 
 import neatlogic.framework.cmdb.dsl.parser.CmdbDSLBaseVisitor;
 import neatlogic.framework.cmdb.dsl.parser.CmdbDSLParser;
-import neatlogic.framework.cmdb.exception.dsl.DslSyntaxIrregularException;
+import neatlogic.framework.cmdb.exception.dsl.DslSyntaxIrregularArrayException;
+import neatlogic.framework.cmdb.exception.dsl.DslSyntaxIrregularOperatorException;
 
 public class DslVisitor extends CmdbDSLBaseVisitor<String> {
     private final DslSearchManager dslSearchManager;
@@ -46,11 +47,11 @@ public class DslVisitor extends CmdbDSLBaseVisitor<String> {
     private void validExpression(CmdbDSLParser.ExpressionContext ctx) {
         if (ctx.STRING_ARRAY() != null || ctx.NUMBER_ARRAY() != null) {
             if (ctx.comparisonOperator().INCLUDE() == null && ctx.comparisonOperator().EXCLUDE() == null) {
-                throw new DslSyntaxIrregularException("数组比较只能使用include或exclude运算符");
+                throw new DslSyntaxIrregularArrayException();
             }
         } else if (ctx.calculateExpressions() != null) {
             if (ctx.comparisonOperator().EQ() == null && ctx.comparisonOperator().NOTEQ() == null && ctx.comparisonOperator().LE() == null && ctx.comparisonOperator().GE() == null && ctx.comparisonOperator().LT() == null && ctx.comparisonOperator().GT() == null) {
-                throw new DslSyntaxIrregularException("计算比较只能使用==、!=、>、<、>=或<=运算符");
+                throw new DslSyntaxIrregularOperatorException();
             }
         }
     }

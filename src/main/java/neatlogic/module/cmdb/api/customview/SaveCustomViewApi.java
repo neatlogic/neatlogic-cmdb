@@ -16,28 +16,28 @@
 
 package neatlogic.module.cmdb.api.customview;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.auth.core.AuthActionChecker;
+import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
+import neatlogic.framework.cmdb.auth.label.CUSTOMVIEW_MODIFY;
 import neatlogic.framework.cmdb.dto.customview.*;
 import neatlogic.framework.cmdb.enums.customview.CustomViewType;
 import neatlogic.framework.cmdb.enums.customview.RelType;
 import neatlogic.framework.cmdb.exception.customview.CustomViewCiNotFoundException;
 import neatlogic.framework.cmdb.exception.customview.CustomViewEmptyException;
 import neatlogic.framework.cmdb.exception.customview.CustomViewNameIsExistsException;
-import neatlogic.framework.cmdb.exception.customview.CustomViewPrivilegeException;
+import neatlogic.framework.cmdb.exception.customview.CustomViewPrivilegeSaveException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.exception.type.ParamNotExistsException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
-import neatlogic.framework.cmdb.auth.label.CUSTOMVIEW_MODIFY;
 import neatlogic.module.cmdb.dao.mapper.customview.CustomViewMapper;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
 import neatlogic.module.cmdb.service.customview.CustomViewService;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -85,7 +85,7 @@ public class SaveCustomViewApi extends PrivateApiComponentBase {
         Long ciId = null;
         if (type.equals(CustomViewType.PUBLIC.getValue())) {
             if (!AuthActionChecker.check(CUSTOMVIEW_MODIFY.class)) {
-                throw new CustomViewPrivilegeException(CustomViewPrivilegeException.Action.SAVE);
+                throw new CustomViewPrivilegeSaveException();
             }
         } else if (type.equals(CustomViewType.SCENE.getValue())) {
             ciId = jsonObj.getLong("ciId");
@@ -93,7 +93,7 @@ public class SaveCustomViewApi extends PrivateApiComponentBase {
                 throw new ParamNotExistsException("ciId");
             }
             if (!CiAuthChecker.chain().checkCiManagePrivilege(ciId).check()) {
-                throw new CustomViewPrivilegeException(CustomViewPrivilegeException.Action.SAVE);
+                throw new CustomViewPrivilegeSaveException();
             }
         }
         Long id = jsonObj.getLong("id");
@@ -104,7 +104,7 @@ public class SaveCustomViewApi extends PrivateApiComponentBase {
             }
             if (type.equals(CustomViewType.PRIVATE.getValue())) {
                 if (!checkView.getFcu().equalsIgnoreCase(UserContext.get().getUserUuid(true))) {
-                    throw new CustomViewPrivilegeException(CustomViewPrivilegeException.Action.SAVE);
+                    throw new CustomViewPrivilegeSaveException();
                 }
             }
         }

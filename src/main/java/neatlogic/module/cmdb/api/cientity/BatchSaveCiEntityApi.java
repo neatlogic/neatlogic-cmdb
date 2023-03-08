@@ -33,8 +33,8 @@ import neatlogic.framework.cmdb.enums.TransactionActionType;
 import neatlogic.framework.cmdb.enums.group.GroupType;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.cientity.CiEntityAuthException;
+import neatlogic.framework.cmdb.exception.cientity.NewCiEntityNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.exception.core.ApiRuntimeException;
 import neatlogic.framework.exception.type.ParamNotExistsException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
@@ -341,7 +341,7 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
                 ciEntityTransactionVo.setCiEntityUuid(uuid);
                 ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
             } else {
-                throw new ApiRuntimeException("数据不合法，缺少id或uuid");
+                throw new ParamNotExistsException("id","uuid");
             }
 
             if (Objects.equals(ciEntityObj.getString("editMode"), EditModeType.GLOBAL.getValue()) || Objects.equals(ciEntityObj.getString("editMode"), EditModeType.PARTIAL.getValue())) {
@@ -375,7 +375,7 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
                                         //使用uuid寻找配置项
                                         CiEntityVo uuidCiEntityVo = ciEntityMapper.getCiEntityBaseInfoByUuid(attrCiEntityUuid);
                                         if (uuidCiEntityVo == null) {
-                                            throw new ApiRuntimeException("找不到" + attrCiEntityUuid + "的新配置项");
+                                            throw new NewCiEntityNotFoundException(attrCiEntityUuid);
                                         } else {
                                             valueList.set(i, uuidCiEntityVo.getId());
                                         }
@@ -411,7 +411,7 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
                                 } else {
                                     CiEntityVo uuidCiEntityVo = ciEntityMapper.getCiEntityBaseInfoByUuid(ciEntityUuid);
                                     if (uuidCiEntityVo == null) {
-                                        throw new ApiRuntimeException("找不到" + relEntityObj.getString("ciEntityUuid") + "的新配置项");
+                                        throw new NewCiEntityNotFoundException( relEntityObj.getString("ciEntityUuid"));
                                     } else {
                                         relEntityObj.put("ciEntityId", uuidCiEntityVo.getId());
                                     }
