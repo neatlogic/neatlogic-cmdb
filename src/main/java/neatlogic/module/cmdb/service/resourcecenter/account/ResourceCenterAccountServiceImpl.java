@@ -96,29 +96,29 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
      * 2、根据节点对应os资产获取账号
      * 3、通过 ”协议id“ 匹配默认帐号
      *
-     * @param accountByResourceList    通过执行节点的资产id+协议id+执行用户 查询回来的帐号列表（tagent类型不适用）
-     * @param tagentIpAccountMap 通过执行节点的ip 查询回来的帐号列表（目前仅用于tagent类型的匹配）
-     * @param resourceId       执行节点的资产id
-     * @param ip               执行节点的ip
-     * @param resourceOSResourceMap   节点resourceId->对应操作系统resourceId
+     * @param accountByResourceList     通过执行节点的资产id+协议id+执行用户 查询回来的帐号列表（tagent类型不适用）
+     * @param tagentIpAccountMap        通过执行节点的ip 查询回来的帐号列表（目前仅用于tagent类型的匹配）
+     * @param resourceId                执行节点的资产id
+     * @param ip                        执行节点的ip
+     * @param resourceOSResourceMap     节点resourceId->对应操作系统resourceId
      * @param protocolDefaultAccountMap 协议对应的默认帐号
      * @return 匹配的帐号
      */
     @Override
-    public AccountVo filterAccountByRules(List<AccountVo> accountByResourceList, Map<String,AccountVo> tagentIpAccountMap,  Long resourceId,AccountVo executeAccountVo, String ip,Map<Long,Long> resourceOSResourceMap, Map<Long, AccountVo> protocolDefaultAccountMap) {
+    public AccountVo filterAccountByRules(List<AccountVo> accountByResourceList, Map<String, AccountVo> tagentIpAccountMap, Long resourceId, AccountProtocolVo protocolVo, String ip, Map<Long, Long> resourceOSResourceMap, Map<Long, AccountVo> protocolDefaultAccountMap) {
         AccountVo accountVo = null;
-        Optional<AccountVo> accountOp ;
+        Optional<AccountVo> accountOp;
         //1
-        if (Objects.equals(executeAccountVo.getProtocol(), Protocol.TAGENT.getValue())) {
+        if (Objects.equals(protocolVo.getName(), Protocol.TAGENT.getValue())) {
             accountVo = tagentIpAccountMap.get(ip);
-        }else {
+        } else {
             accountOp = accountByResourceList.stream().filter(o -> Objects.equals(o.getResourceId(), resourceId)).findFirst();
             if (accountOp.isPresent()) {
                 accountVo = accountOp.get();
             }
         }
         //2
-        if(accountVo == null){
+        if (accountVo == null) {
             Long osResourceId = resourceOSResourceMap.get(resourceId);
             accountOp = accountByResourceList.stream().filter(o -> Objects.equals(o.getResourceId(), osResourceId)).findFirst();
             if (accountOp.isPresent()) {
@@ -126,8 +126,8 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
             }
         }
         //3
-        if(accountVo == null) {
-            accountVo = protocolDefaultAccountMap.get(executeAccountVo.getProtocolId());
+        if (accountVo == null) {
+            accountVo = protocolDefaultAccountMap.get(protocolVo.getId());
         }
         return accountVo;
     }
