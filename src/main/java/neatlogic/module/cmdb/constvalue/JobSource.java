@@ -58,7 +58,7 @@ public enum JobSource implements IAutoexecJobSource {
         for (JobSource s : JobSource.values()) {
             AutoexecJobSourceVo source = new AutoexecJobSourceVo();
             source.setSource(s.value);
-            source.setSourceName(s.text);
+            source.setSourceName(s.getText());
             source.setType(s.getType());
             list.add(source);
         }
