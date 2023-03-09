@@ -1,7 +1,7 @@
 -- ----------------------------
 -- Table structure for cmdb_attr
 -- ----------------------------
-CREATE TABLE `cmdb_attr` (
+CREATE TABLE IF NOT EXISTS `cmdb_attr` (
   `id` bigint NOT NULL COMMENT 'id',
   `ci_id` bigint NOT NULL COMMENT '引用ecmdb_ci的id',
   `type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '值类型',
@@ -27,7 +27,7 @@ CREATE TABLE `cmdb_attr` (
 -- ----------------------------
 -- Table structure for cmdb_attrentity
 -- ----------------------------
-CREATE TABLE `cmdb_attrentity` (
+CREATE TABLE IF NOT EXISTS `cmdb_attrentity` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
   `from_cientity_id` bigint DEFAULT NULL COMMENT '所属配置项id',
   `to_cientity_id` bigint DEFAULT NULL COMMENT '引用配置项id',
@@ -48,7 +48,7 @@ CREATE TABLE `cmdb_attrentity` (
 -- ----------------------------
 -- Table structure for cmdb_attrentity_content
 -- ----------------------------
-CREATE TABLE `cmdb_attrentity_content` (
+CREATE TABLE IF NOT EXISTS `cmdb_attrentity_content` (
   `hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'hash',
   `value_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'value值的hash值，用于精确匹配',
   `content` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '内容',
@@ -59,7 +59,7 @@ CREATE TABLE `cmdb_attrentity_content` (
 -- ----------------------------
 -- Table structure for cmdb_attrentity_content_offset
 -- ----------------------------
-CREATE TABLE `cmdb_attrentity_content_offset` (
+CREATE TABLE IF NOT EXISTS `cmdb_attrentity_content_offset` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'id',
   `hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '内容hash',
   `start` int DEFAULT NULL COMMENT 'start',
@@ -71,7 +71,7 @@ CREATE TABLE `cmdb_attrentity_content_offset` (
 -- ----------------------------
 -- Table structure for cmdb_attrexpression_rebuild_audit
 -- ----------------------------
-CREATE TABLE `cmdb_attrexpression_rebuild_audit` (
+CREATE TABLE IF NOT EXISTS `cmdb_attrexpression_rebuild_audit` (
   `id` bigint NOT NULL COMMENT 'id',
   `ci_id` bigint DEFAULT NULL COMMENT '模型id',
   `cientity_id` bigint DEFAULT NULL COMMENT '配置项id',
@@ -85,7 +85,7 @@ CREATE TABLE `cmdb_attrexpression_rebuild_audit` (
 -- ----------------------------
 -- Table structure for cmdb_attrexpression_rel
 -- ----------------------------
-CREATE TABLE `cmdb_attrexpression_rel` (
+CREATE TABLE IF NOT EXISTS `cmdb_attrexpression_rel` (
   `expression_ci_id` bigint NOT NULL COMMENT 'expression_ci_id',
   `expression_attr_id` bigint NOT NULL COMMENT '表达式属性id',
   `value_attr_id` bigint NOT NULL COMMENT '值属性id',
@@ -96,7 +96,7 @@ CREATE TABLE `cmdb_attrexpression_rel` (
 -- ----------------------------
 -- Table structure for cmdb_ci
 -- ----------------------------
-CREATE TABLE `cmdb_ci` (
+CREATE TABLE IF NOT EXISTS `cmdb_ci` (
   `id` bigint NOT NULL COMMENT 'ID',
   `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '英文名',
   `label` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '中文名',
@@ -123,7 +123,7 @@ CREATE TABLE `cmdb_ci` (
 -- ----------------------------
 -- Table structure for cmdb_ci_auth
 -- ----------------------------
-CREATE TABLE `cmdb_ci_auth` (
+CREATE TABLE IF NOT EXISTS `cmdb_ci_auth` (
   `ci_id` bigint NOT NULL COMMENT '引用ecmdb_ci的id',
   `auth_type` enum('user','role','team','common') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '角色名称',
   `action` enum('cientityinsert','cientityupdate','cientitydelete','cientityrecover','cientityquery','cimanage','transactionmanage','passwordview') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '对应的操作动作',
@@ -134,7 +134,7 @@ CREATE TABLE `cmdb_ci_auth` (
 -- ----------------------------
 -- Table structure for cmdb_ci_customview
 -- ----------------------------
-CREATE TABLE `cmdb_ci_customview` (
+CREATE TABLE IF NOT EXISTS `cmdb_ci_customview` (
   `ci_id` bigint NOT NULL COMMENT '模型id',
   `customview_id` bigint NOT NULL COMMENT '自定义视图id',
   PRIMARY KEY (`ci_id`,`customview_id`) USING BTREE
@@ -143,7 +143,7 @@ CREATE TABLE `cmdb_ci_customview` (
 -- ----------------------------
 -- Table structure for cmdb_ci_group
 -- ----------------------------
-CREATE TABLE `cmdb_ci_group` (
+CREATE TABLE IF NOT EXISTS `cmdb_ci_group` (
   `id` bigint NOT NULL COMMENT 'id',
   `ci_id` bigint DEFAULT NULL COMMENT '模型id',
   `group_id` bigint DEFAULT NULL COMMENT '团体id',
@@ -156,7 +156,7 @@ CREATE TABLE `cmdb_ci_group` (
 -- ----------------------------
 -- Table structure for cmdb_ci_unique
 -- ----------------------------
-CREATE TABLE `cmdb_ci_unique` (
+CREATE TABLE IF NOT EXISTS `cmdb_ci_unique` (
   `ci_id` bigint NOT NULL COMMENT 'ci id',
   `attr_id` bigint NOT NULL COMMENT '属性id',
   PRIMARY KEY (`ci_id`,`attr_id`) USING BTREE,
@@ -166,7 +166,7 @@ CREATE TABLE `cmdb_ci_unique` (
 -- ----------------------------
 -- Table structure for cmdb_cientity
 -- ----------------------------
-CREATE TABLE `cmdb_cientity` (
+CREATE TABLE IF NOT EXISTS `cmdb_cientity` (
   `id` bigint NOT NULL COMMENT 'ID',
   `uuid` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'uuid',
   `ci_id` bigint NOT NULL COMMENT '引用ecmdb_ci的id',
@@ -189,7 +189,7 @@ CREATE TABLE `cmdb_cientity` (
 -- ----------------------------
 -- Table structure for cmdb_cientity_alert
 -- ----------------------------
-CREATE TABLE `cmdb_cientity_alert` (
+CREATE TABLE IF NOT EXISTS `cmdb_cientity_alert` (
   `id` bigint NOT NULL,
   `cientity_id` bigint DEFAULT NULL,
   `cientity_uuid` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -208,7 +208,7 @@ CREATE TABLE `cmdb_cientity_alert` (
 -- ----------------------------
 -- Table structure for cmdb_cientity_alertlevel
 -- ----------------------------
-CREATE TABLE `cmdb_cientity_alertlevel` (
+CREATE TABLE IF NOT EXISTS `cmdb_cientity_alertlevel` (
   `level` int NOT NULL,
   `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `color` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -218,7 +218,7 @@ CREATE TABLE `cmdb_cientity_alertlevel` (
 -- ----------------------------
 -- Table structure for cmdb_cientity_expiredtime
 -- ----------------------------
-CREATE TABLE `cmdb_cientity_expiredtime` (
+CREATE TABLE IF NOT EXISTS `cmdb_cientity_expiredtime` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `expired_day` int DEFAULT NULL COMMENT '原来的超时天数，用于比对修正expired_time',
   `expired_time` timestamp(3) NULL DEFAULT NULL COMMENT '过期日期',
@@ -231,7 +231,7 @@ CREATE TABLE `cmdb_cientity_expiredtime` (
 -- ----------------------------
 -- Table structure for cmdb_cientity_group
 -- ----------------------------
-CREATE TABLE `cmdb_cientity_group` (
+CREATE TABLE IF NOT EXISTS `cmdb_cientity_group` (
   `cientity_id` bigint NOT NULL COMMENT '配置项ID',
   `group_id` bigint NOT NULL COMMENT '圈子id',
   `ci_group_id` bigint DEFAULT NULL COMMENT '命中的规则id',
@@ -243,7 +243,7 @@ CREATE TABLE `cmdb_cientity_group` (
 -- ----------------------------
 -- Table structure for cmdb_cientity_illegal
 -- ----------------------------
-CREATE TABLE `cmdb_cientity_illegal` (
+CREATE TABLE IF NOT EXISTS `cmdb_cientity_illegal` (
   `ci_id` bigint NOT NULL COMMENT '模型id',
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `legalvalid_id` bigint NOT NULL COMMENT '规则id',
@@ -258,7 +258,7 @@ CREATE TABLE `cmdb_cientity_illegal` (
 -- ----------------------------
 -- Table structure for cmdb_cientity_inspect
 -- ----------------------------
-CREATE TABLE `cmdb_cientity_inspect` (
+CREATE TABLE IF NOT EXISTS `cmdb_cientity_inspect` (
   `id` bigint NOT NULL COMMENT '主键',
   `job_id` bigint NOT NULL COMMENT '作业id',
   `ci_entity_id` bigint NOT NULL COMMENT '配置项id',
@@ -271,7 +271,7 @@ CREATE TABLE `cmdb_cientity_inspect` (
 -- ----------------------------
 -- Table structure for cmdb_cientity_snapshot
 -- ----------------------------
-CREATE TABLE `cmdb_cientity_snapshot` (
+CREATE TABLE IF NOT EXISTS `cmdb_cientity_snapshot` (
   `hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'hash',
   `content` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '内容',
   PRIMARY KEY (`hash`) USING BTREE
@@ -280,7 +280,7 @@ CREATE TABLE `cmdb_cientity_snapshot` (
 -- ----------------------------
 -- Table structure for cmdb_cientity_transaction
 -- ----------------------------
-CREATE TABLE `cmdb_cientity_transaction` (
+CREATE TABLE IF NOT EXISTS `cmdb_cientity_transaction` (
   `id` bigint unsigned NOT NULL COMMENT 'ID',
   `ci_entity_uuid` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '配置项实例uuid',
   `ci_id` bigint NOT NULL COMMENT '引用ecmdb_ci的id',
@@ -300,7 +300,7 @@ CREATE TABLE `cmdb_cientity_transaction` (
 -- ----------------------------
 -- Table structure for cmdb_citype
 -- ----------------------------
-CREATE TABLE `cmdb_citype` (
+CREATE TABLE IF NOT EXISTS `cmdb_citype` (
   `id` bigint NOT NULL COMMENT 'id',
   `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '类型名称',
   `sort` int NOT NULL COMMENT '排序',
@@ -313,7 +313,7 @@ CREATE TABLE `cmdb_citype` (
 -- ----------------------------
 -- Table structure for cmdb_customview
 -- ----------------------------
-CREATE TABLE `cmdb_customview` (
+CREATE TABLE IF NOT EXISTS `cmdb_customview` (
   `id` bigint NOT NULL COMMENT 'id',
   `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '名称',
   `is_active` tinyint(1) DEFAULT NULL COMMENT '是否激活',
@@ -333,7 +333,7 @@ CREATE TABLE `cmdb_customview` (
 -- ----------------------------
 -- Table structure for cmdb_customview_attr
 -- ----------------------------
-CREATE TABLE `cmdb_customview_attr` (
+CREATE TABLE IF NOT EXISTS `cmdb_customview_attr` (
   `customview_id` bigint NOT NULL COMMENT '视图id',
   `customview_ci_uuid` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '模型在视图中的唯一id',
   `uuid` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'uuid',
@@ -352,7 +352,7 @@ CREATE TABLE `cmdb_customview_attr` (
 -- ----------------------------
 -- Table structure for cmdb_customview_auth
 -- ----------------------------
-CREATE TABLE `cmdb_customview_auth` (
+CREATE TABLE IF NOT EXISTS `cmdb_customview_auth` (
   `customview_id` bigint NOT NULL COMMENT '视图id',
   `auth_type` enum('user','team','role','common') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '''user'',''team'',''role''',
   `auth_uuid` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'auth uuid',
@@ -364,7 +364,7 @@ CREATE TABLE `cmdb_customview_auth` (
 -- ----------------------------
 -- Table structure for cmdb_customview_ci
 -- ----------------------------
-CREATE TABLE `cmdb_customview_ci` (
+CREATE TABLE IF NOT EXISTS `cmdb_customview_ci` (
   `customview_id` bigint NOT NULL COMMENT '视图id',
   `uuid` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '在视图中的uuid',
   `ci_id` bigint DEFAULT NULL COMMENT '模型id',
@@ -380,7 +380,7 @@ CREATE TABLE `cmdb_customview_ci` (
 -- ----------------------------
 -- Table structure for cmdb_customview_constattr
 -- ----------------------------
-CREATE TABLE `cmdb_customview_constattr` (
+CREATE TABLE IF NOT EXISTS `cmdb_customview_constattr` (
   `customview_id` bigint NOT NULL COMMENT '视图id',
   `customview_ci_uuid` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '模型在视图中的唯一id',
   `uuid` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'uuid',
@@ -398,7 +398,7 @@ CREATE TABLE `cmdb_customview_constattr` (
 -- ----------------------------
 -- Table structure for cmdb_customview_link
 -- ----------------------------
-CREATE TABLE `cmdb_customview_link` (
+CREATE TABLE IF NOT EXISTS `cmdb_customview_link` (
   `customview_id` bigint NOT NULL COMMENT '视图id',
   `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '别名',
   `uuid` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'uuid',
@@ -418,7 +418,7 @@ CREATE TABLE `cmdb_customview_link` (
 -- ----------------------------
 -- Table structure for cmdb_customview_rel
 -- ----------------------------
-CREATE TABLE `cmdb_customview_rel` (
+CREATE TABLE IF NOT EXISTS `cmdb_customview_rel` (
   `customview_id` bigint NOT NULL COMMENT '视图id',
   `customview_ci_uuid` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'customview_ci_uuid',
   `uuid` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'uuid',
@@ -431,7 +431,7 @@ CREATE TABLE `cmdb_customview_rel` (
 -- ----------------------------
 -- Table structure for cmdb_customview_tag
 -- ----------------------------
-CREATE TABLE `cmdb_customview_tag` (
+CREATE TABLE IF NOT EXISTS `cmdb_customview_tag` (
   `customview_id` bigint NOT NULL COMMENT '视图id',
   `tag_id` bigint NOT NULL COMMENT '标签id',
   PRIMARY KEY (`customview_id`,`tag_id`) USING BTREE,
@@ -441,7 +441,7 @@ CREATE TABLE `cmdb_customview_tag` (
 -- ----------------------------
 -- Table structure for cmdb_customview_template
 -- ----------------------------
-CREATE TABLE `cmdb_customview_template` (
+CREATE TABLE IF NOT EXISTS `cmdb_customview_template` (
   `customview_id` bigint NOT NULL COMMENT '自定义模板id',
   `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '名称',
   `config` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '配置',
@@ -453,7 +453,7 @@ CREATE TABLE `cmdb_customview_template` (
 -- ----------------------------
 -- Table structure for cmdb_graph
 -- ----------------------------
-CREATE TABLE `cmdb_graph` (
+CREATE TABLE IF NOT EXISTS `cmdb_graph` (
   `id` bigint NOT NULL,
   `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `description` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -471,7 +471,7 @@ CREATE TABLE `cmdb_graph` (
 -- ----------------------------
 -- Table structure for cmdb_graph_auth
 -- ----------------------------
-CREATE TABLE `cmdb_graph_auth` (
+CREATE TABLE IF NOT EXISTS `cmdb_graph_auth` (
   `graph_id` bigint NOT NULL,
   `auth_type` enum('user','team','role','common') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `auth_uuid` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
@@ -481,7 +481,7 @@ CREATE TABLE `cmdb_graph_auth` (
 -- ----------------------------
 -- Table structure for cmdb_graph_cientity
 -- ----------------------------
-CREATE TABLE `cmdb_graph_cientity` (
+CREATE TABLE IF NOT EXISTS `cmdb_graph_cientity` (
   `graph_id` bigint NOT NULL,
   `cientity_id` bigint NOT NULL,
   PRIMARY KEY (`graph_id`,`cientity_id`) USING BTREE
@@ -490,7 +490,7 @@ CREATE TABLE `cmdb_graph_cientity` (
 -- ----------------------------
 -- Table structure for cmdb_graph_rel
 -- ----------------------------
-CREATE TABLE `cmdb_graph_rel` (
+CREATE TABLE IF NOT EXISTS `cmdb_graph_rel` (
   `from_graph_id` bigint NOT NULL,
   `to_graph_id` bigint NOT NULL,
   PRIMARY KEY (`from_graph_id`,`to_graph_id`) USING BTREE,
@@ -500,7 +500,7 @@ CREATE TABLE `cmdb_graph_rel` (
 -- ----------------------------
 -- Table structure for cmdb_group
 -- ----------------------------
-CREATE TABLE `cmdb_group` (
+CREATE TABLE IF NOT EXISTS `cmdb_group` (
   `id` bigint NOT NULL COMMENT 'id',
   `name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '名字',
   `type` enum('readonly','maintain') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '类型',
@@ -521,7 +521,7 @@ CREATE TABLE `cmdb_group` (
 -- ----------------------------
 -- Table structure for cmdb_group_auth
 -- ----------------------------
-CREATE TABLE `cmdb_group_auth` (
+CREATE TABLE IF NOT EXISTS `cmdb_group_auth` (
   `group_id` bigint NOT NULL COMMENT '引用cmdb_group表id',
   `auth_type` enum('user','role','team','common') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'user,role,team',
   `auth_uuid` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'auth uuid',
@@ -531,7 +531,7 @@ CREATE TABLE `cmdb_group_auth` (
 -- ----------------------------
 -- Table structure for cmdb_import_audit
 -- ----------------------------
-CREATE TABLE `cmdb_import_audit` (
+CREATE TABLE IF NOT EXISTS `cmdb_import_audit` (
   `id` bigint NOT NULL COMMENT 'ID',
   `import_user` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '导入用户',
   `import_date` timestamp(3) NULL DEFAULT NULL COMMENT '导入时间',
@@ -552,7 +552,7 @@ CREATE TABLE `cmdb_import_audit` (
 -- ----------------------------
 -- Table structure for cmdb_import_file
 -- ----------------------------
-CREATE TABLE `cmdb_import_file` (
+CREATE TABLE IF NOT EXISTS `cmdb_import_file` (
   `file_id` bigint NOT NULL COMMENT '文件ID',
   PRIMARY KEY (`file_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='cmdb_import_file';
@@ -560,7 +560,7 @@ CREATE TABLE `cmdb_import_file` (
 -- ----------------------------
 -- Table structure for cmdb_legalvalid
 -- ----------------------------
-CREATE TABLE `cmdb_legalvalid` (
+CREATE TABLE IF NOT EXISTS `cmdb_legalvalid` (
   `id` bigint NOT NULL COMMENT 'id',
   `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '名称',
   `type` enum('ci','custom') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '校验类型',
@@ -575,7 +575,7 @@ CREATE TABLE `cmdb_legalvalid` (
 -- ----------------------------
 -- Table structure for cmdb_rel
 -- ----------------------------
-CREATE TABLE `cmdb_rel` (
+CREATE TABLE IF NOT EXISTS `cmdb_rel` (
   `id` bigint NOT NULL COMMENT 'ID',
   `type_id` bigint DEFAULT NULL COMMENT '类型id',
   `input_type` enum('at','mt') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'mt' COMMENT '录入方式',
@@ -605,7 +605,7 @@ CREATE TABLE `cmdb_rel` (
 -- ----------------------------
 -- Table structure for cmdb_relativerel
 -- ----------------------------
-CREATE TABLE `cmdb_relativerel` (
+CREATE TABLE IF NOT EXISTS `cmdb_relativerel` (
   `rel_id` bigint NOT NULL COMMENT '关系id',
   `from_path` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '上游端路径',
   `to_path` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '下游端路径',
@@ -618,7 +618,7 @@ CREATE TABLE `cmdb_relativerel` (
 -- ----------------------------
 -- Table structure for cmdb_relentity
 -- ----------------------------
-CREATE TABLE `cmdb_relentity` (
+CREATE TABLE IF NOT EXISTS `cmdb_relentity` (
   `id` bigint NOT NULL COMMENT 'ID',
   `rel_id` bigint NOT NULL COMMENT '关联属性ID',
   `from_cientity_id` bigint NOT NULL COMMENT '来源配置项ID',
@@ -645,7 +645,7 @@ CREATE TABLE `cmdb_relentity` (
 -- ----------------------------
 -- Table structure for cmdb_relgroup
 -- ----------------------------
-CREATE TABLE `cmdb_relgroup` (
+CREATE TABLE IF NOT EXISTS `cmdb_relgroup` (
   `id` bigint NOT NULL COMMENT 'id',
   `ci_id` bigint NOT NULL COMMENT '配置项id',
   `name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '名称',
@@ -656,7 +656,7 @@ CREATE TABLE `cmdb_relgroup` (
 -- ----------------------------
 -- Table structure for cmdb_reltype
 -- ----------------------------
-CREATE TABLE `cmdb_reltype` (
+CREATE TABLE IF NOT EXISTS `cmdb_reltype` (
   `id` bigint NOT NULL COMMENT 'ID',
   `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '名称',
   `is_showintopo` tinyint(1) NOT NULL DEFAULT '1' COMMENT '是否在拓扑图中显示',
@@ -672,7 +672,7 @@ CREATE TABLE `cmdb_reltype` (
 -- ----------------------------
 -- Table structure for cmdb_resourcecenter_account
 -- ----------------------------
-CREATE TABLE `cmdb_resourcecenter_account` (
+CREATE TABLE IF NOT EXISTS `cmdb_resourcecenter_account` (
   `id` bigint NOT NULL COMMENT '主键id',
   `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '名称',
   `account` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '账号',
@@ -692,7 +692,7 @@ CREATE TABLE `cmdb_resourcecenter_account` (
 -- ----------------------------
 -- Table structure for cmdb_resourcecenter_account_ip
 -- ----------------------------
-CREATE TABLE `cmdb_resourcecenter_account_ip` (
+CREATE TABLE IF NOT EXISTS `cmdb_resourcecenter_account_ip` (
   `account_id` bigint NOT NULL COMMENT '账号id',
   `ip` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '账号对应的ip',
   PRIMARY KEY (`ip`) USING BTREE
@@ -701,7 +701,7 @@ CREATE TABLE `cmdb_resourcecenter_account_ip` (
 -- ----------------------------
 -- Table structure for cmdb_resourcecenter_account_protocol
 -- ----------------------------
-CREATE TABLE `cmdb_resourcecenter_account_protocol` (
+CREATE TABLE IF NOT EXISTS `cmdb_resourcecenter_account_protocol` (
   `id` bigint NOT NULL COMMENT '协议id',
   `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '协议名称',
   `port` int DEFAULT NULL COMMENT '协议端口',
@@ -716,7 +716,7 @@ CREATE TABLE `cmdb_resourcecenter_account_protocol` (
 -- ----------------------------
 -- Table structure for cmdb_resourcecenter_account_tag
 -- ----------------------------
-CREATE TABLE `cmdb_resourcecenter_account_tag` (
+CREATE TABLE IF NOT EXISTS `cmdb_resourcecenter_account_tag` (
   `account_id` bigint NOT NULL COMMENT '账号id',
   `tag_id` bigint NOT NULL COMMENT '标签id',
   PRIMARY KEY (`account_id`,`tag_id`) USING BTREE,
@@ -726,7 +726,7 @@ CREATE TABLE `cmdb_resourcecenter_account_tag` (
 -- ----------------------------
 -- Table structure for cmdb_resourcecenter_config
 -- ----------------------------
-CREATE TABLE `cmdb_resourcecenter_config` (
+CREATE TABLE IF NOT EXISTS `cmdb_resourcecenter_config` (
   `id` int NOT NULL DEFAULT '1' COMMENT 'id',
   `config` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'config',
   `fcu` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '创建用户',
@@ -739,7 +739,7 @@ CREATE TABLE `cmdb_resourcecenter_config` (
 -- ----------------------------
 -- Table structure for cmdb_resourcecenter_entity
 -- ----------------------------
-CREATE TABLE `cmdb_resourcecenter_entity` (
+CREATE TABLE IF NOT EXISTS `cmdb_resourcecenter_entity` (
   `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '名称',
   `label` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '标识',
   `type` enum('resource','scene') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '类型',
@@ -755,7 +755,7 @@ CREATE TABLE `cmdb_resourcecenter_entity` (
 -- ----------------------------
 -- Table structure for cmdb_resourcecenter_resource_account
 -- ----------------------------
-CREATE TABLE `cmdb_resourcecenter_resource_account` (
+CREATE TABLE IF NOT EXISTS `cmdb_resourcecenter_resource_account` (
   `resource_id` bigint NOT NULL COMMENT '资源id',
   `account_id` bigint NOT NULL COMMENT '账号id',
   PRIMARY KEY (`resource_id`,`account_id`) USING BTREE,
@@ -765,7 +765,7 @@ CREATE TABLE `cmdb_resourcecenter_resource_account` (
 -- ----------------------------
 -- Table structure for cmdb_resourcecenter_resource_tag
 -- ----------------------------
-CREATE TABLE `cmdb_resourcecenter_resource_tag` (
+CREATE TABLE IF NOT EXISTS `cmdb_resourcecenter_resource_tag` (
   `resource_id` bigint NOT NULL COMMENT '资源id',
   `tag_id` bigint NOT NULL COMMENT '标签id',
   PRIMARY KEY (`resource_id`,`tag_id`) USING BTREE
@@ -774,7 +774,7 @@ CREATE TABLE `cmdb_resourcecenter_resource_tag` (
 -- ----------------------------
 -- Table structure for cmdb_schema_audit
 -- ----------------------------
-CREATE TABLE `cmdb_schema_audit` (
+CREATE TABLE IF NOT EXISTS `cmdb_schema_audit` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
   `target_id` bigint NOT NULL COMMENT '目标id',
   `target_type` enum('ci','attr','rel','cientity') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '目标类型',
@@ -792,7 +792,7 @@ CREATE TABLE `cmdb_schema_audit` (
 -- ----------------------------
 -- Table structure for cmdb_sync_audit
 -- ----------------------------
-CREATE TABLE `cmdb_sync_audit` (
+CREATE TABLE IF NOT EXISTS `cmdb_sync_audit` (
   `id` bigint NOT NULL COMMENT 'id',
   `ci_collection_id` bigint DEFAULT NULL COMMENT '同步配置id',
   `start_time` timestamp(3) NULL DEFAULT NULL COMMENT '开始时间',
@@ -812,7 +812,7 @@ CREATE TABLE `cmdb_sync_audit` (
 -- ----------------------------
 -- Table structure for cmdb_sync_ci_collection
 -- ----------------------------
-CREATE TABLE `cmdb_sync_ci_collection` (
+CREATE TABLE IF NOT EXISTS `cmdb_sync_ci_collection` (
   `id` bigint NOT NULL COMMENT 'id',
   `ci_id` bigint NOT NULL COMMENT '配置项id',
   `collection_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'collection name',
@@ -833,7 +833,7 @@ CREATE TABLE `cmdb_sync_ci_collection` (
 -- ----------------------------
 -- Table structure for cmdb_sync_mapping
 -- ----------------------------
-CREATE TABLE `cmdb_sync_mapping` (
+CREATE TABLE IF NOT EXISTS `cmdb_sync_mapping` (
   `id` bigint NOT NULL COMMENT 'id',
   `ci_collection_id` bigint DEFAULT NULL COMMENT '模型集合id',
   `rel_id` bigint DEFAULT NULL COMMENT '关系id',
@@ -847,7 +847,7 @@ CREATE TABLE `cmdb_sync_mapping` (
 -- ----------------------------
 -- Table structure for cmdb_sync_policy
 -- ----------------------------
-CREATE TABLE `cmdb_sync_policy` (
+CREATE TABLE IF NOT EXISTS `cmdb_sync_policy` (
   `id` bigint NOT NULL COMMENT '主键',
   `ci_collection_id` bigint DEFAULT NULL COMMENT '模型id',
   `ci_id` bigint DEFAULT NULL COMMENT '模型id',
@@ -861,7 +861,7 @@ CREATE TABLE `cmdb_sync_policy` (
 -- ----------------------------
 -- Table structure for cmdb_sync_schedule
 -- ----------------------------
-CREATE TABLE `cmdb_sync_schedule` (
+CREATE TABLE IF NOT EXISTS `cmdb_sync_schedule` (
   `id` bigint NOT NULL COMMENT 'id',
   `cron` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'cron表达式',
   `policy_id` bigint NOT NULL COMMENT '策略id',
@@ -872,7 +872,7 @@ CREATE TABLE `cmdb_sync_schedule` (
 -- ----------------------------
 -- Table structure for cmdb_sync_unique
 -- ----------------------------
-CREATE TABLE `cmdb_sync_unique` (
+CREATE TABLE IF NOT EXISTS `cmdb_sync_unique` (
   `ci_collection_id` bigint NOT NULL COMMENT '配置集合id',
   `attr_id` bigint NOT NULL COMMENT '配置属性id',
   PRIMARY KEY (`ci_collection_id`,`attr_id`) USING BTREE
@@ -881,7 +881,7 @@ CREATE TABLE `cmdb_sync_unique` (
 -- ----------------------------
 -- Table structure for cmdb_tag
 -- ----------------------------
-CREATE TABLE `cmdb_tag` (
+CREATE TABLE IF NOT EXISTS `cmdb_tag` (
   `id` bigint NOT NULL COMMENT 'id',
   `name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '名称',
   `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '描述',
@@ -891,7 +891,7 @@ CREATE TABLE `cmdb_tag` (
 -- ----------------------------
 -- Table structure for cmdb_transaction
 -- ----------------------------
-CREATE TABLE `cmdb_transaction` (
+CREATE TABLE IF NOT EXISTS `cmdb_transaction` (
   `id` bigint unsigned NOT NULL COMMENT '事务ID',
   `ci_id` bigint DEFAULT NULL COMMENT '模型id',
   `status` enum('commited','uncommit','recover') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '是否提交',
@@ -913,7 +913,7 @@ CREATE TABLE `cmdb_transaction` (
 -- ----------------------------
 -- Table structure for cmdb_transactiongroup
 -- ----------------------------
-CREATE TABLE `cmdb_transactiongroup` (
+CREATE TABLE IF NOT EXISTS `cmdb_transactiongroup` (
   `id` bigint NOT NULL COMMENT 'id',
   `transaction_id` bigint NOT NULL COMMENT '事务id',
   PRIMARY KEY (`id`,`transaction_id`) USING BTREE,
@@ -923,7 +923,7 @@ CREATE TABLE `cmdb_transactiongroup` (
 -- ----------------------------
 -- Table structure for cmdb_validator
 -- ----------------------------
-CREATE TABLE `cmdb_validator` (
+CREATE TABLE IF NOT EXISTS `cmdb_validator` (
   `id` bigint NOT NULL COMMENT 'id',
   `name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '名称',
   `handler` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '处理器类路径',
@@ -937,7 +937,7 @@ CREATE TABLE `cmdb_validator` (
 -- ----------------------------
 -- Table structure for cmdb_view
 -- ----------------------------
-CREATE TABLE `cmdb_view` (
+CREATE TABLE IF NOT EXISTS `cmdb_view` (
   `ci_id` bigint NOT NULL COMMENT '模型id',
   `item_id` bigint NOT NULL COMMENT '关系或属性id',
   `type` enum('attr','relfrom','relto','const') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '类型',
@@ -951,7 +951,7 @@ CREATE TABLE `cmdb_view` (
 -- ----------------------------
 -- Table structure for cmdb_viewconst
 -- ----------------------------
-CREATE TABLE `cmdb_viewconst` (
+CREATE TABLE IF NOT EXISTS `cmdb_viewconst` (
   `id` bigint NOT NULL COMMENT 'id',
   `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '名称',
   `label` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '显示名',
