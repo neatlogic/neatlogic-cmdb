@@ -25,7 +25,6 @@ import neatlogic.framework.form.exception.AttributeValidException;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -159,16 +158,8 @@ public class AccountsHandler extends FormHandlerBase {
 
     @Override
     public Object dataTransformationForEmail(AttributeDataVo attributeDataVo, JSONObject configObj) {
-        JSONObject tableObj = new JSONObject();
-        // TODO 由于表单重构，数据结构已发生变化，暂时屏蔽些代码使得工单处理触发邮件时不报错，已建需求【ID1007302】重构表单邮件模板及取数逻辑，后面统一测试表单所有组件的邮件模板显示
-//        JSONObject dataObj = (JSONObject) attributeDataVo.getDataObj();
-//        if (MapUtils.isNotEmpty(dataObj)) {
-//            JSONArray tbodyList = dataObj.getJSONArray("selectedDataList");
-//            if (CollectionUtils.isNotEmpty(tbodyList)) {
-//                tableObj.put("theadList", theadList);
-//                tableObj.put("tbodyList", tbodyList);
-//            }
-//        }
+        JSONObject tableObj = getMyDetailedData(attributeDataVo, configObj);
+        tableObj.remove("value");
         return tableObj;
     }
 
@@ -177,140 +168,141 @@ public class AccountsHandler extends FormHandlerBase {
         return null;
     }
 
-    //表单组件配置信息
-//    {
-//        "handler": "formaccounts",
-//        "label": "帐号组件_1",
-//        "type": "form",
-//        "uuid": "79ea2bc150cf4d6396882f66e07850b4",
-//        "config": {
-//            "isRequired": false,
-//            "ruleList": [],
-//            "width": "100%",
-//            "validList": [],
-//            "quoteUuid": "",
-//            "defaultValueType": "self",
-//            "placeholder": "选择帐号组件",
-//            "authorityConfig": [
-//                "common#alluser"
-//            ]
-//        }
-//    }
-//保存数据
-//    {
-//        "selectedDataList": [
-//            {
-//                "id": 493223793189019,
-//                "name": "Mysql",
-//                "ip": "192.168.1.140",
-//                "accountId": 502566202695680,
-//                "account": "root",
-//                "accountName": "mysql_ro_勿动",
-//                "protocolId": 478219996241920,
-//                "protocol": "database",
-//                "port": "3306",
-//                "tempId": 3,
-//                "_selected": true,
-//                "actionType": "创建",
-//                "fcu": "fccf704231734072a1bf80d90b2d1de2",
-//                "lcu": "fccf704231734072a1bf80d90b2d1de2",
-//                "fcuVo": {
-//                    "roleUuidList": [],
-//                    "startPage": 1,
-//                    "userAuthList": [],
-//                    "teamUuidList": [],
-//                    "initType": "user",
-//                    "roleList": [],
-//                    "uuid": "fccf704231734072a1bf80d90b2d1de2",
-//                    "teamRoleList": [],
-//                    "pinyin": "",
-//                    "teamNameList": [],
-//                    "id": 564355489644556,
-//                    "teamList": [],
-//                    "isMaintenanceMode": 0
-//                },
-//                "lcuVo": {
-//                    "roleUuidList": [],
-//                    "startPage": 1,
-//                    "userAuthList": [],
-//                    "teamUuidList": [],
-//                    "initType": "user",
-//                    "roleList": [],
-//                    "uuid": "fccf704231734072a1bf80d90b2d1de2",
-//                    "teamRoleList": [],
-//                    "pinyin": "",
-//                    "teamNameList": [],
-//                    "id": 564355489644557,
-//                    "teamList": [],
-//                    "isMaintenanceMode": 0
-//                }
-//            }
-//        ]
-//    }
-//返回数据结构
-//    {
-//        "value": 原始数据,
-//        "theadList": [
-//            {
-//                "key": "name",
-//                    "title": "资产名"
-//            },
-//            {
-//                "key": "ip",
-//                    "title": "资产IP"
-//            },
-//            {
-//                "key": "account",
-//                    "title": "帐号名称"
-//            },
-//            {
-//                "key": "accountName",
-//                    "title": "用户名"
-//            },
-//            {
-//                "key": "protocol",
-//                    "title": "连接协议"
-//            },
-//            {
-//                "key": "port",
-//                    "title": "端口"
-//            }
-//        ],
-//        "tbodyList": [
-//            {
-//                "id": 493223793189019,
-//                    "name": "Mysql",
-//                    "ip": "192.168.1.140",
-//                    "accountId": 502566202695680,
-//                    "account": "root",
-//                    "accountName": "mysql_ro_勿动",
-//                    "protocolId": 478219996241920,
-//                    "protocol": "database",
-//                    "port": "8080",
-//                    "tempId": 3,
-//                    "_selected": true
-//            }
-//        ]
-//    }
+    /*
+    表单组件配置信息
+    {
+        "handler": "formaccounts",
+        "reaction": {
+            "hide": {},
+            "readonly": {},
+            "display": {}
+        },
+        "override_config": {},
+        "icon": "tsfont-group",
+        "hasValue": true,
+        "label": "帐号_1",
+        "type": "form",
+        "category": "basic",
+        "config": {
+            "isRequired": false,
+            "disableDefaultValue": true,
+            "isMask": false,
+            "width": "100%",
+            "description": "",
+            "placeholder": "选择帐号",
+            "isHide": false
+        },
+        "uuid": "d722aa78701c4b4baac595a7dbfa8513"
+    }
+     */
+    /*
+    保存数据
+    [
+        {
+            "startPage": 1,
+            "accountName": "192.168.0.24_3939_tagent",
+            "ip": "192.168.0.83",
+            "accountId": 669480417812482,
+            "actionType": "创建",
+            "_selected": true,
+            "protocol": "tagent",
+            "protocolId": 478184378212353,
+            "port": "3939",
+            "name": "prd-gitlab-runner",
+            "isSelected": true,
+            "fcu": "fccf704231734072a1bf80d90b2d1de2",
+            "id": 516341538545669,
+            "_selectId": "669480417812482_516341538545669",
+            "lcu": "fccf704231734072a1bf80d90b2d1de2"
+        }
+	]
+     */
+    /*
+    返回数据结构
+    {
+	    "value": [
+            {
+                "startPage": 1,
+                "accountName": "192.168.0.24_3939_tagent",
+                "ip": "192.168.0.83",
+                "accountId": 669480417812482,
+                "actionType": "创建",
+                "_selected": true,
+                "protocol": "tagent",
+                "protocolId": 478184378212353,
+                "port": "3939",
+                "name": "prd-gitlab-runner",
+                "isSelected": true,
+                "fcu": "fccf704231734072a1bf80d90b2d1de2",
+                "id": 516341538545669,
+                "_selectId": "669480417812482_516341538545669",
+                "lcu": "fccf704231734072a1bf80d90b2d1de2"
+            }
+        ],
+        "theadList": [
+            {
+                "title": "资产名",
+                "key": "name"
+            },
+            {
+                "title": "资产IP",
+                "key": "ip"
+            },
+            {
+                "title": "帐号名称",
+                "key": "accountName"
+            },
+            {
+                "title": "用户名",
+                "key": "account"
+            },
+            {
+                "title": "连接协议",
+                "key": "protocol"
+            },
+            {
+                "title": "端口",
+                "key": "port"
+            }
+        ],
+        "tbodyList": [
+            {
+                "startPage": 1,
+                "accountName": "192.168.0.24_3939_tagent",
+                "ip": "192.168.0.83",
+                "accountId": 669480417812482,
+                "_selected": true,
+                "protocol": "tagent",
+                "protocolId": 478184378212353,
+                "port": "3939",
+                "name": "prd-gitlab-runner",
+                "isSelected": true,
+                "id": 516341538545669,
+                "_selectId": "669480417812482_516341538545669"
+            }
+        ]
+    }
+     */
     @Override
     protected JSONObject getMyDetailedData(AttributeDataVo attributeDataVo, JSONObject configObj) {
         JSONObject tableObj = new JSONObject();
-        JSONObject dataObj = (JSONObject) attributeDataVo.getDataObj();
-        tableObj.put("value", dataObj);
-        if (MapUtils.isNotEmpty(dataObj)) {
-            JSONArray tbodyList = dataObj.getJSONArray("selectedDataList");
-            if (CollectionUtils.isNotEmpty(tbodyList)) {
-                tableObj.put("theadList", theadList);
-                for (int i = 0; i < tbodyList.size(); i++) {
-                    JSONObject tbodyObj = tbodyList.getJSONObject(i);
-                    tbodyObj.remove("actionType");
-                    tbodyObj.remove("fcu");
-                    tbodyObj.remove("lcu");
-                    tbodyObj.remove("fcuVo");
-                    tbodyObj.remove("lcuVo");
-                }
-                tableObj.put("tbodyList", tbodyList);
+        JSONArray valueArray = (JSONArray) attributeDataVo.getDataObj();
+        tableObj.put("value", valueArray);
+        if (CollectionUtils.isNotEmpty(valueArray)) {
+            tableObj.put("theadList", theadList);
+            JSONArray tbodyList = new JSONArray();
+            for (int i = 0; i < valueArray.size(); i++) {
+                JSONObject valueObj = valueArray.getJSONObject(i);
+                JSONObject tbodyObj = new JSONObject();
+                tbodyObj.putAll(valueObj);
+                tbodyObj.remove("actionType");
+                tbodyObj.remove("fcu");
+                tbodyObj.remove("lcu");
+                tbodyObj.remove("fcuVo");
+                tbodyObj.remove("lcuVo");
+                tbodyList.add(tbodyObj);
             }
+            tableObj.put("tbodyList", tbodyList);
         }
         return tableObj;
     }
@@ -318,33 +310,30 @@ public class AccountsHandler extends FormHandlerBase {
     @Override
     public Object dataTransformationForExcel(AttributeDataVo attributeDataVo, JSONObject configObj) {
         JSONObject tableObj = new JSONObject();
-        JSONObject dataObj = (JSONObject) attributeDataVo.getDataObj();
-        tableObj.put("value", dataObj);
-        if (MapUtils.isNotEmpty(dataObj)) {
-            JSONArray selectedDataList = dataObj.getJSONArray("selectedDataList");
-            if (CollectionUtils.isNotEmpty(selectedDataList)) {
-                tableObj.put("theadList", theadList);
-                JSONArray tbodyList = new JSONArray();
-                for (int i = 0; i < selectedDataList.size(); i++) {
-                    JSONObject tbodyObj = selectedDataList.getJSONObject(i);
-                    tbodyObj.remove("actionType");
-                    tbodyObj.remove("fcu");
-                    tbodyObj.remove("lcu");
-                    tbodyObj.remove("fcuVo");
-                    tbodyObj.remove("lcuVo");
-                    Set<Map.Entry<String, Object>> entrySet = tbodyObj.entrySet();
-                    JSONObject obj = new JSONObject();
-                    for (Map.Entry<String, Object> entry : entrySet) {
-                        obj.put(entry.getKey(), new JSONObject() {
-                            {
-                                this.put("text", entry.getValue());
-                            }
-                        });
-                    }
-                    tbodyList.add(obj);
+        JSONArray valueArray = (JSONArray) attributeDataVo.getDataObj();
+        tableObj.put("value", valueArray);
+        if (CollectionUtils.isNotEmpty(valueArray)) {
+            tableObj.put("theadList", theadList);
+            JSONArray tbodyList = new JSONArray();
+            for (int i = 0; i < valueArray.size(); i++) {
+                JSONObject valueObj = valueArray.getJSONObject(i);
+                valueObj.remove("actionType");
+                valueObj.remove("fcu");
+                valueObj.remove("lcu");
+                valueObj.remove("fcuVo");
+                valueObj.remove("lcuVo");
+                Set<Map.Entry<String, Object>> entrySet = valueObj.entrySet();
+                JSONObject tbodyObj = new JSONObject();
+                for (Map.Entry<String, Object> entry : entrySet) {
+                    tbodyObj.put(entry.getKey(), new JSONObject() {
+                        {
+                            this.put("text", entry.getValue());
+                        }
+                    });
                 }
-                tableObj.put("tbodyList", tbodyList);
+                tbodyList.add(tbodyObj);
             }
+            tableObj.put("tbodyList", tbodyList);
         }
         return tableObj;
     }
@@ -356,12 +345,9 @@ public class AccountsHandler extends FormHandlerBase {
 
     @Override
     public int getExcelRowCount(AttributeDataVo attributeDataVo, JSONObject configObj) {
-        JSONObject dataObj = (JSONObject) attributeDataVo.getDataObj();
-        if (MapUtils.isNotEmpty(dataObj)) {
-            JSONArray tbodyList = dataObj.getJSONArray("selectedDataList");
-            if (CollectionUtils.isNotEmpty(tbodyList)) {
-                return tbodyList.size() + 1;
-            }
+        JSONArray tbodyList = (JSONArray) attributeDataVo.getDataObj();
+        if (CollectionUtils.isNotEmpty(tbodyList)) {
+            return tbodyList.size() + 1;
         }
         return 1;
     }
