@@ -52,7 +52,7 @@ public class SaveCiEntityAlertApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "/cmdb/relentity/alert/save";
+        return "/cmdb/cientity/alert/save";
     }
 
     @Override

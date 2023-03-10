@@ -55,7 +55,7 @@ public class SaveCiEntityAlertBatchApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "/cmdb/relentity/alert/batchsave";
+        return "/cmdb/cientity/alert/batchsave";
     }
 
     @Override
