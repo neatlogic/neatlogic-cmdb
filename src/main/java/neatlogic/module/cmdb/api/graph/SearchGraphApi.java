@@ -70,6 +70,8 @@ public class SearchGraphApi extends PrivateApiComponentBase {
             @Param(name = "excludeId", type = ApiParamType.LONG, desc = "排除id"),
             @Param(name = "hasParent", type = ApiParamType.BOOLEAN, desc = "是否拥有父视图"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
+            @Param(name = "ciEntityId", type = ApiParamType.LONG, desc = "配置项id"),
+            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "页数大小")})
     @Output({@Param(name = "tbodyList", explode = GraphVo[].class, desc = "拓扑图列表"),
             @Param(explode = BasePageVo.class)})

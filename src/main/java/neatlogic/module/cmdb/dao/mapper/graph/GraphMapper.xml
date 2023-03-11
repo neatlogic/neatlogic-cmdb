@@ -17,6 +17,7 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="neatlogic.module.cmdb.dao.mapper.graph.GraphMapper">
+
     <resultMap id="graphResultMap" type="neatlogic.framework.cmdb.dto.graph.GraphVo">
         <id property="id" column="id"/>
         <result property="name" column="name"/>
@@ -106,6 +107,10 @@
                         and not exists (select 1 from cmdb_graph_rel cgr where cgr.to_graph_id = cg.id)
                     </otherwise>
                 </choose>
+            </if>
+            <if test="ciEntityId != null">
+                and exists (select 1 from cmdb_graph_cientity cgc where cg.id = cgc.graph_id and cgc.cientity_id =
+                #{ciEntityId})
             </if>
             <choose>
                 <!--不提供type代表是最低权限的搜索，需要返回私有视图和有权限查看的公共视图-->
