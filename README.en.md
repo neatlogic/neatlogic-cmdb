@@ -3,7 +3,7 @@
 ## about
 
 neatlogic-cmdb is a configuration management module, with neatlogic-autoexec can realize automatic discovery and
-collection, with neatlogic-itsm to support modification of configuration items in the process, with naetlogic-pbc to
+collection, with neatlogic-itsm to support modification of configuration items in the process, with neatlogic-pbc to
 support automatic push of data to the People's Bank of China.
 neatlogic-cmdb adopts the design concept of "everything is CI", and supports the direct conversion of external data into
 configuration items for internal consumption of cmdb, such as user information, organizational structure information,
@@ -13,8 +13,7 @@ etc.
 
 ### Custom Model
 
-neatlogic-cmdb implements a custom model by automatically generating tables, supports inheritance between models, and
-takes into account the retrieval performance of a single configuration item and the performance of batch reporting.
+Supports custom models and model inheritance.
 ![img.png](README_IMAGES/img.png)
 
 - Support multiple attribute types such as reference attribute, password, attachment, text, number, date time,

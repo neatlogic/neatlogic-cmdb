@@ -2,14 +2,14 @@
 
 ## 关于
 
-neatlogic-cmdb是配置管理模块，配合neatlogic-autoexec可以实现自动发现和采集，配合neatlogic-itsm支持在流程中修改配置项，配合naetlogic-pbc支持数据自动推送到人民银行。
+neatlogic-cmdb是配置管理模块，配合neatlogic-autoexec可以实现自动发现和采集，配合neatlogic-itsm支持在流程中修改配置项，配合neatlogic-pbc支持数据自动推送到人民银行。
 neatlogic-cmdb采用"万物皆CI"的设计理念，支持把外部数据直接转化成配置项，供cmdb内部消费，例如用户信息、组织架构信息等。
 
 ## 主要功能
 
 ### 自定义模型
 
-neatlogic-cmdb通过自动生成表的方式实现自定义模型，模型之间支持继承，兼顾单个配置项检索性能和批量出报表性能。
+支持自定义模型，支持模型继承。
 ![img.png](README_IMAGES/img.png)
 
 - 支持引用属性、密码、附件、文本、数字、日期时间、表达式等多种属性类型。
