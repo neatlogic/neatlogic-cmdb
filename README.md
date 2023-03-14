@@ -48,7 +48,7 @@ neatlogic-cmdb采用"万物皆CI"的设计理念，支持把外部数据直接�
   ![img.png](README_IMAGES/img11.png)
 - 自定义视图拓扑（和配置项拓扑类似，但关系根据自定义视图生成）
 
-###权限
+### 权限
 除了传统的按模型授权以外，还支持通过规则对单个配置项进行授权。
 ![img.png](README_IMAGES/img12.png)
 
