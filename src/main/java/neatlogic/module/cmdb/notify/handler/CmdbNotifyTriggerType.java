@@ -17,14 +17,15 @@
 package neatlogic.module.cmdb.notify.handler;
 
 import neatlogic.framework.notify.core.INotifyTriggerType;
+import neatlogic.framework.util.I18nUtils;
 
 public enum CmdbNotifyTriggerType implements INotifyTriggerType {
 
-    CIMODITY("cimodity", "模型修改", "模型基础配置、属性、关系和授权相关发生变化时触发通知"),
-    CIDELETE("cidelete", "模型删除", "模型被删除时触发通知"),
-    CIENTITYMODITY("cientitymodify", "配置项修改", "配置项发生变化并且生效时触发通知"),
-    CIENTITYDELETE("cientitydelete", "配置项删除", "配置项删除并生效时触发通知"),
-    CIENTITYINSERT("cientityinsert", "配置项添加", "配置项添加并且生效时触发通知");
+    CIMODITY("cimodity", "enum.cmdb.cmdbnotifytriggertype.cimodity", "enum.cmdb.cmdbnotifytriggertype.cimodity.1"),
+    CIDELETE("cidelete", "enum.cmdb.cmdbnotifytriggertype.cidelete", "enum.cmdb.cmdbnotifytriggertype.cidelete.1"),
+    CIENTITYMODITY("cientitymodify", "enum.cmdb.cmdbnotifytriggertype.cientitymodity", "enum.cmdb.cmdbnotifytriggertype.cientitymodity.1"),
+    CIENTITYDELETE("cientitydelete", "enum.cmdb.cmdbnotifytriggertype.cientitydelete", "enum.cmdb.cmdbnotifytriggertype.cientitydelete.1"),
+    CIENTITYINSERT("cientityinsert", "enum.cmdb.cmdbnotifytriggertype.cientityinsert", "enum.cmdb.cmdbnotifytriggertype.cientityinsert.1");
 
     private final String trigger;
     private final String text;
@@ -43,12 +44,12 @@ public enum CmdbNotifyTriggerType implements INotifyTriggerType {
 
     @Override
     public String getText() {
-        return text;
+        return I18nUtils.getMessage(text);
     }
 
     @Override
     public String getDescription() {
-        return description;
+        return I18nUtils.getMessage(description);
     }
 
     public static String getText(String trigger) {
