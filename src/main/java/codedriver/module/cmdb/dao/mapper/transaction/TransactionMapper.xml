@@ -386,7 +386,7 @@
     </update>
 
     <insert id="insertTransactionGroup">
-        INSERT INTO cmdb_transactiongroup
+        INSERT IGNORE INTO cmdb_transactiongroup
             (id, transaction_id)
         VALUES (#{transactionGroupId},
                 #{transactionId})
