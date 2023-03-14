@@ -52,7 +52,7 @@ limitations under the License.
         </dependency>
         <dependency>
             <groupId>com.neatlogic</groupId>
-            <artifactId>neatlogic-process-base</artifactId>
+            <artifactId>neatlogic-itsm-base</artifactId>
         </dependency>
         <dependency>
             <groupId>com.neatlogic</groupId>
