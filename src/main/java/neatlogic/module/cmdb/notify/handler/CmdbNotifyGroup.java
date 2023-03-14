@@ -17,9 +17,10 @@
 package neatlogic.module.cmdb.notify.handler;
 
 import neatlogic.framework.notify.core.INotifyPolicyHandlerGroup;
+import neatlogic.framework.util.I18nUtils;
 
 public enum CmdbNotifyGroup implements INotifyPolicyHandlerGroup {
-    CMDB("cmdb", "配置管理");
+    CMDB("cmdb", "enum.cmdb.cmdbnotifygroup.cmdb");
     private final String value;
     private final String text;
 
@@ -35,6 +36,6 @@ public enum CmdbNotifyGroup implements INotifyPolicyHandlerGroup {
 
     @Override
     public String getText() {
-        return text;
+        return I18nUtils.getMessage(text);
     }
 }

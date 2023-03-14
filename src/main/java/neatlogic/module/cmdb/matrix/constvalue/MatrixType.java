@@ -17,13 +17,14 @@
 package neatlogic.module.cmdb.matrix.constvalue;
 
 import neatlogic.framework.matrix.core.IMatrixType;
+import neatlogic.framework.util.I18nUtils;
 
 /**
  * @author linbq
  * @since 2021/11/16 15:21
  **/
 public enum MatrixType implements IMatrixType {
-    CMDBCI("cmdbci", "配置项", "ciId", 4);
+    CMDBCI("cmdbci", "enum.cmdb.matrixtype.cmdbci", "ciId", 4);
 
     private String value;
     private String name;
@@ -44,7 +45,7 @@ public enum MatrixType implements IMatrixType {
 
     @Override
     public String getName() {
-        return name;
+        return I18nUtils.getMessage(name);
     }
 
     @Override

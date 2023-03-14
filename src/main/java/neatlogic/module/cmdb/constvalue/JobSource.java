@@ -18,12 +18,13 @@ package neatlogic.module.cmdb.constvalue;
 
 import neatlogic.framework.autoexec.dto.AutoexecJobSourceVo;
 import neatlogic.framework.autoexec.source.IAutoexecJobSource;
+import neatlogic.framework.util.I18nUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public enum JobSource implements IAutoexecJobSource {
-    DISCOVERY("自动发现", "discovery");
+    DISCOVERY("enum.cmdb.jobsource.discovery", "discovery");
     private final String text;
     private final String value;
 
@@ -37,7 +38,7 @@ public enum JobSource implements IAutoexecJobSource {
     }
 
     public String getText() {
-        return text;
+        return I18nUtils.getMessage(text);
     }
 
     public static String getText(String _status) {
