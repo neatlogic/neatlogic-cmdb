@@ -9,7 +9,7 @@ neatlogic-cmdb adopts the design concept of "everything is CI", and supports the
 configuration items for internal consumption of cmdb, such as user information, organizational structure information,
 etc.
 
-## The main function
+## Features
 
 ### Custom Model
 
@@ -58,7 +58,7 @@ Support layered, star and other automatic layout methods.
 - Custom view topology (similar to configuration item topology, but the relationship is generated according to the
   custom view)
 
-### Permissions
+### Authorization
 
 In addition to the traditional authorization by model, it also supports the authorization of individual configuration
 items through rules.
@@ -69,7 +69,7 @@ items through rules.
 - Licensing by group
   ![img.png](README_IMAGES/img14.png)
 
-### Other functions
+### Others
 
 - Compliance check
 - global search
