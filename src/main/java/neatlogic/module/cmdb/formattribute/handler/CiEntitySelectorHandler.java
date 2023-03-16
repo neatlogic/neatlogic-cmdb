@@ -27,8 +27,6 @@ import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -83,18 +81,25 @@ public class CiEntitySelectorHandler extends FormHandlerBase {
 
     @Override
     public Object valueConversionText(AttributeDataVo attributeDataVo, JSONObject configObj) {
-        JSONArray dataObj = (JSONArray) attributeDataVo.getDataObj();
-        if (CollectionUtils.isNotEmpty(dataObj)) {
-            List<Long> idList = dataObj.toJavaList(Long.class);
-            List<CiEntityVo> ciEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(idList);
-            return ciEntityList.stream().map(CiEntityVo::getName).collect(Collectors.toList());
+        JSONObject resultObj = getMyDetailedData(attributeDataVo, configObj);
+        JSONArray tbodyArray = resultObj.getJSONArray("tbodyList");
+        if (CollectionUtils.isEmpty(tbodyArray)) {
+            return new ArrayList<>();
         }
-        return new ArrayList<>();
+        List<CiEntityVo> tbodyList = tbodyArray.toJavaList(CiEntityVo.class);
+        return tbodyList.stream().map(CiEntityVo::getName).collect(Collectors.toList());
     }
 
     @Override
     public Object dataTransformationForEmail(AttributeDataVo attributeDataVo, JSONObject configObj) {
-        return valueConversionText(attributeDataVo, configObj);
+        JSONObject resultObj = getMyDetailedData(attributeDataVo, configObj);
+        JSONArray tbodyArray = resultObj.getJSONArray("tbodyList");
+        if (CollectionUtils.isEmpty(tbodyArray)) {
+            return null;
+        }
+        List<CiEntityVo> tbodyList = tbodyArray.toJavaList(CiEntityVo.class);
+        List<String> nameList = tbodyList.stream().map(CiEntityVo::getName).collect(Collectors.toList());
+        return String.join("、", nameList);
     }
 
     @Override
@@ -102,132 +107,109 @@ public class CiEntitySelectorHandler extends FormHandlerBase {
         return null;
     }
 
-    //表单组件配置信息
-//    {
-//        "handler": "formcmdbcientity",
-//        "label": "配置项组件_1",
-//        "type": "form",
-//        "uuid": "468c20afaaed452c89599a44b90ed077",
-//        "config": {
-//            "isRequired": false,
-//            "ruleList": [],
-//            "width": "100%",
-//            "validList": [],
-//            "quoteUuid": "",
-//            "defaultValueType": "self",
-//            "placeholder": "请选择配置项组件",
-//            "authorityConfig": [
-//                "common#alluser"
-//            ]
-//        }
-//    }
-//保存数据结构
-//    {
-//        "selectedCiEntityList": [
-//            {
-//                "typeName": "应用系统",
-//                "type": 441079325270016,
-//                "inspectStatus": "",
-//                "uuid": "770ec8aea3dd4a53925a514b93b2d309",
-//                "ciName": "APP",
-//                "ciId": 479609502048256,
-//                "renewTime": "2022-01-25 14:32",
-//                "_selected": true,
-//                "maxRelEntityCount": 3,
-//                "relEntityData": {},
-//                "name": "名称s4",
-//                "attrEntityData": {
-//                    "attr_478701787553792": {
-//                        "ciEntityId": 547082414645248,
-//                        "attrId": 478701787553792,
-//                        "actualValueList": [
-//                            "名称s4"
-//					    ],
-//                        "valueList": [
-//                            "名称s4"
-//					    ],
-//                        "name": "name",
-//                        "label": "名称",
-//                        "type": "text",
-//                        "ciId": 441087512551424
-//                    },
-//                    "attr_478702072766464": {
-//                        "ciEntityId": 547082414645248,
-//                        "attrId": 478702072766464,
-//                        "actualValueList": [
-//                            "描述s"
-//                        ],
-//                        "valueList": [
-//                            "描述s"
-//                        ],
-//                        "name": "description",
-//                        "label": "备注",
-//                        "type": "text",
-//                        "ciId": 441087512551424
-//                    },
-//                    "attr_480816840630272": {
-//                        "ciEntityId": 547082414645248,
-//                        "attrId": 480816840630272,
-//                        "actualValueList": [
-//                            "2021-01-02"
-//                        ],
-//                        "valueList": [
-//                            "2021-01-02"
-//                        ],
-//                        "name": "maintenance_window",
-//                        "label": "维护窗口",
-//                        "type": "date",
-//                        "config": {
-//                            "format": "HH:mm",
-//                            "type": "timerange"
-//                        },
-//                        "ciId": 441087512551424
-//                    },
-//                    "attr_478703406555136": {
-//                        "ciEntityId": 547082414645248,
-//                        "attrId": 478703406555136,
-//                        "actualValueList": [
-//                            "闫雅(0163347)"
-//                        ],
-//                        "valueList": [
-//                            431662986961481
-//                        ],
-//                        "name": "owner",
-//                        "label": "负责人",
-//                        "targetCiId": 479643459133440,
-//                        "type": "select",
-//                        "config": {
-//                            "mode": "r",
-//                            "isMultiple": 1
-//                        },
-//                        "ciId": 441087512551424
-//                    }
-//                },
-//                "id": 547082414645248,
-//                "maxAttrEntityCount": 3,
-//                "ciLabel": "应用系统",
-//                "monitorStatus": ""
-//            }
-//        ],
-//        "ciId": 441087512551424
-//    }
-//返回数据结构
-//{
-//    "value": 原始数据
-//}
+    /*
+    {
+        "handler": "formcientityselector",
+        "reaction": {
+            "hide": {},
+            "readonly": {},
+            "disable": {},
+            "display": {},
+            "mask": {}
+        },
+        "override_config": {},
+        "icon": "tsfont-tree",
+        "hasValue": true,
+        "label": "配置项选择_1",
+        "type": "form",
+        "category": "cmdb",
+        "config": {
+            "disableDefaultValue": true,
+            "isMask": false,
+            "width": "100%",
+            "description": "",
+            "placeholder": "选择配置项",
+            "isHide": false,
+            "ciList": []
+        },
+        "uuid": "d05ce7dde7004dfe91640d3d824719ea"
+    }
+     */
+    /*
+    [
+        686818514345989,
+        686818514345984
+    ]
+     */
+    /*
+    {
+        "value": [
+            686818514345989,
+            686818514345984
+        ],
+        "tbodyList": [
+            {
+                "attrEntityData": {},
+                "ciIcon": "tsfont-ci",
+                "ciId": 686815704162324,
+                "fcd": 1659683152668,
+                "fcu": "fccf704231734072a1bf80d90b2d1de2",
+                "id": 686818514345984,
+                "isLocked": 0,
+                "isVirtual": 0,
+                "lcd": 1662609881807,
+                "lcu": "fccf704231734072a1bf80d90b2d1de2",
+                "maxAttrEntityCount": 3,
+                "maxRelEntityCount": 3,
+                "name": "",
+                "relEntityData": {},
+                "startPage": 1,
+                "typeId": 479603328032768
+            },
+            {
+                "attrEntityData": {},
+                "ciIcon": "tsfont-ci",
+                "ciId": 686815704162324,
+                "fcd": 1659683152790,
+                "fcu": "fccf704231734072a1bf80d90b2d1de2",
+                "id": 686818514345989,
+                "isLocked": 0,
+                "isVirtual": 0,
+                "lcd": 1660546695775,
+                "lcu": "fccf704231734072a1bf80d90b2d1de2",
+                "maxAttrEntityCount": 3,
+                "maxRelEntityCount": 3,
+                "name": "test2",
+                "relEntityData": {},
+                "startPage": 1,
+                "typeId": 479603328032768
+            }
+        ]
+    }
+     */
     @Override
     protected JSONObject getMyDetailedData(AttributeDataVo attributeDataVo, JSONObject configObj) {
         JSONObject resultObj = new JSONObject();
-        resultObj.put("value", attributeDataVo.getDataObj());
+        JSONArray dataArray = (JSONArray) attributeDataVo.getDataObj();
+        resultObj.put("value", dataArray);
+        if (CollectionUtils.isEmpty(dataArray)) {
+            return resultObj;
+        }
+        List<Long> idList = dataArray.toJavaList(Long.class);
+        List<CiEntityVo> tbodyList = ciEntityMapper.getCiEntityBaseInfoByIdList(idList);
+        resultObj.put("tbodyList", tbodyList);
         return resultObj;
     }
 
     @Override
     public Object dataTransformationForExcel(AttributeDataVo attributeDataVo, JSONObject configObj) {
-        Object value = valueConversionText(attributeDataVo, configObj);
-        if (value != null) {
-            return String.join(",", (List<String>) value);
+        JSONObject resultObj = getMyDetailedData(attributeDataVo, configObj);
+        JSONArray tbodyArray = resultObj.getJSONArray("tbodyList");
+        if (CollectionUtils.isEmpty(tbodyArray)) {
+            return null;
         }
-        return null;
+        List<CiEntityVo> tbodyList = tbodyArray.toJavaList(CiEntityVo.class);
+        List<String> nameList = tbodyList.stream().map(CiEntityVo::getName).collect(Collectors.toList());
+        return String.join(",", nameList);
     }
 }
