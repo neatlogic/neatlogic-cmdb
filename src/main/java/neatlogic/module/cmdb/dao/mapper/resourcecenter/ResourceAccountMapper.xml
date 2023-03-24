@@ -118,6 +118,7 @@ limitations under the License.
         <result column="protocolId" property="protocolId"/>
         <result column="protocol" property="protocol"/>
         <result column="protocolPort" property="protocolPort"/>
+        <result column="isDefault" property="isDefault"/>
         <result column="fcu" property="fcu"/>
         <result column="fcd" property="fcd"/>
         <result column="lcu" property="lcu"/>
@@ -132,6 +133,7 @@ limitations under the License.
         a.`account`,
         b.name as protocol,
         b.`port` as protocolPort,
+        a.`is_default` as isDefault,
         a.`fcu`,
         a.`fcd`,
         a.`lcu`,
