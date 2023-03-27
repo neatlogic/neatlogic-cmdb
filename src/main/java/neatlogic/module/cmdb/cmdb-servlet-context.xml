@@ -37,8 +37,8 @@
         http://www.springframework.org/schema/data/mongo
         https://www.springframework.org/schema/data/mongo/spring-mongo.xsd">
 
-    <neatlogic:module id="cmdb" name="配置管理模块" groupName="配置管理" group="cmdb" groupSort="3"
-                      groupDescription="配置管理平台"/>
+    <neatlogic:module id="cmdb" name="配置管理模块" groupName="modulegroup.cmdb" group="cmdb" groupSort="3"
+                      groupDescription="modulegroup.cmdb.desc"/>
 
     <context:component-scan base-package="neatlogic.module.cmdb">
     </context:component-scan>
