@@ -190,6 +190,15 @@ limitations under the License.
                 AND (sid.`name` LIKE CONCAT('%', #{searchVo.keyword}, '%') OR sid.`ip` LIKE CONCAT('%',
                 #{searchVo.keyword}, '%'))
             </if>
+            <if test="searchVo.ip != null and searchVo.ip != ''">
+                AND sid.`ip` = #{searchVo.ip}
+            </if>
+            <if test="searchVo.port != null">
+                AND sid.`port` = #{searchVo.port}
+            </if>
+            <if test="searchVo.name != null and searchVo.name != ''">
+                AND sid.`name` = #{searchVo.name}
+            </if>
             ${conditionSql}
         </where>
         ORDER BY sid.`id`
