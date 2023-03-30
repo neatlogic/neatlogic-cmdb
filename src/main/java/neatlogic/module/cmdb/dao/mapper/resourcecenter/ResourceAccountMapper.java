@@ -51,8 +51,6 @@ public interface ResourceAccountMapper extends IResourceAccountCrossoverMapper {
 
     AccountVo getAccountByTagentId(Long id);
 
-    List<AccountVo> getAccountListByIpList(@Param("ipList") List<String> ipList);
-
     List<AccountVo> getAccountListByIpAndProtocolNameAndAccountAndProtocolPort(@Param("ip") String ip, @Param("protocolName") String protocolName, @Param("account") String account, @Param("protocolPort") Integer protocolPort);
 
     List<AccountVo> getAccountListByProtocolNameAndAccountAndProtocolPort(@Param("protocolName") String protocolName, @Param("account") String account, @Param("protocolPort") Integer protocolPort);
