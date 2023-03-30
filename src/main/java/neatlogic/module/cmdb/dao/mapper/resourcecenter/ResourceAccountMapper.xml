@@ -251,7 +251,7 @@ limitations under the License.
           and `port` = #{port}
     </select>
 
-    <select id="getAccountListByIpList" resultType="neatlogic.framework.cmdb.dto.resourcecenter.AccountVo">
+    <select id="getAccountListByIpListAndProtocolId" resultType="neatlogic.framework.cmdb.dto.resourcecenter.AccountVo">
         SELECT a.`id`,
         a.`name`,
         a.`account`,
@@ -271,6 +271,7 @@ limitations under the License.
         <foreach collection="ipList" item="ip" open="(" close=")" separator=",">
             #{ip}
         </foreach>
+        and a.`protocol_id` = #{protocolId}
     </select>
 
     <select id="getAccountListByIpAndProtocolNameAndAccountAndProtocolPort"

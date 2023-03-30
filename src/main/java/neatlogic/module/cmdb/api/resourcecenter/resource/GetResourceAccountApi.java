@@ -112,7 +112,7 @@ public class GetResourceAccountApi extends PrivateApiComponentBase {
         if (!Objects.equals(protocol, Protocol.TAGENT.getValue())) {
             accountList = resourceAccountMapper.getResourceAccountByResourceIdAndProtocolAndProtocolPortAndUsername(resourceVo.getId(), protocol, protocolPort, username);
         } else {
-            accountList = resourceAccountMapper.getAccountListByIpList(Collections.singletonList(resourceVo.getIp()));
+            accountList = resourceAccountMapper.getAccountListByIpListAndProtocolId(Collections.singletonList(resourceVo.getIp()), protocolVo.getId());
         }
         if (CollectionUtils.isNotEmpty(accountList)) {
             return accountList.get(0).getPasswordCipher();
@@ -130,7 +130,7 @@ public class GetResourceAccountApi extends PrivateApiComponentBase {
 
         //找协议的默认账号
         accountList = resourceAccountMapper.getDefaultAccountListByProtocolIdListAndAccount(Collections.singletonList(protocolVo.getId()), username);
-        if(CollectionUtils.isNotEmpty(accountList)){
+        if (CollectionUtils.isNotEmpty(accountList)) {
             return accountList.get(0).getPasswordCipher();
         }
 

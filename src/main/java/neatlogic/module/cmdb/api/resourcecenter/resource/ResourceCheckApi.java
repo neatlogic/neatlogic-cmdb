@@ -126,7 +126,7 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
                     return resultObj;
                 }
             }
-        }else{
+        } else {
             //协议没填时不校验
             return resultArray;
         }
@@ -251,7 +251,7 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
             if (!Objects.equals(protocolVo.getName(), Protocol.TAGENT.getValue())) {
                 accountByResourceList = resourceAccountMapper.getResourceAccountListByResourceIdAndProtocolAndAccount(resourceIncludeOsIdList, protocolId, executeUser);
             } else {
-                List<AccountVo> tagentAccountByIpList = resourceAccountMapper.getAccountListByIpList(resourceVoList.stream().map(ResourceVo::getIp).collect(toList()));
+                List<AccountVo> tagentAccountByIpList = resourceAccountMapper.getAccountListByIpListAndProtocolId(resourceVoList.stream().map(ResourceVo::getIp).collect(toList()), protocolId);
                 if (CollectionUtils.isNotEmpty(tagentAccountByIpList)) {
                     tagentIpAccountMap = tagentAccountByIpList.stream().collect(toMap(AccountVo::getIp, o -> o));
                 }
