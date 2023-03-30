@@ -49,7 +49,7 @@ public interface ResourceAccountMapper extends IResourceAccountCrossoverMapper {
 
     List<AccountVo> getAccountListByIpListAndProtocolId(@Param("ipList") List<String> ipList, @Param("protocolId") Long protocolId);
 
-    AccountVo getAccountIdByTagentId(Long id);
+    AccountVo getAccountByTagentId(Long id);
 
     List<AccountVo> getAccountListByIpList(@Param("ipList") List<String> ipList);
 

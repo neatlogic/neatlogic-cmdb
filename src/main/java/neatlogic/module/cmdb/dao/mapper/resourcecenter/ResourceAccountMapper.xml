@@ -503,7 +503,7 @@ limitations under the License.
           AND t.port = #{port}
     </select>
 
-    <select id="getAccountIdByTagentId" resultMap="accountMap">
+    <select id="getAccountByTagentId" resultMap="accountMap">
         SELECT a.`id`,
                a.`name`,
                a.`password`,
