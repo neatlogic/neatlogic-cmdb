@@ -24,6 +24,7 @@ import neatlogic.framework.notify.dto.NotifyTriggerTemplateVo;
 import neatlogic.framework.notify.dto.NotifyTriggerVo;
 import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
 import com.alibaba.fastjson.JSONObject;
+import neatlogic.framework.util.I18nUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -33,7 +34,7 @@ import java.util.List;
 public class CmdbNotifyPolicyHandler extends NotifyPolicyHandlerBase {
     @Override
     public String getName() {
-        return "模型";
+        return I18nUtils.getMessage( "handler.notify.cmdb.ci");
     }
 
     /**
