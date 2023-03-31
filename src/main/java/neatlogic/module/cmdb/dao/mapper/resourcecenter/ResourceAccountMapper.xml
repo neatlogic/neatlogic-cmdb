@@ -566,8 +566,7 @@ limitations under the License.
     </select>
 
     <select id="getAccountIpByIpListAndPort" resultType="java.lang.String">
-        select
-        distinct crai.ip
+        select crai.ip
         from `cmdb_resourcecenter_account` cra
         LEFT JOIN `cmdb_resourcecenter_account_ip` crai on crai.account_id = cra.id
         LEFT JOIN `cmdb_resourcecenter_account_protocol` crap on cra.protocol_id = crap.id
