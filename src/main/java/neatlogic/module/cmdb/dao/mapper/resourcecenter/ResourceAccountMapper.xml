@@ -134,6 +134,7 @@ limitations under the License.
         a.`account`,
         b.name as protocol,
         b.`port` as protocolPort,
+        a.`is_default` as isDefault,
         a.`fcu`,
         a.`fcd`,
         a.`lcu`,
