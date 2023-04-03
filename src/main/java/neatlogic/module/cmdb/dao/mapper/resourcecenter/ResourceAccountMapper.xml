@@ -119,6 +119,7 @@ limitations under the License.
         <result column="protocol" property="protocol"/>
         <result column="protocolPort" property="protocolPort"/>
         <result column="isDefault" property="isDefault"/>
+        <result column="ip" property="ip"/>
         <result column="fcu" property="fcu"/>
         <result column="fcd" property="fcd"/>
         <result column="lcu" property="lcu"/>
@@ -419,6 +420,7 @@ limitations under the License.
                cra.`account`,
                cra.`password`    as passwordCipher,
                cra.`protocol_id` as protocolId,
+               crai.`ip`         as ip,
                crap.`port`       as protocolPort
         from cmdb_resourcecenter_account_ip crai
                  JOIN `cmdb_resourcecenter_account` cra ON crai.`account_id` = cra.`id`
@@ -501,6 +503,20 @@ limitations under the License.
         WHERE t.ip = #{ip}
           AND t.port = #{port}
     </select>
+
+    <select id="getAccountByTagentId" resultMap="accountMap">
+        SELECT a.`id`,
+               a.`name`,
+               a.`password`,
+               a.protocol_id as protocolId,
+               crap.port     as protocolPort,
+               t.ip
+        FROM `cmdb_resourcecenter_account` a
+                 JOIN `tagent` t on t.account_id = a.id
+                 LEFT JOIN `cmdb_resourcecenter_account_protocol` crap on a.protocol_id = crap.id
+        WHERE t.id = #{id}
+    </select>
+
     <select id="getResourceAccountByResourceIdAndProtocolAndProtocolPortAndUsername"
             resultType="neatlogic.framework.cmdb.dto.resourcecenter.AccountVo">
         select
@@ -548,6 +564,18 @@ limitations under the License.
         </foreach>
         and cra.`is_default` = 1
         and cra.`account` = #{account}
+    </select>
+
+    <select id="getAccountIpByIpListAndPort" resultType="java.lang.String">
+        select crai.ip
+        from `cmdb_resourcecenter_account` cra
+        LEFT JOIN `cmdb_resourcecenter_account_ip` crai on crai.account_id = cra.id
+        LEFT JOIN `cmdb_resourcecenter_account_protocol` crap on cra.protocol_id = crap.id
+        where crai.ip in
+        <foreach collection="ipList" item="ip" open="(" close=")" separator=",">
+            #{ip}
+        </foreach>
+        and crap.`port` = #{port}
     </select>
 
     <update id="updateAccount" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.AccountVo">
