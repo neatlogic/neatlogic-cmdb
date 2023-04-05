@@ -18,6 +18,7 @@ package neatlogic.module.cmdb.api.discovery;
 
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.autoexec.constvalue.CombopOperationType;
 import neatlogic.framework.autoexec.crossover.IAutoexecJobActionCrossoverService;
 import neatlogic.framework.autoexec.dto.job.AutoexecJobVo;
 import neatlogic.framework.cmdb.auth.label.SYNC_MODIFY;
@@ -29,6 +30,7 @@ import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.module.cmdb.constvalue.JobSource;
 import neatlogic.module.cmdb.dao.mapper.discovery.DiscoveryMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -79,8 +81,31 @@ public class CreateDiscoveryJobApi extends PrivateApiComponentBase {
         if (CollectionUtils.isEmpty(list)) {
             throw new DiscoverConfNotFoundException(confId);
         }
-
+        JSONObject config = list.get(0);
+//        const { nets, ports, snmpport, communities, workercount, timingtmpl } = row;
+//        const param = {
+//            roundCount: 64,
+//            combopId: row.combopId,
+//            source: 'discovery',
+//            param: { nets, ports, snmpport, communities, workercount, timingtmpl },
+//              name: row.name,
+//            invokeId: row.id
+//        };
+        JSONObject param = new JSONObject();
+        param.put("nets", config.getString("nets"));
+        param.put("ports", config.getString("ports"));
+        param.put("snmpport", config.getString("snmpport"));
+        param.put("communities", config.getString("communities"));
+        param.put("workercount", config.getString("workercount"));
+        param.put("timingtmpl", config.getString("timingtmpl"));
         AutoexecJobVo autoexecJobVo = new AutoexecJobVo();
+        autoexecJobVo.setInvokeId(confId);
+        autoexecJobVo.setSource(JobSource.DISCOVERY.getValue());
+        autoexecJobVo.setOperationId(discoverConfCombopVo.getCombopId());
+        autoexecJobVo.setOperationType(CombopOperationType.COMBOP.getValue());
+        autoexecJobVo.setName(config.getString("name"));
+        autoexecJobVo.setRoundCount(64);
+        autoexecJobVo.setParam(param);
         IAutoexecJobActionCrossoverService autoexecJobActionCrossoverService = CrossoverServiceFactory.getApi(IAutoexecJobActionCrossoverService.class);
         autoexecJobActionCrossoverService.validateCreateJob(autoexecJobVo);
         return autoexecJobVo.getId();
