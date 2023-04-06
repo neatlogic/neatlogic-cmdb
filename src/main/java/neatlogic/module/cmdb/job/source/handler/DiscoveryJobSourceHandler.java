@@ -14,40 +14,30 @@
  * limitations under the License.
  */
 
-package neatlogic.module.cmdb.constvalue;
+package neatlogic.module.cmdb.job.source.handler;
 
-import neatlogic.framework.autoexec.dto.AutoexecJobSourceVo;
 import neatlogic.framework.autoexec.source.IAutoexecJobSource;
-import neatlogic.framework.util.I18nUtils;
+import neatlogic.framework.common.dto.ValueTextVo;
+import neatlogic.module.cmdb.constvalue.JobSource;
+import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public enum JobSource implements IAutoexecJobSource {
-    DISCOVERY("enum.cmdb.jobsource.discovery", "discovery");
-    private final String text;
-    private final String value;
+@Component
+public class DiscoveryJobSourceHandler implements IAutoexecJobSource {
 
-    JobSource(String _text, String _value) {
-        this.text = _text;
-        this.value = _value;
-    }
-
+    @Override
     public String getValue() {
-        return value;
+        return JobSource.DISCOVERY.getValue();
     }
 
+    @Override
     public String getText() {
-        return I18nUtils.getMessage(text);
+        return JobSource.DISCOVERY.getText();
     }
 
-    public static String getText(String _status) {
-        for (JobSource s : JobSource.values()) {
-            if (s.getValue().equals(_status)) {
-                return s.getText();
-            }
-        }
-        return "";
+    @Override
+    public List<ValueTextVo> getListByIdList(List<Long> idList) {
+        return null;
     }
-
 }
