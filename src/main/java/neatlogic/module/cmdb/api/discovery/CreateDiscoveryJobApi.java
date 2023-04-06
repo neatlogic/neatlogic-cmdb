@@ -100,6 +100,7 @@ public class CreateDiscoveryJobApi extends PrivateApiComponentBase {
         param.put("timingtmpl", config.getString("timingtmpl"));
         AutoexecJobVo autoexecJobVo = new AutoexecJobVo();
         autoexecJobVo.setInvokeId(confId);
+        autoexecJobVo.setRouteId(confId.toString());
         autoexecJobVo.setSource(JobSource.DISCOVERY.getValue());
         autoexecJobVo.setOperationId(discoverConfCombopVo.getCombopId());
         autoexecJobVo.setOperationType(CombopOperationType.COMBOP.getValue());
@@ -108,7 +109,9 @@ public class CreateDiscoveryJobApi extends PrivateApiComponentBase {
         autoexecJobVo.setParam(param);
         IAutoexecJobActionCrossoverService autoexecJobActionCrossoverService = CrossoverServiceFactory.getApi(IAutoexecJobActionCrossoverService.class);
         autoexecJobActionCrossoverService.validateCreateJob(autoexecJobVo);
-        return autoexecJobVo.getId();
+        JSONObject resultObj = new JSONObject();
+        resultObj.put("jobId", autoexecJobVo.getId());
+        return resultObj;
     }
 
     @Override
