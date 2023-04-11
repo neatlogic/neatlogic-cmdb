@@ -76,7 +76,6 @@ public class CreateDiscoveryJobApi extends PrivateApiComponentBase {
         if (discoverConfCombopVo == null) {
             throw new DiscoverNotFoundException(confId);
         }
-        new Query();
         List<JSONObject> list = mongoTemplate.find(new Query(Criteria.where("id").is(confId)), JSONObject.class, "_discovery_conf");
         if (CollectionUtils.isEmpty(list)) {
             throw new DiscoverConfNotFoundException(confId);
