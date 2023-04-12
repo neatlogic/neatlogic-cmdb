@@ -109,7 +109,7 @@ public class AccountSaveApi extends PrivateApiComponentBase {
         } else {
             Long resourceId = paramAccountVo.getResourceId();
             if (resourceId == null) {
-                throw new ParamNotExistsException("资产ID（resourceId）");
+                throw new ParamNotExistsException("resourceId");
             }
             List<AccountVo> accountVoList = resourceAccountMapper.getResourceAccountListByResourceId(resourceId);
             for (AccountVo accountVo : accountVoList) {
