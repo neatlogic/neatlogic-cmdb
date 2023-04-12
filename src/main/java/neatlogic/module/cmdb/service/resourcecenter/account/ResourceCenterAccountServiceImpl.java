@@ -143,7 +143,7 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
             resourceAccountMapper.deleteAccountByIdList(accountIdList);
             resourceAccountMapper.deleteResourceAccountByAccountIdList(accountIdList);
             resourceAccountMapper.deleteAccountTagByAccountIdList(accountIdList);
-            resourceAccountMapper.deleteAccountIpByAccountIdList(accountIdList);
+//            resourceAccountMapper.deleteAccountIpByAccountIdList(accountIdList);
         }
     }
 }
