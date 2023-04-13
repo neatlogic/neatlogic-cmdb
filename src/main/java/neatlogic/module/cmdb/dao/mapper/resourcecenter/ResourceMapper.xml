@@ -839,6 +839,21 @@ limitations under the License.
         WHERE a.`id` = #{id}
     </select>
 
+    <select id="getResourceTypeIdListByAppSystemIdAndModuleIdAndEnvIdAndInspectStatusList"
+            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+            resultType="java.lang.Long">
+        SELECT
+            a.type_id
+        FROM @{DATA_SCHEMA}.`scence_ipobject_env_appmodule_appsystem` a
+        WHERE a.`app_system_id` = #{appSystemId}
+          AND a.`app_module_id` = #{appModuleId}
+          AND a.`env_id` = #{envId}
+          AND a.`inspect_status` IN
+          <foreach collection="inspectStatusList" item="inspectStatus" open="(" separator="," close=")">
+            #{inspectStatus}
+          </foreach>
+    </select>
+
     <select id="getResourceIdListByAppSystemIdAndModuleIdAndEnvId"
             parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo"
             resultType="java.lang.Long">
