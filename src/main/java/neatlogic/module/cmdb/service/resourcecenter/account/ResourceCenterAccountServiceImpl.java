@@ -105,8 +105,8 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
      * @return 匹配的帐号
      */
     @Override
-    public AccountVo filterAccountByRules(List<AccountVo> accountByResourceList, Map<String, AccountVo> tagentIpAccountMap, Long resourceId, AccountProtocolVo protocolVo, String ip, Map<Long, Long> resourceOSResourceMap, Map<Long, AccountVo> protocolDefaultAccountMap) {
-        AccountVo accountVo = null;
+    public AccountBaseVo filterAccountByRules(List<AccountVo> accountByResourceList, Map<String, AccountBaseVo> tagentIpAccountMap, Long resourceId, AccountProtocolVo protocolVo, String ip, Map<Long, Long> resourceOSResourceMap, Map<Long, AccountVo> protocolDefaultAccountMap) {
+        AccountBaseVo accountVo = null;
         Optional<AccountVo> accountOp;
         //1
         if (Objects.equals(protocolVo.getName(), Protocol.TAGENT.getValue())) {
@@ -143,7 +143,7 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
             resourceAccountMapper.deleteAccountByIdList(accountIdList);
             resourceAccountMapper.deleteResourceAccountByAccountIdList(accountIdList);
             resourceAccountMapper.deleteAccountTagByAccountIdList(accountIdList);
-            resourceAccountMapper.deleteAccountIpByAccountIdList(accountIdList);
+//            resourceAccountMapper.deleteAccountIpByAccountIdList(accountIdList);
         }
     }
 }

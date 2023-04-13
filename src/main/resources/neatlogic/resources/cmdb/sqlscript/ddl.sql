@@ -692,11 +692,11 @@ CREATE TABLE IF NOT EXISTS `cmdb_resourcecenter_account` (
 -- ----------------------------
 -- Table structure for cmdb_resourcecenter_account_ip
 -- ----------------------------
-CREATE TABLE IF NOT EXISTS `cmdb_resourcecenter_account_ip` (
-  `account_id` bigint NOT NULL COMMENT '账号id',
-  `ip` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '账号对应的ip',
-  PRIMARY KEY (`ip`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='用于ip账号匹配';
+-- CREATE TABLE IF NOT EXISTS `cmdb_resourcecenter_account_ip` (
+--   `account_id` bigint NOT NULL COMMENT '账号id',
+--   `ip` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '账号对应的ip',
+--   PRIMARY KEY (`ip`) USING BTREE
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='用于ip账号匹配';
 
 -- ----------------------------
 -- Table structure for cmdb_resourcecenter_account_protocol

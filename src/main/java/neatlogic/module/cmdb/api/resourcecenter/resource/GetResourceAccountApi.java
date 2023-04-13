@@ -19,8 +19,8 @@ package neatlogic.module.cmdb.api.resourcecenter.resource;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
+import neatlogic.framework.cmdb.dto.resourcecenter.AccountBaseVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.AccountProtocolVo;
-import neatlogic.framework.cmdb.dto.resourcecenter.AccountVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.entity.SoftwareServiceOSVo;
 import neatlogic.framework.cmdb.enums.resourcecenter.Protocol;
@@ -31,6 +31,7 @@ import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.framework.tagent.dao.mapper.TagentMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import org.apache.commons.collections4.CollectionUtils;
@@ -49,6 +50,8 @@ public class GetResourceAccountApi extends PrivateApiComponentBase {
     ResourceMapper resourceMapper;
     @Resource
     ResourceAccountMapper resourceAccountMapper;
+    @Resource
+    TagentMapper tagentMapper;
 
     @Override
     public String getName() {
@@ -108,11 +111,11 @@ public class GetResourceAccountApi extends PrivateApiComponentBase {
         }
 
         //如果是tagent 则通过ip 找账号， 否则根据资产绑定的帐号找
-        List<AccountVo> accountList = null;
+        List<? extends AccountBaseVo> accountList;
         if (!Objects.equals(protocol, Protocol.TAGENT.getValue())) {
             accountList = resourceAccountMapper.getResourceAccountByResourceIdAndProtocolAndProtocolPortAndUsername(resourceVo.getId(), protocol, protocolPort, username);
         } else {
-            accountList = resourceAccountMapper.getAccountListByIpListAndProtocolId(Collections.singletonList(resourceVo.getIp()), protocolVo.getId());
+            accountList = tagentMapper.getAccountListByIpListAndProtocolId(Collections.singletonList(resourceVo.getIp()), protocolVo.getId());
         }
         if (CollectionUtils.isNotEmpty(accountList)) {
             return accountList.get(0).getPasswordCipher();
