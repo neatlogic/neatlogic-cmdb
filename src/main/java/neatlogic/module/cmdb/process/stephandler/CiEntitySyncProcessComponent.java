@@ -16,6 +16,8 @@
 
 package neatlogic.module.cmdb.process.stephandler;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.InputFromContext;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
@@ -23,6 +25,7 @@ import neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import neatlogic.framework.cmdb.dto.transaction.TransactionGroupVo;
 import neatlogic.framework.cmdb.enums.EditModeType;
 import neatlogic.framework.cmdb.enums.TransactionActionType;
+import neatlogic.framework.cmdb.exception.cientity.NewCiEntityNotFoundException;
 import neatlogic.framework.common.constvalue.InputFrom;
 import neatlogic.framework.exception.core.ApiRuntimeException;
 import neatlogic.framework.process.constvalue.ProcessStepMode;
@@ -37,8 +40,6 @@ import neatlogic.framework.transaction.core.EscapeTransactionJob;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -220,7 +221,7 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
                                                             //替换掉原来的ciEntityUuid为新的ciEntityId
                                                             valueList.set(i, tmpVo.getCiEntityId());
                                                         } else {
-                                                            throw new ApiRuntimeException("找不到" + attrCiEntityUuid + "的新配置项");
+                                                            throw new NewCiEntityNotFoundException(attrCiEntityUuid);
                                                         }
                                                     } else if (attrCiEntityId != null) {
                                                         valueList.set(i, attrCiEntityId);
@@ -248,7 +249,7 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
                                                     if (tmpVo != null) {
                                                         relEntityObj.put("ciEntityId", tmpVo.getCiEntityId());
                                                     } else {
-                                                        throw new ApiRuntimeException("找不到" + relEntityObj.getString("ciEntityUuid") + "的新配置项");
+                                                        throw new NewCiEntityNotFoundException(relEntityObj.getString("ciEntityUuid"));
                                                     }
                                                 }
                                             }

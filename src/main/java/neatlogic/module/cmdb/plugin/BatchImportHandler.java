@@ -16,7 +16,9 @@
 
 package neatlogic.module.cmdb.plugin;
 
+import com.alibaba.fastjson.JSONArray;
 import neatlogic.framework.asynchronization.thread.NeatLogicThread;
+import neatlogic.framework.asynchronization.threadlocal.InputFromContext;
 import neatlogic.framework.cmdb.dto.batchimport.ImportAuditVo;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
@@ -25,13 +27,13 @@ import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import neatlogic.framework.cmdb.dto.transaction.TransactionGroupVo;
 import neatlogic.framework.cmdb.enums.*;
+import neatlogic.framework.cmdb.exception.batchimport.*;
 import neatlogic.framework.cmdb.exception.ci.CiIsAbstractedException;
 import neatlogic.framework.cmdb.exception.ci.CiIsVirtualException;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.ci.CiWithoutAttrRelException;
 import neatlogic.framework.cmdb.exception.cientity.AttrEntityValueEmptyException;
 import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
-import neatlogic.framework.asynchronization.threadlocal.InputFromContext;
 import neatlogic.framework.cmdb.exception.cientity.RelEntityNotFoundException;
 import neatlogic.framework.common.constvalue.InputFrom;
 import neatlogic.framework.common.util.FileUtil;
@@ -43,7 +45,6 @@ import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.service.ci.CiService;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
-import com.alibaba.fastjson.JSONArray;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -214,7 +215,7 @@ public class BatchImportHandler {
                     ZipSecureFile.setMinInflateRatio(-1.0d);
                     wb = WorkbookFactory.create(in);
                 } catch (Exception e) {
-                    throw new RuntimeException("读取文件失败，" + e.getMessage());
+                    throw new BatchImportFileFailedException(e.getMessage());
                 }
 
                 for (int i = 0; i < wb.getNumberOfSheets(); i++) {
@@ -280,7 +281,7 @@ public class BatchImportHandler {
                                 }
                             }
                         } catch (Exception e) {
-                            throw new RuntimeException("分析表头失败：" + e.getMessage());
+                            throw new BatchImportAnalyzeHeaderFailedException(e.getMessage());
                         }
                         /*
                           【只添加】与【添加&更新】模式下，不能缺少必填属性列和唯一属性列
@@ -365,14 +366,14 @@ public class BatchImportHandler {
                                                                 ciEntityId = Long.parseLong(content);
                                                                 ciEntityTransactionVo.setCiEntityId(ciEntityId);
                                                             } catch (Exception e) {
-                                                                throw new RuntimeException("无法获取到配置项id：" + e.getMessage());
+                                                                throw new BatchImportCanNotGetResourceIdException(e.getMessage());
                                                             }
                                                         }
                                                     } else if (header.equals("uuid")) {
                                                         if (StringUtils.isNotBlank(content)) {
                                                             ciEntityUuid = content.trim();
                                                             if (ciEntityUuid.length() != 32) {
-                                                                throw new RuntimeException("uuid应该是一个由英文字母和数字组成的长度为32的字符串");
+                                                                throw new BatchImportUuidLengthIsInvalidException();
                                                             }
                                                         } else {
                                                             ciEntityUuid = UuidUtil.randomUuid();
@@ -457,7 +458,7 @@ public class BatchImportHandler {
                                                 ciEntityService.saveCiEntity(ciEntityTransactionVo);
                                                 successCount += 1;
                                             } else {
-                                                throw new RuntimeException("请正确填写模版与选择导入模式，【只添加】不需要填写ID；【只更新】必须填写ID");
+                                                throw new BatchImportMouldIsMustException();
                                             }
                                         } catch (Exception e) {
                                             failedCount += 1;
