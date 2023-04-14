@@ -21,21 +21,18 @@ import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.autoexec.exception.AutoexecCombopProtocolCannotBeEmptyException;
 import neatlogic.framework.cmdb.auth.label.CMDB;
-import neatlogic.framework.cmdb.crossover.IResourceCenterAccountCrossoverService;
-import neatlogic.framework.cmdb.dto.resourcecenter.AccountProtocolVo;
-import neatlogic.framework.cmdb.dto.resourcecenter.AccountVo;
-import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
-import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.*;
 import neatlogic.framework.cmdb.dto.resourcecenter.entity.SoftwareServiceOSVo;
 import neatlogic.framework.cmdb.enums.resourcecenter.Protocol;
 import neatlogic.framework.cmdb.exception.resourcecenter.ResourceCenterAccountProtocolNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.framework.tagent.dao.mapper.TagentMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
+import neatlogic.module.cmdb.service.resourcecenter.account.ResourceCenterAccountService;
 import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -66,6 +63,12 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
 
     @Resource
     private IResourceCenterResourceService resourceCenterResourceService;
+
+    @Resource
+    private ResourceCenterAccountService resourceCenterAccountService;
+
+    @Resource
+    private TagentMapper tagentMapper;
 
     @Override
     public String getToken() {
@@ -231,10 +234,9 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
     }
 
     private void addException(String executeUser, Long protocolId, List<ResourceVo> resourceListWithoutAccountByExecuteUserAndProtocol, List<ResourceVo> resourceListWithoutAccountByProtocol, List<AccountProtocolVo> protocolVoList, List<Long> idList) {
-        IResourceCenterAccountCrossoverService accountService = CrossoverServiceFactory.getApi(IResourceCenterAccountCrossoverService.class);
         AccountProtocolVo protocolVo = resourceAccountMapper.getAccountProtocolVoByProtocolId(protocolId);
         Map<Long, Long> resourceOSResourceMap = new HashMap<>();//节点resourceId->对应操作系统resourceId
-        Map<String, AccountVo> tagentIpAccountMap = new HashMap<>();
+        Map<String, AccountBaseVo> tagentIpAccountMap = new HashMap<>();
         if (protocolVo == null) {
             throw new ResourceCenterAccountProtocolNotFoundException(protocolId);
         }
@@ -251,9 +253,9 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
             if (!Objects.equals(protocolVo.getName(), Protocol.TAGENT.getValue())) {
                 accountByResourceList = resourceAccountMapper.getResourceAccountListByResourceIdAndProtocolAndAccount(resourceIncludeOsIdList, protocolId, executeUser);
             } else {
-                List<AccountVo> tagentAccountByIpList = resourceAccountMapper.getAccountListByIpListAndProtocolId(resourceVoList.stream().map(ResourceVo::getIp).collect(toList()), protocolId);
+                List<AccountBaseVo> tagentAccountByIpList = tagentMapper.getAccountListByIpListAndProtocolId(resourceVoList.stream().map(ResourceVo::getIp).collect(toList()), protocolId);
                 if (CollectionUtils.isNotEmpty(tagentAccountByIpList)) {
-                    tagentIpAccountMap = tagentAccountByIpList.stream().collect(toMap(AccountVo::getIp, o -> o));
+                    tagentIpAccountMap = tagentAccountByIpList.stream().collect(toMap(AccountBaseVo::getIp, o -> o));
                 }
             }
             Map<Long, AccountVo> protocolDefaultAccountMap = new HashMap<>();
@@ -265,7 +267,7 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
                 }
             }
             for (ResourceVo vo : resourceVoList) {
-                AccountVo account = accountService.filterAccountByRules(accountByResourceList, tagentIpAccountMap, vo.getId(), protocolVo, vo.getIp(), resourceOSResourceMap, protocolDefaultAccountMap);
+                AccountBaseVo account = resourceCenterAccountService.filterAccountByRules(accountByResourceList, tagentIpAccountMap, vo.getId(), protocolVo, vo.getIp(), resourceOSResourceMap, protocolDefaultAccountMap);
                 if (account == null) {
                     if (StringUtils.isNotBlank(executeUser)) {
                         resourceListWithoutAccountByExecuteUserAndProtocol.add(vo);

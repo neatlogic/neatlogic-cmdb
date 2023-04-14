@@ -267,7 +267,7 @@ limitations under the License.
         a.`lcd`
         FROM `cmdb_resourcecenter_account` a
         left join `cmdb_resourcecenter_account_protocol` crap on a.protocol_id = crap.id
-        left join `cmdb_resourcecenter_account_ip` crai on a.id = crai.`account_id`
+        left join `tagent_account_ip` crai on a.id = crai.`account_id`
         WHERE crai.`ip` IN
         <foreach collection="ipList" item="ip" open="(" close=")" separator=",">
             #{ip}
@@ -291,7 +291,7 @@ limitations under the License.
         a.`lcd`
         FROM `cmdb_resourcecenter_account` a
         left join `cmdb_resourcecenter_account_protocol` crap on a.protocol_id = crap.id
-        left join `cmdb_resourcecenter_account_ip` crai on a.id = crai.`account_id`
+        left join `tagent_account_ip` crai on a.id = crai.`account_id`
         <where>
             crap.`name` = #{protocolName}
             and crai.ip = #{ip}
@@ -323,7 +323,7 @@ limitations under the License.
         a.`lcd`
         FROM `cmdb_resourcecenter_account` a
         left join `cmdb_resourcecenter_account_protocol` crap on a.protocol_id = crap.id
-        left join `cmdb_resourcecenter_account_ip` crai on a.id = crai.`account_id`
+        left join `tagent_account_ip` crai on a.id = crai.`account_id`
         <where>
             crap.`name` = #{protocolName}
             <if test="account != null">
@@ -422,7 +422,7 @@ limitations under the License.
                cra.`protocol_id` as protocolId,
                crai.`ip`         as ip,
                crap.`port`       as protocolPort
-        from cmdb_resourcecenter_account_ip crai
+        from tagent_account_ip crai
                  JOIN `cmdb_resourcecenter_account` cra ON crai.`account_id` = cra.`id`
                  LEFT JOIN `cmdb_resourcecenter_account_protocol` crap ON crap.`id` = cra.`protocol_id`
         WHERE crai.ip = #{host}
@@ -569,7 +569,7 @@ limitations under the License.
     <select id="getAccountIpByIpListAndPort" resultType="java.lang.String">
         select crai.ip
         from `cmdb_resourcecenter_account` cra
-        LEFT JOIN `cmdb_resourcecenter_account_ip` crai on crai.account_id = cra.id
+        LEFT JOIN `tagent_account_ip` crai on crai.account_id = cra.id
         LEFT JOIN `cmdb_resourcecenter_account_protocol` crap on cra.protocol_id = crap.id
         where crai.ip in
         <foreach collection="ipList" item="ip" open="(" close=")" separator=",">
@@ -672,7 +672,7 @@ limitations under the License.
     <insert id="insertAccountIp">
         INSERT
             IGNORE
-        INTO `cmdb_resourcecenter_account_ip` (`account_id`, `ip`)
+        INTO `tagent_account_ip` (`account_id`, `ip`)
         VALUES (#{accountId},
                 #{ip})
     </insert>
@@ -733,13 +733,13 @@ limitations under the License.
 
     <delete id="deleteAccountIpByAccountId" parameterType="java.lang.Long">
         DELETE
-        FROM `cmdb_resourcecenter_account_ip`
+        FROM `tagent_account_ip`
         WHERE `account_id` = #{value}
     </delete>
 
     <delete id="deleteAccountIpByAccountIdList" parameterType="java.util.List">
         DELETE
-        FROM `cmdb_resourcecenter_account_ip`
+        FROM `tagent_account_ip`
         WHERE `account_id` in
         <foreach collection="list" open="(" close=")" separator="," item="item">
             #{item}
@@ -763,7 +763,7 @@ limitations under the License.
 
     <delete id="deleteAccountIpByIpList">
         DELETE
-        FROM `cmdb_resourcecenter_account_ip`
+        FROM `tagent_account_ip`
         WHERE `ip` in
         <foreach collection="ipList" open="(" close=")" separator="," item="ip">
             #{ip}
