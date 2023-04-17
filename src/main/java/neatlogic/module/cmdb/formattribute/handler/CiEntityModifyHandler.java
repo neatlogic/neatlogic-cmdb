@@ -1,10 +1,7 @@
 package neatlogic.module.cmdb.formattribute.handler;
 
-import neatlogic.framework.cmdb.crossover.ISearchCiEntityApiCrossoverService;
-import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.enums.FormHandler;
 import neatlogic.framework.common.constvalue.ParamType;
-import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.form.attribute.core.FormHandlerBase;
 import neatlogic.framework.form.constvalue.FormConditionModel;
 import neatlogic.framework.form.dto.AttributeDataVo;
@@ -45,67 +42,47 @@ public class CiEntityModifyHandler extends FormHandlerBase {
 
     @Override
     public Object dataTransformationForEmail(AttributeDataVo attributeDataVo, JSONObject configObj) {
-        JSONArray tableArray = new JSONArray();
-        JSONArray dataArray = (JSONArray) attributeDataVo.getDataObj();
-        if (CollectionUtils.isNotEmpty(dataArray)) {
-            JSONObject paramObj = new JSONObject();
-            paramObj.put("currentPage", 1);
-            paramObj.put("needPage", false);
-            paramObj.put("mode", "dialog");
-            paramObj.put("needActionType", true);
-            List<Long> ciIdList = new ArrayList<>();
-            Map<Long, String> ciLabelMap = new HashMap<>();
-            Map<Long, List<CiEntityVo>> ciEntityListMap = new HashMap<>();
-            List<CiEntityVo> ciEntityVoList = dataArray.toJavaList(CiEntityVo.class);
-            for (CiEntityVo ciEntityVo : ciEntityVoList) {
-                Long ciId = ciEntityVo.getCiId();
-                if (!ciIdList.contains(ciId)) {
-                    ciIdList.add(ciId);
-                    ciLabelMap.put(ciId, ciEntityVo.getCiLabel());
-                }
-                ciEntityListMap.computeIfAbsent(ciId, key -> new ArrayList<>()).add(ciEntityVo);
-            }
-            for (Long ciId : ciIdList) {
-                paramObj.put("ciId", ciId);
-                paramObj.put("ciEntityList", ciEntityListMap.get(ciId));
-                try {
-                    ISearchCiEntityApiCrossoverService searchCiEntityApiCrossoverService = CrossoverServiceFactory.getApi(ISearchCiEntityApiCrossoverService.class);
-                    JSONObject tableObj = (JSONObject) searchCiEntityApiCrossoverService.myDoService(paramObj);
-                    JSONArray tbodyList = new JSONArray();
-                    JSONArray tbodyArray = tableObj.getJSONArray("tbodyList");
-                    for (int i = 0; i < tbodyArray.size(); i++) {
-                        JSONObject tbodyObj = tbodyArray.getJSONObject(i);
-                        String actionType = tbodyObj.getString("actionType");
-                        List<String> valueList = new ArrayList<>();
-                        valueList.add(actionType);
-                        List<String> actualValueList = new ArrayList<>();
-                        String actualValue = "";
-                        if ("insert".equals(actionType)) {
-                            actualValue = "新增";
-                        } else if ("update".equals(actionType)) {
-                            actualValue = "编辑";
-                        } else if ("delete".equals(actionType)) {
-                            actualValue = "删除";
-                        }
-                        actualValueList.add(actualValue);
-                        JSONObject actionTypeObj = new JSONObject();
-                        actionTypeObj.put("type", "text");
-                        actionTypeObj.put("valueList", valueList);
-                        actionTypeObj.put("actualValueList", actualValueList);
-                        JSONObject attrEntityData = tbodyObj.getJSONObject("attrEntityData");
-                        attrEntityData.put("actionType", actionTypeObj);
-                        tbodyList.add(attrEntityData);
-                    }
-                    tableObj.put("tbodyList", tbodyList);
-                    tableObj.put("ciId", ciId);
-                    tableObj.put("ciLabel", ciLabelMap.get(ciId));
-                    tableArray.add(tableObj);
-                } catch (Exception e) {
-                    logger.error(e.getMessage(), e);
-                }
-            }
+        JSONObject resultObj = getMyDetailedData(attributeDataVo, configObj);
+        if (MapUtils.isEmpty(resultObj)) {
+            return null;
         }
-        return tableArray;
+        resultObj.remove("value");
+        JSONArray tbodyArray = resultObj.getJSONArray("tbodyList");
+        if (CollectionUtils.isEmpty(tbodyArray)) {
+            return null;
+        }
+        List<Map<String, String>> tbodyList = new ArrayList<>();
+        for (int i = 0; i < tbodyArray.size(); i++) {
+            JSONObject tbodyObj = tbodyArray.getJSONObject(i);
+            Map<String, String> map = new HashMap<>();
+            for (Map.Entry<String, Object> entry : tbodyObj.entrySet()) {
+                Object value = entry.getValue();
+                if (value instanceof JSONObject) {
+                    JSONObject jsonObj = (JSONObject) value;
+                    JSONArray actualValueList = jsonObj.getJSONArray("actualValueList");
+                    if (CollectionUtils.isEmpty(actualValueList)) {
+                        map.put(entry.getKey(), "");
+                        continue;
+                    }
+                    for (int j = 0; j < actualValueList.size(); j++) {
+                        Object actualValue = actualValueList.get(j);
+                        if (actualValue instanceof String) {
+                            map.put(entry.getKey(), (String) actualValue);
+                        } else if (actualValue instanceof JSONObject) {
+                            JSONObject actualValueObj = (JSONObject) actualValue;
+                            if (MapUtils.isEmpty(actualValueObj)) {
+                                map.put(entry.getKey(), "");
+                            } else {
+                                map.put(entry.getKey(), actualValueObj.getString("text"));
+                            }
+                        }
+                    }
+                }
+            }
+            tbodyList.add(map);
+        }
+        resultObj.put("tbodyList", tbodyList);
+        return resultObj;
     }
 
     @Override
@@ -138,800 +115,525 @@ public class CiEntityModifyHandler extends FormHandlerBase {
         return null;
     }
 
+    /*
     //表单组件配置信息
-//{
-//	"handler": "cientityselect",
-//	"label": "配置项修改组件_1",
-//	"type": "form",
-//	"uuid": "89ca9dfd69e74599a60705abfdb20d83",
-//	"config": {
-//		"isRequired": false,
-//		"actionDel": false,
-//		"ciIdList": [
-//			567085713113088
-//		],
-//		"ruleList": [],
-//		"validList": [],
-//		"quoteUuid": "",
-//		"dataConfig": [
-//			{
-//				"fromCiId": 478701787553792,
-//				"isEdit": false,
-//				"title": "名称",
-//				"key": "attr_478701787553792",
-//				"isShow": true
-//			},
-//			{
-//				"fromCiId": 478702072766464,
-//				"isEdit": false,
-//				"title": "备注",
-//				"key": "attr_478702072766464",
-//				"isShow": true
-//			},
-//			{
-//				"fromCiId": 478702852907008,
-//				"isEdit": false,
-//				"title": "使用状态",
-//				"key": "attr_478702852907008",
-//				"isShow": true
-//			},
-//			{
-//				"fromCiId": 478703406555136,
-//				"isEdit": false,
-//				"title": "负责人",
-//				"key": "attr_478703406555136",
-//				"isShow": true
-//			},
-//			{
-//				"fromCiId": 478703658213376,
-//				"isEdit": false,
-//				"title": "事业部",
-//				"key": "attr_478703658213376",
-//				"isShow": true
-//			},
-//			{
-//				"fromCiId": 480816840630272,
-//				"isEdit": false,
-//				"title": "维护窗口",
-//				"key": "attr_480816840630272",
-//				"isShow": true
-//			},
-//			{
-//				"fromCiId": 567087072067584,
-//				"isEdit": false,
-//				"title": "数字属性",
-//				"key": "attr_567087072067584",
-//				"isShow": false
-//			},
-//			{
-//				"fromCiId": 567089035001856,
-//				"isEdit": false,
-//				"title": "文本域属性",
-//				"key": "attr_567089035001856",
-//				"isShow": false
-//			},
-//			{
-//				"fromCiId": 567090637225984,
-//				"isEdit": false,
-//				"title": "枚举属性",
-//				"key": "attr_567090637225984",
-//				"isShow": false
-//			},
-//			{
-//				"fromCiId": 567090997936128,
-//				"isEdit": false,
-//				"title": "日期属性",
-//				"key": "attr_567090997936128",
-//				"isShow": false
-//			},
-//			{
-//				"fromCiId": 567091249594368,
-//				"isEdit": false,
-//				"title": "时间属性",
-//				"key": "attr_567091249594368",
-//				"isShow": false
-//			},
-//			{
-//				"fromCiId": 567091685801984,
-//				"isEdit": false,
-//				"title": "日期时间属性",
-//				"key": "attr_567091685801984",
-//				"isShow": false
-//			},
-//			{
-//				"fromCiId": 567095360012288,
-//				"isEdit": false,
-//				"title": "日期时间范围属性",
-//				"key": "attr_567095360012288",
-//				"isShow": false
-//			},
-//			{
-//				"fromCiId": 567095871717376,
-//				"isEdit": false,
-//				"title": "密码属性",
-//				"key": "attr_567095871717376",
-//				"isShow": false
-//			},
-//			{
-//				"fromCiId": 567096148541440,
-//				"isEdit": false,
-//				"title": "附件属性",
-//				"key": "attr_567096148541440",
-//				"isShow": false
-//			},
-//			{
-//				"fromCiId": 567097792708608,
-//				"isEdit": false,
-//				"title": "表格",
-//				"key": "attr_567097792708608",
-//				"isShow": false
-//			},
-//			{
-//				"fromCiId": 567098648346624,
-//				"isEdit": false,
-//				"title": "表达式属性",
-//				"key": "attr_567098648346624",
-//				"isShow": false
-//			},
-//			{
-//				"fromCiId": 567101106208768,
-//				"isEdit": false,
-//				"title": "超链接属性",
-//				"key": "attr_567101106208768",
-//				"isShow": false
-//			}
-//		],
-//		"ciId": 567085713113088,
-//		"width": "100%",
-//		"actionEdit": false,
-//		"actionAdd": true,
-//		"defaultValueType": "self",
-//		"authorityConfig": [
-//			"common#alluser"
-//		]
-//	}
-//}
-//保存数据结构
-//[
-//	{
-//		"rootCiId": 567085713113088,
-//		"ciIcon": "tsfont-ci",
-//		"authData": {
-//			"cientityupdate": true,
-//			"cientityinsert": true,
-//			"cimanage": true,
-//			"transactionmanage": true
-//		},
-//		"_elementList": [
-//			{
-//				"type": "attr",
-//				"element": {
-//					"needConfig": false,
-//					"startPage": 1,
-//					"needWholeRow": false,
-//					"isUnique": 0,
-//					"needTargetCi": false,
-//					"isPrivate": 1,
-//					"type": "text",
-//					"canSearch": true,
-//					"ciName": "CIRoot",
-//					"ciId": 441087512551424,
-//					"inputTypeText": "自动发现",
-//					"allowEdit": 1,
-//					"inputType": "at",
-//					"id": 478701787553792,
-//					"isRequired": 0,
-//					"canInput": true,
-//					"isCiUnique": 1,
-//					"canImport": true,
-//					"label": "名称",
-//					"sort": 4,
-//					"isExtended": 1,
-//					"expressionList": [
-//						{
-//							"text": "等于",
-//							"value": "equal"
-//						},
-//						{
-//							"text": "不等于",
-//							"value": "notequal"
-//						},
-//						{
-//							"text": "包含",
-//							"value": "like"
-//						},
-//						{
-//							"text": "不包含",
-//							"value": "notlike"
-//						},
-//						{
-//							"text": "不为空",
-//							"value": "is-not-null"
-//						},
-//						{
-//							"text": "为空",
-//							"value": "is-null"
-//						}
-//					],
-//					"groupName": "",
-//					"typeText": "文本框",
-//					"name": "name",
-//					"ciLabel": "CI根对象"
-//				}
-//			},
-//			{
-//				"type": "attr",
-//				"element": {
-//					"needConfig": false,
-//					"startPage": 1,
-//					"needWholeRow": false,
-//					"isUnique": 0,
-//					"needTargetCi": false,
-//					"isPrivate": 1,
-//					"type": "text",
-//					"canSearch": true,
-//					"ciName": "CIRoot",
-//					"ciId": 441087512551424,
-//					"inputTypeText": "自动发现",
-//					"allowEdit": 1,
-//					"inputType": "at",
-//					"id": 478702072766464,
-//					"isRequired": 0,
-//					"canInput": true,
-//					"isCiUnique": 0,
-//					"canImport": true,
-//					"label": "备注",
-//					"sort": 5,
-//					"isExtended": 1,
-//					"expressionList": [
-//						{
-//							"text": "等于",
-//							"value": "equal"
-//						},
-//						{
-//							"text": "不等于",
-//							"value": "notequal"
-//						},
-//						{
-//							"text": "包含",
-//							"value": "like"
-//						},
-//						{
-//							"text": "不包含",
-//							"value": "notlike"
-//						},
-//						{
-//							"text": "不为空",
-//							"value": "is-not-null"
-//						},
-//						{
-//							"text": "为空",
-//							"value": "is-null"
-//						}
-//					],
-//					"groupName": "",
-//					"typeText": "文本框",
-//					"name": "description",
-//					"ciLabel": "CI根对象"
-//				}
-//			},
-//			{
-//				"type": "attr",
-//				"element": {
-//					"needConfig": true,
-//					"startPage": 1,
-//					"needWholeRow": false,
-//					"targetIsVirtual": 0,
-//					"isUnique": 0,
-//					"needTargetCi": true,
-//					"isPrivate": 1,
-//					"type": "select",
-//					"canSearch": true,
-//					"ciName": "CIRoot",
-//					"ciId": 441087512551424,
-//					"inputTypeText": "自动发现",
-//					"allowEdit": 1,
-//					"inputType": "at",
-//					"id": 478702852907008,
-//					"isRequired": 0,
-//					"canInput": true,
-//					"isCiUnique": 0,
-//					"canImport": true,
-//					"label": "使用状态",
-//					"sort": 6,
-//					"targetCiId": 479550169423872,
-//					"isExtended": 1,
-//					"expressionList": [
-//						{
-//							"text": "等于",
-//							"value": "equal"
-//						},
-//						{
-//							"text": "不等于",
-//							"value": "notequal"
-//						},
-//						{
-//							"text": "不为空",
-//							"value": "is-not-null"
-//						},
-//						{
-//							"text": "为空",
-//							"value": "is-null"
-//						}
-//					],
-//					"groupName": "",
-//					"typeText": "下拉框",
-//					"name": "state",
-//					"ciLabel": "CI根对象",
-//					"config": {}
-//				}
-//			},
-//			{
-//				"type": "attr",
-//				"element": {
-//					"needConfig": true,
-//					"startPage": 1,
-//					"needWholeRow": false,
-//					"targetIsVirtual": 1,
-//					"isUnique": 0,
-//					"needTargetCi": true,
-//					"isPrivate": 1,
-//					"type": "select",
-//					"canSearch": true,
-//					"ciName": "CIRoot",
-//					"ciId": 441087512551424,
-//					"inputTypeText": "人工录入",
-//					"allowEdit": 1,
-//					"inputType": "mt",
-//					"id": 478703406555136,
-//					"isRequired": 0,
-//					"canInput": true,
-//					"isCiUnique": 0,
-//					"canImport": true,
-//					"label": "负责人",
-//					"sort": 7,
-//					"targetCiId": 479643459133440,
-//					"isExtended": 1,
-//					"expressionList": [
-//						{
-//							"text": "等于",
-//							"value": "equal"
-//						},
-//						{
-//							"text": "不等于",
-//							"value": "notequal"
-//						},
-//						{
-//							"text": "不为空",
-//							"value": "is-not-null"
-//						},
-//						{
-//							"text": "为空",
-//							"value": "is-null"
-//						}
-//					],
-//					"groupName": "",
-//					"typeText": "下拉框",
-//					"name": "owner",
-//					"ciLabel": "CI根对象",
-//					"config": {
-//						"mode": "r",
-//						"isMultiple": 1
-//					}
-//				}
-//			},
-//			{
-//				"type": "attr",
-//				"element": {
-//					"needConfig": true,
-//					"startPage": 1,
-//					"needWholeRow": false,
-//					"targetIsVirtual": 0,
-//					"isUnique": 0,
-//					"needTargetCi": true,
-//					"isPrivate": 1,
-//					"type": "select",
-//					"canSearch": true,
-//					"ciName": "CIRoot",
-//					"ciId": 441087512551424,
-//					"inputTypeText": "人工录入",
-//					"allowEdit": 0,
-//					"inputType": "mt",
-//					"id": 478703658213376,
-//					"isRequired": 0,
-//					"canInput": true,
-//					"isCiUnique": 0,
-//					"canImport": true,
-//					"label": "事业部",
-//					"sort": 8,
-//					"targetCiId": 480125644709888,
-//					"isExtended": 1,
-//					"expressionList": [
-//						{
-//							"text": "等于",
-//							"value": "equal"
-//						},
-//						{
-//							"text": "不等于",
-//							"value": "notequal"
-//						},
-//						{
-//							"text": "不为空",
-//							"value": "is-not-null"
-//						},
-//						{
-//							"text": "为空",
-//							"value": "is-null"
-//						}
-//					],
-//					"groupName": "",
-//					"typeText": "下拉框",
-//					"name": "business_group",
-//					"ciLabel": "CI根对象",
-//					"config": {
-//						"mode": "r"
-//					}
-//				}
-//			},
-//			{
-//				"type": "attr",
-//				"element": {
-//					"needConfig": true,
-//					"startPage": 1,
-//					"needWholeRow": false,
-//					"isUnique": 0,
-//					"needTargetCi": false,
-//					"isPrivate": 1,
-//					"type": "date",
-//					"canSearch": true,
-//					"ciName": "CIRoot",
-//					"ciId": 441087512551424,
-//					"inputTypeText": "人工录入",
-//					"allowEdit": 1,
-//					"inputType": "mt",
-//					"id": 480816840630272,
-//					"isRequired": 0,
-//					"canInput": true,
-//					"isCiUnique": 0,
-//					"canImport": true,
-//					"label": "维护窗口",
-//					"sort": 9,
-//					"isExtended": 1,
-//					"expressionList": [
-//						{
-//							"text": "在此区间",
-//							"value": "between"
-//						},
-//						{
-//							"text": "不为空",
-//							"value": "is-not-null"
-//						},
-//						{
-//							"text": "为空",
-//							"value": "is-null"
-//						}
-//					],
-//					"typeText": "日期",
-//					"name": "maintenance_window",
-//					"ciLabel": "CI根对象",
-//					"config": {
-//						"format": "HH:mm",
-//						"type": "timerange"
-//					}
-//				}
-//			}
-//		],
-//		"description": "test",
-//		"uuid": "ae05d235b6904faa92b0e1857da89e31",
-//		"ciName": "other",
-//		"ciId": 567085713113088,
-//		"actionType": "insert",
-//		"maxRelEntityCount": 9999999999,
-//		"relEntityData": {},
-//		"_expander": false,
-//		"attrEntityData": {
-//			"attr_567095871717376": {
-//				"actualValueList": [
-//					"qwer"
-//				],
-//				"valueList": [
-//					"qwer"
-//				],
-//				"type": "password"
-//			},
-//			"attr_478701787553792": {
-//				"actualValueList": [
-//					"名称2"
-//				],
-//				"valueList": [
-//					"名称2"
-//				],
-//				"type": "text"
-//			},
-//			"attr_567089035001856": {
-//				"actualValueList": [
-//					"嗯嗯"
-//				],
-//				"valueList": [
-//					"嗯嗯"
-//				],
-//				"type": "textarea"
-//			},
-//			"attr_478702852907008": {
-//				"actualValueList": [
-//					"使用中"
-//				],
-//				"valueList": [
-//					481855425798147
-//				],
-//				"type": "select",
-//				"config": {}
-//			},
-//			"attr_567090637225984": {
-//				"actualValueList": [
-//					"枚举2"
-//				],
-//				"valueList": [
-//					"枚举2"
-//				],
-//				"type": "enum",
-//				"config": {
-//					"members": [
-//						"枚举1",
-//						"枚举2"
-//					]
-//				}
-//			},
-//			"attr_567091249594368": {
-//				"actualValueList": [
-//					"00:00:05"
-//				],
-//				"valueList": [
-//					"00:00:05"
-//				],
-//				"type": "time"
-//			},
-//			"attr_567101106208768": {
-//				"actualValueList": [
-//					"http://localhost:8081/develop/process.html#/task-dispatch?uuid=fd782fe015d8463dae9440e9d07498c6"
-//				],
-//				"valueList": [
-//					"http://localhost:8081/develop/process.html#/task-dispatch?uuid=fd782fe015d8463dae9440e9d07498c6"
-//				],
-//				"type": "hyperlink",
-//				"config": {
-//					"text": "内部链接",
-//					"type": "innerlink"
-//				}
-//			},
-//			"attr_567087072067584": {
-//				"actualValueList": [
-//					"1"
-//				],
-//				"valueList": [
-//					"1"
-//				],
-//				"type": "number"
-//			},
-//			"attr_478702072766464": {
-//				"actualValueList": [
-//					"备注2"
-//				],
-//				"valueList": [
-//					"备注2"
-//				],
-//				"type": "text"
-//			},
-//			"attr_480816840630272": {
-//				"actualValueList": [
-//					"2022-02-21"
-//				],
-//				"valueList": [
-//					"2022-02-21"
-//				],
-//				"type": "date",
-//				"config": {
-//					"format": "HH:mm",
-//					"type": "timerange"
-//				}
-//			},
-//			"attr_567090997936128": {
-//				"actualValueList": [
-//					"2022-02-21"
-//				],
-//				"valueList": [
-//					"2022-02-21"
-//				],
-//				"type": "date",
-//				"config": {}
-//			},
-//			"attr_478703658213376": {
-//				"actualValueList": [
-//					"集团"
-//				],
-//				"valueList": [
-//					481860601569283
-//				],
-//				"type": "select",
-//				"config": {
-//					"mode": "r"
-//				}
-//			},
-//			"attr_567095360012288": {
-//				"actualValueList": [
-//					"2022-02-21 00:02,2022-03-21 00:03"
-//				],
-//				"valueList": [
-//					"2022-02-21 00:02,2022-03-21 00:03"
-//				],
-//				"type": "datetimerange",
-//				"config": {
-//					"format": "yyyy-MM-dd HH:mm",
-//					"type": "datetimerange"
-//				}
-//			},
-//			"attr_478703406555136": {
-//				"actualValueList": [
-//					{
-//						"text": "测试用户(test01)",
-//						"value": 521740908240896
-//					}
-//				],
-//				"valueList": [
-//					521740908240896
-//				],
-//				"type": "select",
-//				"config": {
-//					"mode": "r",
-//					"isMultiple": 1
-//				}
-//			},
-//			"attr_567091685801984": {
-//				"actualValueList": [
-//					"2022-02-21 00:00:08"
-//				],
-//				"valueList": [
-//					"2022-02-21 00:00:08"
-//				],
-//				"type": "datetime"
-//			},
-//			"attr_567096148541440": {
-//				"actualValueList": [
-//					{
-//						"name": "asd.jpg",
-//						"id": 567118537736192
-//					}
-//				],
-//				"valueList": [
-//					567118537736192
-//				],
-//				"type": "file",
-//				"config": {}
-//			}
-//		},
-//		"maxAttrEntityCount": 9999999999,
-//		"ciLabel": "其他"
-//	}
-//]
+    {
+        "disableDefaultValue": true,
+        "isMask": false,
+        "actionDel": true,
+        "ciIdList": [
+            479609502048256
+        ],
+        "width": "100%",
+        "description": "",
+        "actionEdit": false,
+        "actionAdd": false,
+        "dataConfig": [
+            {
+                "fromCiId": 481537078337536,
+                "isEdit": false,
+                "title": "编号",
+                "key": "attr_481537078337536",
+                "isShow": true
+            },
+            {
+                "fromCiId": 480848331464705,
+                "isEdit": false,
+                "title": "简称",
+                "key": "attr_480848331464705",
+                "isShow": true
+            },
+            {
+                "fromCiId": 478701787553792,
+                "isEdit": false,
+                "title": "名称",
+                "key": "attr_478701787553792",
+                "isShow": true
+            },
+            {
+                "fromCiId": 478702852907008,
+                "isEdit": false,
+                "title": "使用状态",
+                "key": "attr_478702852907008",
+                "isShow": true
+            },
+            {
+                "fromCiId": 480857726705664,
+                "isEdit": false,
+                "title": "负责人领导",
+                "key": "attr_480857726705664",
+                "isShow": true
+            },
+            {
+                "fromCiId": 480858834001920,
+                "isEdit": false,
+                "title": "业务负责人",
+                "key": "attr_480858834001920",
+                "isShow": false
+            },
+            {
+                "fromCiId": 480859505090560,
+                "isEdit": false,
+                "title": "业务负责人领导",
+                "key": "attr_480859505090560",
+                "isShow": false
+            },
+            {
+                "fromCiId": 480860184567808,
+                "isEdit": false,
+                "title": "所属开发中心",
+                "key": "attr_480860184567808",
+                "isShow": false
+            },
+            {
+                "fromCiId": 480860595609600,
+                "isEdit": false,
+                "title": "所属业务部门",
+                "key": "attr_480860595609600",
+                "isShow": false
+            },
+            {
+                "fromCiId": 480870116679680,
+                "isEdit": false,
+                "title": "开发类型",
+                "key": "attr_480870116679680",
+                "isShow": false
+            },
+            {
+                "fromCiId": 480869848244224,
+                "isEdit": false,
+                "title": "供应商",
+                "key": "attr_480869848244224",
+                "isShow": false
+            },
+            {
+                "fromCiId": 480870410280963,
+                "isEdit": false,
+                "title": "上线时间",
+                "key": "attr_480870410280963",
+                "isShow": false
+            },
+            {
+                "fromCiId": 478703658213376,
+                "isEdit": false,
+                "title": "事业部",
+                "key": "attr_478703658213376",
+                "isShow": false
+            },
+            {
+                "fromCiId": 478703406555136,
+                "isEdit": false,
+                "title": "负责人",
+                "key": "attr_478703406555136",
+                "isShow": false
+            },
+            {
+                "fromCiId": 479638602129408,
+                "isEdit": false,
+                "title": "应用模块",
+                "key": "relfrom_479638602129408",
+                "isShow": false
+            },
+            {
+                "fromCiId": 478702072766464,
+                "isEdit": false,
+                "title": "备注",
+                "key": "attr_478702072766464",
+                "isShow": false
+            },
+            {
+                "fromCiId": 493359185321984,
+                "isEdit": false,
+                "title": "我调用的应用系统",
+                "key": "relfrom_493359185321984",
+                "isShow": false
+            },
+            {
+                "fromCiId": 493359185321984,
+                "isEdit": false,
+                "title": "调用我的应用系统",
+                "key": "relto_493359185321984",
+                "isShow": false
+            },
+            {
+                "fromCiId": 529435476156416,
+                "isEdit": false,
+                "title": "系统显示名",
+                "key": "attr_529435476156416",
+                "isShow": false
+            },
+            {
+                "fromCiId": 532533548474368,
+                "isEdit": false,
+                "title": "test附件",
+                "key": "attr_532533548474368",
+                "isShow": false
+            },
+            {
+                "fromCiId": 655562282688512,
+                "isEdit": false,
+                "title": "连接",
+                "key": "attr_655562282688512",
+                "isShow": false
+            },
+            {
+                "fromCiId": 684521024184320,
+                "isEdit": false,
+                "title": "投产时段",
+                "key": "attr_684521024184320",
+                "isShow": false
+            },
+            {
+                "fromCiId": 691144643895296,
+                "isEdit": false,
+                "title": "维护窗口",
+                "key": "attr_691144643895296",
+                "isShow": false
+            },
+            {
+                "fromCiId": 756298140147712,
+                "isEdit": false,
+                "title": "test_range",
+                "key": "attr_756298140147712",
+                "isShow": false
+            }
+        ],
+        "isHide": false,
+        "ciId": 479609502048256
+    }
+     */
+    /*
+    //保存数据结构
+    [
+        {
+            "ciIcon": "tsfont-app",
+            "rootCiId": 479609502048256,
+            "typeName": "应用系统",
+            "type": 441079325270016,
+            "inspectStatus": "",
+            "uuid": "7ba5e269295a450ea4e7d2c184480eff",
+            "ciName": "APP",
+            "ciId": 479609502048256,
+            "renewTime": "2022-12-20 14:59",
+            "_selected": true,
+            "actionType": "delete",
+            "maxRelEntityCount": 3,
+            "relEntityData": {
+                "relfrom_479638602129408": {
+                    "relId": 479638602129408,
+                    "ciEntityId": 639089665433601,
+                    "valueList": [
+                        {
+                            "ciEntityId": 676653491347457,
+                            "id": 676653491347464,
+                            "ciEntityName": "测试模块",
+                            "ciId": 479610550624256
+                        }
+                    ],
+                    "name": "APPComponent",
+                    "label": "应用模块",
+                    "direction": "from",
+                    "ciId": 479610550624256
+                }
+            },
+            "_expander": false,
+            "name": "IMAP系统",
+            "isSelected": true,
+            "attrEntityData": {
+                "attr_478701787553792": {
+                    "ciEntityId": 639089665433601,
+                    "attrId": 478701787553792,
+                    "actualValueList": [
+                        "IMAP系统"
+                    ],
+                    "valueList": [
+                        "IMAP系统"
+                    ],
+                    "name": "name",
+                    "label": "名称",
+                    "type": "text",
+                    "ciId": 441087512551424
+                },
+                "attr_480848331464705": {
+                    "ciEntityId": 639089665433601,
+                    "attrId": 480848331464705,
+                    "actualValueList": [
+                        "IMAP"
+                    ],
+                    "valueList": [
+                        "IMAP"
+                    ],
+                    "name": "abbrName",
+                    "label": "简称",
+                    "type": "text",
+                    "ciId": 479609502048256
+                },
+                "attr_529435476156416": {
+                    "ciEntityId": 639089665433601,
+                    "attrId": 529435476156416,
+                    "actualValueList": [
+                        "IMAP[IMAP系统]"
+                    ],
+                    "valueList": [
+                        "IMAP[IMAP系统]"
+                    ],
+                    "name": "systemDisplayName",
+                    "label": "系统显示名",
+                    "type": "expression",
+                    "config": {
+                        "expression": [
+                            "{480848331464705}",
+                            "[",
+                            "{478701787553792}",
+                            "]"
+                        ]
+                    },
+                    "ciId": 479609502048256
+                },
+                "attr_481537078337536": {
+                    "ciEntityId": 639089665433601,
+                    "attrId": 481537078337536,
+                    "actualValueList": [
+                        "1"
+                    ],
+                    "valueList": [
+                        "1"
+                    ],
+                    "name": "applicationCode",
+                    "label": "编号",
+                    "type": "text",
+                    "ciId": 479609502048256
+                }
+            },
+            "id": 639089665433601,
+            "maxAttrEntityCount": 3,
+            "ciLabel": "应用系统",
+            "monitorStatus": ""
+        }
+    ]
+     */
 //返回数据结构
-//{
-//   "value": 原始数据
-//	"ciLabel": "其他",
-//	"ciName": "other",
-//	"theadList": [
-//		{
-//			"title": "操作类型",
-//			"key": "actionType"
-//		},
-//		{
-//			"title": "名称",
-//			"key": "attr_478701787553792"
-//		},
-//		{
-//			"title": "备注",
-//			"key": "attr_478702072766464"
-//		},
-//		{
-//			"title": "使用状态",
-//			"key": "attr_478702852907008"
-//		},
-//		{
-//			"title": "负责人",
-//			"key": "attr_478703406555136"
-//		},
-//		{
-//			"title": "事业部",
-//			"key": "attr_478703658213376"
-//		},
-//		{
-//			"title": "维护窗口",
-//			"key": "attr_480816840630272"
-//		}
-//	],
-//	"ciId": "567085713113088",
-//	"tbodyList": [
-//		{
-//			"actionType": {
-//				"actualValueList": [
-//					"新增"
-//				],
-//				"valueList": [
-//					"insert"
-//				],
-//				"type": "text"
-//			},
-//			"attr_478701787553792": {
-//				"actualValueList": [
-//					"名称2"
-//				],
-//				"valueList": [
-//					"名称2"
-//				],
-//				"type": "text"
-//			},
-//			"attr_478702072766464": {
-//				"actualValueList": [
-//					"备注2"
-//				],
-//				"valueList": [
-//					"备注2"
-//				],
-//				"type": "text"
-//			},
-//			"attr_478702852907008": {
-//				"actualValueList": [
-//					"使用中"
-//				],
-//				"valueList": [
-//					481855425798147
-//				],
-//				"type": "select",
-//				"config": {}
-//			},
-//			"attr_480816840630272": {
-//				"actualValueList": [
-//					"2022-02-21"
-//				],
-//				"valueList": [
-//					"2022-02-21"
-//				],
-//				"type": "date",
-//				"config": {
-//					"format": "HH:mm",
-//					"type": "timerange"
-//				}
-//			},
-//			"attr_478703658213376": {
-//				"actualValueList": [
-//					"集团"
-//				],
-//				"valueList": [
-//					481860601569283
-//				],
-//				"type": "select",
-//				"config": {
-//					"mode": "r"
-//				}
-//			},
-//			"attr_478703406555136": {
-//				"actualValueList": [
-//					{
-//						"text": "测试用户(test01)",
-//						"value": 521740908240896
-//					}
-//				],
-//				"valueList": [
-//					521740908240896
-//				],
-//				"type": "select",
-//				"config": {
-//					"mode": "r",
-//					"isMultiple": 1
-//				}
-//			}
-//		}
-//	]
-//}
+    /*
+    {
+        "ciId": "479609502048256",
+        "ciLabel": "应用系统",
+        "ciName": "APP",
+        "value": 原始数据,
+        "theadList": [
+            {
+                "title": "操作类型",
+                "key": "actionType"
+            },
+            {
+                "title": "编号",
+                "key": "attr_481537078337536"
+            },
+            {
+                "title": "简称",
+                "key": "attr_480848331464705"
+            },
+            {
+                "title": "名称",
+                "key": "attr_478701787553792"
+            },
+            {
+                "title": "使用状态",
+                "key": "attr_478702852907008"
+            },
+            {
+                "title": "负责人领导",
+                "key": "attr_480857726705664"
+            },
+            {
+                "title": "业务负责人",
+                "key": "attr_480858834001920"
+            },
+            {
+                "title": "业务负责人领导",
+                "key": "attr_480859505090560"
+            },
+            {
+                "title": "所属开发中心",
+                "key": "attr_480860184567808"
+            },
+            {
+                "title": "所属业务部门",
+                "key": "attr_480860595609600"
+            },
+            {
+                "title": "开发类型",
+                "key": "attr_480870116679680"
+            },
+            {
+                "title": "供应商",
+                "key": "attr_480869848244224"
+            },
+            {
+                "title": "上线时间",
+                "key": "attr_480870410280963"
+            },
+            {
+                "title": "事业部",
+                "key": "attr_478703658213376"
+            },
+            {
+                "title": "负责人",
+                "key": "attr_478703406555136"
+            },
+            {
+                "title": "应用模块",
+                "key": "relfrom_479638602129408"
+            },
+            {
+                "title": "备注",
+                "key": "attr_478702072766464"
+            },
+            {
+                "title": "我调用的应用系统",
+                "key": "relfrom_493359185321984"
+            },
+            {
+                "title": "调用我的应用系统",
+                "key": "relto_493359185321984"
+            },
+            {
+                "title": "系统显示名",
+                "key": "attr_529435476156416"
+            },
+            {
+                "title": "test附件",
+                "key": "attr_532533548474368"
+            },
+            {
+                "title": "连接",
+                "key": "attr_655562282688512"
+            },
+            {
+                "title": "投产时段",
+                "key": "attr_684521024184320"
+            },
+            {
+                "title": "维护窗口",
+                "key": "attr_691144643895296"
+            },
+            {
+                "title": "test_range",
+                "key": "attr_756298140147712"
+            }
+        ],
+        "tbodyList": [
+            {
+                "attr_655562282688512": {
+                    "ciEntityId": 639091091496961,
+                    "attrId": 655562282688512,
+                    "actualValueList": [
+                        "Http://www.baidu.com"
+                    ],
+                    "valueList": [
+                        "Http://www.baidu.com"
+                    ],
+                    "name": "link",
+                    "label": "连接",
+                    "type": "hyperlink",
+                    "config": {
+                        "text": "工作台",
+                        "type": "outterlink"
+                    },
+                    "ciId": 479609502048256
+                },
+                "actionType": {
+                    "actualValueList": [
+                        "删除"
+                    ],
+                    "valueList": [
+                        "delete"
+                    ],
+                    "type": "text"
+                },
+                "attr_480848331464705": {
+                    "ciEntityId": 639091091496961,
+                    "attrId": 480848331464705,
+                    "actualValueList": [
+                        "UPBS"
+                    ],
+                    "valueList": [
+                        "UPBS"
+                    ],
+                    "name": "abbrName",
+                    "label": "简称",
+                    "type": "text",
+                    "ciId": 479609502048256
+                },
+                "attr_478701787553792": {
+                    "ciEntityId": 639091091496961,
+                    "attrId": 478701787553792,
+                    "actualValueList": [
+                        "统一支付系统"
+                    ],
+                    "valueList": [
+                        "统一支付系统"
+                    ],
+                    "name": "name",
+                    "label": "名称",
+                    "type": "text",
+                    "ciId": 441087512551424
+                },
+                "attr_529435476156416": {
+                    "ciEntityId": 639091091496961,
+                    "attrId": 529435476156416,
+                    "actualValueList": [
+                        "UPBS[统一支付系统]"
+                    ],
+                    "valueList": [
+                        "UPBS[统一支付系统]"
+                    ],
+                    "name": "systemDisplayName",
+                    "label": "系统显示名",
+                    "type": "expression",
+                    "config": {
+                        "expression": [
+                            "{480848331464705}",
+                            "[",
+                            "{478701787553792}",
+                            "]"
+                        ]
+                    },
+                    "ciId": 479609502048256
+                },
+                "attr_481537078337536": {
+                    "ciEntityId": 639091091496961,
+                    "attrId": 481537078337536,
+                    "actualValueList": [
+                        "8"
+                    ],
+                    "valueList": [
+                        "8"
+                    ],
+                    "name": "applicationCode",
+                    "label": "编号",
+                    "type": "text",
+                    "ciId": 479609502048256
+                },
+                "relfrom_479638602129408": {
+                    "relId": 479638602129408,
+                    "ciEntityId": 639091091496961,
+                    "valueList": [
+                        {
+                            "ciEntityId": 481894994862179,
+                            "id": 663530613039115,
+                            "ciEntityName": "交易反欺诈引擎&数据抽取",
+                            "ciId": 479610550624256
+                        }
+                    ],
+                    "name": "APPComponent",
+                    "label": "应用模块",
+                    "direction": "from",
+                    "ciId": 479610550624256
+                }
+            }
+        ]
+    }
+     */
     @Override
     protected JSONObject getMyDetailedData(AttributeDataVo attributeDataVo, JSONObject configObj) {
         JSONObject resultObj = new JSONObject();
@@ -981,13 +683,19 @@ public class CiEntityModifyHandler extends FormHandlerBase {
                     JSONObject attrEntityData = dataObj.getJSONObject("attrEntityData");
                     if (MapUtils.isNotEmpty(attrEntityData)) {
                         for (String key : keyList) {
-                            tbodyObj.put(key, attrEntityData.getJSONObject(key));
+                            JSONObject value = attrEntityData.getJSONObject(key);
+                            if (MapUtils.isNotEmpty(value)) {
+                                tbodyObj.put(key, value);
+                            }
                         }
                     }
                     JSONObject relEntityData = dataObj.getJSONObject("relEntityData");
                     if (MapUtils.isNotEmpty(relEntityData)) {
                         for (String key : keyList) {
-                            tbodyObj.put(key, relEntityData.getJSONObject(key));
+                            JSONObject value = relEntityData.getJSONObject(key);
+                            if (MapUtils.isNotEmpty(value)) {
+                                tbodyObj.put(key, relEntityData.getJSONObject(key));
+                            }
                         }
                     }
                     tbodyList.add(tbodyObj);
