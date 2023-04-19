@@ -16,15 +16,14 @@
 
 package neatlogic.module.cmdb.notify.handler;
 
+import com.alibaba.fastjson.JSONObject;
+import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
 import neatlogic.framework.dto.ConditionParamVo;
 import neatlogic.framework.notify.core.INotifyPolicyHandlerGroup;
 import neatlogic.framework.notify.core.NotifyHandlerType;
 import neatlogic.framework.notify.core.NotifyPolicyHandlerBase;
 import neatlogic.framework.notify.dto.NotifyTriggerTemplateVo;
 import neatlogic.framework.notify.dto.NotifyTriggerVo;
-import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
-import com.alibaba.fastjson.JSONObject;
-import neatlogic.framework.util.I18nUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -34,7 +33,7 @@ import java.util.List;
 public class CmdbNotifyPolicyHandler extends NotifyPolicyHandlerBase {
     @Override
     public String getName() {
-        return I18nUtils.getMessage( "handler.notify.cmdb.ci");
+        return "handler.notify.cmdb.ci";
     }
 
     /**
