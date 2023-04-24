@@ -34,7 +34,7 @@ public interface AttrMapper extends IAttrCrossoverMapper {
 
     List<AttrVo> getAttrByValidatorId(Long validatorId);
 
-    List<AttrExpressionRelVo> getExpressionAttrRelByValueCiIdAndAttrIdList(@Param("valueCiId") Long valueCiId, @Param("valueAttrIdList") List<Long> valueAttrIdList);
+    List<AttrExpressionRelVo> getExpressionAttrRelByValueCiIdAndAttrIdList(/*@Param("valueCiId") Long valueCiId,*/ @Param("valueAttrIdList") List<Long> valueAttrIdList);
 
     List<AttrVo> getExpressionAttrByValueCiIdAndAttrIdList(@Param("valueCiId") Long valueCiId, @Param("valueAttrIdList") List<Long> valueAttrIdList);
 

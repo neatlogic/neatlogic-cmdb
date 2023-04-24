@@ -27,6 +27,8 @@ import java.util.List;
 public interface AttrEntityMapper {
     List<AttrEntityVo> getAttrEntityByFromCiIdAndAttrId(AttrEntityVo attrEntityVo);
 
+    List<AttrEntityVo> getAttrEntityByToCiEntityId(Long ciEntityId);
+
     List<AttrEntityVo> getAttrEntityByFromCiEntityIdAndAttrId(@Param("fromCiEntityId") Long fromCiEntityId, @Param("attrId") Long attrId, @Param("limit") Long limit);
 
     void updateAttrEntityFromIndex(AttrEntityVo attrEntityVo);

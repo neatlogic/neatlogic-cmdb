@@ -16,6 +16,8 @@
 
 package neatlogic.module.cmdb.attrexpression;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.thread.NeatLogicThread;
 import neatlogic.framework.asynchronization.threadpool.CachedThreadPool;
 import neatlogic.framework.cmdb.dto.attrexpression.AttrExpressionRelVo;
@@ -30,11 +32,10 @@ import neatlogic.framework.transaction.core.AfterTransactionJob;
 import neatlogic.framework.util.SnowflakeUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
+import neatlogic.module.cmdb.dao.mapper.cientity.AttrEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.AttrExpressionRebuildAuditMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.RelEntityMapper;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -61,12 +62,16 @@ public class AttrExpressionRebuildManager {
     private static CiMapper ciMapper;
     private static CiEntityService ciEntityService;
 
+    private static AttrEntityMapper attrEntityMapper;
+
+
     @Autowired
-    public AttrExpressionRebuildManager(RelEntityMapper _relEntityMapper, AttrMapper _attrMapper, CiMapper _ciMapper, CiEntityService _ciEntityService, AttrExpressionRebuildAuditMapper _attrExpressionRebuildAuditMapper) {
+    public AttrExpressionRebuildManager(RelEntityMapper _relEntityMapper, AttrMapper _attrMapper, AttrEntityMapper _attrEntityMapper, CiMapper _ciMapper, CiEntityService _ciEntityService, AttrExpressionRebuildAuditMapper _attrExpressionRebuildAuditMapper) {
         relEntityMapper = _relEntityMapper;
         attrMapper = _attrMapper;
         ciMapper = _ciMapper;
         ciEntityService = _ciEntityService;
+        attrEntityMapper = _attrEntityMapper;
         attrExpressionRebuildAuditMapper = _attrExpressionRebuildAuditMapper;
     }
 
@@ -176,7 +181,7 @@ public class AttrExpressionRebuildManager {
             //有配置项id的说明需要更新关联配置项的属性
             if (rebuildAuditVo.getCiId() != null && rebuildAuditVo.getCiEntityId() != null && rebuildAuditVo.getType().equals(RebuildAuditVo.Type.INVOKED.getValue()) && CollectionUtils.isNotEmpty(rebuildAuditVo.getAttrIdList())) {
                 //根据修改的配置项找到会影响的模型属性列表
-                List<AttrExpressionRelVo> expressionAttrList = attrMapper.getExpressionAttrRelByValueCiIdAndAttrIdList(rebuildAuditVo.getCiId(), rebuildAuditVo.getAttrIdList());
+                List<AttrExpressionRelVo> expressionAttrList = attrMapper.getExpressionAttrRelByValueCiIdAndAttrIdList(/*rebuildAuditVo.getCiId(),*/ rebuildAuditVo.getAttrIdList());
                 if (CollectionUtils.isNotEmpty(expressionAttrList)) {
                     //查找当前配置项所关联的配置项，看是否在受影响模型列表里
                     List<RelEntityVo> relEntityList = relEntityMapper.getRelEntityByCiEntityId(rebuildAuditVo.getCiEntityId());
@@ -207,11 +212,19 @@ public class AttrExpressionRebuildManager {
                         }
                     }
                 }
+                //处理关联属性的情况
+                List<AttrEntityVo> attrEntityList = attrEntityMapper.getAttrEntityByToCiEntityId(rebuildAuditVo.getCiEntityId());
+                if (CollectionUtils.isNotEmpty(attrEntityList)) {
+                    for (AttrEntityVo attrEntityVo : attrEntityList) {
+                        updateExpressionAttr(new CiEntityVo(attrEntityVo.getFromCiId(), attrEntityVo.getFromCiEntityId()));
+                    }
+                }
+
             } else if (rebuildAuditVo.getCiId() != null && rebuildAuditVo.getCiEntityId() != null && rebuildAuditVo.getType().equals(RebuildAuditVo.Type.INVOKE.getValue())) {
                 if (CollectionUtils.isNotEmpty(rebuildAuditVo.getAttrIdList())) {
                     //如果修改的属性中没有表达式属性，则不做任何修改
-                    List<AttrExpressionRelVo> attrList = attrMapper.getExpressionAttrRelByValueCiIdAndAttrIdList(rebuildAuditVo.getCiId(), rebuildAuditVo.getAttrIdList());
-                    if (CollectionUtils.isNotEmpty(attrList) && attrList.stream().anyMatch(attr -> attr.getExpressionCiId().equals(rebuildAuditVo.getCiId()))) {
+                    List<AttrExpressionRelVo> attrList = attrMapper.getExpressionAttrRelByValueCiIdAndAttrIdList(/*rebuildAuditVo.getCiId(),*/ rebuildAuditVo.getAttrIdList());
+                    if (CollectionUtils.isNotEmpty(attrList) /*&& attrList.stream().anyMatch(attr -> attr.getExpressionCiId().equals(rebuildAuditVo.getCiId()))*/) {
                         updateExpressionAttr(new CiEntityVo(rebuildAuditVo.getCiId(), rebuildAuditVo.getCiEntityId()));
                     }
                 } else {
@@ -249,8 +262,8 @@ public class AttrExpressionRebuildManager {
          * 更新配置项指定的表达式属性
          */
         private void updateExpressionAttr(CiEntityVo ciEntityVo, List<Long> attrIdList) {
-            List<AttrVo> expressionList = attrMapper.getAttrByCiId(ciEntityVo.getCiId());
-            List<AttrVo> expressionAttrList = expressionList.stream().filter(attr -> attr.getType().equals(EXPRESSION_TYPE)).collect(Collectors.toList());
+            List<AttrVo> attrList = attrMapper.getAttrByCiId(ciEntityVo.getCiId());
+            List<AttrVo> expressionAttrList = attrList.stream().filter(attr -> attr.getType().equals(EXPRESSION_TYPE)).collect(Collectors.toList());
             if (CollectionUtils.isNotEmpty(attrIdList)) {
                 expressionAttrList.removeIf(attrVo -> attrIdList.stream().noneMatch(aid -> aid.equals(attrVo.getId())));
             }
