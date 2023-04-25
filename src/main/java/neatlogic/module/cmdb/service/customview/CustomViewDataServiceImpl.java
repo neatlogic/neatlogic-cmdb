@@ -16,6 +16,7 @@
 
 package neatlogic.module.cmdb.service.customview;
 
+import com.alibaba.fastjson.JSONArray;
 import neatlogic.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
 import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
 import neatlogic.framework.cmdb.crossover.ICustomViewDataCrossoverService;
@@ -23,9 +24,9 @@ import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.customview.*;
 import neatlogic.framework.cmdb.exception.customview.CustomViewNotFoundException;
+import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.customview.CustomViewDataMapper;
 import neatlogic.module.cmdb.dao.mapper.customview.CustomViewMapper;
-import com.alibaba.fastjson.JSONArray;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -48,6 +49,9 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
 
     @Resource
     private CustomViewService customViewService;
+
+    @Resource
+    private CiEntityMapper ciEntityMapper;
 
     @Override
     public CustomViewDataVo getCustomViewData(CustomViewConditionVo customViewConditionVo) {
@@ -133,6 +137,20 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
                     String expression = customViewAttr.getCondition().getString("expression");
                     if (StringUtils.isNotBlank(expression)) {
                         JSONArray valueList = customViewAttr.getCondition().getJSONArray("valueList");
+                        /*
+                        由于前端保存的值是目标配置项的id，进入视图查询之间需要转换成对应配置项名称，否则无法匹配上
+                         */
+                        if (CollectionUtils.isNotEmpty(valueList) && customViewAttr.getAttrVo().getTargetCiId() != null) {
+                            List<Long> ciEntityIdList = new ArrayList<>();
+                            for (int i = 0; i < valueList.size(); i++) {
+                                ciEntityIdList.add(valueList.getLongValue(i));
+                            }
+                            List<CiEntityVo> ciEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(ciEntityIdList);
+                            valueList = new JSONArray();
+                            for (CiEntityVo cientityVo : ciEntityList) {
+                                valueList.add(cientityVo.getName());
+                            }
+                        }
                         customViewConditionVo.addAttrFilter(new CustomViewConditionFilterVo(customViewAttr.getUuid(), expression, valueList));
                     }
                 }
