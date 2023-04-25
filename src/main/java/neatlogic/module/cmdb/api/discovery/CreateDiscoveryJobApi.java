@@ -84,15 +84,6 @@ public class CreateDiscoveryJobApi extends PrivateApiComponentBase {
             throw new DiscoverConfNotFoundException(confId);
         }
         JSONObject config = list.get(0);
-//        const { nets, ports, snmpport, communities, workercount, timingtmpl } = row;
-//        const param = {
-//            roundCount: 64,
-//            combopId: row.combopId,
-//            source: 'discovery',
-//            param: { nets, ports, snmpport, communities, workercount, timingtmpl },
-//              name: row.name,
-//            invokeId: row.id
-//        };
         JSONObject param = new JSONObject();
         param.put("nets", config.getString("nets"));
         param.put("ports", config.getString("ports"));
