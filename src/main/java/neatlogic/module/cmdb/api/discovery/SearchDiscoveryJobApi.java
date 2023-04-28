@@ -90,4 +90,9 @@ public class SearchDiscoveryJobApi extends PrivateApiComponentBase {
         return TableResultUtil.getResult(iAutoexecJobCrossoverService.searchJob(jobVo), jobVo);
     }
 
+    @Override
+    public boolean disableReturnCircularReferenceDetect() {
+        return true;
+    }
+
 }
