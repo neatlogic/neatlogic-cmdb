@@ -150,13 +150,13 @@ public class CIEntitySyncProcessUtilHandler extends ProcessStepInternalHandlerBa
         resultObj.put("replaceableTextList", ProcessConfigUtil.regulateReplaceableTextList(configObj.getJSONArray("replaceableTextList")));
 
         /** 通知 **/
-        JSONObject notifyPolicyConfig = configObj.getJSONObject("notifyPolicyConfig");
-        InvokeNotifyPolicyConfigVo invokeNotifyPolicyConfigVo = JSONObject.toJavaObject(notifyPolicyConfig, InvokeNotifyPolicyConfigVo.class);
-        if (invokeNotifyPolicyConfigVo == null) {
-            invokeNotifyPolicyConfigVo = new InvokeNotifyPolicyConfigVo();
-        }
-        invokeNotifyPolicyConfigVo.setHandler(CiEntitySyncNotifyHandler.class.getName());
-        resultObj.put("notifyPolicyConfig", invokeNotifyPolicyConfigVo);
+//        JSONObject notifyPolicyConfig = configObj.getJSONObject("notifyPolicyConfig");
+//        InvokeNotifyPolicyConfigVo invokeNotifyPolicyConfigVo = JSONObject.toJavaObject(notifyPolicyConfig, InvokeNotifyPolicyConfigVo.class);
+//        if (invokeNotifyPolicyConfigVo == null) {
+//            invokeNotifyPolicyConfigVo = new InvokeNotifyPolicyConfigVo();
+//        }
+//        invokeNotifyPolicyConfigVo.setHandler(CiEntitySyncNotifyHandler.class.getName());
+//        resultObj.put("notifyPolicyConfig", invokeNotifyPolicyConfigVo);
         return resultObj;
     }
 
@@ -185,11 +185,12 @@ public class CIEntitySyncProcessUtilHandler extends ProcessStepInternalHandlerBa
 
         /** 通知 **/
         JSONObject notifyPolicyConfig = configObj.getJSONObject("notifyPolicyConfig");
-        InvokeNotifyPolicyConfigVo invokeNotifyPolicyConfigVo = JSONObject.toJavaObject(notifyPolicyConfig, InvokeNotifyPolicyConfigVo.class);
-        if (invokeNotifyPolicyConfigVo == null) {
-            invokeNotifyPolicyConfigVo = new InvokeNotifyPolicyConfigVo();
-        }
-        invokeNotifyPolicyConfigVo.setHandler(CiEntitySyncNotifyHandler.class.getName());
+//        InvokeNotifyPolicyConfigVo invokeNotifyPolicyConfigVo = JSONObject.toJavaObject(notifyPolicyConfig, InvokeNotifyPolicyConfigVo.class);
+//        if (invokeNotifyPolicyConfigVo == null) {
+//            invokeNotifyPolicyConfigVo = new InvokeNotifyPolicyConfigVo();
+//        }
+//        invokeNotifyPolicyConfigVo.setHandler(CiEntitySyncNotifyHandler.class.getName());
+        InvokeNotifyPolicyConfigVo invokeNotifyPolicyConfigVo = regulateNotifyPolicyConfig(notifyPolicyConfig, CiEntitySyncNotifyHandler.class);
         resultObj.put("notifyPolicyConfig", invokeNotifyPolicyConfigVo);
 
         /** 动作 **/
