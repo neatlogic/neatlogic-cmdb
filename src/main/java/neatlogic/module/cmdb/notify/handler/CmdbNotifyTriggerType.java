@@ -17,21 +17,21 @@
 package neatlogic.module.cmdb.notify.handler;
 
 import neatlogic.framework.notify.core.INotifyTriggerType;
-import neatlogic.framework.util.I18nUtils;
+import neatlogic.framework.util.I18n;
 
 public enum CmdbNotifyTriggerType implements INotifyTriggerType {
 
-    CIMODITY("cimodity", "enum.cmdb.cmdbnotifytriggertype.cimodity", "enum.cmdb.cmdbnotifytriggertype.cimodity.1"),
-    CIDELETE("cidelete", "enum.cmdb.cmdbnotifytriggertype.cidelete", "enum.cmdb.cmdbnotifytriggertype.cidelete.1"),
-    CIENTITYMODITY("cientitymodify", "enum.cmdb.cmdbnotifytriggertype.cientitymodity", "enum.cmdb.cmdbnotifytriggertype.cientitymodity.1"),
-    CIENTITYDELETE("cientitydelete", "enum.cmdb.cmdbnotifytriggertype.cientitydelete", "enum.cmdb.cmdbnotifytriggertype.cientitydelete.1"),
-    CIENTITYINSERT("cientityinsert", "enum.cmdb.cmdbnotifytriggertype.cientityinsert", "enum.cmdb.cmdbnotifytriggertype.cientityinsert.1");
+    CIMODITY("cimodity", new I18n("enum.cmdb.cmdbnotifytriggertype.cimodity"), new I18n("enum.cmdb.cmdbnotifytriggertype.cimodity.1")),
+    CIDELETE("cidelete", new I18n("enum.cmdb.cmdbnotifytriggertype.cidelete"), new I18n("enum.cmdb.cmdbnotifytriggertype.cidelete.1")),
+    CIENTITYMODITY("cientitymodify", new I18n("enum.cmdb.cmdbnotifytriggertype.cientitymodity"), new I18n("enum.cmdb.cmdbnotifytriggertype.cientitymodity.1")),
+    CIENTITYDELETE("cientitydelete", new I18n("enum.cmdb.cmdbnotifytriggertype.cientitydelete"), new I18n("enum.cmdb.cmdbnotifytriggertype.cientitydelete.1")),
+    CIENTITYINSERT("cientityinsert", new I18n("enum.cmdb.cmdbnotifytriggertype.cientityinsert"), new I18n("enum.cmdb.cmdbnotifytriggertype.cientityinsert.1"));
 
     private final String trigger;
-    private final String text;
-    private final String description;
+    private final I18n text;
+    private final I18n description;
 
-    CmdbNotifyTriggerType(String _trigger, String _text, String _description) {
+    CmdbNotifyTriggerType(String _trigger, I18n _text, I18n _description) {
         this.trigger = _trigger;
         this.text = _text;
         this.description = _description;
@@ -44,12 +44,12 @@ public enum CmdbNotifyTriggerType implements INotifyTriggerType {
 
     @Override
     public String getText() {
-        return I18nUtils.getMessage(text);
+        return text.toString();
     }
 
     @Override
     public String getDescription() {
-        return I18nUtils.getMessage(description);
+        return description.toString();
     }
 
     public static String getText(String trigger) {
