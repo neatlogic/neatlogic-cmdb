@@ -54,7 +54,7 @@ public class CmdbNotifyPolicyHandler extends NotifyPolicyHandlerBase {
     protected List<NotifyTriggerVo> myNotifyTriggerList() {
         List<NotifyTriggerVo> returnList = new ArrayList<>();
         for (CmdbNotifyTriggerType triggerType : CmdbNotifyTriggerType.values()) {
-            returnList.add(new NotifyTriggerVo(triggerType.getTrigger(), I18nUtils.getMessage(triggerType.getText()), I18nUtils.getMessage(triggerType.getDescription())));
+            returnList.add(new NotifyTriggerVo(triggerType));
         }
         return returnList;
     }
