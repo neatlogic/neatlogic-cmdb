@@ -18,7 +18,6 @@ package neatlogic.module.cmdb.startup.handler;
 
 import neatlogic.framework.cmdb.dto.group.GroupVo;
 import neatlogic.framework.cmdb.enums.group.Status;
-import neatlogic.framework.startup.IStartup;
 import neatlogic.framework.startup.StartupBase;
 import neatlogic.module.cmdb.dao.mapper.group.GroupMapper;
 import org.apache.commons.collections4.CollectionUtils;
