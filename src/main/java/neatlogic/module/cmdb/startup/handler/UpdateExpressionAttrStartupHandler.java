@@ -18,7 +18,6 @@ package neatlogic.module.cmdb.startup.handler;
 
 import neatlogic.framework.cmdb.dto.attrexpression.RebuildAuditVo;
 import neatlogic.framework.common.config.Config;
-import neatlogic.framework.startup.IStartup;
 import neatlogic.framework.startup.StartupBase;
 import neatlogic.module.cmdb.attrexpression.AttrExpressionRebuildManager;
 import neatlogic.module.cmdb.dao.mapper.cientity.AttrExpressionRebuildAuditMapper;

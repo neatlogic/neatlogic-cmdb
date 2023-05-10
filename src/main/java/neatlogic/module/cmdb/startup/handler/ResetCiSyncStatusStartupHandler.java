@@ -19,7 +19,6 @@ package neatlogic.module.cmdb.startup.handler;
 import neatlogic.framework.cmdb.dto.sync.SyncAuditVo;
 import neatlogic.framework.cmdb.enums.sync.SyncStatus;
 import neatlogic.framework.common.config.Config;
-import neatlogic.framework.startup.IStartup;
 import neatlogic.framework.startup.StartupBase;
 import neatlogic.module.cmdb.dao.mapper.sync.SyncAuditMapper;
 import org.apache.commons.collections4.CollectionUtils;
