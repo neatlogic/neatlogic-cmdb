@@ -173,7 +173,18 @@ public class ResourcesHandler extends FormHandlerBase {
         return "已更新";
     }
 
-
+    private String nodeJSONObjectToString(JSONObject nodeObj) {
+        String ip = nodeObj.getString("ip");
+        String port = nodeObj.getString("port");
+        if (StringUtils.isNotBlank(port)) {
+            ip = ip + ":" + port;
+            String name = nodeObj.getString("name");
+            if (StringUtils.isNotBlank(name)) {
+                ip = ip + "/" + name;
+            }
+        }
+        return ip;
+    }
 
     @Override
     public Object dataTransformationForEmail(AttributeDataVo attributeDataVo, JSONObject configObj) {
@@ -186,32 +197,14 @@ public class ResourcesHandler extends FormHandlerBase {
             List<String> nodeList = new ArrayList<>();
             for (int i = 0; i < selectNodeList.size(); i++) {
                 JSONObject nodeObj = selectNodeList.getJSONObject(i);
-                String ip = nodeObj.getString("ip");
-                String port = nodeObj.getString("port");
-                if (StringUtils.isNotBlank(port)) {
-                    ip = ip + ":" + port;
-                    String name = nodeObj.getString("name");
-                    if (StringUtils.isNotBlank(name)) {
-                        ip = ip + "/" + name;
-                    }
-                }
-                nodeList.add(ip);
+                nodeList.add(nodeJSONObjectToString(nodeObj));
             }
             return String.join("、", nodeList);
         } else if (CollectionUtils.isNotEmpty(inputNodeList)) {
             List<String> nodeList = new ArrayList<>();
             for (int i = 0; i < inputNodeList.size(); i++) {
                 JSONObject nodeObj = inputNodeList.getJSONObject(i);
-                String ip = nodeObj.getString("ip");
-                String port = nodeObj.getString("port");
-                if (StringUtils.isNotBlank(port)) {
-                    ip = ip + ":" + port;
-                    String name = nodeObj.getString("name");
-                    if (StringUtils.isNotBlank(name)) {
-                        ip = ip + "/" + name;
-                    }
-                }
-                nodeList.add(ip);
+                nodeList.add(nodeJSONObjectToString(nodeObj));
             }
             return String.join("、", nodeList);
         } else if (CollectionUtils.isNotEmpty(filterList)) {
@@ -227,8 +220,7 @@ public class ResourcesHandler extends FormHandlerBase {
             return String.join("、", resultList);
         } else if (MapUtils.isNotEmpty(conditionConfig)) {
             ConditionConfigVo conditionConfigVo = new ConditionConfigVo(conditionConfig);
-            String result = ResourcecenterConditionUtil.getBuildNaturalLanguageExpressions(conditionConfigVo);
-            return result;
+            return ResourcecenterConditionUtil.getBuildNaturalLanguageExpressions(conditionConfigVo);
         }
         return StringUtils.EMPTY;
     }
