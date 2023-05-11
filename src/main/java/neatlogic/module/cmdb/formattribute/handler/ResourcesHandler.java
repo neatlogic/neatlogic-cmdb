@@ -22,9 +22,7 @@ import neatlogic.framework.cmdb.dto.resourcecenter.AccountProtocolVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import neatlogic.framework.cmdb.dto.tag.TagVo;
 import neatlogic.framework.cmdb.enums.FormHandler;
-import neatlogic.framework.cmdb.resourcecenter.condition.IResourcecenterCondition;
-import neatlogic.framework.cmdb.resourcecenter.condition.ResourcecenterConditionFactory;
-import neatlogic.framework.common.constvalue.Expression;
+import neatlogic.framework.cmdb.resourcecenter.condition.ResourcecenterConditionUtil;
 import neatlogic.framework.common.constvalue.ParamType;
 import neatlogic.framework.dto.condition.*;
 import neatlogic.framework.form.attribute.core.FormHandlerBase;
@@ -175,71 +173,7 @@ public class ResourcesHandler extends FormHandlerBase {
         return "已更新";
     }
 
-    private String getBuildNaturalLanguageExpressions(ConditionConfigVo conditionConfigVo) {
-        List<ConditionGroupVo> conditionGroupList = conditionConfigVo.getConditionGroupList();
-        Map<String, ConditionGroupVo> conditionGroupMap = conditionConfigVo.getConditionGroupMap();
-        List<ConditionGroupRelVo> conditionGroupRelList = conditionConfigVo.getConditionGroupRelList();
-        if (CollectionUtils.isNotEmpty(conditionGroupRelList)) {
-            StringBuilder script = new StringBuilder();
-            script.append("(");
-            String toUuid = null;
-            for (ConditionGroupRelVo conditionGroupRelVo : conditionGroupRelList) {
-                script.append(getBuildNaturalLanguageExpressions(conditionGroupMap.get(conditionGroupRelVo.getFrom())));
-                script.append("and".equals(conditionGroupRelVo.getJoinType()) ? "并且" : " 或者 ");
-                toUuid = conditionGroupRelVo.getTo();
-            }
-            script.append(getBuildNaturalLanguageExpressions(conditionGroupMap.get(toUuid)));
-            script.append(")");
-            return script.toString();
-        } else if (CollectionUtils.isNotEmpty(conditionGroupList)) {
-            ConditionGroupVo conditionGroupVo = conditionGroupList.get(0);
-            return conditionGroupVo.buildScript();
-        }
-        return StringUtils.EMPTY;
-    }
 
-    private String getBuildNaturalLanguageExpressions(ConditionGroupVo conditionGroupVo) {
-        List<ConditionVo> conditionList = conditionGroupVo.getConditionList();
-        Map<String, ConditionVo> conditionMap = conditionGroupVo.getConditionMap();
-        List<ConditionRelVo> conditionRelList = conditionGroupVo.getConditionRelList();
-        if (CollectionUtils.isNotEmpty(conditionRelList)) {
-            StringBuilder script = new StringBuilder();
-            script.append("(");
-            String toUuid = null;
-            for (ConditionRelVo conditionRelVo : conditionRelList) {
-                script.append(getBuildNaturalLanguageExpressions(conditionMap.get(conditionRelVo.getFrom())));
-                script.append("and".equals(conditionRelVo.getJoinType()) ? " 并且 " : " 或者 ");
-                toUuid = conditionRelVo.getTo();
-            }
-            script.append(getBuildNaturalLanguageExpressions(conditionMap.get(toUuid)));
-            script.append(")");
-            return script.toString();
-        } else if (CollectionUtils.isNotEmpty(conditionList)) {
-            ConditionVo conditionVo = conditionList.get(0);
-            return getBuildNaturalLanguageExpressions(conditionVo);
-        }
-        return StringUtils.EMPTY;
-    }
-
-    private String getBuildNaturalLanguageExpressions(ConditionVo conditionVo) {
-        IResourcecenterCondition conditionHandler = ResourcecenterConditionFactory.getHandler(conditionVo.getName());
-        if (conditionHandler == null) {
-            return StringUtils.EMPTY;
-        }
-        String textStr = StringUtils.EMPTY;
-        Object textObj = conditionHandler.valueConversionText(conditionVo.getValueList(), null);
-        if (textObj != null) {
-            if (textObj instanceof List) {
-                List<String> textList = (List<String>) textObj;
-                textStr = String.join("|", textList);
-            } else {
-                textStr = textObj.toString();
-            }
-        }
-        String label = conditionHandler.getDisplayName();
-        String expressionName = Expression.getExpressionName(conditionVo.getExpression());
-        return label + " " + expressionName + " " + textStr;
-    }
 
     @Override
     public Object dataTransformationForEmail(AttributeDataVo attributeDataVo, JSONObject configObj) {
@@ -293,7 +227,7 @@ public class ResourcesHandler extends FormHandlerBase {
             return String.join("、", resultList);
         } else if (MapUtils.isNotEmpty(conditionConfig)) {
             ConditionConfigVo conditionConfigVo = new ConditionConfigVo(conditionConfig);
-            String result = getBuildNaturalLanguageExpressions(conditionConfigVo);
+            String result = ResourcecenterConditionUtil.getBuildNaturalLanguageExpressions(conditionConfigVo);
             return result;
         }
         return StringUtils.EMPTY;
