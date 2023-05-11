@@ -69,8 +69,12 @@ items through rules.
 - Licensing by group
   ![img.png](README_IMAGES/img14.png)
 
+### Global search
+
+- Quickly query configuration items through full-text indexing.
+  ![img.png](README_IMAGES/img15.png)
+
 ### Others
 
 - Compliance check
-- global search
 - Resource Center (Linkage with Automation)
