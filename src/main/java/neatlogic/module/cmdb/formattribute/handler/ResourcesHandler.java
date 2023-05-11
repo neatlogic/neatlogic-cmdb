@@ -189,6 +189,9 @@ public class ResourcesHandler extends FormHandlerBase {
     @Override
     public Object dataTransformationForEmail(AttributeDataVo attributeDataVo, JSONObject configObj) {
         JSONObject dataObj = getMyDetailedData(attributeDataVo, configObj);
+        if (MapUtils.isEmpty(dataObj)) {
+            return StringUtils.EMPTY;
+        }
         JSONArray selectNodeList = dataObj.getJSONArray("selectNodeList");
         JSONArray inputNodeList = dataObj.getJSONArray("inputNodeList");
         JSONObject conditionConfig = dataObj.getJSONObject("conditionConfig");
@@ -558,6 +561,9 @@ public class ResourcesHandler extends FormHandlerBase {
     protected JSONObject getMyDetailedData(AttributeDataVo attributeDataVo, JSONObject configObj) {
         JSONObject resultObj = new JSONObject();
         JSONObject dataObj = (JSONObject) attributeDataVo.getDataObj();
+        if (MapUtils.isEmpty(dataObj)) {
+            return dataObj;
+        }
         resultObj.put("value", dataObj);
         JSONArray selectNodeList = dataObj.getJSONArray("selectNodeList");
         JSONArray inputNodeList = dataObj.getJSONArray("inputNodeList");
