@@ -22,7 +22,9 @@ import neatlogic.framework.cmdb.dto.resourcecenter.AccountProtocolVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import neatlogic.framework.cmdb.dto.tag.TagVo;
 import neatlogic.framework.cmdb.enums.FormHandler;
+import neatlogic.framework.cmdb.resourcecenter.condition.ResourcecenterConditionUtil;
 import neatlogic.framework.common.constvalue.ParamType;
+import neatlogic.framework.dto.condition.*;
 import neatlogic.framework.form.attribute.core.FormHandlerBase;
 import neatlogic.framework.form.constvalue.FormConditionModel;
 import neatlogic.framework.form.dto.AttributeDataVo;
@@ -36,6 +38,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -170,9 +173,59 @@ public class ResourcesHandler extends FormHandlerBase {
         return "已更新";
     }
 
+    private String nodeJSONObjectToString(JSONObject nodeObj) {
+        String ip = nodeObj.getString("ip");
+        String port = nodeObj.getString("port");
+        if (StringUtils.isNotBlank(port)) {
+            ip = ip + ":" + port;
+            String name = nodeObj.getString("name");
+            if (StringUtils.isNotBlank(name)) {
+                ip = ip + "/" + name;
+            }
+        }
+        return ip;
+    }
+
     @Override
     public Object dataTransformationForEmail(AttributeDataVo attributeDataVo, JSONObject configObj) {
-        return null;
+        JSONObject dataObj = getMyDetailedData(attributeDataVo, configObj);
+        if (MapUtils.isEmpty(dataObj)) {
+            return StringUtils.EMPTY;
+        }
+        JSONArray selectNodeList = dataObj.getJSONArray("selectNodeList");
+        JSONArray inputNodeList = dataObj.getJSONArray("inputNodeList");
+        JSONObject conditionConfig = dataObj.getJSONObject("conditionConfig");
+        JSONArray filterList = dataObj.getJSONArray("filterList");
+        if (CollectionUtils.isNotEmpty(selectNodeList)) {
+            List<String> nodeList = new ArrayList<>();
+            for (int i = 0; i < selectNodeList.size(); i++) {
+                JSONObject nodeObj = selectNodeList.getJSONObject(i);
+                nodeList.add(nodeJSONObjectToString(nodeObj));
+            }
+            return String.join("、", nodeList);
+        } else if (CollectionUtils.isNotEmpty(inputNodeList)) {
+            List<String> nodeList = new ArrayList<>();
+            for (int i = 0; i < inputNodeList.size(); i++) {
+                JSONObject nodeObj = inputNodeList.getJSONObject(i);
+                nodeList.add(nodeJSONObjectToString(nodeObj));
+            }
+            return String.join("、", nodeList);
+        } else if (CollectionUtils.isNotEmpty(filterList)) {
+            // 过滤简单模式
+            List<String> resultList = new ArrayList<>();
+            for (int i = 0; i < filterList.size(); i++) {
+                JSONObject filterObj = filterList.getJSONObject(i);
+                String label = filterObj.getString("label");
+                JSONArray textArray = filterObj.getJSONArray("textList");
+                List<String> textList = textArray.toJavaList(String.class);
+                resultList.add(label + "：" + String.join("|", textList));
+            }
+            return String.join("、", resultList);
+        } else if (MapUtils.isNotEmpty(conditionConfig)) {
+            ConditionConfigVo conditionConfigVo = new ConditionConfigVo(conditionConfig);
+            return ResourcecenterConditionUtil.getBuildNaturalLanguageExpressions(conditionConfigVo);
+        }
+        return StringUtils.EMPTY;
     }
 
     @Override
@@ -185,260 +238,347 @@ public class ResourcesHandler extends FormHandlerBase {
         return 17;
     }
 
+    /*
     //表单组件配置信息
-//    {
-//        "handler": "formresoureces",
-//        "label": "执行目标_2",
-//        "type": "form",
-//        "uuid": "3d9b9d122e694532a7d68e2b2436b85b",
-//        "config": {
-//            "isRequired": false,
-//            "ruleList": [],
-//            "width": "100%",
-//            "validList": [],
-//            "quoteUuid": "",
-//            "defaultValueType": "self",
-//            "placeholder": "选择执行目标",
-//            "authorityConfig": [
-//                "common#alluser"
-//            ]
-//        }
-//    }
-//保存数据
-//过滤器
-//    {
-//        "filter": {
-//            "envIdList": [
-//                481856650534914
-//            ],
-//            "protocolIdList": [
-//                547705260400640
-//            ],
-//            "stateIdList": [
-//                481855425798147
-//            ],
-//            "typeIdList": [
-//                442011534499840
-//            ],
-//            "appSystemIdList": [
-//                481894852255745
-//            ],
-//            "appModuleIdList": [
-//                481894986473474
-//            ],
-//            "tagIdList": [
-//                504187276025856
-//            ]
-//        },
-//        "type": "filter"
-//    }
-//输入文本
-//    {
-//        "inputNodeList": [
-//            {
-//                "port": "8181",
-//                "ip": "192.168.0.10",
-//                "name": "b"
-//            },
-//            {
-//                "port": "8080",
-//                "ip": "192.168.0.10",
-//                "name": "a"
-//            }
-//        ],
-//        "type": "input"
-//    }
-//节点
-//    {
-//        "selectNodeList": [
-//            {
-//                "port": 3306,
-//                "ip": "192.168.0.101",
-//                "name": "Mysql",
-//                "id": 493223784800258
-//            }
-//        ],
-//        "type": "node"
-//    }
-//返回数据结构
-//{
-//	"value": {
-//		"selectNodeList": [
-//			{
-//				"port": 3306,
-//				"ip": "192.168.0.101",
-//				"name": "Mysql",
-//				"id": 493223784800258
-//			},
-//			{
-//				"port": 3306,
-//				"ip": "192.168.0.21",
-//				"name": "Mysql",
-//				"id": 493223793188865
-//			}
-//		],
-//		"inputNodeList": [
-//			{
-//				"port": "8081",
-//				"ip": "192.168.0.1",
-//				"name": "neatlogic2"
-//			},
-//			{
-//				"port": "8080",
-//				"ip": "192.168.0.1",
-//				"name": "neatlogic"
-//			}
-//		],
-//		"filter": {
-//			"envIdList": [
-//				481856650534914,
-//				481856650534918,
-//				481856650534925
-//			],
-//			"protocolIdList": [
-//				547705260400640,
-//				478219912355840
-//			],
-//			"stateIdList": [
-//				481855425798147
-//			],
-//			"typeIdList": [
-//				479596491317248,
-//				479598143873024
-//			],
-//			"appSystemIdList": [
-//				481894852255745,
-//				481894852255749
-//			],
-//			"appModuleIdList": [
-//				481894994862129,
-//				481894986473498
-//			],
-//			"tagIdList": [
-//				504187276025856,
-//				508639420669952
-//			]
-//		},
-//		"type": "input/node/filter"
-//	},
-//	"selectNodeList": [
-//		{
-//			"port": 3306,
-//			"ip": "192.168.0.101",
-//			"name": "Mysql",
-//			"id": 493223784800258
-//		},
-//		{
-//			"port": 3306,
-//			"ip": "192.168.0.21",
-//			"name": "Mysql",
-//			"id": 493223793188865
-//		}
-//	],
-//	"inputNodeList": [
-//		{
-//			"port": "8081",
-//			"ip": "192.168.0.1",
-//			"name": "neatlogic2"
-//		},
-//		{
-//			"port": "8080",
-//			"ip": "192.168.0.1",
-//			"name": "neatlogic"
-//		}
-//	],
-//	"filterList": [
-//		{
-//			"textList": [
-//				"PRD",
-//				"UAT",
-//				"SIT"
-//			],
-//			"valueList": [
-//				481856650534914,
-//				481856650534918,
-//				481856650534925
-//			],
-//			"label": "环境"
-//		},
-//		{
-//			"textList": [
-//				"https",
-//				"ssh"
-//			],
-//			"valueList": [
-//				547705260400640,
-//				478219912355840
-//			],
-//			"label": "连接协议"
-//		},
-//		{
-//			"textList": [
-//				"使用中"
-//			],
-//			"valueList": [
-//				481855425798147
-//			],
-//			"label": "状态"
-//		},
-//		{
-//			"textList": [
-//				"DBIns",
-//				"DBCluster"
-//			],
-//			"valueList": [
-//				479596491317248,
-//				479598143873024
-//			],
-//			"label": "模型类型"
-//		},
-//		{
-//			"textList": [
-//				"理财资产管理",
-//				"全网支付平台"
-//			],
-//			"valueList": [
-//				481894852255745,
-//				481894852255749
-//			],
-//			"label": "系统"
-//		},
-//		{
-//			"textList": [
-//				"交易反欺诈消费",
-//				"台账系统"
-//			],
-//			"valueList": [
-//				481894994862129,
-//				481894986473498
-//			],
-//			"label": "模块"
-//		},
-//		{
-//			"textList": [],
-//			"valueList": [
-//				504187276025856,
-//				508639420669952
-//			],
-//			"label": "标签"
-//		}
-//	],
-//	"type": "input/node/filter"
-//}
+    {
+        "handler": "formresoureces",
+        "reaction": {
+            "hide": {},
+            "readonly": {},
+            "display": {}
+        },
+        "override_config": {},
+        "icon": "tsfont-adapter",
+        "hasValue": true,
+        "label": "执行目标_1",
+        "type": "form",
+        "category": "autoexec",
+        "config": {
+            "isRequired": false,
+            "disableDefaultValue": true,
+            "isMask": false,
+            "width": "100%",
+            "description": "",
+            "isHide": false
+        },
+        "uuid": "e9d06c776ebb4737b96b245d6ad4d65e"
+    }
+    //保存数据
+    //节点
+        {
+        "selectNodeList": [
+            {
+                "port": 3306,
+                "ip": "192.168.0.101",
+                "name": "customerBaseline",
+                "id": 493223784800258
+            },
+            {
+                "port": 3306,
+                "ip": "192.168.0.21",
+                "name": "sit-db-21",
+                "id": 493223793188865
+            }
+        ]
+    }
+    //输入文本
+    {
+        "inputNodeList": [
+            {
+                "port": "3306",
+                "ip": "192.168.0.21"
+            },
+            {
+                "port": "3306",
+                "ip": "192.168.0.101"
+            }
+        ]
+    }
+    //过滤器简单模式
+    {
+        "filter": {
+            "envIdList": [
+                481856650534914,
+                481856650534918,
+                481856650534925,
+                699864006320129
+            ],
+            "protocolIdList": [
+                478219912355840,
+                547705260400640,
+                658651035262976
+            ],
+            "vendorIdList": [
+                481861851471878,
+                481861851471874,
+                481861851471882
+            ],
+            "typeIdList": [
+                442011534499840
+            ],
+            "stateIdList": [
+                481855425798147,
+                575058128723968
+            ],
+            "appSystemIdList": [
+                481894852255745
+            ],
+            "appModuleIdList": [
+                481894986473474
+            ],
+            "tagIdList": [
+                686828596027393
+            ]
+        }
+    }
+    //过滤器高级模式
+    {
+        "filter": {
+            "conditionGroupList": [
+                {
+                    "conditionList": [
+                        {
+                            "expression": "include",
+                            "valueList": [
+                                442011534499840
+                            ],
+                            "name": "typeIdList",
+                            "uuid": "8b2d7cf26de643baa8958c629885ea47"
+                        },
+                        {
+                            "expression": "include",
+                            "valueList": [
+                                481894852255745
+                            ],
+                            "name": "appSystemIdList",
+                            "uuid": "370ec10f3ec8419db4e44b90cc16fc99"
+                        }
+                    ],
+                    "conditionRelList": [
+                        {
+                            "joinType": "or",
+                            "from": "8b2d7cf26de643baa8958c629885ea47",
+                            "to": "370ec10f3ec8419db4e44b90cc16fc99"
+                        }
+                    ],
+                    "uuid": "4ff25e95bb344ed8a37a6e1fb4e40068"
+                },
+                {
+                    "conditionList": [
+                        {
+                            "expression": "include",
+                            "valueList": [
+                                699864006320129,
+                                481856650534925,
+                                481856650534918,
+                                481856650534914
+                            ],
+                            "name": "envIdList",
+                            "uuid": "326d54b079aa474eb9640efa03cbab63"
+                        }
+                    ],
+                    "conditionRelList": [],
+                    "uuid": "0a24501fa53d4cf3b0a638ea639b7842"
+                }
+            ],
+            "keyword": "",
+            "conditionGroupRelList": [
+                {
+                    "joinType": "or",
+                    "from": "4ff25e95bb344ed8a37a6e1fb4e40068",
+                    "to": "0a24501fa53d4cf3b0a638ea639b7842"
+                }
+            ]
+        }
+    }
+    //返回数据结构
+    {
+        "value": {
+            "selectNodeList": [
+                {
+                    "port": 3306,
+                    "ip": "192.168.0.101",
+                    "name": "Mysql",
+                    "id": 493223784800258
+                },
+                {
+                    "port": 3306,
+                    "ip": "192.168.0.21",
+                    "name": "Mysql",
+                    "id": 493223793188865
+                }
+            ],
+            "inputNodeList": [
+                {
+                    "port": "8081",
+                    "ip": "192.168.0.1",
+                    "name": "neatlogic2"
+                },
+                {
+                    "port": "8080",
+                    "ip": "192.168.0.1",
+                    "name": "neatlogic"
+                }
+            ],
+            "filter": {
+                "envIdList": [
+                    481856650534914,
+                    481856650534918,
+                    481856650534925
+                ],
+                "protocolIdList": [
+                    547705260400640,
+                    478219912355840
+                ],
+                "stateIdList": [
+                    481855425798147
+                ],
+                "typeIdList": [
+                    479596491317248,
+                    479598143873024
+                ],
+                "appSystemIdList": [
+                    481894852255745,
+                    481894852255749
+                ],
+                "appModuleIdList": [
+                    481894994862129,
+                    481894986473498
+                ],
+                "tagIdList": [
+                    504187276025856,
+                    508639420669952
+                ]
+            },
+            "type": "input/node/filter"
+        },
+        "selectNodeList": [
+            {
+                "port": 3306,
+                "ip": "192.168.0.101",
+                "name": "Mysql",
+                "id": 493223784800258
+            },
+            {
+                "port": 3306,
+                "ip": "192.168.0.21",
+                "name": "Mysql",
+                "id": 493223793188865
+            }
+        ],
+        "inputNodeList": [
+            {
+                "port": "8081",
+                "ip": "192.168.0.1",
+                "name": "neatlogic2"
+            },
+            {
+                "port": "8080",
+                "ip": "192.168.0.1",
+                "name": "neatlogic"
+            }
+        ],
+        "filterList": [
+            {
+                "textList": [
+                    "PRD",
+                    "UAT",
+                    "SIT"
+                ],
+                "valueList": [
+                    481856650534914,
+                    481856650534918,
+                    481856650534925
+                ],
+                "label": "环境"
+            },
+            {
+                "textList": [
+                    "https",
+                    "ssh"
+                ],
+                "valueList": [
+                    547705260400640,
+                    478219912355840
+                ],
+                "label": "连接协议"
+            },
+            {
+                "textList": [
+                    "使用中"
+                ],
+                "valueList": [
+                    481855425798147
+                ],
+                "label": "状态"
+            },
+            {
+                "textList": [
+                    "DBIns",
+                    "DBCluster"
+                ],
+                "valueList": [
+                    479596491317248,
+                    479598143873024
+                ],
+                "label": "模型类型"
+            },
+            {
+                "textList": [
+                    "理财资产管理",
+                    "全网支付平台"
+                ],
+                "valueList": [
+                    481894852255745,
+                    481894852255749
+                ],
+                "label": "系统"
+            },
+            {
+                "textList": [
+                    "交易反欺诈消费",
+                    "台账系统"
+                ],
+                "valueList": [
+                    481894994862129,
+                    481894986473498
+                ],
+                "label": "模块"
+            },
+            {
+                "textList": [],
+                "valueList": [
+                    504187276025856,
+                    508639420669952
+                ],
+                "label": "标签"
+            }
+        ]
+    }
+
+     */
     @Override
     protected JSONObject getMyDetailedData(AttributeDataVo attributeDataVo, JSONObject configObj) {
         JSONObject resultObj = new JSONObject();
         JSONObject dataObj = (JSONObject) attributeDataVo.getDataObj();
+        if (MapUtils.isEmpty(dataObj)) {
+            return dataObj;
+        }
         resultObj.put("value", dataObj);
-        String type = dataObj.getString("type");
-        resultObj.put("type", type);
-        if ("node".equals(type)) {
-            resultObj.put("selectNodeList", dataObj.getJSONArray("selectNodeList"));
-        } else if ("input".equals(type)) {
-            resultObj.put("inputNodeList", dataObj.getJSONArray("inputNodeList"));
-        } else if ("filter".equals(type)) {
-            JSONObject filter = dataObj.getJSONObject("filter");
-            if (MapUtils.isNotEmpty(filter)) {
+        JSONArray selectNodeList = dataObj.getJSONArray("selectNodeList");
+        JSONArray inputNodeList = dataObj.getJSONArray("inputNodeList");
+        JSONObject filter = dataObj.getJSONObject("filter");
+        if (CollectionUtils.isNotEmpty(selectNodeList)) {
+            resultObj.put("selectNodeList", selectNodeList);
+        } else if (CollectionUtils.isNotEmpty(inputNodeList)) {
+            resultObj.put("inputNodeList", inputNodeList);
+        } else if (MapUtils.isNotEmpty(filter)) {
+            if (filter.containsKey("conditionGroupList")) {
+                // 过滤高级模式
+                ConditionConfigVo conditionConfig = filter.toJavaObject(ConditionConfigVo.class);
+                resultObj.put("conditionConfig", conditionConfig);
+            } else {
+                // 过滤简单模式
                 JSONArray filterList = new JSONArray();
                 JSONArray envIdList = filter.getJSONArray("envIdList");
                 if (CollectionUtils.isNotEmpty(envIdList)) {
@@ -554,7 +694,7 @@ public class ResourcesHandler extends FormHandlerBase {
                     jsonObj.put("label", "标签");
                     jsonObj.put("valueList", tagIdList);
                     List<String> textList = new ArrayList<>();
-                    List<Long> idList = appModuleIdList.toJavaList(Long.class);
+                    List<Long> idList = tagIdList.toJavaList(Long.class);
                     TagVo searchVo = new TagVo();
                     searchVo.setDefaultValue(tagIdList);
                     List<TagVo> tagVoList = resourceTagMapper.getTagListForSelect(searchVo);

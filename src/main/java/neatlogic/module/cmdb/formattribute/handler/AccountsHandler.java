@@ -49,7 +49,7 @@ public class AccountsHandler extends FormHandlerBase {
         ip.put("key", "ip");
         theadList.add(ip);
         JSONObject accountName = new JSONObject();
-        accountName.put("title", "帐号名称");
+        accountName.put("title", "帐号");
         accountName.put("key", "accountName");
         theadList.add(accountName);
         JSONObject account = new JSONObject();
