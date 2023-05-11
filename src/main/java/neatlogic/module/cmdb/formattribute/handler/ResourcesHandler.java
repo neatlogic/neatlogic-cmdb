@@ -222,8 +222,8 @@ public class ResourcesHandler extends FormHandlerBase {
             }
             return String.join("、", resultList);
         } else if (MapUtils.isNotEmpty(conditionConfig)) {
-            ConditionConfigVo conditionConfigVo = new ConditionConfigVo(conditionConfig);
-            return ResourcecenterConditionUtil.getBuildNaturalLanguageExpressions(conditionConfigVo);
+            ResourceSearchVo resourceSearchVo = conditionConfig.toJavaObject(ResourceSearchVo.class);
+            return resourceSearchVo.getBuildNaturalLanguageExpressions();
         }
         return StringUtils.EMPTY;
     }
