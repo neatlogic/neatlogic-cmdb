@@ -22,9 +22,7 @@ import neatlogic.framework.cmdb.dto.resourcecenter.AccountProtocolVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import neatlogic.framework.cmdb.dto.tag.TagVo;
 import neatlogic.framework.cmdb.enums.FormHandler;
-import neatlogic.framework.cmdb.resourcecenter.condition.ResourcecenterConditionUtil;
 import neatlogic.framework.common.constvalue.ParamType;
-import neatlogic.framework.dto.condition.*;
 import neatlogic.framework.form.attribute.core.FormHandlerBase;
 import neatlogic.framework.form.constvalue.FormConditionModel;
 import neatlogic.framework.form.dto.AttributeDataVo;
@@ -222,8 +220,9 @@ public class ResourcesHandler extends FormHandlerBase {
             }
             return String.join("、", resultList);
         } else if (MapUtils.isNotEmpty(conditionConfig)) {
-            ConditionConfigVo conditionConfigVo = new ConditionConfigVo(conditionConfig);
-            return ResourcecenterConditionUtil.getBuildNaturalLanguageExpressions(conditionConfigVo);
+            ResourceSearchVo resourceSearchVo = new ResourceSearchVo(conditionConfig);
+            String result = resourceSearchVo.getBuildNaturalLanguageExpressions();
+            return result;
         }
         return StringUtils.EMPTY;
     }
@@ -575,8 +574,7 @@ public class ResourcesHandler extends FormHandlerBase {
         } else if (MapUtils.isNotEmpty(filter)) {
             if (filter.containsKey("conditionGroupList")) {
                 // 过滤高级模式
-                ConditionConfigVo conditionConfig = filter.toJavaObject(ConditionConfigVo.class);
-                resultObj.put("conditionConfig", conditionConfig);
+                resultObj.put("conditionConfig", filter);
             } else {
                 // 过滤简单模式
                 JSONArray filterList = new JSONArray();
