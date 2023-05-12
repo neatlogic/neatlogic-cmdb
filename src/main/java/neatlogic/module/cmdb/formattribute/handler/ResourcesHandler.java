@@ -573,7 +573,6 @@ public class ResourcesHandler extends FormHandlerBase {
             resultObj.put("inputNodeList", inputNodeList);
         } else if (MapUtils.isNotEmpty(filter)) {
             if (filter.containsKey("conditionGroupList")) {
-                System.out.println(filter);
                 // 过滤高级模式
                 resultObj.put("conditionConfig", filter);
             } else {
