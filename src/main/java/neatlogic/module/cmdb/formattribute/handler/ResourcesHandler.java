@@ -192,7 +192,7 @@ public class ResourcesHandler extends FormHandlerBase {
         }
         JSONArray selectNodeList = dataObj.getJSONArray("selectNodeList");
         JSONArray inputNodeList = dataObj.getJSONArray("inputNodeList");
-//        JSONObject conditionConfig = dataObj.getJSONObject("conditionConfig");
+        JSONObject conditionConfig = dataObj.getJSONObject("conditionConfig");
         JSONArray filterList = dataObj.getJSONArray("filterList");
         if (CollectionUtils.isNotEmpty(selectNodeList)) {
             List<String> nodeList = new ArrayList<>();
@@ -219,12 +219,11 @@ public class ResourcesHandler extends FormHandlerBase {
                 resultList.add(label + "：" + String.join("|", textList));
             }
             return String.join("、", resultList);
+        } else if (MapUtils.isNotEmpty(conditionConfig)) {
+            ResourceSearchVo resourceSearchVo = new ResourceSearchVo(conditionConfig);
+            String result = resourceSearchVo.getBuildNaturalLanguageExpressions();
+            return result;
         }
-//        else if (MapUtils.isNotEmpty(conditionConfig)) {
-//            ResourceSearchVo resourceSearchVo = conditionConfig.toJavaObject(ResourceSearchVo.class);
-//            String result = resourceSearchVo.getBuildNaturalLanguageExpressions();
-//            return result;
-//        }
         return StringUtils.EMPTY;
     }
 
@@ -574,8 +573,9 @@ public class ResourcesHandler extends FormHandlerBase {
             resultObj.put("inputNodeList", inputNodeList);
         } else if (MapUtils.isNotEmpty(filter)) {
             if (filter.containsKey("conditionGroupList")) {
+                System.out.println(filter);
                 // 过滤高级模式
-//                resultObj.put("conditionConfig", filter);
+                resultObj.put("conditionConfig", filter);
             } else {
                 // 过滤简单模式
                 JSONArray filterList = new JSONArray();
