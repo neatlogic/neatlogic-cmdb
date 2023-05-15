@@ -23,7 +23,7 @@ import neatlogic.framework.cmdb.enums.resourcecenter.ScenceView;
 import neatlogic.framework.cmdb.enums.resourcecenter.Status;
 import neatlogic.framework.cmdb.enums.resourcecenter.ViewType;
 import neatlogic.framework.dao.mapper.SchemaMapper;
-import neatlogic.framework.startup.StartupBase;
+import neatlogic.framework.tenantinit.TenantInitBase;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import neatlogic.module.cmdb.utils.ResourceEntityFactory;
 import net.sf.jsqlparser.schema.Table;
@@ -47,8 +47,8 @@ import java.util.Set;
  * @since 2022/2/9 12:12
  **/
 @Component
-public class CreateResourceViewStartupHandler extends StartupBase {
-    private Logger logger = LoggerFactory.getLogger(CreateResourceViewStartupHandler.class);
+public class CreateResourceViewStartupHandler extends TenantInitBase {
+    private final Logger logger = LoggerFactory.getLogger(CreateResourceViewStartupHandler.class);
 
     @Resource
     private SchemaMapper schemaMapper;
@@ -68,7 +68,7 @@ public class CreateResourceViewStartupHandler extends StartupBase {
      * 每个租户分别执行
      */
     @Override
-    public void executeForCurrentTenant() {
+    public void execute() {
         List<ResourceEntityVo> resourceEntityList = ResourceEntityFactory.getResourceEntityList();
         List<ResourceEntityVo> oldResourceEntityList = resourceEntityMapper.getAllResourceEntity();
         List<ResourceEntityVo> scenceEntityList = new ArrayList<>();
@@ -148,11 +148,6 @@ public class CreateResourceViewStartupHandler extends StartupBase {
         for (ResourceEntityVo resourceEntityVo : needInsertList) {
             resourceEntityMapper.insertResourceEntity(resourceEntityVo);
         }
-    }
-
-    @Override
-    public void executeForAllTenant() {
-
     }
 
     /**
