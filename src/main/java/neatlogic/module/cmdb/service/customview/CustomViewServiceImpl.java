@@ -16,12 +16,16 @@
 
 package neatlogic.module.cmdb.service.customview;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.cmdb.crossover.ICustomViewCrossoverService;
 import neatlogic.framework.cmdb.dto.customview.*;
 import neatlogic.framework.cmdb.dto.tag.TagVo;
+import neatlogic.framework.cmdb.enums.customview.RelType;
 import neatlogic.framework.cmdb.exception.customview.CreateCustomViewFailedException;
 import neatlogic.framework.cmdb.exception.customview.CustomViewAttrNameIsExistsException;
+import neatlogic.framework.cmdb.exception.customview.CustomViewEmptyException;
 import neatlogic.framework.cmdb.exception.customview.DeleteCustomViewFailedException;
 import neatlogic.framework.transaction.core.EscapeTransactionJob;
 import neatlogic.module.cmdb.dao.mapper.customview.CustomViewMapper;
@@ -33,7 +37,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class CustomViewServiceImpl implements CustomViewService, ICustomViewCrossoverService {
@@ -188,5 +195,128 @@ public class CustomViewServiceImpl implements CustomViewService, ICustomViewCros
         }
     }
 
+    @Override
+    public void parseConfig(CustomViewVo customViewVo) {
+        JSONObject config = customViewVo.getConfig();
+        JSONArray nodes = config.getJSONArray("nodes");
+        if (CollectionUtils.isEmpty(nodes)) {
+            throw new CustomViewEmptyException();
+        }
+        Map<String, JSONObject> ciNodeMap = new HashMap<>();
+        Map<String, JSONObject> attrNodeMap = new HashMap<>();
+        Map<String, JSONObject> relNodeMap = new HashMap<>();
+        Map<String, JSONObject> constNodeMap = new HashMap<>();
+        Map<String, CustomViewAttrVo> attrMap = new HashMap<>();
+        Map<String, CustomViewRelVo> relMap = new HashMap<>();
+        Map<String, CustomViewCiVo> ciMap = new HashMap<>();
+        Map<String, CustomViewConstAttrVo> constAttrMap = new HashMap<>();
 
+        List<CustomViewCiVo> ciList = new ArrayList<>();
+        List<CustomViewLinkVo> linkList = new ArrayList<>();
+        customViewVo.setCiList(ciList);
+        customViewVo.setLinkList(linkList);
+        for (int i = 0; i < nodes.size(); i++) {
+            JSONObject nodeObj = nodes.getJSONObject(i);
+            switch (nodeObj.getString("type")) {
+                case "Ci":
+                    ciNodeMap.put(nodeObj.getString("uuid"), nodeObj);
+                    break;
+                case "Attr":
+                    attrNodeMap.put(nodeObj.getString("uuid"), nodeObj);
+                    break;
+                case "Rel":
+                    relNodeMap.put(nodeObj.getString("uuid"), nodeObj);
+                    break;
+                case "ConstAttr":
+                    constNodeMap.put(nodeObj.getString("uuid"), nodeObj);
+                    break;
+            }
+        }
+        JSONArray groups = config.getJSONArray("groups");
+        JSONArray links = config.getJSONArray("links");
+
+        if (CollectionUtils.isNotEmpty(groups)) {
+            for (int i = 0; i < groups.size(); i++) {
+                JSONObject groupObj = groups.getJSONObject(i);
+                JSONArray contains = groupObj.getJSONArray("contain");
+                CustomViewCiVo customViewCiVo = null;
+                List<CustomViewAttrVo> attrList = new ArrayList<>();
+                List<CustomViewRelVo> relList = new ArrayList<>();
+                List<CustomViewConstAttrVo> constAttrList = new ArrayList<>();
+                for (int j = 0; j < contains.size(); j++) {
+                    if (ciNodeMap.containsKey(contains.getString(j))) {
+                        JSONObject ciNodeObj = ciNodeMap.get(contains.getString(j));
+                        customViewCiVo = new CustomViewCiVo(ciNodeObj);
+                        customViewCiVo.setCustomViewId(customViewVo.getId());
+                        ciMap.put(customViewCiVo.getUuid(), customViewCiVo);
+                    } else if (attrNodeMap.containsKey(contains.getString(j))) {
+                        JSONObject attrNodeObj = attrNodeMap.get(contains.getString(j));
+                        CustomViewAttrVo attrVo = new CustomViewAttrVo(attrNodeObj);
+                        attrVo.setCustomViewId(customViewVo.getId());
+                        attrMap.put(attrVo.getUuid(), attrVo);
+                        attrList.add(attrVo);
+                    } else if (relNodeMap.containsKey(contains.getString(j))) {
+                        JSONObject relNodeObj = relNodeMap.get(contains.getString(j));
+                        CustomViewRelVo relVo = new CustomViewRelVo(relNodeObj);
+                        relVo.setCustomViewId(customViewVo.getId());
+                        relMap.put(relVo.getUuid(), relVo);
+                        relList.add(relVo);
+                    } else if (constNodeMap.containsKey(contains.getString(j))) {
+                        JSONObject constNodeObj = constNodeMap.get(contains.getString(j));
+                        CustomViewConstAttrVo constAttrVo = new CustomViewConstAttrVo(constNodeObj);
+                        constAttrVo.setCustomViewId(customViewVo.getId());
+                        constAttrMap.put(constAttrVo.getUuid(), constAttrVo);
+                        constAttrList.add(constAttrVo);
+                    }
+                }
+                if (customViewCiVo != null) {
+                    for (CustomViewAttrVo attrVo : attrList) {
+                        attrVo.setCustomViewCiUuid(customViewCiVo.getUuid());
+                    }
+                    for (CustomViewRelVo relVo : relList) {
+                        relVo.setCustomViewCiUuid(customViewCiVo.getUuid());
+                    }
+                    for (CustomViewConstAttrVo constAttrVo : constAttrList) {
+                        constAttrVo.setCustomViewCiUuid(customViewCiVo.getUuid());
+                    }
+                    customViewCiVo.setAttrList(attrList);
+                    customViewCiVo.setRelList(relList);
+                    customViewCiVo.setConstAttrList(constAttrList);
+                    ciList.add(customViewCiVo);
+                }
+            }
+        }
+
+        if (CollectionUtils.isNotEmpty(links)) {
+            for (int i = 0; i < links.size(); i++) {
+                JSONObject linkObj = links.getJSONObject(i);
+                CustomViewLinkVo customViewLinkVo = new CustomViewLinkVo(linkObj);
+                String sUuid = linkObj.getString("source");
+                if (attrNodeMap.containsKey(sUuid)) {
+                    customViewLinkVo.setFromType(RelType.ATTR.getValue());
+                    customViewLinkVo.setFromCustomViewCiUuid(attrMap.get(sUuid).getCustomViewCiUuid());
+                } else if (relNodeMap.containsKey(sUuid)) {
+                    customViewLinkVo.setFromType(RelType.REL.getValue());
+                    customViewLinkVo.setFromCustomViewCiUuid(relMap.get(sUuid).getCustomViewCiUuid());
+                } else if (constNodeMap.containsKey(sUuid)) {
+                    customViewLinkVo.setFromType(RelType.CONST_ATTR.getValue());
+                    customViewLinkVo.setFromCustomViewCiUuid(constAttrMap.get(sUuid).getCustomViewCiUuid());
+                }
+
+                String tUuid = linkObj.getString("target");
+                if (attrNodeMap.containsKey(tUuid)) {
+                    customViewLinkVo.setToType(RelType.ATTR.getValue());
+                    customViewLinkVo.setToCustomViewCiUuid(attrMap.get(tUuid).getCustomViewCiUuid());
+                } else if (ciNodeMap.containsKey(tUuid)) {
+                    customViewLinkVo.setToType(RelType.CI.getValue());
+                    customViewLinkVo.setToCustomViewCiUuid(ciMap.get(tUuid).getUuid());
+                } else if (constNodeMap.containsKey(tUuid)) {
+                    customViewLinkVo.setToType(RelType.CONST_ATTR.getValue());
+                    customViewLinkVo.setToCustomViewCiUuid(constAttrMap.get(tUuid).getCustomViewCiUuid());
+                }
+
+                linkList.add(customViewLinkVo);
+            }
+        }
+    }
 }

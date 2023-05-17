@@ -487,6 +487,33 @@
         WHERE a.label = #{value}
     </select>
 
+    <select id="getVirtualCiCount" resultType="int">
+        SELECT  COUNT(1) FROM `cmdb_ci` WHERE `is_virtual` = 1
+    </select>
+
+    <select id="getVirtualCiList" parameterType="neatlogic.framework.common.dto.BasePageVo" resultType="neatlogic.framework.cmdb.dto.ci.CiVo">
+        SELECT
+            `id`,
+            `name`,
+            `label`,
+            `description`,
+            `icon`,
+            `type_id` AS typeId,
+            `parent_ci_id` AS parentCiId,
+            `name_attr_id` AS nameAttrId,
+            `lft`,
+            `rht`,
+            `is_private` AS isPrivate,
+            `is_menu` AS isMenu,
+            `is_abstract` AS isAbstract,
+            `is_virtual` AS isVirtual,
+            `file_id` AS fileId,
+            `expired_day` AS expiredDay
+        FROM `cmdb_ci`
+        WHERE `is_virtual` = 1
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
     <update id="updateCiNameAttrId" parameterType="neatlogic.framework.cmdb.dto.ci.CiVo">
         UPDATE
             `cmdb_ci`

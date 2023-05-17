@@ -19,8 +19,10 @@ package neatlogic.module.cmdb.service.resourcecenter.resource;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.*;
+import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.dto.tag.TagVo;
 import neatlogic.framework.cmdb.enums.resourcecenter.AppModuleResourceType;
+import neatlogic.framework.cmdb.enums.resourcecenter.Status;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppModuleNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
@@ -28,10 +30,12 @@ import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
+import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceTagMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import neatlogic.module.cmdb.utils.ResourceEntityViewBuilder;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -60,6 +64,8 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
     @Resource
     private CiEntityMapper ciEntityMapper;
 
+    @Resource
+    private ResourceEntityMapper resourceEntityMapper;
     public static final Map<String, Action<ResourceSearchVo>> searchMap = new HashMap<>();
 
     @FunctionalInterface
@@ -494,5 +500,22 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             return returnEnvMap.values().stream().sorted(Comparator.comparing(AppEnvVo::getSeqNo)).collect(Collectors.toList());
         }
         return null;
+    }
+
+    @Override
+    public List<ResourceEntityVo> rebuildResourceEntity() {
+        List<ResourceEntityVo> resourceEntityList = resourceEntityMapper.getAllResourceEntity();
+        for (ResourceEntityVo resourceEntityVo : resourceEntityList) {
+            resourceEntityVo.setError("");
+            resourceEntityVo.setStatus(Status.PENDING.getValue());
+            resourceEntityMapper.updateResourceEntityStatusAndError(resourceEntityVo);
+            String xml = resourceEntityMapper.getResourceEntityXmlByName(resourceEntityVo.getName());
+            if (StringUtils.isNotBlank(xml)) {
+                resourceEntityVo.setXml(xml);
+                ResourceEntityViewBuilder builder = new ResourceEntityViewBuilder(resourceEntityVo);
+                builder.buildView();
+            }
+        }
+        return resourceEntityMapper.getAllResourceEntity();
     }
 }

@@ -41,4 +41,6 @@ public interface CustomViewService {
 
     @Transactional
     void deleteCustomView(Long id);
+
+    void parseConfig(CustomViewVo customViewVo);
 }
