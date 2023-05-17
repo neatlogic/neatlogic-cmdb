@@ -50,7 +50,7 @@ public class CustomViewRebuildHandler implements IRebuildDataBaseView {
             CustomViewVo customViewVo = customViewMapper.getCustomViewById(id);
             customViewService.parseConfig(customViewVo);
             ViewStatusInfo viewStatusInfo = new ViewStatusInfo();
-            viewStatusInfo.setViewName("customview_" + id);
+            viewStatusInfo.setName("customview_" + id);
             viewStatusInfo.setLabel(customViewVo.getName());
             try {
                 CustomViewBuilder builder = new CustomViewBuilder(customViewVo);

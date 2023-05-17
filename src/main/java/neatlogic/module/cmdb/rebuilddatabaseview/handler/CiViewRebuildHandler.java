@@ -58,7 +58,7 @@ public class CiViewRebuildHandler implements IRebuildDataBaseView {
             List<CiVo> ciList = ciMapper.getVirtualCiList(searchVo);
             for (CiVo ciVo : ciList) {
                 ViewStatusInfo viewStatusInfo = new ViewStatusInfo();
-                viewStatusInfo.setViewName("cmdb_" + ciVo.getId());
+                viewStatusInfo.setName("cmdb_" + ciVo.getId());
                 viewStatusInfo.setLabel(ciVo.getLabel() + "(" + ciVo.getName() + ")");
                 String viewXml = ciMapper.getCiViewXmlById(ciVo.getId());
                 ciVo.setViewXml(viewXml);

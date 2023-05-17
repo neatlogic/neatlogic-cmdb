@@ -45,7 +45,7 @@ public class ResourceViewRebuildHandler implements IRebuildDataBaseView {
         List<ResourceEntityVo> resourceEntityList = resourceCenterResourceService.rebuildResourceEntity();
         for (ResourceEntityVo resourceEntityVo : resourceEntityList) {
             ViewStatusInfo viewStatusInfo = new ViewStatusInfo();
-            viewStatusInfo.setViewName(resourceEntityVo.getName());
+            viewStatusInfo.setName(resourceEntityVo.getName());
             viewStatusInfo.setLabel(resourceEntityVo.getLabel());
             viewStatusInfo.setError(resourceEntityVo.getError());
             if (Objects.equals(resourceEntityVo.getStatus(), Status.ERROR.getValue())) {
