@@ -20,6 +20,7 @@ import neatlogic.framework.cmdb.crossover.ICiCrossoverMapper;
 import neatlogic.framework.cmdb.dto.ci.CiTypeVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.customview.CustomViewVo;
+import neatlogic.framework.common.dto.BasePageVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -83,6 +84,10 @@ public interface CiMapper extends ICiCrossoverMapper {
     CiVo getCiByName(String ciName);
 
     CiVo getCiByLabel(String ciLabel);
+
+    int getVirtualCiCount();
+
+    List<CiVo> getVirtualCiList(BasePageVo searchVo);
 
     void updateCi(CiVo ciVo);
 

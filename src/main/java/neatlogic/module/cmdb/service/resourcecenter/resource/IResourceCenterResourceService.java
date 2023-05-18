@@ -22,6 +22,7 @@ import neatlogic.framework.cmdb.dto.resourcecenter.AccountVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.AppEnvVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.dto.tag.TagVo;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -120,4 +121,10 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
      * @return 应用巡检批量巡检时的环境列表
      */
     Collection<AppEnvVo> getAppEnvList(ResourceSearchVo searchVo);
+
+    /**
+     * 重建资源中心视图
+     * @return
+     */
+    List<ResourceEntityVo> rebuildResourceEntity();
 }

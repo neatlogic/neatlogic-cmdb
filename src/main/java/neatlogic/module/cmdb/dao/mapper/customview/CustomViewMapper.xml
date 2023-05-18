@@ -436,6 +436,10 @@
         WHERE customview_id = #{value}
     </select>
 
+    <select id="getAllIdList" resultType="java.lang.Long">
+        SELECT `id` FROM `cmdb_customview`
+    </select>
+
     <update id="updateCustomView" parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewVo">
         UPDATE cmdb_customview
         SET name          = #{name},

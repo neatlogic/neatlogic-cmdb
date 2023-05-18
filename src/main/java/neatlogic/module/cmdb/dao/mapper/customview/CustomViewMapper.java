@@ -48,6 +48,8 @@ public interface CustomViewMapper {
 
     int checkCustomViewNameIsExists(CustomViewVo customViewVo);
 
+    List<Long> getAllIdList();
+
     int searchCustomViewCount(CustomViewVo customViewVo);
 
     void updateCustomView(CustomViewVo customViewVo);
