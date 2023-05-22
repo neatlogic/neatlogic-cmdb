@@ -95,6 +95,7 @@ public class CiEntityBuilder {
                 Date renewTime = result.get("renewTime") != null ? new Date(Long.parseLong(String.valueOf(result.get("renewTime")))) : null;
                 String inspectStatus = result.get("inspectStatus") != null ? String.valueOf(result.get("inspectStatus")) : null;
                 String monitorStatus = result.get("monitorStatus") != null ? String.valueOf(result.get("monitorStatus")) : null;
+                String account = result.get("account") != null ? String.valueOf(result.get("account")) : null;
 
                 if (!ciEntityMap.containsKey(id)) {
                     ciEntityVo = new CiEntityVo();
@@ -117,6 +118,7 @@ public class CiEntityBuilder {
                     ciEntityVo.setMonitorStatus(monitorStatus);
                     ciEntityVo.setMonitorTime(monitorTime);
                     ciEntityVo.setRenewTime(renewTime);
+                    ciEntityVo.setAccount(account);
                     ciEntityMap.put(id, ciEntityVo);
                 } else {
                     ciEntityVo = ciEntityMap.get(id);

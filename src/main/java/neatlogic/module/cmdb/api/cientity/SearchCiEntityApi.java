@@ -351,6 +351,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
                     entityObj.put("relEntityData", entity.getRelEntityData());
                     entityObj.put("maxRelEntityCount", entity.getMaxRelEntityCount());
                     entityObj.put("maxAttrEntityCount", entity.getMaxAttrEntityCount());
+                    entityObj.put("account", entity.getAccount());
                     if (ciEntityObjList == null && needAction && ciVo.getIsVirtual().equals(0)) {
                         JSONObject actionData = new JSONObject();
                         actionData.put(CiAuthType.CIENTITYUPDATE.getValue(), canEdit || hasMaintainCiEntityIdList.contains(entity.getId()));

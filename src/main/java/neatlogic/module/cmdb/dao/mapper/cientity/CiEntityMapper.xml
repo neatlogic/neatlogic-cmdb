@@ -296,6 +296,7 @@
                 null as monitorTime,
                 null as monitorStatus,
                 null as renewTime,
+                null as `account`,
                 null AS lcd,
                 null AS lcu,
                 null AS fcd,
@@ -307,6 +308,7 @@
                 ROUND(UNIX_TIMESTAMP(`ci_base`.`monitor_time`) * 1000) AS monitorTime,
                 `ci_base`.`monitor_status` AS monitorStatus,
                 ROUND(UNIX_TIMESTAMP(`ci_base`.`renew_time`) * 1000) AS renewTime,
+                cientity_account.`account` as `account`,
                 `ci_base`.`lcd` AS lcd,
                 `ci_base`.`lcu` AS lcu,
                 `ci_base`.`fcd` AS fcd,
@@ -543,6 +545,18 @@
             OR `ci_base`.id = #{keyword} OR `ci_base`.`name` LIKE CONCAT('%',#{keyword},'%')
             )
         </if>
+        left join (
+            select group_concat(CONCAT(cra.name,' (',cra.account,' / ',crrap.`name`,')')) as `account`,crra.resource_id
+            from
+            cmdb_resourcecenter_resource_account crra
+            LEFT JOIN cmdb_resourcecenter_account cra ON crra.account_id = cra.id
+            LEFT join cmdb_resourcecenter_account_protocol crrap on cra.protocol_id = crrap.id
+            where crra.resource_id in
+            <foreach collection="idList" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+            GROUP BY crra.resource_id
+        ) as cientity_account on ci_base.id = cientity_account.resource_id
     </sql>
 
     <sql id="ciEntityConditionSql">
