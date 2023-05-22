@@ -57,6 +57,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Map.Entry;
@@ -103,6 +105,14 @@ public class BatchImportHandler {
         ciEntityService = _ciEntityService;
     }
 
+    public static void main(String[] a) {
+        double num = 1.12123123;
+        BigDecimal bd = new BigDecimal(Double.toString(num));
+        bd = bd.setScale(4, RoundingMode.HALF_UP);
+        String result = bd.stripTrailingZeros().toPlainString();
+        System.out.println(result);
+    }
+
     private static String getCellContent(Cell cell) {
         String cellContent = "";
         switch (cell.getCellType()) {
@@ -112,21 +122,23 @@ public class BatchImportHandler {
                     SimpleDateFormat sFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                     cellContent = sFormat.format(date).replace("00:00:00", "");
                 } else {
-                    cellContent = String.format("%.0f", cell.getNumericCellValue());
+                    BigDecimal bd = new BigDecimal(Double.toString(cell.getNumericCellValue()));
+                    bd = bd.setScale(4, RoundingMode.HALF_UP);
+                    cellContent = bd.stripTrailingZeros().toPlainString();
                 }
                 break;
             case STRING:
-                cellContent = cell.getStringCellValue() + "";
+                cellContent = cell.getStringCellValue();
                 break;
             case BOOLEAN:
-                cellContent = cell.getBooleanCellValue() + "";
+                cellContent = String.valueOf(cell.getBooleanCellValue());
                 break;
             case BLANK:
             case ERROR:
                 cellContent = "";
                 break;
             case FORMULA:
-                cellContent = cell.getCellFormula() + "";
+                cellContent = cell.getCellFormula();
                 break;
         }
         if (StringUtils.isNotBlank(cellContent)) {
