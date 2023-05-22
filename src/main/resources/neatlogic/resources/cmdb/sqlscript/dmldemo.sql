@@ -879,13 +879,13 @@ INSERT INTO `cmdb_citype` VALUES (482440665423872, '附加组件信息', 9, 0, N
 INSERT INTO `cmdb_citype` VALUES (544844434694144, '基础资源', 19, 0, NULL, 0);
 INSERT INTO `cmdb_citype` VALUES (802677277384704, '容器', 20, 0, NULL, NULL);
 
-INSERT INTO cmdb_viewconst` (`id`, `name`, `label`) VALUES (1, '_id', 'ID#');
-INSERT INTO cmdb_viewconst` (`id`, `name`, `label`) VALUES (2, '_ciLabel', '模型');
-INSERT INTO cmdb_viewconst` (`id`, `name`, `label`) VALUES (3, '_typeName', '类型');
-INSERT INTO cmdb_viewconst` (`id`, `name`, `label`) VALUES (4, '_inspectTime', '巡检时间');
-INSERT INTO cmdb_viewconst` (`id`, `name`, `label`) VALUES (5, '_inspectStatus', '巡检状态');
-INSERT INTO cmdb_viewconst` (`id`, `name`, `label`) VALUES (6, '_monitorTime', '监控时间');
-INSERT INTO cmdb_viewconst` (`id`, `name`, `label`) VALUES (7, '_monitorStatus', '监控状态');
-INSERT INTO cmdb_viewconst` (`id`, `name`, `label`) VALUES (8, '_account', '账号');
+INSERT INTO `mdb_viewconst` (`id`, `name`, `label`) VALUES (1, '_id', 'ID#');
+INSERT INTO `mdb_viewconst` (`id`, `name`, `label`) VALUES (2, '_ciLabel', '模型');
+INSERT INTO `mdb_viewconst` (`id`, `name`, `label`) VALUES (3, '_typeName', '类型');
+INSERT INTO `mdb_viewconst` (`id`, `name`, `label`) VALUES (4, '_inspectTime', '巡检时间');
+INSERT INTO `mdb_viewconst` (`id`, `name`, `label`) VALUES (5, '_inspectStatus', '巡检状态');
+INSERT INTO `mdb_viewconst` (`id`, `name`, `label`) VALUES (6, '_monitorTime', '监控时间');
+INSERT INTO `mdb_viewconst` (`id`, `name`, `label`) VALUES (7, '_monitorStatus', '监控状态');
+INSERT INTO `mdb_viewconst` (`id`, `name`, `label`) VALUES (8, '_account', '账号');
 
 COMMIT;
