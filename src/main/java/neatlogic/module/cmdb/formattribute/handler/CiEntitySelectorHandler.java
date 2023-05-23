@@ -80,6 +80,11 @@ public class CiEntitySelectorHandler extends FormHandlerBase {
     }
 
     @Override
+    public Object conversionDataType(Object source, String attributeLabel) {
+        return convertToJSONArray(source, attributeLabel);
+    }
+
+    @Override
     public Object valueConversionText(AttributeDataVo attributeDataVo, JSONObject configObj) {
         JSONObject resultObj = getMyDetailedData(attributeDataVo, configObj);
         JSONArray tbodyArray = resultObj.getJSONArray("tbodyList");

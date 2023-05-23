@@ -76,6 +76,22 @@ public class ProtocolNewHandler extends FormHandlerBase {
     }
 
     @Override
+    public Object conversionDataType(Object source, String attributeLabel) {
+        if (source == null) {
+            return null;
+        }
+        if (source instanceof String) {
+            try {
+                return Long.valueOf((String) source);
+            } catch (NumberFormatException e) {
+            }
+        } else if (source instanceof Number) {
+            return source;
+        }
+        throw new AttributeValidException(attributeLabel);
+    }
+
+    @Override
     public Object valueConversionText(AttributeDataVo attributeDataVo, JSONObject configObj) {
         JSONObject dataObj = getMyDetailedData(attributeDataVo, configObj);
         if (MapUtils.isNotEmpty(dataObj)) {
