@@ -19,6 +19,7 @@ package neatlogic.module.cmdb.process.stephandler;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.InputFromContext;
+import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo;
@@ -303,6 +304,7 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
                 processTaskStepDataVo.setProcessTaskStepId(currentProcessTaskStepVo.getId());
                 processTaskStepDataVo.setType("cientitysync");
                 processTaskStepDataVo.setData(auditData.toJSONString());
+                processTaskStepDataVo.setFcu(UserContext.get().getUserUuid());
                 processTaskStepDataMapper.replaceProcessTaskStepData(processTaskStepDataVo);
             }
         }
