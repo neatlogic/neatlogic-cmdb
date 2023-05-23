@@ -168,7 +168,19 @@ public class ResourcesHandler extends FormHandlerBase {
 
     @Override
     public Object conversionDataType(Object source, String attributeLabel) {
-        return convertToJSONArray(source, attributeLabel);
+        if (source == null) {
+            return null;
+        }
+        if (source instanceof String) {
+            try {
+                return JSONObject.parseObject((String) source);
+            } catch (Exception e) {
+                throw new AttributeValidException(attributeLabel);
+            }
+        } else if (source instanceof JSONObject) {
+            return source;
+        }
+        throw new AttributeValidException(attributeLabel);
     }
 
     @Override
