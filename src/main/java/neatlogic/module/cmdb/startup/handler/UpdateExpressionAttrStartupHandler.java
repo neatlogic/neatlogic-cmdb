@@ -43,17 +43,14 @@ public class UpdateExpressionAttrStartupHandler extends StartupBase {
     }
 
     @Override
-    public void executeForCurrentTenant() {
+    public int executeForCurrentTenant() {
         List<RebuildAuditVo> auditList = attrExpressionRebuildAuditMapper.getAttrExpressionRebuildAuditByServerId(Config.SCHEDULE_SERVER_ID);
         if (CollectionUtils.isNotEmpty(auditList)) {
             for (RebuildAuditVo audit : auditList) {
                 AttrExpressionRebuildManager.rebuild(audit);
             }
         }
+        return 0;
     }
 
-    @Override
-    public void executeForAllTenant() {
-
-    }
 }

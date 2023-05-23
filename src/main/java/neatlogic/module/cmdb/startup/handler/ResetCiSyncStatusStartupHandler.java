@@ -43,7 +43,7 @@ public class ResetCiSyncStatusStartupHandler extends StartupBase {
     }
 
     @Override
-    public void executeForCurrentTenant() {
+    public int executeForCurrentTenant() {
         List<SyncAuditVo> auditList = syncAuditMapper.getDoingSyncByServerId(Config.SCHEDULE_SERVER_ID);
         if (CollectionUtils.isNotEmpty(auditList)) {
             for (SyncAuditVo audit : auditList) {
@@ -52,10 +52,7 @@ public class ResetCiSyncStatusStartupHandler extends StartupBase {
                 syncAuditMapper.updateSyncAuditStatus(audit);
             }
         }
+        return 0;
     }
 
-    @Override
-    public void executeForAllTenant() {
-
-    }
 }

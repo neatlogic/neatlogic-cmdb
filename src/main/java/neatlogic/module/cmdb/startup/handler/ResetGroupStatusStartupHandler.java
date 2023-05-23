@@ -42,7 +42,7 @@ public class ResetGroupStatusStartupHandler extends StartupBase {
     }
 
     @Override
-    public void executeForCurrentTenant() {
+    public int executeForCurrentTenant() {
         GroupVo gVo = new GroupVo();
         gVo.setStatus(Status.DOING.getValue());
         List<GroupVo> groupList = groupMapper.getDoingGroupByServerId(gVo);
@@ -52,10 +52,7 @@ public class ResetGroupStatusStartupHandler extends StartupBase {
                 groupMapper.updateGroupStatus(groupVo);
             }
         }
+        return 0;
     }
 
-    @Override
-    public void executeForAllTenant() {
-
-    }
 }
