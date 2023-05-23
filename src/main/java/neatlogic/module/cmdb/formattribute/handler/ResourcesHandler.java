@@ -167,6 +167,11 @@ public class ResourcesHandler extends FormHandlerBase {
     }
 
     @Override
+    public Object conversionDataType(Object source, String attributeLabel) {
+        return convertToJSONArray(source, attributeLabel);
+    }
+
+    @Override
     public Object valueConversionText(AttributeDataVo attributeDataVo, JSONObject configObj) {
         return "已更新";
     }
