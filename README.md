@@ -9,7 +9,9 @@
 
 ## 关于
 
-neatlogic-cmdb是配置管理模块，配合neatlogic-autoexec可以实现自动发现和采集，配合neatlogic-itsm支持在流程中修改配置项，配合neatlogic-pbc支持数据自动推送到人民银行。
+neatlogic-cmdb是配置管理模块，配合[neatlogic-autoexec](../../../neatlogic-autoexec/blob/develop3.0.0/README.md)
+可以实现自动发现和采集，配合[neatlogic-itsm](../../../neatlogic-itsm/blob/develop3.0.0/README.md)
+支持在流程中修改配置项，配合[neatlogic-pbc](../../../neatlogic-pbc/blob/develop3.0.0/README.md)支持数据自动推送到人民银行。
 neatlogic-cmdb采用"万物皆CI"的设计理念，支持把外部数据直接转化成配置项，供cmdb内部消费，例如用户信息、组织架构信息等。
 neatlogic-cmdb不能单独部署，也不能单独构建，如需构建和部署，请参考[neatlogic-itom-all](../../../neatlogic-itom-all/blob/develop3.0.0/README.md)
 的说明文档。
