@@ -1,9 +1,17 @@
 中文 / [English](README.en.md)
 
+<p align="left">
+    <a href="https://opensource.org/licenses/Apache-2.0" alt="License">
+        <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" /></a>
+<a target="_blank" href="https://join.slack.com/t/neatlogichome/shared_invite/zt-1w037axf8-r_i2y4pPQ1Z8FxOkAbb64w">
+<img src="https://img.shields.io/badge/Slack-Neatlogic-orange" /></a>
+</p>
+
 ## 关于
 
 neatlogic-cmdb是配置管理模块，配合neatlogic-autoexec可以实现自动发现和采集，配合neatlogic-itsm支持在流程中修改配置项，配合neatlogic-pbc支持数据自动推送到人民银行。
 neatlogic-cmdb采用"万物皆CI"的设计理念，支持把外部数据直接转化成配置项，供cmdb内部消费，例如用户信息、组织架构信息等。
+neatlogic-cmdb不能单独部署，也不能单独构建，如需构建和部署，请参考[neatlogic-itom-all](../neatlogic-itom-all)的说明文档。
 
 ## 主要功能
 
