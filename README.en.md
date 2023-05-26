@@ -7,14 +7,18 @@
 <img src="https://img.shields.io/badge/Slack-Neatlogic-orange" /></a>
 </p>
 
-## about
+## About
 
-neatlogic-cmdb is a configuration management module, with neatlogic-autoexec can realize automatic discovery and
-collection, with neatlogic-itsm to support modification of configuration items in the process, with neatlogic-pbc to
-support automatic push of data to the People's Bank of China.
-neatlogic-cmdb adopts the design concept of "everything is CI", and supports the direct conversion of external data into
-configuration items for internal consumption of cmdb, such as user information, organizational structure information,
+neatlogic-cmdb is a configuration management module, which can achieve automatic discovery and collection when paired
+with [neatlogic-autoexec](../../../neatlogic-autoexec/blob/develop3.0.0/README.md). It supports the modification of
+configuration items in the process when paired
+with [neatlogic-itsm](../../../neatlogic-itsm/blob/develop3.0.0/README.md), and it supports automatic data push to the
+People's Bank of China when used with [neatlogic-pbc](../../../neatlogic-pbc/blob/develop3.0.0/README.md).
+neatlogic-cmdb adopts the design concept of "Everything is CI", and supports the direct transformation of external data
+into configuration items for cmdb internal consumption, such as user information, organizational structure information,
 etc.
+neatlogic-cmdb cannot be deployed or built independently. If you need to build and deploy, please refer to the
+instructions in the [neatlogic-itom-all](../../../neatlogic-itom-all/blob/develop3.0.0/README.md) documentation.
 
 ## Features
 
