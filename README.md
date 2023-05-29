@@ -7,6 +7,7 @@
 <img src="https://img.shields.io/badge/Slack-Neatlogic-orange" /></a>
 </p>
 
+---
 ## 关于
 
 neatlogic-cmdb是配置管理模块，配合[neatlogic-autoexec](../../../neatlogic-autoexec/blob/develop3.0.0/README.md)

@@ -7,6 +7,8 @@
 <img src="https://img.shields.io/badge/Slack-Neatlogic-orange" /></a>
 </p>
 
+---
+
 ## About
 
 neatlogic-cmdb is a configuration management module, which can achieve automatic discovery and collection when paired
