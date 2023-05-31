@@ -20,7 +20,7 @@ import neatlogic.framework.notify.core.INotifyPolicyHandlerGroup;
 import neatlogic.framework.util.I18nUtils;
 
 public enum CmdbNotifyGroup implements INotifyPolicyHandlerGroup {
-    CMDB("cmdb", "enum.cmdb.cmdbnotifygroup.cmdb");
+    CMDB("cmdb", "common.configurationmanagement");
     private final String value;
     private final String text;
 

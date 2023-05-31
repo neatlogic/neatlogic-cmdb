@@ -24,8 +24,8 @@ public enum CmdbNotifyTriggerType implements INotifyTriggerType {
     CIMODITY("cimodity", new I18n("enum.cmdb.cmdbnotifytriggertype.cimodity.a"), new I18n("enum.cmdb.cmdbnotifytriggertype.cimodity.b")),
     CIDELETE("cidelete", new I18n("enum.cmdb.cmdbnotifytriggertype.cidelete.a"), new I18n("enum.cmdb.cmdbnotifytriggertype.cidelete.b")),
     CIENTITYMODITY("cientitymodify", new I18n("enum.cmdb.cmdbnotifytriggertype.cientitymodity.a"), new I18n("enum.cmdb.cmdbnotifytriggertype.cientitymodity.b")),
-    CIENTITYDELETE("cientitydelete", new I18n("enum.cmdb.cmdbnotifytriggertype.cientitydelete.a"), new I18n("enum.cmdb.cmdbnotifytriggertype.cientitydelete.b")),
-    CIENTITYINSERT("cientityinsert", new I18n("enum.cmdb.cmdbnotifytriggertype.cientityinsert.a"), new I18n("enum.cmdb.cmdbnotifytriggertype.cientityinsert.b"));
+    CIENTITYDELETE("cientitydelete", new I18n("common.deleteconfigurationitem"), new I18n("enum.cmdb.cmdbnotifytriggertype.cientitydelete.b")),
+    CIENTITYINSERT("cientityinsert", new I18n("common.addcientity"), new I18n("enum.cmdb.cmdbnotifytriggertype.cientityinsert.b"));
 
     private final String trigger;
     private final I18n text;

@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public enum JobSource implements IAutoexecJobSource {
-    DISCOVERY("enum.cmdb.jobsource.discovery", "discovery");
+    DISCOVERY("common.automaticdiscovery", "discovery");
     private final String text;
     private final String value;
 

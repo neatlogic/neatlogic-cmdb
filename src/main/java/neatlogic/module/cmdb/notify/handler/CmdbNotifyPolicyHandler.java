@@ -34,7 +34,7 @@ import java.util.List;
 public class CmdbNotifyPolicyHandler extends NotifyPolicyHandlerBase {
     @Override
     public String getName() {
-        return "handler.notify.cmdb.ci";
+        return "common.ci";
     }
 
     /**
