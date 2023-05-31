@@ -21,11 +21,11 @@ import neatlogic.framework.util.I18n;
 
 public enum CmdbNotifyTriggerType implements INotifyTriggerType {
 
-    CIMODITY("cimodity", new I18n("enum.cmdb.cmdbnotifytriggertype.cimodity"), new I18n("enum.cmdb.cmdbnotifytriggertype.cimodity.1")),
-    CIDELETE("cidelete", new I18n("enum.cmdb.cmdbnotifytriggertype.cidelete"), new I18n("enum.cmdb.cmdbnotifytriggertype.cidelete.1")),
-    CIENTITYMODITY("cientitymodify", new I18n("enum.cmdb.cmdbnotifytriggertype.cientitymodity"), new I18n("enum.cmdb.cmdbnotifytriggertype.cientitymodity.1")),
-    CIENTITYDELETE("cientitydelete", new I18n("enum.cmdb.cmdbnotifytriggertype.cientitydelete"), new I18n("enum.cmdb.cmdbnotifytriggertype.cientitydelete.1")),
-    CIENTITYINSERT("cientityinsert", new I18n("enum.cmdb.cmdbnotifytriggertype.cientityinsert"), new I18n("enum.cmdb.cmdbnotifytriggertype.cientityinsert.1"));
+    CIMODITY("cimodity", new I18n("enum.cmdb.cmdbnotifytriggertype.cimodity.a"), new I18n("enum.cmdb.cmdbnotifytriggertype.cimodity.b")),
+    CIDELETE("cidelete", new I18n("enum.cmdb.cmdbnotifytriggertype.cidelete.a"), new I18n("enum.cmdb.cmdbnotifytriggertype.cidelete.b")),
+    CIENTITYMODITY("cientitymodify", new I18n("enum.cmdb.cmdbnotifytriggertype.cientitymodity.a"), new I18n("enum.cmdb.cmdbnotifytriggertype.cientitymodity.b")),
+    CIENTITYDELETE("cientitydelete", new I18n("enum.cmdb.cmdbnotifytriggertype.cientitydelete.a"), new I18n("enum.cmdb.cmdbnotifytriggertype.cientitydelete.b")),
+    CIENTITYINSERT("cientityinsert", new I18n("enum.cmdb.cmdbnotifytriggertype.cientityinsert.a"), new I18n("enum.cmdb.cmdbnotifytriggertype.cientityinsert.b"));
 
     private final String trigger;
     private final I18n text;
