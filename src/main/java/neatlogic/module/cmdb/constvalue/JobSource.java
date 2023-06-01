@@ -16,15 +16,11 @@
 
 package neatlogic.module.cmdb.constvalue;
 
-import neatlogic.framework.autoexec.dto.AutoexecJobSourceVo;
 import neatlogic.framework.autoexec.source.IAutoexecJobSource;
 import neatlogic.framework.util.I18nUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public enum JobSource implements IAutoexecJobSource {
-    DISCOVERY("common.automaticdiscovery", "discovery");
+    DISCOVERY("自动发现", "discovery");
     private final String text;
     private final String value;
 

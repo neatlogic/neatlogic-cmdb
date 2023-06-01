@@ -21,11 +21,11 @@ import neatlogic.framework.util.I18n;
 
 public enum CmdbNotifyTriggerType implements INotifyTriggerType {
 
-    CIMODITY("cimodity", new I18n("enum.cmdb.cmdbnotifytriggertype.cimodity.a"), new I18n("enum.cmdb.cmdbnotifytriggertype.cimodity.b")),
-    CIDELETE("cidelete", new I18n("enum.cmdb.cmdbnotifytriggertype.cidelete.a"), new I18n("enum.cmdb.cmdbnotifytriggertype.cidelete.b")),
-    CIENTITYMODITY("cientitymodify", new I18n("enum.cmdb.cmdbnotifytriggertype.cientitymodity.a"), new I18n("enum.cmdb.cmdbnotifytriggertype.cientitymodity.b")),
-    CIENTITYDELETE("cientitydelete", new I18n("common.deleteconfigurationitem"), new I18n("enum.cmdb.cmdbnotifytriggertype.cientitydelete.b")),
-    CIENTITYINSERT("cientityinsert", new I18n("common.addcientity"), new I18n("enum.cmdb.cmdbnotifytriggertype.cientityinsert.b"));
+    CIMODITY("cimodity", new I18n("模型修改"), new I18n("模型基础配置、属性、关系和授权相关发生变化时触发通知")),
+    CIDELETE("cidelete", new I18n("模型删除"), new I18n("模型被删除时触发通知")),
+    CIENTITYMODITY("cientitymodify", new I18n("配置项修改"), new I18n("配置项发生变化并且生效时触发通知")),
+    CIENTITYDELETE("cientitydelete", new I18n("配置项删除"), new I18n("配置项删除并生效时触发通知")),
+    CIENTITYINSERT("cientityinsert", new I18n("配置项添加"), new I18n("配置项添加并且生效时触发通知"));
 
     private final String trigger;
     private final I18n text;

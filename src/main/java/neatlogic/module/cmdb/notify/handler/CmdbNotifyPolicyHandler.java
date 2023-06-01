@@ -24,7 +24,6 @@ import neatlogic.framework.notify.core.NotifyHandlerType;
 import neatlogic.framework.notify.core.NotifyPolicyHandlerBase;
 import neatlogic.framework.notify.dto.NotifyTriggerTemplateVo;
 import neatlogic.framework.notify.dto.NotifyTriggerVo;
-import neatlogic.framework.util.I18nUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -34,7 +33,7 @@ import java.util.List;
 public class CmdbNotifyPolicyHandler extends NotifyPolicyHandlerBase {
     @Override
     public String getName() {
-        return "common.ci";
+        return "模型";
     }
 
     /**

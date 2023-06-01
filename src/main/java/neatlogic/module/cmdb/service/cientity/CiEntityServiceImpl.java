@@ -808,7 +808,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                                     valueObj.put("ciEntityName", cientity.getName());
                                 } else {
                                     //relEntityData.getJSONArray("valueList").remove(i);
-                                    valueObj.put("ciEntityName", I18nUtils.getMessage("term.cmdb.newcientity"));
+                                    valueObj.put("ciEntityName", I18nUtils.getMessage("新配置项"));
                                 }
                             }
                         }

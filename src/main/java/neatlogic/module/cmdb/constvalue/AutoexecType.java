@@ -6,7 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.util.I18nUtils;
 
 public enum AutoexecType implements IAutoexecType {
-    CMDB(2L,"CMDB", "common.automaticcollection")
+    CMDB(2L,"CMDB", "自动采集")
     ;
 
     private final Long id;

@@ -20,7 +20,7 @@ import neatlogic.framework.process.stephandler.core.IProcessStepHandlerType;
 import neatlogic.framework.util.I18n;
 
 public enum CmdbProcessStepHandlerType implements IProcessStepHandlerType {
-    CIENTITYSYNC("cientitysync", "process", new I18n("enum.cmdb.cmdbprocessstephandlertype.cientitysync"));
+    CIENTITYSYNC("cientitysync", "process", new I18n("配置项同步"));
 
     private final String handler;
     private final I18n name;
