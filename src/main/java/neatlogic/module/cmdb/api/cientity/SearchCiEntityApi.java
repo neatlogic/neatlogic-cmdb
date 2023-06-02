@@ -70,7 +70,6 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
     private final String IP_OBJECT = "IPObject";
     private final String PARENT = "parent";
     private final String CHILD = "child";
-    private final String BROTHER = "brother";
     @Resource
     private CiEntityService ciEntityService;
 
@@ -344,8 +343,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
                             // 判断当前页的配置项模型与IP软硬件配置项模型之间的关系
                             // 1.当前页的配置项模型是IP软硬件配置项模型的祖先，这种情况需要进一步逐行判断那行数据对应的配置项模型是不是IP软硬件模型或其后代模型，如果是，则显示“帐号管理”按钮，否则不显示“帐号管理”按钮
                             // 2.当前页的配置项模型是IP软硬件配置项模型的后代，这种情况所有行数据都显示“帐号管理”按钮
-                            // 3.当前页的配置项模型是IP软硬件配置项模型的兄弟，这种情况所有行数据都不显示“帐号管理”按钮
-                            // 4.左右编码信息不全，无法判断，这种情况所有行数据都不显示“帐号管理”按钮
+                            // 3.其他情况所有行数据都不显示“帐号管理”按钮
                             String result = judgmentRelation(ipObjectCiVo, ciVo);
                             Map<Long, Long> ciEntityIdToCiIdMap = ciEntityList.stream().collect(Collectors.toMap(CiEntityVo::getId, CiEntityVo::getCiId));
                             if (Objects.equals(result, PARENT)) {
@@ -363,10 +361,6 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
                                 }
                             } else if (Objects.equals(result, CHILD)) {
                                 canAccountManagementIdList.addAll(ciEntityIdToCiIdMap.keySet());
-                            } else if (Objects.equals(result, BROTHER)) {
-
-                            } else {
-
                             }
                         }
                     }
@@ -458,13 +452,9 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
                 return CHILD;
             } else if (ipObjectCiVo.getLft() >= ciVo.getLft() && ipObjectCiVo.getRht() <= ciVo.getRht()) {
                 return PARENT;
-            } else {
-                return BROTHER;
             }
-        } else {
-            // 左右编码没有数据，无法判断父子兄弟关系
-            return null;
         }
+        return null;
     }
 
     private String makeupStatus(String status) {
