@@ -364,6 +364,8 @@
         `label`,
         `description`,
         `icon`,
+        `lft`,
+        `rht`,
         `type_id` AS typeId,
         `is_private` AS isPrivate,
         `is_menu` AS isMenu,
