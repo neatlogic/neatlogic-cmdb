@@ -17,8 +17,10 @@
 package neatlogic.module.cmdb.api.cientity;
 
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.auth.core.AuthActionChecker;
 import neatlogic.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
 import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
+import neatlogic.framework.cmdb.auth.label.RESOURCECENTER_ACCOUNT_MODIFY;
 import neatlogic.framework.cmdb.crossover.ISearchCiEntityApiCrossoverService;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiViewVo;
@@ -65,6 +67,9 @@ import java.util.stream.Collectors;
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearchCiEntityApiCrossoverService {//FIXME 内部暂时使用Crossover的方式调用该接口
 
+    private final String IP_OBJECT = "IPObject";
+    private final String PARENT = "parent";
+    private final String CHILD = "child";
     @Resource
     private CiEntityService ciEntityService;
 
@@ -312,7 +317,8 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
             }
             JSONArray tbodyList = new JSONArray();
             if (CollectionUtils.isNotEmpty(ciEntityList)) {
-                boolean canEdit = false, canDelete = false, canViewPassword = false, canTransaction = false;
+                boolean canEdit = false, canDelete = false, canViewPassword = false, canTransaction = false, hasResourcecenterAccountModify = false;
+                List<Long> canAccountManagementIdList = new ArrayList<>();
                 List<Long> hasMaintainCiEntityIdList = new ArrayList<>();
                 List<Long> hasReadCiEntityIdList = new ArrayList<>();
                 if (ciEntityObjList == null && needAction && ciVo.getIsVirtual().equals(0) /*&& ciVo.getIsAbstract().equals(0)*/) {
@@ -325,6 +331,37 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
                         if (CollectionUtils.isNotEmpty(ciEntityVo.getGroupIdList())) {
                             hasMaintainCiEntityIdList = CiAuthChecker.isCiEntityInGroup(ciEntityList.stream().map(CiEntityVo::getId).collect(Collectors.toList()), GroupType.MAINTAIN);
                             hasReadCiEntityIdList = CiAuthChecker.isCiEntityInGroup(ciEntityList.stream().map(CiEntityVo::getId).collect(Collectors.toList()), GroupType.READONLY);
+                        }
+                    }
+                    // 前端页面显示“帐号管理”按钮的条件是当前用户有“资源中心-账号管理权限”，且那行数据对应的配置项模型是IP软硬件模型或其后代模型
+                    // 判断当前用户是否有“资源中心-账号管理权限”
+                    hasResourcecenterAccountModify = AuthActionChecker.check(RESOURCECENTER_ACCOUNT_MODIFY.class);
+                    if (hasResourcecenterAccountModify) {
+                        // 获取IP软硬件配置项模型信息，如果找不到IP软硬件配置项模型信息，则所有行数据都不显示“帐号管理”按钮
+                        CiVo ipObjectCiVo = ciMapper.getCiByName(IP_OBJECT);
+                        if (ipObjectCiVo != null) {
+                            // 判断当前页的配置项模型与IP软硬件配置项模型之间的关系
+                            // 1.当前页的配置项模型是IP软硬件配置项模型的祖先，这种情况需要进一步逐行判断那行数据对应的配置项模型是不是IP软硬件模型或其后代模型，如果是，则显示“帐号管理”按钮，否则不显示“帐号管理”按钮
+                            // 2.当前页的配置项模型是IP软硬件配置项模型的后代，这种情况所有行数据都显示“帐号管理”按钮
+                            // 3.其他情况所有行数据都不显示“帐号管理”按钮
+                            String result = judgmentRelation(ipObjectCiVo, ciVo);
+                            Map<Long, Long> ciEntityIdToCiIdMap = ciEntityList.stream().collect(Collectors.toMap(CiEntityVo::getId, CiEntityVo::getCiId));
+                            if (Objects.equals(result, PARENT)) {
+                                List<CiVo> rowCiVoList = ciMapper.getCiByIdList(new ArrayList<>(ciEntityIdToCiIdMap.values()));
+                                Map<Long, CiVo> rowCiVoMap = rowCiVoList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
+                                for (Map.Entry<Long, Long> entry : ciEntityIdToCiIdMap.entrySet()) {
+                                    CiVo rowCiVo = rowCiVoMap.get(entry.getValue());
+                                    if (rowCiVo == null) {
+                                        continue;
+                                    }
+                                    String rowResult = judgmentRelation(ipObjectCiVo, rowCiVo);
+                                    if (Objects.equals(rowResult, CHILD)) {
+                                        canAccountManagementIdList.add(entry.getKey());
+                                    }
+                                }
+                            } else if (Objects.equals(result, CHILD)) {
+                                canAccountManagementIdList.addAll(ciEntityIdToCiIdMap.keySet());
+                            }
                         }
                     }
                 }
@@ -358,6 +395,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
                         actionData.put(CiAuthType.CIENTITYDELETE.getValue(), canDelete || hasMaintainCiEntityIdList.contains(entity.getId()));
                         actionData.put(CiAuthType.PASSWORDVIEW.getValue(), canViewPassword || hasMaintainCiEntityIdList.contains(entity.getId()) || hasReadCiEntityIdList.contains(entity.getId()));
                         actionData.put(CiAuthType.TRANSACTIONMANAGE.getValue(), canTransaction || hasMaintainCiEntityIdList.contains(entity.getId()));
+                        actionData.put(CiAuthType.ACCOUNTMANAGEMENT.getValue(), hasResourcecenterAccountModify && canAccountManagementIdList.contains(entity.getId()));
                         entityObj.put("authData", actionData);
                     } else if (ciEntityObjList != null && needAction) {
                         JSONObject actionData = new JSONObject();
@@ -400,6 +438,23 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
             returnObj.put("sortList", sortList);
         }
         return returnObj;
+    }
+
+    /**
+     * 判断配置项之间的父子兄弟关系
+     * @param ipObjectCiVo IP软硬件配置项信息
+     * @param ciVo 其他配置项信息
+     * @return 返回结果
+     */
+    private String judgmentRelation(CiVo ipObjectCiVo, CiVo ciVo) {
+        if (ipObjectCiVo.getLft() != null && ipObjectCiVo.getRht() != null && ciVo.getLft() != null && ciVo.getRht() != null) {
+            if (ipObjectCiVo.getLft() <= ciVo.getLft() && ipObjectCiVo.getRht() >= ciVo.getRht()) {
+                return CHILD;
+            } else if (ipObjectCiVo.getLft() >= ciVo.getLft() && ipObjectCiVo.getRht() <= ciVo.getRht()) {
+                return PARENT;
+            }
+        }
+        return null;
     }
 
     private String makeupStatus(String status) {
