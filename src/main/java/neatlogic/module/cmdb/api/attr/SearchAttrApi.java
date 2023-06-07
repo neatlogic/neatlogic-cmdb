@@ -43,7 +43,7 @@ public class SearchAttrApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询属性";
+        return "nmcaa.searchattrapi.getname";
     }
 
     @Override
@@ -51,10 +51,10 @@ public class SearchAttrApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字"),
-            @Param(name = "validatorId", type = ApiParamType.LONG, desc = "验证规则id")})
+    @Input({@Param(name = "keyword", type = ApiParamType.STRING, desc = "common.keyword"),
+            @Param(name = "validatorId", type = ApiParamType.LONG, desc = "term.cmdb.validatorid")})
     @Output({@Param(explode = AttrVo[].class)})
-    @Description(desc = "查询属性接口")
+    @Description(desc = "nmcaa.searchattrapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         AttrVo attrVo = JSONObject.toJavaObject(jsonObj, AttrVo.class);

@@ -55,7 +55,7 @@ public class DeleteAttrApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "删除模型属性";
+        return "nmcaa.deleteattrapi.getname";
     }
 
     @Override
@@ -64,7 +64,7 @@ public class DeleteAttrApi extends PrivateApiComponentBase {
     }
 
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "id", isRequired = true)})
-    @Description(desc = "删除模型属性接口")
+    @Description(desc = "nmcaa.deleteattrapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long attrId = jsonObj.getLong("id");

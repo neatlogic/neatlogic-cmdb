@@ -43,7 +43,7 @@ public class GetAttrApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取属性详细信息";
+        return "nmcaa.getattrapi.getname";
     }
 
     @Override
@@ -51,9 +51,9 @@ public class GetAttrApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "属性id")})
+    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "nmcaa.getattrapi.input.param.desc.id")})
     @Output({@Param(explode = AttrVo.class)})
-    @Description(desc = "获取属性详细信息接口")
+    @Description(desc = "nmcaa.getattrapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         return attrMapper.getAttrById(jsonObj.getLong("id"));

@@ -34,7 +34,7 @@ import org.springframework.stereotype.Service;
 public class ListAttrTypeApi extends PrivateApiComponentBase {
     @Override
     public String getName() {
-        return "获取属性类型";
+        return "nmcaa.listattrtypeapi.getname";
     }
 
     @Override

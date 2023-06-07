@@ -55,7 +55,7 @@ public class SaveAttrApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存模型属性";
+        return "nmcaa.saveattrapi.getname";
     }
 
     @Override
@@ -63,24 +63,24 @@ public class SaveAttrApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "id，不提供代表添加"),
-            @Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
-            @Param(name = "type", type = ApiParamType.STRING, isRequired = true, desc = "属性类型"),
-            @Param(name = "targetCiId", type = ApiParamType.LONG, desc = "目标模型id"),
-            @Param(name = "config", type = ApiParamType.JSONOBJECT, desc = "属性配置"),
+    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "term.cmdb.addid"),
+            @Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid"),
+            @Param(name = "type", type = ApiParamType.STRING, isRequired = true, desc = "term.cmdb.attrtype"),
+            @Param(name = "targetCiId", type = ApiParamType.LONG, desc = "term.cmdb.targetciid"),
+            @Param(name = "config", type = ApiParamType.JSONOBJECT, desc = "term.cmdb.attrconfig"),
             //name不能大于25个字符，因为mysql表名最长64字符，需要给模型名留下位置
-            @Param(name = "name", type = ApiParamType.STRING, xss = true, isRequired = true, maxLength = 25, desc = "英文名称"),
-            @Param(name = "label", type = ApiParamType.STRING, desc = "中文名称", xss = true, maxLength = 100,
+            @Param(name = "name", type = ApiParamType.STRING, xss = true, isRequired = true, maxLength = 25, desc = "common.uniquename"),
+            @Param(name = "label", type = ApiParamType.STRING, desc = "common.cnname", xss = true, maxLength = 100,
                     isRequired = true),
-            @Param(name = "description", type = ApiParamType.STRING, desc = "备注", maxLength = 500, xss = true),
-            @Param(name = "validator", type = ApiParamType.STRING, desc = "校验组件"),
-            @Param(name = "validConfig", type = ApiParamType.JSONOBJECT, desc = "校验设置"),
-            @Param(name = "isRequired", type = ApiParamType.INTEGER, desc = "是否必填"),
-            @Param(name = "isUnique", type = ApiParamType.INTEGER, desc = "是否唯一"),
-            @Param(name = "inputType", type = ApiParamType.ENUM, rule = "at,mt", desc = "输入类型，人工录入|自动发现"),
-            @Param(name = "groupName", type = ApiParamType.STRING, desc = "分组")})
-    @Output({@Param(name = "id", type = ApiParamType.LONG, desc = "属性id"),})
-    @Description(desc = "保存模型属性接口")
+            @Param(name = "description", type = ApiParamType.STRING, desc = "common.memo", maxLength = 500, xss = true),
+            @Param(name = "validator", type = ApiParamType.STRING, desc = "term.cmdb.validatehandler"),
+            @Param(name = "validConfig", type = ApiParamType.JSONOBJECT, desc = "term.cmdb.validateconfig"),
+            @Param(name = "isRequired", type = ApiParamType.INTEGER, desc = "common.isrequired"),
+            @Param(name = "isUnique", type = ApiParamType.INTEGER, desc = "common.isunique"),
+            @Param(name = "inputType", type = ApiParamType.ENUM, rule = "at,mt", desc = "nmcaa.saveattrapi.input.param.desc.inputtype"),
+            @Param(name = "groupName", type = ApiParamType.STRING, desc = "common.group")})
+    @Output({@Param(name = "id", type = ApiParamType.LONG, desc = "nmcaa.getattrapi.input.param.desc.id"),})
+    @Description(desc = "nmcaa.saveattrapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         AttrVo attrVo = JSONObject.toJavaObject(jsonObj, AttrVo.class);
