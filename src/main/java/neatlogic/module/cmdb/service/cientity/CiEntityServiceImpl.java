@@ -16,6 +16,9 @@
 
 package neatlogic.module.cmdb.service.cientity;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.InputFromContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
@@ -45,7 +48,7 @@ import neatlogic.framework.fulltextindex.core.IFullTextIndexHandler;
 import neatlogic.framework.mq.core.ITopic;
 import neatlogic.framework.mq.core.TopicFactory;
 import neatlogic.framework.transaction.core.AfterTransactionJob;
-import neatlogic.framework.util.I18nUtils;
+import neatlogic.framework.util.$;
 import neatlogic.module.cmdb.attrexpression.AttrExpressionRebuildManager;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
@@ -59,9 +62,6 @@ import neatlogic.module.cmdb.group.CiEntityGroupManager;
 import neatlogic.module.cmdb.relativerel.RelativeRelManager;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
 import neatlogic.module.cmdb.utils.CiEntityBuilder;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -808,7 +808,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                                     valueObj.put("ciEntityName", cientity.getName());
                                 } else {
                                     //relEntityData.getJSONArray("valueList").remove(i);
-                                    valueObj.put("ciEntityName", I18nUtils.getMessage("新配置项"));
+                                    valueObj.put("ciEntityName", $.t("新配置项"));
                                 }
                             }
                         }

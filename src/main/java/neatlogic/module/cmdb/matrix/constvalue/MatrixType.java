@@ -17,7 +17,7 @@
 package neatlogic.module.cmdb.matrix.constvalue;
 
 import neatlogic.framework.matrix.core.IMatrixType;
-import neatlogic.framework.util.I18nUtils;
+import neatlogic.framework.util.$;
 
 /**
  * @author linbq
@@ -45,7 +45,7 @@ public enum MatrixType implements IMatrixType {
 
     @Override
     public String getName() {
-        return I18nUtils.getMessage(name);
+        return $.t(name);
     }
 
     @Override

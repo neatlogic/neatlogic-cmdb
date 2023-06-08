@@ -1,9 +1,9 @@
 package neatlogic.module.cmdb.constvalue;
 
-import neatlogic.framework.autoexec.type.IAutoexecType;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import neatlogic.framework.util.I18nUtils;
+import neatlogic.framework.autoexec.type.IAutoexecType;
+import neatlogic.framework.util.$;
 
 public enum AutoexecType implements IAutoexecType {
     CMDB(2L,"CMDB", "自动采集")
@@ -28,7 +28,7 @@ public enum AutoexecType implements IAutoexecType {
     }
 
     public String getText() {
-        return I18nUtils.getMessage(text);
+        return $.t(text);
     }
 
     @Override

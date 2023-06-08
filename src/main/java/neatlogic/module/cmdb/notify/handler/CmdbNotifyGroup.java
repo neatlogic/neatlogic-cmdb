@@ -17,7 +17,7 @@
 package neatlogic.module.cmdb.notify.handler;
 
 import neatlogic.framework.notify.core.INotifyPolicyHandlerGroup;
-import neatlogic.framework.util.I18nUtils;
+import neatlogic.framework.util.$;
 
 public enum CmdbNotifyGroup implements INotifyPolicyHandlerGroup {
     CMDB("cmdb", "配置管理");
@@ -36,6 +36,6 @@ public enum CmdbNotifyGroup implements INotifyPolicyHandlerGroup {
 
     @Override
     public String getText() {
-        return I18nUtils.getMessage(text);
+        return $.t(text);
     }
 }

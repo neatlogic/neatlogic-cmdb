@@ -17,7 +17,7 @@
 package neatlogic.module.cmdb.constvalue;
 
 import neatlogic.framework.autoexec.source.IAutoexecJobSource;
-import neatlogic.framework.util.I18nUtils;
+import neatlogic.framework.util.$;
 
 public enum JobSource implements IAutoexecJobSource {
     DISCOVERY("自动发现", "discovery");
@@ -34,7 +34,7 @@ public enum JobSource implements IAutoexecJobSource {
     }
 
     public String getText() {
-        return I18nUtils.getMessage(text);
+        return $.t(text);
     }
 
     public static String getText(String _status) {

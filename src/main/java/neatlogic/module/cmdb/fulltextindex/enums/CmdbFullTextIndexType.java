@@ -17,7 +17,7 @@
 package neatlogic.module.cmdb.fulltextindex.enums;
 
 import neatlogic.framework.fulltextindex.core.IFullTextIndexType;
-import neatlogic.framework.util.I18nUtils;
+import neatlogic.framework.util.$;
 
 public enum CmdbFullTextIndexType implements IFullTextIndexType {
     CIENTITY("cientity", "配置项");
@@ -37,7 +37,7 @@ public enum CmdbFullTextIndexType implements IFullTextIndexType {
 
     @Override
     public String getTypeName() {
-        return I18nUtils.getMessage(typeName);
+        return $.t(typeName);
     }
 
     @Override
