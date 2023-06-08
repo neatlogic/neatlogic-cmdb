@@ -16,9 +16,11 @@
 
 package neatlogic.module.cmdb.api.batchimport;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.CIENTITY_BATCH_IMPORT;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.exception.file.FileAccessDeniedException;
 import neatlogic.framework.exception.file.FileNotFoundException;
@@ -35,18 +37,17 @@ import neatlogic.framework.restful.annotation.OperationType;
 import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.CIENTITY_BATCH_IMPORT;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 
 @AuthAction(action = CIENTITY_BATCH_IMPORT.class)
 @Service
 @OperationType(type = OperationTypeEnum.DELETE)
 public class DeleteBatchImportFileApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private FileMapper fileMapper;
 
     @Override
@@ -56,7 +57,7 @@ public class DeleteBatchImportFileApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "删除批量导入文件";
+        return "nmcab.deletebatchimportfileapi.getname";
     }
 
     @Override
@@ -65,9 +66,9 @@ public class DeleteBatchImportFileApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "fileId", type = ApiParamType.LONG, isRequired = true, desc = "文件ID")
+            @Param(name = "fileId", type = ApiParamType.LONG, isRequired = true, desc = "common.fileid")
     })
-    @Description(desc = "删除批量导入文件")
+    @Description(desc = "nmcab.deletebatchimportfileapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long fileId = paramObj.getLong("fileId");

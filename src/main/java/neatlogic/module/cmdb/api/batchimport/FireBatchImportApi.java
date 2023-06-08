@@ -16,9 +16,11 @@
 
 package neatlogic.module.cmdb.api.batchimport;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.asynchronization.threadpool.CachedThreadPool;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.CIENTITY_BATCH_IMPORT;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.exception.file.ExcelFormatIllegalException;
 import neatlogic.framework.exception.file.ExcelNameIllegalException;
@@ -27,15 +29,13 @@ import neatlogic.framework.file.dto.FileVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.CIENTITY_BATCH_IMPORT;
 import neatlogic.module.cmdb.dao.mapper.batchimport.ImportMapper;
 import neatlogic.module.cmdb.plugin.BatchImportHandler;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 @AuthAction(action = CIENTITY_BATCH_IMPORT.class)
@@ -44,7 +44,7 @@ import java.util.List;
 @Transactional
 public class FireBatchImportApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private ImportMapper importMapper;
 
 
@@ -55,7 +55,7 @@ public class FireBatchImportApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "发起批量导入";
+        return "nmcab.firebatchimportapi.getname";
     }
 
     @Override
@@ -64,11 +64,11 @@ public class FireBatchImportApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "action", type = ApiParamType.ENUM, rule = "append,update,all", isRequired = true, desc = "append:只添加;update:只更新;all:添加&更新"),
-            @Param(name = "editMode", type = ApiParamType.ENUM, rule = "global,partial", isRequired = true, desc = "编辑模式")
+            @Param(name = "action", type = ApiParamType.ENUM, rule = "append,update,all", isRequired = true, desc = "nmcab.firebatchimportapi.input.param.desc.action"),
+            @Param(name = "editMode", type = ApiParamType.ENUM, rule = "global,partial", isRequired = true, desc = "common.editmode")
     })
     @Output({})
-    @Description(desc = "发起批量导入")
+    @Description(desc = "nmcab.firebatchimportapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         String userUuid = UserContext.get().getUserUuid();

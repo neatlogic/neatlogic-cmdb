@@ -16,16 +16,16 @@
 
 package neatlogic.module.cmdb.api.batchimport;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.batchimport.ImportAuditVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.module.cmdb.dao.mapper.batchimport.ImportMapper;
-import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -46,7 +46,7 @@ public class SearchBatchImportAuditApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询批量导入日志";
+        return "nmcab.searchbatchimportauditapi.getname";
     }
 
     @Override
@@ -57,22 +57,22 @@ public class SearchBatchImportAuditApi extends PrivateApiComponentBase {
     @Input({
             @Param(name = "currentPage",
                     type = ApiParamType.INTEGER,
-                    desc = "当前页"),
+                    desc = "common.currentpage"),
             @Param(name = "pageSize",
                     type = ApiParamType.INTEGER,
-                    desc = "每页数据条目"),
+                    desc = "common.pagesize"),
             @Param(name = "needPage",
                     type = ApiParamType.BOOLEAN,
-                    desc = "是否需要分页，默认true")
+                    desc = "ocommn.isneedpage")
     })
     @Output({
             @Param(name = "tbodyList",
                     type = ApiParamType.JSONARRAY,
                     explode = ImportAuditVo[].class,
-                    desc = "日志列表"),
+                    desc = "common.loglist"),
             @Param(explode = BasePageVo.class)
     })
-    @Description(desc = "查询批量导入日志")
+    @Description(desc = "nmcab.searchbatchimportauditapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONObject returnObj = new JSONObject();

@@ -70,7 +70,7 @@ public class UploadBatchImportFileApi extends PrivateBinaryStreamApiComponentBas
 
     @Override
     public String getName() {
-        return "上传批量导入文件";
+        return "nmcab.uploadbatchimportfileapi.getname";
     }
 
     @Override
@@ -79,11 +79,11 @@ public class UploadBatchImportFileApi extends PrivateBinaryStreamApiComponentBas
     }
 
     @Input({
-            @Param(name = "param", type = ApiParamType.STRING, desc = "附件参数名称", isRequired = true),
-            @Param(name = "type", type = ApiParamType.STRING, desc = "附件类型", isRequired = true)
+            @Param(name = "param", type = ApiParamType.STRING, desc = "common.fileparamname", isRequired = true),
+            @Param(name = "type", type = ApiParamType.STRING, desc = "common.filetype", isRequired = true)
     })
     @Output({@Param(explode = FileVo.class)})
-    @Description(desc = "上传批量导入文件")
+    @Description(desc = "nmcab.uploadbatchimportfileapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
         String tenantUuid = TenantContext.get().getTenantUuid();

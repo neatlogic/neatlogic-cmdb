@@ -31,6 +31,7 @@ import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
+import neatlogic.framework.util.$;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.service.ci.CiService;
@@ -79,7 +80,7 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
 
     @Override
     public String getName() {
-        return "下载配置项导入模板";
+        return "nmcab.getimporttemplateapi.getname";
     }
 
     @Override
@@ -88,12 +89,12 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
     }
 
     @Input({
-            @Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
-            @Param(name = "attrIdList", type = ApiParamType.JSONARRAY, desc = "模型属性ID列表"),
-            @Param(name = "relIdList", type = ApiParamType.JSONARRAY, desc = "模型关系ID列表"),
+            @Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid"),
+            @Param(name = "attrIdList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.attridlist"),
+            @Param(name = "relIdList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.relidlist"),
     })
     @Output({})
-    @Description(desc = "下载配置项导入模板")
+    @Description(desc = "nmcab.getimporttemplateapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
         HSSFWorkbook wb = null;
@@ -175,13 +176,13 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
                         Integer isUnique = attr.getIsUnique();
                         StringBuilder ciTypeAttrNameDesc = new StringBuilder();
                         if (isUnique.equals(1)) {
-                            ciTypeAttrNameDesc.append("唯一");
+                            ciTypeAttrNameDesc.append($.t("common.unique"));
                         }
                         if (isRequired.equals(1)) {
                             if (ciTypeAttrNameDesc.length() > 0) {
                                 ciTypeAttrNameDesc.append("|");
                             }
-                            ciTypeAttrNameDesc.append("必填");
+                            ciTypeAttrNameDesc.append($.t("common.mustinput"));
                         }
 
                         if (ciTypeAttrNameDesc.length() > 0) {
@@ -197,7 +198,7 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
                                 if (CollectionUtils.isNotEmpty(list)) {
                                     List<String> collect = list.stream().map(CiEntityVo::getName).collect(Collectors.toList());
                                     if (ciEntityCount > validationOptionSize) {
-                                        collect.add("选项过多，其余选项不予展示");
+                                        collect.add("common.toomanyoption");
                                     }
                                     String[] array = new String[collect.size()];
                                     collect.toArray(array);
@@ -229,7 +230,7 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
                                 || (CollectionUtils.isNotEmpty(upwardCiIdList) && upwardCiIdList.contains(rel.getFromCiId()))) { //当前CI处于from
                             String label = rel.getToLabel();
                             if (rel.getToIsRequired().equals(1)) {
-                                label = label + "[(必填)]";
+                                label = label + "[(" + $.t("common.mustinput") + ")]";
                             }
                             HSSFCell cell = row.createCell(i);
                             cell.setCellStyle(style);
@@ -239,7 +240,7 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
                                 || (CollectionUtils.isNotEmpty(upwardCiIdList) && upwardCiIdList.contains(rel.getToCiId()))) {//当前CI处于to
                             String label = rel.getFromLabel();
                             if (rel.getFromIsRequired().equals(1)) {
-                                label = label + "[(必填)]";
+                                label = label + "[(" + $.t("common.mustinput") + ")]";
                             }
                             HSSFCell cell = row.createCell(i);
                             cell.setCellStyle(style);

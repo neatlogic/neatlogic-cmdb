@@ -16,24 +16,25 @@
 
 package neatlogic.module.cmdb.api.batchimport;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.batchimport.ImportAuditVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.module.cmdb.dao.mapper.batchimport.ImportMapper;
-import com.alibaba.fastjson.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class GetBatchImportAuditApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private ImportMapper importMapper;
 
     @Override
@@ -43,7 +44,7 @@ public class GetBatchImportAuditApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取单个配置项导入日志";
+        return "nmcab.getbatchimportauditapi.getname";
     }
 
     @Override
@@ -53,7 +54,7 @@ public class GetBatchImportAuditApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "id", isRequired = true)})
     @Output({@Param(explode = ImportAuditVo.class)})
-    @Description(desc = "获取单个配置项导入日志接口")
+    @Description(desc = "nmcab.getbatchimportauditapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         return importMapper.getImportAuditById(paramObj.getLong("id"));
