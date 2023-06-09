@@ -1172,7 +1172,11 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         }
         AttrFilterVo attrFilterVo = new AttrFilterVo();
         attrFilterVo.setAttrId(attrVo.getId());
-        attrFilterVo.setExpression(expression);
+        if (StringUtils.isNotBlank(expression)) {
+            attrFilterVo.setExpression(expression);
+        } else {
+            attrFilterVo.setExpression(Expression.EQUAL.getExpression());
+        }
         attrFilterVo.setValueList(valueList);
         return attrFilterVo;
     }
