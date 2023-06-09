@@ -43,7 +43,7 @@ public class GetCiAuthApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取模型授权信息";
+        return "nmcac.getciauthapi.getname";
     }
 
     @Override
@@ -51,9 +51,9 @@ public class GetCiAuthApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id")})
+    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid")})
     @Output({@Param(explode = CiVo.class)})
-    @Description(desc = "获取模型授权信息接口")
+    @Description(desc = "nmcac.getciauthapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("ciId");

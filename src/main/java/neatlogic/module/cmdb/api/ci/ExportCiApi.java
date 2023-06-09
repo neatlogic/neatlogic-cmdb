@@ -63,7 +63,7 @@ public class ExportCiApi extends PrivateBinaryStreamApiComponentBase {
 
     @Override
     public String getName() {
-        return "导出配置项模型";
+        return "nmcac.exportciapi.getname";
     }
 
     @Override
@@ -71,9 +71,9 @@ public class ExportCiApi extends PrivateBinaryStreamApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id")
+    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid")
     })
-    @Description(desc = "导出配置项模型接口")
+    @Description(desc = "nmcac.exportciapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
         CiVo ciVo = ciService.getCiById(jsonObj.getLong("ciId"));

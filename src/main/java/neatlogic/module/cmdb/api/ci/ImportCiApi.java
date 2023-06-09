@@ -76,7 +76,7 @@ public class ImportCiApi extends PrivateBinaryStreamApiComponentBase {
 
     @Override
     public String getName() {
-        return "导入配置项模型";
+        return "nmcac.importciapi.getname";
     }
 
     @Override
@@ -84,11 +84,11 @@ public class ImportCiApi extends PrivateBinaryStreamApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "name", type = ApiParamType.REGEX, rule = RegexUtils.ENGLISH_NUMBER_NAME, xss = true, isRequired = true, maxLength = 25, desc = "唯一标识"),
-            @Param(name = "label", type = ApiParamType.STRING, desc = "中文名称", xss = true, maxLength = 100, isRequired = true),
-            @Param(name = "typeId", type = ApiParamType.LONG, desc = "类型id", isRequired = true),
-            @Param(name = "icon", type = ApiParamType.STRING, isRequired = true, desc = "图标"), @Param(name = "file", type = ApiParamType.FILE, isRequired = true, desc = "模型文件")})
-    @Description(desc = "导入配置项模型接口")
+    @Input({@Param(name = "name", type = ApiParamType.REGEX, rule = RegexUtils.ENGLISH_NUMBER_NAME, xss = true, isRequired = true, maxLength = 25, desc = "common.uniquename"),
+            @Param(name = "label", type = ApiParamType.STRING, desc = "common.cnname", xss = true, maxLength = 100, isRequired = true),
+            @Param(name = "typeId", type = ApiParamType.LONG, desc = "common.typeid", isRequired = true),
+            @Param(name = "icon", type = ApiParamType.STRING, isRequired = true, desc = "common.icon"), @Param(name = "file", type = ApiParamType.FILE, isRequired = true, desc = "common.file")})
+    @Description(desc = "nmcac.importciapi.getname")
     @Transactional
     @Override
     public Object myDoService(JSONObject paramObj, HttpServletRequest request, HttpServletResponse response) throws Exception {

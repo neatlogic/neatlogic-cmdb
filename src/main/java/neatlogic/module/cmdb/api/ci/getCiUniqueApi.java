@@ -42,7 +42,7 @@ public class getCiUniqueApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "返回唯一属性id列表";
+        return "nmcac.getciuniqueapi.getname";
     }
 
     @Override
@@ -50,9 +50,9 @@ public class getCiUniqueApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciId", type = ApiParamType.LONG, desc = "模型id", isRequired = true)})
+    @Input({@Param(name = "ciId", type = ApiParamType.LONG, desc = "term.cmdb.ciid", isRequired = true)})
     @Output({@Param(explode = Long[].class)})
-    @Description(desc = "返回唯一属性id列表接口")
+    @Description(desc = "nmcac.getciuniqueapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         return ciMapper.getCiUniqueByCiId(jsonObj.getLong("ciId"));

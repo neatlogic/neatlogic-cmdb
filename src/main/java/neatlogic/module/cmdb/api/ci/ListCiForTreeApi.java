@@ -42,7 +42,7 @@ public class ListCiForTreeApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取模型树型列表";
+        return "nmcac.listcifortreeapi.getname";
     }
 
     @Override
@@ -55,9 +55,9 @@ public class ListCiForTreeApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciId", type = ApiParamType.LONG, desc = "模型id")})
+    @Input({@Param(name = "ciId", type = ApiParamType.LONG, desc = "term.cmdb.ciid")})
     @Output({@Param(explode = ValueTextVo[].class)})
-    @Description(desc = "返回模型树型列表接口")
+    @Description(desc = "nmcac.listcifortreeapi.description.desc")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("ciId");

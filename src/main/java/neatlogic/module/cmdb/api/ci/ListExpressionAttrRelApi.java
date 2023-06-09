@@ -55,7 +55,7 @@ public class ListExpressionAttrRelApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "返回模型表达式属性和关系列表";
+        return "nmcac.listexpressionattrrelapi.getname";
     }
 
     @Override
@@ -63,9 +63,9 @@ public class ListExpressionAttrRelApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciId", type = ApiParamType.LONG, desc = "模型id", isRequired = true)})
+    @Input({@Param(name = "ciId", type = ApiParamType.LONG, desc = "term.cmdb.ciid", isRequired = true)})
     @Output({@Param(explode = ValueTextVo[].class)})
-    @Description(desc = "返回模型表达式属性和关系列表接口")
+    @Description(desc = "nmcac.listexpressionattrrelapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("ciId");

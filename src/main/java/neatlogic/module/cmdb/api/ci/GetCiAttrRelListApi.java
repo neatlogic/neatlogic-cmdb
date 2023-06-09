@@ -62,7 +62,7 @@ public class GetCiAttrRelListApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取模型信息";
+        return "nmcac.getciapi.getname";
     }
 
     @Override
@@ -70,9 +70,9 @@ public class GetCiAttrRelListApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciIdList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "模型id列表")})
+    @Input({@Param(name = "ciIdList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "term.cmdb.ciidlist")})
     @Output({@Param(explode = CiVo.class)})
-    @Description(desc = "获取模型信息接口，此接口主要用在和ITSM表单联动")
+    @Description(desc = "nmcac.getciattrrellistapi.description.desc")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONArray ciIds = jsonObj.getJSONArray("ciIdList");

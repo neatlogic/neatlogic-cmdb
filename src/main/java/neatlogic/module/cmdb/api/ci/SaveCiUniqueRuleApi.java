@@ -50,7 +50,7 @@ public class SaveCiUniqueRuleApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存模型唯一规则";
+        return "nmcac.saveciuniqueruleapi.getname";
     }
 
     @Override
@@ -58,10 +58,10 @@ public class SaveCiUniqueRuleApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
+    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid"),
             @Param(name = "attrIdList", type = ApiParamType.JSONARRAY,
-                    desc = "属性id列表")})
-    @Description(desc = "保存模型唯一规则接口")
+                    desc = "nmcaa.getattrlistapi.input.param.desc.idlist")})
+    @Description(desc = "nmcac.saveciuniqueruleapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("ciId");

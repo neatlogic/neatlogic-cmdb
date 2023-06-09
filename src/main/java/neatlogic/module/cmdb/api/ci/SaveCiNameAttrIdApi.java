@@ -50,7 +50,7 @@ public class SaveCiNameAttrIdApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存模型名称属性";
+        return "nmcac.savecinameattridapi.getname";
     }
 
     @Override
@@ -58,10 +58,10 @@ public class SaveCiNameAttrIdApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciId", isRequired = true, type = ApiParamType.LONG, desc = "模型id"),
-            @Param(name = "attrId", type = ApiParamType.LONG, isRequired = true, desc = "属性id")
+    @Input({@Param(name = "ciId", isRequired = true, type = ApiParamType.LONG, desc = "term.cmdb.ciid"),
+            @Param(name = "attrId", type = ApiParamType.LONG, isRequired = true, desc = "nmcaa.getattrapi.input.param.desc.id")
     })
-    @Description(desc = "保存模型名称属性接口")
+    @Description(desc = "nmcac.savecinameattridapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("ciId");

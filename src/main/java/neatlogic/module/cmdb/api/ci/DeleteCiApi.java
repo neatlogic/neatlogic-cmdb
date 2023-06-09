@@ -52,7 +52,7 @@ public class DeleteCiApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "删除模型";
+        return "nmcac.deleteciapi.getname";
     }
 
     @Override
@@ -60,9 +60,9 @@ public class DeleteCiApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "模型id")})
+    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid")})
     @Output({@Param(explode = CiVo.class)})
-    @Description(desc = "删除模型接口")
+    @Description(desc = "nmcac.deleteciapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("id");

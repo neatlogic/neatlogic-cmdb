@@ -57,7 +57,7 @@ public class SearchCiAttrRelListApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "搜索模型属性和关系信息";
+        return "nmcac.searchciattrrellistapi.getname";
     }
 
     @Override
@@ -65,9 +65,10 @@ public class SearchCiAttrRelListApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"), @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字，只匹配属性和关系的唯一标识")})
+    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid"),
+            @Param(name = "keyword", type = ApiParamType.STRING, desc = "nmcac.searchciattrrellistapi.input.param.desc.keyword")})
     @Output({@Param(type = ApiParamType.JSONARRAY)})
-    @Description(desc = "搜索模型属性和关系信息接口，此接口主要用在DSL输入控件搜索属性和关系")
+    @Description(desc = "nmcac.searchciattrrellistapi.description.desc")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("ciId");

@@ -45,7 +45,7 @@ public class GetDownwardCiListApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取下游模型列表";
+        return "nmcac.getdownwardcilistapi.getname";
     }
 
     @Override
@@ -53,9 +53,9 @@ public class GetDownwardCiListApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "模型id")})
+    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid")})
     @Output({@Param(explode = CiVo[].class)})
-    @Description(desc = "获取下游模型列表接口")
+    @Description(desc = "nmcac.getdownwardcilistapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("id");

@@ -59,7 +59,7 @@ public class SaveCiApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存模型";
+        return "nmcac.saveciapi.getname";
     }
 
     @Override
@@ -67,22 +67,22 @@ public class SaveCiApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "id，不提供代表新增模型"),
-            @Param(name = "name", type = ApiParamType.REGEX, rule = RegexUtils.ENGLISH_NUMBER_NAME, xss = true, isRequired = true, maxLength = 25, desc = "唯一标识"),
-            @Param(name = "label", type = ApiParamType.STRING, desc = "中文名称", xss = true, maxLength = 100,
+    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "nmcac.saveciapi.input.param.desc.id"),
+            @Param(name = "name", type = ApiParamType.REGEX, rule = RegexUtils.ENGLISH_NUMBER_NAME, xss = true, isRequired = true, maxLength = 25, desc = "common.uniquename"),
+            @Param(name = "label", type = ApiParamType.STRING, desc = "common.cnname", xss = true, maxLength = 100,
                     isRequired = true),
-            @Param(name = "description", type = ApiParamType.STRING, desc = "备注", maxLength = 500, xss = true),
-            @Param(name = "icon", type = ApiParamType.STRING, isRequired = true, desc = "图标"),
-            @Param(name = "typeId", type = ApiParamType.LONG, desc = "类型id", isRequired = true),
-            @Param(name = "parentCiId", type = ApiParamType.LONG, desc = "父配置项id"),
-            @Param(name = "fileId", type = ApiParamType.LONG, desc = "虚拟模型配置文件id"),
-            @Param(name = "expiredDay", type = ApiParamType.INTEGER, desc = "超时天数"),
-            @Param(name = "isAbstract", type = ApiParamType.INTEGER, defaultValue = "0", desc = "是否抽象模型"),
-            @Param(name = "isVirtual", type = ApiParamType.INTEGER, defaultValue = "0", desc = "是否虚拟模型"),
-            @Param(name = "isPrivate", type = ApiParamType.INTEGER, defaultValue = "0", desc = "是否私有模型"),
-            @Param(name = "isMenu", type = ApiParamType.INTEGER, defaultValue = "0", desc = "是否在菜单显示")})
-    @Output({@Param(name = "id", type = ApiParamType.STRING, desc = "模型id")})
-    @Description(desc = "保存模型接口")
+            @Param(name = "description", type = ApiParamType.STRING, desc = "common.memo", maxLength = 500, xss = true),
+            @Param(name = "icon", type = ApiParamType.STRING, isRequired = true, desc = "common.icon"),
+            @Param(name = "typeId", type = ApiParamType.LONG, desc = "common.typeid", isRequired = true),
+            @Param(name = "parentCiId", type = ApiParamType.LONG, desc = "term.cmdb.parentcientityid"),
+            @Param(name = "fileId", type = ApiParamType.LONG, desc = "term.cmdb.virtualcifileid"),
+            @Param(name = "expiredDay", type = ApiParamType.INTEGER, desc = "common.expireddays"),
+            @Param(name = "isAbstract", type = ApiParamType.INTEGER, defaultValue = "0", desc = "term.cmdb.isabstractci"),
+            @Param(name = "isVirtual", type = ApiParamType.INTEGER, defaultValue = "0", desc = "term.cmdb.isvirtualci"),
+            @Param(name = "isPrivate", type = ApiParamType.INTEGER, defaultValue = "0", desc = "term.cmdb.isprivateci"),
+            @Param(name = "isMenu", type = ApiParamType.INTEGER, defaultValue = "0", desc = "term.cmdb.isshowinmenu")})
+    @Output({@Param(name = "id", type = ApiParamType.STRING, desc = "term.cmdb.ciid")})
+    @Description(desc = "nmcac.saveciapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         CiVo ciVo = JSONObject.toJavaObject(jsonObj, CiVo.class);

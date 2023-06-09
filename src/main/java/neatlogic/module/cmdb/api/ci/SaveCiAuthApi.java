@@ -54,7 +54,7 @@ public class SaveCiAuthApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存模型授权";
+        return "nmcac.saveciauthapi.getname";
     }
 
     @Override
@@ -62,10 +62,10 @@ public class SaveCiAuthApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
+    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid"),
             @Param(name = "authList", type = ApiParamType.JSONARRAY,
-                    desc = "授权列表，为空代表清空所有授权，范例：{authType:'user',authUuid:'xxxx',action:'cimaange'}")})
-    @Description(desc = "保存模型授权接口")
+                    desc = "nmcac.saveciauthapi.input.param.desc.authlist")})
+    @Description(desc = "nmcac.saveciauthapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("ciId");

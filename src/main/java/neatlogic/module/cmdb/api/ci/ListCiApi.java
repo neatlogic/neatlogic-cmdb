@@ -49,7 +49,7 @@ public class ListCiApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "返回模型列表信息（下拉框用）";
+        return "nmcac.listciapi.getname";
     }
 
     @Override
@@ -57,9 +57,9 @@ public class ListCiApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "模型id列表")})
+    @Input({@Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.ciidlist")})
     @Output({@Param(explode = ValueTextVo[].class)})
-    @Description(desc = "返回模型列表信息接口")
+    @Description(desc = "nmcac.listciapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONArray idList = jsonObj.getJSONArray("idList");

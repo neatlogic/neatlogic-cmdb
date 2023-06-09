@@ -75,7 +75,7 @@ public class ExportCiForExcelApi extends PrivateBinaryStreamApiComponentBase {
 
     @Override
     public String getName() {
-        return "导出配置项模型及属性列表";
+        return "nmcac.exportciforexcelapi.getname";
     }
 
     @Override
@@ -83,9 +83,9 @@ public class ExportCiForExcelApi extends PrivateBinaryStreamApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "idList", type = ApiParamType.JSONARRAY, isRequired = true, minSize = 1, desc = "模型ID列表")
+    @Input({@Param(name = "idList", type = ApiParamType.JSONARRAY, isRequired = true, minSize = 1, desc = "term.cmdb.ciidlist")
     })
-    @Description(desc = "导出配置项模型及属性列表")
+    @Description(desc = "nmcac.exportciforexcelapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
         JSONArray idArray = jsonObj.getJSONArray("idList");

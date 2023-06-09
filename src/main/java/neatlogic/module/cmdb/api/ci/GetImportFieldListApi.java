@@ -52,7 +52,7 @@ public class GetImportFieldListApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取可导入的属性和关系列表";
+        return "nmcac.getimportfieldlistapi.getname";
     }
 
     @Override
@@ -60,9 +60,9 @@ public class GetImportFieldListApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "模型id")})
+    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid")})
     @Output({@Param(explode = CiVo.class)})
-    @Description(desc = "获取可导入的属性和关系列表接口")
+    @Description(desc = "nmcac.getimportfieldlistapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("id");
