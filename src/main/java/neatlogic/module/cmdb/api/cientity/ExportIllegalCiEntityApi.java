@@ -84,7 +84,7 @@ public class ExportIllegalCiEntityApi extends PrivateBinaryStreamApiComponentBas
 
     @Override
     public String getName() {
-        return "导出不合规配置项";
+        return "nmcac.exportillegalcientityapi.getname";
     }
 
     @Override
@@ -93,13 +93,13 @@ public class ExportIllegalCiEntityApi extends PrivateBinaryStreamApiComponentBas
     }
 
 
-    @Input({@Param(name = "legalValidId", type = ApiParamType.LONG, isRequired = true, desc = "规则id"),
-            @Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
-            @Param(name = "showAttrRelList", type = ApiParamType.JSONARRAY, desc = "需要导出的字段列表，包括属性和关系"),
-            @Param(name = "attrFilterList", type = ApiParamType.STRING, desc = "属性过滤条件"),
-            @Param(name = "relFilterList", type = ApiParamType.JSONARRAY, desc = "关系过滤条件"),
-            @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "关键字")})
-    @Description(desc = "导出不合规配置项接口")
+    @Input({@Param(name = "legalValidId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ruleid"),
+            @Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid"),
+            @Param(name = "showAttrRelList", type = ApiParamType.JSONARRAY, desc = "nmcac.exportcientityapi.input.param.desc.showattrrellist"),
+            @Param(name = "attrFilterList", type = ApiParamType.STRING, desc = "nmcac.exportcientityapi.input.param.desc.attrfilterlist"),
+            @Param(name = "relFilterList", type = ApiParamType.JSONARRAY, desc = "nmcac.exportcientityapi.input.param.desc.relfilterlist"),
+            @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "common.keyword")})
+    @Description(desc = "nmcac.exportillegalcientityapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
         CiEntityVo ciEntityVo = JSONObject.toJavaObject(jsonObj, CiEntityVo.class);

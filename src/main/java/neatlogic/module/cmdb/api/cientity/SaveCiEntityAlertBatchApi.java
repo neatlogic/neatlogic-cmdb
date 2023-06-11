@@ -60,7 +60,7 @@ public class SaveCiEntityAlertBatchApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "批量保存配置项告警";
+        return "nmcac.savecientityalertbatchapi.getname";
     }
 
     @Override
@@ -86,9 +86,9 @@ public class SaveCiEntityAlertBatchApi extends PrivateApiComponentBase {
         return exampleObj;
     }
 
-    @Input({@Param(name = "alertList", isRequired = true, type = ApiParamType.JSONARRAY, desc = "告警列表", help = "批量保存数据时使用此参数，参数格式和单个告警要求一致"),
+    @Input({@Param(name = "alertList", isRequired = true, type = ApiParamType.JSONARRAY, desc = "common.alertlist", help = "nmcac.savecientityalertbatchapi.input.param.help"),
     })
-    @Description(desc = "批量保存配置项告警接口")
+    @Description(desc = "nmcac.savecientityalertbatchapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONArray alertList = jsonObj.getJSONArray("alertList");

@@ -40,8 +40,6 @@ import neatlogic.framework.util.Md5Util;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
-import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
-import neatlogic.module.cmdb.service.cientity.CiEntityService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -57,7 +55,7 @@ import java.util.stream.Collectors;
 public class BatchSaveCiEntitySimpleApi extends PrivateApiComponentBase {
     @Override
     public String getName() {
-        return "批量保存配置项（简化版本）";
+        return "nmcac.batchsavecientitysimpleapi.getname";
     }
 
     @Override
@@ -65,11 +63,6 @@ public class BatchSaveCiEntitySimpleApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Resource
-    private CiEntityService ciEntityService;
-
-    @Resource
-    private CiEntityMapper ciEntityMapper;
 
     @Resource
     private CiMapper ciMapper;
@@ -310,7 +303,7 @@ public class BatchSaveCiEntitySimpleApi extends PrivateApiComponentBase {
                 "      \"ciName\": \"APP\",\n" +
                 "      \"entityData\": {\n" +
                 "        \"owner\": [\n" +
-                "          \"杨化志(0008035)(运维管理中心)\"\n" +
+                "          \"admin\"\n" +
                 "        ],\n" +
                 "        \"bg\": [\n" +
                 "          \"运维管理中心\"\n" +

@@ -43,7 +43,7 @@ public class SearchAlertLevelApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "搜索告警级别";
+        return "nmcac.searchalertlevelapi.getname";
     }
 
     @Override
@@ -51,9 +51,8 @@ public class SearchAlertLevelApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({})
     @Output({@Param(explode = AlertLevelVo[].class)})
-    @Description(desc = "搜索告警级别接口")
+    @Description(desc = "nmcac.searchalertlevelapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         return alertLevelMapper.searchAlertLevel();

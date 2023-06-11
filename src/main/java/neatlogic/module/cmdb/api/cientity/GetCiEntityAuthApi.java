@@ -53,7 +53,7 @@ public class GetCiEntityAuthApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取配置项权限信息";
+        return "nmcac.getcientityauthapi.getname";
     }
 
     @Override
@@ -61,11 +61,11 @@ public class GetCiEntityAuthApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciEntityId", type = ApiParamType.LONG, isRequired = true, desc = "配置项id"),
-            @Param(name = "ciId", type = ApiParamType.LONG, desc = "模型id"),
-            @Param(name = "authList", type = ApiParamType.JSONARRAY, rule = "cientityinsert,cientitydelete,cimanage,transactionmanage,cientityrecover,passwordview", desc = "需要判断的权限列表")})
+    @Input({@Param(name = "ciEntityId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.cientityid"),
+            @Param(name = "ciId", type = ApiParamType.LONG, desc = "term.cmdb.ciid"),
+            @Param(name = "authList", type = ApiParamType.JSONARRAY, rule = "cientityinsert,cientitydelete,cimanage,transactionmanage,cientityrecover,passwordview", desc = "nmcac.getcientityauthapi.input.param.desc.authlist")})
     @Output({@Param(explode = CiEntityVo.class)})
-    @Description(desc = "获取配置项权限信息接口")
+    @Description(desc = "nmcac.getcientityauthapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         CiEntityVo ciEntityVo = ciEntityService.getCiEntityBaseInfoById(jsonObj.getLong("ciEntityId"));

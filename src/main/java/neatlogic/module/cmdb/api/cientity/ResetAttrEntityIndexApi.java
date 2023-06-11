@@ -57,7 +57,7 @@ public class ResetAttrEntityIndexApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "重建引用属性索引";
+        return "nmcac.resetattrentityindexapi.getname";
     }
 
     @Override
@@ -65,7 +65,7 @@ public class ResetAttrEntityIndexApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Description(desc = "重建引用属性索引接口，用于优化查询性能")
+    @Description(desc = "nmcac.resetattrentityindexapi.description.desc")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         CachedThreadPool.execute(new NeatLogicThread("CMDB-ATTR-INDEX-BUILDER", true) {

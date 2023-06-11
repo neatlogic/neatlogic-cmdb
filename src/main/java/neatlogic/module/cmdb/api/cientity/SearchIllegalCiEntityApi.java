@@ -56,7 +56,7 @@ public class SearchIllegalCiEntityApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询不合规配置项";
+        return "nmcac.searchillegalcientityapi.getname";
     }
 
     @Override
@@ -64,13 +64,13 @@ public class SearchIllegalCiEntityApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "legalValidId", type = ApiParamType.LONG, isRequired = true, desc = "规则id"),
-            @Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
-            @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "关键字")})
+    @Input({@Param(name = "legalValidId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ruleid"),
+            @Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid"),
+            @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "common.keyword")})
     @Output({@Param(explode = BasePageVo.class),
             @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = CiEntityVo[].class),
-            @Param(name = "theadList", type = ApiParamType.JSONARRAY, desc = "表头信息")})
-    @Description(desc = "查询不合规配置项接口")
+            @Param(name = "theadList", type = ApiParamType.JSONARRAY, desc = "nmcac.searchattrtargetcientityapi.output.param.desc")})
+    @Description(desc = "nmcac.searchillegalcientityapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         IllegalCiEntityVo illegalCiEntityVo = JSONObject.toJavaObject(jsonObj, IllegalCiEntityVo.class);

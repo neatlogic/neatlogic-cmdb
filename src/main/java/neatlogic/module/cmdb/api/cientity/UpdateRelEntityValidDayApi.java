@@ -50,7 +50,7 @@ public class UpdateRelEntityValidDayApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "更新关系有效天数";
+        return "nmcac.updaterelentityvaliddayapi.getname";
     }
 
     @Override
@@ -58,10 +58,10 @@ public class UpdateRelEntityValidDayApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "关系id"),
-            @Param(name = "validDay", type = ApiParamType.INTEGER, isRequired = true, desc = "有效天数，0代表永远有效"),
+    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "nmcac.searchcientityapi.input.param.desc.relid"),
+            @Param(name = "validDay", type = ApiParamType.INTEGER, isRequired = true, desc = "nmcac.updaterelentityvaliddayapi.input.param.desc"),
     })
-    @Description(desc = "更新关系有效天数接口")
+    @Description(desc = "nmcac.updaterelentityvaliddayapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");

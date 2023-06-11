@@ -65,7 +65,7 @@ public class SearchCiEntityByDslApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "使用dsl查询配置项";
+        return "nmcac.searchcientitybydslapi.getname";
     }
 
     @Override
@@ -73,13 +73,12 @@ public class SearchCiEntityByDslApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
-            @Param(name = "dsl", type = ApiParamType.STRING, isRequired = true, desc = "查询表达式，逻辑运算符支持&&、||，关系运算符支持：==、>=、<=、>、<、!=、include、exclude。如果需要搜索关系或引用属性" +
-                    "字段，可以使用a.b表示，例如env.name == \"STG\" && (port == 80 || port == 443 )"),
-            @Param(name = "attrList", type = ApiParamType.JSONARRAY, desc = "需要返回的属性，不定义则返回所有属性，空数组代表不返回任何属性"),
-            @Param(name = "relList", type = ApiParamType.JSONARRAY, desc = "需要返回的关系，不定义则返回所有关系，空数组代表不返回任何关系")})
-    @Output({@Param(explode = BasePageVo.class), @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = CiEntityVo[].class), @Param(name = "theadList", type = ApiParamType.JSONARRAY, desc = "表头信息")})
-    @Description(desc = "使用dsl查询配置项接口")
+    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid"),
+            @Param(name = "dsl", type = ApiParamType.STRING, isRequired = true, desc = "nmcac.searchcientitybydslapi.input.param.desc.dsl"),
+            @Param(name = "attrList", type = ApiParamType.JSONARRAY, desc = "nmcac.searchcientitybydslapi.input.param.desc.attr"),
+            @Param(name = "relList", type = ApiParamType.JSONARRAY, desc = "nmcac.searchcientitybydslapi.input.param.desc.rel")})
+    @Output({@Param(explode = BasePageVo.class), @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = CiEntityVo[].class), @Param(name = "theadList", type = ApiParamType.JSONARRAY, desc = "nmcac.searchattrtargetcientityapi.output.param.desc")})
+    @Description(desc = "nmcac.searchcientitybydslapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long ciId = paramObj.getLong("ciId");

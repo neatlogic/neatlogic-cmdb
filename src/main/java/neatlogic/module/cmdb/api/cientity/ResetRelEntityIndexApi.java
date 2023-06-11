@@ -58,7 +58,7 @@ public class ResetRelEntityIndexApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "重建关系索引";
+        return "nmcac.resetrelentityindexapi.getname";
     }
 
     @Override
@@ -66,7 +66,7 @@ public class ResetRelEntityIndexApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Description(desc = "重建关系索引接口，用于优化查询性能")
+    @Description(desc = "nmcac.resetrelentityindexapi.description.desc")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         CachedThreadPool.execute(new NeatLogicThread("CMDB-REL-INDEX-BUILDER", true) {

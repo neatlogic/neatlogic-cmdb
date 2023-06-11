@@ -43,7 +43,7 @@ public class GetIllegalCiEntityCountApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取不合规配置项数量";
+        return "nmcac.getillegalcientitycountapi.getname";
     }
 
     @Override
@@ -51,7 +51,7 @@ public class GetIllegalCiEntityCountApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id")})
+    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid")})
     @Output({@Param(explode = LegalValidVo[].class)})
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {

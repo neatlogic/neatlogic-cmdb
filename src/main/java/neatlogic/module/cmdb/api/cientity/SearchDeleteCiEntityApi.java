@@ -65,7 +65,7 @@ public class SearchDeleteCiEntityApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询已删除配置项";
+        return "nmcac.searchdeletecientityapi.getname";
     }
 
     @Override
@@ -73,14 +73,14 @@ public class SearchDeleteCiEntityApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
-            @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "关键字"),
-            @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "是否需要操作列，如果需要则根据用户权限返回操作列"),
-            @Param(name = "needCheck", type = ApiParamType.BOOLEAN, desc = "是否需要复选列")})
+    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid"),
+            @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "common.keyword"),
+            @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "nmcac.searchcientityapi.input.param.desc.needaction"),
+            @Param(name = "needCheck", type = ApiParamType.BOOLEAN, desc = "nmcac.searchcientityapi.input.param.desc.needcheck")})
     @Output({@Param(explode = BasePageVo.class),
             @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = CiEntityVo[].class),
-            @Param(name = "theadList", type = ApiParamType.JSONARRAY, desc = "表头信息")})
-    @Description(desc = "查询已删除配置项接口")
+            @Param(name = "theadList", type = ApiParamType.JSONARRAY, desc = "nmcac.searchattrtargetcientityapi.output.param.desc")})
+    @Description(desc = "nmcac.searchdeletecientityapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         TransactionVo pTransactionVo = JSONObject.toJavaObject(jsonObj, TransactionVo.class);

@@ -44,7 +44,7 @@ public class ValidateCiEntityApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "校验配置项完整性";
+        return "nmcac.validatecientityapi.getname";
     }
 
     @Override
@@ -52,13 +52,13 @@ public class ValidateCiEntityApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
-            @Param(name = "id", type = ApiParamType.LONG, desc = "配置项id，不存在代表添加"),
-            @Param(name = "uuid", type = ApiParamType.STRING, desc = "配置项uuid"),
-            @Param(name = "attrEntityData", type = ApiParamType.JSONOBJECT, desc = "属性数据"),
-            @Param(name = "relEntityData", type = ApiParamType.JSONOBJECT, desc = "关系数据")})
-    @Output({@Param(name = "hasChange", type = ApiParamType.BOOLEAN, desc = "是否有变化")})
-    @Description(desc = "校验配置项完整性接口")
+    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid"),
+            @Param(name = "id", type = ApiParamType.LONG, desc = "nmcac.validatecientityapi.input.param.desc.id"),
+            @Param(name = "uuid", type = ApiParamType.STRING, desc = "nmcac.validatecientityapi.input.param.desc.uuid"),
+            @Param(name = "attrEntityData", type = ApiParamType.JSONOBJECT, desc = "nmcac.validatecientityapi.input.param.desc.attr"),
+            @Param(name = "relEntityData", type = ApiParamType.JSONOBJECT, desc = "nmcac.validatecientityapi.input.param.desc.rel")})
+    @Output({@Param(name = "hasChange", type = ApiParamType.BOOLEAN, desc = "nmcac.validatecientityapi.output.param.desc.needchange")})
+    @Description(desc = "nmcac.validatecientityapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("ciId");

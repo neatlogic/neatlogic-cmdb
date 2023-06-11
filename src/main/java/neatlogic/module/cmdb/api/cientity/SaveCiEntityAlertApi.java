@@ -57,7 +57,7 @@ public class SaveCiEntityAlertApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存配置项告警";
+        return "nmcac.savecientityalertapi.getname";
     }
 
     @Override
@@ -66,17 +66,17 @@ public class SaveCiEntityAlertApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "ciEntityUuid", type = ApiParamType.STRING, isRequired = true, desc = "配置项唯一标识", help = "如果是32字符的散列，系统会直接保存，否则，系统会先做散列处理"),
-            @Param(name = "ciEntityId", type = ApiParamType.LONG, desc = "配置项id", help = "如果提供了，会优先使用，找不到配置项才会使用ciEntityUuid"),
-            @Param(name = "ip", type = ApiParamType.STRING, desc = "ip地址", isRequired = true, maxLength = 50),
-            @Param(name = "level", type = ApiParamType.INTEGER, desc = "告警级别", isRequired = true, help = "必须是大于等于0的整数，数字越大级别越高，如果等于0代表消除告警"),
-            @Param(name = "metricName", type = ApiParamType.STRING, desc = "告警属性", isRequired = true, xss = true, help = "每个配置项对应一个告警属性只能有一条告警信息"),
-            @Param(name = "metricValue", type = ApiParamType.STRING, desc = "告警值"),
-            @Param(name = "alertTime", type = ApiParamType.LONG, desc = "告警时间", help = "需要提供时间戳，精确到毫秒，如果不提供则使用保存时间"),
-            @Param(name = "alertMessage", type = ApiParamType.STRING, desc = "告警详情", xss = true, maxLength = 500),
-            @Param(name = "alertLink", type = ApiParamType.STRING, desc = "告警外部链接", xss = true, maxLength = 255),
+            @Param(name = "ciEntityUuid", type = ApiParamType.STRING, isRequired = true, desc = "term.cmdb.cientityuniquename", help = "nmcac.savecientityalertapi.input.param.help.uniquename"),
+            @Param(name = "ciEntityId", type = ApiParamType.LONG, desc = "term.cmdb.cientityid", help = "nmcac.savecientityalertapi.input.param.help.cientityid"),
+            @Param(name = "ip", type = ApiParamType.STRING, desc = "ip", isRequired = true, maxLength = 50),
+            @Param(name = "level", type = ApiParamType.INTEGER, desc = "common.alertlevel", isRequired = true, help = "nmcac.savecientityalertapi.input.param.help.alertlevel"),
+            @Param(name = "metricName", type = ApiParamType.STRING, desc = "common.alertattr", isRequired = true, xss = true, help = "nmcac.savecientityalertapi.input.param.help.alertattr"),
+            @Param(name = "metricValue", type = ApiParamType.STRING, desc = "common.alertvalue"),
+            @Param(name = "alertTime", type = ApiParamType.LONG, desc = "common.alerttime", help = "nmcac.savecientityalertapi.input.param.help.alerttime"),
+            @Param(name = "alertMessage", type = ApiParamType.STRING, desc = "common.alertdetail", xss = true, maxLength = 500),
+            @Param(name = "alertLink", type = ApiParamType.STRING, desc = "common.alertlink", xss = true, maxLength = 255),
     })
-    @Description(desc = "保存配置项告警接口")
+    @Description(desc = "nmcac.savecientityalertapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         CiEntityAlertVo ciEntityAlertVo = JSONObject.toJavaObject(jsonObj, CiEntityAlertVo.class);

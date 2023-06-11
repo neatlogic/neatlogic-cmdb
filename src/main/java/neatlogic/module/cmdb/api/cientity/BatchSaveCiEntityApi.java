@@ -39,6 +39,7 @@ import neatlogic.framework.exception.type.ParamNotExistsException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.framework.util.$;
 import neatlogic.framework.util.Md5Util;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
@@ -84,7 +85,7 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
 
     @Override
     public String getName() {
-        return "保存配置项";
+        return "nmcac.batchsavecientityapi.getname";
     }
 
     @Override
@@ -108,7 +109,7 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
                     this.put("attrEntityData", new JSONObject() {{
                         this.put("attr_323010784722944", new JSONObject() {{
                             this.put("valueList", new JSONArray() {{
-                                this.add("测试环境");
+                                this.add($.t("common.testenv"));
                             }});
                             this.put("name", "attrname");
                             this.put("label", "attrlabel");
@@ -152,7 +153,7 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
         simpleJson.put("ciEntityList", new JSONArray() {
             {
                 this.add(new JSONObject() {{
-                    this.put("ciName", "模型唯一标识");
+                    this.put("ciName", $.t("term.cmdb.ciuniquename"));
                     this.put("uuid", "2d327f1213d542bd8a26ace1efb5ab41");
                     this.put("editMode", "global|partial");
                     this.put("entityData", new JSONObject() {{
@@ -177,8 +178,8 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
             }
         });
         return new JSONObject() {{
-            this.put("范例1", defaultJson);
-            this.put("范例2", simpleJson);
+            this.put($.t("common.example") + 1, defaultJson);
+            this.put($.t("common.example") + 2, simpleJson);
         }};
     }
 
@@ -283,10 +284,12 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
         return returnCiEntityObjList;
     }
 
-    @Input({@Param(name = "ciEntityList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "配置项数据"), @Param(name = "needCommit", type = ApiParamType.BOOLEAN, isRequired = true, desc = "是否需要提交"), @Param(name = "isSimple", type = ApiParamType.BOOLEAN, desc = "数据是否简易模式", help = "简易模式主要给第三方系统使用，true：简易模式，false：正常模式")})
-    @Output({@Param(name = "transactionGroupId", type = ApiParamType.LONG, desc = "事务组id"),
-            @Param(name = "commited", type = ApiParamType.BOOLEAN, desc = "是否提交")})
-    @Description(desc = "保存配置项接口")
+    @Input({@Param(name = "ciEntityList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "term.cmdb.cientitydata"),
+            @Param(name = "needCommit", type = ApiParamType.BOOLEAN, isRequired = true, desc = "nmcac.batchdeletecientityapi.input.param.desc.needcommit"),
+            @Param(name = "isSimple", type = ApiParamType.BOOLEAN, desc = "nmcac.batchsavecientityapi.input.param.desc.issimple", help = "nmcac.batchsavecientityapi.input.param.help.issimple")})
+    @Output({@Param(name = "transactionGroupId", type = ApiParamType.LONG, desc = "term.cmdb.transactiongroupid"),
+            @Param(name = "commited", type = ApiParamType.BOOLEAN, desc = "term.cmdb.iscommit")})
+    @Description(desc = "nmcac.batchsavecientityapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         boolean needCommit = jsonObj.getBooleanValue("needCommit");
@@ -341,7 +344,7 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
                 ciEntityTransactionVo.setCiEntityUuid(uuid);
                 ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
             } else {
-                throw new ParamNotExistsException("id","uuid");
+                throw new ParamNotExistsException("id", "uuid");
             }
 
             if (Objects.equals(ciEntityObj.getString("editMode"), EditModeType.GLOBAL.getValue()) || Objects.equals(ciEntityObj.getString("editMode"), EditModeType.PARTIAL.getValue())) {
@@ -411,7 +414,7 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
                                 } else {
                                     CiEntityVo uuidCiEntityVo = ciEntityMapper.getCiEntityBaseInfoByUuid(ciEntityUuid);
                                     if (uuidCiEntityVo == null) {
-                                        throw new NewCiEntityNotFoundException( relEntityObj.getString("ciEntityUuid"));
+                                        throw new NewCiEntityNotFoundException(relEntityObj.getString("ciEntityUuid"));
                                     } else {
                                         relEntityObj.put("ciEntityId", uuidCiEntityVo.getId());
                                     }

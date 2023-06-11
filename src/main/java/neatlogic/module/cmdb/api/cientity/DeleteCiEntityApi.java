@@ -53,7 +53,7 @@ public class DeleteCiEntityApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "删除配置项";
+        return "nmcac.deletecientityapi.getname";
     }
 
     @Override
@@ -62,11 +62,11 @@ public class DeleteCiEntityApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "配置项id"),
-            @Param(name = "needCommit", type = ApiParamType.BOOLEAN, isRequired = true, desc = "是否需要提交"),
-            @Param(name = "description", type = ApiParamType.STRING, desc = "备注", xss = true)})
-    @Output({@Param(name = "transactionId", type = ApiParamType.LONG, desc = "事务id")})
-    @Description(desc = "删除配置项接口")
+            @Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.cientityid"),
+            @Param(name = "needCommit", type = ApiParamType.BOOLEAN, isRequired = true, desc = "nmcac.batchdeletecientityapi.input.param.desc.needcommit"),
+            @Param(name = "description", type = ApiParamType.STRING, desc = "common.memo", xss = true)})
+    @Output({@Param(name = "transactionId", type = ApiParamType.LONG, desc = "term.cmdb.transactionid")})
+    @Description(desc = "nmcac.deletecientityapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");

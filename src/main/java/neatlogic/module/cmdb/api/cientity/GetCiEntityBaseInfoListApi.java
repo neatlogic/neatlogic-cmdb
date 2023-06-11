@@ -51,7 +51,7 @@ public class GetCiEntityBaseInfoListApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取多个配置项基础信息";
+        return "nmcac.getcientitybaseinfolistapi.getname";
     }
 
     @Override
@@ -59,9 +59,9 @@ public class GetCiEntityBaseInfoListApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "idList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "配置项id列表")})
+    @Input({@Param(name = "idList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "nmcac.getcientitybaseinfolistapi.input.param.desc.idlist")})
     @Output({@Param(name = "Return", explode = CiEntityVo[].class)})
-    @Description(desc = "根据id列表获取多个配置项基础信息接口")
+    @Description(desc = "nmcac.getcientitybaseinfolistapi.description.desc")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONArray ids = jsonObj.getJSONArray("idList");

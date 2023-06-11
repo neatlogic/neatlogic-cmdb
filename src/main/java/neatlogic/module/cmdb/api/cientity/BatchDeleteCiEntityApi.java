@@ -56,7 +56,7 @@ public class BatchDeleteCiEntityApi extends PrivateApiComponentBase implements I
 
     @Override
     public String getName() {
-        return "批量删除配置项";
+        return "nmcac.batchdeletecientityapi.getname";
     }
 
     @Override
@@ -64,11 +64,11 @@ public class BatchDeleteCiEntityApi extends PrivateApiComponentBase implements I
         return null;
     }
 
-    @Input({@Param(name = "ciEntityList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "删除列表，包含ciId、ciEntityId和ciEntityName三个属性"),
-            @Param(name = "needCommit", type = ApiParamType.BOOLEAN, isRequired = true, desc = "是否需要提交"),
-            @Param(name = "description", type = ApiParamType.STRING, desc = "备注", xss = true)})
-    @Output({@Param(name = "transactionGroupId", type = ApiParamType.LONG, desc = "事务组id")})
-    @Description(desc = "批量删除配置项接口")
+    @Input({@Param(name = "ciEntityList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "nmcac.batchdeletecientityapi.input.param.desc.cientitylist"),
+            @Param(name = "needCommit", type = ApiParamType.BOOLEAN, isRequired = true, desc = "nmcac.batchdeletecientityapi.input.param.desc.needcommit"),
+            @Param(name = "description", type = ApiParamType.STRING, desc = "common.memo", xss = true)})
+    @Output({@Param(name = "transactionGroupId", type = ApiParamType.LONG, desc = "term.cmdb.transactiongroupid")})
+    @Description(desc = "nmcac.batchdeletecientityapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         String description = jsonObj.getString("description");

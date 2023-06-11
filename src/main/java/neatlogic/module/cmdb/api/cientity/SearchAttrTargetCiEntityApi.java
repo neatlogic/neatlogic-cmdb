@@ -62,7 +62,7 @@ public class SearchAttrTargetCiEntityApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询属性目标配置项";
+        return "nmcac.searchattrtargetcientityapi.getname";
     }
 
     @Override
@@ -70,13 +70,13 @@ public class SearchAttrTargetCiEntityApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "attrId", type = ApiParamType.LONG, isRequired = true, desc = "属性id"),
-            @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "关键字"),
-            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "选中值列表")})
+    @Input({@Param(name = "attrId", type = ApiParamType.LONG, isRequired = true, desc = "nmcaa.getattrapi.input.param.desc.id"),
+            @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "common.keyword"),
+            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "nmcac.searchattrtargetcientityapi.input.param.desc")})
     @Output({@Param(explode = BasePageVo.class),
             @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = CiEntityVo[].class),
-            @Param(name = "theadList", type = ApiParamType.JSONARRAY, desc = "表头信息")})
-    @Description(desc = "查询属性目标配置项")
+            @Param(name = "theadList", type = ApiParamType.JSONARRAY, desc = "nmcac.searchattrtargetcientityapi.output.param.desc")})
+    @Description(desc = "nmcac.searchattrtargetcientityapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long attrId = jsonObj.getLong("attrId");

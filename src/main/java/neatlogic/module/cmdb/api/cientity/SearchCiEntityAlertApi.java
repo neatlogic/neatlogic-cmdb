@@ -48,7 +48,7 @@ public class SearchCiEntityAlertApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "搜索配置项告警信息";
+        return "nmcac.searchcientityalertapi.getname";
     }
 
     @Override
@@ -57,12 +57,12 @@ public class SearchCiEntityAlertApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "ciEntityIdList", type = ApiParamType.JSONARRAY, desc = "配置项id列表", help = "不能和视图id列表同时为空"),
-            @Param(name = "groupIdList", type = ApiParamType.JSONARRAY, desc = "视图id列表", help = "不能和配置项id列表同时为空"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页")
+            @Param(name = "ciEntityIdList", type = ApiParamType.JSONARRAY, desc = "nmcac.getcientitybaseinfolistapi.input.param.desc.idlist", help = "nmcac.searchcientityalertapi.input.param.help.idlist"),
+            @Param(name = "groupIdList", type = ApiParamType.JSONARRAY, desc = "nmcac.searchcientityalertapi.input.param.desc.groupidlist", help = "nmcac.searchcientityalertapi.input.param.help.groupidlist"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage")
     })
     @Output({@Param(explode = BasePageVo[].class)})
-    @Description(desc = "搜索配置项告警信息接口")
+    @Description(desc = "nmcac.searchcientityalertapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         CiEntityAlertVo ciEntityAlertVo = JSONObject.toJavaObject(jsonObj, CiEntityAlertVo.class);

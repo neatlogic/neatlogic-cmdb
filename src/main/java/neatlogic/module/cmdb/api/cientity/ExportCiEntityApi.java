@@ -78,7 +78,7 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
 
     @Override
     public String getName() {
-        return "导出配置项";
+        return "nmcac.exportcientityapi.getname";
     }
 
     @Override
@@ -86,13 +86,13 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
-            @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "关键字"),
-            @Param(name = "showAttrRelList", type = ApiParamType.JSONARRAY, desc = "需要导出的字段列表，包括属性和关系"),
-            @Param(name = "attrFilterList", type = ApiParamType.STRING, desc = "属性过滤条件"),
-            @Param(name = "relFilterList", type = ApiParamType.JSONARRAY, desc = "关系过滤条件")
+    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid"),
+            @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "common.keyword"),
+            @Param(name = "showAttrRelList", type = ApiParamType.JSONARRAY, desc = "nmcac.exportcientityapi.input.param.desc.showattrrellist"),
+            @Param(name = "attrFilterList", type = ApiParamType.STRING, desc = "nmcac.exportcientityapi.input.param.desc.attrfilterlist"),
+            @Param(name = "relFilterList", type = ApiParamType.JSONARRAY, desc = "nmcac.exportcientityapi.input.param.desc.relfilterlist")
     })
-    @Description(desc = "导出配置项接口")
+    @Description(desc = "nmcac.exportcientityapi.getname")
     @Override
     //TODO 后续要对数据进行优化防止OOM
     public Object myDoService(JSONObject jsonObj, HttpServletRequest request, HttpServletResponse response) throws Exception {

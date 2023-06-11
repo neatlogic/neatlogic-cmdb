@@ -44,7 +44,7 @@ public class DeleteAlertLevelApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "删除告警级别";
+        return "nmcac.deletealertlevelapi.getname";
     }
 
     @Override
@@ -53,9 +53,9 @@ public class DeleteAlertLevelApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "level", desc = "级别", type = ApiParamType.INTEGER, isRequired = true)})
+            @Param(name = "level", desc = "common.level", type = ApiParamType.INTEGER, isRequired = true)})
     @Output({@Param(explode = AlertLevelVo[].class)})
-    @Description(desc = "删除告警级别接口")
+    @Description(desc = "nmcac.deletealertlevelapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         alertLevelMapper.deleteAlertLevel(jsonObj.getInteger("level"));

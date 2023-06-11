@@ -65,7 +65,7 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取配置项详细信息";
+        return "nmcac.getcientityapi.getname";
     }
 
     @Override
@@ -73,14 +73,14 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
-            @Param(name = "ciEntityId", type = ApiParamType.LONG, isRequired = true, desc = "配置项id"),
-            @Param(name = "limitRelEntity", type = ApiParamType.BOOLEAN, isRequired = true, desc = "是否限制关系数量，默认值是:true"),
-            @Param(name = "limitAttrEntity", type = ApiParamType.BOOLEAN, isRequired = true, desc = "是否限制引用属性数量，默认值是:true"),
-            @Param(name = "showAttrRelList", type = ApiParamType.JSONARRAY, desc = "需要显示的字段列表，包括属性关系和常量，格式：attr_xxx,relfrom_xxx或relto_xxx，xxx是对应id"),
-            @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "是否需要操作列，如果需要检查操作权限，会根据结果返回action列")})
+    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid"),
+            @Param(name = "ciEntityId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.cientityid"),
+            @Param(name = "limitRelEntity", type = ApiParamType.BOOLEAN, isRequired = true, desc = "nmcac.getcientityapi.input.param.desc.limitrelentity"),
+            @Param(name = "limitAttrEntity", type = ApiParamType.BOOLEAN, isRequired = true, desc = "nmcac.getcientityapi.input.param.desc.limitattrentity"),
+            @Param(name = "showAttrRelList", type = ApiParamType.JSONARRAY, desc = "nmcac.getcientityapi.input.param.desc.showattrrellist"),
+            @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "nmcac.getcientityapi.input.param.desc.needaction")})
     @Output({@Param(explode = CiEntityVo.class)})
-    @Description(desc = "获取配置项详细信息接口")
+    @Description(desc = "nmcac.getcientityapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciEntityId = jsonObj.getLong("ciEntityId");

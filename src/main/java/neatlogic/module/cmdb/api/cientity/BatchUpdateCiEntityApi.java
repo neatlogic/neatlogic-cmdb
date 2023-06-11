@@ -68,7 +68,7 @@ public class BatchUpdateCiEntityApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "批量修改配置项";
+        return "nmcac.batchupdatecientityapi.getname";
     }
 
     @Override
@@ -76,8 +76,13 @@ public class BatchUpdateCiEntityApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"), @Param(name = "ciEntityIdList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "被修改配置项id"), @Param(name = "attrEntityData", type = ApiParamType.JSONOBJECT, desc = "需要修改的属性"), @Param(name = "relEntityData", type = ApiParamType.JSONOBJECT, desc = "需要修改的关系"), @Param(name = "needCommit", type = ApiParamType.BOOLEAN, desc = "是否提交"), @Param(name = "description", type = ApiParamType.STRING, desc = "备注")})
-    @Description(desc = "批量修改配置项接口")
+    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid"),
+            @Param(name = "ciEntityIdList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "nmcac.batchupdatecientityapi.input.param.desc.cientityidlist"),
+            @Param(name = "attrEntityData", type = ApiParamType.JSONOBJECT, desc = "nmcac.batchupdatecientityapi.input.param.desc.attrentitydata"),
+            @Param(name = "relEntityData", type = ApiParamType.JSONOBJECT, desc = "nmcac.batchupdatecientityapi.input.param.desc.relentitydata"),
+            @Param(name = "needCommit", type = ApiParamType.BOOLEAN, desc = "term.cmdb.iscommit"),
+            @Param(name = "description", type = ApiParamType.STRING, desc = "common.memo")})
+    @Description(desc = "nmcac.batchupdatecientityapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("ciId");

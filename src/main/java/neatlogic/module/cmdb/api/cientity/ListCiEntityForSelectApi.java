@@ -57,7 +57,7 @@ public class ListCiEntityForSelectApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询模型数据列表（下拉框）";
+        return "nmcac.listcientityforselectapi.getname";
     }
 
     @Override
@@ -66,17 +66,17 @@ public class ListCiEntityForSelectApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "ciName", type = ApiParamType.STRING, isRequired = true, desc = "模型名称"),
-            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "默认值列表"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
-            @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
-            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true")
+            @Param(name = "ciName", type = ApiParamType.STRING, isRequired = true, desc = "term.cmdb.ciname"),
+            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "nmcac.listcientityforselectapi.input.param.desc.defaultvalue"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage"),
+            @Param(name = "keyword", type = ApiParamType.STRING, desc = "common.keyword"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize"),
+            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "ocommn.isneedpage")
     })
     @Output({
-            @Param(name = "tbodyList", explode = CiEntityVo[].class, desc = "模型数据列表")
+            @Param(name = "tbodyList", explode = CiEntityVo[].class, desc = "nmcac.listcientityforselectapi.output.param.desc")
     })
-    @Description(desc = "查询资源中心状态列表")
+    @Description(desc = "nmcac.listcientityforselectapi.description.desc")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         CiEntityVo ciEntityVo = paramObj.toJavaObject(CiEntityVo.class);

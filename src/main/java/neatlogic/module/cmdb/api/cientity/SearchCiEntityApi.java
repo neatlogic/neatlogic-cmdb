@@ -93,7 +93,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
 
     @Override
     public String getName() {
-        return "查询配置项";
+        return "nmcac.searchcientityapi.getname";
     }
 
     @Override
@@ -101,37 +101,37 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
         return null;
     }
 
-    @Input({@Param(name = "ciId", type = ApiParamType.LONG, desc = "模型id"),
-            @Param(name = "ciName", type = ApiParamType.STRING, desc = "模型唯一标识"),
-            @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "关键字"),
-            @Param(name = "dsl", type = ApiParamType.STRING, desc = "DSL语句"),
-            @Param(name = "groupId", type = ApiParamType.LONG, desc = "团体id"),
-            @Param(name = "attrFilterList", type = ApiParamType.JSONARRAY, desc = "属性过滤条件"),
-            @Param(name = "relFilterList", type = ApiParamType.JSONARRAY, desc = "关系过滤条件"),
-            @Param(name = "showAttrRelList", type = ApiParamType.JSONARRAY, desc = "需要显示的字段列表，包括属性关系和常量，范例：[\"attr_xxx\":\"keyword\",\"relfrom_xxx\":\"keyword\",\"relto_xxx\":\"keyword\",\"const_ciid\":\"keyword\"]，xxx代表对应属性或关系id"),
-            @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "需要查询的配置项id列表）"),
-            @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "是否需要操作列，如果需要则根据用户权限返回操作列"),
-            @Param(name = "needCheck", type = ApiParamType.BOOLEAN, desc = "是否需要复选列"),
-            @Param(name = "needExpand", type = ApiParamType.BOOLEAN, desc = "是否需要显示展开控制列"),
-            @Param(name = "needActionType", type = ApiParamType.BOOLEAN, desc = "是否需要操作类型列，一般在表单控件中使用，用于标记数据是新增还是修改还是删除"),
-            @Param(name = "relCiEntityId", type = ApiParamType.LONG, desc = "关系配置项id"),
-            @Param(name = "relId", type = ApiParamType.LONG, desc = "关系id"),
-            @Param(name = "direction", type = ApiParamType.STRING, desc = "当前模型在关系中的位置"),
-            @Param(name = "mode", type = ApiParamType.ENUM, rule = "page,dialog", desc = "dialog模式不会显示详情连接"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页大小"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
-            @Param(name = "ciEntityList", type = ApiParamType.JSONARRAY, desc = "配置项结果集，如果提供则不会进行搜索，补充头部信息后直接返回"),
-            @Param(name = "attrId", type = ApiParamType.LONG, desc = "关系id（通过引用配置项查询引用属性时使用）"),
-            @Param(name = "fromCiEntityId", type = ApiParamType.LONG, desc = "引用配置项id（通过引用配置项查询引用属性时使用）"),
-            @Param(name = "sortConfig", type = ApiParamType.JSONOBJECT, desc = "排序规则，范例：{\"attr_xxxxx\":\"DESC\",\"attr_yyyyy\":\"ASC\"}"),
-            @Param(name = "isAllColumn", type = ApiParamType.ENUM, rule = "0,1", desc = "是否返回所有列数据"),
-            @Param(name = "isLimitRelEntity", type = ApiParamType.BOOLEAN, desc = "是否限制返回的关系数据"),
-            @Param(name = "isLimitAttrEntity", type = ApiParamType.BOOLEAN, desc = "是否限制返回的引用属性数据")
+    @Input({@Param(name = "ciId", type = ApiParamType.LONG, desc = "term.cmdb.ciid"),
+            @Param(name = "ciName", type = ApiParamType.STRING, desc = "term.cmdb.ciuniquename"),
+            @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "common.keyword"),
+            @Param(name = "dsl", type = ApiParamType.STRING, desc = "nmcac.searchcientityapi.input.param.desc.dsl"),
+            @Param(name = "groupId", type = ApiParamType.LONG, desc = "nmcac.searchcientityapi.input.param.desc.groupid"),
+            @Param(name = "attrFilterList", type = ApiParamType.JSONARRAY, desc = "nmcac.exportcientityapi.input.param.desc.attrfilterlist"),
+            @Param(name = "relFilterList", type = ApiParamType.JSONARRAY, desc = "nmcac.exportcientityapi.input.param.desc.relfilterlist"),
+            @Param(name = "showAttrRelList", type = ApiParamType.JSONARRAY, desc = "nmcac.searchcientityapi.input.param.desc.condition"),
+            @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "nmcac.searchcientityapi.input.param.desc.idlist）"),
+            @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "nmcac.searchcientityapi.input.param.desc.needaction"),
+            @Param(name = "needCheck", type = ApiParamType.BOOLEAN, desc = "nmcac.searchcientityapi.input.param.desc.needcheck"),
+            @Param(name = "needExpand", type = ApiParamType.BOOLEAN, desc = "nmcac.searchcientityapi.input.param.desc.needexpand"),
+            @Param(name = "needActionType", type = ApiParamType.BOOLEAN, desc = "nmcac.searchcientityapi.input.param.desc.needactiontype"),
+            @Param(name = "relCiEntityId", type = ApiParamType.LONG, desc = "nmcac.searchcientityapi.input.param.desc.relcientityid"),
+            @Param(name = "relId", type = ApiParamType.LONG, desc = "nmcac.searchcientityapi.input.param.desc.relid"),
+            @Param(name = "direction", type = ApiParamType.STRING, desc = "nmcac.searchcientityapi.input.param.desc.direction"),
+            @Param(name = "mode", type = ApiParamType.ENUM, rule = "page,dialog", desc = "nmcac.searchcientityapi.input.param.desc.mode"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage"),
+            @Param(name = "ciEntityList", type = ApiParamType.JSONARRAY, desc = "nmcac.searchcientityapi.input.param.desc.cientitylist"),
+            @Param(name = "attrId", type = ApiParamType.LONG, desc = "nmcac.searchcientityapi.input.param.desc.attrid"),
+            @Param(name = "fromCiEntityId", type = ApiParamType.LONG, desc = "nmcac.searchcientityapi.input.param.desc.fromcientityid"),
+            @Param(name = "sortConfig", type = ApiParamType.JSONOBJECT, desc = "nmcac.searchcientityapi.input.param.desc.sort"),
+            @Param(name = "isAllColumn", type = ApiParamType.ENUM, rule = "0,1", desc = "nmcac.searchcientityapi.input.param.desc.isall"),
+            @Param(name = "isLimitRelEntity", type = ApiParamType.BOOLEAN, desc = "nmcac.searchcientityapi.input.param.desc.islimitrel"),
+            @Param(name = "isLimitAttrEntity", type = ApiParamType.BOOLEAN, desc = "nmcac.searchcientityapi.input.param.desc.islimitattr")
     })
     @Output({@Param(explode = BasePageVo.class),
             @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = CiEntityVo[].class),
-            @Param(name = "theadList", type = ApiParamType.JSONARRAY, desc = "表头信息")})
-    @Description(desc = "查询配置项接口")
+            @Param(name = "theadList", type = ApiParamType.JSONARRAY, desc = "nmcac.searchattrtargetcientityapi.output.param.desc")})
+    @Description(desc = "nmcac.searchcientityapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("ciId");

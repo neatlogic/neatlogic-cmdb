@@ -44,7 +44,7 @@ public class GetAlertLevelApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取告警级别";
+        return "nmcac.getalertlevelapi.getname";
     }
 
     @Override
@@ -52,9 +52,9 @@ public class GetAlertLevelApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "level", desc = "告警级别", type = ApiParamType.INTEGER, isRequired = true)})
+    @Input({@Param(name = "level", desc = "common.alertlevel", type = ApiParamType.INTEGER, isRequired = true)})
     @Output({@Param(explode = AlertLevelVo.class)})
-    @Description(desc = "获取告警级别接口")
+    @Description(desc = "nmcac.getalertlevelapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         return alertLevelMapper.getAlertLevel(jsonObj.getInteger("level"));

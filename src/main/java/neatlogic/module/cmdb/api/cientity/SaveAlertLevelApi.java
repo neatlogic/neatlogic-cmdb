@@ -44,7 +44,7 @@ public class SaveAlertLevelApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存告警级别";
+        return "nmcac.savealertlevelapi.getname";
     }
 
     @Override
@@ -53,11 +53,11 @@ public class SaveAlertLevelApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "level", desc = "级别", type = ApiParamType.INTEGER, isRequired = true),
-            @Param(name = "name", desc = "名称", type = ApiParamType.STRING, isRequired = true, xss = true),
-            @Param(name = "color", desc = "颜色", type = ApiParamType.STRING, xss = true)})
+            @Param(name = "level", desc = "common.level", type = ApiParamType.INTEGER, isRequired = true),
+            @Param(name = "name", desc = "common.name", type = ApiParamType.STRING, isRequired = true, xss = true),
+            @Param(name = "color", desc = "common.color", type = ApiParamType.STRING, xss = true)})
     @Output({@Param(explode = AlertLevelVo[].class)})
-    @Description(desc = "保存告警级别接口")
+    @Description(desc = "nmcac.savealertlevelapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         AlertLevelVo alertLevelVo = JSONObject.toJavaObject(jsonObj, AlertLevelVo.class);
