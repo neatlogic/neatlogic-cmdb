@@ -33,5 +33,9 @@ public interface CustomViewDataMapper {
 
     List<Map<String, Object>> getCustomViewCiEntityById(CustomViewConditionVo customViewConditionVo);
 
+    int searchCustomViewDataGroupCount(CustomViewConditionVo customViewConditionVo);
+
+    int searchCustomViewDataCount(CustomViewConditionVo customViewConditionVo);
+
     List<CiEntityVo> searchCustomViewCiEntity(CustomViewConditionVo customViewConditionVo);
 }

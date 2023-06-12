@@ -50,7 +50,7 @@ public class SearchCustomViewDataApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询自定义视图数据";
+        return "nmcac.searchcustomviewdataapi.getname";
     }
 
     @Override
@@ -63,21 +63,21 @@ public class SearchCustomViewDataApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "视图id"),
-            @Param(name = "name", type = ApiParamType.STRING, desc = "视图名称"),
-            @Param(name = "searchMode", type = ApiParamType.ENUM, rule = "normal,group,data", isRequired = true, desc = "normal:视图列表模式、group:视图列表分组模式、data:数据模式"),
-            @Param(name = "groupBy", type = ApiParamType.STRING, desc = "分组属性的uuid"),
-            @Param(name = "attrFilterList", type = ApiParamType.JSONARRAY, desc = "属性过滤条件"),
-            @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页大小"),
-            @Param(name = "mode", type = ApiParamType.ENUM, rule = "page,api", desc = "搜索模式，支持page和api两种，主要影响返回的数据结构，page是默认模式，用于页面展示，api会返回字段名，用于api调用")
+    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "term.cmdb.viewid"),
+            @Param(name = "name", type = ApiParamType.STRING, desc = "term.cmdb.viewname"),
+            @Param(name = "searchMode", type = ApiParamType.ENUM, rule = "normal,group,data", isRequired = true, desc = "nmcac.searchcustomviewdataapi.input.param.desc.searchmode"),
+            @Param(name = "groupBy", type = ApiParamType.STRING, desc = "nmcac.searchcustomviewdataapi.input.param.desc.groupby"),
+            @Param(name = "attrFilterList", type = ApiParamType.JSONARRAY, desc = "nmcac.exportcientityapi.input.param.desc.attrfilterlist"),
+            @Param(name = "keyword", type = ApiParamType.STRING, desc = "common.keyword"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize"),
+            @Param(name = "mode", type = ApiParamType.ENUM, rule = "page,api", desc = "nmcac.searchcustomviewdataapi.input.param.desc.mode")
     })
-    @Output({@Param(name = "dataList", type = ApiParamType.JSONARRAY, desc = "结果集"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页码"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页大小")})
+    @Output({@Param(name = "dataList", type = ApiParamType.JSONARRAY, desc = "nmcac.searchcustomviewdataapi.output.param.desc.datalist"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize")})
     @Example(example = "{\"id\":588094621147136,\"keyword\":\"\",\"pageSize\":20,\"searchMode\":\"normal\",\"currentPage\":1,\"attrFilterList\":[{\"attrUuid\":\"546d7fb7276e40f889cd131e22bb547a\",\"valueList\":[\"192.168.0.22\"],\"expression\":\"like\",\"type\":\"attr\"}]}")
-    @Description(desc = "查询自定义视图数据接口")
+    @Description(desc = "nmcac.searchcustomviewdataapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long id = paramObj.getLong("id");
@@ -93,21 +93,23 @@ public class SearchCustomViewDataApi extends PrivateApiComponentBase {
         CustomViewVo customViewVo = null;
         if (id != null) {
             customViewVo = customViewMapper.getCustomViewById(id);
-            if (customViewVo == null) {
-                throw new CustomViewNotFoundException(id);
-            }
         } else if (StringUtils.isNotBlank(name)) {
             customViewVo = customViewMapper.getCustomViewByName(name);
-            if (customViewVo == null) {
-                throw new CustomViewNotFoundException(name);
-            }
+        }
+        if (customViewVo == null) {
+            throw new CustomViewNotFoundException(name);
         }
         customViewConditionVo.setCustomViewId(customViewVo.getId());
         JSONObject returnObj = new JSONObject();
+
         if (customViewConditionVo.getSearchMode().equals(SearchMode.NORMAL.getValue())) {
             returnObj.put("dataList", customViewDataService.searchCustomViewData(customViewConditionVo));
+            returnObj.put("dataCount", customViewConditionVo.getRowNum());
+            returnObj.put("dataLimit", customViewConditionVo.getLimit());
         } else if (customViewConditionVo.getSearchMode().equals(SearchMode.GROUP.getValue())) {
             returnObj.put("dataList", customViewDataService.searchCustomViewDataGroup(customViewConditionVo));
+            returnObj.put("dataCount", customViewConditionVo.getRowNum());
+            returnObj.put("dataLimit", customViewConditionVo.getLimit());
         } else {
             returnObj.put("dataList", customViewDataService.searchCustomViewDataFlatten(customViewConditionVo));
         }

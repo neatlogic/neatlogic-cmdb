@@ -17,6 +17,41 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="neatlogic.module.cmdb.dao.mapper.customview.CustomViewDataMapper">
+
+    <select id="searchCustomViewDataGroupCount"
+            parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewConditionVo"
+            resultType="int">
+        select count(1) from (
+        SELECT DISTINCT (CASE
+        WHEN `${groupBy}` IS NULL THEN '【空值】'
+        WHEN `${groupBy}` = '' THEN '【空值】'
+        ELSE `${groupBy}` END) AS `value`,
+        MIN(CASE
+        WHEN `${groupBy}_hash` IS NULL THEN 'isnull'
+        ELSE `${groupBy}_hash` END) AS valueHash,
+        count((CASE
+        WHEN `${groupBy}` IS NULL THEN '【空值】'
+        WHEN `${groupBy}` = '' THEN '【空值】'
+        ELSE `${groupBy}` END)) AS `count`
+        FROM
+        (<include refid="searchCustomViewDataSql"/>) t
+        <where>
+            <if test="valueFilterList != null and valueFilterList.size() > 0">
+                <foreach collection="valueFilterList" item="valueFilter">
+                    <if test="valueFilter.value != null and valueFilter.value != '' and valueFilter.value != 'isnull'">
+                        AND `${valueFilter.uuid}_hash` = #{valueFilter.value}
+                    </if>
+                    <if test="valueFilter.value == 'isnull'">
+                        AND `${valueFilter.uuid}_hash` IS NULL
+                    </if>
+                </foreach>
+            </if>
+        </where>
+        GROUP BY
+        `value`
+        LIMIT #{limit}) tmp
+    </select>
+
     <select id="searchCustomViewDataGroup"
             parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewConditionVo"
             resultType="neatlogic.framework.cmdb.dto.customview.CustomViewDataGroupVo">
@@ -50,17 +85,7 @@
         LIMIT #{startNum}, #{pageSizePlus}
     </select>
 
-    <sql id="searchCustomViewDataSql">
-        SELECT
-        id
-        <if test="fieldList != null and fieldList.size() > 0">
-            ,
-            <foreach collection="fieldList" item="field" separator=",">
-                GROUP_CONCAT(distinct `${field.name}`) AS `${field.name}`,
-                MD5(GROUP_CONCAT(distinct `${field.name}`)) AS `${field.name}_hash`
-            </foreach>
-        </if>
-        FROM ${viewName}
+    <sql id="searchCustomViewDataCondition">
         <where>
             <if test="keyword != null and keyword != '' and fieldList != null and fieldList.size() > 0">
                 AND
@@ -118,6 +143,20 @@
                 </foreach>
             </if>
         </where>
+    </sql>
+
+    <sql id="searchCustomViewDataSql">
+        SELECT
+        id
+        <if test="fieldList != null and fieldList.size() > 0">
+            ,
+            <foreach collection="fieldList" item="field" separator=",">
+                GROUP_CONCAT(distinct `${field.name}`) AS `${field.name}`,
+                MD5(GROUP_CONCAT(distinct `${field.name}`)) AS `${field.name}_hash`
+            </foreach>
+        </if>
+        FROM ${viewName}
+        <include refid="searchCustomViewDataCondition"></include>
         GROUP BY id
     </sql>
 
@@ -212,6 +251,28 @@
         LIMIT
         #{startNum},
         #{pageSizePlus}
+    </select>
+
+    <select id="searchCustomViewDataCount" parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewConditionVo"
+            resultType="int">
+        select count(1) from (
+        SELECT * FROM (
+        <include refid="searchCustomViewDataSql"></include>
+        ) t
+        <where>
+            <if test="valueFilterList != null and valueFilterList.size() > 0">
+                <foreach collection="valueFilterList" item="valueFilter">
+                    <if test="valueFilter.value != null and valueFilter.value != '' and valueFilter.value != 'isnull'">
+                        AND `${valueFilter.uuid}_hash` = #{valueFilter.value}
+                    </if>
+                    <if test="valueFilter.value == 'isnull'">
+                        AND `${valueFilter.uuid}_hash` IS NULL
+                    </if>
+                </foreach>
+            </if>
+        </where>
+        LIMIT
+        #{limit}) tmp
     </select>
 
     <select id="getCustomViewCiEntityById"

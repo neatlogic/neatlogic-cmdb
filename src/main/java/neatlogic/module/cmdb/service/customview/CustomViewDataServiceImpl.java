@@ -162,6 +162,8 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
         customViewConditionVo.setFieldList(customViewConditionFieldList);
 
         List<Map<String, Object>> dataList = customViewDataMapper.searchCustomViewData(customViewConditionVo);
+        int rowNum = customViewDataMapper.searchCustomViewDataCount(customViewConditionVo);
+        customViewConditionVo.setRowNum(rowNum);
         if (CollectionUtils.isNotEmpty(customViewConditionVo.getValueFilterList())) {
             for (Map<String, Object> data : dataList) {
                 //必须要复制一份，否则序列化成json会出错
@@ -261,6 +263,8 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
         customViewConditionVo.setFieldList(customViewConditionFieldList);
 
         List<CustomViewDataGroupVo> groupList = customViewDataMapper.searchCustomViewDataGroup(customViewConditionVo);
+        int rowNum = customViewDataMapper.searchCustomViewDataGroupCount(customViewConditionVo);
+        customViewConditionVo.setRowNum(rowNum);
         for (CustomViewDataGroupVo customViewDataGroupVo : groupList) {
             if (customViewAttrVo != null) {
                 customViewDataGroupVo.setAttrAlias(customViewAttrVo.getAlias());

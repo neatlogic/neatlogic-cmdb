@@ -30,6 +30,7 @@ public interface CustomViewDataService {
 
     List<Map<String, Object>> searchCustomViewDataFlatten(CustomViewConditionVo customViewConditionVo);
 
+
     List<Map<String, Object>> searchCustomViewData(CustomViewConditionVo customViewConditionVo);
 
 
