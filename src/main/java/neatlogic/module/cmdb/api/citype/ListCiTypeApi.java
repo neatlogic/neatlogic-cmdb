@@ -45,7 +45,7 @@ public class ListCiTypeApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取模型类型列表";
+        return "nmcac.listcitypeapi.getname";
     }
 
     @Override
@@ -54,7 +54,7 @@ public class ListCiTypeApi extends PrivateApiComponentBase {
     }
 
     @Output({@Param(explode = CiTypeVo[].class)})
-    @Description(desc = "获取模型类型列表接口")
+    @Description(desc = "nmcac.listcitypeapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         return ciTypeMapper.searchCiType(new CiTypeVo());

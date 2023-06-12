@@ -50,7 +50,7 @@ public class SaveAllCiTypeApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "批量保存模型类型";
+        return "nmcac.saveallcitypeapi.getname";
     }
 
     @Override
@@ -59,8 +59,8 @@ public class SaveAllCiTypeApi extends PrivateApiComponentBase {
     }
 
     @Input({@Param(name = "ciTypeList", isRequired = true, explode = CiTypeVo[].class, type = ApiParamType.JSONARRAY,
-        desc = "模型类型列表")})
-    @Description(desc = "批量保存模型类型接口")
+            desc = "nmcac.saveallcitypeapi.input.param.desc.citypelist")})
+    @Description(desc = "nmcac.saveallcitypeapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONArray ciTypeList = jsonObj.getJSONArray("ciTypeList");

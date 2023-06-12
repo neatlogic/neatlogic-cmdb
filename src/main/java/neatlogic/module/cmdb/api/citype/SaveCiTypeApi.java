@@ -47,7 +47,7 @@ public class SaveCiTypeApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存模型类型";
+        return "nmcac.savecitypeapi.getname";
     }
 
     @Override
@@ -55,10 +55,10 @@ public class SaveCiTypeApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "id，不存在代表添加"),
-        @Param(name = "name", type = ApiParamType.STRING, isRequired = true, xss = true, desc = "名称"),
-        @Param(name = "isMenu", type = ApiParamType.INTEGER, desc = "是否在菜单中显示")})
-    @Description(desc = "保存模型类型接口")
+    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "nmcac.savecitypeapi.input.param.desc.id"),
+            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, xss = true, desc = "common.name"),
+            @Param(name = "isMenu", type = ApiParamType.INTEGER, desc = "nmcac.savecitypeapi.input.param.desc.ismenu")})
+    @Description(desc = "nmcac.savecitypeapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         CiTypeVo ciTypeVo = JSONObject.toJavaObject(jsonObj, CiTypeVo.class);

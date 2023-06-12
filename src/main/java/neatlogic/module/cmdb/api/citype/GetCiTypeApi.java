@@ -43,7 +43,7 @@ public class GetCiTypeApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取模型类型信息";
+        return "nmcac.getcitypeapi.getname";
     }
 
     @Override
@@ -51,9 +51,9 @@ public class GetCiTypeApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "类型id")})
+    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "common.typeid")})
     @Output({@Param(explode = CiTypeVo.class)})
-    @Description(desc = "获取模型类型信息接口")
+    @Description(desc = "nmcac.getcitypeapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");
