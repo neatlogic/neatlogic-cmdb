@@ -16,32 +16,17 @@
 
 package neatlogic.module.cmdb.initialdata.handler;
 
-import neatlogic.framework.cmdb.dto.ci.AttrVo;
-import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.initialdata.core.IAfterInitialDataImportHandler;
-import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
-import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
-import neatlogic.module.cmdb.dao.mapper.cischema.CiSchemaMapper;
 import neatlogic.module.cmdb.service.ci.CiService;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.List;
 
 @Service
 public class CmdbAfterInitialDataImportHandler implements IAfterInitialDataImportHandler {
-    @Resource
-    private CiSchemaMapper ciSchemaMapper;
-
-    @Resource
-    private AttrMapper attrMapper;
 
     @Resource
     private CiService ciService;
-
-    @Resource
-    private CiMapper ciMapper;
 
     @Override
     public String getModuleId() {
@@ -55,21 +40,6 @@ public class CmdbAfterInitialDataImportHandler implements IAfterInitialDataImpor
 
     @Override
     public void execute() {
-        List<CiVo> ciList = ciMapper.searchCi(new CiVo());
-        for (CiVo ciVo : ciList) {
-            if (ciVo.getIsVirtual().equals(0)) {
-                List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
-                ciVo.setAttrList(attrList);
-                ciSchemaMapper.initCiTable(ciVo);
-            } else {
-                //创建视图
-                String viewXml = ciMapper.getCiViewXmlById(ciVo.getId());
-                if (StringUtils.isNotBlank(viewXml)) {
-                    ciVo.setViewXml(viewXml);
-                    ciService.buildCiView(ciVo);
-                }
-            }
-        }
-
+        ciService.initCiTableView();
     }
 }

@@ -16,19 +16,20 @@ limitations under the License.
 
 package neatlogic.module.cmdb.startup.handler;
 
-import neatlogic.framework.rebuilddatabaseview.core.RebuildDataBaseViewManager;
 import neatlogic.framework.tenantinit.TenantInitBase;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import neatlogic.module.cmdb.service.ci.CiService;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
 
 /**
  * @author linbq
  * @since 2022/2/9 12:12
  **/
 @Component
-public class CreateResourceViewStartupHandler extends TenantInitBase {
-    private final Logger logger = LoggerFactory.getLogger(CreateResourceViewStartupHandler.class);
+public class CreateCiTableViewInitHandler extends TenantInitBase {
+    @Resource
+    private CiService ciService;
 
     /**
      * 作业名称
@@ -37,15 +38,13 @@ public class CreateResourceViewStartupHandler extends TenantInitBase {
      */
     @Override
     public String getName() {
-        return "创建资源中心视图";
+        return "创建ci动态表或视图";
     }
 
-    /**
-     * 每个租户分别执行
-     */
+
     @Override
     public void execute() {
-        RebuildDataBaseViewManager.execute();
+        ciService.initCiTableView();
     }
 
     /**
@@ -55,6 +54,6 @@ public class CreateResourceViewStartupHandler extends TenantInitBase {
      */
     @Override
     public int sort() {
-        return 4;
+        return 1;
     }
 }

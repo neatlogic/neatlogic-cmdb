@@ -484,4 +484,23 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
         ciVo.setAttrList(attrList);
         return ciVo;
     }
+
+    @Override
+    public void initCiTableView(){
+        List<CiVo> ciList = ciMapper.searchCi(new CiVo());
+        for (CiVo ciVo : ciList) {
+            if (ciVo.getIsVirtual().equals(0)) {
+                List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
+                ciVo.setAttrList(attrList);
+                ciSchemaMapper.initCiTable(ciVo);
+            } else {
+                //创建视图
+                String viewXml = ciMapper.getCiViewXmlById(ciVo.getId());
+                if (StringUtils.isNotBlank(viewXml)) {
+                    ciVo.setViewXml(viewXml);
+                    buildCiView(ciVo);
+                }
+            }
+        }
+    }
 }

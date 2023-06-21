@@ -47,4 +47,9 @@ public interface CiService {
 
 
     CiVo getCiByName(String ciName);
+
+    /**
+     * 创建ci动态表和视图
+     */
+    void initCiTableView();
 }
