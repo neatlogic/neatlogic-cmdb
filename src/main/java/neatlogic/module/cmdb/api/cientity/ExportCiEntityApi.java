@@ -88,6 +88,7 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
 
     @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid"),
             @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "common.keyword"),
+            @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "nmcac.exportcientityapi.input.param.desc.idlist"),
             @Param(name = "showAttrRelList", type = ApiParamType.JSONARRAY, desc = "nmcac.exportcientityapi.input.param.desc.showattrrellist"),
             @Param(name = "attrFilterList", type = ApiParamType.STRING, desc = "nmcac.exportcientityapi.input.param.desc.attrfilterlist"),
             @Param(name = "relFilterList", type = ApiParamType.JSONARRAY, desc = "nmcac.exportcientityapi.input.param.desc.relfilterlist")
@@ -96,6 +97,7 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
     @Override
     //TODO 后续要对数据进行优化防止OOM
     public Object myDoService(JSONObject jsonObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
+        JSONArray idList = jsonObj.getJSONArray("idList");
         CiEntityVo ciEntityVo = JSONObject.toJavaObject(jsonObj, CiEntityVo.class);
         JSONArray showAttrRelList = jsonObj.getJSONArray("showAttrRelList");
         Set<String> showAttrRelSet = new HashSet<>();
@@ -211,8 +213,13 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
                 }
                 sheetBuilder.addData(dataMap);
             }
-            ciEntityVo.setCurrentPage(ciEntityVo.getCurrentPage() + 1);
-            ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
+            //如果从外部传入idList，就不需要进一步查询下一页数据了
+            if (CollectionUtils.isEmpty(idList)) {
+                ciEntityVo.setCurrentPage(ciEntityVo.getCurrentPage() + 1);
+                ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
+            } else {
+                break;
+            }
         }
 
 
