@@ -308,6 +308,19 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
     }
 
     @Override
+    protected MatrixVo myExportMatrix(MatrixVo matrixVo) {
+        myGetMatrix(matrixVo);
+        return matrixVo;
+    }
+
+    @Override
+    protected void myImportMatrix(MatrixVo matrixVo) {
+        matrixMapper.deleteMatrixCiByMatrixUuid(matrixVo.getUuid());
+        MatrixCiVo matrixCiVo = new MatrixCiVo(matrixVo.getUuid(), matrixVo.getCiId(), matrixVo.getConfig());
+        matrixMapper.replaceMatrixCi(matrixCiVo);
+    }
+
+    @Override
     protected void mySaveAttributeList(String matrixUuid, List<MatrixAttributeVo> matrixAttributeList) {
 
     }
