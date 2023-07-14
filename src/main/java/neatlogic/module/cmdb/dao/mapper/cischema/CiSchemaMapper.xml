@@ -127,7 +127,17 @@
                 </if>
             </foreach>
         </if>
-        PRIMARY KEY (`cientity_id`)
+        <if test="attrList!=null and attrList.size() > 0">
+            <foreach collection="attrList" item="attrVo">
+                <if test="attrVo.ciId == id and attrVo.targetCiId == null">
+                    <if test="attrVo.type == 'number' or attrVo.type == 'date' or attrVo.type == 'time' or attrVo.type == 'datetime' or attrVo.type == 'enum'">
+                        KEY `index_${attrVo.id}` (`${attrVo.id}`) USING BTREE,
+                    </if>
+                    KEY `index_${attrVo.id}_hash` (`${attrVo.id}_hash`) USING BTREE,
+                </if>
+            </foreach>
+        </if>
+        PRIMARY KEY (`cientity_id`) USING BTREE
         ) ENGINE = INNODB
         DEFAULT CHARSET = utf8mb4
     </insert>
