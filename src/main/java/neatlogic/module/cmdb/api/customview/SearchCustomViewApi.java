@@ -29,7 +29,6 @@ import neatlogic.framework.dto.AuthenticationInfoVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.service.AuthenticationInfoService;
 import neatlogic.module.cmdb.service.customview.CustomViewService;
 import org.springframework.stereotype.Service;
 
@@ -44,12 +43,9 @@ public class SearchCustomViewApi extends PrivateApiComponentBase {
     @Resource
     private CustomViewService customViewService;
 
-    @Resource
-    private AuthenticationInfoService authenticationInfoService;
-
     @Override
     public String getName() {
-        return "查询自定义视图";
+        return "nmcac.searchcustomviewapi.getname";
     }
 
     @Override
@@ -57,24 +53,24 @@ public class SearchCustomViewApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字", xss = true),
-            @Param(name = "tagId", type = ApiParamType.LONG, desc = "标签"),
-            @Param(name = "isActive", type = ApiParamType.INTEGER, desc = "是否激活"),
-            @Param(name = "ciId", type = ApiParamType.LONG, desc = "模型id", help = "查询场景自定义视图时才需要提供"),
-            @Param(name = "startCiId", type = ApiParamType.LONG, desc = "起始模型id"),
+    @Input({@Param(name = "keyword", type = ApiParamType.STRING, desc = "common.keyword", xss = true),
+            @Param(name = "tagId", type = ApiParamType.LONG, desc = "common.tagid"),
+            @Param(name = "isActive", type = ApiParamType.INTEGER, desc = "common.isactive"),
+            @Param(name = "ciId", type = ApiParamType.LONG, desc = "term.cmdb.ciid", help = "nmcac.searchcustomviewapi.input.param.help.ciid"),
+            @Param(name = "startCiId", type = ApiParamType.LONG, desc = "term.cmdb.startciid"),
             @Param(name = "currentPage",
                     type = ApiParamType.INTEGER,
-                    desc = "当前页"),
+                    desc = "common.currentpage"),
             @Param(name = "pageSize",
                     type = ApiParamType.INTEGER,
-                    desc = "每页数据条目"),
+                    desc = "common.pagesize"),
             @Param(name = "needPage",
                     type = ApiParamType.BOOLEAN,
-                    desc = "是否需要分页，默认true")
+                    desc = "common.isneedpage")
     })
     @Output({@Param(explode = BasePageVo.class),
             @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = CustomViewVo[].class)})
-    @Description(desc = "根据用户权限查询自定义视图，包括用户的个人视图和公共视图")
+    @Description(desc = "nmcac.searchcustomviewapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         CustomViewVo customViewVo = JSONObject.toJavaObject(paramObj, CustomViewVo.class);
@@ -83,7 +79,7 @@ public class SearchCustomViewApi extends PrivateApiComponentBase {
         if (AuthActionChecker.check(CUSTOMVIEW_MODIFY.class.getSimpleName())) {
             customViewVo.setAdmin(true);
         } else {
-            AuthenticationInfoVo authenticationInfoVo = authenticationInfoService.getAuthenticationInfo(userUuid);
+            AuthenticationInfoVo authenticationInfoVo = UserContext.get().getAuthenticationInfoVo();
             customViewVo.setUserUuid(authenticationInfoVo.getUserUuid());
             customViewVo.setTeamUuidList(authenticationInfoVo.getTeamUuidList());
             customViewVo.setRoleUuidList(authenticationInfoVo.getRoleUuidList());
