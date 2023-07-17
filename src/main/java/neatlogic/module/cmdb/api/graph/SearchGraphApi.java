@@ -29,7 +29,6 @@ import neatlogic.framework.dto.AuthenticationInfoVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.service.AuthenticationInfoService;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.cmdb.dao.mapper.graph.GraphMapper;
 import org.apache.commons.collections4.CollectionUtils;
@@ -43,13 +42,8 @@ import java.util.List;
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class SearchGraphApi extends PrivateApiComponentBase {
 
-
     @Resource
     private GraphMapper graphMapper;
-
-    @Resource
-    private AuthenticationInfoService authenticationInfoService;
-
 
     @Override
     public String getToken() {
@@ -58,7 +52,7 @@ public class SearchGraphApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "搜索拓扑视图";
+        return "nmcag.searchgraphapi.getname";
     }
 
     @Override
@@ -66,16 +60,16 @@ public class SearchGraphApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字"),
-            @Param(name = "excludeId", type = ApiParamType.LONG, desc = "排除id"),
-            @Param(name = "hasParent", type = ApiParamType.BOOLEAN, desc = "是否拥有父视图"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
-            @Param(name = "ciEntityId", type = ApiParamType.LONG, desc = "配置项id"),
-            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "页数大小")})
-    @Output({@Param(name = "tbodyList", explode = GraphVo[].class, desc = "拓扑图列表"),
+    @Input({@Param(name = "keyword", type = ApiParamType.STRING, desc = "common.keyword"),
+            @Param(name = "excludeId", type = ApiParamType.LONG, desc = "common.excludeid"),
+            @Param(name = "hasParent", type = ApiParamType.BOOLEAN, desc = "common.hasparent"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage"),
+            @Param(name = "ciEntityId", type = ApiParamType.LONG, desc = "term.cmdb.cientityid"),
+            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "common.isneedpage"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize")})
+    @Output({@Param(name = "tbodyList", explode = GraphVo[].class, desc = "common.tbodylist"),
             @Param(explode = BasePageVo.class)})
-    @Description(desc = "搜索拓扑视图接口")
+    @Description(desc = "nmcag.searchgraphapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         GraphVo graphVo = JSONObject.toJavaObject(jsonObj, GraphVo.class);
@@ -84,7 +78,7 @@ public class SearchGraphApi extends PrivateApiComponentBase {
         if (AuthActionChecker.check(CUSTOMVIEW_MODIFY.class.getSimpleName())) {
             graphVo.setAdmin(true);
         } else {
-            AuthenticationInfoVo authenticationInfoVo = authenticationInfoService.getAuthenticationInfo(userUuid);
+            AuthenticationInfoVo authenticationInfoVo = UserContext.get().getAuthenticationInfoVo();
             graphVo.setUserUuid(authenticationInfoVo.getUserUuid());
             graphVo.setTeamUuidList(authenticationInfoVo.getTeamUuidList());
             graphVo.setRoleUuidList(authenticationInfoVo.getRoleUuidList());

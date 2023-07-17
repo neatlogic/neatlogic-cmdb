@@ -207,8 +207,8 @@ public class CiEntityGroupManager {
     }
 
     public static boolean checkCiEntityIsInUserGroup(CiEntityVo ciEntityVo) {
-        String userUuid = UserContext.get().getUserUuid(true);
-        List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(userUuid);
+        String userUuid = UserContext.get().getUserUuid();
+        List<String> teamUuidList = UserContext.get().getTeamUuidList();
         List<String> roleUuidList = UserContext.get().getRoleUuidList();
         List<GroupVo> groupList = groupMapper.getGroupByUserUuid(userUuid, teamUuidList, roleUuidList);
         if (CollectionUtils.isNotEmpty(groupList)) {

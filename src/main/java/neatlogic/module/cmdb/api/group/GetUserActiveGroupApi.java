@@ -20,7 +20,6 @@ import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.dto.group.GroupVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.dao.mapper.TeamMapper;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -40,10 +39,6 @@ public class GetUserActiveGroupApi extends PrivateApiComponentBase {
     @Resource
     private GroupMapper groupMapper;
 
-    @Resource
-    private TeamMapper teamMapper;
-
-
     @Override
     public String getToken() {
         return "/cmdb/group/getuseractivegroup";
@@ -51,7 +46,7 @@ public class GetUserActiveGroupApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取当前用户激活团体列表";
+        return "nmcag.getuseractivegroupapi.getname";
     }
 
     @Override
@@ -59,14 +54,14 @@ public class GetUserActiveGroupApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id")})
+    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid")})
     @Output({@Param(explode = GroupVo[].class)})
-    @Description(desc = "获取当前用户激活团体列表接口")
+    @Description(desc = "nmcag.getuseractivegroupapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("ciId");
-        String userUuid = UserContext.get().getUserUuid(true);
-        List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(userUuid);
+        String userUuid = UserContext.get().getUserUuid();
+        List<String> teamUuidList = UserContext.get().getTeamUuidList();
         List<String> roleUuidList = UserContext.get().getRoleUuidList();
         List<Long> groupIdList = groupMapper.getGroupIdByUserUuid(userUuid, teamUuidList, roleUuidList);
         List<GroupVo> groupList = groupMapper.getActiveGroupByCiId(ciId);

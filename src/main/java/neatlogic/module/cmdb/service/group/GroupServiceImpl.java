@@ -21,7 +21,6 @@ import neatlogic.framework.cmdb.dto.group.CiGroupVo;
 import neatlogic.framework.cmdb.dto.group.GroupAuthVo;
 import neatlogic.framework.cmdb.dto.group.GroupVo;
 import neatlogic.framework.cmdb.exception.group.GroupNotFoundException;
-import neatlogic.framework.dao.mapper.TeamMapper;
 import neatlogic.module.cmdb.dao.mapper.group.GroupMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,14 +36,11 @@ public class GroupServiceImpl implements GroupService {
     @Autowired
     private GroupMapper groupMapper;
 
-    @Autowired
-    private TeamMapper teamMapper;
-
 
     @Override
     public List<Long> getCurrentUserGroupIdList() {
-        String userUuid = UserContext.get().getUserUuid(true);
-        List<String> teamUuidList = teamMapper.getTeamUuidListByUserUuid(userUuid);
+        String userUuid = UserContext.get().getUserUuid();
+        List<String> teamUuidList = UserContext.get().getTeamUuidList();
         List<String> roleUuidList = UserContext.get().getRoleUuidList();
         return groupMapper.getGroupIdByUserUuid(userUuid, teamUuidList, roleUuidList);
     }
