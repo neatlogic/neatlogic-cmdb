@@ -24,7 +24,6 @@ import neatlogic.framework.cmdb.enums.group.GroupType;
 import neatlogic.framework.common.constvalue.UserType;
 import neatlogic.framework.cmdb.auth.label.CIENTITY_MODIFY;
 import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
-import neatlogic.framework.dto.AuthenticationInfoVo;
 import neatlogic.module.cmdb.dao.mapper.ci.CiAuthMapper;
 import neatlogic.module.cmdb.dao.mapper.group.GroupMapper;
 import org.apache.commons.collections4.CollectionUtils;
@@ -51,10 +50,9 @@ public class CiAuthChecker {
     }
 
     public static boolean hasPrivilege(List<CiAuthVo> authList, CiAuthType... auths) {
-        AuthenticationInfoVo authenticationInfoVo = UserContext.get().getAuthenticationInfoVo();
-        String userUuid = authenticationInfoVo.getUserUuid();
-        List<String> teamUuidList = authenticationInfoVo.getTeamUuidList();
-        List<String> roleUuidList = authenticationInfoVo.getRoleUuidList();
+        String userUuid = UserContext.get().getUserUuid();
+        List<String> teamUuidList = UserContext.get().getTeamUuidList();
+        List<String> roleUuidList = UserContext.get().getRoleUuidList();
         for (CiAuthVo ciAuthVo : authList) {
             for (CiAuthType auth : auths) {
                 if (ciAuthVo.getAction().equals(auth.getValue())) {
@@ -245,10 +243,9 @@ public class CiAuthChecker {
     }
 
     public static List<Long> isCiInGroup(List<Long> ciIdList, GroupType... groupType) {
-        AuthenticationInfoVo authenticationInfoVo = UserContext.get().getAuthenticationInfoVo();
-        String userUuid = authenticationInfoVo.getUserUuid();
-        List<String> teamUuidList = authenticationInfoVo.getTeamUuidList();
-        List<String> roleUuidList = authenticationInfoVo.getRoleUuidList();
+        String userUuid = UserContext.get().getUserUuid();
+        List<String> teamUuidList = UserContext.get().getTeamUuidList();
+        List<String> roleUuidList = UserContext.get().getRoleUuidList();
         // 获取当前用户属于哪个圈子
         List<Long> groupIdList = instance.groupMapper.getGroupIdByUserUuid(userUuid, teamUuidList, roleUuidList);
         List<String> groupTypeList = new ArrayList<>();
@@ -264,10 +261,9 @@ public class CiAuthChecker {
     }
 
     public static List<Long> isCiEntityInGroup(List<Long> ciEntityIdList, GroupType... groupType) {
-        AuthenticationInfoVo authenticationInfoVo = UserContext.get().getAuthenticationInfoVo();
-        String userUuid = authenticationInfoVo.getUserUuid();
-        List<String> teamUuidList = authenticationInfoVo.getTeamUuidList();
-        List<String> roleUuidList = authenticationInfoVo.getRoleUuidList();
+        String userUuid = UserContext.get().getUserUuid();
+        List<String> teamUuidList = UserContext.get().getTeamUuidList();
+        List<String> roleUuidList = UserContext.get().getRoleUuidList();
         // 获取当前用户属于哪个圈子
         List<Long> groupIdList = instance.groupMapper.getGroupIdByUserUuid(userUuid, teamUuidList, roleUuidList);
         List<String> groupTypeList = new ArrayList<>();

@@ -20,7 +20,6 @@ import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.dto.group.GroupVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.dto.AuthenticationInfoVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -61,10 +60,9 @@ public class GetUserActiveGroupApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("ciId");
-        AuthenticationInfoVo authenticationInfoVo = UserContext.get().getAuthenticationInfoVo();
-        String userUuid = authenticationInfoVo.getUserUuid();
-        List<String> teamUuidList = authenticationInfoVo.getTeamUuidList();
-        List<String> roleUuidList = authenticationInfoVo.getRoleUuidList();
+        String userUuid = UserContext.get().getUserUuid();
+        List<String> teamUuidList = UserContext.get().getTeamUuidList();
+        List<String> roleUuidList = UserContext.get().getRoleUuidList();
         List<Long> groupIdList = groupMapper.getGroupIdByUserUuid(userUuid, teamUuidList, roleUuidList);
         List<GroupVo> groupList = groupMapper.getActiveGroupByCiId(ciId);
         groupList.removeIf(group -> !groupIdList.contains(group.getId()));

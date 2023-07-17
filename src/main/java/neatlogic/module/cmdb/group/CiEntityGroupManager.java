@@ -21,7 +21,6 @@ import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.group.*;
 import neatlogic.framework.cmdb.enums.group.Status;
 import neatlogic.framework.dao.mapper.TeamMapper;
-import neatlogic.framework.dto.AuthenticationInfoVo;
 import neatlogic.framework.exception.core.ApiRuntimeException;
 import neatlogic.framework.transaction.core.AfterTransactionJob;
 import neatlogic.framework.util.javascript.JavascriptUtil;
@@ -208,10 +207,9 @@ public class CiEntityGroupManager {
     }
 
     public static boolean checkCiEntityIsInUserGroup(CiEntityVo ciEntityVo) {
-        AuthenticationInfoVo authenticationInfoVo = UserContext.get().getAuthenticationInfoVo();
-        String userUuid = authenticationInfoVo.getUserUuid();
-        List<String> teamUuidList = authenticationInfoVo.getTeamUuidList();
-        List<String> roleUuidList = authenticationInfoVo.getRoleUuidList();
+        String userUuid = UserContext.get().getUserUuid();
+        List<String> teamUuidList = UserContext.get().getTeamUuidList();
+        List<String> roleUuidList = UserContext.get().getRoleUuidList();
         List<GroupVo> groupList = groupMapper.getGroupByUserUuid(userUuid, teamUuidList, roleUuidList);
         if (CollectionUtils.isNotEmpty(groupList)) {
             for (GroupVo groupVo : groupList) {
