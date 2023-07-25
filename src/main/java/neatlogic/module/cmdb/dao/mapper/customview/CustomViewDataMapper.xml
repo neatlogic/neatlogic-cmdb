@@ -39,7 +39,8 @@
             <if test="valueFilterList != null and valueFilterList.size() > 0">
                 <foreach collection="valueFilterList" item="valueFilter">
                     <if test="valueFilter.value != null and valueFilter.value != '' and valueFilter.value != 'isnull'">
-                        AND `${valueFilter.uuid}_hash` = #{valueFilter.value}
+                        AND `${valueFilter.uuid}_hash` =
+                        #{valueFilter.value}
                     </if>
                     <if test="valueFilter.value == 'isnull'">
                         AND `${valueFilter.uuid}_hash` IS NULL
@@ -72,7 +73,8 @@
             <if test="valueFilterList != null and valueFilterList.size() > 0">
                 <foreach collection="valueFilterList" item="valueFilter">
                     <if test="valueFilter.value != null and valueFilter.value != '' and valueFilter.value != 'isnull'">
-                        AND `${valueFilter.uuid}_hash` = #{valueFilter.value}
+                        AND `${valueFilter.uuid}_hash` =
+                        #{valueFilter.value}
                     </if>
                     <if test="valueFilter.value == 'isnull'">
                         AND `${valueFilter.uuid}_hash` IS NULL
@@ -91,7 +93,10 @@
                 AND
                 <foreach collection="fieldList" item="field" separator="OR" open="(" close=")">
                     <if test="field.type == 'attr' or field.type == 'constattr'">
-                        `${field.name}` LIKE CONCAT('%', #{keyword},'%')
+                        `${field.name}` LIKE CONCAT('%',
+                        #{keyword},
+                        '%'
+                        )
                     </if>
                 </foreach>
             </if>
@@ -123,12 +128,27 @@
                                 </choose>
                             </when>
                             <when test="attrFilter.expression == 'like'">
-                                `${attrFilter.attrUuid}` LIKE
-                                CONCAT('%',#{attrFilter.value},'%')
+                                <if test="attrFilter.valueList != null and attrFilter.valueList.size() > 0">
+                                    <foreach collection="attrFilter.valueList" item="value" open="(" close=")"
+                                             separator="or">
+                                        `${attrFilter.attrUuid}` LIKE
+                                        CONCAT('%',
+                                        #{value},
+                                        '%'
+                                        )
+                                    </foreach>
+                                </if>
                             </when>
                             <when test="attrFilter.expression == 'notlike'">
-                                (`${attrFilter.attrUuid}` NOT LIKE
-                                CONCAT('%',#{attrFilter.value},'%') or `${attrFilter.attrUuid}` is null)
+                                <if test="attrFilter.valueList != null and attrFilter.valueList.size() > 0">
+                                    (
+                                    <foreach collection="attrFilter.valueList" item="value" open="(" close=")"
+                                             separator="and">
+                                        `${attrFilter.attrUuid}` NOT LIKE
+                                        CONCAT('%',#{value},'%')
+                                    </foreach>
+                                    or `${attrFilter.attrUuid}` is null)
+                                </if>
                             </when>
                             <when test="attrFilter.expression == 'is-null'">
                                 (`${attrFilter.attrUuid}` IS NULL OR
@@ -175,7 +195,10 @@
                 AND
                 <foreach collection="fieldList" item="field" separator="OR" open="(" close=")">
                     <if test="field.type == 'attr' or field.type == 'constattr'">
-                        `${field.name}` LIKE CONCAT('%', #{keyword},'%')
+                        `${field.name}` LIKE CONCAT('%',
+                        #{keyword},
+                        '%'
+                        )
                     </if>
                 </foreach>
             </if>
@@ -240,7 +263,8 @@
             <if test="valueFilterList != null and valueFilterList.size() > 0">
                 <foreach collection="valueFilterList" item="valueFilter">
                     <if test="valueFilter.value != null and valueFilter.value != '' and valueFilter.value != 'isnull'">
-                        AND `${valueFilter.uuid}_hash` = #{valueFilter.value}
+                        AND `${valueFilter.uuid}_hash` =
+                        #{valueFilter.value}
                     </if>
                     <if test="valueFilter.value == 'isnull'">
                         AND `${valueFilter.uuid}_hash` IS NULL
@@ -263,7 +287,8 @@
             <if test="valueFilterList != null and valueFilterList.size() > 0">
                 <foreach collection="valueFilterList" item="valueFilter">
                     <if test="valueFilter.value != null and valueFilter.value != '' and valueFilter.value != 'isnull'">
-                        AND `${valueFilter.uuid}_hash` = #{valueFilter.value}
+                        AND `${valueFilter.uuid}_hash` =
+                        #{valueFilter.value}
                     </if>
                     <if test="valueFilter.value == 'isnull'">
                         AND `${valueFilter.uuid}_hash` IS NULL
@@ -308,7 +333,10 @@
                 </foreach>
             </if>-->
             <if test="keyword != null and keyword != ''">
-                name LIKE CONCAT('%', #{keyword},'%')
+                name LIKE CONCAT('%',
+                #{keyword},
+                '%'
+                )
             </if>
         </where>
         <choose>
