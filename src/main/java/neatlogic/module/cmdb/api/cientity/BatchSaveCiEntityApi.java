@@ -289,6 +289,7 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
             @Param(name = "isSimple", type = ApiParamType.BOOLEAN, desc = "nmcac.batchsavecientityapi.input.param.desc.issimple", help = "nmcac.batchsavecientityapi.input.param.help.issimple")})
     @Output({@Param(name = "transactionGroupId", type = ApiParamType.LONG, desc = "term.cmdb.transactiongroupid"),
             @Param(name = "commited", type = ApiParamType.BOOLEAN, desc = "term.cmdb.iscommit")})
+    @ResubmitInterval
     @Description(desc = "nmcac.batchsavecientityapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
