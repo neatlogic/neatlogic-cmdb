@@ -40,11 +40,13 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
 
 @Service
+@Transactional
 @AuthAction(action = SYNC_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class CreateDiscoveryJobApi extends PrivateApiComponentBase {
