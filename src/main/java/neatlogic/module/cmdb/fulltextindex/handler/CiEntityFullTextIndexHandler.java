@@ -16,6 +16,7 @@
 
 package neatlogic.module.cmdb.fulltextindex.handler;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
 import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
@@ -32,7 +33,6 @@ import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.fulltextindex.enums.CmdbFullTextIndexType;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
@@ -70,18 +70,28 @@ public class CiEntityFullTextIndexHandler extends FullTextIndexHandlerBase {
             List<AttrEntityVo> attrEntityList = ciEntityVo.getAttrEntityList();
             if (CollectionUtils.isNotEmpty(attrEntityList)) {
                 for (AttrEntityVo attrEntityVo : attrEntityList) {
-                    if (CollectionUtils.isNotEmpty(attrEntityVo.getValueList())) {
-                        if (attrEntityVo.getToCiId() != null) {
-                            List<Long> ciEntityIdList = new ArrayList<>();
-                            for (int i = 0; i < attrEntityVo.getValueList().size(); i++) {
-                                ciEntityIdList.add(attrEntityVo.getValueList().getLong(i));
+                    /*
+                      由于expression属性的计算是异步进行的，
+                      在处理全文检索索引的时候，
+                      表达式字段可能还没计算完毕，
+                      这会导致索引数据错误获取到修改前的记录，
+                      导致搜索结果异常，所以先排除掉expression属性的数据
+                     */
+                    if (!attrEntityVo.getAttrType().equalsIgnoreCase("expression")) {
+                        if (CollectionUtils.isNotEmpty(attrEntityVo.getValueList())) {
+                            if (attrEntityVo.getToCiId() != null) {
+                                List<Long> ciEntityIdList = new ArrayList<>();
+                                for (int i = 0; i < attrEntityVo.getValueList().size(); i++) {
+                                    ciEntityIdList.add(attrEntityVo.getValueList().getLong(i));
+                                }
+                                List<CiEntityVo> targetCiEntityList = ciEntityService.getCiEntityByIdList(attrEntityVo.getToCiId(), ciEntityIdList);
+                                if (CollectionUtils.isNotEmpty(targetCiEntityList)) {
+                                    fullTextIndexVo.addFieldContent(attrEntityVo.getAttrId().toString(), new FullTextIndexVo.WordVo(targetCiEntityList.stream().map(CiEntityVo::getName).collect(Collectors.joining(","))));
+                                }
+                            } else {
+                                String word = attrEntityVo.getValueList().stream().map(Object::toString).collect(Collectors.joining(","));
+                                fullTextIndexVo.addFieldContent(attrEntityVo.getAttrId().toString(), new FullTextIndexVo.WordVo(word));
                             }
-                            List<CiEntityVo> targetCiEntityList = ciEntityService.getCiEntityByIdList(attrEntityVo.getToCiId(), ciEntityIdList);
-                            if (CollectionUtils.isNotEmpty(targetCiEntityList)) {
-                                fullTextIndexVo.addFieldContent(attrEntityVo.getAttrId().toString(), new FullTextIndexVo.WordVo(targetCiEntityList.stream().map(CiEntityVo::getName).collect(Collectors.joining(","))));
-                            }
-                        } else {
-                            fullTextIndexVo.addFieldContent(attrEntityVo.getAttrId().toString(), new FullTextIndexVo.WordVo(attrEntityVo.getValueList().stream().map(Object::toString).collect(Collectors.joining(","))));
                         }
                     }
                 }
