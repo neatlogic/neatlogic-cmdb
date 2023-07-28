@@ -1,17 +1,17 @@
 /*
-Copyright(c) 2023 NeatLogic Co., Ltd. All Rights Reserved.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+ * Copyright(c) 2023 NeatLogic Co., Ltd. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package neatlogic.module.cmdb.api.resourcecenter.resource;
@@ -55,7 +55,7 @@ public class GetResourceAccountApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取帐号密码";
+        return "获取账号密码";
     }
 
     @Override
@@ -76,12 +76,12 @@ public class GetResourceAccountApi extends PrivateApiComponentBase {
             @Param(name = "nodeType", type = ApiParamType.STRING, desc = "ci模型"),
             @Param(name = "protocol", type = ApiParamType.STRING, desc = "协议", isRequired = true),
             @Param(name = "protocolPort", type = ApiParamType.INTEGER, desc = "协议端口"),
-            @Param(name = "username", type = ApiParamType.STRING, desc = "帐号名", isRequired = true)
+            @Param(name = "username", type = ApiParamType.STRING, desc = "账号名", isRequired = true)
     })
     @Output({
             @Param(type = ApiParamType.STRING, desc = "密码"),
     })
-    @Description(desc = "根据资产id、帐号名和协议获取帐号密码")
+    @Description(desc = "根据资产id、账号名和协议获取账号密码")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
 
@@ -110,7 +110,7 @@ public class GetResourceAccountApi extends PrivateApiComponentBase {
             resourceVo = resourceMapper.getResourceById(resourceId);
         }
 
-        //如果是tagent 则通过ip 找账号， 否则根据资产绑定的帐号找
+        //如果是tagent 则通过ip 找账号， 否则根据资产绑定的账号找
         List<? extends AccountBaseVo> accountList;
         if (!Objects.equals(protocol, Protocol.TAGENT.getValue())) {
             accountList = resourceAccountMapper.getResourceAccountByResourceIdAndProtocolAndProtocolPortAndUsername(resourceVo.getId(), protocol, protocolPort, username);

@@ -1,3 +1,19 @@
+/*
+ * Copyright(c) 2023 NeatLogic Co., Ltd. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package neatlogic.module.cmdb.api.resourcecenter.resource;
 
 import neatlogic.framework.auth.core.AuthAction;
@@ -33,7 +49,7 @@ public class ResourceAccountListApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "根据资源id查询关联的帐号信息";
+        return "根据资源id查询关联的账号信息";
     }
 
     @Override
@@ -48,12 +64,12 @@ public class ResourceAccountListApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "resourceId", type = ApiParamType.LONG, isRequired = true, desc = "资源id"),
-            @Param(name = "type", type = ApiParamType.ENUM, member = AccountType.class, isRequired = true, desc = "帐号类型"),
+            @Param(name = "type", type = ApiParamType.ENUM, member = AccountType.class, isRequired = true, desc = "账号类型"),
             @Param(name = "protocol", type = ApiParamType.STRING, desc = "协议名称"),
     })
     @Output({
-            @Param(explode = AccountVo[].class, desc = "帐号列表")})
-    @Description(desc = "根据资产id获取关联帐号信息")
+            @Param(explode = AccountVo[].class, desc = "账号列表")})
+    @Description(desc = "根据资产id获取关联账号信息")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long resourceId = paramObj.getLong("resourceId");

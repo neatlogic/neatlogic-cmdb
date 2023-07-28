@@ -1,17 +1,17 @@
 /*
-Copyright(c) 2023 NeatLogic Co., Ltd. All Rights Reserved.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+ * Copyright(c) 2023 NeatLogic Co., Ltd. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package neatlogic.module.cmdb.api.resourcecenter.resource;
@@ -66,7 +66,7 @@ public class ResourceAccountSaveApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存资源帐号";
+        return "保存资源账号";
     }
 
     @Override
@@ -76,9 +76,9 @@ public class ResourceAccountSaveApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "resourceId", type = ApiParamType.LONG, isRequired = true, desc = "资源id"),
-            @Param(name = "accountIdList", type = ApiParamType.JSONARRAY, desc = "帐号id列表")
+            @Param(name = "accountIdList", type = ApiParamType.JSONARRAY, desc = "账号id列表")
     })
-    @Description(desc = "保存资源帐号")
+    @Description(desc = "保存资源账号")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         int successCount = 0;
@@ -87,7 +87,7 @@ public class ResourceAccountSaveApi extends PrivateApiComponentBase {
         if (resourceMapper.checkResourceIsExists(resourceId) == 0) {
             throw new ResourceNotFoundException(resourceId);
         }
-        // 查询该资产绑定的公有帐号列表，再根据帐号ID解绑
+        // 查询该资产绑定的公有账号列表，再根据账号ID解绑
         List<AccountVo> accountList = resourceAccountMapper.getResourceAccountListByResourceIdAndType(resourceId, AccountType.PUBLIC.getValue());
         if (CollectionUtils.isNotEmpty(accountList)) {
             List<Long> idList = accountList.stream().map(AccountVo::getId).collect(Collectors.toList());
@@ -109,7 +109,7 @@ public class ResourceAccountSaveApi extends PrivateApiComponentBase {
             if (account == null) {
                 accountVoMap.put(key, accountVo);
             } else {
-                failureReasonList.add("选中项中\"" + accountVo.getName() + "（" + accountVo.getProtocol() + "/" + accountVo.getAccount() + "）\"与\"" + account.getName() + "（" + account.getProtocol() + "/" + account.getAccount() + "）\"的协议相同且用户名相同，同一资产不可绑定多个协议相同且用户名相同的帐号");
+                failureReasonList.add("选中项中\"" + accountVo.getName() + "（" + accountVo.getProtocol() + "/" + accountVo.getAccount() + "）\"与\"" + account.getName() + "（" + account.getProtocol() + "/" + account.getAccount() + "）\"的协议相同且用户名相同，同一资产不可绑定多个协议相同且用户名相同的账号");
                 excludeAccountIdSet.add(accountVo.getId());
                 excludeAccountIdSet.add(account.getId());
             }

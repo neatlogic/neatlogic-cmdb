@@ -333,17 +333,17 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
                             hasReadCiEntityIdList = CiAuthChecker.isCiEntityInGroup(ciEntityList.stream().map(CiEntityVo::getId).collect(Collectors.toList()), GroupType.READONLY);
                         }
                     }
-                    // 前端页面显示“帐号管理”按钮的条件是当前用户有“资源中心-账号管理权限”，且那行数据对应的配置项模型是IP软硬件模型或其后代模型
+                    // 前端页面显示“账号管理”按钮的条件是当前用户有“资源中心-账号管理权限”，且那行数据对应的配置项模型是IP软硬件模型或其后代模型
                     // 判断当前用户是否有“资源中心-账号管理权限”
                     hasResourcecenterAccountModify = AuthActionChecker.check(RESOURCECENTER_ACCOUNT_MODIFY.class);
                     if (hasResourcecenterAccountModify) {
-                        // 获取IP软硬件配置项模型信息，如果找不到IP软硬件配置项模型信息，则所有行数据都不显示“帐号管理”按钮
+                        // 获取IP软硬件配置项模型信息，如果找不到IP软硬件配置项模型信息，则所有行数据都不显示“账号管理”按钮
                         CiVo ipObjectCiVo = ciMapper.getCiByName(IP_OBJECT);
                         if (ipObjectCiVo != null) {
                             // 判断当前页的配置项模型与IP软硬件配置项模型之间的关系
-                            // 1.当前页的配置项模型是IP软硬件配置项模型的祖先，这种情况需要进一步逐行判断那行数据对应的配置项模型是不是IP软硬件模型或其后代模型，如果是，则显示“帐号管理”按钮，否则不显示“帐号管理”按钮
-                            // 2.当前页的配置项模型是IP软硬件配置项模型的后代，这种情况所有行数据都显示“帐号管理”按钮
-                            // 3.其他情况所有行数据都不显示“帐号管理”按钮
+                            // 1.当前页的配置项模型是IP软硬件配置项模型的祖先，这种情况需要进一步逐行判断那行数据对应的配置项模型是不是IP软硬件模型或其后代模型，如果是，则显示“账号管理”按钮，否则不显示“账号管理”按钮
+                            // 2.当前页的配置项模型是IP软硬件配置项模型的后代，这种情况所有行数据都显示“账号管理”按钮
+                            // 3.其他情况所有行数据都不显示“账号管理”按钮
                             String result = judgmentRelation(ipObjectCiVo, ciVo);
                             Map<Long, Long> ciEntityIdToCiIdMap = ciEntityList.stream().collect(Collectors.toMap(CiEntityVo::getId, CiEntityVo::getCiId));
                             if (Objects.equals(result, PARENT)) {

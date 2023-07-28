@@ -1,17 +1,17 @@
 /*
-Copyright(c) 2023 NeatLogic Co., Ltd. All Rights Reserved.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License. 
+ * Copyright(c) 2023 NeatLogic Co., Ltd. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package neatlogic.module.cmdb.api.resourcecenter.account;
@@ -35,7 +35,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 查询资源中心帐号列表（下拉列表专用）接口
+ * 查询资源中心账号列表（下拉列表专用）接口
+ *
  * @author linbq
  * @since 2021/5/30 14:42
  **/
@@ -55,7 +56,7 @@ public class AccountListForSelectApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询资源中心帐号列表（下拉列表专用）";
+        return "查询资源中心账号列表（下拉列表专用）";
     }
 
     @Override
@@ -68,9 +69,9 @@ public class AccountListForSelectApi extends PrivateApiComponentBase {
     })
     @Output({
             @Param(explode = BasePageVo.class),
-            @Param(name = "tbodyList", explode = AccountVo[].class, desc = "帐号列表")
+            @Param(name = "tbodyList", explode = AccountVo[].class, desc = "账号列表")
     })
-    @Description(desc = "查询资源中心帐号列表（下拉列表专用）")
+    @Description(desc = "查询资源中心账号列表（下拉列表专用）")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         List<AccountVo> accountVoList =new ArrayList<>();

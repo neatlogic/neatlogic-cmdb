@@ -26,7 +26,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 
 /**
- * 添加资源和帐号的关联关系
+ * 添加资源和账号的关联关系
  */
 @Service
 public class AddAccountResourceRelHandler extends AfterRegisterBase {
@@ -35,7 +35,7 @@ public class AddAccountResourceRelHandler extends AfterRegisterBase {
     private ResourceAccountMapper resourceAccountMapper;
 
     /**
-     * 提前写入关系，当资源中心ready后自然就关联上帐号，每次注册都会写入新的resource_id，所以关系表可能会存在垃圾数据，暂时没有好办法解决
+     * 提前写入关系，当资源中心ready后自然就关联上账号，每次注册都会写入新的resource_id，所以关系表可能会存在垃圾数据，暂时没有好办法解决
      * 而且由于配置项是根据ip来定位的，只要第一次注册成功，后面如果密码更新也没法关联到老的配置项
      *
      * @param tagentVo tagent对象

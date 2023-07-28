@@ -49,7 +49,7 @@ public class AccountsHandler extends FormHandlerBase {
         ip.put("key", "ip");
         theadList.add(ip);
         JSONObject accountName = new JSONObject();
-        accountName.put("title", "帐号");
+        accountName.put("title", "账号");
         accountName.put("key", "accountName");
         theadList.add(accountName);
         JSONObject account = new JSONObject();
@@ -185,7 +185,7 @@ public class AccountsHandler extends FormHandlerBase {
         "override_config": {},
         "icon": "tsfont-group",
         "hasValue": true,
-        "label": "帐号_1",
+        "label": "账号_1",
         "type": "form",
         "category": "basic",
         "config": {
@@ -194,7 +194,7 @@ public class AccountsHandler extends FormHandlerBase {
             "isMask": false,
             "width": "100%",
             "description": "",
-            "placeholder": "选择帐号",
+            "placeholder": "选择账号",
             "isHide": false
         },
         "uuid": "d722aa78701c4b4baac595a7dbfa8513"
@@ -254,7 +254,7 @@ public class AccountsHandler extends FormHandlerBase {
                 "key": "ip"
             },
             {
-                "title": "帐号名称",
+                "title": "账号名称",
                 "key": "accountName"
             },
             {

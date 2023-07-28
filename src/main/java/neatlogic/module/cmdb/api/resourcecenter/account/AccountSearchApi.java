@@ -60,7 +60,7 @@ public class AccountSearchApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询资源中心帐号";
+        return "查询资源中心账号";
     }
 
     @Override
@@ -72,16 +72,16 @@ public class AccountSearchApi extends PrivateApiComponentBase {
             @Param(name = "protocolIdList", type = ApiParamType.JSONARRAY, desc = "协议id列表"),
             @Param(name = "protocolList", type = ApiParamType.JSONARRAY, desc = "协议名称列表"),
             @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "关键词"),
-            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "用于回显的帐号ID列表"),
+            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "用于回显的账号ID列表"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
             @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true")
     })
     @Output({
-            @Param(name = "tbodyList", explode = AccountVo[].class, desc = "帐号列表"),
+            @Param(name = "tbodyList", explode = AccountVo[].class, desc = "账号列表"),
             @Param(explode = BasePageVo.class),
     })
-    @Description(desc = "查询资源中心帐号")
+    @Description(desc = "查询资源中心账号")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         List<AccountVo> returnAccountVoList = new ArrayList<>();
@@ -99,7 +99,7 @@ public class AccountSearchApi extends PrivateApiComponentBase {
                 List<Long> accountIdList = returnAccountVoList.stream().map(AccountVo::getId).collect(Collectors.toList());
                 if (CollectionUtils.isNotEmpty(accountIdList)) {
 
-                    //查询帐号关联的标签
+                    //查询账号关联的标签
                     List<AccountTagVo> accountTagVoList = resourceAccountMapper.getAccountTagListByAccountIdList(accountIdList);
                     Map<Long, List<TagVo>> AccountTagVoMap = new HashMap<>();
                     if (CollectionUtils.isNotEmpty(accountTagVoList)) {
@@ -110,25 +110,25 @@ public class AccountSearchApi extends PrivateApiComponentBase {
                             AccountTagVoMap.computeIfAbsent(accountTagVo.getAccountId(), k -> new ArrayList<>()).add(tagMap.get(accountTagVo.getTagId()));
                         }
                     }
-                    //查询帐号依赖的资产
+                    //查询账号依赖的资产
                     Map<Object, Integer> resourceReferredCountMap = DependencyManager.getBatchDependencyCount(CmdbFromType.RESOURCE_ACCOUNT, accountIdList);
-                    //查询帐号依赖的tagent
+                    //查询账号依赖的tagent
                     Map<Object, Integer> tagentReferredCountMap = DependencyManager.getBatchDependencyCount(TagentFromType.TAGENT_ACCOUNT, accountIdList);
 
                     for (AccountVo accountVo : returnAccountVoList) {
                         Long returnAccountId = accountVo.getId();
-                        //补充帐号关联的标签
+                        //补充账号关联的标签
                         List<TagVo> tagVoList = AccountTagVoMap.get(returnAccountId);
                         if (CollectionUtils.isNotEmpty(tagVoList)) {
                             accountVo.setTagList(tagVoList);
                         }
 
-                        //补充帐号依赖的资产个数
+                        //补充账号依赖的资产个数
                         if (resourceReferredCountMap.containsKey(returnAccountId)) {
                             accountVo.setResourceReferredCount(resourceReferredCountMap.get(returnAccountId));
                         }
 
-                        //补充帐号依赖的tagent个数
+                        //补充账号依赖的tagent个数
                         if (tagentReferredCountMap.containsKey(returnAccountId)) {
                             accountVo.setTagentReferredCount((tagentReferredCountMap.get(returnAccountId)));
                         }

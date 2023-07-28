@@ -46,7 +46,7 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
     @Override
     public void refreshAccountIpByAccountId(Long accountId) {
         resourceAccountMapper.deleteAccountIpByAccountId(accountId);
-        //帐号是否被resource引用
+        //账号是否被resource引用
         List<ResourceAccountVo> resourceAccountVoList = resourceAccountMapper.getResourceAccountListByAccountId(accountId);
         if (CollectionUtils.isNotEmpty(resourceAccountVoList)) {
             List<ResourceVo> resourceVoList = resourceMapper.getResourceByIdList(resourceAccountVoList.stream().map(ResourceAccountVo::getResourceId).collect(Collectors.toList()));
@@ -54,7 +54,7 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
                 resourceAccountMapper.insertAccountIp(new AccountIpVo(accountId, resourceVo.getIp()));
             }
         }
-        //帐号是否被tagent引用
+        //账号是否被tagent引用
         List<TagentVo> tagentVoList = tagentMapper.getTagentByAccountId(accountId);
         if (CollectionUtils.isNotEmpty(tagentVoList)) {
             for (TagentVo tagentVo : tagentVoList) {
@@ -67,7 +67,7 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
     public void refreshAccountIpByResourceIdList(List<Long> resourceIdList) {
         List<ResourceAccountVo> resourceAccountVoList = resourceAccountMapper.getResourceAccountListByResourceIdList(resourceIdList);
         List<ResourceVo> resourceVoList = resourceMapper.getResourceByIdList(resourceAccountVoList.stream().map(ResourceAccountVo::getResourceId).collect(Collectors.toList()));
-        //帐号是否被resource引用
+        //账号是否被resource引用
         if (CollectionUtils.isNotEmpty(resourceVoList)) {
             List<String> resourceIpList = resourceVoList.stream().map(ResourceVo::getIp).collect(Collectors.toList());
             resourceAccountMapper.deleteAccountIpByIpList(resourceIpList);
@@ -80,7 +80,7 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
                     resourceAccountMapper.insertAccountIp(new AccountIpVo(resourceAccountVo.getAccountId(), resourceVoHashMap.get(resourceAccountVo.getResourceId()).getIp()));
                 }
             }
-            //帐号是否被tagent引用
+            //账号是否被tagent引用
             List<TagentVo> tagentVoList = tagentMapper.getTagentByIpList(resourceIpList);
             if (CollectionUtils.isNotEmpty(tagentVoList)) {
                 for (TagentVo tagentVo : tagentVoList) {
@@ -94,15 +94,15 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
      * 按以下规则顺序匹配account
      * 1、tagent 直接通过ip在 account_ip 匹配账号， 其它则从resource_account(资产清单)中匹配账号
      * 2、根据节点对应os资产获取账号
-     * 3、通过 ”协议id“ 匹配默认帐号
+     * 3、通过 ”协议id“ 匹配默认账号
      *
-     * @param accountByResourceList     通过执行节点的资产id+协议id+执行用户 查询回来的帐号列表（tagent类型不适用）
-     * @param tagentIpAccountMap        通过执行节点的ip 查询回来的帐号列表（目前仅用于tagent类型的匹配）
+     * @param accountByResourceList     通过执行节点的资产id+协议id+执行用户 查询回来的账号列表（tagent类型不适用）
+     * @param tagentIpAccountMap        通过执行节点的ip 查询回来的账号列表（目前仅用于tagent类型的匹配）
      * @param resourceId                执行节点的资产id
      * @param ip                        执行节点的ip
      * @param resourceOSResourceMap     节点resourceId->对应操作系统resourceId
-     * @param protocolDefaultAccountMap 协议对应的默认帐号
-     * @return 匹配的帐号
+     * @param protocolDefaultAccountMap 协议对应的默认账号
+     * @return 匹配的账号
      */
     @Override
     public AccountBaseVo filterAccountByRules(List<AccountVo> accountByResourceList, Map<String, AccountBaseVo> tagentIpAccountMap, Long resourceId, AccountProtocolVo protocolVo, String ip, Map<Long, Long> resourceOSResourceMap, Map<Long, AccountVo> protocolDefaultAccountMap) {
@@ -133,9 +133,9 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
     }
 
     /**
-     * 删除帐号
+     * 删除账号
      *
-     * @param accountIdList 帐号idList
+     * @param accountIdList 账号idList
      */
     @Override
     public void deleteAccount(List<Long> accountIdList) {

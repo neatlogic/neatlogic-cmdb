@@ -1,17 +1,17 @@
 /*
-Copyright(c) 2023 NeatLogic Co., Ltd. All Rights Reserved.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+ * Copyright(c) 2023 NeatLogic Co., Ltd. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package neatlogic.module.cmdb.api.resourcecenter.account;
@@ -64,7 +64,7 @@ public class AccountSaveApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存资源中心帐号";
+        return "保存资源中心账号";
     }
 
     @Override
@@ -73,7 +73,7 @@ public class AccountSaveApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, desc = "帐号ID"),
+            @Param(name = "id", type = ApiParamType.LONG, desc = "账号ID"),
             @Param(name = "name", type = ApiParamType.STRING, maxLength = 50, isRequired = true, desc = "名称"),
             @Param(name = "account", type = ApiParamType.STRING, maxLength = 50, desc = "用户名"),
             @Param(name = "passwordPlain", type = ApiParamType.STRING, isRequired = false, desc = "密码"),
@@ -81,13 +81,13 @@ public class AccountSaveApi extends PrivateApiComponentBase {
             @Param(name = "port", type = ApiParamType.INTEGER, isRequired = false, desc = "端口"),
             @Param(name = "tagIdList", type = ApiParamType.JSONARRAY, isRequired = false, desc = "标签id列表"),
             @Param(name = "type", type = ApiParamType.ENUM, member = AccountType.class, isRequired = true, desc = "标签id列表"),
-            @Param(name = "isDefault", type = ApiParamType.INTEGER, desc = "是否默认帐号"),
+            @Param(name = "isDefault", type = ApiParamType.INTEGER, desc = "是否默认账号"),
             @Param(name = "resourceId", type = ApiParamType.LONG, desc = "资产ID")
     })
     @Output({
-            @Param(name = "id", type = ApiParamType.LONG, desc = "帐号ID")
+            @Param(name = "id", type = ApiParamType.LONG, desc = "账号ID")
     })
-    @Description(desc = "保存资源中心帐号")
+    @Description(desc = "保存资源中心账号")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         AccountVo paramAccountVo = JSON.toJavaObject(paramObj, AccountVo.class);
@@ -118,7 +118,7 @@ public class AccountSaveApi extends PrivateApiComponentBase {
                 }
             }
         }
-        // 如果是私有类型帐号，需要校验该资产中所有公有和私有帐号中是否存在帐号及协议都相同的，如果存在则不能更新
+        // 如果是私有类型账号，需要校验该资产中所有公有和私有账号中是否存在账号及协议都相同的，如果存在则不能更新
         if (Objects.equals(type, AccountType.PRIVATE.getValue())) {
             Long resourceId = paramObj.getLong("resourceId");
             if (resourceId == null) {
@@ -164,7 +164,7 @@ public class AccountSaveApi extends PrivateApiComponentBase {
         }
         paramAccountVo.setLcu(UserContext.get().getUserUuid());
 
-        //一个协议只能存一个默认帐号。例如，ssh协议当前默认帐号为app，如果在编辑root帐号时，把root设置为默认帐号，需要替换掉原有的app默认帐号表示标识。root代替app成为了新的ssh协议默认帐号。
+        //一个协议只能存一个默认账号。例如，ssh协议当前默认账号为app，如果在编辑root账号时，把root设置为默认账号，需要替换掉原有的app默认账号表示标识。root代替app成为了新的ssh协议默认账号。
         if (Objects.equals(type, AccountType.PUBLIC.getValue()) && paramAccountVo.getIsDefault() == 1) {
             resourceAccountMapper.resetAccountDefaultByProtocolId(paramAccountVo.getProtocolId());
         }
@@ -213,9 +213,10 @@ public class AccountSaveApi extends PrivateApiComponentBase {
     }
 
     /**
-     * 校验该资产中所有公有和私有帐号中是否存在帐号及协议都相同的
-     * @param resourceId 资产ID
-     * @param newAccountVo 新帐号信息
+     * 校验该资产中所有公有和私有账号中是否存在账号及协议都相同的
+     *
+     * @param resourceId   资产ID
+     * @param newAccountVo 新账号信息
      * @return
      */
     private List<String> check(Long resourceId, AccountVo newAccountVo) {

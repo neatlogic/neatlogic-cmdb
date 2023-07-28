@@ -1,17 +1,17 @@
 /*
-Copyright(c) 2023 NeatLogic Co., Ltd. All Rights Reserved.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License. 
+ * Copyright(c) 2023 NeatLogic Co., Ltd. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package neatlogic.module.cmdb.api.resourcecenter.resource;
@@ -64,7 +64,7 @@ public class ResourceAccountBatchAddApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "批量添加资源帐号";
+        return "批量添加资源账号";
     }
 
     @Override
@@ -74,14 +74,14 @@ public class ResourceAccountBatchAddApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "resourceIdList", type = ApiParamType.JSONARRAY, isRequired = true, minSize = 1, desc = "资源id列表"),
-            @Param(name = "accountIdList", type = ApiParamType.JSONARRAY, isRequired = true, minSize = 1, desc = "帐号id列表")
+            @Param(name = "accountIdList", type = ApiParamType.JSONARRAY, isRequired = true, minSize = 1, desc = "账号id列表")
     })
-    @Description(desc = "批量添加资源帐号")
+    @Description(desc = "批量添加资源账号")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         int successCount = 0;
         List<String> failureReasonList = new ArrayList<>();
-        failureReasonList.add("同一资产不可绑定多个协议相同且用户名相同的帐号");
+        failureReasonList.add("同一资产不可绑定多个协议相同且用户名相同的账号");
         JSONArray resourceIdArray = paramObj.getJSONArray("resourceIdList");
         JSONArray accountIdArray = paramObj.getJSONArray("accountIdList");
 
@@ -146,7 +146,7 @@ public class ResourceAccountBatchAddApi extends PrivateApiComponentBase {
                 if (accountId != null) {
                     ResourceVo resourecVo = resourceVoMap.get(resourceId);
                     AccountVo account = resourceAccountMapper.getAccountById(accountId);
-                    failureReasonList.add(resourecVo.getName() + "（" + resourecVo.getIp() + "）'已绑定帐号\"" + account.getName() + "（" + account.getProtocol() + "/" + account.getAccount() + "）\"");
+                    failureReasonList.add(resourecVo.getName() + "（" + resourecVo.getIp() + "）'已绑定账号\"" + account.getName() + "（" + account.getProtocol() + "/" + account.getAccount() + "）\"");
                     continue;
                 }
                 resourceAccountVoList.add(new ResourceAccountVo(resourceId, accountVo.getId()));
