@@ -195,9 +195,11 @@ public class CiEntityBuilder {
             for (Map<String, Object> result : resultList) {
                 //由于mybatis去掉了值为null的属性字段，为了避免比对时数据不一致，所以要补充不存在的属性
                 if (flattenAttr) {
-                    for (Long attrId : attrMap.keySet()) {
-                        if (!result.containsKey("attr_" + attrId)) {
-                            result.put("attr_" + attrId, null);
+                    if (MapUtils.isNotEmpty(attrMap)) {
+                        for (Long attrId : attrMap.keySet()) {
+                            if (!result.containsKey("attr_" + attrId)) {
+                                result.put("attr_" + attrId, null);
+                            }
                         }
                     }
                 }
