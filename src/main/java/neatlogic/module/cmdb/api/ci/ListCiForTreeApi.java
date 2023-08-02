@@ -59,7 +59,7 @@ public class ListCiForTreeApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "ciId", type = ApiParamType.LONG, desc = "term.cmdb.ciid"),
-            @Param(name = "rootCiId", type = ApiParamType.LONG, desc = "根模型id")
+            @Param(name = "rootCiId", type = ApiParamType.LONG, desc = "term.cmdb.rootciid")
     })
     @Output({
             @Param(explode = ValueTextVo[].class)

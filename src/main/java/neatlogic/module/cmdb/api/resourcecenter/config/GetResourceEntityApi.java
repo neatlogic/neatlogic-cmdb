@@ -51,7 +51,7 @@ public class GetResourceEntityApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取资源配置信息";
+        return "nmcarc.getresourceentityapi.getname";
     }
 
     @Override
@@ -60,12 +60,12 @@ public class GetResourceEntityApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "视图名")
+            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "common.name")
     })
     @Output({
-            @Param(name = "Return", explode = ResourceEntityVo.class, desc = "配置信息")
+            @Param(name = "Return", explode = ResourceEntityVo.class, desc = "term.cmdb.resourceentityinfo")
     })
-    @Description(desc = "获取资源配置信息")
+    @Description(desc = "nmcarc.getresourceentityapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         String name = paramObj.getString("name");

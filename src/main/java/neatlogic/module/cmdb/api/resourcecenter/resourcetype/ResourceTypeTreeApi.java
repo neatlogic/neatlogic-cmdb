@@ -58,7 +58,7 @@ public class ResourceTypeTreeApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询资源类型树列表";
+        return "nmcarr.resourcetypetreeapi.getname";
     }
 
     @Override
@@ -67,12 +67,12 @@ public class ResourceTypeTreeApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "keyword", type = ApiParamType.STRING, desc = "名称模糊匹配")
+            @Param(name = "keyword", type = ApiParamType.STRING, desc = "common.keyword")
     })
     @Output({
-            @Param(explode = ResourceTypeVo[].class, desc = "资源类型树列表")
+            @Param(explode = ResourceTypeVo[].class, desc = "common.tbodylist")
     })
-    @Description(desc = "查询资源类型树列表")
+    @Description(desc = "nmcarr.resourcetypetreeapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         String keyword = jsonObj.getString("keyword");

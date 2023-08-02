@@ -46,14 +46,14 @@ public class SaveResourceTypeApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存资产类型的根模型";
+        return "nmcarr.saveresourcetypeapi.getname";
     }
 
     @Input({
             @Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid")
     })
     @Output({})
-    @Description(desc = "保存资产类型的根模型")
+    @Description(desc = "nmcarr.saveresourcetypeapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long ciId = paramObj.getLong("ciId");
