@@ -17,13 +17,14 @@
 package neatlogic.module.cmdb.api.resourcecenter.config;
 
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
-import neatlogic.framework.cmdb.exception.resourcecenter.ResourceCenterResourceFoundException;
 import neatlogic.framework.cmdb.auth.label.CMDB;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
@@ -40,6 +41,8 @@ import javax.annotation.Resource;
 public class GetResourceEntityApi extends PrivateApiComponentBase {
     @Resource
     private ResourceEntityMapper resourceEntityMapper;
+    @Resource
+    private CiMapper ciMapper;
 
     @Override
     public String getToken() {
@@ -67,8 +70,9 @@ public class GetResourceEntityApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         String name = paramObj.getString("name");
         ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName(name);
-        if (resourceEntityVo == null) {
-            throw new ResourceCenterResourceFoundException(name);
+        if (resourceEntityVo != null && resourceEntityVo.getCiId() != null) {
+            CiVo ciVo = ciMapper.getCiById(resourceEntityVo.getCiId());
+            resourceEntityVo.setCi(ciVo);
         }
         return resourceEntityVo;
     }

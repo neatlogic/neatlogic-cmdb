@@ -18,6 +18,7 @@ package neatlogic.module.cmdb.api.ci;
 
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
+import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.dto.ValueTextVo;
 import neatlogic.framework.restful.annotation.*;
@@ -32,6 +33,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
@@ -55,13 +57,28 @@ public class ListCiForTreeApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciId", type = ApiParamType.LONG, desc = "term.cmdb.ciid")})
-    @Output({@Param(explode = ValueTextVo[].class)})
+    @Input({
+            @Param(name = "ciId", type = ApiParamType.LONG, desc = "term.cmdb.ciid"),
+            @Param(name = "rootCiId", type = ApiParamType.LONG, desc = "根模型id")
+    })
+    @Output({
+            @Param(explode = ValueTextVo[].class)
+    })
     @Description(desc = "nmcac.listcifortreeapi.description.desc")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("ciId");
-        List<CiVo> ciList = ciMapper.getAllCi(null);
+        Long rootCiId = jsonObj.getLong("rootCiId");
+        List<CiVo> ciList = null;
+        if (rootCiId != null) {
+            CiVo ciVo = ciMapper.getCiById(rootCiId);
+            if (ciVo == null) {
+                throw new CiNotFoundException(rootCiId);
+            }
+            ciList = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
+        } else {
+            ciList = ciMapper.getAllCi(null);
+        }
         Map<Long, CiVo> ciMap = new HashMap<>();
         for (CiVo ciVo : ciList) {
             ciMap.put(ciVo.getId(), ciVo);
@@ -72,6 +89,10 @@ public class ListCiForTreeApi extends PrivateApiComponentBase {
                 CiVo parentCiVo = ciMap.get(ciVo.getParentCiId());
                 if (parentCiVo != null) {
                     parentCiVo.addChild(ciVo);
+                } else {
+                    if (rootCiId != null && Objects.equals(rootCiId, ciVo.getId())) {
+                        ciVo.setParentCiId(null);
+                    }
                 }
             }
         }
