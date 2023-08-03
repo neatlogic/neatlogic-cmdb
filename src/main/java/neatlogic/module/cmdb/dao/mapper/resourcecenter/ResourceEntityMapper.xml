@@ -87,6 +87,7 @@ limitations under the License.
         UPDATE cmdb_resourcecenter_entity
         SET `status`    = #{status},
             `error`     = #{error},
+            `ci_id`     = #{ciId},
             `init_time` = NOW(3)
         WHERE `name` = #{name}
     </update>
