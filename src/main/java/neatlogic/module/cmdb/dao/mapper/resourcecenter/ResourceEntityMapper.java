@@ -16,18 +16,23 @@
 
 package neatlogic.module.cmdb.dao.mapper.resourcecenter;
 
+import neatlogic.framework.cmdb.crossover.IResourceEntityCrossoverMapper;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 
 import java.util.List;
 
-public interface ResourceEntityMapper {
+public interface ResourceEntityMapper extends IResourceEntityCrossoverMapper {
     ResourceEntityVo getResourceEntityByName(String name);
 
     List<ResourceEntityVo> getAllResourceEntity();
 
     String getResourceEntityXmlByName(String xml);
 
+    List<Long> getAllResourceTypeCiIdList();
+
     void insertResourceEntity(ResourceEntityVo resourceEntityVo);
+
+    void insertResourceTypeCi(Long ciId);
 
     void updateResourceEntity(ResourceEntityVo resourceEntityVo);
 
@@ -36,4 +41,6 @@ public interface ResourceEntityMapper {
     void updateResourceEntityLabelAndDescription(ResourceEntityVo resourceEntityVo);
 
     void deleteResourceEntityByName(String name);
+
+    void deleteResourceTypeCi();
 }

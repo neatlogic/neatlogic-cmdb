@@ -25,7 +25,7 @@ limitations under the License.
     </select>
 
     <select id="getAllResourceEntity" resultType="neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
-        SELECT `name`, `label`, `status`, `error`, `init_time` AS initTime, `ci_id` AS ciId, `type`, `description`
+        SELECT `name`, `label`, `status`, `error`, `init_time` AS initTime, `ci_id` AS ciId, `type`, `xml`, `description`
         FROM `cmdb_resourcecenter_entity`
     </select>
 
@@ -33,6 +33,10 @@ limitations under the License.
         SELECT `xml`
         FROM `cmdb_resourcecenter_entity`
         WHERE `name` = #{value}
+    </select>
+
+    <select id="getAllResourceTypeCiIdList" resultType="java.lang.Long">
+        SELECT `ci_id` FROM `cmdb_resourcecenter_type_ci`
     </select>
 
     <insert id="insertResourceEntity"
@@ -59,6 +63,11 @@ limitations under the License.
             `ci_id` = #{ciId},
         </if>
         `init_time` = NOW(3)
+    </insert>
+
+    <insert id="insertResourceTypeCi" parameterType="java.lang.Long">
+        INSERT INTO `cmdb_resourcecenter_type_ci` (`ci_id`)
+        VALUES (#{value})
     </insert>
 
     <update id="updateResourceEntity"
@@ -96,5 +105,9 @@ limitations under the License.
         DELETE
         FROM cmdb_resourcecenter_entity
         WHERE name = #{value}
+    </delete>
+
+    <delete id="deleteResourceTypeCi">
+        DELETE FROM `cmdb_resourcecenter_type_ci`
     </delete>
 </mapper>

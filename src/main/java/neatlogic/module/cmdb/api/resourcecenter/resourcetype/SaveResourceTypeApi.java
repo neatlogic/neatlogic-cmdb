@@ -14,66 +14,66 @@
  * limitations under the License.
  */
 
-package neatlogic.module.cmdb.api.resourcecenter.config;
+package neatlogic.module.cmdb.api.resourcecenter.resourcetype;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
-import neatlogic.framework.cmdb.dto.ci.CiVo;
-import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.auth.label.CMDB;
+import neatlogic.framework.cmdb.dto.ci.CiVo;
+import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
-import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 
-/**
- * @author linbq
- * @since 2021/11/9 11:28
- **/
 @Service
 @AuthAction(action = CMDB.class)
-@OperationType(type = OperationTypeEnum.SEARCH)
-public class GetResourceEntityApi extends PrivateApiComponentBase {
+@OperationType(type = OperationTypeEnum.UPDATE)
+public class SaveResourceTypeApi extends PrivateApiComponentBase {
+
     @Resource
     private ResourceEntityMapper resourceEntityMapper;
+
     @Resource
     private CiMapper ciMapper;
 
     @Override
-    public String getToken() {
-        return "resourcecenter/resourceentity/get";
-    }
-
-    @Override
     public String getName() {
-        return "nmcarc.getresourceentityapi.getname";
-    }
-
-    @Override
-    public String getConfig() {
-        return null;
+        return "nmcarr.saveresourcetypeapi.getname";
     }
 
     @Input({
-            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "common.name")
+            @Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid")
     })
-    @Output({
-            @Param(name = "Return", explode = ResourceEntityVo.class, desc = "term.cmdb.resourceentityinfo")
-    })
-    @Description(desc = "nmcarc.getresourceentityapi.getname")
+    @Output({})
+    @Description(desc = "nmcarr.saveresourcetypeapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        String name = paramObj.getString("name");
-        ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName(name);
-        if (resourceEntityVo != null && resourceEntityVo.getCiId() != null) {
-            CiVo ciVo = ciMapper.getCiById(resourceEntityVo.getCiId());
-            resourceEntityVo.setCi(ciVo);
+        Long ciId = paramObj.getLong("ciId");
+        CiVo ciVo = ciMapper.getCiById(ciId);
+        if (ciVo == null) {
+            throw new CiNotFoundException(ciId);
         }
-        return resourceEntityVo;
+        List<Long> ciIdList = resourceEntityMapper.getAllResourceTypeCiIdList();
+        if (ciIdList.contains(ciId)) {
+            return null;
+        }
+        if (CollectionUtils.isNotEmpty(ciIdList)) {
+            resourceEntityMapper.deleteResourceTypeCi();
+        }
+        resourceEntityMapper.insertResourceTypeCi(ciId);
+        return null;
+    }
+
+    @Override
+    public String getToken() {
+        return "resourcecenter/resourcetype/save";
     }
 }

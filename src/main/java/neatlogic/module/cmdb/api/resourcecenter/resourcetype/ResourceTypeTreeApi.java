@@ -17,12 +17,8 @@ limitations under the License.
 package neatlogic.module.cmdb.api.resourcecenter.resourcetype;
 
 import neatlogic.framework.auth.core.AuthAction;
-import neatlogic.framework.cmdb.annotation.ResourceType;
-import neatlogic.framework.cmdb.annotation.ResourceTypes;
-import neatlogic.framework.cmdb.crossover.IResourceTypeTreeApiCrossoverService;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceTypeVo;
-import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
@@ -30,11 +26,9 @@ import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.cmdb.auth.label.CMDB;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import com.alibaba.fastjson.JSONObject;
+import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.reflections.Reflections;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -49,38 +43,13 @@ import java.util.*;
 @Service
 @AuthAction(action = CMDB.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class ResourceTypeTreeApi extends PrivateApiComponentBase implements IResourceTypeTreeApiCrossoverService {
-
-    private static List<ResourceTypeVo> resourceTypeList = new ArrayList<>();
-
-    static {
-        Reflections reflections = new Reflections("neatlogic.framework.cmdb.dto.resourcecenter.entity", new TypeAnnotationsScanner(), new SubTypesScanner());
-        Set<Class<?>> classList = reflections.getTypesAnnotatedWith(ResourceType.class, true);
-        for (Class<?> c : classList) {
-            ResourceType resourceType = c.getAnnotation(ResourceType.class);
-            if (resourceType != null) {
-                String ciName = resourceType.ciName();
-                if (StringUtils.isNotBlank(ciName)) {
-                    resourceTypeList.add(new ResourceTypeVo(resourceType.label(), ciName));
-                }
-            }
-        }
-        classList = reflections.getTypesAnnotatedWith(ResourceTypes.class, true);
-        for (Class<?> c : classList) {
-            ResourceTypes resourceTypes = c.getAnnotation(ResourceTypes.class);
-            if (resourceTypes != null) {
-                for (ResourceType resourceType : resourceTypes.value()) {
-                    String ciName = resourceType.ciName();
-                    if (StringUtils.isNotBlank(ciName)) {
-                        resourceTypeList.add(new ResourceTypeVo(resourceType.label(), ciName));
-                    }
-                }
-            }
-        }
-    }
+public class ResourceTypeTreeApi extends PrivateApiComponentBase {
 
     @Resource
     private CiMapper ciMapper;
+
+    @Resource
+    private ResourceEntityMapper resourceEntityMapper;
 
     @Override
     public String getToken() {
@@ -89,7 +58,7 @@ public class ResourceTypeTreeApi extends PrivateApiComponentBase implements IRes
 
     @Override
     public String getName() {
-        return "查询资源类型树列表";
+        return "nmcarr.resourcetypetreeapi.getname";
     }
 
     @Override
@@ -98,12 +67,12 @@ public class ResourceTypeTreeApi extends PrivateApiComponentBase implements IRes
     }
 
     @Input({
-            @Param(name = "keyword", type = ApiParamType.STRING, desc = "名称模糊匹配")
+            @Param(name = "keyword", type = ApiParamType.STRING, desc = "common.keyword")
     })
     @Output({
-            @Param(explode = ResourceTypeVo[].class, desc = "资源类型树列表")
+            @Param(explode = ResourceTypeVo[].class, desc = "common.tbodylist")
     })
-    @Description(desc = "查询资源类型树列表")
+    @Description(desc = "nmcarr.resourcetypetreeapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         String keyword = jsonObj.getString("keyword");
@@ -111,15 +80,9 @@ public class ResourceTypeTreeApi extends PrivateApiComponentBase implements IRes
             keyword = keyword.toLowerCase();
         }
         List<ResourceTypeVo> resultList = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(resourceTypeList)) {
-            List<CiVo> ciVoList = new ArrayList<>();
-            for (ResourceTypeVo type : resourceTypeList) {
-                CiVo ciVo = ciMapper.getCiByName(type.getName());
-                if (ciVo == null) {
-                    throw new CiNotFoundException(type.getName());
-                }
-                ciVoList.add(ciVo);
-            }
+        List<Long> ciIdList = resourceEntityMapper.getAllResourceTypeCiIdList();
+        if (CollectionUtils.isNotEmpty(ciIdList)) {
+            List<CiVo> ciVoList = ciMapper.getCiByIdList(ciIdList);
             ciVoList.sort(Comparator.comparing(CiVo::getLft));
             for (CiVo ciVo : ciVoList) {
                 List<CiVo> ciList = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
@@ -184,15 +147,12 @@ public class ResourceTypeTreeApi extends PrivateApiComponentBase implements IRes
                         if (parentResourceType == null) {
                             resultList.add(resourceType);
                         }
+                    } else {
+                        resultList.add(resourceType);
                     }
                 }
             }
         }
         return resultList;
-    }
-
-    //用于巡检工具列表的显示
-    public List<ResourceTypeVo> getResourceTypeList() {
-        return resourceTypeList;
     }
 }
