@@ -957,3 +957,11 @@ CREATE TABLE IF NOT EXISTS `cmdb_viewconst` (
   `label` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '显示名',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='cmdb_viewconst';
+
+-- ----------------------------
+-- Table structure for cmdb_resourcecenter_type_ci
+-- ----------------------------
+CREATE TABLE `cmdb_resourcecenter_type_ci` (
+  `ci_id` bigint NOT NULL COMMENT '模型id',
+  PRIMARY KEY (`ci_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='资产清单树形模型';
