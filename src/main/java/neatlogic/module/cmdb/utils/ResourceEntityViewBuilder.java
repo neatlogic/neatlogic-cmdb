@@ -17,6 +17,7 @@
 package neatlogic.module.cmdb.utils;
 
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
+import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.*;
@@ -30,7 +31,11 @@ import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.ResourceCenterConfigIrregularException;
 import neatlogic.framework.cmdb.exception.resourcecenter.ResourceCenterResourceFoundException;
 import neatlogic.framework.cmdb.utils.SceneEntityGenerateSqlUtil;
+import neatlogic.framework.dao.mapper.DataBaseViewInfoMapper;
 import neatlogic.framework.dao.mapper.SchemaMapper;
+import neatlogic.framework.dto.DataBaseViewInfoVo;
+import neatlogic.framework.transaction.core.EscapeTransactionJob;
+import neatlogic.framework.util.Md5Util;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import neatlogic.module.cmdb.service.ci.CiService;
 import net.sf.jsqlparser.expression.Alias;
@@ -68,15 +73,21 @@ public class ResourceEntityViewBuilder {
 
     private final Map<String, CiVo> ciMap = new HashMap<>();
     private static SchemaMapper schemaMapper;
+    private static DataBaseViewInfoMapper dataBaseViewInfoMapper;
     private static CiService ciService;
     private static ResourceEntityMapper resourceEntityMapper;
 
 
     @Autowired
-    public ResourceEntityViewBuilder(SchemaMapper _schemaMapper, CiService _ciService, ResourceEntityMapper _resourceEntityMapper) {
+    public ResourceEntityViewBuilder(
+            SchemaMapper _schemaMapper,
+            CiService _ciService,
+            ResourceEntityMapper _resourceEntityMapper,
+            DataBaseViewInfoMapper _dataBaseViewInfoMapper) {
         schemaMapper = _schemaMapper;
         resourceEntityMapper = _resourceEntityMapper;
         ciService = _ciService;
+        dataBaseViewInfoMapper = _dataBaseViewInfoMapper;
     }
 
     private CiVo getCiByName(String ciName) {
@@ -1199,20 +1210,52 @@ public class ResourceEntityViewBuilder {
                 plainSelect.addJoins(joinList);
             }
         }
-        try {
-            String sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + "." + resourceEntityVo.getName() + " AS " + select;
-            if (logger.isDebugEnabled()) {
-                logger.debug(sql);
+
+        String viewName = resourceEntityVo.getName();
+        String selectSql = select.toString();
+        String md5 = Md5Util.encryptMD5(selectSql);
+        String tableType = schemaMapper.checkTableOrViewIsExists(TenantContext.get().getDataDbName(), viewName);
+        if (tableType != null) {
+            if (Objects.equals(tableType, "SYSTEM VIEW")) {
+                return;
+            } else if (Objects.equals(tableType, "VIEW")) {
+                DataBaseViewInfoVo dataBaseViewInfoVo = dataBaseViewInfoMapper.getDataBaseViewInfoByViewName(viewName);
+                if (dataBaseViewInfoVo != null) {
+                    if (Objects.equals(md5, dataBaseViewInfoVo.getMd5())) {
+                        return;
+                    }
+                }
             }
-            schemaMapper.deleteTable(TenantContext.get().getDataDbName() + "." + resourceEntityVo.getName());
-            schemaMapper.insertView(sql);
-            resourceEntityVo.setError("");
-            resourceEntityVo.setStatus(Status.READY.getValue());
+        }
+
+        try {
+            EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
+                if (Objects.equals(tableType, "BASE TABLE")) {
+                    schemaMapper.deleteTable(TenantContext.get().getDataDbName() + "." + viewName);
+                }
+                String sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + "." + viewName + " AS " + selectSql;
+                if (logger.isDebugEnabled()) {
+                    logger.debug(sql);
+                }
+                schemaMapper.insertView(sql);
+            }).execute();
+            if (s.isSucceed()) {
+                resourceEntityVo.setError("");
+                resourceEntityVo.setStatus(Status.READY.getValue());
+                DataBaseViewInfoVo dataBaseViewInfoVo = new DataBaseViewInfoVo();
+                dataBaseViewInfoVo.setViewName(viewName);
+                dataBaseViewInfoVo.setMd5(md5);
+                dataBaseViewInfoVo.setLcu(UserContext.get().getUserUuid());
+                dataBaseViewInfoMapper.insertDataBaseViewInfo(dataBaseViewInfoVo);
+            } else {
+                resourceEntityVo.setError(s.getError());
+                resourceEntityVo.setStatus(Status.ERROR.getValue());
+            }
         } catch (Exception ex) {
             resourceEntityVo.setError(ex.getMessage());
             resourceEntityVo.setStatus(Status.ERROR.getValue());
             Table table = new Table();
-            table.setName(resourceEntityVo.getName());
+            table.setName(viewName);
             table.setSchemaName(TenantContext.get().getDataDbName());
             List<ColumnDefinition> columnDefinitions = new ArrayList<>();
             Set<ResourceEntityAttrVo> attrList = resourceEntityVo.getAttrList();
@@ -1226,7 +1269,9 @@ public class ResourceEntityViewBuilder {
             createTable.setTable(table);
             createTable.setColumnDefinitions(columnDefinitions);
             createTable.setIfNotExists(true);
-            schemaMapper.insertView(createTable.toString());
+            EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
+                schemaMapper.insertView(createTable.toString());
+            }).execute();
         } finally {
             resourceEntityMapper.updateResourceEntityStatusAndError(resourceEntityVo);
         }
@@ -1243,18 +1288,49 @@ public class ResourceEntityViewBuilder {
             resourceEntityMapper.updateResourceEntityStatusAndError(resourceEntityVo);
             return;
         }
-        String name = sceneEntityVo.getName();
+        String viewName = sceneEntityVo.getName();
         SceneEntityGenerateSqlUtil sceneEntityGenerateSqlUtil = new SceneEntityGenerateSqlUtil(sceneEntityVo);
-        String sql = sceneEntityGenerateSqlUtil.getSql();
-        try {
-            sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + "." + name + " AS " + sql;
-            if (logger.isDebugEnabled()) {
-                logger.debug(sql);
+        String selectSql = sceneEntityGenerateSqlUtil.getSql();
+        String md5 = Md5Util.encryptMD5(selectSql);
+        String tableType = schemaMapper.checkTableOrViewIsExists(TenantContext.get().getDataDbName(), viewName);
+        if (tableType != null) {
+            if (Objects.equals(tableType, "SYSTEM VIEW")) {
+                return;
+            } else if (Objects.equals(tableType, "VIEW")) {
+                DataBaseViewInfoVo dataBaseViewInfoVo = dataBaseViewInfoMapper.getDataBaseViewInfoByViewName(viewName);
+                if (dataBaseViewInfoVo != null) {
+                    // md5相同就不用更新视图了
+                    if (Objects.equals(md5, dataBaseViewInfoVo.getMd5())) {
+                        return;
+                    }
+                }
             }
-            schemaMapper.deleteTable(TenantContext.get().getDataDbName() + "." + name);
-            schemaMapper.insertView(sql);
-            resourceEntityVo.setError("");
-            resourceEntityVo.setStatus(Status.READY.getValue());
+        }
+        try {
+
+            EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
+                if (Objects.equals(tableType, "BASE TABLE")) {
+                    schemaMapper.deleteTable(TenantContext.get().getDataDbName() + "." + viewName);
+                }
+                String sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + "." + viewName + " AS " + selectSql;
+                if (logger.isDebugEnabled()) {
+                    logger.debug(sql);
+                }
+                schemaMapper.insertView(sql);
+            }).execute();
+            if (s.isSucceed()) {
+                resourceEntityVo.setError("");
+                resourceEntityVo.setStatus(Status.READY.getValue());
+                DataBaseViewInfoVo dataBaseViewInfoVo = new DataBaseViewInfoVo();
+                dataBaseViewInfoVo.setViewName(viewName);
+                dataBaseViewInfoVo.setMd5(md5);
+                dataBaseViewInfoVo.setLcu(UserContext.get().getUserUuid());
+                dataBaseViewInfoMapper.insertDataBaseViewInfo(dataBaseViewInfoVo);
+            } else {
+                resourceEntityVo.setError(s.getError());
+                resourceEntityVo.setStatus(Status.ERROR.getValue());
+            }
+
         } catch (Exception ex) {
             resourceEntityVo.setError(ex.getMessage());
             resourceEntityVo.setStatus(Status.ERROR.getValue());
