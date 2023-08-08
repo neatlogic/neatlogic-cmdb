@@ -110,7 +110,7 @@ public class GetCustomViewDataCiEntityTopoApi extends PrivateApiComponentBase {
         // 所有需要绘制的层次
         Set<Long> ciTypeIdSet = new HashSet<>();
         for (CiEntityVo ciEntityVo : ciEntityList) {
-            if (!isHiddenMap.get(ciEntityVo.getCiId())) {
+            if (isHiddenMap.containsKey(ciEntityVo.getCiId()) && !isHiddenMap.get(ciEntityVo.getCiId())) {
                 ciTypeIdSet.add(ciEntityVo.getTypeId());
             }
         }
