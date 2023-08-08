@@ -193,7 +193,7 @@ public class VirtualCiSqlBuilder {
      *
      * @return 创建视图语句
      */
-    public String getCreateViewSql() {
+    public String getSql() {
         try {
             if (MapUtils.isEmpty(attrIdMap)) {
                 throw new CiViewAttrIdMapEmptyException();
@@ -205,7 +205,7 @@ public class VirtualCiSqlBuilder {
             Select selectStatement = (Select) stmt;
             fillUpSchema(selectStatement.getSelectBody());
             fillUpAlias(selectStatement.getSelectBody());
-            return "CREATE OR REPLACE VIEW " + dataSchema + ".cmdb_" + ciId + " AS " + stmt;
+            return stmt.toString();
 
         } catch (ApiRuntimeException ex) {
             throw ex;

@@ -17,6 +17,7 @@
 package neatlogic.module.cmdb.utils;
 
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
+import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.ci.RelVo;
@@ -27,6 +28,11 @@ import neatlogic.framework.cmdb.enums.customview.RelType;
 import neatlogic.framework.cmdb.exception.attr.AttrNotFoundException;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.rel.RelNotFoundException;
+import neatlogic.framework.dao.mapper.DataBaseViewInfoMapper;
+import neatlogic.framework.dao.mapper.SchemaMapper;
+import neatlogic.framework.dto.DataBaseViewInfoVo;
+import neatlogic.framework.transaction.core.EscapeTransactionJob;
+import neatlogic.framework.util.Md5Util;
 import neatlogic.module.cmdb.service.ci.CiService;
 import neatlogic.module.cmdb.service.customview.CustomViewService;
 import net.sf.jsqlparser.expression.*;
@@ -54,12 +60,20 @@ public class CustomViewBuilder {
 
     private static CiService ciService;
     private static CustomViewService customViewService;
+    private static SchemaMapper schemaMapper;
+    private static DataBaseViewInfoMapper dataBaseViewInfoMapper;
     private CustomViewVo customViewVo;
 
     @Autowired
-    public CustomViewBuilder(CiService _ciService, CustomViewService _customViewService) {
+    public CustomViewBuilder(
+            CiService _ciService,
+            CustomViewService _customViewService,
+            SchemaMapper _schemaMapper,
+            DataBaseViewInfoMapper _dataBaseViewInfoMapper) {
         ciService = _ciService;
         customViewService = _customViewService;
+        schemaMapper = _schemaMapper;
+        dataBaseViewInfoMapper = _dataBaseViewInfoMapper;
     }
 
     public CustomViewBuilder(CustomViewVo _customViewVo) {
@@ -221,13 +235,45 @@ public class CustomViewBuilder {
             groupBy.addGroupByExpression(new Column("id").withTable(new Table("ci_base")));
             plainSelect.setGroupByElement(groupBy);
             */
-        String sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + ".customview_" + customViewVo.getId() + " AS " + select;
-        //System.out.println(sql);
-        if (logger.isDebugEnabled()) {
-            logger.debug(sql);
+        String viewName = "customview_" + customViewVo.getId();
+        String selectSql = select.toString();
+        String md5 = Md5Util.encryptMD5(selectSql);
+        String tableType = schemaMapper.checkTableOrViewIsExists(TenantContext.get().getDataDbName(), viewName);
+        if (tableType != null) {
+            if (Objects.equals(tableType, "SYSTEM VIEW")) {
+                return;
+            } else if (Objects.equals(tableType, "VIEW")) {
+                DataBaseViewInfoVo dataBaseViewInfoVo = dataBaseViewInfoMapper.getDataBaseViewInfoByViewName(viewName);
+                if (dataBaseViewInfoVo != null) {
+                    // md5相同就不用更新视图了
+                    if (Objects.equals(md5, dataBaseViewInfoVo.getMd5())) {
+                        return;
+                    }
+                }
+            }
         }
         //System.out.println(sql);
-        customViewService.buildCustomView(sql);
+//        customViewService.buildCustomView(sql);
+        EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
+            if (Objects.equals(tableType, "BASE TABLE")) {
+                schemaMapper.deleteTable(TenantContext.get().getDataDbName() + "." + viewName);
+            }
+            String sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + "." + viewName + " AS " + selectSql;
+            //System.out.println(sql);
+            if (logger.isDebugEnabled()) {
+                logger.debug(sql);
+            }
+            schemaMapper.insertView(sql);
+        }).execute();
+        if (s.isSucceed()) {
+            DataBaseViewInfoVo dataBaseViewInfoVo = new DataBaseViewInfoVo();
+            dataBaseViewInfoVo.setViewName(viewName);
+            dataBaseViewInfoVo.setMd5(md5);
+            dataBaseViewInfoVo.setLcu(UserContext.get().getUserUuid());
+            dataBaseViewInfoMapper.insertDataBaseViewInfo(dataBaseViewInfoVo);
+        } else {
+            throw new RuntimeException(s.getError());
+        }
     }
 
     static class JoinWrapper {

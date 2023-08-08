@@ -17,6 +17,7 @@
 package neatlogic.module.cmdb.service.ci;
 
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
+import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.cmdb.crossover.ICiCrossoverService;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiViewVo;
@@ -28,10 +29,14 @@ import neatlogic.framework.cmdb.exception.attr.AttrIsUsedInExpressionException;
 import neatlogic.framework.cmdb.exception.attr.AttrIsUsedInUniqueRuleException;
 import neatlogic.framework.cmdb.exception.ci.*;
 import neatlogic.framework.cmdb.utils.RelUtil;
+import neatlogic.framework.dao.mapper.DataBaseViewInfoMapper;
+import neatlogic.framework.dao.mapper.SchemaMapper;
+import neatlogic.framework.dto.DataBaseViewInfoVo;
 import neatlogic.framework.exception.database.DataBaseNotFoundException;
 import neatlogic.framework.lrcode.LRCodeManager;
 import neatlogic.framework.transaction.core.AfterTransactionJob;
 import neatlogic.framework.transaction.core.EscapeTransactionJob;
+import neatlogic.framework.util.Md5Util;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiViewMapper;
@@ -88,6 +93,12 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
 
     @Autowired
     private CiEntityService ciEntityService;
+
+    @Autowired
+    private SchemaMapper schemaMapper;
+
+    @Autowired
+    private DataBaseViewInfoMapper dataBaseViewInfoMapper;
 
     @Override
     @Transactional
@@ -194,10 +205,28 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
                     }
                 }
                 viewBuilder.setAttrIdMap(attrIdMap);
+                String selectSql = viewBuilder.getSql();
+                String md5 = Md5Util.encryptMD5(selectSql);
+                String viewName = "cmdb_" + ciVo.getId();
+                String tableType = schemaMapper.checkTableOrViewIsExists(TenantContext.get().getDataDbName(), viewName);
+                if (tableType != null) {
+                    if (Objects.equals(tableType, "SYSTEM VIEW")) {
+                        return;
+                    } else if (Objects.equals(tableType, "VIEW")) {
+                        DataBaseViewInfoVo dataBaseViewInfoVo = dataBaseViewInfoMapper.getDataBaseViewInfoByViewName(viewName);
+                        if (dataBaseViewInfoVo != null) {
+                            // md5相同就不用更新视图了
+                            if (Objects.equals(md5, dataBaseViewInfoVo.getMd5())) {
+                                return;
+                            }
+                        }
+                    }
+                }
                 EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
+                    String sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + "." + viewName + " AS " + selectSql;
                     if (ciSchemaMapper.checkSchemaIsExists(TenantContext.get().getDataDbName()) > 0) {
                         //创建配置项表
-                        ciSchemaMapper.insertCiView(viewBuilder.getCreateViewSql());
+                        ciSchemaMapper.insertCiView(sql);
                     } else {
                         throw new DataBaseNotFoundException();
                     }
@@ -205,6 +234,11 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
                 if (!s.isSucceed()) {
                     throw new CreateCiSchemaException(ciVo.getName(), true);
                 }
+                DataBaseViewInfoVo dataBaseViewInfoVo = new DataBaseViewInfoVo();
+                dataBaseViewInfoVo.setViewName(viewName);
+                dataBaseViewInfoVo.setMd5(md5);
+                dataBaseViewInfoVo.setLcu(UserContext.get().getUserUuid());
+                dataBaseViewInfoMapper.insertDataBaseViewInfo(dataBaseViewInfoVo);
             }
         }
     }
