@@ -19,42 +19,96 @@ package neatlogic.module.cmdb.utils;
 import neatlogic.framework.cmdb.annotation.ResourceField;
 import neatlogic.framework.cmdb.annotation.ResourceType;
 import neatlogic.framework.cmdb.annotation.ResourceTypes;
-import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityAttrVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
-import neatlogic.framework.cmdb.enums.resourcecenter.ViewType;
+import neatlogic.framework.cmdb.dto.resourcecenter.config.SceneEntityVo;
 import org.apache.commons.lang3.StringUtils;
 import org.reflections.Reflections;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author linbq
  * @since 2022/2/9 14:17
  **/
 public class ResourceEntityFactory {
+    private static Map<String, List<String>> fieldMap = new HashMap<>();
     private static List<ResourceEntityVo> resourceEntityList = new ArrayList<>();
+    private static List<SceneEntityVo> sceneEntityList = new ArrayList<>();
 
+//    static {
+//        Reflections ref = new Reflections("neatlogic.framework.cmdb.dto.resourcecenter.entity", new TypeAnnotationsScanner(), new SubTypesScanner(true));
+//        Set<Class<?>> classList = ref.getTypesAnnotatedWith(ResourceType.class, true);
+//        for (Class<?> c : classList) {
+//            ResourceEntityVo resourceEntityVo = null;
+//            Annotation[] classAnnotations = c.getDeclaredAnnotations();
+//            for (Annotation annotation : classAnnotations) {
+//                if (annotation instanceof ResourceType) {
+//                    ResourceType rt = (ResourceType) annotation;
+//                    resourceEntityVo = new ResourceEntityVo();
+//                    resourceEntityVo.setName(rt.name());
+//                    resourceEntityVo.setLabel(rt.label());
+//                }
+//            }
+//            if (resourceEntityVo == null) {
+//                continue;
+//            }
+//            for (Field field : c.getDeclaredFields()) {
+//                Annotation[] annotations = field.getDeclaredAnnotations();
+//                for (Annotation annotation : annotations) {
+//                    if (annotation instanceof ResourceField) {
+//                        ResourceField rf = (ResourceField) annotation;
+//                        if (StringUtils.isNotBlank(rf.name())) {
+//                            ResourceEntityAttrVo attr = new ResourceEntityAttrVo();
+//                            attr.setField(rf.name());
+//                            resourceEntityVo.addAttr(attr);
+//                        }
+//                    }
+//                }
+//            }
+//            resourceEntityVo.setType(ViewType.RESOURCE.getValue());
+//            resourceEntityList.add(resourceEntityVo);
+//        }
+//        classList = ref.getTypesAnnotatedWith(ResourceTypes.class, true);
+//        for (Class<?> c : classList) {
+//            ResourceTypes resourceTypes = c.getAnnotation(ResourceTypes.class);
+//            if (resourceTypes != null) {
+//                for (ResourceType rt : resourceTypes.value()) {
+//                    ResourceEntityVo resourceEntityVo = new ResourceEntityVo();
+//                    resourceEntityVo.setName(rt.name());
+//                    resourceEntityVo.setLabel(rt.label());
+//                    for (Field field : c.getDeclaredFields()) {
+//                        ResourceField rf = field.getAnnotation(ResourceField.class);
+//                        if (rf != null) {
+//                            if (StringUtils.isNotBlank(rf.name())) {
+//                                ResourceEntityAttrVo attr = new ResourceEntityAttrVo();
+//                                attr.setField(rf.name());
+//                                resourceEntityVo.addAttr(attr);
+//                            }
+//                        }
+//                    }
+//                    resourceEntityVo.setType(ViewType.RESOURCE.getValue());
+//                    resourceEntityList.add(resourceEntityVo);
+//                }
+//            }
+//        }
+//    }
     static {
-        Reflections ref = new Reflections("neatlogic.framework.cmdb.dto.resourcecenter.entity", new TypeAnnotationsScanner(), new SubTypesScanner(true));
+        Reflections ref = new Reflections("neatlogic.framework.cmdb.dto.resourcecenter.sceneviewfielddeclare");
         Set<Class<?>> classList = ref.getTypesAnnotatedWith(ResourceType.class, true);
         for (Class<?> c : classList) {
-            ResourceEntityVo resourceEntityVo = null;
+            SceneEntityVo sceneEntityVo = null;
             Annotation[] classAnnotations = c.getDeclaredAnnotations();
             for (Annotation annotation : classAnnotations) {
                 if (annotation instanceof ResourceType) {
                     ResourceType rt = (ResourceType) annotation;
-                    resourceEntityVo = new ResourceEntityVo();
-                    resourceEntityVo.setName(rt.name());
-                    resourceEntityVo.setLabel(rt.label());
+                    sceneEntityVo = new SceneEntityVo();
+                    sceneEntityVo.setName(rt.name());
+                    sceneEntityVo.setLabel(rt.label());
                 }
             }
-            if (resourceEntityVo == null) {
+            if (sceneEntityVo == null) {
                 continue;
             }
             for (Field field : c.getDeclaredFields()) {
@@ -63,36 +117,38 @@ public class ResourceEntityFactory {
                     if (annotation instanceof ResourceField) {
                         ResourceField rf = (ResourceField) annotation;
                         if (StringUtils.isNotBlank(rf.name())) {
-                            ResourceEntityAttrVo attr = new ResourceEntityAttrVo();
-                            attr.setField(rf.name());
-                            resourceEntityVo.addAttr(attr);
+                            fieldMap.computeIfAbsent(sceneEntityVo.getName(), key -> new ArrayList<>()).add(rf.name());
+//                            ResourceEntityAttrVo attr = new ResourceEntityAttrVo();
+//                            attr.setField(rf.name());
+//                            sceneEntityVo.addAttr(attr);
                         }
                     }
                 }
             }
-            resourceEntityVo.setType(ViewType.RESOURCE.getValue());
-            resourceEntityList.add(resourceEntityVo);
+//            sceneEntityVo.setType(ViewType.RESOURCE.getValue());
+            sceneEntityList.add(sceneEntityVo);
         }
         classList = ref.getTypesAnnotatedWith(ResourceTypes.class, true);
         for (Class<?> c : classList) {
             ResourceTypes resourceTypes = c.getAnnotation(ResourceTypes.class);
             if (resourceTypes != null) {
                 for (ResourceType rt : resourceTypes.value()) {
-                    ResourceEntityVo resourceEntityVo = new ResourceEntityVo();
-                    resourceEntityVo.setName(rt.name());
-                    resourceEntityVo.setLabel(rt.label());
+                    SceneEntityVo sceneEntityVo = new SceneEntityVo();
+                    sceneEntityVo.setName(rt.name());
+                    sceneEntityVo.setLabel(rt.label());
                     for (Field field : c.getDeclaredFields()) {
                         ResourceField rf = field.getAnnotation(ResourceField.class);
                         if (rf != null) {
                             if (StringUtils.isNotBlank(rf.name())) {
-                                ResourceEntityAttrVo attr = new ResourceEntityAttrVo();
-                                attr.setField(rf.name());
-                                resourceEntityVo.addAttr(attr);
+                                fieldMap.computeIfAbsent(sceneEntityVo.getName(), key -> new ArrayList<>()).add(rf.name());
+//                                ResourceEntityAttrVo attr = new ResourceEntityAttrVo();
+//                                attr.setField(rf.name());
+//                                resourceEntityVo.addAttr(attr);
                             }
                         }
                     }
-                    resourceEntityVo.setType(ViewType.RESOURCE.getValue());
-                    resourceEntityList.add(resourceEntityVo);
+//                    resourceEntityVo.setType(ViewType.RESOURCE.getValue());
+                    sceneEntityList.add(sceneEntityVo);
                 }
             }
         }
@@ -100,5 +156,17 @@ public class ResourceEntityFactory {
 
     public static List<ResourceEntityVo> getResourceEntityList() {
         return resourceEntityList;
+    }
+
+    public static List<SceneEntityVo> getSceneEntityList() {
+        return sceneEntityList;
+    }
+
+    public static List<String> getFieldListByViewName(String viewName) {
+        List<String> fieldList = fieldMap.get(viewName);
+        if (fieldList == null) {
+            return new ArrayList<>();
+        }
+        return new ArrayList<>(fieldList);
     }
 }
