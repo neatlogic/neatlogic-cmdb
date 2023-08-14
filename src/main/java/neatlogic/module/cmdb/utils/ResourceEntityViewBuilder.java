@@ -976,7 +976,7 @@ public class ResourceEntityViewBuilder {
         if (StringUtils.isBlank(resource)) {
             throw new ResourceCenterConfigIrregularException(viewName, joinType, "resource");
         }
-        checkResourceAndField(resource, field);
+//        checkResourceAndField(resource, field);
         String direction = element.attributeValue("direction");
         String fromCi = element.attributeValue("fromCi");
         String toCi = element.attributeValue("toCi");
@@ -984,7 +984,7 @@ public class ResourceEntityViewBuilder {
         String toAttr = element.attributeValue("toAttr");
         SceneEntityAttrVo attrVo = new SceneEntityAttrVo();
         attrVo.setField(field);
-        attrVo.setResource(resource);
+//        attrVo.setResource(resource);
         attrVo.setDirection(direction);
         attrVo.setFromCi(fromCi);
         attrVo.setToCi(toCi);
@@ -1009,7 +1009,7 @@ public class ResourceEntityViewBuilder {
         if (StringUtils.isBlank(resource)) {
             throw new ResourceCenterConfigIrregularException(viewName, joinType, "resource");
         }
-        checkResourceAndField(resource, field);
+//        checkResourceAndField(resource, field);
         String direction = element.attributeValue("direction");
         String fromCi = element.attributeValue("fromCi");
         String toCi = element.attributeValue("toCi");
@@ -1017,7 +1017,7 @@ public class ResourceEntityViewBuilder {
         String toAttr = element.attributeValue("toAttr");
         SceneEntityJoinVo joinVo = new SceneEntityJoinVo(joinType);
         joinVo.setField(field);
-        joinVo.setResource(resource);
+//        joinVo.setResource(resource);
         joinVo.setDirection(direction);
         joinVo.setFromCi(fromCi);
         joinVo.setToCi(toCi);
@@ -1031,6 +1031,7 @@ public class ResourceEntityViewBuilder {
      * @param resource
      * @param field
      */
+    @Deprecated
     private void checkResourceAndField(String resource, String field) {
         List<ResourceEntityVo> resourceEntityList = ResourceEntityFactory.getResourceEntityList();
         Optional<ResourceEntityVo> optionalEntity = resourceEntityList.stream().filter(e -> Objects.equals(e.getName(), resource)).findFirst();
