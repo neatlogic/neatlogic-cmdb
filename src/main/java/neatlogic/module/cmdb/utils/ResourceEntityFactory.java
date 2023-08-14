@@ -118,14 +118,10 @@ public class ResourceEntityFactory {
                         ResourceField rf = (ResourceField) annotation;
                         if (StringUtils.isNotBlank(rf.name())) {
                             fieldMap.computeIfAbsent(sceneEntityVo.getName(), key -> new ArrayList<>()).add(rf.name());
-//                            ResourceEntityAttrVo attr = new ResourceEntityAttrVo();
-//                            attr.setField(rf.name());
-//                            sceneEntityVo.addAttr(attr);
                         }
                     }
                 }
             }
-//            sceneEntityVo.setType(ViewType.RESOURCE.getValue());
             sceneEntityList.add(sceneEntityVo);
         }
         classList = ref.getTypesAnnotatedWith(ResourceTypes.class, true);
@@ -141,13 +137,9 @@ public class ResourceEntityFactory {
                         if (rf != null) {
                             if (StringUtils.isNotBlank(rf.name())) {
                                 fieldMap.computeIfAbsent(sceneEntityVo.getName(), key -> new ArrayList<>()).add(rf.name());
-//                                ResourceEntityAttrVo attr = new ResourceEntityAttrVo();
-//                                attr.setField(rf.name());
-//                                resourceEntityVo.addAttr(attr);
                             }
                         }
                     }
-//                    resourceEntityVo.setType(ViewType.RESOURCE.getValue());
                     sceneEntityList.add(sceneEntityVo);
                 }
             }
