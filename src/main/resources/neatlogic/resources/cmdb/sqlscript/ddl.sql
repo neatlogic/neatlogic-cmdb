@@ -724,19 +724,6 @@ CREATE TABLE IF NOT EXISTS `cmdb_resourcecenter_account_tag` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='cmdb_resourcecenter_account_tag';
 
 -- ----------------------------
--- Table structure for cmdb_resourcecenter_config
--- ----------------------------
-CREATE TABLE IF NOT EXISTS `cmdb_resourcecenter_config` (
-  `id` int NOT NULL DEFAULT '1' COMMENT 'id',
-  `config` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'config',
-  `fcu` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '创建用户',
-  `fcd` timestamp(3) NULL DEFAULT NULL COMMENT '创建时间',
-  `lcu` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '修改用户',
-  `lcd` timestamp(3) NULL DEFAULT NULL COMMENT '修改时间',
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='资源中心配置表';
-
--- ----------------------------
 -- Table structure for cmdb_resourcecenter_entity
 -- ----------------------------
 CREATE TABLE IF NOT EXISTS `cmdb_resourcecenter_entity` (
