@@ -23,6 +23,8 @@ import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.SceneEntityVo;
 import org.apache.commons.lang3.StringUtils;
 import org.reflections.Reflections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -33,9 +35,20 @@ import java.util.*;
  * @since 2022/2/9 14:17
  **/
 public class ResourceEntityFactory {
+    private static Logger logger = LoggerFactory.getLogger(ResourceEntityFactory.class);
+    /**
+     * 视图名称与字段列表映射关系
+     */
     private static Map<String, List<String>> fieldMap = new HashMap<>();
     private static List<ResourceEntityVo> resourceEntityList = new ArrayList<>();
+    /**
+     * 视图信息列表
+     */
     private static List<SceneEntityVo> sceneEntityList = new ArrayList<>();
+    /**
+     * 视图名称列表
+     */
+    private static List<String> viewNameList = new ArrayList<>();
 
 //    static {
 //        Reflections ref = new Reflections("neatlogic.framework.cmdb.dto.resourcecenter.entity", new TypeAnnotationsScanner(), new SubTypesScanner(true));
@@ -103,6 +116,11 @@ public class ResourceEntityFactory {
             for (Annotation annotation : classAnnotations) {
                 if (annotation instanceof ResourceType) {
                     ResourceType rt = (ResourceType) annotation;
+                    if (viewNameList.contains(rt.name())) {
+                        logger.error("view '" + rt.name() + "' repeats the declaration");
+                        System.exit(1);
+                    }
+                    viewNameList.add(rt.name());
                     sceneEntityVo = new SceneEntityVo();
                     sceneEntityVo.setName(rt.name());
                     sceneEntityVo.setLabel(rt.label());
@@ -129,6 +147,11 @@ public class ResourceEntityFactory {
             ResourceTypes resourceTypes = c.getAnnotation(ResourceTypes.class);
             if (resourceTypes != null) {
                 for (ResourceType rt : resourceTypes.value()) {
+                    if (viewNameList.contains(rt.name())) {
+                        logger.error("view '" + rt.name() + "' repeats the declaration");
+                        System.exit(1);
+                    }
+                    viewNameList.add(rt.name());
                     SceneEntityVo sceneEntityVo = new SceneEntityVo();
                     sceneEntityVo.setName(rt.name());
                     sceneEntityVo.setLabel(rt.label());
@@ -160,5 +183,9 @@ public class ResourceEntityFactory {
             return new ArrayList<>();
         }
         return new ArrayList<>(fieldList);
+    }
+
+    public static List<String> getViewNameList() {
+        return new ArrayList<>(viewNameList);
     }
 }

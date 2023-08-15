@@ -29,6 +29,15 @@ limitations under the License.
         FROM `cmdb_resourcecenter_entity`
     </select>
 
+    <select id="getResourceEntityListByNameList" resultType="neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
+        SELECT `name`, `label`, `status`, `error`, `init_time` AS initTime, `ci_id` AS ciId, `type`, `xml`, `description`
+        FROM `cmdb_resourcecenter_entity`
+        where `name` IN
+        <foreach collection="list" item="name" open="(" separator="," close=")">
+            #{name}
+        </foreach>
+    </select>
+
     <select id="getResourceEntityXmlByName" parameterType="java.lang.String" resultType="java.lang.String">
         SELECT `xml`
         FROM `cmdb_resourcecenter_entity`
