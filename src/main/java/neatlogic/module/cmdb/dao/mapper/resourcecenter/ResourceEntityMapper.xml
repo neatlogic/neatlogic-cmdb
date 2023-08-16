@@ -19,18 +19,18 @@ limitations under the License.
 <mapper namespace="neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper">
     <select id="getResourceEntityByName" parameterType="java.lang.String"
             resultType="neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
-        SELECT `name`, `label`, `status`, `error`, `init_time` AS initTime, `ci_id` AS ciId, `type`, `xml`, `description`
+        SELECT `name`, `label`, `status`, `error`, `init_time` AS initTime, `ci_id` AS ciId, `type`, `xml`, `config` AS configStr, `description`
         FROM `cmdb_resourcecenter_entity`
         WHERE `name` = #{value}
     </select>
 
     <select id="getAllResourceEntity" resultType="neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
-        SELECT `name`, `label`, `status`, `error`, `init_time` AS initTime, `ci_id` AS ciId, `type`, `xml`, `description`
+        SELECT `name`, `label`, `status`, `error`, `init_time` AS initTime, `ci_id` AS ciId, `type`, `xml`, `config` AS configStr, `description`
         FROM `cmdb_resourcecenter_entity`
     </select>
 
     <select id="getResourceEntityListByNameList" resultType="neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
-        SELECT `name`, `label`, `status`, `error`, `init_time` AS initTime, `ci_id` AS ciId, `type`, `xml`, `description`
+        SELECT `name`, `label`, `status`, `error`, `init_time` AS initTime, `ci_id` AS ciId, `type`, `xml`, `config` AS configStr, `description`
         FROM `cmdb_resourcecenter_entity`
         where `name` IN
         <foreach collection="list" item="name" open="(" separator="," close=")">
@@ -50,8 +50,8 @@ limitations under the License.
 
     <insert id="insertResourceEntity"
             parameterType="neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
-        INSERT INTO cmdb_resourcecenter_entity (`name`, `label`, `status`, `error`, `init_time`, `ci_id`, `type`, `xml`, `description`)
-        VALUES (#{name}, #{label}, #{status}, #{error}, NOW(3), #{ciId}, #{type}, #{xml}, #{description})
+        INSERT INTO cmdb_resourcecenter_entity (`name`, `label`, `status`, `error`, `init_time`, `ci_id`, `type`, `xml`, `config`, `description`)
+        VALUES (#{name}, #{label}, #{status}, #{error}, NOW(3), #{ciId}, #{type}, #{xml}, #{configStr} #{description})
         ON DUPLICATE KEY UPDATE
         <if test="label != null">
             `label` = #{label},
@@ -64,6 +64,9 @@ limitations under the License.
         </if>
         <if test="xml != null">
             `xml` = #{xml},
+        </if>
+        <if test="configStr != null">
+            `config` = #{configStr},
         </if>
         <if test="description != null">
             `description`= #{description},
@@ -86,6 +89,7 @@ limitations under the License.
             `label`     = #{label},
             `error`     = #{error},
             `xml`       = #{xml},
+            `config`       = #{configStr},
             `description`= #{description},
             `init_time` = NOW(3)
         WHERE `name` = #{name}
