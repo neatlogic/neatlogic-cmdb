@@ -65,6 +65,8 @@ public class SaveResourceEntityApi extends PrivateApiComponentBase {
     @Input({
             @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "common.name"),
             @Param(name = "label", type = ApiParamType.STRING, isRequired = true, desc = "common.cnname"),
+            @Param(name = "mainCi", type = ApiParamType.STRING, isRequired = true, desc = "主模型"),
+            @Param(name = "config", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "配置"),
             @Param(name = "xml", type = ApiParamType.STRING, desc = "common.config"),
             @Param(name = "description", type = ApiParamType.STRING, desc = "common.description")
     })
@@ -96,7 +98,6 @@ public class SaveResourceEntityApi extends PrivateApiComponentBase {
         } else {
             resourceEntityMapper.updateResourceEntityLabelAndDescription(resourceEntityVo);
         }
-        resourceEntityMapper.insertResourceEntity(resourceEntityVo);
         return null;
     }
 }
