@@ -20,9 +20,11 @@ import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.*;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.config.SceneEntityVo;
 import neatlogic.framework.cmdb.dto.tag.TagVo;
 import neatlogic.framework.cmdb.enums.resourcecenter.AppModuleResourceType;
 import neatlogic.framework.cmdb.enums.resourcecenter.Status;
+import neatlogic.framework.cmdb.enums.resourcecenter.ViewType;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppModuleNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
@@ -35,6 +37,7 @@ import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceTagMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import neatlogic.module.cmdb.utils.ResourceEntityFactory;
 import neatlogic.module.cmdb.utils.ResourceEntityViewBuilder;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -504,7 +507,8 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 
     @Override
     public List<ResourceEntityVo> rebuildResourceEntity() {
-        List<ResourceEntityVo> resourceEntityList = resourceEntityMapper.getAllResourceEntity();
+        List<String> viewNameList = ResourceEntityFactory.getViewNameList();
+        List<ResourceEntityVo> resourceEntityList = resourceEntityMapper.getResourceEntityListByNameList(viewNameList);
         for (ResourceEntityVo resourceEntityVo : resourceEntityList) {
             resourceEntityVo.setError("");
             resourceEntityVo.setStatus(Status.PENDING.getValue());
@@ -516,6 +520,21 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 builder.buildView();
             }
         }
-        return resourceEntityMapper.getAllResourceEntity();
+        resourceEntityList = resourceEntityMapper.getResourceEntityListByNameList(viewNameList);
+        Map<String, ResourceEntityVo> resourceEntityVoMap = resourceEntityList.stream().collect(Collectors.toMap(e -> e.getName(), e -> e));
+        List<ResourceEntityVo> resultList = new ArrayList<>();
+        List<SceneEntityVo> sceneEntityList = ResourceEntityFactory.getSceneEntityList();
+        for (SceneEntityVo sceneEntityVo : sceneEntityList) {
+            ResourceEntityVo resourceEntityVo = resourceEntityVoMap.get(sceneEntityVo.getName());
+            if (resourceEntityVo == null) {
+                resourceEntityVo = new ResourceEntityVo();
+                resourceEntityVo.setName(sceneEntityVo.getName());
+                resourceEntityVo.setLabel(sceneEntityVo.getLabel());
+                resourceEntityVo.setStatus(Status.PENDING.getValue());
+                resourceEntityVo.setType(ViewType.SCENE.getValue());
+            }
+            resultList.add(resourceEntityVo);
+        }
+        return resultList;
     }
 }

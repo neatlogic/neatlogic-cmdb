@@ -23,13 +23,13 @@ import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.*;
 import neatlogic.framework.cmdb.enums.RelDirectionType;
 import neatlogic.framework.cmdb.enums.resourcecenter.JoinType;
-import neatlogic.framework.cmdb.enums.resourcecenter.ScenceView;
 import neatlogic.framework.cmdb.enums.resourcecenter.Status;
 import neatlogic.framework.cmdb.enums.resourcecenter.ViewType;
 import neatlogic.framework.cmdb.exception.attr.AttrNotFoundException;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.ResourceCenterConfigIrregularException;
 import neatlogic.framework.cmdb.exception.resourcecenter.ResourceCenterResourceFoundException;
+import neatlogic.framework.cmdb.exception.resourcecenter.ResourceCenterViewConfigException;
 import neatlogic.framework.cmdb.utils.SceneEntityGenerateSqlUtil;
 import neatlogic.framework.dao.mapper.DataBaseViewInfoMapper;
 import neatlogic.framework.dao.mapper.SchemaMapper;
@@ -50,6 +50,7 @@ import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.util.SelectUtils;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.*;
 import org.slf4j.Logger;
@@ -58,6 +59,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class ResourceEntityViewBuilder {
@@ -138,11 +140,12 @@ public class ResourceEntityViewBuilder {
                 }
                 convertToResourceEntityVo(root);
             } else if (Objects.equals(type, ViewType.SCENE.getValue())) {
-                for (ScenceView scenceView : ScenceView.values()) {
-                    if (Objects.equals(scenceView.getValue(), name)) {
+                List<SceneEntityVo> sceneEntityList = ResourceEntityFactory.getSceneEntityList();
+                for (SceneEntityVo sceneEntity : sceneEntityList) {
+                    if (Objects.equals(sceneEntity.getName(), name)) {
                         sceneEntityVo = new SceneEntityVo();
                         sceneEntityVo.setName(name);
-                        sceneEntityVo.setLabel(scenceView.getText());
+                        sceneEntityVo.setLabel(sceneEntity.getLabel());
                         resourceEntityVo = new ResourceEntityVo();
                         resourceEntityVo.setName(name);
                         resourceEntityVo.setType(this.type);
@@ -955,6 +958,12 @@ public class ResourceEntityViewBuilder {
                     }
                 }
             }
+            List<String> definedFieldList = sceneEntityAttrList.stream().map(SceneEntityAttrVo::getField).collect(Collectors.toList());
+            List<String> declaredFieldList = ResourceEntityFactory.getFieldListByViewName(viewName);
+            List<String> undefinedFieldList = ListUtils.removeAll(declaredFieldList, definedFieldList);
+            if (CollectionUtils.isNotEmpty(undefinedFieldList)) {
+                throw new ResourceCenterViewConfigException(viewName, String.join(",", undefinedFieldList));
+            }
             sceneEntityVo.setStatus(Status.PENDING.getValue());
         } catch (Exception ex) {
             sceneEntityVo.setStatus(Status.ERROR.getValue());
@@ -969,13 +978,17 @@ public class ResourceEntityViewBuilder {
      */
     private SceneEntityAttrVo convertToSceneEntityAttrVo(String viewName, Element element, JoinType joinType) {
         String field = element.attributeValue("field");
-        String resource = element.attributeValue("resource");
+//        String resource = element.attributeValue("resource");
         if (StringUtils.isBlank(field)) {
             throw new ResourceCenterConfigIrregularException(viewName, joinType, "field");
         }
-        if (StringUtils.isBlank(resource)) {
-            throw new ResourceCenterConfigIrregularException(viewName, joinType, "resource");
+        List<String> fieldList = ResourceEntityFactory.getFieldListByViewName(viewName);
+        if (!fieldList.contains(field)) {
+            throw new ResourceCenterResourceFoundException(viewName, field);
         }
+//        if (StringUtils.isBlank(resource)) {
+//            throw new ResourceCenterConfigIrregularException(viewName, joinType, "resource");
+//        }
 //        checkResourceAndField(resource, field);
         String direction = element.attributeValue("direction");
         String fromCi = element.attributeValue("fromCi");
@@ -1002,13 +1015,17 @@ public class ResourceEntityViewBuilder {
      */
     private SceneEntityJoinVo convertToSceneEntityJoinVo(String viewName, Element element, JoinType joinType) {
         String field = element.attributeValue("field");
-        String resource = element.attributeValue("resource");
+//        String resource = element.attributeValue("resource");
         if (StringUtils.isBlank(field)) {
             throw new ResourceCenterConfigIrregularException(viewName, joinType, "field");
         }
-        if (StringUtils.isBlank(resource)) {
-            throw new ResourceCenterConfigIrregularException(viewName, joinType, "resource");
+        List<String> fieldList = ResourceEntityFactory.getFieldListByViewName(viewName);
+        if (!fieldList.contains(field)) {
+            throw new ResourceCenterResourceFoundException(viewName, field);
         }
+//        if (StringUtils.isBlank(resource)) {
+//            throw new ResourceCenterConfigIrregularException(viewName, joinType, "resource");
+//        }
 //        checkResourceAndField(resource, field);
         String direction = element.attributeValue("direction");
         String fromCi = element.attributeValue("fromCi");

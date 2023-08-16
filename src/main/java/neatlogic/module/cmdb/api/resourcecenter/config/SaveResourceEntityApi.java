@@ -19,7 +19,7 @@ package neatlogic.module.cmdb.api.resourcecenter.config;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.enums.resourcecenter.Status;
-import neatlogic.framework.cmdb.exception.resourcecenter.ResourceCenterResourceFoundException;
+import neatlogic.framework.cmdb.enums.resourcecenter.ViewType;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
@@ -54,7 +54,7 @@ public class SaveResourceEntityApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存资源配置信息";
+        return "nmcarc.saveresourceentityapi.getname";
     }
 
     @Override
@@ -63,27 +63,29 @@ public class SaveResourceEntityApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "视图名"),
-            @Param(name = "label", type = ApiParamType.STRING, isRequired = true, desc = "名称"),
-            @Param(name = "xml", type = ApiParamType.STRING, desc = "配置信息"),
-            @Param(name = "description", type = ApiParamType.STRING, desc = "描述")
+            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "common.name"),
+            @Param(name = "label", type = ApiParamType.STRING, isRequired = true, desc = "common.cnname"),
+            @Param(name = "xml", type = ApiParamType.STRING, desc = "common.config"),
+            @Param(name = "description", type = ApiParamType.STRING, desc = "common.description")
     })
-    @Description(desc = "保存资源配置信息接口")
+    @Description(desc = "nmcarc.saveresourceentityapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         ResourceEntityVo resourceEntityVo = paramObj.toJavaObject(ResourceEntityVo.class);
+        boolean xmlEquals = false;
         ResourceEntityVo oldResourceEntityVo = resourceEntityMapper.getResourceEntityByName(resourceEntityVo.getName());
-        if (oldResourceEntityVo == null) {
-            throw new ResourceCenterResourceFoundException(resourceEntityVo.getName());
-        }
-        boolean labelEquals = Objects.equals(resourceEntityVo.getLabel(), oldResourceEntityVo.getLabel());
-        boolean xmlEquals = Objects.equals(resourceEntityVo.getXml(), oldResourceEntityVo.getXml());
-        boolean descriptionEquals = Objects.equals(resourceEntityVo.getDescription(), oldResourceEntityVo.getDescription());
-        if (labelEquals && xmlEquals && descriptionEquals) {
-            return null;
+        if (oldResourceEntityVo != null) {
+            boolean labelEquals = Objects.equals(resourceEntityVo.getLabel(), oldResourceEntityVo.getLabel());
+            xmlEquals = Objects.equals(resourceEntityVo.getXml(), oldResourceEntityVo.getXml());
+            boolean descriptionEquals = Objects.equals(resourceEntityVo.getDescription(), oldResourceEntityVo.getDescription());
+            if (labelEquals && xmlEquals && descriptionEquals) {
+                return null;
+            }
+        } else {
+            resourceEntityMapper.insertResourceEntity(resourceEntityVo);
         }
         if (!xmlEquals) {
-            resourceEntityVo.setType(oldResourceEntityVo.getType());
+            resourceEntityVo.setType(ViewType.SCENE.getValue());
             resourceEntityVo.setError("");
             resourceEntityVo.setStatus(Status.PENDING.getValue());
             resourceEntityMapper.updateResourceEntity(resourceEntityVo);
@@ -94,6 +96,7 @@ public class SaveResourceEntityApi extends PrivateApiComponentBase {
         } else {
             resourceEntityMapper.updateResourceEntityLabelAndDescription(resourceEntityVo);
         }
+        resourceEntityMapper.insertResourceEntity(resourceEntityVo);
         return null;
     }
 }
