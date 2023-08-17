@@ -51,7 +51,7 @@ public class GetCiAttrListApi extends PrivateApiComponentBase implements IGetCiA
 
     @Override
     public String getToken() {
-        return "/cmdb/ci/{ciId}/listattr";
+        return "/cmdb/ci/listattr";
     }
 
     @Override
