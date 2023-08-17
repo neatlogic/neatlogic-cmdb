@@ -23,12 +23,16 @@ import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.crossover.IGetCiAttrListApiCrossoverService;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiViewVo;
+import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.enums.ShowType;
+import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.exception.type.ParamNotExistsException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
+import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiViewMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +53,9 @@ public class GetCiAttrListApi extends PrivateApiComponentBase implements IGetCiA
     @Autowired
     private CiViewMapper ciViewMapper;
 
+    @Autowired
+    private CiMapper ciMapper;
+
     @Override
     public String getToken() {
         return "/cmdb/ci/listattr";
@@ -64,15 +71,31 @@ public class GetCiAttrListApi extends PrivateApiComponentBase implements IGetCiA
         return null;
     }
 
-    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid"),
+    @Input({
+            @Param(name = "ciId", type = ApiParamType.LONG, desc = "term.cmdb.ciid"),
+            @Param(name = "ciName", type = ApiParamType.LONG, desc = "term.cmdb.ciname"),
             @Param(name = "showType", type = ApiParamType.ENUM, rule = "all,list,detail", desc = "common.displaytype"),
             @Param(name = "allowEdit", type = ApiParamType.ENUM, rule = "1,0", desc = "term.cmdb.allowedit"),
-            @Param(name = "isSimple", type = ApiParamType.BOOLEAN, rule = "true,false", desc = "term.cmdb.issimpleattribute")})
-    @Output({@Param(name = "Return", explode = AttrVo[].class)})
+            @Param(name = "isSimple", type = ApiParamType.BOOLEAN, rule = "true,false", desc = "term.cmdb.issimpleattribute")
+    })
+    @Output({
+            @Param(name = "Return", explode = AttrVo[].class)
+    })
     @Description(desc = "nmcaa.getciattrlistapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("ciId");
+        if (ciId == null) {
+            String ciName = jsonObj.getString("ciName");
+            if (StringUtils.isBlank(ciName)) {
+                throw new ParamNotExistsException("ciId", "ciName");
+            }
+            CiVo ciVo = ciMapper.getCiByName(ciName);
+            if (ciVo == null) {
+                throw new CiNotFoundException(ciName);
+            }
+            ciId = ciVo.getId();
+        }
         String showType = jsonObj.getString("showType");
         Boolean isSimple = jsonObj.getBoolean("isSimple");
         Integer allowEdit = jsonObj.getInteger("allowEdit");
