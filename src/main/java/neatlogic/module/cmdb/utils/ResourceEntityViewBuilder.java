@@ -781,10 +781,11 @@ public class ResourceEntityViewBuilder {
             }
             if (StringUtils.isBlank(fromAttr)) {
                 SceneEntityJoinVo joinVo = attToCiJoinMap.get(toCi);
-                if (joinVo != null) {
-                    entityAttrVo.setFromCiVo(joinVo.getFromCiVo());
-                    entityAttrVo.setFromAttrVo(joinVo.getFromAttrVo());
+                if (joinVo == null) {
+                    throw new ResourceCenterConfigIrregularException(viewName, "attr", entityAttrVo.getField(), "fromAttr");
                 }
+                entityAttrVo.setFromCiVo(joinVo.getFromCiVo());
+                entityAttrVo.setFromAttrVo(joinVo.getFromAttrVo());
             }
         }
         return entityAttrVo;
@@ -959,7 +960,7 @@ public class ResourceEntityViewBuilder {
                 }
             }
             List<String> definedFieldList = sceneEntityAttrList.stream().map(SceneEntityAttrVo::getField).collect(Collectors.toList());
-            List<String> declaredFieldList = ResourceEntityFactory.getFieldListByViewName(viewName);
+            List<String> declaredFieldList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
             List<String> undefinedFieldList = ListUtils.removeAll(declaredFieldList, definedFieldList);
             if (CollectionUtils.isNotEmpty(undefinedFieldList)) {
                 throw new ResourceCenterViewConfigException(viewName, String.join(",", undefinedFieldList));
@@ -982,7 +983,7 @@ public class ResourceEntityViewBuilder {
         if (StringUtils.isBlank(field)) {
             throw new ResourceCenterConfigIrregularException(viewName, joinType, "field");
         }
-        List<String> fieldList = ResourceEntityFactory.getFieldListByViewName(viewName);
+        List<String> fieldList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
         if (!fieldList.contains(field)) {
             throw new ResourceCenterResourceFoundException(viewName, field);
         }
@@ -1019,7 +1020,7 @@ public class ResourceEntityViewBuilder {
         if (StringUtils.isBlank(field)) {
             throw new ResourceCenterConfigIrregularException(viewName, joinType, "field");
         }
-        List<String> fieldList = ResourceEntityFactory.getFieldListByViewName(viewName);
+        List<String> fieldList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
         if (!fieldList.contains(field)) {
             throw new ResourceCenterResourceFoundException(viewName, field);
         }

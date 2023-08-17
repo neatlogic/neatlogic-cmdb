@@ -21,6 +21,8 @@ import neatlogic.framework.cmdb.annotation.ResourceType;
 import neatlogic.framework.cmdb.annotation.ResourceTypes;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.SceneEntityVo;
+import neatlogic.framework.common.dto.ValueTextVo;
+import neatlogic.framework.restful.annotation.EntityField;
 import org.apache.commons.lang3.StringUtils;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
@@ -39,7 +41,7 @@ public class ResourceEntityFactory {
     /**
      * 视图名称与字段列表映射关系
      */
-    private static Map<String, List<String>> fieldMap = new HashMap<>();
+    private static Map<String, List<ValueTextVo>> fieldMap = new HashMap<>();
     private static List<ResourceEntityVo> resourceEntityList = new ArrayList<>();
     /**
      * 视图信息列表
@@ -130,15 +132,22 @@ public class ResourceEntityFactory {
                 continue;
             }
             for (Field field : c.getDeclaredFields()) {
-                Annotation[] annotations = field.getDeclaredAnnotations();
-                for (Annotation annotation : annotations) {
-                    if (annotation instanceof ResourceField) {
-                        ResourceField rf = (ResourceField) annotation;
-                        if (StringUtils.isNotBlank(rf.name())) {
-                            fieldMap.computeIfAbsent(sceneEntityVo.getName(), key -> new ArrayList<>()).add(rf.name());
-                        }
+                ResourceField rf = field.getAnnotation(ResourceField.class);
+                if (rf != null) {
+                    if (StringUtils.isNotBlank(rf.name())) {
+                        EntityField ef = field.getAnnotation(EntityField.class);
+                        fieldMap.computeIfAbsent(sceneEntityVo.getName(), key -> new ArrayList<>()).add(new ValueTextVo(rf.name(), ef.name()));
                     }
                 }
+//                Annotation[] annotations = field.getDeclaredAnnotations();
+//                for (Annotation annotation : annotations) {
+//                    if (annotation instanceof ResourceField) {
+//                        ResourceField rf = (ResourceField) annotation;
+//                        if (StringUtils.isNotBlank(rf.name())) {
+//                            fieldMap.computeIfAbsent(sceneEntityVo.getName(), key -> new ArrayList<>()).add(new ValueTextVo(rf.name(), "aaa"));
+//                        }
+//                    }
+//                }
             }
             sceneEntityList.add(sceneEntityVo);
         }
@@ -159,7 +168,8 @@ public class ResourceEntityFactory {
                         ResourceField rf = field.getAnnotation(ResourceField.class);
                         if (rf != null) {
                             if (StringUtils.isNotBlank(rf.name())) {
-                                fieldMap.computeIfAbsent(sceneEntityVo.getName(), key -> new ArrayList<>()).add(rf.name());
+                                EntityField ef = field.getAnnotation(EntityField.class);
+                                fieldMap.computeIfAbsent(sceneEntityVo.getName(), key -> new ArrayList<>()).add(new ValueTextVo(rf.name(), ef.name()));
                             }
                         }
                     }
@@ -177,8 +187,31 @@ public class ResourceEntityFactory {
         return sceneEntityList;
     }
 
-    public static List<String> getFieldListByViewName(String viewName) {
-        List<String> fieldList = fieldMap.get(viewName);
+    public static SceneEntityVo getSceneEntityByViewName(String viewName) {
+        SceneEntityVo sceneEntityVo = null;
+        for (SceneEntityVo sceneEntity : sceneEntityList) {
+            if (Objects.equals(viewName, sceneEntity.getName())) {
+                sceneEntityVo = new SceneEntityVo();
+                sceneEntityVo.setName(sceneEntity.getName());
+                sceneEntityVo.setLabel(sceneEntity.getLabel());
+            }
+        }
+        return sceneEntityVo;
+    }
+    public static List<String> getFieldNameListByViewName(String viewName) {
+        List<ValueTextVo> fieldList = fieldMap.get(viewName);
+        if (fieldList == null) {
+            return new ArrayList<>();
+        }
+        List<String> fieldNameList = new ArrayList<>();
+        for (ValueTextVo valueTextVo : fieldList) {
+            fieldNameList.add(valueTextVo.getValue().toString());
+        }
+        return fieldNameList;
+    }
+
+    public static List<ValueTextVo> getFieldListByViewName(String viewName) {
+        List<ValueTextVo> fieldList = fieldMap.get(viewName);
         if (fieldList == null) {
             return new ArrayList<>();
         }
