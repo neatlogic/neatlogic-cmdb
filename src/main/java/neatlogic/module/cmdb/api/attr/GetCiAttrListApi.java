@@ -73,7 +73,7 @@ public class GetCiAttrListApi extends PrivateApiComponentBase implements IGetCiA
 
     @Input({
             @Param(name = "ciId", type = ApiParamType.LONG, desc = "term.cmdb.ciid"),
-            @Param(name = "ciName", type = ApiParamType.LONG, desc = "term.cmdb.ciname"),
+            @Param(name = "ciName", type = ApiParamType.STRING, desc = "term.cmdb.ciname"),
             @Param(name = "showType", type = ApiParamType.ENUM, rule = "all,list,detail", desc = "common.displaytype"),
             @Param(name = "allowEdit", type = ApiParamType.ENUM, rule = "1,0", desc = "term.cmdb.allowedit"),
             @Param(name = "isSimple", type = ApiParamType.BOOLEAN, rule = "true,false", desc = "term.cmdb.issimpleattribute")
