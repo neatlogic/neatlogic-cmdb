@@ -1372,6 +1372,27 @@ public class ResourceEntityViewBuilder {
         } catch (Exception ex) {
             resourceEntityVo.setError(ex.getMessage());
             resourceEntityVo.setStatus(Status.ERROR.getValue());
+            if (Objects.equals(tableType, "VIEW")) {
+                schemaMapper.deleteView(TenantContext.get().getDataDbName() + "." + viewName);
+            }
+            List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
+            Table table = new Table();
+            table.setName(viewName);
+            table.setSchemaName(TenantContext.get().getDataDbName());
+            List<ColumnDefinition> columnDefinitions = new ArrayList<>();
+            for (String columnName : fieldNameList) {
+                ColumnDefinition columnDefinition = new ColumnDefinition();
+                columnDefinition.setColumnName(columnName);
+                columnDefinition.setColDataType(new ColDataType("int"));
+                columnDefinitions.add(columnDefinition);
+            }
+            CreateTable createTable = new CreateTable();
+            createTable.setTable(table);
+            createTable.setColumnDefinitions(columnDefinitions);
+            createTable.setIfNotExists(true);
+            EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
+                schemaMapper.insertView(createTable.toString());
+            }).execute();
         } finally {
             resourceEntityMapper.updateResourceEntityStatusAndError(resourceEntityVo);
         }

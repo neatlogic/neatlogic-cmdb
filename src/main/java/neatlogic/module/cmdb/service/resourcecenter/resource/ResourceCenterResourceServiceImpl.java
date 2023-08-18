@@ -16,6 +16,7 @@
 
 package neatlogic.module.cmdb.service.resourcecenter.resource;
 
+import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
@@ -31,6 +32,8 @@ import neatlogic.framework.cmdb.enums.resourcecenter.ViewType;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppModuleNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
+import neatlogic.framework.dao.mapper.SchemaMapper;
+import neatlogic.framework.transaction.core.EscapeTransactionJob;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
@@ -43,6 +46,10 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.module.cmdb.utils.ResourceEntityFactory;
 import neatlogic.module.cmdb.utils.ResourceEntityViewBuilder;
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.create.table.ColDataType;
+import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
+import net.sf.jsqlparser.statement.create.table.CreateTable;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -76,6 +83,10 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 
     @Resource
     private ResourceEntityMapper resourceEntityMapper;
+
+    @Resource
+    private SchemaMapper schemaMapper;
+
     public static final Map<String, Action<ResourceSearchVo>> searchMap = new HashMap<>();
 
     @FunctionalInterface
@@ -527,10 +538,34 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 builder.buildView();
             }
         }
+        List<SceneEntityVo> sceneEntityList = ResourceEntityFactory.getSceneEntityList();
+        for (SceneEntityVo sceneEntityVo : sceneEntityList) {
+            String viewName = sceneEntityVo.getName();
+            String tableType = schemaMapper.checkTableOrViewIsExists(TenantContext.get().getDataDbName(), viewName);
+            if (tableType == null) {
+                List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
+                Table table = new Table();
+                table.setName(viewName);
+                table.setSchemaName(TenantContext.get().getDataDbName());
+                List<ColumnDefinition> columnDefinitions = new ArrayList<>();
+                for (String columnName : fieldNameList) {
+                    ColumnDefinition columnDefinition = new ColumnDefinition();
+                    columnDefinition.setColumnName(columnName);
+                    columnDefinition.setColDataType(new ColDataType("int"));
+                    columnDefinitions.add(columnDefinition);
+                }
+                CreateTable createTable = new CreateTable();
+                createTable.setTable(table);
+                createTable.setColumnDefinitions(columnDefinitions);
+                createTable.setIfNotExists(true);
+                EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
+                    schemaMapper.insertView(createTable.toString());
+                }).execute();
+            }
+        }
         resourceEntityList = resourceEntityMapper.getResourceEntityListByNameList(viewNameList);
         Map<String, ResourceEntityVo> resourceEntityVoMap = resourceEntityList.stream().collect(Collectors.toMap(e -> e.getName(), e -> e));
         List<ResourceEntityVo> resultList = new ArrayList<>();
-        List<SceneEntityVo> sceneEntityList = ResourceEntityFactory.getSceneEntityList();
         for (SceneEntityVo sceneEntityVo : sceneEntityList) {
             ResourceEntityVo resourceEntityVo = resourceEntityVoMap.get(sceneEntityVo.getName());
             if (resourceEntityVo == null) {
