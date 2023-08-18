@@ -22,6 +22,7 @@ import neatlogic.framework.cmdb.dto.resourcecenter.AccountVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.AppEnvVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityConfigVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.dto.tag.TagVo;
 import com.alibaba.fastjson.JSONArray;
@@ -127,4 +128,12 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
      * @return
      */
     List<ResourceEntityVo> rebuildResourceEntity();
+
+    /**
+     * 对字段映射配置信息进行有效性检查及填充缺省数据
+     * @param viewName
+     * @param config
+     * @return
+     */
+    ResourceEntityConfigVo fieldMappingCheckValidityAndFillDefaultData(String viewName, ResourceEntityConfigVo config);
 }

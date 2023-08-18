@@ -1108,6 +1108,25 @@ public class ResourceEntityViewBuilder {
             buildScene();
         }
     }
+    public void buildView2() {
+        if (Objects.equals(type, ViewType.SCENE.getValue())) {
+            //创建场景视图
+            ResourceEntityVo resourceEntityVo = new ResourceEntityVo();
+            resourceEntityVo.setName(sceneEntityVo.getName());
+            resourceEntityVo.setLabel(sceneEntityVo.getLabel());
+            resourceEntityVo.setCiId(sceneEntityVo.getCiId());
+            if (StringUtils.isNotBlank(sceneEntityVo.getError())) {
+                resourceEntityVo.setError(sceneEntityVo.getError());
+                resourceEntityVo.setStatus(Status.ERROR.getValue());
+                resourceEntityMapper.updateResourceEntityStatusAndError(resourceEntityVo);
+                return;
+            }
+            String viewName = sceneEntityVo.getName();
+            SceneEntityGenerateSqlUtil sceneEntityGenerateSqlUtil = new SceneEntityGenerateSqlUtil(sceneEntityVo);
+            String selectSql = sceneEntityGenerateSqlUtil.getSql();
+            System.out.println("selectSql=" + selectSql);
+        }
+    }
 
     private void buildResource() {
         if (StringUtils.isNotBlank(resourceEntityVo.getError())) {
