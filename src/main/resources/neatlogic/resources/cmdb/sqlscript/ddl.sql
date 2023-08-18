@@ -726,7 +726,7 @@ CREATE TABLE IF NOT EXISTS `cmdb_resourcecenter_account_tag` (
 -- ----------------------------
 -- Table structure for cmdb_resourcecenter_entity
 -- ----------------------------
-CREATE TABLE `cmdb_resourcecenter_entity` (
+CREATE TABLE IF NOT EXISTS `cmdb_resourcecenter_entity` (
   `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '名称',
   `label` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '标识',
   `type` enum('resource','scene') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '类型',
