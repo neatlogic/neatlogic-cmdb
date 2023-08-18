@@ -753,7 +753,8 @@ CREATE TABLE `cmdb_441135981928448` (
 
 -- ----------------------------
 -- Table structure for cmdb_441136493633536
--- ----------------------------CREATE TABLE `cmdb_441136493633536` (
+-- ----------------------------
+CREATE TABLE `cmdb_441136493633536` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `443376067420160` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '归属机构',
   `443376067420160_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '归属机构值散列码',
