@@ -27,6 +27,7 @@ import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -59,7 +60,8 @@ public class ListCiForTreeApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "ciId", type = ApiParamType.LONG, desc = "term.cmdb.ciid"),
-            @Param(name = "rootCiId", type = ApiParamType.LONG, desc = "term.cmdb.rootciid")
+            @Param(name = "rootCiId", type = ApiParamType.LONG, desc = "term.cmdb.rootciid"),
+            @Param(name = "rootCiName", type = ApiParamType.STRING, desc = "根模型名称")
     })
     @Output({
             @Param(explode = ValueTextVo[].class)
@@ -70,6 +72,16 @@ public class ListCiForTreeApi extends PrivateApiComponentBase {
         Long ciId = jsonObj.getLong("ciId");
         Long rootCiId = jsonObj.getLong("rootCiId");
         List<CiVo> ciList = null;
+        if (rootCiId == null) {
+            String rootCiName = jsonObj.getString("rootCiName");
+            if (StringUtils.isNotBlank(rootCiName)) {
+                CiVo ciVo = ciMapper.getCiByName(rootCiName);
+                if (ciVo == null) {
+                    throw new CiNotFoundException(rootCiName);
+                }
+                rootCiId = ciVo.getId();
+            }
+        }
         if (rootCiId != null) {
             CiVo ciVo = ciMapper.getCiById(rootCiId);
             if (ciVo == null) {
