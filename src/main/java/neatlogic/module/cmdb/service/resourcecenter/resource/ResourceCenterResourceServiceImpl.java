@@ -715,7 +715,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 newFieldMappingVo.setToCiIsVirtual(toCiVo.getIsVirtual());
                 String direction = fieldMappingVo.getDirection();
                 newFieldMappingVo.setDirection(direction);
-                if (Objects.equals(direction, "to")) {// 应该是from
+                if (Objects.equals(direction, "from")) {
                     String fromAttr = fieldMappingVo.getFromAttr();
                     if (StringUtils.isBlank(fromAttr)) {
                         // throw new
