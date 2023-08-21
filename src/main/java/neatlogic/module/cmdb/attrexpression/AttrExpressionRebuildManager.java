@@ -269,6 +269,10 @@ public class AttrExpressionRebuildManager {
             }
             if (CollectionUtils.isNotEmpty(expressionAttrList)) {
                 CiEntityVo newCiEntityVo = ciEntityService.getCiEntityById(ciEntityVo.getCiId(), ciEntityVo.getId());
+                if (newCiEntityVo == null) {
+                    //如果cmdb_attrexpression_rebuild_audit表中的配置项已经找不到，直接退出
+                    return;
+                }
                 CiVo ciVo = ciMapper.getCiById(ciEntityVo.getCiId());
                 CiEntityVo saveCiEntityVo = new CiEntityVo();
                 saveCiEntityVo.setCiId(newCiEntityVo.getCiId());
