@@ -111,6 +111,7 @@ limitations under the License.
         SET
             `label`= #{label},
             `description`= #{description},
+            `config`= #{configStr},
             `init_time` = NOW(3)
         WHERE `name` = #{name}
     </update>
