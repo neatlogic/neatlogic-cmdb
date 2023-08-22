@@ -90,5 +90,4 @@ public class ListResourceEntityApi extends PrivateApiComponentBase {
         }
         return resultList;
     }
-
 }
