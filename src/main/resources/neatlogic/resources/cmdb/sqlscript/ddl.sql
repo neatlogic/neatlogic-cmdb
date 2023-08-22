@@ -729,10 +729,8 @@ CREATE TABLE IF NOT EXISTS `cmdb_resourcecenter_account_tag` (
 CREATE TABLE IF NOT EXISTS `cmdb_resourcecenter_entity` (
   `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '名称',
   `label` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '标识',
-  `type` enum('resource','scene') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '类型',
   `status` enum('ready','pending','error','') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '状态',
   `error` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'error',
-  `xml` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '配置信息',
   `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '描述',
   `init_time` timestamp(3) NULL DEFAULT NULL COMMENT 'init time',
   `ci_id` bigint DEFAULT NULL COMMENT '模型id',
