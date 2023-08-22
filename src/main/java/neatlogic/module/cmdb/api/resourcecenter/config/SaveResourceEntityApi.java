@@ -22,7 +22,6 @@ import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityConfigVo
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.SceneEntityVo;
 import neatlogic.framework.cmdb.enums.resourcecenter.Status;
-import neatlogic.framework.cmdb.enums.resourcecenter.ViewType;
 import neatlogic.framework.cmdb.exception.resourcecenter.ResourceCenterResourceFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
@@ -98,15 +97,13 @@ public class SaveResourceEntityApi extends PrivateApiComponentBase {
         ResourceEntityVo oldResourceEntityVo = resourceEntityMapper.getResourceEntityByName(resourceEntityVo.getName());
         if (oldResourceEntityVo != null) {
             boolean labelEquals = Objects.equals(resourceEntityVo.getLabel(), oldResourceEntityVo.getLabel());
-            boolean xmlEquals = Objects.equals(resourceEntityVo.getXml(), oldResourceEntityVo.getXml());
             boolean descriptionEquals = Objects.equals(resourceEntityVo.getDescription(), oldResourceEntityVo.getDescription());
             configEquals = Objects.equals(resourceEntityVo.getConfigStr(), oldResourceEntityVo.getConfigStr());
-            if (labelEquals && xmlEquals && descriptionEquals && configEquals) {
+            if (labelEquals && descriptionEquals && configEquals) {
                 return null;
             }
             resourceEntityMapper.updateResourceEntityLabelAndDescription(resourceEntityVo);
         } else {
-            resourceEntityVo.setType(ViewType.SCENE.getValue());
             resourceEntityVo.setStatus(Status.PENDING.getValue());
             resourceEntityMapper.insertResourceEntity(resourceEntityVo);
         }
