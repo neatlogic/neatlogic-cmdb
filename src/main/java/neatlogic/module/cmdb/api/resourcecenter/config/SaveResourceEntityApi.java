@@ -24,7 +24,6 @@ import neatlogic.framework.cmdb.dto.resourcecenter.config.SceneEntityVo;
 import neatlogic.framework.cmdb.enums.resourcecenter.Status;
 import neatlogic.framework.cmdb.enums.resourcecenter.ViewType;
 import neatlogic.framework.cmdb.exception.resourcecenter.ResourceCenterResourceFoundException;
-import neatlogic.framework.cmdb.utils.ResourceViewGenerateSqlUtil;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
@@ -78,7 +77,6 @@ public class SaveResourceEntityApi extends PrivateApiComponentBase {
             @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "common.name"),
             @Param(name = "label", type = ApiParamType.STRING, isRequired = true, desc = "common.cnname"),
             @Param(name = "config", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "配置"),
-//            @Param(name = "xml", type = ApiParamType.STRING, desc = "common.config"),
             @Param(name = "description", type = ApiParamType.STRING, desc = "common.description")
     })
     @Description(desc = "nmcarc.saveresourceentityapi.getname")
@@ -110,16 +108,10 @@ public class SaveResourceEntityApi extends PrivateApiComponentBase {
             resourceEntityMapper.updateResourceEntityLabelAndDescription(resourceEntityVo);
         } else {
             resourceEntityVo.setType(ViewType.SCENE.getValue());
+            resourceEntityVo.setStatus(Status.PENDING.getValue());
             resourceEntityMapper.insertResourceEntity(resourceEntityVo);
         }
         if (!configEquals) {
-//            resourceEntityVo.setError("");
-//            resourceEntityVo.setStatus(Status.PENDING.getValue());
-//            resourceEntityMapper.updateResourceEntity(resourceEntityVo);
-//            if (StringUtils.isNotBlank(resourceEntityVo.getXml())) {
-//                ResourceEntityViewBuilder builder = new ResourceEntityViewBuilder(resourceEntityVo);
-//                builder.buildView();
-//            }
             String error = resourceCenterResourceService.buildResourceView(resourceEntityVo.getName(), resourceEntityVo.getConfig());
             resourceEntityVo.setError(error);
             if (StringUtils.isNotBlank(error)) {
