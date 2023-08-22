@@ -24,11 +24,13 @@ import java.util.List;
 public interface ResourceEntityMapper extends IResourceEntityCrossoverMapper {
     ResourceEntityVo getResourceEntityByName(String name);
 
-    List<ResourceEntityVo> getAllResourceEntity();
+//    List<ResourceEntityVo> getAllResourceEntity();
 
     List<ResourceEntityVo> getResourceEntityListByNameList(List<String> nameList);
 
     String getResourceEntityXmlByName(String xml);
+
+    String getResourceEntityConfigByName(String name);
 
     List<Long> getAllResourceTypeCiIdList();
 

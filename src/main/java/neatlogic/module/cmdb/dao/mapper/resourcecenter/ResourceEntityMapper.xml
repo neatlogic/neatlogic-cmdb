@@ -24,13 +24,13 @@ limitations under the License.
         WHERE `name` = #{value}
     </select>
 
-    <select id="getAllResourceEntity" resultType="neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
+    <!--<select id="getAllResourceEntity" resultType="neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
         SELECT `name`, `label`, `status`, `error`, `init_time` AS initTime, `ci_id` AS ciId, `type`, `xml`, `config` AS configStr, `description`
         FROM `cmdb_resourcecenter_entity`
-    </select>
+    </select>-->
 
     <select id="getResourceEntityListByNameList" resultType="neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
-        SELECT `name`, `label`, `status`, `error`, `init_time` AS initTime, `ci_id` AS ciId, `type`, `xml`, `config` AS configStr, `description`
+        SELECT `name`, `label`, `status`, `error`, `init_time` AS initTime, `ci_id` AS ciId, `type`, `description`
         FROM `cmdb_resourcecenter_entity`
         where `name` IN
         <foreach collection="list" item="name" open="(" separator="," close=")">
@@ -40,6 +40,12 @@ limitations under the License.
 
     <select id="getResourceEntityXmlByName" parameterType="java.lang.String" resultType="java.lang.String">
         SELECT `xml`
+        FROM `cmdb_resourcecenter_entity`
+        WHERE `name` = #{value}
+    </select>
+
+    <select id="getResourceEntityConfigByName" parameterType="java.lang.String" resultType="java.lang.String">
+        SELECT `config`
         FROM `cmdb_resourcecenter_entity`
         WHERE `name` = #{value}
     </select>
@@ -100,7 +106,6 @@ limitations under the License.
         UPDATE cmdb_resourcecenter_entity
         SET `status`    = #{status},
             `error`     = #{error},
-            `ci_id`     = #{ciId},
             `init_time` = NOW(3)
         WHERE `name` = #{name}
     </update>
@@ -112,6 +117,8 @@ limitations under the License.
             `label`= #{label},
             `description`= #{description},
             `config`= #{configStr},
+            `xml`= #{xml},
+            `ci_id`= #{ciId},
             `init_time` = NOW(3)
         WHERE `name` = #{name}
     </update>

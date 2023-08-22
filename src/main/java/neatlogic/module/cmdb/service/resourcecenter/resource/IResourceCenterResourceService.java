@@ -129,6 +129,8 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
      */
     List<ResourceEntityVo> rebuildResourceEntity();
 
+    String buildResourceView(String viewName, ResourceEntityConfigVo originalConfig);
+
     /**
      * 对字段映射配置信息进行有效性检查及填充缺省数据
      * @param viewName

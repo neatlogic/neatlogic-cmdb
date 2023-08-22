@@ -83,59 +83,12 @@ public class ListResourceEntityApi extends PrivateApiComponentBase {
                 resourceEntityVo = new ResourceEntityVo();
                 resourceEntityVo.setName(sceneEntityVo.getName());
                 resourceEntityVo.setLabel(sceneEntityVo.getLabel());
-                resourceEntityVo.setStatus(Status.PENDING.getValue());
+                resourceEntityVo.setStatus(Status.NO_CONFIGURE_VIEW_RULE.getValue());
                 resourceEntityVo.setType(ViewType.SCENE.getValue());
             }
             resultList.add(resourceEntityVo);
         }
         return resultList;
     }
-//    public Object myDoService(JSONObject paramObj) throws Exception {
-//        List<ResourceEntityVo> resultList = new ArrayList<>();
-//        resultList.addAll(ResourceEntityFactory.getResourceEntityBaseInfoList());
-//        resultList.addAll(ScenceView.getResourceEntityBaseInfoList());
-//        String[] nameSortArray = new String[resultList.size()];
-//        for (int i = 0; i < resultList.size(); i++) {
-//            nameSortArray[i] = resultList.get(i).getName();
-//        }
-//        Arrays.sort(nameSortArray);
-//        List<String> nameSortList = Arrays.asList(nameSortArray);
-////        for (String str : nameSortArray) {
-////            System.out.println(str);
-////        }
-//        resultList.sort(Comparator.comparingInt(e -> nameSortList.indexOf(e.getName())));
-//        for (ResourceEntityVo resourceEntityVo : resultList) {
-//            System.out.println(resourceEntityVo.getName() + "-" + resourceEntityVo.getLabel() + "-" + resourceEntityVo.getType() + "-" + resourceEntityVo.getInitTime() + "-" + resourceEntityVo.getDescription());
-//        }
-//        List<ResourceEntityVo> resourceEntityList = resourceEntityMapper.getAllResourceEntity();
-//        Map<String, ResourceEntityVo> resourceEntityMap = resourceEntityList.stream().collect(Collectors.toMap(e -> e.getName(), e -> e));
-//        for (ResourceEntityVo resourceEntityVo : resultList) {
-//            ResourceEntityVo resourceEntity = resourceEntityMap.get(resourceEntityVo.getName());
-//            if (resourceEntity != null) {
-//                resourceEntityVo.setLabel(resourceEntity.getLabel());
-//                resourceEntityVo.setInitTime(resourceEntity.getInitTime());
-//                resourceEntityVo.setCiId(resourceEntity.getCiId());
-//                resourceEntityVo.setDescription(resourceEntity.getDescription());
-//                resourceEntityVo.setStatus(resourceEntity.getStatus());
-//                if (StringUtils.isNotBlank(resourceEntity.getError())) {
-//                    resourceEntityVo.setError(resourceEntity.getError());
-//                    resourceEntityVo.setStatus(Status.ERROR.getValue());
-//                } else {
-//                    if (StringUtils.isBlank(resourceEntity.getXml())) {
-//                        resourceEntityVo.setStatus(Status.NO_CONFIGURE_VIEW_RULE.getValue());
-//                    } else {
-//                        String tableType = schemaMapper.checkTableOrViewIsExists(TenantContext.get().getDataDbName(), resourceEntity.getName());
-////                        if () {
-////
-////                        }
-//                    }
-//                }
-//
-//            } else {
-//                resourceEntityVo.setStatus(Status.NO_CONFIGURE_VIEW_RULE.getValue());
-//            }
-//        }
-//        return resultList;
-//    }
 
 }
