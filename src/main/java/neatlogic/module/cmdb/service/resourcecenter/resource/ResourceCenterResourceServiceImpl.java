@@ -29,7 +29,6 @@ import neatlogic.framework.cmdb.dto.resourcecenter.config.SceneEntityVo;
 import neatlogic.framework.cmdb.dto.tag.TagVo;
 import neatlogic.framework.cmdb.enums.resourcecenter.AppModuleResourceType;
 import neatlogic.framework.cmdb.enums.resourcecenter.Status;
-import neatlogic.framework.cmdb.enums.resourcecenter.ViewType;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppModuleNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
@@ -51,7 +50,6 @@ import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceTagMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.module.cmdb.utils.ResourceEntityFactory;
-import neatlogic.module.cmdb.utils.ResourceEntityViewBuilder;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
@@ -71,6 +69,9 @@ import java.util.stream.Collectors;
  **/
 @Service
 public class ResourceCenterResourceServiceImpl implements IResourceCenterResourceService {
+
+    private final static List<String> defaultAttrList = Arrays.asList("_id", "_uuid", "_name", "_fcu", "_fcd", "_lcu", "_lcd", "_inspectStatus", "_inspectTime", "_monitorStatus", "_monitorTime", "_typeId", "_typeName", "_typeLabel");
+
     @Resource
     ResourceMapper resourceMapper;
     @Resource
@@ -592,7 +593,6 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 resourceEntityVo.setName(sceneEntityVo.getName());
                 resourceEntityVo.setLabel(sceneEntityVo.getLabel());
                 resourceEntityVo.setStatus(Status.PENDING.getValue());
-                resourceEntityVo.setType(ViewType.SCENE.getValue());
             }
             resultList.add(resourceEntityVo);
         }
@@ -604,7 +604,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         String error = StringUtils.EMPTY;
         ResourceEntityConfigVo config = null;
         try {
-            config = fieldMappingCheckValidityAndFillDefaultData(viewName, originalConfig);
+            config = fieldMappingCheckValidityAndFillIdData(viewName, originalConfig);
         } catch (ResourceViewFieldMappingException e) {
             return e.getMessage();
         }
@@ -667,13 +667,16 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             }).execute();
         } finally {
             return error;
-//            resourceEntityMapper.updateResourceEntityStatusAndError(resourceEntityVo);
         }
     }
-    private final static List<String> defaultAttrList = Arrays.asList("_id", "_uuid", "_name", "_fcu", "_fcd", "_lcu", "_lcd", "_inspectStatus", "_inspectTime", "_monitorStatus", "_monitorTime", "_typeId", "_typeName", "_typeLabel");
 
-    @Override
-    public ResourceEntityConfigVo fieldMappingCheckValidityAndFillDefaultData(String viewName, ResourceEntityConfigVo config) {
+    /**
+     * 对字段映射配置信息进行有效性检查及填充缺省数据
+     * @param viewName
+     * @param config
+     * @return
+     */
+    private ResourceEntityConfigVo fieldMappingCheckValidityAndFillIdData(String viewName, ResourceEntityConfigVo config) {
         ResourceEntityConfigVo newConfig = new ResourceEntityConfigVo();
         String mainCi = config.getMainCi();
         if (StringUtils.isBlank(mainCi)) {
