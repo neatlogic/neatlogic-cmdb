@@ -709,9 +709,6 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 if (fromCiVo == null) {
                     throw new ResourceViewFieldMappingException(viewName, field, "fromCi", fromCi);
                 }
-                if (mainCiVo.getLft() > fromCiVo.getLft() || mainCiVo.getRht() < fromCiVo.getRht()) {
-                    throw new ResourceViewFieldMappingException(viewName, field, "fromCi", fromCi);
-                }
                 String fromAttr = fieldMappingVo.getFromAttr();
                 if (StringUtils.isBlank(fromAttr)) {
                     throw new ResourceViewFieldMappingException(viewName, field, "fromAttr", fromAttr);
@@ -729,9 +726,6 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 }
                 CiVo fromCiVo = ciMapper.getCiByName(fromCi);
                 if (fromCiVo == null) {
-                    throw new ResourceViewFieldMappingException(viewName, field, "fromCi", fromCi);
-                }
-                if (mainCiVo.getLft() > fromCiVo.getLft() || mainCiVo.getRht() < fromCiVo.getRht()) {
                     throw new ResourceViewFieldMappingException(viewName, field, "fromCi", fromCi);
                 }
                 String fromAttr = fieldMappingVo.getFromAttr();
