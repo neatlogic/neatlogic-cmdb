@@ -19,13 +19,13 @@ limitations under the License.
 <mapper namespace="neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper">
     <select id="getResourceEntityByName" parameterType="java.lang.String"
             resultType="neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
-        SELECT `name`, `label`, `status`, `error`, `init_time` AS initTime, `ci_id` AS ciId, `type`, `config` AS configStr, `description`
+        SELECT `name`, `label`, `status`, `error`, `init_time` AS initTime, `ci_id` AS ciId, `config` AS configStr, `description`
         FROM `cmdb_resourcecenter_entity`
         WHERE `name` = #{value}
     </select>
 
     <select id="getResourceEntityListByNameList" resultType="neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
-        SELECT `name`, `label`, `status`, `error`, `init_time` AS initTime, `ci_id` AS ciId, `type`, `description`
+        SELECT `name`, `label`, `status`, `error`, `init_time` AS initTime, `ci_id` AS ciId, `description`
         FROM `cmdb_resourcecenter_entity`
         where `name` IN
         <foreach collection="list" item="name" open="(" separator="," close=")">
