@@ -42,16 +42,11 @@ import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiViewMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
-import neatlogic.module.cmdb.dao.mapper.cientity.RelEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.cischema.CiSchemaMapper;
-import neatlogic.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
-import neatlogic.module.cmdb.service.rel.RelService;
 import neatlogic.module.cmdb.utils.VirtualCiSqlBuilder;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,42 +57,34 @@ import java.util.stream.Collectors;
 
 @Service
 public class CiServiceImpl implements CiService, ICiCrossoverService {
-    private final static Logger logger = LoggerFactory.getLogger(CiServiceImpl.class);
 
     @Resource
     private CiViewMapper ciViewMapper;
 
-    @Autowired
+    @Resource
     private CiMapper ciMapper;
 
     @Autowired
     private CiEntityMapper ciEntityMapper;
 
-    @Autowired
-    private TransactionMapper transactionMapper;
 
-    @Autowired
-    private RelEntityMapper relEntityMapper;
-
-    @Autowired
+    @Resource
     private AttrMapper attrMapper;
 
-    @Autowired
+    @Resource
     private RelMapper relMapper;
 
-    @Autowired
-    private RelService relService;
 
-    @Autowired
+    @Resource
     private CiSchemaMapper ciSchemaMapper;
 
-    @Autowired
+    @Resource
     private CiEntityService ciEntityService;
 
-    @Autowired
+    @Resource
     private SchemaMapper schemaMapper;
 
-    @Autowired
+    @Resource
     private DataBaseViewInfoMapper dataBaseViewInfoMapper;
 
     @Override
@@ -141,17 +128,17 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
             if (ciSchemaMapper.checkSchemaIsExists(TenantContext.get().getDataDbName()) > 0) {
                 if (ciSchemaMapper.checkTableIsExists(TenantContext.get().getDataDbName(), "cmdb_" + ciVo.getId()) <= 0) {
                     //创建配置项表
-                    ciSchemaMapper.insertCiTable(ciVo.getCiTableName());
+                    ciSchemaMapper.insertCiTable(ciVo.getId(), ciVo.getCiTableName());
                 } else {
                     //如果已存在但没有数据，重建表
                     if (ciSchemaMapper.checkTableHasData(ciVo.getCiTableName()) <= 0) {
-                        ciSchemaMapper.deleteCiTable(ciVo.getCiTableName());
-                        ciSchemaMapper.insertCiTable(ciVo.getCiTableName());
+                        ciSchemaMapper.deleteCiTable(ciVo.getId(), ciVo.getCiTableName());
+                        ciSchemaMapper.insertCiTable(ciVo.getId(), ciVo.getCiTableName());
                         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
                         for (AttrVo attrVo : attrList) {
                             //这里的attrlist包含了所有集成模型的属性，不是自己模型的属性就不要添加
                             if (attrVo.getCiId().equals(ciVo.getId()) && attrVo.getTargetCiId() == null) {
-                                ciSchemaMapper.insertAttrToCiTable(ciVo.getCiTableName(), attrVo);
+                                ciSchemaMapper.insertAttrToCiTable(ciVo.getId(), ciVo.getCiTableName(), attrVo);
                             }
                         }
                     }
@@ -266,45 +253,6 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
         job.execute(ciVo, dataCiVo -> ciEntityService.updateCiEntityNameForCi(dataCiVo));
     }
 
-    @Override
-    @Transactional
-    public void updateCiNameExpression(Long ciId, String nameExpression) {
-        List<AttrVo> attrList = attrMapper.getAttrByCiId(ciId);
-        CiVo ciVo = ciMapper.getCiById(ciId);
-        //ciMapper.deleteCiNameExpressionByCiId(ciId);
-       /* if (!nameExpression.equals(ciVo.getNameExpression())) {
-            if (StringUtils.isNotEmpty(nameExpression)) {
-                //检查表达式中所有属性是否存在当前模型的属性列表里
-                String regex = "\\{([^}]+?)}";
-                Matcher matcher = Pattern.compile(regex).matcher(nameExpression);
-                Set<String> labelSet = new HashSet<>();
-                while (matcher.find()) {
-                    labelSet.add(matcher.group(1));
-                }
-                for (String label : labelSet) {
-                    Optional<AttrVo> opAttr = attrList.stream().filter(attr -> attr.getName().equalsIgnoreCase(label)).findFirst();
-                    if (!opAttr.isPresent()) {
-                        throw new CiNameExpressionHasNotExistsAttrException(label);
-                    } else {
-                        AttrVo attrVo = opAttr.get();
-                        if (!attrVo.getType().equals("text")) {
-                            throw new CiNameExpressionAttrTypeNotSupportedException(label);
-                        }
-                        ciMapper.insertCiNameExpression(ciId, opAttr.get().getId());
-                    }
-                }
-            }
-            ciMapper.updateCiNameExpression(ciId, nameExpression);
-            //修正配置项的名字表达式
-            ciVo.setNameExpression(nameExpression);
-            AfterTransactionJob<CiVo> job = new AfterTransactionJob<>();
-            job.execute(ciVo, dataCiVo -> {
-                Thread.currentThread().setName("UPDATE-CIENTITY-NAME-" + dataCiVo.getId());
-                ciEntityService.updateCiEntityName(dataCiVo);
-            });
-        }*/
-
-    }
 
     @Override
     @Transactional
@@ -469,12 +417,11 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
             throw new CiIsUsedInCustomViewException(ciVo, viewList);
         }
 
-        //检查是否被资源中心引用
-        //FIXME
+        //TODO 检查是否被资源中心引用
 
         if (StringUtils.isNotBlank(ciVo.getCiTableName())) {
             if (ciVo.getIsVirtual().equals(0)) {
-                ciSchemaMapper.deleteCiTable(ciVo.getCiTableName());
+                ciSchemaMapper.deleteCiTable(ciVo.getId(), ciVo.getCiTableName());
             } else {
                 ciSchemaMapper.deleteCiView(ciVo.getCiTableName());
             }
@@ -520,13 +467,13 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
     }
 
     @Override
-    public void initCiTableView(){
+    public void initCiTableView() {
         List<CiVo> ciList = ciMapper.searchCi(new CiVo());
         for (CiVo ciVo : ciList) {
             if (ciVo.getIsVirtual().equals(0)) {
                 List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
                 ciVo.setAttrList(attrList);
-                ciSchemaMapper.initCiTable(ciVo);
+                ciSchemaMapper.initCiTable(ciVo.getId(), ciVo);
             } else {
                 //创建视图
                 String viewXml = ciMapper.getCiViewXmlById(ciVo.getId());

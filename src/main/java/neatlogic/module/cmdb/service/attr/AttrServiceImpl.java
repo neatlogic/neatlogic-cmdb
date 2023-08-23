@@ -40,33 +40,30 @@ import neatlogic.module.cmdb.dao.mapper.cischema.CiSchemaMapper;
 import neatlogic.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
 import org.apache.commons.collections4.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class AttrServiceImpl implements AttrService {
-    static Logger logger = LoggerFactory.getLogger(AttrServiceImpl.class);
-    @Autowired
+    @Resource
     private CiMapper ciMapper;
-    @Autowired
+    @Resource
     private AttrMapper attrMapper;
 
-    @Autowired
+    @Resource
     private TransactionMapper transactionMapper;
 
-    @Autowired
+    @Resource
     private CiEntityMapper ciEntityMapper;
 
-    @Autowired
+    @Resource
     private CiEntityService ciEntityService;
 
-    @Autowired
+    @Resource
     private CiSchemaMapper ciSchemaMapper;
 
 
@@ -84,7 +81,7 @@ public class AttrServiceImpl implements AttrService {
         handler.afterInsert(attrVo);
         if (!handler.isNeedTargetCi()) {
             //由于以下操作是DDL操作，所以需要使用EscapeTransactionJob避开当前事务，否则在进行DDL操作之前事务就会提交，如果DDL出错，则上面的事务就无法回滚了
-            EscapeTransactionJob.State s = new EscapeTransactionJob(() -> ciSchemaMapper.insertAttrToCiTable(ciVo.getCiTableName(), attrVo)).execute();
+            EscapeTransactionJob.State s = new EscapeTransactionJob(() -> ciSchemaMapper.insertAttrToCiTable(ciVo.getId(), ciVo.getCiTableName(), attrVo)).execute();
             if (!s.isSucceed()) {
                 throw new InsertAttrToSchemaException(attrVo.getName());
             }
@@ -114,7 +111,7 @@ public class AttrServiceImpl implements AttrService {
             //由于以下操作是DDL操作，所以需要使用EscapeTransactionJob避开当前事务
             EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
                 try {
-                    ciSchemaMapper.insertAttrToCiTable(ciVo.getCiTableName(), attrVo);
+                    ciSchemaMapper.insertAttrToCiTable(ciVo.getId(), ciVo.getCiTableName(), attrVo);
                 } catch (Exception ex) {
                     //如果报重复列异常，代表列已存在，这种异常无需处理
                     if (!ex.getMessage().contains("Duplicate")) {
@@ -225,7 +222,7 @@ public class AttrServiceImpl implements AttrService {
         //物理删除字段
         //由于以上事务中的dml操作包含了以下ddl操作的表，如果使用 EscapeTransactionJob会导致事务等待产生死锁，所以这里不再使用EscapeTransactionJob去保证事务一致性。即使ddl删除字段失败，以上事务也会提交
         if (!attrVo.isNeedTargetCi()) {
-            ciSchemaMapper.deleteAttrFromCiTable(attrCi.getCiTableName(), attrVo);
+            ciSchemaMapper.deleteAttrFromCiTable(attrVo.getCiId(), attrCi.getCiTableName(), attrVo);
         }
 
 

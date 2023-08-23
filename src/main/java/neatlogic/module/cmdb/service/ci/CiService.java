@@ -36,8 +36,6 @@ public interface CiService {
     @Transactional
     void updateCiNameAttrId(CiVo ciVo);
 
-    @Transactional
-    void updateCiNameExpression(Long ciId, String nameExpression);
 
     @Transactional
     void updateCi(CiVo ciVo);

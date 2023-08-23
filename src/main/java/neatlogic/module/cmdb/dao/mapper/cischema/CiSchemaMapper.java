@@ -18,15 +18,16 @@ package neatlogic.module.cmdb.dao.mapper.cischema;
 
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
+import neatlogic.module.cmdb.annotation.CiId;
+import neatlogic.module.cmdb.annotation.CreateCiView;
+import neatlogic.module.cmdb.annotation.DeleteCiView;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;
 
 public interface CiSchemaMapper {
-    //SchemaAuditVo getLatestSchemaAudit(Integer serverId);
 
-    //int checkTableIsExists(@Param("dbName") String dbName, @Param("tableName") String tableName);
 
     int checkSchemaIsExists(String databaseName);
 
@@ -38,9 +39,11 @@ public interface CiSchemaMapper {
     //void insertAttrSchema(@Param("tableName") String tableName, @Param("columnList") List<AttrVo.Column> columnList);
     List<Map<String, String>> testCiViewSql(String sql);
 
-    void insertAttrToCiTable(@Param("tableName") String tableName, @Param("attrVo") AttrVo attrVo);
+    @CreateCiView
+    void insertAttrToCiTable(@CiId Long ciId, @Param("tableName") String tableName, @Param("attrVo") AttrVo attrVo);
 
-    void insertCiTable(@Param("tableName") String tableName);
+    @CreateCiView
+    void insertCiTable(@CiId Long ciId, @Param("tableName") String tableName);
 
     void insertCiView(String sql);
 
@@ -54,11 +57,14 @@ public interface CiSchemaMapper {
 
     //void replaceSchemaAudit(SchemaAuditVo schemaAuditvo);
 
-    void deleteAttrFromCiTable(@Param("tableName") String tableName, @Param("attrVo") AttrVo attrVo);
+    @CreateCiView
+    void deleteAttrFromCiTable(@CiId Long ciId, @Param("tableName") String tableName, @Param("attrVo") AttrVo attrVo);
 
-    void initCiTable(CiVo ciVo);
+    @CreateCiView
+    void initCiTable(@CiId Long ciId, CiVo ciVo);
 
-    void deleteCiTable(@Param("tableName") String tableName);
+    @DeleteCiView
+    void deleteCiTable(@CiId Long ciId, @Param("tableName") String tableName);
 
     void deleteCiView(@Param("tableName") String tableName);
     //void deleteRelSchema(@Param("tableName") String tableName);
