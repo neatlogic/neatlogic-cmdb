@@ -61,7 +61,7 @@ public interface CiSchemaMapper {
     void deleteAttrFromCiTable(@CiId Long ciId, @Param("tableName") String tableName, @Param("attrVo") AttrVo attrVo);
 
     @CreateCiView
-    void initCiTable(@CiId Long ciId, CiVo ciVo);
+    void initCiTable(@CiId Long ciId, @Param("ciVo") CiVo ciVo);
 
     @DeleteCiView
     void deleteCiTable(@CiId Long ciId, @Param("tableName") String tableName);

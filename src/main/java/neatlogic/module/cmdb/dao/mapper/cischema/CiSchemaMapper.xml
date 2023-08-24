@@ -93,13 +93,13 @@
           DEFAULT CHARSET = utf8mb4
     </insert>
 
-    <insert id="initCiTable" parameterType="neatlogic.framework.cmdb.dto.ci.CiVo">
-        CREATE TABLE IF NOT EXISTS ${ciTableName}
+    <insert id="initCiTable">
+        CREATE TABLE IF NOT EXISTS ${ciVo.ciTableName}
         (
         `cientity_id` bigint(20) NOT NULL COMMENT '配置项id',
-        <if test="attrList!=null and attrList.size() > 0">
-            <foreach collection="attrList" item="attrVo">
-                <if test="attrVo.ciId == id and attrVo.targetCiId == null">
+        <if test="ciVo.attrList!=null and ciVo.attrList.size() > 0">
+            <foreach collection="ciVo.attrList" item="attrVo">
+                <if test="attrVo.ciId == ciVo.id and attrVo.targetCiId == null">
                     `${attrVo.id}`
                     <choose>
                         <when test="attrVo.type == 'number'">
@@ -127,9 +127,9 @@
                 </if>
             </foreach>
         </if>
-        <if test="attrList!=null and attrList.size() > 0">
-            <foreach collection="attrList" item="attrVo">
-                <if test="attrVo.ciId == id and attrVo.targetCiId == null">
+        <if test="ciVo.attrList!=null and ciVo.attrList.size() > 0">
+            <foreach collection="ciVo.attrList" item="attrVo">
+                <if test="attrVo.ciId == ciVo.id and attrVo.targetCiId == null">
                     <if test="attrVo.type == 'number' or attrVo.type == 'date' or attrVo.type == 'time' or attrVo.type == 'datetime' or attrVo.type == 'enum'">
                         KEY `index_${attrVo.id}` (`${attrVo.id}`) USING BTREE,
                     </if>
