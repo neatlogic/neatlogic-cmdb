@@ -17,21 +17,30 @@
 package neatlogic.module.cmdb.service.resourcecenter.resource;
 
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
+import neatlogic.framework.asynchronization.threadlocal.UserContext;
+import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.*;
+import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityConfigVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityFieldMappingVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.SceneEntityVo;
 import neatlogic.framework.cmdb.dto.tag.TagVo;
 import neatlogic.framework.cmdb.enums.resourcecenter.AppModuleResourceType;
 import neatlogic.framework.cmdb.enums.resourcecenter.Status;
-import neatlogic.framework.cmdb.enums.resourcecenter.ViewType;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppModuleNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
+import neatlogic.framework.cmdb.exception.resourcecenter.ResourceViewFieldMappingException;
+import neatlogic.framework.cmdb.utils.ResourceViewGenerateSqlUtil;
+import neatlogic.framework.dao.mapper.DataBaseViewInfoMapper;
 import neatlogic.framework.dao.mapper.SchemaMapper;
+import neatlogic.framework.dto.DataBaseViewInfoVo;
 import neatlogic.framework.transaction.core.EscapeTransactionJob;
+import neatlogic.framework.util.Md5Util;
 import neatlogic.framework.util.TableResultUtil;
+import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
@@ -41,7 +50,6 @@ import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceTagMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.module.cmdb.utils.ResourceEntityFactory;
-import neatlogic.module.cmdb.utils.ResourceEntityViewBuilder;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
@@ -61,6 +69,9 @@ import java.util.stream.Collectors;
  **/
 @Service
 public class ResourceCenterResourceServiceImpl implements IResourceCenterResourceService {
+
+    private final static List<String> defaultAttrList = Arrays.asList("_id", "_uuid", "_name", "_fcu", "_fcd", "_lcu", "_lcd", "_inspectStatus", "_inspectTime", "_monitorStatus", "_monitorTime", "_typeId", "_typeName", "_typeLabel");
+
     @Resource
     ResourceMapper resourceMapper;
     @Resource
@@ -72,6 +83,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
     private CiMapper ciMapper;
 
     @Resource
+    private AttrMapper attrMapper;
+
+    @Resource
     private CiEntityMapper ciEntityMapper;
 
     @Resource
@@ -79,6 +93,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 
     @Resource
     private SchemaMapper schemaMapper;
+
+    @Resource
+    private DataBaseViewInfoMapper dataBaseViewInfoMapper;
 
     public static final Map<String, Action<ResourceSearchVo>> searchMap = new HashMap<>();
 
@@ -521,15 +538,25 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         List<String> viewNameList = ResourceEntityFactory.getViewNameList();
         List<ResourceEntityVo> resourceEntityList = resourceEntityMapper.getResourceEntityListByNameList(viewNameList);
         for (ResourceEntityVo resourceEntityVo : resourceEntityList) {
-            resourceEntityVo.setError("");
-            resourceEntityVo.setStatus(Status.PENDING.getValue());
-            resourceEntityMapper.updateResourceEntityStatusAndError(resourceEntityVo);
-            String xml = resourceEntityMapper.getResourceEntityXmlByName(resourceEntityVo.getName());
-            if (StringUtils.isNotBlank(xml)) {
-                resourceEntityVo.setXml(xml);
-                ResourceEntityViewBuilder builder = new ResourceEntityViewBuilder(resourceEntityVo);
-                builder.buildView();
+//            resourceEntityVo.setError("");
+//            resourceEntityVo.setStatus(Status.PENDING.getValue());
+//            resourceEntityMapper.updateResourceEntityStatusAndError(resourceEntityVo);
+//            String xml = resourceEntityMapper.getResourceEntityXmlByName(resourceEntityVo.getName());
+//            if (StringUtils.isNotBlank(xml)) {
+//                resourceEntityVo.setXml(xml);
+//                ResourceEntityViewBuilder builder = new ResourceEntityViewBuilder(resourceEntityVo);
+//                builder.buildView();
+//            }
+            String config = resourceEntityMapper.getResourceEntityConfigByName(resourceEntityVo.getName());
+            resourceEntityVo.setConfigStr(config);
+            String error = buildResourceView(resourceEntityVo.getName(), resourceEntityVo.getConfig());
+            resourceEntityVo.setError(error);
+            if (StringUtils.isNotBlank(error)) {
+                resourceEntityVo.setStatus(Status.ERROR.getValue());
+            } else {
+                resourceEntityVo.setStatus(Status.READY.getValue());
             }
+            resourceEntityMapper.updateResourceEntityStatusAndError(resourceEntityVo);
         }
         List<SceneEntityVo> sceneEntityList = ResourceEntityFactory.getSceneEntityList();
         for (SceneEntityVo sceneEntityVo : sceneEntityList) {
@@ -566,10 +593,266 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 resourceEntityVo.setName(sceneEntityVo.getName());
                 resourceEntityVo.setLabel(sceneEntityVo.getLabel());
                 resourceEntityVo.setStatus(Status.PENDING.getValue());
-                resourceEntityVo.setType(ViewType.SCENE.getValue());
             }
             resultList.add(resourceEntityVo);
         }
         return resultList;
+    }
+
+    @Override
+    public String buildResourceView(String viewName, ResourceEntityConfigVo originalConfig) {
+        String error = StringUtils.EMPTY;
+        ResourceEntityConfigVo config = null;
+        try {
+            config = fieldMappingCheckValidityAndFillIdData(viewName, originalConfig);
+        } catch (ResourceViewFieldMappingException e) {
+            return e.getMessage();
+        }
+        ResourceViewGenerateSqlUtil resourceViewGenerateSqlUtil = new ResourceViewGenerateSqlUtil(config);
+        String selectSql = resourceViewGenerateSqlUtil.getSql();
+        String md5 = Md5Util.encryptMD5(selectSql);
+        String tableType = schemaMapper.checkTableOrViewIsExists(TenantContext.get().getDataDbName(), viewName);
+        if (tableType != null) {
+            if (Objects.equals(tableType, "SYSTEM VIEW")) {
+                return StringUtils.EMPTY;
+            } else if (Objects.equals(tableType, "VIEW")) {
+                DataBaseViewInfoVo dataBaseViewInfoVo = dataBaseViewInfoMapper.getDataBaseViewInfoByViewName(viewName);
+                if (dataBaseViewInfoVo != null) {
+                    // md5相同就不用更新视图了
+                    if (Objects.equals(md5, dataBaseViewInfoVo.getMd5())) {
+                        return StringUtils.EMPTY;
+                    }
+                }
+            }
+        }
+        try {
+            EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
+                if (Objects.equals(tableType, "BASE TABLE")) {
+                    schemaMapper.deleteTable(TenantContext.get().getDataDbName() + "." + viewName);
+                }
+                String sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + "." + viewName + " AS " + selectSql;
+                schemaMapper.insertView(sql);
+            }).execute();
+            if (s.isSucceed()) {
+                DataBaseViewInfoVo dataBaseViewInfoVo = new DataBaseViewInfoVo();
+                dataBaseViewInfoVo.setViewName(viewName);
+                dataBaseViewInfoVo.setMd5(md5);
+                dataBaseViewInfoVo.setLcu(UserContext.get().getUserUuid());
+                dataBaseViewInfoMapper.insertDataBaseViewInfo(dataBaseViewInfoVo);
+            } else {
+                return s.getError();
+            }
+        } catch (Exception ex) {
+            error = ex.getMessage();
+            if (Objects.equals(tableType, "VIEW")) {
+                schemaMapper.deleteView(TenantContext.get().getDataDbName() + "." + viewName);
+            }
+            List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
+            Table table = new Table();
+            table.setName(viewName);
+            table.setSchemaName(TenantContext.get().getDataDbName());
+            List<ColumnDefinition> columnDefinitions = new ArrayList<>();
+            for (String columnName : fieldNameList) {
+                ColumnDefinition columnDefinition = new ColumnDefinition();
+                columnDefinition.setColumnName(columnName);
+                columnDefinition.setColDataType(new ColDataType("int"));
+                columnDefinitions.add(columnDefinition);
+            }
+            CreateTable createTable = new CreateTable();
+            createTable.setTable(table);
+            createTable.setColumnDefinitions(columnDefinitions);
+            createTable.setIfNotExists(true);
+            EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
+                schemaMapper.insertView(createTable.toString());
+            }).execute();
+        } finally {
+            return error;
+        }
+    }
+
+    /**
+     * 对字段映射配置信息进行有效性检查及填充缺省数据
+     * @param viewName
+     * @param config
+     * @return
+     */
+    private ResourceEntityConfigVo fieldMappingCheckValidityAndFillIdData(String viewName, ResourceEntityConfigVo config) {
+        ResourceEntityConfigVo newConfig = new ResourceEntityConfigVo();
+        String mainCi = config.getMainCi();
+        if (StringUtils.isBlank(mainCi)) {
+            throw new ResourceViewFieldMappingException(viewName);
+        }
+        List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
+        List<ResourceEntityFieldMappingVo> fieldMappingList = config.getFieldMappingList();
+        if (CollectionUtils.isEmpty(fieldMappingList)) {
+            throw new ResourceViewFieldMappingException(viewName, fieldNameList);
+        }
+        CiVo mainCiVo = ciMapper.getCiByName(mainCi);
+        if (mainCiVo == null) {
+            throw new ResourceViewFieldMappingException(viewName, mainCi);
+        }
+        newConfig.setMainCi(mainCi);
+        newConfig.setMainCiVo(mainCiVo);
+        List<ResourceEntityFieldMappingVo> resultList = new ArrayList<>();
+        for (ResourceEntityFieldMappingVo fieldMappingVo : fieldMappingList) {
+            String field = fieldMappingVo.getField();
+            if (!fieldNameList.remove(field)) {
+                continue;
+            }
+            String type = fieldMappingVo.getType();
+            ResourceEntityFieldMappingVo newFieldMappingVo = new ResourceEntityFieldMappingVo();
+            newFieldMappingVo.setField(field);
+            newFieldMappingVo.setType(type);
+            if (Objects.equals(type, "const")) {
+                String fromCi = fieldMappingVo.getFromCi();
+                if (StringUtils.isBlank(fromCi)) {
+                    throw new ResourceViewFieldMappingException(viewName, field, "fromCi", fromCi);
+                }
+                CiVo fromCiVo = ciMapper.getCiByName(fromCi);
+                if (fromCiVo == null) {
+                    throw new ResourceViewFieldMappingException(viewName, field, "fromCi", fromCi);
+                }
+                String fromAttr = fieldMappingVo.getFromAttr();
+                if (StringUtils.isBlank(fromAttr)) {
+                    throw new ResourceViewFieldMappingException(viewName, field, "fromAttr", fromAttr);
+                }
+                if (!defaultAttrList.contains(fromAttr)) {
+                    throw new ResourceViewFieldMappingException(viewName, field, "fromAttr", fromAttr);
+                }
+                newFieldMappingVo.setFromCi(fromCi);
+                newFieldMappingVo.setFromCiId(fromCiVo.getId());
+                newFieldMappingVo.setFromAttr(fromAttr);
+            } else if (Objects.equals(type, "attr")) {
+                String fromCi = fieldMappingVo.getFromCi();
+                if (StringUtils.isBlank(fromCi)) {
+                    throw new ResourceViewFieldMappingException(viewName, field, "fromCi", fromCi);
+                }
+                CiVo fromCiVo = ciMapper.getCiByName(fromCi);
+                if (fromCiVo == null) {
+                    throw new ResourceViewFieldMappingException(viewName, field, "fromCi", fromCi);
+                }
+                String fromAttr = fieldMappingVo.getFromAttr();
+                if (StringUtils.isBlank(fromAttr)) {
+                    throw new ResourceViewFieldMappingException(viewName, field, "fromAttr", fromAttr);
+                }
+                AttrVo fromAttrVo = attrMapper.getAttrByCiIdAndName(fromCiVo.getId(), fromAttr);
+                if (fromAttrVo == null) {
+                    throw new ResourceViewFieldMappingException(viewName, field, "fromAttr", fromAttr);
+                }
+                newFieldMappingVo.setFromCi(fromCi);
+                newFieldMappingVo.setFromCiId(fromCiVo.getId());
+                newFieldMappingVo.setFromAttr(fromAttr);
+                newFieldMappingVo.setFromAttrId(fromAttrVo.getId());
+                newFieldMappingVo.setFromAttrCiId(fromAttrVo.getCiId());
+                if (fromAttrVo.getTargetCiId() != null) {
+                    String toCi = fieldMappingVo.getToCi();
+                    if (StringUtils.isBlank(toCi)) {
+                        throw new ResourceViewFieldMappingException(viewName, field, "toCi", toCi);
+                    }
+                    CiVo toCiVo = ciMapper.getCiByName(toCi);
+                    if (toCiVo == null) {
+                        throw new ResourceViewFieldMappingException(viewName, field, "toCi", toCi);
+                    }
+                    if (!Objects.equals(toCiVo.getId(), fromAttrVo.getTargetCiId())) {
+                        throw new ResourceViewFieldMappingException(viewName, field, "toCi", toCi);
+                    }
+                    String toAttr = fieldMappingVo.getToAttr();
+                    if (StringUtils.isBlank(toAttr)) {
+                        throw new ResourceViewFieldMappingException(viewName, field, "toAttr", toAttr);
+                    }
+                    newFieldMappingVo.setToCi(toCi);
+                    newFieldMappingVo.setToCiId(toCiVo.getId());
+                    newFieldMappingVo.setToCiIsVirtual(toCiVo.getIsVirtual());
+                    newFieldMappingVo.setToAttr(toAttr);
+                    if (Objects.equals(toCiVo.getIsVirtual(), 1)) {
+                        newFieldMappingVo.setToAttrCiId(toCiVo.getId());
+                        newFieldMappingVo.setToAttrCiName(toCiVo.getName());
+                    }
+                    if (!defaultAttrList.contains(toAttr)) {
+                        AttrVo toAttrVo = attrMapper.getAttrByCiIdAndName(toCiVo.getId(), toAttr);
+                        if (toAttrVo == null) {
+                            throw new ResourceViewFieldMappingException(viewName, field, "toAttr", toAttr);
+                        }
+                        newFieldMappingVo.setToAttrId(toAttrVo.getId());
+                        if(Objects.equals(toCiVo.getIsVirtual(), 0)) {
+                            newFieldMappingVo.setToAttrCiId(toAttrVo.getCiId());
+                            newFieldMappingVo.setToAttrCiName(toAttrVo.getCiName());
+                        }
+                        if (toAttrVo.getTargetCiId() != null) {
+                            throw new ResourceViewFieldMappingException(viewName, field, "toAttr", toAttr);
+                        }
+                    }
+                }
+            } else if (Objects.equals(type, "rel")) {
+                String fromCi = fieldMappingVo.getFromCi();
+                if (StringUtils.isBlank(fromCi)) {
+                    throw new ResourceViewFieldMappingException(viewName, field, "fromCi", fromCi);
+                }
+                CiVo fromCiVo = ciMapper.getCiByName(fromCi);
+                if (fromCiVo == null) {
+                    throw new ResourceViewFieldMappingException(viewName, field, "fromCi", fromCi);
+                }
+                String toCi = fieldMappingVo.getToCi();
+                if (StringUtils.isBlank(toCi)) {
+                    throw new ResourceViewFieldMappingException(viewName, field, "toCi", toCi);
+                }
+                CiVo toCiVo = ciMapper.getCiByName(toCi);
+                if (toCiVo == null) {
+                    throw new ResourceViewFieldMappingException(viewName, field, "toCi", toCi);
+                }
+                newFieldMappingVo.setFromCi(fromCi);
+                newFieldMappingVo.setFromCiId(fromCiVo.getId());
+                newFieldMappingVo.setToCi(toCi);
+                newFieldMappingVo.setToCiId(toCiVo.getId());
+                newFieldMappingVo.setToCiIsVirtual(toCiVo.getIsVirtual());
+                String direction = fieldMappingVo.getDirection();
+                newFieldMappingVo.setDirection(direction);
+                if (Objects.equals(direction, "from")) {
+                    String fromAttr = fieldMappingVo.getFromAttr();
+                    if (StringUtils.isBlank(fromAttr)) {
+                        throw new ResourceViewFieldMappingException(viewName, field, "fromAttr", fromAttr);
+                    }
+                    newFieldMappingVo.setFromAttr(fromAttr);
+                    if (!defaultAttrList.contains(fromAttr)) {
+                        AttrVo fromAttrVo = attrMapper.getAttrByCiIdAndName(fromCiVo.getId(), fromAttr);
+                        if (fromAttrVo == null) {
+                            throw new ResourceViewFieldMappingException(viewName, field, "fromAttr", fromAttr);
+                        }
+                        if (fromAttrVo.getTargetCiId() != null) {
+                            throw new ResourceViewFieldMappingException(viewName, field, "fromAttr", fromAttr);
+                        }
+                        newFieldMappingVo.setFromAttrId(fromAttrVo.getId());
+                        newFieldMappingVo.setFromAttrCiId(fromAttrVo.getCiId());
+                    }
+                } else {
+                    String toAttr = fieldMappingVo.getToAttr();
+                    if (StringUtils.isBlank(toAttr)) {
+                        newFieldMappingVo.setToAttr("_id");
+                    } else {
+                        newFieldMappingVo.setToAttr(toAttr);
+                        if (!defaultAttrList.contains(toAttr)) {
+                            AttrVo toAttrVo = attrMapper.getAttrByCiIdAndName(toCiVo.getId(), toAttr);
+                            if (toAttrVo == null) {
+                                throw new ResourceViewFieldMappingException(viewName, field, "toAttr", toAttr);
+                            }
+                            if (toAttrVo.getTargetCiId() != null) {
+                                throw new ResourceViewFieldMappingException(viewName, field, "toAttr", toAttr);
+                            }
+                            newFieldMappingVo.setToAttrId(toAttrVo.getId());
+                            newFieldMappingVo.setToAttrCiId(toAttrVo.getCiId());
+                            newFieldMappingVo.setToAttrCiName(toAttrVo.getCiName());
+                        }
+                    }
+                }
+            } else {
+                throw new ResourceViewFieldMappingException(viewName, field, "type", type);
+            }
+            resultList.add(newFieldMappingVo);
+        }
+        if (CollectionUtils.isNotEmpty(fieldNameList)) {
+            throw new ResourceViewFieldMappingException(viewName, fieldNameList);
+        }
+        newConfig.setFieldMappingList(resultList);
+        return newConfig;
     }
 }

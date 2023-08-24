@@ -61,6 +61,7 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Deprecated
 @Component
 public class ResourceEntityViewBuilder {
     private final static Logger logger = LoggerFactory.getLogger(ResourceEntityViewBuilder.class);
@@ -121,9 +122,9 @@ public class ResourceEntityViewBuilder {
     public ResourceEntityViewBuilder(ResourceEntityVo resourceEntity) {
         try {
             String name = resourceEntity.getName();
-            String xml = resourceEntity.getXml();
+            String xml = "";
             String description = resourceEntity.getDescription();
-            this.type = resourceEntity.getType();
+            this.type = "";
             Document document = DocumentHelper.parseText(xml);
             Element root = document.getRootElement();
             if (Objects.equals(type, ViewType.RESOURCE.getValue())) {
@@ -131,8 +132,7 @@ public class ResourceEntityViewBuilder {
                 for (ResourceEntityVo entity : resourceEntityVoList) {
                     if (Objects.equals(entity.getName(), name)) {
                         resourceEntityVo = createResourceEntityVo(entity);
-                        resourceEntityVo.setXml(xml);
-                        resourceEntityVo.setType(type);
+//                        resourceEntityVo.setXml(xml);
                     }
                 }
                 if (resourceEntityVo == null) {
@@ -148,9 +148,8 @@ public class ResourceEntityViewBuilder {
                         sceneEntityVo.setLabel(sceneEntity.getLabel());
                         resourceEntityVo = new ResourceEntityVo();
                         resourceEntityVo.setName(name);
-                        resourceEntityVo.setType(this.type);
                         resourceEntityVo.setDescription(description);
-                        resourceEntityVo.setXml(xml);
+//                        resourceEntityVo.setXml(xml);
                     }
                 }
                 if (sceneEntityVo == null) {

@@ -177,6 +177,11 @@ public class ResourceEntityFactory {
                 }
             }
         }
+        String[] viewNameArray = new String[viewNameList.size()];
+        viewNameList.toArray(viewNameArray);
+        Arrays.sort(viewNameArray);
+        viewNameList = Arrays.asList(viewNameArray);
+        sceneEntityList.sort(Comparator.comparingInt(e -> viewNameList.indexOf(e.getName())));
     }
 
     public static List<ResourceEntityVo> getResourceEntityList() {

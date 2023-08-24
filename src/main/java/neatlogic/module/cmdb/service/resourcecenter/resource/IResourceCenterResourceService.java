@@ -22,6 +22,7 @@ import neatlogic.framework.cmdb.dto.resourcecenter.AccountVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.AppEnvVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityConfigVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.dto.tag.TagVo;
 import com.alibaba.fastjson.JSONArray;
@@ -127,4 +128,12 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
      * @return
      */
     List<ResourceEntityVo> rebuildResourceEntity();
+
+    /**
+     * 构建单个视图
+     * @param viewName
+     * @param originalConfig
+     * @return
+     */
+    String buildResourceView(String viewName, ResourceEntityConfigVo originalConfig);
 }

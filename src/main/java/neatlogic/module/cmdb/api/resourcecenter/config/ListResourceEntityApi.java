@@ -84,7 +84,6 @@ public class ListResourceEntityApi extends PrivateApiComponentBase {
                 resourceEntityVo.setName(sceneEntityVo.getName());
                 resourceEntityVo.setLabel(sceneEntityVo.getLabel());
                 resourceEntityVo.setStatus(Status.PENDING.getValue());
-                resourceEntityVo.setType(ViewType.SCENE.getValue());
             }
             resultList.add(resourceEntityVo);
         }

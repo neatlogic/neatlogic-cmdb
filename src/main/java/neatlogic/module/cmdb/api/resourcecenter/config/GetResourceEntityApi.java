@@ -87,7 +87,6 @@ public class GetResourceEntityApi extends PrivateApiComponentBase {
             CiVo ciVo = ciMapper.getCiById(resourceEntityVo.getCiId());
             if (ciVo != null) {
                 resourceEntityVo.setCi(ciVo);
-                resourceEntityVo.setMainCi(ciVo.getName());
             }
         }
         List<ValueTextVo> fieldList = ResourceEntityFactory.getFieldListByViewName(name);
