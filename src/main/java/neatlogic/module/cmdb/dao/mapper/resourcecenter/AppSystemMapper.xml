@@ -66,26 +66,25 @@ limitations under the License.
         a.env_id AS envId,
         a.env_name AS envName
         FROM @{DATA_SCHEMA}.`scence_ipobject_env_appmodule_appsystem` a
-        <where>
-            <choose>
-                <when test="appResourceId != null">
-                    and a.`app_system_id` = #{appResourceId}
-                </when>
-                <otherwise>
-                    and a.`app_system_id` is not null
-                </otherwise>
-            </choose>
-            <choose>
-                <when test="moduleResourceIdList != null and moduleResourceIdList.size() > 0">
-                    and a.`app_module_id` in
-                    <foreach collection="moduleResourceIdList" item="moduleResourceId" separator="," open="(" close=")">
-                        #{moduleResourceId}
-                    </foreach>
-                </when>
-                <otherwise>
-                    and a.`app_module_id` is not null
-                </otherwise>
-            </choose>
-        </where>
+        WHERE a.env_id is not null
+        <choose>
+            <when test="appSystemId != null">
+                and a.`app_system_id` = #{appSystemId}
+            </when>
+            <otherwise>
+                and a.`app_system_id` is not null
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="appModuleIdList != null and appModuleIdList.size() > 0">
+                and a.`app_module_id` in
+                <foreach collection="appModuleIdList" item="appModuleId" separator="," open="(" close=")">
+                    #{appModuleId}
+                </foreach>
+            </when>
+            <otherwise>
+                and a.`app_module_id` is not null
+            </otherwise>
+        </choose>
     </select>
 </mapper>
