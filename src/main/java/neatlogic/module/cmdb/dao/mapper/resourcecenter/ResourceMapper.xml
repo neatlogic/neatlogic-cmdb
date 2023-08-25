@@ -713,6 +713,20 @@ limitations under the License.
         </where>
     </select>
 
+    <select id="getAppSystemModuleIdListByAppSystemIdAndAppModuleIdListAndEnvId"
+            resultType="java.lang.Long">
+        SELECT a.`app_module_id` FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
+        <where>
+            a.`env_id` = #{envId} and a.`app_system_id` = #{appSystemId}
+            <if test="appModuleIdList != null and appModuleIdList.size() > 0">
+                And a.app_module_id in
+                <foreach collection="appModuleIdList" open="(" separator="," close=")" item="moduleId">
+                    #{moduleId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
     <select id="getAppModuleListByAppSystemIdList"
             parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultType="neatlogic.framework.cmdb.dto.resourcecenter.entity.ModuleVo">

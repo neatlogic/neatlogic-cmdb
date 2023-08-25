@@ -36,11 +36,11 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     int getResourceCount(ResourceSearchVo searchVo);
 
-    int getResourceCountByDynamicCondition(@Param("searchVo") ResourceSearchVo searchVo, @Param("conditionSql")String conditionSql);
+    int getResourceCountByDynamicCondition(@Param("searchVo") ResourceSearchVo searchVo, @Param("conditionSql") String conditionSql);
 
     List<Long> getResourceIdList(ResourceSearchVo searchVo);
 
-    List<Long> getResourceIdListByDynamicCondition(@Param("searchVo") ResourceSearchVo searchVo, @Param("conditionSql")String conditionSql);
+    List<Long> getResourceIdListByDynamicCondition(@Param("searchVo") ResourceSearchVo searchVo, @Param("conditionSql") String conditionSql);
 
     List<ResourceVo> getResourceListByIdList(List<Long> idList);
 
@@ -56,7 +56,7 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     List<Long> getOsResourceIdListByAppSystemIdAndAppModuleIdListAndEnvIdAndTypeId(ResourceSearchVo searchVo);
 
-    List<ResourceVo> getAppInstanceResourceListByIdList(@Param("idList")List<Long> idList);
+    List<ResourceVo> getAppInstanceResourceListByIdList(@Param("idList") List<Long> idList);
 
     List<ResourceVo> getAppInstanceResourceListByIdListAndKeyword(@Param("idList") List<Long> idList, @Param("keyword") String keyword);
 
@@ -91,6 +91,8 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
     List<Long> getAppSystemModuleIdListByAppSystemId(Long appSystemId);
 
     List<Long> getAppSystemModuleIdListByAppSystemIdAndAppModuleIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleIdList") JSONArray appModuleIdList);
+
+    List<Long> getAppSystemModuleIdListByAppSystemIdAndAppModuleIdListAndEnvId(@Param("appSystemId") Long appSystemId, @Param("envId") Long envId, @Param("appModuleIdList") JSONArray appModuleIdList);
 
     List<ModuleVo> getAppModuleListByAppSystemIdList(ResourceSearchVo searchVo);
 
