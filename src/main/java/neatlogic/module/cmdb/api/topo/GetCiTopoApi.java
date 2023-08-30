@@ -16,31 +16,31 @@
 
 package neatlogic.module.cmdb.api.topo;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.auth.core.AuthActionChecker;
+import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.ci.CiTypeVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.ci.RelVo;
 import neatlogic.framework.cmdb.enums.CiAuthType;
 import neatlogic.framework.cmdb.enums.group.GroupType;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.graphviz.*;
+import neatlogic.framework.graphviz.enums.LayoutType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
-import neatlogic.framework.graphviz.*;
-import neatlogic.framework.graphviz.enums.LayoutType;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.*;
 
 @Service
@@ -49,10 +49,10 @@ import java.util.*;
 public class GetCiTopoApi extends PrivateApiComponentBase {
     static Logger logger = LoggerFactory.getLogger(GetCiTopoApi.class);
 
-    @Autowired
+    @Resource
     private CiMapper ciMapper;
 
-    @Autowired
+    @Resource
     private RelMapper relMapper;
 
     @Override
@@ -159,6 +159,12 @@ public class GetCiTopoApi extends PrivateApiComponentBase {
                     nb.withLabel(ciVo.getLabel());
                     nb.withImage(ciVo.getIcon());
                     nb.addClass("cinode").addClass("normalnode");
+                    if (ciVo.getIsAbstract().equals(1)) {
+                        nb.addClass("abstract_ci");
+                    }
+                    if (ciVo.getIsVirtual().equals(1)) {
+                        nb.addClass("virtual_ci");
+                    }
                     lb.addNode(nb.build());
                     ciIdSet.add(ciVo.getId());
                 }
