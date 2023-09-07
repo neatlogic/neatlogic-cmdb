@@ -289,7 +289,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
         Set<RelEntityVo> set = new HashSet<>();
         set.add(relEntityVo);
         set.add(relEntityVo2);
-        System.out.println(set.size());
+        //System.out.println(set.size());
     }
 
 }
