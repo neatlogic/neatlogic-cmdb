@@ -90,7 +90,7 @@
             `cientity_id` bigint(20) NOT NULL COMMENT '配置项id',
             PRIMARY KEY (`cientity_id`)
         ) ENGINE = INNODB
-          DEFAULT CHARSET = utf8mb4
+          DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci
     </insert>
 
     <insert id="initCiTable">
