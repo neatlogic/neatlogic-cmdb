@@ -53,7 +53,7 @@ public class SearchTransactionApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询事务";
+        return "nmcat.searchtransactionapi.getname";
     }
 
     @Override
@@ -61,9 +61,16 @@ public class SearchTransactionApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciId", type = ApiParamType.LONG, desc = "模型id"), @Param(name = "ciEntityId", type = ApiParamType.LONG, desc = "配置项id"), @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页大小"), @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页数"), @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页"), @Param(name = "status", type = ApiParamType.ENUM, rule = "commited,uncommit,recover,expired", desc = "状态"), @Param(name = "transactionGroupId", type = ApiParamType.LONG, desc = "事务组id"), @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "是否需要操作列，如果需要则根据用户权限返回操作列")})
+    @Input({@Param(name = "ciId", type = ApiParamType.LONG, desc = "term.cmdb.ciid"),
+            @Param(name = "ciEntityId", type = ApiParamType.LONG, desc = "term.cmdb.cientityid"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage"),
+            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "common.isneedpage"),
+            @Param(name = "status", type = ApiParamType.ENUM, rule = "commited,uncommit,recover,expired", desc = "common.status"),
+            @Param(name = "transactionGroupId", type = ApiParamType.LONG, desc = "term.cmdb.transactiongroupid"),
+            @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "nmcac.searchcientityapi.input.param.desc.needaction")})
     @Output({@Param(name = "tbodyList", explode = TransactionVo[].class), @Param(explode = BasePageVo.class)})
-    @Description(desc = "查询事务接口")
+    @Description(desc = "nmcat.searchtransactionapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         TransactionVo transactionVo = JSONObject.toJavaObject(jsonObj, TransactionVo.class);

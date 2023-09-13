@@ -220,7 +220,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
                 ciViewVo.addShowType(ShowType.ALL.getValue());
             }
             List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo));
-            List<Long> attrIdList = null, relIdList = null;
+            List<Long> attrIdList = null, relIdList = null, globalAttrIdList = null;
             JSONArray theadList = new JSONArray();
             if (needCheck) {
                 // 增加复选列
@@ -251,6 +251,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
             if (CollectionUtils.isNotEmpty(ciViewList)) {
                 attrIdList = new ArrayList<>();
                 relIdList = new ArrayList<>();
+                globalAttrIdList = new ArrayList<>();
                 for (CiViewVo ciview : ciViewList) {
                     JSONObject headObj = new JSONObject();
                     headObj.put("title", ciview.getItemLabel());
@@ -283,6 +284,13 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
                                 theadList.add(headObj);
                             }
                             break;
+                        case "global":
+                            if (CollectionUtils.isEmpty(showAttrRelSet) || showAttrRelSet.contains("global_" + ciview.getItemId())) {
+                                globalAttrIdList.add(ciview.getItemId());
+                                headObj.put("key", "global_" + ciview.getItemId());
+                                theadList.add(headObj);
+                            }
+                            break;
                         case "const":
                             //固化属性需要特殊处理
                             headObj.put("key", "const_" + ciview.getItemName().replace("_", ""));
@@ -304,6 +312,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
             //把需要显示的属性和关系设进去，后台会进行自动过滤
             ciEntityVo.setAttrIdList(attrIdList);
             ciEntityVo.setRelIdList(relIdList);
+            ciEntityVo.setGlobalAttrIdList(globalAttrIdList);
 
             List<CiEntityVo> ciEntityList;
             CiVo ciVo = ciMapper.getCiById(ciEntityVo.getCiId());
@@ -317,7 +326,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
             }
             JSONArray tbodyList = new JSONArray();
             if (CollectionUtils.isNotEmpty(ciEntityList)) {
-                boolean canEdit = false, canDelete = false, canViewPassword = false, canTransaction = false, hasResourcecenterAccountModify = false;
+                boolean canEdit = false, canDelete = false, canViewPassword = false, canTransaction = false, hasResourceCenterAccountModify = false;
                 List<Long> canAccountManagementIdList = new ArrayList<>();
                 List<Long> hasMaintainCiEntityIdList = new ArrayList<>();
                 List<Long> hasReadCiEntityIdList = new ArrayList<>();
@@ -335,8 +344,8 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
                     }
                     // 前端页面显示“账号管理”按钮的条件是当前用户有“资源中心-账号管理权限”，且那行数据对应的配置项模型是IP软硬件模型或其后代模型
                     // 判断当前用户是否有“资源中心-账号管理权限”
-                    hasResourcecenterAccountModify = AuthActionChecker.check(RESOURCECENTER_ACCOUNT_MODIFY.class);
-                    if (hasResourcecenterAccountModify) {
+                    hasResourceCenterAccountModify = AuthActionChecker.check(RESOURCECENTER_ACCOUNT_MODIFY.class);
+                    if (hasResourceCenterAccountModify) {
                         // 获取IP软硬件配置项模型信息，如果找不到IP软硬件配置项模型信息，则所有行数据都不显示“账号管理”按钮
                         CiVo ipObjectCiVo = ciMapper.getCiByName(IP_OBJECT);
                         if (ipObjectCiVo != null) {
@@ -348,7 +357,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
                             Map<Long, Long> ciEntityIdToCiIdMap = ciEntityList.stream().collect(Collectors.toMap(CiEntityVo::getId, CiEntityVo::getCiId));
                             if (Objects.equals(result, PARENT)) {
                                 List<CiVo> rowCiVoList = ciMapper.getCiByIdList(new ArrayList<>(ciEntityIdToCiIdMap.values()));
-                                Map<Long, CiVo> rowCiVoMap = rowCiVoList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
+                                Map<Long, CiVo> rowCiVoMap = rowCiVoList.stream().collect(Collectors.toMap(CiVo::getId, e -> e));
                                 for (Map.Entry<Long, Long> entry : ciEntityIdToCiIdMap.entrySet()) {
                                     CiVo rowCiVo = rowCiVoMap.get(entry.getValue());
                                     if (rowCiVo == null) {
@@ -385,6 +394,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
                     entityObj.put("renewTime", entity.getRenewTime() != null ? sdf.format(entity.getRenewTime()) : null);
                     entityObj.put("actionType", entity.getActionType());
                     entityObj.put("attrEntityData", entity.getAttrEntityData());
+                    entityObj.put("globalAttrEntityData", entity.getGlobalAttrEntityData());
                     entityObj.put("relEntityData", entity.getRelEntityData());
                     entityObj.put("maxRelEntityCount", entity.getMaxRelEntityCount());
                     entityObj.put("maxAttrEntityCount", entity.getMaxAttrEntityCount());
@@ -395,7 +405,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
                         actionData.put(CiAuthType.CIENTITYDELETE.getValue(), canDelete || hasMaintainCiEntityIdList.contains(entity.getId()));
                         actionData.put(CiAuthType.PASSWORDVIEW.getValue(), canViewPassword || hasMaintainCiEntityIdList.contains(entity.getId()) || hasReadCiEntityIdList.contains(entity.getId()));
                         actionData.put(CiAuthType.TRANSACTIONMANAGE.getValue(), canTransaction || hasMaintainCiEntityIdList.contains(entity.getId()));
-                        actionData.put(CiAuthType.ACCOUNTMANAGEMENT.getValue(), hasResourcecenterAccountModify && canAccountManagementIdList.contains(entity.getId()));
+                        actionData.put(CiAuthType.ACCOUNTMANAGEMENT.getValue(), hasResourceCenterAccountModify && canAccountManagementIdList.contains(entity.getId()));
                         entityObj.put("authData", actionData);
                     } else if (ciEntityObjList != null && needAction) {
                         JSONObject actionData = new JSONObject();
@@ -442,8 +452,9 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
 
     /**
      * 判断配置项之间的父子兄弟关系
+     *
      * @param ipObjectCiVo IP软硬件配置项信息
-     * @param ciVo 其他配置项信息
+     * @param ciVo         其他配置项信息
      * @return 返回结果
      */
     private String judgmentRelation(CiVo ipObjectCiVo, CiVo ciVo) {

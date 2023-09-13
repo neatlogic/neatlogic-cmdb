@@ -221,6 +221,7 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
             returnCiEntityObj.put("ciId", ciVo.getId());
             JSONObject attrEntityData = new JSONObject();
             JSONObject relEntityData = new JSONObject();
+            JSONObject globalAttrData = new JSONObject();
             if (MapUtils.isNotEmpty(entityData)) {
                 for (String key : entityData.keySet()) {
                     JSONArray valueList = entityData.getJSONArray(key);
@@ -395,6 +396,9 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
                 }
             }
             ciEntityTransactionVo.setAttrEntityData(attrObj);
+            //解析公共属性数据
+            JSONObject globalAttrObj = ciEntityObj.getJSONObject("globalAttrEntityData");
+            ciEntityTransactionVo.setGlobalAttrEntityData(globalAttrObj);
 
             // 解析关系数据
             JSONObject relObj = ciEntityObj.getJSONObject("relEntityData");

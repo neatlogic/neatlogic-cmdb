@@ -71,9 +71,13 @@ public class ValidateCiEntityApi extends PrivateApiComponentBase {
         // 解析属性数据
         JSONObject attrObj = jsonObj.getJSONObject("attrEntityData");
         ciEntityTransactionVo.setAttrEntityData(attrObj);
+        //解析全局属性数据
+        JSONObject globalAttrObj = jsonObj.getJSONObject("globalAttrEntityData");
+        ciEntityTransactionVo.setGlobalAttrEntityData(globalAttrObj);
         // 解析关系数据
         JSONObject relObj = jsonObj.getJSONObject("relEntityData");
         ciEntityTransactionVo.setRelEntityData(relObj);
+
         if (id == null) {
             ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
         } else {

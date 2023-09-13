@@ -121,6 +121,9 @@ public class SearchDeleteCiEntityApi extends PrivateApiComponentBase {
                     case "relto":
                         headObj.put("key", "relto_" + ciview.getItemId());
                         break;
+                    case "global":
+                        headObj.put("key", "global_" + ciview.getItemId());
+                        break;
                     case "const":
                         //固化属性需要特殊处理
                         headObj.put("key", "const_" + ciview.getItemName().replace("_", ""));

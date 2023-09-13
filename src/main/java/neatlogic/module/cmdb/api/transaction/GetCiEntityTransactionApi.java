@@ -16,10 +16,15 @@
 
 package neatlogic.module.cmdb.api.transaction;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
+import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
+import neatlogic.framework.cmdb.dto.cientity.GlobalAttrEntityVo;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
 import neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import neatlogic.framework.cmdb.dto.transaction.RelEntityTransactionVo;
 import neatlogic.framework.cmdb.dto.transaction.TransactionVo;
@@ -29,15 +34,12 @@ import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
+import neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper;
 import neatlogic.module.cmdb.dao.mapper.transaction.TransactionMapper;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -49,14 +51,17 @@ import java.util.Optional;
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private TransactionMapper transactionMapper;
 
     @Resource
     private AttrMapper attrMapper;
 
-    @Autowired
+    @Resource
     private CiEntityMapper ciEntityMapper;
+
+    @Resource
+    private GlobalAttrMapper globalAttrMapper;
 
 
     @Override
@@ -128,6 +133,42 @@ public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
                     dataObj.put("name", attrObj.getString("name"));
                     dataObj.put("label", attrObj.getString("label"));
                     dataObj.put("type", "attr");
+                    dataList.add(dataObj);
+                }
+            }
+            //处理全局属性
+            if (MapUtils.isNotEmpty(ciEntityTransactionVo.getGlobalAttrEntityData())) {
+                List<GlobalAttrVo> globalAttrList = globalAttrMapper.searchGlobalAttr(new GlobalAttrVo());
+                JSONObject oldGlobalAttrEntityData = null;
+                if (MapUtils.isNotEmpty(oldCiEntityObj)) {
+                    oldGlobalAttrEntityData = oldCiEntityObj.getJSONObject("globalAttrEntityData");
+                }
+
+                for (String key : ciEntityTransactionVo.getGlobalAttrEntityData().keySet()) {
+                    JSONObject dataObj = new JSONObject();
+                    JSONObject attrObj = ciEntityTransactionVo.getGlobalAttrEntityData().getJSONObject(key);
+                    Long attrId = Long.parseLong(key.replace("global_", ""));
+
+                    Optional<GlobalAttrVo> filterAttr = globalAttrList.stream().filter(attr -> attr.getId().equals(attrId)).findFirst();
+                    if (filterAttr.isPresent()) {
+                        GlobalAttrVo attr = filterAttr.get();
+                        dataObj.put("name", attr.getName());
+                        dataObj.put("label", attr.getLabel());
+                        dataObj.put("newValue", attrObj.getJSONArray("valueList"));
+                        if (MapUtils.isNotEmpty(oldGlobalAttrEntityData) && oldGlobalAttrEntityData.containsKey(key)) {
+                            dataObj.put("oldValue", oldGlobalAttrEntityData.getJSONObject(key).getJSONArray("valueList"));
+                        }
+                    } else {
+                        if (MapUtils.isNotEmpty(oldGlobalAttrEntityData) && oldGlobalAttrEntityData.containsKey(key)) {
+                            JSONObject globalAttrObj = oldGlobalAttrEntityData.getJSONObject(key);
+                            dataObj.put("name", globalAttrObj.getString("name"));
+                            dataObj.put("label", globalAttrObj.getString("label"));
+                            dataObj.put("oldValue", globalAttrObj.getJSONArray("valueList"));
+                        }
+                        dataObj.put("action", "delglobalattr");
+                    }
+                    dataObj.put("id", attrId);
+                    dataObj.put("type", "globalattr");
                     dataList.add(dataObj);
                 }
             }
@@ -203,7 +244,7 @@ public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
                     for (String key : attrData.keySet()) {
                         JSONObject dataObj = new JSONObject();
                         //如果属性已删除，尝试使用snapshot数据还原原来的值
-                        JSONObject oldAttrEntityData = attrData.getJSONObject(key);
+                        //JSONObject oldAttrEntityData = attrData.getJSONObject(key);
                         AttrVo attrVo = JSONObject.toJavaObject(attrData.getJSONObject(key), AttrVo.class);
                         dataObj.put("oldValue", buildAttrObj(attrVo, attrData.getJSONObject(key).getJSONArray("valueList")));
                         dataObj.put("action", "delattr");
@@ -211,6 +252,20 @@ public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
                         dataObj.put("name", attrVo.getName());
                         dataObj.put("label", attrVo.getLabel());
                         dataObj.put("type", "attr");
+                        dataList.add(dataObj);
+                    }
+                }
+                JSONObject globalAttrData = oldCiEntityObj.getJSONObject("globalAttrEntityData");
+                if (MapUtils.isNotEmpty(globalAttrData)) {
+                    for (String key : globalAttrData.keySet()) {
+                        JSONObject dataObj = new JSONObject();
+                        GlobalAttrEntityVo attrVo = JSONObject.toJavaObject(globalAttrData.getJSONObject(key), GlobalAttrEntityVo.class);
+                        dataObj.put("oldValue", attrVo.getValueObjList());
+                        dataObj.put("action", "delglobalattr");
+                        dataObj.put("id", attrVo.getAttrId());
+                        dataObj.put("name", attrVo.getAttrName());
+                        dataObj.put("label", attrVo.getAttrLabel());
+                        dataObj.put("type", "globalattr");
                         dataList.add(dataObj);
                     }
                 }
@@ -241,6 +296,7 @@ public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
     public boolean disableReturnCircularReferenceDetect() {
         return true;
     }
+
 
     private JSONObject buildAttrObj(AttrVo attrVo, JSONArray valueList) {
         JSONObject attrObj = new JSONObject();

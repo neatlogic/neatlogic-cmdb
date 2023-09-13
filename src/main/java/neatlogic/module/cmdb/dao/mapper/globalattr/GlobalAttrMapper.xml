@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright(c) 2023 NeatLogic Co., Ltd. All Rights Reserved.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper">
+    <select id="checkGlobalAttrNameIsUsed" parameterType="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo"
+            resultType="int">
+        select count(1)
+        from cmdb_global_attr
+        where id != #{id}
+          and name = #{name}
+    </select>
+
+    <select id="checkGlobalAttrIsUsed" parameterType="java.lang.Long" resultType="int">
+        select count(1)
+        from cmdb_cientity_globalattritem
+        where attr_id = #{value}
+        limit 1
+    </select>
+
+    <select id="checkGlobalAttrItemIsUsed" parameterType="java.lang.Long" resultType="int">
+        select count(1)
+        from cmdb_cientity_globalattritem
+        where id = #{value}
+        limit 1
+    </select>
+
+    <resultMap id="globalAttrMap" type="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="label" column="label"/>
+        <result property="isActive" column="isActive"/>
+        <result property="isMultiple" column="isMultiple"/>
+        <result property="description" column="description"/>
+        <collection property="itemList" ofType="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo">
+            <id property="id" column="itemId"/>
+            <result property="value" column="itemValue"/>
+            <result property="sort" column="itemSort"/>
+            <result property="attrId" column="itemAttrId"/>
+        </collection>
+    </resultMap>
+
+    <select id="getGlobalAttrById" parameterType="java.lang.Long" resultMap="globalAttrMap">
+        select cga.id,
+               cga.name,
+               cga.label,
+               cga.is_active   AS isActive,
+               cga.is_multiple AS isMultiple,
+               cga.description As description,
+               cgai.id         as itemId,
+               cgai.value      as itemValue,
+               cgai.attr_id    as itemAttrId,
+               cgai.sort       as itemSort
+        from cmdb_global_attr cga
+                 left join cmdb_global_attritem cgai on cga.id = cgai.attr_id
+        where cga.id = #{value}
+        order by cgai.sort
+    </select>
+
+    <select id="searchGlobalAttr" parameterType="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo"
+            resultMap="globalAttrMap">
+        select
+        cga.id,
+        cga.name,
+        cga.label,
+        cga.is_active AS isActive,
+        cga.is_multiple AS isMultiple,
+        cga.description As description,
+        cgai.id as itemId,
+        cgai.value as itemValue,
+        cgai.attr_id as itemAttrId,
+        cgai.sort as itemSort
+        from cmdb_global_attr cga left join cmdb_global_attritem cgai on cga.id = cgai.attr_id
+        <where>
+            <if test="isActive != null">
+                is_active = #{isActive}
+            </if>
+        </where>
+        order by cga.id desc, cgai.sort
+    </select>
+
+    <resultMap id="globalCiEntityAttrMap" type="neatlogic.framework.cmdb.dto.cientity.GlobalAttrEntityVo">
+        <id property="ciEntityId" column="ciEntityId"/>
+        <id property="attrId" column="attrId"/>
+        <result property="attrName" column="attrName"/>
+        <result property="attrLabel" column="attrLabel"/>
+        <collection property="valueList" ofType="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo">
+            <id property="id" column="itemId"/>
+            <result property="value" column="itemValue"/>
+            <result property="attrId" column="itemAttrId"/>
+        </collection>
+    </resultMap>
+
+    <select id="getGlobalAttrByCiEntityIdList" resultMap="globalCiEntityAttrMap">
+        select
+        ccg.cientity_id as ciEntityId,
+        ccg.item_id as itemId,
+        ccg.attr_id as attrId,
+        cga.name as attrName,
+        cga.label as attrLabel,
+        cgai.value as itemValue,
+        cgai.attr_id as itemAttrId
+        from cmdb_cientity_globalattritem ccg
+        join cmdb_global_attr cga on ccg.attr_id = cga.id and cga.is_active = 1
+        join cmdb_global_attritem cgai ON ccg.item_id = cgai.id
+        where ccg.cientity_id in
+        <foreach collection="ciEntityIdList" item="value" open="(" close=")" separator=",">#{value}</foreach>
+    </select>
+
+    <select id="getGlobalAttrByCiEntityId" parameterType="java.lang.Long" resultMap="globalCiEntityAttrMap">
+        select ccg.cientity_id as ciEntityId,
+               ccg.item_id     as itemId,
+               ccg.attr_id     as attrId,
+               cga.name        as attrName,
+               cga.label       as attrLabel,
+               cgai.value      as itemValue,
+               cgai.attr_id    as itemAttrId
+        from cmdb_cientity_globalattritem ccg
+                 join cmdb_global_attr cga on ccg.attr_id = cga.id and cga.is_active = 1
+                 join cmdb_global_attritem cgai ON ccg.item_id = cgai.id
+        where ccg.cientity_id = #{value}
+    </select>
+
+    <update id="updateGlobalAttr" parameterType="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo">
+        update cmdb_global_attr
+        set name        = #{name},
+            label       = #{label},
+            is_active   = #{isActive},
+            is_multiple = #{isMultiple},
+            description = #{description}
+        where id = #{id}
+    </update>
+
+    <update id="updateGlobalAttrItem" parameterType="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo">
+        update cmdb_global_attritem
+        set value = #{value},
+            sort  = #{sort}
+        where id = #{id}
+    </update>
+
+    <insert id="insertGlobalAttrItem" parameterType="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo">
+        insert into cmdb_global_attritem
+            (id, value, attr_id, sort)
+        values (#{id}, #{value}, #{attrId}, #{sort})
+    </insert>
+
+    <insert id="insertGlobalAttr" parameterType="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo">
+        insert into cmdb_global_attr (id,
+                                      name,
+                                      label,
+                                      is_active,
+                                      is_multiple,
+                                      description)
+        values (#{id},
+                #{name},
+                #{label},
+                #{isActive},
+                #{isMultiple},
+                #{description})
+    </insert>
+
+
+    <insert id="insertGlobalAttrEntityItem" parameterType="neatlogic.framework.cmdb.dto.cientity.GlobalAttrEntityVo">
+        insert ignore into cmdb_cientity_globalattritem (cientity_id,
+        attr_id,
+        item_id)
+        values
+        <foreach collection="valueList" item="item" separator=",">(#{ciEntityId},
+            #{attrId},
+            #{item.id})
+        </foreach>
+    </insert>
+
+    <delete id="deleteGlobalAttrEntityByCiEntityId" parameterType="java.lang.Long">
+        delete
+        from cmdb_cientity_globalattritem
+        where cientity_id = #{value}
+    </delete>
+
+    <delete id="deleteGlobalAttrEntityByCiEntityIdAndAttrId">
+        delete
+        from cmdb_cientity_globalattritem
+        where cientity_id = #{ciEntityId}
+          and attr_id = #{attrId}
+    </delete>
+
+    <delete id="deleteGlobalAttrItemById" parameterType="java.lang.Long">
+        delete
+        from cmdb_global_attritem
+        where id = #{value}
+    </delete>
+
+    <delete id="deleteGlobalAttrById" parameterType="java.lang.Long">
+        delete a, b
+        from cmdb_global_attr a
+                 left join cmdb_global_attritem b on a.id = b.attr_id
+        where a.id = #{value}
+    </delete>
+</mapper>

@@ -16,16 +16,18 @@
 
 package neatlogic.module.cmdb.utils;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.ci.RelVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.cientity.RelEntityVo;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
 import neatlogic.framework.cmdb.enums.RelDirectionType;
 import neatlogic.framework.cmdb.exception.cientity.CiEntityMultipleException;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -361,6 +363,16 @@ public class CiEntityBuilder {
         attrObj.put("ciId", attrVo.getCiId());
         attrObj.put("valueList", valueList);
         attrObj.put("actualValueList", actualValueList);
+        return attrObj;
+    }
+
+    public static JSONObject buildGlobalAttrObj(Long ciEntityId, GlobalAttrVo globalAttrVo, List<GlobalAttrItemVo> valueList) {
+        JSONObject attrObj = new JSONObject();
+        attrObj.put("ciEntityId", ciEntityId);
+        attrObj.put("attrId", globalAttrVo.getId());
+        attrObj.put("name", globalAttrVo.getName());
+        attrObj.put("label", globalAttrVo.getLabel());
+        attrObj.put("valueList", CollectionUtils.isEmpty(valueList) ? new JSONArray() : valueList);
         return attrObj;
     }
 

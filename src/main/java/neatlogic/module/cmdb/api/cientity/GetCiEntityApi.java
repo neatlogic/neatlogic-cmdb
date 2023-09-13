@@ -150,6 +150,7 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
         entityObj.put("actionType", ciEntityVo.getActionType());
         entityObj.put("attrEntityData", CollectionUtils.isEmpty(showAttrRelSet) ? ciEntityVo.getAttrEntityData() : getFilterAttrRel(showAttrRelSet, ciEntityVo.getAttrEntityData()));
         entityObj.put("relEntityData", CollectionUtils.isEmpty(showAttrRelSet) ? ciEntityVo.getRelEntityData() : getFilterAttrRel(showAttrRelSet, ciEntityVo.getRelEntityData()));
+        entityObj.put("globalAttrEntityData", CollectionUtils.isEmpty(showAttrRelSet) ? ciEntityVo.getGlobalAttrEntityData() : getFilterAttrRel(showAttrRelSet, ciEntityVo.getGlobalAttrEntityData()));
         entityObj.put("maxRelEntityCount", ciEntityVo.getMaxRelEntityCount());
         entityObj.put("maxAttrEntityCount", ciEntityVo.getMaxAttrEntityCount());
         entityObj.put("isVirtual", ciEntityVo.getIsVirtual());

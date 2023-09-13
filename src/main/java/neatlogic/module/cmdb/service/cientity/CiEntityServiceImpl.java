@@ -29,6 +29,7 @@ import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.ci.RelVo;
 import neatlogic.framework.cmdb.dto.cientity.*;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
 import neatlogic.framework.cmdb.dto.transaction.*;
 import neatlogic.framework.cmdb.enums.*;
 import neatlogic.framework.cmdb.enums.group.GroupType;
@@ -56,6 +57,7 @@ import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.AttrEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.RelEntityMapper;
+import neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper;
 import neatlogic.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import neatlogic.module.cmdb.fulltextindex.enums.CmdbFullTextIndexType;
 import neatlogic.module.cmdb.group.CiEntityGroupManager;
@@ -79,6 +81,9 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
 
     @Resource
     private CiEntityMapper ciEntityMapper;
+
+    @Resource
+    private GlobalAttrMapper globalAttrMapper;
 
     @Resource
     private RelEntityMapper relEntityMapper;
@@ -160,6 +165,15 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         List<HashMap<String, Object>> resultList = ciEntityMapper.getCiEntityByIdLite(ciEntityVo);
         CiEntityVo returnCiEntityVo = new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, attrList, relList).isFlattenAttr(flattenAttr).build().getCiEntity();
         if (returnCiEntityVo != null) {
+            //获取全局属性数据
+            List<GlobalAttrVo> activeGlobalAttrList = globalAttrMapper.searchGlobalAttr(new GlobalAttrVo() {{
+                this.setIsActive(1);
+            }});
+            List<GlobalAttrEntityVo> globalAttrList = globalAttrMapper.getGlobalAttrByCiEntityId(ciEntityVo.getId());
+            for (GlobalAttrVo globalAttrVo : activeGlobalAttrList) {
+                Optional<GlobalAttrEntityVo> op = globalAttrList.stream().filter(d -> d.getAttrId().equals(globalAttrVo.getId())).findFirst();
+                returnCiEntityVo.addGlobalAttrData(globalAttrVo.getId(), CiEntityBuilder.buildGlobalAttrObj(returnCiEntityVo.getId(), globalAttrVo, op.map(GlobalAttrEntityVo::getValueList).orElse(null)));
+            }
             //拼接引用属性数据
             Long attrEntityLimit = null;
             if (limitAttrEntity) {
@@ -378,8 +392,20 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             ciEntityVo.setLimitRelEntity(isLimitRelEntity != null ? isLimitRelEntity : true);
             ciEntityVo.setLimitAttrEntity(isLimitAttrEntity != null ? isLimitAttrEntity : true);
             List<HashMap<String, Object>> resultList = ciEntityMapper.searchCiEntity(ciEntityVo);
+            List<GlobalAttrEntityVo> globalAttrList = globalAttrMapper.getGlobalAttrByCiEntityIdList(ciEntityVo.getIdList());
             ciEntityVo.setIdList(null);//清除id列表，避免ciEntityVo重用时数据没法更新
-            return new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, attrList, relList).build().getCiEntityList();
+            List<CiEntityVo> ciEntityList = new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, attrList, relList).build().getCiEntityList();
+            if (CollectionUtils.isNotEmpty(globalAttrList)) {
+                for (CiEntityVo cientity : ciEntityList) {
+                    List<GlobalAttrEntityVo> tmpAttrList = globalAttrList.stream().filter(d -> d.getCiEntityId().equals(cientity.getId())).collect(Collectors.toList());
+                    if (CollectionUtils.isNotEmpty(tmpAttrList)) {
+                        for (GlobalAttrEntityVo attr : tmpAttrList) {
+                            cientity.addGlobalAttrData(attr.getAttrId(), attr.toJSONObject());
+                        }
+                    }
+                }
+            }
+            return ciEntityList;
         }
         return new ArrayList<>();
     }
@@ -739,6 +765,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
     public boolean validateCiEntityTransaction(CiEntityTransactionVo ciEntityTransactionVo) {
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciEntityTransactionVo.getCiId());
         List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciEntityTransactionVo.getCiId()));
+        List<GlobalAttrVo> globalAttrList = globalAttrMapper.searchGlobalAttr(new GlobalAttrVo());
         CiVo ciVo = ciMapper.getCiById(ciEntityTransactionVo.getCiId());
         //如果外部有自定义唯一规则，则使用外部的唯一规则
         if (CollectionUtils.isNotEmpty(ciEntityTransactionVo.getUniqueAttrIdList())) {
@@ -747,6 +774,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         CiEntityVo oldEntity = ciEntityTransactionVo.getOldCiEntityVo();
         List<AttrEntityVo> oldAttrEntityList = null;
         List<RelEntityVo> oldRelEntityList = null;
+        List<GlobalAttrEntityVo> oldGlobalAttrEntityList = null;
         if (oldEntity == null) {
             //如果是单纯校验可能会没有旧配置项信息
             oldEntity = this.getCiEntityByIdLite(ciEntityTransactionVo.getCiId(), ciEntityTransactionVo.getCiEntityId(), true, false, false);
@@ -754,9 +782,13 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         if (oldEntity != null) {
             oldAttrEntityList = oldEntity.getAttrEntityList();
             oldRelEntityList = oldEntity.getRelEntityList();
+            oldGlobalAttrEntityList = oldEntity.getGlobalAttrEntityList();
         }
         if (oldAttrEntityList == null) {
             oldAttrEntityList = new ArrayList<>();
+        }
+        if (oldGlobalAttrEntityList == null) {
+            oldGlobalAttrEntityList = new ArrayList<>();
         }
         if (oldRelEntityList == null) {
             oldRelEntityList = new ArrayList<>();
@@ -781,6 +813,25 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     attrEntityData.put("type", attrVo.getType());
                     attrEntityData.put("ciId", attrVo.getCiId());
                     attrEntityData.put("targetCiId", attrVo.getTargetCiId());
+                }
+            }
+        }
+
+        // 清除和模型属性不匹配的属性
+        if (MapUtils.isNotEmpty(ciEntityTransactionVo.getGlobalAttrEntityData())) {
+            for (GlobalAttrVo globalAttrVo : globalAttrList) {
+                JSONObject globalAttrEntityData = ciEntityTransactionVo.getGlobalAttrEntityDataByAttrId(globalAttrVo.getId());
+                if (globalAttrEntityData == null) {
+                    ciEntityTransactionVo.removeGlobalAttrEntityData(globalAttrVo.getId());
+                } else {
+                    //修正属性基本信息，多余属性不要
+                    JSONArray valueList = globalAttrEntityData.getJSONArray("valueList");
+                    //进行必要的值转换，例如密码转换成密文
+                    globalAttrEntityData.clear();
+                    globalAttrEntityData.put("valueList", valueList);
+                    globalAttrEntityData.put("label", globalAttrVo.getLabel());
+                    globalAttrEntityData.put("name", globalAttrVo.getName());
+                    globalAttrEntityData.put("id", globalAttrVo.getId());
                 }
             }
         }
@@ -1173,6 +1224,19 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 // 去掉没变化的修改
                 ciEntityTransactionVo.removeAttrEntityData(oldAttrEntityTransactionList);
                 if (MapUtils.isNotEmpty(ciEntityTransactionVo.getAttrEntityData())) {
+                    hasChange = true;
+                }
+            } else {
+                hasChange = true;
+            }
+        }
+        //去掉没有变化全局属性修改
+        if (CollectionUtils.isNotEmpty(ciEntityTransactionVo.getGlobalAttrTransactionList())) {
+            if (CollectionUtils.isNotEmpty(oldGlobalAttrEntityList)) {
+                List<GlobalAttrEntityTransactionVo> oldGlobalAttrTransactionList = oldGlobalAttrEntityList.stream().map(GlobalAttrEntityTransactionVo::new).collect(Collectors.toList());
+                // 去掉没变化的修改
+                ciEntityTransactionVo.removeGlobalAttrEntityData(oldGlobalAttrTransactionList);
+                if (MapUtils.isNotEmpty(ciEntityTransactionVo.getGlobalAttrEntityData())) {
                     hasChange = true;
                 }
             } else {
@@ -1799,6 +1863,16 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     }
                 }
             }
+            //处理全局属性
+            for (GlobalAttrEntityTransactionVo globalAttrTransactionVo : ciEntityTransactionVo.getGlobalAttrTransactionList()) {
+                GlobalAttrEntityVo attrEntityVo = new GlobalAttrEntityVo(globalAttrTransactionVo);
+                if (globalAttrTransactionVo.getSaveMode().equals(SaveModeType.REPLACE.getValue())) {
+                    globalAttrMapper.deleteGlobalAttrEntityByCiEntityIdAndAttrId(ciEntityTransactionVo.getCiEntityId(), globalAttrTransactionVo.getAttrId());
+                }
+                if (CollectionUtils.isNotEmpty(attrEntityVo.getValueList())) {
+                    globalAttrMapper.insertGlobalAttrEntityItem(attrEntityVo);
+                }
+            }
 
             //重建属性序列
             rebuildAttrEntityIndex(rebuildAttrEntityList);
@@ -2107,6 +2181,8 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         CiVo ciVo = ciMapper.getCiById(ciEntityVo.getCiId());
         List<CiVo> ciList = ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht());
         ciEntityMapper.deleteCiEntityBaseInfo(ciEntityVo);
+        //删除全局属性
+        globalAttrMapper.deleteGlobalAttrEntityByCiEntityId(ciEntityVo.getId());
         for (CiVo ci : ciList) {
             ciEntityVo.setCiId(ci.getId());
             ciEntityMapper.deleteCiEntity(ciEntityVo);

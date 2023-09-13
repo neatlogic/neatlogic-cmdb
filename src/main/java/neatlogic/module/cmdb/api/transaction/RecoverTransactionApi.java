@@ -16,6 +16,7 @@
 
 package neatlogic.module.cmdb.api.transaction;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.transaction.TransactionVo;
@@ -33,8 +34,6 @@ import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
-import com.alibaba.fastjson.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -44,7 +43,7 @@ import javax.annotation.Resource;
 @OperationType(type = OperationTypeEnum.CREATE)
 public class RecoverTransactionApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private TransactionMapper transactionMapper;
 
     @Resource
@@ -58,7 +57,7 @@ public class RecoverTransactionApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "恢复事务";
+        return "nmcat.recovertransactionapi.getname";
     }
 
     @Override
@@ -66,8 +65,8 @@ public class RecoverTransactionApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", isRequired = true, type = ApiParamType.LONG, desc = "事务id")})
-    @Description(desc = "恢复事务接口")
+    @Input({@Param(name = "id", isRequired = true, type = ApiParamType.LONG, desc = "term.cmdb.transactionid")})
+    @Description(desc = "nmcat.recovertransactionapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long transactionId = jsonObj.getLong("id");
