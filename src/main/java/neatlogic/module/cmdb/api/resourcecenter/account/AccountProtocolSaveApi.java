@@ -18,6 +18,7 @@ package neatlogic.module.cmdb.api.resourcecenter.account;
 
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.dto.resourcecenter.AccountProtocolVo;
+import neatlogic.framework.cmdb.exception.resourcecenter.ResourceCenterAccountProtocolNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.ResourceCenterAccountProtocolRepeatException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
@@ -71,10 +72,11 @@ public class AccountProtocolSaveApi extends PrivateApiComponentBase {
         }
         Long id = paramObj.getLong("id");
         if (id != null) {
-            resourceAccountMapper.updateAccountProtocol(accountProtocolVo);
-        } else {
-            resourceAccountMapper.insertAccountProtocol(accountProtocolVo);
+            if (resourceAccountMapper.getAccountProtocolVoByProtocolId(id) == null) {
+                throw new ResourceCenterAccountProtocolNotFoundException(id);
+            }
         }
+        resourceAccountMapper.insertAccountProtocol(accountProtocolVo);
         return null;
     }
 

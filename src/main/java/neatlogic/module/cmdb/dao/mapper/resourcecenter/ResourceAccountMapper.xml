@@ -596,14 +596,6 @@ limitations under the License.
         where a.`id` = #{id}
     </update>
 
-    <update id="updateAccountProtocol" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.AccountProtocolVo">
-        update `cmdb_resourcecenter_account_protocol`
-        set `name` = #{name},
-            `port` = #{port},
-            `lcd`  = now(3),
-            `lcu`  = #{lcu}
-        where `id` = #{id}
-    </update>
     <update id="updateAccountPasswordById">
         update `cmdb_resourcecenter_account`
         set password = #{password}
@@ -667,6 +659,11 @@ limitations under the License.
     <insert id="insertAccountProtocol" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.AccountProtocolVo">
         insert into `cmdb_resourcecenter_account_protocol` (`id`, `name`, `port`, `fcd`, `fcu`, `lcd`, `lcu`)
         values (#{id}, #{name}, #{port}, now(3), #{fcu}, now(3), #{fcu})
+        ON DUPLICATE KEY UPDATE
+         `name` = #{name},
+         `port` = #{port},
+         `lcd`  = now(3),
+         `lcu`  = #{lcu}
     </insert>
 
     <insert id="insertAccountIp">
