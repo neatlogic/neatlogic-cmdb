@@ -108,6 +108,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
             @Param(name = "groupId", type = ApiParamType.LONG, desc = "nmcac.searchcientityapi.input.param.desc.groupid"),
             @Param(name = "attrFilterList", type = ApiParamType.JSONARRAY, desc = "nmcac.exportcientityapi.input.param.desc.attrfilterlist"),
             @Param(name = "relFilterList", type = ApiParamType.JSONARRAY, desc = "nmcac.exportcientityapi.input.param.desc.relfilterlist"),
+            @Param(name = "globalAttrFilterList", type = ApiParamType.JSONARRAY, desc = "nmcac.searchcientityapi.input.param.desc.globalattrfilterlist"),
             @Param(name = "showAttrRelList", type = ApiParamType.JSONARRAY, desc = "nmcac.searchcientityapi.input.param.desc.condition"),
             @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "nmcac.searchcientityapi.input.param.desc.idlist）"),
             @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "nmcac.searchcientityapi.input.param.desc.needaction"),

@@ -483,7 +483,54 @@
                     `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id) or exists
                     (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
                     `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
-                    and xx.expired_time &gt;= NOW()))
+                    AND xx.expired_time &gt;= NOW()))
+                    <if test="globalAttrFilterList != null and globalAttrFilterList.size() > 0">
+                        AND
+                        <foreach collection="globalAttrFilterList" item="item" open="(" close=")" separator="and">
+                            <choose>
+                                <when test="item.expression == 'like'">
+                                    exists ( select 1 from `cmdb_cientity_globalattritem`
+                                    ccgi where `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id =
+                                    `ccgi`.cientity_id
+                                    and `ccgi`.attr_id = #{item.attrId}
+                                    and `ccgi`.item_id in <foreach collection="item.valueList" item="value" open="("
+                                                                   close=")"
+                                                                   separator=",">#{value}</foreach>)
+                                    or
+                                    not exists ( select 1 from `cmdb_cientity_globalattritem` ccgi where
+                                    `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id =
+                                    `ccgi`.cientity_id
+                                    and `ccgi`.attr_id = #{item.attrId})
+                                </when>
+                                <when test="item.expression == 'notlike'">
+                                    not exists ( select 1 from `cmdb_cientity_globalattritem`
+                                    ccgi where `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id =
+                                    `ccgi`.cientity_id
+                                    and `ccgi`.attr_id = #{item.attrId}
+                                    and `ccgi`.item_id in <foreach collection="item.valueList" item="value" open="("
+                                                                   close=")"
+                                                                   separator=",">#{value}</foreach>)
+                                    or
+                                    not exists ( select 1 from `cmdb_cientity_globalattritem` ccgi where
+                                    `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id =
+                                    `ccgi`.cientity_id
+                                    and `ccgi`.attr_id = #{item.attrId})
+                                </when>
+                                <when test="item.expression == 'is-null'">
+                                    not exists ( select 1 from `cmdb_cientity_globalattritem` ccgi where
+                                    `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id =
+                                    `ccgi`.cientity_id
+                                    and `ccgi`.attr_id = #{item.attrId})
+                                </when>
+                                <when test="item.expression == 'is-not-null'">
+                                    exists ( select 1 from `cmdb_cientity_globalattritem`
+                                    ccgi where `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id =
+                                    `ccgi`.cientity_id
+                                    and `ccgi`.attr_id = #{item.attrId})
+                                </when>
+                            </choose>
+                        </foreach>
+                    </if>
                     <if test="limitRelEntity == true">
                         AND `cmdb_relentity_${rel.id}_${rel.direction}`.`from_index` &lt;= (#{rel.maxRelEntityCount}
                         +
@@ -510,7 +557,54 @@
                     `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id) or exists
                     (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
                     `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
-                    and xx.expired_time &gt;= NOW()))
+                    AND xx.expired_time &gt;= NOW()))
+                    <if test="globalAttrFilterList != null and globalAttrFilterList.size() > 0">
+                        AND
+                        <foreach collection="globalAttrFilterList" item="item" open="(" close=")" separator="and">
+                            <choose>
+                                <when test="item.expression == 'like'">
+                                    exists ( select 1 from `cmdb_cientity_globalattritem`
+                                    ccgi where `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id =
+                                    `ccgi`.cientity_id
+                                    and `ccgi`.attr_id = #{item.attrId}
+                                    and `ccgi`.item_id in <foreach collection="item.valueList" item="value" open="("
+                                                                   close=")"
+                                                                   separator=",">#{value}</foreach>)
+                                    or
+                                    not exists ( select 1 from `cmdb_cientity_globalattritem` ccgi where
+                                    `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id =
+                                    `ccgi`.cientity_id
+                                    and `ccgi`.attr_id = #{item.attrId})
+                                </when>
+                                <when test="item.expression == 'notlike'">
+                                    not exists ( select 1 from `cmdb_cientity_globalattritem`
+                                    ccgi where `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id =
+                                    `ccgi`.cientity_id
+                                    and `ccgi`.attr_id = #{item.attrId}
+                                    and `ccgi`.item_id in <foreach collection="item.valueList" item="value" open="("
+                                                                   close=")"
+                                                                   separator=",">#{value}</foreach>)
+                                    or
+                                    not exists ( select 1 from `cmdb_cientity_globalattritem` ccgi where
+                                    `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id =
+                                    `ccgi`.cientity_id
+                                    and `ccgi`.attr_id = #{item.attrId})
+                                </when>
+                                <when test="item.expression == 'is-null'">
+                                    not exists ( select 1 from `cmdb_cientity_globalattritem` ccgi where
+                                    `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id =
+                                    `ccgi`.cientity_id
+                                    and `ccgi`.attr_id = #{item.attrId})
+                                </when>
+                                <when test="item.expression == 'is-not-null'">
+                                    exists ( select 1 from `cmdb_cientity_globalattritem`
+                                    ccgi where `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id =
+                                    `ccgi`.cientity_id
+                                    and `ccgi`.attr_id = #{item.attrId})
+                                </when>
+                            </choose>
+                        </foreach>
+                    </if>
                     <if test="limitRelEntity == true">
                         AND `cmdb_relentity_${rel.id}_${rel.direction}`.`to_index` &lt;= (#{rel.maxRelEntityCount} +
                         1)
@@ -570,6 +664,45 @@
             </if>
             <if test="filterCiId != null">
                 AND `ci_base`.ci_id = #{filterCiId}
+            </if>
+            <if test="globalAttrFilterList != null and globalAttrFilterList.size() > 0">
+                and
+                <foreach collection="globalAttrFilterList" item="item" open="(" close=")" separator="and">
+                    <choose>
+                        <when test="item.expression == 'like'">
+                            exists ( select 1 from `cmdb_cientity_globalattritem`
+                            ccgi where `ci_base`.id = `ccgi`.cientity_id
+                            and `ccgi`.attr_id = #{item.attrId}
+                            and `ccgi`.item_id in <foreach collection="item.valueList" item="value" open="(" close=")"
+                                                           separator=",">#{value}</foreach>)
+                            or
+                            not exists ( select 1 from `cmdb_cientity_globalattritem` ccgi where `ci_base`.id =
+                            `ccgi`.cientity_id
+                            and `ccgi`.attr_id = #{item.attrId})
+                        </when>
+                        <when test="item.expression == 'notlike'">
+                            not exists ( select 1 from `cmdb_cientity_globalattritem`
+                            ccgi where `ci_base`.id = `ccgi`.cientity_id
+                            and `ccgi`.attr_id = #{item.attrId}
+                            and `ccgi`.item_id in <foreach collection="item.valueList" item="value" open="(" close=")"
+                                                           separator=",">#{value}</foreach>)
+                            or
+                            not exists ( select 1 from `cmdb_cientity_globalattritem` ccgi where `ci_base`.id =
+                            `ccgi`.cientity_id
+                            and `ccgi`.attr_id = #{item.attrId})
+                        </when>
+                        <when test="item.expression == 'is-null'">
+                            not exists ( select 1 from `cmdb_cientity_globalattritem` ccgi where `ci_base`.id =
+                            `ccgi`.cientity_id
+                            and `ccgi`.attr_id = #{item.attrId})
+                        </when>
+                        <when test="item.expression == 'is-not-null'">
+                            exists ( select 1 from `cmdb_cientity_globalattritem`
+                            ccgi where `ci_base`.id = `ccgi`.cientity_id
+                            and `ccgi`.attr_id = #{item.attrId})
+                        </when>
+                    </choose>
+                </foreach>
             </if>
             <!--有全文检索就不需要
             <if test="keyword != null and keyword != ''">

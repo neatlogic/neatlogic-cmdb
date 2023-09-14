@@ -21,6 +21,7 @@ import neatlogic.framework.cmdb.dto.ci.CiTypeVo;
 import neatlogic.framework.cmdb.dto.ci.RelTypeVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.cientity.RelEntityVo;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrFilterVo;
 import neatlogic.framework.cmdb.enums.RelDirectionType;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.graphviz.*;
@@ -70,7 +71,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取配置项拓扑";
+        return "nmcat.getcientitytopoapi.getname";
     }
 
     @Override
@@ -79,12 +80,13 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
     }
 
     @Input({@Param(name = "layout", type = ApiParamType.ENUM, rule = "dot,circo,fdp,neato,osage,patchwork,twopi", isRequired = true),
-            @Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
-            @Param(name = "ciEntityId", type = ApiParamType.LONG, isRequired = true, desc = "配置项id"),
-            @Param(name = "disableRelList", type = ApiParamType.JSONARRAY, desc = "不显示关系id"),
-            @Param(name = "level", type = ApiParamType.INTEGER, desc = "自动展开关系层数，默认是1")})
+            @Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid"),
+            @Param(name = "ciEntityId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.cientityid"),
+            @Param(name = "globalAttrFilterList", type = ApiParamType.JSONARRAY, desc = "nmcac.searchcientityapi.input.param.desc.globalattrfilterlist"),
+            @Param(name = "disableRelList", type = ApiParamType.JSONARRAY, desc = "nmcat.getcientitytopoapi.input.param.desc.disablerellist"),
+            @Param(name = "level", type = ApiParamType.INTEGER, desc = "nmcat.getcientitytopoapi.input.param.desc.level")})
     @Output({@Param(name = "topo", type = ApiParamType.STRING)})
-    @Description(desc = "获取配置项拓扑接口")
+    @Description(desc = "nmcat.getcientitytopoapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         String layout = jsonObj.getString("layout");
@@ -99,6 +101,14 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
 
         Long ciEntityId = jsonObj.getLong("ciEntityId");
         JSONArray disableRelObjList = jsonObj.getJSONArray("disableRelList");
+        JSONArray globalAttrFilterObjList = jsonObj.getJSONArray("globalAttrFilterList");
+        List<GlobalAttrFilterVo> globalAttrFilterList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(globalAttrFilterObjList)) {
+            for (int i = 0; i < globalAttrFilterObjList.size(); i++) {
+                GlobalAttrFilterVo globalAttrFilterVo = JSONObject.toJavaObject(globalAttrFilterObjList.getJSONObject(i), GlobalAttrFilterVo.class);
+                globalAttrFilterList.add(globalAttrFilterVo);
+            }
+        }
         Set<Long> disableRelIdList = new HashSet<>();
         Set<Long> containRelIdSet = new HashSet<>();
         JSONObject returnObj = new JSONObject();
@@ -141,6 +151,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                     pCiEntityVo.setIdList(ciCiEntityIdMap.get(ciId));
                     pCiEntityVo.setCiId(ciId);
                     pCiEntityVo.setMaxRelEntityCount(50L);
+                    pCiEntityVo.setGlobalAttrFilterList(globalAttrFilterList);
                     //不需要多余的属性
                     pCiEntityVo.setAttrIdList(new ArrayList<Long>() {{
                         this.add(0L);
