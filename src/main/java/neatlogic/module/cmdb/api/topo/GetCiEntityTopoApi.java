@@ -142,8 +142,10 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
         ciCiEntityIdMap.put(jsonObj.getLong("ciId"), new ArrayList<Long>() {{
             this.add(ciEntityId);
         }});
+        int maxLevel = 0;
         for (int l = 0; l <= level; l++) {
             if (MapUtils.isNotEmpty(ciCiEntityIdMap)) {
+                maxLevel = l + 1;
                 Map<Long, List<Long>> tmpCiCiEntityIdMap = new HashMap<>();
                 for (Long ciId : ciCiEntityIdMap.keySet()) {
                     // 获取当前层次配置项详细信息
@@ -277,6 +279,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
             if (logger.isDebugEnabled()) {
                 logger.debug(dot);
             }
+            returnObj.put("level", maxLevel);
             returnObj.put("dot", dot);
         }
         if (CollectionUtils.isNotEmpty(containRelIdSet)) {
