@@ -42,7 +42,7 @@ public class AccountProtocolSaveApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存账号管理协议";
+        return "nmcara.accountprotocolsaveapi.getname";
     }
 
     @Override
@@ -56,14 +56,14 @@ public class AccountProtocolSaveApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG,  desc = "协议ID"),
-            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "协议名称"),
-            @Param(name = "port", type = ApiParamType.INTEGER, desc = "协议端口"),
+            @Param(name = "id", type = ApiParamType.LONG,  desc = "common.id"),
+            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "common.name"),
+            @Param(name = "port", type = ApiParamType.INTEGER, desc = "term.cmdb.port"),
 
     })
     @Output({
     })
-    @Description(desc = "保存账号管理协议")
+    @Description(desc = "nmcara.accountprotocolsaveapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         AccountProtocolVo accountProtocolVo = JSON.toJavaObject(paramObj, AccountProtocolVo.class);
