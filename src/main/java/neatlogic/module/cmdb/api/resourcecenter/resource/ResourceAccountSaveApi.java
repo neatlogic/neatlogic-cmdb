@@ -16,25 +16,24 @@
 
 package neatlogic.module.cmdb.api.resourcecenter.resource;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.RESOURCECENTER_MODIFY;
 import neatlogic.framework.cmdb.dto.resourcecenter.AccountVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceAccountVo;
 import neatlogic.framework.cmdb.enums.resourcecenter.AccountType;
 import neatlogic.framework.cmdb.exception.resourcecenter.ResourceCenterAccountNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.ResourceNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.exception.type.ParamNotExistsException;
 import neatlogic.framework.restful.annotation.Description;
 import neatlogic.framework.restful.annotation.Input;
 import neatlogic.framework.restful.annotation.OperationType;
 import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.RESOURCECENTER_MODIFY;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.springframework.stereotype.Service;
@@ -90,8 +89,8 @@ public class ResourceAccountSaveApi extends PrivateApiComponentBase {
         // 查询该资产绑定的公有账号列表，再根据账号ID解绑
         List<AccountVo> accountList = resourceAccountMapper.getResourceAccountListByResourceIdAndType(resourceId, AccountType.PUBLIC.getValue());
         if (CollectionUtils.isNotEmpty(accountList)) {
-            List<Long> idList = accountList.stream().map(AccountVo::getId).collect(Collectors.toList());
-            resourceAccountMapper.deleteResourceAccountByAccountIdList(idList);
+            List<Long> accountIdList = accountList.stream().map(AccountVo::getId).collect(Collectors.toList());
+            resourceAccountMapper.deleteResourceAccountByResourceIdListAndAccountIdList(Arrays.asList(resourceId), accountIdList);
         }
         JSONArray accountIdArray = paramObj.getJSONArray("accountIdList");
         if (CollectionUtils.isEmpty(accountIdArray)) {
