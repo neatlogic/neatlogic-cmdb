@@ -639,6 +639,7 @@
             OR `ci_base`.id = #{keyword} OR `ci_base`.`name` LIKE CONCAT('%',#{keyword},'%')
             )
         </if>
+        <if test="ciList == null or ciList.size() != 1 or (ciList.size() == 1 and ciList[0].isVirtual == 0)">
         left join (
             select group_concat(CONCAT(cra.name,' (',cra.account,' / ',crrap.`name`,')')) as `account`,crra.resource_id
             from
@@ -651,6 +652,7 @@
             </foreach>
             GROUP BY crra.resource_id
         ) as cientity_account on ci_base.id = cientity_account.resource_id
+        </if>
     </sql>
 
     <sql id="ciEntityConditionSql">
