@@ -61,6 +61,15 @@ public class ProtocolImportExportHandler extends ImportExportHandlerBase {
     }
 
     @Override
+    public Object getPrimaryByName(ImportExportVo importExportVo) {
+        AccountProtocolVo oldProtocolVo = resourceAccountMapper.getAccountProtocolVoByProtocolName(importExportVo.getName());
+        if (oldProtocolVo == null) {
+            throw new ResourceCenterAccountProtocolNotFoundException(importExportVo.getName());
+        }
+        return oldProtocolVo.getId();
+    }
+
+    @Override
     public Long importData(ImportExportVo importExportVo, List<ImportExportPrimaryChangeVo> primaryChangeList) {
         // 导入前判断协议是否已经存在的标准是名称是否相同，如果存在则更新，如果不存在则新增。
         // 如果需要的数据，名称不存在但id已存在，则更新导入数据的id。
