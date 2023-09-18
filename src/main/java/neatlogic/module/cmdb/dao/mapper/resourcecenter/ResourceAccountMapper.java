@@ -105,8 +105,6 @@ public interface ResourceAccountMapper extends IResourceAccountCrossoverMapper {
 
     int updateAccountPasswordById(@Param("id") Long id, @Param("password") String password);
 
-    int updateAccountProtocol(AccountProtocolVo searchVo);
-
     int resetAccountDefaultByProtocolId(Long protocolId);
 
     void insertAccount(AccountVo vo);

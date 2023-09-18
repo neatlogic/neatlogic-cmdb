@@ -18,6 +18,7 @@ package neatlogic.module.cmdb.api.resourcecenter.account;
 
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.dto.resourcecenter.AccountProtocolVo;
+import neatlogic.framework.cmdb.exception.resourcecenter.ResourceCenterAccountProtocolNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.ResourceCenterAccountProtocolRepeatException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
@@ -41,7 +42,7 @@ public class AccountProtocolSaveApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "保存账号管理协议";
+        return "nmcara.accountprotocolsaveapi.getname";
     }
 
     @Override
@@ -55,14 +56,14 @@ public class AccountProtocolSaveApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG,  desc = "协议ID"),
-            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "协议名称"),
-            @Param(name = "port", type = ApiParamType.INTEGER, desc = "协议端口"),
+            @Param(name = "id", type = ApiParamType.LONG,  desc = "common.id"),
+            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "common.name"),
+            @Param(name = "port", type = ApiParamType.INTEGER, desc = "term.cmdb.port"),
 
     })
     @Output({
     })
-    @Description(desc = "保存账号管理协议")
+    @Description(desc = "nmcara.accountprotocolsaveapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         AccountProtocolVo accountProtocolVo = JSON.toJavaObject(paramObj, AccountProtocolVo.class);
@@ -71,10 +72,11 @@ public class AccountProtocolSaveApi extends PrivateApiComponentBase {
         }
         Long id = paramObj.getLong("id");
         if (id != null) {
-            resourceAccountMapper.updateAccountProtocol(accountProtocolVo);
-        } else {
-            resourceAccountMapper.insertAccountProtocol(accountProtocolVo);
+            if (resourceAccountMapper.getAccountProtocolVoByProtocolId(id) == null) {
+                throw new ResourceCenterAccountProtocolNotFoundException(id);
+            }
         }
+        resourceAccountMapper.insertAccountProtocol(accountProtocolVo);
         return null;
     }
 
