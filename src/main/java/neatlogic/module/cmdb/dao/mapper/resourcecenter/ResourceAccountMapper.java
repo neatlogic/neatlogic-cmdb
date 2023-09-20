@@ -29,6 +29,8 @@ public interface ResourceAccountMapper extends IResourceAccountCrossoverMapper {
 
     AccountVo getAccountById(Long id);
 
+    AccountVo getPublicAccountByName(String name);
+
     List<AccountVo> getAccountListByIdList(List<Long> accountIdList);
 
     int checkAccountNameIsRepeats(AccountVo vo);

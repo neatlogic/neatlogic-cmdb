@@ -48,6 +48,26 @@ limitations under the License.
         where a.`id` = #{value}
     </select>
 
+    <select id="getPublicAccountByName"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.AccountVo">
+        select a.`id`,
+               a.`name`,
+               a.`account`,
+               a.`password`   as passwordCipher,
+               b.name         as protocol,
+               b.id           as protocolId,
+               b.`port`       as protocolPort,
+               a.`is_default` as isDefault,
+               a.`type`,
+               a.`fcu`,
+               a.`fcd`,
+               a.`lcu`,
+               a.`lcd`
+        from `cmdb_resourcecenter_account` a
+                 JOIN `cmdb_resourcecenter_account_protocol` b ON a.`protocol_id` = b.`id`
+        where a.`type` = 'public' and a.`name` = #{value}
+    </select>
+
     <select id="getAccountListByIdList" parameterType="java.lang.Long"
             resultType="neatlogic.framework.cmdb.dto.resourcecenter.AccountVo">
         SELECT

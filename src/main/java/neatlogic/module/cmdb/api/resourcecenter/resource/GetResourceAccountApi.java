@@ -104,11 +104,15 @@ public class GetResourceAccountApi extends PrivateApiComponentBase {
         if (resourceId == null) {
             resourceVo = resourceMapper.getResourceByIpAndPortAndNameAndTypeName(ip, port, nodeName, nodeType);
             if (resourceVo == null) {
-                throw new ResourceNotFoundException();
+                throw new ResourceNotFoundException(ip, port, nodeName, nodeType);
             }
         } else {
             resourceVo = resourceMapper.getResourceById(resourceId);
+            if (resourceVo == null) {
+                throw new ResourceNotFoundException(resourceId);
+            }
         }
+
 
         //如果是tagent 则通过ip 找账号， 否则根据资产绑定的账号找
         List<? extends AccountBaseVo> accountList;
