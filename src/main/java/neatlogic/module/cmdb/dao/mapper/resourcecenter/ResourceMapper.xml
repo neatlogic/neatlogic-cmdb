@@ -571,7 +571,7 @@ limitations under the License.
     </select>
 
     <select id="getResourceByIdList" parameterType="java.lang.Long" resultMap="resourceCenterMap">
-        SELECT a.`id`, a.`name`, a.`ip`,a.`port`,a.`type_id`, a.`type_name`
+        SELECT a.`id`, a.`name`, a.`ip`,a.`port`,a.`type_id`, a.`type_name`, a.`type_label`
         FROM @{DATA_SCHEMA}.`scence_ipobject_ip_port` a
         where a.`id` in
         <foreach collection="list" item="id" separator="," close=")" open="(">
@@ -1023,6 +1023,30 @@ limitations under the License.
                `monitor_time`
         from `@{DATA_SCHEMA}`.`scence_appsystem`
         where `id` = #{value}
+    </select>
+
+    <select id="getAppSystemVoListByIdList" parameterType="java.lang.Long" resultMap="resourceCenterMap">
+        select `id`,
+               `name`,
+               `abbr_name`,
+               `type_id`,
+               `type_name`,
+               `type_label`,
+               `fcu`,
+               `fcd`,
+               `lcu`,
+               `lcd`,
+               `maintenance_window`,
+               `description`,
+               `inspect_status`,
+               `inspect_time`,
+               `monitor_status`,
+               `monitor_time`
+        from `@{DATA_SCHEMA}`.`scence_appsystem`
+        where `id` IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
     </select>
 
     <select id="getAppModuleById" parameterType="java.lang.Long" resultMap="resourceCenterMap">
