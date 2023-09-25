@@ -267,6 +267,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 throw new CiNotFoundException(typeId);
             }
             resourceTypeIdList.add(typeId);
+        } else if (CollectionUtils.isNotEmpty(searchVo.getTypeIdList())) {
+            resourceTypeIdList.addAll(searchVo.getTypeIdList());
+            searchVo.setTypeIdList(null);
         } else if (appModuleId != null) {
             CiEntityVo ciEntityVo = ciEntityMapper.getCiEntityBaseInfoById(appModuleId);
             if (ciEntityVo == null) {
