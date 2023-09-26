@@ -1491,6 +1491,16 @@ limitations under the License.
           AND a.`app_system_id` = #{appSystemId}
           AND a.app_module_id is not null
     </select>
+
+    <select id="getAppEnvListByAppSystemIdAndModuleId" resultMap="appEnvMap">
+        SELECT DISTINCT a.env_id               as id,
+               a.env_name             as name,
+               a.env_seq_no           as seqNo
+        FROM @{DATA_SCHEMA}.`scence_ipobject_env_appmodule_appsystem` a
+        WHERE a.`app_system_id` = #{appSystemId}
+          AND a.app_module_id = #{appModuleId}
+    </select>
+
     <select id="getOsResourceCountByAppSystemIdAndAppModuleIdListAndEnvIdAndTypeId"
             resultType="java.lang.Integer">
         SELECT COUNT(distinct a.`id`)

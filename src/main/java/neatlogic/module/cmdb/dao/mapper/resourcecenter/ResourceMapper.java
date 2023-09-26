@@ -195,6 +195,8 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     List<AppEnvVo> getIpObjectEnvListByAppSystemIdAndTypeId(ResourceSearchVo searchVo);
 
+    List<AppEnvVo> getAppEnvListByAppSystemIdAndModuleId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId);
+
     List<ResourceVo> getOsResourceListenPortListByResourceIdList(List<Long> resourceIdList);
 
     List<ResourceVo> getSoftwareResourceListenPortListByResourceIdList(List<Long> resourceIdList);
