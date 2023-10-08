@@ -524,6 +524,8 @@ limitations under the License.
         a.`ip`,
         a.`name`,
         a.`type_id`,
+        a.`type_name`,
+        a.`type_label`,
         a.`monitor_status`,
         a.`monitor_time`,
         a.`inspect_status`,
@@ -1492,13 +1494,24 @@ limitations under the License.
           AND a.app_module_id is not null
     </select>
 
-    <select id="getAppEnvListByAppSystemIdAndModuleId" resultMap="appEnvMap">
-        SELECT DISTINCT a.env_id               as id,
-               a.env_name             as name,
-               a.env_seq_no           as seqNo
+    <select id="getAppEnvListByAppSystemIdAndAppModuleId" resultMap="appEnvMap">
+        SELECT DISTINCT a.`env_id`               as id,
+               a.`env_name`             as name,
+               a.`env_seq_no`           as seqNo
         FROM @{DATA_SCHEMA}.`scence_ipobject_env_appmodule_appsystem` a
         WHERE a.`app_system_id` = #{appSystemId}
-          AND a.app_module_id = #{appModuleId}
+          AND a.`app_module_id` = #{appModuleId}
+          AND a.`env_id` IS NOT NULL
+    </select>
+
+    <select id="getAppEnvCountMapByAppSystemIdGroupByAppModuleId" parameterType="java.lang.Long" resultType="java.util.HashMap">
+        SELECT
+            a.`app_module_id` AS appModuleId,
+            COUNT(DISTINCT a.`env_id`) AS count
+        FROM @{DATA_SCHEMA}.`scence_ipobject_env_appmodule_appsystem` a
+        WHERE a.`app_system_id` = #{value}
+          AND a.`env_id` IS NOT NULL
+        GROUP BY a.`app_module_id`
     </select>
 
     <select id="getOsResourceCountByAppSystemIdAndAppModuleIdListAndEnvIdAndTypeId"

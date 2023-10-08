@@ -43,7 +43,7 @@ public class AppEnvListApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "resourcecenter/app/env/list";
+        return "resourcecenter/appenv/list";
     }
 
     @Override
@@ -57,7 +57,7 @@ public class AppEnvListApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用id"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
             @Param(name = "appModuleId", type = ApiParamType.LONG,  isRequired = true, desc = "应用模块id"),
     })
     @Output({
@@ -68,6 +68,6 @@ public class AppEnvListApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) {
         Long appSystemId = paramObj.getLong("appSystemId");
         Long appModuleId = paramObj.getLong("appModuleId");
-        return resourceMapper.getAppEnvListByAppSystemIdAndModuleId(appSystemId, appModuleId);
+        return resourceMapper.getAppEnvListByAppSystemIdAndAppModuleId(appSystemId, appModuleId);
     }
 }
