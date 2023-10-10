@@ -48,7 +48,7 @@ public class AppEnvListApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询应用模块环境列表";
+        return "nmcara.appenvlistapi.getname";
     }
 
     @Override
@@ -57,13 +57,13 @@ public class AppEnvListApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id"),
-            @Param(name = "appModuleId", type = ApiParamType.LONG,  isRequired = true, desc = "应用模块id"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG,  isRequired = true, desc = "term.cmdb.appmoduleid"),
     })
     @Output({
-            @Param(explode = AppEnvVo[].class, desc = "应用模块环境列表"),
+            @Param(explode = AppEnvVo[].class, desc = "common.tbodylist"),
     })
-    @Description(desc = "查询应用模块环境列表")
+    @Description(desc = "nmcara.appenvlistapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) {
         Long appSystemId = paramObj.getLong("appSystemId");

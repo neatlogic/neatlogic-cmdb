@@ -48,7 +48,7 @@ public class ListAppModuleListForTreeApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询资源模块列表树";
+        return "nmcara.listappmodulelistfortreeapi.getname";
     }
 
     @Override
@@ -57,12 +57,12 @@ public class ListAppModuleListForTreeApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "应用系统id")
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid")
     })
     @Output({
-            @Param(name = "tbodyList", explode = AppModuleVo[].class, desc = "模块列表")
+            @Param(name = "tbodyList", explode = AppModuleVo[].class, desc = "common.tbodylist")
     })
-    @Description(desc = "查询资源模块列表树")
+    @Description(desc = "nmcara.listappmodulelistfortreeapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long appSystemId = paramObj.getLong("appSystemId");
