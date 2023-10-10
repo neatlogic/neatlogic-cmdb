@@ -16,43 +16,39 @@ limitations under the License.
 
 package neatlogic.module.cmdb.api.resourcecenter.appenv;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
-import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo;
+import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
+import neatlogic.framework.cmdb.dto.resourcecenter.AppEnvVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
-import neatlogic.module.cmdb.dao.mapper.resourcecenter.AppSystemMapper;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.collections4.CollectionUtils;
+import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.List;
 
 /**
  * @author linbq
  * @since 2021/6/16 15:04
  **/
-//@Service
+@Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-@Deprecated
 public class AppEnvListApi extends PrivateApiComponentBase {
 
     @Resource
-    AppSystemMapper appSystemMapper;
+    private ResourceMapper resourceMapper;
 
     @Override
     public String getToken() {
-        return "resourcecenter/app/env/list";
+        return "resourcecenter/appenv/list";
     }
 
     @Override
     public String getName() {
-        return "查询应用系统环境列表";
+        return "nmcara.appenvlistapi.getname";
     }
 
     @Override
@@ -61,21 +57,17 @@ public class AppEnvListApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用id"),
-            @Param(name = "appModuleIdList", type = ApiParamType.JSONARRAY, desc = "应用模块id列表"),
+            @Param(name = "appSystemId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.appsystemid"),
+            @Param(name = "appModuleId", type = ApiParamType.LONG,  isRequired = true, desc = "term.cmdb.appmoduleid"),
     })
     @Output({
-            @Param(explode = AppEnvironmentVo[].class, desc = "应用模块环境列表"),
+            @Param(explode = AppEnvVo[].class, desc = "common.tbodylist"),
     })
-    @Description(desc = "查询应用系统环境列表")
+    @Description(desc = "nmcara.appenvlistapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) {
-        JSONArray appModuleIdArray = paramObj.getJSONArray("appModuleIdList");
-        List<Long> appModuleIdList = null;
-        if (CollectionUtils.isNotEmpty(appModuleIdArray)) {
-            appModuleIdList = appModuleIdArray.toJavaList(Long.class);
-        }
         Long appSystemId = paramObj.getLong("appSystemId");
-        return appSystemMapper.getAppEnvListByAppSystemIdAndModuleIdList(appSystemId, appModuleIdList);
+        Long appModuleId = paramObj.getLong("appModuleId");
+        return resourceMapper.getAppEnvListByAppSystemIdAndAppModuleId(appSystemId, appModuleId);
     }
 }

@@ -26,6 +26,7 @@ import neatlogic.framework.common.dto.BasePageVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public interface ResourceMapper extends IResourceCrossoverMapper {
@@ -194,6 +195,10 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
     List<AppEnvVo> getOsEnvListByAppSystemIdAndTypeId(ResourceSearchVo searchVo);
 
     List<AppEnvVo> getIpObjectEnvListByAppSystemIdAndTypeId(ResourceSearchVo searchVo);
+
+    List<AppEnvVo> getAppEnvListByAppSystemIdAndAppModuleId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId);
+
+    List<Map<String, Long>> getAppEnvCountMapByAppSystemIdGroupByAppModuleId(Long appSystemId);
 
     List<ResourceVo> getOsResourceListenPortListByResourceIdList(List<Long> resourceIdList);
 
