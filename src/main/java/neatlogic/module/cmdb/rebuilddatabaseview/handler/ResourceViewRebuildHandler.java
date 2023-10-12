@@ -57,4 +57,9 @@ public class ResourceViewRebuildHandler implements IRebuildDataBaseView {
         }
         return resultList;
     }
+
+    @Override
+    public int getSort() {
+        return 4;
+    }
 }

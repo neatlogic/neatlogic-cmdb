@@ -74,4 +74,9 @@ public class CiViewRebuildHandler implements IRebuildDataBaseView {
         }
         return resultList;
     }
+
+    @Override
+    public int getSort() {
+        return 1;
+    }
 }

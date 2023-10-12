@@ -64,4 +64,9 @@ public class CustomViewRebuildHandler implements IRebuildDataBaseView {
         }
         return resultList;
     }
+
+    @Override
+    public int getSort() {
+        return 3;
+    }
 }
