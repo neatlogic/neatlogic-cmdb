@@ -17,16 +17,17 @@
 package neatlogic.module.cmdb.process.stephandler;
 
 import neatlogic.framework.process.stephandler.core.IProcessStepHandlerType;
-import neatlogic.framework.util.I18n;
+import neatlogic.framework.util.$;
 
 public enum CmdbProcessStepHandlerType implements IProcessStepHandlerType {
-    CIENTITYSYNC("cientitysync", "process", new I18n("配置项同步"));
+    CIENTITYSYNC("cientitysync", "process", "nmcps.cmdbprocessstephandlertype"),
+    CMDBSYNC("cmdbsync", "process", "nmcps.cmdbprocessstephandlertype");
 
     private final String handler;
-    private final I18n name;
+    private final String name;
     private final String type;
 
-    CmdbProcessStepHandlerType(String _handler, String _type, I18n _name) {
+    CmdbProcessStepHandlerType(String _handler, String _type, String _name) {
         this.handler = _handler;
         this.type = _type;
         this.name = _name;
@@ -37,7 +38,7 @@ public enum CmdbProcessStepHandlerType implements IProcessStepHandlerType {
     }
 
     public String getName() {
-        return name.toString();
+        return $.t(name);
     }
 
     public String getType() {
