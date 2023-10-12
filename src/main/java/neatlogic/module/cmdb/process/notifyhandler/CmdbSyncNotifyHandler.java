@@ -31,7 +31,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class CiEntityNotifyHandler extends NotifyPolicyHandlerBase {
+public class CmdbSyncNotifyHandler extends NotifyPolicyHandlerBase {
 
     @Override
     public String getName() {
