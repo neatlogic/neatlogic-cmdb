@@ -1,7 +1,7 @@
 -- ----------------------------
 -- Table structure for cmdb_345354974593024
 -- ----------------------------
-CREATE TABLE `cmdb_345354974593024` (
+CREATE TABLE IF NOT EXISTS  `cmdb_345354974593024` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `345355108810752` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '名称',
   `345355108810752_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '名称值散列码',
@@ -12,7 +12,7 @@ CREATE TABLE `cmdb_345354974593024` (
 -- ----------------------------
 -- Table structure for cmdb_345355645681664
 -- ----------------------------
-CREATE TABLE `cmdb_345355645681664` (
+CREATE TABLE IF NOT EXISTS  `cmdb_345355645681664` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `345355863785472` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'ip',
   `345355863785472_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'ip值散列码',
@@ -26,7 +26,7 @@ CREATE TABLE `cmdb_345355645681664` (
 -- ----------------------------
 -- Table structure for cmdb_345357096910848
 -- ----------------------------
-CREATE TABLE `cmdb_345357096910848` (
+CREATE TABLE IF NOT EXISTS  `cmdb_345357096910848` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `345357994491904` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '关闭端口',
   `345357994491904_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '关闭端口值散列码',
@@ -37,7 +37,7 @@ CREATE TABLE `cmdb_345357096910848` (
 -- ----------------------------
 -- Table structure for cmdb_345523753385984
 -- ----------------------------
-CREATE TABLE `cmdb_345523753385984` (
+CREATE TABLE IF NOT EXISTS  `cmdb_345523753385984` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -45,7 +45,7 @@ CREATE TABLE `cmdb_345523753385984` (
 -- ----------------------------
 -- Table structure for cmdb_433108151181312
 -- ----------------------------
-CREATE TABLE `cmdb_433108151181312` (
+CREATE TABLE IF NOT EXISTS  `cmdb_433108151181312` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -53,7 +53,7 @@ CREATE TABLE `cmdb_433108151181312` (
 -- ----------------------------
 -- Table structure for cmdb_433120683761664
 -- ----------------------------
-CREATE TABLE `cmdb_433120683761664` (
+CREATE TABLE IF NOT EXISTS  `cmdb_433120683761664` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `481874467938304` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '资产编号',
   `481874467938304_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '资产编号值散列码',
@@ -64,7 +64,7 @@ CREATE TABLE `cmdb_433120683761664` (
 -- ----------------------------
 -- Table structure for cmdb_440280545239040
 -- ----------------------------
-CREATE TABLE `cmdb_440280545239040` (
+CREATE TABLE IF NOT EXISTS  `cmdb_440280545239040` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `440280713011200` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '名称',
   `440280713011200_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '名称值散列码',
@@ -78,7 +78,7 @@ CREATE TABLE `cmdb_440280545239040` (
 -- ----------------------------
 -- Table structure for cmdb_440281224716288
 -- ----------------------------
-CREATE TABLE `cmdb_440281224716288` (
+CREATE TABLE IF NOT EXISTS  `cmdb_440281224716288` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `440281367322624` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'ip',
   `440281367322624_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'ip值散列码',
@@ -92,7 +92,7 @@ CREATE TABLE `cmdb_440281224716288` (
 -- ----------------------------
 -- Table structure for cmdb_440283028267008
 -- ----------------------------
-CREATE TABLE `cmdb_440283028267008` (
+CREATE TABLE IF NOT EXISTS  `cmdb_440283028267008` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `440283246370816` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '路由规则',
   `440283246370816_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '路由规则值散列码',
@@ -106,7 +106,7 @@ CREATE TABLE `cmdb_440283028267008` (
 -- ----------------------------
 -- Table structure for cmdb_441085960658944
 -- ----------------------------
-CREATE TABLE `cmdb_441085960658944` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441085960658944` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -114,7 +114,7 @@ CREATE TABLE `cmdb_441085960658944` (
 -- ----------------------------
 -- Table structure for cmdb_441087512551424
 -- ----------------------------
-CREATE TABLE `cmdb_441087512551424` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441087512551424` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `478701787553792` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '名称',
   `478701787553792_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '名称值散列码',
@@ -131,7 +131,7 @@ CREATE TABLE `cmdb_441087512551424` (
 -- ----------------------------
 -- Table structure for cmdb_441088670179328
 -- ----------------------------
-CREATE TABLE `cmdb_441088670179328` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441088670179328` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441239975501824` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '设施名称',
   `441239975501824_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '设施名称值散列码',
@@ -154,7 +154,7 @@ CREATE TABLE `cmdb_441088670179328` (
 -- ----------------------------
 -- Table structure for cmdb_441089760698368
 -- ----------------------------
-CREATE TABLE `cmdb_441089760698368` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441089760698368` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441247542026240` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '资产编码',
   `441247542026240_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '资产编码值散列码',
@@ -198,7 +198,7 @@ CREATE TABLE `cmdb_441089760698368` (
 -- ----------------------------
 -- Table structure for cmdb_441090540838912
 -- ----------------------------
-CREATE TABLE `cmdb_441090540838912` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441090540838912` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `481546297417728` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '管理IP地址',
   `481546297417728_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '管理IP地址值散列码',
@@ -257,7 +257,7 @@ CREATE TABLE `cmdb_441090540838912` (
 -- ----------------------------
 -- Table structure for cmdb_441092319223808
 -- ----------------------------
-CREATE TABLE `cmdb_441092319223808` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441092319223808` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `442001166180352` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '系统名称',
   `442001166180352_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '系统名称值散列码',
@@ -274,7 +274,7 @@ CREATE TABLE `cmdb_441092319223808` (
 -- ----------------------------
 -- Table structure for cmdb_441093216804864
 -- ----------------------------
-CREATE TABLE `cmdb_441093216804864` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441093216804864` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `442005318541312` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '应用系统标识符',
   `442005318541312_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '应用系统标识符值散列码',
@@ -291,7 +291,7 @@ CREATE TABLE `cmdb_441093216804864` (
 -- ----------------------------
 -- Table structure for cmdb_441093577515008
 -- ----------------------------
-CREATE TABLE `cmdb_441093577515008` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441093577515008` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `442006375505920` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '软件标识符',
   `442006375505920_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '软件标识符值散列码',
@@ -305,7 +305,7 @@ CREATE TABLE `cmdb_441093577515008` (
 -- ----------------------------
 -- Table structure for cmdb_441095766941696
 -- ----------------------------
-CREATE TABLE `cmdb_441095766941696` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441095766941696` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441821440253952` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '所属系统信息',
   `441821440253952_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '所属系统信息值散列码',
@@ -337,7 +337,7 @@ CREATE TABLE `cmdb_441095766941696` (
 -- ----------------------------
 -- Table structure for cmdb_441096421253120
 -- ----------------------------
-CREATE TABLE `cmdb_441096421253120` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441096421253120` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `442008598487040` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '备注信息',
   `442008598487040_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '备注信息值散列码',
@@ -375,7 +375,7 @@ CREATE TABLE `cmdb_441096421253120` (
 -- ----------------------------
 -- Table structure for cmdb_441098266746880
 -- ----------------------------
-CREATE TABLE `cmdb_441098266746880` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441098266746880` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441996695052288` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '软件分类标识符',
   `441996695052288_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '软件分类标识符值散列码',
@@ -416,7 +416,7 @@ CREATE TABLE `cmdb_441098266746880` (
 -- ----------------------------
 -- Table structure for cmdb_441099676033024
 -- ----------------------------
-CREATE TABLE `cmdb_441099676033024` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441099676033024` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -424,7 +424,7 @@ CREATE TABLE `cmdb_441099676033024` (
 -- ----------------------------
 -- Table structure for cmdb_441108425351168
 -- ----------------------------
-CREATE TABLE `cmdb_441108425351168` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441108425351168` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441843149971456` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '有效容量',
   `441843149971456_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '有效容量值散列码',
@@ -441,7 +441,7 @@ CREATE TABLE `cmdb_441108425351168` (
 -- ----------------------------
 -- Table structure for cmdb_441108962222080
 -- ----------------------------
-CREATE TABLE `cmdb_441108962222080` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441108962222080` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441837806428160` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '有效容量',
   `441837806428160_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '有效容量值散列码',
@@ -455,7 +455,7 @@ CREATE TABLE `cmdb_441108962222080` (
 -- ----------------------------
 -- Table structure for cmdb_441109692030976
 -- ----------------------------
-CREATE TABLE `cmdb_441109692030976` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441109692030976` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -463,7 +463,7 @@ CREATE TABLE `cmdb_441109692030976` (
 -- ----------------------------
 -- Table structure for cmdb_441110153404416
 -- ----------------------------
-CREATE TABLE `cmdb_441110153404416` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441110153404416` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -471,7 +471,7 @@ CREATE TABLE `cmdb_441110153404416` (
 -- ----------------------------
 -- Table structure for cmdb_441110715441152
 -- ----------------------------
-CREATE TABLE `cmdb_441110715441152` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441110715441152` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -479,7 +479,7 @@ CREATE TABLE `cmdb_441110715441152` (
 -- ----------------------------
 -- Table structure for cmdb_441111420084224
 -- ----------------------------
-CREATE TABLE `cmdb_441111420084224` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441111420084224` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -487,7 +487,7 @@ CREATE TABLE `cmdb_441111420084224` (
 -- ----------------------------
 -- Table structure for cmdb_441112812593152
 -- ----------------------------
-CREATE TABLE `cmdb_441112812593152` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441112812593152` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441853920944128` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '吞吐率',
   `441853920944128_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '吞吐率值散列码',
@@ -498,7 +498,7 @@ CREATE TABLE `cmdb_441112812593152` (
 -- ----------------------------
 -- Table structure for cmdb_441114163159040
 -- ----------------------------
-CREATE TABLE `cmdb_441114163159040` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441114163159040` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441857637097472` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '支持协议类型',
   `441857637097472_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '支持协议类型值散列码',
@@ -527,7 +527,7 @@ CREATE TABLE `cmdb_441114163159040` (
 -- ----------------------------
 -- Table structure for cmdb_441115220123648
 -- ----------------------------
-CREATE TABLE `cmdb_441115220123648` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441115220123648` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -535,7 +535,7 @@ CREATE TABLE `cmdb_441115220123648` (
 -- ----------------------------
 -- Table structure for cmdb_441127224221696
 -- ----------------------------
-CREATE TABLE `cmdb_441127224221696` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441127224221696` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441922757861376` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '板卡数量',
   `441922757861376_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '板卡数量值散列码',
@@ -546,7 +546,7 @@ CREATE TABLE `cmdb_441127224221696` (
 -- ----------------------------
 -- Table structure for cmdb_441127945641984
 -- ----------------------------
-CREATE TABLE `cmdb_441127945641984` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441127945641984` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441925316386816` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '板卡数量',
   `441925316386816_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '板卡数量值散列码',
@@ -557,7 +557,7 @@ CREATE TABLE `cmdb_441127945641984` (
 -- ----------------------------
 -- Table structure for cmdb_441128742559744
 -- ----------------------------
-CREATE TABLE `cmdb_441128742559744` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441128742559744` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441925962309632` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '板卡数量',
   `441925962309632_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '板卡数量值散列码',
@@ -577,7 +577,7 @@ CREATE TABLE `cmdb_441128742559744` (
 -- ----------------------------
 -- Table structure for cmdb_441130680328192
 -- ----------------------------
-CREATE TABLE `cmdb_441130680328192` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441130680328192` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441927900078080` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '支持业务类型',
   `441927900078080_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '支持业务类型值散列码',
@@ -594,7 +594,7 @@ CREATE TABLE `cmdb_441130680328192` (
 -- ----------------------------
 -- Table structure for cmdb_441131519188992
 -- ----------------------------
-CREATE TABLE `cmdb_441131519188992` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441131519188992` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441928495669248` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '板卡数量',
   `441928495669248_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '板卡数量值散列码',
@@ -617,7 +617,7 @@ CREATE TABLE `cmdb_441131519188992` (
 -- ----------------------------
 -- Table structure for cmdb_441132332883968
 -- ----------------------------
-CREATE TABLE `cmdb_441132332883968` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441132332883968` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441930601209856` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '光纤端口数量',
   `441930601209856_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '光纤端口数量值散列码',
@@ -628,7 +628,7 @@ CREATE TABLE `cmdb_441132332883968` (
 -- ----------------------------
 -- Table structure for cmdb_441134404870144
 -- ----------------------------
-CREATE TABLE `cmdb_441134404870144` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441134404870144` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `442003657596928` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '线路资费',
   `442003657596928_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '线路资费值散列码',
@@ -642,7 +642,7 @@ CREATE TABLE `cmdb_441134404870144` (
 -- ----------------------------
 -- Table structure for cmdb_441135117901824
 -- ----------------------------
-CREATE TABLE `cmdb_441135117901824` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441135117901824` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `442004488069120` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '本端IT设备',
   `442004488069120_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '本端IT设备值散列码',
@@ -656,7 +656,7 @@ CREATE TABLE `cmdb_441135117901824` (
 -- ----------------------------
 -- Table structure for cmdb_441135981928448
 -- ----------------------------
-CREATE TABLE `cmdb_441135981928448` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441135981928448` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `443229501661184` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'LEI全球法人机构识别编码',
   `443229501661184_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'LEI全球法人机构识别编码值散列码',
@@ -754,7 +754,7 @@ CREATE TABLE `cmdb_441135981928448` (
 -- ----------------------------
 -- Table structure for cmdb_441136493633536
 -- ----------------------------
-CREATE TABLE `cmdb_441136493633536` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441136493633536` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `443376067420160` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '归属机构',
   `443376067420160_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '归属机构值散列码',
@@ -774,7 +774,7 @@ CREATE TABLE `cmdb_441136493633536` (
 -- ----------------------------
 -- Table structure for cmdb_441137584152576
 -- ----------------------------
-CREATE TABLE `cmdb_441137584152576` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441137584152576` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441968819707904` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '额定交变频率',
   `441968819707904_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '额定交变频率值散列码',
@@ -806,7 +806,7 @@ CREATE TABLE `cmdb_441137584152576` (
 -- ----------------------------
 -- Table structure for cmdb_441142382436352
 -- ----------------------------
-CREATE TABLE `cmdb_441142382436352` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441142382436352` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441969398521856` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '高压成套配电设备类型',
   `441969398521856_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '高压成套配电设备类型值散列码',
@@ -817,7 +817,7 @@ CREATE TABLE `cmdb_441142382436352` (
 -- ----------------------------
 -- Table structure for cmdb_441142936084480
 -- ----------------------------
-CREATE TABLE `cmdb_441142936084480` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441142936084480` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441973727043584` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '低压配电设备控制类型',
   `441973727043584_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '低压配电设备控制类型值散列码',
@@ -831,7 +831,7 @@ CREATE TABLE `cmdb_441142936084480` (
 -- ----------------------------
 -- Table structure for cmdb_441143607173120
 -- ----------------------------
-CREATE TABLE `cmdb_441143607173120` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441143607173120` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441971143352320` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '变压器类型',
   `441971143352320_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '变压器类型值散列码',
@@ -842,7 +842,7 @@ CREATE TABLE `cmdb_441143607173120` (
 -- ----------------------------
 -- Table structure for cmdb_441145528164352
 -- ----------------------------
-CREATE TABLE `cmdb_441145528164352` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441145528164352` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441974154862592` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '不间断电源并机系统',
   `441974154862592_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '不间断电源并机系统值散列码',
@@ -868,7 +868,7 @@ CREATE TABLE `cmdb_441145528164352` (
 -- ----------------------------
 -- Table structure for cmdb_441146308304896
 -- ----------------------------
-CREATE TABLE `cmdb_441146308304896` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441146308304896` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441975824195584` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '发电机类型',
   `441975824195584_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '发电机类型值散列码',
@@ -885,7 +885,7 @@ CREATE TABLE `cmdb_441146308304896` (
 -- ----------------------------
 -- Table structure for cmdb_441147482710016
 -- ----------------------------
-CREATE TABLE `cmdb_441147482710016` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441147482710016` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441976545615872` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '精密配电设备',
   `441976545615872_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '精密配电设备值散列码',
@@ -896,7 +896,7 @@ CREATE TABLE `cmdb_441147482710016` (
 -- ----------------------------
 -- Table structure for cmdb_441153598005248
 -- ----------------------------
-CREATE TABLE `cmdb_441153598005248` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441153598005248` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -904,7 +904,7 @@ CREATE TABLE `cmdb_441153598005248` (
 -- ----------------------------
 -- Table structure for cmdb_441154319425536
 -- ----------------------------
-CREATE TABLE `cmdb_441154319425536` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441154319425536` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441859163824128` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '设备类型',
   `441859163824128_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '设备类型值散列码',
@@ -924,7 +924,7 @@ CREATE TABLE `cmdb_441154319425536` (
 -- ----------------------------
 -- Table structure for cmdb_441155468664832
 -- ----------------------------
-CREATE TABLE `cmdb_441155468664832` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441155468664832` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441860656996352` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '清洗能力',
   `441860656996352_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '清洗能力值散列码',
@@ -935,7 +935,7 @@ CREATE TABLE `cmdb_441155468664832` (
 -- ----------------------------
 -- Table structure for cmdb_441157381267456
 -- ----------------------------
-CREATE TABLE `cmdb_441157381267456` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441157381267456` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441860917043200` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '分析层次',
   `441860917043200_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '分析层次值散列码',
@@ -949,7 +949,7 @@ CREATE TABLE `cmdb_441157381267456` (
 -- ----------------------------
 -- Table structure for cmdb_441157926526976
 -- ----------------------------
-CREATE TABLE `cmdb_441157926526976` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441157926526976` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441862762536960` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '扫描类型',
   `441862762536960_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '扫描类型值散列码',
@@ -963,7 +963,7 @@ CREATE TABLE `cmdb_441157926526976` (
 -- ----------------------------
 -- Table structure for cmdb_441158580838400
 -- ----------------------------
-CREATE TABLE `cmdb_441158580838400` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441158580838400` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441863483957248` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '所属系统信息',
   `441863483957248_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '所属系统信息值散列码',
@@ -1013,7 +1013,7 @@ CREATE TABLE `cmdb_441158580838400` (
 -- ----------------------------
 -- Table structure for cmdb_441183134294016
 -- ----------------------------
-CREATE TABLE `cmdb_441183134294016` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441183134294016` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441881334915072` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'Bypass功能',
   `441881334915072_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Bypass功能值散列码',
@@ -1030,7 +1030,7 @@ CREATE TABLE `cmdb_441183134294016` (
 -- ----------------------------
 -- Table structure for cmdb_441183880880128
 -- ----------------------------
-CREATE TABLE `cmdb_441183880880128` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441183880880128` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441882526097408` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '网闸类型',
   `441882526097408_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '网闸类型值散列码',
@@ -1050,7 +1050,7 @@ CREATE TABLE `cmdb_441183880880128` (
 -- ----------------------------
 -- Table structure for cmdb_441184585523200
 -- ----------------------------
-CREATE TABLE `cmdb_441184585523200` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441184585523200` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441883708891136` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '网关接入模式',
   `441883708891136_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '网关接入模式值散列码',
@@ -1061,7 +1061,7 @@ CREATE TABLE `cmdb_441184585523200` (
 -- ----------------------------
 -- Table structure for cmdb_441185139171328
 -- ----------------------------
-CREATE TABLE `cmdb_441185139171328` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441185139171328` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441884052824064` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '所属系统信息',
   `441884052824064_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '所属系统信息值散列码',
@@ -1111,7 +1111,7 @@ CREATE TABLE `cmdb_441185139171328` (
 -- ----------------------------
 -- Table structure for cmdb_441186070306816
 -- ----------------------------
-CREATE TABLE `cmdb_441186070306816` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441186070306816` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441891418021888` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '扫描类别',
   `441891418021888_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '扫描类别值散列码',
@@ -1122,7 +1122,7 @@ CREATE TABLE `cmdb_441186070306816` (
 -- ----------------------------
 -- Table structure for cmdb_441189685796864
 -- ----------------------------
-CREATE TABLE `cmdb_441189685796864` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441189685796864` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441902524538880` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '所属系统信息',
   `441902524538880_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '所属系统信息值散列码',
@@ -1145,7 +1145,7 @@ CREATE TABLE `cmdb_441189685796864` (
 -- ----------------------------
 -- Table structure for cmdb_441190407217152
 -- ----------------------------
-CREATE TABLE `cmdb_441190407217152` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441190407217152` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441903766052864` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '数字摘要',
   `441903766052864_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '数字摘要值散列码',
@@ -1159,7 +1159,7 @@ CREATE TABLE `cmdb_441190407217152` (
 -- ----------------------------
 -- Table structure for cmdb_441190910533632
 -- ----------------------------
-CREATE TABLE `cmdb_441190910533632` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441190910533632` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441904655245312` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '所属系统信息',
   `441904655245312_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '所属系统信息值散列码',
@@ -1209,7 +1209,7 @@ CREATE TABLE `cmdb_441190910533632` (
 -- ----------------------------
 -- Table structure for cmdb_441191917166592
 -- ----------------------------
-CREATE TABLE `cmdb_441191917166592` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441191917166592` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441909721964544` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '用户认证模式',
   `441909721964544_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '用户认证模式值散列码',
@@ -1232,7 +1232,7 @@ CREATE TABLE `cmdb_441191917166592` (
 -- ----------------------------
 -- Table structure for cmdb_441192521146368
 -- ----------------------------
-CREATE TABLE `cmdb_441192521146368` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441192521146368` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441911189970944` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '配置核查对象',
   `441911189970944_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '配置核查对象值散列码',
@@ -1243,7 +1243,7 @@ CREATE TABLE `cmdb_441192521146368` (
 -- ----------------------------
 -- Table structure for cmdb_441193116737536
 -- ----------------------------
-CREATE TABLE `cmdb_441193116737536` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441193116737536` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441911533903872` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '协议识别',
   `441911533903872_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '协议识别值散列码',
@@ -1260,7 +1260,7 @@ CREATE TABLE `cmdb_441193116737536` (
 -- ----------------------------
 -- Table structure for cmdb_441193880100864
 -- ----------------------------
-CREATE TABLE `cmdb_441193880100864` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441193880100864` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441912297267200` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '所属系统信息',
   `441912297267200_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '所属系统信息值散列码',
@@ -1310,7 +1310,7 @@ CREATE TABLE `cmdb_441193880100864` (
 -- ----------------------------
 -- Table structure for cmdb_441194626686976
 -- ----------------------------
-CREATE TABLE `cmdb_441194626686976` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441194626686976` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441916709675008` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '所属系统信息',
   `441916709675008_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '所属系统信息值散列码',
@@ -1363,7 +1363,7 @@ CREATE TABLE `cmdb_441194626686976` (
 -- ----------------------------
 -- Table structure for cmdb_441214088257536
 -- ----------------------------
-CREATE TABLE `cmdb_441214088257536` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441214088257536` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441978911203328` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '门禁系统',
   `441978911203328_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '门禁系统值散列码',
@@ -1380,7 +1380,7 @@ CREATE TABLE `cmdb_441214088257536` (
 -- ----------------------------
 -- Table structure for cmdb_441217426923520
 -- ----------------------------
-CREATE TABLE `cmdb_441217426923520` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441217426923520` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441979557126144` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '入侵报警系统',
   `441979557126144_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '入侵报警系统值散列码',
@@ -1391,7 +1391,7 @@ CREATE TABLE `cmdb_441217426923520` (
 -- ----------------------------
 -- Table structure for cmdb_441218257395712
 -- ----------------------------
-CREATE TABLE `cmdb_441218257395712` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441218257395712` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441979943002112` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '出入口控制系统',
   `441979943002112_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '出入口控制系统值散列码',
@@ -1402,7 +1402,7 @@ CREATE TABLE `cmdb_441218257395712` (
 -- ----------------------------
 -- Table structure for cmdb_441218710380544
 -- ----------------------------
-CREATE TABLE `cmdb_441218710380544` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441218710380544` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441978147840000` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '监控摄像头数量',
   `441978147840000_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '监控摄像头数量值散列码',
@@ -1419,7 +1419,7 @@ CREATE TABLE `cmdb_441218710380544` (
 -- ----------------------------
 -- Table structure for cmdb_441219725402112
 -- ----------------------------
-CREATE TABLE `cmdb_441219725402112` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441219725402112` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441980949635072` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '火灾报警系统',
   `441980949635072_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '火灾报警系统值散列码',
@@ -1448,7 +1448,7 @@ CREATE TABLE `cmdb_441219725402112` (
 -- ----------------------------
 -- Table structure for cmdb_441220203552768
 -- ----------------------------
-CREATE TABLE `cmdb_441220203552768` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441220203552768` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441987341754368` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '环境监控软件',
   `441987341754368_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '环境监控软件值散列码',
@@ -1501,7 +1501,7 @@ CREATE TABLE `cmdb_441220203552768` (
 -- ----------------------------
 -- Table structure for cmdb_441221210185728
 -- ----------------------------
-CREATE TABLE `cmdb_441221210185728` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441221210185728` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441991561224192` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '设备功率',
   `441991561224192_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '设备功率值散列码',
@@ -1512,7 +1512,7 @@ CREATE TABLE `cmdb_441221210185728` (
 -- ----------------------------
 -- Table structure for cmdb_441222426533888
 -- ----------------------------
-CREATE TABLE `cmdb_441222426533888` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441222426533888` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441993725485056` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '空调制冷量',
   `441993725485056_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '空调制冷量值散列码',
@@ -1526,7 +1526,7 @@ CREATE TABLE `cmdb_441222426533888` (
 -- ----------------------------
 -- Table structure for cmdb_441222887907328
 -- ----------------------------
-CREATE TABLE `cmdb_441222887907328` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441222887907328` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441991879991296` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '空调制冷量',
   `441991879991296_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '空调制冷量值散列码',
@@ -1555,7 +1555,7 @@ CREATE TABLE `cmdb_441222887907328` (
 -- ----------------------------
 -- Table structure for cmdb_441223408001024
 -- ----------------------------
-CREATE TABLE `cmdb_441223408001024` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441223408001024` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441994035863552` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '普通空调分类',
   `441994035863552_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '普通空调分类值散列码',
@@ -1566,7 +1566,7 @@ CREATE TABLE `cmdb_441223408001024` (
 -- ----------------------------
 -- Table structure for cmdb_441223835820032
 -- ----------------------------
-CREATE TABLE `cmdb_441223835820032` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441223835820032` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441994790838272` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '新风量',
   `441994790838272_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '新风量值散列码',
@@ -1583,7 +1583,7 @@ CREATE TABLE `cmdb_441223835820032` (
 -- ----------------------------
 -- Table structure for cmdb_441224297193472
 -- ----------------------------
-CREATE TABLE `cmdb_441224297193472` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441224297193472` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441994530791424` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '加湿器分类',
   `441994530791424_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '加湿器分类值散列码',
@@ -1594,7 +1594,7 @@ CREATE TABLE `cmdb_441224297193472` (
 -- ----------------------------
 -- Table structure for cmdb_441226042023936
 -- ----------------------------
-CREATE TABLE `cmdb_441226042023936` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441226042023936` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441931331018752` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '机柜承重',
   `441931331018752_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '机柜承重值散列码',
@@ -1608,7 +1608,7 @@ CREATE TABLE `cmdb_441226042023936` (
 -- ----------------------------
 -- Table structure for cmdb_441226805387264
 -- ----------------------------
-CREATE TABLE `cmdb_441226805387264` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441226805387264` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1616,7 +1616,7 @@ CREATE TABLE `cmdb_441226805387264` (
 -- ----------------------------
 -- Table structure for cmdb_441227392589824
 -- ----------------------------
-CREATE TABLE `cmdb_441227392589824` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441227392589824` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441965111943168` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '屏蔽效能',
   `441965111943168_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '屏蔽效能值散列码',
@@ -1630,7 +1630,7 @@ CREATE TABLE `cmdb_441227392589824` (
 -- ----------------------------
 -- Table structure for cmdb_441227862351872
 -- ----------------------------
-CREATE TABLE `cmdb_441227862351872` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441227862351872` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441964801564672` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '集成功能',
   `441964801564672_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '集成功能值散列码',
@@ -1641,7 +1641,7 @@ CREATE TABLE `cmdb_441227862351872` (
 -- ----------------------------
 -- Table structure for cmdb_441235680534528
 -- ----------------------------
-CREATE TABLE `cmdb_441235680534528` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441235680534528` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1649,7 +1649,7 @@ CREATE TABLE `cmdb_441235680534528` (
 -- ----------------------------
 -- Table structure for cmdb_441237786075136
 -- ----------------------------
-CREATE TABLE `cmdb_441237786075136` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441237786075136` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `443419436523520` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '用电设施',
   `443419436523520_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '用电设施值散列码',
@@ -1663,7 +1663,7 @@ CREATE TABLE `cmdb_441237786075136` (
 -- ----------------------------
 -- Table structure for cmdb_441268136058880
 -- ----------------------------
-CREATE TABLE `cmdb_441268136058880` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441268136058880` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1671,7 +1671,7 @@ CREATE TABLE `cmdb_441268136058880` (
 -- ----------------------------
 -- Table structure for cmdb_441662014758912
 -- ----------------------------
-CREATE TABLE `cmdb_441662014758912` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441662014758912` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1679,7 +1679,7 @@ CREATE TABLE `cmdb_441662014758912` (
 -- ----------------------------
 -- Table structure for cmdb_441662794899456
 -- ----------------------------
-CREATE TABLE `cmdb_441662794899456` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441662794899456` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1687,7 +1687,7 @@ CREATE TABLE `cmdb_441662794899456` (
 -- ----------------------------
 -- Table structure for cmdb_441663348547584
 -- ----------------------------
-CREATE TABLE `cmdb_441663348547584` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441663348547584` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1695,7 +1695,7 @@ CREATE TABLE `cmdb_441663348547584` (
 -- ----------------------------
 -- Table structure for cmdb_441664162242560
 -- ----------------------------
-CREATE TABLE `cmdb_441664162242560` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441664162242560` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1703,7 +1703,7 @@ CREATE TABLE `cmdb_441664162242560` (
 -- ----------------------------
 -- Table structure for cmdb_441666594938880
 -- ----------------------------
-CREATE TABLE `cmdb_441666594938880` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441666594938880` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1711,7 +1711,7 @@ CREATE TABLE `cmdb_441666594938880` (
 -- ----------------------------
 -- Table structure for cmdb_441666964037632
 -- ----------------------------
-CREATE TABLE `cmdb_441666964037632` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441666964037632` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1719,7 +1719,7 @@ CREATE TABLE `cmdb_441666964037632` (
 -- ----------------------------
 -- Table structure for cmdb_441667391856640
 -- ----------------------------
-CREATE TABLE `cmdb_441667391856640` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441667391856640` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1727,7 +1727,7 @@ CREATE TABLE `cmdb_441667391856640` (
 -- ----------------------------
 -- Table structure for cmdb_441667744178176
 -- ----------------------------
-CREATE TABLE `cmdb_441667744178176` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441667744178176` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1735,7 +1735,7 @@ CREATE TABLE `cmdb_441667744178176` (
 -- ----------------------------
 -- Table structure for cmdb_441668255883264
 -- ----------------------------
-CREATE TABLE `cmdb_441668255883264` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441668255883264` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1743,7 +1743,7 @@ CREATE TABLE `cmdb_441668255883264` (
 -- ----------------------------
 -- Table structure for cmdb_441669606449152
 -- ----------------------------
-CREATE TABLE `cmdb_441669606449152` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441669606449152` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1751,7 +1751,7 @@ CREATE TABLE `cmdb_441669606449152` (
 -- ----------------------------
 -- Table structure for cmdb_441670260760576
 -- ----------------------------
-CREATE TABLE `cmdb_441670260760576` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441670260760576` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1759,7 +1759,7 @@ CREATE TABLE `cmdb_441670260760576` (
 -- ----------------------------
 -- Table structure for cmdb_441670638247936
 -- ----------------------------
-CREATE TABLE `cmdb_441670638247936` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441670638247936` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1767,7 +1767,7 @@ CREATE TABLE `cmdb_441670638247936` (
 -- ----------------------------
 -- Table structure for cmdb_441671166730240
 -- ----------------------------
-CREATE TABLE `cmdb_441671166730240` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441671166730240` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1775,7 +1775,7 @@ CREATE TABLE `cmdb_441671166730240` (
 -- ----------------------------
 -- Table structure for cmdb_441674530562048
 -- ----------------------------
-CREATE TABLE `cmdb_441674530562048` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441674530562048` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `443306869792768` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '机房名称',
   `443306869792768_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '机房名称值散列码',
@@ -1786,7 +1786,7 @@ CREATE TABLE `cmdb_441674530562048` (
 -- ----------------------------
 -- Table structure for cmdb_441675805630464
 -- ----------------------------
-CREATE TABLE `cmdb_441675805630464` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441675805630464` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1794,7 +1794,7 @@ CREATE TABLE `cmdb_441675805630464` (
 -- ----------------------------
 -- Table structure for cmdb_441676627714048
 -- ----------------------------
-CREATE TABLE `cmdb_441676627714048` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441676627714048` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1802,7 +1802,7 @@ CREATE TABLE `cmdb_441676627714048` (
 -- ----------------------------
 -- Table structure for cmdb_441677600792576
 -- ----------------------------
-CREATE TABLE `cmdb_441677600792576` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441677600792576` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1810,7 +1810,7 @@ CREATE TABLE `cmdb_441677600792576` (
 -- ----------------------------
 -- Table structure for cmdb_441679983157248
 -- ----------------------------
-CREATE TABLE `cmdb_441679983157248` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441679983157248` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1818,7 +1818,7 @@ CREATE TABLE `cmdb_441679983157248` (
 -- ----------------------------
 -- Table structure for cmdb_441684244570112
 -- ----------------------------
-CREATE TABLE `cmdb_441684244570112` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441684244570112` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1826,7 +1826,7 @@ CREATE TABLE `cmdb_441684244570112` (
 -- ----------------------------
 -- Table structure for cmdb_441715265642496
 -- ----------------------------
-CREATE TABLE `cmdb_441715265642496` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441715265642496` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1834,7 +1834,7 @@ CREATE TABLE `cmdb_441715265642496` (
 -- ----------------------------
 -- Table structure for cmdb_441718730137600
 -- ----------------------------
-CREATE TABLE `cmdb_441718730137600` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441718730137600` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `445485626171392` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '品牌基础设施二级分类标识符',
   `445485626171392_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '品牌基础设施二级分类标识符值散列码',
@@ -1863,7 +1863,7 @@ CREATE TABLE `cmdb_441718730137600` (
 -- ----------------------------
 -- Table structure for cmdb_441900016345088
 -- ----------------------------
-CREATE TABLE `cmdb_441900016345088` (
+CREATE TABLE IF NOT EXISTS  `cmdb_441900016345088` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `441900301557760` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '审计内容',
   `441900301557760_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '审计内容值散列码',
@@ -1880,7 +1880,7 @@ CREATE TABLE `cmdb_441900016345088` (
 -- ----------------------------
 -- Table structure for cmdb_442011534499840
 -- ----------------------------
-CREATE TABLE `cmdb_442011534499840` (
+CREATE TABLE IF NOT EXISTS  `cmdb_442011534499840` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `446087097753600` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '网络区域',
   `446087097753600_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '网络区域值散列码',
@@ -1894,7 +1894,7 @@ CREATE TABLE `cmdb_442011534499840` (
 -- ----------------------------
 -- Table structure for cmdb_442531821133824
 -- ----------------------------
-CREATE TABLE `cmdb_442531821133824` (
+CREATE TABLE IF NOT EXISTS  `cmdb_442531821133824` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1902,7 +1902,7 @@ CREATE TABLE `cmdb_442531821133824` (
 -- ----------------------------
 -- Table structure for cmdb_442548355080192
 -- ----------------------------
-CREATE TABLE `cmdb_442548355080192` (
+CREATE TABLE IF NOT EXISTS  `cmdb_442548355080192` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1910,7 +1910,7 @@ CREATE TABLE `cmdb_442548355080192` (
 -- ----------------------------
 -- Table structure for cmdb_442570509393920
 -- ----------------------------
-CREATE TABLE `cmdb_442570509393920` (
+CREATE TABLE IF NOT EXISTS  `cmdb_442570509393920` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1918,7 +1918,7 @@ CREATE TABLE `cmdb_442570509393920` (
 -- ----------------------------
 -- Table structure for cmdb_442578956722176
 -- ----------------------------
-CREATE TABLE `cmdb_442578956722176` (
+CREATE TABLE IF NOT EXISTS  `cmdb_442578956722176` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1926,7 +1926,7 @@ CREATE TABLE `cmdb_442578956722176` (
 -- ----------------------------
 -- Table structure for cmdb_442582010175488
 -- ----------------------------
-CREATE TABLE `cmdb_442582010175488` (
+CREATE TABLE IF NOT EXISTS  `cmdb_442582010175488` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1934,7 +1934,7 @@ CREATE TABLE `cmdb_442582010175488` (
 -- ----------------------------
 -- Table structure for cmdb_442587747983360
 -- ----------------------------
-CREATE TABLE `cmdb_442587747983360` (
+CREATE TABLE IF NOT EXISTS  `cmdb_442587747983360` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1942,7 +1942,7 @@ CREATE TABLE `cmdb_442587747983360` (
 -- ----------------------------
 -- Table structure for cmdb_442590583332864
 -- ----------------------------
-CREATE TABLE `cmdb_442590583332864` (
+CREATE TABLE IF NOT EXISTS  `cmdb_442590583332864` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1950,7 +1950,7 @@ CREATE TABLE `cmdb_442590583332864` (
 -- ----------------------------
 -- Table structure for cmdb_442595280953344
 -- ----------------------------
-CREATE TABLE `cmdb_442595280953344` (
+CREATE TABLE IF NOT EXISTS  `cmdb_442595280953344` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1958,7 +1958,7 @@ CREATE TABLE `cmdb_442595280953344` (
 -- ----------------------------
 -- Table structure for cmdb_442599441702912
 -- ----------------------------
-CREATE TABLE `cmdb_442599441702912` (
+CREATE TABLE IF NOT EXISTS  `cmdb_442599441702912` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1966,7 +1966,7 @@ CREATE TABLE `cmdb_442599441702912` (
 -- ----------------------------
 -- Table structure for cmdb_442601228476416
 -- ----------------------------
-CREATE TABLE `cmdb_442601228476416` (
+CREATE TABLE IF NOT EXISTS  `cmdb_442601228476416` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1974,7 +1974,7 @@ CREATE TABLE `cmdb_442601228476416` (
 -- ----------------------------
 -- Table structure for cmdb_442608459456512
 -- ----------------------------
-CREATE TABLE `cmdb_442608459456512` (
+CREATE TABLE IF NOT EXISTS  `cmdb_442608459456512` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1982,7 +1982,7 @@ CREATE TABLE `cmdb_442608459456512` (
 -- ----------------------------
 -- Table structure for cmdb_442611470966784
 -- ----------------------------
-CREATE TABLE `cmdb_442611470966784` (
+CREATE TABLE IF NOT EXISTS  `cmdb_442611470966784` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1990,7 +1990,7 @@ CREATE TABLE `cmdb_442611470966784` (
 -- ----------------------------
 -- Table structure for cmdb_442619716968448
 -- ----------------------------
-CREATE TABLE `cmdb_442619716968448` (
+CREATE TABLE IF NOT EXISTS  `cmdb_442619716968448` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1998,7 +1998,7 @@ CREATE TABLE `cmdb_442619716968448` (
 -- ----------------------------
 -- Table structure for cmdb_442627484819456
 -- ----------------------------
-CREATE TABLE `cmdb_442627484819456` (
+CREATE TABLE IF NOT EXISTS  `cmdb_442627484819456` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2006,7 +2006,7 @@ CREATE TABLE `cmdb_442627484819456` (
 -- ----------------------------
 -- Table structure for cmdb_442632031444992
 -- ----------------------------
-CREATE TABLE `cmdb_442632031444992` (
+CREATE TABLE IF NOT EXISTS  `cmdb_442632031444992` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2014,7 +2014,7 @@ CREATE TABLE `cmdb_442632031444992` (
 -- ----------------------------
 -- Table structure for cmdb_442637374988288
 -- ----------------------------
-CREATE TABLE `cmdb_442637374988288` (
+CREATE TABLE IF NOT EXISTS  `cmdb_442637374988288` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2022,7 +2022,7 @@ CREATE TABLE `cmdb_442637374988288` (
 -- ----------------------------
 -- Table structure for cmdb_442644614356992
 -- ----------------------------
-CREATE TABLE `cmdb_442644614356992` (
+CREATE TABLE IF NOT EXISTS  `cmdb_442644614356992` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2030,7 +2030,7 @@ CREATE TABLE `cmdb_442644614356992` (
 -- ----------------------------
 -- Table structure for cmdb_442650134061056
 -- ----------------------------
-CREATE TABLE `cmdb_442650134061056` (
+CREATE TABLE IF NOT EXISTS  `cmdb_442650134061056` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2038,7 +2038,7 @@ CREATE TABLE `cmdb_442650134061056` (
 -- ----------------------------
 -- Table structure for cmdb_442688008626176
 -- ----------------------------
-CREATE TABLE `cmdb_442688008626176` (
+CREATE TABLE IF NOT EXISTS  `cmdb_442688008626176` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2046,7 +2046,7 @@ CREATE TABLE `cmdb_442688008626176` (
 -- ----------------------------
 -- Table structure for cmdb_442693880651776
 -- ----------------------------
-CREATE TABLE `cmdb_442693880651776` (
+CREATE TABLE IF NOT EXISTS  `cmdb_442693880651776` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2054,7 +2054,7 @@ CREATE TABLE `cmdb_442693880651776` (
 -- ----------------------------
 -- Table structure for cmdb_442701405233152
 -- ----------------------------
-CREATE TABLE `cmdb_442701405233152` (
+CREATE TABLE IF NOT EXISTS  `cmdb_442701405233152` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2062,7 +2062,7 @@ CREATE TABLE `cmdb_442701405233152` (
 -- ----------------------------
 -- Table structure for cmdb_442706706833408
 -- ----------------------------
-CREATE TABLE `cmdb_442706706833408` (
+CREATE TABLE IF NOT EXISTS  `cmdb_442706706833408` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2070,7 +2070,7 @@ CREATE TABLE `cmdb_442706706833408` (
 -- ----------------------------
 -- Table structure for cmdb_442710951469056
 -- ----------------------------
-CREATE TABLE `cmdb_442710951469056` (
+CREATE TABLE IF NOT EXISTS  `cmdb_442710951469056` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2078,7 +2078,7 @@ CREATE TABLE `cmdb_442710951469056` (
 -- ----------------------------
 -- Table structure for cmdb_442713174450176
 -- ----------------------------
-CREATE TABLE `cmdb_442713174450176` (
+CREATE TABLE IF NOT EXISTS  `cmdb_442713174450176` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2086,7 +2086,7 @@ CREATE TABLE `cmdb_442713174450176` (
 -- ----------------------------
 -- Table structure for cmdb_442714231414784
 -- ----------------------------
-CREATE TABLE `cmdb_442714231414784` (
+CREATE TABLE IF NOT EXISTS  `cmdb_442714231414784` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2094,7 +2094,7 @@ CREATE TABLE `cmdb_442714231414784` (
 -- ----------------------------
 -- Table structure for cmdb_442725522481152
 -- ----------------------------
-CREATE TABLE `cmdb_442725522481152` (
+CREATE TABLE IF NOT EXISTS  `cmdb_442725522481152` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2102,7 +2102,7 @@ CREATE TABLE `cmdb_442725522481152` (
 -- ----------------------------
 -- Table structure for cmdb_442727636410368
 -- ----------------------------
-CREATE TABLE `cmdb_442727636410368` (
+CREATE TABLE IF NOT EXISTS  `cmdb_442727636410368` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2110,7 +2110,7 @@ CREATE TABLE `cmdb_442727636410368` (
 -- ----------------------------
 -- Table structure for cmdb_442730689863680
 -- ----------------------------
-CREATE TABLE `cmdb_442730689863680` (
+CREATE TABLE IF NOT EXISTS  `cmdb_442730689863680` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2118,7 +2118,7 @@ CREATE TABLE `cmdb_442730689863680` (
 -- ----------------------------
 -- Table structure for cmdb_442739741171712
 -- ----------------------------
-CREATE TABLE `cmdb_442739741171712` (
+CREATE TABLE IF NOT EXISTS  `cmdb_442739741171712` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2126,7 +2126,7 @@ CREATE TABLE `cmdb_442739741171712` (
 -- ----------------------------
 -- Table structure for cmdb_443103269888000
 -- ----------------------------
-CREATE TABLE `cmdb_443103269888000` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443103269888000` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2134,7 +2134,7 @@ CREATE TABLE `cmdb_443103269888000` (
 -- ----------------------------
 -- Table structure for cmdb_443105249599488
 -- ----------------------------
-CREATE TABLE `cmdb_443105249599488` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443105249599488` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2142,7 +2142,7 @@ CREATE TABLE `cmdb_443105249599488` (
 -- ----------------------------
 -- Table structure for cmdb_443111096459264
 -- ----------------------------
-CREATE TABLE `cmdb_443111096459264` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443111096459264` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2150,7 +2150,7 @@ CREATE TABLE `cmdb_443111096459264` (
 -- ----------------------------
 -- Table structure for cmdb_443117815734272
 -- ----------------------------
-CREATE TABLE `cmdb_443117815734272` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443117815734272` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2158,7 +2158,7 @@ CREATE TABLE `cmdb_443117815734272` (
 -- ----------------------------
 -- Table structure for cmdb_443119971606528
 -- ----------------------------
-CREATE TABLE `cmdb_443119971606528` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443119971606528` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2166,7 +2166,7 @@ CREATE TABLE `cmdb_443119971606528` (
 -- ----------------------------
 -- Table structure for cmdb_443123125723136
 -- ----------------------------
-CREATE TABLE `cmdb_443123125723136` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443123125723136` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2174,7 +2174,7 @@ CREATE TABLE `cmdb_443123125723136` (
 -- ----------------------------
 -- Table structure for cmdb_443129559785472
 -- ----------------------------
-CREATE TABLE `cmdb_443129559785472` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443129559785472` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2182,7 +2182,7 @@ CREATE TABLE `cmdb_443129559785472` (
 -- ----------------------------
 -- Table structure for cmdb_443132210585600
 -- ----------------------------
-CREATE TABLE `cmdb_443132210585600` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443132210585600` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2190,7 +2190,7 @@ CREATE TABLE `cmdb_443132210585600` (
 -- ----------------------------
 -- Table structure for cmdb_443135180152832
 -- ----------------------------
-CREATE TABLE `cmdb_443135180152832` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443135180152832` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2198,7 +2198,7 @@ CREATE TABLE `cmdb_443135180152832` (
 -- ----------------------------
 -- Table structure for cmdb_443140758577152
 -- ----------------------------
-CREATE TABLE `cmdb_443140758577152` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443140758577152` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2206,7 +2206,7 @@ CREATE TABLE `cmdb_443140758577152` (
 -- ----------------------------
 -- Table structure for cmdb_443143644258304
 -- ----------------------------
-CREATE TABLE `cmdb_443143644258304` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443143644258304` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2214,7 +2214,7 @@ CREATE TABLE `cmdb_443143644258304` (
 -- ----------------------------
 -- Table structure for cmdb_443148996190208
 -- ----------------------------
-CREATE TABLE `cmdb_443148996190208` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443148996190208` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2222,7 +2222,7 @@ CREATE TABLE `cmdb_443148996190208` (
 -- ----------------------------
 -- Table structure for cmdb_443151655378944
 -- ----------------------------
-CREATE TABLE `cmdb_443151655378944` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443151655378944` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2230,7 +2230,7 @@ CREATE TABLE `cmdb_443151655378944` (
 -- ----------------------------
 -- Table structure for cmdb_443156269113344
 -- ----------------------------
-CREATE TABLE `cmdb_443156269113344` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443156269113344` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2238,7 +2238,7 @@ CREATE TABLE `cmdb_443156269113344` (
 -- ----------------------------
 -- Table structure for cmdb_443158877970432
 -- ----------------------------
-CREATE TABLE `cmdb_443158877970432` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443158877970432` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2246,7 +2246,7 @@ CREATE TABLE `cmdb_443158877970432` (
 -- ----------------------------
 -- Table structure for cmdb_443159238680576
 -- ----------------------------
-CREATE TABLE `cmdb_443159238680576` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443159238680576` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2254,7 +2254,7 @@ CREATE TABLE `cmdb_443159238680576` (
 -- ----------------------------
 -- Table structure for cmdb_443159859437568
 -- ----------------------------
-CREATE TABLE `cmdb_443159859437568` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443159859437568` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2262,7 +2262,7 @@ CREATE TABLE `cmdb_443159859437568` (
 -- ----------------------------
 -- Table structure for cmdb_443166117339136
 -- ----------------------------
-CREATE TABLE `cmdb_443166117339136` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443166117339136` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2270,7 +2270,7 @@ CREATE TABLE `cmdb_443166117339136` (
 -- ----------------------------
 -- Table structure for cmdb_443167233024000
 -- ----------------------------
-CREATE TABLE `cmdb_443167233024000` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443167233024000` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2278,7 +2278,7 @@ CREATE TABLE `cmdb_443167233024000` (
 -- ----------------------------
 -- Table structure for cmdb_443176259166208
 -- ----------------------------
-CREATE TABLE `cmdb_443176259166208` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443176259166208` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2286,7 +2286,7 @@ CREATE TABLE `cmdb_443176259166208` (
 -- ----------------------------
 -- Table structure for cmdb_443179916599296
 -- ----------------------------
-CREATE TABLE `cmdb_443179916599296` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443179916599296` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2294,7 +2294,7 @@ CREATE TABLE `cmdb_443179916599296` (
 -- ----------------------------
 -- Table structure for cmdb_443181913088000
 -- ----------------------------
-CREATE TABLE `cmdb_443181913088000` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443181913088000` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2302,7 +2302,7 @@ CREATE TABLE `cmdb_443181913088000` (
 -- ----------------------------
 -- Table structure for cmdb_443184287064064
 -- ----------------------------
-CREATE TABLE `cmdb_443184287064064` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443184287064064` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2310,7 +2310,7 @@ CREATE TABLE `cmdb_443184287064064` (
 -- ----------------------------
 -- Table structure for cmdb_443185067204608
 -- ----------------------------
-CREATE TABLE `cmdb_443185067204608` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443185067204608` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2318,7 +2318,7 @@ CREATE TABLE `cmdb_443185067204608` (
 -- ----------------------------
 -- Table structure for cmdb_443218856517632
 -- ----------------------------
-CREATE TABLE `cmdb_443218856517632` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443218856517632` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2326,7 +2326,7 @@ CREATE TABLE `cmdb_443218856517632` (
 -- ----------------------------
 -- Table structure for cmdb_443219242393600
 -- ----------------------------
-CREATE TABLE `cmdb_443219242393600` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443219242393600` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2334,7 +2334,7 @@ CREATE TABLE `cmdb_443219242393600` (
 -- ----------------------------
 -- Table structure for cmdb_443224250392576
 -- ----------------------------
-CREATE TABLE `cmdb_443224250392576` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443224250392576` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2342,7 +2342,7 @@ CREATE TABLE `cmdb_443224250392576` (
 -- ----------------------------
 -- Table structure for cmdb_443250909388800
 -- ----------------------------
-CREATE TABLE `cmdb_443250909388800` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443250909388800` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2350,7 +2350,7 @@ CREATE TABLE `cmdb_443250909388800` (
 -- ----------------------------
 -- Table structure for cmdb_443251714695168
 -- ----------------------------
-CREATE TABLE `cmdb_443251714695168` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443251714695168` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2358,7 +2358,7 @@ CREATE TABLE `cmdb_443251714695168` (
 -- ----------------------------
 -- Table structure for cmdb_443252251566080
 -- ----------------------------
-CREATE TABLE `cmdb_443252251566080` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443252251566080` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2366,7 +2366,7 @@ CREATE TABLE `cmdb_443252251566080` (
 -- ----------------------------
 -- Table structure for cmdb_443252872323072
 -- ----------------------------
-CREATE TABLE `cmdb_443252872323072` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443252872323072` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2374,7 +2374,7 @@ CREATE TABLE `cmdb_443252872323072` (
 -- ----------------------------
 -- Table structure for cmdb_443253459525632
 -- ----------------------------
-CREATE TABLE `cmdb_443253459525632` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443253459525632` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2382,7 +2382,7 @@ CREATE TABLE `cmdb_443253459525632` (
 -- ----------------------------
 -- Table structure for cmdb_443254088671232
 -- ----------------------------
-CREATE TABLE `cmdb_443254088671232` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443254088671232` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2390,7 +2390,7 @@ CREATE TABLE `cmdb_443254088671232` (
 -- ----------------------------
 -- Table structure for cmdb_443254617153536
 -- ----------------------------
-CREATE TABLE `cmdb_443254617153536` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443254617153536` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2398,7 +2398,7 @@ CREATE TABLE `cmdb_443254617153536` (
 -- ----------------------------
 -- Table structure for cmdb_443255237910528
 -- ----------------------------
-CREATE TABLE `cmdb_443255237910528` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443255237910528` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2406,7 +2406,7 @@ CREATE TABLE `cmdb_443255237910528` (
 -- ----------------------------
 -- Table structure for cmdb_443256085159936
 -- ----------------------------
-CREATE TABLE `cmdb_443256085159936` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443256085159936` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2414,7 +2414,7 @@ CREATE TABLE `cmdb_443256085159936` (
 -- ----------------------------
 -- Table structure for cmdb_443256965963776
 -- ----------------------------
-CREATE TABLE `cmdb_443256965963776` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443256965963776` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2422,7 +2422,7 @@ CREATE TABLE `cmdb_443256965963776` (
 -- ----------------------------
 -- Table structure for cmdb_443257519611910
 -- ----------------------------
-CREATE TABLE `cmdb_443257519611910` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443257519611910` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2430,7 +2430,7 @@ CREATE TABLE `cmdb_443257519611910` (
 -- ----------------------------
 -- Table structure for cmdb_443258408804352
 -- ----------------------------
-CREATE TABLE `cmdb_443258408804352` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443258408804352` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2438,7 +2438,7 @@ CREATE TABLE `cmdb_443258408804352` (
 -- ----------------------------
 -- Table structure for cmdb_443258970841088
 -- ----------------------------
-CREATE TABLE `cmdb_443258970841088` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443258970841088` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2446,7 +2446,7 @@ CREATE TABLE `cmdb_443258970841088` (
 -- ----------------------------
 -- Table structure for cmdb_443259641929728
 -- ----------------------------
-CREATE TABLE `cmdb_443259641929728` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443259641929728` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2454,7 +2454,7 @@ CREATE TABLE `cmdb_443259641929728` (
 -- ----------------------------
 -- Table structure for cmdb_443322397106176
 -- ----------------------------
-CREATE TABLE `cmdb_443322397106176` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443322397106176` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2462,7 +2462,7 @@ CREATE TABLE `cmdb_443322397106176` (
 -- ----------------------------
 -- Table structure for cmdb_443374121263104
 -- ----------------------------
-CREATE TABLE `cmdb_443374121263104` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443374121263104` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2470,7 +2470,7 @@ CREATE TABLE `cmdb_443374121263104` (
 -- ----------------------------
 -- Table structure for cmdb_443378726608896
 -- ----------------------------
-CREATE TABLE `cmdb_443378726608896` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443378726608896` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2478,7 +2478,7 @@ CREATE TABLE `cmdb_443378726608896` (
 -- ----------------------------
 -- Table structure for cmdb_443421525286912
 -- ----------------------------
-CREATE TABLE `cmdb_443421525286912` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443421525286912` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2486,7 +2486,7 @@ CREATE TABLE `cmdb_443421525286912` (
 -- ----------------------------
 -- Table structure for cmdb_443423085568000
 -- ----------------------------
-CREATE TABLE `cmdb_443423085568000` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443423085568000` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2494,7 +2494,7 @@ CREATE TABLE `cmdb_443423085568000` (
 -- ----------------------------
 -- Table structure for cmdb_443430526263296
 -- ----------------------------
-CREATE TABLE `cmdb_443430526263296` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443430526263296` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2502,7 +2502,7 @@ CREATE TABLE `cmdb_443430526263296` (
 -- ----------------------------
 -- Table structure for cmdb_443433571328000
 -- ----------------------------
-CREATE TABLE `cmdb_443433571328000` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443433571328000` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2510,7 +2510,7 @@ CREATE TABLE `cmdb_443433571328000` (
 -- ----------------------------
 -- Table structure for cmdb_443436238905344
 -- ----------------------------
-CREATE TABLE `cmdb_443436238905344` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443436238905344` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2518,7 +2518,7 @@ CREATE TABLE `cmdb_443436238905344` (
 -- ----------------------------
 -- Table structure for cmdb_443438453497856
 -- ----------------------------
-CREATE TABLE `cmdb_443438453497856` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443438453497856` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2526,7 +2526,7 @@ CREATE TABLE `cmdb_443438453497856` (
 -- ----------------------------
 -- Table structure for cmdb_443438763876352
 -- ----------------------------
-CREATE TABLE `cmdb_443438763876352` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443438763876352` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2534,7 +2534,7 @@ CREATE TABLE `cmdb_443438763876352` (
 -- ----------------------------
 -- Table structure for cmdb_443439250415616
 -- ----------------------------
-CREATE TABLE `cmdb_443439250415616` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443439250415616` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2542,7 +2542,7 @@ CREATE TABLE `cmdb_443439250415616` (
 -- ----------------------------
 -- Table structure for cmdb_443445005000704
 -- ----------------------------
-CREATE TABLE `cmdb_443445005000704` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443445005000704` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2550,7 +2550,7 @@ CREATE TABLE `cmdb_443445005000704` (
 -- ----------------------------
 -- Table structure for cmdb_443447873904640
 -- ----------------------------
-CREATE TABLE `cmdb_443447873904640` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443447873904640` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2558,7 +2558,7 @@ CREATE TABLE `cmdb_443447873904640` (
 -- ----------------------------
 -- Table structure for cmdb_443450818306048
 -- ----------------------------
-CREATE TABLE `cmdb_443450818306048` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443450818306048` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2566,7 +2566,7 @@ CREATE TABLE `cmdb_443450818306048` (
 -- ----------------------------
 -- Table structure for cmdb_443452126928896
 -- ----------------------------
-CREATE TABLE `cmdb_443452126928896` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443452126928896` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2574,7 +2574,7 @@ CREATE TABLE `cmdb_443452126928896` (
 -- ----------------------------
 -- Table structure for cmdb_443456975544320
 -- ----------------------------
-CREATE TABLE `cmdb_443456975544320` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443456975544320` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2582,7 +2582,7 @@ CREATE TABLE `cmdb_443456975544320` (
 -- ----------------------------
 -- Table structure for cmdb_443469390684160
 -- ----------------------------
-CREATE TABLE `cmdb_443469390684160` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443469390684160` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2590,7 +2590,7 @@ CREATE TABLE `cmdb_443469390684160` (
 -- ----------------------------
 -- Table structure for cmdb_443472452526080
 -- ----------------------------
-CREATE TABLE `cmdb_443472452526080` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443472452526080` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2598,7 +2598,7 @@ CREATE TABLE `cmdb_443472452526080` (
 -- ----------------------------
 -- Table structure for cmdb_443472964231168
 -- ----------------------------
-CREATE TABLE `cmdb_443472964231168` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443472964231168` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2606,7 +2606,7 @@ CREATE TABLE `cmdb_443472964231168` (
 -- ----------------------------
 -- Table structure for cmdb_443473475936256
 -- ----------------------------
-CREATE TABLE `cmdb_443473475936256` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443473475936256` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2614,7 +2614,7 @@ CREATE TABLE `cmdb_443473475936256` (
 -- ----------------------------
 -- Table structure for cmdb_443473861812224
 -- ----------------------------
-CREATE TABLE `cmdb_443473861812224` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443473861812224` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2622,7 +2622,7 @@ CREATE TABLE `cmdb_443473861812224` (
 -- ----------------------------
 -- Table structure for cmdb_443474440626176
 -- ----------------------------
-CREATE TABLE `cmdb_443474440626176` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443474440626176` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2630,7 +2630,7 @@ CREATE TABLE `cmdb_443474440626176` (
 -- ----------------------------
 -- Table structure for cmdb_443474792947712
 -- ----------------------------
-CREATE TABLE `cmdb_443474792947712` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443474792947712` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2638,7 +2638,7 @@ CREATE TABLE `cmdb_443474792947712` (
 -- ----------------------------
 -- Table structure for cmdb_443481696772096
 -- ----------------------------
-CREATE TABLE `cmdb_443481696772096` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443481696772096` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2646,7 +2646,7 @@ CREATE TABLE `cmdb_443481696772096` (
 -- ----------------------------
 -- Table structure for cmdb_443483584208896
 -- ----------------------------
-CREATE TABLE `cmdb_443483584208896` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443483584208896` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2654,7 +2654,7 @@ CREATE TABLE `cmdb_443483584208896` (
 -- ----------------------------
 -- Table structure for cmdb_443484959940608
 -- ----------------------------
-CREATE TABLE `cmdb_443484959940608` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443484959940608` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2662,7 +2662,7 @@ CREATE TABLE `cmdb_443484959940608` (
 -- ----------------------------
 -- Table structure for cmdb_443486713159680
 -- ----------------------------
-CREATE TABLE `cmdb_443486713159680` (
+CREATE TABLE IF NOT EXISTS  `cmdb_443486713159680` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2670,7 +2670,7 @@ CREATE TABLE `cmdb_443486713159680` (
 -- ----------------------------
 -- Table structure for cmdb_445307754127360
 -- ----------------------------
-CREATE TABLE `cmdb_445307754127360` (
+CREATE TABLE IF NOT EXISTS  `cmdb_445307754127360` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2678,7 +2678,7 @@ CREATE TABLE `cmdb_445307754127360` (
 -- ----------------------------
 -- Table structure for cmdb_445318575431680
 -- ----------------------------
-CREATE TABLE `cmdb_445318575431680` (
+CREATE TABLE IF NOT EXISTS  `cmdb_445318575431680` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2686,7 +2686,7 @@ CREATE TABLE `cmdb_445318575431680` (
 -- ----------------------------
 -- Table structure for cmdb_446083406766080
 -- ----------------------------
-CREATE TABLE `cmdb_446083406766080` (
+CREATE TABLE IF NOT EXISTS  `cmdb_446083406766080` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `479555169034240` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'IP地址',
   `479555169034240_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'IP地址值散列码',
@@ -2700,7 +2700,7 @@ CREATE TABLE `cmdb_446083406766080` (
 -- ----------------------------
 -- Table structure for cmdb_446294497697792
 -- ----------------------------
-CREATE TABLE `cmdb_446294497697792` (
+CREATE TABLE IF NOT EXISTS  `cmdb_446294497697792` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2708,7 +2708,7 @@ CREATE TABLE `cmdb_446294497697792` (
 -- ----------------------------
 -- Table structure for cmdb_446299723800576
 -- ----------------------------
-CREATE TABLE `cmdb_446299723800576` (
+CREATE TABLE IF NOT EXISTS  `cmdb_446299723800576` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `446308070465536` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '槽位号',
   `446308070465536_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '槽位号值散列码',
@@ -2719,7 +2719,7 @@ CREATE TABLE `cmdb_446299723800576` (
 -- ----------------------------
 -- Table structure for cmdb_478816686317568
 -- ----------------------------
-CREATE TABLE `cmdb_478816686317568` (
+CREATE TABLE IF NOT EXISTS  `cmdb_478816686317568` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `481541616574464` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '服务',
   `481541616574464_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '服务值散列码',
@@ -2733,7 +2733,7 @@ CREATE TABLE `cmdb_478816686317568` (
 -- ----------------------------
 -- Table structure for cmdb_479550169423872
 -- ----------------------------
-CREATE TABLE `cmdb_479550169423872` (
+CREATE TABLE IF NOT EXISTS  `cmdb_479550169423872` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2741,7 +2741,7 @@ CREATE TABLE `cmdb_479550169423872` (
 -- ----------------------------
 -- Table structure for cmdb_479551469658112
 -- ----------------------------
-CREATE TABLE `cmdb_479551469658112` (
+CREATE TABLE IF NOT EXISTS  `cmdb_479551469658112` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `689722431119360` decimal(50,4) DEFAULT NULL COMMENT '序号',
   `689722431119360_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '序号值散列码',
@@ -2753,7 +2753,7 @@ CREATE TABLE `cmdb_479551469658112` (
 -- ----------------------------
 -- Table structure for cmdb_479552551788544
 -- ----------------------------
-CREATE TABLE `cmdb_479552551788544` (
+CREATE TABLE IF NOT EXISTS  `cmdb_479552551788544` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2761,7 +2761,7 @@ CREATE TABLE `cmdb_479552551788544` (
 -- ----------------------------
 -- Table structure for cmdb_479556628652032
 -- ----------------------------
-CREATE TABLE `cmdb_479556628652032` (
+CREATE TABLE IF NOT EXISTS  `cmdb_479556628652032` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2769,7 +2769,7 @@ CREATE TABLE `cmdb_479556628652032` (
 -- ----------------------------
 -- Table structure for cmdb_479557517844480
 -- ----------------------------
-CREATE TABLE `cmdb_479557517844480` (
+CREATE TABLE IF NOT EXISTS  `cmdb_479557517844480` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2777,7 +2777,7 @@ CREATE TABLE `cmdb_479557517844480` (
 -- ----------------------------
 -- Table structure for cmdb_479593471418368
 -- ----------------------------
-CREATE TABLE `cmdb_479593471418368` (
+CREATE TABLE IF NOT EXISTS  `cmdb_479593471418368` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `482321077428224` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'OS版本',
   `482321077428224_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'OS版本值散列码',
@@ -2834,7 +2834,7 @@ CREATE TABLE `cmdb_479593471418368` (
 -- ----------------------------
 -- Table structure for cmdb_479594234781696
 -- ----------------------------
-CREATE TABLE `cmdb_479594234781696` (
+CREATE TABLE IF NOT EXISTS  `cmdb_479594234781696` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2842,7 +2842,7 @@ CREATE TABLE `cmdb_479594234781696` (
 -- ----------------------------
 -- Table structure for cmdb_479596491317248
 -- ----------------------------
-CREATE TABLE `cmdb_479596491317248` (
+CREATE TABLE IF NOT EXISTS  `cmdb_479596491317248` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `479597237903360` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'SSL端口',
   `479597237903360_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'SSL端口值散列码',
@@ -2865,7 +2865,7 @@ CREATE TABLE `cmdb_479596491317248` (
 -- ----------------------------
 -- Table structure for cmdb_479598143873024
 -- ----------------------------
-CREATE TABLE `cmdb_479598143873024` (
+CREATE TABLE IF NOT EXISTS  `cmdb_479598143873024` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `479598940790784` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '访问地址',
   `479598940790784_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '访问地址值散列码',
@@ -2879,7 +2879,7 @@ CREATE TABLE `cmdb_479598143873024` (
 -- ----------------------------
 -- Table structure for cmdb_479603630022656
 -- ----------------------------
-CREATE TABLE `cmdb_479603630022656` (
+CREATE TABLE IF NOT EXISTS  `cmdb_479603630022656` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `479605257412608` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '安装目录',
   `479605257412608_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '安装目录值散列码',
@@ -2914,7 +2914,7 @@ CREATE TABLE `cmdb_479603630022656` (
 -- ----------------------------
 -- Table structure for cmdb_479606037553152
 -- ----------------------------
-CREATE TABLE `cmdb_479606037553152` (
+CREATE TABLE IF NOT EXISTS  `cmdb_479606037553152` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `479606616367104` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '访问入口',
   `479606616367104_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '访问入口值散列码',
@@ -2925,7 +2925,7 @@ CREATE TABLE `cmdb_479606037553152` (
 -- ----------------------------
 -- Table structure for cmdb_479609502048256
 -- ----------------------------
-CREATE TABLE `cmdb_479609502048256` (
+CREATE TABLE IF NOT EXISTS  `cmdb_479609502048256` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `480848331464705` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '系统简称',
   `480848331464705_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '系统简称值散列码',
@@ -2945,7 +2945,7 @@ CREATE TABLE `cmdb_479609502048256` (
 -- ----------------------------
 -- Table structure for cmdb_479610550624256
 -- ----------------------------
-CREATE TABLE `cmdb_479610550624256` (
+CREATE TABLE IF NOT EXISTS  `cmdb_479610550624256` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `480873648283648` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '简称',
   `480873648283648_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '简称值散列码',
@@ -2956,7 +2956,7 @@ CREATE TABLE `cmdb_479610550624256` (
 -- ----------------------------
 -- Table structure for cmdb_480125644709888
 -- ----------------------------
-CREATE TABLE `cmdb_480125644709888` (
+CREATE TABLE IF NOT EXISTS  `cmdb_480125644709888` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2964,7 +2964,7 @@ CREATE TABLE `cmdb_480125644709888` (
 -- ----------------------------
 -- Table structure for cmdb_480157781467136
 -- ----------------------------
-CREATE TABLE `cmdb_480157781467136` (
+CREATE TABLE IF NOT EXISTS  `cmdb_480157781467136` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `482300743442432` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '主板序列号',
   `482300743442432_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '主板序列号值散列码',
@@ -3014,7 +3014,7 @@ CREATE TABLE `cmdb_480157781467136` (
 -- ----------------------------
 -- Table structure for cmdb_480863598731264
 -- ----------------------------
-CREATE TABLE `cmdb_480863598731264` (
+CREATE TABLE IF NOT EXISTS  `cmdb_480863598731264` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `497652961656832` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '公司编码',
   `497652961656832_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '公司编码值散列码',
@@ -3037,7 +3037,7 @@ CREATE TABLE `cmdb_480863598731264` (
 -- ----------------------------
 -- Table structure for cmdb_480864647307264
 -- ----------------------------
-CREATE TABLE `cmdb_480864647307264` (
+CREATE TABLE IF NOT EXISTS  `cmdb_480864647307264` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -3045,7 +3045,7 @@ CREATE TABLE `cmdb_480864647307264` (
 -- ----------------------------
 -- Table structure for cmdb_481080948498432
 -- ----------------------------
-CREATE TABLE `cmdb_481080948498432` (
+CREATE TABLE IF NOT EXISTS  `cmdb_481080948498432` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -3053,7 +3053,7 @@ CREATE TABLE `cmdb_481080948498432` (
 -- ----------------------------
 -- Table structure for cmdb_481658427727872
 -- ----------------------------
-CREATE TABLE `cmdb_481658427727872` (
+CREATE TABLE IF NOT EXISTS  `cmdb_481658427727872` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `481658704551936` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '编码',
   `481658704551936_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '编码值散列码',
@@ -3067,7 +3067,7 @@ CREATE TABLE `cmdb_481658427727872` (
 -- ----------------------------
 -- Table structure for cmdb_481849293725696
 -- ----------------------------
-CREATE TABLE `cmdb_481849293725696` (
+CREATE TABLE IF NOT EXISTS  `cmdb_481849293725696` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `481849998368768` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '名称',
   `481849998368768_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '名称值散列码',
@@ -3081,7 +3081,7 @@ CREATE TABLE `cmdb_481849293725696` (
 -- ----------------------------
 -- Table structure for cmdb_482385359331328
 -- ----------------------------
-CREATE TABLE `cmdb_482385359331328` (
+CREATE TABLE IF NOT EXISTS  `cmdb_482385359331328` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `482386894446592` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'MAC地址',
   `482386894446592_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'MAC地址值散列码',
@@ -3098,7 +3098,7 @@ CREATE TABLE `cmdb_482385359331328` (
 -- ----------------------------
 -- Table structure for cmdb_482390962921472
 -- ----------------------------
-CREATE TABLE `cmdb_482390962921472` (
+CREATE TABLE IF NOT EXISTS  `cmdb_482390962921472` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -3106,7 +3106,7 @@ CREATE TABLE `cmdb_482390962921472` (
 -- ----------------------------
 -- Table structure for cmdb_482391566901248
 -- ----------------------------
-CREATE TABLE `cmdb_482391566901248` (
+CREATE TABLE IF NOT EXISTS  `cmdb_482391566901248` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `482391818559488` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '用户ID',
   `482391818559488_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '用户ID值散列码',
@@ -3129,7 +3129,7 @@ CREATE TABLE `cmdb_482391566901248` (
 -- ----------------------------
 -- Table structure for cmdb_482395954143232
 -- ----------------------------
-CREATE TABLE `cmdb_482395954143232` (
+CREATE TABLE IF NOT EXISTS  `cmdb_482395954143232` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `482396683952128` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '设备名',
   `482396683952128_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '设备名值散列码',
@@ -3164,7 +3164,7 @@ CREATE TABLE `cmdb_482395954143232` (
 -- ----------------------------
 -- Table structure for cmdb_482403134791680
 -- ----------------------------
-CREATE TABLE `cmdb_482403134791680` (
+CREATE TABLE IF NOT EXISTS  `cmdb_482403134791680` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `482404023984128` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '类型',
   `482404023984128_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '类型值散列码',
@@ -3184,7 +3184,7 @@ CREATE TABLE `cmdb_482403134791680` (
 -- ----------------------------
 -- Table structure for cmdb_482410231554048
 -- ----------------------------
-CREATE TABLE `cmdb_482410231554048` (
+CREATE TABLE IF NOT EXISTS  `cmdb_482410231554048` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `482410466435072` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'WWN',
   `482410466435072_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'WWN值散列码',
@@ -3201,7 +3201,7 @@ CREATE TABLE `cmdb_482410231554048` (
 -- ----------------------------
 -- Table structure for cmdb_482443215560704
 -- ----------------------------
-CREATE TABLE `cmdb_482443215560704` (
+CREATE TABLE IF NOT EXISTS  `cmdb_482443215560704` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `482447057543169` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '空闲内存',
   `482447057543169_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '空闲内存值散列码',
@@ -3224,7 +3224,7 @@ CREATE TABLE `cmdb_482443215560704` (
 -- ----------------------------
 -- Table structure for cmdb_482443702099968
 -- ----------------------------
-CREATE TABLE `cmdb_482443702099968` (
+CREATE TABLE IF NOT EXISTS  `cmdb_482443702099968` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `482453206392832` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '空闲内存',
   `482453206392832_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '空闲内存值散列码',
@@ -3235,7 +3235,7 @@ CREATE TABLE `cmdb_482443702099968` (
 -- ----------------------------
 -- Table structure for cmdb_482443978924032
 -- ----------------------------
-CREATE TABLE `cmdb_482443978924032` (
+CREATE TABLE IF NOT EXISTS  `cmdb_482443978924032` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -3243,7 +3243,7 @@ CREATE TABLE `cmdb_482443978924032` (
 -- ----------------------------
 -- Table structure for cmdb_482994858811392
 -- ----------------------------
-CREATE TABLE `cmdb_482994858811392` (
+CREATE TABLE IF NOT EXISTS  `cmdb_482994858811392` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `483042153783296` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '数据目录',
   `483042153783296_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '数据目录值散列码',
@@ -3257,7 +3257,7 @@ CREATE TABLE `cmdb_482994858811392` (
 -- ----------------------------
 -- Table structure for cmdb_482995731226624
 -- ----------------------------
-CREATE TABLE `cmdb_482995731226624` (
+CREATE TABLE IF NOT EXISTS  `cmdb_482995731226624` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `483165306937344` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '数据目录',
   `483165306937344_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '数据目录值散列码',
@@ -3274,7 +3274,7 @@ CREATE TABLE `cmdb_482995731226624` (
 -- ----------------------------
 -- Table structure for cmdb_483000076525568
 -- ----------------------------
-CREATE TABLE `cmdb_483000076525568` (
+CREATE TABLE IF NOT EXISTS  `cmdb_483000076525568` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `483174886727680` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'Home目录',
   `483174886727680_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Home目录值散列码',
@@ -3312,7 +3312,7 @@ CREATE TABLE `cmdb_483000076525568` (
 -- ----------------------------
 -- Table structure for cmdb_483025577893888
 -- ----------------------------
-CREATE TABLE `cmdb_483025577893888` (
+CREATE TABLE IF NOT EXISTS  `cmdb_483025577893888` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -3320,7 +3320,7 @@ CREATE TABLE `cmdb_483025577893888` (
 -- ----------------------------
 -- Table structure for cmdb_483027867983872
 -- ----------------------------
-CREATE TABLE `cmdb_483027867983872` (
+CREATE TABLE IF NOT EXISTS  `cmdb_483027867983872` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -3328,7 +3328,7 @@ CREATE TABLE `cmdb_483027867983872` (
 -- ----------------------------
 -- Table structure for cmdb_483028262248448
 -- ----------------------------
-CREATE TABLE `cmdb_483028262248448` (
+CREATE TABLE IF NOT EXISTS  `cmdb_483028262248448` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -3336,7 +3336,7 @@ CREATE TABLE `cmdb_483028262248448` (
 -- ----------------------------
 -- Table structure for cmdb_483028849451008
 -- ----------------------------
-CREATE TABLE `cmdb_483028849451008` (
+CREATE TABLE IF NOT EXISTS  `cmdb_483028849451008` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -3344,7 +3344,7 @@ CREATE TABLE `cmdb_483028849451008` (
 -- ----------------------------
 -- Table structure for cmdb_483029788975104
 -- ----------------------------
-CREATE TABLE `cmdb_483029788975104` (
+CREATE TABLE IF NOT EXISTS  `cmdb_483029788975104` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -3352,7 +3352,7 @@ CREATE TABLE `cmdb_483029788975104` (
 -- ----------------------------
 -- Table structure for cmdb_483146013138944
 -- ----------------------------
-CREATE TABLE `cmdb_483146013138944` (
+CREATE TABLE IF NOT EXISTS  `cmdb_483146013138944` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -3360,7 +3360,7 @@ CREATE TABLE `cmdb_483146013138944` (
 -- ----------------------------
 -- Table structure for cmdb_483205689696256
 -- ----------------------------
-CREATE TABLE `cmdb_483205689696256` (
+CREATE TABLE IF NOT EXISTS  `cmdb_483205689696256` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -3368,7 +3368,7 @@ CREATE TABLE `cmdb_483205689696256` (
 -- ----------------------------
 -- Table structure for cmdb_483208323719168
 -- ----------------------------
-CREATE TABLE `cmdb_483208323719168` (
+CREATE TABLE IF NOT EXISTS  `cmdb_483208323719168` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `483210513145856` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'DB实例IP',
   `483210513145856_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'DB实例IP值散列码',
@@ -3394,7 +3394,7 @@ CREATE TABLE `cmdb_483208323719168` (
 -- ----------------------------
 -- Table structure for cmdb_483212568354816
 -- ----------------------------
-CREATE TABLE `cmdb_483212568354816` (
+CREATE TABLE IF NOT EXISTS  `cmdb_483212568354816` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `483215202377728` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'DB实例IP',
   `483215202377728_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'DB实例IP值散列码',
@@ -3417,7 +3417,7 @@ CREATE TABLE `cmdb_483212568354816` (
 -- ----------------------------
 -- Table structure for cmdb_483235007881216
 -- ----------------------------
-CREATE TABLE `cmdb_483235007881216` (
+CREATE TABLE IF NOT EXISTS  `cmdb_483235007881216` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `483235251150848` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '部署目录',
   `483235251150848_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '部署目录值散列码',
@@ -3428,7 +3428,7 @@ CREATE TABLE `cmdb_483235007881216` (
 -- ----------------------------
 -- Table structure for cmdb_483270063874052
 -- ----------------------------
-CREATE TABLE `cmdb_483270063874052` (
+CREATE TABLE IF NOT EXISTS  `cmdb_483270063874052` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `483270466527232` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'JAVA_HOME',
   `483270466527232_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'JAVA_HOME值散列码',
@@ -3460,7 +3460,7 @@ CREATE TABLE `cmdb_483270063874052` (
 -- ----------------------------
 -- Table structure for cmdb_483276229500928
 -- ----------------------------
-CREATE TABLE `cmdb_483276229500928` (
+CREATE TABLE IF NOT EXISTS  `cmdb_483276229500928` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `483278595088384` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'WAS HOME目录',
   `483278595088384_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'WAS HOME目录值散列码',
@@ -3480,7 +3480,7 @@ CREATE TABLE `cmdb_483276229500928` (
 -- ----------------------------
 -- Table structure for cmdb_483279895322624
 -- ----------------------------
-CREATE TABLE `cmdb_483279895322624` (
+CREATE TABLE IF NOT EXISTS  `cmdb_483279895322624` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `483280457359360` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'Catalina家目录',
   `483280457359360_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Catalina家目录值散列码',
@@ -3494,7 +3494,7 @@ CREATE TABLE `cmdb_483279895322624` (
 -- ----------------------------
 -- Table structure for cmdb_483287419904000
 -- ----------------------------
-CREATE TABLE `cmdb_483287419904000` (
+CREATE TABLE IF NOT EXISTS  `cmdb_483287419904000` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -3502,7 +3502,7 @@ CREATE TABLE `cmdb_483287419904000` (
 -- ----------------------------
 -- Table structure for cmdb_483300590018560
 -- ----------------------------
-CREATE TABLE `cmdb_483300590018560` (
+CREATE TABLE IF NOT EXISTS  `cmdb_483300590018560` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -3510,7 +3510,7 @@ CREATE TABLE `cmdb_483300590018560` (
 -- ----------------------------
 -- Table structure for cmdb_483315689512960
 -- ----------------------------
-CREATE TABLE `cmdb_483315689512960` (
+CREATE TABLE IF NOT EXISTS  `cmdb_483315689512960` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `483321318268928` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '设备名',
   `483321318268928_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '设备名值散列码',
@@ -3545,7 +3545,7 @@ CREATE TABLE `cmdb_483315689512960` (
 -- ----------------------------
 -- Table structure for cmdb_493301966839808
 -- ----------------------------
-CREATE TABLE `cmdb_493301966839808` (
+CREATE TABLE IF NOT EXISTS  `cmdb_493301966839808` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -3553,7 +3553,7 @@ CREATE TABLE `cmdb_493301966839808` (
 -- ----------------------------
 -- Table structure for cmdb_496258816942080
 -- ----------------------------
-CREATE TABLE `cmdb_496258816942080` (
+CREATE TABLE IF NOT EXISTS  `cmdb_496258816942080` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `496259328647168` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '设备名',
   `496259328647168_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '设备名值散列码',
@@ -3585,7 +3585,7 @@ CREATE TABLE `cmdb_496258816942080` (
 -- ----------------------------
 -- Table structure for cmdb_496317889519616
 -- ----------------------------
-CREATE TABLE `cmdb_496317889519616` (
+CREATE TABLE IF NOT EXISTS  `cmdb_496317889519616` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -3593,7 +3593,7 @@ CREATE TABLE `cmdb_496317889519616` (
 -- ----------------------------
 -- Table structure for cmdb_496318208286720
 -- ----------------------------
-CREATE TABLE `cmdb_496318208286720` (
+CREATE TABLE IF NOT EXISTS  `cmdb_496318208286720` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -3601,7 +3601,7 @@ CREATE TABLE `cmdb_496318208286720` (
 -- ----------------------------
 -- Table structure for cmdb_496981184929898
 -- ----------------------------
-CREATE TABLE `cmdb_496981184929898` (
+CREATE TABLE IF NOT EXISTS  `cmdb_496981184929898` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -3609,7 +3609,7 @@ CREATE TABLE `cmdb_496981184929898` (
 -- ----------------------------
 -- Table structure for cmdb_497070599323648
 -- ----------------------------
-CREATE TABLE `cmdb_497070599323648` (
+CREATE TABLE IF NOT EXISTS  `cmdb_497070599323648` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -3617,7 +3617,7 @@ CREATE TABLE `cmdb_497070599323648` (
 -- ----------------------------
 -- Table structure for cmdb_507682339217408
 -- ----------------------------
-CREATE TABLE `cmdb_507682339217408` (
+CREATE TABLE IF NOT EXISTS  `cmdb_507682339217408` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `518039115980800` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '访问地址',
   `518039115980800_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '访问地址值散列码',
@@ -3628,7 +3628,7 @@ CREATE TABLE `cmdb_507682339217408` (
 -- ----------------------------
 -- Table structure for cmdb_546978471624704
 -- ----------------------------
-CREATE TABLE `cmdb_546978471624704` (
+CREATE TABLE IF NOT EXISTS  `cmdb_546978471624704` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `546978949775443` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '访问地址',
   `546978949775443_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '访问地址值散列码',
@@ -3639,7 +3639,7 @@ CREATE TABLE `cmdb_546978471624704` (
 -- ----------------------------
 -- Table structure for cmdb_546979444703232
 -- ----------------------------
-CREATE TABLE `cmdb_546979444703232` (
+CREATE TABLE IF NOT EXISTS  `cmdb_546979444703232` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -3647,7 +3647,7 @@ CREATE TABLE `cmdb_546979444703232` (
 -- ----------------------------
 -- Table structure for cmdb_547538604138496
 -- ----------------------------
-CREATE TABLE `cmdb_547538604138496` (
+CREATE TABLE IF NOT EXISTS  `cmdb_547538604138496` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -3655,7 +3655,7 @@ CREATE TABLE `cmdb_547538604138496` (
 -- ----------------------------
 -- Table structure for cmdb_547539166175232
 -- ----------------------------
-CREATE TABLE `cmdb_547539166175232` (
+CREATE TABLE IF NOT EXISTS  `cmdb_547539166175232` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -3663,7 +3663,7 @@ CREATE TABLE `cmdb_547539166175232` (
 -- ----------------------------
 -- Table structure for cmdb_547539619160064
 -- ----------------------------
-CREATE TABLE `cmdb_547539619160064` (
+CREATE TABLE IF NOT EXISTS  `cmdb_547539619160064` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -3671,7 +3671,7 @@ CREATE TABLE `cmdb_547539619160064` (
 -- ----------------------------
 -- Table structure for cmdb_573130988855296
 -- ----------------------------
-CREATE TABLE `cmdb_573130988855296` (
+CREATE TABLE IF NOT EXISTS  `cmdb_573130988855296` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `573131316011008` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '服务端地址',
   `573131316011008_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '服务端地址值散列码',
@@ -3682,7 +3682,7 @@ CREATE TABLE `cmdb_573130988855296` (
 -- ----------------------------
 -- Table structure for cmdb_573132951789568
 -- ----------------------------
-CREATE TABLE `cmdb_573132951789568` (
+CREATE TABLE IF NOT EXISTS  `cmdb_573132951789568` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `573133127950336` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '默认字符集',
   `573133127950336_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '默认字符集值散列码',
@@ -3696,7 +3696,7 @@ CREATE TABLE `cmdb_573132951789568` (
 -- ----------------------------
 -- Table structure for cmdb_573133958422528
 -- ----------------------------
-CREATE TABLE `cmdb_573133958422528` (
+CREATE TABLE IF NOT EXISTS  `cmdb_573133958422528` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -3704,7 +3704,7 @@ CREATE TABLE `cmdb_573133958422528` (
 -- ----------------------------
 -- Table structure for cmdb_573134277189632
 -- ----------------------------
-CREATE TABLE `cmdb_573134277189632` (
+CREATE TABLE IF NOT EXISTS  `cmdb_573134277189632` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `573134486904832` decimal(50,4) DEFAULT NULL COMMENT '是否RAC',
   `573134486904832_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '是否RAC值散列码',
@@ -3723,7 +3723,7 @@ CREATE TABLE `cmdb_573134277189632` (
 -- ----------------------------
 -- Table structure for cmdb_594812604522496
 -- ----------------------------
-CREATE TABLE `cmdb_594812604522496` (
+CREATE TABLE IF NOT EXISTS  `cmdb_594812604522496` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `595645693960192` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '版本',
   `595645693960192_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '版本值散列码',
@@ -3734,7 +3734,7 @@ CREATE TABLE `cmdb_594812604522496` (
 -- ----------------------------
 -- Table structure for cmdb_595641751314432
 -- ----------------------------
-CREATE TABLE `cmdb_595641751314432` (
+CREATE TABLE IF NOT EXISTS  `cmdb_595641751314432` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `595641969418240` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'uid',
   `595641969418240_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'uid值散列码',
@@ -3769,7 +3769,7 @@ CREATE TABLE `cmdb_595641751314432` (
 -- ----------------------------
 -- Table structure for cmdb_595646591541248
 -- ----------------------------
-CREATE TABLE `cmdb_595646591541248` (
+CREATE TABLE IF NOT EXISTS  `cmdb_595646591541248` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `595646901919744` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'uid',
   `595646901919744_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'uid值散列码',
@@ -3783,7 +3783,7 @@ CREATE TABLE `cmdb_595646591541248` (
 -- ----------------------------
 -- Table structure for cmdb_596077262675968
 -- ----------------------------
-CREATE TABLE `cmdb_596077262675968` (
+CREATE TABLE IF NOT EXISTS  `cmdb_596077262675968` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `596077363339264` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'uid',
   `596077363339264_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'uid值散列码',
@@ -3812,7 +3812,7 @@ CREATE TABLE `cmdb_596077262675968` (
 -- ----------------------------
 -- Table structure for cmdb_596082757214208
 -- ----------------------------
-CREATE TABLE `cmdb_596082757214208` (
+CREATE TABLE IF NOT EXISTS  `cmdb_596082757214208` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `596260318879744` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'uid',
   `596260318879744_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'uid值散列码',
@@ -3830,7 +3830,7 @@ CREATE TABLE `cmdb_596082757214208` (
 -- ----------------------------
 -- Table structure for cmdb_596086020382720
 -- ----------------------------
-CREATE TABLE `cmdb_596086020382720` (
+CREATE TABLE IF NOT EXISTS  `cmdb_596086020382720` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `596107050622976` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '主键',
   `596107050622976_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '主键值散列码',
@@ -3844,7 +3844,7 @@ CREATE TABLE `cmdb_596086020382720` (
 -- ----------------------------
 -- Table structure for cmdb_596274369798144
 -- ----------------------------
-CREATE TABLE `cmdb_596274369798144` (
+CREATE TABLE IF NOT EXISTS  `cmdb_596274369798144` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `596274646622208` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'uid',
   `596274646622208_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'uid值散列码',
@@ -3877,7 +3877,7 @@ CREATE TABLE `cmdb_596274369798144` (
 -- ----------------------------
 -- Table structure for cmdb_598987262402560
 -- ----------------------------
-CREATE TABLE `cmdb_598987262402560` (
+CREATE TABLE IF NOT EXISTS  `cmdb_598987262402560` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `598987715387392` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '集群IP',
   `598987715387392_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '集群IP值散列码',
@@ -3906,7 +3906,7 @@ CREATE TABLE `cmdb_598987262402560` (
 -- ----------------------------
 -- Table structure for cmdb_598994946367488
 -- ----------------------------
-CREATE TABLE `cmdb_598994946367488` (
+CREATE TABLE IF NOT EXISTS  `cmdb_598994946367488` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `598995105751040` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '协议',
   `598995105751040_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '协议值散列码',
@@ -3931,7 +3931,7 @@ CREATE TABLE `cmdb_598994946367488` (
 -- ----------------------------
 -- Table structure for cmdb_599116790898688
 -- ----------------------------
-CREATE TABLE `cmdb_599116790898688` (
+CREATE TABLE IF NOT EXISTS  `cmdb_599116790898688` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `599117277437952` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'uid',
   `599117277437952_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'uid值散列码',
@@ -3948,7 +3948,7 @@ CREATE TABLE `cmdb_599116790898688` (
 -- ----------------------------
 -- Table structure for cmdb_599191088799744
 -- ----------------------------
-CREATE TABLE `cmdb_599191088799744` (
+CREATE TABLE IF NOT EXISTS  `cmdb_599191088799744` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `599191432732672` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '方式',
   `599191432732672_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '方式值散列码',
@@ -3974,7 +3974,7 @@ CREATE TABLE `cmdb_599191088799744` (
 -- ----------------------------
 -- Table structure for cmdb_654987285766144
 -- ----------------------------
-CREATE TABLE `cmdb_654987285766144` (
+CREATE TABLE IF NOT EXISTS  `cmdb_654987285766144` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `656212072865792` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '版本',
   `656212072865792_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '版本值散列码',
@@ -4009,7 +4009,7 @@ CREATE TABLE `cmdb_654987285766144` (
 -- ----------------------------
 -- Table structure for cmdb_655549624492032
 -- ----------------------------
-CREATE TABLE `cmdb_655549624492032` (
+CREATE TABLE IF NOT EXISTS  `cmdb_655549624492032` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -4017,7 +4017,7 @@ CREATE TABLE `cmdb_655549624492032` (
 -- ----------------------------
 -- Table structure for cmdb_655791761661952
 -- ----------------------------
-CREATE TABLE `cmdb_655791761661952` (
+CREATE TABLE IF NOT EXISTS  `cmdb_655791761661952` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `655792709574656` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '交换机IP',
   `655792709574656_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '交换机IP值散列码',
@@ -4034,7 +4034,7 @@ CREATE TABLE `cmdb_655791761661952` (
 -- ----------------------------
 -- Table structure for cmdb_656217324134400
 -- ----------------------------
-CREATE TABLE `cmdb_656217324134400` (
+CREATE TABLE IF NOT EXISTS  `cmdb_656217324134400` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `656217844228096` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'RAC唯一名',
   `656217844228096_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'RAC唯一名值散列码',
@@ -4064,7 +4064,7 @@ CREATE TABLE `cmdb_656217324134400` (
 -- ----------------------------
 -- Table structure for cmdb_656220209815552
 -- ----------------------------
-CREATE TABLE `cmdb_656220209815552` (
+CREATE TABLE IF NOT EXISTS  `cmdb_656220209815552` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `656222667677696` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'RAC唯一名',
   `656222667677696_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'RAC唯一名值散列码',
@@ -4103,7 +4103,7 @@ CREATE TABLE `cmdb_656220209815552` (
 -- ----------------------------
 -- Table structure for cmdb_656228128661504
 -- ----------------------------
-CREATE TABLE `cmdb_656228128661504` (
+CREATE TABLE IF NOT EXISTS  `cmdb_656228128661504` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `656229680553984` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'IP',
   `656229680553984_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'IP值散列码',
@@ -4123,7 +4123,7 @@ CREATE TABLE `cmdb_656228128661504` (
 -- ----------------------------
 -- Table structure for cmdb_656242540290048
 -- ----------------------------
-CREATE TABLE `cmdb_656242540290048` (
+CREATE TABLE IF NOT EXISTS  `cmdb_656242540290048` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `656242808725504` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'RAC唯一名',
   `656242808725504_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'RAC唯一名值散列码',
@@ -4138,7 +4138,7 @@ CREATE TABLE `cmdb_656242540290048` (
 -- ----------------------------
 -- Table structure for cmdb_656246273220608
 -- ----------------------------
-CREATE TABLE `cmdb_656246273220608` (
+CREATE TABLE IF NOT EXISTS  `cmdb_656246273220608` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -4146,7 +4146,7 @@ CREATE TABLE `cmdb_656246273220608` (
 -- ----------------------------
 -- Table structure for cmdb_656246961086464
 -- ----------------------------
-CREATE TABLE `cmdb_656246961086464` (
+CREATE TABLE IF NOT EXISTS  `cmdb_656246961086464` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -4154,7 +4154,7 @@ CREATE TABLE `cmdb_656246961086464` (
 -- ----------------------------
 -- Table structure for cmdb_658440556912640
 -- ----------------------------
-CREATE TABLE `cmdb_658440556912640` (
+CREATE TABLE IF NOT EXISTS  `cmdb_658440556912640` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -4162,7 +4162,7 @@ CREATE TABLE `cmdb_658440556912640` (
 -- ----------------------------
 -- Table structure for cmdb_658440867291136
 -- ----------------------------
-CREATE TABLE `cmdb_658440867291136` (
+CREATE TABLE IF NOT EXISTS  `cmdb_658440867291136` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -4170,7 +4170,7 @@ CREATE TABLE `cmdb_658440867291136` (
 -- ----------------------------
 -- Table structure for cmdb_684626284650496
 -- ----------------------------
-CREATE TABLE `cmdb_684626284650496` (
+CREATE TABLE IF NOT EXISTS  `cmdb_684626284650496` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   PRIMARY KEY (`cientity_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -4178,7 +4178,7 @@ CREATE TABLE `cmdb_684626284650496` (
 -- ----------------------------
 -- Table structure for cmdb_827467770109952
 -- ----------------------------
-CREATE TABLE `cmdb_827467770109952` (
+CREATE TABLE IF NOT EXISTS  `cmdb_827467770109952` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `827467770109953` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '软件服务IP',
   `827467770109953_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '软件服务IP值散列码',
@@ -4197,7 +4197,7 @@ CREATE TABLE `cmdb_827467770109952` (
 -- ----------------------------
 -- Table structure for cmdb_827468374089728
 -- ----------------------------
-CREATE TABLE `cmdb_827468374089728` (
+CREATE TABLE IF NOT EXISTS  `cmdb_827468374089728` (
   `cientity_id` bigint NOT NULL COMMENT '配置项id',
   `827468374089729` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '操作系统IP',
   `827468374089729_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '操作系统IP值散列码',
@@ -4212,7 +4212,7 @@ CREATE TABLE `cmdb_827468374089728` (
 -- ----------------------------
 -- Table structure for customview_544088067686400
 -- ----------------------------
-CREATE TABLE `customview_544088067686400` (
+CREATE TABLE IF NOT EXISTS  `customview_544088067686400` (
   `id` bigint NOT NULL COMMENT 'ID',
   `name` varchar(1024) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '配置项名称',
   `39d33a102ea84ce5991ed4b6d0e57edb_id` bigint NOT NULL COMMENT 'ID',
