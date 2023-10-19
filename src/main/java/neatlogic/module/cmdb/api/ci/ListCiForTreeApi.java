@@ -16,7 +16,9 @@
 
 package neatlogic.module.cmdb.api.ci;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
@@ -24,13 +26,11 @@ import neatlogic.framework.common.dto.ValueTextVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +40,7 @@ import java.util.Objects;
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ListCiForTreeApi extends PrivateApiComponentBase {
-    @Autowired
+    @Resource
     private CiMapper ciMapper;
 
     @Override
@@ -60,6 +60,7 @@ public class ListCiForTreeApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "ciId", type = ApiParamType.LONG, desc = "term.cmdb.ciid"),
+            @Param(name = "isVirtual", type = ApiParamType.INTEGER, desc = "是否虚拟模型"),
             @Param(name = "rootCiId", type = ApiParamType.LONG, desc = "term.cmdb.rootciid"),
             @Param(name = "rootCiName", type = ApiParamType.STRING, desc = "term.cmdb.rootciname")
     })
@@ -71,6 +72,7 @@ public class ListCiForTreeApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("ciId");
         Long rootCiId = jsonObj.getLong("rootCiId");
+        Integer isVirtual = jsonObj.getInteger("isVirtual");
         List<CiVo> ciList = null;
         if (rootCiId == null) {
             String rootCiName = jsonObj.getString("rootCiName");
@@ -90,6 +92,9 @@ public class ListCiForTreeApi extends PrivateApiComponentBase {
             ciList = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
         } else {
             ciList = ciMapper.getAllCi(null);
+        }
+        if (isVirtual != null) {
+            ciList.removeIf(d -> !d.getIsVirtual().equals(isVirtual));
         }
         Map<Long, CiVo> ciMap = new HashMap<>();
         for (CiVo ciVo : ciList) {
