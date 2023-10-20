@@ -83,15 +83,17 @@ limitations under the License.
             </foreach>
         </if>
         <if test="batchSearchList != null and batchSearchList.size() > 0 and searchField != null and searchField != ''">
+            AND
             <if test="searchField == 'name'">
-                and a.`name` IN
+                <foreach collection="batchSearchList" item="item" open="(" separator=" OR " close=")">
+                    a.`name` LIKE #{item}
+                </foreach>
             </if>
             <if test="searchField == 'ip'">
-                and a.`ip` IN
+                <foreach collection="batchSearchList" item="item" open="(" separator=" OR " close=")">
+                    a.`ip` LIKE #{item}
+                </foreach>
             </if>
-            <foreach collection="batchSearchList" item="item" open="(" separator="," close=")">
-                #{item}
-            </foreach>
         </if>
         <if test="inspectJobPhaseNodeStatusList !=null and inspectJobPhaseNodeStatusList.size() > 0">
             AND ajpn.status in
