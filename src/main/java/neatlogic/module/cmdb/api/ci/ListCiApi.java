@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
@@ -57,7 +58,11 @@ public class ListCiApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.ciidlist")})
+    @Input({
+            @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.ciidlist"),
+            @Param(name = "isAbstract", type = ApiParamType.ENUM, rule = "0,1", desc = "term.cmdb.isabstractci"),
+            @Param(name = "isVirtual", type = ApiParamType.ENUM, rule = "0,1", desc = "term.cmdb.isvirtualci"),
+    })
     @Output({@Param(explode = ValueTextVo[].class)})
     @Description(desc = "nmcac.listciapi.getname")
     @Override
@@ -75,7 +80,15 @@ public class ListCiApi extends PrivateApiComponentBase {
         }
         List<CiVo> ciList = ciMapper.getAllCi(ciIdList);
         JSONArray jsonList = new JSONArray();
+        Integer isAbstract = jsonObj.getInteger("isAbstract");
+        Integer isVirtual = jsonObj.getInteger("isVirtual");
         for (CiVo ciVo : ciList) {
+            if (isAbstract != null && !Objects.equals(isAbstract, ciVo.getIsAbstract())) {
+                continue;
+            }
+            if (isVirtual != null && !Objects.equals(isVirtual, ciVo.getIsVirtual())) {
+                continue;
+            }
             JSONObject valueObj = new JSONObject();
             valueObj.put("value", ciVo.getId());
             valueObj.put("text", ciVo.getLabel() + "(" + ciVo.getName() + ")");

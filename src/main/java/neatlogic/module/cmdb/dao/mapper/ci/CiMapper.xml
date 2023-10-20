@@ -379,54 +379,6 @@
         </foreach>
     </select>
 
-    <select id="getCiCount" parameterType="neatlogic.framework.cmdb.dto.ci.CiSearchVo" resultType="int">
-        SELECT
-        COUNT(1)
-        FROM
-        `cmdb_ci`
-        <where>
-            <if test="keyword != null and keyword != ''">
-                AND (`name` LIKE CONCAT('%', #{keyword},'%') OR `label` LIKE CONCAT('%', #{keyword},'%') OR `description` LIKE CONCAT('%', #{keyword},'%'))
-            </if>
-            <if test="isVirtual != null">
-                AND `is_virtual` = #{isVirtual}
-            </if>
-            <if test="isAbstract != null">
-                AND `is_abstract` = #{isAbstract}
-            </if>
-        </where>
-    </select>
-
-    <select id="searchCiList" parameterType="neatlogic.framework.cmdb.dto.ci.CiSearchVo" resultType="neatlogic.framework.cmdb.dto.ci.CiVo">
-        SELECT
-        `id`,
-        `name`,
-        `label`,
-        `description`,
-        `icon`,
-        `lft`,
-        `rht`,
-        `type_id` AS typeId,
-        `is_private` AS isPrivate,
-        `is_menu` AS isMenu,
-        `is_abstract` AS isAbstract,
-        `is_virtual` AS isVirtual
-        FROM
-        `cmdb_ci`
-        <where>
-            <if test="keyword != null and keyword != ''">
-                AND (`name` LIKE CONCAT('%', #{keyword},'%') OR `label` LIKE CONCAT('%', #{keyword},'%') OR `description` LIKE CONCAT('%', #{keyword},'%'))
-            </if>
-            <if test="isVirtual != null">
-                AND `is_virtual` = #{isVirtual}
-            </if>
-            <if test="isAbstract != null">
-                AND `is_abstract` = #{isAbstract}
-            </if>
-        </where>
-        LIMIT #{startNum}, #{pageSize}
-    </select>
-
     <resultMap id="ciResultMap" type="neatlogic.framework.cmdb.dto.ci.CiVo">
         <id column="id" property="id"></id>
         <result column="name" property="name"></result>

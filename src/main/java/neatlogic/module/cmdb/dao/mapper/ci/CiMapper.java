@@ -17,7 +17,6 @@
 package neatlogic.module.cmdb.dao.mapper.ci;
 
 import neatlogic.framework.cmdb.crossover.ICiCrossoverMapper;
-import neatlogic.framework.cmdb.dto.ci.CiSearchVo;
 import neatlogic.framework.cmdb.dto.ci.CiTypeVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.customview.CustomViewVo;
@@ -73,10 +72,6 @@ public interface CiMapper extends ICiCrossoverMapper {
     List<CiVo> getCiByToCiId(Long ciId);
 
     List<CiVo> getCiByIdList(@Param("ciIdList") List<Long> ciIds);
-
-    int getCiCount(CiSearchVo search);
-
-    List<CiVo> searchCiList(CiSearchVo search);
 
     int checkCiNameIsExists(CiVo ciVo);
 
