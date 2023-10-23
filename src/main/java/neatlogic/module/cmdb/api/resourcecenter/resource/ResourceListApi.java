@@ -114,25 +114,7 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
         } else {
             searchVo = resourceCenterResourceService.assembleResourceSearchVo(jsonObj);
         }
-        List<String> batchSearchList = searchVo.getBatchSearchList();
-        if (CollectionUtils.isNotEmpty(batchSearchList)) {
-            if (Objects.equals(searchVo.getSearchField(), "name")) {
-                List<String> list = new ArrayList<>();
-                for (String keyword : batchSearchList) {
-                    list.add("%" + keyword + "%");
-                }
-                searchVo.setBatchSearchList(list);
-            } else if (Objects.equals(searchVo.getSearchField(), "ip")) {
-                List<String> list = new ArrayList<>();
-                for (String keyword : batchSearchList) {
-                    if (keyword.contains("*")) {
-                        keyword = keyword.replace('*', '%');
-                    }
-                    list.add(keyword);
-                }
-                searchVo.setBatchSearchList(list);
-            }
-        }
+        resourceCenterResourceService.handleBatchSearchList(searchVo);
         int rowNum = resourceMapper.getResourceCount(searchVo);
         if (rowNum == 0) {
             return TableResultUtil.getResult(resourceList, searchVo);
