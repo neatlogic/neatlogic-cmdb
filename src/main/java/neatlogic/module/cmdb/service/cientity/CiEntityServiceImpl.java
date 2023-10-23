@@ -1795,6 +1795,11 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                                 relEntityMapper.deleteRelEntityByRelIdFromCiEntityIdToCiEntityId(item.getRelId(), item.getFromCiEntityId(), item.getToCiEntityId());
                                 //删除级联关系数据
                                 RelativeRelManager.delete(item);
+                                //发送消息到消息队列
+                                ITopic<CiEntityTransactionVo> topic = TopicFactory.getTopic("cmdb/cientity/update");
+                                if (topic != null) {
+                                    topic.send(endCiEntityTransactionVo);
+                                }
                             }
                             ciEntityTransactionSet.add(ciEntityId);
                         }
@@ -1965,6 +1970,11 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 //所有事务信息补充完毕后才能写入，因为对端配置项有可能被引用多次
                 for (Long ciEntityId : ciEntityTransactionMap.keySet()) {
                     transactionMapper.insertCiEntityTransaction(ciEntityTransactionMap.get(ciEntityId));
+                    //发送消息到消息队列
+                    ITopic<CiEntityTransactionVo> topic = TopicFactory.getTopic("cmdb/cientity/update");
+                    if (topic != null) {
+                        topic.send(ciEntityTransactionMap.get(ciEntityId));
+                    }
                 }
                 //重建关系序列
                 rebuildRelEntityIndex(rebuildRelEntityList);
