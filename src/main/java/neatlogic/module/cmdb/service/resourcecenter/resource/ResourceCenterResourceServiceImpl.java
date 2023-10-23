@@ -155,6 +155,29 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
     }
 
     @Override
+    public void handleBatchSearchList(ResourceSearchVo searchVo) {
+        List<String> batchSearchList = searchVo.getBatchSearchList();
+        if (CollectionUtils.isNotEmpty(batchSearchList)) {
+            if (Objects.equals(searchVo.getSearchField(), "name")) {
+                List<String> list = new ArrayList<>();
+                for (String keyword : batchSearchList) {
+                    list.add("%" + keyword + "%");
+                }
+                searchVo.setBatchSearchList(list);
+            } else if (Objects.equals(searchVo.getSearchField(), "ip")) {
+                List<String> list = new ArrayList<>();
+                for (String keyword : batchSearchList) {
+                    if (keyword.contains("*")) {
+                        keyword = keyword.replace('*', '%');
+                    }
+                    list.add(keyword);
+                }
+                searchVo.setBatchSearchList(list);
+            }
+        }
+    }
+
+    @Override
     public List<Long> getDownwardCiIdListByCiIdList(List<Long> idList) {
         Set<Long> ciIdSet = new HashSet<>();
         for (Long ciId : idList) {

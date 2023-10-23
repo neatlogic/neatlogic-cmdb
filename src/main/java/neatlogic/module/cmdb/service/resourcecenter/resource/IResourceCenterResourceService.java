@@ -42,6 +42,12 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
     ResourceSearchVo assembleResourceSearchVo(JSONObject jsonObj);
 
     /**
+     * 处理批量搜索关键字
+     * @param resourceSearchVo
+     */
+    void handleBatchSearchList(ResourceSearchVo resourceSearchVo);
+
+    /**
      * 查询所有后代模型的id列表
      *
      * @param idList

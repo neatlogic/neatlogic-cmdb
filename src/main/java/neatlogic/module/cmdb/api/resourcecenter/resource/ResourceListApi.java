@@ -114,7 +114,7 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
         } else {
             searchVo = resourceCenterResourceService.assembleResourceSearchVo(jsonObj);
         }
-
+        resourceCenterResourceService.handleBatchSearchList(searchVo);
         int rowNum = resourceMapper.getResourceCount(searchVo);
         if (rowNum == 0) {
             return TableResultUtil.getResult(resourceList, searchVo);
