@@ -128,9 +128,6 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
                     if (keyword.contains("*")) {
                         keyword = keyword.replace('*', '%');
                     }
-                    if (keyword.contains("?")) {
-                        keyword = keyword.replace('?', '_');
-                    }
                     list.add(keyword);
                 }
                 searchVo.setBatchSearchList(list);
