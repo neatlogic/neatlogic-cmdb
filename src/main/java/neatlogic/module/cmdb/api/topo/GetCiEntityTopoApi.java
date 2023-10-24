@@ -79,7 +79,9 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "layout", type = ApiParamType.ENUM, rule = "dot,circo,fdp,neato,osage,patchwork,twopi", isRequired = true),
+    @Input({
+            @Param(name = "isBackbone", type = ApiParamType.INTEGER, rule = "0,1", isRequired = true, desc = "term.cmdb.isbackbone"),
+            @Param(name = "layout", type = ApiParamType.ENUM, rule = "dot,circo,fdp,neato,osage,patchwork,twopi", isRequired = true, desc = "nmcat.getcientitytopoapi.input.param.desc"),
             @Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid"),
             @Param(name = "ciEntityId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.cientityid"),
             @Param(name = "globalAttrFilterList", type = ApiParamType.JSONARRAY, desc = "nmcac.searchcientityapi.input.param.desc.globalattrfilterlist"),
@@ -90,6 +92,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         String layout = jsonObj.getString("layout");
+        int isBackbone = jsonObj.getIntValue("isBackbone");
         // 所有需要绘制的配置项
         Set<CiEntityVo> ciEntitySet = new HashSet<>();
         // 所有需要绘制的层次
@@ -110,6 +113,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
             }
         }
         Set<Long> disableRelIdList = new HashSet<>();
+        //已经使用过的关系，如果是backbone模式，查询过的关系不会重复查询
         Set<Long> containRelIdSet = new HashSet<>();
         JSONObject returnObj = new JSONObject();
         if (CollectionUtils.isNotEmpty(disableRelObjList)) {
@@ -169,7 +173,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                             for (RelEntityVo relEntityVo : ciEntityVo.getRelEntityList()) {
                                 RelTypeVo relTypeVo = relMapper.getRelTypeByRelId(relEntityVo.getRelId());
                                 //判断关系类型是否展示TOPO
-                                if (relTypeVo != null && relTypeVo.getIsShowInTopo().equals(1)) {
+                                if (relTypeVo != null && relTypeVo.getIsShowInTopo().equals(1) && (isBackbone == 0 || (isBackbone == 1 && !containRelIdSet.contains(relEntityVo.getRelId())))) {
                                     //记录所有存在数据的关系
                                     containRelIdSet.add(relEntityVo.getRelId());
                                     if (CollectionUtils.isEmpty(disableRelIdList) || disableRelIdList.stream().noneMatch(r -> r.equals(relEntityVo.getRelId()))) {
