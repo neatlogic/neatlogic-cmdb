@@ -236,7 +236,6 @@ public class CmdbSyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
     }
 
     private JSONObject regulateCiEntityConfig(JSONObject ciEntityConfig) {
-        // TODO 校验数据结构
-        return null;
+        return ciEntityConfig;
     }
 }
