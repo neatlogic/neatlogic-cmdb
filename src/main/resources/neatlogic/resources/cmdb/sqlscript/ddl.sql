@@ -938,7 +938,7 @@ CREATE TABLE IF NOT EXISTS `cmdb_viewconst` (
 -- ----------------------------
 -- Table structure for cmdb_resourcecenter_type_ci
 -- ----------------------------
-CREATE TABLE `cmdb_resourcecenter_type_ci` (
+CREATE TABLE IF NOT EXISTS `cmdb_resourcecenter_type_ci` (
   `ci_id` bigint NOT NULL COMMENT '模型id',
   PRIMARY KEY (`ci_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='资产清单树形模型';
