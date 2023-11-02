@@ -174,8 +174,6 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                                 RelTypeVo relTypeVo = relMapper.getRelTypeByRelId(relEntityVo.getRelId());
                                 //判断关系类型是否展示TOPO
                                 if (relTypeVo != null && relTypeVo.getIsShowInTopo().equals(1) && (isBackbone == 0 || (isBackbone == 1 && !containRelIdSet.contains(relEntityVo.getRelId())))) {
-                                    //记录所有存在数据的关系
-                                    containRelIdSet.add(relEntityVo.getRelId());
                                     if (CollectionUtils.isEmpty(disableRelIdList) || disableRelIdList.stream().noneMatch(r -> r.equals(relEntityVo.getRelId()))) {
                                         relEntitySet.add(relEntityVo);
                                         // 检查关系中的对端配置项是否已经存在，不存在可进入下一次搜索
@@ -192,6 +190,10 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                                         }
                                     }
                                 }
+                            }
+                            //为了防止一个配置项有多个相同关系而被错误剪枝，需要等当前配置项循环结束后再记录关系
+                            for (RelEntityVo relEntityVo : ciEntityVo.getRelEntityList()) {
+                                containRelIdSet.add(relEntityVo.getRelId());
                             }
                         }
                     }
