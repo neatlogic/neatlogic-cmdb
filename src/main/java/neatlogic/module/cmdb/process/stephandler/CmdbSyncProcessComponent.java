@@ -19,6 +19,7 @@ package neatlogic.module.cmdb.process.stephandler;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSONPath;
+import neatlogic.framework.asynchronization.threadlocal.InputFromContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.RelVo;
@@ -30,6 +31,7 @@ import neatlogic.framework.cmdb.enums.TransactionActionType;
 import neatlogic.framework.cmdb.exception.cientity.NewCiEntityNotFoundException;
 import neatlogic.framework.cmdb.utils.RelUtil;
 import neatlogic.framework.common.constvalue.Expression;
+import neatlogic.framework.common.constvalue.InputFrom;
 import neatlogic.framework.form.constvalue.FormHandler;
 import neatlogic.framework.form.dto.FormAttributeVo;
 import neatlogic.framework.form.dto.FormVersionVo;
@@ -155,11 +157,20 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             // rerunStepToCreateNewJob为1时表示重新激活自动化步骤时创建新作业，rerunStepToCreateNewJob为0时表示重新激活自动化步骤时不创建新作业，也不重跑旧作业，即什么都不做
             Integer rerunStepToSync = ciEntityConfig.getInteger("rerunStepToSync");
             if (!Objects.equals(rerunStepToSync, 1)) {
-//                Long autoexecJobId = autoexecJobMapper.getJobIdByInvokeIdLimitOne(currentProcessTaskStepVo.getId());
-//                if (autoexecJobId != null) {
-//                    return 1;
-//                }
+                ProcessTaskStepDataVo search = new ProcessTaskStepDataVo();
+                search.setProcessTaskId(currentProcessTaskStepVo.getProcessTaskId());
+                search.setProcessTaskStepId(currentProcessTaskStepVo.getId());
+                search.setType("ciEntitySyncResult");
+                ProcessTaskStepDataVo processTaskStepData = processTaskStepDataMapper.getProcessTaskStepData(search);
+                if (processTaskStepData != null) {
+                    return 1;
+                }
             }
+            ProcessTaskStepDataVo processTaskStepData = new ProcessTaskStepDataVo();
+            processTaskStepData.setProcessTaskId(currentProcessTaskStepVo.getProcessTaskId());
+            processTaskStepData.setProcessTaskStepId(currentProcessTaskStepVo.getId());
+            processTaskStepData.setType("ciEntitySyncError");
+            processTaskStepDataMapper.deleteProcessTaskStepData(processTaskStepData);
 
             Map<String, ProcessTaskFormAttributeDataVo> processTaskFormAttributeDataMap = new HashMap<>();
             Map<String, FormAttributeVo> formAttributeMap = new HashMap<>();
@@ -241,20 +252,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                     }
                 }
             }
-//            String createPolicy = mainConfigObj.getString("createPolicy");
-//            if (Objects.equals(createPolicy, "single")) {
-//                ciEntityTransactionList = createSingleCiEntityVo(ciEntityTransactionMap, mainConfigObj, dependencyConfigMap, formAttributeMap, processTaskFormAttributeDataMap);
-//                if (CollectionUtils.isEmpty(ciEntityTransactionList)) {
-//                    return 0;
-//                }
-//            } else if (Objects.equals(createPolicy, "batch")) {
-//                ciEntityTransactionList = createBatchCiEntityVo(ciEntityTransactionMap, mainConfigObj, dependencyConfigMap, formAttributeMap, processTaskFormAttributeDataMap);
-//                if (CollectionUtils.isEmpty(ciEntityTransactionList)) {
-//                    return 0;
-//                }
-//            } else {
-//                return 0;
-//            }
             boolean flag = false;
             JSONArray errorMessageList = new JSONArray();
             if (CollectionUtils.isNotEmpty(ciEntityTransactionList)) {
@@ -264,35 +261,41 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                 System.out.println("ciEntityTransactionList = " + JSONObject.toJSONString(ciEntityTransactionList));
                 System.out.println("ciEntityTransactionList.size() = " + ciEntityTransactionList.size());
                 EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
+                    InputFromContext.init(InputFrom.ITSM);
                     Long transactionGroupId = ciEntityService.saveCiEntity(ciEntityTransactionList);
                     System.out.println("transactionGroupId = " + transactionGroupId);
+                    ProcessTaskStepDataVo search = new ProcessTaskStepDataVo();
+                    search.setProcessTaskId(currentProcessTaskStepVo.getProcessTaskId());
+                    search.setProcessTaskStepId(currentProcessTaskStepVo.getId());
+                    search.setType("ciEntitySyncResult");
+                    ProcessTaskStepDataVo oldProcessTaskStepData = processTaskStepDataMapper.getProcessTaskStepData(search);
+                    if (oldProcessTaskStepData != null) {
+                        JSONObject dataObj = oldProcessTaskStepData.getData();
+                        JSONArray transactionGroupIdList = dataObj.getJSONArray("transactionGroupIdList");
+                        transactionGroupIdList.add(transactionGroupId);
+                    } else {
+                        oldProcessTaskStepData = search;
+                        oldProcessTaskStepData.setFcu(UserContext.get().getUserUuid());
+                        JSONObject dataObj = new JSONObject();
+                        List<Long> transactionGroupIdList = new ArrayList<>();
+                        transactionGroupIdList.add(transactionGroupId);
+                        dataObj.put("transactionGroupIdList", transactionGroupIdList);
+                        oldProcessTaskStepData.setData(dataObj.toJSONString());
+                    }
+                    processTaskStepDataMapper.replaceProcessTaskStepData(oldProcessTaskStepData);
                 }).execute();
                 if (!s.isSucceed()) {
                     // 增加提醒
                     logger.error(s.getError(), s.getException());
                     JSONObject errorMessageObj = new JSONObject();
-//                    errorMessageObj.put("jobId", ciEntityVo.getId());
-//                    errorMessageObj.put("jobName", ciEntityVo.getName());
                     errorMessageObj.put("error", s.getError());
                     errorMessageList.add(errorMessageObj);
                     flag = true;
                 }
-//                try {
-//                    Long transactionGroupId = ciEntityService.saveCiEntity(ciEntityTransactionList);
-//                    System.out.println("transactionGroupId = " + transactionGroupId);
-//                } catch (Exception e) {
-//                    // 增加提醒
-//                    logger.error(e.getMessage(), e);
-//                    JSONObject errorMessageObj = new JSONObject();
-////                    errorMessageObj.put("jobId", ciEntityVo.getId());
-////                    errorMessageObj.put("jobName", ciEntityVo.getName());
-//                    errorMessageObj.put("error", e.getMessage());
-//                    errorMessageList.add(errorMessageObj);
-//                    flag = true;
-//                }
+
             }
             boolean isAutoComplete = true;
-            // 如果有一个作业创建有异常，则根据失败策略执行操作
+            // 如果有异常，则根据失败策略执行操作
             if (flag) {
                 ProcessTaskStepDataVo processTaskStepDataVo = new ProcessTaskStepDataVo();
                 processTaskStepDataVo.setProcessTaskId(currentProcessTaskStepVo.getProcessTaskId());
@@ -495,12 +498,7 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             Map<String, FormAttributeVo> formAttributeMap,
             Map<String, ProcessTaskFormAttributeDataVo> processTaskFormAttributeDataMap) {
         List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
-//        cmdb/ci/get
-//        cmdb/ciview/get
-//        cmdb/ci/listattr
-//        cmdb/ci/479609502048256/listrel
-//        cmdb/globalattr/search
-//        cmdb/ci/unique/get
+
         Long ciId = mainConfigObj.getLong("ciId");
         Map<String, JSONObject> mappingMap = new HashMap<>();
         JSONArray mappingList = mainConfigObj.getJSONArray("mappingList");
@@ -597,14 +595,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                         if (MapUtils.isNotEmpty(dependencyConfig)) {
                             List<CiEntityTransactionVo> list = createSingleCiEntityVo(ciEntityTransactionMap, dependencyConfig, dependencyConfigMap, formAttributeMap, processTaskFormAttributeDataMap);
                             ciEntityTransactionList.addAll(list);
-//                            String createPolicy = dependencyConfig.getString("createPolicy");
-//                            if (Objects.equals(createPolicy, "single")) {
-//                                List<CiEntityTransactionVo> list = createSingleCiEntityVo(ciEntityTransactionMap, dependencyConfig, dependencyConfigMap, formAttributeMap, processTaskFormAttributeDataMap);
-//                                ciEntityTransactionList.addAll(list);
-//                            } else if (Objects.equals(createPolicy, "batch")) {
-//                                List<CiEntityTransactionVo> list = createBatchCiEntityVo(ciEntityTransactionMap, dependencyConfig, dependencyConfigMap, formAttributeMap, processTaskFormAttributeDataMap);
-//                                ciEntityTransactionList.addAll(list);
-//                            }
                         }
                     }
                     JSONObject relEntity = parseRel(relVo, mappingObj, null, formAttributeMap, processTaskFormAttributeDataMap);
@@ -1144,31 +1134,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
 //        resultObj.put("config", attrVo.getConfig());
         resultObj.put("valueList", valueList);
         return resultObj;
-    }
-
-    private List<CiEntityTransactionVo> createBatchCiEntityVo(
-            Map<String, CiEntityTransactionVo> ciEntityTransactionMap,
-            JSONObject mainConfigObj,
-            Map<String, JSONObject> dependencyConfigMap,
-            Map<String, FormAttributeVo> formAttributeMap,
-            Map<String, ProcessTaskFormAttributeDataVo> processTaskFormAttributeDataMap) {
-        // 批量遍历表格
-        JSONObject batchDataSource = mainConfigObj.getJSONObject("batchDataSource");
-        if (MapUtils.isEmpty(batchDataSource)) {
-            return null;
-        }
-        String attributeUuid = batchDataSource.getString("attributeUuid");
-        ProcessTaskFormAttributeDataVo formAttributeDataVo = processTaskFormAttributeDataMap.get(attributeUuid);
-        JSONArray filterList = batchDataSource.getJSONArray("filterList");
-        JSONArray tbodyList = getTbodyList(formAttributeDataVo, filterList);
-        if (CollectionUtils.isEmpty(tbodyList)) {
-            return new ArrayList<>();
-        }
-        // 遍历表格数据，创建AutoexecJobVo对象列表
-        for (int index = 0; index < tbodyList.size(); index++) {
-
-        }
-        return null;
     }
 
     @Override
