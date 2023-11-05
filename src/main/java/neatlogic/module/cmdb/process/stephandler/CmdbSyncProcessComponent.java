@@ -201,14 +201,18 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                 }
             }
             System.out.println("ciEntityConfig1 = " + ciEntityConfig);
-            ciEntityConfig = rebuildCiEntityConfig(ciEntityConfig, formAttributeMap, processTaskFormAttributeDataMap);
-            System.out.println("ciEntityConfig2 = " + ciEntityConfig);
             JSONArray configList = ciEntityConfig.getJSONArray("configList");
+            if (CollectionUtils.isEmpty(configList)) {
+                return 0;
+            }
+            /* 重新构建configList配置信息 */
+            configList = rebuildConfigList(configList, formAttributeMap, processTaskFormAttributeDataMap);
+            System.out.println("ciEntityConfig2 = " + ciEntityConfig);
             if (CollectionUtils.isEmpty(configList)) {
                 return 1;
             }
             System.out.println("configList.size() = " + configList.size());
-
+            /* 遍历configList， 找出起始模型配置列表，根据id和uuid的值判断是新增还是更新 */
             List<JSONObject> startConfigList = new ArrayList<>();
             Map<String, CiEntityTransactionVo> ciEntityTransactionMap = new HashMap<>();
             Map<String, JSONObject> dependencyConfigMap = new HashMap<>();
@@ -226,14 +230,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                     ciEntityTransactionVo.setCiEntityId(id);
                     ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
                 } else {
-//                    CiEntityVo uuidCiEntityVo = ciEntityMapper.getCiEntityBaseInfoByUuid(uuid);
-//                    if (uuidCiEntityVo != null) {
-//                        ciEntityTransactionVo.setCiEntityId(uuidCiEntityVo.getId());
-//                        ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
-//                        configObject.put("id", uuidCiEntityVo.getId());
-//                    } else {
-//                        ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
-//                    }
                     System.out.println("insert uuid = " + uuid);
                     ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
                 }
@@ -249,6 +245,7 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             if (CollectionUtils.isEmpty(startConfigList)) {
                 return 0;
             }
+            /* 遍历起始模型配置信息列表，生成CiEntityTransactionVo列表 */
             List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
             for (JSONObject mainConfigObj : startConfigList) {
                 Long ciId = mainConfigObj.getLong("ciId");
@@ -352,15 +349,16 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
         }
     }
 
-    private JSONObject rebuildCiEntityConfig(
-            JSONObject ciEntityConfig,
-            Map<String, FormAttributeVo> formAttributeMap,
-            Map<String, ProcessTaskFormAttributeDataVo> processTaskFormAttributeDataMap) {
-        JSONArray configList = ciEntityConfig.getJSONArray("configList");
-        if (CollectionUtils.isEmpty(configList)) {
-            return ciEntityConfig;
-        }
-        // 遍历configList，将“批量操作”的配置信息根据表单数据转换成多条“单个操作”配置信息
+    /**
+     * 遍历configList，将“批量操作”的配置信息根据表单数据转换成多条“单个操作”配置信息
+     * @param configList 配置信息列表
+     * @param processTaskFormAttributeDataMap 表单数据信息
+     * @return
+     */
+    private JSONArray handleBatchDataSource(
+            JSONArray configList,
+            Map<String, ProcessTaskFormAttributeDataVo> processTaskFormAttributeDataMap
+    ) {
         Map<String, List<String>> oldUuid2NewUuidListMap = new HashMap<>();
         JSONArray newConfigList = new JSONArray();
         for (int i = 0; i < configList.size(); i++) {
@@ -427,24 +425,23 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                     newMappingList.add(newMappingObj);
                 }
 //                if (flag) {
-                    String newUuid = UuidUtil.randomUuid();
-                    oldUuid2NewUuidListMap.computeIfAbsent(oldUuid, key -> new ArrayList<>()).add(newUuid);
-                    newConfigObj.put("uuid", newUuid);
-                    newConfigObj.put("ciId", configObj.get("ciId"));
-                    newConfigObj.put("ciName", configObj.get("ciName"));
+                String newUuid = UuidUtil.randomUuid();
+                oldUuid2NewUuidListMap.computeIfAbsent(oldUuid, key -> new ArrayList<>()).add(newUuid);
+                newConfigObj.put("uuid", newUuid);
+                newConfigObj.put("ciId", configObj.get("ciId"));
+                newConfigObj.put("ciName", configObj.get("ciName"));
 //                    newConfigObj.put("createPolicy", "single");
-                    newConfigObj.put("ciLabel", configObj.get("ciLabel"));
-                    newConfigObj.put("isStart", configObj.get("isStart"));
-                    newConfigObj.put("ciIcon", configObj.get("ciIcon"));
-                    newConfigObj.put("mappingList", newMappingList);
-                    newConfigList.add(newConfigObj);
+                newConfigObj.put("ciLabel", configObj.get("ciLabel"));
+                newConfigObj.put("isStart", configObj.get("isStart"));
+                newConfigObj.put("ciIcon", configObj.get("ciIcon"));
+                newConfigObj.put("mappingList", newMappingList);
+                newConfigList.add(newConfigObj);
 //                }
             }
         }
-        configList = newConfigList;
-        // 遍历configList，根据oldUuid2NewUuidListMap，将关系映射配置信息中的valueList数据重新构建
-        for (int i = 0; i < configList.size(); i++) {
-            JSONObject configObj = configList.getJSONObject(i);
+        // 遍历newConfigList，根据oldUuid2NewUuidListMap，将关系映射配置信息中的valueList数据重新构建
+        for (int i = 0; i < newConfigList.size(); i++) {
+            JSONObject configObj = newConfigList.getJSONObject(i);
             JSONArray mappingList = configObj.getJSONArray("mappingList");
             for (int k = 0; k < mappingList.size(); k++) {
                 JSONObject mappingObj = mappingList.getJSONObject(k);
@@ -472,7 +469,20 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                 }
             }
         }
-        // 遍历configList，将mappingList中映射模式为“表单普通组件”和“表单表格组件”的数据替换称表单组件对应的真实值
+        return newConfigList;
+    }
+
+    /**
+     * 遍历configList，将mappingList中映射模式为“表单普通组件”和“表单表格组件”的数据替换称表单组件对应的真实值
+     * @param configList 配置信息列表
+     * @param formAttributeMap 表单组件信息
+     * @param processTaskFormAttributeDataMap 表单数据信息
+     */
+    private void handleMappingFormComponent(
+            JSONArray configList,
+            Map<String, FormAttributeVo> formAttributeMap,
+            Map<String, ProcessTaskFormAttributeDataVo> processTaskFormAttributeDataMap
+    ) {
         for (int i = 0; i < configList.size(); i++) {
             JSONObject configObj = configList.getJSONObject(i);
             JSONArray mappingList = configObj.getJSONArray("mappingList");
@@ -544,9 +554,16 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                 }
             }
         }
+    }
 
+    /**
+     * 遍历configList，根据唯一规则属性值删除重复配置信息
+     * @param configList 配置信息列表
+     * @return
+     */
+    private JSONArray removeDuplicatesByUniqueAttrValue(JSONArray configList) {
         List<String> uniqueAttrValueListJoinStrList = new ArrayList<>();
-        JSONArray newConfigList2 = new JSONArray();
+        JSONArray newConfigList = new JSONArray();
         for (int i = 0; i < configList.size(); i++) {
             JSONObject configObj = configList.getJSONObject(i);
             Long ciId = configObj.getLong("ciId");
@@ -557,7 +574,7 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             }
             List<Long> uniqueAttrIdList = ciVo.getUniqueAttrIdList();
             if (CollectionUtils.isEmpty(uniqueAttrIdList)) {
-                newConfigList2.add(configObj);
+                newConfigList.add(configObj);
             }
             Map<String, JSONArray> key2ValueListMap = new HashMap<>();
             JSONArray mappingList = configObj.getJSONArray("mappingList");
@@ -605,9 +622,17 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                 }
             }
             uniqueAttrValueListJoinStrList.add(uniqueAttrValueListJoinStr);
-            newConfigList2.add(configObj);
+            newConfigList.add(configObj);
         }
-        configList = newConfigList2;
+        return newConfigList;
+    }
+
+    /**
+     * 遍历configList，重新生成uuid的值
+     * @param configList 配置信息列表
+     * @return
+     */
+    private JSONArray updateUuidValue(JSONArray configList) {
         Map<String, String> oldUuid2NewUuidMap = new HashMap<>();
 //        List<String> needReplaceUuidList = new ArrayList<>();
         for (int i = 0; i < configList.size(); i++) {
@@ -641,17 +666,36 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                 }
             }
         }
-        ciEntityConfig.put("configList", configList);
         if (MapUtils.isNotEmpty(oldUuid2NewUuidMap)) {
             System.out.println("oldUuid2NewUuidMap = " + JSONObject.toJSONString(oldUuid2NewUuidMap));
-            String ciEntityConfigStr = ciEntityConfig.toJSONString();
+            String configListStr = configList.toJSONString();
             for (Map.Entry<String, String> entry : oldUuid2NewUuidMap.entrySet()) {
-                ciEntityConfigStr = ciEntityConfigStr.replace(entry.getKey(), entry.getValue());
+                configListStr = configListStr.replace(entry.getKey(), entry.getValue());
             }
-            return JSONObject.parseObject(ciEntityConfigStr);
-//            configList = ciEntityConfig.getJSONArray("configList");
+            return JSONObject.parseArray(configListStr);
         }
-        return ciEntityConfig;
+        return configList;
+    }
+    /**
+     * 重新构建configList配置信息
+     * @param configList 配置信息列表
+     * @param formAttributeMap 表单组件信息
+     * @param processTaskFormAttributeDataMap 表单数据信息
+     * @return
+     */
+    private JSONArray rebuildConfigList(
+            JSONArray configList,
+            Map<String, FormAttributeVo> formAttributeMap,
+            Map<String, ProcessTaskFormAttributeDataVo> processTaskFormAttributeDataMap) {
+        // 遍历configList，将“批量操作”的配置信息根据表单数据转换成多条“单个操作”配置信息
+        configList = handleBatchDataSource(configList, processTaskFormAttributeDataMap);
+        // 遍历configList，将mappingList中映射模式为“表单普通组件”和“表单表格组件”的数据替换称表单组件对应的真实值
+        handleMappingFormComponent(configList, formAttributeMap, processTaskFormAttributeDataMap);
+        // 遍历configList，根据唯一规则属性值删除重复配置信息
+        configList = removeDuplicatesByUniqueAttrValue(configList);
+        // 遍历configList，重新生成uuid的值
+        configList = updateUuidValue(configList);
+        return configList;
     }
 
     private List<CiEntityTransactionVo> createCiEntityTransactionVo(
