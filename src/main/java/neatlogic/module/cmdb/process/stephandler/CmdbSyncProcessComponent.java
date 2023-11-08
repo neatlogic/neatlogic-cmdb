@@ -162,7 +162,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             }
             // 获取工单当前步骤配置信息
             String config = selectContentByHashMapper.getProcessTaskStepConfigByHash(configHash);
-
             if (StringUtils.isBlank(config)) {
                 return 0;
             }
@@ -170,7 +169,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             if (MapUtils.isEmpty(ciEntityConfig)) {
                 return 0;
             }
-
             Map<String, ProcessTaskFormAttributeDataVo> processTaskFormAttributeDataMap = new HashMap<>();
             Map<String, FormAttributeVo> formAttributeMap = new HashMap<>();
             Long processTaskId = currentProcessTaskStepVo.getProcessTaskId();
@@ -196,7 +194,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             try {
                 CiEntitySyncVo ciEntitySyncVo = ciEntityConfig.toJavaObject(CiEntitySyncVo.class);
                 // rerunStepToSync为1时表示重新激活CMDB步骤时同步配置项实例，rerunStepToSync为0时表示重新激活CMDB步骤时不同步配置项实例，即什么都不做，直接自动流转到下一阶段
-//            Integer rerunStepToSync = ciEntityConfig.getInteger("rerunStepToSync");
                 Integer rerunStepToSync = ciEntitySyncVo.getRerunStepToSync();
                 if (!Objects.equals(rerunStepToSync, 1)) {
                     ProcessTaskStepDataVo searchVo = new ProcessTaskStepDataVo();
@@ -205,7 +202,7 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                     searchVo.setType("ciEntitySyncResult");
                     ProcessTaskStepDataVo processTaskStepData = processTaskStepDataMapper.getProcessTaskStepData(searchVo);
                     if (processTaskStepData != null) {
-                        autoComplete2(currentProcessTaskStepVo);
+                        myAutoComplete(currentProcessTaskStepVo);
                         return 1;
                     }
                 }
@@ -217,27 +214,18 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                 if (processTaskStepData != null) {
                     processTaskStepDataMapper.deleteProcessTaskStepDataById(processTaskStepData.getId());
                 }
-//            JSONArray configList = ciEntityConfig.getJSONArray("configList");
-//            if (CollectionUtils.isEmpty(configList)) {
-//                return 0;
-//            }
                 List<CiEntitySyncConfigVo> configList = ciEntitySyncVo.getConfigList();
-                System.out.println("configList1 = " + JSONObject.toJSONString(configList));
                 /* 重新构建configList配置信息 */
                 configList = rebuildConfigList(configList, formAttributeMap, processTaskFormAttributeDataMap);
-                System.out.println("configList2 = " + JSONObject.toJSONString(configList));
                 if (CollectionUtils.isEmpty(configList)) {
                     return 1;
                 }
-                System.out.println("configList.size() = " + configList.size());
                 /* 遍历configList， 找出起始模型配置列表，根据id和uuid的值判断是新增还是更新 */
                 List<CiEntitySyncConfigVo> startConfigList = new ArrayList<>();
                 Map<String, CiEntityTransactionVo> ciEntityTransactionMap = new HashMap<>();
                 Map<String, CiEntitySyncConfigVo> dependencyConfigMap = new HashMap<>();
                 for (CiEntitySyncConfigVo configObject : configList) {
-//                JSONObject configObject = configList.getJSONObject(i);
                     String uuid = configObject.getUuid();
-                    System.out.println("uuid = " + uuid);
                     if (StringUtils.isBlank(uuid)) {
                         continue;
                     }
@@ -250,11 +238,9 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                     ciEntityTransactionVo.setCiId(ciId);
                     Long id = configObject.getId();
                     if (id != null) {
-                        System.out.println("update id = " + id);
                         ciEntityTransactionVo.setCiEntityId(id);
                         ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
                     } else {
-                        System.out.println("insert uuid = " + uuid);
                         ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
                     }
                     Integer isStart = configObject.getIsStart();
@@ -271,7 +257,7 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                 /* 遍历起始模型配置信息列表，生成CiEntityTransactionVo列表 */
                 List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
                 for (CiEntitySyncConfigVo mainConfigObj : startConfigList) {
-                    List<CiEntityTransactionVo> list = createCiEntityTransactionVo(ciEntityTransactionMap, mainConfigObj, dependencyConfigMap, formAttributeMap, processTaskFormAttributeDataMap);
+                    List<CiEntityTransactionVo> list = createCiEntityTransactionVo(ciEntityTransactionMap, mainConfigObj, dependencyConfigMap);
                     for (CiEntityTransactionVo ciEntityTransactionVo : list) {
                         if (!ciEntityTransactionList.contains(ciEntityTransactionVo)) {
                             ciEntityTransactionList.add(ciEntityTransactionVo);
@@ -282,14 +268,10 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                     for (CiEntityTransactionVo t : ciEntityTransactionList) {
                         t.setAllowCommit(true);
                     }
-                    System.out.println("ciEntityTransactionList = " + JSONObject.toJSONString(ciEntityTransactionList));
-                    System.out.println("ciEntityTransactionList.size() = " + ciEntityTransactionList.size());
                     EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
                         InputFromContext.init(InputFrom.ITSM);
                         Long transactionGroupId = ciEntityService.saveCiEntity(ciEntityTransactionList);
-//                    Long transactionGroupId = 0L;
                         currentProcessTaskStepVo.getParamObj().put(CmdbAuditDetailType.CMDBSYNCMESSAGE.getParamName(), transactionGroupId);
-                        System.out.println("transactionGroupId = " + transactionGroupId);
                         ProcessTaskStepDataVo search = new ProcessTaskStepDataVo();
                         search.setProcessTaskId(currentProcessTaskStepVo.getProcessTaskId());
                         search.setProcessTaskStepId(currentProcessTaskStepVo.getId());
@@ -358,10 +340,10 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                 processTaskStepDataMapper.replaceProcessTaskStepData(processTaskStepDataVo);
                 String failPolicy = ciEntityConfig.getString("failPolicy");
                 if (FailPolicy.KEEP_ON.getValue().equals(failPolicy)) {
-                    autoComplete2(currentProcessTaskStepVo);
+                    myAutoComplete(currentProcessTaskStepVo);
                 }
             } else {
-                autoComplete2(currentProcessTaskStepVo);
+                myAutoComplete(currentProcessTaskStepVo);
             }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -370,7 +352,7 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
         return 1;
     }
 
-    private void autoComplete2(ProcessTaskStepVo currentProcessTaskStepVo) {
+    private void myAutoComplete(ProcessTaskStepVo currentProcessTaskStepVo) {
         List<Long> toProcessTaskStepIdList = processTaskMapper.getToProcessTaskStepIdListByFromIdAndType(currentProcessTaskStepVo.getId(), ProcessFlowDirection.FORWARD.getValue());
         if (toProcessTaskStepIdList.size() == 1) {
             Long nextStepId = toProcessTaskStepIdList.get(0);
@@ -406,7 +388,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
         Map<String, List<String>> oldUuid2NewUuidListMap = new HashMap<>();
         List<CiEntitySyncConfigVo> newConfigList = new ArrayList<>();
         for (CiEntitySyncConfigVo configObj : configList) {
-//            JSONObject configObj = configList.getJSONObject(i);
             if (!Objects.equals(configObj.getCreatePolicy(), "batch")) {
                 // 单个操作配置，不做修改
                 newConfigList.add(configObj);
@@ -415,11 +396,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             String oldUuid = configObj.getUuid();
             // 批量操作配置信息
             CiEntitySyncBatchDataSourceVo batchDataSource = configObj.getBatchDataSource();
-//            if (batchDataSource == null) {
-//                // 单个操作配置，不做修改
-//                newConfigList.add(configObj);
-//                continue;
-//            }
             String attributeUuid = batchDataSource.getAttributeUuid();
             ProcessTaskFormAttributeDataVo formAttributeDataVo = processTaskFormAttributeDataMap.get(attributeUuid);
             List<CiEntitySyncFilterVo> filterList = batchDataSource.getFilterList();
@@ -432,17 +408,12 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             for (int j = 0; j < tbodyList.size(); j++) {
                 JSONObject tbodyObj = tbodyList.getJSONObject(j);
                 if (MapUtils.isEmpty(tbodyObj)) {
-                    logger.warn("批量操作数据源表格的第" + j + "行数据为空");
                     continue;
                 }
-                System.out.println("tbodyObj = " + tbodyObj);
                 CiEntitySyncConfigVo newConfigObj = new CiEntitySyncConfigVo();
-//                boolean flag = false;
                 List<CiEntitySyncMappingVo> newMappingList = new ArrayList<>();
                 for (CiEntitySyncMappingVo mappingObj : mappingList) {
                     CiEntitySyncMappingVo newMappingObj = new CiEntitySyncMappingVo(mappingObj);
-//                    JSONObject mappingObj = mappingList.getJSONObject(k);
-                    String key = mappingObj.getKey();
                     String mappingMode = mappingObj.getMappingMode();
                     if (Objects.equals(mappingMode, "formTableComponent")) {
                         // 映射模式是表单表格组件
@@ -451,7 +422,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                             String value = valueList.getString(0);
                             if (Objects.equals(value, attributeUuid)) {
                                 String column = mappingObj.getColumn();
-//                                String columnValue = tbodyObj.getString(column);
                                 JSONArray newValueList = new JSONArray();
                                 Object valueObj = tbodyObj.get(column);
                                 if (valueObj instanceof JSONObject) {
@@ -485,45 +455,34 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                                     }
                                 }
                                 if (CollectionUtils.isNotEmpty(newValueList)) {
-//                                    flag = true;
                                     newMappingObj.setMappingMode("constant");
                                     newMappingObj.setValueList(newValueList);
                                 } else {
                                     continue;
                                 }
-                            } else {
-//                                newMappingObj.putAll(mappingObj);
                             }
                         } else {
                             continue;
                         }
-                    } else {
-//                        newMappingObj.putAll(mappingObj);
                     }
                     newMappingList.add(newMappingObj);
                 }
-//                if (flag) {
                 String newUuid = UuidUtil.randomUuid();
                 oldUuid2NewUuidListMap.computeIfAbsent(oldUuid, key -> new ArrayList<>()).add(newUuid);
                 newConfigObj.setUuid(newUuid);
                 newConfigObj.setCiId(configObj.getCiId());
                 newConfigObj.setCiName(configObj.getCiName());
-//                    newConfigObj.put("createPolicy", "single");
                 newConfigObj.setCiLabel(configObj.getCiLabel());
                 newConfigObj.setIsStart(configObj.getIsStart());
                 newConfigObj.setCiIcon(configObj.getCiIcon());
                 newConfigObj.setMappingList(newMappingList);
                 newConfigList.add(newConfigObj);
-//                }
             }
         }
-        System.out.println("oldUuid2NewUuidListMap = " + JSONObject.toJSONString(oldUuid2NewUuidListMap));
         // 遍历newConfigList，根据oldUuid2NewUuidListMap，将关系映射配置信息中的valueList数据重新构建
         for (CiEntitySyncConfigVo configObj : newConfigList) {
-//            JSONObject configObj = newConfigList.getJSONObject(i);
             List<CiEntitySyncMappingVo> mappingList = configObj.getMappingList();
             for (CiEntitySyncMappingVo mappingObj : mappingList) {
-//                JSONObject mappingObj = mappingList.getJSONObject(k);
                 String key = mappingObj.getKey();
                 if (key.startsWith("rel")) {
                     JSONArray valueList = mappingObj.getValueList();
@@ -531,8 +490,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                         JSONArray newValueList = new JSONArray();
                         for (int i = 0; i < valueList.size(); i++) {
                             JSONObject valueObj = valueList.getJSONObject(i);
-//                            String type = valueObj.getString("type");
-//                            if (Objects.equals(type, "new")) {
                                 String ciEntityUuid = valueObj.getString("ciEntityUuid");
                                 List<String> newUuidList = oldUuid2NewUuidListMap.get(ciEntityUuid);
                                 if (CollectionUtils.isNotEmpty(newUuidList)) {
@@ -548,7 +505,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                                     newValueObj.putAll(valueObj);
                                     newValueList.add(newValueObj);
                                 }
-//                            }
                         }
                     }
                 }
@@ -584,7 +540,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                     if (attributeDataVo == null) {
                         continue;
                     }
-//                    JSONArray filterList = mappingObj.getJSONArray("filterList");
                     List<CiEntitySyncFilterVo> filterList = mappingObj.getFilterList();
                     JSONArray tbodyList = getTbodyList(attributeDataVo, filterList);
                     if (CollectionUtils.isEmpty(tbodyList)) {
@@ -640,7 +595,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                     }
                     FormAttributeVo formAttributeVo = formAttributeMap.get(valueList.getString(0));
                     if (Objects.equals(formAttributeVo.getHandler(), FormHandler.FORMUPLOAD.getHandler())) {
-//                        List<Long> idList = new ArrayList<>();
                         if (dataObj instanceof JSONArray) {
                             JSONArray dataArray = (JSONArray) dataObj;
                             for (int m = 0; m < dataArray.size(); m++) {
@@ -676,7 +630,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
         List<String> uniqueAttrValueListJoinStrList = new ArrayList<>();
         List<CiEntitySyncConfigVo> newConfigList = new ArrayList<>();
         for (CiEntitySyncConfigVo configObj : configList) {
-//            JSONObject configObj = configList.getJSONObject(i);
             Long ciId = configObj.getCiId();
             CiVo ciVo = ciMapper.getCiById(ciId);
             if (ciVo == null) {
@@ -686,11 +639,11 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             List<Long> uniqueAttrIdList = ciVo.getUniqueAttrIdList();
             if (CollectionUtils.isEmpty(uniqueAttrIdList)) {
                 newConfigList.add(configObj);
+                continue;
             }
             Map<String, JSONArray> key2ValueListMap = new HashMap<>();
             List<CiEntitySyncMappingVo> mappingList = configObj.getMappingList();
             for (CiEntitySyncMappingVo mappingObj : mappingList) {
-//                JSONObject mappingObj = mappingList.getJSONObject(j);
                 String key = mappingObj.getKey();
                 JSONArray valueList = mappingObj.getValueList();
                 key2ValueListMap.put(key, valueList);
@@ -746,10 +699,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
     private List<CiEntitySyncConfigVo> updateUuidValue(List<CiEntitySyncConfigVo> configList) {
         Map<String, String> oldUuid2NewUuidMap = new HashMap<>();
         for (CiEntitySyncConfigVo configObject : configList) {
-            Integer isStart = configObject.getIsStart();
-            if (Objects.equals(isStart, 1)) {
-                // TODO
-            }
             String uuid = configObject.getUuid();
             Long id = configObject.getId();
             if (id != null) {
@@ -766,16 +715,10 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                 CiEntityVo ciEntityVo = ciEntityMapper.getCiEntityBaseInfoByUuid(uuid);
                 if (ciEntityVo != null) {
                     oldUuid2NewUuidMap.put(uuid, UuidUtil.randomUuid());
-//                    if (Objects.equals(isStart, 1)) {
-//                        oldUuid2NewUuidMap.put(uuid, UuidUtil.randomUuid());
-//                    } else {
-//                        configObject.setId(ciEntityVo.getId());
-//                    }
                 }
             }
         }
         if (MapUtils.isNotEmpty(oldUuid2NewUuidMap)) {
-            System.out.println("oldUuid2NewUuidMap = " + JSONObject.toJSONString(oldUuid2NewUuidMap));
             String configListStr = JSONObject.toJSONString(configList);
             for (Map.Entry<String, String> entry : oldUuid2NewUuidMap.entrySet()) {
                 configListStr = configListStr.replace(entry.getKey(), entry.getValue());
@@ -809,70 +752,53 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
     private List<CiEntityTransactionVo> createCiEntityTransactionVo(
             Map<String, CiEntityTransactionVo> ciEntityTransactionMap,
             CiEntitySyncConfigVo mainConfigObj,
-            Map<String, CiEntitySyncConfigVo> dependencyConfigMap,
-            Map<String, FormAttributeVo> formAttributeMap,
-            Map<String, ProcessTaskFormAttributeDataVo> processTaskFormAttributeDataMap) {
+            Map<String, CiEntitySyncConfigVo> dependencyConfigMap) {
         List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
 
         Long ciId = mainConfigObj.getCiId();
         Map<String, CiEntitySyncMappingVo> mappingMap = new HashMap<>();
         List<CiEntitySyncMappingVo> mappingList = mainConfigObj.getMappingList();
         for (CiEntitySyncMappingVo mappingObj : mappingList) {
-//            JSONObject mappingObj = mappingList.getJSONObject(i);
-//            if (MapUtils.isEmpty(mappingObj)) {
-//                continue;
-//            }
             String key = mappingObj.getKey();
             if (StringUtils.isBlank(key)) {
                 continue;
             }
             mappingMap.put(key, mappingObj);
         }
-//        Long id = mainConfigObj.getId();
         String uuid = mainConfigObj.getUuid();
         CiEntityTransactionVo ciEntityTransactionVo = ciEntityTransactionMap.get(uuid);
-//        if (id != null) {
-//            ciEntityTransactionVo.setCiEntityId(id);
-//            ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
-//        } else {
-//            ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
-//        }
-//        ciEntityTransactionVo.setCiId(ciId);
         /** 变更说明 **/
         CiEntitySyncMappingVo descriptionMappingObj = mappingMap.get("description");
         if (descriptionMappingObj != null) {
             JSONArray valueList = descriptionMappingObj.getValueList();
             if (CollectionUtils.isEmpty(valueList)) {
-                System.out.println("description is null");
             }
             String description = valueList.getString(0);
-//            String description = parseDescription(descriptionMappingObj, null, formAttributeMap, processTaskFormAttributeDataMap);
             if (StringUtils.isBlank(description)) {
-                System.out.println("description is null");
             }
             ciEntityTransactionVo.setDescription(description);
-        } else {
-            System.out.println("description is null");
         }
 
         /** 属性 **/
         JSONObject attrEntityData = new JSONObject();
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciId);
         for (AttrVo attrVo : attrList) {
-            if (Objects.equals(attrVo.getExpression(), "")) {
+            if (Objects.equals(attrVo.getType(), "expression")) {
                 continue;
             }
             String key = "attr_" + attrVo.getId();
             CiEntitySyncMappingVo mappingObj = mappingMap.get(key);
             if (mappingObj == null) {
-//                System.out.println(key + " is null");
+                JSONObject attrEntity = new JSONObject();
+                attrEntity.put("type", attrVo.getType());
+                attrEntity.put("config", attrVo.getConfig());
+                attrEntity.put("valueList", new JSONArray());
+                attrEntityData.put(key, attrEntity);
                 continue;
             }
-//            JSONObject attrEntity = parseAttr(ciEntityTransactionMap, attrVo, mappingObj, null, formAttributeMap, processTaskFormAttributeDataMap);
             // 映射模式为常量
             JSONArray valueList = mappingObj.getValueList();
             if (CollectionUtils.isNotEmpty(valueList)) {
-//                valueList = valueArray;
                 for (int i = valueList.size() - 1; i >= 0; i--) {
                     if (valueList.get(i) instanceof JSONObject) {
                         JSONObject valueObj = valueList.getJSONObject(i);
@@ -914,7 +840,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             String key = "rel" + relVo.getDirection() + "_" + relVo.getId();
             CiEntitySyncMappingVo mappingObj = mappingMap.get(key);
             if (mappingObj == null) {
-//                System.out.println(key + " is null");
                 continue;
             }
             String mappingMode = mappingObj.getMappingMode();
@@ -937,7 +862,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                             CiEntityTransactionVo tmpVo = ciEntityTransactionMap.get(ciEntityUuid);
                             if (tmpVo != null) {
                                 ciEntityId = tmpVo.getCiEntityId();
-                                System.out.println("tmpVo.getCiEntityId() = " + tmpVo.getCiEntityId());
                                 valueObj.put("ciEntityId", ciEntityId);
                             } else {
                                 CiEntityVo uuidCiEntityVo = ciEntityMapper.getCiEntityBaseInfoByUuid(ciEntityUuid);
@@ -960,14 +884,10 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                         }
                         // 关系选择追加模式时，需要将该配置项原来就关联的关系数据补充到valueList中
                         if (Objects.equals(dependencyConfig.getAction(), "append") && ciEntityTransactionVo.getCiEntityId() != null) {
-//                            Long relCiEntityId = dependencyConfig.getId();
                             List<RelEntityVo> relEntityList;
                             if (relVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
                                 relEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(ciEntityTransactionVo.getCiEntityId(), relVo.getId(), null);
                                 for (RelEntityVo relEntityVo : relEntityList) {
-//                                    if (relCiEntityId != null && Objects.equals(relCiEntityId, relEntityVo.getToCiEntityId())) {
-//                                        continue;
-//                                    }
                                     JSONObject jsonObj = new JSONObject();
                                     jsonObj.put("ciEntityId", relEntityVo.getToCiEntityId());
                                     jsonObj.put("ciEntityName", relEntityVo.getToCiEntityName());
@@ -977,9 +897,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                             } else {
                                 relEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(ciEntityTransactionVo.getCiEntityId(), relVo.getId(), null);
                                 for (RelEntityVo relEntityVo : relEntityList) {
-//                                    if (relCiEntityId != null && Objects.equals(relCiEntityId, relEntityVo.getFromCiEntityId())) {
-//                                        continue;
-//                                    }
                                     JSONObject jsonObj = new JSONObject();
                                     jsonObj.put("ciEntityId", relEntityVo.getFromCiEntityId());
                                     jsonObj.put("ciEntityName", relEntityVo.getFromCiEntityName());
@@ -988,10 +905,9 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                                 }
                             }
                         }
-                        List<CiEntityTransactionVo> list = createCiEntityTransactionVo(ciEntityTransactionMap, dependencyConfig, dependencyConfigMap, formAttributeMap, processTaskFormAttributeDataMap);
+                        List<CiEntityTransactionVo> list = createCiEntityTransactionVo(ciEntityTransactionMap, dependencyConfig, dependencyConfigMap);
                         ciEntityTransactionList.addAll(list);
                     }
-//                    JSONObject relEntity = parseRel(relVo, mappingObj, null, formAttributeMap, processTaskFormAttributeDataMap);
                     // 关系选择追加模式时，需要将该配置项原来就关联的关系数据补充到valueList中
                     for (JSONObject jsonObj : alreadyExistRelList) {
                         if (ciEntityIdList.contains(jsonObj.getLong("ciEntityId"))) {
@@ -1015,10 +931,11 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             String key = "global_" + globalAttrVo.getId();
             CiEntitySyncMappingVo mappingObj = mappingMap.get(key);
             if (mappingObj == null) {
-//                System.out.println(key + " is null");
+                JSONObject globalAttrEntity = new JSONObject();
+                globalAttrEntity.put("valueList", new JSONArray());
+                globalAttrEntityData.put(key, globalAttrEntity);
                 continue;
             }
-//            JSONObject globalAttrEntity = parseGlobalAttr(globalAttrVo, mappingObj, null, formAttributeMap, processTaskFormAttributeDataMap);
             JSONArray valueList = new JSONArray();
             String mappingMode = mappingObj.getMappingMode();
             if (Objects.equals(mappingMode, "constant")) {
@@ -1060,10 +977,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                 }
                 boolean flag = true;
                 for (CiEntitySyncFilterVo filterObj : filterList) {
-//                    JSONObject filterObj = filterList.getJSONObject(j);
-//                    if (MapUtils.isEmpty(filterObj)) {
-//                        continue;
-//                    }
                     String column = filterObj.getColumn();
                     if (StringUtils.isBlank(column)) {
                         continue;
