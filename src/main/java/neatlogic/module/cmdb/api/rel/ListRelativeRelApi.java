@@ -16,7 +16,9 @@
 
 package neatlogic.module.cmdb.api.rel;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.ci.RelVo;
 import neatlogic.framework.cmdb.dto.ci.RelativeRelVo;
@@ -24,16 +26,14 @@ import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -42,10 +42,10 @@ import java.util.stream.Collectors;
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ListRelativeRelApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private RelMapper relMapper;
 
-    @Autowired
+    @Resource
     private CiMapper ciMapper;
 
     @Override

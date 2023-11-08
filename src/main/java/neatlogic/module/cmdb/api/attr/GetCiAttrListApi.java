@@ -75,7 +75,8 @@ public class GetCiAttrListApi extends PrivateApiComponentBase implements IGetCiA
             @Param(name = "ciId", type = ApiParamType.LONG, desc = "term.cmdb.ciid"),
             @Param(name = "ciName", type = ApiParamType.STRING, desc = "term.cmdb.ciname"),
             @Param(name = "showType", type = ApiParamType.ENUM, rule = "all,list,detail", desc = "common.displaytype"),
-            @Param(name = "allowEdit", type = ApiParamType.ENUM, rule = "1,0", desc = "term.cmdb.allowedit"),
+            @Param(name = "allowEdit", type = ApiParamType.INTEGER, rule = "1,0", desc = "term.cmdb.allowedit"),
+            @Param(name = "isRequired", type = ApiParamType.INTEGER, rule = "1,0", desc = "common.isrequired"),
             @Param(name = "isSimple", type = ApiParamType.BOOLEAN, rule = "true,false", desc = "term.cmdb.issimpleattribute")
     })
     @Output({
@@ -99,6 +100,7 @@ public class GetCiAttrListApi extends PrivateApiComponentBase implements IGetCiA
         String showType = jsonObj.getString("showType");
         Boolean isSimple = jsonObj.getBoolean("isSimple");
         Integer allowEdit = jsonObj.getInteger("allowEdit");
+        Integer isRequired = jsonObj.getInteger("isRequired");
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciId);
         if (StringUtils.isNotBlank(showType)) {
             CiViewVo ciViewVo = new CiViewVo();
@@ -120,6 +122,10 @@ public class GetCiAttrListApi extends PrivateApiComponentBase implements IGetCiA
         }
         if (isSimple != null) {
             attrList.removeIf(attr -> AttrValueHandlerFactory.getHandler(attr.getType()).isSimple() != isSimple);
+        }
+        if (isRequired != null && isRequired.equals(1)) {
+            //唯一规则和必填等价
+            attrList.removeIf(attr -> (attr.getIsRequired() != null && attr.getIsRequired().equals(0) && attr.getIsUnique().equals(0)));
         }
         return attrList;
     }

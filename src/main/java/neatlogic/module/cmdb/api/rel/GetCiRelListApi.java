@@ -56,12 +56,12 @@ public class GetCiRelListApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "/cmdb/ci/{ciId}/listrel";
+        return "/cmdb/ci/listrel";
     }
 
     @Override
     public String getName() {
-        return "获取模型关系列表";
+        return "nmcar.getcirellistapi.getname";
     }
 
     @Override
@@ -69,19 +69,21 @@ public class GetCiRelListApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
-            @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "是否需要操作列，如果需要则根据用户权限返回合适的操作列"),
-            @Param(name = "allowEdit", type = ApiParamType.ENUM, rule = "1,0", desc = "是否允许编辑"),
-            @Param(name = "showType", type = ApiParamType.ENUM, rule = "all,list,detail", desc = "显示类型")
+    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid"),
+            @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "nmcar.getcirellistapi.input.param.desc"),
+            @Param(name = "allowEdit", type = ApiParamType.INTEGER, rule = "1,0", desc = "term.cmdb.allowedit"),
+            @Param(name = "isRequired", type = ApiParamType.INTEGER, rule = "1,0", desc = "common.isrequired"),
+            @Param(name = "showType", type = ApiParamType.ENUM, rule = "all,list,detail", desc = "common.displaytype")
     })
     @Output({@Param(explode = RelVo[].class)})
-    @Description(desc = "获取模型关系列表接口")
+    @Description(desc = "nmcar.getcirellistapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("ciId");
         String showType = jsonObj.getString("showType");
         boolean needAction = jsonObj.getBooleanValue("needAction");
         Integer allowEdit = jsonObj.getInteger("allowEdit");
+        Integer isRequired = jsonObj.getInteger("isRequired");
         List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciId));
         if (StringUtils.isNotBlank(showType)) {
             CiViewVo ciViewVo = new CiViewVo();
@@ -100,6 +102,10 @@ public class GetCiRelListApi extends PrivateApiComponentBase {
         if (allowEdit != null) {
             relList.removeIf(rel -> (allowEdit.equals(1) && (rel.getAllowEdit() != null && rel.getAllowEdit().equals(0)))
                     || (allowEdit.equals(0) && (rel.getAllowEdit() == null || rel.getAllowEdit().equals(1))));
+        }
+        if (isRequired != null && isRequired.equals(1)) {
+            relList.removeIf(rel -> (rel.getDirection().equals(RelDirectionType.FROM.getValue()) && rel.getToIsRequired().equals(0)) ||
+                    (rel.getDirection().equals(RelDirectionType.TO.getValue()) && rel.getFromIsRequired().equals(0)));
         }
         Map<Long, CiVo> checkCiMap = new HashMap<>();
         if (needAction) {

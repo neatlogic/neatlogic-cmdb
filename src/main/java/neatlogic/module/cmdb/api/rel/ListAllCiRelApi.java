@@ -57,7 +57,7 @@ public class ListAllCiRelApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取模型所有关系列表";
+        return "nmcar.listallcirelapi.getname";
     }
 
     @Override
@@ -70,7 +70,7 @@ public class ListAllCiRelApi extends PrivateApiComponentBase {
             //@Param(name = "direction", type = ApiParamType.ENUM, isRequired = true, desc = "方向", member = RelDirectionType.class),
     })
     @Output({@Param(explode = RelVo[].class)})
-    @Description(desc = "获取模型所有关系列表接口")
+    @Description(desc = "nmcar.listallcirelapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("ciId");
