@@ -64,6 +64,7 @@
                 <value>classpath:neatlogic/module/cmdb/**/dao/mapper/**/*.xml</value>
             </list>
         </property>
+        <property name="databaseIdProvider" ref="neatLogicDatabaseIdProvider"/>
     </bean>
 
     <mongo:repositories base-package="neatlogic.module.cmdb.repository"/>
