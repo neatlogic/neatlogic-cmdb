@@ -123,8 +123,10 @@ public class TableValueHandler implements IAttrValueHandler {
 
                 }
             }
-            List<CiEntityVo> ciEntityList = ciEntityService.getCiEntityByIdList(attrVo.getTargetCiId(), ciEntityIdList);
-            returnList.addAll(ciEntityList);
+            if (CollectionUtils.isNotEmpty(ciEntityIdList)) {
+                List<CiEntityVo> ciEntityList = ciEntityService.getCiEntityByIdList(attrVo.getTargetCiId(), ciEntityIdList);
+                returnList.addAll(ciEntityList);
+            }
         }
         return returnList;
     }

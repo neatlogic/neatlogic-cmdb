@@ -110,7 +110,9 @@ public class SelectValueHandler implements IAttrValueHandler {
             CiVo ciVo = ciMapper.getCiById(attrVo.getTargetCiId());
             List<CiEntityVo> ciEntityList = null;
             if (ciVo.getIsVirtual().equals(0)) {
-                ciEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(ciEntityIdList);
+                if (CollectionUtils.isNotEmpty(ciEntityIdList)) {
+                    ciEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(ciEntityIdList);
+                }
             } else {
                 CiEntityVo ciEntityVo = new CiEntityVo();
                 ciEntityVo.setCiId(ciVo.getId());
