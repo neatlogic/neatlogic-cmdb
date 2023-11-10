@@ -302,7 +302,11 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                         // 增加提醒
                         logger.error(s.getError(), s.getException());
                         JSONObject errorMessageObj = new JSONObject();
-                        errorMessageObj.put("error", s.getError());
+                        String error = s.getError();
+                        if (error == null) {
+                            error = "null";
+                        }
+                        errorMessageObj.put("error", error);
                         errorMessageList.add(errorMessageObj);
                         JSONObject dataObj = new JSONObject();
                         dataObj.put("time", System.currentTimeMillis());
@@ -317,7 +321,11 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                 // 增加提醒
                 logger.error(e.getMessage(), e);
                 JSONObject errorMessageObj = new JSONObject();
-                errorMessageObj.put("error", e.getMessage());
+                String error = e.getMessage();
+                if (error == null) {
+                    error = "null";
+                }
+                errorMessageObj.put("error", error);
                 errorMessageList.add(errorMessageObj);
                 JSONObject dataObj = new JSONObject();
                 dataObj.put("time", System.currentTimeMillis());
@@ -652,7 +660,9 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             list.add(ciId.toString());
             for (Long attrId : uniqueAttrIdList) {
                 JSONArray valueList = key2ValueListMap.get("attr_" + attrId);
-                list.add(valueList.toJSONString());
+                if (valueList != null) {
+                    list.add(valueList.toJSONString());
+                }
             }
             String uniqueAttrValueListJoinStr = String.join(",", list);
             if (uniqueAttrValueListJoinStrList.contains(uniqueAttrValueListJoinStr)) {
