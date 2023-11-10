@@ -10,11 +10,10 @@ import neatlogic.framework.notify.dto.NotifyTriggerTemplateVo;
 import neatlogic.framework.notify.dto.NotifyTriggerVo;
 import neatlogic.framework.process.notify.constvalue.ProcessNotifyPolicyHandlerGroup;
 import neatlogic.module.cmdb.process.stephandler.CmdbProcessStepHandlerType;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-@Component
+//@Component
 public class CiEntitySyncNotifyHandler extends NotifyPolicyHandlerBase {
 
     @Override
