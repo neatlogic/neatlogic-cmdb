@@ -163,10 +163,12 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             // 获取工单当前步骤配置信息
             String config = selectContentByHashMapper.getProcessTaskStepConfigByHash(configHash);
             if (StringUtils.isBlank(config)) {
+                myAutoComplete(currentProcessTaskStepVo);
                 return 0;
             }
             JSONObject ciEntityConfig = (JSONObject) JSONPath.read(config, "ciEntityConfig");
             if (MapUtils.isEmpty(ciEntityConfig)) {
+                myAutoComplete(currentProcessTaskStepVo);
                 return 0;
             }
             Map<String, ProcessTaskFormAttributeDataVo> processTaskFormAttributeDataMap = new HashMap<>();
@@ -218,6 +220,7 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                 /* 重新构建configList配置信息 */
                 configList = rebuildConfigList(configList, formAttributeMap, processTaskFormAttributeDataMap);
                 if (CollectionUtils.isEmpty(configList)) {
+                    myAutoComplete(currentProcessTaskStepVo);
                     return 1;
                 }
                 /* 遍历configList， 找出起始模型配置列表，根据id和uuid的值判断是新增还是更新 */
@@ -252,6 +255,7 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                     ciEntityTransactionMap.put(uuid, ciEntityTransactionVo);
                 }
                 if (CollectionUtils.isEmpty(startConfigList)) {
+                    myAutoComplete(currentProcessTaskStepVo);
                     return 0;
                 }
                 /* 遍历起始模型配置信息列表，生成CiEntityTransactionVo列表 */
@@ -264,10 +268,16 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                         }
                     }
                 }
-                if (CollectionUtils.isNotEmpty(ciEntityTransactionList)) {
-                    for (CiEntityTransactionVo t : ciEntityTransactionList) {
+                for (int i = ciEntityTransactionList.size() - 1; i >= 0; i--) {
+                    CiEntityTransactionVo t = ciEntityTransactionList.get(i);
+                    boolean hasChange = ciEntityService.validateCiEntityTransaction(t);
+                    if (hasChange) {
                         t.setAllowCommit(true);
+                    } else {
+                        ciEntityTransactionList.remove(i);
                     }
+                }
+                if (CollectionUtils.isNotEmpty(ciEntityTransactionList)) {
                     EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
                         InputFromContext.init(InputFrom.ITSM);
                         Long transactionGroupId = ciEntityService.saveCiEntity(ciEntityTransactionList);
@@ -613,6 +623,37 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                                 }
                             }
                         }
+                    } else if (Objects.equals(formAttributeVo.getHandler(), FormHandler.FORMRADIO.getHandler())
+                        || Objects.equals(formAttributeVo.getHandler(), FormHandler.FORMCHECKBOX.getHandler())
+                        || Objects.equals(formAttributeVo.getHandler(), FormHandler.FORMSELECT.getHandler())) {
+                            if (dataObj instanceof JSONArray) {
+                                JSONArray valueArray = (JSONArray) dataObj;
+                                for (int j = 0; j < valueArray.size(); j++) {
+                                    String valueStr = valueArray.getString(j);
+                                    if (valueStr.contains("&=&")) {
+                                        String[] split = valueStr.split("&=&");
+                                        newValueList.add(split[0]);
+                                    } else {
+                                        newValueList.add(valueStr);
+                                    }
+                                }
+                            } else if (dataObj instanceof String) {
+                                String valueStr = (String) dataObj;
+                                if (valueStr.contains("&=&")) {
+                                    String[] split = valueStr.split("&=&");
+                                    newValueList.add(split[0]);
+                                } else {
+                                    newValueList.add(valueStr);
+                                }
+                            } else {
+                                String valueStr = dataObj.toString();
+                                if (valueStr.contains("&=&")) {
+                                    String[] split = valueStr.split("&=&");
+                                    newValueList.add(split[0]);
+                                } else {
+                                    newValueList.add(valueStr);
+                                }
+                            }
                     } else {
                         if (dataObj instanceof JSONObject) {
 
