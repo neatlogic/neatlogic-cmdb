@@ -126,6 +126,7 @@ public class ResourceEntityFactory {
                     sceneEntityVo = new SceneEntityVo();
                     sceneEntityVo.setName(rt.name());
                     sceneEntityVo.setLabel(rt.label());
+                    sceneEntityVo.setDescription(String.join("；", rt.functionPathList()));
                 }
             }
             if (sceneEntityVo == null) {
@@ -164,6 +165,7 @@ public class ResourceEntityFactory {
                     SceneEntityVo sceneEntityVo = new SceneEntityVo();
                     sceneEntityVo.setName(rt.name());
                     sceneEntityVo.setLabel(rt.label());
+                    sceneEntityVo.setDescription(String.join("；", rt.functionPathList()));
                     for (Field field : c.getDeclaredFields()) {
                         ResourceField rf = field.getAnnotation(ResourceField.class);
                         if (rf != null) {
@@ -199,6 +201,7 @@ public class ResourceEntityFactory {
                 sceneEntityVo = new SceneEntityVo();
                 sceneEntityVo.setName(sceneEntity.getName());
                 sceneEntityVo.setLabel(sceneEntity.getLabel());
+                sceneEntityVo.setDescription(sceneEntity.getDescription());
             }
         }
         return sceneEntityVo;

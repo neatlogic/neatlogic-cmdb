@@ -16,20 +16,19 @@
 
 package neatlogic.module.cmdb.api.resourcecenter.config;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.RESOURCECENTER_MODIFY;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.SceneEntityVo;
 import neatlogic.framework.cmdb.enums.resourcecenter.Status;
-import neatlogic.framework.cmdb.enums.resourcecenter.ViewType;
 import neatlogic.framework.restful.annotation.Description;
 import neatlogic.framework.restful.annotation.OperationType;
 import neatlogic.framework.restful.annotation.Output;
 import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.RESOURCECENTER_MODIFY;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
-import com.alibaba.fastjson.JSONObject;
 import neatlogic.module.cmdb.utils.ResourceEntityFactory;
 import org.springframework.stereotype.Service;
 
@@ -81,10 +80,11 @@ public class ListResourceEntityApi extends PrivateApiComponentBase {
             ResourceEntityVo resourceEntityVo = resourceEntityVoMap.get(sceneEntityVo.getName());
             if (resourceEntityVo == null) {
                 resourceEntityVo = new ResourceEntityVo();
-                resourceEntityVo.setName(sceneEntityVo.getName());
-                resourceEntityVo.setLabel(sceneEntityVo.getLabel());
                 resourceEntityVo.setStatus(Status.PENDING.getValue());
             }
+            resourceEntityVo.setName(sceneEntityVo.getName());
+            resourceEntityVo.setLabel(sceneEntityVo.getLabel());
+            resourceEntityVo.setDescription(sceneEntityVo.getDescription());
             resultList.add(resourceEntityVo);
         }
         return resultList;
