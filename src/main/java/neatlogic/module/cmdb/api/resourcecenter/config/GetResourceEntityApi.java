@@ -89,6 +89,7 @@ public class GetResourceEntityApi extends PrivateApiComponentBase {
                 resourceEntityVo.setCi(ciVo);
             }
         }
+        resourceEntityVo.setDescription(sceneEntityVo.getDescription());
         List<ValueTextVo> fieldList = ResourceEntityFactory.getFieldListByViewName(name);
         resourceEntityVo.setFieldList(fieldList);
         return resourceEntityVo;
