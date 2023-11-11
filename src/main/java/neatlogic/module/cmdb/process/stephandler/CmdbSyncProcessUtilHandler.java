@@ -36,7 +36,7 @@ import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import neatlogic.module.cmdb.process.dto.*;
 import neatlogic.module.cmdb.process.exception.CiEntityConfigIllegalException;
-import neatlogic.module.cmdb.process.notifyhandler.CiEntitySyncNotifyHandler;
+import neatlogic.module.cmdb.process.notifyhandler.CmdbSyncNotifyHandler;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -248,7 +248,7 @@ public class CmdbSyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
         /** 通知 **/
         JSONObject notifyPolicyConfig = configObj.getJSONObject("notifyPolicyConfig");
         INotifyServiceCrossoverService notifyServiceCrossoverService = CrossoverServiceFactory.getApi(INotifyServiceCrossoverService.class);
-        InvokeNotifyPolicyConfigVo invokeNotifyPolicyConfigVo = notifyServiceCrossoverService.regulateNotifyPolicyConfig(notifyPolicyConfig, CiEntitySyncNotifyHandler.class);
+        InvokeNotifyPolicyConfigVo invokeNotifyPolicyConfigVo = notifyServiceCrossoverService.regulateNotifyPolicyConfig(notifyPolicyConfig, CmdbSyncNotifyHandler.class);
         resultObj.put("notifyPolicyConfig", invokeNotifyPolicyConfigVo);
 
         /** 动作 **/
@@ -257,7 +257,7 @@ public class CmdbSyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
         if (actionConfigVo == null) {
             actionConfigVo = new ActionConfigVo();
         }
-        actionConfigVo.setHandler(CiEntitySyncNotifyHandler.class.getName());
+        actionConfigVo.setHandler(CmdbSyncNotifyHandler.class.getName());
         resultObj.put("actionConfig", actionConfigVo);
 
         JSONArray customButtonList = configObj.getJSONArray("customButtonList");
