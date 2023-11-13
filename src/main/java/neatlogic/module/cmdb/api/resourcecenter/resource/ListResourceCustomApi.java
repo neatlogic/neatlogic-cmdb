@@ -75,7 +75,7 @@ public class ListResourceCustomApi extends PrivateApiComponentBase {
     })
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        ResourceSearchVo resourceSearch = JSONObject.toJavaObject(paramObj, ResourceSearchVo.class);
+        ResourceSearchVo resourceSearch = resourceCenterResourceService.assembleResourceSearchVo(paramObj);
         List<ResourceVo> resourceList = new ArrayList<>();
         StringBuilder sqlSb = new StringBuilder();
         resourceSearch.buildConditionWhereSql(sqlSb, resourceSearch);
