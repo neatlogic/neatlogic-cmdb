@@ -66,6 +66,7 @@
         </where>
     </sql>
 
+
     <select id="searchCiEntityBaseInfo" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo"
             resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo" useCache="false">
         SELECT
@@ -78,7 +79,7 @@
         FROM cmdb_cientity
         <include refid="searchCiEntityBaseInfoSql">
         </include>
-        ORDER BY id<!--这个排序不能删除-->
+        ORDER BY id<!--这个排序不能删除，因为有种场景是需要使用ciEntityId去分页查询-->
         LIMIT #{startNum}, #{pageSize}
     </select>
 
@@ -640,7 +641,7 @@
             )
         </if>
         <if test="ciList == null or ciList.size() != 1 or (ciList.size() == 1 and ciList[0].isVirtual == 0)">
-        left join (
+            left join (
             select group_concat(CONCAT(cra.name,' (',cra.account,' / ',crrap.`name`,')')) as `account`,crra.resource_id
             from
             cmdb_resourcecenter_resource_account crra
@@ -651,7 +652,7 @@
                 #{id}
             </foreach>
             GROUP BY crra.resource_id
-        ) as cientity_account on ci_base.id = cientity_account.resource_id
+            ) as cientity_account on ci_base.id = cientity_account.resource_id
         </if>
     </sql>
 

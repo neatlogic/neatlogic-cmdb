@@ -16,10 +16,13 @@
 
 package neatlogic.module.cmdb.api.cientity;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.auth.core.AuthActionChecker;
 import neatlogic.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
 import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
+import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.auth.label.RESOURCECENTER_ACCOUNT_MODIFY;
 import neatlogic.framework.cmdb.crossover.ISearchCiEntityApiCrossoverService;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
@@ -39,17 +42,12 @@ import neatlogic.framework.exception.type.ParamNotExistsException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.CIENTITY_MODIFY;
-import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
-import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiViewMapper;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
 import neatlogic.module.cmdb.service.group.GroupService;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -62,8 +60,6 @@ import java.util.stream.Collectors;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
-@AuthAction(action = CI_MODIFY.class)
-@AuthAction(action = CIENTITY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearchCiEntityApiCrossoverService {//FIXME 内部暂时使用Crossover的方式调用该接口
 
