@@ -76,26 +76,27 @@ public class ListResourceCustomApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         ResourceSearchVo resourceSearch = resourceCenterResourceService.assembleResourceSearchVo(paramObj);
-        List<ResourceVo> resourceList = new ArrayList<>();
+        List<ResourceVo> resultList = new ArrayList<>();
         StringBuilder sqlSb = new StringBuilder();
         resourceSearch.buildConditionWhereSql(sqlSb, resourceSearch);
         int rowNum = resourceMapper.getResourceCountByDynamicCondition(resourceSearch, sqlSb.toString());
         if (rowNum == 0) {
-            return TableResultUtil.getResult(resourceList, resourceSearch);
+            return TableResultUtil.getResult(resultList, resourceSearch);
         }
         resourceSearch.setRowNum(rowNum);
-        List<Long> idList =  resourceMapper.getResourceIdListByDynamicCondition(resourceSearch, sqlSb.toString());
-        resourceList = resourceMapper.getResourceListByIdList(idList);
-        if (CollectionUtils.isNotEmpty(resourceList)) {
-            resourceCenterResourceService.addTagAndAccountInformation(resourceList);
-        }
-        //排序
-        List<ResourceVo> resultList = new ArrayList<>();
-        for (Long id : idList) {
-            for (ResourceVo resourceVo : resourceList) {
-                if (Objects.equals(id, resourceVo.getId())) {
-                    resultList.add(resourceVo);
-                    break;
+        List<Long> idList = resourceMapper.getResourceIdListByDynamicCondition(resourceSearch, sqlSb.toString());
+        if (CollectionUtils.isNotEmpty(idList)) {
+            List<ResourceVo> resourceList = resourceMapper.getResourceListByIdList(idList);
+            if (CollectionUtils.isNotEmpty(resourceList)) {
+                resourceCenterResourceService.addTagAndAccountInformation(resourceList);
+            }
+            //排序
+            for (Long id : idList) {
+                for (ResourceVo resourceVo : resourceList) {
+                    if (Objects.equals(id, resourceVo.getId())) {
+                        resultList.add(resourceVo);
+                        break;
+                    }
                 }
             }
         }

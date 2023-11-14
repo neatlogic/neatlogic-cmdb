@@ -201,6 +201,12 @@ limitations under the License.
             <if test="searchVo.name != null and searchVo.name != ''">
                 AND sid.`name` = #{searchVo.name}
             </if>
+            <if test="searchVo.typeIdList != null and searchVo.typeIdList.size() > 0">
+                AND sid.`type_id` IN
+                <foreach collection="searchVo.typeIdList" item="typeId" open="(" separator="," close=")">
+                    #{typeId}
+                </foreach>
+            </if>
             ${conditionSql}
         </where>
         ORDER BY sid.`id`
