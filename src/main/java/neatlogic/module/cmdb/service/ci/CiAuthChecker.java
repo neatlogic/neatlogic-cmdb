@@ -18,28 +18,29 @@ package neatlogic.module.cmdb.service.ci;
 
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthActionChecker;
+import neatlogic.framework.cmdb.auth.label.CIENTITY_MODIFY;
+import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
 import neatlogic.framework.cmdb.dto.ci.CiAuthVo;
 import neatlogic.framework.cmdb.enums.CiAuthType;
 import neatlogic.framework.cmdb.enums.group.GroupType;
 import neatlogic.framework.common.constvalue.UserType;
-import neatlogic.framework.cmdb.auth.label.CIENTITY_MODIFY;
-import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
 import neatlogic.module.cmdb.dao.mapper.ci.CiAuthMapper;
 import neatlogic.module.cmdb.dao.mapper.group.GroupMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class CiAuthChecker {
 
-    @Autowired
+    @Resource
     private CiAuthMapper ciAuthMapper;
 
-    @Autowired
+    @Resource
     private GroupMapper groupMapper;
 
     private static CiAuthChecker instance;
