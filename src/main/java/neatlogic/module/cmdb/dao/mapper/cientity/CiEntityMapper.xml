@@ -1361,7 +1361,7 @@
 
     <delete id="deleteCiEntityBaseInfo" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo">
         DELETE
-            a,b,c,d,e,f
+            a,b,c,e,f
         FROM cmdb_cientity a
                  LEFT JOIN cmdb_attrentity b
                            ON a.id =
@@ -1369,8 +1369,7 @@
                  LEFT JOIN cmdb_relentity c
                            ON a.id =
                               c.`from_cientity_id`
-                 LEFT JOIN cmdb_relentity d
-                           ON a.id =
+                           OR a.id =
                               c.`to_cientity_id`
                  LEFT JOIN cmdb_cientity_group e
                            ON a.id =
