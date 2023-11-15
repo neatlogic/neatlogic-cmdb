@@ -16,6 +16,8 @@
 
 package neatlogic.module.cmdb.service.resourcecenter.resource;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
@@ -34,9 +36,12 @@ import neatlogic.framework.cmdb.exception.resourcecenter.AppModuleNotFoundExcept
 import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.ResourceViewFieldMappingException;
 import neatlogic.framework.cmdb.utils.ResourceViewGenerateSqlUtil;
+import neatlogic.framework.cmdb.utils.ResourceViewGenerateSqlUtilForTiDB;
 import neatlogic.framework.dao.mapper.DataBaseViewInfoMapper;
 import neatlogic.framework.dao.mapper.SchemaMapper;
 import neatlogic.framework.dto.DataBaseViewInfoVo;
+import neatlogic.framework.store.mysql.DatabaseVendor;
+import neatlogic.framework.store.mysql.DatasourceManager;
 import neatlogic.framework.transaction.core.EscapeTransactionJob;
 import neatlogic.framework.util.Md5Util;
 import neatlogic.framework.util.TableResultUtil;
@@ -47,8 +52,6 @@ import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceTagMapper;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import neatlogic.module.cmdb.utils.ResourceEntityFactory;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
@@ -634,9 +637,17 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         } catch (ResourceViewFieldMappingException e) {
             return e.getMessage();
         }
-        ResourceViewGenerateSqlUtil resourceViewGenerateSqlUtil = new ResourceViewGenerateSqlUtil(config);
-        String selectSql = resourceViewGenerateSqlUtil.getSql();
-        String md5 = Md5Util.encryptMD5(selectSql);
+        String select = null;
+        if (Objects.equals(DatasourceManager.getDatabaseId(), DatabaseVendor.TIDB.getAlias())) {
+            ResourceViewGenerateSqlUtilForTiDB resourceViewGenerateSqlUtil2 = new ResourceViewGenerateSqlUtilForTiDB(config);
+            select = resourceViewGenerateSqlUtil2.getSql();
+            System.out.println(viewName + "1 = " + select);
+        } else {
+            ResourceViewGenerateSqlUtil resourceViewGenerateSqlUtil = new ResourceViewGenerateSqlUtil(config);
+            select = resourceViewGenerateSqlUtil.getSql();
+            System.out.println(viewName + "2 = " + select);
+        }
+        String md5 = Md5Util.encryptMD5(select);
         String tableType = schemaMapper.checkTableOrViewIsExists(TenantContext.get().getDataDbName(), viewName);
         if (tableType != null) {
             if (Objects.equals(tableType, "SYSTEM VIEW")) {
@@ -646,12 +657,13 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 if (dataBaseViewInfoVo != null) {
                     // md5相同就不用更新视图了
                     if (Objects.equals(md5, dataBaseViewInfoVo.getMd5())) {
-                        return StringUtils.EMPTY;
+//                        return StringUtils.EMPTY;
                     }
                 }
             }
         }
         try {
+            String selectSql = select;
             EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
                 if (Objects.equals(tableType, "BASE TABLE")) {
                     schemaMapper.deleteTable(TenantContext.get().getDataDbName() + "." + viewName);
