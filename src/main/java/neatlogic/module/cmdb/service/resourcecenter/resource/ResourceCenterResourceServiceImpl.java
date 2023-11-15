@@ -638,7 +638,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             return e.getMessage();
         }
         String select = null;
-        if (Objects.equals(DatasourceManager.getDatabaseId(), DatabaseVendor.TIDB.getAlias())) {
+        if (Objects.equals(DatasourceManager.getDatabaseId(), DatabaseVendor.TIDB.getDatabaseId())) {
             ResourceViewGenerateSqlUtilForTiDB resourceViewGenerateSqlUtil2 = new ResourceViewGenerateSqlUtilForTiDB(config);
             select = resourceViewGenerateSqlUtil2.getSql();
         } else {
