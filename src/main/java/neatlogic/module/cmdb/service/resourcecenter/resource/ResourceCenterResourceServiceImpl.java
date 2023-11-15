@@ -641,11 +641,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         if (Objects.equals(DatasourceManager.getDatabaseId(), DatabaseVendor.TIDB.getAlias())) {
             ResourceViewGenerateSqlUtilForTiDB resourceViewGenerateSqlUtil2 = new ResourceViewGenerateSqlUtilForTiDB(config);
             select = resourceViewGenerateSqlUtil2.getSql();
-            System.out.println(viewName + "1 = " + select);
         } else {
             ResourceViewGenerateSqlUtil resourceViewGenerateSqlUtil = new ResourceViewGenerateSqlUtil(config);
             select = resourceViewGenerateSqlUtil.getSql();
-            System.out.println(viewName + "2 = " + select);
         }
         String md5 = Md5Util.encryptMD5(select);
         String tableType = schemaMapper.checkTableOrViewIsExists(TenantContext.get().getDataDbName(), viewName);
@@ -657,7 +655,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 if (dataBaseViewInfoVo != null) {
                     // md5相同就不用更新视图了
                     if (Objects.equals(md5, dataBaseViewInfoVo.getMd5())) {
-//                        return StringUtils.EMPTY;
+                        return StringUtils.EMPTY;
                     }
                 }
             }
