@@ -21,7 +21,8 @@ CREATE TABLE IF NOT EXISTS `cmdb_attr` (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `uk_name` (`ci_id`,`name`) USING BTREE,
   KEY `idx_prop_id` (`prop_id`) USING BTREE,
-  KEY `idx_name` (`name`) USING BTREE
+  KEY `idx_name` (`name`) USING BTREE,
+  KEY `idx_target_ci_id` (`target_ci_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='cmdb配置项属性表';
 
 -- ----------------------------
@@ -720,14 +721,17 @@ CREATE TABLE IF NOT EXISTS `cmdb_resourcecenter_account_tag` (
 CREATE TABLE IF NOT EXISTS `cmdb_resourcecenter_entity` (
   `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '名称',
   `label` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '标识',
+  `type` enum('resource','scene') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '类型',
   `status` enum('ready','pending','error','') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '状态',
   `error` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'error',
+  `xml` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '配置信息',
   `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '描述',
   `init_time` timestamp(3) NULL DEFAULT NULL COMMENT 'init time',
   `ci_id` bigint DEFAULT NULL COMMENT '模型id',
   `config` mediumtext COLLATE utf8mb4_general_ci COMMENT '配置信息',
   PRIMARY KEY (`name`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='cmdb_resourcecenter_entity';
+
 
 -- ----------------------------
 -- Table structure for cmdb_resourcecenter_resource_account
@@ -917,7 +921,7 @@ CREATE TABLE IF NOT EXISTS `cmdb_validator` (
 CREATE TABLE IF NOT EXISTS `cmdb_view` (
   `ci_id` bigint NOT NULL COMMENT '模型id',
   `item_id` bigint NOT NULL COMMENT '关系或属性id',
-  `type` enum('attr','relfrom','relto','const') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '类型',
+  `type` enum('attr','relfrom','relto','const','global') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '类型',
   `sort` int NOT NULL COMMENT '排序',
   `show_type` enum('none','all','list','detail') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '显示方式',
   `allow_edit` tinyint(1) DEFAULT NULL COMMENT '允许修改',
@@ -942,3 +946,53 @@ CREATE TABLE IF NOT EXISTS `cmdb_resourcecenter_type_ci` (
   `ci_id` bigint NOT NULL COMMENT '模型id',
   PRIMARY KEY (`ci_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='资产清单树形模型';
+
+-- ----------------------------
+-- Table structure for cmdb_cientity_globalattritem
+-- ----------------------------
+CREATE TABLE IF NOT EXISTS `cmdb_cientity_globalattritem`  (
+  `cientity_id` bigint NOT NULL,
+  `item_id` bigint NOT NULL,
+  `attr_id` bigint NOT NULL,
+  PRIMARY KEY (`cientity_id`, `attr_id`, `item_id`) USING BTREE,
+  INDEX `idx_attr_item_id`(`attr_id`, `item_id`) USING BTREE,
+  INDEX `idx_item_id`(`item_id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for cmdb_global_attr
+-- ----------------------------
+CREATE TABLE IF NOT EXISTS `cmdb_global_attr`  (
+  `id` bigint NOT NULL COMMENT 'Id',
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '唯一标识',
+  `label` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '显示文案\n',
+  `is_active` tinyint NULL DEFAULT NULL COMMENT '是否激活',
+  `is_multiple` tinyint NULL DEFAULT NULL COMMENT '允许多选',
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT '描述',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for cmdb_global_attritem
+-- ----------------------------
+CREATE TABLE IF NOT EXISTS `cmdb_global_attritem`  (
+  `id` bigint NOT NULL,
+  `attr_id` bigint NULL DEFAULT NULL,
+  `value` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
+  `sort` int NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_attr_id`(`attr_id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for cmdb_resourcecenter_config
+-- ----------------------------
+CREATE TABLE IF NOT EXISTS `cmdb_resourcecenter_config`  (
+  `id` int NOT NULL DEFAULT 1 COMMENT 'id',
+  `config` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT 'config',
+  `fcu` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '创建用户',
+  `fcd` timestamp(3) NULL DEFAULT NULL COMMENT '创建时间',
+  `lcu` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '修改用户',
+  `lcd` timestamp(3) NULL DEFAULT NULL COMMENT '修改时间',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '资源中心配置表' ROW_FORMAT = Dynamic;
