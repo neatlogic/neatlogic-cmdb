@@ -18,8 +18,10 @@ package neatlogic.module.cmdb.dao.mapper.resourcecenter;
 
 import neatlogic.framework.cmdb.crossover.IResourceEntityCrossoverMapper;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ResourceEntityMapper extends IResourceEntityCrossoverMapper {
     ResourceEntityVo getResourceEntityByName(String name);
@@ -29,6 +31,10 @@ public interface ResourceEntityMapper extends IResourceEntityCrossoverMapper {
     String getResourceEntityConfigByName(String name);
 
     List<Long> getAllResourceTypeCiIdList();
+
+    int getResourceEntityViewDataCount(String name);
+
+    List<Map<String, Object>> getResourceEntityViewDataList(@Param("name") String name, @Param("startNum") int startNum, @Param("pageSize") int pageSize);
 
     void insertResourceEntity(ResourceEntityVo resourceEntityVo);
 

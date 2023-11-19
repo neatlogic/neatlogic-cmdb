@@ -43,6 +43,15 @@ limitations under the License.
         SELECT `ci_id` FROM `cmdb_resourcecenter_type_ci`
     </select>
 
+    <select id="getResourceEntityViewDataCount" parameterType="java.lang.String" resultType="int">
+        SELECT count(1) FROM @{DATA_SCHEMA}.`${name}`
+    </select>
+
+    <select id="getResourceEntityViewDataList" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT * FROM @{DATA_SCHEMA}.`${name}`
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
     <insert id="insertResourceEntity"
             parameterType="neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
         INSERT INTO cmdb_resourcecenter_entity (`name`, `label`, `status`, `error`, `init_time`, `ci_id`, `config`, `description`)
