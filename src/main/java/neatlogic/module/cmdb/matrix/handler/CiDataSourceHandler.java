@@ -427,43 +427,43 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         return null;
     }
 
-    @Override
-    protected JSONObject myGetTableData(MatrixDataVo dataVo) {
-        String matrixUuid = dataVo.getMatrixUuid();
-        MatrixCiVo matrixCiVo = matrixMapper.getMatrixCiByMatrixUuid(matrixUuid);
-        if (matrixCiVo == null) {
-            throw new MatrixCiNotFoundException(matrixUuid);
-        }
-        MatrixVo matrixVo = matrixMapper.getMatrixByUuid(matrixUuid);
-        List<MatrixAttributeVo> attributeVoList = myGetAttributeList(matrixVo);
-        CiEntityVo ciEntityVo = new CiEntityVo();
-        ciEntityVo.setCiId(matrixCiVo.getCiId());
-        ciEntityVo.setCurrentPage(dataVo.getCurrentPage());
-        ciEntityVo.setPageSize(dataVo.getPageSize());
-        JSONArray tbodyArray = accessSearchCiEntity(matrixUuid, ciEntityVo);
-        List<Map<String, Object>> tbodyList = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(tbodyArray)) {
-            Map<String, String> attributeUuidMap = attributeVoList.stream().collect(Collectors.toMap(e -> e.getLabel(), e -> e.getUuid()));
-            for (int i = 0; i < tbodyArray.size(); i++) {
-                JSONObject rowData = tbodyArray.getJSONObject(i);
-                if (MapUtils.isNotEmpty(rowData)) {
-                    Map<String, Object> rowDataMap = new HashMap<>();
-                    for (Map.Entry<String, Object> entry : rowData.entrySet()) {
-                        String uuid = attributeUuidMap.get(entry.getKey());
-                        if (StringUtils.isNotBlank(uuid)) {
-                            rowDataMap.put(uuid, matrixAttributeValueHandle(null, entry.getValue()));
-                        }
-                        if ("const_id".equals(entry.getKey())) {
-                            rowDataMap.put("uuid", matrixAttributeValueHandle(null, entry.getValue()));
-                        }
-                    }
-                    tbodyList.add(rowDataMap);
-                }
-            }
-        }
-        JSONArray theadList = getTheadList(attributeVoList);
-        return TableResultUtil.getResult(theadList, tbodyList, ciEntityVo);
-    }
+//    @Override
+//    protected JSONObject myGetTableData(MatrixDataVo dataVo) {
+//        String matrixUuid = dataVo.getMatrixUuid();
+//        MatrixCiVo matrixCiVo = matrixMapper.getMatrixCiByMatrixUuid(matrixUuid);
+//        if (matrixCiVo == null) {
+//            throw new MatrixCiNotFoundException(matrixUuid);
+//        }
+//        MatrixVo matrixVo = matrixMapper.getMatrixByUuid(matrixUuid);
+//        List<MatrixAttributeVo> attributeVoList = myGetAttributeList(matrixVo);
+//        CiEntityVo ciEntityVo = new CiEntityVo();
+//        ciEntityVo.setCiId(matrixCiVo.getCiId());
+//        ciEntityVo.setCurrentPage(dataVo.getCurrentPage());
+//        ciEntityVo.setPageSize(dataVo.getPageSize());
+//        JSONArray tbodyArray = accessSearchCiEntity(matrixUuid, ciEntityVo);
+//        List<Map<String, Object>> tbodyList = new ArrayList<>();
+//        if (CollectionUtils.isNotEmpty(tbodyArray)) {
+//            Map<String, String> attributeUuidMap = attributeVoList.stream().collect(Collectors.toMap(e -> e.getLabel(), e -> e.getUuid()));
+//            for (int i = 0; i < tbodyArray.size(); i++) {
+//                JSONObject rowData = tbodyArray.getJSONObject(i);
+//                if (MapUtils.isNotEmpty(rowData)) {
+//                    Map<String, Object> rowDataMap = new HashMap<>();
+//                    for (Map.Entry<String, Object> entry : rowData.entrySet()) {
+//                        String uuid = attributeUuidMap.get(entry.getKey());
+//                        if (StringUtils.isNotBlank(uuid)) {
+//                            rowDataMap.put(uuid, matrixAttributeValueHandle(null, entry.getValue()));
+//                        }
+//                        if ("const_id".equals(entry.getKey())) {
+//                            rowDataMap.put("uuid", matrixAttributeValueHandle(null, entry.getValue()));
+//                        }
+//                    }
+//                    tbodyList.add(rowDataMap);
+//                }
+//            }
+//        }
+//        JSONArray theadList = getTheadList(attributeVoList);
+//        return TableResultUtil.getResult(theadList, tbodyList, ciEntityVo);
+//    }
 
     @Override
     protected JSONObject myTableDataSearch(MatrixDataVo dataVo) {
