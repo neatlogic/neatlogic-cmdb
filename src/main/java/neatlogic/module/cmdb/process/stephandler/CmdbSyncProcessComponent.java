@@ -442,7 +442,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                                 String column = mappingObj.getColumn();
                                 JSONArray newValueList = new JSONArray();
                                 Object valueObj = tbodyObj.get(column);
-                                System.out.println("8");
                                 if (valueObj instanceof JSONObject) {
                                     String valueStr = ((JSONObject) valueObj).getString("value");
                                     if (StringUtils.isNotBlank(valueStr)) {
@@ -563,7 +562,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                             continue;
                         }
                         Object valueObj = tbodyObj.get(column);
-                        System.out.println("9");
                         if (valueObj instanceof JSONObject) {
                             String valueStr = ((JSONObject) valueObj).getString("value");
                             if (StringUtils.isNotBlank(valueStr)) {
@@ -613,7 +611,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                     } else if (Objects.equals(formAttributeVo.getHandler(), FormHandler.FORMRADIO.getHandler())
                         || Objects.equals(formAttributeVo.getHandler(), FormHandler.FORMCHECKBOX.getHandler())
                         || Objects.equals(formAttributeVo.getHandler(), FormHandler.FORMSELECT.getHandler())) {
-                            System.out.println("10");
                             if (dataObj instanceof JSONObject) {
                                 String valueStr = ((JSONObject) dataObj).getString("value");
                                 if (StringUtils.isNotBlank(valueStr)) {
