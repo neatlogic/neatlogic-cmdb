@@ -10,6 +10,7 @@ import java.util.List;
 public class CiEntitySyncMappingVo {
     private String key;
     private String mappingMode;
+    @Deprecated
     private String column;
     private List<CiEntitySyncFilterVo> filterList;
     private JSONArray valueList;
@@ -19,7 +20,7 @@ public class CiEntitySyncMappingVo {
     public CiEntitySyncMappingVo(CiEntitySyncMappingVo ciEntitySyncMappingVo) {
         this.key = ciEntitySyncMappingVo.getKey();
         this.mappingMode = ciEntitySyncMappingVo.getMappingMode();
-        this.column = ciEntitySyncMappingVo.getColumn();
+//        this.column = ciEntitySyncMappingVo.getColumn();
         List<CiEntitySyncFilterVo> newFilterList = ciEntitySyncMappingVo.getFilterList();
         if (CollectionUtils.isNotEmpty(newFilterList)) {
             this.filterList = new ArrayList<>();
@@ -62,11 +63,11 @@ public class CiEntitySyncMappingVo {
     public void setMappingMode(String mappingMode) {
         this.mappingMode = mappingMode;
     }
-
+    @Deprecated
     public String getColumn() {
         return column;
     }
-
+    @Deprecated
     public void setColumn(String column) {
         this.column = column;
     }
