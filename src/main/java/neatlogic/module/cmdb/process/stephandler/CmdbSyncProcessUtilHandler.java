@@ -444,7 +444,7 @@ public class CmdbSyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
                     throw new CiEntityConfigIllegalException("ciEntityConfig.configList[x].mappingList[y].mappingMode is null");
                 }
                 JSONArray valueList = mappingVo.getValueList();
-                String column = mappingVo.getColumn();
+//                String column = mappingVo.getColumn();
                 List<CiEntitySyncFilterVo> filterList = mappingVo.getFilterList();
                 if (Objects.equals(mappingMode, "formSubassemblyComponent")) {
                     if (CollectionUtils.isEmpty(valueList)) {
@@ -455,10 +455,10 @@ public class CmdbSyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
                         logger.warn("ciEntityConfig.configList[x].mappingList[y].valueList[0] is null");
                         throw new CiEntityConfigIllegalException("ciEntityConfig.configList[x].mappingList[y].valueList[0] is null");
                     }
-                    if (StringUtils.isBlank(column)) {
-                        logger.warn("ciEntityConfig.configList[x].mappingList[y].column is null");
-                        throw new CiEntityConfigIllegalException("ciEntityConfig.configList[x].mappingList[y].column is null");
-                    }
+//                    if (StringUtils.isBlank(column)) {
+//                        logger.warn("ciEntityConfig.configList[x].mappingList[y].column is null");
+//                        throw new CiEntityConfigIllegalException("ciEntityConfig.configList[x].mappingList[y].column is null");
+//                    }
                     if (CollectionUtils.isNotEmpty(filterList)) {
                         Iterator<CiEntitySyncFilterVo> filterIterator = filterList.iterator();
                         while (filterIterator.hasNext()) {
@@ -491,10 +491,10 @@ public class CmdbSyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
                         logger.warn("ciEntityConfig.configList[x].mappingList[y].valueList[0] is null");
                         throw new CiEntityConfigIllegalException("ciEntityConfig.configList[x].mappingList[y].valueList[0] is null");
                     }
-                    if (StringUtils.isBlank(column)) {
-                        logger.warn("ciEntityConfig.configList[x].mappingList[y].column is null");
-                        throw new CiEntityConfigIllegalException("ciEntityConfig.configList[x].mappingList[y].column is null");
-                    }
+//                    if (StringUtils.isBlank(column)) {
+//                        logger.warn("ciEntityConfig.configList[x].mappingList[y].column is null");
+//                        throw new CiEntityConfigIllegalException("ciEntityConfig.configList[x].mappingList[y].column is null");
+//                    }
                     if (CollectionUtils.isNotEmpty(filterList)) {
                         Iterator<CiEntitySyncFilterVo> filterIterator = filterList.iterator();
                         while (filterIterator.hasNext()) {
@@ -529,19 +529,19 @@ public class CmdbSyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
                             throw new CiEntityConfigIllegalException("ciEntityConfig.configList[x].mappingList[y].valueList[0] is null");
                         }
                     }
-                    if (StringUtils.isNotBlank(column)) {
-                        logger.warn("ciEntityConfig.configList[x].mappingList[y].column is not null");
-                        mappingVo.setColumn(null);
-                    }
+//                    if (StringUtils.isNotBlank(column)) {
+//                        logger.warn("ciEntityConfig.configList[x].mappingList[y].column is not null");
+//                        mappingVo.setColumn(null);
+//                    }
                     if (CollectionUtils.isNotEmpty(filterList)) {
                         logger.warn("ciEntityConfig.configList[x].mappingList[y].filterList is not null");
                         mappingVo.setFilterList(null);
                     }
                 } else if (Objects.equals(mappingMode, "constant")) {
-                    if (StringUtils.isNotBlank(column)) {
-                        logger.warn("ciEntityConfig.configList[x].mappingList[y].column is not null");
-                        mappingVo.setColumn(null);
-                    }
+//                    if (StringUtils.isNotBlank(column)) {
+//                        logger.warn("ciEntityConfig.configList[x].mappingList[y].column is not null");
+//                        mappingVo.setColumn(null);
+//                    }
                     if (CollectionUtils.isNotEmpty(filterList)) {
                         logger.warn("ciEntityConfig.configList[x].mappingList[y].filterList is not null");
                         mappingVo.setFilterList(null);
@@ -555,10 +555,10 @@ public class CmdbSyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
                         logger.warn("ciEntityConfig.configList[x].mappingList[y].valueList[0] is null");
                         throw new CiEntityConfigIllegalException("ciEntityConfig.configList[x].mappingList[y].valueList[0] is null");
                     }
-                    if (StringUtils.isNotBlank(column)) {
-                        logger.warn("ciEntityConfig.configList[x].mappingList[y].column is not null");
-                        mappingVo.setColumn(null);
-                    }
+//                    if (StringUtils.isNotBlank(column)) {
+//                        logger.warn("ciEntityConfig.configList[x].mappingList[y].column is not null");
+//                        mappingVo.setColumn(null);
+//                    }
                     if (CollectionUtils.isNotEmpty(filterList)) {
                         logger.warn("ciEntityConfig.configList[x].mappingList[y].filterList is not null");
                         mappingVo.setFilterList(null);
