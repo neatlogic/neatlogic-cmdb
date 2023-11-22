@@ -4,6 +4,7 @@ import java.util.List;
 
 public class CiEntitySyncBatchDataSourceVo {
     private String attributeUuid;
+    private String type;
     private List<CiEntitySyncFilterVo> filterList;
 
     public String getAttributeUuid() {
@@ -12,6 +13,14 @@ public class CiEntitySyncBatchDataSourceVo {
 
     public void setAttributeUuid(String attributeUuid) {
         this.attributeUuid = attributeUuid;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public List<CiEntitySyncFilterVo> getFilterList() {
