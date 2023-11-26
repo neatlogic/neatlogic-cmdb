@@ -16,7 +16,10 @@
 
 package neatlogic.module.cmdb.api.rel;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.ci.CiRelPathVo;
 import neatlogic.framework.cmdb.dto.ci.CiRelVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
@@ -26,13 +29,9 @@ import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -44,7 +43,7 @@ import java.util.List;
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ListAllCiRelApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private RelMapper relMapper;
 
     @Resource
@@ -65,8 +64,9 @@ public class ListAllCiRelApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id"),
-            @Param(name = "ciIdList", type = ApiParamType.JSONARRAY, desc = "路径包含的模型id")
+    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid"),
+            @Param(name = "ciIdList", type = ApiParamType.JSONARRAY, desc = "nmcar.listallcirelapi.ciidlist"),
+            @Param(name = "endCiId", type = ApiParamType.LONG, desc = "nmcar.listallcirelapi.endciid")
             //@Param(name = "direction", type = ApiParamType.ENUM, isRequired = true, desc = "方向", member = RelDirectionType.class),
     })
     @Output({@Param(explode = RelVo[].class)})
@@ -75,6 +75,7 @@ public class ListAllCiRelApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("ciId");
         JSONArray ciIdListJson = jsonObj.getJSONArray("ciIdList");
+        Long endCiId = jsonObj.getLong("endCiId");
         List<Long> ciIdList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(ciIdListJson)) {
             for (int i = 0; i < ciIdListJson.size(); i++) {
@@ -86,14 +87,22 @@ public class ListAllCiRelApi extends PrivateApiComponentBase {
         //RelDirectionType directionType = RelDirectionType.get(jsonObj.getString("direction"));
         //if (directionType != null) {
         getRelPathByCiId(ciId, path, pathList);
-        if (CollectionUtils.isNotEmpty(pathList) && CollectionUtils.isNotEmpty(ciIdList)) {
+        if (CollectionUtils.isNotEmpty(pathList) && (CollectionUtils.isNotEmpty(ciIdList) || endCiId != null)) {
+
             for (int i = pathList.size() - 1; i >= 0; i--) {
                 List<CiRelVo> pList = pathList.get(i).getCiRelList();
                 boolean allMatch = true;
-                for (Long cId : ciIdList) {
-                    if (pList.stream().noneMatch(d -> d.getCiId().equals(cId))) {
+                if (CollectionUtils.isNotEmpty(ciIdList)) {
+                    for (Long cId : ciIdList) {
+                        if (pList.stream().noneMatch(d -> d.getCiId().equals(cId))) {
+                            allMatch = false;
+                            break;
+                        }
+                    }
+                }
+                if (endCiId != null) {
+                    if (!pList.get(pList.size() - 1).getCiId().equals(endCiId)) {
                         allMatch = false;
-                        break;
                     }
                 }
                 if (!allMatch) {
