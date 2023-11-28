@@ -443,34 +443,26 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                                 JSONArray newValueList = new JSONArray();
                                 Object valueObj = tbodyObj.get(column);
                                 if (valueObj instanceof JSONObject) {
-
+                                    String valueStr = ((JSONObject) valueObj).getString("value");
+                                    if (StringUtils.isNotBlank(valueStr)) {
+                                        newValueList.add(valueStr);
+                                    }
                                 } else if (valueObj instanceof JSONArray) {
                                     JSONArray valueArray = (JSONArray) valueObj;
                                     for (int k = 0; k < valueArray.size(); k++) {
-                                        String valueStr = valueArray.getString(k);
-                                        if (valueStr.contains("&=&")) {
-                                            String[] split = valueStr.split("&=&");
-                                            newValueList.add(split[0]);
+                                        Object valueObj2 = valueArray.get(k);
+                                        if (valueObj2 instanceof JSONObject) {
+                                            String valueStr = ((JSONObject) valueObj2).getString("value");
+                                            if (StringUtils.isNotBlank(valueStr)) {
+                                                newValueList.add(valueStr);
+                                            }
                                         } else {
-                                            newValueList.add(valueStr);
+                                            newValueList.add(valueObj2.toString());
                                         }
-                                    }
-                                } else if (valueObj instanceof String) {
-                                    String valueStr = (String) valueObj;
-                                    if (valueStr.contains("&=&")) {
-                                        String[] split = valueStr.split("&=&");
-                                        newValueList.add(split[0]);
-                                    } else {
-                                        newValueList.add(valueStr);
                                     }
                                 } else {
                                     String valueStr = valueObj.toString();
-                                    if (valueStr.contains("&=&")) {
-                                        String[] split = valueStr.split("&=&");
-                                        newValueList.add(split[0]);
-                                    } else {
-                                        newValueList.add(valueStr);
-                                    }
+                                    newValueList.add(valueStr);
                                 }
                                 if (CollectionUtils.isNotEmpty(newValueList)) {
                                     newMappingObj.setMappingMode("constant");
@@ -571,34 +563,27 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                         }
                         Object valueObj = tbodyObj.get(column);
                         if (valueObj instanceof JSONObject) {
-
+                            String valueStr = ((JSONObject) valueObj).getString("value");
+                            if (StringUtils.isNotBlank(valueStr)) {
+                                newValueList.add(valueStr);
+                            }
                         } else if (valueObj instanceof JSONArray) {
                             JSONArray valueArray = (JSONArray) valueObj;
                             for (int j = 0; j < valueArray.size(); j++) {
-                                String valueStr = valueArray.getString(j);
-                                if (valueStr.contains("&=&")) {
-                                    String[] split = valueStr.split("&=&");
-                                    newValueList.add(split[0]);
+                                Object valueObj2 = valueArray.get(j);
+                                if (valueObj2 instanceof JSONObject) {
+                                    String valueStr = ((JSONObject) valueObj2).getString("value");
+                                    if (StringUtils.isNotBlank(valueStr)) {
+                                        newValueList.add(valueStr);
+                                    }
                                 } else {
+                                    String valueStr = valueObj2.toString();
                                     newValueList.add(valueStr);
                                 }
                             }
-                        } else if (valueObj instanceof String) {
-                            String valueStr = (String) valueObj;
-                            if (valueStr.contains("&=&")) {
-                                String[] split = valueStr.split("&=&");
-                                newValueList.add(split[0]);
-                            } else {
-                                newValueList.add(valueStr);
-                            }
                         } else {
                             String valueStr = valueObj.toString();
-                            if (valueStr.contains("&=&")) {
-                                String[] split = valueStr.split("&=&");
-                                newValueList.add(split[0]);
-                            } else {
-                                newValueList.add(valueStr);
-                            }
+                            newValueList.add(valueStr);
                         }
                     }
                 } else if (Objects.equals(mappingMode, "formCommonComponent")) {
@@ -626,33 +611,28 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                     } else if (Objects.equals(formAttributeVo.getHandler(), FormHandler.FORMRADIO.getHandler())
                         || Objects.equals(formAttributeVo.getHandler(), FormHandler.FORMCHECKBOX.getHandler())
                         || Objects.equals(formAttributeVo.getHandler(), FormHandler.FORMSELECT.getHandler())) {
-                            if (dataObj instanceof JSONArray) {
+                            if (dataObj instanceof JSONObject) {
+                                String valueStr = ((JSONObject) dataObj).getString("value");
+                                if (StringUtils.isNotBlank(valueStr)) {
+                                    newValueList.add(valueStr);
+                                }
+                            } else if (dataObj instanceof JSONArray) {
                                 JSONArray valueArray = (JSONArray) dataObj;
                                 for (int j = 0; j < valueArray.size(); j++) {
-                                    String valueStr = valueArray.getString(j);
-                                    if (valueStr.contains("&=&")) {
-                                        String[] split = valueStr.split("&=&");
-                                        newValueList.add(split[0]);
+                                    Object valueObj = valueArray.get(j);
+                                    if (valueObj instanceof JSONObject) {
+                                        String valueStr = ((JSONObject) valueObj).getString("value");
+                                        if (StringUtils.isNotBlank(valueStr)) {
+                                            newValueList.add(valueStr);
+                                        }
                                     } else {
+                                        String valueStr = valueObj.toString();
                                         newValueList.add(valueStr);
                                     }
                                 }
                             } else if (dataObj instanceof String) {
                                 String valueStr = (String) dataObj;
-                                if (valueStr.contains("&=&")) {
-                                    String[] split = valueStr.split("&=&");
-                                    newValueList.add(split[0]);
-                                } else {
-                                    newValueList.add(valueStr);
-                                }
-                            } else {
-                                String valueStr = dataObj.toString();
-                                if (valueStr.contains("&=&")) {
-                                    String[] split = valueStr.split("&=&");
-                                    newValueList.add(split[0]);
-                                } else {
-                                    newValueList.add(valueStr);
-                                }
+                                newValueList.add(valueStr);
                             }
                     } else {
                         if (dataObj instanceof JSONObject) {
