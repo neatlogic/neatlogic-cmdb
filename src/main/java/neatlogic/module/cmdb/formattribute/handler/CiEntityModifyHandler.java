@@ -1,23 +1,22 @@
 package neatlogic.module.cmdb.formattribute.handler;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.enums.FormHandler;
 import neatlogic.framework.common.constvalue.ParamType;
 import neatlogic.framework.form.attribute.core.FormHandlerBase;
 import neatlogic.framework.form.constvalue.FormConditionModel;
 import neatlogic.framework.form.dto.AttributeDataVo;
 import neatlogic.framework.form.exception.AttributeValidException;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import java.util.*;
 
-@Component
+//@Component
 public class CiEntityModifyHandler extends FormHandlerBase {
     private final static Logger logger = LoggerFactory.getLogger(CiEntityModifyHandler.class);
 
