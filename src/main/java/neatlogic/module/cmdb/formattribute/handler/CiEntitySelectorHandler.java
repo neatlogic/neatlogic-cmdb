@@ -16,6 +16,8 @@ limitations under the License.
 
 package neatlogic.module.cmdb.formattribute.handler;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.enums.FormHandler;
 import neatlogic.framework.common.constvalue.ParamType;
@@ -24,10 +26,7 @@ import neatlogic.framework.form.constvalue.FormConditionModel;
 import neatlogic.framework.form.dto.AttributeDataVo;
 import neatlogic.framework.form.exception.AttributeValidException;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -38,7 +37,7 @@ import java.util.stream.Collectors;
  * @author linbq
  * @since 2021/8/18 14:24
  **/
-@Component
+//@Component
 public class CiEntitySelectorHandler extends FormHandlerBase {
 
     @Resource

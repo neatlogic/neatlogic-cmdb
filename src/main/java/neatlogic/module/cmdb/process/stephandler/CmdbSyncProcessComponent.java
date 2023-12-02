@@ -29,17 +29,19 @@ import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.cientity.RelEntityVo;
 import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
 import neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo;
+import neatlogic.framework.cmdb.enums.PropHandlerType;
 import neatlogic.framework.cmdb.enums.RelDirectionType;
 import neatlogic.framework.cmdb.enums.SearchExpression;
 import neatlogic.framework.cmdb.enums.TransactionActionType;
+import neatlogic.framework.cmdb.exception.attr.AttrValueIrregularException;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.cientity.NewCiEntityNotFoundException;
 import neatlogic.framework.cmdb.utils.RelUtil;
 import neatlogic.framework.common.constvalue.Expression;
 import neatlogic.framework.common.constvalue.InputFrom;
+import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.form.constvalue.FormHandler;
-import neatlogic.framework.form.dto.FormAttributeVo;
-import neatlogic.framework.form.dto.FormVersionVo;
+import neatlogic.framework.form.service.IFormCrossoverService;
 import neatlogic.framework.process.constvalue.ProcessFlowDirection;
 import neatlogic.framework.process.constvalue.ProcessStepMode;
 import neatlogic.framework.process.constvalue.ProcessTaskAuditType;
@@ -73,7 +75,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
@@ -171,26 +172,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                 myAutoComplete(currentProcessTaskStepVo);
                 return 0;
             }
-            Map<String, ProcessTaskFormAttributeDataVo> processTaskFormAttributeDataMap = new HashMap<>();
-            Map<String, FormAttributeVo> formAttributeMap = new HashMap<>();
-            Long processTaskId = currentProcessTaskStepVo.getProcessTaskId();
-            // 如果工单有表单信息，则查询出表单配置及数据
-            ProcessTaskFormVo processTaskFormVo = processTaskMapper.getProcessTaskFormByProcessTaskId(processTaskId);
-            if (processTaskFormVo != null) {
-                String formContent = selectContentByHashMapper.getProcessTaskFromContentByHash(processTaskFormVo.getFormContentHash());
-                FormVersionVo formVersionVo = new FormVersionVo();
-                formVersionVo.setFormUuid(processTaskFormVo.getFormUuid());
-                formVersionVo.setFormName(processTaskFormVo.getFormName());
-                formVersionVo.setFormConfig(JSONObject.parseObject(formContent));
-                List<FormAttributeVo> formAttributeList = formVersionVo.getFormAttributeList();
-                if (CollectionUtils.isNotEmpty(formAttributeList)) {
-                    formAttributeMap = formAttributeList.stream().collect(Collectors.toMap(e -> e.getUuid(), e -> e));
-                }
-                List<ProcessTaskFormAttributeDataVo> processTaskFormAttributeDataList = processTaskMapper.getProcessTaskStepFormAttributeDataByProcessTaskId(processTaskId);
-                if (CollectionUtils.isNotEmpty(processTaskFormAttributeDataList)) {
-                    processTaskFormAttributeDataMap = processTaskFormAttributeDataList.stream().collect(Collectors.toMap(e -> e.getAttributeUuid(), e -> e));
-                }
-            }
             boolean flag = false;
             JSONArray errorMessageList = new JSONArray();
             try {
@@ -218,7 +199,7 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                 }
                 List<CiEntitySyncConfigVo> configList = ciEntitySyncVo.getConfigList();
                 /* 重新构建configList配置信息 */
-                configList = rebuildConfigList(configList, formAttributeMap, processTaskFormAttributeDataMap);
+                configList = rebuildConfigList(configList, currentProcessTaskStepVo.getProcessTaskId());
                 if (CollectionUtils.isEmpty(configList)) {
                     myAutoComplete(currentProcessTaskStepVo);
                     return 1;
@@ -229,16 +210,9 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                 Map<String, CiEntitySyncConfigVo> dependencyConfigMap = new HashMap<>();
                 for (CiEntitySyncConfigVo configObject : configList) {
                     String uuid = configObject.getUuid();
-                    if (StringUtils.isBlank(uuid)) {
-                        continue;
-                    }
-                    Long ciId = configObject.getCiId();
-                    if (ciId == null) {
-                        continue;
-                    }
                     CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
                     ciEntityTransactionVo.setCiEntityUuid(uuid);
-                    ciEntityTransactionVo.setCiId(ciId);
+                    ciEntityTransactionVo.setCiId(configObject.getCiId());
                     Long id = configObject.getId();
                     if (id != null) {
                         ciEntityTransactionVo.setCiEntityId(id);
@@ -394,271 +368,18 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
     }
 
     /**
-     * 遍历configList，将“批量操作”的配置信息根据表单数据转换成多条“单个操作”配置信息
-     * @param configList 配置信息列表
-     * @param processTaskFormAttributeDataMap 表单数据信息
-     * @return
-     */
-    private List<CiEntitySyncConfigVo> handleBatchDataSource(
-            List<CiEntitySyncConfigVo> configList,
-            Map<String, ProcessTaskFormAttributeDataVo> processTaskFormAttributeDataMap
-    ) {
-        Map<String, List<String>> oldUuid2NewUuidListMap = new HashMap<>();
-        List<CiEntitySyncConfigVo> newConfigList = new ArrayList<>();
-        for (CiEntitySyncConfigVo configObj : configList) {
-            if (!Objects.equals(configObj.getCreatePolicy(), "batch")) {
-                // 单个操作配置，不做修改
-                newConfigList.add(configObj);
-                continue;
-            }
-            String oldUuid = configObj.getUuid();
-            // 批量操作配置信息
-            CiEntitySyncBatchDataSourceVo batchDataSource = configObj.getBatchDataSource();
-            String attributeUuid = batchDataSource.getAttributeUuid();
-            ProcessTaskFormAttributeDataVo formAttributeDataVo = processTaskFormAttributeDataMap.get(attributeUuid);
-            List<CiEntitySyncFilterVo> filterList = batchDataSource.getFilterList();
-            JSONArray tbodyList = getTbodyList(formAttributeDataVo, filterList);
-            if (CollectionUtils.isEmpty(tbodyList)) {
-                continue;
-            }
-            List<CiEntitySyncMappingVo> mappingList = configObj.getMappingList();
-            // 遍历批量操作表格数据
-            for (int j = 0; j < tbodyList.size(); j++) {
-                JSONObject tbodyObj = tbodyList.getJSONObject(j);
-                if (MapUtils.isEmpty(tbodyObj)) {
-                    continue;
-                }
-                CiEntitySyncConfigVo newConfigObj = new CiEntitySyncConfigVo();
-                List<CiEntitySyncMappingVo> newMappingList = new ArrayList<>();
-                for (CiEntitySyncMappingVo mappingObj : mappingList) {
-                    CiEntitySyncMappingVo newMappingObj = new CiEntitySyncMappingVo(mappingObj);
-                    String mappingMode = mappingObj.getMappingMode();
-                    if (Objects.equals(mappingMode, "formTableComponent")) {
-                        // 映射模式是表单表格组件
-                        JSONArray valueList = mappingObj.getValueList();
-                        if (CollectionUtils.isNotEmpty(valueList)) {
-                            String value = valueList.getString(0);
-                            if (Objects.equals(value, attributeUuid)) {
-                                String column = mappingObj.getColumn();
-                                JSONArray newValueList = new JSONArray();
-                                Object valueObj = tbodyObj.get(column);
-                                if (valueObj instanceof JSONObject) {
-                                    String valueStr = ((JSONObject) valueObj).getString("value");
-                                    if (StringUtils.isNotBlank(valueStr)) {
-                                        newValueList.add(valueStr);
-                                    }
-                                } else if (valueObj instanceof JSONArray) {
-                                    JSONArray valueArray = (JSONArray) valueObj;
-                                    for (int k = 0; k < valueArray.size(); k++) {
-                                        Object valueObj2 = valueArray.get(k);
-                                        if (valueObj2 instanceof JSONObject) {
-                                            String valueStr = ((JSONObject) valueObj2).getString("value");
-                                            if (StringUtils.isNotBlank(valueStr)) {
-                                                newValueList.add(valueStr);
-                                            }
-                                        } else {
-                                            newValueList.add(valueObj2.toString());
-                                        }
-                                    }
-                                } else {
-                                    String valueStr = valueObj.toString();
-                                    newValueList.add(valueStr);
-                                }
-                                if (CollectionUtils.isNotEmpty(newValueList)) {
-                                    newMappingObj.setMappingMode("constant");
-                                    newMappingObj.setValueList(newValueList);
-                                } else {
-                                    continue;
-                                }
-                            }
-                        } else {
-                            continue;
-                        }
-                    }
-                    newMappingList.add(newMappingObj);
-                }
-                String newUuid = UuidUtil.randomUuid();
-                oldUuid2NewUuidListMap.computeIfAbsent(oldUuid, key -> new ArrayList<>()).add(newUuid);
-                newConfigObj.setUuid(newUuid);
-                newConfigObj.setCiId(configObj.getCiId());
-                newConfigObj.setCiName(configObj.getCiName());
-                newConfigObj.setCiLabel(configObj.getCiLabel());
-                newConfigObj.setIsStart(configObj.getIsStart());
-                newConfigObj.setCiIcon(configObj.getCiIcon());
-                newConfigObj.setMappingList(newMappingList);
-                newConfigList.add(newConfigObj);
-            }
-        }
-        // 遍历newConfigList，根据oldUuid2NewUuidListMap，将关系映射配置信息中的valueList数据重新构建
-        for (CiEntitySyncConfigVo configObj : newConfigList) {
-            List<CiEntitySyncMappingVo> mappingList = configObj.getMappingList();
-            for (CiEntitySyncMappingVo mappingObj : mappingList) {
-                String key = mappingObj.getKey();
-                if (key.startsWith("rel")) {
-                    JSONArray valueList = mappingObj.getValueList();
-                    if (CollectionUtils.isNotEmpty(valueList)) {
-                        JSONArray newValueList = new JSONArray();
-                        for (int i = 0; i < valueList.size(); i++) {
-                            JSONObject valueObj = valueList.getJSONObject(i);
-                                String ciEntityUuid = valueObj.getString("ciEntityUuid");
-                                List<String> newUuidList = oldUuid2NewUuidListMap.get(ciEntityUuid);
-                                if (CollectionUtils.isNotEmpty(newUuidList)) {
-                                    for (String newUuid : newUuidList) {
-                                        JSONObject newValueObj = new JSONObject();
-                                        newValueObj.putAll(valueObj);
-                                        newValueObj.put("ciEntityUuid", newUuid);
-                                        newValueList.add(newValueObj);
-                                    }
-                                    mappingObj.setValueList(newValueList);
-                                } else {
-                                    JSONObject newValueObj = new JSONObject();
-                                    newValueObj.putAll(valueObj);
-                                    newValueList.add(newValueObj);
-                                }
-                        }
-                    }
-                }
-            }
-        }
-        return newConfigList;
-    }
-
-    /**
-     * 遍历configList，将mappingList中映射模式为“表单普通组件”和“表单表格组件”的数据替换称表单组件对应的真实值
-     * @param configList 配置信息列表
-     * @param formAttributeMap 表单组件信息
-     * @param processTaskFormAttributeDataMap 表单数据信息
-     */
-    private void handleMappingFormComponent(
-            List<CiEntitySyncConfigVo> configList,
-            Map<String, FormAttributeVo> formAttributeMap,
-            Map<String, ProcessTaskFormAttributeDataVo> processTaskFormAttributeDataMap
-    ) {
-        for (CiEntitySyncConfigVo configObj : configList) {
-            List<CiEntitySyncMappingVo> mappingList = configObj.getMappingList();
-            for (CiEntitySyncMappingVo mappingObj : mappingList) {
-                JSONArray valueList = mappingObj.getValueList();
-                if (CollectionUtils.isEmpty(valueList)) {
-                    continue;
-                }
-                JSONArray newValueList = new JSONArray();
-                String mappingMode = mappingObj.getMappingMode();
-                mappingObj.setValueList(newValueList);
-                if (Objects.equals(mappingMode, "formTableComponent")) {
-                    mappingObj.setMappingMode("constant");
-                    ProcessTaskFormAttributeDataVo attributeDataVo = processTaskFormAttributeDataMap.get(valueList.getString(0));
-                    if (attributeDataVo == null) {
-                        continue;
-                    }
-                    List<CiEntitySyncFilterVo> filterList = mappingObj.getFilterList();
-                    JSONArray tbodyList = getTbodyList(attributeDataVo, filterList);
-                    if (CollectionUtils.isEmpty(tbodyList)) {
-                        continue;
-                    }
-                    String column = mappingObj.getColumn();
-                    for (int m = 0; m < tbodyList.size(); m++) {
-                        JSONObject tbodyObj = tbodyList.getJSONObject(m);
-                        if (MapUtils.isEmpty(tbodyObj)) {
-                            continue;
-                        }
-                        Object valueObj = tbodyObj.get(column);
-                        if (valueObj instanceof JSONObject) {
-                            String valueStr = ((JSONObject) valueObj).getString("value");
-                            if (StringUtils.isNotBlank(valueStr)) {
-                                newValueList.add(valueStr);
-                            }
-                        } else if (valueObj instanceof JSONArray) {
-                            JSONArray valueArray = (JSONArray) valueObj;
-                            for (int j = 0; j < valueArray.size(); j++) {
-                                Object valueObj2 = valueArray.get(j);
-                                if (valueObj2 instanceof JSONObject) {
-                                    String valueStr = ((JSONObject) valueObj2).getString("value");
-                                    if (StringUtils.isNotBlank(valueStr)) {
-                                        newValueList.add(valueStr);
-                                    }
-                                } else {
-                                    String valueStr = valueObj2.toString();
-                                    newValueList.add(valueStr);
-                                }
-                            }
-                        } else {
-                            String valueStr = valueObj.toString();
-                            newValueList.add(valueStr);
-                        }
-                    }
-                } else if (Objects.equals(mappingMode, "formCommonComponent")) {
-                    mappingObj.setMappingMode("constant");
-                    ProcessTaskFormAttributeDataVo attributeDataVo = processTaskFormAttributeDataMap.get(valueList.getString(0));
-                    if (attributeDataVo == null) {
-                        continue;
-                    }
-                    Object dataObj = attributeDataVo.getDataObj();
-                    if (dataObj == null) {
-                        continue;
-                    }
-                    FormAttributeVo formAttributeVo = formAttributeMap.get(valueList.getString(0));
-                    if (Objects.equals(formAttributeVo.getHandler(), FormHandler.FORMUPLOAD.getHandler())) {
-                        if (dataObj instanceof JSONArray) {
-                            JSONArray dataArray = (JSONArray) dataObj;
-                            for (int m = 0; m < dataArray.size(); m++) {
-                                JSONObject data = dataArray.getJSONObject(m);
-                                Long id = data.getLong("id");
-                                if (id != null) {
-                                    newValueList.add(id);
-                                }
-                            }
-                        }
-                    } else if (Objects.equals(formAttributeVo.getHandler(), FormHandler.FORMRADIO.getHandler())
-                        || Objects.equals(formAttributeVo.getHandler(), FormHandler.FORMCHECKBOX.getHandler())
-                        || Objects.equals(formAttributeVo.getHandler(), FormHandler.FORMSELECT.getHandler())) {
-                            if (dataObj instanceof JSONObject) {
-                                String valueStr = ((JSONObject) dataObj).getString("value");
-                                if (StringUtils.isNotBlank(valueStr)) {
-                                    newValueList.add(valueStr);
-                                }
-                            } else if (dataObj instanceof JSONArray) {
-                                JSONArray valueArray = (JSONArray) dataObj;
-                                for (int j = 0; j < valueArray.size(); j++) {
-                                    Object valueObj = valueArray.get(j);
-                                    if (valueObj instanceof JSONObject) {
-                                        String valueStr = ((JSONObject) valueObj).getString("value");
-                                        if (StringUtils.isNotBlank(valueStr)) {
-                                            newValueList.add(valueStr);
-                                        }
-                                    } else {
-                                        String valueStr = valueObj.toString();
-                                        newValueList.add(valueStr);
-                                    }
-                                }
-                            } else if (dataObj instanceof String) {
-                                String valueStr = (String) dataObj;
-                                newValueList.add(valueStr);
-                            }
-                    } else {
-                        if (dataObj instanceof JSONObject) {
-
-                        } else if (dataObj instanceof JSONArray) {
-                            newValueList.addAll((JSONArray) dataObj);
-                        } else {
-                            newValueList.add(dataObj);
-                        }
-                    }
-                } else {
-                    newValueList.addAll(valueList);
-                }
-            }
-        }
-    }
-
-    /**
      * 遍历configList，根据唯一规则属性值删除重复配置信息
      * @param configList 配置信息列表
      * @return
      */
     private List<CiEntitySyncConfigVo> removeDuplicatesByUniqueAttrValue(List<CiEntitySyncConfigVo> configList) {
-        List<String> uniqueAttrValueListJoinStrList = new ArrayList<>();
-        List<CiEntitySyncConfigVo> newConfigList = new ArrayList<>();
-        for (CiEntitySyncConfigVo configObj : configList) {
+        // 保存唯一规则属性值组成的字符串与uuid的映射关系
+        Map<String, String> uniqueAttrValueListJoinStr2UuidMap = new HashMap<>();
+        // 保存将要删除uuid与等价替换uuid的映射关系
+        Map<String, String> toDeleteUuid2EquivalentUuidMap = new HashMap<>();
+        // 反向遍历，如果唯一规则属性值相同，后面数据优先级高
+        for (int i = configList.size() - 1; i >= 0; i--) {
+            CiEntitySyncConfigVo configObj = configList.get(i);
             Long ciId = configObj.getCiId();
             CiVo ciVo = ciMapper.getCiById(ciId);
             if (ciVo == null) {
@@ -667,7 +388,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             }
             List<Long> uniqueAttrIdList = ciVo.getUniqueAttrIdList();
             if (CollectionUtils.isEmpty(uniqueAttrIdList)) {
-                newConfigList.add(configObj);
                 continue;
             }
             Map<String, JSONArray> key2ValueListMap = new HashMap<>();
@@ -686,7 +406,9 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                 }
             }
             String uniqueAttrValueListJoinStr = String.join(",", list);
-            if (uniqueAttrValueListJoinStrList.contains(uniqueAttrValueListJoinStr)) {
+            String equivalentUuid = uniqueAttrValueListJoinStr2UuidMap.get(uniqueAttrValueListJoinStr);
+            if (StringUtils.isNotBlank(equivalentUuid)) {
+                toDeleteUuid2EquivalentUuidMap.put(configObj.getUuid(), equivalentUuid);
                 continue;
             }
             //校验唯一规则
@@ -716,68 +438,77 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                     configObj.setId(checkList.get(0).getId());
                 }
             }
-            uniqueAttrValueListJoinStrList.add(uniqueAttrValueListJoinStr);
+            uniqueAttrValueListJoinStr2UuidMap.put(uniqueAttrValueListJoinStr, configObj.getUuid());
+        }
+
+        List<CiEntitySyncConfigVo> newConfigList = new ArrayList<>();
+        for (CiEntitySyncConfigVo configObj : configList) {
+            if (toDeleteUuid2EquivalentUuidMap.containsKey(configObj.getUuid())) {
+                continue;
+            }
+            List<CiEntitySyncMappingVo> mappingList = configObj.getMappingList();
+            for (CiEntitySyncMappingVo mappingObj : mappingList) {
+                String mappingMode = mappingObj.getMappingMode();
+                if (!Objects.equals(mappingMode, "new")) {
+                    continue;
+                }
+                JSONArray valueList = mappingObj.getValueList();
+                if (CollectionUtils.isEmpty(valueList)) {
+                    continue;
+                }
+                for (int i = 0; i < valueList.size(); i++) {
+                    JSONObject valueObj = valueList.getJSONObject(i);
+                    if (MapUtils.isEmpty(valueObj)) {
+                        continue;
+                    }
+                    String ciEntityUuid = valueObj.getString("ciEntityUuid");
+                    String equivalentUuid = toDeleteUuid2EquivalentUuidMap.get(ciEntityUuid);
+                    if (StringUtils.isNotBlank(equivalentUuid)) {
+                        valueObj.put("ciEntityUuid", equivalentUuid);
+                    }
+                }
+            }
             newConfigList.add(configObj);
         }
         return newConfigList;
     }
 
     /**
-     * 遍历configList，重新生成uuid的值
-     * @param configList 配置信息列表
-     * @return
-     */
-    private List<CiEntitySyncConfigVo> updateUuidValue(List<CiEntitySyncConfigVo> configList) {
-        Map<String, String> oldUuid2NewUuidMap = new HashMap<>();
-        for (CiEntitySyncConfigVo configObject : configList) {
-            String uuid = configObject.getUuid();
-            Long id = configObject.getId();
-            if (id != null) {
-                CiEntityVo ciEntityVo = ciEntityMapper.getCiEntityBaseInfoById(id);
-                if (ciEntityVo == null) {
-                    configObject.setId(null);
-                    oldUuid2NewUuidMap.put(uuid, UuidUtil.randomUuid());
-                } else {
-                    if (!Objects.equals(uuid, ciEntityVo.getUuid())) {
-                        oldUuid2NewUuidMap.put(uuid, ciEntityVo.getUuid());
-                    }
-                }
-            } else if (StringUtils.isNotBlank(uuid)) {
-                CiEntityVo ciEntityVo = ciEntityMapper.getCiEntityBaseInfoByUuid(uuid);
-                if (ciEntityVo != null) {
-                    oldUuid2NewUuidMap.put(uuid, UuidUtil.randomUuid());
-                }
-            }
-        }
-        if (MapUtils.isNotEmpty(oldUuid2NewUuidMap)) {
-            String configListStr = JSONObject.toJSONString(configList);
-            for (Map.Entry<String, String> entry : oldUuid2NewUuidMap.entrySet()) {
-                configListStr = configListStr.replace(entry.getKey(), entry.getValue());
-            }
-            return JSONObject.parseArray(configListStr, CiEntitySyncConfigVo.class);
-        }
-        return configList;
-    }
-    /**
      * 重新构建configList配置信息
-     * @param configList 配置信息列表
-     * @param formAttributeMap 表单组件信息
-     * @param processTaskFormAttributeDataMap 表单数据信息
+     * @param originalConfigList 原始配置信息列表
+     * @param processTaskId 工单ID
      * @return
      */
     private List<CiEntitySyncConfigVo> rebuildConfigList(
-            List<CiEntitySyncConfigVo> configList,
-            Map<String, FormAttributeVo> formAttributeMap,
-            Map<String, ProcessTaskFormAttributeDataVo> processTaskFormAttributeDataMap) {
-        // 遍历configList，将“批量操作”的配置信息根据表单数据转换成多条“单个操作”配置信息
-        configList = handleBatchDataSource(configList, processTaskFormAttributeDataMap);
-        // 遍历configList，将mappingList中映射模式为“表单普通组件”和“表单表格组件”的数据替换称表单组件对应的真实值
-        handleMappingFormComponent(configList, formAttributeMap, processTaskFormAttributeDataMap);
+            List<CiEntitySyncConfigVo> originalConfigList,
+            Long processTaskId
+    ) {
+        List<CiEntitySyncConfigVo> newConfigList = new ArrayList<>();
+        // 找出起始模型配置信息
+        CiEntitySyncConfigVo startConfigObj = originalConfigList.stream().filter(e -> Objects.equals(e.getIsStart(), 1)).findFirst().get();
+        if (startConfigObj != null) {
+            Map<String, Object> formAttributeDataMap = new HashMap<>();
+            String formConfig = null;
+            // 如果工单有表单信息，则查询出表单配置及数据
+            ProcessTaskFormVo processTaskFormVo = processTaskMapper.getProcessTaskFormByProcessTaskId(processTaskId);
+            if (processTaskFormVo != null) {
+                formConfig = selectContentByHashMapper.getProcessTaskFromContentByHash(processTaskFormVo.getFormContentHash());
+                List<ProcessTaskFormAttributeDataVo> processTaskFormAttributeDataList = processTaskMapper.getProcessTaskStepFormAttributeDataByProcessTaskId(processTaskId);
+                if (CollectionUtils.isNotEmpty(processTaskFormAttributeDataList)) {
+                    for (ProcessTaskFormAttributeDataVo attributeDataVo : processTaskFormAttributeDataList) {
+                        Object dataObj = formAttributeDataAdaptsToCmdb(attributeDataVo.getAttributeUuid(), attributeDataVo.getDataObj(), formConfig);
+                        if (dataObj == null) {
+                            continue;
+                        }
+                        formAttributeDataMap.put(attributeDataVo.getAttributeUuid(), dataObj);
+                    }
+                }
+            }
+            // 遍历configList，将“批量操作”的配置信息根据表单数据转换成多条“单个操作”配置信息
+            handleBatchDataSource(originalConfigList, startConfigObj, formAttributeDataMap, newConfigList, formConfig);
+        }
         // 遍历configList，根据唯一规则属性值删除重复配置信息
-        configList = removeDuplicatesByUniqueAttrValue(configList);
-        // 遍历configList，重新生成uuid的值
-        configList = updateUuidValue(configList);
-        return configList;
+        return removeDuplicatesByUniqueAttrValue(newConfigList);
     }
 
     private List<CiEntityTransactionVo> createCiEntityTransactionVo(
@@ -785,7 +516,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             CiEntitySyncConfigVo mainConfigObj,
             Map<String, CiEntitySyncConfigVo> dependencyConfigMap) {
         List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
-
         Long ciId = mainConfigObj.getCiId();
         Map<String, CiEntitySyncMappingVo> mappingMap = new HashMap<>();
         List<CiEntitySyncMappingVo> mappingList = mainConfigObj.getMappingList();
@@ -853,6 +583,25 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                             valueList.set(i, attrCiEntityId);
                         } else {
                             valueList.remove(i);
+                        }
+                    }
+                }
+            }
+            if (PropHandlerType.SELECT.getValue().equals(attrVo.getType())) {
+                if (CollectionUtils.isNotEmpty(valueList)) {
+                    for (int i = 0; i < valueList.size(); i++) {
+                        String value = valueList.getString(i);
+                        try {
+                            Long attrId = Long.valueOf(value);
+                            CiEntityVo ciEntity = ciEntityMapper.getCiEntityBaseInfoById(attrId);
+                            if (ciEntity == null) {
+                                throw new AttrValueIrregularException(attrVo, value);
+                            }
+                            if (!Objects.equals(ciEntity.getCiId(), attrVo.getTargetCiId())) {
+                                throw new AttrValueIrregularException(attrVo, value);
+                            }
+                        } catch (NumberFormatException ex) {
+                            throw new AttrValueIrregularException(attrVo, value);
                         }
                     }
                 }
@@ -986,24 +735,315 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
         return ciEntityTransactionList;
     }
 
-    private JSONArray getTbodyList(ProcessTaskFormAttributeDataVo formAttributeDataVo, List<CiEntitySyncFilterVo> filterList) {
-        JSONArray tbodyList = new JSONArray();
-        if (formAttributeDataVo == null) {
-            return tbodyList;
+
+    /**
+     * 遍历configList，将“批量操作”的配置信息根据表单数据转换成多条“单个操作”配置信息
+     * @param originalConfigList  原始配置信息列表
+     * @param currentConfig 当前要处理的配置信息
+     * @param formAttributeDataMap 表单数据信息
+     * @param newConfigList 收集新产生的配置信息列表
+     * @param formConfig 表单配置信息
+     * @return
+     */
+    private List<String> handleBatchDataSource(
+            List<CiEntitySyncConfigVo> originalConfigList,
+            CiEntitySyncConfigVo currentConfig,
+            Map<String, Object> formAttributeDataMap,
+            List<CiEntitySyncConfigVo> newConfigList,
+            String formConfig
+    ) {
+        List<String> newUuidList = new ArrayList<>();
+        List<String> batchDataColumnList = new ArrayList<>();
+        JSONArray batchDataList = new JSONArray();
+        if (Objects.equals(currentConfig.getCreatePolicy(), "batch")) {
+            // 批量操作配置信息
+            CiEntitySyncBatchDataSourceVo batchDataSource = currentConfig.getBatchDataSource();
+            String attributeUuid = batchDataSource.getAttributeUuid();
+            Object dataObj = formAttributeDataMap.get(attributeUuid);
+            if (dataObj == null) {
+                return newUuidList;
+            }
+            if (dataObj instanceof JSONArray) {
+                JSONArray dataList = (JSONArray) dataObj;
+                List<CiEntitySyncFilterVo> filterList = batchDataSource.getFilterList();
+                batchDataList = filterData(dataList, filterList, formConfig);
+                if (CollectionUtils.isEmpty(batchDataList)) {
+                    return newUuidList;
+                }
+                JSONObject rowDataObj = batchDataList.getJSONObject(0);
+                batchDataColumnList.addAll(rowDataObj.keySet());
+            } else {
+                return newUuidList;
+            }
         }
-        if (!Objects.equals(formAttributeDataVo.getType(), neatlogic.framework.form.constvalue.FormHandler.FORMTABLEINPUTER.getHandler())
-                && !Objects.equals(formAttributeDataVo.getType(), neatlogic.framework.form.constvalue.FormHandler.FORMTABLESELECTOR.getHandler())) {
-            return tbodyList;
+        handleMappingFormComponent(currentConfig, batchDataColumnList, formAttributeDataMap);
+        List<CiEntitySyncMappingVo> mappingList = currentConfig.getMappingList();
+        if (CollectionUtils.isNotEmpty(batchDataList)) {
+            // 遍历批量操作表格数据
+            for (int j = 0; j < batchDataList.size(); j++) {
+                JSONObject rowDataObj = batchDataList.getJSONObject(j);
+                if (MapUtils.isEmpty(rowDataObj)) {
+                    continue;
+                }
+                List<CiEntitySyncMappingVo> newMappingList = new ArrayList<>();
+                for (CiEntitySyncMappingVo mappingObj : mappingList) {
+                    JSONArray valueList = mappingObj.getValueList();
+                    if (CollectionUtils.isEmpty(valueList)) {
+                        continue;
+                    }
+                    CiEntitySyncMappingVo newMappingObj = new CiEntitySyncMappingVo(mappingObj);
+                    String mappingMode = mappingObj.getMappingMode();
+                    if (Objects.equals(mappingMode, "formTableComponent") || Objects.equals(mappingMode, "formSubassemblyComponent")) {
+                        // 映射模式是表单表格组件
+                        String attributeUuid = valueList.getString(valueList.size() -1);
+                        if (!batchDataColumnList.contains(attributeUuid)) {
+                            continue;
+                        }
+                        JSONArray newValueList = new JSONArray();
+                        Object valueObj = rowDataObj.get(attributeUuid);
+                        if (valueObj instanceof JSONArray) {
+                            JSONArray valueArray = (JSONArray) valueObj;
+                            newValueList.addAll(valueArray);
+                        } else {
+                            newValueList.add(valueObj);
+                        }
+                        if (CollectionUtils.isNotEmpty(newValueList)) {
+                            newMappingObj.setMappingMode("constant");
+                            newMappingObj.setValueList(newValueList);
+                        } else {
+                            continue;
+                        }
+                        newMappingList.add(newMappingObj);
+                    } else {
+                        newMappingList.add(newMappingObj);
+                    }
+                }
+                CiEntitySyncConfigVo newConfigObj = new CiEntitySyncConfigVo();
+                newConfigObj.setUuid(UuidUtil.randomUuid());
+                newConfigObj.setCiId(currentConfig.getCiId());
+                newConfigObj.setCiName(currentConfig.getCiName());
+                newConfigObj.setCiLabel(currentConfig.getCiLabel());
+                newConfigObj.setIsStart(currentConfig.getIsStart());
+                newConfigObj.setCiIcon(currentConfig.getCiIcon());
+                newConfigObj.setMappingList(newMappingList);
+                newUuidList.add(newConfigObj.getUuid());
+                newConfigList.add(newConfigObj);
+                formAttributeDataMap.putAll(rowDataObj);
+                Map<String, Object> newFormAttributeDataMap = new HashMap<>();
+                newFormAttributeDataMap.putAll(formAttributeDataMap);
+                newFormAttributeDataMap.putAll(rowDataObj);
+                handleMappingRelConfig(originalConfigList, newConfigObj, newFormAttributeDataMap, newConfigList, formConfig);
+            }
+        } else {
+            CiEntitySyncConfigVo newConfigObj = new CiEntitySyncConfigVo();
+            newConfigObj.setUuid(UuidUtil.randomUuid());
+            newConfigObj.setCiId(currentConfig.getCiId());
+            newConfigObj.setCiName(currentConfig.getCiName());
+            newConfigObj.setCiLabel(currentConfig.getCiLabel());
+            newConfigObj.setIsStart(currentConfig.getIsStart());
+            newConfigObj.setCiIcon(currentConfig.getCiIcon());
+            newConfigObj.setMappingList(currentConfig.getMappingList());
+            newUuidList.add(newConfigObj.getUuid());
+            newConfigList.add(newConfigObj);
+            handleMappingRelConfig(originalConfigList, newConfigObj, formAttributeDataMap, newConfigList, formConfig);
         }
-        if (formAttributeDataVo.getDataObj() == null) {
-            return tbodyList;
+        return newUuidList;
+    }
+
+    /**
+     * 处理关系的新的配置项数据
+     * @param originalConfigList 原始配置信息列表
+     * @param currentConfig 当前要处理的配置信息
+     * @param formAttributeDataMap 表单数据信息
+     * @param newConfigList 收集新产生的配置信息列表
+     * @param formConfig 表单配置信息
+     */
+    private void handleMappingRelConfig(
+            List<CiEntitySyncConfigVo> originalConfigList,
+            CiEntitySyncConfigVo currentConfig,
+            Map<String, Object> formAttributeDataMap,
+            List<CiEntitySyncConfigVo> newConfigList,
+            String formConfig
+    ) {
+        List<CiEntitySyncMappingVo> mappingList = currentConfig.getMappingList();
+        for (CiEntitySyncMappingVo mappingObj : mappingList) {
+            String mappingMode = mappingObj.getMappingMode();
+            if (!Objects.equals(mappingMode, "new")) {
+                continue;
+            }
+            JSONArray valueList = mappingObj.getValueList();
+            if (CollectionUtils.isEmpty(valueList)) {
+                continue;
+            }
+            JSONArray newValueList = new JSONArray();
+            for (int i = 0; i < valueList.size(); i++) {
+                JSONObject valueObj = valueList.getJSONObject(i);
+                if (MapUtils.isEmpty(valueObj)) {
+                    continue;
+                }
+                String ciEntityUuid = valueObj.getString("ciEntityUuid");
+                if (StringUtils.isBlank(ciEntityUuid)) {
+                    continue;
+                }
+                String type = valueObj.getString("type");
+                if (Objects.equals(type, "new")) {
+                    CiEntitySyncConfigVo relConfigObj = originalConfigList.stream().filter(e -> Objects.equals(e.getUuid(), ciEntityUuid)).findFirst().get();
+                    replaceMappingRelFromCiEntityUuid(relConfigObj, currentConfig.getUuid());
+                    List<String> newCiEntityUuidList = handleBatchDataSource(originalConfigList, relConfigObj, formAttributeDataMap, newConfigList, formConfig);
+                    for (String newCiEntityUuid : newCiEntityUuidList) {
+                        JSONObject newValueObj = new JSONObject();
+                        newValueObj.putAll(valueObj);
+                        newValueObj.put("ciEntityUuid", newCiEntityUuid);
+                        newValueList.add(newValueObj);
+                    }
+                } else {
+                    JSONObject newValueObj = new JSONObject();
+                    newValueObj.putAll(valueObj);
+                    newValueList.add(newValueObj);
+                }
+            }
+            mappingObj.setValueList(newValueList);
         }
-        JSONArray dataList = (JSONArray) formAttributeDataVo.getDataObj();
+    }
+
+    /**
+     * 替换关系的配置信息中的来源配置项的ciEntityUuid
+     * @param relConfigObj
+     * @param fromCiEntityUuid
+     */
+    private void replaceMappingRelFromCiEntityUuid(CiEntitySyncConfigVo relConfigObj, String fromCiEntityUuid) {
+        List<CiEntitySyncMappingVo> mappingList = relConfigObj.getMappingList();
+        for (CiEntitySyncMappingVo mappingObj : mappingList) {
+            String mappingMode = mappingObj.getMappingMode();
+            if (!Objects.equals(mappingMode, "new")) {
+                continue;
+            }
+            JSONArray valueList = mappingObj.getValueList();
+            if (CollectionUtils.isEmpty(valueList)) {
+                continue;
+            }
+            for (int i = 0; i < valueList.size(); i++) {
+                JSONObject valueObj = valueList.getJSONObject(i);
+                if (MapUtils.isEmpty(valueObj)) {
+                    continue;
+                }
+                String ciEntityUuid = valueObj.getString("ciEntityUuid");
+                if (StringUtils.isBlank(ciEntityUuid)) {
+                    continue;
+                }
+                String type = valueObj.getString("type");
+                if (Objects.equals(type, "from")) {
+                    valueObj.put("ciEntityUuid", fromCiEntityUuid);
+                }
+            }
+        }
+    }
+
+    /**
+     * 遍历configList，将mappingList中映射模式为“表单普通组件”和“表单表格组件”的数据替换称表单组件对应的真实值
+     * @param configObj 配置信息
+     * @param batchDataColumnList 遍历对象属性列表
+     * @param formAttributeDataMap 表单数据信息
+     */
+    private void handleMappingFormComponent(
+            CiEntitySyncConfigVo configObj,
+            List<String> batchDataColumnList,
+            Map<String, Object> formAttributeDataMap) {
+
+        List<CiEntitySyncMappingVo> mappingList = configObj.getMappingList();
+        for (CiEntitySyncMappingVo mappingObj : mappingList) {
+            JSONArray valueList = mappingObj.getValueList();
+            if (CollectionUtils.isEmpty(valueList)) {
+                continue;
+            }
+            JSONArray newValueList = new JSONArray();
+            String mappingMode = mappingObj.getMappingMode();
+            mappingObj.setValueList(newValueList);
+            if (Objects.equals(mappingMode, "formTableComponent")
+                    || Objects.equals(mappingMode, "formSubassemblyComponent")) {
+                String attributeUuid = valueList.getString(valueList.size() -1);
+                if (batchDataColumnList.contains(attributeUuid)) {
+                    newValueList.addAll(valueList);
+                    continue;
+                }
+                mappingObj.setMappingMode("constant");
+                Object dataObj = formAttributeDataMap.get(attributeUuid);
+                if (dataObj == null) {
+                    continue;
+                }
+                if (dataObj instanceof JSONArray) {
+                    newValueList.addAll((JSONArray) dataObj);
+                } else {
+                    newValueList.add(dataObj);
+                }
+            } else if (Objects.equals(mappingMode, "formCommonComponent")) {
+                mappingObj.setMappingMode("constant");
+                Object dataObj = formAttributeDataMap.get(valueList.getString(0));
+                if (dataObj == null) {
+                    continue;
+                }
+                if (dataObj instanceof JSONArray) {
+                    newValueList.addAll((JSONArray) dataObj);
+                } else {
+                    newValueList.add(dataObj);
+                }
+            } else {
+                newValueList.addAll(valueList);
+            }
+        }
+    }
+
+
+
+    /**
+     * 表单数据适配CMDB数据
+     * @param attributeUuid 表单属性uuid
+     * @param originalValue 表单属性值
+     * @param formConfig 表单配置信息
+     * @return
+     */
+    private Object formAttributeDataAdaptsToCmdb(String attributeUuid, Object originalValue, String formConfig) {
+        if (originalValue == null) {
+            return null;
+        }
+        IFormCrossoverService formCrossoverService = CrossoverServiceFactory.getApi(IFormCrossoverService.class);
+        String handler = formCrossoverService.getFormAttributeHandler(attributeUuid, formConfig);
+        if (Objects.equals(handler, FormHandler.FORMUPLOAD.getHandler())) {
+            JSONArray resultList = new JSONArray();
+            if (originalValue instanceof JSONArray) {
+                JSONArray dataArray = (JSONArray) originalValue;
+                for (int m = 0; m < dataArray.size(); m++) {
+                    JSONObject data = dataArray.getJSONObject(m);
+                    Long id = data.getLong("id");
+                    if (id != null) {
+                        resultList.add(id);
+                    }
+                }
+            }
+            return resultList;
+        } else if (Objects.equals(handler, FormHandler.FORMRADIO.getHandler())
+                || Objects.equals(handler, FormHandler.FORMCHECKBOX.getHandler())
+                || Objects.equals(handler, FormHandler.FORMSELECT.getHandler())) {
+            return formCrossoverService.getFormSelectAttributeValueByOriginalValue(originalValue);
+        }
+        return originalValue;
+    }
+
+    /**
+     * 过滤数据
+     * @param dataList 输入数据
+     * @param filterList 过滤设置列表
+     * @param formConfig 表单配置信息
+     * @return
+     */
+    private JSONArray filterData(JSONArray dataList, List<CiEntitySyncFilterVo> filterList, String formConfig) {
+        JSONArray resultList = new JSONArray();
+        JSONArray tempList = new JSONArray();
         // 数据过滤
         if (CollectionUtils.isNotEmpty(filterList)) {
             for (int i = 0; i < dataList.size(); i++) {
-                JSONObject data = dataList.getJSONObject(i);
-                if (MapUtils.isEmpty(data)) {
+                JSONObject rowData = dataList.getJSONObject(i);
+                if (MapUtils.isEmpty(rowData)) {
                     continue;
                 }
                 boolean flag = true;
@@ -1020,18 +1060,19 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                     if (StringUtils.isBlank(value)) {
                         continue;
                     }
+                    Object data = formAttributeDataAdaptsToCmdb(column, rowData.get(column), formConfig);
                     if (Objects.equals(expression, Expression.EQUAL.getExpression())) {
-                        if (!Objects.equals(value, data.getString(column))) {
+                        if (!Objects.equals(value, data)) {
                             flag = false;
                             break;
                         }
                     } else if (Objects.equals(expression, Expression.UNEQUAL.getExpression())) {
-                        if (Objects.equals(value, data.getString(column))) {
+                        if (Objects.equals(value, data)) {
                             flag = false;
                             break;
                         }
                     } else if (Objects.equals(expression, Expression.LIKE.getExpression())) {
-                        String columnValue = data.getString(column);
+                        String columnValue = (String) data;
                         if (StringUtils.isBlank(columnValue)) {
                             flag = false;
                             break;
@@ -1041,7 +1082,7 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                             break;
                         }
                     } else if (Objects.equals(expression, Expression.NOTLIKE.getExpression())) {
-                        String columnValue = data.getString(column);
+                        String columnValue = (String) data;
                         if (StringUtils.isBlank(columnValue)) {
                             continue;
                         }
@@ -1052,13 +1093,23 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                     }
                 }
                 if (flag) {
-                    tbodyList.add(data);
+                    tempList.add(rowData);
                 }
             }
         } else {
-            tbodyList = dataList;
+            tempList = dataList;
         }
-        return tbodyList;
+
+        for (int i = 0; i < tempList.size(); i++) {
+            JSONObject newRowDataObj = new JSONObject();
+            JSONObject rowDataObj = tempList.getJSONObject(i);
+            for (Map.Entry<String, Object> entry : rowDataObj.entrySet()) {
+                Object valueObj = formAttributeDataAdaptsToCmdb(entry.getKey(), entry.getValue(), formConfig);
+                newRowDataObj.put(entry.getKey(), valueObj);
+            }
+            resultList.add(newRowDataObj);
+        }
+        return resultList;
     }
 
     @Override
