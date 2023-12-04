@@ -175,11 +175,25 @@ public class SelectValueHandler implements IAttrValueHandler {
     @Override
     public boolean valid(AttrVo attrVo, JSONArray valueList) {
         if (CollectionUtils.isNotEmpty(valueList)) {
+            CiVo ciVo = ciMapper.getCiById(attrVo.getTargetCiId());
             for (int i = 0; i < valueList.size(); i++) {
                 String value = valueList.getString(i);
                 try {
-                    Long attrId = Long.valueOf(value);
-                    CiEntityVo ciEntity = ciEntityMapper.getCiEntityBaseInfoById(attrId);
+                    Long id = Long.valueOf(value);
+                    CiEntityVo ciEntity = null;
+                    if (ciVo.getIsVirtual().equals(0)) {
+                        ciEntity = ciEntityMapper.getCiEntityBaseInfoById(id);
+                    } else {
+                        CiEntityVo ciEntityVo = new CiEntityVo();
+                        ciEntityVo.setCiId(ciVo.getId());
+                        List<Long> idList = new ArrayList<>();
+                        idList.add(id);
+                        ciEntityVo.setIdList(idList);
+                        List<CiEntityVo> ciEntityList = ciEntityMapper.getVirtualCiEntityBaseInfoByIdList(ciEntityVo);
+                        if (CollectionUtils.isNotEmpty(ciEntityList)) {
+                            ciEntity = ciEntityList.get(0);
+                        }
+                    }
                     if (ciEntity == null) {
                         throw new AttrValueIrregularException(attrVo, value);
                     }
