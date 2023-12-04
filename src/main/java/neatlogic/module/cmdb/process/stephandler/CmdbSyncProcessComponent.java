@@ -27,15 +27,15 @@ import neatlogic.framework.cmdb.dto.ci.RelVo;
 import neatlogic.framework.cmdb.dto.cientity.AttrFilterVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.cientity.RelEntityVo;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo;
 import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
 import neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo;
-import neatlogic.framework.cmdb.enums.PropHandlerType;
 import neatlogic.framework.cmdb.enums.RelDirectionType;
 import neatlogic.framework.cmdb.enums.SearchExpression;
 import neatlogic.framework.cmdb.enums.TransactionActionType;
-import neatlogic.framework.cmdb.exception.attr.AttrValueIrregularException;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.cientity.NewCiEntityNotFoundException;
+import neatlogic.framework.cmdb.exception.globalattr.GlobalAttrValueIrregularException;
 import neatlogic.framework.cmdb.utils.RelUtil;
 import neatlogic.framework.common.constvalue.Expression;
 import neatlogic.framework.common.constvalue.InputFrom;
@@ -213,6 +213,7 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                     CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
                     ciEntityTransactionVo.setCiEntityUuid(uuid);
                     ciEntityTransactionVo.setCiId(configObject.getCiId());
+                    ciEntityTransactionVo.setAllowCommit(true);
                     Long id = configObject.getId();
                     if (id != null) {
                         ciEntityTransactionVo.setCiEntityId(id);
@@ -240,15 +241,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                         if (!ciEntityTransactionList.contains(ciEntityTransactionVo)) {
                             ciEntityTransactionList.add(ciEntityTransactionVo);
                         }
-                    }
-                }
-                for (int i = ciEntityTransactionList.size() - 1; i >= 0; i--) {
-                    CiEntityTransactionVo t = ciEntityTransactionList.get(i);
-                    boolean hasChange = ciEntityService.validateCiEntityTransaction(t);
-                    if (hasChange) {
-                        t.setAllowCommit(true);
-                    } else {
-                        ciEntityTransactionList.remove(i);
                     }
                 }
                 if (CollectionUtils.isNotEmpty(ciEntityTransactionList)) {
@@ -532,12 +524,12 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
         CiEntitySyncMappingVo descriptionMappingObj = mappingMap.get("description");
         if (descriptionMappingObj != null) {
             JSONArray valueList = descriptionMappingObj.getValueList();
-            if (CollectionUtils.isEmpty(valueList)) {
+            if (CollectionUtils.isNotEmpty(valueList)) {
+                String description = valueList.getString(0);
+                if (StringUtils.isNotBlank(description)) {
+                    ciEntityTransactionVo.setDescription(description);
+                }
             }
-            String description = valueList.getString(0);
-            if (StringUtils.isBlank(description)) {
-            }
-            ciEntityTransactionVo.setDescription(description);
         }
 
         /** 属性 **/
@@ -583,25 +575,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                             valueList.set(i, attrCiEntityId);
                         } else {
                             valueList.remove(i);
-                        }
-                    }
-                }
-            }
-            if (PropHandlerType.SELECT.getValue().equals(attrVo.getType())) {
-                if (CollectionUtils.isNotEmpty(valueList)) {
-                    for (int i = 0; i < valueList.size(); i++) {
-                        String value = valueList.getString(i);
-                        try {
-                            Long attrId = Long.valueOf(value);
-                            CiEntityVo ciEntity = ciEntityMapper.getCiEntityBaseInfoById(attrId);
-                            if (ciEntity == null) {
-                                throw new AttrValueIrregularException(attrVo, value);
-                            }
-                            if (!Objects.equals(ciEntity.getCiId(), attrVo.getTargetCiId())) {
-                                throw new AttrValueIrregularException(attrVo, value);
-                            }
-                        } catch (NumberFormatException ex) {
-                            throw new AttrValueIrregularException(attrVo, value);
                         }
                     }
                 }
@@ -717,12 +690,31 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                 continue;
             }
             JSONArray valueList = new JSONArray();
-            String mappingMode = mappingObj.getMappingMode();
-            if (Objects.equals(mappingMode, "constant")) {
-                // 映射模式为常量
-                JSONArray valueArray = mappingObj.getValueList();
-                if (CollectionUtils.isNotEmpty(valueArray)) {
-                valueList = valueArray;
+            // 映射模式为常量
+            JSONArray valueArray = mappingObj.getValueList();
+            if (CollectionUtils.isNotEmpty(valueArray)) {
+                for (int i = 0; i < valueArray.size(); i++) {
+                    Object valueObj = valueArray.get(i);
+                    if (valueObj instanceof JSONObject) {
+                        valueList.add(valueObj);
+                    } else {
+                        boolean flag = false;
+                        List<GlobalAttrItemVo> itemList = globalAttrVo.getItemList();
+                        for (GlobalAttrItemVo item : itemList) {
+                            if (Objects.equals(item.getValue(), valueObj)) {
+                                JSONObject jsonObj = new JSONObject();
+                                jsonObj.put("id", item.getId());
+                                jsonObj.put("value", item.getValue());
+                                jsonObj.put("sort", item.getSort());
+                                jsonObj.put("attrId", globalAttrVo.getId());
+                                valueList.add(jsonObj);
+                                flag = true;
+                            }
+                        }
+                        if (!flag) {
+                            throw new GlobalAttrValueIrregularException(globalAttrVo, valueObj.toString());
+                        }
+                    }
                 }
             }
             JSONObject globalAttrEntity = new JSONObject();
@@ -989,6 +981,11 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                 }
             } else {
                 newValueList.addAll(valueList);
+            }
+            for (int i = newValueList.size() - 1; i >= 0; i--) {
+                if (StringUtils.isBlank(newValueList.getString(i))){
+                    newValueList.remove(i);
+                }
             }
         }
     }

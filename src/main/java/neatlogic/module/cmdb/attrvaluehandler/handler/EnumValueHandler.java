@@ -16,8 +16,13 @@
 
 package neatlogic.module.cmdb.attrvaluehandler.handler;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
+import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.enums.SearchExpression;
+import neatlogic.framework.cmdb.exception.attr.AttrValueIrregularException;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 
@@ -87,6 +92,21 @@ public class EnumValueHandler implements IAttrValueHandler {
     @Override
     public int getSort() {
         return 4;
+    }
+
+    @Override
+    public boolean valid(AttrVo attrVo, JSONArray valueList) {
+        if (CollectionUtils.isNotEmpty(valueList)) {
+            JSONObject config = attrVo.getConfig();
+            JSONArray members = config.getJSONArray("members");
+            for (int i = 0; i < valueList.size(); i++) {
+                String v = valueList.getString(i);
+                if (!members.contains(v)) {
+                    throw new AttrValueIrregularException(attrVo, v);
+                }
+            }
+        }
+        return true;
     }
 
 }

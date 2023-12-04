@@ -21,6 +21,7 @@ import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.enums.SearchExpression;
+import neatlogic.framework.cmdb.exception.attr.AttrValueIrregularException;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
@@ -31,6 +32,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 @Service
@@ -159,5 +161,27 @@ public class TableValueHandler implements IAttrValueHandler {
                 }
             }
         }
+    }
+
+    @Override
+    public boolean valid(AttrVo attrVo, JSONArray valueList) {
+        if (CollectionUtils.isNotEmpty(valueList)) {
+            for (int i = 0; i < valueList.size(); i++) {
+                String value = valueList.getString(i);
+                try {
+                    Long attrId = Long.valueOf(value);
+                    CiEntityVo ciEntity = ciEntityMapper.getCiEntityBaseInfoById(attrId);
+                    if (ciEntity == null) {
+                        throw new AttrValueIrregularException(attrVo, value);
+                    }
+                    if (!Objects.equals(ciEntity.getCiId(), attrVo.getTargetCiId())) {
+                        throw new AttrValueIrregularException(attrVo, value);
+                    }
+                } catch (NumberFormatException ex) {
+                    throw new AttrValueIrregularException(attrVo, value);
+                }
+            }
+        }
+        return true;
     }
 }
