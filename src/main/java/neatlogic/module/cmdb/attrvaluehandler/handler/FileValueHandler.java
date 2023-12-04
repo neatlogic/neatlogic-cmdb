@@ -19,6 +19,7 @@ package neatlogic.module.cmdb.attrvaluehandler.handler;
 import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.enums.SearchExpression;
+import neatlogic.framework.cmdb.exception.attr.AttrValueIrregularException;
 import neatlogic.framework.file.dao.mapper.FileMapper;
 import neatlogic.framework.file.dto.FileVo;
 import com.alibaba.fastjson.JSONArray;
@@ -162,5 +163,24 @@ public class FileValueHandler implements IAttrValueHandler {
                 //传进来的值不一定是id，例如视图分组后的"[空值]"
             }
         }
+    }
+
+    @Override
+    public boolean valid(AttrVo attrVo, JSONArray valueList) {
+        if (CollectionUtils.isNotEmpty(valueList)) {
+            for (int i = 0; i < valueList.size(); i++) {
+                String value = valueList.getString(i);
+                try {
+                    Long fileId = Long.valueOf(value);
+                    FileVo fileVo = fileMapper.getFileById(fileId);
+                    if (fileVo == null) {
+                        throw new AttrValueIrregularException(attrVo, value);
+                    }
+                } catch (NumberFormatException ex) {
+                    throw new AttrValueIrregularException(attrVo, value);
+                }
+            }
+        }
+        return true;
     }
 }
