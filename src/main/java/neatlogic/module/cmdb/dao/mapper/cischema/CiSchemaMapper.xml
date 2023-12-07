@@ -75,13 +75,14 @@
             <otherwise>TEXT</otherwise>
         </choose>
         NULL COMMENT '${attrVo.label}',
-        ADD COLUMN `${attrVo.id}_hash` CHAR(32) NULL COMMENT '${attrVo.label}值散列码',
+        ADD COLUMN `${attrVo.id}_hash` CHAR(32) NULL COMMENT '${attrVo.label}值散列码'
         <choose>
             <when test="attrVo.type == 'number' or attrVo.type == 'date' or attrVo.type == 'time' or attrVo.type == 'datetime' or attrVo.type == 'enum'">
-                ADD KEY `index_${attrVo.id}` (`${attrVo.id}`),
+                ,ADD KEY `index_${attrVo.id}` (`${attrVo.id}`)
             </when>
         </choose>
-        ADD KEY `index_${attrVo.id}_hash` (`${attrVo.id}_hash`);
+        ;
+        <!--ADD KEY `index_${attrVo.id}_hash` (`${attrVo.id}_hash`);-->
     </insert>
 
     <insert id="insertCiTable">
