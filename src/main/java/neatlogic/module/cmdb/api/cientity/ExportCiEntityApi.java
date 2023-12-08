@@ -117,11 +117,19 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
         List<String> columnList = new ArrayList<>();
         columnList.add("id");
         columnList.add("uuid");
+        List<Long> globalAttrIdList = new ArrayList<>();
         List<Long> attrIdList = new ArrayList<>();
         List<Long> relIdList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(ciViewList)) {
             for (CiViewVo ciview : ciViewList) {
                 switch (ciview.getType()) {
+                    case "global":
+                        if (showAttrRelSet.contains("global_" + ciview.getItemId())) {
+                            globalAttrIdList.add(ciview.getItemId());
+                            columnList.add("global_" + ciview.getItemId());
+                            headerList.add(ciview.getItemLabel());
+                        }
+                        break;
                     case "attr":
                         if (showAttrRelSet.contains("attr_" + ciview.getItemId())) {
                             attrIdList.add(ciview.getItemId());
@@ -149,6 +157,8 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
         //把需要显示的属性和关系设进去，后台会进行自动过滤
         ciEntityVo.setAttrIdList(attrIdList);
         ciEntityVo.setRelIdList(relIdList);
+        ciEntityVo.setGlobalAttrIdList(globalAttrIdList);
+
 
         ExcelBuilder builder = new ExcelBuilder(SXSSFWorkbook.class);
         SheetBuilder sheetBuilder = builder.withBorderColor(HSSFColor.HSSFColorPredefined.GREY_40_PERCENT)

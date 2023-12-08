@@ -19,6 +19,7 @@ package neatlogic.module.cmdb.api.ci;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.RelVo;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
 import neatlogic.framework.cmdb.enums.RelDirectionType;
 import neatlogic.framework.cmdb.utils.RelUtil;
 import neatlogic.framework.common.constvalue.ApiParamType;
@@ -30,6 +31,7 @@ import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -49,6 +51,9 @@ public class SearchCiAttrRelListApi extends PrivateApiComponentBase {
 
     @Resource
     private RelMapper relMapper;
+
+    @Resource
+    private GlobalAttrMapper globalAttrMapper;
 
     @Override
     public String getToken() {
@@ -76,12 +81,22 @@ public class SearchCiAttrRelListApi extends PrivateApiComponentBase {
         JSONArray returnList = new JSONArray();
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciId);
         List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciId));
+        List<GlobalAttrVo> globalAttrList = globalAttrMapper.getGlobalAttrByCiId(ciId);
         if (StringUtils.isNotBlank(keyword)) {
             keyword = keyword.toLowerCase(Locale.ROOT);
             //因为有二级缓存，数据量也不大，可以直接在应用层过滤关键字实现搜索效果
             String finalKeyword = keyword;
             attrList = attrList.stream().filter(d -> d.getName().toLowerCase(Locale.ROOT).contains(finalKeyword)).collect(Collectors.toList());
             relList = relList.stream().filter(d -> (d.getDirection().equals(RelDirectionType.FROM.getValue()) && d.getToName().toLowerCase(Locale.ROOT).contains(finalKeyword)) || (d.getDirection().equals(RelDirectionType.TO.getValue()) && d.getFromName().toLowerCase(Locale.ROOT).contains(finalKeyword))).collect(Collectors.toList());
+            globalAttrList = globalAttrList.stream().filter(d -> d.getName().toLowerCase(Locale.ROOT).contains(finalKeyword)).collect(Collectors.toList());
+        }
+        for (GlobalAttrVo globalAttrVo : globalAttrList) {
+            JSONObject attrObj = new JSONObject();
+            attrObj.put("id", globalAttrVo.getId());
+            attrObj.put("uid", "global_" + globalAttrVo.getId());
+            attrObj.put("name", globalAttrVo.getName());
+            attrObj.put("label", globalAttrVo.getLabel());
+            returnList.add(attrObj);
         }
         for (AttrVo attrVo : attrList) {
             JSONObject attrObj = new JSONObject();
@@ -108,6 +123,8 @@ public class SearchCiAttrRelListApi extends PrivateApiComponentBase {
             }
             returnList.add(relObj);
         }
+
+
         return returnList;
     }
 }
