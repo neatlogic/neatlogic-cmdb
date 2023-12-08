@@ -219,6 +219,22 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
                             }
                             dataMap.put(column, relCiEntityName);
                         }
+                    } else if (entity.getGlobalAttrEntityData().containsKey(column)) {
+                        JSONObject attrObj = entity.getGlobalAttrEntityData().getJSONObject(column);
+                        JSONArray valueList = attrObj.getJSONArray("valueList");
+                        if (CollectionUtils.isNotEmpty(valueList)) {
+                            String tmpValue = "";
+                            for (int v = 0; v < valueList.size(); v++) {
+                                JSONObject valueObj = valueList.getJSONObject(v);
+                                if (StringUtils.isNotBlank(valueObj.getString("value"))) {
+                                    if (StringUtils.isNotBlank(tmpValue)) {
+                                        tmpValue += ",";
+                                    }
+                                    tmpValue += valueObj.getString("value");
+                                }
+                            }
+                            dataMap.put(column, tmpValue);
+                        }
                     }
                 }
                 sheetBuilder.addData(dataMap);
