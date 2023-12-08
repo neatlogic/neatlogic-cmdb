@@ -24,6 +24,8 @@ import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.ci.RelVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
 import neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import neatlogic.framework.cmdb.dto.transaction.TransactionGroupVo;
 import neatlogic.framework.cmdb.enums.*;
@@ -39,6 +41,7 @@ import neatlogic.framework.common.constvalue.InputFrom;
 import neatlogic.framework.common.util.FileUtil;
 import neatlogic.framework.exception.core.ApiRuntimeException;
 import neatlogic.framework.file.dto.FileVo;
+import neatlogic.framework.util.$;
 import neatlogic.framework.util.UuidUtil;
 import neatlogic.module.cmdb.dao.mapper.batchimport.ImportMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
@@ -267,6 +270,14 @@ public class BatchImportHandler {
                                             requireAttrSet.add("attr_" + attr.getId());
                                         }
                                     }
+                                    for (GlobalAttrVo globalAttr : ciVo.getGlobalAttrList()) {
+                                        if (content.contains("[" + $.t("term.cmdb.globalattr") + "]") && (globalAttr.getLabel() + "[" + $.t("term.cmdb.globalattr") + "]").equals(content)) {
+                                            checkAttrSet.add("global_" + globalAttr.getId());
+                                            typeMap.put(cell.getColumnIndex(), globalAttr);
+                                            cellIndex.add(cell.getColumnIndex());
+                                            continue COLUMN;
+                                        }
+                                    }
                                     for (AttrVo attr : ciVo.getAttrList()) {
                                         if (attr.getLabel().equals(content)) {
                                             checkAttrSet.add("attr_" + attr.getId());
@@ -391,6 +402,16 @@ public class BatchImportHandler {
                                                             ciEntityUuid = UuidUtil.randomUuid();
                                                         }
                                                         ciEntityTransactionVo.setCiEntityUuid(ciEntityUuid);
+                                                    }
+                                                } else if (header instanceof GlobalAttrVo) {
+                                                    GlobalAttrVo globalAttr = (GlobalAttrVo) header;
+                                                    JSONArray valueList = new JSONArray();
+                                                    for (String c : content.split(",")) {
+                                                        Optional<GlobalAttrItemVo> op = globalAttr.getItemList().stream().filter(d -> d.getValue().equalsIgnoreCase(c)).findFirst();
+                                                        op.ifPresent(valueList::add);
+                                                    }
+                                                    if (CollectionUtils.isNotEmpty(valueList)) {
+                                                        ciEntityTransactionVo.addGlobalAttrEntityData(globalAttr, valueList);
                                                     }
                                                 } else if (header instanceof AttrVo) {// 如果是属性
                                                     AttrVo attr = (AttrVo) header;

@@ -16,21 +16,23 @@
 
 package neatlogic.module.cmdb.api.ci;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
+import neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper;
 import neatlogic.module.cmdb.service.ci.CiService;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
@@ -38,10 +40,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional // 需要启用事务，以便查询权限时激活一级缓存
 public class GetImportFieldListApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private CiService ciService;
 
-    @Autowired
+    @Resource
+    private GlobalAttrMapper globalAttrMapper;
+
+    @Resource
     private CiMapper ciMapper;
 
 

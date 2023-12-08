@@ -25,6 +25,7 @@ import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.ci.RelVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.customview.CustomViewVo;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
 import neatlogic.framework.cmdb.exception.attr.AttrIsUsedInExpressionException;
 import neatlogic.framework.cmdb.exception.attr.AttrIsUsedInUniqueRuleException;
 import neatlogic.framework.cmdb.exception.ci.*;
@@ -43,11 +44,11 @@ import neatlogic.module.cmdb.dao.mapper.ci.CiViewMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.cischema.CiSchemaMapper;
+import neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
 import neatlogic.module.cmdb.utils.VirtualCiSqlBuilder;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,9 +65,11 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
     @Resource
     private CiMapper ciMapper;
 
-    @Autowired
+    @Resource
     private CiEntityMapper ciEntityMapper;
 
+    @Resource
+    private GlobalAttrMapper globalAttrMapper;
 
     @Resource
     private AttrMapper attrMapper;
@@ -445,8 +448,10 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
         }
         List<AttrVo> attrList = attrMapper.getAttrByCiId(id);
         List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(id));
+        List<GlobalAttrVo> globalAttrList = globalAttrMapper.getGlobalAttrByCiId(id);
         ciVo.setRelList(relList);
         ciVo.setAttrList(attrList);
+        ciVo.setGlobalAttrList(globalAttrList);
         return ciVo;
     }
 

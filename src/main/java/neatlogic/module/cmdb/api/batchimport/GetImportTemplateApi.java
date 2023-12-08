@@ -24,11 +24,16 @@ import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.ci.RelVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
 import neatlogic.framework.cmdb.enums.PropHandlerType;
 import neatlogic.framework.cmdb.exception.ci.CiAttrIsNotNullException;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.restful.annotation.*;
+import neatlogic.framework.restful.annotation.Description;
+import neatlogic.framework.restful.annotation.Input;
+import neatlogic.framework.restful.annotation.OperationType;
+import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
 import neatlogic.framework.util.$;
@@ -92,8 +97,8 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
             @Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid"),
             @Param(name = "attrIdList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.attridlist"),
             @Param(name = "relIdList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.relidlist"),
+            @Param(name = "globalAttrIdList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.globalattridlist")
     })
-    @Output({})
     @Description(desc = "nmcab.getimporttemplateapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -103,13 +108,18 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
             Long ciId = paramObj.getLong("ciId");
             JSONArray attrIdArray = paramObj.getJSONArray("attrIdList");
             JSONArray relIdArray = paramObj.getJSONArray("relIdList");
+            JSONArray globalAttrIdArray = paramObj.getJSONArray("globalAttrIdList");
             List<Long> attrIdList = null;
             List<Long> relIdList = null;
+            List<Long> globalAttrIdList = null;
             if (CollectionUtils.isNotEmpty(attrIdArray)) {
                 attrIdList = attrIdArray.toJavaList(Long.class);
             }
             if (CollectionUtils.isNotEmpty(relIdArray)) {
                 relIdList = relIdArray.toJavaList(Long.class);
+            }
+            if (CollectionUtils.isNotEmpty(globalAttrIdArray)) {
+                globalAttrIdList = globalAttrIdArray.toJavaList(Long.class);
             }
 
             if (CollectionUtils.isEmpty(attrIdList) && CollectionUtils.isEmpty(relIdList)) {
@@ -166,6 +176,28 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
             idCell.setCellStyle(style);
             idCell.setCellValue("uuid");
             i++;
+            /* 全局属性 */
+            if (CollectionUtils.isNotEmpty(ciVo.getGlobalAttrList()) && CollectionUtils.isNotEmpty(globalAttrIdList)) {
+                int validationSheetIndex = 1;
+                for (GlobalAttrVo attr : ciVo.getGlobalAttrList()) {
+                    if (globalAttrIdList.contains(attr.getId())) {
+                        String label = attr.getLabel();
+                        label = label + "[" + $.t("term.cmdb.globalattr") + "]";
+                        // 如果是单值，则设置数据有效性
+                        if (attr.getIsMultiple().equals(0) && CollectionUtils.isNotEmpty(attr.getItemList())) {
+                            List<String> collect = attr.getItemList().stream().map(GlobalAttrItemVo::getValue).collect(Collectors.toList());
+                            String[] array = new String[collect.size()];
+                            collect.toArray(array);
+                            addValidationData(wb, sheet, attr.getName(), validationSheetIndex, array, row.getRowNum() + 1, 99999, i, i);
+                            validationSheetIndex++;
+                        }
+                        HSSFCell cell = row.createCell(i);
+                        cell.setCellStyle(style);
+                        cell.setCellValue(label);
+                        i++;
+                    }
+                }
+            }
             /* 属性 */
             if (CollectionUtils.isNotEmpty(ciVo.getAttrList()) && CollectionUtils.isNotEmpty(attrIdList)) {
                 int validationSheetIndex = 1;
@@ -202,13 +234,7 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
                                     }
                                     String[] array = new String[collect.size()];
                                     collect.toArray(array);
-                                    addValidationData(wb, sheet, attr.getName(), validationSheetIndex, array, row.getRowNum() + 1, 99999, i, i);
-                                    //CellRangeAddressList addressList = new CellRangeAddressList(row.getRowNum() + 1, 99999, i, i);
-                                    //DVConstraint dvConstraint = DVConstraint.createExplicitListConstraint(array);
-                                    //DataValidation validation = new HSSFDataValidation(addressList, dvConstraint);
-                                    //validation.setSuppressDropDownArrow(false);// false时显示下拉箭头(office2007)
-                                    //validation.setShowErrorBox(true);
-                                    //sheet.addValidationData(validation);
+                                    addValidationData(wb, sheet, "global_" + attr.getName(), validationSheetIndex, array, row.getRowNum() + 1, 99999, i, i);
                                     validationSheetIndex++;
                                 }
                             }
