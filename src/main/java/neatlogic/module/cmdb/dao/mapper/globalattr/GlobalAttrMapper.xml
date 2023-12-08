@@ -46,6 +46,8 @@
         <result property="isActive" column="isActive"/>
         <result property="isMultiple" column="isMultiple"/>
         <result property="description" column="description"/>
+        <result property="sort" column="sort"/>
+        <result property="allowEdit" column="allowEdit"/>
         <collection property="itemList" ofType="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo">
             <id property="id" column="itemId"/>
             <result property="value" column="itemValue"/>
@@ -70,6 +72,28 @@
         where cga.id = #{value}
         order by cgai.sort
     </select>
+
+    <select id="getGlobalAttrByCiId" parameterType="java.lang.Long" resultMap="globalAttrMap">
+        select cga.id,
+               cga.name,
+               cga.label,
+               cga.is_active                 AS isActive,
+               cga.is_multiple               AS isMultiple,
+               cga.description               As description,
+               cgai.id                       as itemId,
+               cgai.value                    as itemValue,
+               cgai.attr_id                  as itemAttrId,
+               cgai.sort                     as itemSort,
+               IFNULL(cview.sort, 999999)    AS `sort`,
+               IFNULL(cview.`allow_edit`, 1) AS allowEdit
+        from cmdb_global_attr cga
+                 left join cmdb_global_attritem cgai on cga.id = cgai.attr_id
+                 LEFT JOIN cmdb_view cview
+                           ON cga.id = cview.item_id AND cview.type = 'global' AND cview.ci_id = #{value}
+        where cga.is_active = 1
+        order by sort, itemSort
+    </select>
+
 
     <select id="searchGlobalAttr" parameterType="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo"
             resultMap="globalAttrMap">

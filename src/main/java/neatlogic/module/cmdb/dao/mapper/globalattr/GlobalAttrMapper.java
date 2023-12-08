@@ -31,6 +31,8 @@ public interface GlobalAttrMapper {
 
     int checkGlobalAttrItemIsUsed(Long itemId);
 
+    List<GlobalAttrVo> getGlobalAttrByCiId(Long ciId);
+
     GlobalAttrVo getGlobalAttrById(Long id);
 
     List<GlobalAttrVo> searchGlobalAttr(GlobalAttrVo globalAttrVo);
