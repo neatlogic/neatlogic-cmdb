@@ -28,6 +28,7 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
+import neatlogic.module.cmdb.dao.mapper.cischema.CiSchemaMapper;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
@@ -49,6 +50,9 @@ public class GetCiApi extends PrivateApiComponentBase {
 
     @Resource
     private FileMapper fileMapper;
+
+    @Resource
+    private CiSchemaMapper ciSchemaMapper;
 
     @Override
     public String getToken() {
@@ -76,6 +80,7 @@ public class GetCiApi extends PrivateApiComponentBase {
         if (ciVo == null) {
             throw new CiNotFoundException(ciId);
         }
+        ciVo.setHasData(ciSchemaMapper.checkTableHasData(ciVo.getCiTableName()) > 0);
         if (Objects.equals(ciVo.getIsVirtual(), 1) && ciVo.getFileId() != null) {
             ciVo.setFileVo(fileMapper.getFileById(ciVo.getFileId()));
         }
