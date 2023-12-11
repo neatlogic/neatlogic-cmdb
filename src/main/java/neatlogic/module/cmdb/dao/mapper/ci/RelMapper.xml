@@ -415,6 +415,33 @@
         ORDER BY sort, id
     </select>
 
+    <select id="getRelBaseInfoByCiId" parameterType="java.lang.Long" resultMap="relDetailMap"
+            useCache="true">
+        SELECT
+            `id`,
+            `type_id` AS typeId,
+            `input_type` AS inputType,
+            `from_ci_id` AS fromCiId,
+            `from_name` AS fromName,
+            `from_label` AS fromLabel,
+            `from_rule` AS fromRule,
+            `from_group_id` AS fromGroupId,
+            `from_is_unique` AS fromIsUnique,
+            `from_is_cascade_delete` AS fromIsCascadeDelete,
+            `from_is_required` AS fromIsRequired,
+            `to_ci_id` AS toCiId,
+            `to_name` AS toName,
+            `to_label` AS toLabel,
+            `to_rule` AS toRule,
+            `to_group_id` AS toGroupId,
+            `to_is_unique` AS toIsUnique,
+            `to_is_cascade_delete` AS toIsCascadeDelete,
+            `to_is_required` AS toIsRequired
+        FROM `cmdb_rel`
+        WHERE `from_ci_id` = #{value}
+           OR `to_ci_id` = #{value}
+    </select>
+
     <update id="updateRel" parameterType="neatlogic.framework.cmdb.dto.ci.RelVo">
         UPDATE
             `cmdb_rel`
@@ -508,6 +535,12 @@
         DELETE
         from cmdb_relativerel
         WHERE rel_id = #{value}
+    </delete>
+
+    <delete id="deleteRelGroupByCiId" parameterType="java.lang.Long">
+        DELETE
+        from `cmdb_relgroup`
+        WHERE `ci_id` = #{value}
     </delete>
 
 </mapper>

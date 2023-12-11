@@ -50,6 +50,8 @@ public interface RelMapper extends IRelCrossoverMapper {
 
     List<RelVo> getRelByCiId(Long ciId);
 
+    List<RelVo> getRelBaseInfoByCiId(Long ciId);
+
     int updateRel(RelVo relVo);
 
     int updateRelGroup(RelGroupVo relGroupVo);
@@ -64,4 +66,5 @@ public interface RelMapper extends IRelCrossoverMapper {
 
     void deleteRelativeRelByRelId(Long relId);
 
+    void deleteRelGroupByCiId(Long ciId);
 }
