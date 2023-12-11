@@ -43,6 +43,16 @@
         WHERE id = #{value}
     </select>
 
+    <select id="getRelTypeByName" parameterType="java.lang.String" resultType="neatlogic.framework.cmdb.dto.ci.RelTypeVo"
+            useCache="false">
+        SELECT `id`,
+               `name`,
+               `is_showintopo` AS isShowInTopo,
+               `description`
+        FROM `cmdb_reltype`
+        WHERE name = #{value}
+    </select>
+
     <select id="getAllRelType" resultType="neatlogic.framework.cmdb.dto.ci.RelTypeVo" useCache="false">
         SELECT `id`,
                `name`,
