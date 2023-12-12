@@ -16,11 +16,14 @@
 
 package neatlogic.module.cmdb.api.transaction;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
+import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.transaction.TransactionGroupVo;
 import neatlogic.framework.cmdb.dto.transaction.TransactionVo;
-import neatlogic.framework.cmdb.enums.group.GroupType;
 import neatlogic.framework.cmdb.enums.TransactionStatus;
+import neatlogic.framework.cmdb.enums.group.GroupType;
 import neatlogic.framework.cmdb.exception.transaction.TransactionAuthException;
 import neatlogic.framework.cmdb.exception.transaction.TransactionStatusIrregularException;
 import neatlogic.framework.common.constvalue.ApiParamType;
@@ -30,13 +33,9 @@ import neatlogic.framework.restful.annotation.OperationType;
 import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
-import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
-import com.alibaba.fastjson.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,13 +48,10 @@ import java.util.List;
 @Transactional
 public class DeleteTransactionApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private TransactionMapper transactionMapper;
 
     @Resource
-    private AttrMapper attrMapper;
-
-    @Autowired
     private CiEntityMapper ciEntityMapper;
 
 
@@ -92,6 +88,11 @@ public class DeleteTransactionApi extends PrivateApiComponentBase {
                     throw new TransactionAuthException();
                 }
                 transactionMapper.deleteTransactionById(transactionVo.getId());
+                // 解除配置项修改锁定
+                CiEntityVo ciEntityVo = new CiEntityVo();
+                ciEntityVo.setId(transactionVo.getCiEntityId());
+                ciEntityVo.setIsLocked(0);
+                ciEntityMapper.updateCiEntityLockById(ciEntityVo);
             }
         } else {
             TransactionVo transactionVo = transactionMapper.getTransactionById(transactionId);
@@ -104,6 +105,11 @@ public class DeleteTransactionApi extends PrivateApiComponentBase {
                 throw new TransactionAuthException();
             }
             transactionMapper.deleteTransactionById(transactionVo.getId());
+            // 解除配置项修改锁定
+            CiEntityVo ciEntityVo = new CiEntityVo();
+            ciEntityVo.setId(transactionVo.getCiEntityId());
+            ciEntityVo.setIsLocked(0);
+            ciEntityMapper.updateCiEntityLockById(ciEntityVo);
         }
         return null;
     }
