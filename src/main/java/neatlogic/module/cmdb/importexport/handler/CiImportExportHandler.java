@@ -106,6 +106,7 @@ public class CiImportExportHandler extends ImportExportHandlerBase {
         for (AttrVo attr : attrList) {
             attr.setCiId(ciVo.getId());
         }
+        ciVo.setAttrList(null);
         if (oldCi == null) {
             ciService.insertCi(ciVo);
             List<RelVo> oldRelList = relMapper.getRelBaseInfoByCiId(ciVo.getId());
