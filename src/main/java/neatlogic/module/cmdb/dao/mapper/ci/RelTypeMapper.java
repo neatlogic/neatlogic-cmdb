@@ -27,6 +27,8 @@ public interface RelTypeMapper {
 
     RelTypeVo getRelTypeById(Long id);
 
+    RelTypeVo getRelTypeByName(String name);
+
     List<RelTypeVo> getAllRelType();
 
     int insertRelType(RelTypeVo relTypeVo);
