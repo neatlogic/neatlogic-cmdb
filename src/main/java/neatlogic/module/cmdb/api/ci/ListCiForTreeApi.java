@@ -96,10 +96,14 @@ public class ListCiForTreeApi extends PrivateApiComponentBase {
         if (isVirtual != null) {
             ciList.removeIf(d -> !d.getIsVirtual().equals(isVirtual));
         }
+        if (ciId != null) {
+            ciList.removeIf(d -> d.getId().equals(ciId));
+        }
         Map<Long, CiVo> ciMap = new HashMap<>();
         for (CiVo ciVo : ciList) {
             ciMap.put(ciVo.getId(), ciVo);
         }
+
         //将模型挂到父模型上
         for (CiVo ciVo : ciList) {
             if (ciVo.getParentCiId() != null) {
@@ -114,7 +118,7 @@ public class ListCiForTreeApi extends PrivateApiComponentBase {
             }
         }
         //清除所有非父节点模型
-        ciList.removeIf(ciVo -> ciVo.getParentCiId() != null || (ciId != null && (ciVo.getId().equals(ciId) || checkCiIdIsParent(ciId, ciVo))));
+        ciList.removeIf(ciVo -> ciVo.getParentCiId() != null || (ciId != null && checkCiIdIsParent(ciId, ciVo)));
         return ciList;
     }
 
