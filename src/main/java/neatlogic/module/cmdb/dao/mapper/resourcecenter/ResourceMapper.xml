@@ -1083,7 +1083,7 @@ limitations under the License.
             a.`value` AS NAME,
             a.`sort` AS envSeqNo
         FROM `cmdb_global_attritem` a
-        JOIN `cmdb_global_attr` b ON b.`id` = a.`attr_id` AND b.`name` = 'env'
+        JOIN `cmdb_global_attr` b ON b.`id` = a.`attr_id` AND b.`name` = 'app_environment'
         WHERE a.`id` = #{value}
     </select>
 
@@ -1093,7 +1093,7 @@ limitations under the License.
         a.`value` AS NAME,
         a.`sort` AS envSeqNo
         FROM `cmdb_global_attritem` a
-        JOIN `cmdb_global_attr` b ON b.`id` = a.`attr_id` AND b.`name` = 'env'
+        JOIN `cmdb_global_attr` b ON b.`id` = a.`attr_id` AND b.`name` = 'app_environment'
         where a.`id` in
         <foreach collection="list" open="(" separator="," close=")" item="value">
             #{value}
@@ -1186,7 +1186,7 @@ limitations under the License.
             a.`value` AS NAME,
             a.`sort` AS envSeqNo
         FROM `cmdb_global_attritem` a
-        JOIN `cmdb_global_attr` b ON b.`id` = a.`attr_id` AND b.`name` = 'env'
+        JOIN `cmdb_global_attr` b ON b.`id` = a.`attr_id` AND b.`name` = 'app_environment'
         where a.`value` = #{value}
     </select>
 
@@ -1197,14 +1197,14 @@ limitations under the License.
             a.`value` AS envName,
             a.`sort` AS envSeqNo
         FROM `cmdb_global_attritem` a
-        JOIN `cmdb_global_attr` b ON b.`id` = a.`attr_id` AND b.`name` = 'env'
+        JOIN `cmdb_global_attr` b ON b.`id` = a.`attr_id` AND b.`name` = 'app_environment'
     </select>
 
     <select id="searchAppEnvCount" parameterType="neatlogic.framework.common.dto.BasePageVo" resultType="int">
         SELECT
         COUNT(1)
         FROM `cmdb_global_attritem` a
-        JOIN `cmdb_global_attr` b ON b.`id` = a.`attr_id` AND b.`name` = 'env'
+        JOIN `cmdb_global_attr` b ON b.`id` = a.`attr_id` AND b.`name` = 'app_environment'
         <where>
             <if test="keyword != null and keyword != ''">
                 a.`value` LIKE CONCAT('%', #{keyword}, '%')
@@ -1217,7 +1217,7 @@ limitations under the License.
         SELECT
         a.`id`
         FROM `cmdb_global_attritem` a
-        JOIN `cmdb_global_attr` b ON b.`id` = a.`attr_id` AND b.`name` = 'env'
+        JOIN `cmdb_global_attr` b ON b.`id` = a.`attr_id` AND b.`name` = 'app_environment'
         <where>
             <if test="keyword != null and keyword != ''">
                 a.`value` LIKE CONCAT('%', #{keyword}, '%')
@@ -1232,7 +1232,7 @@ limitations under the License.
         a.`value` AS NAME,
         a.`sort` AS envSeqNo
         FROM `cmdb_global_attritem` a
-        JOIN `cmdb_global_attr` b ON b.`id` = a.`attr_id` AND b.`name` = 'env'
+        JOIN `cmdb_global_attr` b ON b.`id` = a.`attr_id` AND b.`name` = 'app_environment'
         WHERE a.`id` IN
         <foreach collection="list" item="id" open="(" separator="," close=")">
             #{id}
