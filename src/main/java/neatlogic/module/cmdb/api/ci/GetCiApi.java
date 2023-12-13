@@ -16,21 +16,20 @@
 
 package neatlogic.module.cmdb.api.ci;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.enums.CiAuthType;
-import neatlogic.framework.cmdb.enums.group.GroupType;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.file.dao.mapper.FileMapper;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.cischema.CiSchemaMapper;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
-import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -94,9 +93,9 @@ public class GetCiApi extends PrivateApiComponentBase {
                 hasCiEntityTransactionAuth = true;
                 hasCiEntityUpdateAuth = true;
             } else if (ciVo.getIsVirtual().equals(0) && ciVo.getIsAbstract().equals(0)) {
-                hasCiEntityUpdateAuth = CiAuthChecker.chain().checkCiEntityUpdatePrivilege(ciId).checkCiIsInGroup(ciId, GroupType.MAINTAIN).check();
-                hasCiEntityInsertAuth = CiAuthChecker.chain().checkCiEntityInsertPrivilege(ciId).checkCiIsInGroup(ciId, GroupType.MAINTAIN).check();
-                hasCiEntityTransactionAuth = CiAuthChecker.chain().checkCiEntityTransactionPrivilege(ciId).checkCiIsInGroup(ciId, GroupType.MAINTAIN).check();
+                hasCiEntityUpdateAuth = CiAuthChecker.chain().checkCiEntityUpdatePrivilege(ciId).check();
+                hasCiEntityInsertAuth = CiAuthChecker.chain().checkCiEntityInsertPrivilege(ciId).check();
+                hasCiEntityTransactionAuth = CiAuthChecker.chain().checkCiEntityTransactionPrivilege(ciId).check();
             }
 
             authData.put(CiAuthType.CIMANAGE.getValue(), hasCiManageAuth);

@@ -435,11 +435,11 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
             if (ciEntityTransactionVo.getAction().equals(TransactionActionType.INSERT.getValue())) {
                 //boolean isInGroup = false;
                 //CiEntityVo newCiEntityVo = new CiEntityVo(ciEntityTransactionVo);
-                if (!CiAuthChecker.chain().checkCiEntityInsertPrivilege(ciId).checkCiIsInGroup(ciId, GroupType.MAINTAIN).check()) {
+                if (!CiAuthChecker.chain().checkCiEntityInsertPrivilege(ciId).check()) {
                     CiVo ciVo = ciMapper.getCiById(ciId);
                     throw new CiEntityAuthException(ciVo.getLabel(), TransactionActionType.INSERT.getText());
                 }
-                if (!CiAuthChecker.chain().checkCiEntityTransactionPrivilege(ciId).checkCiIsInGroup(ciId, GroupType.MAINTAIN).check()) {
+                if (!CiAuthChecker.chain().checkCiEntityTransactionPrivilege(ciId).check()) {
                     allowCommit = false;
                 }
             } else if (ciEntityTransactionVo.getAction().equals(TransactionActionType.UPDATE.getValue())) {

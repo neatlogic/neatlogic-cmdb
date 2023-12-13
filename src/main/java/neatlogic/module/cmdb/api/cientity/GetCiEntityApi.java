@@ -112,7 +112,7 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
             throw new CiEntityNotFoundException(ciEntityId);
         }
         ciEntityVo.setIsVirtual(ciVo.getIsVirtual());
-        if (!CiAuthChecker.chain().checkCiEntityQueryPrivilege(ciEntityVo.getCiId()).checkCiEntityIsInGroup(ciEntityVo.getId(), GroupType.READONLY).check()) {
+        if (!CiAuthChecker.chain().checkCiEntityQueryPrivilege(ciEntityVo.getCiId()).checkCiEntityIsInGroup(ciEntityVo.getId(), GroupType.READONLY, GroupType.MAINTAIN, GroupType.AUTOEXEC).check()) {
             throw new CiEntityAuthException(ciEntityVo.getCiLabel(), TransactionActionType.VIEW.getText());
         }
 
@@ -122,7 +122,7 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
                     this.put(CiAuthType.CIMANAGE.getValue(), CiAuthChecker.chain().checkCiManagePrivilege(ciEntityVo.getCiId()).check());
                     this.put(CiAuthType.CIENTITYUPDATE.getValue(), CiAuthChecker.chain().checkCiEntityUpdatePrivilege(ciEntityVo.getCiId()).checkCiEntityIsInGroup(ciEntityVo.getId(), GroupType.MAINTAIN)
                             .check());
-                    this.put(CiAuthType.PASSWORDVIEW.getValue(), CiAuthChecker.chain().checkViewPasswordPrivilege(ciEntityVo.getCiId()).checkCiEntityIsInGroup(ciEntityVo.getId(), GroupType.READONLY, GroupType.MAINTAIN)
+                    this.put(CiAuthType.PASSWORDVIEW.getValue(), CiAuthChecker.chain().checkViewPasswordPrivilege(ciEntityVo.getCiId()).checkCiEntityIsInGroup(ciEntityVo.getId(), GroupType.MAINTAIN)
                             .check());
                     this.put(CiAuthType.TRANSACTIONMANAGE.getValue(), CiAuthChecker.chain().checkCiEntityTransactionPrivilege(ciEntityVo.getCiId()).checkCiEntityIsInGroup(ciEntityVo.getId(), GroupType.MAINTAIN).check());
                 }

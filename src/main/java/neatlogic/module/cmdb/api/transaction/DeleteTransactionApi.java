@@ -19,14 +19,11 @@ package neatlogic.module.cmdb.api.transaction;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
-import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.transaction.TransactionGroupVo;
 import neatlogic.framework.cmdb.dto.transaction.TransactionVo;
-import neatlogic.framework.cmdb.enums.TransactionActionType;
 import neatlogic.framework.cmdb.enums.TransactionStatus;
 import neatlogic.framework.cmdb.enums.group.GroupType;
-import neatlogic.framework.cmdb.exception.cientity.CiEntityAuthException;
 import neatlogic.framework.cmdb.exception.transaction.TransactionAuthException;
 import neatlogic.framework.cmdb.exception.transaction.TransactionStatusIrregularException;
 import neatlogic.framework.common.constvalue.ApiParamType;
@@ -36,7 +33,6 @@ import neatlogic.framework.restful.annotation.OperationType;
 import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
@@ -57,9 +53,6 @@ public class DeleteTransactionApi extends PrivateApiComponentBase {
 
     @Resource
     private CiEntityMapper ciEntityMapper;
-
-    @Resource
-    private CiMapper ciMapper;
 
 
     @Override
@@ -83,11 +76,6 @@ public class DeleteTransactionApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long transactionId = jsonObj.getLong("id");
-        Long ciId = jsonObj.getLong("ciId");
-        if (!CiAuthChecker.chain().checkCiEntityTransactionPrivilege(ciId).checkCiIsInGroup(ciId, GroupType.MAINTAIN).check()) {
-            CiVo ciVo = ciMapper.getCiById(ciId);
-            throw new CiEntityAuthException(ciVo.getLabel(), TransactionActionType.INSERT.getText());
-        }
         TransactionGroupVo transactionGroup = transactionMapper.getTransactionGroupByTransactionId(transactionId);
         if (transactionGroup != null) {
             List<TransactionVo> transactionList = transactionMapper.getTransactionByGroupId(transactionGroup.getId());

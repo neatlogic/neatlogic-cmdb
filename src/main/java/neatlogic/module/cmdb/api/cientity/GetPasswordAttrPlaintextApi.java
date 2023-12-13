@@ -80,7 +80,7 @@ public class GetPasswordAttrPlaintextApi extends PrivateApiComponentBase {
         if (ciEntityVo == null) {
             throw new CiEntityNotFoundException(ciEntityId);
         }
-        if (!CiAuthChecker.chain().checkViewPasswordPrivilege(ciEntityVo.getCiId()).checkCiEntityIsInGroup(ciEntityId, GroupType.MAINTAIN, GroupType.READONLY).check()) {
+        if (!CiAuthChecker.chain().checkViewPasswordPrivilege(ciEntityVo.getCiId()).checkCiEntityIsInGroup(ciEntityId, GroupType.MAINTAIN).check()) {
             throw new CiAuthException();
         }
 
