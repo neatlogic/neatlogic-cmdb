@@ -23,6 +23,7 @@ import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.*;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityConfigVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityFieldMappingVo;
@@ -48,6 +49,7 @@ import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
+import neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
@@ -87,6 +89,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 
     @Resource
     private AttrMapper attrMapper;
+
+    @Resource
+    private GlobalAttrMapper globalAttrMapper;
 
     @Resource
     private CiEntityMapper ciEntityMapper;
@@ -880,6 +885,37 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                         }
                     }
                 }
+            } else if (Objects.equals(type, "globalAttr")) {
+                String fromCi = fieldMappingVo.getFromCi();
+                if (StringUtils.isBlank(fromCi)) {
+                    throw new ResourceViewFieldMappingException(viewName, field, "fromCi", fromCi);
+                }
+                CiVo fromCiVo = ciMapper.getCiByName(fromCi);
+                if (fromCiVo == null) {
+                    throw new ResourceViewFieldMappingException(viewName, field, "fromCi", fromCi);
+                }
+                String fromAttr = fieldMappingVo.getFromAttr();
+                if (StringUtils.isBlank(fromAttr)) {
+                    throw new ResourceViewFieldMappingException(viewName, field, "fromAttr", fromAttr);
+                }
+                GlobalAttrVo globalAttrVo = new GlobalAttrVo();
+                globalAttrVo.setName(fromAttr);
+                if (globalAttrMapper.checkGlobalAttrNameIsUsed(globalAttrVo) == 0) {
+                    throw new ResourceViewFieldMappingException(viewName, field, "fromAttr", fromAttr);
+                }
+                String toAttr = fieldMappingVo.getToAttr();
+                if (StringUtils.isBlank(toAttr)) {
+                    throw new ResourceViewFieldMappingException(viewName, field, "toAttr", toAttr);
+                }
+                if (!Objects.equals(toAttr, "id") && !Objects.equals(toAttr, "value") && !Objects.equals(toAttr, "sort")){
+                    throw new ResourceViewFieldMappingException(viewName, field, "toAttr", toAttr);
+                }
+                newFieldMappingVo.setFromCi(fromCi);
+                newFieldMappingVo.setFromCiId(fromCiVo.getId());
+                newFieldMappingVo.setFromAttr(fromAttr);
+                newFieldMappingVo.setToAttr(toAttr);
+            } else if (Objects.equals(type, "empty")) {
+
             } else {
                 throw new ResourceViewFieldMappingException(viewName, field, "type", type);
             }

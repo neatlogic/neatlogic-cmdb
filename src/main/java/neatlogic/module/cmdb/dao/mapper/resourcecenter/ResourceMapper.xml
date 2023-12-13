@@ -1078,19 +1078,23 @@ limitations under the License.
     </select>
 
     <select id="getAppEnvById" parameterType="java.lang.Long" resultMap="resourceCenterMap">
-        select `id`,
-               `name`,
-               `description`
-        from `@{DATA_SCHEMA}`.`scence_env`
-        where `id` = #{value}
+        SELECT
+            a.`id`,
+            a.`value` AS NAME,
+            a.`sort` AS envSeqNo
+        FROM `cmdb_global_attritem` a
+        JOIN `cmdb_global_attr` b ON b.`id` = a.`attr_id` AND b.`name` = 'env'
+        WHERE a.`id` = #{value}
     </select>
 
     <select id="getAppEnvListByIdList" parameterType="java.lang.Long" resultMap="resourceCenterMap">
-        select `id`,
-        `name`,
-        `description`
-        from `@{DATA_SCHEMA}`.`scence_env`
-        where `id` in
+        SELECT
+        a.`id`,
+        a.`value` AS NAME,
+        a.`sort` AS envSeqNo
+        FROM `cmdb_global_attritem` a
+        JOIN `cmdb_global_attr` b ON b.`id` = a.`attr_id` AND b.`name` = 'env'
+        where a.`id` in
         <foreach collection="list" open="(" separator="," close=")" item="value">
             #{value}
         </foreach>
@@ -1177,29 +1181,33 @@ limitations under the License.
     </select>
 
     <select id="getAppEnvByName" parameterType="java.lang.String" resultMap="resourceCenterMap">
-        select `id`,
-               `name`,
-               `description`
-        from `@{DATA_SCHEMA}`.`scence_env`
-        where `name` = #{value}
+        SELECT
+            a.`id`,
+            a.`value` AS NAME,
+            a.`sort` AS envSeqNo
+        FROM `cmdb_global_attritem` a
+        JOIN `cmdb_global_attr` b ON b.`id` = a.`attr_id` AND b.`name` = 'env'
+        where a.`value` = #{value}
     </select>
 
     <select id="getAllAppEnv"
             resultType="neatlogic.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo">
-        select `id`         as envId,
-               `name`       as envName,
-               `env_seq_no` as envSeqNo
-        from `@{DATA_SCHEMA}`.`scence_env`
+        SELECT
+            a.`id`AS envId,
+            a.`value` AS envName,
+            a.`sort` AS envSeqNo
+        FROM `cmdb_global_attritem` a
+        JOIN `cmdb_global_attr` b ON b.`id` = a.`attr_id` AND b.`name` = 'env'
     </select>
 
     <select id="searchAppEnvCount" parameterType="neatlogic.framework.common.dto.BasePageVo" resultType="int">
         SELECT
         COUNT(1)
-        FROM @{DATA_SCHEMA}.`scence_env`
+        FROM `cmdb_global_attritem` a
+        JOIN `cmdb_global_attr` b ON b.`id` = a.`attr_id` AND b.`name` = 'env'
         <where>
             <if test="keyword != null and keyword != ''">
-                `name` LIKE CONCAT('%', #{keyword}, '%')
-                OR `description` LIKE CONCAT('%', #{keyword}, '%')
+                a.`value` LIKE CONCAT('%', #{keyword}, '%')
             </if>
         </where>
     </select>
@@ -1207,12 +1215,12 @@ limitations under the License.
     <select id="searchAppEnvIdList" parameterType="neatlogic.framework.common.dto.BasePageVo"
             resultType="java.lang.Long">
         SELECT
-        `id`
-        FROM @{DATA_SCHEMA}.`scence_env`
+        a.`id`
+        FROM `cmdb_global_attritem` a
+        JOIN `cmdb_global_attr` b ON b.`id` = a.`attr_id` AND b.`name` = 'env'
         <where>
             <if test="keyword != null and keyword != ''">
-                `name` LIKE CONCAT('%', #{keyword}, '%')
-                OR `description` LIKE CONCAT('%', #{keyword}, '%')
+                a.`value` LIKE CONCAT('%', #{keyword}, '%')
             </if>
         </where>
         LIMIT #{startNum}, #{pageSize}
@@ -1220,16 +1228,16 @@ limitations under the License.
 
     <select id="searchAppEnvListByIdList" parameterType="java.lang.Long" resultMap="resourceCenterMap">
         SELECT
-        `id`,
-        `name`,
-        `description`,
-        `env_seq_no`
-        FROM @{DATA_SCHEMA}.`scence_env`
-        WHERE `id` IN
+        a.`id`,
+        a.`value` AS NAME,
+        a.`sort` AS envSeqNo
+        FROM `cmdb_global_attritem` a
+        JOIN `cmdb_global_attr` b ON b.`id` = a.`attr_id` AND b.`name` = 'env'
+        WHERE a.`id` IN
         <foreach collection="list" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
-        ORDER BY `env_seq_no` ASC
+        ORDER BY a.`sort` ASC
     </select>
 
     <select id="searchAppSystemCount" parameterType="neatlogic.framework.common.dto.BasePageVo" resultType="int">
