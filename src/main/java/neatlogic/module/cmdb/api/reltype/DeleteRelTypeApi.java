@@ -16,21 +16,22 @@
 
 package neatlogic.module.cmdb.api.reltype;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.RELTYPE_MODIFY;
+import neatlogic.framework.cmdb.exception.reltype.RelTypeIsInUsedException;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.annotation.Description;
 import neatlogic.framework.restful.annotation.Input;
 import neatlogic.framework.restful.annotation.OperationType;
 import neatlogic.framework.restful.annotation.Param;
+import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.RELTYPE_MODIFY;
 import neatlogic.module.cmdb.dao.mapper.ci.RelTypeMapper;
-import neatlogic.framework.cmdb.exception.reltype.RelTypeIsInUsedException;
-import com.alibaba.fastjson.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
 
 @Service
 @AuthAction(action = RELTYPE_MODIFY.class)
@@ -38,7 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class DeleteRelTypeApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private RelTypeMapper relTypeMapper;
 
     @Override
@@ -48,7 +49,7 @@ public class DeleteRelTypeApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "删除模型关系类型";
+        return "nmcar.deletereltypeapi.getname";
     }
 
     @Override
@@ -57,7 +58,7 @@ public class DeleteRelTypeApi extends PrivateApiComponentBase {
     }
 
     @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "关系类型id")})
-    @Description(desc = "删除模型关系类型接口，已经在使用中的关系类型不允许删除")
+    @Description(desc = "nmcar.deletereltypeapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");

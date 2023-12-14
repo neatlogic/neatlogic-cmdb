@@ -16,6 +16,8 @@
 
 package neatlogic.module.cmdb.group;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.group.*;
@@ -26,8 +28,6 @@ import neatlogic.framework.transaction.core.AfterTransactionJob;
 import neatlogic.framework.util.javascript.JavascriptUtil;
 import neatlogic.module.cmdb.dao.mapper.group.GroupMapper;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -263,6 +263,20 @@ public class CiEntityGroupManager {
                 JSONObject paramObj = new JSONObject();
                 JSONObject dataObj = new JSONObject();
                 JSONObject defineObj = new JSONObject();
+                if (MapUtils.isNotEmpty(ciEntityVo.getGlobalAttrEntityData())) {
+                    for (String key : ciEntityVo.getGlobalAttrEntityData().keySet()) {
+                        JSONObject attrObj = ciEntityVo.getGlobalAttrEntityData().getJSONObject(key);
+                        defineObj.put(key, attrObj.getString("attrLabel"));
+                        if (CollectionUtils.isNotEmpty(attrObj.getJSONArray("valueList"))) {
+                            JSONArray valueList = new JSONArray();
+                            for (int i = 0; i < attrObj.getJSONArray("valueList").size(); i++) {
+                                JSONObject valueObj = attrObj.getJSONArray("valueList").getJSONObject(i);
+                                valueList.add(valueObj.getLong("id"));
+                            }
+                            dataObj.put(key, valueList);
+                        }
+                    }
+                }
                 if (MapUtils.isNotEmpty(ciEntityVo.getAttrEntityData())) {
                     for (String key : ciEntityVo.getAttrEntityData().keySet()) {
                         defineObj.put(key, ciEntityVo.getAttrEntityData().getJSONObject(key).getString("label"));
