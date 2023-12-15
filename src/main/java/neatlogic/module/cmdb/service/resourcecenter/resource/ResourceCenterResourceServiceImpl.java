@@ -20,6 +20,9 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
+import neatlogic.framework.auth.core.AuthActionChecker;
+import neatlogic.framework.cmdb.auth.label.CIENTITY_MODIFY;
+import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
@@ -30,6 +33,7 @@ import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityFieldMap
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.SceneEntityVo;
 import neatlogic.framework.cmdb.dto.tag.TagVo;
+import neatlogic.framework.cmdb.enums.CmdbTenantConfig;
 import neatlogic.framework.cmdb.enums.resourcecenter.AppModuleResourceType;
 import neatlogic.framework.cmdb.enums.resourcecenter.Status;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
@@ -38,6 +42,7 @@ import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundExcept
 import neatlogic.framework.cmdb.exception.resourcecenter.ResourceViewFieldMappingException;
 import neatlogic.framework.cmdb.utils.ResourceViewGenerateSqlUtil;
 import neatlogic.framework.cmdb.utils.ResourceViewGenerateSqlUtilForTiDB;
+import neatlogic.framework.config.ConfigManager;
 import neatlogic.framework.dao.mapper.DataBaseViewInfoMapper;
 import neatlogic.framework.dao.mapper.SchemaMapper;
 import neatlogic.framework.dto.DataBaseViewInfoVo;
@@ -114,12 +119,27 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 
     @Override
     public ResourceSearchVo assembleResourceSearchVo(JSONObject jsonObj) {
+        return assembleResourceSearchVo(jsonObj, true);
+    }
+
+    @Override
+    public ResourceSearchVo assembleResourceSearchVo(JSONObject jsonObj, boolean isIncludeSon) {
         ResourceSearchVo searchVo = jsonObj.toJavaObject(ResourceSearchVo.class);
+        searchVo.setIsHasAuth(AuthActionChecker.check(CI_MODIFY.class, CIENTITY_MODIFY.class));
         Long typeId = searchVo.getTypeId();
         if (typeId != null) {
             CiVo ciVo = ciMapper.getCiById(typeId);
             if (ciVo == null) {
                 throw new CiNotFoundException(typeId);
+            }
+            if (!searchVo.getIsHasAuth()) {
+                List<CiVo> authedCiList;
+                authedCiList = ciMapper.getDownwardCiEntityQueryCiListByLR(ciVo.getLft(), ciVo.getRht(), UserContext.get().getAuthenticationInfoVo(), searchVo.getIsHasAuth());
+                if (isIncludeSon && CollectionUtils.isNotEmpty(authedCiList)) {
+                    List<CiVo> inCludeSonCiList = ciMapper.getBatchDownwardCiListByCiList(authedCiList);
+                    Set<Long> ciIdList = inCludeSonCiList.stream().map(CiVo::getId).collect(Collectors.toSet());
+                    searchVo.setAuthedTypeIdList(new ArrayList<>(ciIdList));
+                }
             }
             List<CiVo> ciList = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
             List<Long> ciIdList = ciList.stream().map(CiVo::getId).collect(Collectors.toList());
@@ -127,16 +147,32 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         } else {
             List<Long> typeIdList = searchVo.getTypeIdList();
             if (CollectionUtils.isNotEmpty(typeIdList)) {
+                Set<Long> authedCiIdSet = new HashSet<>();
                 Set<Long> ciIdSet = new HashSet<>();
                 for (Long ciId : typeIdList) {
                     CiVo ciVo = ciMapper.getCiById(ciId);
                     if (ciVo == null) {
                         throw new CiNotFoundException(ciId);
                     }
+                    if (!searchVo.getIsHasAuth()) {
+                        List<CiVo> authedCiList;
+                        authedCiList = ciMapper.getDownwardCiEntityQueryCiListByLR(ciVo.getLft(), ciVo.getRht(), UserContext.get().getAuthenticationInfoVo(), searchVo.getIsHasAuth());
+                        if (isIncludeSon) {
+                            if (CollectionUtils.isNotEmpty(authedCiList)) {
+                                List<CiVo> inCludeSonCiList = ciMapper.getBatchDownwardCiListByCiList(authedCiList);
+                                Set<Long> ciIdList = inCludeSonCiList.stream().map(CiVo::getId).collect(Collectors.toSet());
+                                authedCiIdSet.addAll(ciIdList);
+                            }
+                        } else {
+                            authedCiIdSet.addAll(authedCiList.stream().map(CiVo::getId).collect(Collectors.toSet()));
+                        }
+                    }
                     List<CiVo> ciList = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
                     List<Long> ciIdList = ciList.stream().map(CiVo::getId).collect(Collectors.toList());
                     ciIdSet.addAll(ciIdList);
+
                 }
+                searchVo.setAuthedTypeIdList(new ArrayList<>(authedCiIdSet));
                 searchVo.setTypeIdList(new ArrayList<>(ciIdSet));
             }
         }
@@ -159,6 +195,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 //            }
 //        }
 //        searchVo.setIdList(resourceIdList);
+        searchVo.setIsHasAuth(AuthActionChecker.check(CI_MODIFY.class, CIENTITY_MODIFY.class) || Objects.equals("0", ConfigManager.getConfig(CmdbTenantConfig.IS_RESOURCECENTER_AUTH)));
         return searchVo;
     }
 
@@ -713,6 +750,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 
     /**
      * 对字段映射配置信息进行有效性检查及填充缺省数据
+     *
      * @param viewName
      * @param config
      * @return
@@ -815,7 +853,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                             throw new ResourceViewFieldMappingException(viewName, field, "toAttr", toAttr);
                         }
                         newFieldMappingVo.setToAttrId(toAttrVo.getId());
-                        if(Objects.equals(toCiVo.getIsVirtual(), 0)) {
+                        if (Objects.equals(toCiVo.getIsVirtual(), 0)) {
                             newFieldMappingVo.setToAttrCiId(toAttrVo.getCiId());
                             newFieldMappingVo.setToAttrCiName(toAttrVo.getCiName());
                         }
@@ -907,7 +945,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 if (StringUtils.isBlank(toAttr)) {
                     throw new ResourceViewFieldMappingException(viewName, field, "toAttr", toAttr);
                 }
-                if (!Objects.equals(toAttr, "id") && !Objects.equals(toAttr, "value") && !Objects.equals(toAttr, "sort")){
+                if (!Objects.equals(toAttr, "id") && !Objects.equals(toAttr, "value") && !Objects.equals(toAttr, "sort")) {
                     throw new ResourceViewFieldMappingException(viewName, field, "toAttr", toAttr);
                 }
                 newFieldMappingVo.setFromCi(fromCi);

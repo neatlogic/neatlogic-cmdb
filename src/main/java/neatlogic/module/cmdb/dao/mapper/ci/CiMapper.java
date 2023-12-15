@@ -21,6 +21,7 @@ import neatlogic.framework.cmdb.dto.ci.CiTypeVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.customview.CustomViewVo;
 import neatlogic.framework.common.dto.BasePageVo;
+import neatlogic.framework.dto.AuthenticationInfoVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -59,9 +60,15 @@ public interface CiMapper extends ICiCrossoverMapper {
      */
     List<CiVo> getDownwardCiListByLR(@Param("lft") Integer lft, @Param("rht") Integer rht);
 
+    List<CiVo> getBatchDownwardCiListByCiList(@Param("ciList") List<CiVo> ciList);
+
+    List<CiVo> getDownwardCiEntityQueryCiListByLR(@Param("lft") Integer lft, @Param("rht") Integer rht, @Param("authenticationInfo") AuthenticationInfoVo authenticationInfo ,@Param("isHasAuth") boolean isHasAuth);
+
     //List<Long> getCiNameExpressionCiIdByAttrId(Long attrId);
 
     List<CiVo> getAllCi(@Param("idList") List<Long> idList);
+
+    List<CiVo> getAllAuthCi(AuthenticationInfoVo authenticationInfoVo);
 
     List<CiVo> getCiListByNameList(List<String> nameList);
 

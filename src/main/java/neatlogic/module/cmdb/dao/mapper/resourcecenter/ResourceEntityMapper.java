@@ -17,6 +17,7 @@
 package neatlogic.module.cmdb.dao.mapper.resourcecenter;
 
 import neatlogic.framework.cmdb.crossover.IResourceEntityCrossoverMapper;
+import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import org.apache.ibatis.annotations.Param;
 
@@ -30,7 +31,7 @@ public interface ResourceEntityMapper extends IResourceEntityCrossoverMapper {
 
     String getResourceEntityConfigByName(String name);
 
-    List<Long> getAllResourceTypeCiIdList();
+    List<Long> getAllResourceTypeCiIdList(ResourceSearchVo searchVo);
 
     int getResourceEntityViewDataCount(String name);
 

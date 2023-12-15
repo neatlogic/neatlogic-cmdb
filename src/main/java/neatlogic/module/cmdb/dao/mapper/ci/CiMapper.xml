@@ -105,6 +105,83 @@
         ORDER BY lft
     </select>
 
+    <select id="getBatchDownwardCiListByCiList" resultType="neatlogic.framework.cmdb.dto.ci.CiVo" useCache="true">
+        SELECT a.`id`,
+        a.`name`,
+        a.`label`,
+        a.`description`,
+        a.`icon`,
+        a.`parent_ci_id` AS parentCiId,
+        a.`type_id` AS typeId,
+        a.`is_private` AS isPrivate,
+        a.`is_menu` AS isMenu,
+        a.`is_abstract` AS isAbstract,
+        a.`is_virtual` AS isVirtual,
+        a.`expired_day` AS expiredDay,
+        a.`lft` AS lft,
+        a.`rht` AS rht
+        FROM `cmdb_ci` a
+        WHERE
+        <foreach collection="ciList" item="ci" separator=") or (" open="(" close=")">
+            a.lft &gt;= #{ci.lft} AND a.rht &lt;= #{ci.rht}
+        </foreach>
+        ORDER BY a.lft
+    </select>
+
+    <select id="getDownwardCiEntityQueryCiListByLR" resultType="neatlogic.framework.cmdb.dto.ci.CiVo" useCache="true">
+        SELECT a.`id`,
+        a.`name`,
+        a.`label`,
+        a.`description`,
+        a.`icon`,
+        a.`parent_ci_id` AS parentCiId,
+        a.`type_id` AS typeId,
+        a.`is_private` AS isPrivate,
+        a.`is_menu` AS isMenu,
+        a.`is_abstract` AS isAbstract,
+        a.`is_virtual` AS isVirtual,
+        a.`expired_day` AS expiredDay,
+        a.`lft` AS lft,
+        a.`rht` AS rht
+        FROM `cmdb_ci` a
+        <if test="isHasAuth == false">
+            join `cmdb_ci_auth` c on a.id = c.ci_id
+        </if>
+        WHERE a.lft &gt;= #{lft}
+        AND a.rht &lt;= #{rht}
+        <if test="isHasAuth == false">
+            and ((c.auth_type = 'common' AND c.auth_uuid = 'alluser')
+            <if test="authenticationInfo.userUuid != null and authenticationInfo.userUuid != ''">
+                OR (
+                c.auth_type = 'user'
+                AND
+                c.auth_uuid = #{authenticationInfo.userUuid}
+                )
+            </if>
+            <if test="authenticationInfo.teamUuidList != null and authenticationInfo.teamUuidList.size() > 0">
+                OR (
+                c.auth_type = 'team'
+                AND
+                c.auth_uuid IN
+                <foreach collection="authenticationInfo.teamUuidList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+                )
+            </if>
+            <if test="authenticationInfo.roleUuidList != null and authenticationInfo.roleUuidList.size() > 0">
+                OR (
+                c.auth_type = 'role'
+                AND
+                c.auth_uuid IN
+                <foreach collection="authenticationInfo.roleUuidList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>)
+            </if>
+            )
+        </if>
+        ORDER BY a.lft
+    </select>
+
     <select id="getUpwardCiListByLR" resultType="neatlogic.framework.cmdb.dto.ci.CiVo" useCache="true">
         SELECT a.`id`,
                a.`name`,
@@ -151,6 +228,54 @@
                 </foreach>
             </if>
         </where>
+        ORDER BY `name`
+    </select>
+
+    <select id="getAllAuthCi" resultType="neatlogic.framework.cmdb.dto.ci.CiVo" useCache="true">
+        SELECT a.`id`,
+        a.`name`,
+        a.`label`,
+        a.`description`,
+        a.`icon`,
+        a.`parent_ci_id` AS parentCiId,
+        a.`type_id` AS typeId,
+        a.`is_private` AS isPrivate,
+        a.`is_menu` AS isMenu,
+        a.`is_abstract` AS isAbstract,
+        a.`is_virtual` AS isVirtual,
+        a.`expired_day` AS expiredDay,
+        a.`lft` AS lft,
+        a.`rht` AS rht
+        FROM `cmdb_ci` a
+        left join  cmdb_ci_auth cca on a.id =cca.ci_id
+        where
+        (cca.auth_type = 'common' AND cca.auth_uuid = 'alluser')
+        <if test="userUuid != null and userUuid != ''">
+            OR (
+            cca.auth_type = 'user'
+            AND
+            cca.auth_uuid = #{userUuid}
+            )
+        </if>
+        <if test="teamUuidList != null and teamUuidList.size() > 0">
+            OR (
+            cca.auth_type = 'team'
+            AND
+            cca.auth_uuid IN
+            <foreach collection="teamUuidList" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+            )
+        </if>
+        <if test="roleUuidList != null and roleUuidList.size() > 0">
+            OR (
+            cca.auth_type = 'role'
+            AND
+            cca.auth_uuid IN
+            <foreach collection="roleUuidList" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>)
+        </if>
         ORDER BY `name`
     </select>
 

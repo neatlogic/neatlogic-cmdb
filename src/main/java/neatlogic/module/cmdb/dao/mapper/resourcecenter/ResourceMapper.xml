@@ -20,10 +20,62 @@ limitations under the License.
 
     <sql id="resource_ipobject_where">
         <if test="typeIdList != null and typeIdList.size() > 0">
-            AND a.`type_id` IN
-            <foreach collection="typeIdList" item="typeId" open="(" separator="," close=")">
-                #{typeId}
-            </foreach>
+            <if test="isHasAuth == true">
+                AND a.`type_id` IN
+                <foreach collection="typeIdList" item="typeId" open="(" separator="," close=")">
+                    #{typeId}
+                </foreach>
+            </if>
+            <if test="isHasAuth == false">
+                AND (
+                <choose>
+                    <when test="authedTypeIdList != null and authedTypeIdList.size() >0">
+                        a.`type_id` IN
+                        <foreach collection="authedTypeIdList" item="authedTypeId" open="(" separator="," close=")">
+                            #{authedTypeId}
+                        </foreach>
+                    </when>
+                    <otherwise>
+                        1 = 0
+                    </otherwise>
+                </choose>
+                or (
+                a.`type_id` IN
+                <foreach collection="typeIdList" item="typeId" open="(" separator="," close=")">
+                    #{typeId}
+                </foreach>
+                and
+                ((cga.auth_type = 'common' AND cga.auth_uuid = 'alluser')
+                <if test="authenticationInfo.userUuid != null and authenticationInfo.userUuid != ''">
+                    OR (
+                    cga.auth_type = 'user'
+                    AND
+                    cga.auth_uuid = #{authenticationInfo.userUuid}
+                    )
+                </if>
+                <if test="authenticationInfo.teamUuidList != null and authenticationInfo.teamUuidList.size() > 0">
+                    OR (
+                    cga.auth_type = 'team'
+                    AND
+                    cga.auth_uuid IN
+                    <foreach collection="authenticationInfo.teamUuidList" item="item" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                    )
+                </if>
+                <if test="authenticationInfo.roleUuidList != null and authenticationInfo.roleUuidList.size() > 0">
+                    OR (
+                    cga.auth_type = 'role'
+                    AND
+                    cga.auth_uuid IN
+                    <foreach collection="authenticationInfo.roleUuidList" item="item" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>)
+                </if>
+                )
+                )
+                )
+            </if>
         </if>
         <if test="stateIdList != null and stateIdList.size() > 0">
             AND a.`state_id` IN
@@ -111,6 +163,11 @@ limitations under the License.
         LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
         LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
         LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+        <if test="isHasAuth == false">
+            LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
+            LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
+            LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+        </if>
         WHERE a.`name` LIKE CONCAT('%', #{keyword}, '%')
         <include refid="resource_ipobject_where"/>
     </select>
@@ -123,6 +180,11 @@ limitations under the License.
         LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
         LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
         LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+        <if test="isHasAuth == false">
+            LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
+            LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
+            LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+        </if>
         WHERE a.`ip` LIKE CONCAT('%', #{keyword}, '%')
         <include refid="resource_ipobject_where"/>
     </select>
@@ -137,6 +199,16 @@ limitations under the License.
         <if test="inspectJobPhaseNodeStatusList !=null and inspectJobPhaseNodeStatusList.size() > 0">
             left join autoexec_job_resource_inspect ajri on ajri.resource_id=a.id
             left join autoexec_job_phase_node ajpn on ajpn.job_phase_id =ajri.phase_id AND ajpn.resource_id = a.id
+        </if>
+        <if test="isHasAuth == false">
+            LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
+            LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
+            <if test="cmdbGroupType == 'readonly'">
+                LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+            </if>
+            <if test="cmdbGroupType == 'autoexec'">
+                LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
+            </if>
         </if>
         <where>
             <if test="keyword != null and keyword != ''">
@@ -157,6 +229,11 @@ limitations under the License.
         <if test="inspectJobPhaseNodeStatusList !=null and inspectJobPhaseNodeStatusList.size() > 0">
             left join autoexec_job_resource_inspect ajri on ajri.resource_id=a.id
             left join autoexec_job_phase_node ajpn on ajpn.job_phase_id =ajri.phase_id AND ajpn.resource_id = a.id
+        </if>
+        <if test="isHasAuth == false">
+            LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
+            LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
+            LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
         </if>
         <where>
             <if test="keyword != null and keyword != ''">
@@ -935,6 +1012,11 @@ limitations under the License.
         LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
         LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
         LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+        <if test="isHasAuth == false">
+            LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
+            LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
+            LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+        </if>
         WHERE a.`ip` = #{ip}
         <if test="keyword != null and keyword != ''">
             AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%'))
@@ -1615,5 +1697,27 @@ limitations under the License.
             #{resourceId}
         </foreach>
         and os_id is not null
+    </select>
+    <select id="getResourceTypeIdListByAuth" resultType="java.lang.Long">
+        SELECT DISTINCT a.`type_id`
+        FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
+        LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
+        LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
+        LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+        <if test="inspectJobPhaseNodeStatusList !=null and inspectJobPhaseNodeStatusList.size() > 0">
+            left join autoexec_job_resource_inspect ajri on ajri.resource_id=a.id
+            left join autoexec_job_phase_node ajpn on ajpn.job_phase_id =ajri.phase_id AND ajpn.resource_id = a.id
+        </if>
+        <if test="isHasAuth == false">
+            LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
+            LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
+            LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+        </if>
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <include refid="resource_ipobject_where"/>
+        </where>
     </select>
 </mapper>

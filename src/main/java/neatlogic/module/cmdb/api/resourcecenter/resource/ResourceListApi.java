@@ -16,6 +16,8 @@ limitations under the License.
 
 package neatlogic.module.cmdb.api.resourcecenter.resource;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB;
 import neatlogic.framework.cmdb.crossover.IResourceListApiCrossoverService;
@@ -31,14 +33,14 @@ import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * 查询资源中心数据列表接口
@@ -92,6 +94,7 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
             @Param(name = "searchField", type = ApiParamType.STRING, desc = "批量搜索字段"),
             @Param(name = "batchSearchList", type = ApiParamType.JSONARRAY, desc = "批量搜索值"),
             @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "用于回显的资源ID列表"),
+            @Param(name = "cmdbGroupType", type = ApiParamType.STRING, desc = "通过团体过滤权限"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
             @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true")
@@ -106,6 +109,7 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         List<ResourceVo> resourceList = new ArrayList<>();
+        List<ResourceVo> resultList = new ArrayList<>();
         ResourceSearchVo searchVo;
         JSONArray defaultValue = jsonObj.getJSONArray("defaultValue");
         if (CollectionUtils.isNotEmpty(defaultValue)) {
@@ -114,7 +118,9 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
         } else {
             searchVo = resourceCenterResourceService.assembleResourceSearchVo(jsonObj);
         }
+        //if (CollectionUtils.isNotEmpty(defaultValue) || CollectionUtils.isNotEmpty(searchVo.getTypeIdList())) {
         resourceCenterResourceService.handleBatchSearchList(searchVo);
+
         int rowNum = resourceMapper.getResourceCount(searchVo);
         if (rowNum == 0) {
             return TableResultUtil.getResult(resourceList, searchVo);
@@ -140,7 +146,7 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
             resourceCenterResourceService.addTagAndAccountInformation(resourceList);
         }
         //排序
-        List<ResourceVo> resultList = new ArrayList<>();
+
         for (Long id : idList) {
             for (ResourceVo resourceVo : resourceList) {
                 if (Objects.equals(id, resourceVo.getId())) {
@@ -149,6 +155,7 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
                 }
             }
         }
+        //}
         return TableResultUtil.getResult(resultList, searchVo);
     }
 

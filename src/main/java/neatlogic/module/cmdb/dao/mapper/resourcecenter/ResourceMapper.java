@@ -205,4 +205,6 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
     List<ResourceVo> getSoftwareResourceListenPortListByResourceIdList(List<Long> resourceIdList);
 
     List<SoftwareServiceOSVo> getOsResourceListByResourceIdList(List<Long> resourceIdList);
+
+    List<Long> getResourceTypeIdListByAuth(ResourceSearchVo searchVo);
 }
