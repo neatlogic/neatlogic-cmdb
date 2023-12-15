@@ -134,7 +134,6 @@
                     <if test="attrVo.type == 'number' or attrVo.type == 'date' or attrVo.type == 'time' or attrVo.type == 'datetime' or attrVo.type == 'enum'">
                         KEY `index_${attrVo.id}` (`${attrVo.id}`) USING BTREE,
                     </if>
-                    KEY `index_${attrVo.id}_hash` (`${attrVo.id}_hash`) USING BTREE,
                 </if>
             </foreach>
         </if>

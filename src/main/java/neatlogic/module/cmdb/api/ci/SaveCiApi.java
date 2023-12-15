@@ -74,6 +74,7 @@ public class SaveCiApi extends PrivateApiComponentBase {
             @Param(name = "description", type = ApiParamType.STRING, desc = "common.memo", maxLength = 500, xss = true),
             @Param(name = "icon", type = ApiParamType.STRING, isRequired = true, desc = "common.icon"),
             @Param(name = "typeId", type = ApiParamType.LONG, desc = "common.typeid", isRequired = true),
+            @Param(name = "catalogId", type = ApiParamType.LONG, desc = "common.catalogid", isRequired = true),
             @Param(name = "parentCiId", type = ApiParamType.LONG, desc = "term.cmdb.parentcientityid"),
             @Param(name = "fileId", type = ApiParamType.LONG, desc = "term.cmdb.virtualcifileid"),
             @Param(name = "expiredDay", type = ApiParamType.INTEGER, desc = "common.expireddays"),
