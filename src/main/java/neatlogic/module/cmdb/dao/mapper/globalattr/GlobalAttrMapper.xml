@@ -48,6 +48,7 @@
         <result property="description" column="description"/>
         <result property="sort" column="sort"/>
         <result property="allowEdit" column="allowEdit"/>
+        <result property="isPrivate" column="isPrivate"/>
         <collection property="itemList" ofType="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo">
             <id property="id" column="itemId"/>
             <result property="value" column="itemValue"/>
@@ -63,6 +64,7 @@
                cga.is_active   AS isActive,
                cga.is_multiple AS isMultiple,
                cga.description As description,
+               cga.is_private AS isPrivate,
                cgai.id         as itemId,
                cgai.value      as itemValue,
                cgai.attr_id    as itemAttrId,
@@ -104,6 +106,7 @@
         cga.is_active AS isActive,
         cga.is_multiple AS isMultiple,
         cga.description As description,
+        cga.is_private AS isPrivate,
         cgai.id as itemId,
         cgai.value as itemValue,
         cgai.attr_id as itemAttrId,
@@ -161,8 +164,7 @@
 
     <update id="updateGlobalAttr" parameterType="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo">
         update cmdb_global_attr
-        set name        = #{name},
-            label       = #{label},
+        set label = #{label},
             is_active   = #{isActive},
             is_multiple = #{isMultiple},
             description = #{description}
@@ -188,13 +190,15 @@
                                       label,
                                       is_active,
                                       is_multiple,
-                                      description)
+                                      description,
+                                      is_private)
         values (#{id},
                 #{name},
                 #{label},
                 #{isActive},
                 #{isMultiple},
-                #{description})
+                #{description},
+                0)
     </insert>
 
 
