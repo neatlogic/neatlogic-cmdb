@@ -25,3 +25,27 @@ insert ignore into `cmdb_resourcecenter_entity`(`name`,`label`,`status`,`error`,
 insert ignore into `cmdb_resourcecenter_entity`(`name`,`label`,`status`,`error`,`description`,`init_time`,`ci_id`,`config`) values ('scence_softwareservice_ports','软件服务服务端口场景','ready','',NULL,'2023-12-13 09:10:31.867',478816686317568,'{\"fieldMappingList\":[{\"field\":\"id\",\"fromAttr\":\"_id\",\"fromCi\":\"SoftwareService\",\"type\":\"const\"},{\"field\":\"service_ports_id\",\"fromAttr\":\"service_ports\",\"fromCi\":\"SoftwareService\",\"toAttr\":\"_id\",\"toCi\":\"SoftWareListenPort\",\"type\":\"attr\"},{\"field\":\"name\",\"fromAttr\":\"service_ports\",\"fromCi\":\"SoftwareService\",\"toAttr\":\"name\",\"toCi\":\"SoftWareListenPort\",\"type\":\"attr\"},{\"field\":\"listen_port\",\"fromAttr\":\"service_ports\",\"fromCi\":\"SoftwareService\",\"toAttr\":\"listen_port\",\"toCi\":\"SoftWareListenPort\",\"type\":\"attr\"}],\"mainCi\":\"SoftwareService\"}');
 insert ignore into `cmdb_resourcecenter_entity`(`name`,`label`,`status`,`error`,`description`,`init_time`,`ci_id`,`config`) values ('scence_state','资产状态基本信息场景','ready','',NULL,'2023-12-13 09:10:31.894',479550169423872,'{\"fieldMappingList\":[{\"field\":\"id\",\"fromAttr\":\"_id\",\"fromCi\":\"CIState\",\"type\":\"const\"},{\"field\":\"name\",\"fromAttr\":\"name\",\"fromCi\":\"CIState\",\"type\":\"attr\"},{\"field\":\"description\",\"fromAttr\":\"label\",\"fromCi\":\"CIState\",\"type\":\"attr\"}],\"mainCi\":\"CIState\"}');
 insert ignore into `cmdb_resourcecenter_entity`(`name`,`label`,`status`,`error`,`description`,`init_time`,`ci_id`,`config`) values ('scence_vendor','厂商基本信息场景','ready','',NULL,'2023-12-13 09:10:31.921',480863598731264,'{\"fieldMappingList\":[{\"field\":\"id\",\"fromAttr\":\"_id\",\"fromCi\":\"Vendor\",\"type\":\"const\"},{\"field\":\"name\",\"fromAttr\":\"name\",\"fromCi\":\"Vendor\",\"type\":\"attr\"},{\"field\":\"description\",\"fromAttr\":\"label\",\"fromCi\":\"Vendor\",\"type\":\"attr\"}],\"mainCi\":\"Vendor\"}');
+
+-- ----------------------------
+-- Records of cmdb_global_attr
+-- ----------------------------
+insert ignore into `cmdb_global_attr`(`id`,`name`,`label`,`is_active`,`is_multiple`,`description`) values (979768512987136,'app_environment','应用环境',1,0,NULL);
+
+-- ----------------------------
+-- Records of cmdb_global_attritem
+-- ----------------------------
+insert ignore into `cmdb_global_attritem`(`id`,`attr_id`,`value`,`sort`) values (481856650534914,979768512987136,'PRD',4);
+insert ignore into `cmdb_global_attritem`(`id`,`attr_id`,`value`,`sort`) values (481856650534918,979768512987136,'UAT',3);
+insert ignore into `cmdb_global_attritem`(`id`,`attr_id`,`value`,`sort`) values (481856650534925,979768512987136,'SIT',2);
+insert ignore into `cmdb_global_attritem`(`id`,`attr_id`,`value`,`sort`) values (699864006320129,979768512987136,'DEV',1);
+
+-- ----------------------------
+-- Records of cmdb_viewconst
+-- ----------------------------
+INSERT ignore INTO `cmdb_viewconst` (`id`, `name`, `label`) VALUES (1, '_id', 'ID#');
+INSERT ignore INTO `cmdb_viewconst` (`id`, `name`, `label`) VALUES (2, '_ciLabel', '模型');
+INSERT ignore INTO `cmdb_viewconst` (`id`, `name`, `label`) VALUES (3, '_typeName', '类型');
+INSERT ignore INTO `cmdb_viewconst` (`id`, `name`, `label`) VALUES (4, '_inspectTime', '巡检时间');
+INSERT ignore INTO `cmdb_viewconst` (`id`, `name`, `label`) VALUES (5, '_inspectStatus', '巡检状态');
+INSERT ignore INTO `cmdb_viewconst` (`id`, `name`, `label`) VALUES (6, '_monitorTime', '监控时间');
+INSERT ignore INTO `cmdb_viewconst` (`id`, `name`, `label`) VALUES (7, '_monitorStatus', '监控状态');

@@ -1225,7 +1225,7 @@
     </update>
 
     <insert id="insertCiEntity" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo">
-        INSERT INTO ${ciTableName} (
+        INSERT ignore INTO ${ciTableName} (
         <foreach collection="attrEntityList" item="attr">
             <if test="attr.isNeedTargetCi == false and attr.fromCiId == ciId">
                 `${attr.attrId}`,

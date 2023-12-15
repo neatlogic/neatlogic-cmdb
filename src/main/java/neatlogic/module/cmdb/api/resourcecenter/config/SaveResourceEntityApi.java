@@ -74,7 +74,7 @@ public class SaveResourceEntityApi extends PrivateApiComponentBase {
     @Input({
             @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "common.name"),
             @Param(name = "label", type = ApiParamType.STRING, isRequired = true, desc = "common.cnname"),
-            @Param(name = "config", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "配置"),
+            @Param(name = "config", type = ApiParamType.JSONOBJECT, isRequired = true, desc = "common.config"),
             @Param(name = "description", type = ApiParamType.STRING, desc = "common.description")
     })
     @Description(desc = "nmcarc.saveresourceentityapi.getname")
@@ -93,13 +93,13 @@ public class SaveResourceEntityApi extends PrivateApiComponentBase {
                 resourceEntityVo.setCiId(mainCiVo.getId());
             }
         }
+        resourceEntityVo.setDescription(sceneEntityVo.getDescription());
+        resourceEntityVo.setLabel(sceneEntityVo.getLabel());
         boolean configEquals = false;
         ResourceEntityVo oldResourceEntityVo = resourceEntityMapper.getResourceEntityByName(resourceEntityVo.getName());
         if (oldResourceEntityVo != null) {
-            boolean labelEquals = Objects.equals(resourceEntityVo.getLabel(), oldResourceEntityVo.getLabel());
-            boolean descriptionEquals = Objects.equals(resourceEntityVo.getDescription(), oldResourceEntityVo.getDescription());
             configEquals = Objects.equals(resourceEntityVo.getConfigStr(), oldResourceEntityVo.getConfigStr());
-            if (labelEquals && descriptionEquals && configEquals) {
+            if (configEquals) {
                 return null;
             }
             resourceEntityMapper.updateResourceEntityLabelAndDescription(resourceEntityVo);

@@ -82,13 +82,13 @@ public class GetResourceEntityApi extends PrivateApiComponentBase {
         if (resourceEntityVo == null) {
             resourceEntityVo = new ResourceEntityVo();
             resourceEntityVo.setName(sceneEntityVo.getName());
-            resourceEntityVo.setLabel(sceneEntityVo.getLabel());
         } else if (resourceEntityVo.getCiId() != null) {
             CiVo ciVo = ciMapper.getCiById(resourceEntityVo.getCiId());
             if (ciVo != null) {
                 resourceEntityVo.setCi(ciVo);
             }
         }
+        resourceEntityVo.setLabel(sceneEntityVo.getLabel());
         resourceEntityVo.setDescription(sceneEntityVo.getDescription());
         List<ValueTextVo> fieldList = ResourceEntityFactory.getFieldListByViewName(name);
         resourceEntityVo.setFieldList(fieldList);
