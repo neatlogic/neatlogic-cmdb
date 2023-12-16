@@ -140,8 +140,10 @@ public class CiImportExportHandler extends ImportExportHandlerBase {
                     }
                 }
             }
-            for (AttrVo attr : attrList) {
-                attrService.insertAttr(attr);
+            if (Objects.equals(ciVo.getIsVirtual(), 0)) {
+                for (AttrVo attr : attrList) {
+                    attrService.insertAttr(attr);
+                }
             }
         } else {
             ciService.updateCi(ciVo);
@@ -161,13 +163,15 @@ public class CiImportExportHandler extends ImportExportHandlerBase {
                     }
                 }
             }
-            List<AttrVo> oldAttrList = attrMapper.getAttrBaseInfoByCiId(oldCi.getId());
-            List<Long> oldAttrIdList = oldAttrList.stream().map(AttrVo::getId).collect(Collectors.toList());
-            for (AttrVo attr : attrList) {
-                if (oldAttrIdList.contains(attr.getId())) {
-                    attrService.updateAttr(attr);
-                } else {
-                    attrService.insertAttr(attr);
+            if (Objects.equals(ciVo.getIsVirtual(), 0)) {
+                List<AttrVo> oldAttrList = attrMapper.getAttrBaseInfoByCiId(oldCi.getId());
+                List<Long> oldAttrIdList = oldAttrList.stream().map(AttrVo::getId).collect(Collectors.toList());
+                for (AttrVo attr : attrList) {
+                    if (oldAttrIdList.contains(attr.getId())) {
+                        attrService.updateAttr(attr);
+                    } else {
+                        attrService.insertAttr(attr);
+                    }
                 }
             }
             relMapper.deleteRelGroupByCiId(ciVo.getId());
@@ -207,7 +211,8 @@ public class CiImportExportHandler extends ImportExportHandlerBase {
             throw new CiNotFoundException(id);
         }
         if (Objects.equals(ciVo.getIsVirtual(), 1) && ciVo.getFileId() != null) {
-            ciVo.setFileVo(fileMapper.getFileById(ciVo.getFileId()));
+            String viewXml = ciMapper.getCiViewXmlById(ciVo.getId());
+            ciVo.setViewXml(viewXml);
         }
         List<AttrVo> attrList = attrMapper.getAttrBaseInfoByCiId(id);
         List<RelVo> relList = relMapper.getRelBaseInfoByCiId(id);
@@ -271,7 +276,7 @@ public class CiImportExportHandler extends ImportExportHandlerBase {
                 doExportData(CmdbImportExportHandlerType.CI_TYPE, ciVo.getTypeId(), dependencyList, zipOutputStream);
             }
         }
-        if (Objects.equals(ciVo.getIsVirtual(), 1) && ciVo.getFileId() != null) {
+        if (Objects.equals(ciVo.getIsVirtual(), 1) && ciVo.getFileId() != null && fileMapper.getFileById(ciVo.getFileId()) != null) {
             if (action == IMPORT) {
                 Object newPrimaryKey = getNewPrimaryKey(FrameworkImportExportHandlerType.FILE, ciVo.getFileId(), primaryChangeList);
                 if (newPrimaryKey != null) {
