@@ -13,6 +13,7 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
+import neatlogic.module.cmdb.utils.ResourceEntityFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -47,13 +48,16 @@ public class getResourceEntityViewDataListApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         String name = paramObj.getString("name");
+        List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(name);
         JSONArray theadList = new JSONArray();
         List<String> columnNameList = schemaMapper.getTableOrViewAllColumnNameList(TenantContext.get().getDataDbName(), name);
-        for (String columnName : columnNameList) {
-            JSONObject thead = new JSONObject();
-            thead.put("key", columnName);
-            thead.put("title", columnName);
-            theadList.add(thead);
+        for (String fieldName : fieldNameList) {
+            if (columnNameList.contains(fieldName)) {
+                JSONObject thead = new JSONObject();
+                thead.put("key", fieldName);
+                thead.put("title", fieldName);
+                theadList.add(thead);
+            }
         }
         BasePageVo basePageVo = paramObj.toJavaObject(BasePageVo.class);
         int rowNum = resourceEntityMapper.getResourceEntityViewDataCount(name);
