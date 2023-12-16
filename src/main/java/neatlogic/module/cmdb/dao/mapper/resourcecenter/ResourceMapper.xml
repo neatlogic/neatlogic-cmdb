@@ -1515,7 +1515,7 @@ limitations under the License.
                         `app_system_id` AS appSystemId
         FROM @{DATA_SCHEMA}.`scence_appmodule_appsystem`
         WHERE `app_system_id` = #{value}
-        ORDER BY CONVERT (`abbr_name` USING gbk) COLLATE gbk_chinese_ci ASC
+        <!-- ORDER BY CONVERT (`abbr_name` USING gbk) COLLATE gbk_chinese_ci ASC -->
     </select>
 
     <select id="getAppSystemCountByKeyword" parameterType="neatlogic.framework.common.dto.BasePageVo" resultType="int">
