@@ -16,7 +16,12 @@
 
 package neatlogic.module.cmdb.api.cientity;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.CIENTITY_MODIFY;
+import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
+import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import neatlogic.framework.cmdb.enums.EditModeType;
@@ -29,14 +34,9 @@ import neatlogic.framework.restful.annotation.OperationType;
 import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.CIENTITY_MODIFY;
-import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
-import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,6 +79,7 @@ public class BatchUpdateCiEntityApi extends PrivateApiComponentBase {
     @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid"),
             @Param(name = "ciEntityIdList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "nmcac.batchupdatecientityapi.input.param.desc.cientityidlist"),
             @Param(name = "attrEntityData", type = ApiParamType.JSONOBJECT, desc = "nmcac.batchupdatecientityapi.input.param.desc.attrentitydata"),
+            @Param(name = "globalAttrEntityData", type = ApiParamType.JSONOBJECT, desc = "nmcac.batchupdatecientityapi.input.param.desc.globalattrentitydata"),
             @Param(name = "relEntityData", type = ApiParamType.JSONOBJECT, desc = "nmcac.batchupdatecientityapi.input.param.desc.relentitydata"),
             @Param(name = "needCommit", type = ApiParamType.BOOLEAN, desc = "term.cmdb.iscommit"),
             @Param(name = "description", type = ApiParamType.STRING, desc = "common.memo")})
@@ -120,6 +121,7 @@ public class BatchUpdateCiEntityApi extends PrivateApiComponentBase {
             }
         }
 
+
         JSONArray ciEntityIdList = jsonObj.getJSONArray("ciEntityIdList");
         String description = jsonObj.getString("description");
         List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
@@ -132,6 +134,7 @@ public class BatchUpdateCiEntityApi extends PrivateApiComponentBase {
                 ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
                 ciEntityTransactionVo.setAllowCommit(needCommit);
                 ciEntityTransactionVo.setDescription(description);
+                ciEntityTransactionVo.setGlobalAttrEntityData(JSONObject.parseObject(jsonObj.getString("globalAttrEntityData")));
                 ciEntityTransactionVo.setAttrEntityData(JSONObject.parseObject(jsonObj.getString("attrEntityData")));
                 ciEntityTransactionVo.setRelEntityData(JSONObject.parseObject(jsonObj.getString("relEntityData")));
                 ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
