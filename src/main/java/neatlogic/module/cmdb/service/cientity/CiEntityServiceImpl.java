@@ -327,6 +327,9 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
         List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciVo.getId()));
 
+        if (CollectionUtils.isNotEmpty(ciEntityVo.getExcludeRelIdList())) {
+            relList.removeIf(d -> ciEntityVo.getExcludeRelIdList().contains(d.getId()));
+        }
         //把条件的最大限制设到关系里
         for (RelVo relVo : relList) {
             relVo.setMaxRelEntityCount(ciEntityVo.getMaxRelEntityCount());

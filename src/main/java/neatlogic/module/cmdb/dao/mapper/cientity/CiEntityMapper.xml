@@ -17,8 +17,8 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper">
-    <!-- <cache-ref namespace="neatlogic.module.cmdb.dao.mapper.ci.CiMapper"/>
-     <cache type="neatlogic.framework.dao.cache.NeatLogicCache" flushInterval="30000" size="500"></cache>-->
+    <!--<cache-ref namespace="neatlogic.module.cmdb.dao.mapper.ci.CiMapper"/>
+    <cache type="neatlogic.framework.dao.cache.NeatLogicCache" flushInterval="30000" size="500"></cache>-->
     <select id="searchCiEntityIdBySql" parameterType="java.lang.String" resultType="java.lang.Long">
         ${value}
     </select>
@@ -1369,8 +1369,8 @@
                  LEFT JOIN cmdb_relentity c
                            ON a.id =
                               c.`from_cientity_id`
-                           OR a.id =
-                              c.`to_cientity_id`
+                               OR a.id =
+                                  c.`to_cientity_id`
                  LEFT JOIN cmdb_cientity_group e
                            ON a.id =
                               e.cientity_id

@@ -16,7 +16,10 @@
 
 package neatlogic.module.cmdb.api.topo;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.ci.CiTypeVo;
 import neatlogic.framework.cmdb.dto.ci.RelTypeVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
@@ -24,17 +27,17 @@ import neatlogic.framework.cmdb.dto.cientity.RelEntityVo;
 import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrFilterVo;
 import neatlogic.framework.cmdb.enums.RelDirectionType;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.graphviz.*;
+import neatlogic.framework.graphviz.Graphviz;
+import neatlogic.framework.graphviz.Layer;
+import neatlogic.framework.graphviz.Link;
+import neatlogic.framework.graphviz.Node;
 import neatlogic.framework.graphviz.enums.LayoutType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.module.cmdb.dao.mapper.ci.CiTypeMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -102,6 +105,8 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
         //记录已经绘制的配置项
         Set<String> ciEntityNodeSet = new HashSet<>();
 
+        Map<Long, RelTypeVo> relTypeMap = new HashMap<>();
+
         Long ciEntityId = jsonObj.getLong("ciEntityId");
         JSONArray disableRelObjList = jsonObj.getJSONArray("disableRelList");
         JSONArray globalAttrFilterObjList = jsonObj.getJSONArray("globalAttrFilterList");
@@ -143,6 +148,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
 
         // 每一层需要搜索关系的节点列表
         Map<Long, List<Long>> ciCiEntityIdMap = new HashMap<>();
+        Map<Long, Set<Long>> excludeRelIdMap = new HashMap<>();
         ciCiEntityIdMap.put(jsonObj.getLong("ciId"), new ArrayList<Long>() {{
             this.add(ciEntityId);
         }});
@@ -151,13 +157,17 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
             if (MapUtils.isNotEmpty(ciCiEntityIdMap)) {
                 maxLevel = l + 1;
                 Map<Long, List<Long>> tmpCiCiEntityIdMap = new HashMap<>();
+                Map<Long, Set<Long>> tmpExcludeRelIdMap = new HashMap<>();
                 for (Long ciId : ciCiEntityIdMap.keySet()) {
                     // 获取当前层次配置项详细信息
                     CiEntityVo pCiEntityVo = new CiEntityVo();
                     pCiEntityVo.setIdList(ciCiEntityIdMap.get(ciId));
                     pCiEntityVo.setCiId(ciId);
-                    pCiEntityVo.setMaxRelEntityCount(50L);
+                    pCiEntityVo.setMaxRelEntityCount(30L);
                     pCiEntityVo.setGlobalAttrFilterList(globalAttrFilterList);
+                    if (isBackbone == 1 && excludeRelIdMap.get(ciId) != null) {
+                        pCiEntityVo.setExcludeRelIdList(new ArrayList<>(excludeRelIdMap.get(ciId)));
+                    }
                     //不需要多余的属性
                     pCiEntityVo.setAttrIdList(new ArrayList<Long>() {{
                         this.add(0L);
@@ -171,9 +181,13 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                                 ciTypeIdSet.add(ciEntityVo.getTypeId());
                             }
                             for (RelEntityVo relEntityVo : ciEntityVo.getRelEntityList()) {
-                                RelTypeVo relTypeVo = relMapper.getRelTypeByRelId(relEntityVo.getRelId());
+                                RelTypeVo relTypeVo = relTypeMap.get(relEntityVo.getRelId());
+                                if (relTypeVo == null) {
+                                    relTypeMap.put(relEntityVo.getRelId(), relMapper.getRelTypeByRelId(relEntityVo.getRelId()));
+                                    relTypeVo = relTypeMap.get(relEntityVo.getRelId());
+                                }
                                 //判断关系类型是否展示TOPO
-                                if (relTypeVo != null && relTypeVo.getIsShowInTopo().equals(1) && (isBackbone == 0 || (isBackbone == 1 && !containRelIdSet.contains(relEntityVo.getRelId())))) {
+                                if (relTypeVo != null && relTypeVo.getIsShowInTopo().equals(1)) {
                                     if (CollectionUtils.isEmpty(disableRelIdList) || disableRelIdList.stream().noneMatch(r -> r.equals(relEntityVo.getRelId()))) {
                                         relEntitySet.add(relEntityVo);
                                         // 检查关系中的对端配置项是否已经存在，不存在可进入下一次搜索
@@ -182,23 +196,34 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                                                 tmpCiCiEntityIdMap.put(relEntityVo.getToCiId(), new ArrayList<>());
                                             }
                                             tmpCiCiEntityIdMap.get(relEntityVo.getToCiId()).add(relEntityVo.getToCiEntityId());
+
+                                            if (!tmpExcludeRelIdMap.containsKey(relEntityVo.getToCiId())) {
+                                                tmpExcludeRelIdMap.put(relEntityVo.getToCiId(), new HashSet<>());
+                                            }
+                                            tmpExcludeRelIdMap.get(relEntityVo.getToCiId()).add(relEntityVo.getRelId());
                                         } else if (relEntityVo.getDirection().equals(RelDirectionType.TO.getValue())) {
                                             if (!tmpCiCiEntityIdMap.containsKey(relEntityVo.getFromCiId())) {
                                                 tmpCiCiEntityIdMap.put(relEntityVo.getFromCiId(), new ArrayList<>());
                                             }
                                             tmpCiCiEntityIdMap.get(relEntityVo.getFromCiId()).add(relEntityVo.getFromCiEntityId());
+
+                                            if (!tmpExcludeRelIdMap.containsKey(relEntityVo.getFromCiId())) {
+                                                tmpExcludeRelIdMap.put(relEntityVo.getFromCiId(), new HashSet<>());
+                                            }
+                                            tmpExcludeRelIdMap.get(relEntityVo.getFromCiId()).add(relEntityVo.getRelId());
                                         }
                                     }
                                 }
                             }
                             //为了防止一个配置项有多个相同关系而被错误剪枝，需要等当前配置项循环结束后再记录关系
-                            for (RelEntityVo relEntityVo : ciEntityVo.getRelEntityList()) {
+                            /*for (RelEntityVo relEntityVo : ciEntityVo.getRelEntityList()) {
                                 containRelIdSet.add(relEntityVo.getRelId());
-                            }
+                            }*/
                         }
                     }
                 }
                 ciCiEntityIdMap = tmpCiCiEntityIdMap;
+                excludeRelIdMap = tmpExcludeRelIdMap;
             } else {
                 break;
             }
