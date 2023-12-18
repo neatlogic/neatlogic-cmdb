@@ -46,6 +46,28 @@
         LIMIT 1
     </select>
 
+    <select id="getDeclaredAttrByCiIdAndName" resultType="neatlogic.framework.cmdb.dto.ci.AttrVo">
+        SELECT
+            `id`,
+            `ci_id` AS ciId,
+            `type`,
+            `prop_id` AS propId,
+            `target_ci_id` AS targetCiId,
+            `expression`,
+            `name`,
+            `label`,
+            `description`,
+            `validator_id` AS validatorId,
+            `is_required` AS isRequired,
+            `is_unique` AS isUnique,
+            `input_type` AS inputType,
+            `group_name` AS groupName,
+            `is_private` AS isPrivate,
+            `config` AS configStr
+        FROM `cmdb_attr`
+        WHERE `ci_id` = #{ciId}
+          AND `name` = #{name}
+    </select>
 
     <select id="getAllNeedTargetCiAttrList" resultType="neatlogic.framework.cmdb.dto.ci.AttrVo" useCache="false">
         SELECT `id`, ci_id AS ciId
@@ -263,7 +285,7 @@
         id<!-- 按照视图设置的排序 -->
     </select>
 
-    <select id="getAttrBaseInfoByCiId" parameterType="java.lang.Long" resultType="neatlogic.framework.cmdb.dto.ci.AttrVo"
+    <select id="getDeclaredAttrListByCiId" parameterType="java.lang.Long" resultType="neatlogic.framework.cmdb.dto.ci.AttrVo"
             useCache="true">
         SELECT
             `id`,

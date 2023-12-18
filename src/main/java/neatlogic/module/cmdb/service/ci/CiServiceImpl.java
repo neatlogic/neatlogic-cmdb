@@ -474,11 +474,34 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
     @Override
     public void initCiTableView() {
         List<CiVo> ciList = ciMapper.searchCi(new CiVo());
+        ciList.sort(Comparator.comparing(CiVo::getLft));
+        Map<Long, CiVo> ciMap = ciList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
         for (CiVo ciVo : ciList) {
             if (ciVo.getIsVirtual().equals(0)) {
                 List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
                 ciVo.setAttrList(attrList);
+                // 生成动态表
                 ciSchemaMapper.initCiTable(ciVo.getId(), ciVo);
+                // 向动态表中插入数据
+                CiVo tempCi = ciVo;
+                List<Long> upwardIdList = new ArrayList<>();
+                upwardIdList.add(tempCi.getId());
+                while (tempCi.getParentCiId() != null) {
+                    upwardIdList.add(tempCi.getParentCiId());
+                    tempCi = ciMap.get(tempCi.getParentCiId());
+                }
+                CiEntityVo search = new CiEntityVo();
+                search.setCiId(ciVo.getId());
+                search.setPageSize(100);
+                List<Long> ciEntityIdList = ciEntityMapper.getCiEntityIdByCiId(search);
+                for (Long ciEntityId : ciEntityIdList) {
+                    CiEntityVo ciEntityVo = new CiEntityVo();
+                    ciEntityVo.setId(ciEntityId);
+                    for (Long ciId : upwardIdList) {
+                        ciEntityVo.setCiId(ciId);
+                        ciEntityMapper.insertCiEntity(ciEntityVo);
+                    }
+                }
             } else {
                 //创建视图
                 String viewXml = ciMapper.getCiViewXmlById(ciVo.getId());

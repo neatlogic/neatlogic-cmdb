@@ -164,7 +164,7 @@ public class CiImportExportHandler extends ImportExportHandlerBase {
                 }
             }
             if (Objects.equals(ciVo.getIsVirtual(), 0)) {
-                List<AttrVo> oldAttrList = attrMapper.getAttrBaseInfoByCiId(oldCi.getId());
+                List<AttrVo> oldAttrList = attrMapper.getDeclaredAttrListByCiId(oldCi.getId());
                 List<Long> oldAttrIdList = oldAttrList.stream().map(AttrVo::getId).collect(Collectors.toList());
                 for (AttrVo attr : attrList) {
                     if (oldAttrIdList.contains(attr.getId())) {
@@ -214,7 +214,7 @@ public class CiImportExportHandler extends ImportExportHandlerBase {
             String viewXml = ciMapper.getCiViewXmlById(ciVo.getId());
             ciVo.setViewXml(viewXml);
         }
-        List<AttrVo> attrList = attrMapper.getAttrBaseInfoByCiId(id);
+        List<AttrVo> attrList = attrMapper.getDeclaredAttrListByCiId(id);
         List<RelVo> relList = relMapper.getRelBaseInfoByCiId(id);
         for (RelVo rel : relList) {
             List<RelativeRelVo> relativeRelList = relMapper.getRelativeRelByRelId(rel.getId());

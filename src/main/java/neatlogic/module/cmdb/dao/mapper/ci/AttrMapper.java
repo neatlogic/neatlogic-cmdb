@@ -26,6 +26,8 @@ import java.util.List;
 public interface AttrMapper extends IAttrCrossoverMapper {
     AttrVo getAttrByCiIdAndName(@Param("ciId") Long ciId, @Param("attrName") String attrName);
 
+    AttrVo getDeclaredAttrByCiIdAndName(@Param("ciId") Long ciId, @Param("name") String attrName);
+
     List<AttrVo> getAllNeedTargetCiAttrList();
 
     List<AttrVo> searchAttr(AttrVo attrVo);
@@ -50,8 +52,7 @@ public interface AttrMapper extends IAttrCrossoverMapper {
 
     List<AttrVo> getAttrByCiId(Long ciId);
 
-    List<AttrVo> getAttrBaseInfoByCiId(Long ciId);
-
+    List<AttrVo> getDeclaredAttrListByCiId(Long ciId);
 
     int checkAttrNameIsRepeat(AttrVo attrVo);
 
