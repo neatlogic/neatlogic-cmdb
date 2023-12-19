@@ -814,7 +814,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 if (StringUtils.isBlank(fromAttr)) {
                     throw new ResourceViewFieldMappingException(viewName, field, "fromAttr", fromAttr);
                 }
-                AttrVo fromAttrVo = attrMapper.getAttrByCiIdAndName(fromCiVo.getId(), fromAttr);
+                AttrVo fromAttrVo = getAttrVo(fromCiVo, fromAttr);
                 if (fromAttrVo == null) {
                     throw new ResourceViewFieldMappingException(viewName, field, "fromAttr", fromAttr);
                 }
@@ -848,7 +848,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                         newFieldMappingVo.setToAttrCiName(toCiVo.getName());
                     }
                     if (!defaultAttrList.contains(toAttr)) {
-                        AttrVo toAttrVo = attrMapper.getAttrByCiIdAndName(toCiVo.getId(), toAttr);
+                        AttrVo toAttrVo = getAttrVo(toCiVo, toAttr);
                         if (toAttrVo == null) {
                             throw new ResourceViewFieldMappingException(viewName, field, "toAttr", toAttr);
                         }
@@ -893,7 +893,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                     }
                     newFieldMappingVo.setFromAttr(fromAttr);
                     if (!defaultAttrList.contains(fromAttr)) {
-                        AttrVo fromAttrVo = attrMapper.getAttrByCiIdAndName(fromCiVo.getId(), fromAttr);
+                        AttrVo fromAttrVo = getAttrVo(fromCiVo, fromAttr);
                         if (fromAttrVo == null) {
                             throw new ResourceViewFieldMappingException(viewName, field, "fromAttr", fromAttr);
                         }
@@ -910,7 +910,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                     } else {
                         newFieldMappingVo.setToAttr(toAttr);
                         if (!defaultAttrList.contains(toAttr)) {
-                            AttrVo toAttrVo = attrMapper.getAttrByCiIdAndName(toCiVo.getId(), toAttr);
+                            AttrVo toAttrVo = getAttrVo(toCiVo, toAttr);
                             if (toAttrVo == null) {
                                 throw new ResourceViewFieldMappingException(viewName, field, "toAttr", toAttr);
                             }
@@ -964,5 +964,16 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         }
         newConfig.setFieldMappingList(resultList);
         return newConfig;
+    }
+
+    private AttrVo getAttrVo(CiVo ciVo, String attrName) {
+        List<CiVo> upwardCiList = ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht());
+        for (CiVo ci : upwardCiList) {
+            AttrVo attr = attrMapper.getDeclaredAttrByCiIdAndName(ci.getId(), attrName);
+            if (attr != null) {
+                return attr;
+            }
+        }
+        return null;
     }
 }
