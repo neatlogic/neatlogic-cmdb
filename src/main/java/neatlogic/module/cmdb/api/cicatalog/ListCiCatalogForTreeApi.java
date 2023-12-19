@@ -48,6 +48,16 @@ public class ListCiCatalogForTreeApi extends PrivateApiComponentBase {
         if (CollectionUtils.isEmpty(allNodeList)) {
             return allNodeList;
         }
+        CiCatalogNodeVo rootNode = allNodeList.get(0);
+        Map<Long, CiCatalogNodeVo> id2NodeMap = allNodeList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
+        for (CiCatalogNodeVo node : allNodeList) {
+            node.setType(CiCatalogNodeVo.CATALOG);
+
+            CiCatalogNodeVo parent = id2NodeMap.get(node.getParentId());
+            if (parent != null) {
+                parent.addChild(node);
+            }
+        }
         Map<Long, List<CiVo>> catalogId2CiListMap = new HashMap<>();
         List<CiVo> ciList = ciMapper.getAllCi(null);
         for (CiVo ciVo : ciList) {
@@ -55,17 +65,12 @@ public class ListCiCatalogForTreeApi extends PrivateApiComponentBase {
                 catalogId2CiListMap.computeIfAbsent(ciVo.getCatalogId(), key -> new ArrayList<>()).add(ciVo);
             }
         }
-        CiCatalogNodeVo rootNode = allNodeList.get(0);
-        Map<Long, CiCatalogNodeVo> id2NodeMap = allNodeList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
         for (CiCatalogNodeVo node : allNodeList) {
-            node.setType(CiCatalogNodeVo.CATALOG);
             List<CiVo> ciVoList = catalogId2CiListMap.get(node.getId());
             if (CollectionUtils.isNotEmpty(ciVoList)) {
-                node.setChildrenCount(ciVoList.size());
-            }
-            CiCatalogNodeVo parent = id2NodeMap.get(node.getParentId());
-            if (parent != null) {
-                parent.addChild(node);
+                Integer childrenCount = node.getChildrenCount();
+                childrenCount = childrenCount + ciVoList.size();
+                node.setChildrenCount(childrenCount);
             }
         }
         return rootNode.getChildren();
