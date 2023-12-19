@@ -25,6 +25,7 @@ import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceInfo;
+import neatlogic.framework.cmdb.enums.group.GroupType;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.restful.annotation.*;
@@ -32,15 +33,14 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
+import neatlogic.module.cmdb.service.ci.CiAuthChecker;
 import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * 查询资源中心数据列表接口
@@ -118,7 +118,6 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
         } else {
             searchVo = resourceCenterResourceService.assembleResourceSearchVo(jsonObj);
         }
-        //if (CollectionUtils.isNotEmpty(defaultValue) || CollectionUtils.isNotEmpty(searchVo.getTypeIdList())) {
         resourceCenterResourceService.handleBatchSearchList(searchVo);
 
         int rowNum = resourceMapper.getResourceCount(searchVo);
@@ -145,17 +144,52 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
         if (CollectionUtils.isNotEmpty(resourceList)) {
             resourceCenterResourceService.addTagAndAccountInformation(resourceList);
         }
-        //排序
 
+        Set<Long> typeIdList = new HashSet<>();
+        List<Long> canDeleteTypeIdList = new ArrayList<>();
+        List<Long> canEditTypeIdList = new ArrayList<>();
+        //排序
         for (Long id : idList) {
             for (ResourceVo resourceVo : resourceList) {
                 if (Objects.equals(id, resourceVo.getId())) {
                     resultList.add(resourceVo);
+                    typeIdList.add(resourceVo.getTypeId());
                     break;
                 }
             }
         }
-        //}
+
+        //补充配置项权限
+        Set<Long> withoutCiAuthCiEntityList = new HashSet<>();
+        for (Long typeId : typeIdList) {
+            if (CiAuthChecker.chain().checkCiEntityUpdatePrivilege(typeId).check()) {
+                canEditTypeIdList.add(typeId);
+            }
+            if (CiAuthChecker.chain().checkCiEntityDeletePrivilege(typeId).check()) {
+                canDeleteTypeIdList.add(typeId);
+            }
+        }
+        //模型权限
+        for (ResourceVo resourceVo : resultList) {
+            if (canEditTypeIdList.contains(resourceVo.getTypeId())) {
+                resourceVo.setIsCanEdit(true);
+            } else {
+                withoutCiAuthCiEntityList.add(resourceVo.getId());
+            }
+            if (canDeleteTypeIdList.contains(resourceVo.getTypeId())) {
+                resourceVo.setIsCanDelete(true);
+            } else {
+                withoutCiAuthCiEntityList.add(resourceVo.getId());
+            }
+        }
+        //团体权限
+        List<Long> hasMaintainCiEntityIdList = CiAuthChecker.isCiEntityInGroup(new ArrayList<>(withoutCiAuthCiEntityList), GroupType.MAINTAIN);
+        for (ResourceVo resourceVo : resultList) {
+            if (hasMaintainCiEntityIdList.contains(resourceVo.getId())) {
+                resourceVo.setIsCanEdit(true);
+                resourceVo.setIsCanDelete(true);
+            }
+        }
         return TableResultUtil.getResult(resultList, searchVo);
     }
 
