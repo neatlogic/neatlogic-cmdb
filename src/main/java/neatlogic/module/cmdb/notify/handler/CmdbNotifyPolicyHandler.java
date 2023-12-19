@@ -19,7 +19,6 @@ package neatlogic.module.cmdb.notify.handler;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
 import neatlogic.framework.dto.ConditionParamVo;
-import neatlogic.framework.notify.core.INotifyPolicyHandlerGroup;
 import neatlogic.framework.notify.core.NotifyHandlerType;
 import neatlogic.framework.notify.core.NotifyPolicyHandlerBase;
 import neatlogic.framework.notify.dto.NotifyTriggerTemplateVo;
@@ -33,7 +32,7 @@ import java.util.List;
 public class CmdbNotifyPolicyHandler extends NotifyPolicyHandlerBase {
     @Override
     public String getName() {
-        return "模型";
+        return "cmdb.ci";
     }
 
     /**
@@ -44,10 +43,10 @@ public class CmdbNotifyPolicyHandler extends NotifyPolicyHandlerBase {
         return CI_MODIFY.class.getSimpleName();
     }
 
-    @Override
-    public INotifyPolicyHandlerGroup getGroup() {
-        return CmdbNotifyGroup.CMDB;
-    }
+//    @Override
+//    public INotifyPolicyHandlerGroup getGroup() {
+//        return CmdbNotifyGroup.CMDB;
+//    }
 
     @Override
     protected List<NotifyTriggerVo> myNotifyTriggerList() {
