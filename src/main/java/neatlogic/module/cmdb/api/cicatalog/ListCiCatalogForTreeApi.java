@@ -52,7 +52,6 @@ public class ListCiCatalogForTreeApi extends PrivateApiComponentBase {
         Map<Long, CiCatalogNodeVo> id2NodeMap = allNodeList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
         for (CiCatalogNodeVo node : allNodeList) {
             node.setType(CiCatalogNodeVo.CATALOG);
-
             CiCatalogNodeVo parent = id2NodeMap.get(node.getParentId());
             if (parent != null) {
                 parent.addChild(node);
