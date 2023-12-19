@@ -3,16 +3,20 @@ package neatlogic.module.cmdb.api.cicatalog;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
+import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.cicatalog.CiCatalogNodeVo;
 import neatlogic.framework.cmdb.dto.cicatalog.CiCatalogVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.service.cicatalog.CiCatalogService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -21,6 +25,9 @@ import java.util.stream.Collectors;
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ListCiCatalogForTreeApi extends PrivateApiComponentBase {
+
+    @Resource
+    private CiMapper ciMapper;
 
     @Resource
     private CiCatalogService ciCatalogService;
@@ -48,6 +55,21 @@ public class ListCiCatalogForTreeApi extends PrivateApiComponentBase {
             CiCatalogNodeVo parent = id2NodeMap.get(node.getParentId());
             if (parent != null) {
                 parent.addChild(node);
+            }
+        }
+        Map<Long, List<CiVo>> catalogId2CiListMap = new HashMap<>();
+        List<CiVo> ciList = ciMapper.getAllCi(null);
+        for (CiVo ciVo : ciList) {
+            if (ciVo.getCatalogId() != null) {
+                catalogId2CiListMap.computeIfAbsent(ciVo.getCatalogId(), key -> new ArrayList<>()).add(ciVo);
+            }
+        }
+        for (CiCatalogNodeVo node : allNodeList) {
+            List<CiVo> ciVoList = catalogId2CiListMap.get(node.getId());
+            if (CollectionUtils.isNotEmpty(ciVoList)) {
+                Integer childrenCount = node.getChildrenCount();
+                childrenCount = childrenCount + ciVoList.size();
+                node.setChildrenCount(childrenCount);
             }
         }
         return rootNode.getChildren();

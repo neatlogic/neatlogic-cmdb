@@ -66,6 +66,7 @@ public class ListCiCatalogAndCiForTreeApi extends PrivateApiComponentBase {
                 }
             }
         }
+        List<CiCatalogNodeVo> noCatalogCiNodeList = new ArrayList<>();
         List<CiCatalogNodeVo> ciNodeList = new ArrayList<>();
         List<CiVo> ciList = ciMapper.getAllCi(null);
         for (CiVo ciVo : ciList) {
@@ -74,21 +75,23 @@ public class ListCiCatalogAndCiForTreeApi extends PrivateApiComponentBase {
                     continue;
                 }
             }
-            if (ciVo.getCatalogId() == null) {
-                continue;
-            }
-            CiCatalogNodeVo node = id2NodeMap.get(ciVo.getCatalogId());
-            if (node == null) {
-                continue;
-            }
-            if (StringUtils.isNotBlank(keyword)) {
-                matchKeywordCiCatalogNodeList.add(node);
-            }
             CiCatalogNodeVo ciNode = new CiCatalogNodeVo();
             ciNode.setId(ciVo.getId());
             ciNode.setName(ciVo.getLabel() + "(" + ciVo.getName() + ")");
             ciNode.setParentId(ciVo.getCatalogId());
             ciNode.setType(CiCatalogNodeVo.CI);
+            if (ciVo.getCatalogId() == null) {
+                noCatalogCiNodeList.add(ciNode);
+                continue;
+            }
+            CiCatalogNodeVo node = id2NodeMap.get(ciVo.getCatalogId());
+            if (node == null) {
+                noCatalogCiNodeList.add(ciNode);
+                continue;
+            }
+            if (StringUtils.isNotBlank(keyword)) {
+                matchKeywordCiCatalogNodeList.add(node);
+            }
             ciNodeList.add(ciNode);
         }
         List<CiCatalogNodeVo> catalogList = new ArrayList<>();
@@ -115,6 +118,9 @@ public class ListCiCatalogAndCiForTreeApi extends PrivateApiComponentBase {
             if (parent != null) {
                 parent.addChild(node);
             }
+        }
+        for (CiCatalogNodeVo node : noCatalogCiNodeList) {
+            rootNode.addChild(node);
         }
         return rootNode.getChildren();
     }
