@@ -72,11 +72,7 @@ public class ListCiCatalogAndCiForTreeApi extends PrivateApiComponentBase {
                 if (!ciVo.getName().toLowerCase().contains(keyword) && !ciVo.getLabel().toLowerCase().contains(keyword)) {
                     continue;
                 }
-                CiCatalogNodeVo ciNode = new CiCatalogNodeVo();
-                ciNode.setId(ciVo.getId());
-                ciNode.setName(ciVo.getLabel() + "(" + ciVo.getName() + ")");
-                ciNode.setParentId(ciVo.getCatalogId());
-                ciNode.setType(CiCatalogNodeVo.CI);
+                CiCatalogNodeVo ciNode = new CiCatalogNodeVo(ciVo);
                 if (ciVo.getCatalogId() == null) {
                     noCatalogCiNodeList.add(ciNode);
                     continue;
@@ -106,11 +102,7 @@ public class ListCiCatalogAndCiForTreeApi extends PrivateApiComponentBase {
                 }
             }
             for (CiVo ciVo : ciList) {
-                CiCatalogNodeVo ciNode = new CiCatalogNodeVo();
-                ciNode.setId(ciVo.getId());
-                ciNode.setName(ciVo.getLabel() + "(" + ciVo.getName() + ")");
-                ciNode.setParentId(ciVo.getCatalogId());
-                ciNode.setType(CiCatalogNodeVo.CI);
+                CiCatalogNodeVo ciNode = new CiCatalogNodeVo(ciVo);
                 if (ciVo.getCatalogId() == null) {
                     noCatalogCiNodeList.add(ciNode);
                     continue;
@@ -150,4 +142,5 @@ public class ListCiCatalogAndCiForTreeApi extends PrivateApiComponentBase {
     public String getToken() {
         return "cmdb/cicatalogandci/listtree";
     }
+
 }
