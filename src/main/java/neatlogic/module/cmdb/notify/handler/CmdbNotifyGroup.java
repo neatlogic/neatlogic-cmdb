@@ -18,7 +18,7 @@ package neatlogic.module.cmdb.notify.handler;
 
 import neatlogic.framework.notify.core.INotifyPolicyHandlerGroup;
 import neatlogic.framework.util.$;
-
+@Deprecated
 public enum CmdbNotifyGroup implements INotifyPolicyHandlerGroup {
     CMDB("cmdb", "配置管理");
     private final String value;
