@@ -17,7 +17,7 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="neatlogic.module.cmdb.dao.mapper.ci.CiAuthMapper">
-    <cache type="neatlogic.framework.dao.cache.NeatLogicCache" flushInterval="30000" size="100"></cache>
+    <!--<cache type="neatlogic.framework.dao.cache.NeatLogicCache" flushInterval="30000" size="100"></cache>-->
 
     <select id="getCiAuthByCiId" parameterType="java.lang.Long" resultType="neatlogic.framework.cmdb.dto.ci.CiAuthVo"
             useCache="true">

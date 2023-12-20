@@ -17,7 +17,7 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="neatlogic.module.cmdb.dao.mapper.ci.CiMapper">
-    <cache type="neatlogic.framework.dao.cache.NeatLogicCache" flushInterval="30000" size="500"></cache>
+    <!--<cache type="neatlogic.framework.dao.cache.NeatLogicCache" flushInterval="30000" size="500"></cache>-->
 
     <select id="getCiLock" parameterType="java.lang.Long" resultType="java.lang.Long" useCache="false">
         select id
@@ -70,7 +70,7 @@
         a.`description`,
         a.`icon`,
         a.`type_id` AS typeId,
-        a.`catalog_id`   AS catalogId,
+        a.`catalog_id` AS catalogId,
         a.`is_private` AS isPrivate,
         a.`is_menu` AS isMenu,
         a.`parent_ci_id` AS parentCiId,
@@ -138,7 +138,7 @@
         a.`icon`,
         a.`parent_ci_id` AS parentCiId,
         a.`type_id` AS typeId,
-        a.`catalog_id`   AS catalogId,
+        a.`catalog_id` AS catalogId,
         a.`is_private` AS isPrivate,
         a.`is_menu` AS isMenu,
         a.`is_abstract` AS isAbstract,
@@ -252,7 +252,7 @@
         a.`lft` AS lft,
         a.`rht` AS rht
         FROM `cmdb_ci` a
-        left join  cmdb_ci_auth cca on a.id =cca.ci_id
+        left join cmdb_ci_auth cca on a.id =cca.ci_id
         where
         (cca.auth_type = 'common' AND cca.auth_uuid = 'alluser')
         <if test="userUuid != null and userUuid != ''">
@@ -481,7 +481,7 @@
         `is_private` AS isPrivate,
         `is_menu` AS ciIsMenu,
         `type_id` AS typeId,
-        `catalog_id`   AS catalogId,
+        `catalog_id` AS catalogId,
         `parent_ci_id` AS parentCiId,
         `is_abstract` AS isAbstract,
         `is_virtual` AS isVirtual,
@@ -504,7 +504,7 @@
         `lft`,
         `rht`,
         `type_id` AS typeId,
-        `catalog_id`   AS catalogId,
+        `catalog_id` AS catalogId,
         `is_private` AS isPrivate,
         `is_menu` AS isMenu,
         `is_abstract` AS isAbstract,
