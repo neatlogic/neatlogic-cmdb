@@ -19,6 +19,7 @@ package neatlogic.module.cmdb.api.ci;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
+import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
@@ -81,7 +82,10 @@ public class GetImportFieldListApi extends PrivateApiComponentBase {
         //唯一表达式的属性也需要设为必填
         if (CollectionUtils.isNotEmpty(ciVo.getUniqueAttrIdList())) {
             for (Long attrId : ciVo.getUniqueAttrIdList()) {
-                ciVo.getAttrById(attrId).setIsRequired(1);
+                AttrVo attrVo = ciVo.getAttrById(attrId);
+                if (attrVo != null) {
+                    attrVo.setIsRequired(1);
+                }
             }
         }
         return ciVo;

@@ -47,86 +47,100 @@ public class ListCiCatalogAndCiForTreeApi extends PrivateApiComponentBase {
     @Description(desc = "nmcac.listcicatalogandcifortreeapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
+        CiCatalogNodeVo rootNode = null;
+        List<CiCatalogNodeVo> catalogList = new ArrayList<>();
+        Map<Long, CiCatalogNodeVo> id2NodeMap = new HashMap<>();
+        List<CiCatalogNodeVo> noCatalogCiNodeList = new ArrayList<>();
+        List<CiCatalogNodeVo> ciNodeList = new ArrayList<>();
+        List<CiCatalogNodeVo> allNodeList = ciCatalogService.getAllCiCatalogList();
+        List<CiVo> ciList = ciMapper.getAllCi(null);
         String keyword = paramObj.getString("keyword");
         if (StringUtils.isNotBlank(keyword)) {
             keyword = keyword.toLowerCase();
-        }
-        List<CiCatalogNodeVo> allNodeList = ciCatalogService.getAllCiCatalogList();
-        if (CollectionUtils.isEmpty(allNodeList)) {
-            return allNodeList;
-        }
-        CiCatalogNodeVo rootNode = allNodeList.get(0);
-        Map<Long, CiCatalogNodeVo> id2NodeMap = new HashMap<>();
-        List<CiCatalogNodeVo> matchKeywordCiCatalogNodeList = new ArrayList<>();
-        for (CiCatalogNodeVo node : allNodeList) {
-            id2NodeMap.put(node.getId(), node);
-            if (StringUtils.isNotBlank(keyword)) {
-                if (node.getName().toLowerCase().contains(keyword)) {
-                    matchKeywordCiCatalogNodeList.add(node);
+            List<CiCatalogNodeVo> matchKeywordCiCatalogNodeList = new ArrayList<>();
+            if (CollectionUtils.isNotEmpty(allNodeList)) {
+                rootNode = allNodeList.get(0);
+                for (CiCatalogNodeVo node : allNodeList) {
+                    node.setType(CiCatalogNodeVo.CATALOG);
+                    id2NodeMap.put(node.getId(), node);
+                    if (node.getName().toLowerCase().contains(keyword)) {
+                        matchKeywordCiCatalogNodeList.add(node);
+                    }
                 }
             }
-        }
-        List<CiCatalogNodeVo> noCatalogCiNodeList = new ArrayList<>();
-        List<CiCatalogNodeVo> ciNodeList = new ArrayList<>();
-        List<CiVo> ciList = ciMapper.getAllCi(null);
-        for (CiVo ciVo : ciList) {
-            if (StringUtils.isNotBlank(keyword)) {
+            for (CiVo ciVo : ciList) {
                 if (!ciVo.getName().toLowerCase().contains(keyword) && !ciVo.getLabel().toLowerCase().contains(keyword)) {
                     continue;
                 }
-            }
-            CiCatalogNodeVo ciNode = new CiCatalogNodeVo();
-            ciNode.setId(ciVo.getId());
-            ciNode.setName(ciVo.getLabel() + "(" + ciVo.getName() + ")");
-            ciNode.setParentId(ciVo.getCatalogId());
-            ciNode.setType(CiCatalogNodeVo.CI);
-            if (ciVo.getCatalogId() == null) {
-                noCatalogCiNodeList.add(ciNode);
-                continue;
-            }
-            CiCatalogNodeVo node = id2NodeMap.get(ciVo.getCatalogId());
-            if (node == null) {
-                noCatalogCiNodeList.add(ciNode);
-                continue;
-            }
-            if (StringUtils.isNotBlank(keyword)) {
+                CiCatalogNodeVo ciNode = new CiCatalogNodeVo(ciVo);
+                if (ciVo.getCatalogId() == null) {
+                    noCatalogCiNodeList.add(ciNode);
+                    continue;
+                }
+                CiCatalogNodeVo node = id2NodeMap.get(ciVo.getCatalogId());
+                if (node == null) {
+                    noCatalogCiNodeList.add(ciNode);
+                    continue;
+                }
                 matchKeywordCiCatalogNodeList.add(node);
+                ciNodeList.add(ciNode);
             }
-            ciNodeList.add(ciNode);
-        }
-        List<CiCatalogNodeVo> catalogList = new ArrayList<>();
-        for (CiCatalogNodeVo node : allNodeList) {
-            node.setType(CiCatalogNodeVo.CATALOG);
-            if (CollectionUtils.isNotEmpty(matchKeywordCiCatalogNodeList)) {
+            for (CiCatalogNodeVo node : allNodeList) {
                 for (CiCatalogNodeVo matchKeywordCiCatalogNode : matchKeywordCiCatalogNodeList) {
                     if (node.getLft() <= matchKeywordCiCatalogNode.getLft() && node.getRht() >= matchKeywordCiCatalogNode.getRht()) {
                         catalogList.add(node);
                     }
                 }
-            } else {
-                catalogList.add(node);
+            }
+        } else {
+            if (CollectionUtils.isNotEmpty(allNodeList)) {
+                rootNode = allNodeList.get(0);
+                for (CiCatalogNodeVo node : allNodeList) {
+                    node.setType(CiCatalogNodeVo.CATALOG);
+                    id2NodeMap.put(node.getId(), node);
+                    catalogList.add(node);
+                }
+            }
+            for (CiVo ciVo : ciList) {
+                CiCatalogNodeVo ciNode = new CiCatalogNodeVo(ciVo);
+                if (ciVo.getCatalogId() == null) {
+                    noCatalogCiNodeList.add(ciNode);
+                    continue;
+                }
+                CiCatalogNodeVo node = id2NodeMap.get(ciVo.getCatalogId());
+                if (node == null) {
+                    noCatalogCiNodeList.add(ciNode);
+                    continue;
+                }
+                ciNodeList.add(ciNode);
             }
         }
-        for (CiCatalogNodeVo node : catalogList) {
-            CiCatalogNodeVo parent = id2NodeMap.get(node.getParentId());
-            if (parent != null) {
-                parent.addChild(node);
+
+        if (CollectionUtils.isNotEmpty(catalogList)) {
+            for (CiCatalogNodeVo node : catalogList) {
+                CiCatalogNodeVo parent = id2NodeMap.get(node.getParentId());
+                if (parent != null) {
+                    parent.addChild(node);
+                }
             }
-        }
-        for (CiCatalogNodeVo node : ciNodeList) {
-            CiCatalogNodeVo parent = id2NodeMap.get(node.getParentId());
-            if (parent != null) {
-                parent.addChild(node);
+            for (CiCatalogNodeVo node : ciNodeList) {
+                CiCatalogNodeVo parent = id2NodeMap.get(node.getParentId());
+                if (parent != null) {
+                    parent.addChild(node);
+                }
             }
+            for (CiCatalogNodeVo node : noCatalogCiNodeList) {
+                rootNode.addChild(node);
+            }
+            return rootNode.getChildren();
+        } else {
+            return noCatalogCiNodeList;
         }
-        for (CiCatalogNodeVo node : noCatalogCiNodeList) {
-            rootNode.addChild(node);
-        }
-        return rootNode.getChildren();
     }
 
     @Override
     public String getToken() {
         return "cmdb/cicatalogandci/listtree";
     }
+
 }
