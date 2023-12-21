@@ -16,6 +16,7 @@
 
 package neatlogic.module.cmdb.dao.mapper.globalattr;
 
+import neatlogic.framework.cmdb.crossover.IGlobalAttrCrossoverMapper;
 import neatlogic.framework.cmdb.dto.cientity.GlobalAttrEntityVo;
 import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo;
 import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
@@ -23,7 +24,7 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
-public interface GlobalAttrMapper {
+public interface GlobalAttrMapper extends IGlobalAttrCrossoverMapper {
 
     int checkGlobalAttrNameIsUsed(GlobalAttrVo globalAttrVo);
 
