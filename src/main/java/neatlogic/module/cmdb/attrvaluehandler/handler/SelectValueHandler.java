@@ -16,6 +16,8 @@
 
 package neatlogic.module.cmdb.attrvaluehandler.handler;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
@@ -24,7 +26,6 @@ import neatlogic.framework.cmdb.enums.SearchExpression;
 import neatlogic.framework.cmdb.exception.attr.AttrValueIrregularException;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
-import com.alibaba.fastjson.JSONArray;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
@@ -178,43 +179,50 @@ public class SelectValueHandler implements IAttrValueHandler {
             CiVo ciVo = ciMapper.getCiById(attrVo.getTargetCiId());
             List<CiVo> childCiList = null;
             for (int i = 0; i < valueList.size(); i++) {
-                String value = valueList.getString(i);
-                try {
-                    Long id = Long.valueOf(value);
-
-                    CiEntityVo ciEntity = null;
-                    if (ciVo.getIsVirtual().equals(0)) {
-                        ciEntity = ciEntityMapper.getCiEntityBaseInfoById(id);
-                    } else {
-                        CiEntityVo ciEntityVo = new CiEntityVo();
-                        ciEntityVo.setCiId(ciVo.getId());
-                        ciEntityVo.setIdList(new ArrayList<Long>() {{
-                            this.add(id);
-                        }});
-                        List<CiEntityVo> ciEntityList = ciEntityMapper.getVirtualCiEntityBaseInfoByIdList(ciEntityVo);
-                        if (CollectionUtils.isNotEmpty(ciEntityList)) {
-                            ciEntity = ciEntityList.get(0);
-                        }
+                if (valueList.get(i) instanceof JSONObject) {
+                    JSONObject valueObj = valueList.getJSONObject(i);
+                    if (!valueObj.containsKey("uuid") && !valueObj.containsKey("id")) {
+                        throw new AttrValueIrregularException(attrVo, valueObj.toString());
                     }
-                    if (ciEntity == null) {
+                } else {
+                    String value = valueList.getString(i);
+                    try {
+                        Long id = Long.valueOf(value);
+
+                        CiEntityVo ciEntity = null;
+                        if (ciVo.getIsVirtual().equals(0)) {
+                            ciEntity = ciEntityMapper.getCiEntityBaseInfoById(id);
+                        } else {
+                            CiEntityVo ciEntityVo = new CiEntityVo();
+                            ciEntityVo.setCiId(ciVo.getId());
+                            ciEntityVo.setIdList(new ArrayList<Long>() {{
+                                this.add(id);
+                            }});
+                            List<CiEntityVo> ciEntityList = ciEntityMapper.getVirtualCiEntityBaseInfoByIdList(ciEntityVo);
+                            if (CollectionUtils.isNotEmpty(ciEntityList)) {
+                                ciEntity = ciEntityList.get(0);
+                            }
+                        }
+                        if (ciEntity == null) {
+                            throw new AttrValueIrregularException(attrVo, value);
+                        }
+                        if (!Objects.equals(ciEntity.getCiId(), attrVo.getTargetCiId())) {
+                            if (ciVo.getIsAbstract().equals(0)) {
+                                throw new AttrValueIrregularException(attrVo, value);
+                            } else {
+                                //如果目标模型是抽象模型，可能会出现目标配置项的模型id和目标模型id不一致的问题。
+                                if (childCiList == null) {
+                                    childCiList = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
+                                }
+                                if (childCiList.stream().noneMatch(d -> d.getId().equals(attrVo.getTargetCiId()))) {
+                                    throw new AttrValueIrregularException(attrVo, value);
+                                }
+                            }
+
+                        }
+                    } catch (NumberFormatException ex) {
                         throw new AttrValueIrregularException(attrVo, value);
                     }
-                    if (!Objects.equals(ciEntity.getCiId(), attrVo.getTargetCiId())) {
-                        if (ciVo.getIsAbstract().equals(0)) {
-                            throw new AttrValueIrregularException(attrVo, value);
-                        } else {
-                            //如果目标模型是抽象模型，可能会出现目标配置项的模型id和目标模型id不一致的问题。
-                            if (childCiList == null) {
-                                childCiList = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
-                            }
-                            if (childCiList.stream().noneMatch(d -> d.getId().equals(attrVo.getTargetCiId()))) {
-                                throw new AttrValueIrregularException(attrVo, value);
-                            }
-                        }
-
-                    }
-                } catch (NumberFormatException ex) {
-                    throw new AttrValueIrregularException(attrVo, value);
                 }
             }
         }
