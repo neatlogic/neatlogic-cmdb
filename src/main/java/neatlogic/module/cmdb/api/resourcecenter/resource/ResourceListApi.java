@@ -32,6 +32,7 @@ import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.TableResultUtil;
+import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
 import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
@@ -58,6 +59,9 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
 
     @Resource
     private ResourceMapper resourceMapper;
+
+    @Resource
+    private ResourceEntityMapper resourceEntityMapper;
 
     @Override
     public String getToken() {
@@ -110,6 +114,10 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
     public Object myDoService(JSONObject jsonObj) throws Exception {
         List<ResourceVo> resourceList = new ArrayList<>();
         List<ResourceVo> resultList = new ArrayList<>();
+        if(!jsonObj.containsKey("typeId") && !jsonObj.containsKey("typeIdList")){
+            List<Long> ciIdList = resourceEntityMapper.getAllResourceTypeCiIdList();
+            jsonObj.put("typeIdList", ciIdList);
+        }
         ResourceSearchVo searchVo;
         JSONArray defaultValue = jsonObj.getJSONArray("defaultValue");
         if (CollectionUtils.isNotEmpty(defaultValue)) {

@@ -40,6 +40,7 @@ limitations under the License.
                     </otherwise>
                 </choose>
                 or (
+                cg.id  is not null and
                 a.`type_id` IN
                 <foreach collection="typeIdList" item="typeId" open="(" separator="," close=")">
                     #{typeId}
@@ -166,7 +167,14 @@ limitations under the License.
         <if test="isHasAuth == false">
             LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
             LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
-            LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+            <choose>
+                <when test="cmdbGroupType == 'autoexec'">
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
+                </when>
+                <otherwise>
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+                </otherwise>
+            </choose>
         </if>
         WHERE a.`name` LIKE CONCAT('%', #{keyword}, '%')
         <include refid="resource_ipobject_where"/>
@@ -183,7 +191,14 @@ limitations under the License.
         <if test="isHasAuth == false">
             LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
             LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
-            LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+             <choose>
+                <when test="cmdbGroupType == 'autoexec'">
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
+                </when>
+                <otherwise>
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+                </otherwise>
+            </choose>
         </if>
         WHERE a.`ip` LIKE CONCAT('%', #{keyword}, '%')
         <include refid="resource_ipobject_where"/>
@@ -203,12 +218,14 @@ limitations under the License.
         <if test="isHasAuth == false">
             LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
             LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
-            <if test="cmdbGroupType == 'readonly'">
-                LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
-            </if>
-            <if test="cmdbGroupType == 'autoexec'">
-                LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
-            </if>
+             <choose>
+                <when test="cmdbGroupType == 'autoexec'">
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
+                </when>
+                <otherwise>
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+                </otherwise>
+            </choose>
         </if>
         <where>
             <if test="keyword != null and keyword != ''">
@@ -233,7 +250,14 @@ limitations under the License.
         <if test="isHasAuth == false">
             LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
             LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
-            LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+             <choose>
+                <when test="cmdbGroupType == 'autoexec'">
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
+                </when>
+                <otherwise>
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+                </otherwise>
+            </choose>
         </if>
         <where>
             <if test="keyword != null and keyword != ''">
@@ -1015,7 +1039,14 @@ limitations under the License.
         <if test="isHasAuth == false">
             LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
             LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
-            LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+             <choose>
+                <when test="cmdbGroupType == 'autoexec'">
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
+                </when>
+                <otherwise>
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+                </otherwise>
+            </choose>
         </if>
         WHERE a.`ip` = #{ip}
         <if test="keyword != null and keyword != ''">
@@ -1711,7 +1742,14 @@ limitations under the License.
         <if test="isHasAuth == false">
             LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
             LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
-            LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+             <choose>
+                <when test="cmdbGroupType == 'autoexec'">
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
+                </when>
+                <otherwise>
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+                </otherwise>
+            </choose>
         </if>
         <where>
             <if test="keyword != null and keyword != ''">

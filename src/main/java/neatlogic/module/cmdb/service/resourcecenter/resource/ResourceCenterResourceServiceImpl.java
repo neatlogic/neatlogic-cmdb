@@ -135,10 +135,14 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             if (!searchVo.getIsHasAuth()) {
                 List<CiVo> authedCiList;
                 authedCiList = ciMapper.getDownwardCiEntityQueryCiListByLR(ciVo.getLft(), ciVo.getRht(), UserContext.get().getAuthenticationInfoVo(), searchVo.getIsHasAuth());
-                if (isIncludeSon && CollectionUtils.isNotEmpty(authedCiList)) {
-                    List<CiVo> inCludeSonCiList = ciMapper.getBatchDownwardCiListByCiList(authedCiList);
-                    Set<Long> ciIdList = inCludeSonCiList.stream().map(CiVo::getId).collect(Collectors.toSet());
-                    searchVo.setAuthedTypeIdList(new ArrayList<>(ciIdList));
+                if (CollectionUtils.isNotEmpty(authedCiList)) {
+                    if (isIncludeSon) {
+                        List<CiVo> inCludeSonCiList = ciMapper.getBatchDownwardCiListByCiList(authedCiList);
+                        Set<Long> ciIdList = inCludeSonCiList.stream().map(CiVo::getId).collect(Collectors.toSet());
+                        searchVo.setAuthedTypeIdList(new ArrayList<>(ciIdList));
+                    } else {
+                        searchVo.setAuthedTypeIdList(authedCiList.stream().map(CiVo::getId).collect(Collectors.toList()));
+                    }
                 }
             }
             List<CiVo> ciList = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
@@ -157,14 +161,14 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                     if (!searchVo.getIsHasAuth()) {
                         List<CiVo> authedCiList;
                         authedCiList = ciMapper.getDownwardCiEntityQueryCiListByLR(ciVo.getLft(), ciVo.getRht(), UserContext.get().getAuthenticationInfoVo(), searchVo.getIsHasAuth());
-                        if (isIncludeSon) {
-                            if (CollectionUtils.isNotEmpty(authedCiList)) {
+                        if (CollectionUtils.isNotEmpty(authedCiList)) {
+                            if (isIncludeSon) {
                                 List<CiVo> inCludeSonCiList = ciMapper.getBatchDownwardCiListByCiList(authedCiList);
                                 Set<Long> ciIdList = inCludeSonCiList.stream().map(CiVo::getId).collect(Collectors.toSet());
                                 authedCiIdSet.addAll(ciIdList);
+                            } else {
+                                authedCiIdSet.addAll(authedCiList.stream().map(CiVo::getId).collect(Collectors.toSet()));
                             }
-                        } else {
-                            authedCiIdSet.addAll(authedCiList.stream().map(CiVo::getId).collect(Collectors.toSet()));
                         }
                     }
                     List<CiVo> ciList = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
