@@ -29,6 +29,19 @@
         WHERE ci_id = #{value}
     </select>
 
+    <select id="getCiAuthByCiIdList" parameterType="java.lang.Long" resultType="neatlogic.framework.cmdb.dto.ci.CiAuthVo"
+            useCache="true">
+        SELECT `ci_id`     AS ciId,
+               `auth_type` AS authType,
+               `action`,
+               `auth_uuid` AS authUuid
+        FROM `cmdb_ci_auth`
+        WHERE ci_id IN
+        <foreach collection="list" item="ciId" open="(" separator="," close=")">
+            #{ciId}
+        </foreach>
+    </select>
+
     <insert id="insertCiAuth" parameterType="neatlogic.framework.cmdb.dto.ci.CiAuthVo">
         INSERT INTO `cmdb_ci_auth` (`ci_id`,
                                     `auth_type`,
