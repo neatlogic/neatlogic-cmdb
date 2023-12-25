@@ -114,10 +114,6 @@ public class ResourceListApi extends PrivateApiComponentBase implements IResourc
     public Object myDoService(JSONObject jsonObj) throws Exception {
         List<ResourceVo> resourceList = new ArrayList<>();
         List<ResourceVo> resultList = new ArrayList<>();
-        if(!jsonObj.containsKey("typeId") && !jsonObj.containsKey("typeIdList")){
-            List<Long> ciIdList = resourceEntityMapper.getAllResourceTypeCiIdList();
-            jsonObj.put("typeIdList", ciIdList);
-        }
         ResourceSearchVo searchVo;
         JSONArray defaultValue = jsonObj.getJSONArray("defaultValue");
         if (CollectionUtils.isNotEmpty(defaultValue)) {

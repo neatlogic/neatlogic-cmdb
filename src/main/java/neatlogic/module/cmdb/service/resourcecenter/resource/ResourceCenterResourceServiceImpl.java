@@ -119,6 +119,10 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 
     @Override
     public ResourceSearchVo assembleResourceSearchVo(JSONObject jsonObj) {
+        if(!jsonObj.containsKey("typeId") && !jsonObj.containsKey("typeIdList")){
+            List<Long> ciIdList = resourceEntityMapper.getAllResourceTypeCiIdList();
+            jsonObj.put("typeIdList", ciIdList);
+        }
         return assembleResourceSearchVo(jsonObj, true);
     }
 

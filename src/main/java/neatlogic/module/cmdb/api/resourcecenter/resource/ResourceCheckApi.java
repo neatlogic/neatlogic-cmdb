@@ -91,7 +91,8 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
             @Param(name = "filter", type = ApiParamType.JSONOBJECT, desc = "过滤器"),
             @Param(name = "selectNodeList", type = ApiParamType.JSONARRAY, desc = "选择节点列表"),
             @Param(name = "inputNodeList", type = ApiParamType.JSONARRAY, desc = "输入节点列表"),
-            @Param(name = "whitelist", type = ApiParamType.JSONARRAY, desc = "白名单")
+            @Param(name = "whitelist", type = ApiParamType.JSONARRAY, desc = "白名单"),
+            @Param(name = "cmdbGroupType", type = ApiParamType.STRING, desc = "通过团体过滤权限")
     })
     @Output({
             @Param(name = "count", type = ApiParamType.INTEGER, desc = "校验不成功个数"),
@@ -106,6 +107,7 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
         String executeUser = jsonObj.getString("executeUser");
         Long protocolId = jsonObj.getLong("protocolId");
         JSONObject filter = jsonObj.getJSONObject("filter");
+        String cmdbGroupType = jsonObj.getString("cmdbGroupType");
         String protocol = null;
         if (protocolId != null) {
             AccountProtocolVo protocolVo = resourceAccountMapper.getAccountProtocolVoByProtocolId(protocolId);
@@ -178,8 +180,10 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
                     searchVo.setIp(node.getIp());
                     searchVo.setPort(node.getPort());
                     searchVo.setName(node.getName());
+                    searchVo.setCmdbGroupType(cmdbGroupType);
                     resourceId = resourceMapper.getResourceIdByIpAndPortAndNameWithFilter(searchVo);
                 } else {
+                    node.setCmdbGroupType(cmdbGroupType);
                     resourceId = resourceMapper.getResourceIdByIpAndPortAndName(node);
                 }
                 if (resourceId == null) {
@@ -189,9 +193,11 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
                 }
             }
             if (!idList.isEmpty()) {
-                addException(executeUser, protocolId, resourceListWithoutAccountByExecuteUserAndProtocol, resourceListWithoutAccountByProtocol, protocolVoList, idList);
+                addException(executeUser, protocolId, resourceListWithoutAccountByExecuteUserAndProtocol, resourceListWithoutAccountByProtocol, protocolVoList, idList, cmdbGroupType);
             }
         } else if (MapUtils.isNotEmpty(filter)) {
+            //补充opType操作类型
+            filter.put("cmdbGroupType", cmdbGroupType);
             ResourceSearchVo searchVo = resourceCenterResourceService.assembleResourceSearchVo(filter);
             int rowNum = resourceMapper.getResourceCount(searchVo);
             // 先检查过滤器下是否存在资源
@@ -201,7 +207,7 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
                 for (int i = 1; i <= searchVo.getPageCount(); i++) {
                     searchVo.setCurrentPage(i);
                     List<Long> idList = resourceMapper.getResourceIdList(searchVo);
-                    addException(executeUser, protocolId, resourceListWithoutAccountByExecuteUserAndProtocol, resourceListWithoutAccountByProtocol, protocolVoList, idList);
+                    addException(executeUser, protocolId, resourceListWithoutAccountByExecuteUserAndProtocol, resourceListWithoutAccountByProtocol, protocolVoList, idList, cmdbGroupType);
                 }
             } else {
                 JSONObject resourceIsEmpty = new JSONObject();
@@ -211,13 +217,13 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
         } else if (CollectionUtils.isNotEmpty(jsonObj.getJSONArray("selectNodeList"))) {
             // 如果直接选的节点，当协议和用户都存在时，才校验是否合法
             List<ResourceVo> resourceVoList = jsonObj.getJSONArray("selectNodeList").toJavaList(ResourceVo.class);
-            addException(executeUser, protocolId, resourceListWithoutAccountByExecuteUserAndProtocol, resourceListWithoutAccountByProtocol, protocolVoList, resourceVoList.stream().map(ResourceVo::getId).collect(toList()));
+            addException(executeUser, protocolId, resourceListWithoutAccountByExecuteUserAndProtocol, resourceListWithoutAccountByProtocol, protocolVoList, resourceVoList.stream().map(ResourceVo::getId).collect(toList()), cmdbGroupType);
         }
 
         JSONArray whiteArray = jsonObj.getJSONArray("whitelist");
         if (CollectionUtils.isNotEmpty(whiteArray)) {
             List<ResourceVo> whitelist = whiteArray.toJavaList(ResourceVo.class);
-            addException(executeUser, protocolId, resourceListWithoutAccountByExecuteUserAndProtocol, whileResourceListWithoutAccountByProtocol, protocolVoList, whitelist.stream().map(ResourceVo::getId).collect(toList()));
+            addException(executeUser, protocolId, resourceListWithoutAccountByExecuteUserAndProtocol, whileResourceListWithoutAccountByProtocol, protocolVoList, whitelist.stream().map(ResourceVo::getId).collect(toList()), cmdbGroupType);
         }
         if (resourceListWithoutAccountByExecuteUserAndProtocol.size() > 0 || whileResourceListWithoutAccountByExecuteUserAndProtocol.size() > 0) {
             resultArray.add(resourceObjectWithoutAccountByExecuteUserAndProtocol);
@@ -233,14 +239,19 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
         return resultObj;
     }
 
-    private void addException(String executeUser, Long protocolId, List<ResourceVo> resourceListWithoutAccountByExecuteUserAndProtocol, List<ResourceVo> resourceListWithoutAccountByProtocol, List<AccountProtocolVo> protocolVoList, List<Long> idList) {
+    private void addException(String executeUser, Long protocolId, List<ResourceVo> resourceListWithoutAccountByExecuteUserAndProtocol, List<ResourceVo> resourceListWithoutAccountByProtocol, List<AccountProtocolVo> protocolVoList, List<Long> idList, String cmdbGroupType) {
         AccountProtocolVo protocolVo = resourceAccountMapper.getAccountProtocolVoByProtocolId(protocolId);
         Map<Long, Long> resourceOSResourceMap = new HashMap<>();//节点resourceId->对应操作系统resourceId
         Map<String, AccountBaseVo> tagentIpAccountMap = new HashMap<>();
         if (protocolVo == null) {
             throw new ResourceCenterAccountProtocolNotFoundException(protocolId);
         }
-        List<ResourceVo> resourceVoList = resourceMapper.getResourceByIdList(idList);
+        //补充opType操作类型
+        JSONObject filterJson = new JSONObject();
+        filterJson.put("cmdbGroupType", cmdbGroupType);
+        ResourceSearchVo searchVo = resourceCenterResourceService.assembleResourceSearchVo(filterJson);
+        searchVo.setIdList(idList);
+        List<ResourceVo> resourceVoList = resourceMapper.getAuthResourceList(searchVo);
         List<Long> resourceIncludeOsIdList = new ArrayList<>(idList);
         //查询target 对应的os
         List<SoftwareServiceOSVo> targetOsList = resourceMapper.getOsResourceListByResourceIdList(idList);
