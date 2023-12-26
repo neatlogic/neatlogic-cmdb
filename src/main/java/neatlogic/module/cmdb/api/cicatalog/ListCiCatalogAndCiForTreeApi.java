@@ -109,14 +109,14 @@ public class ListCiCatalogAndCiForTreeApi extends PrivateApiComponentBase {
         }
 
         if (CollectionUtils.isNotEmpty(catalogList)) {
-            for (CiCatalogNodeVo node : catalogList) {
-                node.setType(CiCatalogNodeVo.CATALOG);
+            for (CiCatalogNodeVo node : hasCatalogCiNodeList) {
                 CiCatalogNodeVo parent = id2NodeMap.get(node.getParentId());
                 if (parent != null) {
                     parent.addChild(node);
                 }
             }
-            for (CiCatalogNodeVo node : hasCatalogCiNodeList) {
+            for (CiCatalogNodeVo node : catalogList) {
+                node.setType(CiCatalogNodeVo.CATALOG);
                 CiCatalogNodeVo parent = id2NodeMap.get(node.getParentId());
                 if (parent != null) {
                     parent.addChild(node);
