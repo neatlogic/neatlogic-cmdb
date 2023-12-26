@@ -35,7 +35,7 @@
     <select id="checkGlobalAttrItemIsUsed" parameterType="java.lang.Long" resultType="int">
         select count(1)
         from cmdb_cientity_globalattritem
-        where id = #{value}
+        where item_id = #{value}
         limit 1
     </select>
 

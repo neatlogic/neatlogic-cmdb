@@ -29,7 +29,7 @@ insert ignore into `cmdb_resourcecenter_entity`(`name`,`label`,`status`,`error`,
 -- ----------------------------
 -- Records of cmdb_global_attr
 -- ----------------------------
-insert ignore into `cmdb_global_attr`(`id`,`name`,`label`,`is_active`,`is_multiple`,`description`) values (979768512987136,'app_environment','应用环境',1,0,NULL);
+insert ignore into `cmdb_global_attr`(`id`,`name`,`label`,`is_active`,`is_multiple`,`description`, `is_private`) values (979768512987136,'app_environment','应用环境',1,0,NULL,1);
 
 -- ----------------------------
 -- Records of cmdb_global_attritem
