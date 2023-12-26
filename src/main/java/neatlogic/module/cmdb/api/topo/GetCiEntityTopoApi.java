@@ -181,6 +181,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                                 ciTypeIdSet.add(ciEntityVo.getTypeId());
                             }
                             for (RelEntityVo relEntityVo : ciEntityVo.getRelEntityList()) {
+                                containRelIdSet.add(relEntityVo.getRelId());
                                 RelTypeVo relTypeVo = relTypeMap.get(relEntityVo.getRelId());
                                 if (relTypeVo == null) {
                                     relTypeMap.put(relEntityVo.getRelId(), relMapper.getRelTypeByRelId(relEntityVo.getRelId()));
@@ -215,6 +216,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                                     }
                                 }
                             }
+
                             //为了防止一个配置项有多个相同关系而被错误剪枝，需要等当前配置项循环结束后再记录关系
                             /*for (RelEntityVo relEntityVo : ciEntityVo.getRelEntityList()) {
                                 containRelIdSet.add(relEntityVo.getRelId());
