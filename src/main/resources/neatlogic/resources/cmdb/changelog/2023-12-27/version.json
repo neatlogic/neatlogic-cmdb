@@ -1,0 +1,12 @@
+{
+  "content": [
+    {
+      "type": "修复",
+      "detail": [
+        {
+          "msg": "1.全局属性cmdb_global_attr表的name字段增加唯一索引"
+        }
+      ]
+    }
+  ]
+}
