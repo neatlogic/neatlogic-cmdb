@@ -53,7 +53,7 @@ import java.util.Objects;
 @Service
 public class CmdbSyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
 
-    private Logger logger = LoggerFactory.getLogger(CmdbSyncProcessUtilHandler.class);
+    private final Logger logger = LoggerFactory.getLogger(CmdbSyncProcessUtilHandler.class);
 
     @Resource
     private ProcessTaskStepDataMapper processTaskStepDataMapper;
@@ -74,7 +74,7 @@ public class CmdbSyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
     @Override
     public Object getHandlerStepInitInfo(ProcessTaskStepVo currentProcessTaskStepVo) {
         JSONObject resultObj = new JSONObject();
-        /** 事务审计列表 **/
+        /* 事务审计列表 **/
         ProcessTaskStepDataVo search = new ProcessTaskStepDataVo();
         search.setProcessTaskId(currentProcessTaskStepVo.getProcessTaskId());
         search.setProcessTaskStepId(currentProcessTaskStepVo.getId());
@@ -101,7 +101,7 @@ public class CmdbSyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
                 resultObj.put("tableList", tableList);
             }
         }
-        /** 错误信息列表 **/
+        /* 错误信息列表 **/
         ProcessTaskStepDataVo searchVo = new ProcessTaskStepDataVo();
         searchVo.setProcessTaskId(currentProcessTaskStepVo.getProcessTaskId());
         searchVo.setProcessTaskStepId(currentProcessTaskStepVo.getId());
@@ -122,7 +122,7 @@ public class CmdbSyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
 
     @Override
     public void makeupProcessStep(ProcessStepVo processStepVo, JSONObject stepConfigObj) {
-        /** 组装通知策略id **/
+        /* 组装通知策略id **/
         JSONObject notifyPolicyConfig = stepConfigObj.getJSONObject("notifyPolicyConfig");
         InvokeNotifyPolicyConfigVo invokeNotifyPolicyConfigVo = JSONObject.toJavaObject(notifyPolicyConfig, InvokeNotifyPolicyConfigVo.class);
         if (invokeNotifyPolicyConfigVo != null) {
@@ -145,7 +145,7 @@ public class CmdbSyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
             }
         }
 
-        /** 组装分配策略 **/
+        /* 组装分配策略 **/
         JSONObject workerPolicyConfig = stepConfigObj.getJSONObject("workerPolicyConfig");
         if (MapUtils.isNotEmpty(workerPolicyConfig)) {
             JSONArray policyList = workerPolicyConfig.getJSONArray("policyList");
@@ -201,7 +201,7 @@ public class CmdbSyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
         JSONArray authorityArray = ProcessConfigUtil.regulateAuthorityList(authorityList, stepActions);
         resultObj.put("authorityList", authorityArray);
 
-        /** 按钮映射 **/
+        /* 按钮映射 **/
         ProcessTaskOperationType[] stepButtons = {
                 ProcessTaskOperationType.STEP_COMPLETE,
                 ProcessTaskOperationType.STEP_BACK,
@@ -212,12 +212,12 @@ public class CmdbSyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
         JSONArray customButtonArray = ProcessConfigUtil.regulateCustomButtonList(customButtonList, stepButtons);
         resultObj.put("customButtonList", customButtonArray);
 
-        /** 状态映射列表 **/
+        /* 状态映射列表 **/
         JSONArray customStatusList = configObj.getJSONArray("customStatusList");
         JSONArray customStatusArray = ProcessConfigUtil.regulateCustomStatusList(customStatusList);
         resultObj.put("customStatusList", customStatusArray);
 
-        /** 可替换文本列表 **/
+        /* 可替换文本列表 **/
         resultObj.put("replaceableTextList", ProcessConfigUtil.regulateReplaceableTextList(configObj.getJSONArray("replaceableTextList")));
         return resultObj;
     }
@@ -229,7 +229,7 @@ public class CmdbSyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
         }
         JSONObject resultObj = new JSONObject();
 
-        /** 授权 **/
+        /* 授权 **/
         ProcessTaskOperationType[] stepActions = {
                 ProcessTaskOperationType.STEP_VIEW,
                 ProcessTaskOperationType.STEP_TRANSFER
@@ -261,7 +261,7 @@ public class CmdbSyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
         resultObj.put("actionConfig", actionConfigVo);
 
         JSONArray customButtonList = configObj.getJSONArray("customButtonList");
-        /** 按钮映射列表 **/
+        /* 按钮映射列表 **/
         ProcessTaskOperationType[] stepButtons = {
                 ProcessTaskOperationType.STEP_COMPLETE,
                 ProcessTaskOperationType.STEP_BACK,
@@ -271,27 +271,27 @@ public class CmdbSyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
 
         JSONArray customButtonArray = ProcessConfigUtil.regulateCustomButtonList(customButtonList, stepButtons);
         resultObj.put("customButtonList", customButtonArray);
-        /** 状态映射列表 **/
+        /* 状态映射列表 **/
         JSONArray customStatusList = configObj.getJSONArray("customStatusList");
         JSONArray customStatusArray = ProcessConfigUtil.regulateCustomStatusList(customStatusList);
         resultObj.put("customStatusList", customStatusArray);
 
-        /** 可替换文本列表 **/
+        /* 可替换文本列表 **/
         resultObj.put("replaceableTextList", ProcessConfigUtil.regulateReplaceableTextList(configObj.getJSONArray("replaceableTextList")));
 
-        /** 自动化配置 **/
+        /* 自动化配置 **/
         JSONObject ciEntityConfig = configObj.getJSONObject("ciEntityConfig");
         CiEntitySyncVo ciEntitySyncVo = regulateCiEntityConfig(ciEntityConfig);
         resultObj.put("ciEntityConfig", ciEntitySyncVo);
 
-        /** 分配处理人 **/
+        /* 分配处理人 **/
         JSONObject workerPolicyConfig = configObj.getJSONObject("workerPolicyConfig");
         JSONObject workerPolicyObj = ProcessConfigUtil.regulateWorkerPolicyConfig(workerPolicyConfig);
         resultObj.put("workerPolicyConfig", workerPolicyObj);
 
         JSONObject simpleSettings = ProcessConfigUtil.regulateSimpleSettings(configObj);
         resultObj.putAll(simpleSettings);
-        /** 表单场景 **/
+        /* 表单场景 **/
         String formSceneUuid = configObj.getString("formSceneUuid");
         String formSceneName = configObj.getString("formSceneName");
         resultObj.put("formSceneUuid", formSceneUuid == null ? "" : formSceneUuid);
