@@ -8,7 +8,7 @@ CREATE TABLE `cmdb_ci_tree`
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci;
 
-DROP table `cmdb_ci_catalog`;
+DROP table if exists `cmdb_ci_catalog`;
 
 ALTER TABLE `cmdb_ci`
     DROP COLUMN `catalog_id`;
