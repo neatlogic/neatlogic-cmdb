@@ -8,3 +8,4 @@ bin
 .classpath
 .externalToolBuilders
 .idea
+.DS_Store
