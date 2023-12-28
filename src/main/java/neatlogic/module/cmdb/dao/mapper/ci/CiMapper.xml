@@ -28,7 +28,7 @@
                IFNULL(b.sort, 9999) AS sort
         FROM cmdb_ci a
                  LEFT JOIN cmdb_ci_tree b ON a.id = b.ci_id
-        order by sort
+        order by sort, a.id
     </select>
 
     <select id="getCiLock" parameterType="java.lang.Long" resultType="java.lang.Long" useCache="false">
