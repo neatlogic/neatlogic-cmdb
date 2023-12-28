@@ -966,11 +966,12 @@ CREATE TABLE IF NOT EXISTS `cmdb_cientity_globalattritem`  (
 CREATE TABLE IF NOT EXISTS `cmdb_global_attr`  (
   `id` bigint NOT NULL COMMENT 'Id',
   `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '唯一标识',
-  `label` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '显示文案\n',
+  `label` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '显示文案',
   `is_active` tinyint NULL DEFAULT NULL COMMENT '是否激活',
   `is_multiple` tinyint NULL DEFAULT NULL COMMENT '允许多选',
   `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT '描述',
-  PRIMARY KEY (`id`) USING BTREE
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE KEY `idx_name` (`name`)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------

@@ -21,6 +21,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSONPath;
 import neatlogic.framework.asynchronization.threadlocal.InputFromContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
+import neatlogic.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
+import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.ci.RelVo;
@@ -29,10 +31,11 @@ import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.cientity.RelEntityVo;
 import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo;
 import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
+import neatlogic.framework.cmdb.dto.transaction.AttrEntityTransactionVo;
 import neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo;
-import neatlogic.framework.cmdb.enums.RelDirectionType;
-import neatlogic.framework.cmdb.enums.SearchExpression;
-import neatlogic.framework.cmdb.enums.TransactionActionType;
+import neatlogic.framework.cmdb.enums.*;
+import neatlogic.framework.cmdb.exception.attr.AttrValueIrregularException;
+import neatlogic.framework.cmdb.exception.attrtype.AttrTypeNotFoundException;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.cientity.NewCiEntityNotFoundException;
 import neatlogic.framework.cmdb.exception.globalattr.GlobalAttrValueIrregularException;
@@ -75,6 +78,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
@@ -244,6 +248,8 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                     }
                 }
                 if (CollectionUtils.isNotEmpty(ciEntityTransactionList)) {
+                    /* 处理和校验下拉框类型和表格类型属性的值 */
+                    validSelectAndTableAttrValueList(ciEntityTransactionList);
                     EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
                         InputFromContext.init(InputFrom.ITSM);
                         Long transactionGroupId = ciEntityService.saveCiEntity(ciEntityTransactionList);
@@ -277,6 +283,7 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                     if (!s.isSucceed()) {
                         // 增加提醒
                         logger.error(s.getError(), s.getException());
+                        logger.error("导致异常的数据：" + JSONObject.toJSONString(ciEntityTransactionList));
                         JSONObject errorMessageObj = new JSONObject();
                         String error = s.getError();
                         if (error == null) {
@@ -508,7 +515,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             CiEntitySyncConfigVo mainConfigObj,
             Map<String, CiEntitySyncConfigVo> dependencyConfigMap) {
         List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
-        Long ciId = mainConfigObj.getCiId();
         Map<String, CiEntitySyncMappingVo> mappingMap = new HashMap<>();
         List<CiEntitySyncMappingVo> mappingList = mainConfigObj.getMappingList();
         for (CiEntitySyncMappingVo mappingObj : mappingList) {
@@ -533,61 +539,260 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
         }
 
         /** 属性 **/
+//        JSONObject attrEntityData = new JSONObject();
+//        List<AttrVo> attrList = attrMapper.getAttrByCiId(ciId);
+//        for (AttrVo attrVo : attrList) {
+//            if (Objects.equals(attrVo.getType(), "expression")) {
+//                continue;
+//            }
+//            String key = "attr_" + attrVo.getId();
+//            CiEntitySyncMappingVo mappingObj = mappingMap.get(key);
+//            if (mappingObj == null) {
+//                JSONObject attrEntity = new JSONObject();
+//                attrEntity.put("type", attrVo.getType());
+//                attrEntity.put("config", attrVo.getConfig());
+//                attrEntity.put("valueList", new JSONArray());
+//                attrEntityData.put(key, attrEntity);
+//                continue;
+//            }
+//            // 映射模式为常量
+//            JSONArray valueList = mappingObj.getValueList();
+//            if (CollectionUtils.isNotEmpty(valueList)) {
+//                for (int i = valueList.size() - 1; i >= 0; i--) {
+//                    if (valueList.get(i) instanceof JSONObject) {
+//                        JSONObject valueObj = valueList.getJSONObject(i);
+//                        String attrCiEntityUuid = valueObj.getString("uuid");
+//                        Long attrCiEntityId = valueObj.getLong("id");
+//                        if (attrCiEntityId == null && StringUtils.isNotBlank(attrCiEntityUuid)) {
+//                            CiEntityTransactionVo tmpVo = ciEntityTransactionMap.get(attrCiEntityUuid);
+//                            if (tmpVo != null) {
+//                                //替换掉原来的ciEntityUuid为新的ciEntityId
+//                                valueList.set(i, tmpVo.getCiEntityId());
+//                            } else {
+//                                //使用uuid寻找配置项
+//                                CiEntityVo uuidCiEntityVo = ciEntityMapper.getCiEntityBaseInfoByUuid(attrCiEntityUuid);
+//                                if (uuidCiEntityVo == null) {
+//                                    throw new NewCiEntityNotFoundException(attrCiEntityUuid);
+//                                } else {
+//                                    valueList.set(i, uuidCiEntityVo.getId());
+//                                }
+//                            }
+//                        } else if (attrCiEntityId != null) {
+//                            valueList.set(i, attrCiEntityId);
+//                        } else {
+//                            valueList.remove(i);
+//                        }
+//                    }
+//                }
+//            }
+//            JSONObject attrEntity = new JSONObject();
+//            attrEntity.put("type", attrVo.getType());
+//            attrEntity.put("config", attrVo.getConfig());
+//            attrEntity.put("valueList", valueList);
+//            attrEntityData.put(key, attrEntity);
+//        }
+        JSONObject attrEntityData = buildAttrEntityData(mainConfigObj, mappingMap);
+        ciEntityTransactionVo.setAttrEntityData(attrEntityData);
+        /** 关系 **/
+//        JSONObject relEntityData = new JSONObject();
+//        List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciId));
+//        for (RelVo relVo : relList) {
+//            String key = "rel" + relVo.getDirection() + "_" + relVo.getId();
+//            CiEntitySyncMappingVo mappingObj = mappingMap.get(key);
+//            if (mappingObj == null) {
+//                continue;
+//            }
+//            String mappingMode = mappingObj.getMappingMode();
+//            if (Objects.equals(mappingMode, "new")) {
+//                JSONArray valueList = mappingObj.getValueList();
+//                if (CollectionUtils.isNotEmpty(valueList)) {
+//                    List<Long> ciEntityIdList = new ArrayList<>();
+//                    List<JSONObject> alreadyExistRelList = new ArrayList<>();
+//                    for (int i = 0; i < valueList.size(); i++) {
+//                        JSONObject valueObj = valueList.getJSONObject(i);
+//                        if (MapUtils.isEmpty(valueObj)) {
+//                            continue;
+//                        }
+//                        String ciEntityUuid = valueObj.getString("ciEntityUuid");
+//                        if (StringUtils.isBlank(ciEntityUuid)) {
+//                            continue;
+//                        }
+//                        Long ciEntityId = valueObj.getLong("ciEntityId");
+//                        if (ciEntityId == null) {
+//                            CiEntityTransactionVo tmpVo = ciEntityTransactionMap.get(ciEntityUuid);
+//                            if (tmpVo != null) {
+//                                ciEntityId = tmpVo.getCiEntityId();
+//                                valueObj.put("ciEntityId", ciEntityId);
+//                            } else {
+//                                CiEntityVo uuidCiEntityVo = ciEntityMapper.getCiEntityBaseInfoByUuid(ciEntityUuid);
+//                                if (uuidCiEntityVo == null) {
+//                                    throw new NewCiEntityNotFoundException(valueObj.getString("ciEntityUuid"));
+//                                } else {
+//                                    ciEntityId = uuidCiEntityVo.getId();
+//                                    valueObj.put("ciEntityId", ciEntityId);
+//                                }
+//                            }
+//                        }
+//                        ciEntityIdList.add(ciEntityId);
+//                        String type = valueObj.getString("type");
+//                        if (!Objects.equals(type, "new")) {
+//                            continue;
+//                        }
+//                        CiEntitySyncConfigVo dependencyConfig = dependencyConfigMap.get(ciEntityUuid);
+//                        if (dependencyConfig == null) {
+//                            continue;
+//                        }
+//                        // 关系选择追加模式时，需要将该配置项原来就关联的关系数据补充到valueList中
+//                        if (Objects.equals(dependencyConfig.getAction(), "append") && ciEntityTransactionVo.getCiEntityId() != null) {
+//                            List<RelEntityVo> relEntityList;
+//                            if (relVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
+//                                relEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(ciEntityTransactionVo.getCiEntityId(), relVo.getId(), null);
+//                                for (RelEntityVo relEntityVo : relEntityList) {
+//                                    JSONObject jsonObj = new JSONObject();
+//                                    jsonObj.put("ciEntityId", relEntityVo.getToCiEntityId());
+//                                    jsonObj.put("ciEntityName", relEntityVo.getToCiEntityName());
+//                                    jsonObj.put("ciId", relEntityVo.getToCiId());
+//                                    alreadyExistRelList.add(jsonObj);
+//                                }
+//                            } else {
+//                                relEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(ciEntityTransactionVo.getCiEntityId(), relVo.getId(), null);
+//                                for (RelEntityVo relEntityVo : relEntityList) {
+//                                    JSONObject jsonObj = new JSONObject();
+//                                    jsonObj.put("ciEntityId", relEntityVo.getFromCiEntityId());
+//                                    jsonObj.put("ciEntityName", relEntityVo.getFromCiEntityName());
+//                                    jsonObj.put("ciId", relEntityVo.getFromCiId());
+//                                    alreadyExistRelList.add(jsonObj);
+//                                }
+//                            }
+//                        }
+//                        List<CiEntityTransactionVo> list = createCiEntityTransactionVo(ciEntityTransactionMap, dependencyConfig, dependencyConfigMap);
+//                        ciEntityTransactionList.addAll(list);
+//                    }
+//                    // 关系选择追加模式时，需要将该配置项原来就关联的关系数据补充到valueList中
+//                    for (JSONObject jsonObj : alreadyExistRelList) {
+//                        if (ciEntityIdList.contains(jsonObj.getLong("ciEntityId"))) {
+//                            continue;
+//                        }
+//                        valueList.add(jsonObj);
+//                    }
+//                    JSONObject relEntity = new JSONObject();
+//                    relEntity.put("valueList", valueList);
+//                    relEntityData.put(key, relEntity);
+//                }
+//            }
+//        }
+        JSONObject relEntityData = buildRelEntityData(ciEntityTransactionMap, mainConfigObj, dependencyConfigMap, mappingMap, ciEntityTransactionList);
+        ciEntityTransactionVo.setRelEntityData(relEntityData);
+        /** 全局属性 **/
+//        JSONObject globalAttrEntityData = new JSONObject();
+//        GlobalAttrVo searchVo = new GlobalAttrVo();
+//        searchVo.setIsActive(1);
+//        List<GlobalAttrVo> globalAttrList = globalAttrMapper.searchGlobalAttr(searchVo);
+//        for (GlobalAttrVo globalAttrVo : globalAttrList) {
+//            String key = "global_" + globalAttrVo.getId();
+//            CiEntitySyncMappingVo mappingObj = mappingMap.get(key);
+//            if (mappingObj == null) {
+//                JSONObject globalAttrEntity = new JSONObject();
+//                globalAttrEntity.put("valueList", new JSONArray());
+//                globalAttrEntityData.put(key, globalAttrEntity);
+//                continue;
+//            }
+//            JSONArray valueList = new JSONArray();
+//            // 映射模式为常量
+//            JSONArray valueArray = mappingObj.getValueList();
+//            if (CollectionUtils.isNotEmpty(valueArray)) {
+//                for (int i = 0; i < valueArray.size(); i++) {
+//                    Object valueObj = valueArray.get(i);
+//                    if (valueObj instanceof JSONObject) {
+//                        valueList.add(valueObj);
+//                    } else {
+//                        boolean flag = false;
+//                        List<GlobalAttrItemVo> itemList = globalAttrVo.getItemList();
+//                        for (GlobalAttrItemVo item : itemList) {
+//                            if (Objects.equals(item.getValue(), valueObj)
+//                                    || Objects.equals(item.getId().toString(), valueObj.toString())) {
+//                                JSONObject jsonObj = new JSONObject();
+//                                jsonObj.put("id", item.getId());
+//                                jsonObj.put("value", item.getValue());
+//                                jsonObj.put("sort", item.getSort());
+//                                jsonObj.put("attrId", globalAttrVo.getId());
+//                                valueList.add(jsonObj);
+//                                flag = true;
+//                            }
+//                        }
+//                        if (!flag) {
+//                            throw new GlobalAttrValueIrregularException(globalAttrVo, valueObj.toString());
+//                        }
+//                    }
+//                }
+//            }
+//            JSONObject globalAttrEntity = new JSONObject();
+//            globalAttrEntity.put("valueList", valueList);
+//            globalAttrEntityData.put(key, globalAttrEntity);
+//        }
+        JSONObject globalAttrEntityData = buildGlobalAttrEntityData(mappingMap);
+        ciEntityTransactionVo.setGlobalAttrEntityData(globalAttrEntityData);
+
+        ciEntityTransactionList.add(ciEntityTransactionVo);
+        return ciEntityTransactionList;
+    }
+
+    /**
+     * 组装属性
+     * @param mainConfigObj
+     * @param mappingMap
+     * @return
+     */
+    private JSONObject buildAttrEntityData(
+            CiEntitySyncConfigVo mainConfigObj,
+            Map<String, CiEntitySyncMappingVo> mappingMap
+    ) {
         JSONObject attrEntityData = new JSONObject();
+        Long ciId = mainConfigObj.getCiId();
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciId);
         for (AttrVo attrVo : attrList) {
             if (Objects.equals(attrVo.getType(), "expression")) {
                 continue;
             }
             String key = "attr_" + attrVo.getId();
-            CiEntitySyncMappingVo mappingObj = mappingMap.get(key);
-            if (mappingObj == null) {
-                JSONObject attrEntity = new JSONObject();
-                attrEntity.put("type", attrVo.getType());
-                attrEntity.put("config", attrVo.getConfig());
-                attrEntity.put("valueList", new JSONArray());
-                attrEntityData.put(key, attrEntity);
-                continue;
-            }
-            // 映射模式为常量
-            JSONArray valueList = mappingObj.getValueList();
-            if (CollectionUtils.isNotEmpty(valueList)) {
-                for (int i = valueList.size() - 1; i >= 0; i--) {
-                    if (valueList.get(i) instanceof JSONObject) {
-                        JSONObject valueObj = valueList.getJSONObject(i);
-                        String attrCiEntityUuid = valueObj.getString("uuid");
-                        Long attrCiEntityId = valueObj.getLong("id");
-                        if (attrCiEntityId == null && StringUtils.isNotBlank(attrCiEntityUuid)) {
-                            CiEntityTransactionVo tmpVo = ciEntityTransactionMap.get(attrCiEntityUuid);
-                            if (tmpVo != null) {
-                                //替换掉原来的ciEntityUuid为新的ciEntityId
-                                valueList.set(i, tmpVo.getCiEntityId());
-                            } else {
-                                //使用uuid寻找配置项
-                                CiEntityVo uuidCiEntityVo = ciEntityMapper.getCiEntityBaseInfoByUuid(attrCiEntityUuid);
-                                if (uuidCiEntityVo == null) {
-                                    throw new NewCiEntityNotFoundException(attrCiEntityUuid);
-                                } else {
-                                    valueList.set(i, uuidCiEntityVo.getId());
-                                }
-                            }
-                        } else if (attrCiEntityId != null) {
-                            valueList.set(i, attrCiEntityId);
-                        } else {
-                            valueList.remove(i);
-                        }
-                    }
-                }
-            }
             JSONObject attrEntity = new JSONObject();
             attrEntity.put("type", attrVo.getType());
             attrEntity.put("config", attrVo.getConfig());
-            attrEntity.put("valueList", valueList);
+            // 对于设置必填的自动采集字段，saveMode设置为允许为空，不校验必填
+            if (attrVo.getIsRequired().equals(1) && Objects.equals(attrVo.getInputType(), InputType.AT.getValue())) {
+                attrEntity.put("saveMode", SaveModeType.ALLOW_EMPTY.getValue());
+            }
+            CiEntitySyncMappingVo mappingObj = mappingMap.get(key);
+            if (mappingObj == null) {
+                attrEntity.put("valueList", new JSONArray());
+            } else {
+                attrEntity.put("valueList", mappingObj.getValueList());
+            }
             attrEntityData.put(key, attrEntity);
         }
-        ciEntityTransactionVo.setAttrEntityData(attrEntityData);
-        /** 关系 **/
+        return attrEntityData;
+    }
+
+    /**
+     * 组装关系
+     * @param ciEntityTransactionMap
+     * @param mainConfigObj
+     * @param dependencyConfigMap
+     * @param mappingMap
+     * @param ciEntityTransactionList
+     * @return
+     */
+    private JSONObject buildRelEntityData(
+            Map<String, CiEntityTransactionVo> ciEntityTransactionMap,
+            CiEntitySyncConfigVo mainConfigObj,
+            Map<String, CiEntitySyncConfigVo> dependencyConfigMap,
+            Map<String, CiEntitySyncMappingVo> mappingMap,
+            List<CiEntityTransactionVo> ciEntityTransactionList
+    ) {
         JSONObject relEntityData = new JSONObject();
+        Long ciId = mainConfigObj.getCiId();
+        String uuid = mainConfigObj.getUuid();
+        CiEntityTransactionVo ciEntityTransactionVo = ciEntityTransactionMap.get(uuid);
         List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciId));
         for (RelVo relVo : relList) {
             String key = "rel" + relVo.getDirection() + "_" + relVo.getId();
@@ -674,8 +879,15 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                 }
             }
         }
-        ciEntityTransactionVo.setRelEntityData(relEntityData);
-        /** 全局属性 **/
+        return relEntityData;
+    }
+
+    /**
+     * 组装全局属性
+     * @param mappingMap
+     * @return
+     */
+    private JSONObject buildGlobalAttrEntityData(Map<String, CiEntitySyncMappingVo> mappingMap) {
         JSONObject globalAttrEntityData = new JSONObject();
         GlobalAttrVo searchVo = new GlobalAttrVo();
         searchVo.setIsActive(1);
@@ -701,7 +913,8 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                         boolean flag = false;
                         List<GlobalAttrItemVo> itemList = globalAttrVo.getItemList();
                         for (GlobalAttrItemVo item : itemList) {
-                            if (Objects.equals(item.getValue(), valueObj)) {
+                            if (Objects.equals(item.getValue(), valueObj)
+                                    || Objects.equals(item.getId().toString(), valueObj.toString())) {
                                 JSONObject jsonObj = new JSONObject();
                                 jsonObj.put("id", item.getId());
                                 jsonObj.put("value", item.getValue());
@@ -721,12 +934,121 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             globalAttrEntity.put("valueList", valueList);
             globalAttrEntityData.put(key, globalAttrEntity);
         }
-        ciEntityTransactionVo.setGlobalAttrEntityData(globalAttrEntityData);
-
-        ciEntityTransactionList.add(ciEntityTransactionVo);
-        return ciEntityTransactionList;
+        return globalAttrEntityData;
     }
 
+    /**
+     * 处理和校验下拉框类型和表格类型属性的值
+     * @param ciEntityTransactionList
+     */
+    private void validSelectAndTableAttrValueList(List<CiEntityTransactionVo> ciEntityTransactionList) {
+        for (CiEntityTransactionVo ciEntityTransaction : ciEntityTransactionList) {
+            Long ciId = ciEntityTransaction.getCiId();
+            List<AttrVo> attrList = attrMapper.getAttrByCiId(ciId);
+            for (AttrVo attrVo : attrList) {
+                if (Objects.equals(attrVo.getType(), PropHandlerType.SELECT.getValue()) || Objects.equals(attrVo.getType(), PropHandlerType.TABLE.getValue())) {
+                    IAttrValueHandler attrHandler = AttrValueHandlerFactory.getHandler(attrVo.getType());
+                    if (attrHandler == null) {
+                        throw new AttrTypeNotFoundException(attrVo.getType());
+                    }
+                    AttrEntityTransactionVo attrEntityTransactionVo = ciEntityTransaction.getAttrEntityTransactionByAttrId(attrVo.getId());
+                    JSONArray valueList = attrEntityTransactionVo.getValueList();
+                    if (CollectionUtils.isNotEmpty(valueList)) {
+                        List<Long> longValueList = new ArrayList<>();
+                        List<String> stringValueList = new ArrayList<>();
+                        JSONArray tempList = new JSONArray();
+                        tempList.addAll(valueList);
+                        for (int i = 0; i < tempList.size(); i++) {
+                            Object valueObj = tempList.get(i);
+                            if (valueObj instanceof Long) {
+                                longValueList.add((Long) valueObj);
+                            } else if (valueObj instanceof String) {
+                                String valueStr = valueObj.toString();
+                                try {
+                                    Integer.valueOf(valueStr);
+                                    stringValueList.add(valueStr);
+                                } catch (NumberFormatException e1) {
+                                    try {
+                                        Long.valueOf(valueStr);
+                                    } catch (NumberFormatException e2) {
+                                        stringValueList.add(valueStr);
+                                    }
+                                }
+                            }
+                        }
+                        JSONArray newValueList = new JSONArray();
+                        if (CollectionUtils.isNotEmpty(longValueList)) {
+                            JSONArray array = new JSONArray();
+                            array.addAll(longValueList);
+                            attrHandler.valid(attrVo, array);
+                            newValueList.addAll(longValueList);
+                        }
+                        if (CollectionUtils.isNotEmpty(stringValueList)) {
+                            CiVo ciVo = ciMapper.getCiById(attrVo.getTargetCiId());
+                            if (ciVo == null) {
+                                throw new CiNotFoundException(attrVo.getTargetCiId());
+                            }
+                            for (String valueStr : stringValueList) {
+                                CiEntityVo search = new CiEntityVo();
+                                search.setName(valueStr);
+                                if (ciVo.getIsVirtual().equals(0)) {
+                                    // 非虚拟模型
+                                    List<CiVo> downwardCiList = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
+                                    Map<Long, CiVo> downwardCiMap = downwardCiList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
+                                    boolean isFind = false;
+                                    for (CiEntityTransactionVo ciEntityTransactionVo : ciEntityTransactionList) {
+                                        CiVo downwardCi = downwardCiMap.get(ciEntityTransactionVo.getCiId());
+                                        if (downwardCi == null) {
+                                            continue;
+                                        }
+                                        if (downwardCi.getNameAttrId() == null) {
+                                            continue;
+                                        }
+                                        AttrEntityTransactionVo attrEntityTransaction = ciEntityTransactionVo.getAttrEntityTransactionByAttrId(downwardCi.getNameAttrId());
+                                        if (attrEntityTransaction == null) {
+                                            continue;
+                                        }
+                                        if (CollectionUtils.isEmpty(attrEntityTransaction.getValueList())) {
+                                            continue;
+                                        }
+                                        for (Object value : attrEntityTransaction.getValueList()) {
+                                            if (Objects.equals(value, valueStr)) {
+                                                newValueList.add(ciEntityTransactionVo.getCiEntityId());
+                                                isFind = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    if (!isFind) {
+                                        search.setIdList(new ArrayList<>(downwardCiMap.keySet()));
+                                        List<CiEntityVo> ciEntityList = ciEntityMapper.getCiEntityListByCiIdListAndName(search);
+                                        if (CollectionUtils.isNotEmpty(ciEntityList)) {
+                                            throw new AttrValueIrregularException(attrVo, valueStr);
+                                        }
+                                        for (CiEntityVo ciEntity : ciEntityList) {
+                                            newValueList.add(ciEntity.getId());
+                                        }
+                                    }
+                                } else {
+                                    // 虚拟模型
+                                    search.setCiId(ciVo.getId());
+                                    List<CiEntityVo> ciEntityList = ciEntityMapper.getVirtualCiEntityBaseInfoByName(search);
+                                    if (CollectionUtils.isNotEmpty(ciEntityList)) {
+                                        throw new AttrValueIrregularException(attrVo, valueStr);
+                                    }
+                                    for (CiEntityVo ciEntity : ciEntityList) {
+                                        newValueList.add(ciEntity.getId());
+                                    }
+                                }
+                            }
+                        }
+                        valueList.clear();
+                        valueList.addAll(newValueList);
+                    }
+                }
+            }
+        }
+    }
 
     /**
      * 遍历configList，将“批量操作”的配置信息根据表单数据转换成多条“单个操作”配置信息
