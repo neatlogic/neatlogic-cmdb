@@ -222,8 +222,10 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                     if (id != null) {
                         ciEntityTransactionVo.setCiEntityId(id);
                         ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
+                        ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
                     } else {
                         ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
+                        ciEntityTransactionVo.setEditMode(EditModeType.GLOBAL.getValue());
                     }
                     Integer isStart = configObject.getIsStart();
                     if (Objects.equals(isStart, 1)) {
@@ -1022,7 +1024,7 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                                     if (!isFind) {
                                         search.setIdList(new ArrayList<>(downwardCiMap.keySet()));
                                         List<CiEntityVo> ciEntityList = ciEntityMapper.getCiEntityListByCiIdListAndName(search);
-                                        if (CollectionUtils.isNotEmpty(ciEntityList)) {
+                                        if (CollectionUtils.isEmpty(ciEntityList)) {
                                             throw new AttrValueIrregularException(attrVo, valueStr);
                                         }
                                         for (CiEntityVo ciEntity : ciEntityList) {
@@ -1033,7 +1035,7 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                                     // 虚拟模型
                                     search.setCiId(ciVo.getId());
                                     List<CiEntityVo> ciEntityList = ciEntityMapper.getVirtualCiEntityBaseInfoByName(search);
-                                    if (CollectionUtils.isNotEmpty(ciEntityList)) {
+                                    if (CollectionUtils.isEmpty(ciEntityList)) {
                                         throw new AttrValueIrregularException(attrVo, valueStr);
                                     }
                                     for (CiEntityVo ciEntity : ciEntityList) {
