@@ -19,6 +19,18 @@
 <mapper namespace="neatlogic.module.cmdb.dao.mapper.ci.CiMapper">
     <!--<cache type="neatlogic.framework.dao.cache.NeatLogicCache" flushInterval="30000" size="500"></cache>-->
 
+    <select id="getCiTree" resultType="neatlogic.framework.cmdb.dto.ci.CiVo">
+        SELECT a.name,
+               a.label,
+               a.icon,
+               a.id,
+               b.parent_ci_id       AS parentCiId,
+               IFNULL(b.sort, 9999) AS sort
+        FROM cmdb_ci a
+                 LEFT JOIN cmdb_ci_tree b ON a.id = b.ci_id
+        order by sort
+    </select>
+
     <select id="getCiLock" parameterType="java.lang.Long" resultType="java.lang.Long" useCache="false">
         select id
         from cmdb_ci
@@ -70,7 +82,6 @@
         a.`description`,
         a.`icon`,
         a.`type_id` AS typeId,
-        a.`catalog_id` AS catalogId,
         a.`is_private` AS isPrivate,
         a.`is_menu` AS isMenu,
         a.`parent_ci_id` AS parentCiId,
@@ -93,7 +104,6 @@
                a.`icon`,
                a.`parent_ci_id` AS parentCiId,
                a.`type_id`      AS typeId,
-               a.`catalog_id`   AS catalogId,
                a.`is_private`   AS isPrivate,
                a.`is_menu`      AS isMenu,
                a.`is_abstract`  AS isAbstract,
@@ -138,7 +148,6 @@
         a.`icon`,
         a.`parent_ci_id` AS parentCiId,
         a.`type_id` AS typeId,
-        a.`catalog_id` AS catalogId,
         a.`is_private` AS isPrivate,
         a.`is_menu` AS isMenu,
         a.`is_abstract` AS isAbstract,
@@ -193,7 +202,6 @@
                a.`icon`,
                a.`parent_ci_id` AS parentCiId,
                a.`type_id`      AS typeId,
-               a.`catalog_id`   AS catalogId,
                a.`is_private`   AS isPrivate,
                a.`is_menu`      AS isMenu,
                a.`is_abstract`  AS isAbstract,
@@ -216,7 +224,6 @@
         a.`icon`,
         a.`parent_ci_id` AS parentCiId,
         a.`type_id` AS typeId,
-        a.`catalog_id` AS catalogId,
         a.`is_private` AS isPrivate,
         a.`is_menu` AS isMenu,
         a.`is_abstract` AS isAbstract,
@@ -314,7 +321,6 @@
                a.`description`,
                a.`icon`,
                a.`type_id`      AS typeId,
-               a.`catalog_id`   AS catalogId,
                a.`is_private`   AS isPrivate,
                a.`is_menu`      AS isMenu,
                a.`parent_ci_id` AS parentCiId,
@@ -334,7 +340,6 @@
                a.`description`,
                a.`icon`,
                a.`type_id`      AS typeId,
-               a.`catalog_id`   AS catalogId,
                a.`is_private`   AS isPrivate,
                a.`is_menu`      AS isMenu,
                a.`parent_ci_id` AS parentCiId,
@@ -354,7 +359,6 @@
                a.`description`,
                a.`icon`,
                a.`type_id`      AS typeId,
-               a.`catalog_id`   AS catalogId,
                a.`is_private`   AS isPrivate,
                a.`is_menu`      AS isMenu,
                a.`parent_ci_id` AS parentCiId,
@@ -423,7 +427,6 @@
         b.`is_private` AS isPrivate,
         b.`is_menu` AS ciIsMenu,
         b.`type_id` AS typeId,
-        b.`catalog_id` AS catalogId,
         b.`parent_ci_id` AS parentCiId,
         d.`name` AS parentCiName,
         d.`icon` AS parentCiIcon,
@@ -481,7 +484,6 @@
         `is_private` AS isPrivate,
         `is_menu` AS ciIsMenu,
         `type_id` AS typeId,
-        `catalog_id` AS catalogId,
         `parent_ci_id` AS parentCiId,
         `is_abstract` AS isAbstract,
         `is_virtual` AS isVirtual,
@@ -504,7 +506,6 @@
         `lft`,
         `rht`,
         `type_id` AS typeId,
-        `catalog_id` AS catalogId,
         `is_private` AS isPrivate,
         `is_menu` AS isMenu,
         `is_abstract` AS isAbstract,
@@ -524,7 +525,6 @@
         <result column="description" property="description"></result>
         <result column="icon" property="icon"></result>
         <result column="typeId" property="typeId"></result>
-        <result column="catalogId" property="catalogId"></result>
         <result column="typeName" property="typeName"/>
         <result column="isPrivate" property="isPrivate"></result>
         <result column="isMenu" property="isMenu"></result>
@@ -551,7 +551,6 @@
                a.`description`,
                a.`icon`,
                a.`type_id`      AS typeId,
-               a.`catalog_id`   AS catalogId,
                d.`name`         AS typeName,
                a.`is_private`   AS isPrivate,
                a.`is_menu`      AS isMenu,
@@ -581,7 +580,6 @@
                a.`description`,
                a.`icon`,
                a.`type_id`      AS typeId,
-               a.`catalog_id`   AS catalogId,
                d.`name`         AS typeName,
                a.`is_private`   AS isPrivate,
                a.`is_menu`      AS isMenu,
@@ -610,7 +608,6 @@
                a.`description`,
                a.`icon`,
                a.`type_id`      AS typeId,
-               a.`catalog_id`   AS catalogId,
                d.`name`         AS typeName,
                a.`is_private`   AS isPrivate,
                a.`is_menu`      AS isMenu,
@@ -645,7 +642,6 @@
                `description`,
                `icon`,
                `type_id`      AS typeId,
-               `catalog_id`   AS catalogId,
                `parent_ci_id` AS parentCiId,
                `name_attr_id` AS nameAttrId,
                `lft`,
@@ -676,7 +672,6 @@
             `description`  = #{description},
             `icon`         = #{icon},
             `type_id`      = #{typeId},
-            `catalog_id`   = #{catalogId},
             `is_private`   = #{isPrivate},
             `is_menu`      = #{isMenu},
             `parent_ci_id` = #{parentCiId},
@@ -688,6 +683,14 @@
         WHERE `id` = #{id}
     </update>
 
+    <update id="saveCiTreeItem" parameterType="neatlogic.framework.cmdb.dto.ci.CiVo">
+        insert into cmdb_ci_tree (ci_id, parent_ci_id, sort)
+        values (#{id}, #{parentCiId}, #{sort})
+        ON DUPLICATE KEY
+            UPDATE parent_ci_id = #{parentCiId},
+                   sort         = #{sort}
+    </update>
+
     <insert id="insertCi" parameterType="neatlogic.framework.cmdb.dto.ci.CiVo">
         INSERT INTO `cmdb_ci` (`id`,
                                `name`,
@@ -695,7 +698,6 @@
                                `description`,
                                `icon`,
                                `type_id`,
-                               `catalog_id`,
                                `is_private`,
                                `is_menu`,
                                `is_abstract`,
@@ -713,7 +715,6 @@
                 #{description},
                 #{icon},
                 #{typeId},
-                #{catalogId},
                 #{isPrivate},
                 #{isMenu},
                 #{isAbstract},

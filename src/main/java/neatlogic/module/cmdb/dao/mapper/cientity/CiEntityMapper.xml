@@ -1030,6 +1030,83 @@
         WHERE ci_base.id = #{id}
     </select>
 
+    <!--解决topo图分页问题
+    <select id="searchCiRelEntityCount" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo" resultType="neatlogic.framework.cmdb.dto.ci.RelVo">
+        SELECT
+        COUNT(DISTINCT ci_base.id)
+        <include refid="ciEntityDriverSql">
+        </include>
+        <include refid="ciRelEntityCountJoinSql">
+        </include>
+        <include refid="ciEntityConditionSql">
+        </include>
+    </select>
+
+    <sql id="ciRelEntityCountJoinSql">
+        <foreach collection="relList" item="rel">
+            <choose>
+                <when test="rel.direction=='from' and ( @neatlogic.framework.cmdb.dao.ognl.IsRelExistsInFilter@isExists(rel, relFilterList) or @neatlogic.framework.cmdb.dao.ognl.IsRelExistsInCiEntityFilter@isExists(rel, relCiEntityFilterList))">
+                    LEFT JOIN `cmdb_relentity` `cmdb_relentity_${rel.id}_${rel.direction}` ON `ci_base`.id =
+                    `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
+                    AND `cmdb_relentity_${rel.id}_${rel.direction}`.rel_id = #{rel.id}
+                    <if test="limitRelEntity == true">
+                        AND `cmdb_relentity_${rel.id}_${rel.direction}`.`from_index` &lt;= (#{rel.maxRelEntityCount}
+                        +
+                        1)
+                    </if>
+                    <choose>
+                        <when test="rel.toIsVirtual == 0">
+                            LEFT JOIN `cmdb_cientity` `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
+                            `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
+                            `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
+                        </when>
+                        <otherwise>
+                            LEFT JOIN ${rel.toCiTableName} `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
+                            `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
+                            `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
+                        </otherwise>
+                    </choose>
+                </when>
+                <when test="rel.direction=='to' and ( @neatlogic.framework.cmdb.dao.ognl.IsRelExistsInFilter@isExists(rel, relFilterList) or @neatlogic.framework.cmdb.dao.ognl.IsRelExistsInCiEntityFilter@isExists(rel, relCiEntityFilterList))">
+                    LEFT JOIN `cmdb_relentity` `cmdb_relentity_${rel.id}_${rel.direction}` ON `ci_base`.id =
+                    `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
+                    AND `cmdb_relentity_${rel.id}_${rel.direction}`.rel_id = #{rel.id}
+                    <if test="limitRelEntity == true">
+                        AND `cmdb_relentity_${rel.id}_${rel.direction}`.`to_index` &lt;= (#{rel.maxRelEntityCount} +
+                        1)
+                    </if>
+                    <choose>
+                        <when test="rel.fromIsVirtual == 0">
+                            LEFT JOIN `cmdb_cientity` `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
+                            `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
+                            `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
+                        </when>
+                        <otherwise>
+                            LEFT JOIN ${rel.fromCiTableName} `cmdb_rel_cientity_${rel.id}_${rel.direction}` ON
+                            `cmdb_rel_cientity_${rel.id}_${rel.direction}`.id =
+                            `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
+                        </otherwise>
+                    </choose>
+                </when>
+            </choose>
+        </foreach>
+        <if test="groupIdList != null and groupIdList.size() > 0">
+            JOIN `cmdb_cientity_group` `ccg` ON `ci_base`.id = `ccg`.cientity_id AND `ccg`.group_id IN
+            <foreach collection="groupIdList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <if test="keywordList != null and keywordList.size() > 0">
+            JOIN fulltextindex_field_cmdb ffc ON ffc.target_id = `ci_base`.id JOIN fulltextindex_word fw ON ffc.word_id
+            = fw.id AND (fw.word IN
+            <foreach collection="keywordList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+            OR `ci_base`.id = #{keyword} OR `ci_base`.`name` LIKE CONCAT('%',#{keyword},'%')
+            )
+        </if>
+    </sql>
+-->
 
     <select id="searchCiEntityId" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo"
             resultType="java.lang.Long" useCache="true">

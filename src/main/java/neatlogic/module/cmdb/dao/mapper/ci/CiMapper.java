@@ -28,6 +28,8 @@ import java.util.List;
 
 public interface CiMapper extends ICiCrossoverMapper {
 
+    List<CiVo> getCiTree();
+
     Long getCiLock(Long ciId);
 
     String getCiViewXmlById(Long ciId);
@@ -62,7 +64,7 @@ public interface CiMapper extends ICiCrossoverMapper {
 
     List<CiVo> getBatchDownwardCiListByCiList(@Param("ciList") List<CiVo> ciList);
 
-    List<CiVo> getDownwardCiEntityQueryCiListByLR(@Param("lft") Integer lft, @Param("rht") Integer rht, @Param("authenticationInfo") AuthenticationInfoVo authenticationInfo ,@Param("isHasAuth") boolean isHasAuth);
+    List<CiVo> getDownwardCiEntityQueryCiListByLR(@Param("lft") Integer lft, @Param("rht") Integer rht, @Param("authenticationInfo") AuthenticationInfoVo authenticationInfo, @Param("isHasAuth") boolean isHasAuth);
 
     //List<Long> getCiNameExpressionCiIdByAttrId(Long attrId);
 
@@ -105,6 +107,7 @@ public interface CiMapper extends ICiCrossoverMapper {
 
     void insertCiUnique(@Param("ciId") Long ciId, @Param("attrId") Long attrId);
 
+    void saveCiTreeItem(CiVo ciVo);
     //int insertCiNameExpression(@Param("ciId") Long ciId, @Param("attrId") Long attrId);
 
     void deleteCiById(Long ciId);
