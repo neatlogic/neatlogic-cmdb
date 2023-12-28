@@ -422,17 +422,21 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
 
         //TODO 检查是否被资源中心引用
 
-        if (StringUtils.isNotBlank(ciVo.getCiTableName())) {
-            if (ciVo.getIsVirtual().equals(0)) {
-                ciSchemaMapper.deleteCiTable(ciVo.getId(), ciVo.getCiTableName());
-            } else {
-                ciSchemaMapper.deleteCiView(ciVo.getCiTableName());
-            }
-        }
 
         //清除模型数据
         LRCodeManager.beforeDeleteTreeNode("cmdb_ci", "id", "parent_ci_id", ciId);
         ciMapper.deleteCiById(ciId);
+
+        AfterTransactionJob<CiVo> job = new AfterTransactionJob<>("DELETE-CI-" + ciVo.getId());
+        job.execute(ciVo, dataCiVo -> {
+            if (StringUtils.isNotBlank(dataCiVo.getCiTableName())) {
+                if (dataCiVo.getIsVirtual().equals(0)) {
+                    ciSchemaMapper.deleteCiTable(dataCiVo.getId(), dataCiVo.getCiTableName());
+                } else {
+                    ciSchemaMapper.deleteCiView(dataCiVo.getCiTableName());
+                }
+            }
+        });
         return 0;
     }
 
