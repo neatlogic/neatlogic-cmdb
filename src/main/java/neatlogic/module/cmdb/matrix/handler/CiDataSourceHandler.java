@@ -408,6 +408,8 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                             matrixAttributeVo.setIsSearchable(0);
                         }
                         break;
+                    default:
+                        break;
                 }
                 if (MapUtils.isNotEmpty(showAttributeUuidMap)) {
                     String uuid = showAttributeUuidMap.get(matrixAttributeVo.getLabel());

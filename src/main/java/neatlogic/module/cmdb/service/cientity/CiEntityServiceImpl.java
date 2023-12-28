@@ -809,7 +809,9 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     //进行必要的值转换，例如密码转换成密文
                     IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
                     handler.transferValueListToSave(attrVo, valueList);
+                    String saveMode = attrEntityData.getString("saveMode");
                     attrEntityData.clear();
+                    attrEntityData.put("saveMode", saveMode);
                     attrEntityData.put("valueList", valueList);
                     attrEntityData.put("label", attrVo.getLabel());
                     attrEntityData.put("name", attrVo.getName());
@@ -895,7 +897,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 /*
                 校验值是否符合数据类型
                  */
-                if (attrEntityTransactionVo != null && CollectionUtils.isNotEmpty(attrEntityTransactionVo.getValueList())) {
+                if (attrEntityTransactionVo != null && CollectionUtils.isNotEmpty(attrEntityTransactionVo.getValueList()) && !attrVo.isNeedTargetCi()) {
                     IAttrValueHandler attrHandler = AttrValueHandlerFactory.getHandler(attrVo.getType());
                     if (attrHandler != null) {
                         attrHandler.valid(attrVo, attrEntityTransactionVo.getValueList());

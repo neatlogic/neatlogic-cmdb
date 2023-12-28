@@ -99,6 +99,7 @@
                a.`is_abstract`  AS isAbstract,
                a.`is_virtual`   AS isVirtual,
                a.`expired_day`  AS expiredDay,
+               a.`name_attr_id` AS nameAttrId,
                a.`lft`          AS lft,
                a.`rht`          AS rht
         FROM `cmdb_ci` a
