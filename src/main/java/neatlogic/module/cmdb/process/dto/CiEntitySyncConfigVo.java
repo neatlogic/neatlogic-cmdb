@@ -19,6 +19,8 @@ public class CiEntitySyncConfigVo {
     private CiEntitySyncBatchDataSourceVo batchDataSource;
     /** 全局属性、属性和关系映射列表 **/
     private List<CiEntitySyncMappingVo> mappingList;
+    /** 同步策略，全局模式或局部模式 **/
+    private String editMode;
 
     public Long getId() {
         return id;
@@ -106,5 +108,13 @@ public class CiEntitySyncConfigVo {
 
     public void setMappingList(List<CiEntitySyncMappingVo> mappingList) {
         this.mappingList = mappingList;
+    }
+
+    public String getEditMode() {
+        return editMode;
+    }
+
+    public void setEditMode(String editMode) {
+        this.editMode = editMode;
     }
 }
