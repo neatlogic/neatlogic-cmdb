@@ -217,14 +217,16 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                     ciEntityTransactionVo.setCiEntityUuid(uuid);
                     ciEntityTransactionVo.setCiId(configObject.getCiId());
                     ciEntityTransactionVo.setAllowCommit(true);
-                    ciEntityTransactionVo.setEditMode(configObject.getEditMode());
-                    Long id = configObject.getId();
-                    if (id != null) {
-                        ciEntityTransactionVo.setCiEntityId(id);
-                        ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
-                    } else {
-                        ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
+                    if (StringUtils.isNotBlank(configObject.getEditMode())) {
+                        ciEntityTransactionVo.setEditMode(configObject.getEditMode());
                     }
+//                    Long id = configObject.getId();
+//                    if (id != null) {
+//                        ciEntityTransactionVo.setCiEntityId(id);
+//                        ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
+//                    } else {
+//                        ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
+//                    }
                     Integer isStart = configObject.getIsStart();
                     if (Objects.equals(isStart, 1)) {
                         startConfigList.add(configObject);
@@ -248,8 +250,9 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                     }
                 }
                 if (CollectionUtils.isNotEmpty(ciEntityTransactionList)) {
+                    removeDuplicatesByUniqueAttrValue(ciEntityTransactionList);
                     /* 处理和校验下拉框类型和表格类型属性的值 */
-                    validSelectAndTableAttrValueList(ciEntityTransactionList);
+//                    validSelectAndTableAttrValueList(ciEntityTransactionList);
                     EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
                         InputFromContext.init(InputFrom.ITSM);
                         Long transactionGroupId = ciEntityService.saveCiEntity(ciEntityTransactionList);
@@ -371,7 +374,7 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
      * @param configList 配置信息列表
      * @return
      */
-    private List<CiEntitySyncConfigVo> removeDuplicatesByUniqueAttrValue(List<CiEntitySyncConfigVo> configList) {
+    private List<CiEntitySyncConfigVo> removeDuplicatesByUniqueAttrValue2(List<CiEntitySyncConfigVo> configList) {
         // 保存唯一规则属性值组成的字符串与uuid的映射关系
         Map<String, String> uniqueAttrValueListJoinStr2UuidMap = new HashMap<>();
         // 保存将要删除uuid与等价替换uuid的映射关系
@@ -473,6 +476,80 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
     }
 
     /**
+     * 遍历ciEntityTransactionList，根据唯一规则属性值删除重复配置信息
+     * @param ciEntityTransactionList 配置信息列表
+     * @return
+     */
+    private List<CiEntityTransactionVo> removeDuplicatesByUniqueAttrValue(List<CiEntityTransactionVo> ciEntityTransactionList) {
+        // 保存唯一规则属性值组成的字符串与uuid的映射关系
+        Map<String, String> uniqueAttrValueListJoinStr2UuidMap = new HashMap<>();
+        // 保存将要删除uuid与等价替换uuid的映射关系
+        Map<String, String> toDeleteUuid2EquivalentUuidMap = new HashMap<>();
+        // 反向遍历，如果唯一规则属性值相同，后面数据优先级高
+        for (int i = ciEntityTransactionList.size() - 1; i >= 0; i--) {
+            CiEntityTransactionVo configObj = ciEntityTransactionList.get(i);
+            String uniqueAttrValueListJoinStr = "";
+            if (Objects.equals(configObj.getAction(), TransactionActionType.UPDATE.getValue())) {
+                uniqueAttrValueListJoinStr = configObj.getCiEntityId().toString();
+            } else {
+                Long ciId = configObj.getCiId();
+                CiVo ciVo = ciMapper.getCiById(ciId);
+                List<Long> uniqueAttrIdList = ciVo.getUniqueAttrIdList();
+                if (CollectionUtils.isEmpty(uniqueAttrIdList)) {
+                    continue;
+                }
+                List<String> list = new ArrayList<>();
+                list.add(ciId.toString());
+                for (Long attrId : uniqueAttrIdList) {
+                    AttrEntityTransactionVo attrEntityTransaction = configObj.getAttrEntityTransactionByAttrId(attrId);
+                    if (attrEntityTransaction != null) {
+                        JSONArray valueList = attrEntityTransaction.getValueList();
+                        if (valueList != null) {
+                            list.add(valueList.toJSONString());
+                        }
+                    }
+                }
+                uniqueAttrValueListJoinStr = String.join(",", list);
+            }
+
+            String equivalentUuid = uniqueAttrValueListJoinStr2UuidMap.get(uniqueAttrValueListJoinStr);
+            if (StringUtils.isNotBlank(equivalentUuid)) {
+                toDeleteUuid2EquivalentUuidMap.put(configObj.getCiEntityUuid(), equivalentUuid);
+            } else {
+                uniqueAttrValueListJoinStr2UuidMap.put(uniqueAttrValueListJoinStr, configObj.getCiEntityUuid());
+            }
+        }
+
+        List<CiEntityTransactionVo> newConfigList = new ArrayList<>();
+        for (CiEntityTransactionVo configObj : ciEntityTransactionList) {
+            if (toDeleteUuid2EquivalentUuidMap.containsKey(configObj.getCiEntityUuid())) {
+                continue;
+            }
+            JSONObject relEntityData = configObj.getRelEntityData();
+            for (Map.Entry<String, Object> entry : relEntityData.entrySet()) {
+                JSONObject valueObject = (JSONObject) entry.getValue();
+                JSONArray valueList = valueObject.getJSONArray("valueList");
+                if (CollectionUtils.isEmpty(valueList)) {
+                    continue;
+                }
+                for (int i = 0; i < valueList.size(); i++) {
+                    JSONObject valueObj = valueList.getJSONObject(i);
+                    if (MapUtils.isEmpty(valueObj)) {
+                        continue;
+                    }
+                    String ciEntityUuid = valueObj.getString("ciEntityUuid");
+                    String equivalentUuid = toDeleteUuid2EquivalentUuidMap.get(ciEntityUuid);
+                    if (StringUtils.isNotBlank(equivalentUuid)) {
+                        valueObj.put("ciEntityUuid", equivalentUuid);
+                    }
+                }
+            }
+            newConfigList.add(configObj);
+        }
+        return newConfigList;
+    }
+
+    /**
      * 重新构建configList配置信息
      * @param originalConfigList 原始配置信息列表
      * @param processTaskId 工单ID
@@ -506,8 +583,9 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             // 遍历configList，将“批量操作”的配置信息根据表单数据转换成多条“单个操作”配置信息
             handleBatchDataSource(originalConfigList, startConfigObj, formAttributeDataMap, newConfigList, formConfig);
         }
-        // 遍历configList，根据唯一规则属性值删除重复配置信息
-        return removeDuplicatesByUniqueAttrValue(newConfigList);
+        return newConfigList;
+//        // 遍历configList，根据唯一规则属性值删除重复配置信息
+//        return removeDuplicatesByUniqueAttrValue(newConfigList);
     }
 
     private List<CiEntityTransactionVo> createCiEntityTransactionVo(
@@ -591,8 +669,16 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
 //            attrEntity.put("valueList", valueList);
 //            attrEntityData.put(key, attrEntity);
 //        }
-        JSONObject attrEntityData = buildAttrEntityData(mainConfigObj, mappingMap);
+        JSONObject attrEntityData = buildAttrEntityData(ciEntityTransactionMap, mainConfigObj, mappingMap);
         ciEntityTransactionVo.setAttrEntityData(attrEntityData);
+
+        Long ciEntityId = getCiEntityId(ciEntityTransactionMap, mainConfigObj, mappingMap);
+        if (ciEntityId != null) {
+            ciEntityTransactionVo.setCiEntityId(ciEntityId);
+            ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
+        } else {
+            ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
+        }
         /** 关系 **/
 //        JSONObject relEntityData = new JSONObject();
 //        List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciId));
@@ -745,13 +831,16 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
      * @return
      */
     private JSONObject buildAttrEntityData(
+            Map<String, CiEntityTransactionVo> ciEntityTransactionMap,
             CiEntitySyncConfigVo mainConfigObj,
             Map<String, CiEntitySyncMappingVo> mappingMap
     ) {
         JSONObject attrEntityData = new JSONObject();
+//        Map<Long, AttrVo> attrMap = new HashMap<>();
         Long ciId = mainConfigObj.getCiId();
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciId);
         for (AttrVo attrVo : attrList) {
+//            attrMap.put(attrVo.getId(), attrVo);
             if (Objects.equals(attrVo.getType(), "expression")) {
                 continue;
             }
@@ -766,21 +855,70 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             attrEntity.put("type", attrVo.getType());
             attrEntity.put("config", attrVo.getConfig());
             // 对于设置必填的自动采集字段，saveMode设置为允许为空，不校验必填
-            if (Objects.equals(mainConfigObj.getEditMode(), EditModeType.GLOBAL.getValue())
+            if (!Objects.equals(mainConfigObj.getEditMode(), EditModeType.PARTIAL.getValue())
                     && attrVo.getIsRequired().equals(1)
                     && Objects.equals(attrVo.getInputType(), InputType.AT.getValue())) {
                 attrEntity.put("saveMode", SaveModeType.ALLOW_EMPTY.getValue());
             }
-            if (mappingObj == null) {
+            if (mappingObj == null || CollectionUtils.isEmpty(mappingObj.getValueList())) {
                 attrEntity.put("valueList", new JSONArray());
             } else {
-                attrEntity.put("valueList", mappingObj.getValueList());
+                if (Objects.equals(attrVo.getType(), PropHandlerType.SELECT.getValue()) || Objects.equals(attrVo.getType(), PropHandlerType.TABLE.getValue())) {
+                    JSONArray valueList = validSelectAndTableAttrValueList(ciEntityTransactionMap, attrVo, mappingObj.getValueList());
+                    attrEntity.put("valueList", valueList);
+                } else {
+                    attrEntity.put("valueList", mappingObj.getValueList());
+                }
             }
             attrEntityData.put(key, attrEntity);
         }
         return attrEntityData;
     }
 
+    private Long getCiEntityId(
+            Map<String, CiEntityTransactionVo> ciEntityTransactionMap,
+            CiEntitySyncConfigVo mainConfigObj,
+            Map<String, CiEntitySyncMappingVo> mappingMap) {
+        Long ciId = mainConfigObj.getCiId();
+        CiVo ciVo = ciMapper.getCiById(ciId);
+        List<Long> uniqueAttrIdList = ciVo.getUniqueAttrIdList();
+        if (CollectionUtils.isEmpty(uniqueAttrIdList)) {
+            return null;
+        }
+        CiEntityTransactionVo ciEntityTransactionVo = ciEntityTransactionMap.get(mainConfigObj.getUuid());
+        //校验唯一规则
+        CiEntityVo ciEntityConditionVo = new CiEntityVo();
+        ciEntityConditionVo.setCiId(ciId);
+        ciEntityConditionVo.setAttrIdList(new ArrayList<Long>() {{
+            this.add(0L);
+        }});
+        ciEntityConditionVo.setRelIdList(new ArrayList<Long>() {{
+            this.add(0L);
+        }});
+        for (Long attrId : ciVo.getUniqueAttrIdList()) {
+            AttrFilterVo filterVo = new AttrFilterVo();
+            filterVo.setAttrId(attrId);
+            filterVo.setExpression(SearchExpression.EQ.getExpression());
+            List<String> valueList = new ArrayList<>();
+            AttrEntityTransactionVo attrEntityTransaction = ciEntityTransactionVo.getAttrEntityTransactionByAttrId(attrId);
+//            CiEntitySyncMappingVo mappingObj = mappingMap.get("attr_" + attrId);
+            if (attrEntityTransaction != null) {
+                JSONArray valueArray = attrEntityTransaction.getValueList();
+                if (CollectionUtils.isNotEmpty(valueArray)) {
+                    valueList = valueArray.toJavaList(String.class);
+                }
+            }
+            filterVo.setValueList(valueList);
+            ciEntityConditionVo.addAttrFilter(filterVo);
+        }
+        if (CollectionUtils.isNotEmpty(ciEntityConditionVo.getAttrFilterList())) {
+            List<CiEntityVo> checkList = ciEntityService.searchCiEntity(ciEntityConditionVo);
+            if (CollectionUtils.isNotEmpty(checkList)) {
+                return checkList.get(0).getId();
+            }
+        }
+        return null;
+    }
     /**
      * 组装关系
      *
@@ -810,10 +948,10 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                 continue;
             }
             String mappingMode = mappingObj.getMappingMode();
-            if (Objects.equals(mappingMode, "new")) {
+            if (Objects.equals(mappingMode, "new")) {// 表示关系
                 JSONArray valueList = mappingObj.getValueList();
                 if (CollectionUtils.isNotEmpty(valueList)) {
-                    List<Long> ciEntityIdList = new ArrayList<>();
+//                    List<Long> ciEntityIdList = new ArrayList<>();
 //                    List<JSONObject> alreadyExistRelList = new ArrayList<>();
                     for (int i = 0; i < valueList.size(); i++) {
                         JSONObject valueObj = valueList.getJSONObject(i);
@@ -824,13 +962,30 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                         if (StringUtils.isBlank(ciEntityUuid)) {
                             continue;
                         }
+                        String type = valueObj.getString("type");
+                        if (Objects.equals(type, "new")) {// 新配置信息
+                            CiEntitySyncConfigVo dependencyConfig = dependencyConfigMap.get(ciEntityUuid);
+                            if (dependencyConfig == null) {
+                                continue;
+                            }
+                            List<CiEntityTransactionVo> list = createCiEntityTransactionVo(ciEntityTransactionMap, dependencyConfig, dependencyConfigMap);
+                            ciEntityTransactionList.addAll(list);
+                            // 关系选择追加模式时，需要将该配置项原来就关联的关系数据补充到valueList中
+                            if (Objects.equals(dependencyConfig.getAction(), "append") && ciEntityTransactionVo.getCiEntityId() != null) {//
+                                valueObj.put("action", RelActionType.INSERT.getValue());
+                            } else {
+                                valueObj.put("action", RelActionType.REPLACE.getValue());
+                            }
+                        }
+
                         Long ciEntityId = valueObj.getLong("ciEntityId");
                         if (ciEntityId == null) {
                             CiEntityTransactionVo tmpVo = ciEntityTransactionMap.get(ciEntityUuid);
                             if (tmpVo != null) {
-                                ciEntityId = tmpVo.getCiEntityId();
+                                ciEntityId = tmpVo.getCiEntityId();//
                                 valueObj.put("ciEntityId", ciEntityId);
                             } else {
+                                // TODO 这部分不会执行
                                 CiEntityVo uuidCiEntityVo = ciEntityMapper.getCiEntityBaseInfoByUuid(ciEntityUuid);
                                 if (uuidCiEntityVo == null) {
                                     throw new NewCiEntityNotFoundException(valueObj.getString("ciEntityUuid"));
@@ -840,51 +995,24 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                                 }
                             }
                         }
-                        ciEntityIdList.add(ciEntityId);
-                        String type = valueObj.getString("type");
-                        if (!Objects.equals(type, "new")) {
-                            continue;
-                        }
-                        CiEntitySyncConfigVo dependencyConfig = dependencyConfigMap.get(ciEntityUuid);
-                        if (dependencyConfig == null) {
-                            continue;
-                        }
-                        // 关系选择追加模式时，需要将该配置项原来就关联的关系数据补充到valueList中
-                        if (Objects.equals(dependencyConfig.getAction(), "append") && ciEntityTransactionVo.getCiEntityId() != null) {
-                            valueObj.put("action", RelActionType.INSERT.getValue());
-//                            List<RelEntityVo> relEntityList;
-//                            if (relVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
-//                                relEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(ciEntityTransactionVo.getCiEntityId(), relVo.getId(), null);
-//                                for (RelEntityVo relEntityVo : relEntityList) {
-//                                    JSONObject jsonObj = new JSONObject();
-//                                    jsonObj.put("ciEntityId", relEntityVo.getToCiEntityId());
-//                                    jsonObj.put("ciEntityName", relEntityVo.getToCiEntityName());
-//                                    jsonObj.put("ciId", relEntityVo.getToCiId());
-//                                    alreadyExistRelList.add(jsonObj);
-//                                }
-//                            } else {
-//                                relEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(ciEntityTransactionVo.getCiEntityId(), relVo.getId(), null);
-//                                for (RelEntityVo relEntityVo : relEntityList) {
-//                                    JSONObject jsonObj = new JSONObject();
-//                                    jsonObj.put("ciEntityId", relEntityVo.getFromCiEntityId());
-//                                    jsonObj.put("ciEntityName", relEntityVo.getFromCiEntityName());
-//                                    jsonObj.put("ciId", relEntityVo.getFromCiId());
-//                                    alreadyExistRelList.add(jsonObj);
-//                                }
-//                            }
-                        } else {
-                            valueObj.put("action", RelActionType.REPLACE.getValue());
-                        }
-                        List<CiEntityTransactionVo> list = createCiEntityTransactionVo(ciEntityTransactionMap, dependencyConfig, dependencyConfigMap);
-                        ciEntityTransactionList.addAll(list);
-                    }
-                    // 关系选择追加模式时，需要将该配置项原来就关联的关系数据补充到valueList中
-//                    for (JSONObject jsonObj : alreadyExistRelList) {
-//                        if (ciEntityIdList.contains(jsonObj.getLong("ciEntityId"))) {
+//                        ciEntityIdList.add(ciEntityId);
+//                        String type = valueObj.getString("type");
+//                        if (!Objects.equals(type, "new")) {// 新配置信息
 //                            continue;
 //                        }
-//                        valueList.add(jsonObj);
-//                    }
+//                        CiEntitySyncConfigVo dependencyConfig = dependencyConfigMap.get(ciEntityUuid);
+//                        if (dependencyConfig == null) {
+//                            continue;
+//                        }
+//                        // 关系选择追加模式时，需要将该配置项原来就关联的关系数据补充到valueList中
+//                        if (Objects.equals(dependencyConfig.getAction(), "append") && ciEntityTransactionVo.getCiEntityId() != null) {//
+//                            valueObj.put("action", RelActionType.INSERT.getValue());
+//                        } else {
+//                            valueObj.put("action", RelActionType.REPLACE.getValue());
+//                        }
+//                        List<CiEntityTransactionVo> list = createCiEntityTransactionVo(ciEntityTransactionMap, dependencyConfig, dependencyConfigMap);
+//                        ciEntityTransactionList.addAll(list);
+                    }
                     JSONObject relEntity = new JSONObject();
                     relEntity.put("valueList", valueList);
                     relEntityData.put(key, relEntity);
@@ -1035,7 +1163,7 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                                         }
                                         for (Object value : attrEntityTransaction.getValueList()) {
                                             if (Objects.equals(value, valueStr)) {
-                                                newValueList.add(ciEntityTransactionVo.getCiEntityId());
+                                                newValueList.add(ciEntityTransactionVo.getCiEntityId());//
                                                 isFind = true;
                                                 break;
                                             }
@@ -1073,6 +1201,116 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
     }
 
     /**
+     * 处理和校验下拉框类型和表格类型属性的值
+     *
+     * @param attrVo
+     * @param valueList
+     */
+    private JSONArray validSelectAndTableAttrValueList(
+            Map<String, CiEntityTransactionVo> ciEntityTransactionMap,
+            AttrVo attrVo,
+            JSONArray valueList
+    ) {
+        IAttrValueHandler attrHandler = AttrValueHandlerFactory.getHandler(attrVo.getType());
+        if (attrHandler == null) {
+            throw new AttrTypeNotFoundException(attrVo.getType());
+        }
+        if (CollectionUtils.isEmpty(valueList)) {
+            return valueList;
+        }
+        List<Long> longValueList = new ArrayList<>();
+        List<String> stringValueList = new ArrayList<>();
+        JSONArray tempList = new JSONArray();
+        tempList.addAll(valueList);
+        for (int i = 0; i < tempList.size(); i++) {
+            Object valueObj = tempList.get(i);
+            if (valueObj instanceof Long) {
+                longValueList.add((Long) valueObj);
+            } else if (valueObj instanceof String) {
+                String valueStr = valueObj.toString();
+                try {
+                    Integer.valueOf(valueStr);
+                    stringValueList.add(valueStr);
+                } catch (NumberFormatException e1) {
+                    try {
+                        longValueList.add(Long.valueOf(valueStr));
+                    } catch (NumberFormatException e2) {
+                        stringValueList.add(valueStr);
+                    }
+                }
+            }
+        }
+        JSONArray newValueList = new JSONArray();
+        if (CollectionUtils.isNotEmpty(longValueList)) {
+            JSONArray array = new JSONArray();
+            array.addAll(longValueList);
+            attrHandler.valid(attrVo, array);
+            newValueList.addAll(longValueList);
+        }
+        if (CollectionUtils.isNotEmpty(stringValueList)) {
+            CiVo ciVo = ciMapper.getCiById(attrVo.getTargetCiId());
+            if (ciVo == null) {
+                throw new CiNotFoundException(attrVo.getTargetCiId());
+            }
+            for (String valueStr : stringValueList) {
+                CiEntityVo search = new CiEntityVo();
+                search.setName(valueStr);
+                if (ciVo.getIsVirtual().equals(0)) {
+                    // 非虚拟模型
+                    List<CiVo> downwardCiList = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
+                    Map<Long, CiVo> downwardCiMap = downwardCiList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
+                    boolean isFind = false;
+                    for (Map.Entry<String, CiEntityTransactionVo> entry : ciEntityTransactionMap.entrySet()) {
+                        CiEntityTransactionVo ciEntityTransactionVo = entry.getValue();
+                        CiVo downwardCi = downwardCiMap.get(ciEntityTransactionVo.getCiId());
+                        if (downwardCi == null) {
+                            continue;
+                        }
+                        if (downwardCi.getNameAttrId() == null) {
+                            continue;
+                        }
+                        AttrEntityTransactionVo attrEntityTransaction = ciEntityTransactionVo.getAttrEntityTransactionByAttrId(downwardCi.getNameAttrId());
+                        if (attrEntityTransaction == null) {
+                            continue;
+                        }
+                        if (CollectionUtils.isEmpty(attrEntityTransaction.getValueList())) {
+                            continue;
+                        }
+                        for (Object value : attrEntityTransaction.getValueList()) {
+                            if (Objects.equals(value, valueStr)) {
+                                newValueList.add(ciEntityTransactionVo.getCiEntityId());//
+                                isFind = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!isFind) {
+                        search.setIdList(new ArrayList<>(downwardCiMap.keySet()));
+                        List<CiEntityVo> ciEntityList = ciEntityMapper.getCiEntityListByCiIdListAndName(search);
+                        if (CollectionUtils.isEmpty(ciEntityList)) {
+                            throw new AttrValueIrregularException(attrVo, valueStr);
+                        }
+                        for (CiEntityVo ciEntity : ciEntityList) {
+                            newValueList.add(ciEntity.getId());
+                        }
+                    }
+                } else {
+                    // 虚拟模型
+                    search.setCiId(ciVo.getId());
+                    List<CiEntityVo> ciEntityList = ciEntityMapper.getVirtualCiEntityBaseInfoByName(search);
+                    if (CollectionUtils.isEmpty(ciEntityList)) {
+                        throw new AttrValueIrregularException(attrVo, valueStr);
+                    }
+                    for (CiEntityVo ciEntity : ciEntityList) {
+                        newValueList.add(ciEntity.getId());
+                    }
+                }
+            }
+        }
+        return newValueList;
+    }
+
+    /**
      * 遍历configList，将“批量操作”的配置信息根据表单数据转换成多条“单个操作”配置信息
      * @param originalConfigList  原始配置信息列表
      * @param currentConfig 当前要处理的配置信息
@@ -1088,6 +1326,12 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             List<CiEntitySyncConfigVo> newConfigList,
             String formConfig
     ) {
+        Long ciId = currentConfig.getCiId();
+        CiVo ciVo = ciMapper.getCiById(ciId);
+        if (ciVo == null) {
+            String ciName = currentConfig.getCiName();
+            throw new CiNotFoundException(ciName);
+        }
         List<String> newUuidList = new ArrayList<>();
         List<String> batchDataColumnList = new ArrayList<>();
         JSONArray batchDataList = new JSONArray();
