@@ -60,6 +60,7 @@ public class ListCiApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.ciidlist"),
+            @Param(name = "excludeCiId", type = ApiParamType.LONG, desc = "term.cmdb.excludeciid"),
             @Param(name = "isAbstract", type = ApiParamType.ENUM, rule = "0,1", desc = "term.cmdb.isabstractci"),
             @Param(name = "isVirtual", type = ApiParamType.ENUM, rule = "0,1", desc = "term.cmdb.isvirtualci"),
     })
@@ -68,6 +69,7 @@ public class ListCiApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONArray idList = jsonObj.getJSONArray("idList");
+        Long excludeCiId = jsonObj.getLong("excludeCiId");
         List<Long> ciIdList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(idList)) {
             for (int i = 0; i < idList.size(); i++) {
@@ -83,6 +85,9 @@ public class ListCiApi extends PrivateApiComponentBase {
         Integer isAbstract = jsonObj.getInteger("isAbstract");
         Integer isVirtual = jsonObj.getInteger("isVirtual");
         for (CiVo ciVo : ciList) {
+            if (excludeCiId != null && ciVo.getId().equals(excludeCiId)) {
+                continue;
+            }
             if (isAbstract != null && !Objects.equals(isAbstract, ciVo.getIsAbstract())) {
                 continue;
             }
