@@ -41,6 +41,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -152,10 +153,10 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
         resourceObjectWithoutAccountByProtocol.put("list", resourceListWithoutAccountByProtocol);
         resourceObjectWithoutAccountByProtocol.put("whitelist", whileResourceListWithoutAccountByProtocol);
 
-        List<ResourceSearchVo> resourceIsNotFoundList = new ArrayList<>();
+        List<ResourceSearchVo> resourceSearchIsNotFoundList = new ArrayList<>();
         JSONObject resourceIsNotFoundObj = new JSONObject();
         resourceIsNotFoundObj.put("type", "resourceIsNotFound");
-        resourceIsNotFoundObj.put("list", resourceIsNotFoundList);
+        resourceIsNotFoundObj.put("list", resourceSearchIsNotFoundList);
 
         List<AccountProtocolVo> protocolVoList = resourceAccountMapper.searchAccountProtocolListByProtocolName(new AccountProtocolVo());
         if (CollectionUtils.isNotEmpty(jsonObj.getJSONArray("inputNodeList"))) {
@@ -187,7 +188,7 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
                     resourceId = resourceMapper.getResourceIdByIpAndPortAndName(node);
                 }
                 if (resourceId == null) {
-                    resourceIsNotFoundList.add(node);
+                    resourceSearchIsNotFoundList.add(node);
                 } else {
                     idList.add(resourceId);
                 }
@@ -217,29 +218,47 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
         } else if (CollectionUtils.isNotEmpty(jsonObj.getJSONArray("selectNodeList"))) {
             // 如果直接选的节点，当协议和用户都存在时，才校验是否合法
             List<ResourceVo> resourceVoList = jsonObj.getJSONArray("selectNodeList").toJavaList(ResourceVo.class);
-            addException(executeUser, protocolId, resourceListWithoutAccountByExecuteUserAndProtocol, resourceListWithoutAccountByProtocol, protocolVoList, resourceVoList.stream().map(ResourceVo::getId).collect(toList()), cmdbGroupType);
+            List<Long> resourceIsNotFoundIdList = addException(executeUser, protocolId, resourceListWithoutAccountByExecuteUserAndProtocol, resourceListWithoutAccountByProtocol, protocolVoList, resourceVoList.stream().map(ResourceVo::getId).collect(toList()), cmdbGroupType);
+            if (CollectionUtils.isNotEmpty(resourceIsNotFoundIdList)) {
+                List<ResourceVo> resourceIsNotFoundList = resourceVoList.stream().filter(e -> resourceIsNotFoundIdList.contains(e.getId())).collect(toList());
+                if (CollectionUtils.isNotEmpty(resourceIsNotFoundList)) {
+                    resourceIsNotFoundList.forEach(r -> {
+                        resourceSearchIsNotFoundList.add(new ResourceSearchVo(r));
+                    });
+                }
+            }
         }
 
         JSONArray whiteArray = jsonObj.getJSONArray("whitelist");
         if (CollectionUtils.isNotEmpty(whiteArray)) {
             List<ResourceVo> whitelist = whiteArray.toJavaList(ResourceVo.class);
-            addException(executeUser, protocolId, resourceListWithoutAccountByExecuteUserAndProtocol, whileResourceListWithoutAccountByProtocol, protocolVoList, whitelist.stream().map(ResourceVo::getId).collect(toList()), cmdbGroupType);
+            List<Long> resourceIsNotFoundIdList = addException(executeUser, protocolId, resourceListWithoutAccountByExecuteUserAndProtocol, whileResourceListWithoutAccountByProtocol, protocolVoList, whitelist.stream().map(ResourceVo::getId).collect(toList()), cmdbGroupType);
+            if (CollectionUtils.isNotEmpty(resourceIsNotFoundIdList)) {
+                List<ResourceVo> resourceIsNotFoundList = whitelist.stream().filter(e -> resourceIsNotFoundIdList.contains(e.getId())).collect(toList());
+                if (CollectionUtils.isNotEmpty(resourceIsNotFoundList)) {
+                    resourceIsNotFoundList.forEach(r -> {
+                        resourceSearchIsNotFoundList.add(new ResourceSearchVo(r));
+                    });
+                }
+            }
         }
+
         if (resourceListWithoutAccountByExecuteUserAndProtocol.size() > 0 || whileResourceListWithoutAccountByExecuteUserAndProtocol.size() > 0) {
             resultArray.add(resourceObjectWithoutAccountByExecuteUserAndProtocol);
         }
-        if (resourceIsNotFoundList.size() > 0) {
+        if (resourceSearchIsNotFoundList.size() > 0) {
             resultArray.add(resourceIsNotFoundObj);
         }
         if (resourceListWithoutAccountByProtocol.size() > 0 || whileResourceListWithoutAccountByProtocol.size() > 0) {
             resultArray.add(resourceObjectWithoutAccountByProtocol);
         }
-        int count = resourceListWithoutAccountByExecuteUserAndProtocol.size() + resourceIsNotFoundList.size() + resourceListWithoutAccountByProtocol.size() + whileResourceListWithoutAccountByExecuteUserAndProtocol.size() + whileResourceListWithoutAccountByProtocol.size();
+        int count = resourceListWithoutAccountByExecuteUserAndProtocol.size() + resourceSearchIsNotFoundList.size() + resourceListWithoutAccountByProtocol.size() + whileResourceListWithoutAccountByExecuteUserAndProtocol.size() + whileResourceListWithoutAccountByProtocol.size();
         resultObj.put("count", count);
         return resultObj;
     }
 
-    private void addException(String executeUser, Long protocolId, List<ResourceVo> resourceListWithoutAccountByExecuteUserAndProtocol, List<ResourceVo> resourceListWithoutAccountByProtocol, List<AccountProtocolVo> protocolVoList, List<Long> idList, String cmdbGroupType) {
+    private List<Long> addException(String executeUser, Long protocolId, List<ResourceVo> resourceListWithoutAccountByExecuteUserAndProtocol, List<ResourceVo> resourceListWithoutAccountByProtocol, List<AccountProtocolVo> protocolVoList, List<Long> idList, String cmdbGroupType) {
+        List<Long> resourceIsNotFoundIdList = new ArrayList<>();
         AccountProtocolVo protocolVo = resourceAccountMapper.getAccountProtocolVoByProtocolId(protocolId);
         Map<Long, Long> resourceOSResourceMap = new HashMap<>();//节点resourceId->对应操作系统resourceId
         Map<String, AccountBaseVo> tagentIpAccountMap = new HashMap<>();
@@ -252,14 +271,18 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
         ResourceSearchVo searchVo = resourceCenterResourceService.assembleResourceSearchVo(filterJson);
         searchVo.setIdList(idList);
         List<ResourceVo> resourceVoList = resourceMapper.getAuthResourceList(searchVo);
-        List<Long> resourceIncludeOsIdList = new ArrayList<>(idList);
-        //查询target 对应的os
-        List<SoftwareServiceOSVo> targetOsList = resourceMapper.getOsResourceListByResourceIdList(idList);
-        if (CollectionUtils.isNotEmpty(targetOsList)) {
-            resourceIncludeOsIdList.addAll(targetOsList.stream().map(SoftwareServiceOSVo::getOsId).collect(toList()));
-            resourceOSResourceMap = targetOsList.stream().collect(toMap(SoftwareServiceOSVo::getResourceId, SoftwareServiceOSVo::getOsId));
-        }
         if (CollectionUtils.isNotEmpty(resourceVoList)) {
+            if (idList.size() != resourceVoList.size()) {
+                List<Long> exitResourceIdList = resourceVoList.stream().map(ResourceVo::getId).collect(toList());
+                resourceIsNotFoundIdList.addAll(idList.stream().filter(s -> !exitResourceIdList.contains(s)).collect(Collectors.toList()));
+            }
+            List<Long> resourceIncludeOsIdList = new ArrayList<>(idList);
+            //查询target 对应的os
+            List<SoftwareServiceOSVo> targetOsList = resourceMapper.getOsResourceListByResourceIdList(idList);
+            if (CollectionUtils.isNotEmpty(targetOsList)) {
+                resourceIncludeOsIdList.addAll(targetOsList.stream().map(SoftwareServiceOSVo::getOsId).collect(toList()));
+                resourceOSResourceMap = targetOsList.stream().collect(toMap(SoftwareServiceOSVo::getResourceId, SoftwareServiceOSVo::getOsId));
+            }
             List<AccountVo> accountByResourceList = new ArrayList<>();
             if (!Objects.equals(protocolVo.getName(), Protocol.TAGENT.getValue())) {
                 accountByResourceList = resourceAccountMapper.getResourceAccountListByResourceIdAndProtocolAndAccount(resourceIncludeOsIdList, protocolId, executeUser);
@@ -287,7 +310,10 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
                     }
                 }
             }
+        } else {
+            resourceIsNotFoundIdList.addAll(idList);
         }
+        return resourceIsNotFoundIdList;
     }
 
 }
