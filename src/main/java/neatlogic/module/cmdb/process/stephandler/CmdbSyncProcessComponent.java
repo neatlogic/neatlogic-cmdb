@@ -903,7 +903,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             String ciName = currentConfig.getCiName();
             throw new CiNotFoundException(ciName);
         }
-//        System.out.println(ciVo.getName() + " start... ");
         JSONArray resultList = new JSONArray();
         List<String> batchDataColumnList = new ArrayList<>();
         JSONArray batchDataList = new JSONArray();
@@ -935,7 +934,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             targetCiConfigMap.put(ciEntitySyncConfig.getCiName(), ciEntitySyncConfig);
             targetCiConfigMap.put(ciEntitySyncConfig.getCiLabel(), ciEntitySyncConfig);
         }
-//        System.out.println("targetCiConfigMap.keySet() = " + targetCiConfigMap.keySet());
         List<CiEntitySyncMappingVo> mappingList = handleMappingFormComponent(currentConfig.getMappingList(), batchDataColumnList, formAttributeDataMap);
         if (Objects.equals(currentConfig.getCreatePolicy(), "batch")) {
             if (CollectionUtils.isNotEmpty(batchDataList)) {
@@ -961,7 +959,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                     Map<String, Object> newFormAttributeDataMap = new HashMap<>();
                     newFormAttributeDataMap.putAll(formAttributeDataMap);
                     newFormAttributeDataMap.putAll(rowDataObj);
-//                    System.out.println(ciVo.getName() + " end... ");
                     handleMappingRelConfig(originalConfigList, newConfigObj, newFormAttributeDataMap, newConfigList, formConfig);
                 }
             }
@@ -974,7 +971,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             resultObj.put("type", "new");
             resultList.add(resultObj);
             newConfigList.add(newConfigObj);
-//            System.out.println(ciVo.getName() + " end... ");
             handleMappingRelConfig(originalConfigList, newConfigObj, formAttributeDataMap, newConfigList, formConfig);
         }
         return resultList;
@@ -1038,7 +1034,7 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                 if (CollectionUtils.isNotEmpty(relConfigObjList)) {
                     newValueList = handleBatchDataSource(originalConfigList, relConfigObjList, formAttributeDataMap, newConfigList, formConfig);
                 } else {
-//                    System.out.println("mappingObj = " + JSONObject.toJSONString(mappingObj));
+                    logger.warn("mappingObj = " + JSONObject.toJSONString(mappingObj));
                 }
             }
             mappingObj.setValueList(newValueList);
@@ -1205,7 +1201,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                 throw new AbstractCiTargetCiIdAttrNotFoundException(ciVo);
             }
             String valueStr = valueList.getString(0);
-//            System.out.println("valueStr = " + valueStr);
             CiEntitySyncConfigVo targetCiConfig = targetCiConfigMap.get(valueStr);
             if (targetCiConfig == null) {
                 CiVo targetCi = null;
