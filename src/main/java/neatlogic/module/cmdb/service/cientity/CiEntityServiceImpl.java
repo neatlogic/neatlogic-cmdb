@@ -546,9 +546,13 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 CiEntityTransactionVo ciEntityTransactionVo = ciEntityTransactionList.get(i);
                 if (ciEntityTransactionVo.getAction().equals(TransactionActionType.UPDATE.getValue())) {
                     CiEntityVo oldCiEntityVo = this.getCiEntityByIdLite(ciEntityTransactionVo.getCiId(), ciEntityTransactionVo.getCiEntityId(), true, false, false);
-                    // 正在编辑中的配置项，在事务提交或删除前不允许再次修改
+                    /*
+                    正在编辑中的配置项，在事务提交或删除前不允许再次修改
+                     */
                     if (oldCiEntityVo == null) {
-                        //旧配置项不存在且action==UPDATE，证明此配置项是新配置项，只是被多次引用导致后续添加的都是UPDATE操作，此种配置项应该从事务列表中删除，什么都不需要处理
+                        /*
+                        旧配置项不存在且action==UPDATE，证明此配置项是新配置项，只是被多次引用导致后续添加的都是UPDATE操作，此种配置项应该从事务列表中删除，什么都不需要处理
+                         */
                         ciEntityTransactionList.remove(i);
                         continue;
                         //throw new CiEntityNotFoundException(ciEntityTransactionVo.getCiEntityId());
@@ -598,7 +602,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             CiEntityVo oldCiEntityVo = this.getCiEntityByIdLite(ciEntityTransactionVo.getCiId(), ciEntityTransactionVo.getCiEntityId(), true, false, false);
             // 正在编辑中的配置项，在事务提交或删除前不允许再次修改
             if (oldCiEntityVo == null) {
-                //就配置项不存在直接返回0L，代表什么都不需要做
+                //配置项不存在直接返回0L，代表什么都不需要做
                 return 0L;
                 //throw new CiEntityNotFoundException(ciEntityTransactionVo.getCiEntityId());
             } else if (oldCiEntityVo.getIsLocked().equals(1)) {
@@ -779,7 +783,9 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         List<RelEntityVo> oldRelEntityList = null;
         List<GlobalAttrEntityVo> oldGlobalAttrEntityList = null;
         if (oldEntity == null) {
-            //如果是单纯校验可能会没有旧配置项信息
+            /*
+            如果是单纯校验可能会没有旧配置项信息，这里重新获取一次
+             */
             oldEntity = this.getCiEntityByIdLite(ciEntityTransactionVo.getCiId(), ciEntityTransactionVo.getCiEntityId(), true, false, false);
         }
         if (oldEntity != null) {
@@ -802,14 +808,20 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             for (AttrVo attrVo : attrList) {
                 JSONObject attrEntityData = ciEntityTransactionVo.getAttrEntityDataByAttrId(attrVo.getId());
                 if (attrEntityData == null) {
-                    ciEntityTransactionVo.removeAttrEntityData(attrVo.getId());
+                    //全局模式下，不提供属性代表需要删除，因此直接补充valueList为空的属性数据
+                    //FIXME 按照设计在global模式下，不提供的属性代表删除，但资源清单某些修改配置项的页面属性是不全的，会导致不提供的属性全部清空，要先确认没问题才补充以下逻辑
+                    /*if (ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
+                        ciEntityTransactionVo.addAttrEntityData(attrVo);
+                    }*/
                 } else {
                     //修正属性基本信息，多余属性不要
                     JSONArray valueList = attrEntityData.getJSONArray("valueList");
                     //进行必要的值转换，例如密码转换成密文
                     IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
                     handler.transferValueListToSave(attrVo, valueList);
+                    String saveMode = attrEntityData.getString("saveMode");
                     attrEntityData.clear();
+                    attrEntityData.put("saveMode", saveMode);
                     attrEntityData.put("valueList", valueList);
                     attrEntityData.put("label", attrVo.getLabel());
                     attrEntityData.put("name", attrVo.getName());
@@ -820,16 +832,19 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             }
         }
 
-        // 清除和模型属性不匹配的属性
+        // 清除和当前全局属性不匹配的全局属性
         if (MapUtils.isNotEmpty(ciEntityTransactionVo.getGlobalAttrEntityData())) {
             for (GlobalAttrVo globalAttrVo : globalAttrList) {
                 JSONObject globalAttrEntityData = ciEntityTransactionVo.getGlobalAttrEntityDataByAttrId(globalAttrVo.getId());
                 if (globalAttrEntityData == null) {
-                    ciEntityTransactionVo.removeGlobalAttrEntityData(globalAttrVo.getId());
+                    //全局模式下，不提供属性代表需要删除，因此直接补充valueList为空的属性数据
+                    //FIXME 按照设计在global模式下，不提供的属性代表删除，但资源清单某些修改配置项的页面属性是不全的，会导致不提供的属性全部清空，要先确认没问题才补充以下逻辑
+                    /*if (ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
+                        ciEntityTransactionVo.addGlobalAttrEntityData(globalAttrVo);
+                    }*/
                 } else {
                     //修正属性基本信息，多余属性不要
                     JSONArray valueList = globalAttrEntityData.getJSONArray("valueList");
-                    //进行必要的值转换，例如密码转换成密文
                     globalAttrEntityData.clear();
                     globalAttrEntityData.put("valueList", valueList);
                     globalAttrEntityData.put("label", globalAttrVo.getLabel());
@@ -871,6 +886,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             }
         }
 
+
         for (AttrVo attrVo : attrList) {
             if (!attrVo.getType().equals(EXPRESSION_TYPE)) {
                 AttrEntityTransactionVo attrEntityTransactionVo = ciEntityTransactionVo.getAttrEntityTransactionByAttrId(attrVo.getId());
@@ -895,7 +911,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 /*
                 校验值是否符合数据类型
                  */
-                if (attrEntityTransactionVo != null && CollectionUtils.isNotEmpty(attrEntityTransactionVo.getValueList())) {
+                if (attrEntityTransactionVo != null && CollectionUtils.isNotEmpty(attrEntityTransactionVo.getValueList()) && !attrVo.isNeedTargetCi()) {
                     IAttrValueHandler attrHandler = AttrValueHandlerFactory.getHandler(attrVo.getType());
                     if (attrHandler != null) {
                         attrHandler.valid(attrVo, attrEntityTransactionVo.getValueList());

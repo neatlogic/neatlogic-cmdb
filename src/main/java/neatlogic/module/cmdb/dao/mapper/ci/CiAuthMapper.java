@@ -30,6 +30,8 @@ import java.util.List;
 public interface CiAuthMapper {
     public List<CiAuthVo> getCiAuthByCiId(Long ciId);
 
+    List<CiAuthVo> getCiAuthByCiIdList(List<Long> ciIdList);
+
     public int insertCiAuth(CiAuthVo ciAuthVo);
 
     public int deleteCiAuthByCiId(Long ciId);

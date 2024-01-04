@@ -104,7 +104,6 @@ CREATE TABLE IF NOT EXISTS `cmdb_ci` (
   `description` varchar(1024) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '描述',
   `icon` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '图标',
   `type_id` bigint DEFAULT NULL COMMENT '类型ID ecmdb_ci_type',
-  `catalog_id` bigint DEFAULT NULL COMMENT '模型目录id',
   `parent_ci_id` bigint DEFAULT NULL COMMENT '父模型ID',
   `name_attr_id` bigint DEFAULT NULL COMMENT '名称属性',
   `lft` int DEFAULT NULL COMMENT '左编码',
@@ -966,11 +965,12 @@ CREATE TABLE IF NOT EXISTS `cmdb_cientity_globalattritem`  (
 CREATE TABLE IF NOT EXISTS `cmdb_global_attr`  (
   `id` bigint NOT NULL COMMENT 'Id',
   `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '唯一标识',
-  `label` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '显示文案\n',
+  `label` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '显示文案',
   `is_active` tinyint NULL DEFAULT NULL COMMENT '是否激活',
   `is_multiple` tinyint NULL DEFAULT NULL COMMENT '允许多选',
   `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT '描述',
-  PRIMARY KEY (`id`) USING BTREE
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE KEY `idx_name` (`name`)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
@@ -998,17 +998,3 @@ CREATE TABLE IF NOT EXISTS `cmdb_resourcecenter_config`  (
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '资源中心配置表' ROW_FORMAT = Dynamic;
 
--- ----------------------------
--- Table structure for cmdb_ci_catalog
--- ----------------------------
-CREATE TABLE IF NOT EXISTS `cmdb_ci_catalog` (
-   `id` bigint NOT NULL COMMENT 'id',
-   `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '名称',
-   `parent_id` bigint NOT NULL COMMENT '父id',
-   `lft` int DEFAULT NULL COMMENT '左编码',
-   `rht` int DEFAULT NULL COMMENT '右编码',
-   PRIMARY KEY (`id`) USING BTREE,
-   KEY `idx_lft` (`lft`) USING BTREE,
-   KEY `idx_rht` (`rht`) USING BTREE,
-   KEY `idx_parent_id` (`parent_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='模型目录';

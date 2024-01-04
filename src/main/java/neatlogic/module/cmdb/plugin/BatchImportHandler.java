@@ -215,7 +215,7 @@ public class BatchImportHandler {
                     throw new CiNotFoundException(ciId);
                 }
                 if (ciVo.getIsAbstract().equals(1)) {
-                    throw new CiIsAbstractedException(ciVo.getName());
+                    throw new CiIsAbstractedException(CiIsAbstractedException.Type.DATA, ciVo.getLabel());
                 }
                 if (ciVo.getIsVirtual().equals(1)) {
                     throw new CiIsVirtualException(ciVo.getName());

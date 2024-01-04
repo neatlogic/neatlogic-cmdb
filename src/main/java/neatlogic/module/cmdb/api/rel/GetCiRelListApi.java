@@ -16,24 +16,24 @@
 
 package neatlogic.module.cmdb.api.rel;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.ci.CiViewVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.ci.RelVo;
 import neatlogic.framework.cmdb.enums.RelDirectionType;
 import neatlogic.framework.cmdb.enums.ShowType;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
+import neatlogic.framework.cmdb.utils.RelUtil;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiViewMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
-import neatlogic.framework.cmdb.utils.RelUtil;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -70,6 +70,7 @@ public class GetCiRelListApi extends PrivateApiComponentBase {
     }
 
     @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid"),
+            @Param(name = "relId", type = ApiParamType.LONG, desc = "term.cmdb.sourcerelid"),
             @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "nmcar.getcirellistapi.input.param.desc"),
             @Param(name = "allowEdit", type = ApiParamType.INTEGER, rule = "1,0", desc = "term.cmdb.allowedit"),
             @Param(name = "isRequired", type = ApiParamType.INTEGER, rule = "1,0", desc = "common.isrequired"),
@@ -80,11 +81,15 @@ public class GetCiRelListApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("ciId");
+        Long relId = jsonObj.getLong("relId");
         String showType = jsonObj.getString("showType");
         boolean needAction = jsonObj.getBooleanValue("needAction");
         Integer allowEdit = jsonObj.getInteger("allowEdit");
         Integer isRequired = jsonObj.getInteger("isRequired");
         List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciId));
+        if (relId != null) {
+            relList.removeIf(d -> d.getId().equals(relId));
+        }
         if (StringUtils.isNotBlank(showType)) {
             CiViewVo ciViewVo = new CiViewVo();
             ciViewVo.setCiId(ciId);

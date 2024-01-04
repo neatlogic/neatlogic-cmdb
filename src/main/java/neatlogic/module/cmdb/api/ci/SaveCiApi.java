@@ -16,9 +16,13 @@
 
 package neatlogic.module.cmdb.api.ci;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.exception.ci.CiAuthException;
+import neatlogic.framework.cmdb.exception.ci.CiIsAbstractedException;
+import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.ci.VirtualCiSettingFileNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.util.FileUtil;
@@ -28,10 +32,10 @@ import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.RegexUtils;
-import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
+import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
+import neatlogic.module.cmdb.dao.mapper.cischema.CiSchemaMapper;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
 import neatlogic.module.cmdb.service.ci.CiService;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -50,6 +54,12 @@ public class SaveCiApi extends PrivateApiComponentBase {
 
     @Resource
     private FileMapper fileMapper;
+
+    @Resource
+    private CiMapper ciMapper;
+
+    @Resource
+    private CiSchemaMapper ciSchemaMapper;
 
 
     @Override
@@ -105,8 +115,25 @@ public class SaveCiApi extends PrivateApiComponentBase {
             }
             ciService.insertCi(ciVo);
         } else {
+            CiVo oldCiVo = ciMapper.getCiById(ciId);
+
+            if (oldCiVo == null) {
+                throw new CiNotFoundException(ciId);
+            }
             if (!CiAuthChecker.chain().checkCiManagePrivilege(ciId).check()) {
                 throw new CiAuthException();
+            }
+            if (oldCiVo.getRht() - oldCiVo.getLft() > 1) {
+                oldCiVo.setHasChildren(true);
+            } else {
+                oldCiVo.setHasChildren(false);
+            }
+            oldCiVo.setHasData(ciSchemaMapper.checkTableHasData(ciVo.getCiTableName()) > 0);
+            if ((oldCiVo.getHasChildren() || oldCiVo.getHasData()) && !Objects.equals(oldCiVo.getIsAbstract(), ciVo.getIsAbstract())) {
+                throw new CiIsAbstractedException(CiIsAbstractedException.Type.UPDATEABSTRACT, ciVo.getLabel());
+            }
+            if (oldCiVo.getHasData() && !Objects.equals(oldCiVo.getParentCiId(), ciVo.getParentCiId())) {
+                throw new CiIsAbstractedException(CiIsAbstractedException.Type.UPDATEPARENT, ciVo.getLabel());
             }
             ciService.updateCi(ciVo);
         }

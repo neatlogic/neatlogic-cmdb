@@ -16,6 +16,10 @@
 
 package neatlogic.module.cmdb.service.sync;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSONPath;
+import com.mongodb.client.MongoCursor;
 import neatlogic.framework.asynchronization.thread.NeatLogicThread;
 import neatlogic.framework.asynchronization.threadlocal.InputFromContext;
 import neatlogic.framework.asynchronization.threadpool.CachedThreadPool;
@@ -51,10 +55,6 @@ import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
 import neatlogic.module.cmdb.dao.mapper.sync.SyncAuditMapper;
 import neatlogic.module.cmdb.dao.mapper.sync.SyncMapper;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.JSONPath;
-import com.mongodb.client.MongoCursor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -406,7 +406,7 @@ public class CiSyncManager {
                                                 throw new CiIsVirtualException(subCiVo.getLabel() + "(" + subCiVo.getName() + ")");
                                             }
                                             if (subCiVo.getIsAbstract().equals(1)) {
-                                                throw new CiIsAbstractedException(subCiVo.getLabel() + "(" + subCiVo.getName() + ")");
+                                                throw new CiIsAbstractedException(CiIsAbstractedException.Type.DATA, subCiVo.getLabel() + "(" + subCiVo.getName() + ")");
                                             }
                                             //补充所有普通值数据进数据集，方便子对象引用父模型属性
                                             JSONObject subDataWithPK = new JSONObject();
@@ -569,7 +569,7 @@ public class CiSyncManager {
                                                         throw new CiIsVirtualException(subCiVo.getLabel() + "(" + subCiVo.getName() + ")");
                                                     }
                                                     if (subCiVo.getIsAbstract().equals(1)) {
-                                                        throw new CiIsAbstractedException(subCiVo.getLabel() + "(" + subCiVo.getName() + ")");
+                                                        throw new CiIsAbstractedException(CiIsAbstractedException.Type.DATA, subCiVo.getLabel() + "(" + subCiVo.getName() + ")");
                                                     }
                                                     subSyncCiCollectionVo.setCiId(subCiId);
                                                     CiEntityTransactionVo subCiEntityTransactionVo = generateCiEntityTransaction(subDataWithPK, subSyncCiCollectionVo, ciEntityTransactionMap, mappingVo.getField());
@@ -686,7 +686,7 @@ public class CiSyncManager {
                             throw new CiIsVirtualException(ciVo.getLabel() + "(" + ciVo.getName() + ")");
                         }
                         if (ciVo.getIsAbstract().equals(1)) {
-                            throw new CiIsAbstractedException(ciVo.getLabel() + "(" + ciVo.getName() + ")");
+                            throw new CiIsAbstractedException(CiIsAbstractedException.Type.DATA, ciVo.getLabel() + "(" + ciVo.getName() + ")");
                         }
 
                         Criteria finalCriteria = new Criteria();

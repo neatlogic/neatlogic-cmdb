@@ -16,6 +16,9 @@
 
 package neatlogic.module.cmdb.matrix.handler;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSONPath;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiViewVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
@@ -47,9 +50,6 @@ import neatlogic.module.cmdb.dao.mapper.cientity.RelEntityMapper;
 import neatlogic.module.cmdb.matrix.constvalue.MatrixType;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
 import neatlogic.module.framework.dependency.handler.CiAttr2MatrixAttrDependencyHandler;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.JSONPath;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -407,6 +407,8 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                         } else {
                             matrixAttributeVo.setIsSearchable(0);
                         }
+                        break;
+                    default:
                         break;
                 }
                 if (MapUtils.isNotEmpty(showAttributeUuidMap)) {
