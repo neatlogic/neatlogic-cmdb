@@ -33,6 +33,7 @@ import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
 import neatlogic.framework.cmdb.dto.transaction.AttrEntityTransactionVo;
 import neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import neatlogic.framework.cmdb.enums.*;
+import neatlogic.framework.cmdb.exception.attr.AttrNotFoundException;
 import neatlogic.framework.cmdb.exception.attr.AttrValueIrregularException;
 import neatlogic.framework.cmdb.exception.attrtype.AttrTypeNotFoundException;
 import neatlogic.framework.cmdb.exception.ci.*;
@@ -616,6 +617,9 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             }
             if (CollectionUtils.isEmpty(valueList)) {
                 AttrVo attr = attrMapper.getAttrById(attrId);
+                if (attr == null) {
+                    throw new AttrNotFoundException(ciVo.getName(), attrId.toString());
+                }
                 attr.setCiName(ciVo.getName());
                 attr.setCiLabel(ciVo.getLabel());
                 throw new CiUniqueAttrNotFoundException(attr);
