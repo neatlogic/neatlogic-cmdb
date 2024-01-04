@@ -123,6 +123,11 @@ public class SaveCiApi extends PrivateApiComponentBase {
             if (!CiAuthChecker.chain().checkCiManagePrivilege(ciId).check()) {
                 throw new CiAuthException();
             }
+            if (oldCiVo.getRht() - oldCiVo.getLft() > 1) {
+                oldCiVo.setHasChildren(true);
+            } else {
+                oldCiVo.setHasChildren(false);
+            }
             oldCiVo.setHasData(ciSchemaMapper.checkTableHasData(ciVo.getCiTableName()) > 0);
             if ((oldCiVo.getHasChildren() || oldCiVo.getHasData()) && !Objects.equals(oldCiVo.getIsAbstract(), ciVo.getIsAbstract())) {
                 throw new CiIsAbstractedException(CiIsAbstractedException.Type.UPDATEABSTRACT, ciVo.getLabel());
