@@ -16,6 +16,8 @@
 
 package neatlogic.module.cmdb.api.cientity;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
 import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
@@ -24,6 +26,7 @@ import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiViewVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
+import neatlogic.framework.cmdb.exception.cientity.CiEntityAuthException;
 import neatlogic.framework.cmdb.utils.RelUtil;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.Description;
@@ -36,9 +39,9 @@ import neatlogic.framework.util.excel.ExcelBuilder;
 import neatlogic.framework.util.excel.SheetBuilder;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiViewMapper;
+import neatlogic.module.cmdb.service.ci.CiAuthChecker;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import neatlogic.module.cmdb.service.group.GroupService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.util.HSSFColor;
@@ -81,6 +84,9 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
         return "nmcac.exportcientityapi.getname";
     }
 
+    @Resource
+    private GroupService groupService;
+
     @Override
     public String getConfig() {
         return null;
@@ -105,6 +111,20 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
             for (int i = 0; i < showAttrRelList.size(); i++) {
                 showAttrRelSet.add(showAttrRelList.getString(i));
             }
+        }
+        boolean hasAuth = true;
+        if (!CiAuthChecker.chain().checkCiEntityQueryPrivilege(ciEntityVo.getCiId()).check()) {
+            List<Long> groupIdList = groupService.getCurrentUserGroupIdList();
+            if (CollectionUtils.isNotEmpty(groupIdList)) {
+                ciEntityVo.setGroupIdList(groupIdList);
+            } else {
+                //throw new CiEntityAuthException(ciVo, "查看");
+                hasAuth = false;
+            }
+        }
+        if (!hasAuth) {
+            CiVo ciVo = ciMapper.getCiById(ciEntityVo.getCiId());
+            throw new CiEntityAuthException(ciVo.getLabel(), "导出");
         }
         Long ciId = jsonObj.getLong("ciId");
         CiVo ciVo = ciMapper.getCiById(ciId);
