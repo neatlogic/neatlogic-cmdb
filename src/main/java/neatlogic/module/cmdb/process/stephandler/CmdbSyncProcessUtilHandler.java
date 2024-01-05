@@ -45,10 +45,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class CmdbSyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
@@ -520,7 +518,7 @@ public class CmdbSyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
                     for (int i = 0; i < valueList.size(); i++) {
                         if (valueList.get(i) == null) {
                             logger.warn("ciEntityConfig.configList[" + name + "].mappingList[y].valueList[z] is null");
-                            throw new CiEntityConfigIllegalException("ciEntityConfig.configList[" + name + "].mappingList[y].valueList[0] is null");
+                            throw new CiEntityConfigIllegalException("ciEntityConfig.configList[" + name + "].mappingList[y].valueList[z] is null");
                         }
                     }
                     if (CollectionUtils.isNotEmpty(filterList)) {
@@ -573,6 +571,58 @@ public class CmdbSyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
                 if (ciId == null) {
                     logger.warn("ciEntityConfig.configList[" + name + "].children[i].ciId is null");
                     throw new CiEntityConfigIllegalException("ciEntityConfig.configList[" + name + "].children[i].ciId is null");
+                }
+            }
+        }
+
+        Set<String> usedUuidList = new HashSet<>();
+        List<String> allUuidList = configList.stream().map(CiEntitySyncConfigVo::getUuid).collect(Collectors.toList());
+        for (CiEntitySyncConfigVo ciEntitySyncConfigVo : configList) {
+            String ciName = ciEntitySyncConfigVo.getCiName();
+            String name = ciName;
+            String ciLabel = ciEntitySyncConfigVo.getCiLabel();
+            name += "(" + ciLabel + ")";
+            JSONArray children = ciEntitySyncConfigVo.getChildren();
+            if (CollectionUtils.isNotEmpty(children)) {
+                for (int i = 0; i < children.size(); i++) {
+                    JSONObject child = children.getJSONObject(i);
+                    String ciEntityUuid = child.getString("ciEntityUuid");
+                    if (!allUuidList.contains(ciEntityUuid)) {
+                        logger.warn("ciEntityConfig.configList[" + name + "].children[i].ciEntityUuid = '" + ciEntityUuid + "' is illegal");
+                        throw new CiEntityConfigIllegalException("ciEntityConfig.configList[" + name + "].children[i].ciEntityUuid = '" + ciEntityUuid + "' is illegal");
+                    }
+                    usedUuidList.add(ciEntityUuid);
+                }
+            }
+            List<CiEntitySyncMappingVo> mappingList = ciEntitySyncConfigVo.getMappingList();
+            if (CollectionUtils.isNotEmpty(mappingList)) {
+                for (CiEntitySyncMappingVo mapping : mappingList) {
+                    if (Objects.equals(mapping.getMappingMode(), "new")) {
+                        JSONArray valueList = mapping.getValueList();
+                        for (int i = 0; i < valueList.size(); i++) {
+                            JSONObject valueObj = valueList.getJSONObject(i);
+                            String type = valueObj.getString("type");
+                            if (!Objects.equals(type, "new")) {
+                                continue;
+                            }
+                            String ciEntityUuid = valueObj.getString("ciEntityUuid");
+                            if (!allUuidList.contains(ciEntityUuid)) {
+                                logger.warn("ciEntityConfig.configList[" + name + "].mappingList[y].valueList[z].ciEntityUuid = '" + ciEntityUuid + "' is illegal");
+                                throw new CiEntityConfigIllegalException("ciEntityConfig.configList[" + name + "].mappingList[y].valueList[z].ciEntityUuid = '" + ciEntityUuid + "' is illegal");
+                            }
+                            usedUuidList.add(ciEntityUuid);
+                        }
+                    }
+                }
+            }
+        }
+        allUuidList.removeAll(usedUuidList);
+        if (CollectionUtils.isNotEmpty(allUuidList)) {
+            for (int i = configList.size() - 1; i >= 0; i--) {
+                CiEntitySyncConfigVo ciEntitySyncConfigVo = configList.get(i);
+                if (allUuidList.contains(ciEntitySyncConfigVo.getUuid()) && !Objects.equals(ciEntitySyncConfigVo.getIsStart(), 1)) {
+                    logger.warn("ciEntitySyncConfig is not used：" + JSONObject.toJSONString(ciEntitySyncConfigVo));
+                    configList.remove(i);
                 }
             }
         }
