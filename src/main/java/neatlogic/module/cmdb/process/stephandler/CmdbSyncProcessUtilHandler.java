@@ -547,6 +547,34 @@ public class CmdbSyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
                     }
                 }
             }
+
+            JSONArray children = configObj.getChildren();
+            if (CollectionUtils.isEmpty(children)) {
+                continue;
+            }
+            for (int i = children.size() - 1; i >= 0; i--) {
+                JSONObject child = children.getJSONObject(i);
+                if (MapUtils.isEmpty(child)) {
+                    logger.warn("ciEntityConfig.configList[" + name + "].children[i] is null");
+                    children.remove(i);
+                    continue;
+                }
+                String ciEntityUuid = child.getString("ciEntityUuid");
+                if (StringUtils.isBlank(ciEntityUuid)) {
+                    logger.warn("ciEntityConfig.configList[" + name + "].children[i].ciEntityUuid is null");
+                    throw new CiEntityConfigIllegalException("ciEntityConfig.configList[\" + name + \"].children[i].ciEntityUuid is null");
+                }
+                String ciEntityName = child.getString("ciEntityName");
+                if (StringUtils.isBlank(ciEntityName)) {
+                    logger.warn("ciEntityConfig.configList[" + name + "].children[i].ciEntityName is null");
+                    throw new CiEntityConfigIllegalException("ciEntityConfig.configList[\" + name + \"].children[i].ciEntityName is null");
+                }
+                Long ciId = child.getLong("ciId");
+                if (ciId == null) {
+                    logger.warn("ciEntityConfig.configList[" + name + "].children[i].ciId is null");
+                    throw new CiEntityConfigIllegalException("ciEntityConfig.configList[\" + name + \"].children[i].ciId is null");
+                }
+            }
         }
         return ciEntitySyncVo;
     }
