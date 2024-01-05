@@ -562,17 +562,17 @@ public class CmdbSyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
                 String ciEntityUuid = child.getString("ciEntityUuid");
                 if (StringUtils.isBlank(ciEntityUuid)) {
                     logger.warn("ciEntityConfig.configList[" + name + "].children[i].ciEntityUuid is null");
-                    throw new CiEntityConfigIllegalException("ciEntityConfig.configList[\" + name + \"].children[i].ciEntityUuid is null");
+                    throw new CiEntityConfigIllegalException("ciEntityConfig.configList[" + name + "].children[i].ciEntityUuid is null");
                 }
                 String ciEntityName = child.getString("ciEntityName");
                 if (StringUtils.isBlank(ciEntityName)) {
                     logger.warn("ciEntityConfig.configList[" + name + "].children[i].ciEntityName is null");
-                    throw new CiEntityConfigIllegalException("ciEntityConfig.configList[\" + name + \"].children[i].ciEntityName is null");
+                    throw new CiEntityConfigIllegalException("ciEntityConfig.configList[" + name + "].children[i].ciEntityName is null");
                 }
                 Long ciId = child.getLong("ciId");
                 if (ciId == null) {
                     logger.warn("ciEntityConfig.configList[" + name + "].children[i].ciId is null");
-                    throw new CiEntityConfigIllegalException("ciEntityConfig.configList[\" + name + \"].children[i].ciId is null");
+                    throw new CiEntityConfigIllegalException("ciEntityConfig.configList[" + name + "].children[i].ciId is null");
                 }
             }
         }
