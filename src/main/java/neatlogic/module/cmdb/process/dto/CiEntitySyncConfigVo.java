@@ -1,5 +1,7 @@
 package neatlogic.module.cmdb.process.dto;
 
+import com.alibaba.fastjson.JSONArray;
+
 import java.util.List;
 
 public class CiEntitySyncConfigVo {
@@ -21,6 +23,8 @@ public class CiEntitySyncConfigVo {
     private List<CiEntitySyncMappingVo> mappingList;
     /** 同步策略，全局模式或局部模式 **/
     private String editMode;
+    /** 子模型配置 **/
+    private JSONArray children;
 
     public Long getId() {
         return id;
@@ -116,5 +120,13 @@ public class CiEntitySyncConfigVo {
 
     public void setEditMode(String editMode) {
         this.editMode = editMode;
+    }
+
+    public JSONArray getChildren() {
+        return children;
+    }
+
+    public void setChildren(JSONArray children) {
+        this.children = children;
     }
 }
