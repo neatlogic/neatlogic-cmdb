@@ -16,17 +16,16 @@
 
 package neatlogic.module.cmdb.api.customview;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.customview.CustomViewConditionVo;
 import neatlogic.framework.cmdb.dto.customview.CustomViewVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.module.cmdb.service.customview.CustomViewDataService;
-import neatlogic.module.cmdb.service.customview.CustomViewService;
-import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -39,12 +38,10 @@ public class GetCustomViewCiEntityApi extends PrivateApiComponentBase {
     @Resource
     private CustomViewDataService customViewDataService;
 
-    @Resource
-    private CustomViewService customViewService;
 
     @Override
     public String getName() {
-        return "根据配置项id获取自定义视图id数据";
+        return "nmcac.getcustomviewcientityapi.getname";
     }
 
     @Override
@@ -58,11 +55,11 @@ public class GetCustomViewCiEntityApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "customViewId", type = ApiParamType.LONG, desc = "视图id", isRequired = true),
-            @Param(name = "ciEntityId", type = ApiParamType.LONG, isRequired = true, desc = "配置项id"),
+            @Param(name = "customViewId", type = ApiParamType.LONG, desc = "term.cmdb.viewid", isRequired = true),
+            @Param(name = "ciEntityId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.cientityid"),
     })
     @Output({@Param(explode = CustomViewVo.class)})
-    @Description(desc = "根据配置项id获取自定义视图id数据接口")
+    @Description(desc = "nmcac.getcustomviewcientityapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         CustomViewConditionVo customViewConditionVo = JSONObject.toJavaObject(paramObj, CustomViewConditionVo.class);
