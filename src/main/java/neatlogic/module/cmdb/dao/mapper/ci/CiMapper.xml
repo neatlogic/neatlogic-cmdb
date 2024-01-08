@@ -18,7 +18,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="neatlogic.module.cmdb.dao.mapper.ci.CiMapper">
     <!--<cache type="neatlogic.framework.dao.cache.NeatLogicCache" flushInterval="30000" size="500"></cache>-->
-
     <select id="getCiTree" resultType="neatlogic.framework.cmdb.dto.ci.CiVo">
         SELECT a.name,
                a.label,
@@ -539,6 +538,7 @@
         <result column="expiredDay" property="expiredDay"></result>
         <result column="lft" property="lft"></result>
         <result column="rht" property="rht"></result>
+        <result column="hasChildren" property="hasChildren"></result>
         <collection property="uniqueAttrIdList" ofType="java.lang.Long">
             <id column="uniqueAttrId"></id>
         </collection>
@@ -551,21 +551,22 @@
                a.`label`,
                a.`description`,
                a.`icon`,
-               a.`type_id`      AS typeId,
-               d.`name`         AS typeName,
-               a.`is_private`   AS isPrivate,
-               a.`is_menu`      AS isMenu,
-               a.`parent_ci_id` AS parentCiId,
-               c.label          AS parentCiLabel,
-               c.name           AS parentCiName,
-               a.`is_abstract`  AS isAbstract,
-               a.`is_virtual`   AS isVirtual,
-               a.`expired_day`  AS expiredDay,
-               a.`name_attr_id` AS nameAttrId,
-               a.`lft`          AS lft,
-               a.`rht`          AS rht,
-               a.`file_id`      AS fileId,
-               b.`attr_id`      AS uniqueAttrId
+               a.`type_id`                                                                       AS typeId,
+               d.`name`                                                                          AS typeName,
+               a.`is_private`                                                                    AS isPrivate,
+               a.`is_menu`                                                                       AS isMenu,
+               a.`parent_ci_id`                                                                  AS parentCiId,
+               c.label                                                                           AS parentCiLabel,
+               c.name                                                                            AS parentCiName,
+               a.`is_abstract`                                                                   AS isAbstract,
+               a.`is_virtual`                                                                    AS isVirtual,
+               a.`expired_day`                                                                   AS expiredDay,
+               a.`name_attr_id`                                                                  AS nameAttrId,
+               a.`lft`                                                                           AS lft,
+               a.`rht`                                                                           AS rht,
+               a.`file_id`                                                                       AS fileId,
+               b.`attr_id`                                                                       AS uniqueAttrId,
+               IF((select count(1) from cmdb_ci x where x.parent_ci_id = a.id) > 0, true, false) as hasChildren
         FROM `cmdb_ci` a
                  LEFT JOIN `cmdb_ci_unique` b ON a.id = b.ci_id
                  LEFT JOIN `cmdb_ci` c ON a.`parent_ci_id` = c.id

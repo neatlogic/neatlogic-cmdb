@@ -476,6 +476,22 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             // 遍历configList，将“批量操作”的配置信息根据表单数据转换成多条“单个操作”配置信息
             List<CiEntitySyncConfigVo> ciEntitySyncConfigList = new ArrayList<>();
             ciEntitySyncConfigList.add(startConfigObj);
+            List<String> ciEntityUuidList = new ArrayList<>();
+            JSONArray children = startConfigObj.getChildren();
+            if (CollectionUtils.isNotEmpty(children)) {
+                for (int i = 0; i < children.size(); i++) {
+                    JSONObject child = children.getJSONObject(i);
+                    String ciEntityUuid = child.getString("ciEntityUuid");
+                    if (StringUtils.isNotBlank(ciEntityUuid)) {
+                        ciEntityUuidList.add(ciEntityUuid);
+                    }
+                }
+            }
+            for (CiEntitySyncConfigVo ciEntitySyncConfig : originalConfigList) {
+                if (ciEntityUuidList.contains(ciEntitySyncConfig.getUuid())) {
+                    ciEntitySyncConfigList.add(ciEntitySyncConfig);
+                }
+            }
             handleBatchDataSource(originalConfigList, ciEntitySyncConfigList, formAttributeDataMap, newConfigList, formConfig);
         }
         return newConfigList;
