@@ -16,6 +16,7 @@
 
 package neatlogic.module.cmdb.api.resourcecenter.resource;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
@@ -59,6 +60,7 @@ public class CheckResourceInputNodeListApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "filter", type = ApiParamType.JSONOBJECT, desc = "过滤条件", help="简单过滤条件和高级过滤条件都用这个字段"),
+            @Param(name = "cmdbGroupType", type = ApiParamType.STRING, desc = "通过团体过滤权限"),
             @Param(name = "inputNodeList", type = ApiParamType.JSONARRAY, isRequired = true, minSize = 1, desc = "输入节点列表"),
     })
     @Output({
@@ -72,6 +74,7 @@ public class CheckResourceInputNodeListApi extends PrivateApiComponentBase {
         JSONArray nonExistList = new JSONArray();
         JSONArray inputNodeList = paramObj.getJSONArray("inputNodeList");
         JSONObject filter = paramObj.getJSONObject("filter");
+        String cmdbGroupType = paramObj.getString("cmdbGroupType");
         if (MapUtils.isNotEmpty(filter)) {
             // 判断过滤条件是简单模式还是高级模式
             if (filter.containsKey("conditionGroupList")) {
@@ -92,10 +95,12 @@ public class CheckResourceInputNodeListApi extends PrivateApiComponentBase {
                 searchVo.setPageSize(1);
                 for (int i = 0; i < inputNodeList.size(); i++) {
                     JSONObject inputNodeObj = inputNodeList.getJSONObject(i);
-                    ResourceSearchVo node = inputNodeObj.toJavaObject(inputNodeObj, ResourceSearchVo.class);
+                    ResourceSearchVo node = JSON.toJavaObject(inputNodeObj, ResourceSearchVo.class);
+                    searchVo.setCmdbGroupType(cmdbGroupType);
                     searchVo.setIp(node.getIp());
                     searchVo.setPort(node.getPort());
                     searchVo.setName(node.getName());
+                    searchVo.setCmdbGroupType(cmdbGroupType);
                     List<Long> idList =  resourceMapper.getResourceIdListByDynamicCondition(searchVo, sqlSb.toString());
                     if (CollectionUtils.isEmpty(idList)) {
                         nonExistList.add(inputNodeObj);
@@ -108,7 +113,8 @@ public class CheckResourceInputNodeListApi extends PrivateApiComponentBase {
                 ResourceSearchVo searchVo = resourceCenterResourceService.assembleResourceSearchVo(filter);
                 for (int i = 0; i < inputNodeList.size(); i++) {
                     JSONObject inputNodeObj = inputNodeList.getJSONObject(i);
-                    ResourceSearchVo node = inputNodeObj.toJavaObject(inputNodeObj, ResourceSearchVo.class);
+                    ResourceSearchVo node = JSON.toJavaObject(inputNodeObj, ResourceSearchVo.class);
+                    searchVo.setCmdbGroupType(cmdbGroupType);
                     searchVo.setIp(node.getIp());
                     searchVo.setPort(node.getPort());
                     searchVo.setName(node.getName());
@@ -122,10 +128,15 @@ public class CheckResourceInputNodeListApi extends PrivateApiComponentBase {
             }
         } else {
             // 没有过滤条件
+            ResourceSearchVo searchVo = resourceCenterResourceService.assembleResourceSearchVo(new JSONObject());
             for (int i = 0; i < inputNodeList.size(); i++) {
                 JSONObject inputNodeObj = inputNodeList.getJSONObject(i);
-                ResourceSearchVo node = inputNodeObj.toJavaObject(inputNodeObj, ResourceSearchVo.class);
-                Long resourceId = resourceMapper.getResourceIdByIpAndPortAndName(node);
+                ResourceSearchVo node = JSON.toJavaObject(inputNodeObj, ResourceSearchVo.class);
+                searchVo.setCmdbGroupType(cmdbGroupType);
+                searchVo.setIp(node.getIp());
+                searchVo.setPort(node.getPort());
+                searchVo.setName(node.getName());
+                Long resourceId = resourceMapper.getResourceIdByIpAndPortAndName(searchVo);
                 if (resourceId == null) {
                     nonExistList.add(inputNodeObj);
                 } else {
