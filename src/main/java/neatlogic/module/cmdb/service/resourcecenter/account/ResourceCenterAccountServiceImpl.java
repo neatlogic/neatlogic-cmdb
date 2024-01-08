@@ -109,7 +109,7 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
         AccountBaseVo accountVo = null;
         Optional<AccountVo> accountOp;
         //1
-        if (Objects.equals(protocolVo.getName(), Protocol.TAGENT.getValue())) {
+        if (Objects.equals(protocolVo.getName(), Protocol.TAGENT.getValue()) || (protocolVo.getName() != null && protocolVo.getName().startsWith(Protocol.TAGENT.getValue() + "."))) {
             accountVo = tagentIpAccountMap.get(ip);
         } else {
             accountOp = accountByResourceList.stream().filter(o -> Objects.equals(o.getResourceId(), resourceId)).findFirst();
