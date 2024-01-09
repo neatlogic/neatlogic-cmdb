@@ -16,6 +16,7 @@
 
 package neatlogic.module.cmdb.api.attr;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
@@ -33,6 +34,7 @@ import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiViewMapper;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -76,7 +78,9 @@ public class GetCiAttrListApi extends PrivateApiComponentBase {
             @Param(name = "showType", type = ApiParamType.ENUM, rule = "all,list,detail", desc = "common.displaytype"),
             @Param(name = "allowEdit", type = ApiParamType.INTEGER, rule = "1,0", desc = "term.cmdb.allowedit"),
             @Param(name = "isRequired", type = ApiParamType.INTEGER, rule = "1,0", desc = "common.isrequired"),
-            @Param(name = "isSimple", type = ApiParamType.BOOLEAN, rule = "true,false", desc = "term.cmdb.issimpleattribute")
+            @Param(name = "isSimple", type = ApiParamType.BOOLEAN, rule = "true,false", desc = "term.cmdb.issimpleattribute"),
+            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "common.defaultvalue")
+
     })
     @Output({
             @Param(name = "Return", explode = AttrVo[].class)
@@ -84,6 +88,12 @@ public class GetCiAttrListApi extends PrivateApiComponentBase {
     @Description(desc = "nmcaa.getciattrlistapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
+        JSONArray defaultValue = jsonObj.getJSONArray("defaultValue");
+        if (CollectionUtils.isNotEmpty(defaultValue)) {
+            List<Long> idList = defaultValue.toJavaList(Long.class);
+            List<AttrVo> attrList = attrMapper.getAttrByIdList(idList);
+            return attrList;
+        }
         Long ciId = jsonObj.getLong("ciId");
         if (ciId == null) {
             String ciName = jsonObj.getString("ciName");
