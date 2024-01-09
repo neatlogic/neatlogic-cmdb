@@ -44,7 +44,7 @@ public class GetCustomViewAttrApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取自定义视图属性列表";
+        return "nmcac.getcustomviewattrapi.getname";
     }
 
     @Override
@@ -53,15 +53,15 @@ public class GetCustomViewAttrApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "id", type = ApiParamType.LONG, desc = "视图id"),
-            @Param(name = "isHidden", type = ApiParamType.INTEGER, desc = "属性是否隐藏，1是，0否"),
+            @Param(name = "id", type = ApiParamType.LONG, desc = "common.id"),
+            @Param(name = "isHidden", type = ApiParamType.INTEGER, desc = "common.ishidden，", help = "1是，0否"),
             @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "common.defaultvalue")
     })
     @Output({
             @Param(name = "attrList", explode = CustomViewAttrVo[].class),
             @Param(name = "constAttrList", explode = CustomViewConstAttrVo[].class)
     })
-    @Description(desc = "获取自定义视图属性列表接口")
+    @Description(desc = "nmcac.getcustomviewattrapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONArray defaultValue = paramObj.getJSONArray("defaultValue");
