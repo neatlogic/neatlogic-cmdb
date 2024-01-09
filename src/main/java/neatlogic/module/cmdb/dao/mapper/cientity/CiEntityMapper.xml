@@ -19,6 +19,178 @@
 <mapper namespace="neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper">
     <!--<cache-ref namespace="neatlogic.module.cmdb.dao.mapper.ci.CiMapper"/>
     <cache type="neatlogic.framework.dao.cache.NeatLogicCache" flushInterval="30000" size="500"></cache>-->
+    <resultMap id="ciEntityRelMap" type="neatlogic.framework.cmdb.dto.cientity.CiEntityTopoVo">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="ciIcon" column="ciIcon"/>
+        <result property="ciType" column="ciType"/>
+        <result property="ciId" column="ciId"/>
+        <collection property="relCiEntityList" ofType="neatlogic.framework.cmdb.dto.cientity.CiEntityTopoVo">
+            <id property="id" column="relCiEntityId"/>
+            <result property="name" column="relCiEntityName"/>
+            <result property="ciIcon" column="relCiIcon"/>
+            <result property="ciType" column="relCiType"/>
+            <result property="ciId" column="relCiId"/>
+            <result property="relId" column="relId"/>
+            <result property="direction" column="relDirection"/>
+        </collection>
+    </resultMap>
+
+    <select id="getCiEntityForTopo" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo"
+            resultMap="ciEntityRelMap">
+        select cientity.id,
+        cientity.name,
+        ci.icon as ciIcon,
+        ci.type_id as ciType,
+        ci.id as ciId
+        <if test="relList != null and relList.size() > 0">
+            ,relcientity.id as relCiEntityId,
+            relcientity.name as relCiEntityName,
+            relci.icon as relCiIcon,
+            relci.type_id as relCiType,
+            relci.id as relCiId,
+            ${relList[relList.size()-1].id} as relId,
+            '${relList[relList.size()-1].direction}' as relDirection
+        </if>
+        from cmdb_cientity cientity
+        join cmdb_ci ci on cientity.ci_id = ci.id
+        <if test="relList != null and relList.size() > 0">
+            <foreach collection="relList" item="rel" index="idx">
+                <choose>
+                    <when test="idx == 0">
+                        <choose>
+                            <when test="rel.direction == 'from'">
+                                left join cmdb_relentity `rel_${idx}` on cientity.id = `rel_${idx}`.from_cientity_id
+                                and `rel_${idx}`.rel_id = #{rel.id}
+                                and ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                                `rel_${idx}`.to_cientity_id) or exists
+                                (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                                `rel_${idx}`.to_cientity_id
+                                and xx.expired_time &gt;= NOW()))
+                                <if test="globalAttrFilterList != null and globalAttrFilterList.size () > 0">
+                                    and
+                                    <foreach collection="globalAttrFilterList" item="item" open="(" close=")"
+                                             separator="and">
+                                        exists ( select 1 from `cmdb_cientity_globalattritem`
+                                        ccgi where `rel_${idx}`.to_cientity_id = `ccgi`.cientity_id
+                                        and `ccgi`.attr_id = #{item.attrId}
+                                        and `ccgi`.item_id in <foreach collection="item.valueList" item="value" open="("
+                                                                       close=")"
+                                                                       separator=",">#{value}</foreach>)
+                                        or
+                                        not exists ( select 1 from `cmdb_cientity_globalattritem` ccgi where
+                                        `rel_${idx}`.to_cientity_id = `ccgi`.cientity_id
+                                        and `ccgi`.attr_id = #{item.attrId})
+                                    </foreach>
+                                </if>
+                            </when>
+                            <otherwise>
+                                left join cmdb_relentity `rel_${idx}` on cientity.id = `rel_${idx}`.to_cientity_id
+                                and `rel_${idx}`.rel_id = #{rel.id}
+                                and ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                                `rel_${idx}`.from_cientity_id) or exists
+                                (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                                `rel_${idx}`.from_cientity_id
+                                and xx.expired_time &gt;= NOW()))
+                                <if test="globalAttrFilterList != null and globalAttrFilterList.size () > 0">
+                                    and
+                                    <foreach collection="globalAttrFilterList" item="item" open="(" close=")"
+                                             separator="and">
+                                        exists ( select 1 from `cmdb_cientity_globalattritem`
+                                        ccgi where `rel_${idx}`.from_cientity_id = `ccgi`.cientity_id
+                                        and `ccgi`.attr_id = #{item.attrId}
+                                        and `ccgi`.item_id in <foreach collection="item.valueList" item="value" open="("
+                                                                       close=")"
+                                                                       separator=",">#{value}</foreach>)
+                                        or
+                                        not exists ( select 1 from `cmdb_cientity_globalattritem` ccgi where
+                                        `rel_${idx}`.from_cientity_id = `ccgi`.cientity_id
+                                        and `ccgi`.attr_id = #{item.attrId})
+                                    </foreach>
+                                </if>
+                            </otherwise>
+                        </choose>
+                    </when>
+                    <otherwise>
+                        <choose>
+                            <when test="rel.direction == 'from'">
+                                left join cmdb_relentity `rel_${idx}` on `rel_${idx - 1}`.to_cientity_id =
+                                `rel_${idx}`.from_cientity_id and
+                                `rel_${idx}`.rel_id = #{rel.id}
+                                and ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                                `rel_${idx}`.to_cientity_id)
+                                or exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                                `rel_${idx}`.to_cientity_id
+                                and xx.expired_time &gt;= NOW()))
+                                <if test="globalAttrFilterList != null and globalAttrFilterList.size () > 0">
+                                    and
+                                    <foreach collection="globalAttrFilterList" item="item" open="(" close=")"
+                                             separator="and">
+                                        exists ( select 1 from `cmdb_cientity_globalattritem`
+                                        ccgi where `rel_${idx}`.to_cientity_id = `ccgi`.cientity_id
+                                        and `ccgi`.attr_id = #{item.attrId}
+                                        and `ccgi`.item_id in <foreach collection="item.valueList" item="value" open="("
+                                                                       close=")"
+                                                                       separator=",">#{value}</foreach>)
+                                        or
+                                        not exists ( select 1 from `cmdb_cientity_globalattritem` ccgi where
+                                        `rel_${idx}`.to_cientity_id = `ccgi`.cientity_id
+                                        and `ccgi`.attr_id = #{item.attrId})
+                                    </foreach>
+                                </if>
+                            </when>
+                            <otherwise>
+                                left join cmdb_relentity `rel_${idx}` on `rel_${idx - 1}`.from_cientity_id =
+                                `rel_${idx}`.to_cientity_id
+                                and `rel_${idx}`.rel_id = #{rel.id}
+                                and ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                                `rel_${idx}`.from_cientity_id) or exists
+                                (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                                `rel_${idx}`.from_cientity_id
+                                and xx.expired_time &gt;= NOW()))
+                                <if test="globalAttrFilterList != null and globalAttrFilterList.size () > 0">
+                                    and
+                                    <foreach collection="globalAttrFilterList" item="item" open="(" close=")"
+                                             separator="and">
+                                        exists ( select 1 from `cmdb_cientity_globalattritem`
+                                        ccgi where `rel_${idx}`.from_cientity_id = `ccgi`.cientity_id
+                                        and `ccgi`.attr_id = #{item.attrId}
+                                        and `ccgi`.item_id in <foreach collection="item.valueList" item="value" open="("
+                                                                       close=")"
+                                                                       separator=",">#{value}</foreach>)
+                                        or
+                                        not exists ( select 1 from `cmdb_cientity_globalattritem` ccgi where
+                                        `rel_${idx}`.from_cientity_id = `ccgi`.cientity_id
+                                        and `ccgi`.attr_id = #{item.attrId})
+                                    </foreach>
+                                </if>
+                            </otherwise>
+                        </choose>
+                    </otherwise>
+                </choose>
+            </foreach>
+            <choose>
+                <when test="relList[relList.size()-1].direction == 'from'">
+                    left join cmdb_cientity relcientity on `rel_${relList.size() - 1}`.to_cientity_id =
+                    relcientity.id
+                </when>
+                <otherwise>
+                    left join cmdb_cientity relcientity on `rel_${relList.size() - 1}`.from_cientity_id =
+                    relcientity.id
+                </otherwise>
+            </choose>
+            left join cmdb_ci relci on relcientity.ci_id = relci.id
+        </if>
+        where
+        <if test="idList != null and idList.size() > 0">
+            cientity.id in
+            <foreach collection="idList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+
     <select id="searchCiEntityIdBySql" parameterType="java.lang.String" resultType="java.lang.Long">
         ${value}
     </select>

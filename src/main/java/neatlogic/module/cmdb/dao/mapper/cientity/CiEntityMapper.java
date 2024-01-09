@@ -21,6 +21,7 @@ import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.cientity.AttrEntityVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityInspectVo;
+import neatlogic.framework.cmdb.dto.cientity.CiEntityTopoVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.fulltextindex.dto.fulltextindex.FullTextIndexTypeVo;
 import org.apache.ibatis.annotations.Param;
@@ -29,6 +30,8 @@ import java.util.HashMap;
 import java.util.List;
 
 public interface CiEntityMapper extends ICiEntityCrossoverMapper {
+    List<CiEntityTopoVo> getCiEntityForTopo(CiEntityVo ciEntityVo);
+
     List<Long> searchCiEntityIdBySql(String sql);
 
     /**
