@@ -1012,7 +1012,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             List<CiEntitySyncConfigVo> newConfigList,
             String formConfig
     ) {
-//        CiEntitySyncConfigVo currentConfig = currentConfigList.get(0);
         Long ciId = currentConfig.getCiId();
         CiVo ciVo = ciMapper.getCiById(ciId);
         if (ciVo == null) {
@@ -1043,13 +1042,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                 return resultList;
             }
         }
-//        Map<String, CiEntitySyncConfigVo> targetCiConfigMap = new HashMap<>();
-//        for (int i = 1; i < currentConfigList.size(); i++) {
-//            CiEntitySyncConfigVo ciEntitySyncConfig = currentConfigList.get(i);
-//            targetCiConfigMap.put(ciEntitySyncConfig.getCiId().toString(), ciEntitySyncConfig);
-//            targetCiConfigMap.put(ciEntitySyncConfig.getCiName(), ciEntitySyncConfig);
-//            targetCiConfigMap.put(ciEntitySyncConfig.getCiLabel(), ciEntitySyncConfig);
-//        }
         List<CiEntitySyncMappingVo> mappingList = handleMappingFormComponent(currentConfig.getMappingList(), batchDataColumnList, formAttributeDataMap);
         if (Objects.equals(currentConfig.getCreatePolicy(), "batch")) {
             if (CollectionUtils.isNotEmpty(batchDataList)) {
@@ -1205,7 +1197,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                 }
             }
             if (!isFrom) {
-//                List<CiEntitySyncConfigVo> relConfigObjList = new ArrayList<>();
                 for (CiEntitySyncConfigVo originalConfig : originalConfigList) {
                     if (ciEntityUuidList.contains(originalConfig.getUuid())) {
                         replaceMappingRelFromCiEntityUuid(originalConfig, currentConfig.getUuid());
@@ -1213,11 +1204,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                         newValueList.addAll(list);
                     }
                 }
-//                if (CollectionUtils.isNotEmpty(relConfigObjList)) {
-//                    newValueList = handleBatchDataSource(originalConfigList, relConfigObjList, formAttributeDataMap, newConfigList, formConfig);
-//                } else {
-//                    logger.warn("mappingObj = " + JSONObject.toJSONString(mappingObj));
-//                }
             }
             mappingObj.setValueList(newValueList);
         }
@@ -1461,50 +1447,28 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                 throw new AbstractCiTargetCiIdAttrNotFoundException(ciVo);
             }
             String valueStr = valueList.getString(0);
-//            CiEntitySyncConfigVo targetCiConfig = targetCiConfigMap.get(valueStr);
-//            if (targetCiConfig == null) {
-                CiVo targetCi = null;
-                List<CiVo> downwardCiList = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
-                for (CiVo downwardCi : downwardCiList) {
-                    if (Objects.equals(downwardCi.getId().toString(), valueStr)) {
-                        targetCi = downwardCi;
-                    } else if (Objects.equals(downwardCi.getName(), valueStr)) {
-                        targetCi = downwardCi;
-                    } else if (Objects.equals(downwardCi.getLabel(), valueStr)) {
-                        targetCi = downwardCi;
-                    }
+            CiVo targetCi = null;
+            List<CiVo> downwardCiList = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
+            for (CiVo downwardCi : downwardCiList) {
+                if (Objects.equals(downwardCi.getId().toString(), valueStr)) {
+                    targetCi = downwardCi;
+                } else if (Objects.equals(downwardCi.getName(), valueStr)) {
+                    targetCi = downwardCi;
+                } else if (Objects.equals(downwardCi.getLabel(), valueStr)) {
+                    targetCi = downwardCi;
                 }
-                if (targetCi == null) {
-                    throw new DownwardCiNotFoundException(ciVo, valueStr);
-                } else if (Objects.equals(targetCi.getIsAbstract(), 1)) {
-                    throw new CiIsAbstractedException(CiIsAbstractedException.Type.DATA, targetCi.getLabel() + "(" + targetCi.getName() + ")");
-                }
-                newConfigObj.setCiId(targetCi.getId());
-                newConfigObj.setCiName(targetCi.getName());
-                newConfigObj.setCiLabel(targetCi.getLabel());
-                newConfigObj.setIsStart(currentConfig.getIsStart());
-                newConfigObj.setCiIcon(targetCi.getIcon());
-                newConfigObj.setEditMode(currentConfig.getEditMode());
-//            } else {
-//                List<CiEntitySyncMappingVo> mappingList = targetCiConfig.getMappingList();
-//                List<CiEntitySyncMappingVo> list = handleMappingFormComponent(mappingList, batchDataColumnList, formAttributeDataMap);
-//                newMappingList.addAll(list);
-//                if (rowDataObj != null) {
-//                    list = handleMappingFormTableComponent(rowDataObj, batchDataColumnList, targetCiConfig.getMappingList());
-//                    newMappingList.addAll(list);
-//                }
-//                for (CiEntitySyncMappingVo mapping : mappingList) {
-//                    if (Objects.equals(mapping.getMappingMode(), "new")) {
-//                        newMappingList.add(new CiEntitySyncMappingVo(mapping));
-//                    }
-//                }
-//                newConfigObj.setCiId(targetCiConfig.getCiId());
-//                newConfigObj.setCiName(targetCiConfig.getCiName());
-//                newConfigObj.setCiLabel(targetCiConfig.getCiLabel());
-//                newConfigObj.setIsStart(currentConfig.getIsStart());
-//                newConfigObj.setCiIcon(targetCiConfig.getCiIcon());
-//                newConfigObj.setEditMode(targetCiConfig.getEditMode());
-//            }
+            }
+            if (targetCi == null) {
+                throw new DownwardCiNotFoundException(ciVo, valueStr);
+            } else if (Objects.equals(targetCi.getIsAbstract(), 1)) {
+                throw new CiIsAbstractedException(CiIsAbstractedException.Type.DATA, targetCi.getLabel() + "(" + targetCi.getName() + ")");
+            }
+            newConfigObj.setCiId(targetCi.getId());
+            newConfigObj.setCiName(targetCi.getName());
+            newConfigObj.setCiLabel(targetCi.getLabel());
+            newConfigObj.setIsStart(currentConfig.getIsStart());
+            newConfigObj.setCiIcon(targetCi.getIcon());
+            newConfigObj.setEditMode(currentConfig.getEditMode());
         } else {
             newConfigObj.setCiId(currentConfig.getCiId());
             newConfigObj.setCiName(currentConfig.getCiName());
