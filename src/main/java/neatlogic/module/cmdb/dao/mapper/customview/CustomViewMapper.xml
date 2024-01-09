@@ -177,6 +177,34 @@
         ORDER BY a.sort
     </select>
 
+    <select id="getCustomViewAttrByUuidList" parameterType="java.lang.String" resultMap="customViewAttrMap">
+        SELECT
+        a.customview_id AS customViewId,
+        a.customview_ci_uuid AS customViewCiUuid,
+        a.uuid,
+        a.attr_id AS attrId,
+        a.alias,
+        a.sort,
+        a.is_hidden AS isHidden,
+        a.is_primary AS isPrimary,
+        a.`condition` AS conditionStr,
+        a.`name` AS name,
+        b.`name` AS attrName,
+        b.`label` AS attrLabel,
+        b.`ci_id` AS ciId,
+        b.`type` AS attrType,
+        b.`target_ci_id` AS targetCiId,
+        b.`config` AS configStr
+        FROM `cmdb_customview_attr` a
+        JOIN `cmdb_attr` b ON a.attr_id = b.id
+        JOIN `cmdb_customview_ci` c ON a.customview_ci_uuid = c.uuid AND c.is_hidden = 0
+        WHERE a.uuid IN
+        <foreach collection="list" item="uuid" open="(" separator="," close=")">
+            #{uuid}
+        </foreach>
+        ORDER BY a.sort
+    </select>
+
     <select id="getCustomViewByName" parameterType="java.lang.String" resultMap="customViewMap">
         SELECT a.id,
                a.name,

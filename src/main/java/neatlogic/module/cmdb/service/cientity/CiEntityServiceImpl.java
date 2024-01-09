@@ -120,10 +120,27 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
 
     @Override
     public List<CiEntityVo> getCiEntityBaseInfoByName(Long ciId, String name) {
-        CiEntityVo ciEntityVo = new CiEntityVo();
-        ciEntityVo.setCiId(ciId);
-        ciEntityVo.setName(name);
-        return ciEntityMapper.getCiEntityBaseInfoByName(ciEntityVo);
+//        CiEntityVo ciEntityVo = new CiEntityVo();
+//        ciEntityVo.setCiId(ciId);
+//        ciEntityVo.setName(name);
+//        return ciEntityMapper.getCiEntityBaseInfoByName(ciEntityVo);
+        CiVo ciVo = ciMapper.getCiById(ciId);
+        if (ciVo == null) {
+            return new ArrayList<>();
+        }
+        CiEntityVo search = new CiEntityVo();
+        search.setName(name);
+        if (ciVo.getIsVirtual().equals(0)) {
+            // 非虚拟模型
+            List<CiVo> downwardCiList = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
+            Map<Long, CiVo> downwardCiMap = downwardCiList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
+            search.setIdList(new ArrayList<>(downwardCiMap.keySet()));
+            return ciEntityMapper.getCiEntityListByCiIdListAndName(search);
+        } else {
+            // 虚拟模型
+            search.setCiId(ciVo.getId());
+            return ciEntityMapper.getVirtualCiEntityBaseInfoByName(search);
+        }
     }
 
     /**
