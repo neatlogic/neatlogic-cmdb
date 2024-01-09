@@ -27,7 +27,7 @@
                IFNULL(b.sort, 9999) AS sort
         FROM cmdb_ci a
                  LEFT JOIN cmdb_ci_tree b ON a.id = b.ci_id
-        order by sort, a.id
+        order by sort, a.name
     </select>
 
     <select id="getCiLock" parameterType="java.lang.Long" resultType="java.lang.Long" useCache="false">
@@ -737,7 +737,7 @@
 
 
     <delete id="deleteCiById" parameterType="java.lang.Long">
-        DELETE a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t
+        DELETE a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u
         FROM `cmdb_ci` a
                  LEFT JOIN `cmdb_attr` b
                            ON a.`id` = b.`ci_id`
@@ -759,6 +759,7 @@
                  LEFT JOIN `cmdb_relativerel` r ON c.`id` = r.`rel_id`
                  LEFT JOIN `cmdb_relativerel` s ON d.`id` = s.`rel_id`
                  LEFT JOIN `cmdb_ci_tree` t ON a.id = t.ci_id OR a.id = t.parent_ci_id
+                 LEFT JOIN `cmdb_topo_template` u ON a.id = u.ci_id
         WHERE a.id = #{value}
     </delete>
 

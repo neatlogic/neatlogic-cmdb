@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2023 NeatLogic Co., Ltd. All Rights Reserved.
+ * Copyright(c) 2024 NeatLogic Co., Ltd. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-package neatlogic.module.cmdb.api.customview;
+package neatlogic.module.cmdb.api.ci;
 
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
-import neatlogic.framework.cmdb.dto.customview.CustomViewConditionVo;
-import neatlogic.framework.cmdb.dto.customview.CustomViewVo;
+import neatlogic.framework.cmdb.dto.ci.CiTopoTemplateVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.module.cmdb.service.customview.CustomViewDataService;
+import neatlogic.module.cmdb.dao.mapper.ci.CiTopoTemplateMapper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -33,20 +32,19 @@ import javax.annotation.Resource;
 @Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class GetCustomViewCiEntityApi extends PrivateApiComponentBase {
+public class ListCiTopoTemplateApi extends PrivateApiComponentBase {
 
     @Resource
-    private CustomViewDataService customViewDataService;
-
-
-    @Override
-    public String getName() {
-        return "nmcac.getcustomviewcientityapi.getname";
-    }
+    private CiTopoTemplateMapper ciTopoTemplateMapper;
 
     @Override
     public String getToken() {
-        return "/cmdb/customview/data/get";
+        return "/cmdb/ci/topotemplate/list";
+    }
+
+    @Override
+    public String getName() {
+        return "nmcac.listcitopotemplateapi.getname";
     }
 
     @Override
@@ -55,16 +53,14 @@ public class GetCustomViewCiEntityApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "customViewId", type = ApiParamType.LONG, desc = "term.cmdb.viewid", isRequired = true),
-            @Param(name = "ciEntityId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.cientityid"),
+            @Param(name = "ciId", type = ApiParamType.LONG, desc = "term.cmdb.ciid", isRequired = true),
+            @Param(name = "isActive", type = ApiParamType.INTEGER, desc = "common.isactive")
     })
-    @Output({@Param(explode = CustomViewVo.class)})
-    @Description(desc = "nmcac.getcustomviewcientityapi.getname")
+    @Output({@Param(explode = CiTopoTemplateVo[].class)})
+    @Description(desc = "nmcac.listcitopotemplateapi.getname")
     @Override
-    public Object myDoService(JSONObject paramObj) throws Exception {
-        CustomViewConditionVo customViewConditionVo = JSONObject.toJavaObject(paramObj, CustomViewConditionVo.class);
-        return customViewDataService.getCustomViewCiEntityById(customViewConditionVo);
+    public Object myDoService(JSONObject jsonObj) throws Exception {
+        CiTopoTemplateVo ciTopoTemplateVo = JSONObject.toJavaObject(jsonObj,CiTopoTemplateVo.class);
+        return ciTopoTemplateMapper.getCiTopoTemplateByCiId(ciTopoTemplateVo);
     }
-
-
 }

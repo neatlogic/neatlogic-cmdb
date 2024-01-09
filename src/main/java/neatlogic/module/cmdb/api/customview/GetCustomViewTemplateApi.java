@@ -16,6 +16,7 @@
 
 package neatlogic.module.cmdb.api.customview;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.customview.CustomViewVo;
@@ -24,7 +25,6 @@ import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.customview.CustomViewMapper;
-import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -39,7 +39,7 @@ public class GetCustomViewTemplateApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "获取自定义视图模板";
+        return "nmcac.getcustomviewtemplateapi.getname";
     }
 
     @Override
@@ -48,9 +48,9 @@ public class GetCustomViewTemplateApi extends PrivateApiComponentBase {
     }
 
 
-    @Input({@Param(name = "customViewId", type = ApiParamType.LONG, desc = "视图id", isRequired = true)})
+    @Input({@Param(name = "customViewId", type = ApiParamType.LONG, desc = "term.cmdb.viewid", isRequired = true)})
     @Output({@Param(explode = CustomViewVo.class)})
-    @Description(desc = "获取自定义视图模板接口")
+    @Description(desc = "nmcac.getcustomviewtemplateapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         return customViewMapper.getCustomViewTemplateById(paramObj.getLong("customViewId"));

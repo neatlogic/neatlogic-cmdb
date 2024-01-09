@@ -1261,7 +1261,7 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                 newConfigObj.setCiId(targetCiConfig.getCiId());
                 newConfigObj.setCiName(targetCiConfig.getCiName());
                 newConfigObj.setCiLabel(targetCiConfig.getCiLabel());
-                newConfigObj.setIsStart(targetCiConfig.getIsStart());
+                newConfigObj.setIsStart(currentConfig.getIsStart());
                 newConfigObj.setCiIcon(targetCiConfig.getCiIcon());
                 newConfigObj.setEditMode(targetCiConfig.getEditMode());
             }
