@@ -25,9 +25,7 @@ import neatlogic.framework.cmdb.exception.ci.CiIsAbstractedException;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.ci.VirtualCiSettingFileNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.common.util.FileUtil;
 import neatlogic.framework.file.dao.mapper.FileMapper;
-import neatlogic.framework.file.dto.FileVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -36,12 +34,10 @@ import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.cischema.CiSchemaMapper;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
 import neatlogic.module.cmdb.service.ci.CiService;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 @Service
@@ -86,7 +82,8 @@ public class SaveCiApi extends PrivateApiComponentBase {
             @Param(name = "typeId", type = ApiParamType.LONG, desc = "common.typeid", isRequired = true),
             @Param(name = "catalogId", type = ApiParamType.LONG, desc = "common.catalogid"),
             @Param(name = "parentCiId", type = ApiParamType.LONG, desc = "term.cmdb.parentcientityid"),
-            @Param(name = "fileId", type = ApiParamType.LONG, desc = "term.cmdb.virtualcifileid"),
+            @Param(name = "viewXml", type = ApiParamType.STRING, desc = "common.config"),
+            //@Param(name = "fileId", type = ApiParamType.LONG, desc = "term.cmdb.virtualcifileid"),
             @Param(name = "expiredDay", type = ApiParamType.INTEGER, desc = "common.expireddays"),
             @Param(name = "isAbstract", type = ApiParamType.INTEGER, defaultValue = "0", desc = "term.cmdb.isabstractci"),
             @Param(name = "isVirtual", type = ApiParamType.INTEGER, defaultValue = "0", desc = "term.cmdb.isvirtualci"),
@@ -98,16 +95,10 @@ public class SaveCiApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         CiVo ciVo = JSONObject.toJavaObject(jsonObj, CiVo.class);
         Long ciId = jsonObj.getLong("id");
-        if (Objects.equals(ciVo.getIsVirtual(), 1) && ciVo.getFileId() != null) {
-            FileVo fileVo = fileMapper.getFileById(ciVo.getFileId());
-            if (fileVo == null) {
+        if (Objects.equals(ciVo.getIsVirtual(), 1)) {
+            if (StringUtils.isBlank(ciVo.getViewXml())) {
                 throw new VirtualCiSettingFileNotFoundException();
             }
-            String xml = IOUtils.toString(FileUtil.getData(fileVo.getPath()), StandardCharsets.UTF_8);
-            if (StringUtils.isBlank(xml)) {
-                throw new VirtualCiSettingFileNotFoundException();
-            }
-            ciVo.setViewXml(xml);
         }
         if (ciId == null) {
             if (!CiAuthChecker.chain().checkCiManagePrivilege().check()) {
