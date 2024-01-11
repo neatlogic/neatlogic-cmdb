@@ -40,6 +40,7 @@ limitations under the License.
                     </otherwise>
                 </choose>
                 or (
+                cg.id  is not null and
                 a.`type_id` IN
                 <foreach collection="typeIdList" item="typeId" open="(" separator="," close=")">
                     #{typeId}
@@ -166,7 +167,14 @@ limitations under the License.
         <if test="isHasAuth == false">
             LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
             LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
-            LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+            <choose>
+                <when test="cmdbGroupType == 'autoexec'">
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
+                </when>
+                <otherwise>
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+                </otherwise>
+            </choose>
         </if>
         WHERE a.`name` LIKE CONCAT('%', #{keyword}, '%')
         <include refid="resource_ipobject_where"/>
@@ -183,7 +191,14 @@ limitations under the License.
         <if test="isHasAuth == false">
             LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
             LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
-            LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+             <choose>
+                <when test="cmdbGroupType == 'autoexec'">
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
+                </when>
+                <otherwise>
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+                </otherwise>
+            </choose>
         </if>
         WHERE a.`ip` LIKE CONCAT('%', #{keyword}, '%')
         <include refid="resource_ipobject_where"/>
@@ -203,12 +218,14 @@ limitations under the License.
         <if test="isHasAuth == false">
             LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
             LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
-            <if test="cmdbGroupType == 'readonly'">
-                LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
-            </if>
-            <if test="cmdbGroupType == 'autoexec'">
-                LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
-            </if>
+             <choose>
+                <when test="cmdbGroupType == 'autoexec'">
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
+                </when>
+                <otherwise>
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+                </otherwise>
+            </choose>
         </if>
         <where>
             <if test="keyword != null and keyword != ''">
@@ -233,7 +250,14 @@ limitations under the License.
         <if test="isHasAuth == false">
             LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
             LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
-            LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+             <choose>
+                <when test="cmdbGroupType == 'autoexec'">
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
+                </when>
+                <otherwise>
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+                </otherwise>
+            </choose>
         </if>
         <where>
             <if test="keyword != null and keyword != ''">
@@ -264,26 +288,24 @@ limitations under the License.
         LEFT JOIN `cmdb_resourcecenter_resource_account` crra ON crra.`resource_id` = sid.`id`
         LEFT JOIN `cmdb_resourcecenter_account` cra ON cra.`id` = crra.`account_id`
         LEFT JOIN `cmdb_resourcecenter_resource_tag` crrt ON crrt.`resource_id` = sid.`id`
+        <if test="searchVo.isHasAuth == false">
+            LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = sid.id
+            LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
+            <choose>
+                <when test="searchVo.cmdbGroupType == 'autoexec'">
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
+                </when>
+                <otherwise>
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+                </otherwise>
+            </choose>
+        </if>
         <where>
             <if test="searchVo.keyword != null and searchVo.keyword != ''">
                 AND (sid.`name` LIKE CONCAT('%', #{searchVo.keyword}, '%') OR sid.`ip` LIKE CONCAT('%',
                 #{searchVo.keyword}, '%'))
             </if>
-            <if test="searchVo.ip != null and searchVo.ip != ''">
-                AND sid.`ip` = #{searchVo.ip}
-            </if>
-            <if test="searchVo.port != null">
-                AND sid.`port` = #{searchVo.port}
-            </if>
-            <if test="searchVo.name != null and searchVo.name != ''">
-                AND sid.`name` = #{searchVo.name}
-            </if>
-            <if test="searchVo.typeIdList != null and searchVo.typeIdList.size() > 0">
-                AND sid.`type_id` IN
-                <foreach collection="searchVo.typeIdList" item="typeId" open="(" separator="," close=")">
-                    #{typeId}
-                </foreach>
-            </if>
+            <include refid="resource_ipobject_custom_where"/>
             ${conditionSql}
         </where>
         ORDER BY sid.`id`
@@ -642,6 +664,18 @@ limitations under the License.
             parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
         SELECT a.`id`
         FROM @{DATA_SCHEMA}.`scence_ipobject_ip_port` a
+        <if test="isHasAuth == false">
+            LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
+            LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
+            <choose>
+                <when test="cmdbGroupType == 'autoexec'">
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
+                </when>
+                <otherwise>
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+                </otherwise>
+            </choose>
+        </if>
         WHERE a.`ip` = #{ip}
         <choose>
             <when test="port != null and port != ''">
@@ -654,6 +688,7 @@ limitations under the License.
         <if test="name != null and name != ''">
             and a.`name` = #{name}
         </if>
+        <include refid="resource_ipobject_where"/>
         LIMIT 1
     </select>
 
@@ -664,6 +699,28 @@ limitations under the License.
         <foreach collection="list" item="id" separator="," close=")" open="(">
             #{id}
         </foreach>
+    </select>
+
+    <select id="getAuthResourceList" resultMap="resourceCenterMap">
+        SELECT a.`id`, a.`name`, a.`ip`,a.`port`,a.`type_id`, a.`type_name`, a.`type_label`
+        FROM @{DATA_SCHEMA}.`scence_ipobject_ip_port` a
+        <if test="isHasAuth == false">
+            LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
+            LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
+            <choose>
+                <when test="cmdbGroupType == 'autoexec'">
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
+                </when>
+                <otherwise>
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+                </otherwise>
+            </choose>
+        </if>
+        where a.`id` in
+        <foreach collection="idList" item="id" separator="," close=")" open="(">
+            #{id}
+        </foreach>
+        <include refid="resource_ipobject_where"/>
     </select>
 
     <select id="getResourceById" parameterType="java.lang.Long" resultMap="resourceCenterMap">
@@ -919,6 +976,18 @@ limitations under the License.
             resultType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo">
         SELECT a.name,a.`ip`,a.id,a.port,a.type_name as typeName
         FROM @{DATA_SCHEMA}.`scence_ipobject_ip_port` a
+        <if test="isHasAuth == false">
+            LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
+            LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
+            <choose>
+                <when test="cmdbGroupType == 'autoexec'">
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
+                </when>
+                <otherwise>
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+                </otherwise>
+            </choose>
+        </if>
         WHERE
         <foreach collection="resourceList" item="resource" separator="or" open="(" close=")">
             a.ip = #{resource.ip}
@@ -932,6 +1001,7 @@ limitations under the License.
                 and a.name = #{resource.name}
             </if>
         </foreach>
+        <include refid="resource_ipobject_where"/>
     </select>
 
     <select id="getAppSystemIdByResourceId" parameterType="java.lang.Long" resultType="java.lang.Long">
@@ -1015,7 +1085,14 @@ limitations under the License.
         <if test="isHasAuth == false">
             LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
             LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
-            LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+             <choose>
+                <when test="cmdbGroupType == 'autoexec'">
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
+                </when>
+                <otherwise>
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+                </otherwise>
+            </choose>
         </if>
         WHERE a.`ip` = #{ip}
         <if test="keyword != null and keyword != ''">
@@ -1662,17 +1739,93 @@ limitations under the License.
         ORDER BY a.`id` DESC
         LIMIT #{startNum}, #{pageSize}
     </select>
+
+    <sql id="resource_ipobject_custom_where">
+        <if test="searchVo.typeIdList != null and searchVo.typeIdList.size() > 0">
+            <if test="searchVo.isHasAuth == true">
+                AND sid.`type_id` IN
+                <foreach collection="searchVo.typeIdList" item="typeId" open="(" separator="," close=")">
+                    #{typeId}
+                </foreach>
+            </if>
+            <if test="searchVo.isHasAuth == false">
+                AND (
+                <choose>
+                    <when test="searchVo.authedTypeIdList != null and searchVo.authedTypeIdList.size() >0">
+                        sid.`type_id` IN
+                        <foreach collection="searchVo.authedTypeIdList" item="authedTypeId" open="(" separator="," close=")">
+                            #{authedTypeId}
+                        </foreach>
+                    </when>
+                    <otherwise>
+                        1 = 0
+                    </otherwise>
+                </choose>
+                or (
+                cg.id  is not null and
+                sid.`type_id` IN
+                <foreach collection="searchVo.typeIdList" item="typeId" open="(" separator="," close=")">
+                    #{typeId}
+                </foreach>
+                and
+                ((cga.auth_type = 'common' AND cga.auth_uuid = 'alluser')
+                <if test="searchVo.authenticationInfo.userUuid != null and searchVo.authenticationInfo.userUuid != ''">
+                    OR (
+                    cga.auth_type = 'user'
+                    AND
+                    cga.auth_uuid = #{searchVo.authenticationInfo.userUuid}
+                    )
+                </if>
+                <if test="searchVo.authenticationInfo.teamUuidList != null and searchVo.authenticationInfo.teamUuidList.size() > 0">
+                    OR (
+                    cga.auth_type = 'team'
+                    AND
+                    cga.auth_uuid IN
+                    <foreach collection="searchVo.authenticationInfo.teamUuidList" item="item" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                    )
+                </if>
+                <if test="searchVo.authenticationInfo.roleUuidList != null and searchVo.authenticationInfo.roleUuidList.size() > 0">
+                    OR (
+                    cga.auth_type = 'role'
+                    AND
+                    cga.auth_uuid IN
+                    <foreach collection="searchVo.authenticationInfo.roleUuidList" item="item" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>)
+                </if>
+                )
+                )
+                )
+            </if>
+        </if>
+    </sql>
+
     <select id="getResourceCountByDynamicCondition" resultType="java.lang.Integer">
         SELECT COUNT(DISTINCT sid.`id`)
         FROM @{DATA_SCHEMA}.`scence_ipobject_detail` sid
         LEFT JOIN `cmdb_resourcecenter_resource_account` crra ON crra.`resource_id` = sid.`id`
         LEFT JOIN `cmdb_resourcecenter_account` cra ON cra.`id` = crra.`account_id`
         LEFT JOIN `cmdb_resourcecenter_resource_tag` crrt ON crrt.`resource_id` = sid.`id`
+        <if test="searchVo.isHasAuth == false">
+            LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = sid.id
+            LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
+            <choose>
+                <when test="searchVo.cmdbGroupType == 'autoexec'">
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
+                </when>
+                <otherwise>
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+                </otherwise>
+            </choose>
+        </if>
         <where>
             <if test="searchVo.keyword != null and searchVo.keyword != ''">
                 AND (sid.`name` LIKE CONCAT('%', #{searchVo.keyword}, '%') OR sid.`ip` LIKE CONCAT('%',
                 #{searchVo.keyword}, '%'))
             </if>
+            <include refid="resource_ipobject_custom_where"/>
             ${conditionSql}
         </where>
     </select>
@@ -1711,7 +1864,14 @@ limitations under the License.
         <if test="isHasAuth == false">
             LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
             LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
-            LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+             <choose>
+                <when test="cmdbGroupType == 'autoexec'">
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
+                </when>
+                <otherwise>
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+                </otherwise>
+            </choose>
         </if>
         <where>
             <if test="keyword != null and keyword != ''">
