@@ -167,11 +167,12 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             }
         }
         JSONArray showAttributeArray = new JSONArray();
-        List<String> showAttributeLabelList = showAttributeLabelArray.toJavaList(String.class);
-        if (!showAttributeLabelList.contains("const_id")) {
-            showAttributeLabelList.add("const_id");
+        if (!showAttributeLabelArray.contains("const_id")) {
+            showAttributeLabelArray.add(0, "const_id");
         }
-        for (String showAttributeLabel : showAttributeLabelList) {
+        Iterator<Object> iterator = showAttributeLabelArray.iterator();
+        while (iterator.hasNext()) {
+            String showAttributeLabel = (String) iterator.next();
             JSONObject showAttributeObj = new JSONObject();
             String showAttributeUuid = oldShowAttributeUuidMap.get(showAttributeLabel);
             if (showAttributeUuid == null) {
@@ -179,10 +180,12 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             }
             showAttributeObj.put("uuid", showAttributeUuid);
             CiViewVo ciViewVo = ciViewMap.get(showAttributeLabel);
-            if (ciViewVo != null) {
-                showAttributeObj.put("name", ciViewVo.getItemLabel());
-                showAttributeObj.put("label", showAttributeLabel);
+            if (ciViewVo == null) {
+                iterator.remove();
+                continue;
             }
+            showAttributeObj.put("name", ciViewVo.getItemLabel());
+            showAttributeObj.put("label", showAttributeLabel);
             showAttributeArray.add(showAttributeObj);
             if (showAttributeLabel.startsWith("const_")) {
                 continue;
@@ -410,6 +413,9 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                         break;
                     default:
                         break;
+                }
+                if (StringUtils.isBlank(matrixAttributeVo.getLabel())) {
+                    continue;
                 }
                 if (MapUtils.isNotEmpty(showAttributeUuidMap)) {
                     String uuid = showAttributeUuidMap.get(matrixAttributeVo.getLabel());
