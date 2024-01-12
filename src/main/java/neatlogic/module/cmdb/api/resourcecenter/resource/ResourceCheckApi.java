@@ -116,7 +116,7 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
                 throw new AutoexecCombopProtocolCannotBeEmptyException();
             }
             protocol = protocolVo.getName();
-            if (Objects.equals(protocol, Protocol.TAGENT.getValue())) {
+            if (Objects.equals(protocolVo.getName(), Protocol.TAGENT.getValue()) || (protocolVo.getName() != null && protocolVo.getName().startsWith(Protocol.TAGENT.getValue() + "."))) {
                 executeUser = null;
             }
             // 协议和用户同时填了，才校验是否合法，协议为tagent时，无需校验用户名
@@ -284,13 +284,13 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
                 resourceOSResourceMap = targetOsList.stream().collect(toMap(SoftwareServiceOSVo::getResourceId, SoftwareServiceOSVo::getOsId));
             }
             List<AccountVo> accountByResourceList = new ArrayList<>();
-            if (!Objects.equals(protocolVo.getName(), Protocol.TAGENT.getValue())) {
-                accountByResourceList = resourceAccountMapper.getResourceAccountListByResourceIdAndProtocolAndAccount(resourceIncludeOsIdList, protocolId, executeUser);
-            } else {
+            if (Objects.equals(protocolVo.getName(), Protocol.TAGENT.getValue()) || (protocolVo.getName() != null && protocolVo.getName().startsWith(Protocol.TAGENT.getValue() + "."))) {
                 List<AccountBaseVo> tagentAccountByIpList = tagentMapper.getAccountListByIpListAndProtocolId(resourceVoList.stream().map(ResourceVo::getIp).collect(toList()), protocolId);
                 if (CollectionUtils.isNotEmpty(tagentAccountByIpList)) {
                     tagentIpAccountMap = tagentAccountByIpList.stream().collect(toMap(AccountBaseVo::getIp, o -> o));
                 }
+            } else {
+                accountByResourceList = resourceAccountMapper.getResourceAccountListByResourceIdAndProtocolAndAccount(resourceIncludeOsIdList, protocolId, executeUser);
             }
             Map<Long, AccountVo> protocolDefaultAccountMap = new HashMap<>();
             List<AccountVo> defaultAccountList;
