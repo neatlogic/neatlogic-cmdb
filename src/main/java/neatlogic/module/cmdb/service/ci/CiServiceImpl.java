@@ -348,7 +348,7 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
             //重建所有左右编码，性能差点但可靠
             LRCodeManager.rebuildLeftRightCode("cmdb_ci", "id", "parent_ci_id");
         }
-        if (checkCiVo.getExpiredDay() != ciVo.getExpiredDay()) {
+        if (Objects.equals(ciVo.getIsVirtual(), 0) && checkCiVo.getExpiredDay() != ciVo.getExpiredDay()) {
             AfterTransactionJob<CiVo> job = new AfterTransactionJob<>("REFRESH-CIENTITY-EXPIREDTIME-" + ciVo.getId());
             job.execute(ciVo, _ciVo -> {
                 //修正配置项超时数据
@@ -376,7 +376,10 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
                     }
                 }
             });
+        }
 
+        if (Objects.equals(ciVo.getIsVirtual(), 1)) {
+            buildCiView(ciVo);
         }
     }
 

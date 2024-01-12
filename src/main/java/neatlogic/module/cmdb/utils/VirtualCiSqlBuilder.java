@@ -240,10 +240,10 @@ public class VirtualCiSqlBuilder {
                         String alias;
                         SelectExpressionItem selectItem = new SelectExpressionItem();
                         if (selectExpressionItem.getAlias() != null) {
-                            selectItem.setExpression(new Column("md5(" + selectExpressionItem.getExpression() + ")"));
+                            selectItem.setExpression(new Column("md5(LOWER(" + selectExpressionItem.getExpression() + "))"));
                             alias = selectExpressionItem.getAlias().getName();
                         } else {
-                            selectItem.setExpression(new Column("md5(" + selectExpressionItem + ")"));
+                            selectItem.setExpression(new Column("md5(LOWER(" + selectExpressionItem + "))"));
                             alias = selectExpressionItem.toString();
                         }
                         if (attrIdMap.containsKey(alias)) {
