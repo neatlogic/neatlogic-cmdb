@@ -16,7 +16,9 @@
 
 package neatlogic.module.cmdb.api.ci;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.ci.RelVo;
@@ -33,12 +35,10 @@ import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
 import neatlogic.framework.util.RegexUtils;
-import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
 import neatlogic.module.cmdb.service.attr.AttrService;
 import neatlogic.module.cmdb.service.ci.CiService;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -55,6 +55,7 @@ import java.util.zip.ZipInputStream;
 @Service
 @AuthAction(action = CI_MODIFY.class)
 @OperationType(type = OperationTypeEnum.CREATE)
+@Transactional
 public class ImportCiApi extends PrivateBinaryStreamApiComponentBase {
     @Resource
     private CiService ciService;
@@ -89,7 +90,6 @@ public class ImportCiApi extends PrivateBinaryStreamApiComponentBase {
             @Param(name = "typeId", type = ApiParamType.LONG, desc = "common.typeid", isRequired = true),
             @Param(name = "icon", type = ApiParamType.STRING, isRequired = true, desc = "common.icon"), @Param(name = "file", type = ApiParamType.FILE, isRequired = true, desc = "common.file")})
     @Description(desc = "nmcac.importciapi.getname")
-    @Transactional
     @Override
     public Object myDoService(JSONObject paramObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
