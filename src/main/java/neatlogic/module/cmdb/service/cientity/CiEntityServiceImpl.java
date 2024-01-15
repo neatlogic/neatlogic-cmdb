@@ -1187,6 +1187,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
 
         //校验唯一规则
         if (CollectionUtils.isNotEmpty(ciVo.getUniqueAttrIdList())) {
+            List<String> valueList = new ArrayList<>();
             CiEntityVo ciEntityConditionVo = new CiEntityVo();
             ciEntityConditionVo.setCiId(ciEntityTransactionVo.getCiId());
             for (Long attrId : ciVo.getUniqueAttrIdList()) {
@@ -1209,6 +1210,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                             throw new CiUniqueAttrNotFoundException(op.get());
                         }
                     }).collect(Collectors.toList()));
+                    valueList.add(String.join(",", filterVo.getValueList()));
                     ciEntityConditionVo.addAttrFilter(filterVo);
                 } else {
                     if (oldEntity != null) {
@@ -1227,6 +1229,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                                     throw new CiUniqueAttrNotFoundException(op.get());
                                 }
                             }).collect(Collectors.toList()));
+                            valueList.add(String.join(",", filterVo.getValueList()));
                             ciEntityConditionVo.addAttrFilter(filterVo);
                         }
                     } else {
@@ -1246,7 +1249,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 List<CiEntityVo> checkList = this.searchCiEntity(ciEntityConditionVo);
                 for (CiEntityVo checkCiEntity : checkList) {
                     if (!checkCiEntity.getId().equals(ciEntityTransactionVo.getCiEntityId())) {
-                        throw new CiUniqueRuleException(ciVo);
+                        throw new CiUniqueRuleException(ciVo, String.join(",", valueList));
                     }
                 }
             }
