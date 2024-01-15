@@ -16,27 +16,25 @@
 
 package neatlogic.module.cmdb.api.batchimport;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.CIENTITY_BATCH_IMPORT;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.util.FileUtil;
 import neatlogic.framework.exception.file.*;
 import neatlogic.framework.exception.user.NoTenantException;
 import neatlogic.framework.file.core.FileTypeHandlerFactory;
 import neatlogic.framework.file.core.IFileTypeHandler;
-import neatlogic.module.framework.file.handler.LocalFileSystemHandler;
-import neatlogic.module.framework.file.handler.MinioFileSystemHandler;
 import neatlogic.framework.file.dao.mapper.FileMapper;
 import neatlogic.framework.file.dto.FileTypeVo;
 import neatlogic.framework.file.dto.FileVo;
-import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.annotation.*;
+import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.CIENTITY_BATCH_IMPORT;
 import neatlogic.module.cmdb.dao.mapper.batchimport.ImportMapper;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -169,14 +167,7 @@ public class UploadBatchImportFileApi extends PrivateBinaryStreamApiComponentBas
             fileVo.setUserUuid(userUuid);
             fileVo.setType(type);
             fileVo.setContentType(multipartFile.getContentType());
-            String filePath;
-            try {
-                filePath = FileUtil.saveData(MinioFileSystemHandler.NAME, tenantUuid, multipartFile.getInputStream(), fileVo.getId().toString(), fileVo.getContentType(), fileVo.getType().toLowerCase());
-            } catch (Exception ex) {
-                // 如果minio出现异常，则上传到本地
-                logger.error(ex.getMessage());
-                filePath = FileUtil.saveData(LocalFileSystemHandler.NAME, tenantUuid, multipartFile.getInputStream(), fileVo.getId().toString(), fileVo.getContentType(), fileVo.getType().toLowerCase());
-            }
+            String filePath = FileUtil.saveData(tenantUuid, multipartFile.getInputStream(), fileVo.getId().toString(), fileVo.getContentType(), fileVo.getType().toLowerCase());
             fileVo.setPath(filePath);
             fileMapper.insertFile(fileVo);
             fileTypeHandler.afterUpload(fileVo, paramObj);
