@@ -1268,7 +1268,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                     newValueList.addAll(valueList);
                     continue;
                 }
-                mappingObj.setMappingMode("constant");
                 Object dataObj = formAttributeDataMap.get(attributeUuid);
                 if (dataObj == null) {
                     continue;
@@ -1279,7 +1278,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                     newValueList.add(dataObj);
                 }
             } else if (Objects.equals(mappingMode, "formCommonComponent")) {
-                mappingObj.setMappingMode("constant");
                 Object dataObj = formAttributeDataMap.get(valueList.getString(0));
                 if (dataObj == null) {
                     continue;
