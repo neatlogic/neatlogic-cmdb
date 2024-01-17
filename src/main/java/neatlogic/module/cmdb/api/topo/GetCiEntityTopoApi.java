@@ -95,13 +95,14 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "isBackbone", type = ApiParamType.INTEGER, rule = "0,1", isRequired = true, desc = "term.cmdb.isbackbone"),
-            @Param(name = "layout", type = ApiParamType.ENUM, rule = "dot,circo,fdp,neato,osage,patchwork,twopi", isRequired = true, desc = "nmcat.getcientitytopoapi.input.param.desc"),
+            @Param(name = "layout", type = ApiParamType.ENUM, rule = "dot,circo,fdp,neato,osage,patchwork,twopi", isRequired = true, desc = "common.layout"),
             @Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid"),
             @Param(name = "ciEntityId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.cientityid"),
             @Param(name = "globalAttrFilterList", type = ApiParamType.JSONARRAY, desc = "nmcac.searchcientityapi.input.param.desc.globalattrfilterlist"),
             @Param(name = "disableRelList", type = ApiParamType.JSONARRAY, desc = "nmcat.getcientitytopoapi.input.param.desc.disablerellist"),
             @Param(name = "templateId", type = ApiParamType.LONG, desc = "term.autoexec.scenarioid"),
-            @Param(name = "level", type = ApiParamType.INTEGER, desc = "nmcat.getcientitytopoapi.input.param.desc.level")})
+            @Param(name = "level", type = ApiParamType.INTEGER, desc = "nmcat.getcientitytopoapi.input.param.desc.level"),
+            @Param(name = "templateConfig", type = ApiParamType.JSONOBJECT, desc = "term.cmdb.templateconfig")})
     @Output({@Param(name = "topo", type = ApiParamType.STRING)})
     @Description(desc = "nmcat.getcientitytopoapi.getname")
     @Override
@@ -109,6 +110,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
         String layout = jsonObj.getString("layout");
         int isBackbone = jsonObj.getIntValue("isBackbone");
         Long templateId = jsonObj.getLong("templateId");
+        JSONObject templateConfig = jsonObj.getJSONObject("templateConfig");
         // 所有需要绘制的配置项
         Set<CiEntityVo> ciEntitySet = new HashSet<>();
         // 所有需要绘制的层次
@@ -119,6 +121,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
         Set<String> ciEntityNodeSet = new HashSet<>();
 
         Map<Long, RelTypeVo> relTypeMap = new HashMap<>();
+
 
         Long ciEntityId = jsonObj.getLong("ciEntityId");
         JSONArray disableRelObjList = jsonObj.getJSONArray("disableRelList");
@@ -257,6 +260,20 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                 ciEntityVo.setIdList(new ArrayList<Long>() {{
                     this.add(ciEntityId);
                 }});
+                if (MapUtils.isNotEmpty(templateConfig)) {
+                    for (int i = 0; i < ciRelList.size(); i++) {
+                        JSONObject relObj = ciRelList.getJSONObject(i);
+                        String relId = relObj.getString("relId");
+                        if (templateConfig.containsKey(relId)) {
+                            JSONObject configObj = templateConfig.getJSONObject(relId);
+                            if (relObj.getIntValue("isHidden") == 0 && configObj.getBooleanValue("isHidden")) {
+                                relObj.put("isHidden", 1);
+                            } else if (relObj.getIntValue("isHidden") == 1 && configObj.getBooleanValue("isShow")) {
+                                relObj.put("isHidden", 0);
+                            }
+                        }
+                    }
+                }
                 while (startIndex < ciRelList.size()) {
                     List<RelVo> relList = new ArrayList<>();
                     for (int i = startIndex; i < ciRelList.size(); i++) {
