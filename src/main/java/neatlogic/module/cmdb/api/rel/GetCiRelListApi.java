@@ -74,7 +74,8 @@ public class GetCiRelListApi extends PrivateApiComponentBase {
             @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "nmcar.getcirellistapi.input.param.desc"),
             @Param(name = "allowEdit", type = ApiParamType.INTEGER, rule = "1,0", desc = "term.cmdb.allowedit"),
             @Param(name = "isRequired", type = ApiParamType.INTEGER, rule = "1,0", desc = "common.isrequired"),
-            @Param(name = "showType", type = ApiParamType.ENUM, rule = "all,list,detail", desc = "common.displaytype")
+            @Param(name = "showType", type = ApiParamType.ENUM, rule = "all,list,detail", desc = "common.displaytype"),
+            @Param(name = "needAlias", type = ApiParamType.INTEGER, desc = "term.cmdb.needalias", rule = "0,1")
     })
     @Output({@Param(explode = RelVo[].class)})
     @Description(desc = "nmcar.getcirellistapi.getname")
@@ -86,6 +87,7 @@ public class GetCiRelListApi extends PrivateApiComponentBase {
         boolean needAction = jsonObj.getBooleanValue("needAction");
         Integer allowEdit = jsonObj.getInteger("allowEdit");
         Integer isRequired = jsonObj.getInteger("isRequired");
+        int needAlias = jsonObj.getIntValue("needAlias");
         List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciId));
         if (relId != null) {
             relList.removeIf(d -> d.getId().equals(relId));
@@ -98,6 +100,17 @@ public class GetCiRelListApi extends PrivateApiComponentBase {
             List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo));
             Set<Long> relSet = new HashSet<>();
             for (CiViewVo ciView : ciViewList) {
+                if (needAlias == 1 && StringUtils.isNotBlank(ciView.getAlias()) && ciView.getType().equals("rel")) {
+                    Optional<RelVo> op = relList.stream().filter(d -> d.getId().equals(ciView.getItemId())).findFirst();
+                    if (op.isPresent()) {
+                        RelVo rel = op.get();
+                        if (rel.getDirection().equals(RelDirectionType.FROM.getValue())) {
+                            rel.setToLabel(ciView.getAlias());
+                        } else {
+                            rel.setFromLabel(ciView.getAlias());
+                        }
+                    }
+                }
                 if (ciView.getType().startsWith("rel")) {
                     relSet.add(ciView.getItemId());
                 }

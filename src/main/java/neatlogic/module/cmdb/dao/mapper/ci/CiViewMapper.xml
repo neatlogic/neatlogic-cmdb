@@ -50,6 +50,7 @@
         attr.`name` AS itemName,
         attr.`label` AS itemLabel,
         'attr' AS type,
+        v.alias,
         v.show_type AS showType,
         v.allow_edit AS allowEdit,
         IFNULL(v.sort, 999999) AS sort,
@@ -68,6 +69,7 @@
         rel.to_name AS itemName,
         rel.to_label AS itemLabel,<!-- 当前模型作为上游时需要显示下游目标名称 -->
         'relfrom' AS type,
+        v.alias,
         v.show_type AS showType,
         v.allow_edit AS allowEdit,
         IFNULL(v.sort, 999999) AS sort,
@@ -85,6 +87,7 @@
         rel.from_name AS itemName,
         rel.from_label AS itemLabel,<!-- 当前模型作为下游时需要显示上游目标名称 -->
         'relto' AS type,
+        v.alias,
         v.show_type AS showType,
         v.allow_edit AS allowEdit,
         IFNULL(v.sort, 999999) AS sort,
@@ -105,6 +108,7 @@
         cga.name as itemName,
         cga.label as itemLabel,
         'global' as type,
+        v.alias,
         IFNULL(v.show_type,'none') AS showType,
         v.allow_edit AS allowEdit,
         IFNULL(v.sort, 999999) as sort,
@@ -119,6 +123,7 @@
         const.name AS itemName,
         const.label AS itemLabel,
         'const' AS type,
+        v.alias,
         IFNULL(v.show_type,'none') AS showType,
         v.allow_edit AS allowEdit,
         IFNULL(v.sort, 999999) as sort,
@@ -147,13 +152,15 @@
                                  `type`,
                                  `sort`,
                                  `show_type`,
-                                 `allow_edit`)
+                                 `allow_edit`,
+                                 `alias`)
         VALUES (#{ciId},
                 #{itemId},
                 #{type},
                 #{sort},
                 #{showType},
-                #{allowEdit})
+                #{allowEdit},
+                #{alias})
     </insert>
 
     <delete id="deleteCiViewByCiId" parameterType="java.lang.Long">

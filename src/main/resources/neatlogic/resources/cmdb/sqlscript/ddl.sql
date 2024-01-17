@@ -925,6 +925,7 @@ CREATE TABLE IF NOT EXISTS `cmdb_view` (
   `sort` int NOT NULL COMMENT '排序',
   `show_type` enum('none','all','list','detail') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '显示方式',
   `allow_edit` tinyint(1) DEFAULT NULL COMMENT '允许修改',
+  `alias` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '别名',
   PRIMARY KEY (`ci_id`,`item_id`,`type`) USING BTREE,
   KEY `idx_item_id` (`item_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='cmdb视图表';

@@ -41,6 +41,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -79,8 +80,8 @@ public class GetCiAttrListApi extends PrivateApiComponentBase {
             @Param(name = "allowEdit", type = ApiParamType.INTEGER, rule = "1,0", desc = "term.cmdb.allowedit"),
             @Param(name = "isRequired", type = ApiParamType.INTEGER, rule = "1,0", desc = "common.isrequired"),
             @Param(name = "isSimple", type = ApiParamType.BOOLEAN, rule = "true,false", desc = "term.cmdb.issimpleattribute"),
-            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "common.defaultvalue")
-
+            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "common.defaultvalue"),
+            @Param(name = "needAlias", type = ApiParamType.INTEGER, desc = "term.cmdb.needalias", rule = "0,1")
     })
     @Output({
             @Param(name = "Return", explode = AttrVo[].class)
@@ -89,10 +90,10 @@ public class GetCiAttrListApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONArray defaultValue = jsonObj.getJSONArray("defaultValue");
+        int needAlias = jsonObj.getIntValue("needAlias");
         if (CollectionUtils.isNotEmpty(defaultValue)) {
             List<Long> idList = defaultValue.toJavaList(Long.class);
-            List<AttrVo> attrList = attrMapper.getAttrByIdList(idList);
-            return attrList;
+            return attrMapper.getAttrByIdList(idList);
         }
         Long ciId = jsonObj.getLong("ciId");
         if (ciId == null) {
@@ -119,6 +120,10 @@ public class GetCiAttrListApi extends PrivateApiComponentBase {
             List<CiViewVo> ciViewList = ciViewMapper.getCiViewByCiId(ciViewVo);
             Set<Long> attrSet = new HashSet<>();
             for (CiViewVo ciView : ciViewList) {
+                if (needAlias == 1 && StringUtils.isNotBlank(ciView.getAlias()) && ciView.getType().equals("attr")) {
+                    Optional<AttrVo> op = attrList.stream().filter(d -> d.getId().equals(ciView.getItemId())).findFirst();
+                    op.ifPresent(attrVo -> attrVo.setLabel(ciView.getAlias()));
+                }
                 if (ciView.getType().equals("attr")) {
                     attrSet.add(ciView.getItemId());
                 }

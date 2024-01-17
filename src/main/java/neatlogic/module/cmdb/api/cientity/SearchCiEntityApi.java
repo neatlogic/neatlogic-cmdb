@@ -42,6 +42,7 @@ import neatlogic.framework.exception.type.ParamNotExistsException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.framework.util.$;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiViewMapper;
@@ -241,7 +242,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
                 theadList.add(new JSONObject() {
                     {
                         this.put("key", "actionType");
-                        this.put("title", "操作类型");
+                        this.put("title", $.t("common.actiontype"));
                     }
                 });
             }
@@ -252,7 +253,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
                 globalAttrIdList = new ArrayList<>();
                 for (CiViewVo ciview : ciViewList) {
                     JSONObject headObj = new JSONObject();
-                    headObj.put("title", ciview.getItemLabel());
+                    headObj.put("title", ciview.getAliasOrLabel());
                     switch (ciview.getType()) {
                         case "attr":
                             if (CollectionUtils.isEmpty(showAttrRelSet) || showAttrRelSet.contains("attr_" + ciview.getItemId())) {

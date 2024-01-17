@@ -64,13 +64,15 @@ public class GetCiEntityGlobalAttrEntityApi extends PrivateApiComponentBase {
     }
 
     @Input({@Param(name = "ciEntityId", isRequired = true, type = ApiParamType.LONG, desc = "term.cmdb.cientityid"),
-            @Param(name = "showType", type = ApiParamType.ENUM, rule = "all,list,detail", desc = "common.displaytype"),})
+            @Param(name = "showType", type = ApiParamType.ENUM, rule = "all,list,detail", desc = "common.displaytype"),
+            @Param(name = "needAlias", type = ApiParamType.INTEGER, desc = "term.cmdb.needalias", rule = "0,1")})
     @Output({@Param(explode = GlobalAttrEntityVo[].class)})
     @Description(desc = "nmcag.getcientityglobalattrentityapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long ciEntityId = paramObj.getLong("ciEntityId");
         String showType = paramObj.getString("showType");
+        int needAlias = paramObj.getIntValue("needAlias");
         CiEntityVo ciEntityVo = ciEntityMapper.getCiEntityBaseInfoById(ciEntityId);
         if (ciEntityVo == null) {
             throw new CiEntityNotFoundException(ciEntityId);
@@ -89,6 +91,10 @@ public class GetCiEntityGlobalAttrEntityApi extends PrivateApiComponentBase {
             List<CiViewVo> ciViewList = ciViewMapper.getCiViewByCiId(ciViewVo);
             Set<Long> attrSet = new HashSet<>();
             for (CiViewVo ciView : ciViewList) {
+                if (needAlias == 1 && StringUtils.isNotBlank(ciView.getAlias()) && ciView.getType().equals("global")) {
+                    Optional<GlobalAttrVo> op = globalAttrList.stream().filter(d -> d.getId().equals(ciView.getItemId())).findFirst();
+                    op.ifPresent(attrVo -> attrVo.setLabel(ciView.getAlias()));
+                }
                 if (ciView.getType().equals("global")) {
                     attrSet.add(ciView.getItemId());
                 }
