@@ -82,24 +82,32 @@ public class GetCiEntityGlobalAttrEntityApi extends PrivateApiComponentBase {
         先搜索出所有全局属性再和配置了全局属性的数据合并，这样做的目的是全局属性随时可能会增加，为了能正确显示新添加的全局属性，需要两份数据做合并
          */
         List<GlobalAttrVo> globalAttrList = globalAttrMapper.getGlobalAttrByCiId(ciEntityVo.getCiId());
-
+        List<CiViewVo> ciViewList;
         if (StringUtils.isNotBlank(showType)) {
             CiViewVo ciViewVo = new CiViewVo();
             ciViewVo.setCiId(ciEntityVo.getCiId());
             ciViewVo.addShowType(showType);
             ciViewVo.addShowType(ShowType.ALL.getValue());
-            List<CiViewVo> ciViewList = ciViewMapper.getCiViewByCiId(ciViewVo);
+            ciViewList = ciViewMapper.getCiViewByCiId(ciViewVo);
             Set<Long> attrSet = new HashSet<>();
             for (CiViewVo ciView : ciViewList) {
-                if (needAlias == 1 && StringUtils.isNotBlank(ciView.getAlias()) && ciView.getType().equals("global")) {
-                    Optional<GlobalAttrVo> op = globalAttrList.stream().filter(d -> d.getId().equals(ciView.getItemId())).findFirst();
-                    op.ifPresent(attrVo -> attrVo.setLabel(ciView.getAlias()));
-                }
                 if (ciView.getType().equals("global")) {
                     attrSet.add(ciView.getItemId());
                 }
             }
             globalAttrList.removeIf(attr -> !attrSet.contains(attr.getId()));
+        } else {
+            CiViewVo ciViewVo = new CiViewVo();
+            ciViewVo.setCiId(ciEntityVo.getCiId());
+            ciViewList = ciViewMapper.getCiViewByCiId(ciViewVo);
+        }
+        if (needAlias == 1 && CollectionUtils.isNotEmpty(ciViewList)) {
+            for (CiViewVo ciView : ciViewList) {
+                if (StringUtils.isNotBlank(ciView.getAlias()) && ciView.getType().equals("global")) {
+                    Optional<GlobalAttrVo> op = globalAttrList.stream().filter(d -> d.getId().equals(ciView.getItemId())).findFirst();
+                    op.ifPresent(attrVo -> attrVo.setLabel(ciView.getAlias()));
+                }
+            }
         }
 
         if (CollectionUtils.isNotEmpty(globalAttrList)) {

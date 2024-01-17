@@ -112,23 +112,32 @@ public class GetCiAttrListApi extends PrivateApiComponentBase {
         Integer allowEdit = jsonObj.getInteger("allowEdit");
         Integer isRequired = jsonObj.getInteger("isRequired");
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciId);
+        List<CiViewVo> ciViewList;
         if (StringUtils.isNotBlank(showType)) {
             CiViewVo ciViewVo = new CiViewVo();
             ciViewVo.setCiId(ciId);
             ciViewVo.addShowType(showType);
             ciViewVo.addShowType(ShowType.ALL.getValue());
-            List<CiViewVo> ciViewList = ciViewMapper.getCiViewByCiId(ciViewVo);
+            ciViewList = ciViewMapper.getCiViewByCiId(ciViewVo);
             Set<Long> attrSet = new HashSet<>();
             for (CiViewVo ciView : ciViewList) {
-                if (needAlias == 1 && StringUtils.isNotBlank(ciView.getAlias()) && ciView.getType().equals("attr")) {
-                    Optional<AttrVo> op = attrList.stream().filter(d -> d.getId().equals(ciView.getItemId())).findFirst();
-                    op.ifPresent(attrVo -> attrVo.setLabel(ciView.getAlias()));
-                }
                 if (ciView.getType().equals("attr")) {
                     attrSet.add(ciView.getItemId());
                 }
             }
             attrList.removeIf(attr -> !attrSet.contains(attr.getId()));
+        } else {
+            CiViewVo ciViewVo = new CiViewVo();
+            ciViewVo.setCiId(ciId);
+            ciViewList = ciViewMapper.getCiViewByCiId(ciViewVo);
+        }
+        if (needAlias == 1 && CollectionUtils.isNotEmpty(ciViewList)) {
+            for (CiViewVo ciView : ciViewList) {
+                if (StringUtils.isNotBlank(ciView.getAlias()) && ciView.getType().equals("attr")) {
+                    Optional<AttrVo> op = attrList.stream().filter(d -> d.getId().equals(ciView.getItemId())).findFirst();
+                    op.ifPresent(attrVo -> attrVo.setLabel(ciView.getAlias()));
+                }
+            }
         }
         if (allowEdit != null) {
             attrList.removeIf(attr -> (allowEdit.equals(1) && (attr.getAllowEdit() != null && attr.getAllowEdit().equals(0)))

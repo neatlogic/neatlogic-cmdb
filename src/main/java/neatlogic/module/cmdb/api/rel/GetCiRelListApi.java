@@ -34,6 +34,7 @@ import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiViewMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -92,15 +93,28 @@ public class GetCiRelListApi extends PrivateApiComponentBase {
         if (relId != null) {
             relList.removeIf(d -> d.getId().equals(relId));
         }
+        List<CiViewVo> ciViewList;
         if (StringUtils.isNotBlank(showType)) {
             CiViewVo ciViewVo = new CiViewVo();
             ciViewVo.setCiId(ciId);
             ciViewVo.addShowType(showType);
             ciViewVo.addShowType(ShowType.ALL.getValue());
-            List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo));
+            ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo));
             Set<Long> relSet = new HashSet<>();
             for (CiViewVo ciView : ciViewList) {
-                if (needAlias == 1 && StringUtils.isNotBlank(ciView.getAlias()) && ciView.getType().equals("rel")) {
+                if (ciView.getType().startsWith("rel")) {
+                    relSet.add(ciView.getItemId());
+                }
+            }
+            relList.removeIf(rel -> !relSet.contains(rel.getId()));
+        } else {
+            CiViewVo ciViewVo = new CiViewVo();
+            ciViewVo.setCiId(ciId);
+            ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo));
+        }
+        if (needAlias == 1 && CollectionUtils.isNotEmpty(ciViewList)) {
+            for (CiViewVo ciView : ciViewList) {
+                if (StringUtils.isNotBlank(ciView.getAlias()) && ciView.getType().equals("rel")) {
                     Optional<RelVo> op = relList.stream().filter(d -> d.getId().equals(ciView.getItemId())).findFirst();
                     if (op.isPresent()) {
                         RelVo rel = op.get();
@@ -111,11 +125,7 @@ public class GetCiRelListApi extends PrivateApiComponentBase {
                         }
                     }
                 }
-                if (ciView.getType().startsWith("rel")) {
-                    relSet.add(ciView.getItemId());
-                }
             }
-            relList.removeIf(rel -> !relSet.contains(rel.getId()));
         }
         if (allowEdit != null) {
             relList.removeIf(rel -> (allowEdit.equals(1) && (rel.getAllowEdit() != null && rel.getAllowEdit().equals(0)))

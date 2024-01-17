@@ -32,12 +32,14 @@ import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiViewMapper;
 import neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -73,7 +75,8 @@ public class GetCiGlobalAttrListApi extends PrivateApiComponentBase {
             @Param(name = "ciId", type = ApiParamType.LONG, desc = "term.cmdb.ciid"),
             @Param(name = "ciName", type = ApiParamType.STRING, desc = "term.cmdb.ciname"),
             @Param(name = "showType", type = ApiParamType.ENUM, rule = "all,list,detail", desc = "common.displaytype"),
-            @Param(name = "allowEdit", type = ApiParamType.INTEGER, rule = "1,0", desc = "term.cmdb.allowedit")
+            @Param(name = "allowEdit", type = ApiParamType.INTEGER, rule = "1,0", desc = "term.cmdb.allowedit"),
+            @Param(name = "needAlias", type = ApiParamType.INTEGER, desc = "term.cmdb.needalias", rule = "0,1")
     })
     @Output({
             @Param(name = "Return", explode = GlobalAttrVo[].class)
@@ -82,6 +85,7 @@ public class GetCiGlobalAttrListApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("ciId");
+        int needAlias = jsonObj.getIntValue("needAlias");
         if (ciId == null) {
             String ciName = jsonObj.getString("ciName");
             if (StringUtils.isBlank(ciName)) {
@@ -96,12 +100,13 @@ public class GetCiGlobalAttrListApi extends PrivateApiComponentBase {
         String showType = jsonObj.getString("showType");
         Integer allowEdit = jsonObj.getInteger("allowEdit");
         List<GlobalAttrVo> attrList = globalAttrMapper.getGlobalAttrByCiId(ciId);
+        List<CiViewVo> ciViewList;
         if (StringUtils.isNotBlank(showType)) {
             CiViewVo ciViewVo = new CiViewVo();
             ciViewVo.setCiId(ciId);
             ciViewVo.addShowType(showType);
             ciViewVo.addShowType(ShowType.ALL.getValue());
-            List<CiViewVo> ciViewList = ciViewMapper.getCiViewByCiId(ciViewVo);
+            ciViewList = ciViewMapper.getCiViewByCiId(ciViewVo);
             Set<Long> attrSet = new HashSet<>();
             for (CiViewVo ciView : ciViewList) {
                 if (ciView.getType().equals("global")) {
@@ -109,6 +114,18 @@ public class GetCiGlobalAttrListApi extends PrivateApiComponentBase {
                 }
             }
             attrList.removeIf(attr -> !attrSet.contains(attr.getId()));
+        } else {
+            CiViewVo ciViewVo = new CiViewVo();
+            ciViewVo.setCiId(ciId);
+            ciViewList = ciViewMapper.getCiViewByCiId(ciViewVo);
+        }
+        if (needAlias == 1 && CollectionUtils.isNotEmpty(ciViewList)) {
+            for (CiViewVo ciView : ciViewList) {
+                if (StringUtils.isNotBlank(ciView.getAlias()) && ciView.getType().equals("global")) {
+                    Optional<GlobalAttrVo> op = attrList.stream().filter(d -> d.getId().equals(ciView.getItemId())).findFirst();
+                    op.ifPresent(attrVo -> attrVo.setLabel(ciView.getAlias()));
+                }
+            }
         }
         if (allowEdit != null) {
             attrList.removeIf(attr -> (allowEdit.equals(1) && (attr.getAllowEdit() != null && attr.getAllowEdit().equals(0)))
