@@ -16,7 +16,10 @@
 
 package neatlogic.module.cmdb.api.cientity;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.ci.CiViewVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo;
@@ -26,18 +29,15 @@ import neatlogic.framework.cmdb.enums.ShowType;
 import neatlogic.framework.cmdb.enums.TransactionActionType;
 import neatlogic.framework.cmdb.enums.TransactionStatus;
 import neatlogic.framework.cmdb.enums.group.GroupType;
+import neatlogic.framework.cmdb.utils.RelUtil;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.module.cmdb.dao.mapper.ci.CiViewMapper;
 import neatlogic.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
-import neatlogic.framework.cmdb.utils.RelUtil;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -110,7 +110,7 @@ public class SearchDeleteCiEntityApi extends PrivateApiComponentBase {
         if (CollectionUtils.isNotEmpty(ciViewList)) {
             for (CiViewVo ciview : ciViewList) {
                 JSONObject headObj = new JSONObject();
-                headObj.put("title", ciview.getItemLabel());
+                headObj.put("title", StringUtils.isNotBlank(ciview.getAlias()) ? ciview.getAlias() : ciview.getItemLabel());
                 switch (ciview.getType()) {
                     case "attr":
                         headObj.put("key", "attr_" + ciview.getItemId());
