@@ -114,7 +114,7 @@ public class GetCiRelListApi extends PrivateApiComponentBase {
         }
         if (needAlias == 1 && CollectionUtils.isNotEmpty(ciViewList)) {
             for (CiViewVo ciView : ciViewList) {
-                if (StringUtils.isNotBlank(ciView.getAlias()) && ciView.getType().equals("rel")) {
+                if (StringUtils.isNotBlank(ciView.getAlias()) && (ciView.getType().equals("relfrom") || ciView.getType().equals("relto"))) {
                     Optional<RelVo> op = relList.stream().filter(d -> d.getId().equals(ciView.getItemId())).findFirst();
                     if (op.isPresent()) {
                         RelVo rel = op.get();
