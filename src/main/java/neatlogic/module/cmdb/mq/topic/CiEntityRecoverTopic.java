@@ -16,9 +16,10 @@
 
 package neatlogic.module.cmdb.mq.topic;
 
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import neatlogic.framework.mq.core.TopicBase;
-import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -40,10 +41,6 @@ public class CiEntityRecoverTopic extends TopicBase<CiEntityTransactionVo> {
 
     @Override
     protected JSONObject generateTopicContent(CiEntityTransactionVo content) {
-        //FIXME 补充内容
-        JSONObject dataObj = new JSONObject();
-        dataObj.put("id", "123");
-        dataObj.put("name", "abc");
-        return dataObj;
+        return JSONObject.parseObject(JSONObject.toJSONString(content, SerializerFeature.DisableCircularReferenceDetect));
     }
 }

@@ -35,8 +35,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
@@ -69,15 +71,21 @@ public class GetCiApi extends PrivateApiComponentBase {
     }
 
     @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid"),
-            @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "nmcac.getciapi.input.param.desc.needaction")})
+            @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "nmcac.getciapi.input.param.desc.needaction"),
+            @Param(name = "needChildren", type = ApiParamType.BOOLEAN, desc = "是否返回子模型")})
     @Output({@Param(explode = CiVo.class)})
     @Description(desc = "nmcac.getciapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("id");
+        boolean needChildren = jsonObj.getBooleanValue("needChildren");
         CiVo ciVo = ciMapper.getCiById(ciId);
         if (ciVo == null) {
             throw new CiNotFoundException(ciId);
+        }
+        if (needChildren) {
+            List<CiVo> childCiList = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
+            ciVo.setChildren(childCiList.stream().filter(d -> !d.getId().equals(ciVo.getId())).collect(Collectors.toList()));
         }
         ciVo.setHasData(ciSchemaMapper.checkTableHasData(ciVo.getCiTableName()) > 0);
         if (Objects.equals(ciVo.getIsVirtual(), 1) && ciVo.getFileId() != null) {
