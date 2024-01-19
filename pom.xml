@@ -59,10 +59,10 @@
             <artifactId>neatlogic-tagent-base</artifactId>
         </dependency>
         <!-- graphviz 依赖包开始 -->
-        <dependency>
+        <!--<dependency>
             <groupId>guru.nidi</groupId>
             <artifactId>graphviz-java</artifactId>
             <version>0.17.0</version>
-        </dependency>
+        </dependency>-->
     </dependencies>
 </project>
