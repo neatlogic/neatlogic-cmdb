@@ -680,8 +680,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
         Long ciId = mainConfigObj.getCiId();
         String uuid = mainConfigObj.getUuid();
         CiEntityTransactionVo ciEntityTransactionVo = ciEntityTransactionMap.get(uuid);
-
-
         List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciId));
         for (RelVo relVo : relList) {
             String key = "rel" + relVo.getDirection() + "_" + relVo.getId();
@@ -739,6 +737,7 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                                 valueObj.put("action", RelActionType.REPLACE.getValue());
                             }
                         }
+
                         Long ciEntityId = valueObj.getLong("ciEntityId");
                         if (ciEntityId == null) {
                             CiEntityTransactionVo tmpVo = ciEntityTransactionMap.get(ciEntityUuid);
