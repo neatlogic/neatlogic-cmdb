@@ -72,7 +72,7 @@ public class GetCiApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid"),
             @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "nmcac.getciapi.input.param.desc.needaction"),
-            @Param(name = "needChildren", type = ApiParamType.BOOLEAN, desc = "是否返回子模型")})
+            @Param(name = "needChildren", type = ApiParamType.BOOLEAN, desc = "term.cmdb.needchildren")})
     @Output({@Param(explode = CiVo.class)})
     @Description(desc = "nmcac.getciapi.getname")
     @Override
