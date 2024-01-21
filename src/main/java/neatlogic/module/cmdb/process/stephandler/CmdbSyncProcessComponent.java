@@ -38,7 +38,6 @@ import neatlogic.framework.cmdb.exception.attr.AttrNotFoundException;
 import neatlogic.framework.cmdb.exception.attr.AttrValueIrregularException;
 import neatlogic.framework.cmdb.exception.attrtype.AttrTypeNotFoundException;
 import neatlogic.framework.cmdb.exception.ci.*;
-import neatlogic.framework.cmdb.exception.globalattr.GlobalAttrValueIrregularException;
 import neatlogic.framework.cmdb.utils.RelUtil;
 import neatlogic.framework.common.constvalue.Expression;
 import neatlogic.framework.common.constvalue.InputFrom;
@@ -691,24 +690,27 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             if (Objects.equals(mappingMode, "new")) {// 表示关系
                 List<JSONObject> alreadyExistRelList = new ArrayList<>();
                 List<Long> ciEntityIdList = new ArrayList<>();
-                List<RelEntityVo> relEntityList;
-                if (relVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
-                    relEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(ciEntityTransactionVo.getCiEntityId(), relVo.getId(), null);
-                    for (RelEntityVo relEntityVo : relEntityList) {
-                        JSONObject jsonObj = new JSONObject();
-                        jsonObj.put("ciEntityId", relEntityVo.getToCiEntityId());
-                        jsonObj.put("ciEntityName", relEntityVo.getToCiEntityName());
-                        jsonObj.put("ciId", relEntityVo.getToCiId());
-                        alreadyExistRelList.add(jsonObj);
-                    }
-                } else {
-                    relEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(ciEntityTransactionVo.getCiEntityId(), relVo.getId(), null);
-                    for (RelEntityVo relEntityVo : relEntityList) {
-                        JSONObject jsonObj = new JSONObject();
-                        jsonObj.put("ciEntityId", relEntityVo.getFromCiEntityId());
-                        jsonObj.put("ciEntityName", relEntityVo.getFromCiEntityName());
-                        jsonObj.put("ciId", relEntityVo.getFromCiId());
-                        alreadyExistRelList.add(jsonObj);
+                if (Objects.equals(mainConfigObj.getEditMode(), EditModeType.PARTIAL.getValue())
+                        && !Objects.equals(mainConfigObj.getAction(), "replace")) {
+                    List<RelEntityVo> relEntityList;
+                    if (relVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
+                        relEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(ciEntityTransactionVo.getCiEntityId(), relVo.getId(), null);
+                        for (RelEntityVo relEntityVo : relEntityList) {
+                            JSONObject jsonObj = new JSONObject();
+                            jsonObj.put("ciEntityId", relEntityVo.getToCiEntityId());
+                            jsonObj.put("ciEntityName", relEntityVo.getToCiEntityName());
+                            jsonObj.put("ciId", relEntityVo.getToCiId());
+                            alreadyExistRelList.add(jsonObj);
+                        }
+                    } else {
+                        relEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(ciEntityTransactionVo.getCiEntityId(), relVo.getId(), null);
+                        for (RelEntityVo relEntityVo : relEntityList) {
+                            JSONObject jsonObj = new JSONObject();
+                            jsonObj.put("ciEntityId", relEntityVo.getFromCiEntityId());
+                            jsonObj.put("ciEntityName", relEntityVo.getFromCiEntityName());
+                            jsonObj.put("ciId", relEntityVo.getFromCiId());
+                            alreadyExistRelList.add(jsonObj);
+                        }
                     }
                 }
                 JSONArray valueList = mappingObj.getValueList();
@@ -784,9 +786,11 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             String key = "global_" + globalAttrVo.getId();
             CiEntitySyncMappingVo mappingObj = mappingMap.get(key);
             if (mappingObj == null) {
-                JSONObject globalAttrEntity = new JSONObject();
-                globalAttrEntity.put("valueList", new JSONArray());
-                globalAttrEntityData.put(key, globalAttrEntity);
+                if (Objects.equals(mainConfigObj.getEditMode(), EditModeType.GLOBAL.getValue())) {
+                    JSONObject globalAttrEntity = new JSONObject();
+                    globalAttrEntity.put("valueList", new JSONArray());
+                    globalAttrEntityData.put(key, globalAttrEntity);
+                }
                 continue;
             }
             JSONArray valueList = new JSONArray();
@@ -798,7 +802,7 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                     if (valueObj instanceof JSONObject) {
                         valueList.add(valueObj);
                     } else {
-                        boolean flag = false;
+//                        boolean flag = false;
                         List<GlobalAttrItemVo> itemList = globalAttrVo.getItemList();
                         for (GlobalAttrItemVo item : itemList) {
                             if (Objects.equals(item.getValue(), valueObj)
@@ -809,12 +813,12 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                                 jsonObj.put("sort", item.getSort());
                                 jsonObj.put("attrId", globalAttrVo.getId());
                                 valueList.add(jsonObj);
-                                flag = true;
+//                                flag = true;
                             }
                         }
-                        if (!flag) {
-                            throw new GlobalAttrValueIrregularException(globalAttrVo, valueObj.toString());
-                        }
+//                        if (!flag) {
+//                            throw new GlobalAttrValueIrregularException(globalAttrVo, valueObj.toString());
+//                        }
                     }
                 }
             }
@@ -1540,6 +1544,9 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
         }
         IFormCrossoverService formCrossoverService = CrossoverServiceFactory.getApi(IFormCrossoverService.class);
         String handler = formCrossoverService.getFormAttributeHandler(attributeUuid, formConfig);
+        if (handler == null) {
+            return null;
+        }
         if (Objects.equals(handler, FormHandler.FORMUPLOAD.getHandler())) {
             JSONArray resultList = new JSONArray();
             if (originalValue instanceof JSONArray) {
@@ -1637,7 +1644,13 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             JSONObject rowDataObj = tempList.getJSONObject(i);
             for (Map.Entry<String, Object> entry : rowDataObj.entrySet()) {
                 Object valueObj = formAttributeDataAdaptsToCmdb(entry.getKey(), entry.getValue(), formConfig);
+                if (valueObj == null) {
+                    continue;
+                }
                 newRowDataObj.put(entry.getKey(), valueObj);
+            }
+            if (MapUtils.isEmpty(newRowDataObj)) {
+                continue;
             }
             resultList.add(newRowDataObj);
         }
