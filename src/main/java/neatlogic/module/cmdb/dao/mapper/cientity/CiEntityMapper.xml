@@ -850,10 +850,12 @@
                             and `ccgi`.attr_id = #{item.attrId}
                             and `ccgi`.item_id in <foreach collection="item.valueList" item="value" open="(" close=")"
                                                            separator=",">#{value}</foreach>)
-                            or
-                            not exists ( select 1 from `cmdb_cientity_globalattritem` ccgi where `ci_base`.id =
-                            `ccgi`.cientity_id
-                            and `ccgi`.attr_id = #{item.attrId})
+                            <if test="globalAttrStrictMode == false">
+                                or
+                                not exists ( select 1 from `cmdb_cientity_globalattritem` ccgi where `ci_base`.id =
+                                `ccgi`.cientity_id
+                                and `ccgi`.attr_id = #{item.attrId})
+                            </if>
                         </when>
                         <when test="item.expression == 'notlike'">
                             not exists ( select 1 from `cmdb_cientity_globalattritem`

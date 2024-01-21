@@ -118,6 +118,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
             @Param(name = "mode", type = ApiParamType.ENUM, rule = "page,dialog", desc = "nmcac.searchcientityapi.input.param.desc.mode"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage"),
+            @Param(name = "globalAttrStrictMode", type = ApiParamType.BOOLEAN, desc = "全局属性严格模式，严格模式下不返回没有全局属性的配置项，只用在配置项搜索"),
             @Param(name = "ciEntityList", type = ApiParamType.JSONARRAY, desc = "nmcac.searchcientityapi.input.param.desc.cientitylist"),
             @Param(name = "attrId", type = ApiParamType.LONG, desc = "nmcac.searchcientityapi.input.param.desc.attrid"),
             @Param(name = "fromCiEntityId", type = ApiParamType.LONG, desc = "nmcac.searchcientityapi.input.param.desc.fromcientityid"),
