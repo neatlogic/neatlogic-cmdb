@@ -73,10 +73,10 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid"),
+    @Input({
             @Param(name = "ciEntityId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.cientityid"),
-            @Param(name = "limitRelEntity", type = ApiParamType.BOOLEAN, isRequired = true, desc = "nmcac.getcientityapi.input.param.desc.limitrelentity"),
-            @Param(name = "limitAttrEntity", type = ApiParamType.BOOLEAN, isRequired = true, desc = "nmcac.getcientityapi.input.param.desc.limitattrentity"),
+            @Param(name = "limitRelEntity", type = ApiParamType.BOOLEAN, desc = "nmcac.getcientityapi.input.param.desc.limitrelentity"),
+            @Param(name = "limitAttrEntity", type = ApiParamType.BOOLEAN, desc = "nmcac.getcientityapi.input.param.desc.limitattrentity"),
             @Param(name = "showAttrRelList", type = ApiParamType.JSONARRAY, desc = "nmcac.getcientityapi.input.param.desc.showattrrellist"),
             @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "nmcac.getcientityapi.input.param.desc.needaction")})
     @Output({@Param(explode = CiEntityVo.class)})
@@ -84,7 +84,11 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciEntityId = jsonObj.getLong("ciEntityId");
-        Long ciId = jsonObj.getLong("ciId");
+        CiEntityVo ciEntityBaseVo = ciEntityService.getCiEntityBaseInfoById(ciEntityId);
+        if (ciEntityBaseVo == null) {
+            throw new CiEntityNotFoundException(ciEntityId);
+        }
+        Long ciId = ciEntityBaseVo.getCiId();
         Boolean limitRelEntity = jsonObj.getBoolean("limitRelEntity");
         Boolean limitAttrEntity = jsonObj.getBoolean("limitAttrEntity");
         if (limitRelEntity == null) {
@@ -108,9 +112,6 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
         pCiEntityVo.setLimitRelEntity(limitRelEntity);
         pCiEntityVo.setLimitAttrEntity(limitAttrEntity);
         CiEntityVo ciEntityVo = ciEntityService.getCiEntityById(pCiEntityVo);
-        if (ciEntityVo == null) {
-            throw new CiEntityNotFoundException(ciEntityId);
-        }
         ciEntityVo.setIsVirtual(ciVo.getIsVirtual());
         if (!CiAuthChecker.chain().checkCiEntityQueryPrivilege(ciEntityVo.getCiId()).checkCiEntityIsInGroup(ciEntityVo.getId(), GroupType.READONLY, GroupType.MAINTAIN, GroupType.AUTOEXEC).check()) {
             throw new CiEntityAuthException(ciEntityVo.getCiLabel(), TransactionActionType.VIEW.getText());
