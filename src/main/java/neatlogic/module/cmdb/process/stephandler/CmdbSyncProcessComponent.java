@@ -1408,11 +1408,14 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             }
             JSONArray newValueList = new JSONArray();
             String mappingMode = mappingObj.getMappingMode();
+            if (Objects.equals(mappingMode, "new")) {
+                continue;
+            }
             if (Objects.equals(mappingMode, "formTableComponent")
                     || Objects.equals(mappingMode, "formSubassemblyComponent")) {
                 String attributeUuid = valueList.getString(valueList.size() -1);
                 if (batchDataColumnList.contains(attributeUuid)) {
-                    newValueList.addAll(valueList);
+//                    newValueList.addAll(valueList);
                     continue;
                 }
                 Object dataObj = formAttributeDataMap.get(attributeUuid);
@@ -1434,8 +1437,6 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                 } else {
                     newValueList.add(dataObj);
                 }
-            } else {
-                newValueList.addAll(valueList);
             }
             for (int i = newValueList.size() - 1; i >= 0; i--) {
                 if (StringUtils.isBlank(newValueList.getString(i))){
