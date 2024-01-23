@@ -244,18 +244,18 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                     return 0;
                 }
                 /* 遍历起始模型配置信息列表，生成CiEntityTransactionVo列表 */
-                List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
+                List<CiEntityTransactionVo> allCiEntityTransactionList = new ArrayList<>();
                 for (CiEntitySyncConfigVo mainConfigObj : startConfigList) {
                     List<CiEntityTransactionVo> list = createCiEntityTransactionVo(ciEntityTransactionMap, mainConfigObj, dependencyConfigMap);
                     for (CiEntityTransactionVo ciEntityTransactionVo : list) {
-                        if (!ciEntityTransactionList.contains(ciEntityTransactionVo)) {
-                            ciEntityTransactionList.add(ciEntityTransactionVo);
+                        if (!allCiEntityTransactionList.contains(ciEntityTransactionVo)) {
+                            allCiEntityTransactionList.add(ciEntityTransactionVo);
                         }
                     }
                 }
-                if (CollectionUtils.isNotEmpty(ciEntityTransactionList)) {
+                if (CollectionUtils.isNotEmpty(allCiEntityTransactionList)) {
                     // 遍历ciEntityTransactionList，根据唯一规则属性值删除重复配置信息
-                    removeDuplicatesByUniqueAttrValue(ciEntityTransactionList);
+                    List<CiEntityTransactionVo> ciEntityTransactionList = removeDuplicatesByUniqueAttrValue(allCiEntityTransactionList);
                     EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
                         InputFromContext.init(InputFrom.ITSM);
                         Long transactionGroupId = ciEntityService.saveCiEntity(ciEntityTransactionList);
@@ -382,9 +382,11 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
         Map<String, String> uniqueAttrValueListJoinStr2UuidMap = new HashMap<>();
         // 保存将要删除uuid与等价替换uuid的映射关系
         Map<String, String> toDeleteUuid2EquivalentUuidMap = new HashMap<>();
+        Map<String, CiEntityTransactionVo> ciEntityTransactionMap = new HashMap<>();
         // 反向遍历，如果唯一规则属性值相同，后面数据优先级高
         for (int i = ciEntityTransactionList.size() - 1; i >= 0; i--) {
             CiEntityTransactionVo configObj = ciEntityTransactionList.get(i);
+            ciEntityTransactionMap.put(configObj.getCiEntityUuid(), configObj);
             String uniqueAttrValueListJoinStr = "";
             if (Objects.equals(configObj.getAction(), TransactionActionType.UPDATE.getValue())) {
                 uniqueAttrValueListJoinStr = configObj.getCiEntityId().toString();
@@ -438,12 +440,113 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                     String equivalentUuid = toDeleteUuid2EquivalentUuidMap.get(ciEntityUuid);
                     if (StringUtils.isNotBlank(equivalentUuid)) {
                         valueObj.put("ciEntityUuid", equivalentUuid);
+                        merge(ciEntityTransactionMap.get(equivalentUuid), ciEntityTransactionMap.get(ciEntityUuid));
                     }
                 }
             }
             newConfigList.add(configObj);
         }
         return newConfigList;
+    }
+
+    private void merge(CiEntityTransactionVo ciEntityTransactionA, CiEntityTransactionVo ciEntityTransactionB) {
+        {
+            JSONObject attrEntityDataA = ciEntityTransactionA.getAttrEntityData();
+            JSONObject attrEntityDataB = ciEntityTransactionB.getAttrEntityData();
+            if (MapUtils.isNotEmpty(attrEntityDataB)) {
+                if (MapUtils.isNotEmpty(attrEntityDataA)) {
+                    for (Map.Entry<String, Object> entryB : attrEntityDataB.entrySet()) {
+                        JSONObject attrEntityB = (JSONObject) entryB.getValue();
+                        JSONArray valueListB = attrEntityB.getJSONArray("valueList");
+                        if (CollectionUtils.isNotEmpty(valueListB)) {
+                            boolean keyExists = false;
+                            for (Map.Entry<String, Object> entryA : attrEntityDataA.entrySet()) {
+                                if (Objects.equals(entryA.getKey(), entryB.getKey())) {
+                                    keyExists = true;
+                                    JSONObject attrEntityA = (JSONObject) entryA.getValue();
+                                    JSONArray valueListA = attrEntityA.getJSONArray("valueList");
+                                    if (CollectionUtils.isEmpty(valueListA)) {
+                                        attrEntityDataA.put(entryB.getKey(), attrEntityB);
+                                    }
+                                }
+                                if (keyExists) {
+                                    break;
+                                }
+                            }
+                            if (!keyExists) {
+                                attrEntityDataA.put(entryB.getKey(), attrEntityB);
+                            }
+                        }
+                    }
+                } else {
+                    ciEntityTransactionA.setAttrEntityData(attrEntityDataB);
+                }
+            }
+        }
+        {
+            JSONObject globalAttrEntityDataA = ciEntityTransactionA.getGlobalAttrEntityData();
+            JSONObject globalAttrEntityDataB = ciEntityTransactionB.getGlobalAttrEntityData();
+            if (MapUtils.isNotEmpty(globalAttrEntityDataB)) {
+                if (MapUtils.isNotEmpty(globalAttrEntityDataA)) {
+                    for (Map.Entry<String, Object> entryB : globalAttrEntityDataB.entrySet()) {
+                        JSONObject globalAttrEntityB = (JSONObject) entryB.getValue();
+                        JSONArray valueListB = globalAttrEntityB.getJSONArray("valueList");
+                        if (CollectionUtils.isNotEmpty(valueListB)) {
+                            boolean keyExists = false;
+                            for (Map.Entry<String, Object> entryA : globalAttrEntityDataA.entrySet()) {
+                                if (Objects.equals(entryA.getKey(), entryB.getKey())) {
+                                    keyExists = true;
+                                    JSONObject globalAttrEntityA = (JSONObject) entryA.getValue();
+                                    JSONArray valueListA = globalAttrEntityA.getJSONArray("valueList");
+                                    if (CollectionUtils.isEmpty(valueListA)) {
+                                        globalAttrEntityDataA.put(entryB.getKey(), globalAttrEntityB);
+                                    }
+                                }
+                                if (keyExists) {
+                                    break;
+                                }
+                            }
+                            if (!keyExists) {
+                                globalAttrEntityDataA.put(entryB.getKey(), globalAttrEntityB);
+                            }
+                        }
+                    }
+                }  else {
+                    ciEntityTransactionA.setGlobalAttrEntityData(globalAttrEntityDataB);
+                }
+            }
+        }
+        {
+            JSONObject relEntityDataA = ciEntityTransactionA.getRelEntityData();
+            JSONObject relEntityDataB = ciEntityTransactionB.getRelEntityData();
+            if (MapUtils.isNotEmpty(relEntityDataB)) {
+                if (MapUtils.isNotEmpty(relEntityDataA)) {
+                    for (Map.Entry<String, Object> entryB : relEntityDataB.entrySet()) {
+                        JSONObject attrEntityB = (JSONObject) entryB.getValue();
+                        JSONArray valueListB = attrEntityB.getJSONArray("valueList");
+                        if (CollectionUtils.isNotEmpty(valueListB)) {
+                            boolean keyExists = false;
+                            for (Map.Entry<String, Object> entryA : relEntityDataA.entrySet()) {
+                                if (Objects.equals(entryA.getKey(), entryB.getKey())) {
+                                    keyExists = true;
+                                    JSONObject attrEntityA = (JSONObject) entryA.getValue();
+                                    JSONArray valueListA = attrEntityA.getJSONArray("valueList");
+                                    valueListA.addAll(valueListB);
+                                }
+                                if (keyExists) {
+                                    break;
+                                }
+                            }
+                            if (!keyExists) {
+                                relEntityDataA.put(entryB.getKey(), attrEntityB);
+                            }
+                        }
+                    }
+                } else {
+                    ciEntityTransactionA.setAttrEntityData(relEntityDataB);
+                }
+            }
+        }
     }
 
     /**
