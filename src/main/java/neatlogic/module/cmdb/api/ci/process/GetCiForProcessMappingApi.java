@@ -90,10 +90,13 @@ public class GetCiForProcessMappingApi extends PrivateApiComponentBase {
         // 属性
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciId);
         for (AttrVo attrVo : attrList) {
-            if (uniqueAttrIdList.contains(attrVo.getId()) && Objects.equals(attrVo.getType(), "expression")) {
-                attrVo.setCiLabel(ciVo.getLabel());
-                attrVo.setCiName(ciVo.getName());
-                throw new CiUniqueRuleAttrTypeIrregularException(attrVo);
+            if (uniqueAttrIdList.contains(attrVo.getId())) {
+                if (Objects.equals(attrVo.getType(), "expression")) {
+                    attrVo.setCiLabel(ciVo.getLabel());
+                    attrVo.setCiName(ciVo.getName());
+                    throw new CiUniqueRuleAttrTypeIrregularException(attrVo);
+                }
+                attrVo.setIsRequired(1);
             }
         }
         for (int i = attrList.size() - 1; i >= 0; i--) {
