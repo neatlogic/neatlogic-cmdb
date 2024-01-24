@@ -66,8 +66,4 @@ public class DataConversionNotifyHandler extends NotifyPolicyHandlerBase {
         return CIENTITY_MODIFY.class.getSimpleName();
     }
 
-//    @Override
-//    public INotifyPolicyHandlerGroup getGroup() {
-//        return ProcessNotifyPolicyHandlerGroup.TASKSTEP;
-//    }
 }
