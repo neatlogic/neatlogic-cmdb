@@ -1004,7 +1004,7 @@ CREATE TABLE IF NOT EXISTS `cmdb_resourcecenter_config`  (
 -- ----------------------------
 -- Table structure for cmdb_topo_template
 -- ----------------------------
-CREATE TABLE `cmdb_topo_template` (
+CREATE TABLE IF NOT EXISTS `cmdb_topo_template` (
                                       `id` bigint DEFAULT NULL COMMENT ' Id',
                                       `ci_id` bigint DEFAULT NULL COMMENT '模型id',
                                       `name` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '模板名称',
