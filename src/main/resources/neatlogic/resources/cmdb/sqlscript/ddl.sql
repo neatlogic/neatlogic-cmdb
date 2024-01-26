@@ -965,14 +965,15 @@ CREATE TABLE IF NOT EXISTS `cmdb_cientity_globalattritem`  (
 -- ----------------------------
 CREATE TABLE IF NOT EXISTS `cmdb_global_attr`  (
   `id` bigint NOT NULL COMMENT 'Id',
-  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '唯一标识',
-  `label` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '显示文案',
-  `is_active` tinyint NULL DEFAULT NULL COMMENT '是否激活',
-  `is_multiple` tinyint NULL DEFAULT NULL COMMENT '允许多选',
-  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT '描述',
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '唯一标识',
+  `label` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '显示文案\n',
+  `is_active` tinyint DEFAULT NULL COMMENT '是否激活',
+  `is_multiple` tinyint DEFAULT NULL COMMENT '允许多选',
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '描述',
+  `is_private` tinyint DEFAULT NULL COMMENT '私有属性不能编辑和删除',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `idx_name` (`name`)
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci ROW_FORMAT=DYNAMIC;
 
 -- ----------------------------
 -- Table structure for cmdb_global_attritem
