@@ -61,6 +61,7 @@ import neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper;
 import neatlogic.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import neatlogic.module.cmdb.fulltextindex.enums.CmdbFullTextIndexType;
 import neatlogic.module.cmdb.group.CiEntityGroupManager;
+import neatlogic.module.cmdb.process.exception.DataConversionAppendPathException;
 import neatlogic.module.cmdb.relativerel.RelativeRelManager;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
 import neatlogic.module.cmdb.utils.CiEntityBuilder;
@@ -582,9 +583,18 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 }
             }
             for (CiEntityTransactionVo ciEntityTransactionVo : ciEntityTransactionList) {
-                Long transactionId = saveCiEntity(ciEntityTransactionVo, transactionGroupVo);
-                if (transactionId > 0L) {
-                    transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), transactionId);
+                try {
+                    Long transactionId = saveCiEntity(ciEntityTransactionVo, transactionGroupVo);
+                    if (transactionId > 0L) {
+                        transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), transactionId);
+                    }
+                } catch (Exception e) {
+                    if (CollectionUtils.isNotEmpty(ciEntityTransactionVo.getConfigurationPathList())
+                            || CollectionUtils.isNotEmpty(ciEntityTransactionVo.getActualPathList())) {
+                        throw new DataConversionAppendPathException(e, String.join(",", ciEntityTransactionVo.getConfigurationPathList()), String.join(",", ciEntityTransactionVo.getActualPathList()));
+                    } else {
+                        throw e;
+                    }
                 }
             }
         }
