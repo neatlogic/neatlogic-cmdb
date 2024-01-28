@@ -591,7 +591,15 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 } catch (Exception e) {
                     if (CollectionUtils.isNotEmpty(ciEntityTransactionVo.getConfigurationPathList())
                             || CollectionUtils.isNotEmpty(ciEntityTransactionVo.getActualPathList())) {
-                        throw new DataConversionAppendPathException(e, String.join(",", ciEntityTransactionVo.getConfigurationPathList()), String.join(",", ciEntityTransactionVo.getActualPathList()));
+                        String configurationPath = "";
+                        if (CollectionUtils.isNotEmpty(ciEntityTransactionVo.getConfigurationPathList())) {
+                            configurationPath = String.join(",", ciEntityTransactionVo.getConfigurationPathList());
+                        }
+                        String actualPath = "";
+                        if (CollectionUtils.isNotEmpty(ciEntityTransactionVo.getActualPathList())) {
+                            actualPath = String.join(",", ciEntityTransactionVo.getActualPathList());
+                        }
+                        throw new DataConversionAppendPathException(e, configurationPath, actualPath);
                     } else {
                         throw e;
                     }
