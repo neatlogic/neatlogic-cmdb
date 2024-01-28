@@ -34,17 +34,39 @@
           and a.TABLE_NAME = #{tableName}
     </select>
 
+    <select id="checkColumnIsExists" resultType="int">
+        select count(1)
+        from information_schema.`COLUMNS` a
+        where table_schema = #{schemaName}
+          and table_name = 'cmdb_${ciId}'
+          and column_name = '${attrId}'
+    </select>
+
+    <select id="checkIndexIsExists" resultType="int">
+        select count(1)
+        from information_schema.STATISTICS
+        where table_schema = #{schemaName}
+          and table_name = 'cmdb_${ciId}'
+          and index_name = 'index_${attrId}_hash'
+    </select>
+
     <select id="checkSchemaIsExists" parameterType="java.lang.String" resultType="int">
         SELECT COUNT(1)
         FROM information_schema.`SCHEMATA`
         WHERE schema_name = #{value}
     </select>
 
+
     <update id="updateSchemaAuditIsFailed" parameterType="java.lang.Long">
         UPDATE cmdb_schema_audit
         SET is_failed = 1
         WHERE id = #{value}
     </update>
+
+    <insert id="addAttrIndex">
+        ALTER TABLE ${tableName}
+            ADD INDEX `index_${attrId}_hash` (`${attrId}_hash`) USING BTREE
+    </insert>
 
     <insert id="insertCiView" parameterType="java.lang.String">
         ${value}
@@ -78,11 +100,12 @@
         ADD COLUMN `${attrVo.id}_hash` CHAR(32) NULL COMMENT '${attrVo.label}值散列码'
         <choose>
             <when test="attrVo.type == 'number' or attrVo.type == 'date' or attrVo.type == 'time' or attrVo.type == 'datetime' or attrVo.type == 'enum'">
-                ,ADD KEY `index_${attrVo.id}` (`${attrVo.id}`)
+                ,ADD INDEX `index_${attrVo.id}` (`${attrVo.id}`) USING BTREE
             </when>
         </choose>
-        ;
-        <!--ADD KEY `index_${attrVo.id}_hash` (`${attrVo.id}_hash`);-->
+        <if test="attrVo.isSearchAble != null and attrVo.isSearchAble == 1">
+            ,ADD INDEX `index_${attrVo.id}_hash` (`${attrVo.id}_hash`) USING BTREE
+        </if>
     </insert>
 
     <insert id="insertCiTable">
@@ -91,7 +114,8 @@
             `cientity_id` bigint(20) NOT NULL COMMENT '配置项id',
             PRIMARY KEY (`cientity_id`)
         ) ENGINE = INNODB
-          DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci
+          DEFAULT CHARSET = utf8mb4
+          COLLATE = utf8mb4_general_ci
     </insert>
 
     <insert id="initCiTable">
@@ -140,6 +164,11 @@
         PRIMARY KEY (`cientity_id`) USING BTREE
         ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci
     </insert>
+
+    <delete id="deleteAttrIndex">
+        ALTER TABLE ${tableName}
+            DROP INDEX `index_${attrId}_hash`
+    </delete>
 
 
     <delete id="deleteAttrFromCiTable">

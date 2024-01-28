@@ -34,6 +34,7 @@
                attr.`target_ci_id`       AS targetCiId,
                attr.`is_required`        AS isRequired,
                attr.`is_unique`          AS isUnique,
+               attr.`is_searchable`      AS isSearchAble,
                attr.`input_type`         AS inputType,
                attr.`group_name`         AS groupName,
                attr.`is_private`         AS isPrivate,
@@ -47,23 +48,23 @@
     </select>
 
     <select id="getDeclaredAttrByCiIdAndName" resultType="neatlogic.framework.cmdb.dto.ci.AttrVo">
-        SELECT
-            `id`,
-            `ci_id` AS ciId,
-            `type`,
-            `prop_id` AS propId,
-            `target_ci_id` AS targetCiId,
-            `expression`,
-            `name`,
-            `label`,
-            `description`,
-            `validator_id` AS validatorId,
-            `is_required` AS isRequired,
-            `is_unique` AS isUnique,
-            `input_type` AS inputType,
-            `group_name` AS groupName,
-            `is_private` AS isPrivate,
-            `config` AS configStr
+        SELECT `id`,
+               `ci_id`         AS ciId,
+               `type`,
+               `prop_id`       AS propId,
+               `target_ci_id`  AS targetCiId,
+               `expression`,
+               `name`,
+               `label`,
+               `description`,
+               `validator_id`  AS validatorId,
+               `is_required`   AS isRequired,
+               `is_unique`     AS isUnique,
+               `is_searchable` AS isSearchAble,
+               `input_type`    AS inputType,
+               `group_name`    AS groupName,
+               `is_private`    AS isPrivate,
+               `config`        AS configStr
         FROM `cmdb_attr`
         WHERE `ci_id` = #{ciId}
           AND `name` = #{name}
@@ -139,6 +140,7 @@
                (SELECT name FROM cmdb_validator x WHERE x.id = a.validator_id) AS validatorName,
                a.`is_required`                                                 AS isRequired,
                a.`is_unique`                                                   AS isUnique,
+               a.`is_searchable`                                               AS isSearchAble,
                a.`input_type`                                                  AS inputType,
                a.`group_name`                                                  AS groupName,
                a.`is_private`                                                  AS isPrivate,
@@ -162,6 +164,7 @@
         (SELECT name FROM cmdb_validator x WHERE x.id = a.validator_id) AS validatorName,
         a.`is_required` AS isRequired,
         a.`is_unique` AS isUnique,
+        a.`is_searchable` AS isSearchAble,
         a.`input_type` AS inputType,
         a.`group_name` AS groupName,
         a.`is_private` AS isPrivate,
@@ -206,6 +209,7 @@
                (SELECT name FROM cmdb_validator x WHERE x.id = validator_id) AS validatorName,
                `is_required`                                                 AS isRequired,
                `is_unique`                                                   AS isUnique,
+               `is_searchable`                                               AS isSearchAble,
                `input_type`                                                  AS inputType,
                `group_name`                                                  AS groupName,
                `is_private`                                                  AS isPrivate,
@@ -227,6 +231,7 @@
         (SELECT name FROM cmdb_validator x WHERE x.id = validator_id) AS validatorName,
         `is_required` AS isRequired,
         `is_unique` AS isUnique,
+        `is_searchable` AS isSearchAble,
         `input_type` AS inputType,
         `group_name` AS groupName,
         `is_private` AS isPrivate,
@@ -263,6 +268,7 @@
         targetci.name AS targetCiName,
         attr.`is_required` AS isRequired,
         attr.`is_unique` AS isUnique,
+        attr.`is_searchable` AS isSearchAble,
         attr.`input_type` AS inputType,
         attr.`group_name` AS groupName,
         attr.`is_private` AS isPrivate,
@@ -287,23 +293,23 @@
 
     <select id="getDeclaredAttrListByCiId" parameterType="java.lang.Long" resultType="neatlogic.framework.cmdb.dto.ci.AttrVo"
             useCache="true">
-        SELECT
-            `id`,
-            `ci_id` AS ciId,
-            `type`,
-            `prop_id` AS propId,
-            `target_ci_id` AS targetCiId,
-            `expression`,
-            `name`,
-            `label`,
-            `description`,
-            `validator_id` AS validatorId,
-            `is_required` AS isRequired,
-            `is_unique` AS isUnique,
-            `input_type` AS inputType,
-            `group_name` AS groupName,
-            `is_private` AS isPrivate,
-            `config` AS configStr
+        SELECT `id`,
+               `ci_id`         AS ciId,
+               `type`,
+               `prop_id`       AS propId,
+               `target_ci_id`  AS targetCiId,
+               `expression`,
+               `name`,
+               `label`,
+               `description`,
+               `validator_id`  AS validatorId,
+               `is_required`   AS isRequired,
+               `is_unique`     AS isUnique,
+               `is_searchable` AS isSearchAble,
+               `input_type`    AS inputType,
+               `group_name`    AS groupName,
+               `is_private`    AS isPrivate,
+               `config`        AS configStr
         FROM `cmdb_attr`
         WHERE `ci_id` = #{value}
     </select>
@@ -321,18 +327,19 @@
     <update id="updateAttr" parameterType="neatlogic.framework.cmdb.dto.ci.AttrVo">
         UPDATE
             `cmdb_attr`
-        SET `type`         = #{type},
-            `expression`   = #{expression},
-            `target_ci_id` = #{targetCiId},
-            `name`         = #{name},
-            `label`        = #{label},
-            `description`  = #{description},
-            `validator_id` = #{validatorId},
-            `is_required`  = #{isRequired},
-            `is_unique`    = #{isUnique},
-            `input_type`   = #{inputType},
-            `group_name`   = #{groupName},
-            `config`       = #{configStr,typeHandler=compressHandler}
+        SET `type`          = #{type},
+            `expression`    = #{expression},
+            `target_ci_id`  = #{targetCiId},
+            `name`          = #{name},
+            `label`         = #{label},
+            `description`   = #{description},
+            `validator_id`  = #{validatorId},
+            `is_required`   = #{isRequired},
+            `is_unique`     = #{isUnique},
+            `is_searchable` = #{isSearchAble},
+            `input_type`    = #{inputType},
+            `group_name`    = #{groupName},
+            `config`        = #{configStr,typeHandler=compressHandler}
         WHERE id = #{id}
     </update>
 
@@ -361,7 +368,8 @@
                                  `is_unique`,
                                  `input_type`,
                                  `group_name`,
-                                 `is_private`)
+                                 `is_private`,
+                                 `is_searchable`)
         VALUES (#{id},
                 #{ciId},
                 #{type},
@@ -375,7 +383,8 @@
                 #{isUnique},
                 #{inputType},
                 #{groupName},
-                #{isPrivate})
+                #{isPrivate},
+                #{isSearchAble})
     </insert>
 
     <delete id="deleteAttrExpressionRelByExpressionAttrId" parameterType="java.lang.Long">

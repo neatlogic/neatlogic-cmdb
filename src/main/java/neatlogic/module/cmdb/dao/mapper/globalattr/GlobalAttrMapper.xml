@@ -43,6 +43,7 @@
         <id property="id" column="id"/>
         <result property="name" column="name"/>
         <result property="label" column="label"/>
+        <result property="alias" column="alias"/>
         <result property="isActive" column="isActive"/>
         <result property="isMultiple" column="isMultiple"/>
         <result property="description" column="description"/>
@@ -86,6 +87,7 @@
                cgai.value                    as itemValue,
                cgai.attr_id                  as itemAttrId,
                cgai.sort                     as itemSort,
+               cview.alias                   AS alias,
                IFNULL(cview.sort, 999999)    AS `sort`,
                IFNULL(cview.`allow_edit`, 1) AS allowEdit
         from cmdb_global_attr cga

@@ -31,6 +31,10 @@ public interface CiSchemaMapper {
 
     int checkSchemaIsExists(String databaseName);
 
+    int checkColumnIsExists(@Param("schemaName") String schemaName, @Param("ciId") Long ciId, @Param("attrId") Long attrId);
+
+    int checkIndexIsExists(@Param("schemaName") String schemaName, @Param("ciId") Long ciId, @Param("attrId") Long attrId);
+
     int checkTableIsExists(@Param("schemaName") String schemaName, @Param("tableName") String tableName);
 
     int checkTableHasData(String tableName);
@@ -47,6 +51,8 @@ public interface CiSchemaMapper {
 
     void insertCiView(String sql);
 
+    void addAttrIndex(@Param("tableName") String tableName, @Param("attrId") Long attrId);
+
     //void insertCiAttrSchema(@Param("tableName") String tableName);
 
     //void insertRelSchema(@Param("tableName") String tableName);
@@ -56,6 +62,7 @@ public interface CiSchemaMapper {
     //void insertRelEntity(@Param("tableName") String tableName, @Param("ciEntityVo") CiEntityVo ciEntityVo);
 
     //void replaceSchemaAudit(SchemaAuditVo schemaAuditvo);
+    void deleteAttrIndex(@Param("tableName") String tableName, @Param("attrId") Long attrId);
 
     @CreateCiView
     void deleteAttrFromCiTable(@CiId Long ciId, @Param("tableName") String tableName, @Param("attrVo") AttrVo attrVo);

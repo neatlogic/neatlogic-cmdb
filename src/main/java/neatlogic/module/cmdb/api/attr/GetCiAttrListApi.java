@@ -81,7 +81,8 @@ public class GetCiAttrListApi extends PrivateApiComponentBase {
             @Param(name = "isRequired", type = ApiParamType.INTEGER, rule = "1,0", desc = "common.isrequired"),
             @Param(name = "isSimple", type = ApiParamType.BOOLEAN, rule = "true,false", desc = "term.cmdb.issimpleattribute"),
             @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "common.defaultvalue"),
-            @Param(name = "needAlias", type = ApiParamType.INTEGER, desc = "term.cmdb.needalias", rule = "0,1")
+            @Param(name = "needAlias", type = ApiParamType.INTEGER, desc = "term.cmdb.needalias", rule = "0,1"),
+            @Param(name = "mergeAlias", type = ApiParamType.INTEGER, defaultValue = "1", desc = "term.cmdb.mergealias", rule = "0,1")
     })
     @Output({
             @Param(name = "Return", explode = AttrVo[].class)
@@ -91,6 +92,7 @@ public class GetCiAttrListApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONArray defaultValue = jsonObj.getJSONArray("defaultValue");
         int needAlias = jsonObj.getIntValue("needAlias");
+        int mergeAlias = jsonObj.getInteger("mergeAlias");
         if (CollectionUtils.isNotEmpty(defaultValue)) {
             List<Long> idList = defaultValue.toJavaList(Long.class);
             return attrMapper.getAttrByIdList(idList);
@@ -135,7 +137,11 @@ public class GetCiAttrListApi extends PrivateApiComponentBase {
             for (CiViewVo ciView : ciViewList) {
                 if (StringUtils.isNotBlank(ciView.getAlias()) && ciView.getType().equals("attr")) {
                     Optional<AttrVo> op = attrList.stream().filter(d -> d.getId().equals(ciView.getItemId())).findFirst();
-                    op.ifPresent(attrVo -> attrVo.setLabel(ciView.getAlias()));
+                    if (mergeAlias == 1) {
+                        op.ifPresent(attrVo -> attrVo.setLabel(ciView.getAlias()));
+                    } else {
+                        op.ifPresent(attrVo -> attrVo.setAlias(ciView.getAlias()));
+                    }
                 }
             }
         }

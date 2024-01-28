@@ -16,6 +16,7 @@
 
 package neatlogic.module.cmdb.service.attr;
 
+import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.batch.BatchRunner;
 import neatlogic.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
@@ -46,6 +47,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class AttrServiceImpl implements AttrService {
@@ -111,7 +113,21 @@ public class AttrServiceImpl implements AttrService {
             //由于以下操作是DDL操作，所以需要使用EscapeTransactionJob避开当前事务
             EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
                 try {
-                    ciSchemaMapper.insertAttrToCiTable(ciVo.getId(), ciVo.getCiTableName(), attrVo);
+                    if (ciSchemaMapper.checkColumnIsExists(TenantContext.get().getDataDbName(), attrVo.getCiId(), attrVo.getId()) == 0) {
+                        ciSchemaMapper.insertAttrToCiTable(ciVo.getId(), ciVo.getCiTableName(), attrVo);
+                    } else {
+                        if (Objects.equals(attrVo.getIsSearchAble(), 1)) {
+                            if (ciSchemaMapper.checkIndexIsExists(TenantContext.get().getDataDbName(), attrVo.getCiId(), attrVo.getId()) == 0) {
+                                //创建索引
+                                ciSchemaMapper.addAttrIndex(attrVo.getCiTableName(), attrVo.getId());
+                            }
+                        } else {
+                            if (ciSchemaMapper.checkIndexIsExists(TenantContext.get().getDataDbName(), attrVo.getCiId(), attrVo.getId()) > 0) {
+                                //删除索引
+                                ciSchemaMapper.deleteAttrIndex(attrVo.getCiTableName(), attrVo.getId());
+                            }
+                        }
+                    }
                 } catch (Exception ex) {
                     //如果报重复列异常，代表列已存在，这种异常无需处理
                     if (!ex.getMessage().contains("Duplicate")) {

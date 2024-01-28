@@ -76,7 +76,8 @@ public class GetCiGlobalAttrListApi extends PrivateApiComponentBase {
             @Param(name = "ciName", type = ApiParamType.STRING, desc = "term.cmdb.ciname"),
             @Param(name = "showType", type = ApiParamType.ENUM, rule = "all,list,detail", desc = "common.displaytype"),
             @Param(name = "allowEdit", type = ApiParamType.INTEGER, rule = "1,0", desc = "term.cmdb.allowedit"),
-            @Param(name = "needAlias", type = ApiParamType.INTEGER, desc = "term.cmdb.needalias", rule = "0,1")
+            @Param(name = "needAlias", type = ApiParamType.INTEGER, desc = "term.cmdb.needalias", rule = "0,1"),
+            @Param(name = "mergeAlias", type = ApiParamType.INTEGER, defaultValue = "1", desc = "term.cmdb.mergealias", rule = "0,1")
     })
     @Output({
             @Param(name = "Return", explode = GlobalAttrVo[].class)
@@ -86,6 +87,7 @@ public class GetCiGlobalAttrListApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("ciId");
         int needAlias = jsonObj.getIntValue("needAlias");
+        int mergeAlias = jsonObj.getInteger("mergeAlias");
         if (ciId == null) {
             String ciName = jsonObj.getString("ciName");
             if (StringUtils.isBlank(ciName)) {
@@ -123,7 +125,11 @@ public class GetCiGlobalAttrListApi extends PrivateApiComponentBase {
             for (CiViewVo ciView : ciViewList) {
                 if (StringUtils.isNotBlank(ciView.getAlias()) && ciView.getType().equals("global")) {
                     Optional<GlobalAttrVo> op = attrList.stream().filter(d -> d.getId().equals(ciView.getItemId())).findFirst();
-                    op.ifPresent(attrVo -> attrVo.setLabel(ciView.getAlias()));
+                    if(mergeAlias==1) {
+                        op.ifPresent(attrVo -> attrVo.setLabel(ciView.getAlias()));
+                    }else{
+                        op.ifPresent(attrVo -> attrVo.setAlias(ciView.getAlias()));
+                    }
                 }
             }
         }

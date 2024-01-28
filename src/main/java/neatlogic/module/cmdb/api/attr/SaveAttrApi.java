@@ -16,7 +16,9 @@
 
 package neatlogic.module.cmdb.api.attr;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.exception.attr.AttrNameRepeatException;
 import neatlogic.framework.cmdb.exception.ci.CiAuthException;
@@ -24,11 +26,9 @@ import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.service.attr.AttrService;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
-import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -77,6 +77,7 @@ public class SaveAttrApi extends PrivateApiComponentBase {
             @Param(name = "validConfig", type = ApiParamType.JSONOBJECT, desc = "term.cmdb.validateconfig"),
             @Param(name = "isRequired", type = ApiParamType.INTEGER, desc = "common.isrequired"),
             @Param(name = "isUnique", type = ApiParamType.INTEGER, desc = "common.isunique"),
+            @Param(name = "isSearchAble", type = ApiParamType.INTEGER, desc = "term.cmdb.issearchable"),
             @Param(name = "inputType", type = ApiParamType.ENUM, rule = "at,mt", desc = "nmcaa.saveattrapi.input.param.desc.inputtype"),
             @Param(name = "groupName", type = ApiParamType.STRING, desc = "common.group")})
     @Output({@Param(name = "id", type = ApiParamType.LONG, desc = "nmcaa.getattrapi.input.param.desc.id"),})
