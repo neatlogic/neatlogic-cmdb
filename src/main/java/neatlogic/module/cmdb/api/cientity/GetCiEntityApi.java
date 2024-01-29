@@ -26,7 +26,6 @@ import neatlogic.framework.cmdb.enums.CiAuthType;
 import neatlogic.framework.cmdb.enums.TransactionActionType;
 import neatlogic.framework.cmdb.enums.group.GroupType;
 import neatlogic.framework.cmdb.exception.cientity.CiEntityAuthException;
-import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
@@ -74,6 +73,7 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
     }
 
     @Input({
+            @Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid"),
             @Param(name = "ciEntityId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.cientityid"),
             @Param(name = "limitRelEntity", type = ApiParamType.BOOLEAN, desc = "nmcac.getcientityapi.input.param.desc.limitrelentity"),
             @Param(name = "limitAttrEntity", type = ApiParamType.BOOLEAN, desc = "nmcac.getcientityapi.input.param.desc.limitattrentity"),
@@ -84,11 +84,7 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciEntityId = jsonObj.getLong("ciEntityId");
-        CiEntityVo ciEntityBaseVo = ciEntityService.getCiEntityBaseInfoById(ciEntityId);
-        if (ciEntityBaseVo == null) {
-            throw new CiEntityNotFoundException(ciEntityId);
-        }
-        Long ciId = ciEntityBaseVo.getCiId();
+        Long ciId = jsonObj.getLong("ciId");
         Boolean limitRelEntity = jsonObj.getBoolean("limitRelEntity");
         Boolean limitAttrEntity = jsonObj.getBoolean("limitAttrEntity");
         if (limitRelEntity == null) {
