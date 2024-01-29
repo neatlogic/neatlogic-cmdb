@@ -33,6 +33,7 @@ import neatlogic.framework.cmdb.enums.SearchExpression;
 import neatlogic.framework.cmdb.enums.TransactionActionType;
 import neatlogic.framework.cmdb.enums.TransactionStatus;
 import neatlogic.framework.cmdb.exception.attr.*;
+import neatlogic.framework.exception.core.ApiRuntimeException;
 import neatlogic.framework.transaction.core.EscapeTransactionJob;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
@@ -83,9 +84,14 @@ public class AttrServiceImpl implements AttrService {
         handler.afterInsert(attrVo);
         if (!handler.isNeedTargetCi()) {
             //由于以下操作是DDL操作，所以需要使用EscapeTransactionJob避开当前事务，否则在进行DDL操作之前事务就会提交，如果DDL出错，则上面的事务就无法回滚了
-            EscapeTransactionJob.State s = new EscapeTransactionJob(() -> ciSchemaMapper.insertAttrToCiTable(ciVo.getId(), ciVo.getCiTableName(), attrVo)).execute();
-            if (!s.isSucceed()) {
-                throw new InsertAttrToSchemaException(attrVo.getName());
+            int indexCount = ciSchemaMapper.getIndexCount(TenantContext.get().getDataDbName(), attrVo.getCiId());
+            if (indexCount <= 60) {
+                EscapeTransactionJob.State s = new EscapeTransactionJob(() -> ciSchemaMapper.insertAttrToCiTable(ciVo.getId(), ciVo.getCiTableName(), attrVo)).execute();
+                if (!s.isSucceed()) {
+                    throw new InsertAttrToSchemaException(attrVo.getName());
+                }
+            } else {
+                throw new InsertAttrToSchemaException(attrVo.getName(), 60);
             }
         }
     }
@@ -119,7 +125,12 @@ public class AttrServiceImpl implements AttrService {
                         if (Objects.equals(attrVo.getIsSearchAble(), 1)) {
                             if (ciSchemaMapper.checkIndexIsExists(TenantContext.get().getDataDbName(), attrVo.getCiId(), attrVo.getId()) == 0) {
                                 //创建索引
-                                ciSchemaMapper.addAttrIndex(attrVo.getCiTableName(), attrVo.getId());
+                                int indexCount = ciSchemaMapper.getIndexCount(TenantContext.get().getDataDbName(), attrVo.getCiId());
+                                if (indexCount <= 60) {
+                                    ciSchemaMapper.addAttrIndex(attrVo.getCiTableName(), attrVo.getId());
+                                } else {
+                                    throw new InsertAttrToSchemaException(attrVo.getName(), 60);
+                                }
                             }
                         } else {
                             if (ciSchemaMapper.checkIndexIsExists(TenantContext.get().getDataDbName(), attrVo.getCiId(), attrVo.getId()) > 0) {
@@ -137,7 +148,7 @@ public class AttrServiceImpl implements AttrService {
             }).execute();
             //编辑属性只是尝试创建字段，如果创建不成功代表字段已经存在，所以无需处理执行结果
             if (!s.isSucceed()) {
-                throw s.getException();
+                throw new ApiRuntimeException(s.getError());
             }
         }
     }

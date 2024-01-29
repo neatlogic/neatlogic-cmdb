@@ -35,6 +35,8 @@ public interface CiSchemaMapper {
 
     int checkIndexIsExists(@Param("schemaName") String schemaName, @Param("ciId") Long ciId, @Param("attrId") Long attrId);
 
+    int getIndexCount(@Param("schemaName") String schemaName, @Param("ciId") Long ciId);
+
     int checkTableIsExists(@Param("schemaName") String schemaName, @Param("tableName") String tableName);
 
     int checkTableHasData(String tableName);
