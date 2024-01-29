@@ -164,7 +164,7 @@ public class CiEntityUpdateTopic extends TopicBase<CiEntityTransactionVo> {
                 if (attrEntityVo.getToCiId() != null) {
                     attrObj.put("targetCiId", attrEntityVo.getToCiId());
                 }
-                attrObj.put("value", attrEntityVo.getValueList());
+                attrObj.put("value", attrEntityVo.getActualValueList());
                 attrObjList.add((attrObj));
             }
         }
