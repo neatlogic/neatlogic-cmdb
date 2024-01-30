@@ -10,6 +10,6 @@ public class AbstractCiTargetCiIdAttrNotFoundException extends ApiRuntimeExcepti
     }
 
     public AbstractCiTargetCiIdAttrNotFoundException(CiVo ciVo, String configurationPath, String actualPath) {
-        super("抽象模型“{0}({1})”的“targetCiId(写入模型)”字段的值为空，配置路径：{2}，实际路径：{3}", ciVo.getLabel(), ciVo.getName(), configurationPath, actualPath);
+        super("nmcpe.abstractcitargetciidattrnotfoundexception.abstractcitargetciidattrnotfoundexception_b", ciVo.getLabel(), ciVo.getName(), configurationPath, actualPath);
     }
 }
