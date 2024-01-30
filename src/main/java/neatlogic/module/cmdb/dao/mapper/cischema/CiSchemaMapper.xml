@@ -42,6 +42,13 @@
           and column_name = '${attrId}'
     </select>
 
+    <select id="getIndexCount" resultType="int">
+        select count(1)
+        from information_schema.STATISTICS
+        where table_schema = #{schemaName}
+          and table_name = 'cmdb_${ciId}'
+    </select>
+
     <select id="checkIndexIsExists" resultType="int">
         select count(1)
         from information_schema.STATISTICS
