@@ -930,14 +930,14 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     if (/*ciEntityTransactionVo.getAction().equals(TransactionActionType.INSERT.getValue()) ||*/ ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
                         if (attrEntityTransactionVo == null) {
                             if (attrVo.getAllowEdit() == null || attrVo.getAllowEdit().equals(1)) {
-                                throw new AttrEntityValueEmptyException(attrVo.getLabel());
+                                throw new AttrEntityValueEmptyException(ciVo, attrVo);
                             }
                         } else if (attrEntityTransactionVo.getSaveMode().equals(SaveModeType.REPLACE.getValue()) && CollectionUtils.isEmpty(attrEntityTransactionVo.getValueList())) {
-                            throw new AttrEntityValueEmptyException(attrVo.getLabel());
+                            throw new AttrEntityValueEmptyException(ciVo, attrVo);
                         } else if (attrEntityTransactionVo.getSaveMode().equals(SaveModeType.MERGE.getValue()) && attrVo.isNeedTargetCi() && CollectionUtils.isEmpty(attrEntityTransactionVo.getValueList())) {
                             List<AttrEntityVo> oldList = ciEntityMapper.getAttrEntityByAttrIdAndFromCiEntityId(ciEntityTransactionVo.getCiEntityId(), attrVo.getId(), null);
                             if (CollectionUtils.isEmpty(oldList)) {
-                                throw new AttrEntityValueEmptyException(attrVo.getLabel());
+                                throw new AttrEntityValueEmptyException(ciVo, attrVo);
                             }
                         }
                     }
@@ -1414,7 +1414,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         if (attrVo.getIsRequired().equals(1)) {
                             if (attrEntityTransactionVo == null || CollectionUtils.isEmpty(attrEntityTransactionVo.getValueList())) {
                                 if (attrVo.getAllowEdit() == null || attrVo.getAllowEdit().equals(1)) {
-                                    throw new AttrEntityValueEmptyException(attrVo.getLabel());
+                                    throw new AttrEntityValueEmptyException(ciVo, attrVo);
                                 }
                             }
                         }
@@ -1558,7 +1558,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                             boolean isDelete = CollectionUtils.isEmpty(attrEntityTransactionVo.getValueList()) || (attrEntityTransactionVo.getValueList().size() == 1 && StringUtils.isBlank(attrEntityTransactionVo.getValueList().getString(0)));
                             /*检查必填属性：*/
                             if (attrVo.getIsRequired().equals(1) && isDelete) {
-                                throw new AttrEntityValueEmptyException(attrVo.getLabel());
+                                throw new AttrEntityValueEmptyException(ciVo, attrVo);
                             }
 
                             /* 校验值是否符合数据类型*/
