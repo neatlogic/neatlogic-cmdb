@@ -61,6 +61,7 @@ import neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper;
 import neatlogic.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import neatlogic.module.cmdb.fulltextindex.enums.CmdbFullTextIndexType;
 import neatlogic.module.cmdb.group.CiEntityGroupManager;
+import neatlogic.module.cmdb.process.exception.DataConversionAppendPathException;
 import neatlogic.module.cmdb.relativerel.RelativeRelManager;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
 import neatlogic.module.cmdb.utils.CiEntityBuilder;
@@ -582,9 +583,26 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 }
             }
             for (CiEntityTransactionVo ciEntityTransactionVo : ciEntityTransactionList) {
-                Long transactionId = saveCiEntity(ciEntityTransactionVo, transactionGroupVo);
-                if (transactionId > 0L) {
-                    transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), transactionId);
+                try {
+                    Long transactionId = saveCiEntity(ciEntityTransactionVo, transactionGroupVo);
+                    if (transactionId > 0L) {
+                        transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), transactionId);
+                    }
+                } catch (Exception e) {
+                    if (CollectionUtils.isNotEmpty(ciEntityTransactionVo.getConfigurationPathList())
+                            || CollectionUtils.isNotEmpty(ciEntityTransactionVo.getActualPathList())) {
+                        String configurationPath = "";
+                        if (CollectionUtils.isNotEmpty(ciEntityTransactionVo.getConfigurationPathList())) {
+                            configurationPath = String.join(",", ciEntityTransactionVo.getConfigurationPathList());
+                        }
+                        String actualPath = "";
+                        if (CollectionUtils.isNotEmpty(ciEntityTransactionVo.getActualPathList())) {
+                            actualPath = String.join(",", ciEntityTransactionVo.getActualPathList());
+                        }
+                        throw new DataConversionAppendPathException(e, configurationPath, actualPath);
+                    } else {
+                        throw e;
+                    }
                 }
             }
         }
@@ -912,14 +930,14 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     if (/*ciEntityTransactionVo.getAction().equals(TransactionActionType.INSERT.getValue()) ||*/ ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
                         if (attrEntityTransactionVo == null) {
                             if (attrVo.getAllowEdit() == null || attrVo.getAllowEdit().equals(1)) {
-                                throw new AttrEntityValueEmptyException(attrVo.getLabel());
+                                throw new AttrEntityValueEmptyException(ciVo, attrVo);
                             }
                         } else if (attrEntityTransactionVo.getSaveMode().equals(SaveModeType.REPLACE.getValue()) && CollectionUtils.isEmpty(attrEntityTransactionVo.getValueList())) {
-                            throw new AttrEntityValueEmptyException(attrVo.getLabel());
+                            throw new AttrEntityValueEmptyException(ciVo, attrVo);
                         } else if (attrEntityTransactionVo.getSaveMode().equals(SaveModeType.MERGE.getValue()) && attrVo.isNeedTargetCi() && CollectionUtils.isEmpty(attrEntityTransactionVo.getValueList())) {
                             List<AttrEntityVo> oldList = ciEntityMapper.getAttrEntityByAttrIdAndFromCiEntityId(ciEntityTransactionVo.getCiEntityId(), attrVo.getId(), null);
                             if (CollectionUtils.isEmpty(oldList)) {
-                                throw new AttrEntityValueEmptyException(attrVo.getLabel());
+                                throw new AttrEntityValueEmptyException(ciVo, attrVo);
                             }
                         }
                     }
@@ -1396,7 +1414,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         if (attrVo.getIsRequired().equals(1)) {
                             if (attrEntityTransactionVo == null || CollectionUtils.isEmpty(attrEntityTransactionVo.getValueList())) {
                                 if (attrVo.getAllowEdit() == null || attrVo.getAllowEdit().equals(1)) {
-                                    throw new AttrEntityValueEmptyException(attrVo.getLabel());
+                                    throw new AttrEntityValueEmptyException(ciVo, attrVo);
                                 }
                             }
                         }
@@ -1540,7 +1558,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                             boolean isDelete = CollectionUtils.isEmpty(attrEntityTransactionVo.getValueList()) || (attrEntityTransactionVo.getValueList().size() == 1 && StringUtils.isBlank(attrEntityTransactionVo.getValueList().getString(0)));
                             /*检查必填属性：*/
                             if (attrVo.getIsRequired().equals(1) && isDelete) {
-                                throw new AttrEntityValueEmptyException(attrVo.getLabel());
+                                throw new AttrEntityValueEmptyException(ciVo, attrVo);
                             }
 
                             /* 校验值是否符合数据类型*/
