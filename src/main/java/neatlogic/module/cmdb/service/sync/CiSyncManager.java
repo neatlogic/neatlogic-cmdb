@@ -113,7 +113,7 @@ public class CiSyncManager {
         private final HashMap<Integer, Object> filterLock = new HashMap<>();
         private JSONObject singleDataObj;
 
-        private String branchTag;//批量标签，用于确定一定范围数据
+        private String batchTag;//批量标签，用于确定一定范围数据
         private final String mode;//如果是batch模式，代表批量更新，如果是single模式，接受单条数据更新
         int CAPACITY = 5000;//缓存大小
         private final Map<Integer, List<CiEntityVo>> ciEntityCache = new LinkedHashMap<Integer, List<CiEntityVo>>(CAPACITY, 0.75F, true) {//用户缓存检索数据，提升效率
@@ -159,11 +159,11 @@ public class CiSyncManager {
             }
         }
 
-        public SyncHandler(List<SyncCiCollectionVo> syncCiCollectionVoList, String branchTag) {
+        public SyncHandler(List<SyncCiCollectionVo> syncCiCollectionVoList, String batchTag) {
             super("COLLECTION-CIENTITY-SYNC-BATCH-HANDLER");
             this.mode = "batch";
             this.syncCiCollectionList = syncCiCollectionVoList;
-            this.branchTag = branchTag;
+            this.batchTag = batchTag;
             //获取所有集合列表
             List<CollectionVo> tmpList = mongoTemplate.find(new Query(), CollectionVo.class, "_dictionary");
             this.collectionList = tmpList.stream().distinct().collect(Collectors.toList());
@@ -709,12 +709,12 @@ public class CiSyncManager {
                                     criteriaList.add(syncCiCollectionVo.getSyncPolicy().getCriteria());
                                 }
                                 //如果不提供批次标签，则只更新上次同步以来新的集合数据进行同步
-                                if (StringUtils.isBlank(this.branchTag)) {
+                                if (StringUtils.isBlank(this.batchTag)) {
                                     if (syncCiCollectionVo.getLastSyncDate() != null) {
                                         criteriaList.add(Criteria.where("_updatetime").gt(convertToIsoDate(syncCiCollectionVo.getLastSyncDate())));
                                     }
                                 } else {
-                                    criteriaList.add(Criteria.where("_branch_tag").is(this.branchTag));
+                                    criteriaList.add(Criteria.where("_batch_tag").is(this.batchTag));
                                 }
 
                                 //#############测试用条件，使用后注释掉
@@ -972,7 +972,7 @@ public class CiSyncManager {
         }
     }
 
-    public static void doSync(List<SyncCiCollectionVo> syncCiCollectionList, String branchTag) {
+    public static void doSync(List<SyncCiCollectionVo> syncCiCollectionList, String batchTag) {
         if (CollectionUtils.isNotEmpty(syncCiCollectionList)) {
             List<SyncCiCollectionVo> initiativeCollectList = syncCiCollectionList.stream().filter(s -> s.getCollectMode().equals(CollectMode.INITIATIVE.getValue())).collect(Collectors.toList());
             if (CollectionUtils.isNotEmpty(initiativeCollectList)) {
@@ -992,7 +992,7 @@ public class CiSyncManager {
                     }
                 }
                 if (CollectionUtils.isNotEmpty(syncList)) {
-                    SyncHandler handler = new SyncHandler(syncList, branchTag);
+                    SyncHandler handler = new SyncHandler(syncList, batchTag);
                     CachedThreadPool.execute(handler);
                 }
             }

@@ -64,7 +64,7 @@ public class LaunchSyncCollectionApi extends PrivateApiComponentBase {
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "term.cmdb.syncid"),
             @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.syncidlist"),
             @Param(name = "collectionList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.collectionlist"),
-            @Param(name = "branchTag", type = ApiParamType.STRING, desc = "term.cmdb.branchtag"),
+            @Param(name = "batchTag", type = ApiParamType.STRING, desc = "term.cmdb.batchtag"),
             @Param(name = "isAll", type = ApiParamType.INTEGER, desc = "term.cmdb.syncisall")})
     @Description(desc = "nmcas.launchsynccollectionapi.getname")
     @ResubmitInterval(value = 5)
@@ -74,7 +74,7 @@ public class LaunchSyncCollectionApi extends PrivateApiComponentBase {
         Long id = jsonObj.getLong("id");
         JSONArray idList = jsonObj.getJSONArray("idList");
         JSONArray collectionList = jsonObj.getJSONArray("collectionList");
-        String branchTag = jsonObj.getString("branchTag");
+        String batchTag = jsonObj.getString("batchTag");
         if (id == null && CollectionUtils.isEmpty(idList) && isAll == null && CollectionUtils.isEmpty(collectionList)) {
             throw new ParamNotExistsException("id", "idList", "collectionList", "isAll");
         }
@@ -102,7 +102,7 @@ public class LaunchSyncCollectionApi extends PrivateApiComponentBase {
             }
         }
         if (CollectionUtils.isNotEmpty(syncCiCollectionList)) {
-            CiSyncManager.doSync(syncCiCollectionList, branchTag);
+            CiSyncManager.doSync(syncCiCollectionList, batchTag);
         }
         return null;
     }
