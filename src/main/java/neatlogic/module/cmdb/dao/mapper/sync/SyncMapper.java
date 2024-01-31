@@ -56,7 +56,7 @@ public interface SyncMapper extends ISyncCrossoverMapper {
 
     SyncCiCollectionVo getSyncCiCollectionById(Long id);
 
-    List<SyncCiCollectionVo> getSyncCiCollectionByIdList(@Param("idList") List<Long> idList);
+    List<SyncCiCollectionVo> getSyncCiCollectionByMultipleCondition(@Param("id") Long id, @Param("idList") List<Long> idList, @Param("collectionList") List<String> collectionList);
 
     List<SyncCiCollectionVo> getSyncCiCollectionByCollectionName(String collectionName);
 

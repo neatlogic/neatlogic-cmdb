@@ -16,24 +16,23 @@
 
 package neatlogic.module.cmdb.api.sync;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
 import neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo;
 import neatlogic.framework.cmdb.enums.sync.CollectMode;
-import neatlogic.framework.cmdb.exception.sync.SyncCiCollectionNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.exception.type.ParamNotExistsException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
 import neatlogic.module.cmdb.dao.mapper.sync.SyncMapper;
 import neatlogic.module.cmdb.service.sync.CiSyncManager;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,7 +42,7 @@ import java.util.stream.Collectors;
 @OperationType(type = OperationTypeEnum.OPERATE)
 public class LaunchSyncCollectionApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private SyncMapper syncMapper;
 
 
@@ -54,7 +53,7 @@ public class LaunchSyncCollectionApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "执行自动采集";
+        return "nmcas.launchsynccollectionapi.getname";
     }
 
     @Override
@@ -62,28 +61,35 @@ public class LaunchSyncCollectionApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "采集id"), @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "采集id列表"), @Param(name = "isAll", type = ApiParamType.INTEGER, desc = "是否执行所有主动采集，不提供id或idList参数下此参数才有效")})
-    @Description(desc = "执行自动采集接口，采集会在后台执行")
+    @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "term.cmdb.syncid"),
+            @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.syncidlist"),
+            @Param(name = "collectionList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.collectionlist"),
+            @Param(name = "branchTag", type = ApiParamType.STRING, desc = "term.cmdb.branchtag"),
+            @Param(name = "isAll", type = ApiParamType.INTEGER, desc = "term.cmdb.syncisall")})
+    @Description(desc = "nmcas.launchsynccollectionapi.getname")
     @ResubmitInterval(value = 5)
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        Long id = jsonObj.getLong("id");
         Integer isAll = jsonObj.getInteger("isAll");
+        Long id = jsonObj.getLong("id");
         JSONArray idList = jsonObj.getJSONArray("idList");
-        if (id == null && CollectionUtils.isEmpty(idList) && isAll == null) {
-            throw new ParamNotExistsException("id", "idList", "isAll");
+        JSONArray collectionList = jsonObj.getJSONArray("collectionList");
+        String branchTag = jsonObj.getString("branchTag");
+        if (id == null && CollectionUtils.isEmpty(idList) && isAll == null && CollectionUtils.isEmpty(collectionList)) {
+            throw new ParamNotExistsException("id", "idList", "collectionList", "isAll");
+        }
+        List<Long> pIdList = null;
+        List<String> pCollectionList = null;
+        if (CollectionUtils.isNotEmpty(idList)) {
+            pIdList = idList.stream().map(d -> Long.parseLong(d.toString())).collect(Collectors.toList());
+        }
+        if (CollectionUtils.isNotEmpty(collectionList)) {
+            pCollectionList = collectionList.stream().map(Object::toString).collect(Collectors.toList());
         }
         List<SyncCiCollectionVo> syncCiCollectionList = new ArrayList<>();
-        if (id != null) {
-            SyncCiCollectionVo syncCiCollectionVo = syncMapper.getSyncCiCollectionById(id);
-            if (syncCiCollectionVo == null) {
-                throw new SyncCiCollectionNotFoundException(id);
-            }
-            syncCiCollectionList.add(syncCiCollectionVo);
-        } else if (CollectionUtils.isNotEmpty(idList)) {
-            List<Long> pIdList = idList.stream().map(d -> Long.parseLong(d.toString())).collect(Collectors.toList());
-            syncCiCollectionList = syncMapper.getSyncCiCollectionByIdList(pIdList);
-        } else if (isAll.equals(1)) {
+        if (isAll == null || isAll.equals(0)) {
+            syncCiCollectionList = syncMapper.getSyncCiCollectionByMultipleCondition(id, pIdList, pCollectionList);
+        } else {
             SyncCiCollectionVo p = new SyncCiCollectionVo();
             p.setCollectMode(CollectMode.INITIATIVE.getValue());
             p.setPageSize(100);
@@ -96,7 +102,7 @@ public class LaunchSyncCollectionApi extends PrivateApiComponentBase {
             }
         }
         if (CollectionUtils.isNotEmpty(syncCiCollectionList)) {
-            CiSyncManager.doSync(syncCiCollectionList);
+            CiSyncManager.doSync(syncCiCollectionList, branchTag);
         }
         return null;
     }

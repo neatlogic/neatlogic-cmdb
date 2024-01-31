@@ -16,7 +16,9 @@
 
 package neatlogic.module.cmdb.api.sync;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.sync.SyncPolicyVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.Description;
@@ -25,18 +27,17 @@ import neatlogic.framework.restful.annotation.OperationType;
 import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.module.cmdb.dao.mapper.sync.SyncMapper;
-import com.alibaba.fastjson.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class SearchSyncPolicyApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private SyncMapper syncMapper;
 
     @Override
@@ -46,7 +47,7 @@ public class SearchSyncPolicyApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "搜索自动采集策略";
+        return "nmcas.searchsyncpolicyapi.getname";
     }
 
     @Override
@@ -54,8 +55,8 @@ public class SearchSyncPolicyApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id")})
-    @Description(desc = "搜索自动采集策略接口")
+    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid")})
+    @Description(desc = "nmcas.searchsyncpolicyapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         SyncPolicyVo syncPolicyVo = JSONObject.toJavaObject(jsonObj, SyncPolicyVo.class);

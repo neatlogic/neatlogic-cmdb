@@ -16,6 +16,7 @@
 
 package neatlogic.module.cmdb.api.sync;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.SYNC_MODIFY;
 import neatlogic.framework.cmdb.dto.sync.CollectionVo;
@@ -26,7 +27,6 @@ import neatlogic.framework.restful.annotation.OperationType;
 import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import com.alibaba.fastjson.JSONObject;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -45,7 +45,7 @@ public class DeleteUnknownCollectionDataApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "删除未知设备数据";
+        return "nmcas.deleteunknowncollectiondataapi.getname";
     }
 
     @Override
@@ -53,8 +53,8 @@ public class DeleteUnknownCollectionDataApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "_id", type = ApiParamType.STRING, isRequired = true, desc = "数据id")})
-    @Description(desc = "删除未知设备数据接口")
+    @Input({@Param(name = "_id", type = ApiParamType.STRING, isRequired = true, desc = "nfrd.issuewebhookvo.entityfield.name")})
+    @Description(desc = "nmcas.deleteunknowncollectiondataapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         paramObj.put("_id", new ObjectId(paramObj.getString("_id")));

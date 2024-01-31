@@ -16,7 +16,9 @@
 
 package neatlogic.module.cmdb.api.sync;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.sync.CollectionVo;
 import neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
@@ -25,9 +27,7 @@ import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.TableResultUtil;
-import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.module.cmdb.service.sync.SyncService;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -55,7 +55,7 @@ public class SearchSyncCiCollectionApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "搜索模型集合映射";
+        return "nmcas.searchsynccicollectionapi.getname";
     }
 
     @Override
@@ -63,15 +63,15 @@ public class SearchSyncCiCollectionApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciId", type = ApiParamType.LONG, desc = "模型id"),
+    @Input({@Param(name = "ciId", type = ApiParamType.LONG, desc = "term.cmdb.ciid"),
             @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "id列表，用于精确刷新状态"),
-            @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字"),
-            @Param(name = "isShowPhysicalType", type = ApiParamType.INTEGER, desc = "是否显示物理集合数据"),
-            @Param(name = "collectMode", type = ApiParamType.ENUM, rule = "initiative,passive", desc = "采集方式"),
-            @Param(name = "collectionType", type = ApiParamType.STRING, desc = "集合类型"),
-            @Param(name = "collectionName", type = ApiParamType.STRING, desc = "集合名称")})
+            @Param(name = "keyword", type = ApiParamType.STRING, desc = "common.keyword"),
+            @Param(name = "isShowPhysicalType", type = ApiParamType.INTEGER, desc = "term.cmdb.isshowpsycollectioni"),
+            @Param(name = "collectMode", type = ApiParamType.ENUM, rule = "initiative,passive", desc = "term.cmdb.collectmode"),
+            @Param(name = "collectionType", type = ApiParamType.STRING, desc = "term.cmdb.collectiontype"),
+            @Param(name = "collectionName", type = ApiParamType.STRING, desc = "term.cmdb.collectionname")})
     @Output({@Param(explode = BasePageVo.class)})
-    @Description(desc = "搜索模型集合映射接口")
+    @Description(desc = "nmcas.searchsynccicollectionapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         SyncCiCollectionVo syncCiCollectionVo = JSONObject.toJavaObject(jsonObj, SyncCiCollectionVo.class);

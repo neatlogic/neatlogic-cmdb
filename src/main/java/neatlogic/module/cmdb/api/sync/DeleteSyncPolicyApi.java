@@ -16,7 +16,9 @@
 
 package neatlogic.module.cmdb.api.sync;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.SYNC_MODIFY;
 import neatlogic.framework.cmdb.dto.sync.SyncPolicyVo;
 import neatlogic.framework.cmdb.exception.sync.SyncPolicyNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
@@ -26,18 +28,17 @@ import neatlogic.framework.restful.annotation.OperationType;
 import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.SYNC_MODIFY;
 import neatlogic.module.cmdb.dao.mapper.sync.SyncMapper;
-import com.alibaba.fastjson.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 
 @Service
 @AuthAction(action = SYNC_MODIFY.class)
 @OperationType(type = OperationTypeEnum.DELETE)
 public class DeleteSyncPolicyApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private SyncMapper syncMapper;
 
 
@@ -48,7 +49,7 @@ public class DeleteSyncPolicyApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "删除自动采集策略";
+        return "nmcas.deletesyncpolicyapi.getname";
     }
 
     @Override
@@ -56,8 +57,8 @@ public class DeleteSyncPolicyApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "策略id")})
-    @Description(desc = "删除自动采集策略接口")
+    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "id")})
+    @Description(desc = "nmcas.deletesyncpolicyapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");

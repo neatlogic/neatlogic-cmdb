@@ -16,16 +16,17 @@
 
 package neatlogic.module.cmdb.api.sync;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.restful.annotation.Description;
 import neatlogic.framework.restful.annotation.Input;
 import neatlogic.framework.restful.annotation.OperationType;
 import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.module.cmdb.dao.mapper.sync.SyncMapper;
-import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -39,7 +40,7 @@ public class CheckCiHasSyncCollectionApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "检查配置项模型是否有配置集合映射";
+        return "nmcas.checkcihassynccollectionapi.getname";
     }
 
     @Override
@@ -47,7 +48,8 @@ public class CheckCiHasSyncCollectionApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id")})
+    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid")})
+    @Description(desc = "nmcas.checkcihassynccollectionapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long ciId = paramObj.getLong("ciId");

@@ -16,17 +16,17 @@
 
 package neatlogic.module.cmdb.api.sync;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSONPath;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.sync.CollectionVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.JSONPath;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -50,7 +50,7 @@ public class SearchCollectionDataApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "搜索自动采集集合数据";
+        return "nmcas.searchcollectiondataapi.getname";
     }
 
     @Override
@@ -58,16 +58,16 @@ public class SearchCollectionDataApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "collection", type = ApiParamType.STRING, isRequired = true, desc = "集合名"),
-            @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数量")
+    @Input({@Param(name = "collection", type = ApiParamType.STRING, isRequired = true, desc = "term.cmdb.collectionname"),
+            @Param(name = "keyword", type = ApiParamType.STRING, desc = "common.keyword"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize")
     })
     @Output({@Param(explode = BasePageVo.class),
             @Param(name = "subTheadData", type = ApiParamType.JSONOBJECT, desc = "子属性表头定义"),
             @Param(name = "theadList", type = ApiParamType.JSONARRAY, desc = "表头数据"),
             @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, desc = "表格数据")})
-    @Description(desc = "搜索自动采集集合数据接口")
+    @Description(desc = "nmcas.searchcollectiondataapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         String collection = paramObj.getString("collection");

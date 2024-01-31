@@ -16,7 +16,9 @@
 
 package neatlogic.module.cmdb.api.sync;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.SYNC_MODIFY;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.Description;
 import neatlogic.framework.restful.annotation.Input;
@@ -24,9 +26,7 @@ import neatlogic.framework.restful.annotation.OperationType;
 import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.SYNC_MODIFY;
 import neatlogic.module.cmdb.dao.mapper.sync.SyncAuditMapper;
-import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -47,7 +47,7 @@ public class DeleteSyncAuditApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "删除自动采集执行日志";
+        return "nmcas.deletesyncauditapi.getname";
     }
 
     @Override
@@ -57,7 +57,7 @@ public class DeleteSyncAuditApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "id")
     })
-    @Description(desc = "删除自动采集执行日志接口")
+    @Description(desc = "nmcas.deletesyncauditapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         syncAuditMapper.deleteSyncAuditById(jsonObj.getLong("id"));

@@ -405,7 +405,7 @@ limitations under the License.
         WHERE a.id = #{value}
     </select>
 
-    <select id="getSyncCiCollectionByIdList" resultMap="syncCiCollectionResultMap">
+    <select id="getSyncCiCollectionByMultipleCondition" resultMap="syncCiCollectionResultMap">
         SELECT
         a.id,
         a.ci_id AS ciId,
@@ -433,9 +433,17 @@ limitations under the License.
         JOIN cmdb_sync_mapping csm on a.id = csm.ci_collection_id
         JOIN cmdb_ci cc ON a.ci_id = cc.id
         LEFT JOIN cmdb_sync_unique csu on a.id = csu.ci_collection_id
-        WHERE a.id in
-        <foreach collection="idList" item="item" open="(" close=")" separator=",">#{item}</foreach>
+        <where>
+            <if test="id != null">
+                or a.id = #{id}
+            </if>
+            <if test="idList != null and idList.size() > 0">
+                or a.id in
+                <foreach collection="idList" item="item" open="(" close=")" separator=",">#{item}</foreach>
+            </if>
+        </where>
     </select>
+
 
     <update id="updateSyncCiCollection" parameterType="neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo">
         update cmdb_sync_ci_collection

@@ -16,7 +16,10 @@
 
 package neatlogic.module.cmdb.api.sync;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.SYNC_MODIFY;
 import neatlogic.framework.cmdb.dto.sync.CollectionVo;
 import neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo;
 import neatlogic.framework.cmdb.dto.sync.SyncConditionVo;
@@ -30,10 +33,7 @@ import neatlogic.framework.restful.annotation.OperationType;
 import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.SYNC_MODIFY;
 import neatlogic.module.cmdb.dao.mapper.sync.SyncMapper;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -64,9 +64,9 @@ public class TestConditionApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "collectionId", type = ApiParamType.LONG, isRequired = true, desc = "集合映射id"),
-            @Param(name = "conditionList", type = ApiParamType.JSONARRAY, desc = "模型id")})
-    @Description(desc = "测试采集策略搜索条件接口")
+    @Input({@Param(name = "collectionId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.syncmappingid"),
+            @Param(name = "conditionList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.ciid")})
+    @Description(desc = "测试采集策略搜索条件")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long collectionId = paramObj.getLong("collectionId");

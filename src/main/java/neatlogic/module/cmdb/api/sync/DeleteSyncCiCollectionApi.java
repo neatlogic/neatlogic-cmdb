@@ -16,7 +16,9 @@
 
 package neatlogic.module.cmdb.api.sync;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.SYNC_MODIFY;
 import neatlogic.framework.cmdb.dto.sync.SyncPolicyVo;
 import neatlogic.framework.cmdb.exception.sync.CiCollectionIsInUsedException;
 import neatlogic.framework.common.constvalue.ApiParamType;
@@ -26,9 +28,7 @@ import neatlogic.framework.restful.annotation.OperationType;
 import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.SYNC_MODIFY;
 import neatlogic.module.cmdb.dao.mapper.sync.SyncMapper;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
@@ -50,7 +50,7 @@ public class DeleteSyncCiCollectionApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "删除配置项集合映射信息";
+        return "nmcas.deletesynccicollectionapi.getname";
     }
 
     @Override
@@ -58,8 +58,8 @@ public class DeleteSyncCiCollectionApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "模型id")})
-    @Description(desc = "删除配置项集合映射信息接口")
+    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid")})
+    @Description(desc = "nmcas.deletesynccicollectionapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");
