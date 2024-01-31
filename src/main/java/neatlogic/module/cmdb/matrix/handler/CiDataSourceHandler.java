@@ -875,6 +875,8 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                                 CiVo ciVo = ciMapper.getCiByLabel(ciLabel);
                                 if (ciVo != null) {
                                     ciEntityVo.setFilterCiId(ciVo.getId());
+                                } else {
+                                    ciEntityVo.setFilterCiId(-1L);
                                 }
                             }
                             break;
@@ -954,6 +956,8 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                                 CiVo ciVo = ciMapper.getCiByLabel(ciLabel);
                                 if (ciVo != null) {
                                     ciEntityVo.setFilterCiId(ciVo.getId());
+                                } else {
+                                    ciEntityVo.setFilterCiId(-1L);
                                 }
                             }
                             break;
