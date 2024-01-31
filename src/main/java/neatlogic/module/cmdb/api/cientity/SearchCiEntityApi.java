@@ -146,7 +146,6 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
             jsonObj.put("ciId", ciVo.getId());
         }
         CiEntityVo ciEntityVo = JSONObject.toJavaObject(jsonObj, CiEntityVo.class);
-        ciEntityVo.setName(jsonObj.getString("keyword"));
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciEntityVo.getCiId());
         Map<Long, AttrVo> attrMap = new HashMap<>();
         for (AttrVo attrVo : attrList) {
