@@ -27,9 +27,9 @@ import neatlogic.module.cmdb.service.sync.CiSyncManager;
 import org.apache.commons.collections4.CollectionUtils;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,7 +40,7 @@ import java.util.List;
 @DisallowConcurrentExecution
 public class SyncCiEntityScheduleJob extends JobBase {
 
-    @Autowired
+    @Resource
     private SyncMapper syncMapper;
 
 
@@ -85,7 +85,7 @@ public class SyncCiEntityScheduleJob extends JobBase {
             if (syncCiCollectionVo != null) {
                 List<SyncCiCollectionVo> syncCiCollectionList = new ArrayList<>();
                 syncCiCollectionList.add(syncCiCollectionVo);
-                CiSyncManager.doSync(syncCiCollectionList);
+                CiSyncManager.doSync(syncCiCollectionList, null);
             } else {
                 schedulerManager.unloadJob(jobObject);
             }
