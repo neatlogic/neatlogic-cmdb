@@ -85,7 +85,7 @@ public class SyncCiEntityScheduleJob extends JobBase {
             if (syncCiCollectionVo != null) {
                 List<SyncCiCollectionVo> syncCiCollectionList = new ArrayList<>();
                 syncCiCollectionList.add(syncCiCollectionVo);
-                CiSyncManager.doSync(syncCiCollectionList, null);
+                CiSyncManager.doSync(syncCiCollectionList);
             } else {
                 schedulerManager.unloadJob(jobObject);
             }
