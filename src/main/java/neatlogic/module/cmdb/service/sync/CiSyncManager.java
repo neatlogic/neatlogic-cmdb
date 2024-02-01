@@ -114,6 +114,8 @@ public class CiSyncManager {
         private JSONObject singleDataObj;
 
         private String batchTag;//批量标签，用于确定一定范围数据
+
+        private Long startTime;//结合批量标签一起使用，用于提高索引性能
         private final String mode;//如果是batch模式，代表批量更新，如果是single模式，接受单条数据更新
         int CAPACITY = 5000;//缓存大小
         private final Map<Integer, List<CiEntityVo>> ciEntityCache = new LinkedHashMap<Integer, List<CiEntityVo>>(CAPACITY, 0.75F, true) {//用户缓存检索数据，提升效率
@@ -159,11 +161,12 @@ public class CiSyncManager {
             }
         }
 
-        public SyncHandler(List<SyncCiCollectionVo> syncCiCollectionVoList, String batchTag) {
+        public SyncHandler(List<SyncCiCollectionVo> syncCiCollectionVoList, String batchTag, Long startTime) {
             super("COLLECTION-CIENTITY-SYNC-BATCH-HANDLER");
             this.mode = "batch";
             this.syncCiCollectionList = syncCiCollectionVoList;
             this.batchTag = batchTag;
+            this.startTime = startTime;
             //获取所有集合列表
             List<CollectionVo> tmpList = mongoTemplate.find(new Query(), CollectionVo.class, "_dictionary");
             this.collectionList = tmpList.stream().distinct().collect(Collectors.toList());
@@ -674,6 +677,17 @@ public class CiSyncManager {
             return finalDate;
         }
 
+        private Date convertToIsoDate(Long date) {
+            Date finalDate = null;
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+                finalDate = sdf.parse(sdf.format(new Date(date)));
+            } catch (Exception ex) {
+                logger.error(ex.getMessage(), ex);
+            }
+            return finalDate;
+        }
+
 
         /**
          * 批量执行方式
@@ -715,6 +729,9 @@ public class CiSyncManager {
                                     }
                                 } else {
                                     criteriaList.add(Criteria.where("_batch_tag").is(this.batchTag));
+                                    if (this.startTime != null) {
+                                        criteriaList.add(Criteria.where("_renewtime").gte(convertToIsoDate(this.startTime)));
+                                    }
                                 }
 
                                 //#############测试用条件，使用后注释掉
@@ -972,7 +989,11 @@ public class CiSyncManager {
         }
     }
 
-    public static void doSync(List<SyncCiCollectionVo> syncCiCollectionList, String batchTag) {
+    public static void doSync(List<SyncCiCollectionVo> syncCiCollectionList) {
+        doSync(syncCiCollectionList, null, null);
+    }
+
+    public static void doSync(List<SyncCiCollectionVo> syncCiCollectionList, String batchTag, Long startTime) {
         if (CollectionUtils.isNotEmpty(syncCiCollectionList)) {
             List<SyncCiCollectionVo> initiativeCollectList = syncCiCollectionList.stream().filter(s -> s.getCollectMode().equals(CollectMode.INITIATIVE.getValue())).collect(Collectors.toList());
             if (CollectionUtils.isNotEmpty(initiativeCollectList)) {
@@ -992,7 +1013,7 @@ public class CiSyncManager {
                     }
                 }
                 if (CollectionUtils.isNotEmpty(syncList)) {
-                    SyncHandler handler = new SyncHandler(syncList, batchTag);
+                    SyncHandler handler = new SyncHandler(syncList, batchTag, startTime);
                     CachedThreadPool.execute(handler);
                 }
             }

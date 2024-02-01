@@ -65,6 +65,7 @@ public class LaunchSyncCollectionApi extends PrivateApiComponentBase {
             @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.syncidlist"),
             @Param(name = "collectionList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.collectionlist"),
             @Param(name = "batchTag", type = ApiParamType.STRING, desc = "term.cmdb.batchtag"),
+            @Param(name = "startTime", type = ApiParamType.LONG, desc = "common.starttime"),
             @Param(name = "isAll", type = ApiParamType.INTEGER, desc = "term.cmdb.syncisall")})
     @Description(desc = "nmcas.launchsynccollectionapi.getname")
     @ResubmitInterval(value = 5)
@@ -74,6 +75,7 @@ public class LaunchSyncCollectionApi extends PrivateApiComponentBase {
         Long id = jsonObj.getLong("id");
         JSONArray idList = jsonObj.getJSONArray("idList");
         JSONArray collectionList = jsonObj.getJSONArray("collectionList");
+        Long startTime = jsonObj.getLong("startTime");
         String batchTag = jsonObj.getString("batchTag");
         if (id == null && CollectionUtils.isEmpty(idList) && isAll == null && CollectionUtils.isEmpty(collectionList)) {
             throw new ParamNotExistsException("id", "idList", "collectionList", "isAll");
@@ -102,7 +104,7 @@ public class LaunchSyncCollectionApi extends PrivateApiComponentBase {
             }
         }
         if (CollectionUtils.isNotEmpty(syncCiCollectionList)) {
-            CiSyncManager.doSync(syncCiCollectionList, batchTag);
+            CiSyncManager.doSync(syncCiCollectionList, batchTag, startTime);
         }
         return null;
     }
