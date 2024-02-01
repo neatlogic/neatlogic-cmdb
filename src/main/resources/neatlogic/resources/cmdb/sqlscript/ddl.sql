@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS `cmdb_attr` (
   `description` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '描述',
   `validator_id` bigint DEFAULT '0' COMMENT '验证器组件id，需要在代码中实现验证器',
   `is_required` tinyint NOT NULL COMMENT '是否必填',
+  `is_searchable` tinyint DEFAULT NULL COMMENT '是否允许搜索',
   `is_unique` tinyint(1) NOT NULL DEFAULT '1' COMMENT '0不唯一，1同类唯一，2全局唯一',
   `input_type` enum('at','mt') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'mt' COMMENT '属性录入方式',
   `group_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '属性分组',
