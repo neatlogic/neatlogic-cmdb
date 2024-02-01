@@ -117,6 +117,12 @@ limitations under the License.
                 #{id}
             </foreach>
         </if>
+        <if test="idList != null and idList.size() > 0">
+            AND a.`id` IN
+            <foreach collection="idList" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
         <if test="inspectStatusList != null and inspectStatusList.size() > 0">
             AND a.`inspect_status` IN
             <foreach collection="inspectStatusList" item="inspectStatus" open="(" separator="," close=")">
@@ -688,7 +694,6 @@ limitations under the License.
         <if test="name != null and name != ''">
             and a.`name` = #{name}
         </if>
-        <include refid="resource_ipobject_where"/>
         LIMIT 1
     </select>
 
