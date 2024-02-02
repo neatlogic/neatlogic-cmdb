@@ -29,10 +29,7 @@ import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.ci.RelVo;
 import neatlogic.framework.cmdb.dto.cientity.AttrFilterVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
-import neatlogic.framework.cmdb.dto.sync.CollectionVo;
-import neatlogic.framework.cmdb.dto.sync.SyncAuditVo;
-import neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo;
-import neatlogic.framework.cmdb.dto.sync.SyncMappingVo;
+import neatlogic.framework.cmdb.dto.sync.*;
 import neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import neatlogic.framework.cmdb.dto.transaction.TransactionGroupVo;
 import neatlogic.framework.cmdb.enums.EditModeType;
@@ -52,6 +49,7 @@ import neatlogic.framework.exception.core.ApiRuntimeException;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
+import neatlogic.module.cmdb.dao.mapper.sync.ObjectMapper;
 import neatlogic.module.cmdb.dao.mapper.sync.SyncAuditMapper;
 import neatlogic.module.cmdb.dao.mapper.sync.SyncMapper;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
@@ -88,9 +86,10 @@ public class CiSyncManager {
     private static RelMapper relMapper;
     private static SyncAuditMapper syncAuditMapper;
     private static SyncMapper syncMapper;
+    private static ObjectMapper objectMapper;
 
     @Autowired
-    public CiSyncManager(MongoTemplate _mongoTemplate, CiEntityService _ciEntityService, AttrMapper _attrMapper, SyncAuditMapper _syncAuditMapper, RelMapper _relMapper, CiMapper _ciMapper, SyncMapper _syncMapper) {
+    public CiSyncManager(MongoTemplate _mongoTemplate, CiEntityService _ciEntityService, AttrMapper _attrMapper, SyncAuditMapper _syncAuditMapper, RelMapper _relMapper, CiMapper _ciMapper, SyncMapper _syncMapper, ObjectMapper _objectMapper) {
         mongoTemplate = _mongoTemplate;
         ciEntityService = _ciEntityService;
         attrMapper = _attrMapper;
@@ -98,6 +97,7 @@ public class CiSyncManager {
         syncAuditMapper = _syncAuditMapper;
         ciMapper = _ciMapper;
         syncMapper = _syncMapper;
+        objectMapper = _objectMapper;
     }
 
     public static class SyncHandler extends NeatLogicThread {
@@ -107,6 +107,7 @@ public class CiSyncManager {
         private final Map<Long, CiVo> CiMap = new HashMap<>();//模型缓存
         private final Map<Long, List<CiVo>> DownwardCiMap = new HashMap<>();//子模型缓存
         private final Map<String, SyncCiCollectionVo> InitiativeSyncCiCollectionMap = new HashMap<>();//主动采集集合映射缓存
+        private final Map<String, ObjectVo> objectMap = new HashMap<>();//采集对象缓存
         private final Map<String, SyncCiCollectionVo> syncCiCollectionMap = new HashMap<>();//普通集合映射缓存
         private final List<SyncCiCollectionVo> syncCiCollectionList;
         private final List<CollectionVo> collectionList;
@@ -225,6 +226,18 @@ public class CiSyncManager {
                 DownwardCiMap.put(ciId, downCiList);
             }
             return DownwardCiMap.get(ciId);
+        }
+
+        public ObjectVo getObjectByCategoryAndType(String category, String type) {
+            if (!objectMap.containsKey(category + "#" + type)) {
+                ObjectVo objectVo = objectMapper.getObjectByCategoryAndType(category, type);
+                if (objectVo != null) {
+                    objectMap.put(category + "#" + type, objectVo);
+                } /*else {
+                    throw new InitiativeSyncCiCollectionNotFoundException(collectionName);
+                }*/
+            }
+            return objectMap.get(category + "#" + type);
         }
 
         private SyncCiCollectionVo getInitiativeSyncCiCollection(String collectionName) {
@@ -546,10 +559,12 @@ public class CiSyncManager {
                                      需要使用同一个集合下的映射关系，如果没有则不处理下一层数据，直接丢弃
                                      */
                                     String subCollectionName = subData.getString("_OBJ_TYPE");
-                                    if (StringUtils.isNotBlank(subCollectionName)) {
-                                        SyncCiCollectionVo subInitiativeSyncCiCollection = getInitiativeSyncCiCollection(subCollectionName);
-                                        if (subInitiativeSyncCiCollection != null) {
-                                            Long subCiId = subInitiativeSyncCiCollection.getCiId();
+                                    String subCollectionCategoryName = subData.getString("_OBJ_CATEGORY");
+                                    if (StringUtils.isNotBlank(subCollectionName) && StringUtils.isNotBlank(subCollectionCategoryName)) {
+                                        //SyncCiCollectionVo subInitiativeSyncCiCollection = getInitiativeSyncCiCollection(subCollectionName);
+                                        ObjectVo objectVo = getObjectByCategoryAndType(subCollectionCategoryName, subCollectionName);
+                                        if (objectVo != null) {
+                                            Long subCiId = objectVo.getCiId();
                                             List<CiVo> downCiList = getDownwardCiList(ciId);
                                             if (downCiList.stream().anyMatch(d -> d.getId().equals(subCiId))) {
                                                 //找到关系原始模型id在当前集合下的映射关系
