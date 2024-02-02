@@ -16,16 +16,17 @@
 
 package neatlogic.module.cmdb.api.group;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
+import neatlogic.framework.cmdb.auth.label.GROUP_MODIFY;
 import neatlogic.framework.cmdb.dto.group.GroupVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.CardResultUtil;
-import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
 import neatlogic.module.cmdb.dao.mapper.group.GroupMapper;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +35,7 @@ import java.util.List;
 
 @Service
 @AuthAction(action = CI_MODIFY.class)
+@AuthAction(action = GROUP_MODIFY.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class SearchGroupApi extends PrivateApiComponentBase {
 
