@@ -1028,3 +1028,10 @@ CREATE TABLE IF NOT EXISTS `cmdb_sync_objtype` (
                                      UNIQUE KEY `uk_ciid` (`ci_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+CREATE TABLE IF NOT EXISTS `cmdb_ci_tree` (
+  `ci_id` bigint NOT NULL,
+  `parent_ci_id` bigint DEFAULT NULL,
+  `sort` int DEFAULT NULL,
+  PRIMARY KEY (`ci_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
