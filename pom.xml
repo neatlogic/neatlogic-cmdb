@@ -58,6 +58,11 @@
             <groupId>com.neatlogic</groupId>
             <artifactId>neatlogic-tagent-base</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-runtime</artifactId>
+            <version>4.12.0</version>
+        </dependency>
         <!-- graphviz 依赖包开始 -->
         <!--<dependency>
             <groupId>guru.nidi</groupId>

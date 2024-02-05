@@ -46,6 +46,7 @@ import neatlogic.framework.util.$;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiViewMapper;
+import neatlogic.module.cmdb.dsl.DslSearchManager;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
 import neatlogic.module.cmdb.service.group.GroupService;
@@ -101,7 +102,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
     @Input({@Param(name = "ciId", type = ApiParamType.LONG, desc = "term.cmdb.ciid"),
             @Param(name = "ciName", type = ApiParamType.STRING, desc = "term.cmdb.ciuniquename"),
             @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "common.keyword"),
-            //@Param(name = "dsl", type = ApiParamType.STRING, desc = "nmcac.searchcientityapi.input.param.desc.dsl"),
+            @Param(name = "dsl", type = ApiParamType.STRING, desc = "nmcac.searchcientityapi.input.param.desc.dsl"),
             @Param(name = "groupId", type = ApiParamType.LONG, desc = "nmcac.searchcientityapi.input.param.desc.groupid"),
             @Param(name = "attrFilterList", type = ApiParamType.JSONARRAY, desc = "nmcac.exportcientityapi.input.param.desc.attrfilterlist"),
             @Param(name = "relFilterList", type = ApiParamType.JSONARRAY, desc = "nmcac.exportcientityapi.input.param.desc.relfilterlist"),
@@ -135,6 +136,10 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("ciId");
         String ciName = jsonObj.getString("ciName");
+        String dsl = jsonObj.getString("dsl");
+        Integer currentPage = jsonObj.getInteger("currentPage");
+        Integer pageSize = jsonObj.getInteger("pageSize");
+
         if (ciId == null && StringUtils.isBlank(ciName)) {
             throw new ParamNotExistsException("ciId", "ciName");
         }
@@ -316,7 +321,20 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
             List<CiEntityVo> ciEntityList;
             CiVo ciVo = ciMapper.getCiById(ciEntityVo.getCiId());
             if (ciEntityObjList == null) {
-                ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
+                if (StringUtils.isBlank(dsl)) {
+                    ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
+                } else {
+                    DslSearchManager searchManager = DslSearchManager.build(ciEntityVo.getCiId(), dsl)
+                            .withCurrentPage(currentPage).withPageSize(pageSize).withNeedRowCount(true);
+                    if (CollectionUtils.isNotEmpty(ciEntityVo.getGroupIdList())) {
+                        searchManager.withGroupIdList(ciEntityVo.getGroupIdList());
+                    }
+                    List<Long> idList = searchManager.search();
+                    ciEntityVo.setIdList(idList);
+                    ciEntityVo.setRowNum(searchManager.getRowNum());
+                    ciEntityVo.setPageCount(searchManager.getPageCount());
+                    ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
+                }
             } else {
                 ciEntityList = new ArrayList<>();
                 for (int i = 0; i < ciEntityObjList.size(); i++) {

@@ -195,6 +195,10 @@
         ${value}
     </select>
 
+    <select id="searchCiEntityIdCountBySql" parameterType="java.lang.String" resultType="int">
+        ${value}
+    </select>
+
     <select id="getNotIndexCiEntityIdList"
             parameterType="neatlogic.framework.fulltextindex.dto.fulltextindex.FullTextIndexTypeVo"
             resultType="java.lang.Long" useCache="false">
