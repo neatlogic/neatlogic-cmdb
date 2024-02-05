@@ -22,7 +22,6 @@ import neatlogic.framework.cmdb.auth.label.SYNC_MODIFY;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.sync.ObjectVo;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
-import neatlogic.framework.cmdb.exception.sync.ObjectCiIsExistsException;
 import neatlogic.framework.cmdb.exception.sync.ObjectIsExistsException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.Description;
@@ -74,9 +73,9 @@ public class SaveObjectApi extends PrivateApiComponentBase {
         if (objectMapper.checkObjectIsExists(objectVo) > 0) {
             throw new ObjectIsExistsException(objectVo);
         }
-        if (objectMapper.checkObjectCiIdIsExists(objectVo) > 0) {
+       /* if (objectMapper.checkObjectCiIdIsExists(objectVo) > 0) {
             throw new ObjectCiIsExistsException(ciVo);
-        }
+        }*/
         if (id == null) {
             objectMapper.insertObject(objectVo);
         } else {

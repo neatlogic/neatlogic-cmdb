@@ -1,0 +1,1 @@
+ALTER TABLE `cmdb_sync_objtype` DROP INDEX `uk_ciid`;
