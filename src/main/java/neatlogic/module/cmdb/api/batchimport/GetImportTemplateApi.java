@@ -21,6 +21,7 @@ import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
+import neatlogic.framework.cmdb.dto.ci.CiViewVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.ci.RelVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
@@ -38,6 +39,7 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
 import neatlogic.framework.util.$;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
+import neatlogic.module.cmdb.dao.mapper.ci.CiViewMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.service.ci.CiService;
 import org.apache.commons.collections4.CollectionUtils;
@@ -57,6 +59,7 @@ import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -66,10 +69,13 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
 
     static Logger logger = LoggerFactory.getLogger(GetImportTemplateApi.class);
 
-    private final int validationOptionSize = 100;// 限制数据有效性列表长度
+    private final static int validationOptionSize = 100;// 限制数据有效性列表长度
 
     @Resource
     private CiMapper ciMapper;
+
+    @Resource
+    private CiViewMapper ciViewMapper;
 
     @Resource
     private CiEntityMapper ciEntityMapper;
@@ -127,6 +133,10 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
             }
 
             CiVo ciVo = ciService.getCiById(ciId);
+            CiViewVo ciViewVo = new CiViewVo();
+            ciViewVo.setCiId(ciId);
+            ciViewVo.setNeedAlias(1);
+            List<CiViewVo> ciViewList = ciViewMapper.getCiViewByCiId(ciViewVo);
             if (ciVo == null) {
                 throw new CiNotFoundException(ciId);
             }
@@ -181,6 +191,10 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
                 int validationSheetIndex = 1;
                 for (GlobalAttrVo attr : ciVo.getGlobalAttrList()) {
                     if (globalAttrIdList.contains(attr.getId())) {
+                        if (CollectionUtils.isNotEmpty(ciViewList)) {
+                            Optional<CiViewVo> op = ciViewList.stream().filter(d -> d.getType().equals("global") && d.getItemId().equals(attr.getId())).findFirst();
+                            op.ifPresent(viewVo -> attr.setLabel(viewVo.getAlias()));
+                        }
                         String label = attr.getLabel();
                         label = label + "[" + $.t("term.cmdb.globalattr") + "]";
                         // 如果是单值，则设置数据有效性
@@ -203,6 +217,10 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
                 int validationSheetIndex = 1;
                 for (AttrVo attr : ciVo.getAttrList()) {
                     if (attrIdList.contains(attr.getId())) {
+                        if (CollectionUtils.isNotEmpty(ciViewList)) {
+                            Optional<CiViewVo> op = ciViewList.stream().filter(d -> d.getType().equals("attr") && d.getItemId().equals(attr.getId())).findFirst();
+                            op.ifPresent(viewVo -> attr.setLabel(viewVo.getAlias()));
+                        }
                         String label = attr.getLabel();
                         Integer isRequired = attr.getIsRequired();
                         Integer isUnique = attr.getIsUnique();
@@ -251,6 +269,17 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
                 List<Long> upwardCiIdList = ciVo.getUpwardCiList().stream().map(CiVo::getId).collect(Collectors.toList());
                 for (RelVo rel : ciVo.getRelList()) {
                     if (relIdList.contains(rel.getId())) {
+                        if (CollectionUtils.isNotEmpty(ciViewList)) {
+                            Optional<CiViewVo> op = ciViewList.stream().filter(d -> d.getType().startsWith("rel") && d.getItemId().equals(rel.getId())).findFirst();
+                            if (op.isPresent()) {
+                                CiViewVo view = op.get();
+                                if (view.getType().equals("relfrom")) {
+                                    rel.setToLabel(view.getAlias());
+                                } else if (view.getType().equals("relto")) {
+                                    rel.setFromLabel(view.getAlias());
+                                }
+                            }
+                        }
                         // 关系包括当前CI自身设置的关系与继承过来的关系
                         if (rel.getFromCiId().equals(ciVo.getId())
                                 || (CollectionUtils.isNotEmpty(upwardCiIdList) && upwardCiIdList.contains(rel.getFromCiId()))) { //当前CI处于from

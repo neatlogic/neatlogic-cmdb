@@ -21,6 +21,7 @@ import neatlogic.framework.asynchronization.thread.NeatLogicThread;
 import neatlogic.framework.asynchronization.threadlocal.InputFromContext;
 import neatlogic.framework.cmdb.dto.batchimport.ImportAuditVo;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
+import neatlogic.framework.cmdb.dto.ci.CiViewVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.ci.RelVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
@@ -45,6 +46,7 @@ import neatlogic.framework.util.$;
 import neatlogic.framework.util.UuidUtil;
 import neatlogic.module.cmdb.dao.mapper.batchimport.ImportMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
+import neatlogic.module.cmdb.dao.mapper.ci.CiViewMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.service.ci.CiService;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
@@ -79,6 +81,8 @@ public class BatchImportHandler {
 
     private static CiService ciService;
 
+    private static CiViewMapper ciViewMapper;
+
     private static CiEntityService ciEntityService;
 
     private static CiMapper ciMapper;
@@ -101,6 +105,11 @@ public class BatchImportHandler {
     @Autowired
     public void setCiService(CiService _ciService) {
         ciService = _ciService;
+    }
+
+    @Autowired
+    public void setCiViewMapper(CiViewMapper _ciViewMapper) {
+        ciViewMapper = _ciViewMapper;
     }
 
     @Autowired
@@ -211,6 +220,10 @@ public class BatchImportHandler {
 
             try {
                 CiVo ciVo = ciService.getCiById(ciId);
+                CiViewVo ciViewVo = new CiViewVo();
+                ciViewVo.setCiId(ciId);
+                ciViewVo.setNeedAlias(1);
+                List<CiViewVo> ciViewList = ciViewMapper.getCiViewByCiId(ciViewVo);
                 if (ciVo == null) {
                     throw new CiNotFoundException(ciId);
                 }
@@ -271,6 +284,10 @@ public class BatchImportHandler {
                                         }
                                     }
                                     for (GlobalAttrVo globalAttr : ciVo.getGlobalAttrList()) {
+                                        if (CollectionUtils.isNotEmpty(ciViewList)) {
+                                            Optional<CiViewVo> op = ciViewList.stream().filter(d -> d.getType().equals("global") && d.getItemId().equals(globalAttr.getId())).findFirst();
+                                            op.ifPresent(viewVo -> globalAttr.setLabel(viewVo.getAlias()));
+                                        }
                                         if (content.contains("[" + $.t("term.cmdb.globalattr") + "]") && (globalAttr.getLabel() + "[" + $.t("term.cmdb.globalattr") + "]").equals(content)) {
                                             checkAttrSet.add("global_" + globalAttr.getId());
                                             typeMap.put(cell.getColumnIndex(), globalAttr);
@@ -279,6 +296,10 @@ public class BatchImportHandler {
                                         }
                                     }
                                     for (AttrVo attr : ciVo.getAttrList()) {
+                                        if (CollectionUtils.isNotEmpty(ciViewList)) {
+                                            Optional<CiViewVo> op = ciViewList.stream().filter(d -> d.getType().equals("attr") && d.getItemId().equals(attr.getId())).findFirst();
+                                            op.ifPresent(viewVo -> attr.setLabel(viewVo.getAlias()));
+                                        }
                                         if (attr.getLabel().equals(content)) {
                                             checkAttrSet.add("attr_" + attr.getId());
                                             typeMap.put(cell.getColumnIndex(), attr);
@@ -293,6 +314,17 @@ public class BatchImportHandler {
                                         }
                                     }
                                     for (RelVo rel : ciVo.getRelList()) {
+                                        if (CollectionUtils.isNotEmpty(ciViewList)) {
+                                            Optional<CiViewVo> op = ciViewList.stream().filter(d -> d.getType().startsWith("rel") && d.getItemId().equals(rel.getId())).findFirst();
+                                            if (op.isPresent()) {
+                                                CiViewVo view = op.get();
+                                                if (view.getType().equals("relfrom")) {
+                                                    rel.setToLabel(view.getAlias());
+                                                } else if (view.getType().equals("relto")) {
+                                                    rel.setFromLabel(view.getAlias());
+                                                }
+                                            }
+                                        }
                                         if ((rel.getDirection().equals(RelDirectionType.FROM.getValue()) && rel.getToLabel().equals(content)) ||
                                                 (rel.getDirection().equals(RelDirectionType.TO.getValue()) && rel.getFromLabel().equals(content))) {
                                             checkAttrSet.add("rel_" + rel.getDirection() + rel.getId());

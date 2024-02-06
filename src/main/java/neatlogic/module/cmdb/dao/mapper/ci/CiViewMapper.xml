@@ -141,6 +141,9 @@
                 OR t.showType is NULL
                 )
             </if>
+            <if test="needAlias == 1">
+                and (alias is not null or alias != '')
+            </if>
         </where>
         ORDER BY sort,type,itemId
         <!-- 按照sort,type,itemId进行排序，当sort为空时，得到的是自然顺序 -->

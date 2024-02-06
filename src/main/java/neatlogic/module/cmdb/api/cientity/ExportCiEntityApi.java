@@ -74,6 +74,7 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
     @Resource
     private CiMapper ciMapper;
 
+
     @Override
     public String getToken() {
         return "/cmdb/cientity/export";
@@ -147,28 +148,28 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
                         if (showAttrRelSet.contains("global_" + ciview.getItemId())) {
                             globalAttrIdList.add(ciview.getItemId());
                             columnList.add("global_" + ciview.getItemId());
-                            headerList.add(ciview.getItemLabel());
+                            headerList.add(StringUtils.isBlank(ciview.getAlias()) ? ciview.getItemLabel() : ciview.getAlias());
                         }
                         break;
                     case "attr":
                         if (showAttrRelSet.contains("attr_" + ciview.getItemId())) {
                             attrIdList.add(ciview.getItemId());
                             columnList.add("attr_" + ciview.getItemId());
-                            headerList.add(ciview.getItemLabel());
+                            headerList.add(StringUtils.isBlank(ciview.getAlias()) ? ciview.getItemLabel() : ciview.getAlias());
                         }
                         break;
                     case "relfrom":
                         if (showAttrRelSet.contains("relfrom_" + ciview.getItemId())) {
                             relIdList.add(ciview.getItemId());
                             columnList.add("relfrom_" + ciview.getItemId());
-                            headerList.add(ciview.getItemLabel());
+                            headerList.add(StringUtils.isBlank(ciview.getAlias()) ? ciview.getItemLabel() : ciview.getAlias());
                         }
                         break;
                     case "relto":
                         if (showAttrRelSet.contains("relto_" + ciview.getItemId())) {
                             relIdList.add(ciview.getItemId());
                             columnList.add("relto_" + ciview.getItemId());
-                            headerList.add(ciview.getItemLabel());
+                            headerList.add(StringUtils.isBlank(ciview.getAlias()) ? ciview.getItemLabel() : ciview.getAlias());
                         }
                         break;
                 }
