@@ -21,6 +21,7 @@ import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
+import neatlogic.framework.cmdb.dto.ci.CiViewVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.ci.RelVo;
 import neatlogic.framework.cmdb.dto.cientity.AttrEntityVo;
@@ -39,6 +40,7 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
+import neatlogic.module.cmdb.dao.mapper.ci.CiViewMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
 import neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
@@ -72,6 +74,9 @@ public class GetCiEntityDataApi extends PrivateApiComponentBase {
     @Resource
     private GlobalAttrMapper globalAttrMapper;
 
+    @Resource
+    private CiViewMapper ciViewMapper;
+
     @Override
     public String getToken() {
         return "/cmdb/cientity/getdata";
@@ -100,6 +105,10 @@ public class GetCiEntityDataApi extends PrivateApiComponentBase {
             throw new CiEntityNotFoundException(ciEntityId);
         }
         Long ciId = ciEntityBaseVo.getCiId();
+        CiViewVo ciViewVo = new CiViewVo();
+        ciViewVo.setCiId(ciId);
+        ciViewVo.setNeedAlias(1);
+        List<CiViewVo> ciViewList = ciViewMapper.getCiViewByCiId(ciViewVo);
         Boolean limitRelEntity = false;
         Boolean limitAttrEntity = false;
         CiVo ciVo = ciMapper.getCiById(ciId);
@@ -130,6 +139,10 @@ public class GetCiEntityDataApi extends PrivateApiComponentBase {
         JSONArray globalAttrObjList = new JSONArray();
         if (CollectionUtils.isNotEmpty(entity.getGlobalAttrEntityList())) {
             for (GlobalAttrEntityVo attrEntityVo : entity.getGlobalAttrEntityList()) {
+                if (CollectionUtils.isNotEmpty(ciViewList)) {
+                    Optional<CiViewVo> op = ciViewList.stream().filter(d -> d.getType().equals("global") && d.getItemId().equals(attrEntityVo.getAttrId())).findAny();
+                    op.ifPresent(viewVo -> attrEntityVo.setAttrLabel(viewVo.getAlias()));
+                }
                 JSONObject attrObj = new JSONObject();
                 attrObj.put("name", attrEntityVo.getAttrName());
                 attrObj.put("label", attrEntityVo.getAttrLabel());
@@ -140,6 +153,10 @@ public class GetCiEntityDataApi extends PrivateApiComponentBase {
         if (CollectionUtils.isNotEmpty(globalAttrList)) {
             for (GlobalAttrVo attr : globalAttrList) {
                 if (entity.getGlobalAttrEntityList().stream().noneMatch(d -> d.getAttrId().equals(attr.getId()))) {
+                    if (CollectionUtils.isNotEmpty(ciViewList)) {
+                        Optional<CiViewVo> op = ciViewList.stream().filter(d -> d.getType().equals("global") && d.getItemId().equals(attr.getId())).findAny();
+                        op.ifPresent(viewVo -> attr.setLabel(viewVo.getAlias()));
+                    }
                     JSONObject attrObj = new JSONObject();
                     attrObj.put("name", attr.getName());
                     attrObj.put("label", attr.getLabel());
@@ -153,6 +170,10 @@ public class GetCiEntityDataApi extends PrivateApiComponentBase {
         JSONArray attrObjList = new JSONArray();
         if (CollectionUtils.isNotEmpty(entity.getAttrEntityList())) {
             for (AttrEntityVo attrEntityVo : entity.getAttrEntityList()) {
+                if (CollectionUtils.isNotEmpty(ciViewList)) {
+                    Optional<CiViewVo> op = ciViewList.stream().filter(d -> d.getType().equals("attr") && d.getItemId().equals(attrEntityVo.getAttrId())).findAny();
+                    op.ifPresent(viewVo -> attrEntityVo.setAttrLabel(viewVo.getAlias()));
+                }
                 JSONObject attrObj = new JSONObject();
                 attrObj.put("id", attrEntityVo.getId());
                 attrObj.put("name", attrEntityVo.getAttrName());
@@ -169,6 +190,10 @@ public class GetCiEntityDataApi extends PrivateApiComponentBase {
         if (CollectionUtils.isNotEmpty(attrList)) {
             for (AttrVo attr : attrList) {
                 if (entity.getAttrEntityList().stream().noneMatch(d -> d.getAttrId().equals(attr.getId()))) {
+                    if (CollectionUtils.isNotEmpty(ciViewList)) {
+                        Optional<CiViewVo> op = ciViewList.stream().filter(d -> d.getType().equals("attr") && d.getItemId().equals(attr.getId())).findAny();
+                        op.ifPresent(viewVo -> attr.setLabel(viewVo.getAlias()));
+                    }
                     JSONObject attrObj = new JSONObject();
                     attrObj.put("id", attr.getId());
                     attrObj.put("name", attr.getName());
@@ -184,6 +209,10 @@ public class GetCiEntityDataApi extends PrivateApiComponentBase {
         JSONArray relObjList = new JSONArray();
         if (CollectionUtils.isNotEmpty(entity.getRelEntityList())) {
             for (RelEntityVo relEntityVo : entity.getRelEntityList()) {
+                if (CollectionUtils.isNotEmpty(ciViewList)) {
+                    Optional<CiViewVo> op = ciViewList.stream().filter(d -> d.getType().equals("rel" + relEntityVo.getDirection()) && d.getItemId().equals(relEntityVo.getRelId())).findAny();
+                    op.ifPresent(viewVo -> relEntityVo.setRelLabel(viewVo.getAlias()));
+                }
                 Optional<Object> op = relObjList.stream().filter(d -> ((JSONObject) d).getLong("id").equals(relEntityVo.getRelId())).findFirst();
                 JSONObject relObj;
                 if (op.isPresent()) {
@@ -209,6 +238,17 @@ public class GetCiEntityDataApi extends PrivateApiComponentBase {
         if (CollectionUtils.isNotEmpty(relList)) {
             for (RelVo rel : relList) {
                 if (entity.getRelEntityList().stream().noneMatch(d -> d.getRelId().equals(rel.getId()))) {
+                    if (CollectionUtils.isNotEmpty(ciViewList)) {
+                        Optional<CiViewVo> op = ciViewList.stream().filter(d -> d.getType().startsWith("rel") && d.getItemId().equals(rel.getId())).findAny();
+                        if (op.isPresent()) {
+                            CiViewVo ciview = op.get();
+                            if (ciview.getType().equals("relfrom")) {
+                                rel.setToLabel(ciview.getAlias());
+                            } else if (ciview.getType().equals("relto")) {
+                                rel.setFromLabel(ciview.getAlias());
+                            }
+                        }
+                    }
                     JSONObject relObj = new JSONObject();
                     relObj.put("id", rel.getId());
                     if (rel.getDirection().equals(RelDirectionType.FROM.getValue())) {
