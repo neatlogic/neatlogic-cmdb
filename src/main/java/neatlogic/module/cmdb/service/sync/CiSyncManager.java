@@ -535,7 +535,8 @@ public class CiSyncManager {
                         if (dataObj.containsKey(mappingVo.getField(parentKey))) {
                         /*
                         由于模型关系的对端模型可能是父模型，而采集数据有可能是各个不同的子模型，因此需要做如下处理：
-                        1、通过jsonArray数据成员中的_OBJ_TYPE找到相应的主动采集配置模型（已经规定一个集合只能关联一个主动采集配置模型）。
+                        旧逻辑：1、通过jsonArray数据成员中的_OBJ_TYPE找到相应的主动采集配置模型（已经规定一个集合只能关联一个主动采集配置模型）。
+                        新逻辑：1、通过jsonArray数据成员那种的_OBJ_CATEGORY和_OBJ_TYPE找到对应的模型（cmdb_sync_objtype表）
                         2、如果找到模型，则检查找到的模型是否属于关系对端模型的子模型（子模型列表包括自己）。
                         3、如果2成立，则检查关系对端模型（可能是父模型）是否配置了当前集合的被动采集配置。
                         4、如果有3成立，则把采集配置的父模型id切换成第一步中真正的子模型id。
@@ -552,7 +553,8 @@ public class CiSyncManager {
                                 subDataList = new JSONArray();
                                 subDataList.add(dataObj.getJSONObject(mappingVo.getField(parentKey)));
                             }
-                            if (subDataList != null) {
+                            //if (subDataList != null) {
+                            if (CollectionUtils.isNotEmpty(subDataList)) {
                                 for (int i = 0; i < subDataList.size(); i++) {
                                     JSONObject subData = subDataList.getJSONObject(i);
                                    /*
@@ -607,7 +609,13 @@ public class CiSyncManager {
                                         }
                                     }
                                 }
+                            } else {
+                                if (mappingVo.getAction().equals("replace")) {
+                                    //如果是替换，则需要添加一个空关系，用于删除
+                                    ciEntityTransactionVo.addRelEntityData(relVo, mappingVo.getDirection(), mappingVo.getAction());
+                                }
                             }
+                            // }
                         }
                     }
                 }
