@@ -16,14 +16,16 @@
 
 package neatlogic.module.cmdb.attrvaluehandler.handler;
 
+import com.alibaba.fastjson.JSONArray;
 import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.enums.SearchExpression;
 import neatlogic.framework.cmdb.exception.attr.AttrValueIrregularException;
-import com.alibaba.fastjson.JSONArray;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+
+import java.text.DecimalFormat;
 
 
 @Service
@@ -92,6 +94,22 @@ public class NumberValueHandler implements IAttrValueHandler {
     @Override
     public int getSort() {
         return 2;
+    }
+
+    @Override
+    public JSONArray getActualValueList(AttrVo attrVo, JSONArray valueList) {
+        JSONArray actualValueList = new JSONArray();
+        if (CollectionUtils.isNotEmpty(valueList)) {
+            DecimalFormat df = new DecimalFormat("0.####");
+            for (int i = 0; i < valueList.size(); i++) {
+                try {
+                    actualValueList.add(df.parse(valueList.getString(i)));
+                } catch (Exception ignored) {
+
+                }
+            }
+        }
+        return actualValueList;
     }
 
     @Override
