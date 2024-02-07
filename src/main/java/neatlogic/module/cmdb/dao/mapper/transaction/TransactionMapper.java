@@ -38,7 +38,9 @@ public interface TransactionMapper {
 
     TransactionVo getTransactionById(Long transactionId);
 
-    List<TransactionVo> searchTransaction(TransactionVo transactionVo);
+    List<TransactionVo> getTransactionByIdList(@Param("idList") List<Long> idList);
+
+    List<Long> searchTransactionId(TransactionVo transactionVo);
 
     int searchTransactionCount(TransactionVo transactionVo);
 

@@ -33,10 +33,10 @@ import neatlogic.framework.process.dto.processconfig.ActionConfigVo;
 import neatlogic.framework.process.stephandler.core.ProcessStepInternalHandlerBase;
 import neatlogic.framework.process.util.ProcessConfigUtil;
 import neatlogic.framework.util.TableResultUtil;
-import neatlogic.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import neatlogic.module.cmdb.process.dto.*;
 import neatlogic.module.cmdb.process.exception.CiEntityConfigIllegalException;
 import neatlogic.module.cmdb.process.notifyhandler.CmdbSyncNotifyHandler;
+import neatlogic.module.cmdb.service.transaction.TransactionService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -57,7 +57,7 @@ public class CmdbSyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
     private ProcessTaskStepDataMapper processTaskStepDataMapper;
 
     @Resource
-    private TransactionMapper transactionMapper;
+    private TransactionService transactionService;
 
     @Override
     public String getHandler() {
@@ -89,7 +89,7 @@ public class CmdbSyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
                     Long transactionGroupId = transactionGroupObj.getLong("transactionGroupId");
                     TransactionVo transactionVo = new TransactionVo();
                     transactionVo.setTransactionGroupId(transactionGroupId);
-                    List<TransactionVo> tbodyList = transactionMapper.searchTransaction(transactionVo);
+                    List<TransactionVo> tbodyList = transactionService.searchTransaction(transactionVo);
                     if (CollectionUtils.isNotEmpty(tbodyList)) {
                         JSONObject tableObj = TableResultUtil.getResult(tbodyList);
                         tableObj.put("time", time);

@@ -268,8 +268,22 @@ limitations under the License.
           AND transaction_id != #{transactionId}
     </select>
 
-    <select id="searchTransaction" parameterType="neatlogic.framework.cmdb.dto.transaction.TransactionVo"
-            resultMap="transactionDetailMap">
+    <select id="searchTransactionId" parameterType="neatlogic.framework.cmdb.dto.transaction.TransactionVo"
+            resultType="java.lang.Long">
+        SELECT
+        distinct a.id
+        FROM
+        cmdb_transaction a
+        JOIN cmdb_ci ci ON a.ci_id = ci.id
+        JOIN cmdb_cientity_transaction b ON a.id = b.`transaction_id` and b.ci_id = a.ci_id
+        LEFT JOIN cmdb_cientity c ON b.ci_entity_id = c.id and b.ci_id = c.ci_id
+        LEFT JOIN cmdb_transactiongroup t on a.id = t.transaction_id
+        <include refid="searchTransactionCondition"></include>
+        ORDER BY a.id DESC
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="getTransactionByIdList"  resultMap="transactionDetailMap">
         SELECT
         a.id,
         a.ci_id AS ciId,
@@ -304,17 +318,15 @@ limitations under the License.
         JOIN cmdb_cientity_transaction b ON a.id = b.`transaction_id` and b.ci_id = a.ci_id
         LEFT JOIN cmdb_cientity c ON b.ci_entity_id = c.id and b.ci_id = c.ci_id
         LEFT JOIN cmdb_transactiongroup t on a.id = t.transaction_id
-        <include refid="searchTransactionCondition"></include>
-        ORDER BY b.id DESC
-        <if test="needPage == true">
-            LIMIT #{startNum}, #{pageSize}
-        </if>
+        where a.id in
+        <foreach collection="idList" item="item" open="(" close=")" separator=",">#{item}</foreach>
+        ORDER BY a.id DESC
     </select>
 
     <select id="searchTransactionCount" parameterType="neatlogic.framework.cmdb.dto.transaction.TransactionVo"
             resultType="int">
         SELECT
-        COUNT(1)
+        COUNT(distinct a.id)
         FROM
         cmdb_transaction a
         JOIN cmdb_ci ci ON a.ci_id = ci.id

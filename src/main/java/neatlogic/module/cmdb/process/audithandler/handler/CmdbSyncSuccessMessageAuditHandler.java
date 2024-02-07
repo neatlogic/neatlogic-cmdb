@@ -5,8 +5,8 @@ import neatlogic.framework.cmdb.dto.transaction.TransactionVo;
 import neatlogic.framework.process.audithandler.core.IProcessTaskStepAuditDetailHandler;
 import neatlogic.framework.process.dto.ProcessTaskStepAuditDetailVo;
 import neatlogic.framework.util.TableResultUtil;
-import neatlogic.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import neatlogic.module.cmdb.process.constvalue.CmdbAuditDetailType;
+import neatlogic.module.cmdb.service.transaction.TransactionService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -18,7 +18,7 @@ import java.util.List;
 public class CmdbSyncSuccessMessageAuditHandler implements IProcessTaskStepAuditDetailHandler {
 
     @Resource
-    private TransactionMapper transactionMapper;
+    private TransactionService transactionService;
 
     @Override
     public String getType() {
@@ -42,7 +42,7 @@ public class CmdbSyncSuccessMessageAuditHandler implements IProcessTaskStepAudit
         }
         TransactionVo transactionVo = new TransactionVo();
         transactionVo.setTransactionGroupId(transactionGroupId);
-        List<TransactionVo> transactionList = transactionMapper.searchTransaction(transactionVo);
+        List<TransactionVo> transactionList = transactionService.searchTransaction(transactionVo);
         if (CollectionUtils.isEmpty(transactionList)) {
             return 0;
         }

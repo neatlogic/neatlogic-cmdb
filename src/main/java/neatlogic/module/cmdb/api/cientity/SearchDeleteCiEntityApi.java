@@ -36,8 +36,8 @@ import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.ci.CiViewMapper;
-import neatlogic.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
+import neatlogic.module.cmdb.service.transaction.TransactionService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -53,7 +53,7 @@ import java.util.stream.Collectors;
 public class SearchDeleteCiEntityApi extends PrivateApiComponentBase {
 
     @Resource
-    private TransactionMapper transactionMapper;
+    private TransactionService transactionService;
 
     @Resource
     private CiViewMapper ciViewMapper;
@@ -88,7 +88,7 @@ public class SearchDeleteCiEntityApi extends PrivateApiComponentBase {
         pTransactionVo.setStatus(TransactionStatus.COMMITED.getValue());
         boolean needAction = jsonObj.getBooleanValue("needAction");
         boolean needCheck = jsonObj.getBooleanValue("needCheck");
-        List<TransactionVo> transactionList = transactionMapper.searchTransaction(pTransactionVo);
+        List<TransactionVo> transactionList = transactionService.searchTransaction(pTransactionVo);
 
         CiViewVo ciViewVo = new CiViewVo();
         ciViewVo.setCiId(pTransactionVo.getCiId());
