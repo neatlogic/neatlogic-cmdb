@@ -399,7 +399,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         }
         Boolean isLimitRelEntity = ciEntityVo.isLimitRelEntity();
         Boolean isLimitAttrEntity = ciEntityVo.isLimitAttrEntity();
-        if (CollectionUtils.isEmpty(ciEntityVo.getIdList())) {
+        if (ciEntityVo.getIdList() == null) {
             ciEntityVo.setLimitRelEntity(false);
             ciEntityVo.setLimitAttrEntity(false);
             int rowNum = ciEntityMapper.searchCiEntityIdCount(ciEntityVo);

@@ -74,7 +74,6 @@ public class DslSearchManager {
     private List<Long> groupIdList;
 
     private static CiEntityMapper ciEntityMapper;
-    private String dsl;
     private Long ciId;
 
     private List<Long> ciEntityIdList;
@@ -118,7 +117,6 @@ public class DslSearchManager {
 
 
     private DslSearchManager(Long ciId, String dsl) {
-        this.dsl = dsl;
         this.ciId = ciId;
         if (StringUtils.isNotBlank(dsl)) {
             CharStream input = CharStreams.fromString(dsl);
@@ -306,21 +304,11 @@ public class DslSearchManager {
     public List<Long> search() {
         String sql = this.buildSql();
 
-
         if (this.needRowCount) {
             String buildSql = this.buildCountSql();
             this.rowCount = ciEntityMapper.searchCiEntityIdCountBySql(buildSql);
         }
-        List<Long> idList = ciEntityMapper.searchCiEntityIdBySql(sql);
-       /* if (this.currentPage != null && this.pageSize != null) {
-            int startNum = Math.max((this.currentPage - 1) * this.pageSize, 0);
-            if (idList.size() > startNum) {
-                idList = idList.subList(startNum, Math.min(idList.size(), startNum + pageSize));
-            } else {
-                idList = new ArrayList<>();
-            }
-        }*/
-        return idList;
+        return ciEntityMapper.searchCiEntityIdBySql(sql);
     }
 
 
@@ -371,7 +359,7 @@ public class DslSearchManager {
                     //只需要join关系所在的模型和叶子模型，中间模型可以跳过，尽量减少没必要的join
                     if (!selectFragment.isCiExists(ci.getId()) && (searchItem.getAttrVo().getCiId().equals(ci.getId()) || ci.getId().equals(searchItem.getCiId()))) {
                         selectFragment.addCiToCheckSet(ci.getId());
-                        plainSelect.addJoins(new Join().withRightItem(new Table().withName("cmdb_" + ci.getId()).withSchemaName(TenantContext.get().getDataDbName()).withAlias(new Alias("cmdb_" + ci.getId()))).withOnExpression(new EqualsTo().withLeftExpression(new Column().withTable(new Table("ci_base")).withColumnName("id")).withRightExpression(new Column().withTable(new Table("cmdb_" + ci.getId())).withColumnName("cientity_id"))));
+                        plainSelect.addJoins(new Join().withRightItem(new Table().withName("cmdb_" + ci.getId()).withSchemaName(TenantContext.get().getDataDbName()).withAlias(new Alias("cmdb_" + ci.getId()))).addOnExpression(new EqualsTo().withLeftExpression(new Column().withTable(new Table("ci_base")).withColumnName("id")).withRightExpression(new Column().withTable(new Table("cmdb_" + ci.getId())).withColumnName("cientity_id"))));
                     }
                 }
             } else if (searchItem.getAttrVo() != null && searchItem.getAttrVo().getTargetCiId() != null) {
@@ -383,7 +371,7 @@ public class DslSearchManager {
                                 .withName("cmdb_attrentity")
                                 .withAlias(new Alias(searchItem.getAttrEntityAlias())))
                         //.withAlias(new Alias("cmdb_attrentity_" + searchItem.getAttrVo().getId())))
-                        .withOnExpression(new AndExpression()
+                        .addOnExpression(new AndExpression()
                                 .withLeftExpression(new EqualsTo()
                                         .withLeftExpression(new Column()
                                                 .withTable(new Table(searchItem.getAttrEntityAlias()))
@@ -401,7 +389,7 @@ public class DslSearchManager {
                         .withRightItem(new Table()
                                 .withName("cmdb_cientity")
                                 .withAlias(new Alias(searchItem.getTargetCiEntityAlias())))
-                        .withOnExpression(new EqualsTo()
+                        .addOnExpression(new EqualsTo()
                                 .withLeftExpression(new Column()
                                         //.withTable(new Table("cmdb_attrentity_" + searchItem.getAttrVo().getId()))
                                         .withTable(new Table(searchItem.getAttrEntityAlias()))
@@ -415,7 +403,7 @@ public class DslSearchManager {
                         .withAlias(new Alias(searchItem.getAlias())));
                 plainSelect.addJoins(new Join().withLeft(true).withRightItem(new Table().withName("cmdb_relentity")
                                         .withAlias(new Alias(searchItem.getRelEntityAlias())))
-                                .withOnExpression(new AndExpression().withLeftExpression(new EqualsTo().withLeftExpression(new Column()
+                                .addOnExpression(new AndExpression().withLeftExpression(new EqualsTo().withLeftExpression(new Column()
                                                         .withTable(new Table(searchItem.getRelEntityAlias()))
                                                         .withColumnName("rel_id"))
                                                 .withRightExpression(new LongValue(searchItem.getRelVo().getId())))
@@ -429,7 +417,7 @@ public class DslSearchManager {
                         .addJoins(new Join().withLeft(true)
                                 .withRightItem(new Table().withName("cmdb_cientity")
                                         .withAlias(new Alias(searchItem.getTargetCiEntityAlias())))
-                                .withOnExpression(new EqualsTo()
+                                .addOnExpression(new EqualsTo()
                                         .withLeftExpression(new Column()
                                                 .withTable(new Table(searchItem.getRelEntityAlias()))
                                                 .withColumnName("to_cientity_id"))
