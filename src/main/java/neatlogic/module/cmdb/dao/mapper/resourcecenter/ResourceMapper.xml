@@ -977,15 +977,14 @@ limitations under the License.
         </foreach>
     </select>
 
-    <select id="getResourceListByResourceVoList" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo"
-            resultType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo">
+    <select id="getResourceListByResourceVoList" resultType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo">
         SELECT a.name,a.`ip`,a.id,a.port,a.type_name as typeName
         FROM @{DATA_SCHEMA}.`scence_ipobject_ip_port` a
-        <if test="isHasAuth == false">
+        <if test="searchVo.isHasAuth == false">
             LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
             LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
             <choose>
-                <when test="cmdbGroupType == 'autoexec'">
+                <when test="searchVo.cmdbGroupType == 'autoexec'">
                     LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
                 </when>
                 <otherwise>
@@ -1006,7 +1005,6 @@ limitations under the License.
                 and a.name = #{resource.name}
             </if>
         </foreach>
-        <include refid="resource_ipobject_where"/>
     </select>
 
     <select id="getAppSystemIdByResourceId" parameterType="java.lang.Long" resultType="java.lang.Long">
