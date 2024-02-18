@@ -63,7 +63,7 @@ limitations under the License.
         b.name as ciName,
         b.label as ciLabel
         from cmdb_sync_objtype a
-        join cmdb_ci b on a.ci_id = b.id
+        left join cmdb_ci b on a.ci_id = b.id
         <include refid="searchObjectSql"></include>
         limit #{startNum},#{pageSize}
     </select>
@@ -72,7 +72,8 @@ limitations under the License.
             resultType="int">
         select count(1)
         from cmdb_sync_objtype a
-                 join cmdb_ci b on a.ci_id = b.id
+        left join cmdb_ci b on a.ci_id = b.id
+        <include refid="searchObjectSql"></include>
     </select>
 
     <sql id="searchObjectSql">

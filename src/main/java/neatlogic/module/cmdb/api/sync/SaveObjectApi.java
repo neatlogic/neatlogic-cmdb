@@ -58,24 +58,23 @@ public class SaveObjectApi extends PrivateApiComponentBase {
     }
 
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "id"),
-            @Param(name = "objCategory", type = ApiParamType.STRING, desc = "对象大类", isRequired = true),
-            @Param(name = "objType", type = ApiParamType.STRING, desc = "对象类型", isRequired = true),
-            @Param(name = "ciId", type = ApiParamType.LONG, desc = "模型id", isRequired = true)})
+            @Param(name = "objCategory", type = ApiParamType.STRING, desc = "term.cmdb.objcategory", isRequired = true),
+            @Param(name = "objType", type = ApiParamType.STRING, desc = "term.cmdb.objtype", isRequired = true),
+            @Param(name = "ciId", type = ApiParamType.LONG, desc = "term.cmdb.ciid")})
     @Description(desc = "nmcas.saveobjectapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long id = paramObj.getLong("id");
         ObjectVo objectVo = JSONObject.toJavaObject(paramObj, ObjectVo.class);
-        CiVo ciVo = ciMapper.getCiById(objectVo.getCiId());
-        if (ciVo == null) {
-            throw new CiNotFoundException(objectVo.getCiId());
+        if (objectVo.getCiId() != null) {
+            CiVo ciVo = ciMapper.getCiById(objectVo.getCiId());
+            if (ciVo == null) {
+                throw new CiNotFoundException(objectVo.getCiId());
+            }
         }
         if (objectMapper.checkObjectIsExists(objectVo) > 0) {
             throw new ObjectIsExistsException(objectVo);
         }
-       /* if (objectMapper.checkObjectCiIdIsExists(objectVo) > 0) {
-            throw new ObjectCiIsExistsException(ciVo);
-        }*/
         if (id == null) {
             objectMapper.insertObject(objectVo);
         } else {

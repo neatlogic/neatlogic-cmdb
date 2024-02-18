@@ -231,7 +231,7 @@ public class CiSyncManager {
         public ObjectVo getObjectByCategoryAndType(String category, String type) {
             if (!objectMap.containsKey(category + "#" + type)) {
                 ObjectVo objectVo = objectMapper.getObjectByCategoryAndType(category, type);
-                if (objectVo != null) {
+                if (objectVo != null && objectVo.getCiId() != null) {
                     objectMap.put(category + "#" + type, objectVo);
                 } /*else {
                     throw new InitiativeSyncCiCollectionNotFoundException(collectionName);
