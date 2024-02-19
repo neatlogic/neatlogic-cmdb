@@ -16,10 +16,11 @@
 
 package neatlogic.module.cmdb.api.sync;
 
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.nacos.common.utils.CollectionUtils;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.SYNC_MODIFY;
 import neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo;
-import neatlogic.framework.cmdb.enums.sync.CollectMode;
-import neatlogic.framework.cmdb.exception.sync.InitiativeSyncCiCollectionIsExistsException;
 import neatlogic.framework.cmdb.exception.sync.SyncMappingNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.Description;
@@ -28,11 +29,8 @@ import neatlogic.framework.restful.annotation.OperationType;
 import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.SYNC_MODIFY;
 import neatlogic.module.cmdb.dao.mapper.sync.SyncMapper;
 import neatlogic.module.cmdb.service.sync.SyncService;
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.nacos.common.utils.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -79,9 +77,9 @@ public class SaveSyncCiCollectionApi extends PrivateApiComponentBase {
         if (CollectionUtils.isEmpty(syncCiCollectionVo.getMappingList())) {
             throw new SyncMappingNotFoundException();
         }
-        if (syncCiCollectionVo.getCollectMode().equals(CollectMode.INITIATIVE.getValue()) && syncMapper.checkInitiativeSyncCiCollectionIsExists(syncCiCollectionVo) > 0) {
+        /*if (syncCiCollectionVo.getCollectMode().equals(CollectMode.INITIATIVE.getValue()) && syncMapper.checkInitiativeSyncCiCollectionIsExists(syncCiCollectionVo) > 0) {
             throw new InitiativeSyncCiCollectionIsExistsException(syncCiCollectionVo.getCollectionName());
-        }
+        }*/
         syncService.saveSyncCiCollection(syncCiCollectionVo);
         return null;
     }

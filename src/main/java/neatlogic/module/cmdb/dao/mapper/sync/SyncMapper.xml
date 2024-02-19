@@ -87,9 +87,14 @@ limitations under the License.
         SELECT COUNT(1)
         FROM cmdb_sync_ci_collection
         WHERE ci_id = #{ciId}
-          AND collection_name = #{collectionName}
-          AND parent_key = #{parentKey}
-          AND id != #{id}
+        AND collection_name = #{collectionName}
+        <choose>
+            <when test="parentKey == null">
+                AND parent_key is null
+            </when>
+            <otherwise>AND parent_key = #{parentKey}</otherwise>
+        </choose>
+        AND id != #{id}
     </select>
 
     <select id="checkCiHasSyncCiCollection" parameterType="java.lang.Long" resultType="int">
