@@ -32,6 +32,7 @@ import neatlogic.module.cmdb.dao.mapper.sync.ObjectMapper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -59,7 +60,7 @@ public class SearchObjectApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         ObjectVo objectVo = JSONObject.toJavaObject(paramObj, ObjectVo.class);
         int rowNum = objectMapper.searchObjectCount(objectVo);
-        List<ObjectVo> objectList = null;
+        List<ObjectVo> objectList = new ArrayList<>();
         if (rowNum > 0) {
             objectVo.setRowNum(rowNum);
             objectList = objectMapper.searchObject(objectVo);

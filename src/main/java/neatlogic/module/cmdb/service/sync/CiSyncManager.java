@@ -375,6 +375,9 @@ public class CiSyncManager {
             }
 
             if (CollectionUtils.isNotEmpty(ciEntityConditionVo.getAttrFilterList())) {
+                CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
+                //searchCiEntityWithCache在查询不到配置项的情况下，会把输入条件放入cache中，用于避免新的配置项重复添加，因此需要和新配置项的id保持一致
+                ciEntityConditionVo.setId(ciEntityTransactionVo.getCiEntityId());
                 //使用所有非引用属性去搜索配置项，没有则添加，发现一个则就修改，发现多个就抛异常
                 List<CiEntityVo> checkList = searchCiEntityWithCache(ciEntityConditionVo);
                 if (CollectionUtils.isNotEmpty(checkList) && checkList.size() > 1) {
@@ -389,7 +392,6 @@ public class CiSyncManager {
                     }
                     throw new CiEntityDuplicateException(ciEntityConditionVo, dataObj);
                 }
-                CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
                 ciEntityTransactionVo.setCiId(ciVo.getId());
                 ciEntityTransactionVo.setAllowCommit(syncCiCollectionVo.getIsAutoCommit().equals(1));
                 ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());//局部更新模式
@@ -484,6 +486,8 @@ public class CiSyncManager {
                                             this.add(dataObj.getString(mappingVo.getField(parentKey)));
                                         }});
                                         attrConditionVo.addAttrFilter(filterVo);
+                                        CiEntityTransactionVo attrCiEntityTransactionVo = new CiEntityTransactionVo();
+                                        attrConditionVo.setId(attrCiEntityTransactionVo.getCiEntityId());
                                         List<CiEntityVo> attrCiCheckList = searchCiEntityWithCache(attrConditionVo);//ciEntityService.searchCiEntity(attrConditionVo);
                                         if (CollectionUtils.isNotEmpty(attrCiCheckList) && attrCiCheckList.size() > 1) {
                                             //补充异常信息
@@ -498,7 +502,6 @@ public class CiSyncManager {
                                             throw new CiEntityDuplicateException(attrConditionVo, dataObj);
                                         }
                                         //添加目标属性事务
-                                        CiEntityTransactionVo attrCiEntityTransactionVo = new CiEntityTransactionVo();
                                         attrCiEntityTransactionVo.setCiId(targetCiVo.getId());
                                         attrCiEntityTransactionVo.setAllowCommit(syncCiCollectionVo.getIsAutoCommit().equals(1));
                                         attrCiEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());//局部更新模式
@@ -860,7 +863,8 @@ public class CiSyncManager {
                             if (logger.isInfoEnabled()) {
                                 startTime = System.currentTimeMillis();
                             }
-
+                            //清理豁免配置项列表，避免重复配置项无法更新
+                            //syncCiCollectionVo.getTransactionGroup().clearExclude();
                             ciEntityService.saveCiEntityWithoutTransaction(ciEntityTransactionList, syncCiCollectionVo.getTransactionGroup());
                             if (logger.isInfoEnabled()) {
                                 logger.info("处理了" + ciEntityTransactionList.size() + "个事务，耗时：" + (System.currentTimeMillis() - startTime) + "ms");
