@@ -16,7 +16,9 @@
 
 package neatlogic.module.cmdb.api.resourcecenter.resource;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.resourcecenter.AccountAccessTestVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.AccountVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
@@ -35,11 +37,10 @@ import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.HttpRequestUtil;
-import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -108,11 +109,11 @@ public class ResourceAccountAccessTestApi extends PrivateApiComponentBase {
             throw new RunnerNotMatchException();
         }
         // 随机分配runner
-        int runnerMapIndex = (int) (Math.random() * runnerMapList.size());
+        int runnerMapIndex = RandomUtils.nextInt() * runnerMapList.size();
         RunnerMapVo runnerMapVo = runnerMapList.get(runnerMapIndex);
         List<AccountAccessTestVo> accessTestVoList = new ArrayList<>();
         List<AccountVo> accountList = resourceAccountMapper.getAccountListByIdList(accountIdList);
-        if (accountList.size() > 0) {
+        if (!accountList.isEmpty()) {
             accountList.forEach(vo -> accessTestVoList.add(new AccountAccessTestVo(resource.getIp()
                     , resource.getPort()
                     , vo.getProtocolPort()

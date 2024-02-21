@@ -16,6 +16,8 @@
 
 package neatlogic.module.cmdb.api.resourcecenter.account;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB;
 import neatlogic.framework.cmdb.dto.resourcecenter.AccountTagVo;
@@ -33,8 +35,6 @@ import neatlogic.framework.tagent.enums.TagentFromType;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceTagMapper;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
@@ -101,13 +101,13 @@ public class AccountSearchApi extends PrivateApiComponentBase {
 
                     //查询账号关联的标签
                     List<AccountTagVo> accountTagVoList = resourceAccountMapper.getAccountTagListByAccountIdList(accountIdList);
-                    Map<Long, List<TagVo>> AccountTagVoMap = new HashMap<>();
+                    Map<Long, List<TagVo>> accountTagVoMap = new HashMap<>();
                     if (CollectionUtils.isNotEmpty(accountTagVoList)) {
                         Set<Long> tagIdSet = accountTagVoList.stream().map(AccountTagVo::getTagId).collect(Collectors.toSet());
                         List<TagVo> tagList = resourceTagMapper.getTagListByIdList(new ArrayList<>(tagIdSet));
                         Map<Long, TagVo> tagMap = tagList.stream().collect(Collectors.toMap(TagVo::getId, e -> e));
                         for (AccountTagVo accountTagVo : accountTagVoList) {
-                            AccountTagVoMap.computeIfAbsent(accountTagVo.getAccountId(), k -> new ArrayList<>()).add(tagMap.get(accountTagVo.getTagId()));
+                            accountTagVoMap.computeIfAbsent(accountTagVo.getAccountId(), k -> new ArrayList<>()).add(tagMap.get(accountTagVo.getTagId()));
                         }
                     }
                     //查询账号依赖的资产
@@ -118,7 +118,7 @@ public class AccountSearchApi extends PrivateApiComponentBase {
                     for (AccountVo accountVo : returnAccountVoList) {
                         Long returnAccountId = accountVo.getId();
                         //补充账号关联的标签
-                        List<TagVo> tagVoList = AccountTagVoMap.get(returnAccountId);
+                        List<TagVo> tagVoList = accountTagVoMap.get(returnAccountId);
                         if (CollectionUtils.isNotEmpty(tagVoList)) {
                             accountVo.setTagList(tagVoList);
                         }

@@ -16,6 +16,7 @@
 
 package neatlogic.module.cmdb.process.stephandler;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.InputFromContext;
@@ -46,27 +47,28 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 //@Service
+@Deprecated
 public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
     static Logger logger = LoggerFactory.getLogger(CiEntitySyncProcessComponent.class);
 
-    @Autowired
+    @Resource
     private ProcessTaskStepDataMapper processTaskStepDataMapper;
 
-    @Autowired
+    @Resource
     private CiEntityService ciEntityService;
 
-    @Autowired
+    @Resource
     private CiMapper ciMapper;
 
-    @Autowired
+    @Resource
     private TransactionMapper transactionMapper;
 
     @Override
@@ -117,7 +119,7 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
         Map<String, CiEntityTransactionVo> ciEntityTransactionMap = new HashMap<>();
         Map<Long, CiVo> ciMap = new HashMap<>();
         try {
-            JSONObject stepConfigObj = JSONObject.parseObject(stepConfig);
+            JSONObject stepConfigObj = JSON.parseObject(stepConfig);
             currentProcessTaskStepVo.getParamObj().putAll(stepConfigObj);
             if (MapUtils.isNotEmpty(stepConfigObj)) {
                 JSONArray handlerList = stepConfigObj.getJSONArray("handlerList");
@@ -129,7 +131,7 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
                         ProcessTaskFormAttributeDataVo processTaskFormAttributeDataVo =
                                 processTaskMapper.getProcessTaskFormAttributeDataByProcessTaskIdAndAttributeUuid(p);
                         if (processTaskFormAttributeDataVo != null) {
-                            JSONArray dataList = JSONArray.parseArray(processTaskFormAttributeDataVo.getData());
+                            JSONArray dataList = JSON.parseArray(processTaskFormAttributeDataVo.getData());
                             for (int dIndex = 0; dIndex < dataList.size(); dIndex++) {
                                 JSONObject dataObj = dataList.getJSONObject(dIndex);
                                 Long ciId = dataObj.getLong("ciId");
@@ -161,12 +163,13 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
         // 审计详情
         JSONArray auditList = new JSONArray();
         if (MapUtils.isNotEmpty(syncCiEntityMap)) {
-            EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
+            new EscapeTransactionJob(() -> {
                 // 获取表单数据，写入CMDB
                 InputFromContext.init(InputFrom.ITSM);
                 TransactionGroupVo transactionGroupVo = new TransactionGroupVo();
-                for (Long ciId : syncCiEntityMap.keySet()) {
-                    JSONArray ciEntitySyncList = syncCiEntityMap.get(ciId);
+                for (Map.Entry<Long, JSONArray> entry : syncCiEntityMap.entrySet()) {
+                    Long ciId = entry.getKey();
+                    JSONArray ciEntitySyncList = entry.getValue();
                     for (int entityIndex = 0; entityIndex < ciEntitySyncList.size(); entityIndex++) {
                         JSONObject auditObj = new JSONObject();
                         JSONObject ciEntityObj = ciEntitySyncList.getJSONObject(entityIndex);

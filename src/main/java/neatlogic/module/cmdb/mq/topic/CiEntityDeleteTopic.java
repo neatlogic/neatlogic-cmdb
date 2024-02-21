@@ -16,6 +16,7 @@
 
 package neatlogic.module.cmdb.mq.topic;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
@@ -85,7 +86,7 @@ public class CiEntityDeleteTopic extends TopicBase<CiEntityTransactionVo> {
             return null;
         }
         String snapshot = content.getSnapshot();
-        CiEntityVo entity = JSONObject.toJavaObject(JSONObject.parseObject(snapshot), CiEntityVo.class);
+        CiEntityVo entity = JSON.toJavaObject(JSON.parseObject(snapshot), CiEntityVo.class);
         List<AttrVo> attrList = attrMapper.getAttrByCiId(entity.getCiId());
         List<RelVo> relList = relMapper.getRelByCiId(entity.getCiId());
         List<GlobalAttrVo> globalAttrList = globalAttrMapper.getGlobalAttrByCiId(entity.getCiId());

@@ -16,8 +16,11 @@
 
 package neatlogic.module.cmdb.api.resourcecenter.account;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.RESOURCECENTER_ACCOUNT_MODIFY;
 import neatlogic.framework.cmdb.dto.resourcecenter.AccountProtocolVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.AccountTagVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.AccountVo;
@@ -32,11 +35,8 @@ import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.IValid;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.RESOURCECENTER_ACCOUNT_MODIFY;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceTagMapper;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -114,7 +114,7 @@ public class AccountSaveApi extends PrivateApiComponentBase {
             List<AccountVo> accountVoList = resourceAccountMapper.getResourceAccountListByResourceId(resourceId);
             for (AccountVo accountVo : accountVoList) {
                 if (Objects.equals(paramAccountVo.getName(), accountVo.getName()) && !Objects.equals(paramAccountVo.getId(), accountVo.getId())) {
-                    new ResourceCenterAccountNameRepeatsException(paramAccountVo.getName());
+                    throw new ResourceCenterAccountNameRepeatsException(paramAccountVo.getName());
                 }
             }
         }
@@ -137,15 +137,13 @@ public class AccountSaveApi extends PrivateApiComponentBase {
         List<Long> tagIdList = paramAccountVo.getTagIdList();
         List<AccountTagVo> accountTagVoList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(tagIdList)) {
-            List<Long> notFoundTagIdList = new ArrayList<>();
             List<Long> searchTagIdList = null;
-            List<Long> insertTagIdList = new ArrayList<>();
-            insertTagIdList.addAll(tagIdList);
+            List<Long> insertTagIdList = new ArrayList<>(tagIdList);
             List<TagVo> tagVoList = resourceTagMapper.searchTagListByIdList(tagIdList);
             searchTagIdList = tagVoList.stream().map(TagVo::getId).collect(Collectors.toList());
             insertTagIdList.removeAll(searchTagIdList);
             if (CollectionUtils.isNotEmpty(insertTagIdList)) {
-                notFoundTagIdList.addAll(insertTagIdList);
+                List<Long> notFoundTagIdList = new ArrayList<>(insertTagIdList);
                 if (CollectionUtils.isNotEmpty(notFoundTagIdList)) {
                     throw new ResourceCenterTagNotFoundException(notFoundTagIdList);
                 }
@@ -217,19 +215,12 @@ public class AccountSaveApi extends PrivateApiComponentBase {
      *
      * @param resourceId   资产ID
      * @param newAccountVo 新账号信息
-     * @return
      */
     private List<String> check(Long resourceId, AccountVo newAccountVo) {
         List<String> failureReasonList = new ArrayList<>();
         Map<String, AccountVo> accountVoMap = new HashMap<>();
         List<AccountVo> accountVoList = resourceAccountMapper.getResourceAccountListByResourceId(resourceId);
-        Iterator<AccountVo> iterator = accountVoList.iterator();
-        while(iterator.hasNext()) {
-            AccountVo accountVo = iterator.next();
-            if (Objects.equals(accountVo.getId(), newAccountVo.getId())) {
-                iterator.remove();
-            }
-        }
+        accountVoList.removeIf(accountVo -> Objects.equals(accountVo.getId(), newAccountVo.getId()));
         accountVoList.add(newAccountVo);
         for (AccountVo accountVo : accountVoList) {
             String key = accountVo.getProtocol() + "#" + accountVo.getAccount();

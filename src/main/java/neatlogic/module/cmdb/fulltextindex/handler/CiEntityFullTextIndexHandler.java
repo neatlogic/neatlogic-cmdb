@@ -77,8 +77,7 @@ public class CiEntityFullTextIndexHandler extends FullTextIndexHandlerBase {
                       这会导致索引数据错误获取到修改前的记录，
                       导致搜索结果异常，所以先排除掉expression属性的数据
                      */
-                    if (!attrEntityVo.getAttrType().equalsIgnoreCase("expression")) {
-                        if (CollectionUtils.isNotEmpty(attrEntityVo.getValueList())) {
+                    if (!attrEntityVo.getAttrType().equalsIgnoreCase("expression") && (CollectionUtils.isNotEmpty(attrEntityVo.getValueList()))) {
                             if (attrEntityVo.getToCiId() != null) {
                                 List<Long> ciEntityIdList = new ArrayList<>();
                                 for (int i = 0; i < attrEntityVo.getValueList().size(); i++) {
@@ -92,7 +91,7 @@ public class CiEntityFullTextIndexHandler extends FullTextIndexHandlerBase {
                                 String word = attrEntityVo.getValueList().stream().map(Object::toString).collect(Collectors.joining(","));
                                 fullTextIndexVo.addFieldContent(attrEntityVo.getAttrId().toString(), new FullTextIndexVo.WordVo(word));
                             }
-                        }
+
                     }
                 }
             }
@@ -111,9 +110,7 @@ public class CiEntityFullTextIndexHandler extends FullTextIndexHandlerBase {
                     }
                 }
             }
-            for (Long key : relNameMap.keySet()) {
-                fullTextIndexVo.addFieldContent(key.toString(), new FullTextIndexVo.WordVo(String.join(",", relNameMap.get(key))));
-            }
+            relNameMap.keySet().forEach(key -> fullTextIndexVo.addFieldContent(key.toString(), new FullTextIndexVo.WordVo(String.join(",", relNameMap.get(key)))));
         }
     }
 
@@ -131,7 +128,7 @@ public class CiEntityFullTextIndexHandler extends FullTextIndexHandlerBase {
             CiEntityVo ciEntityVo = ciEntityService.getCiEntityById(baseCiEntityVo.getCiId(), baseCiEntityVo.getId());
             documentVo.setTitle(ciEntityVo.getName());
             StringBuilder content = new StringBuilder();
-            if (ciEntityVo.getAttrEntityList() != null && ciEntityVo.getAttrEntityList().size() > 0) {
+            if (ciEntityVo.getAttrEntityList() != null && !ciEntityVo.getAttrEntityList().isEmpty()) {
                 for (AttrEntityVo attr : ciEntityVo.getAttrEntityList()) {
                     if (CollectionUtils.isNotEmpty(attr.getValueList()) && attrMap.containsKey(attr.getAttrId())) {
                         IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attr.getAttrType());
