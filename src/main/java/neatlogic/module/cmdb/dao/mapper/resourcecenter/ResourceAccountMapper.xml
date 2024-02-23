@@ -547,7 +547,9 @@ limitations under the License.
         cra.`fcu`,
         cra.`fcd`,
         cra.`lcu`,
-        cra.`lcd`
+        cra.`lcd`,
+        crap.`name` as protocol,
+        crap.`port` as protocolPort
         from `cmdb_resourcecenter_resource_account` crra
         left join `cmdb_resourcecenter_account` cra on crra.account_id = cra.id
         LEFT JOIN `cmdb_resourcecenter_account_protocol` crap on cra.protocol_id = crap.id

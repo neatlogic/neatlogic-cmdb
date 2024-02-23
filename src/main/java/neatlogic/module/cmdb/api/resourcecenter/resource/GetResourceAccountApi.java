@@ -21,6 +21,7 @@ import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.resourcecenter.AccountBaseVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.AccountProtocolVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.AccountVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.entity.SoftwareServiceOSVo;
 import neatlogic.framework.cmdb.enums.resourcecenter.Protocol;
@@ -115,30 +116,32 @@ public class GetResourceAccountApi extends PrivateApiComponentBase {
 
 
         //如果是tagent 则通过ip 找账号， 否则根据资产绑定的账号找
-        List<? extends AccountBaseVo> accountList;
         if (!Objects.equals(protocol, Protocol.TAGENT.getValue())) {
-            accountList = resourceAccountMapper.getResourceAccountByResourceIdAndProtocolAndProtocolPortAndUsername(resourceVo.getId(), protocol, protocolPort, username);
+            List<AccountVo> accountList = resourceAccountMapper.getResourceAccountByResourceIdAndProtocolAndProtocolPortAndUsername(resourceVo.getId(), protocol, protocolPort, username);
+            if (CollectionUtils.isNotEmpty(accountList)) {
+                return accountList.get(0);
+            }
         } else {
-            accountList = tagentMapper.getAccountListByIpListAndProtocolId(Collections.singletonList(resourceVo.getIp()), protocolVo.getId());
-        }
-        if (CollectionUtils.isNotEmpty(accountList)) {
-            return accountList.get(0).getPasswordCipher();
+            List<AccountBaseVo> accountList = tagentMapper.getAccountListByIpListAndProtocolId(Collections.singletonList(resourceVo.getIp()), protocolVo.getId());
+            if (CollectionUtils.isNotEmpty(accountList)) {
+                return accountList.get(0);
+            }
         }
 
         //通过对应资产的os 找账号
         List<SoftwareServiceOSVo> targetOsList = resourceMapper.getOsResourceListByResourceIdList(Collections.singletonList(resourceId));
         if (CollectionUtils.isNotEmpty(targetOsList)) {
             SoftwareServiceOSVo targetOs = targetOsList.get(0);
-            accountList = resourceAccountMapper.getResourceAccountByResourceIdAndProtocolAndProtocolPortAndUsername(targetOs.getOsId(), protocol, protocolPort, username);
+            List<AccountVo> accountList = resourceAccountMapper.getResourceAccountByResourceIdAndProtocolAndProtocolPortAndUsername(targetOs.getOsId(), protocol, protocolPort, username);
             if (CollectionUtils.isNotEmpty(accountList)) {
-                return accountList.get(0).getPasswordCipher();
+                return accountList.get(0);
             }
         }
 
         //找协议的默认账号
-        accountList = resourceAccountMapper.getDefaultAccountListByProtocolIdListAndAccount(Collections.singletonList(protocolVo.getId()), username);
+        List<AccountVo> accountList = resourceAccountMapper.getDefaultAccountListByProtocolIdListAndAccount(Collections.singletonList(protocolVo.getId()), username);
         if (CollectionUtils.isNotEmpty(accountList)) {
-            return accountList.get(0).getPasswordCipher();
+            return accountList.get(0);
         }
 
         throw new ResourceCenterAccountNotFoundException();
