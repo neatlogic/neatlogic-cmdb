@@ -29,8 +29,10 @@ import neatlogic.framework.cmdb.enums.EditModeType;
 import neatlogic.framework.cmdb.enums.TransactionActionType;
 import neatlogic.framework.cmdb.exception.cientity.NewCiEntityNotFoundException;
 import neatlogic.framework.common.constvalue.InputFrom;
+import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.exception.core.ApiRuntimeException;
 import neatlogic.framework.process.constvalue.ProcessStepMode;
+import neatlogic.framework.process.crossover.IProcessTaskCrossoverService;
 import neatlogic.framework.process.dao.mapper.ProcessTaskStepDataMapper;
 import neatlogic.framework.process.dto.ProcessTaskFormAttributeDataVo;
 import neatlogic.framework.process.dto.ProcessTaskStepDataVo;
@@ -53,6 +55,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 //@Service
 @Deprecated
@@ -124,12 +127,11 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
             if (MapUtils.isNotEmpty(stepConfigObj)) {
                 JSONArray handlerList = stepConfigObj.getJSONArray("handlerList");
                 if (CollectionUtils.isNotEmpty(handlerList)) {
+                    IProcessTaskCrossoverService processTaskCrossoverService = CrossoverServiceFactory.getApi(IProcessTaskCrossoverService.class);
+                    List<ProcessTaskFormAttributeDataVo> processTaskFormAttributeDataList = processTaskCrossoverService.getProcessTaskFormAttributeDataListByProcessTaskId(currentProcessTaskStepVo.getProcessTaskId());
+                    Map<String, ProcessTaskFormAttributeDataVo> processTaskFormAttributeDataMap = processTaskFormAttributeDataList.stream().collect(Collectors.toMap(e -> e.getAttributeUuid(), e -> e));
                     for (int hIndex = 0; hIndex < handlerList.size(); hIndex++) {
-                        ProcessTaskFormAttributeDataVo p = new ProcessTaskFormAttributeDataVo();
-                        p.setProcessTaskId(currentProcessTaskStepVo.getProcessTaskId());
-                        p.setAttributeUuid(handlerList.getString(hIndex));
-                        ProcessTaskFormAttributeDataVo processTaskFormAttributeDataVo =
-                                processTaskMapper.getProcessTaskFormAttributeDataByProcessTaskIdAndAttributeUuid(p);
+                        ProcessTaskFormAttributeDataVo processTaskFormAttributeDataVo = processTaskFormAttributeDataMap.get(handlerList.getString(hIndex));
                         if (processTaskFormAttributeDataVo != null) {
                             JSONArray dataList = JSON.parseArray(processTaskFormAttributeDataVo.getData());
                             for (int dIndex = 0; dIndex < dataList.size(); dIndex++) {

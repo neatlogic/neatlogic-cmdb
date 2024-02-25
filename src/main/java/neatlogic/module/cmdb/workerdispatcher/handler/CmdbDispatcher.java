@@ -23,6 +23,7 @@ import neatlogic.framework.dto.UserVo;
 import neatlogic.framework.form.constvalue.FormHandler;
 import neatlogic.framework.form.service.IFormCrossoverService;
 import neatlogic.framework.process.constvalue.ProcessUserType;
+import neatlogic.framework.process.crossover.IProcessTaskCrossoverService;
 import neatlogic.framework.process.dao.mapper.ProcessTaskMapper;
 import neatlogic.framework.process.dao.mapper.SelectContentByHashMapper;
 import neatlogic.framework.process.dto.ProcessTaskFormAttributeDataVo;
@@ -401,7 +402,8 @@ public class CmdbDispatcher extends WorkerDispatcherBase {
         ProcessTaskFormVo processTaskFormVo = processTaskMapper.getProcessTaskFormByProcessTaskId(processTaskId);
         if (processTaskFormVo != null) {
             formConfig = selectContentByHashMapper.getProcessTaskFromContentByHash(processTaskFormVo.getFormContentHash());
-            List<ProcessTaskFormAttributeDataVo> processTaskFormAttributeDataList = processTaskMapper.getProcessTaskStepFormAttributeDataByProcessTaskId(processTaskId);
+            IProcessTaskCrossoverService processTaskCrossoverService = CrossoverServiceFactory.getApi(IProcessTaskCrossoverService.class);
+            List<ProcessTaskFormAttributeDataVo> processTaskFormAttributeDataList = processTaskCrossoverService.getProcessTaskFormAttributeDataListByProcessTaskId(processTaskId);
             if (CollectionUtils.isNotEmpty(processTaskFormAttributeDataList)) {
                 for (ProcessTaskFormAttributeDataVo attributeDataVo : processTaskFormAttributeDataList) {
                     Object dataObj = formAttributeDataAdaptsToCmdb(attributeDataVo.getAttributeUuid(), attributeDataVo.getDataObj(), formConfig);
