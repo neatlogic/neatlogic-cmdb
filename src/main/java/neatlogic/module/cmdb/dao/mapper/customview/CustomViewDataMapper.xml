@@ -166,6 +166,7 @@
     </sql>
 
     <sql id="searchCustomViewDataSql">
+        select * from (
         SELECT
         id
         <if test="fieldList != null and fieldList.size() > 0">
@@ -175,9 +176,8 @@
                 MD5(GROUP_CONCAT(distinct `${field.name}`)) AS `${field.name}_hash`
             </foreach>
         </if>
-        FROM ${viewName}
+        FROM ${viewName} GROUP BY id ) x
         <include refid="searchCustomViewDataCondition"></include>
-        GROUP BY id
     </sql>
 
     <select id="searchCustomViewDataFlatten"
