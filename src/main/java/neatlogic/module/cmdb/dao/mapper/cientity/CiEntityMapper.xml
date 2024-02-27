@@ -36,6 +36,55 @@
         </collection>
     </resultMap>
 
+    <select id="getRelEntityByCiEntityIdList" resultType="neatlogic.framework.cmdb.dto.cientity.RelEntityVo">
+        SELECT
+        from_cientity.name as fromCiEntityName,
+        to_cientity.name as toCiEntityName,
+        from_cientity.ci_id as fromCiId,
+        to_cientity.ci_id as toCiId,
+        from_ci.icon as fromCiIcon,
+        to_ci.icon as toCiIcon,
+        from_ci.type_id as fromCiTypeId,
+        to_ci.type_id as toCiTypeId,
+        t.*
+        FROM
+        (
+        SELECT
+        rel_id AS relId,
+        from_cientity_id AS fromCiEntityId,
+        to_cientity_id AS toCiEntityId,
+        'from' AS direction
+        FROM
+        cmdb_relentity
+        WHERE
+        from_cientity_id in
+        <foreach collection="idList" open="(" close=")" item="item" separator=",">#{item}</foreach>
+        <if test="excludeRelIdList != null and excludeRelIdList.size() > 0">
+            and rel_id not in
+            <foreach collection="excludeRelIdList" open="(" close=")" item="item" separator=",">#{item}</foreach>
+        </if>
+        UNION
+        SELECT
+        rel_id AS relId,
+        from_cientity_id AS fromCiEntityId,
+        to_cientity_id AS toCiEntityId,
+        'to' AS direction
+        FROM
+        cmdb_relentity
+        WHERE
+        to_cientity_id in
+        <foreach collection="idList" open="(" close=")" item="item" separator=",">#{item}</foreach>
+        <if test="excludeRelIdList != null and excludeRelIdList.size() > 0">
+            and rel_id not in
+            <foreach collection="excludeRelIdList" open="(" close=")" item="item" separator=",">#{item}</foreach>
+        </if>
+        ) t
+        JOIN cmdb_cientity from_cientity ON t.fromCiEntityId = from_cientity.id
+        JOIN cmdb_cientity to_cientity ON t.toCiEntityId = to_cientity.id
+        JOIN cmdb_ci from_ci ON from_cientity.ci_id = from_ci.id
+        JOIN cmdb_ci to_ci ON to_cientity.ci_id = to_ci.id
+    </select>
+
     <select id="getCiEntityForTopo" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo"
             resultMap="ciEntityRelMap">
         select cientity.id,
@@ -400,17 +449,20 @@
 
     <select id="getCiEntityBaseInfoById" parameterType="java.lang.Long"
             resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo" useCache="false">
-        SELECT id,
-               uuid,
-               ci_id AS ciId,
-               `name`,
-               `status`,
-               fcu,
-               fcd,
-               lcu,
-               lcd
-        FROM cmdb_cientity
-        WHERE id = #{value}
+        SELECT cientity.id,
+               cientity.uuid,
+               cientity.ci_id AS ciId,
+               ci.type_id     AS typeId,
+               ci.icon        AS ciIcon,
+               cientity.`name`,
+               cientity.`status`,
+               cientity.fcu,
+               cientity.fcd,
+               cientity.lcu,
+               cientity.lcd
+        FROM cmdb_cientity cientity
+                 join cmdb_ci ci on cientity.ci_id = ci.id
+        WHERE cientity.id = #{value}
     </select>
 
     <select id="getCiEntityBaseInfoByUuid" parameterType="java.lang.String"
