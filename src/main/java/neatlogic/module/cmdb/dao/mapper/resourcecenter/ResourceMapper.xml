@@ -658,7 +658,10 @@ limitations under the License.
         a.`datacenter_name`,
         a.`cluster_id`,
         a.`cluster_type_id`,
-        a.`cluster_name`
+        a.`cluster_name`,
+        a.`env_id`,
+        a.`env_name`,
+        a.`env_seq_no`
         FROM @{DATA_SCHEMA}.`scence_os_detail_cluster` a
         WHERE a.`id` IN
         <foreach collection="list" item="id" open="(" separator="," close=")">

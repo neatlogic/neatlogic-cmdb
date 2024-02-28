@@ -967,9 +967,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             }
             resultList.add(newFieldMappingVo);
         }
-        if (CollectionUtils.isNotEmpty(fieldNameList)) {
-            throw new ResourceViewFieldMappingException(viewName, fieldNameList);
-        }
+//        if (CollectionUtils.isNotEmpty(fieldNameList)) {
+//            throw new ResourceViewFieldMappingException(viewName, fieldNameList);
+//        }
         newConfig.setFieldMappingList(resultList);
         return newConfig;
     }
