@@ -208,7 +208,13 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             throw new MatrixCiNotFoundException(matrixVo.getUuid());
         }
         matrixVo.setCiId(matrixCiVo.getCiId());
-        matrixVo.setConfig(matrixCiVo.getConfig());
+        JSONObject config = matrixCiVo.getConfig();
+        CiVo ciVo = ciMapper.getCiById(matrixCiVo.getCiId());
+        if (ciVo != null) {
+            config.put("ciName", ciVo.getName());
+            config.put("ciLabel", ciVo.getLabel());
+        }
+        matrixVo.setConfig(config);
     }
 
     @Override
