@@ -20,7 +20,7 @@ import neatlogic.framework.fulltextindex.core.IFullTextIndexType;
 import neatlogic.framework.util.$;
 
 public enum CmdbFullTextIndexType implements IFullTextIndexType {
-    CIENTITY("cientity", "配置项");
+    CIENTITY("cientity", "nmcfe.cmdbfulltextindextype.cientity");
 
     private final String type;
     private final String typeName;
