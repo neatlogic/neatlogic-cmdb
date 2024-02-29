@@ -18,7 +18,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper">
     <!--<cache-ref namespace="neatlogic.module.cmdb.dao.mapper.ci.CiMapper"/>
-    <cache type="neatlogic.framework.dao.cache.NeatLogicCache" flushInterval="30000" size="500"></cache>-->
+  <cache type="neatlogic.framework.dao.cache.NeatLogicCache" flushInterval="30000" size="500"></cache>-->
     <resultMap id="ciEntityRelMap" type="neatlogic.framework.cmdb.dto.cientity.CiEntityTopoVo">
         <id property="id" column="id"/>
         <result property="name" column="name"/>

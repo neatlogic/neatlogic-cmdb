@@ -589,6 +589,21 @@ public class CiSyncManager {
                                                             subDataWithPK.put(key, dataObj.get(key));
                                                         }
                                                     }
+                                                    //检查下层映射配置，如果发现某些key不存在，那可能是跨层读取，这时需要使用jsonpath尝试寻找跨层数据放入当前节点
+                                                    for (SyncMappingVo subMappingVo : subSyncCiCollectionVo.getMappingList()) {
+                                                        if (!subDataWithPK.containsKey(subMappingVo.getField())) {
+                                                            String realKey = subMappingVo.getField().replace(mappingVo.getField(parentKey), "");
+                                                            if (realKey.startsWith(".")) {
+                                                                realKey = "$" + realKey;
+                                                            } else {
+                                                                realKey = "$." + realKey;
+                                                            }
+                                                            Object obj = JSONPath.eval(subData, realKey);
+                                                            if (obj != null) {
+                                                                subDataWithPK.put(subMappingVo.getField(), obj);
+                                                            }
+                                                        }
+                                                    }
                                                     //切换关系原始模型id为真正的子模型id，否则数据找不到真正的模型id
                                                     CiVo subCiVo = getCi(subCiId);
                                                     if (subCiVo.getIsVirtual().equals(1)) {

@@ -17,7 +17,7 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="neatlogic.module.cmdb.dao.mapper.ci.CiViewMapper">
-    <!--<cache-ref namespace="neatlogic.module.cmdb.dao.mapper.ci.CiMapper"/>-->
+    <cache-ref namespace="neatlogic.module.cmdb.dao.mapper.ci.CiMapper"/>
 
     <select id="getCiViewBaseInfoByCiId" parameterType="java.lang.Long"
             resultType="neatlogic.framework.cmdb.dto.ci.CiViewVo">
