@@ -16,14 +16,14 @@
 
 package neatlogic.module.cmdb.attrvaluehandler.handler;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.enums.SearchExpression;
 import neatlogic.framework.cmdb.exception.attr.AttrValueIrregularException;
 import neatlogic.framework.file.dao.mapper.FileMapper;
 import neatlogic.framework.file.dto.FileVo;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
@@ -110,22 +110,23 @@ public class FileValueHandler implements IAttrValueHandler {
     }
 
     @Override
-    public void transferValueListToExport(AttrVo attrVo, JSONArray valueList) {
+    public JSONArray transferValueListToExport(AttrVo attrVo, JSONArray valueList) {
+        JSONArray returnValueList = new JSONArray();
         if (CollectionUtils.isNotEmpty(valueList)) {
             List<Long> idList = new ArrayList<>();
             for (int i = 0; i < valueList.size(); i++) {
                 idList.add(valueList.getLong(i));
             }
-            valueList.clear();
             if (CollectionUtils.isNotEmpty(idList)) {
                 List<FileVo> fileList = fileMapper.getFileListByIdList(idList);
                 if (CollectionUtils.isNotEmpty(fileList)) {
                     for (FileVo fileVo : fileList) {
-                        valueList.add(fileVo.getName());
+                        returnValueList.add(fileVo.getName());
                     }
                 }
             }
         }
+        return returnValueList;
     }
 
 

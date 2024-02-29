@@ -135,7 +135,8 @@ public class TableValueHandler implements IAttrValueHandler {
     }
 
     @Override
-    public void transferValueListToExport(AttrVo attrVo, JSONArray valueList) {
+    public JSONArray transferValueListToExport(AttrVo attrVo, JSONArray valueList) {
+        JSONArray returnValueList = new JSONArray();
         if (CollectionUtils.isNotEmpty(valueList) && attrVo.getTargetCiId() != null) {
             List<Long> ciEntityIdList = new ArrayList<>();
             for (int i = 0; i < valueList.size(); i++) {
@@ -155,13 +156,13 @@ public class TableValueHandler implements IAttrValueHandler {
                 ciEntityVo.setIdList(ciEntityIdList);
                 ciEntityList = ciEntityMapper.getVirtualCiEntityBaseInfoByIdList(ciEntityVo);
             }
-            valueList.clear();
             if (CollectionUtils.isNotEmpty(ciEntityList)) {
                 for (CiEntityVo ciEntityVo : ciEntityList) {
-                    valueList.add(ciEntityVo.getName());
+                    returnValueList.add(ciEntityVo.getName());
                 }
             }
         }
+        return returnValueList;
     }
 
     @Override

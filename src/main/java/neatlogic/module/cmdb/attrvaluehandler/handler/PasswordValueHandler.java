@@ -16,11 +16,11 @@
 
 package neatlogic.module.cmdb.attrvaluehandler.handler;
 
+import com.alibaba.fastjson.JSONArray;
 import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.enums.SearchExpression;
 import neatlogic.framework.common.util.RC4Util;
-import com.alibaba.fastjson.JSONArray;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
@@ -121,11 +121,13 @@ public class PasswordValueHandler implements IAttrValueHandler {
     }
 
     @Override
-    public void transferValueListToExport(AttrVo attrVo, JSONArray valueList) {
+    public JSONArray transferValueListToExport(AttrVo attrVo, JSONArray valueList) {
+        JSONArray returnValueList = new JSONArray();
         if (CollectionUtils.isNotEmpty(valueList)) {
             for (int i = 0; i < valueList.size(); i++) {
-                valueList.set(i, "*******");
+                returnValueList.add("*******");
             }
         }
+        return returnValueList;
     }
 }

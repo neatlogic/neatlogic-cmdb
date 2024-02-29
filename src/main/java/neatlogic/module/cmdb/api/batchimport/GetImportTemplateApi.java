@@ -38,15 +38,20 @@ import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
 import neatlogic.framework.util.$;
+import neatlogic.framework.util.excel.ExcelBuilder;
+import neatlogic.framework.util.excel.SheetBuilder;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiViewMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.service.ci.CiService;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.poi.hssf.usermodel.*;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.poi.hssf.usermodel.DVConstraint;
+import org.apache.poi.hssf.usermodel.HSSFDataValidation;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -58,8 +63,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -69,7 +73,6 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
 
     static Logger logger = LoggerFactory.getLogger(GetImportTemplateApi.class);
 
-    private final static int validationOptionSize = 100;// 限制数据有效性列表长度
 
     @Resource
     private CiMapper ciMapper;
@@ -108,228 +111,177 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
     @Description(desc = "nmcab.getimporttemplateapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
-        HSSFWorkbook wb = null;
-        OutputStream os = null;
-        try {
-            Long ciId = paramObj.getLong("ciId");
-            JSONArray attrIdArray = paramObj.getJSONArray("attrIdList");
-            JSONArray relIdArray = paramObj.getJSONArray("relIdList");
-            JSONArray globalAttrIdArray = paramObj.getJSONArray("globalAttrIdList");
-            List<Long> attrIdList = null;
-            List<Long> relIdList = null;
-            List<Long> globalAttrIdList = null;
-            if (CollectionUtils.isNotEmpty(attrIdArray)) {
-                attrIdList = attrIdArray.toJavaList(Long.class);
-            }
-            if (CollectionUtils.isNotEmpty(relIdArray)) {
-                relIdList = relIdArray.toJavaList(Long.class);
-            }
-            if (CollectionUtils.isNotEmpty(globalAttrIdArray)) {
-                globalAttrIdList = globalAttrIdArray.toJavaList(Long.class);
-            }
+        int validationOptionSize = 100;// 限制数据有效性列表长度
+        Long ciId = paramObj.getLong("ciId");
+        JSONArray attrIdArray = paramObj.getJSONArray("attrIdList");
+        JSONArray relIdArray = paramObj.getJSONArray("relIdList");
+        JSONArray globalAttrIdArray = paramObj.getJSONArray("globalAttrIdList");
+        List<Long> attrIdList = null;
+        List<Long> relIdList = null;
+        List<Long> globalAttrIdList = null;
+        if (CollectionUtils.isNotEmpty(attrIdArray)) {
+            attrIdList = attrIdArray.toJavaList(Long.class);
+        }
+        if (CollectionUtils.isNotEmpty(relIdArray)) {
+            relIdList = relIdArray.toJavaList(Long.class);
+        }
+        if (CollectionUtils.isNotEmpty(globalAttrIdArray)) {
+            globalAttrIdList = globalAttrIdArray.toJavaList(Long.class);
+        }
 
-            if (CollectionUtils.isEmpty(attrIdList) && CollectionUtils.isEmpty(relIdList)) {
-                throw new CiAttrIsNotNullException();
-            }
+        if (CollectionUtils.isEmpty(attrIdList) && CollectionUtils.isEmpty(relIdList)) {
+            throw new CiAttrIsNotNullException();
+        }
 
-            CiVo ciVo = ciService.getCiById(ciId);
-            CiViewVo ciViewVo = new CiViewVo();
-            ciViewVo.setCiId(ciId);
-            ciViewVo.setNeedAlias(1);
-            List<CiViewVo> ciViewList = ciViewMapper.getCiViewByCiId(ciViewVo);
-            if (ciVo == null) {
-                throw new CiNotFoundException(ciId);
-            }
+        CiVo ciVo = ciService.getCiById(ciId);
+        CiViewVo ciViewVo = new CiViewVo();
+        ciViewVo.setCiId(ciId);
+        ciViewVo.setNeedAlias(1);
+        List<CiViewVo> ciViewList = ciViewMapper.getCiViewByCiId(ciViewVo);
+        if (ciVo == null) {
+            throw new CiNotFoundException(ciId);
+        }
 
-            wb = new HSSFWorkbook();
-            HSSFSheet sheet = wb.createSheet("data");
-            String fileName = ciVo.getId() + "_" + ciVo.getLabel() + ".xlsx";
-
-            int ciTypeAttrListSize = ciVo.getAttrList().size() + ciVo.getRelList().size() + 1;
-            // 设置excel每列宽度
-            for (int i = 0; i < ciTypeAttrListSize; i++) {
-                sheet.setColumnWidth(i, 5000);
-            }
-
-            // 创建字体样式
-            HSSFFont font = wb.createFont();
-            font.setFontName("宋体");
-            font.setFontHeightInPoints((short) 10);
-            font.setColor(HSSFColor.HSSFColorPredefined.WHITE.getIndex());
-
-            // 创建单元格样式
-            HSSFPalette palette = wb.getCustomPalette();
-            palette.setColorAtIndex((short) 8, (byte) (0xff & 2), (byte) (0xff & 159), (byte) (0xff & 228));
-            HSSFCellStyle style = wb.createCellStyle();
-            style.setAlignment(HorizontalAlignment.CENTER);
-            style.setVerticalAlignment(VerticalAlignment.CENTER);
-            style.setFillForegroundColor((short) 8);
-            style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-
-            // 设置边框
-            style.setBottomBorderColor(HSSFColor.HSSFColorPredefined.BLACK.getIndex());
-            style.setBorderBottom(BorderStyle.THIN);
-            style.setBorderLeft(BorderStyle.THIN);
-            style.setBorderRight(BorderStyle.THIN);
-            style.setBorderTop(BorderStyle.THIN);
-            style.setFont(font);// 设置字体
-
-            // 创建Excel的sheet的一行
-            int i = 0;
-            HSSFRow row = sheet.createRow(0);
-            row.setHeight((short) 300);// 设定行的高度
-            HSSFCell idCell = row.createCell(i);
-            idCell.setCellStyle(style);
-            idCell.setCellValue("id");
-            i++;
-            idCell = row.createCell(i);
-            idCell.setCellStyle(style);
-            idCell.setCellValue("uuid");
-            i++;
-            /* 全局属性 */
-            if (CollectionUtils.isNotEmpty(ciVo.getGlobalAttrList()) && CollectionUtils.isNotEmpty(globalAttrIdList)) {
-                int validationSheetIndex = 1;
-                for (GlobalAttrVo attr : ciVo.getGlobalAttrList()) {
-                    if (globalAttrIdList.contains(attr.getId())) {
-                        if (CollectionUtils.isNotEmpty(ciViewList)) {
-                            Optional<CiViewVo> op = ciViewList.stream().filter(d -> d.getType().equals("global") && d.getItemId().equals(attr.getId())).findFirst();
-                            op.ifPresent(viewVo -> attr.setLabel(viewVo.getAlias()));
-                        }
-                        String label = attr.getLabel();
-                        label = label + "[" + $.t("term.cmdb.globalattr") + "]";
-                        // 如果是单值，则设置数据有效性
-                        if (attr.getIsMultiple().equals(0) && CollectionUtils.isNotEmpty(attr.getItemList())) {
-                            List<String> collect = attr.getItemList().stream().map(GlobalAttrItemVo::getValue).collect(Collectors.toList());
-                            String[] array = new String[collect.size()];
-                            collect.toArray(array);
-                            addValidationData(wb, sheet, attr.getName(), validationSheetIndex, array, row.getRowNum() + 1, 99999, i, i);
-                            validationSheetIndex++;
-                        }
-                        HSSFCell cell = row.createCell(i);
-                        cell.setCellStyle(style);
-                        cell.setCellValue(label);
-                        i++;
+        List<String> headerList = new ArrayList<>();
+        List<String> columnList = new ArrayList<>();
+        Map<String, String[]> validationMap = new HashMap<>();
+        headerList.add("id");
+        headerList.add("uuid");
+        columnList.add("id");
+        columnList.add("uuid");
+        /* 全局属性 */
+        if (CollectionUtils.isNotEmpty(ciVo.getGlobalAttrList()) && CollectionUtils.isNotEmpty(globalAttrIdList)) {
+            for (GlobalAttrVo attr : ciVo.getGlobalAttrList()) {
+                if (globalAttrIdList.contains(attr.getId())) {
+                    if (CollectionUtils.isNotEmpty(ciViewList)) {
+                        Optional<CiViewVo> op = ciViewList.stream().filter(d -> d.getType().equals("global") && d.getItemId().equals(attr.getId())).findFirst();
+                        op.ifPresent(viewVo -> attr.setLabel(viewVo.getAlias()));
+                    }
+                    String label = attr.getLabel();
+                    label = label + "[" + $.t("term.cmdb.globalattr") + "]";
+                    headerList.add(label);
+                    columnList.add("global_" + attr.getId());
+                    // 如果是单值，则设置数据有效性
+                    if (attr.getIsMultiple().equals(0) && CollectionUtils.isNotEmpty(attr.getItemList())) {
+                        String[] collect = attr.getItemList().stream().map(GlobalAttrItemVo::getValue).toArray(String[]::new);
+                        validationMap.put("global_" + attr.getId(), collect);
                     }
                 }
             }
-            /* 属性 */
-            if (CollectionUtils.isNotEmpty(ciVo.getAttrList()) && CollectionUtils.isNotEmpty(attrIdList)) {
-                int validationSheetIndex = 1;
-                for (AttrVo attr : ciVo.getAttrList()) {
-                    if (attrIdList.contains(attr.getId())) {
-                        if (CollectionUtils.isNotEmpty(ciViewList)) {
-                            Optional<CiViewVo> op = ciViewList.stream().filter(d -> d.getType().equals("attr") && d.getItemId().equals(attr.getId())).findFirst();
-                            op.ifPresent(viewVo -> attr.setLabel(viewVo.getAlias()));
-                        }
-                        String label = attr.getLabel();
-                        Integer isRequired = attr.getIsRequired();
-                        Integer isUnique = attr.getIsUnique();
-                        StringBuilder ciTypeAttrNameDesc = new StringBuilder();
-                        if (isUnique.equals(1)) {
-                            ciTypeAttrNameDesc.append($.t("common.unique"));
-                        }
-                        if (isRequired.equals(1)) {
-                            if (ciTypeAttrNameDesc.length() > 0) {
-                                ciTypeAttrNameDesc.append("|");
-                            }
-                            ciTypeAttrNameDesc.append($.t("common.mustinput"));
-                        }
-
+        }
+        /* 属性 */
+        if (CollectionUtils.isNotEmpty(ciVo.getAttrList()) && CollectionUtils.isNotEmpty(attrIdList)) {
+            for (AttrVo attr : ciVo.getAttrList()) {
+                if (attrIdList.contains(attr.getId())) {
+                    if (CollectionUtils.isNotEmpty(ciViewList)) {
+                        Optional<CiViewVo> op = ciViewList.stream().filter(d -> d.getType().equals("attr") && d.getItemId().equals(attr.getId())).findFirst();
+                        op.ifPresent(viewVo -> attr.setLabel(viewVo.getAlias()));
+                    }
+                    String label = attr.getLabel();
+                    Integer isRequired = attr.getIsRequired();
+                    Integer isUnique = attr.getIsUnique();
+                    StringBuilder ciTypeAttrNameDesc = new StringBuilder();
+                    if (isUnique.equals(1)) {
+                        ciTypeAttrNameDesc.append($.t("common.unique"));
+                    }
+                    if (isRequired.equals(1)) {
                         if (ciTypeAttrNameDesc.length() > 0) {
-                            label = label + "[(" + ciTypeAttrNameDesc + ")]";
+                            ciTypeAttrNameDesc.append("|");
                         }
-                        // 如果是下拉框，则设置数据有效性
-                        if (PropHandlerType.SELECT.getValue().equals(attr.getType())) {
-                            CiVo targetCi = ciMapper.getCiById(attr.getTargetCiId());
-                            if (targetCi != null) {
-                                // 获取当前属性关联的模型配置项（包括子模型的配置项，限制validationOptionSize条）
-                                int ciEntityCount = ciEntityMapper.getDownwardCiEntityCountByLR(targetCi.getLft(), targetCi.getRht());
-                                List<CiEntityVo> list = ciEntityMapper.getDownwardCiEntityByLRLimitSize(targetCi.getLft(), targetCi.getRht(), validationOptionSize);
-                                if (CollectionUtils.isNotEmpty(list)) {
-                                    List<String> collect = list.stream().map(CiEntityVo::getName).collect(Collectors.toList());
-                                    if (ciEntityCount > validationOptionSize) {
-                                        collect.add("common.toomanyoption");
-                                    }
-                                    String[] array = new String[collect.size()];
-                                    collect.toArray(array);
-                                    addValidationData(wb, sheet, "global_" + attr.getName(), validationSheetIndex, array, row.getRowNum() + 1, 99999, i, i);
-                                    validationSheetIndex++;
-                                }
-                            }
-                        }
-                        HSSFCell cell = row.createCell(i);
-                        cell.setCellStyle(style);
-                        cell.setCellValue(label);
-                        i++;
+                        ciTypeAttrNameDesc.append($.t("common.mustinput"));
                     }
-                }
-            }
-            /* 关系 */
-            if (CollectionUtils.isNotEmpty(ciVo.getRelList()) && CollectionUtils.isNotEmpty(relIdList)) {
-                List<Long> upwardCiIdList = ciVo.getUpwardCiList().stream().map(CiVo::getId).collect(Collectors.toList());
-                for (RelVo rel : ciVo.getRelList()) {
-                    if (relIdList.contains(rel.getId())) {
-                        if (CollectionUtils.isNotEmpty(ciViewList)) {
-                            Optional<CiViewVo> op = ciViewList.stream().filter(d -> d.getType().startsWith("rel") && d.getItemId().equals(rel.getId())).findFirst();
-                            if (op.isPresent()) {
-                                CiViewVo view = op.get();
-                                if (view.getType().equals("relfrom")) {
-                                    rel.setToLabel(view.getAlias());
-                                } else if (view.getType().equals("relto")) {
-                                    rel.setFromLabel(view.getAlias());
-                                }
-                            }
-                        }
-                        // 关系包括当前CI自身设置的关系与继承过来的关系
-                        if (rel.getFromCiId().equals(ciVo.getId())
-                                || (CollectionUtils.isNotEmpty(upwardCiIdList) && upwardCiIdList.contains(rel.getFromCiId()))) { //当前CI处于from
-                            String label = rel.getToLabel();
-                            if (rel.getToIsRequired().equals(1)) {
-                                label = label + "[(" + $.t("common.mustinput") + ")]";
-                            }
-                            HSSFCell cell = row.createCell(i);
-                            cell.setCellStyle(style);
-                            cell.setCellValue(label);
-                            i++;
-                        } else if (rel.getToCiId().equals(ciVo.getId())
-                                || (CollectionUtils.isNotEmpty(upwardCiIdList) && upwardCiIdList.contains(rel.getToCiId()))) {//当前CI处于to
-                            String label = rel.getFromLabel();
-                            if (rel.getFromIsRequired().equals(1)) {
-                                label = label + "[(" + $.t("common.mustinput") + ")]";
-                            }
-                            HSSFCell cell = row.createCell(i);
-                            cell.setCellStyle(style);
-                            cell.setCellValue(label);
-                            i++;
-                        }
-                    }
-                }
-            }
 
-            boolean flag = request.getHeader("User-Agent").indexOf("Gecko") > 0;
-            if (request.getHeader("User-Agent").toLowerCase().indexOf("msie") > 0 || flag) {
-                fileName = URLEncoder.encode(fileName, "UTF-8");// IE浏览器
-            } else {
-                fileName = new String(fileName.replace(" ", "").getBytes(StandardCharsets.UTF_8), "ISO8859-1");
-            }
-            response.setContentType("application/vnd.ms-excel;charset=utf-8");
-            response.setHeader("Content-Disposition", " attachment; filename=\"" + fileName + "\"");
-            os = response.getOutputStream();
-            wb.write(os);
-        } catch (IOException ex) {
-            logger.error(ex.getMessage(), ex);
-        } finally {
-            if (wb != null) {
-                try {
-                    wb.close();
-                } catch (IOException ex) {
-                    logger.error(ex.getMessage(), ex);
+                    if (ciTypeAttrNameDesc.length() > 0) {
+                        label = label + "[(" + ciTypeAttrNameDesc + ")]";
+                    }
+                    headerList.add(label);
+                    columnList.add("attr_" + attr.getId());
+                    // 如果是下拉框，则设置数据有效性
+                    if (PropHandlerType.SELECT.getValue().equals(attr.getType())) {
+                        CiVo targetCi = ciMapper.getCiById(attr.getTargetCiId());
+                        if (targetCi != null) {
+                            // 获取当前属性关联的模型配置项（包括子模型的配置项，限制validationOptionSize条）
+                            int ciEntityCount = ciEntityMapper.getDownwardCiEntityCountByLR(targetCi.getLft(), targetCi.getRht());
+                            List<CiEntityVo> list = ciEntityMapper.getDownwardCiEntityByLRLimitSize(targetCi.getLft(), targetCi.getRht(), validationOptionSize);
+                            if (CollectionUtils.isNotEmpty(list)) {
+                                List<String> collect = list.stream().map(CiEntityVo::getName).collect(Collectors.toList());
+                                if (ciEntityCount > validationOptionSize) {
+                                    collect.add("common.toomanyoption");
+                                }
+                                String[] array = new String[collect.size()];
+                                collect.toArray(array);
+                                validationMap.put("attr_" + attr.getId(), array);
+                            }
+                        }
+                    }
                 }
             }
-            if (os != null) {
-                os.flush();
-                os.close();
+        }
+        /* 关系 */
+        if (CollectionUtils.isNotEmpty(ciVo.getRelList()) && CollectionUtils.isNotEmpty(relIdList)) {
+            List<Long> upwardCiIdList = ciVo.getUpwardCiList().stream().map(CiVo::getId).collect(Collectors.toList());
+            for (RelVo rel : ciVo.getRelList()) {
+                if (relIdList.contains(rel.getId())) {
+                    if (CollectionUtils.isNotEmpty(ciViewList)) {
+                        Optional<CiViewVo> op = ciViewList.stream().filter(d -> d.getType().startsWith("rel") && d.getItemId().equals(rel.getId())).findFirst();
+                        if (op.isPresent()) {
+                            CiViewVo view = op.get();
+                            if (view.getType().equals("relfrom")) {
+                                rel.setToLabel(view.getAlias());
+                            } else if (view.getType().equals("relto")) {
+                                rel.setFromLabel(view.getAlias());
+                            }
+                        }
+                    }
+                    // 关系包括当前CI自身设置的关系与继承过来的关系
+                    if (rel.getFromCiId().equals(ciVo.getId())
+                            || (CollectionUtils.isNotEmpty(upwardCiIdList) && upwardCiIdList.contains(rel.getFromCiId()))) { //当前CI处于from
+                        String label = rel.getToLabel();
+                        if (rel.getToIsRequired().equals(1)) {
+                            label = label + "[(" + $.t("common.mustinput") + ")]";
+                        }
+                        headerList.add(label);
+                        columnList.add("relfrom_" + rel.getId());
+                    } else if (rel.getToCiId().equals(ciVo.getId())
+                            || (CollectionUtils.isNotEmpty(upwardCiIdList) && upwardCiIdList.contains(rel.getToCiId()))) {//当前CI处于to
+                        String label = rel.getFromLabel();
+                        if (rel.getFromIsRequired().equals(1)) {
+                            label = label + "[(" + $.t("common.mustinput") + ")]";
+                        }
+                        headerList.add(label);
+                        columnList.add("relto_" + rel.getId());
+                    }
+                }
             }
+        }
+
+
+        ExcelBuilder builder = new ExcelBuilder(SXSSFWorkbook.class);
+        SheetBuilder sheetBuilder = builder.withBorderColor(HSSFColor.HSSFColorPredefined.GREY_40_PERCENT)
+                .withHeadFontColor(HSSFColor.HSSFColorPredefined.WHITE)
+                .withHeadBgColor(HSSFColor.HSSFColorPredefined.LIGHT_BLUE)
+                .withColumnWidth(30)
+                .addSheet("data")
+                .withHeaderList(headerList).withColumnList(columnList);
+        if (MapUtils.isNotEmpty(validationMap)) {
+            for (Map.Entry<String, String[]> entry : validationMap.entrySet()) {
+                sheetBuilder.addValidation(entry.getKey(), entry.getValue());
+            }
+        }
+        Workbook workbook = builder.build();
+        String fileName = ciVo.getId() + "_" + ciVo.getLabel() + ".xlsx";
+        if (request.getHeader("User-Agent").toLowerCase().contains("msie") || request.getHeader("User-Agent").contains("Gecko")) {
+            fileName = URLEncoder.encode(fileName, "UTF-8");// IE浏览器
+        } else {
+            fileName = new String(fileName.replace(" ", "").getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
+        }
+        response.setContentType("application/vnd.ms-excel;charset=utf-8");
+        response.setHeader("Content-Disposition", " attachment; filename=\"" + fileName + "\"");
+        try (OutputStream os = response.getOutputStream()) {
+            workbook.write(os);
+            workbook.close();
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
         }
         return null;
     }

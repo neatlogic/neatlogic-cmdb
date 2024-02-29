@@ -104,7 +104,6 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
     })
     @Description(desc = "nmcac.exportcientityapi.getname")
     @Override
-    //TODO 后续要对数据进行优化防止OOM
     public Object myDoService(JSONObject jsonObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
         JSONArray idList = jsonObj.getJSONArray("idList");
         CiEntityVo ciEntityVo = JSON.toJavaObject(jsonObj, CiEntityVo.class);
@@ -121,7 +120,6 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
             if (CollectionUtils.isNotEmpty(groupIdList)) {
                 ciEntityVo.setGroupIdList(groupIdList);
             } else {
-                //throw new CiEntityAuthException(ciVo, "查看");
                 hasAuth = false;
             }
         }
@@ -190,7 +188,7 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
                 .withHeadFontColor(HSSFColor.HSSFColorPredefined.WHITE)
                 .withHeadBgColor(HSSFColor.HSSFColorPredefined.DARK_BLUE)
                 .withColumnWidth(30)
-                .addSheet("数据")
+                .addSheet($.t("common.data"))
                 .withHeaderList(headerList)
                 .withColumnList(columnList);
         Workbook workbook = builder.build();
@@ -218,15 +216,15 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
                         attrVo.setTargetCiId(attrObj.getLong("targetCiId"));
                         if (handler != null) {
                             JSONArray valueList = attrObj.getJSONArray("valueList");
-                            handler.transferValueListToExport(attrVo, valueList);
+                            JSONArray newValueList = handler.transferValueListToExport(attrVo, valueList);
                             if (CollectionUtils.isNotEmpty(valueList)) {
                                 String tmpValue = "";
-                                for (int v = 0; v < valueList.size(); v++) {
-                                    if (valueList.get(v) != null) {
+                                for (int v = 0; v < newValueList.size(); v++) {
+                                    if (newValueList.get(v) != null) {
                                         if (StringUtils.isNotBlank(tmpValue)) {
                                             tmpValue += ",";
                                         }
-                                        tmpValue += valueList.getString(v);
+                                        tmpValue += newValueList.getString(v);
                                     }
                                 }
                                 dataMap.put(column, tmpValue);
@@ -275,11 +273,10 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
 
 
         String fileNameEncode = ciVo.getId() + "_" + ciVo.getLabel() + ".xlsx";
-        boolean flag = request.getHeader("User-Agent").indexOf("Gecko") > 0;
-        if (request.getHeader("User-Agent").toLowerCase().indexOf("msie") > 0 || flag) {
+        if (request.getHeader("User-Agent").toLowerCase().contains("msie") || request.getHeader("User-Agent").contains("Gecko")) {
             fileNameEncode = URLEncoder.encode(fileNameEncode, "UTF-8");// IE浏览器
         } else {
-            fileNameEncode = new String(fileNameEncode.replace(" ", "").getBytes(StandardCharsets.UTF_8), "ISO8859-1");
+            fileNameEncode = new String(fileNameEncode.replace(" ", "").getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
         }
         response.setContentType("application/vnd.ms-excel;charset=utf-8");
         response.setHeader("Content-Disposition", " attachment; filename=\"" + fileNameEncode + "\"");

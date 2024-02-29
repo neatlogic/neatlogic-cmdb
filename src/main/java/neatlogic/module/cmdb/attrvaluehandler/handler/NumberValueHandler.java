@@ -129,5 +129,21 @@ public class NumberValueHandler implements IAttrValueHandler {
         return true;
     }
 
+    @Override
+    public JSONArray transferValueListToExport(AttrVo attrVo, JSONArray valueList) {
+        JSONArray actualValueList = new JSONArray();
+        if (CollectionUtils.isNotEmpty(valueList)) {
+            DecimalFormat df = new DecimalFormat("0.####");
+            for (int i = 0; i < valueList.size(); i++) {
+                try {
+                    actualValueList.add(df.parse(valueList.getString(i)));
+                } catch (Exception ignored) {
+
+                }
+            }
+        }
+        return actualValueList;
+    }
+
 
 }
