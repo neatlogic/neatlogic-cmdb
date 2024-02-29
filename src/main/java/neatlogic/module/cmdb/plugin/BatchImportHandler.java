@@ -117,13 +117,13 @@ public class BatchImportHandler {
         ciEntityService = _ciEntityService;
     }
 
-    public static void main(String[] a) {
+    /*public static void main(String[] a) {
         double num = 1.12123123;
         BigDecimal bd = new BigDecimal(Double.toString(num));
         bd = bd.setScale(4, RoundingMode.HALF_UP);
         String result = bd.stripTrailingZeros().toPlainString();
         System.out.println(result);
-    }
+    }*/
 
     private static String getCellContent(Cell cell) {
         String cellContent = "";
@@ -151,6 +151,8 @@ public class BatchImportHandler {
                 break;
             case FORMULA:
                 cellContent = cell.getCellFormula();
+                break;
+            default:
                 break;
         }
         if (StringUtils.isNotBlank(cellContent)) {

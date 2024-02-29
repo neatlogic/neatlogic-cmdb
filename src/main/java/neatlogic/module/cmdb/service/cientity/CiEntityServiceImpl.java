@@ -1291,7 +1291,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 } else {
                     if (oldEntity != null) {
                         AttrEntityVo attrEntityVo = oldEntity.getAttrEntityByAttrId(attrId);
-                        if (attrEntityVo != null) {
+                        if (attrEntityVo != null && CollectionUtils.isNotEmpty(attrEntityVo.getValueList())) {
                             AttrFilterVo filterVo = new AttrFilterVo();
                             filterVo.setAttrId(attrId);
                             filterVo.setExpression(SearchExpression.EQ.getExpression());
@@ -1307,6 +1307,8 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                             }).collect(Collectors.toList()));
                             valueList.add(String.join(",", filterVo.getValueList()));
                             ciEntityConditionVo.addAttrFilter(filterVo);
+                        } else {
+                            throw new CiUniqueAttrNotFoundException(op.get());
                         }
                     } else {
                         //没有oldEntity代表新添加数据，如果没有唯一属性值则需要抛异常

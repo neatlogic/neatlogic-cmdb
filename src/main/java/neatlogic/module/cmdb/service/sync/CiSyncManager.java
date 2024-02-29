@@ -102,11 +102,11 @@ public class CiSyncManager {
 
     public static class SyncHandler extends NeatLogicThread {
         private final static Logger logger = LoggerFactory.getLogger(SyncHandler.class);
-        private final Map<Long, Map<Long, AttrVo>> CiAttrMap = new HashMap<>();
-        private final Map<Long, Map<Long, RelVo>> CiRelMap = new HashMap<>();
-        private final Map<Long, CiVo> CiMap = new HashMap<>();//模型缓存
-        private final Map<Long, List<CiVo>> DownwardCiMap = new HashMap<>();//子模型缓存
-        private final Map<String, SyncCiCollectionVo> InitiativeSyncCiCollectionMap = new HashMap<>();//主动采集集合映射缓存
+        private final Map<Long, Map<Long, AttrVo>> ciAttrMap = new HashMap<>();
+        private final Map<Long, Map<Long, RelVo>> ciRelMap = new HashMap<>();
+        private final Map<Long, CiVo> ciMap = new HashMap<>();//模型缓存
+        private final Map<Long, List<CiVo>> downwardCiMap = new HashMap<>();//子模型缓存
+        private final Map<String, SyncCiCollectionVo> initiativeSyncCiCollectionMap = new HashMap<>();//主动采集集合映射缓存
         private final Map<String, ObjectVo> objectMap = new HashMap<>();//采集对象缓存
         private final Map<String, SyncCiCollectionVo> syncCiCollectionMap = new HashMap<>();//普通集合映射缓存
         private final List<SyncCiCollectionVo> syncCiCollectionList;
@@ -209,23 +209,23 @@ public class CiSyncManager {
         }
 
         private CiVo getCi(Long ciId) {
-            if (!CiMap.containsKey(ciId)) {
+            if (!ciMap.containsKey(ciId)) {
                 CiVo ciVo = ciMapper.getCiById(ciId);
                 if (ciVo == null) {
                     throw new CiNotFoundException(ciId);
                 }
-                CiMap.put(ciId, ciVo);
+                ciMap.put(ciId, ciVo);
             }
-            return CiMap.get(ciId);
+            return ciMap.get(ciId);
         }
 
         private List<CiVo> getDownwardCiList(Long ciId) {
-            if (!DownwardCiMap.containsKey(ciId)) {
+            if (!downwardCiMap.containsKey(ciId)) {
                 CiVo ciVo = getCi(ciId);
                 List<CiVo> downCiList = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
-                DownwardCiMap.put(ciId, downCiList);
+                downwardCiMap.put(ciId, downCiList);
             }
-            return DownwardCiMap.get(ciId);
+            return downwardCiMap.get(ciId);
         }
 
         public ObjectVo getObjectByCategoryAndType(String category, String type) {
@@ -241,35 +241,35 @@ public class CiSyncManager {
         }
 
         private SyncCiCollectionVo getInitiativeSyncCiCollection(String collectionName) {
-            if (!InitiativeSyncCiCollectionMap.containsKey(collectionName)) {
+            if (!initiativeSyncCiCollectionMap.containsKey(collectionName)) {
                 SyncCiCollectionVo syncCiCollectionVo = syncMapper.getInitiativeSyncCiCollectionByCollectName(collectionName);
                 if (syncCiCollectionVo != null) {
-                    InitiativeSyncCiCollectionMap.put(collectionName, syncCiCollectionVo);
+                    initiativeSyncCiCollectionMap.put(collectionName, syncCiCollectionVo);
                 } /*else {
                     throw new InitiativeSyncCiCollectionNotFoundException(collectionName);
                 }*/
             }
-            return InitiativeSyncCiCollectionMap.get(collectionName);
+            return initiativeSyncCiCollectionMap.get(collectionName);
         }
 
         private Map<Long, AttrVo> getAttrMap(Long ciId) {
-            if (!this.CiAttrMap.containsKey(ciId)) {
+            if (!this.ciAttrMap.containsKey(ciId)) {
                 List<AttrVo> attrList = attrMapper.getAttrByCiId(ciId);
                 Map<Long, AttrVo> tmpAttrMap = new HashMap<>();
                 attrList.forEach(attr -> tmpAttrMap.put(attr.getId(), attr));
-                this.CiAttrMap.put(ciId, tmpAttrMap);
+                this.ciAttrMap.put(ciId, tmpAttrMap);
             }
-            return this.CiAttrMap.get(ciId);
+            return this.ciAttrMap.get(ciId);
         }
 
         private Map<Long, RelVo> getRelMap(Long ciId) {
-            if (!this.CiRelMap.containsKey(ciId)) {
+            if (!this.ciRelMap.containsKey(ciId)) {
                 List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciId));
                 Map<Long, RelVo> tmpRelMap = new HashMap<>();
                 relList.forEach(rel -> tmpRelMap.put(rel.getId(), rel));
-                this.CiRelMap.put(ciId, tmpRelMap);
+                this.ciRelMap.put(ciId, tmpRelMap);
             }
-            return this.CiRelMap.get(ciId);
+            return this.ciRelMap.get(ciId);
         }
 
 

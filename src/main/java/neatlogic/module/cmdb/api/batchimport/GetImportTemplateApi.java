@@ -143,7 +143,7 @@ public class GetImportTemplateApi extends PrivateBinaryStreamApiComponentBase {
 
             wb = new HSSFWorkbook();
             HSSFSheet sheet = wb.createSheet("data");
-            String fileName = ciVo.getId() + "_" + ciVo.getLabel() + ".xls";
+            String fileName = ciVo.getId() + "_" + ciVo.getLabel() + ".xlsx";
 
             int ciTypeAttrListSize = ciVo.getAttrList().size() + ciVo.getRelList().size() + 1;
             // 设置excel每列宽度

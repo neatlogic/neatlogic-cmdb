@@ -16,6 +16,7 @@
 
 package neatlogic.module.cmdb.api.cientity;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
@@ -35,6 +36,7 @@ import neatlogic.framework.restful.annotation.OperationType;
 import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
+import neatlogic.framework.util.$;
 import neatlogic.framework.util.excel.ExcelBuilder;
 import neatlogic.framework.util.excel.SheetBuilder;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
@@ -64,7 +66,7 @@ import java.util.*;
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
-    private final static Logger logger = LoggerFactory.getLogger(ExportCiEntityApi.class);
+    private static final Logger logger = LoggerFactory.getLogger(ExportCiEntityApi.class);
     @Resource
     private CiEntityService ciEntityService;
 
@@ -105,7 +107,7 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
     //TODO 后续要对数据进行优化防止OOM
     public Object myDoService(JSONObject jsonObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
         JSONArray idList = jsonObj.getJSONArray("idList");
-        CiEntityVo ciEntityVo = JSONObject.toJavaObject(jsonObj, CiEntityVo.class);
+        CiEntityVo ciEntityVo = JSON.toJavaObject(jsonObj, CiEntityVo.class);
         JSONArray showAttrRelList = jsonObj.getJSONArray("showAttrRelList");
         Set<String> showAttrRelSet = new HashSet<>();
         if (CollectionUtils.isNotEmpty(showAttrRelList)) {
@@ -148,7 +150,7 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
                         if (showAttrRelSet.contains("global_" + ciview.getItemId())) {
                             globalAttrIdList.add(ciview.getItemId());
                             columnList.add("global_" + ciview.getItemId());
-                            headerList.add(StringUtils.isBlank(ciview.getAlias()) ? ciview.getItemLabel() : ciview.getAlias());
+                            headerList.add(StringUtils.isBlank(ciview.getAlias()) ? ciview.getItemLabel() : ciview.getAlias() + "[" + $.t("term.cmdb.globalattr") + "]");
                         }
                         break;
                     case "attr":
@@ -171,6 +173,8 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
                             columnList.add("relto_" + ciview.getItemId());
                             headerList.add(StringUtils.isBlank(ciview.getAlias()) ? ciview.getItemLabel() : ciview.getAlias());
                         }
+                        break;
+                    default:
                         break;
                 }
             }

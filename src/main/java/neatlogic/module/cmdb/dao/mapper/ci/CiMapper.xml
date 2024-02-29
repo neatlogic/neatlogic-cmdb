@@ -72,6 +72,18 @@
         where b.ci_id = #{value}
     </select>
 
+    <select id="getCiBaseInfoById" parameterType="java.lang.Long" resultType="neatlogic.framework.cmdb.dto.ci.CiVo">
+        select id,
+               name,
+               label,
+               type_id as typeId,
+               icon,
+               lft,
+               rht
+        from cmdb_ci
+        where id = #{value}
+    </select>
+
     <select id="getCiBaseInfoByCiEntityIdList" resultType="neatlogic.framework.cmdb.dto.ci.CiVo" useCache="false">
         SELECT
         DISTINCT
@@ -93,6 +105,14 @@
         <foreach collection="ciEntityIdList" item="value" open="(" close=")" separator=",">
             #{value}
         </foreach>
+    </select>
+
+    <select id="getDownwardCiIdListByLR" resultType="java.lang.Long" useCache="true">
+        SELECT a.`id`
+        FROM `cmdb_ci` a
+        WHERE a.lft &gt;= #{lft}
+          AND a.rht &lt;= #{rht}
+        ORDER BY lft
     </select>
 
     <select id="getDownwardCiListByLR" resultType="neatlogic.framework.cmdb.dto.ci.CiVo" useCache="true">
@@ -192,6 +212,14 @@
             )
         </if>
         ORDER BY a.lft
+    </select>
+
+    <select id="getUpwardCiIdListByLR" resultType="java.lang.Long">
+        SELECT a.`id`
+        FROM `cmdb_ci` a
+        WHERE a.lft &lt;= #{lft}
+          AND a.rht &gt;= #{rht}
+        ORDER BY lft
     </select>
 
     <select id="getUpwardCiListByLR" resultType="neatlogic.framework.cmdb.dto.ci.CiVo" useCache="true">

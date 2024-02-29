@@ -27,6 +27,9 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface CiMapper extends ICiCrossoverMapper {
+    List<Long> getDownwardCiIdListByLR(@Param("lft") Integer lft, @Param("rht") Integer rht);
+
+    CiVo getCiBaseInfoById(Long ciId);
 
     List<CiVo> getCiTree();
 
@@ -52,6 +55,8 @@ public interface CiMapper extends ICiCrossoverMapper {
      * @return 模型列表
      */
     List<CiVo> getUpwardCiListByLR(@Param("lft") Integer lft, @Param("rht") Integer rht);
+
+    List<Long> getUpwardCiIdListByLR(@Param("lft") Integer lft, @Param("rht") Integer rht);
 
     /**
      * 查找所有子模型包括自己
