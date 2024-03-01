@@ -16,6 +16,7 @@
 
 package neatlogic.module.cmdb.api.resourcecenter.resource;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
@@ -43,6 +44,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+
+/**
+ * 1、先根据resourceId 或 （ip、port、nodeName、nodeType)获取资产
+ * 2、tagent 则通过ip 找账号， 否则根据资产绑定的账号找，找到即返回
+ * 3、通过对应资产的os 找账号，找到即返回
+ * 4、 找协议+用户的默认账号
+ */
 @Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
@@ -114,36 +122,45 @@ public class GetResourceAccountApi extends PrivateApiComponentBase {
             }
         }
 
-
         //如果是tagent 则通过ip 找账号， 否则根据资产绑定的账号找
         if (!Objects.equals(protocol, Protocol.TAGENT.getValue())) {
             List<AccountVo> accountList = resourceAccountMapper.getResourceAccountByResourceIdAndProtocolAndProtocolPortAndUsername(resourceVo.getId(), protocol, protocolPort, username);
             if (CollectionUtils.isNotEmpty(accountList)) {
-                return accountList.get(0);
+                AccountVo account = accountList.get(0);
+                return removePasswordPlain(account);
             }
         } else {
             List<AccountBaseVo> accountList = tagentMapper.getAccountListByIpListAndProtocolId(Collections.singletonList(resourceVo.getIp()), protocolVo.getId());
             if (CollectionUtils.isNotEmpty(accountList)) {
-                return accountList.get(0);
+                AccountBaseVo accountTagent = accountList.get(0);
+                return removePasswordPlain(accountTagent);
             }
         }
 
         //通过对应资产的os 找账号
-        List<SoftwareServiceOSVo> targetOsList = resourceMapper.getOsResourceListByResourceIdList(Collections.singletonList(resourceId));
+        List<SoftwareServiceOSVo> targetOsList = resourceMapper.getOsResourceListByResourceIdList(Collections.singletonList(resourceVo.getId()));
         if (CollectionUtils.isNotEmpty(targetOsList)) {
             SoftwareServiceOSVo targetOs = targetOsList.get(0);
             List<AccountVo> accountList = resourceAccountMapper.getResourceAccountByResourceIdAndProtocolAndProtocolPortAndUsername(targetOs.getOsId(), protocol, protocolPort, username);
             if (CollectionUtils.isNotEmpty(accountList)) {
-                return accountList.get(0);
+                AccountVo account = accountList.get(0);
+                return removePasswordPlain(account);
             }
         }
 
         //找协议的默认账号
         List<AccountVo> accountList = resourceAccountMapper.getDefaultAccountListByProtocolIdListAndAccount(Collections.singletonList(protocolVo.getId()), username);
         if (CollectionUtils.isNotEmpty(accountList)) {
-            return accountList.get(0);
+            AccountVo account = accountList.get(0);
+            return removePasswordPlain(account);
         }
 
         throw new ResourceCenterAccountNotFoundException();
+    }
+
+    private JSONObject removePasswordPlain(AccountBaseVo account){
+        JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(account));
+        jsonObject.put("passwordPlain",null);
+        return jsonObject;
     }
 }
