@@ -19,7 +19,9 @@ package neatlogic.module.cmdb.api.graph;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
+import neatlogic.framework.cmdb.dto.graph.GraphVo;
 import neatlogic.framework.cmdb.exception.graph.GraphIsInvokedException;
+import neatlogic.framework.cmdb.exception.graph.GraphPrivilegeDeleteException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.Description;
 import neatlogic.framework.restful.annotation.Input;
@@ -51,7 +53,7 @@ public class DeleteGraphApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "删除拓扑视图";
+        return "nmcag.deletegraphapi.getname";
     }
 
     @Override
@@ -59,17 +61,23 @@ public class DeleteGraphApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "视图id")})
-    @Description(desc = "删除拓扑视图接口")
+    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "id")})
+    @Description(desc = "nmcag.deletegraphapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");
-        if (graphMapper.checkGraphIsInvoked(id) > 0) {
-            throw new GraphIsInvokedException();
+        GraphVo graphVo = graphMapper.getGraphById(id);
+        if (graphVo != null) {
+            if (!graphVo.hasPrivilege()) {
+                throw new GraphPrivilegeDeleteException();
+            }
+            if (graphMapper.checkGraphIsInvoked(id) > 0) {
+                throw new GraphIsInvokedException();
+            }
+            graphMapper.deleteGraphRelByFromGraphId(id);
+            graphMapper.deleteGraphAuthByGraphId(id);
+            graphMapper.deleteGraphById(id);
         }
-        graphMapper.deleteGraphRelByFromGraphId(id);
-        graphMapper.deleteGraphAuthByGraphId(id);
-        graphMapper.deleteGraphById(id);
         return null;
     }
 }
