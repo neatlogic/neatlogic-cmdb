@@ -99,6 +99,8 @@ public interface CiMapper extends ICiCrossoverMapper {
 
     CiVo getCiByLabel(String ciLabel);
 
+    List<CiVo> getCiListByLabelList(List<String> ciLabelList);
+
     int getVirtualCiCount();
 
     List<CiVo> getVirtualCiList(BasePageVo searchVo);

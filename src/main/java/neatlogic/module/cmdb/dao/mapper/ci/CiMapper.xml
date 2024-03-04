@@ -660,6 +660,37 @@
         WHERE a.label = #{value}
     </select>
 
+    <select id="getCiListByLabelList" parameterType="java.lang.String" resultMap="ciResultMap"
+            useCache="true">
+        SELECT a.`id`,
+               a.`name`,
+               a.`label`,
+               a.`description`,
+               a.`icon`,
+               a.`type_id`      AS typeId,
+               d.`name`         AS typeName,
+               a.`is_private`   AS isPrivate,
+               a.`is_menu`      AS isMenu,
+               a.`parent_ci_id` AS parentCiId,
+               c.label          AS parentCiLabel,
+               c.name           AS parentCiName,
+               a.`is_abstract`  AS isAbstract,
+               a.`is_virtual`   AS isVirtual,
+               a.`expired_day`  AS expiredDay,
+               a.`name_attr_id` AS nameAttrId,
+               a.`lft`          AS lft,
+               a.`rht`          AS rht,
+               b.`attr_id`      AS uniqueAttrId
+        FROM `cmdb_ci` a
+                 LEFT JOIN `cmdb_ci_unique` b ON a.id = b.ci_id
+                 LEFT JOIN `cmdb_ci` c ON a.`parent_ci_id` = c.id
+                 LEFT JOIN `cmdb_citype` d ON a.`type_id` = d.id
+        WHERE a.label in
+        <foreach collection="list" item="label" open="(" separator="," close=")">
+            #{label}
+        </foreach>
+    </select>
+
     <select id="getVirtualCiCount" resultType="int">
         SELECT COUNT(1)
         FROM `cmdb_ci`
