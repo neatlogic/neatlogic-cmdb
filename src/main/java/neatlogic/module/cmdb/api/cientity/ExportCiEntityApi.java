@@ -148,7 +148,7 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
                         if (showAttrRelSet.contains("global_" + ciview.getItemId())) {
                             globalAttrIdList.add(ciview.getItemId());
                             columnList.add("global_" + ciview.getItemId());
-                            headerList.add(StringUtils.isBlank(ciview.getAlias()) ? ciview.getItemLabel() : ciview.getAlias() + "[" + $.t("term.cmdb.globalattr") + "]");
+                            headerList.add(StringUtils.isBlank(ciview.getAlias()) ? ciview.getItemLabel() + "[" + $.t("term.cmdb.globalattr") + "]" : ciview.getAlias() + "[" + $.t("term.cmdb.globalattr") + "]");
                         }
                         break;
                     case "attr":
