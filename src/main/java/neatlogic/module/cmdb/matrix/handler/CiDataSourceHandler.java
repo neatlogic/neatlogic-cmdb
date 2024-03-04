@@ -877,13 +877,21 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                             if ("const_id".equals(label)) {
                                 ciEntityVo.setFilterCiEntityId(Long.valueOf(valueList.get(0)));
                             } else if ("const_ciLabel".equals(label)) {
-                                String ciLabel = valueList.get(0);
-                                CiVo ciVo = ciMapper.getCiByLabel(ciLabel);
-                                if (ciVo != null) {
-                                    ciEntityVo.setFilterCiId(ciVo.getId());
-                                } else {
-                                    ciEntityVo.setFilterCiId(-1L);
+//                                String ciLabel = valueList.get(0);
+//                                CiVo ciVo = ciMapper.getCiByLabel(ciLabel);
+//                                if (ciVo != null) {
+//                                    ciEntityVo.setFilterCiId(ciVo.getId());
+//                                } else {
+//                                    ciEntityVo.setFilterCiId(-1L);
+//                                }
+                                List<Long> filterCiIdList = new ArrayList<>();
+                                for (String ciLabel : valueList) {
+                                    CiVo ciVo = ciMapper.getCiByLabel(ciLabel);
+                                    if (ciVo != null) {
+                                        filterCiIdList.add(ciVo.getId());
+                                    }
                                 }
+                                ciEntityVo.setFilterCiIdList(filterCiIdList);
                             }
                             break;
                     }
@@ -958,13 +966,21 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                             if ("const_id".equals(label)) {
                                 ciEntityVo.setFilterCiEntityId(Long.valueOf(valueList.get(0)));
                             } else if ("const_ciLabel".equals(label)) {
-                                String ciLabel = valueList.get(0);
-                                CiVo ciVo = ciMapper.getCiByLabel(ciLabel);
-                                if (ciVo != null) {
-                                    ciEntityVo.setFilterCiId(ciVo.getId());
-                                } else {
-                                    ciEntityVo.setFilterCiId(-1L);
+//                                String ciLabel = valueList.get(0);//
+//                                CiVo ciVo = ciMapper.getCiByLabel(ciLabel);
+//                                if (ciVo != null) {
+//                                    ciEntityVo.setFilterCiId(ciVo.getId());
+//                                } else {
+//                                    ciEntityVo.setFilterCiId(-1L);
+//                                }
+                                List<Long> filterCiIdList = new ArrayList<>();
+                                for (String ciLabel : valueList) {
+                                    CiVo ciVo = ciMapper.getCiByLabel(ciLabel);
+                                    if (ciVo != null) {
+                                        filterCiIdList.add(ciVo.getId());
+                                    }
                                 }
+                                ciEntityVo.setFilterCiIdList(filterCiIdList);
                             }
                             break;
                     }
