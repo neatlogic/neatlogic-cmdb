@@ -875,15 +875,23 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                         case "const":
                             //固化属性需要特殊处理
                             if ("const_id".equals(label)) {
-                                ciEntityVo.setFilterCiEntityId(Long.valueOf(valueList.get(0)));
-                            } else if ("const_ciLabel".equals(label)) {
-                                String ciLabel = valueList.get(0);
-                                CiVo ciVo = ciMapper.getCiByLabel(ciLabel);
-                                if (ciVo != null) {
-                                    ciEntityVo.setFilterCiId(ciVo.getId());
-                                } else {
-                                    ciEntityVo.setFilterCiId(-1L);
+//                                ciEntityVo.setFilterCiEntityId(Long.valueOf(valueList.get(0)));
+                                List<Long> idList = new ArrayList<>();
+                                for (String value : valueList) {
+                                    idList.add(Long.valueOf(value));
                                 }
+                                ciEntityVo.setIdList(idList);
+                            } else if ("const_ciLabel".equals(label)) {
+//                                String ciLabel = valueList.get(0);
+//                                CiVo ciVo = ciMapper.getCiByLabel(ciLabel);
+//                                if (ciVo != null) {
+//                                    ciEntityVo.setFilterCiId(ciVo.getId());
+//                                } else {
+//                                    ciEntityVo.setFilterCiId(-1L);
+//                                }
+                                List<CiVo> ciList = ciMapper.getCiListByLabelList(valueList);
+                                List<Long> filterCiIdList = ciList.stream().map(CiVo::getId).collect(Collectors.toList());
+                                ciEntityVo.setFilterCiIdList(filterCiIdList);
                             }
                             break;
                     }
@@ -956,15 +964,23 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                         case "const":
                             //固化属性需要特殊处理
                             if ("const_id".equals(label)) {
-                                ciEntityVo.setFilterCiEntityId(Long.valueOf(valueList.get(0)));
-                            } else if ("const_ciLabel".equals(label)) {
-                                String ciLabel = valueList.get(0);
-                                CiVo ciVo = ciMapper.getCiByLabel(ciLabel);
-                                if (ciVo != null) {
-                                    ciEntityVo.setFilterCiId(ciVo.getId());
-                                } else {
-                                    ciEntityVo.setFilterCiId(-1L);
+//                                ciEntityVo.setFilterCiEntityId(Long.valueOf(valueList.get(0)));
+                                List<Long> idList = new ArrayList<>();
+                                for (String value : valueList) {
+                                    idList.add(Long.valueOf(value));
                                 }
+                                ciEntityVo.setIdList(idList);
+                            } else if ("const_ciLabel".equals(label)) {
+//                                String ciLabel = valueList.get(0);//
+//                                CiVo ciVo = ciMapper.getCiByLabel(ciLabel);
+//                                if (ciVo != null) {
+//                                    ciEntityVo.setFilterCiId(ciVo.getId());
+//                                } else {
+//                                    ciEntityVo.setFilterCiId(-1L);
+//                                }
+                                List<CiVo> ciList = ciMapper.getCiListByLabelList(valueList);
+                                List<Long> filterCiIdList = ciList.stream().map(CiVo::getId).collect(Collectors.toList());
+                                ciEntityVo.setFilterCiIdList(filterCiIdList);
                             }
                             break;
                     }
