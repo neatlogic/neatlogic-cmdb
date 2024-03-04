@@ -16,6 +16,7 @@
 
 package neatlogic.module.cmdb.api.cientity;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
@@ -150,7 +151,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
             }
             jsonObj.put("ciId", ciVo.getId());
         }
-        CiEntityVo ciEntityVo = JSONObject.toJavaObject(jsonObj, CiEntityVo.class);
+        CiEntityVo ciEntityVo = JSON.toJavaObject(jsonObj, CiEntityVo.class);
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciEntityVo.getCiId());
         Map<Long, AttrVo> attrMap = new HashMap<>();
         for (AttrVo attrVo : attrList) {
@@ -338,7 +339,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
             } else {
                 ciEntityList = new ArrayList<>();
                 for (int i = 0; i < ciEntityObjList.size(); i++) {
-                    ciEntityList.add(JSONObject.toJavaObject(ciEntityObjList.getJSONObject(i), CiEntityVo.class));
+                    ciEntityList.add(JSON.toJavaObject(ciEntityObjList.getJSONObject(i), CiEntityVo.class));
                 }
             }
             JSONArray tbodyList = new JSONArray();

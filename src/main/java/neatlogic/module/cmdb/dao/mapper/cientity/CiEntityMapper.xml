@@ -893,9 +893,15 @@
             <if test="name != null and name != ''">
                 AND `ci_base`.`name` LIKE CONCAT('%',#{name},'%')
             </if>
-            <if test="filterCiId != null">
-                AND `ci_base`.ci_id = #{filterCiId}
-            </if>
+            <choose>
+                <when test="filterCiId != null">
+                    AND `ci_base`.ci_id = #{filterCiId}
+                </when>
+                <when test="filterCiIdList != null and filterCiIdList.size() > 0">
+                    AND `ci_base`.ci_id in
+                    <foreach collection="filterCiIdList" item="item" open="(" close=")" separator=",">#{item}</foreach>
+                </when>
+            </choose>
             <if test="globalAttrFilterList != null and globalAttrFilterList.size() > 0">
                 and
                 <foreach collection="globalAttrFilterList" item="item" open="(" close=")" separator="and">
