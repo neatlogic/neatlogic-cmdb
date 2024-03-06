@@ -148,6 +148,49 @@ limitations under the License.
           and id != #{id}
     </select>
 
+    <select id="getInitiativeSyncCiCollectionByCollectNameList"
+            resultType="neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo">
+        SELECT a.id,
+        a.ci_id AS ciId,
+        b.label AS ciLabel,
+        b.name AS ciName,
+        a.collection_name AS collectionName,
+        a.collect_mode AS collectMode,
+        a.is_auto_commit AS isAutoCommit,
+        a.match_mode AS matchMode,
+        a.fcu,
+        a.fcd,
+        a.lcu,
+        a.lcd
+        FROM cmdb_sync_ci_collection a
+        JOIN cmdb_ci b ON a.ci_id = b.id
+        WHERE a.collection_name in
+        <foreach collection="collectionNameList" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+        and a.collect_mode = 'initiative'
+    </select>
+
+    <select id="getInitiativeSyncCiCollectionByCollectNameAndCiId"
+            resultType="neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo">
+        SELECT a.id,
+               a.ci_id           AS ciId,
+               b.label           AS ciLabel,
+               b.name            AS ciName,
+               a.collection_name AS collectionName,
+               a.collect_mode    AS collectMode,
+               a.is_auto_commit  AS isAutoCommit,
+               a.match_mode      AS matchMode,
+               a.fcu,
+               a.fcd,
+               a.lcu,
+               a.lcd
+        FROM cmdb_sync_ci_collection a
+                 JOIN cmdb_ci b ON a.ci_id = b.id
+        WHERE a.collection_name = #{collectionName} and a.ci_id = #{ciId}
+          and a.collect_mode = 'initiative'
+    </select>
+
     <select id="getInitiativeSyncCiCollectionByCollectName" parameterType="java.lang.String"
             resultType="neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo">
         SELECT a.id,
@@ -410,7 +453,7 @@ limitations under the License.
         WHERE a.id = #{value}
     </select>
 
-    <select id="getSyncCiCollectionByMultipleCondition" resultMap="syncCiCollectionResultMap">
+    <select id="getSyncCiCollectionByIdList" resultMap="syncCiCollectionResultMap">
         SELECT
         a.id,
         a.ci_id AS ciId,
@@ -439,11 +482,8 @@ limitations under the License.
         JOIN cmdb_ci cc ON a.ci_id = cc.id
         LEFT JOIN cmdb_sync_unique csu on a.id = csu.ci_collection_id
         <where>
-            <if test="id != null">
-                or a.id = #{id}
-            </if>
             <if test="idList != null and idList.size() > 0">
-                or a.id in
+                a.id in
                 <foreach collection="idList" item="item" open="(" close=")" separator=",">#{item}</foreach>
             </if>
         </where>

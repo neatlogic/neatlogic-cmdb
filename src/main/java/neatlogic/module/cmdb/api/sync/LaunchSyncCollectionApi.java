@@ -27,6 +27,7 @@ import neatlogic.framework.exception.type.ParamNotExistsException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.module.cmdb.dao.mapper.sync.ObjectMapper;
 import neatlogic.module.cmdb.dao.mapper.sync.SyncMapper;
 import neatlogic.module.cmdb.service.sync.CiSyncManager;
 import org.apache.commons.collections4.CollectionUtils;
@@ -44,6 +45,9 @@ public class LaunchSyncCollectionApi extends PrivateApiComponentBase {
 
     @Resource
     private SyncMapper syncMapper;
+
+    @Resource
+    private ObjectMapper objectMapper;
 
 
     @Override
@@ -64,6 +68,7 @@ public class LaunchSyncCollectionApi extends PrivateApiComponentBase {
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "term.cmdb.syncid"),
             @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.syncidlist"),
             @Param(name = "collectionList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.collectionlist"),
+            //@Param(name = "collectionObjList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.collectionobjlist"),
             @Param(name = "batchTag", type = ApiParamType.STRING, desc = "term.cmdb.batchtag"),
             @Param(name = "startTime", type = ApiParamType.LONG, desc = "common.starttime"),
             @Param(name = "isAll", type = ApiParamType.INTEGER, desc = "term.cmdb.syncisall")})
@@ -75,22 +80,41 @@ public class LaunchSyncCollectionApi extends PrivateApiComponentBase {
         Long id = jsonObj.getLong("id");
         JSONArray idList = jsonObj.getJSONArray("idList");
         JSONArray collectionList = jsonObj.getJSONArray("collectionList");
+        JSONArray collectionObjList = jsonObj.getJSONArray("collectionObjList");
         Long startTime = jsonObj.getLong("startTime");
         String batchTag = jsonObj.getString("batchTag");
-        if (id == null && CollectionUtils.isEmpty(idList) && isAll == null && CollectionUtils.isEmpty(collectionList)) {
-            throw new ParamNotExistsException("id", "idList", "collectionList", "isAll");
+        if (id == null && CollectionUtils.isEmpty(idList) && isAll == null && CollectionUtils.isEmpty(collectionList) && CollectionUtils.isEmpty(collectionObjList)) {
+            throw new ParamNotExistsException("id", "idList", "collectionList", "isAll", "collectionObjList");
         }
-        List<Long> pIdList = null;
-        List<String> pCollectionList = null;
+        List<Long> pIdList = new ArrayList<>();
+        if (id != null) {
+            pIdList.add(id);
+        }
         if (CollectionUtils.isNotEmpty(idList)) {
-            pIdList = idList.stream().map(d -> Long.parseLong(d.toString())).collect(Collectors.toList());
+            for (int i = 0; i < idList.size(); i++) {
+                pIdList.add(idList.getLong(i));
+            }
         }
         if (CollectionUtils.isNotEmpty(collectionList)) {
-            pCollectionList = collectionList.stream().map(Object::toString).collect(Collectors.toList());
+            List<String> pCollectionList = collectionList.stream().map(Object::toString).collect(Collectors.toList());
+            List<SyncCiCollectionVo> syncCiCollectionList = syncMapper.getInitiativeSyncCiCollectionByCollectNameList(pCollectionList);
+            for (SyncCiCollectionVo syncCiCollection : syncCiCollectionList) {
+                pIdList.add(syncCiCollection.getId());
+            }
         }
+        /*
+        if (CollectionUtils.isNotEmpty(collectionObjList)) {
+            for (int i = 0; i < collectionObjList.size(); i++) {
+                JSONObject obj = collectionObjList.getJSONObject(i);
+                ObjectVo objectVo = objectMapper.getObjectByCategoryAndType(obj.getString("category"), obj.getString("type"));
+                if (objectVo != null && objectVo.getCiId() != null) {
+                    syncMapper.getInitiativeSyncCiCollectionByCollectNameAndCiId()
+                }
+            }
+        }*/
         List<SyncCiCollectionVo> syncCiCollectionList = new ArrayList<>();
         if (isAll == null || isAll.equals(0)) {
-            syncCiCollectionList = syncMapper.getSyncCiCollectionByMultipleCondition(id, pIdList, pCollectionList);
+            syncCiCollectionList = syncMapper.getSyncCiCollectionByIdList(pIdList);
         } else {
             SyncCiCollectionVo p = new SyncCiCollectionVo();
             p.setCollectMode(CollectMode.INITIATIVE.getValue());

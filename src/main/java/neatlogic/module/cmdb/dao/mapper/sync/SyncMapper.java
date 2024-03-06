@@ -28,7 +28,11 @@ import java.util.List;
 public interface SyncMapper extends ISyncCrossoverMapper {
     List<SyncCiCollectionVo> getPassiveSyncCiCollectionByCiId(Long ciId);
 
+    List<SyncCiCollectionVo> getInitiativeSyncCiCollectionByCollectNameList(@Param("collectionNameList") List<String> collectionNameList);
+
     SyncCiCollectionVo getInitiativeSyncCiCollectionByCollectName(String collectName);
+
+    SyncCiCollectionVo getInitiativeSyncCiCollectionByCollectNameAndCiId(@Param("collectionName") String collectionName, @Param("ciId") Long ciId);
 
     int checkInitiativeSyncCiCollectionIsExists(SyncCiCollectionVo syncCiCollectionVo);
 
@@ -56,7 +60,7 @@ public interface SyncMapper extends ISyncCrossoverMapper {
 
     SyncCiCollectionVo getSyncCiCollectionById(Long id);
 
-    List<SyncCiCollectionVo> getSyncCiCollectionByMultipleCondition(@Param("id") Long id, @Param("idList") List<Long> idList, @Param("collectionList") List<String> collectionList);
+    List<SyncCiCollectionVo> getSyncCiCollectionByIdList(@Param("idList") List<Long> idList);
 
     List<SyncCiCollectionVo> getSyncCiCollectionByCollectionName(String collectionName);
 
