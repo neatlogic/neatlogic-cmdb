@@ -16,6 +16,7 @@
 
 package neatlogic.module.cmdb.service.sync;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSONPath;
@@ -129,7 +130,7 @@ public class CiSyncManager {
 
         private List<CiEntityVo> searchCiEntityWithCache(CiEntityVo conditionVo) {
             Object lock;
-            int hash = Objects.hash(conditionVo.getCiId(), CollectionUtils.isNotEmpty(conditionVo.getAttrFilterList()) ? JSONObject.toJSONString(conditionVo.getAttrFilterList()) : "");
+            int hash = Objects.hash(conditionVo.getCiId(), CollectionUtils.isNotEmpty(conditionVo.getAttrFilterList()) ? JSON.toJSONString(conditionVo.getAttrFilterList()) : "");
             synchronized (filterLock) {
                 if (!filterLock.containsKey(hash)) {
                     filterLock.put(hash, new Object());

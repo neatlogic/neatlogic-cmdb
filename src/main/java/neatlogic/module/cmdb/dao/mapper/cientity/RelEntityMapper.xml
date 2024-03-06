@@ -429,87 +429,89 @@ limitations under the License.
         update cmdb_relentity
         set from_index = null
         where rel_id = #{relId}
-          and from_cientity_id = #{ciEntityId}
-          and from_index is not null
+        and from_cientity_id = #{ciEntityId}
+        <!--and from_index is not null-->
+        and from_index &gt; #{limit}
     </update>
 
     <update id="clearRelEntityToIndex">
         update cmdb_relentity
         set to_index = null
         where rel_id = #{relId}
-          and to_cientity_id = #{ciEntityId}
-          and to_index is not null
+        and to_cientity_id = #{ciEntityId}
+        <!--and to_index is not null-->
+        and to_index &gt; #{limit}
     </update>
 
-    <update id="updateRelEntityFromIndex" parameterType="neatlogic.framework.cmdb.dto.cientity.RelEntityVo">
-        update cmdb_relentity
-        set `from_index` = #{fromIndex}
-        where id = #{id}
-    </update>
+  <update id="updateRelEntityFromIndex" parameterType="neatlogic.framework.cmdb.dto.cientity.RelEntityVo">
+      update cmdb_relentity
+      set `from_index` = #{fromIndex}
+      where id = #{id}
+  </update>
 
-    <update id="updateRelEntityToIndex" parameterType="neatlogic.framework.cmdb.dto.cientity.RelEntityVo">
-        update cmdb_relentity
-        set `to_index` = #{toIndex}
-        where id = #{id}
-    </update>
-
-
-    <insert id="insertRelEntity" parameterType="neatlogic.framework.cmdb.dto.cientity.RelEntityVo">
-        INSERT INTO `cmdb_relentity` (`id`,
-        `rel_id`,
-        `from_cientity_id`,
-        `to_cientity_id`,
-        `transaction_id`,
-        `insert_time`,
-        `renew_time`,
-        `valid_day`,
-        `source_relentity_id`,
-        `relativerel_hash`
-        <if test="validDay != null and validDay > 0">
-            ,`expired_time`
-        </if>)
-        VALUES (
-        #{id},
-        #{relId},
-        #{fromCiEntityId},
-        #{toCiEntityId},
-        #{transactionId},
-        now(3),
-        now(3),
-        #{validDay},
-        #{sourceRelEntityId},
-        #{relativeRelHash}
-        <if test="validDay != null and validDay > 0">
-            ,DATE_ADD(NOW(3),INTERVAL #{validDay} DAY)
-        </if>)
-    </insert>
+  <update id="updateRelEntityToIndex" parameterType="neatlogic.framework.cmdb.dto.cientity.RelEntityVo">
+      update cmdb_relentity
+      set `to_index` = #{toIndex}
+      where id = #{id}
+  </update>
 
 
-    <delete id="deleteRelEntityByFromCiEntityIdAndRelId">
-        DELETE
-        FROM `cmdb_relentity`
-        WHERE from_cientity_id = #{fromCiEntityId}
-          AND rel_id = #{relId}
-    </delete>
+  <insert id="insertRelEntity" parameterType="neatlogic.framework.cmdb.dto.cientity.RelEntityVo">
+      INSERT INTO `cmdb_relentity` (`id`,
+      `rel_id`,
+      `from_cientity_id`,
+      `to_cientity_id`,
+      `transaction_id`,
+      `insert_time`,
+      `renew_time`,
+      `valid_day`,
+      `source_relentity_id`,
+      `relativerel_hash`
+      <if test="validDay != null and validDay > 0">
+          ,`expired_time`
+      </if>)
+      VALUES (
+      #{id},
+      #{relId},
+      #{fromCiEntityId},
+      #{toCiEntityId},
+      #{transactionId},
+      now(3),
+      now(3),
+      #{validDay},
+      #{sourceRelEntityId},
+      #{relativeRelHash}
+      <if test="validDay != null and validDay > 0">
+          ,DATE_ADD(NOW(3),INTERVAL #{validDay} DAY)
+      </if>)
+  </insert>
 
-    <delete id="deleteRelEntityByToCiEntityIdAndRelId">
-        DELETE
-        FROM `cmdb_relentity`
-        WHERE to_cientity_id = #{toCiEntityId}
-          AND rel_id = #{relId}
-    </delete>
 
-    <delete id="deleteRelEntityByRelIdFromCiEntityIdToCiEntityId">
-        DELETE
-        FROM `cmdb_relentity`
-        WHERE rel_id = #{relId}
-          AND from_cientity_id = #{fromCiEntityId}
-          AND to_cientity_id = #{toCiEntityId}
-    </delete>
+  <delete id="deleteRelEntityByFromCiEntityIdAndRelId">
+      DELETE
+      FROM `cmdb_relentity`
+      WHERE from_cientity_id = #{fromCiEntityId}
+        AND rel_id = #{relId}
+  </delete>
 
-    <delete id="deleteRelEntityBySourceRelEntityId" parameterType="java.lang.Long">
-        delete
-        from `cmdb_relentity`
-        where source_relentity_id = #{value}
-    </delete>
+  <delete id="deleteRelEntityByToCiEntityIdAndRelId">
+      DELETE
+      FROM `cmdb_relentity`
+      WHERE to_cientity_id = #{toCiEntityId}
+        AND rel_id = #{relId}
+  </delete>
+
+  <delete id="deleteRelEntityByRelIdFromCiEntityIdToCiEntityId">
+      DELETE
+      FROM `cmdb_relentity`
+      WHERE rel_id = #{relId}
+        AND from_cientity_id = #{fromCiEntityId}
+        AND to_cientity_id = #{toCiEntityId}
+  </delete>
+
+  <delete id="deleteRelEntityBySourceRelEntityId" parameterType="java.lang.Long">
+      delete
+      from `cmdb_relentity`
+      where source_relentity_id = #{value}
+  </delete>
 </mapper>

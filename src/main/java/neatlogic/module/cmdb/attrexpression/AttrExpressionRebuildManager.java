@@ -30,6 +30,7 @@ import neatlogic.framework.cmdb.dto.cientity.RelEntityVo;
 import neatlogic.framework.cmdb.enums.RelDirectionType;
 import neatlogic.framework.transaction.core.AfterTransactionJob;
 import neatlogic.framework.util.SnowflakeUtil;
+import neatlogic.framework.util.javascript.JavascriptUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.AttrEntityMapper;
@@ -44,6 +45,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import javax.script.ScriptEngine;
+import javax.script.ScriptException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -134,6 +137,7 @@ public class AttrExpressionRebuildManager {
             CONST
         }
 
+        private final String expression;
         private final Long key;
         private final String direction;
         private final Type type;
@@ -143,7 +147,8 @@ public class AttrExpressionRebuildManager {
             return type;
         }
 
-        public ExpressionGroup(Long key, String direction, Type type, String attr, ExpressionGroupAttr.Type attrType) {
+        public ExpressionGroup(String expression, Long key, String direction, Type type, String attr, ExpressionGroupAttr.Type attrType) {
+            this.expression = expression;
             this.key = key;
             this.type = type;
             this.direction = direction;
@@ -152,6 +157,10 @@ public class AttrExpressionRebuildManager {
 
         public void addAttr(String attr, ExpressionGroupAttr.Type attrType) {
             attrList.add(new ExpressionGroupAttr(attr, attrType));
+        }
+
+        public String getExpression() {
+            return expression;
         }
 
         public Long getKey() {
@@ -277,6 +286,7 @@ public class AttrExpressionRebuildManager {
                 CiEntityVo saveCiEntityVo = new CiEntityVo();
                 saveCiEntityVo.setCiId(newCiEntityVo.getCiId());
                 saveCiEntityVo.setId(newCiEntityVo.getId());
+                JSONObject dataObj = new JSONObject();
                 for (AttrVo attrVo : expressionAttrList) {
                     if (attrVo.getConfig().containsKey("expression") && attrVo.getConfig().get("expression") instanceof JSONArray) {
                         List<ExpressionGroup> groupList = new ArrayList<>();
@@ -295,18 +305,18 @@ public class AttrExpressionRebuildManager {
                                         if (expressionGroup.getType() == ExpressionGroup.Type.REL && expressionGroup.getKey().equals(relId) && expressionGroup.getDirection().equals(direction)) {
                                             expressionGroup.addAttr(attrId, ExpressionGroupAttr.Type.ATTR);
                                         } else {
-                                            groupList.add(new ExpressionGroup(relId, direction, ExpressionGroup.Type.REL, attrId, ExpressionGroupAttr.Type.ATTR));
+                                            groupList.add(new ExpressionGroup(expression, relId, direction, ExpressionGroup.Type.REL, attrId, ExpressionGroupAttr.Type.ATTR));
                                         }
                                     } else {
-                                        groupList.add(new ExpressionGroup(relId, direction, ExpressionGroup.Type.REL, attrId, ExpressionGroupAttr.Type.ATTR));
+                                        groupList.add(new ExpressionGroup(expression, SnowflakeUtil.uniqueLong(), direction, ExpressionGroup.Type.REL, attrId, ExpressionGroupAttr.Type.ATTR));
                                     }
 
                                 } else {
                                     //用新id作为key，适配同一个属性重复出现的场景
-                                    groupList.add(new ExpressionGroup(SnowflakeUtil.uniqueLong(), null, ExpressionGroup.Type.ATTR, exp, ExpressionGroupAttr.Type.ATTR));
+                                    groupList.add(new ExpressionGroup(expression, SnowflakeUtil.uniqueLong(), null, ExpressionGroup.Type.ATTR, exp, ExpressionGroupAttr.Type.ATTR));
                                 }
                             } else {
-                                if (CollectionUtils.isNotEmpty(groupList)) {
+                               /* if (CollectionUtils.isNotEmpty(groupList)) {
                                     ExpressionGroup expressionGroup = groupList.get(groupList.size() - 1);
                                     if (expressionGroup.getType() == ExpressionGroup.Type.REL) {
                                         expressionGroup.addAttr(expression, ExpressionGroupAttr.Type.CONST);
@@ -314,10 +324,10 @@ public class AttrExpressionRebuildManager {
                                         //用新id作为key，适配同一个常量重复出现的场景
                                         groupList.add(new ExpressionGroup(SnowflakeUtil.uniqueLong(), null, ExpressionGroup.Type.CONST, expression, ExpressionGroupAttr.Type.CONST));
                                     }
-                                } else {
-                                    //用新id作为key，适配同一个常量重复出现的场景
-                                    groupList.add(new ExpressionGroup(SnowflakeUtil.uniqueLong(), null, ExpressionGroup.Type.CONST, expression, ExpressionGroupAttr.Type.CONST));
-                                }
+                                } else {*/
+                                //用新id作为key，适配同一个常量重复出现的场景
+                                groupList.add(new ExpressionGroup(expression, SnowflakeUtil.uniqueLong(), null, ExpressionGroup.Type.CONST, expression, ExpressionGroupAttr.Type.CONST));
+                                //}
                             }
                         }
                         StringBuilder expressionValue = new StringBuilder();
@@ -345,6 +355,7 @@ public class AttrExpressionRebuildManager {
                                                     groupValue.append(expressionGroupAttr.getAttr());
                                                 }
                                             }
+                                            dataObj.put(expressionGroup.getExpression(), groupValue.toString());
                                             expressionValueList.add(groupValue.toString());
                                         }
                                     }
@@ -356,19 +367,39 @@ public class AttrExpressionRebuildManager {
                                 Long attrId = Long.parseLong(expressionGroup.getAttrList().get(0).getAttr());
                                 AttrEntityVo attrEntityVo = newCiEntityVo.getAttrEntityByAttrId(attrId);
                                 if (attrEntityVo != null) {
-                                    expressionValue.append(attrEntityVo.getActualValueList().stream().map(Object::toString).collect(Collectors.joining(",")));
+                                    String v = attrEntityVo.getActualValueList().stream().map(Object::toString).collect(Collectors.joining(","));
+                                    expressionValue.append(v);
+                                    dataObj.put(expressionGroup.getExpression(), v);
                                 }
                             } else if (expressionGroup.getType() == ExpressionGroup.Type.CONST) {
                                 expressionValue.append(expressionGroup.getAttrList().get(0).getAttr());
                             }
                         }
+                        String expressionV = expressionValue.toString();
+                        if (attrVo.getConfig().containsKey("script")) {
+                            String script = attrVo.getConfig().getString("script");
+                            if (StringUtils.isNotBlank(script)) {
+                                ScriptEngine se = JavascriptUtil.getEngine();
+                                try {
+                                    se.put("$value", expressionV);
+                                    se.put("$attr", dataObj);
+                                    se.eval(script);
+                                    Object value = se.get("$value");
+                                    if (value != null) {
+                                        expressionV = value.toString();
+                                    }
+                                } catch (ScriptException ignored) {
+                                }
+                            }
+                        }
+
 
                         JSONObject attrEntityObj = new JSONObject();
                         attrEntityObj.put("ciId", attrVo.getCiId());
                         attrEntityObj.put("type", attrVo.getType());
-                        attrEntityObj.put("valueList", new JSONArray() {{
-                            this.add(expressionValue.toString());
-                        }});
+                        JSONArray valueList = new JSONArray();
+                        valueList.add(expressionV);
+                        attrEntityObj.put("valueList", valueList);
                         saveCiEntityVo.addAttrEntityData(attrVo.getId(), attrEntityObj);
                         //更新配置项名称
                         if (Objects.equals(ciVo.getNameAttrId(), attrVo.getId())) {

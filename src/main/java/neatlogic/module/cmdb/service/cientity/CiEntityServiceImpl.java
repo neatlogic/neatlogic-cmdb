@@ -2087,8 +2087,9 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     }
                 }
                 //所有事务信息补充完毕后才能写入，因为对端配置项有可能被引用多次
-                for (Long ciEntityId : ciEntityTransactionMap.keySet()) {
-                    transactionMapper.insertCiEntityTransaction(ciEntityTransactionMap.get(ciEntityId));
+                for (Map.Entry<Long,CiEntityTransactionVo> entry : ciEntityTransactionMap.entrySet()) {
+                    Long ciEntityId = entry.getKey();
+                    transactionMapper.insertCiEntityTransaction(entry.getValue());
                     //发送消息到消息队列
                     ITopic<CiEntityTransactionVo> topic = TopicFactory.getTopic("cmdb/cientity/update");
                     if (topic != null) {
@@ -2167,7 +2168,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
     public void rebuildRelEntityIndex(RelDirectionType direction, Long relId, Long ciEntityId) {
         List<RelEntityVo> relEntityList;
         if (direction == RelDirectionType.FROM) {
-            relEntityMapper.clearRelEntityFromIndex(relId, ciEntityId);
+            relEntityMapper.clearRelEntityFromIndex(relId, ciEntityId,50);
             relEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(ciEntityId, relId, Math.max(CiEntityVo.MAX_RELENTITY_COUNT + 1, 50));
             if (CollectionUtils.isNotEmpty(relEntityList)) {
                 for (int i = 0; i < relEntityList.size(); i++) {
@@ -2177,7 +2178,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 }
             }
         } else if (direction == RelDirectionType.TO) {
-            relEntityMapper.clearRelEntityToIndex(relId, ciEntityId);
+            relEntityMapper.clearRelEntityToIndex(relId, ciEntityId,50);
             relEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(ciEntityId, relId, Math.max(CiEntityVo.MAX_RELENTITY_COUNT + 1, 50));
             if (CollectionUtils.isNotEmpty(relEntityList)) {
                 for (int i = 0; i < relEntityList.size(); i++) {

@@ -63,9 +63,9 @@ public interface RelEntityMapper {
 
     List<Long> getFromToCiEntityIdByCiEntityId(Long ciEntityId);
 
-    void clearRelEntityFromIndex(@Param("relId") Long relId, @Param("ciEntityId") Long ciEntityId);
+    void clearRelEntityFromIndex(@Param("relId") Long relId, @Param("ciEntityId") Long ciEntityId, @Param("limit") Integer limit);
 
-    void clearRelEntityToIndex(@Param("relId") Long relId, @Param("ciEntityId") Long ciEntityId);
+    void clearRelEntityToIndex(@Param("relId") Long relId, @Param("ciEntityId") Long ciEntityId, @Param("limit") Integer limit);
 
 
     void updateRelEntityFromIndex(RelEntityVo relEntityVo);
