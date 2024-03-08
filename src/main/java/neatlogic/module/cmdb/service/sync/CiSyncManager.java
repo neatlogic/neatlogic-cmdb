@@ -41,7 +41,6 @@ import neatlogic.framework.cmdb.enums.sync.CollectMode;
 import neatlogic.framework.cmdb.enums.sync.SyncStatus;
 import neatlogic.framework.cmdb.exception.attr.AttrNotFoundException;
 import neatlogic.framework.cmdb.exception.ci.*;
-import neatlogic.framework.cmdb.exception.collection.CollectionDataIrregularException;
 import neatlogic.framework.cmdb.exception.sync.CiEntityDuplicateException;
 import neatlogic.framework.cmdb.exception.sync.CollectionNotFoundException;
 import neatlogic.framework.cmdb.utils.RelUtil;
@@ -414,10 +413,13 @@ public class CiSyncManager {
                                     JSONArray subDataList = dataObj.getJSONArray(mappingVo.getField(parentKey));
                                     JSONArray attrValueList = new JSONArray();
                                     for (int i = 0; i < subDataList.size(); i++) {
-                                        if (!(subDataList.get(i) instanceof JSONObject)) {
-                                            throw new CollectionDataIrregularException(mappingVo.getField(parentKey), "json");
+                                        JSONObject subData;
+                                        if (subDataList.get(i) instanceof JSONObject) {
+                                            subData = subDataList.getJSONObject(i);
+                                        } else {
+                                            subData = new JSONObject();
+                                            subData.put("_value", subDataList.get(i));
                                         }
-                                        JSONObject subData = subDataList.getJSONObject(i);
                                         /*
                                         需要使用同一个集合下的映射关系，如果没有则不处理下一层数据，直接丢弃
                                          */
@@ -557,10 +559,15 @@ public class CiSyncManager {
                                 subDataList = new JSONArray();
                                 subDataList.add(dataObj.getJSONObject(mappingVo.getField(parentKey)));
                             }
-                            //if (subDataList != null) {
                             if (CollectionUtils.isNotEmpty(subDataList)) {
                                 for (int i = 0; i < subDataList.size(); i++) {
-                                    JSONObject subData = subDataList.getJSONObject(i);
+                                    JSONObject subData;
+                                    if (subDataList.get(i) instanceof JSONObject) {
+                                        subData = subDataList.getJSONObject(i);
+                                    } else {
+                                        subData = new JSONObject();
+                                        subData.put("_value", subDataList.get(i));
+                                    }
                                    /*
                                      需要使用同一个集合下的映射关系，如果没有则不处理下一层数据，直接丢弃
                                      */
@@ -634,7 +641,6 @@ public class CiSyncManager {
                                     ciEntityTransactionVo.addRelEntityData(relVo, mappingVo.getDirection(), mappingVo.getAction());
                                 }
                             }
-                            // }
                         }
                     }
                 }
@@ -959,10 +965,10 @@ public class CiSyncManager {
                         JSONArray tmpList = new JSONArray();
                         if (CollectionUtils.isNotEmpty(returnDataList)) {
                             for (int r = 0; r < returnDataList.size(); r++) {
-                                JSONObject rData = JSONObject.parseObject(returnDataList.getJSONObject(r).toJSONString());
+                                JSONObject rData = JSON.parseObject(returnDataList.getJSONObject(r).toJSONString());
                                 if (CollectionUtils.isNotEmpty(subDataList)) {
                                     for (int s = 0; s < subDataList.size(); s++) {
-                                        JSONObject subData = JSONObject.parseObject(subDataList.getJSONObject(s).toJSONString());
+                                        JSONObject subData = JSON.parseObject(subDataList.getJSONObject(s).toJSONString());
                                         subData.putAll(rData);
                                         if (MapUtils.isNotEmpty(subData)) {
                                             tmpList.add(subData);
