@@ -16,7 +16,12 @@
 
 package neatlogic.module.cmdb.api.cientity;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.CIENTITY_MODIFY;
+import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
+import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.exception.attr.AttrNotFoundException;
@@ -26,13 +31,8 @@ import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.CIENTITY_MODIFY;
-import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
-import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -72,6 +72,7 @@ public class SearchAttrTargetCiEntityApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "attrId", type = ApiParamType.LONG, isRequired = true, desc = "nmcaa.getattrapi.input.param.desc.id"),
             @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "common.keyword"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize"),
             @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "nmcac.searchattrtargetcientityapi.input.param.desc")})
     @Output({@Param(explode = BasePageVo.class),
             @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = CiEntityVo[].class),
@@ -82,6 +83,7 @@ public class SearchAttrTargetCiEntityApi extends PrivateApiComponentBase {
         Long attrId = jsonObj.getLong("attrId");
         String keyword = jsonObj.getString("keyword");
         JSONArray defaultValue = jsonObj.getJSONArray("defaultValue");
+        Integer pageSize = jsonObj.getInteger("pageSize");
         AttrVo attrVo = attrMapper.getAttrById(attrId);
         if (attrVo == null) {
             throw new AttrNotFoundException(attrId);
@@ -93,6 +95,9 @@ public class SearchAttrTargetCiEntityApi extends PrivateApiComponentBase {
 
 
         CiEntityVo ciEntityVo = new CiEntityVo();
+        if (pageSize != null) {
+            ciEntityVo.setPageSize(pageSize);
+        }
         ciEntityVo.setCiId(attrVo.getTargetCiId());
         if (CollectionUtils.isNotEmpty(defaultValue)) {
             List<Long> idList = new ArrayList<>();

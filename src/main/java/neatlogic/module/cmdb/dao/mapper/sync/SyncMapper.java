@@ -32,7 +32,7 @@ public interface SyncMapper extends ISyncCrossoverMapper {
 
     SyncCiCollectionVo getInitiativeSyncCiCollectionByCollectName(String collectName);
 
-    SyncCiCollectionVo getInitiativeSyncCiCollectionByCollectNameAndCiId(@Param("collectionName") String collectionName, @Param("ciId") Long ciId);
+    List<SyncCiCollectionVo> getInitiativeSyncCiCollectionByCollectNameAndCiId(@Param("collectionName") String collectionName, @Param("ciId") Long ciId);
 
     int checkInitiativeSyncCiCollectionIsExists(SyncCiCollectionVo syncCiCollectionVo);
 

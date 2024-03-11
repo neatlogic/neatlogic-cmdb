@@ -20,6 +20,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
+import neatlogic.framework.cmdb.dto.sync.ObjectVo;
 import neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo;
 import neatlogic.framework.cmdb.enums.sync.CollectMode;
 import neatlogic.framework.common.constvalue.ApiParamType;
@@ -31,6 +32,7 @@ import neatlogic.module.cmdb.dao.mapper.sync.ObjectMapper;
 import neatlogic.module.cmdb.dao.mapper.sync.SyncMapper;
 import neatlogic.module.cmdb.service.sync.CiSyncManager;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -68,7 +70,7 @@ public class LaunchSyncCollectionApi extends PrivateApiComponentBase {
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "term.cmdb.syncid"),
             @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.syncidlist"),
             @Param(name = "collectionList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.collectionlist"),
-            //@Param(name = "collectionObjList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.collectionobjlist"),
+            @Param(name = "collectionObjList", type = ApiParamType.JSONARRAY, help = "需要包含category和type属性", desc = "term.cmdb.collectionobjlist"),
             @Param(name = "batchTag", type = ApiParamType.STRING, desc = "term.cmdb.batchtag"),
             @Param(name = "startTime", type = ApiParamType.LONG, desc = "common.starttime"),
             @Param(name = "isAll", type = ApiParamType.INTEGER, desc = "term.cmdb.syncisall")})
@@ -102,16 +104,23 @@ public class LaunchSyncCollectionApi extends PrivateApiComponentBase {
                 pIdList.add(syncCiCollection.getId());
             }
         }
-        /*
+
         if (CollectionUtils.isNotEmpty(collectionObjList)) {
             for (int i = 0; i < collectionObjList.size(); i++) {
                 JSONObject obj = collectionObjList.getJSONObject(i);
-                ObjectVo objectVo = objectMapper.getObjectByCategoryAndType(obj.getString("category"), obj.getString("type"));
-                if (objectVo != null && objectVo.getCiId() != null) {
-                    syncMapper.getInitiativeSyncCiCollectionByCollectNameAndCiId()
+                String category = obj.getString("category");
+                String type = obj.getString("type");
+                if (StringUtils.isNotBlank(category) && StringUtils.isNotBlank(type)) {
+                    ObjectVo objectVo = objectMapper.getObjectByCategoryAndType(obj.getString("category"), obj.getString("type"));
+                    if (objectVo != null && objectVo.getCiId() != null) {
+                        List<SyncCiCollectionVo> syncCiCollectionList = syncMapper.getInitiativeSyncCiCollectionByCollectNameAndCiId(obj.getString("type"), objectVo.getCiId());
+                        for (SyncCiCollectionVo syncCiCollection : syncCiCollectionList) {
+                            pIdList.add(syncCiCollection.getId());
+                        }
+                    }
                 }
             }
-        }*/
+        }
         List<SyncCiCollectionVo> syncCiCollectionList = new ArrayList<>();
         if (isAll == null || isAll.equals(0)) {
             syncCiCollectionList = syncMapper.getSyncCiCollectionByIdList(pIdList);
