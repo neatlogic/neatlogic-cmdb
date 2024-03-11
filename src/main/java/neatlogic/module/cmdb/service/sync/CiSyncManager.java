@@ -30,6 +30,8 @@ import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.ci.RelVo;
 import neatlogic.framework.cmdb.dto.cientity.AttrFilterVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
 import neatlogic.framework.cmdb.dto.sync.*;
 import neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import neatlogic.framework.cmdb.dto.transaction.TransactionGroupVo;
@@ -41,6 +43,7 @@ import neatlogic.framework.cmdb.enums.sync.CollectMode;
 import neatlogic.framework.cmdb.enums.sync.SyncStatus;
 import neatlogic.framework.cmdb.exception.attr.AttrNotFoundException;
 import neatlogic.framework.cmdb.exception.ci.*;
+import neatlogic.framework.cmdb.exception.globalattr.GlobalAttrItemIsNotExistsException;
 import neatlogic.framework.cmdb.exception.sync.CiEntityDuplicateException;
 import neatlogic.framework.cmdb.exception.sync.CollectionNotFoundException;
 import neatlogic.framework.cmdb.utils.RelUtil;
@@ -49,6 +52,7 @@ import neatlogic.framework.exception.core.ApiRuntimeException;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
+import neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper;
 import neatlogic.module.cmdb.dao.mapper.sync.ObjectMapper;
 import neatlogic.module.cmdb.dao.mapper.sync.SyncAuditMapper;
 import neatlogic.module.cmdb.dao.mapper.sync.SyncMapper;
@@ -82,6 +86,7 @@ public class CiSyncManager {
     private static MongoTemplate mongoTemplate;
     private static CiEntityService ciEntityService;
     private static CiMapper ciMapper;
+    private static GlobalAttrMapper globalAttrMapper;
     private static AttrMapper attrMapper;
     private static RelMapper relMapper;
     private static SyncAuditMapper syncAuditMapper;
@@ -89,9 +94,10 @@ public class CiSyncManager {
     private static ObjectMapper objectMapper;
 
     @Autowired
-    public CiSyncManager(MongoTemplate _mongoTemplate, CiEntityService _ciEntityService, AttrMapper _attrMapper, SyncAuditMapper _syncAuditMapper, RelMapper _relMapper, CiMapper _ciMapper, SyncMapper _syncMapper, ObjectMapper _objectMapper) {
+    public CiSyncManager(MongoTemplate _mongoTemplate, CiEntityService _ciEntityService, GlobalAttrMapper _globalAttrMapper, AttrMapper _attrMapper, SyncAuditMapper _syncAuditMapper, RelMapper _relMapper, CiMapper _ciMapper, SyncMapper _syncMapper, ObjectMapper _objectMapper) {
         mongoTemplate = _mongoTemplate;
         ciEntityService = _ciEntityService;
+        globalAttrMapper = _globalAttrMapper;
         attrMapper = _attrMapper;
         relMapper = _relMapper;
         syncAuditMapper = _syncAuditMapper;
@@ -101,12 +107,12 @@ public class CiSyncManager {
     }
 
     public static class SyncHandler extends NeatLogicThread {
-        private final static Logger logger = LoggerFactory.getLogger(SyncHandler.class);
+        private static final Logger logger = LoggerFactory.getLogger(SyncHandler.class);
+        private final Map<Long, Map<Long, GlobalAttrVo>> ciGlobalAttrMap = new HashMap<>();
         private final Map<Long, Map<Long, AttrVo>> ciAttrMap = new HashMap<>();
         private final Map<Long, Map<Long, RelVo>> ciRelMap = new HashMap<>();
         private final Map<Long, CiVo> ciMap = new HashMap<>();//模型缓存
         private final Map<Long, List<CiVo>> downwardCiMap = new HashMap<>();//子模型缓存
-        private final Map<String, SyncCiCollectionVo> initiativeSyncCiCollectionMap = new HashMap<>();//主动采集集合映射缓存
         private final Map<String, ObjectVo> objectMap = new HashMap<>();//采集对象缓存
         private final Map<String, SyncCiCollectionVo> syncCiCollectionMap = new HashMap<>();//普通集合映射缓存
         private final List<SyncCiCollectionVo> syncCiCollectionList;
@@ -240,16 +246,15 @@ public class CiSyncManager {
             return objectMap.get(category + "#" + type);
         }
 
-        private SyncCiCollectionVo getInitiativeSyncCiCollection(String collectionName) {
-            if (!initiativeSyncCiCollectionMap.containsKey(collectionName)) {
-                SyncCiCollectionVo syncCiCollectionVo = syncMapper.getInitiativeSyncCiCollectionByCollectName(collectionName);
-                if (syncCiCollectionVo != null) {
-                    initiativeSyncCiCollectionMap.put(collectionName, syncCiCollectionVo);
-                } /*else {
-                    throw new InitiativeSyncCiCollectionNotFoundException(collectionName);
-                }*/
+
+        private Map<Long, GlobalAttrVo> getGlobalAttrMap(Long ciId) {
+            if (!this.ciGlobalAttrMap.containsKey(ciId)) {
+                List<GlobalAttrVo> attrList = globalAttrMapper.getGlobalAttrByCiId(ciId);
+                Map<Long, GlobalAttrVo> tmpAttrMap = new HashMap<>();
+                attrList.forEach(attr -> tmpAttrMap.put(attr.getId(), attr));
+                this.ciGlobalAttrMap.put(ciId, tmpAttrMap);
             }
-            return initiativeSyncCiCollectionMap.get(collectionName);
+            return this.ciGlobalAttrMap.get(ciId);
         }
 
         private Map<Long, AttrVo> getAttrMap(Long ciId) {
@@ -282,8 +287,8 @@ public class CiSyncManager {
          * @return 配置项事务
          */
         private CiEntityTransactionVo generateCiEntityTransaction(JSONObject dataObj, SyncCiCollectionVo syncCiCollectionVo, Map<Integer, CiEntityTransactionVo> ciEntityTransactionMap, String parentKey) {
-            //List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
             CiEntityVo ciEntityConditionVo = new CiEntityVo();
+            Map<Long, GlobalAttrVo> globalAttrMap = getGlobalAttrMap(syncCiCollectionVo.getCiId());
             Map<Long, AttrVo> attrMap = getAttrMap(syncCiCollectionVo.getCiId());
             Map<Long, RelVo> relMap = getRelMap(syncCiCollectionVo.getCiId());
             CiVo ciVo = getCi(syncCiCollectionVo.getCiId());
@@ -404,7 +409,36 @@ public class CiSyncManager {
 
                 //拼凑更新字段
                 for (SyncMappingVo mappingVo : syncCiCollectionVo.getMappingList()) {
-                    if (mappingVo.getAttrId() != null && attrMap.containsKey(mappingVo.getAttrId())) {
+                    if (mappingVo.getGlobalAttrId() != null && globalAttrMap.containsKey(mappingVo.getGlobalAttrId())) {
+                        GlobalAttrVo globalAttrVo = globalAttrMap.get(mappingVo.getGlobalAttrId());
+                        if (dataObj.containsKey(mappingVo.getField(parentKey))) {
+                            List<GlobalAttrItemVo> globalAttrItemList = new ArrayList<>();
+                            if (dataObj.get(mappingVo.getField(parentKey)) instanceof JSONArray) {
+                                JSONArray subDataList = dataObj.getJSONArray(mappingVo.getField(parentKey));
+                                for (int i = 0; i < subDataList.size(); i++) {
+                                    if (!(subDataList.get(i) instanceof JSONObject)) {
+                                        String value = subDataList.getString(i);
+                                        GlobalAttrItemVo item = globalAttrVo.getItem(value);
+                                        if (item!=null) {
+                                            globalAttrItemList.add(item);
+                                        } else {
+                                            throw new GlobalAttrItemIsNotExistsException(globalAttrVo, value);
+                                        }
+                                    }
+                                }
+                            } else if (!(dataObj.get(mappingVo.getField(parentKey)) instanceof JSONObject)) {
+                                //其他标值
+                                String value = dataObj.getString(mappingVo.getField(parentKey));
+                                GlobalAttrItemVo item = globalAttrVo.getItem(value);
+                                if (item!=null) {
+                                    globalAttrItemList.add(item);
+                                } else {
+                                    throw new GlobalAttrItemIsNotExistsException(globalAttrVo, value);
+                                }
+                            }
+                            ciEntityTransactionVo.addGlobalAttrEntityData(globalAttrVo, (JSONArray) JSON.toJSON(globalAttrItemList));
+                        }
+                    } else if (mappingVo.getAttrId() != null && attrMap.containsKey(mappingVo.getAttrId())) {
                         AttrVo attrVo = attrMap.get(mappingVo.getAttrId());
                         if (dataObj.containsKey(mappingVo.getField(parentKey))) {
                             if (attrVo.isNeedTargetCi()) {
@@ -574,7 +608,6 @@ public class CiSyncManager {
                                     String subCollectionName = subData.getString("_OBJ_TYPE");
                                     String subCollectionCategoryName = subData.getString("_OBJ_CATEGORY");
                                     if (StringUtils.isNotBlank(subCollectionName) && StringUtils.isNotBlank(subCollectionCategoryName)) {
-                                        //SyncCiCollectionVo subInitiativeSyncCiCollection = getInitiativeSyncCiCollection(subCollectionName);
                                         ObjectVo objectVo = getObjectByCategoryAndType(subCollectionCategoryName, subCollectionName);
                                         if (objectVo != null) {
                                             Long subCiId = objectVo.getCiId();
@@ -802,7 +835,7 @@ public class CiSyncManager {
                                                 dataList.add(objList.getJSONObject(i));
                                             }
                                         } else {
-                                            JSONObject orgDataObj = JSONObject.parseObject(jsonStr);
+                                            JSONObject orgDataObj = JSON.parseObject(jsonStr);
                                             dataList.add(orgDataObj);
                                         }
 
@@ -983,7 +1016,7 @@ public class CiSyncManager {
                         } else {
                             if (CollectionUtils.isNotEmpty(subDataList)) {
                                 for (int s = 0; s < subDataList.size(); s++) {
-                                    JSONObject subData = JSONObject.parseObject(subDataList.getJSONObject(s).toJSONString());
+                                    JSONObject subData = JSON.parseObject(subDataList.getJSONObject(s).toJSONString());
                                     if (MapUtils.isNotEmpty(subData)) {
                                         tmpList.add(subData);
                                     }
@@ -996,7 +1029,7 @@ public class CiSyncManager {
                 finalDataList.addAll(returnDataList);
             }
         }
-        return JSONArray.parseArray(JSONArray.toJSONString(finalDataList));
+        return JSON.parseArray(JSON.toJSONString(finalDataList));
     }
 
     public static void doSync(JSONObject dataObj, List<SyncCiCollectionVo> syncCiCollectionList) {

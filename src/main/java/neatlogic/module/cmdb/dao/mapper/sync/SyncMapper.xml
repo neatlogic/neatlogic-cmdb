@@ -20,23 +20,24 @@ limitations under the License.
     <select id="getPassiveSyncCiCollectionByCiId" parameterType="java.lang.Long"
             resultMap="syncCiCollectionResultMap">
         SELECT a.id,
-               a.ci_id           AS ciId,
-               cc.name           AS ciName,
-               cc.label          AS ciLabel,
-               a.collection_name AS collectionName,
-               a.parent_key      AS parentKey,
-               a.collect_mode    AS collectMode,
-               a.is_auto_commit  AS isAutoCommit,
-               a.last_sync_date  AS lastSyncDate,
-               a.match_mode      AS matchMode,
+               a.ci_id            AS ciId,
+               cc.name            AS ciName,
+               cc.label           AS ciLabel,
+               a.collection_name  AS collectionName,
+               a.parent_key       AS parentKey,
+               a.collect_mode     AS collectMode,
+               a.is_auto_commit   AS isAutoCommit,
+               a.last_sync_date   AS lastSyncDate,
+               a.match_mode       AS matchMode,
                a.description,
-               csm.id            AS mappingId,
-               csm.attr_id       AS attrId,
-               csm.rel_id        AS relId,
+               csm.id             AS mappingId,
+               csm.global_attr_id AS globalAttrId,
+               csm.attr_id        AS attrId,
+               csm.rel_id         AS relId,
                csm.direction,
                csm.field,
-               csu.attr_id       AS uniqueAttrId,
-               csm.action        as relAction
+               csu.attr_id        AS uniqueAttrId,
+               csm.action         as relAction
         FROM cmdb_sync_ci_collection a
                  JOIN cmdb_sync_mapping csm on a.id = csm.ci_collection_id
                  JOIN cmdb_ci cc ON a.ci_id = cc.id
@@ -349,6 +350,7 @@ limitations under the License.
         <result property="lcu" column="lcu"/>
         <collection property="mappingList" ofType="neatlogic.framework.cmdb.dto.sync.SyncMappingVo">
             <id property="id" column="mappingId"/>
+            <result property="globalAttrId" column="globalAttrId"/>
             <result property="attrId" column="attrId"/>
             <result property="relId" column="relId"/>
             <result property="direction" column="direction"/>
@@ -364,27 +366,28 @@ limitations under the License.
     <select id="getSyncCiCollectionByCollectionName" parameterType="java.lang.String"
             resultMap="syncCiCollectionResultMap">
         SELECT a.id,
-               a.ci_id           AS ciId,
-               cc.name           AS ciName,
-               cc.label          AS ciLabel,
-               a.collection_name AS collectionName,
-               a.collect_mode    AS collectMode,
-               a.is_auto_commit  AS isAutoCommit,
-               a.last_sync_date  AS lastSyncDate,
-               a.match_mode      AS matchMode,
-               a.parent_key      AS parentKey,
+               a.ci_id            AS ciId,
+               cc.name            AS ciName,
+               cc.label           AS ciLabel,
+               a.collection_name  AS collectionName,
+               a.collect_mode     AS collectMode,
+               a.is_auto_commit   AS isAutoCommit,
+               a.last_sync_date   AS lastSyncDate,
+               a.match_mode       AS matchMode,
+               a.parent_key       AS parentKey,
                a.description,
-               a.fcd             AS fcd,
-               a.fcu             AS fcu,
-               a.lcd             AS lcd,
-               a.lcu             AS lcu,
-               csm.id            AS mappingId,
-               csm.attr_id       AS attrId,
-               csm.rel_id        AS relId,
+               a.fcd              AS fcd,
+               a.fcu              AS fcu,
+               a.lcd              AS lcd,
+               a.lcu              AS lcu,
+               csm.id             AS mappingId,
+               csm.global_attr_id AS globalAttrId,
+               csm.attr_id        AS attrId,
+               csm.rel_id         AS relId,
                csm.direction,
                csm.field,
-               csu.attr_id       AS uniqueAttrId,
-               csm.action        as relAction
+               csu.attr_id        AS uniqueAttrId,
+               csm.action         as relAction
         FROM cmdb_sync_ci_collection a
                  JOIN cmdb_sync_mapping csm on a.id = csm.ci_collection_id
                  JOIN cmdb_ci cc ON a.ci_id = cc.id
@@ -395,27 +398,28 @@ limitations under the License.
     <select id="getSyncCiCollectionByCiIdAndCollectionName"
             resultMap="syncCiCollectionResultMap">
         SELECT a.id,
-               a.ci_id           AS ciId,
-               cc.name           AS ciName,
-               cc.label          AS ciLabel,
-               a.collection_name AS collectionName,
-               a.collect_mode    AS collectMode,
-               a.is_auto_commit  AS isAutoCommit,
-               a.last_sync_date  AS lastSyncDate,
-               a.match_mode      AS matchMode,
-               a.parent_key      AS parentKey,
+               a.ci_id            AS ciId,
+               cc.name            AS ciName,
+               cc.label           AS ciLabel,
+               a.collection_name  AS collectionName,
+               a.collect_mode     AS collectMode,
+               a.is_auto_commit   AS isAutoCommit,
+               a.last_sync_date   AS lastSyncDate,
+               a.match_mode       AS matchMode,
+               a.parent_key       AS parentKey,
                a.description,
-               a.fcd             AS fcd,
-               a.fcu             AS fcu,
-               a.lcd             AS lcd,
-               a.lcu             AS lcu,
-               csm.id            AS mappingId,
-               csm.attr_id       AS attrId,
-               csm.rel_id        AS relId,
+               a.fcd              AS fcd,
+               a.fcu              AS fcu,
+               a.lcd              AS lcd,
+               a.lcu              AS lcu,
+               csm.id             AS mappingId,
+               csm.global_attr_id AS globalAttrId,
+               csm.attr_id        AS attrId,
+               csm.rel_id         AS relId,
                csm.direction,
                csm.field,
-               csu.attr_id       AS uniqueAttrId,
-               csm.action        as relAction
+               csu.attr_id        AS uniqueAttrId,
+               csm.action         as relAction
         FROM cmdb_sync_ci_collection a
                  JOIN cmdb_sync_mapping csm on a.id = csm.ci_collection_id
                  JOIN cmdb_ci cc ON a.ci_id = cc.id
@@ -427,27 +431,28 @@ limitations under the License.
     <select id="getSyncCiCollectionById" parameterType="java.lang.Long"
             resultMap="syncCiCollectionResultMap">
         SELECT a.id,
-               a.ci_id           AS ciId,
-               cc.name           AS ciName,
-               cc.label          AS ciLabel,
-               a.collection_name AS collectionName,
-               a.collect_mode    AS collectMode,
-               a.is_auto_commit  AS isAutoCommit,
-               a.last_sync_date  AS lastSyncDate,
-               a.match_mode      AS matchMode,
-               a.parent_key      AS parentKey,
+               a.ci_id            AS ciId,
+               cc.name            AS ciName,
+               cc.label           AS ciLabel,
+               a.collection_name  AS collectionName,
+               a.collect_mode     AS collectMode,
+               a.is_auto_commit   AS isAutoCommit,
+               a.last_sync_date   AS lastSyncDate,
+               a.match_mode       AS matchMode,
+               a.parent_key       AS parentKey,
                a.description,
-               a.fcd             AS fcd,
-               a.fcu             AS fcu,
-               a.lcd             AS lcd,
-               a.lcu             AS lcu,
-               csm.id            AS mappingId,
-               csm.attr_id       AS attrId,
-               csm.rel_id        AS relId,
+               a.fcd              AS fcd,
+               a.fcu              AS fcu,
+               a.lcd              AS lcd,
+               a.lcu              AS lcu,
+               csm.id             AS mappingId,
+               csm.global_attr_id AS globalAttrId,
+               csm.attr_id        AS attrId,
+               csm.rel_id         AS relId,
                csm.direction,
                csm.field,
-               csu.attr_id       AS uniqueAttrId,
-               csm.action        as relAction
+               csu.attr_id        AS uniqueAttrId,
+               csm.action         as relAction
         FROM cmdb_sync_ci_collection a
                  JOIN cmdb_sync_mapping csm on a.id = csm.ci_collection_id
                  JOIN cmdb_ci cc ON a.ci_id = cc.id
@@ -473,6 +478,7 @@ limitations under the License.
         a.lcd AS lcd,
         a.lcu AS lcu,
         csm.id AS mappingId,
+        csm.global_attr_id as globalAttrId,
         csm.attr_id AS attrId,
         csm.rel_id AS relId,
         csm.direction,
@@ -535,8 +541,8 @@ limitations under the License.
     </insert>
 
     <insert id="insertSyncMapping" parameterType="neatlogic.framework.cmdb.dto.sync.SyncMappingVo">
-        insert into cmdb_sync_mapping (id, ci_collection_id, rel_id, direction, attr_id, field, action)
-        values (#{id}, #{ciCollectionId}, #{relId}, #{direction}, #{attrId}, #{field}, #{action})
+        insert into cmdb_sync_mapping (id, ci_collection_id, rel_id, direction, attr_id, field, action, global_attr_id)
+        values (#{id}, #{ciCollectionId}, #{relId}, #{direction}, #{attrId}, #{field}, #{action}, #{globalAttrId})
     </insert>
 
     <insert id="insertSyncUnique">

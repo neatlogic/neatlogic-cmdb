@@ -141,5 +141,4 @@ public class LaunchSyncCollectionApi extends PrivateApiComponentBase {
         }
         return null;
     }
-
 }

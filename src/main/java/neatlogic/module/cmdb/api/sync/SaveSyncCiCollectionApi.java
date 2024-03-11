@@ -69,7 +69,7 @@ public class SaveSyncCiCollectionApi extends PrivateApiComponentBase {
             @Param(name = "mappingList", type = ApiParamType.JSONARRAY, desc = "映射内容"),
             @Param(name = "description", type = ApiParamType.STRING, xss = true, desc = "说明", maxLength = 500),
             @Param(name = "uniqueAttrIdList", type = ApiParamType.JSONARRAY, desc = "唯一规则")})
-    @Description(desc = "保存配置项集合映射设置接口")
+    @Description(desc = "保存配置项集合映射设置")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         SyncCiCollectionVo syncCiCollectionVo = JSONObject.toJavaObject(jsonObj, SyncCiCollectionVo.class);
