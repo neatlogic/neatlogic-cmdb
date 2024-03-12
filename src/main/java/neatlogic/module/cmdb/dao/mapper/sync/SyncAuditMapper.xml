@@ -72,6 +72,7 @@ limitations under the License.
             resultType="neatlogic.framework.cmdb.dto.sync.SyncAuditVo">
         select a.id,
         a.ci_collection_id AS ciCollectionId,
+        b.collection_name AS ciCollectionName,
         a.start_time AS startTime,
         a.end_time AS endTime,
         (UNIX_TIMESTAMP(IFNULL(end_time, NOW(3)))*1000 - UNIX_TIMESTAMP(start_time)*1000) AS timeCost,
