@@ -40,13 +40,13 @@ import neatlogic.framework.util.HttpRequestUtil;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
@@ -109,7 +109,8 @@ public class ResourceAccountAccessTestApi extends PrivateApiComponentBase {
             throw new RunnerNotMatchException();
         }
         // 随机分配runner
-        int runnerMapIndex = RandomUtils.nextInt() * runnerMapList.size();
+//        int runnerMapIndex = RandomUtils.nextInt() * runnerMapList.size();
+        int runnerMapIndex = new Random().nextInt(runnerMapList.size());
         RunnerMapVo runnerMapVo = runnerMapList.get(runnerMapIndex);
         List<AccountAccessTestVo> accessTestVoList = new ArrayList<>();
         List<AccountVo> accountList = resourceAccountMapper.getAccountListByIdList(accountIdList);
