@@ -16,6 +16,7 @@
 
 package neatlogic.module.cmdb.api.sync;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSONPath;
@@ -71,7 +72,7 @@ public class SearchCollectionDataApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         String collection = paramObj.getString("collection");
-        BasePageVo pageVo = JSONObject.toJavaObject(paramObj, BasePageVo.class);
+        BasePageVo pageVo = JSON.toJavaObject(paramObj, BasePageVo.class);
         JSONObject resultObj = new JSONObject();
         CollectionVo collectionVo = mongoTemplate.findOne(new Query(Criteria.where("name").is(collection)), CollectionVo.class, "_dictionary");
         JSONArray theadList = new JSONArray();
@@ -96,24 +97,26 @@ public class SearchCollectionDataApi extends PrivateApiComponentBase {
                     JSONObject headObj = new JSONObject();
                     headObj.put("key", fieldObj.getString("name"));
                     headObj.put("title", fieldObj.getString("desc") + "(" + fieldObj.getString("name") + ")");
+                    headObj.put("type", fieldObj.getString("type"));
                     headObj.put("className", "top");
                     theadList.add(headObj);
                     //字符串字段才启用模糊匹配
                     if (pattern != null && fieldObj.getString("type").equalsIgnoreCase("string")) {
                         criteriaList.add(Criteria.where(fieldObj.getString("name")).is(pattern));
                     }
-                    if (fieldObj.containsKey("subset") && fieldObj.get("subset") instanceof List) {
+                    if (fieldObj.getString("type").equalsIgnoreCase("array") || (fieldObj.containsKey("subset") && fieldObj.get("subset") instanceof List)) {
                         JSONArray subTheadList = new JSONArray();
-                        for (int s = 0; s < fieldObj.getJSONArray("subset").size(); s++) {
-                            JSONObject subHeadObj = new JSONObject();
-                            JSONObject subObj = fieldObj.getJSONArray("subset").getJSONObject(s);
-                            subHeadObj.put("key", subObj.getString("name"));
-                            subHeadObj.put("title", subObj.getString("desc") + "(" + subObj.getString("name") + ")");
-                            subTheadList.add(subHeadObj);
+                        if (fieldObj.containsKey("subset") && fieldObj.get("subset") instanceof List) {
+                            for (int s = 0; s < fieldObj.getJSONArray("subset").size(); s++) {
+                                JSONObject subHeadObj = new JSONObject();
+                                JSONObject subObj = fieldObj.getJSONArray("subset").getJSONObject(s);
+                                subHeadObj.put("key", subObj.getString("name"));
+                                subHeadObj.put("title", subObj.getString("desc") + "(" + subObj.getString("name") + ")");
+                                subTheadList.add(subHeadObj);
+                            }
                         }
                         subsetData.put(fieldObj.getString("name"), subTheadList);
                     }
-
                 }
 
                 if (CollectionUtils.isNotEmpty(criteriaList)) {
