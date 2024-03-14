@@ -120,6 +120,14 @@ public interface CiEntityMapper extends ICiEntityCrossoverMapper {
     List<CiEntityVo> getVirtualCiEntityBaseInfoByName(CiEntityVo ciEntityVo);
 
     /**
+     * 根据配置项名称模糊匹配获取虚拟模型配置项
+     *
+     * @param ciEntityVo 条件
+     * @return 配置项列表
+     */
+    List<CiEntityVo> getVirtualCiEntityBaseInfoByLikeName(CiEntityVo ciEntityVo);
+
+    /**
      * 根据id列表返回多个配置项基本信息
      *
      * @param ciEntityIdList 配置项id列表
@@ -205,6 +213,8 @@ public interface CiEntityMapper extends ICiEntityCrossoverMapper {
     List<Long> getCiEntityIdByCiId(CiEntityVo ciEntityVo);
 
     List<CiEntityVo> getCiEntityListByCiIdListAndName(CiEntityVo ciEntityVo);
+
+    List<CiEntityVo> getCiEntityListByCiIdListAndLikeName(CiEntityVo ciEntityVo);
 
     List<Long> searchExpiredCiEntityId(CiEntityVo ciEntityVo);
 

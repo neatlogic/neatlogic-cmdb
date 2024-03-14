@@ -821,6 +821,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                 if (textFieldFilter != null && (valueFieldFilter == null || !Objects.equals(valueFieldFilter.getUuid(), textFieldFilter.getUuid()))) {
                     filterList.add(new MatrixFilterVo(textFieldFilter.getUuid(), textFieldFilter.getExpression(), Arrays.asList(textFieldFilter.getValue())));
                 }
+                boolean flag = true;
                 for (MatrixFilterVo matrixFilterVo : filterList) {
                     if (matrixFilterVo == null) {
                         continue;
@@ -849,6 +850,8 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                                 AttrFilterVo attrFilterVo = convertAttrFilter(attrVo, matrixFilterVo.getExpression(), valueList);
                                 if (attrFilterVo != null) {
                                     attrFilters.add(attrFilterVo);
+                                } else {
+                                    flag = false;
                                 }
                             }
                             break;
@@ -859,6 +862,8 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                                 RelFilterVo relFilterVo = convertFromRelFilter(relVo, matrixFilterVo.getExpression(), valueList, "from");
                                 if (relFilterVo != null) {
                                     relFilters.add(relFilterVo);
+                                } else {
+                                    flag = false;
                                 }
                             }
                             break;
@@ -869,6 +874,8 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                                 RelFilterVo relFilterVo = convertFromRelFilter(relVo, matrixFilterVo.getExpression(), valueList, "to");
                                 if (relFilterVo != null) {
                                     relFilters.add(relFilterVo);
+                                } else {
+                                    flag = false;
                                 }
                             }
                             break;
@@ -896,9 +903,11 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                             break;
                     }
                 }
-                ciEntityVo.setAttrFilterList(attrFilters);
-                ciEntityVo.setRelFilterList(relFilters);
-                tbodyArray.addAll(accessSearchCiEntity(matrixUuid, ciEntityVo));
+                if (flag) {
+                    ciEntityVo.setAttrFilterList(attrFilters);
+                    ciEntityVo.setRelFilterList(relFilters);
+                    tbodyArray.addAll(accessSearchCiEntity(matrixUuid, ciEntityVo));
+                }
             }
         } else {
             List<AttrFilterVo> attrFilters = new ArrayList<>();
@@ -909,6 +918,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                 MatrixFilterVo matrixFilterVo = new MatrixFilterVo(keywordColumn, Expression.LIKE.getExpression(), Arrays.asList(dataVo.getKeyword()));
                 filterList.add(matrixFilterVo);
             }
+            boolean flag = true;
             if (CollectionUtils.isNotEmpty(filterList)) {
                 for (MatrixFilterVo matrixFilterVo : filterList) {
                     if (matrixFilterVo == null) {
@@ -938,6 +948,8 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                                 AttrFilterVo attrFilterVo = convertAttrFilter(attrVo, matrixFilterVo.getExpression(), valueList);
                                 if (attrFilterVo != null) {
                                     attrFilters.add(attrFilterVo);
+                                } else {
+                                    flag = false;
                                 }
                             }
                             break;
@@ -948,6 +960,8 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                                 RelFilterVo relFilterVo = convertFromRelFilter(relVo, matrixFilterVo.getExpression(), valueList, "from");
                                 if (relFilterVo != null) {
                                     relFilters.add(relFilterVo);
+                                } else {
+                                    flag = false;
                                 }
                             }
                             break;
@@ -958,6 +972,8 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                                 RelFilterVo relFilterVo = convertFromRelFilter(relVo, matrixFilterVo.getExpression(), valueList, "to");
                                 if (relFilterVo != null) {
                                     relFilters.add(relFilterVo);
+                                } else {
+                                    flag = false;
                                 }
                             }
                             break;
@@ -987,6 +1003,9 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                 }
             }
 
+            if (!flag) {
+                return resultList;
+            }
             ciEntityVo.setAttrFilterList(attrFilters);
             ciEntityVo.setRelFilterList(relFilters);
             //下面逻辑适用于下拉框滚动加载，也可以搜索，但是一页返回的数据量可能会小于pageSize，因为做了去重处理
@@ -1023,42 +1042,51 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
     }
 
     private AttrFilterVo convertAttrFilter(AttrVo attrVo, String expression, List<String> valueList) {
+        if (StringUtils.isBlank(expression)) {
+            expression = Expression.EQUAL.getExpression();
+        }
+        AttrFilterVo attrFilterVo = new AttrFilterVo();
+        attrFilterVo.setAttrId(attrVo.getId());
+        attrFilterVo.setExpression(expression);
         if ("select".equals(attrVo.getType())) {
             CiVo targetCiVo = ciMapper.getCiById(attrVo.getTargetCiId());
             if (targetCiVo == null) {
                 return null;
             }
+            List<CiVo> downwardCiList = ciMapper.getDownwardCiListByLR(targetCiVo.getLft(), targetCiVo.getRht());
+            Map<Long, CiVo> downwardCiMap = downwardCiList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
+
+            CiEntityVo ciEntityVo = new CiEntityVo();
+            ciEntityVo.setCiId(targetCiVo.getId());
+            ciEntityVo.setIdList(new ArrayList<>(downwardCiMap.keySet()));
             List<String> newValueList = new ArrayList<>();
             for (String value : valueList) {
+                List<CiEntityVo> ciEntityList = new ArrayList<>();
+                ciEntityVo.setName(value);
                 if (Objects.equals(targetCiVo.getIsVirtual(), 1)) {
-                    CiEntityVo ciEntityVo = new CiEntityVo();
-                    ciEntityVo.setCiId(targetCiVo.getId());
-                    ciEntityVo.setName(value);
-                    List<CiEntityVo> ciEntityList = ciEntityMapper.getVirtualCiEntityBaseInfoByName(ciEntityVo);
-                    if (CollectionUtils.isEmpty(ciEntityList)) {
-                        return null;
-                    }
-                    for (CiEntityVo ciEntity : ciEntityList) {
-                        newValueList.add(ciEntity.getId().toString());
+                    if (Objects.equals(expression, Expression.LIKE.getExpression())) {
+                        ciEntityList = ciEntityMapper.getVirtualCiEntityBaseInfoByLikeName(ciEntityVo);
+                    } else {
+                        ciEntityList = ciEntityMapper.getVirtualCiEntityBaseInfoByName(ciEntityVo);
                     }
                 } else {
-                    Long ciEntityId = ciEntityMapper.getIdByCiIdAndName(targetCiVo.getId(), value);
-                    if (ciEntityId == null) {
-                        return null;
+                    if (Objects.equals(expression, Expression.LIKE.getExpression())) {
+                        ciEntityList = ciEntityMapper.getCiEntityListByCiIdListAndLikeName(ciEntityVo);
+                    } else {
+                        ciEntityList = ciEntityMapper.getCiEntityListByCiIdListAndName(ciEntityVo);
                     }
-                    newValueList.add(ciEntityId.toString());
+                }
+                for (CiEntityVo ciEntity : ciEntityList) {
+                    newValueList.add(ciEntity.getId().toString());
                 }
             }
-            valueList = newValueList;
-        }
-        AttrFilterVo attrFilterVo = new AttrFilterVo();
-        attrFilterVo.setAttrId(attrVo.getId());
-        if (StringUtils.isNotBlank(expression)) {
-            attrFilterVo.setExpression(expression);
+            if (CollectionUtils.isEmpty(newValueList)) {
+                return null;
+            }
+            attrFilterVo.setValueList(newValueList);
         } else {
-            attrFilterVo.setExpression(Expression.EQUAL.getExpression());
+            attrFilterVo.setValueList(valueList);
         }
-        attrFilterVo.setValueList(valueList);
         return attrFilterVo;
     }
 
@@ -1075,39 +1103,35 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         if (ciVo == null) {
             return null;
         }
+        if (StringUtils.isBlank(expression)) {
+            expression = Expression.EQUAL.getExpression();
+        }
         List<Long> ciEntityIdList = new ArrayList<>();
         for (String value : valueList) {
-            if (Objects.equals(ciVo.getIsVirtual(), 1)) {
-                CiEntityVo ciEntityVo = new CiEntityVo();
-                ciEntityVo.setCiId(ciVo.getId());
-                ciEntityVo.setName(value);
-                List<CiEntityVo> ciEntityList = ciEntityMapper.getVirtualCiEntityBaseInfoByName(ciEntityVo);
-                if (CollectionUtils.isEmpty(ciEntityList)) {
-                    return null;
-                }
-                for (CiEntityVo ciEntity : ciEntityList) {
-                    ciEntityIdList.add(ciEntity.getId());
-                }
-            } else {
-                RelEntityVo relEntityVo = new RelEntityVo();
-                relEntityVo.setRelId(relVo.getId());
-                relEntityVo.setPageSize(100);
-                List<RelEntityVo> relEntityList = relEntityMapper.getRelEntityByRelId(relEntityVo);
-                if (CollectionUtils.isEmpty(relEntityList)) {
-                    return null;
+            RelEntityVo relEntityVo = new RelEntityVo();
+            relEntityVo.setRelId(relVo.getId());
+            relEntityVo.setPageSize(100);
+            if ("from".equals(direction)) {
+                relEntityVo.setToCiEntityName(value);
+                List<RelEntityVo> relEntityList = new ArrayList<>();
+                if (Objects.equals(expression, Expression.LIKE.getExpression())) {
+                    relEntityList = relEntityMapper.getRelEntityByRelIdAndLikeToCiEntityName(relEntityVo);
+                } else {
+                    relEntityList = relEntityMapper.getRelEntityByRelIdAndToCiEntityName(relEntityVo);
                 }
                 for (RelEntityVo relEntity : relEntityList) {
-                    if ("from".equals(direction)) {
-                        if (value.equals(relEntity.getToCiEntityName())) {
-                            ciEntityIdList.add(relEntity.getToCiEntityId());
-                            break;
-                        }
-                    } else if ("to".equals(direction)) {
-                        if (value.equals(relEntity.getFromCiEntityName())) {
-                            ciEntityIdList.add(relEntity.getFromCiEntityId());
-                            break;
-                        }
-                    }
+                    ciEntityIdList.add(relEntity.getToCiEntityId());
+                }
+            } else if ("to".equals(direction)) {
+                relEntityVo.setFromCiEntityName(value);
+                List<RelEntityVo> relEntityList = new ArrayList<>();
+                if (Objects.equals(expression, Expression.LIKE.getExpression())) {
+                    relEntityList = relEntityMapper.getRelEntityByRelIdAndLikeFromCiEntityName(relEntityVo);
+                } else {
+                    relEntityList = relEntityMapper.getRelEntityByRelIdAndFromCiEntityName(relEntityVo);
+                }
+                for (RelEntityVo relEntity : relEntityList) {
+                    ciEntityIdList.add(relEntity.getFromCiEntityId());
                 }
             }
         }

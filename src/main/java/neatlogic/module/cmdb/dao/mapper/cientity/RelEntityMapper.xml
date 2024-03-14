@@ -313,6 +313,94 @@ limitations under the License.
         ORDER BY id
     </select>
 
+    <select id="getRelEntityByRelIdAndLikeToCiEntityName" parameterType="neatlogic.framework.cmdb.dto.cientity.RelEntityVo" resultType="neatlogic.framework.cmdb.dto.cientity.RelEntityVo">
+        SELECT
+            a.`id`,
+            a.`rel_id` AS relId,
+            a.`from_cientity_id` AS fromCiEntityId,
+            a.`to_cientity_id` AS toCiEntityId,
+            a.`transaction_id` AS transactionId,
+            b.`name` AS fromCiEntityName,
+            c.`name` AS toCiEntityName,
+            a.`valid_day` AS validDay,
+            b.`ci_id` AS fromCiId,
+            c.`ci_id` AS toCiId,
+            'to' AS direction
+        FROM `cmdb_relentity` a
+        JOIN `cmdb_cientity` b ON a.`from_cientity_id` = b.id
+        JOIN `cmdb_cientity` c ON a.`to_cientity_id` = c.id
+        WHERE c.`name` LIKE  CONCAT('%', #{toCiEntityName}, '%')
+          AND a.rel_id = #{relId}
+          AND ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id = a.from_cientity_id)
+          or exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id = a.from_cientity_id and xx.expired_time &gt;= NOW()))
+    </select>
+
+    <select id="getRelEntityByRelIdAndToCiEntityName" parameterType="neatlogic.framework.cmdb.dto.cientity.RelEntityVo" resultType="neatlogic.framework.cmdb.dto.cientity.RelEntityVo">
+        SELECT
+            a.`id`,
+            a.`rel_id` AS relId,
+            a.`from_cientity_id` AS fromCiEntityId,
+            a.`to_cientity_id` AS toCiEntityId,
+            a.`transaction_id` AS transactionId,
+            b.`name` AS fromCiEntityName,
+            c.`name` AS toCiEntityName,
+            a.`valid_day` AS validDay,
+            b.`ci_id` AS fromCiId,
+            c.`ci_id` AS toCiId,
+            'to' AS direction
+        FROM `cmdb_relentity` a
+        JOIN `cmdb_cientity` b ON a.`from_cientity_id` = b.id
+        JOIN `cmdb_cientity` c ON a.`to_cientity_id` = c.id
+        WHERE c.`name` = #{toCiEntityName}
+          AND a.rel_id = #{relId}
+          AND ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id = a.from_cientity_id)
+          or exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id = a.from_cientity_id and xx.expired_time &gt;= NOW()))
+    </select>
+
+    <select id="getRelEntityByRelIdAndLikeFromCiEntityName" parameterType="neatlogic.framework.cmdb.dto.cientity.RelEntityVo" resultType="neatlogic.framework.cmdb.dto.cientity.RelEntityVo">
+        SELECT
+            a.`id`,
+            a.`rel_id` AS relId,
+            a.`from_cientity_id` AS fromCiEntityId,
+            a.`to_cientity_id` AS toCiEntityId,
+            a.`transaction_id` AS transactionId,
+            b.`name` AS fromCiEntityName,
+            c.`name` AS toCiEntityName,
+            a.`valid_day` AS validDay,
+            b.`ci_id` AS fromCiId,
+            c.`ci_id` AS toCiId,
+            'from' as direction
+        FROM `cmdb_relentity` a
+        JOIN `cmdb_cientity` b ON a.`from_cientity_id` = b.id
+        JOIN `cmdb_cientity` c ON a.`to_cientity_id` = c.id
+        WHERE b.`name` LIKE CONCAT('%', #{fromCiEntityName}, '%')
+          AND a.rel_id = #{relId}
+          AND ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id = a.to_cientity_id)
+          or exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id = a.to_cientity_id and xx.expired_time &gt;= NOW()))
+    </select>
+
+    <select id="getRelEntityByRelIdAndFromCiEntityName" parameterType="neatlogic.framework.cmdb.dto.cientity.RelEntityVo" resultType="neatlogic.framework.cmdb.dto.cientity.RelEntityVo">
+        SELECT
+        a.`id`,
+        a.`rel_id` AS relId,
+        a.`from_cientity_id` AS fromCiEntityId,
+        a.`to_cientity_id` AS toCiEntityId,
+        a.`transaction_id` AS transactionId,
+        b.`name` AS fromCiEntityName,
+        c.`name` AS toCiEntityName,
+        a.`valid_day` AS validDay,
+        b.`ci_id` AS fromCiId,
+        c.`ci_id` AS toCiId,
+        'from' as direction
+        FROM `cmdb_relentity` a
+        JOIN `cmdb_cientity` b ON a.`from_cientity_id` = b.id
+        JOIN `cmdb_cientity` c ON a.`to_cientity_id` = c.id
+        WHERE b.`name` = #{fromCiEntityName}
+        AND a.rel_id = #{relId}
+        AND ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id = a.to_cientity_id)
+        or exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id = a.to_cientity_id and xx.expired_time &gt;= NOW()))
+    </select>
+
     <select id="getFromToCiEntityIdByCiEntityIdList" resultType="java.lang.Long">
         SELECT
         a.`to_cientity_id`

@@ -59,6 +59,14 @@ public interface RelEntityMapper {
     List<RelEntityVo> getRelEntityByToCiEntityIdAndRelId(@Param("toCiEntityId") Long toCiEntityId,
                                                          @Param("relId") Long relId, @Param("limit") Long limit);
 
+    List<RelEntityVo> getRelEntityByRelIdAndLikeToCiEntityName(RelEntityVo relEntityVo);
+
+    List<RelEntityVo> getRelEntityByRelIdAndToCiEntityName(RelEntityVo relEntityVo);
+
+    List<RelEntityVo> getRelEntityByRelIdAndLikeFromCiEntityName(RelEntityVo relEntityVo);
+
+    List<RelEntityVo> getRelEntityByRelIdAndFromCiEntityName(RelEntityVo relEntityVo);
+
     List<Long> getFromToCiEntityIdByCiEntityIdList(@Param("idList") List<Long> idList);
 
     List<Long> getFromToCiEntityIdByCiEntityId(Long ciEntityId);
@@ -90,5 +98,4 @@ public interface RelEntityMapper {
                                                          @Param("toCiEntityId") Long toCiEntityId);
 
     void deleteRelEntityBySourceRelEntityId(Long sourceRelEntityId);
-
 }
