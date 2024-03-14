@@ -333,6 +333,13 @@
         WHERE name = #{name}
     </select>
 
+    <select id="getVirtualCiEntityBaseInfoByLikeName" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo"
+            resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo" useCache="false">
+        SELECT id, `name`
+        FROM ${ciTableName}
+        WHERE name LIKE CONCAT('%',#{name}, '%')
+    </select>
+
     <select id="getCiEntityBaseInfoByName" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo"
             resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo" useCache="false">
         SELECT id,
@@ -1473,6 +1480,25 @@
             #{item}
         </foreach>
         AND `name` = #{name}
+    </select>
+
+    <select id="getCiEntityListByCiIdListAndLikeName" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo"
+            resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo" useCache="false">
+        SELECT `id`,
+        `uuid`,
+        `ci_id` AS ciId,
+        `name`,
+        `status`,
+        `fcu`,
+        `fcd`,
+        `lcu`,
+        `lcd`
+        FROM `cmdb_cientity`
+        WHERE `ci_id` in
+        <foreach collection="idList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        AND `name` LIKE CONCAT('%', #{name}, '%')
     </select>
 
     <select id="getDownwardCiEntityByLRLimitSize" resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo"
