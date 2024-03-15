@@ -56,9 +56,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class AttrExpressionRebuildManager {
-    private final static String EXPRESSION_TYPE = "expression";
-    private final static Logger logger = LoggerFactory.getLogger(AttrExpressionRebuildManager.class);
-    private final static BlockingQueue<RebuildAuditVo> rebuildQueue = new LinkedBlockingQueue<>();
+    private static final String EXPRESSION_TYPE = "expression";
+    private static final Logger logger = LoggerFactory.getLogger(AttrExpressionRebuildManager.class);
+    private static final BlockingQueue<RebuildAuditVo> rebuildQueue = new LinkedBlockingQueue<>();
     private static RelEntityMapper relEntityMapper;
     private static AttrExpressionRebuildAuditMapper attrExpressionRebuildAuditMapper;
     private static AttrMapper attrMapper;
@@ -84,13 +84,15 @@ public class AttrExpressionRebuildManager {
             @Override
             protected void execute() {
                 RebuildAuditVo rebuildAuditVo;
-                while (true) {
+                while (!Thread.currentThread().isInterrupted()) {
                     try {
                         rebuildAuditVo = rebuildQueue.take();
                         CachedThreadPool.execute(new Builder(rebuildAuditVo));
                     } catch (InterruptedException e) {
-                        logger.error(e.getMessage(), e);
+                        Thread.currentThread().interrupt();
                         break;
+                    } catch (Exception e) {
+                        logger.error(e.getMessage(), e);
                     }
                 }
             }
@@ -288,10 +290,10 @@ public class AttrExpressionRebuildManager {
                 saveCiEntityVo.setId(newCiEntityVo.getId());
                 JSONObject dataObj = new JSONObject();
                 for (AttrVo attrVo : expressionAttrList) {
-                    if (attrVo.getConfig().containsKey("expression") && attrVo.getConfig().get("expression") instanceof JSONArray) {
+                    if (attrVo.getConfig().containsKey(EXPRESSION_TYPE) && attrVo.getConfig().get(EXPRESSION_TYPE) instanceof JSONArray) {
                         List<ExpressionGroup> groupList = new ArrayList<>();
-                        for (int i = 0; i < attrVo.getConfig().getJSONArray("expression").size(); i++) {
-                            String expression = attrVo.getConfig().getJSONArray("expression").getString(i);
+                        for (int i = 0; i < attrVo.getConfig().getJSONArray(EXPRESSION_TYPE).size(); i++) {
+                            String expression = attrVo.getConfig().getJSONArray(EXPRESSION_TYPE).getString(i);
                             //如果是属性表达式
                             if (expression.startsWith("{") && expression.endsWith("}")) {
                                 String exp = expression.substring(1, expression.length() - 1);
@@ -389,6 +391,7 @@ public class AttrExpressionRebuildManager {
                                         expressionV = value.toString();
                                     }
                                 } catch (ScriptException ignored) {
+                                    logger.warn(ignored.getMessage(), ignored);
                                 }
                             }
                         }

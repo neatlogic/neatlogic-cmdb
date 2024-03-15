@@ -20,7 +20,6 @@ import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.module.cmdb.annotation.CiId;
 import neatlogic.module.cmdb.annotation.CreateCiView;
-import neatlogic.module.cmdb.annotation.DeleteCiView;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -72,7 +71,7 @@ public interface CiSchemaMapper {
     @CreateCiView
     void initCiTable(@CiId Long ciId, @Param("ciVo") CiVo ciVo);
 
-    @DeleteCiView
+
     void deleteCiTable(@CiId Long ciId, @Param("tableName") String tableName);
 
     void deleteCiView(@Param("tableName") String tableName);
