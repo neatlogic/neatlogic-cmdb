@@ -38,6 +38,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -122,9 +123,9 @@ public class LaunchSyncCollectionApi extends PrivateApiComponentBase {
             }
         }
         List<SyncCiCollectionVo> syncCiCollectionList = new ArrayList<>();
-        if (isAll == null || isAll.equals(0)) {
+        if ((isAll == null || isAll.equals(0)) && CollectionUtils.isNotEmpty(pIdList)) {
             syncCiCollectionList = syncMapper.getSyncCiCollectionByIdList(pIdList);
-        } else {
+        } else if (Objects.equals(isAll, 1)) {
             SyncCiCollectionVo p = new SyncCiCollectionVo();
             p.setCollectMode(CollectMode.INITIATIVE.getValue());
             p.setPageSize(100);

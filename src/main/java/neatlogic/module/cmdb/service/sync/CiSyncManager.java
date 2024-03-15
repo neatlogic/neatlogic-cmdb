@@ -93,6 +93,7 @@ public class CiSyncManager {
     private static SyncMapper syncMapper;
     private static ObjectMapper objectMapper;
 
+    @SuppressWarnings("all")
     @Autowired
     public CiSyncManager(MongoTemplate _mongoTemplate, CiEntityService _ciEntityService, GlobalAttrMapper _globalAttrMapper, AttrMapper _attrMapper, SyncAuditMapper _syncAuditMapper, RelMapper _relMapper, CiMapper _ciMapper, SyncMapper _syncMapper, ObjectMapper _objectMapper) {
         mongoTemplate = _mongoTemplate;
@@ -192,20 +193,20 @@ public class CiSyncManager {
         private SyncCiCollectionVo getSyncCiCollection(Long ciId, String collectionName, String parentKey) {
             String pk = (parentKey == null ? "" : parentKey);
             if (!syncCiCollectionMap.containsKey(ciId + "#" + collectionName + "#" + pk)) {
-                List<SyncCiCollectionVo> syncCiCollectionList = syncMapper.getPassiveSyncCiCollectionByCiId(ciId);
-                if (CollectionUtils.isNotEmpty(syncCiCollectionList)) {
+                List<SyncCiCollectionVo> tmpSyncCiCollectionList = syncMapper.getPassiveSyncCiCollectionByCiId(ciId);
+                if (CollectionUtils.isNotEmpty(tmpSyncCiCollectionList)) {
                     //优先使用parentKey来匹配映射配置，避免匹配到没有配置parentKey的映射配置
-                    Optional<SyncCiCollectionVo> op = syncCiCollectionList.stream().filter(d -> d.getCollectionName().equals(collectionName) && StringUtils.isNotBlank(d.getParentKey()) && d.getParentKey().equals(pk)).findFirst();
+                    Optional<SyncCiCollectionVo> op = tmpSyncCiCollectionList.stream().filter(d -> d.getCollectionName().equals(collectionName) && StringUtils.isNotBlank(d.getParentKey()) && d.getParentKey().equals(pk)).findFirst();
                     if (op.isPresent()) {
                         syncCiCollectionMap.put(ciId + "#" + collectionName + "#" + pk, op.get());
                     } else {
-                        op = syncCiCollectionList.stream().filter(d -> d.getCollectionName().equals(collectionName)).findFirst();
+                        op = tmpSyncCiCollectionList.stream().filter(d -> d.getCollectionName().equals(collectionName)).findFirst();
                         if (op.isPresent()) {
                             syncCiCollectionMap.put(ciId + "#" + collectionName + "#" + pk, op.get());
                         } else {
                             //如果在当前的逻辑集合collectionName找不到映射配置，则根据ciId随便找一个物理集合相同的被动映射关系
                             // （之所以这样做是假设同一个模型在不同逻辑集合上的配置应该是一致的，所以只要物理集合一致即可）
-                            op = syncCiCollectionList.stream().filter(d -> getCollectionByName(d.getCollectionName()).getCollection().equals(getCollectionByName(collectionName).getCollection())).findFirst();
+                            op = tmpSyncCiCollectionList.stream().filter(d -> getCollectionByName(d.getCollectionName()).getCollection().equals(getCollectionByName(collectionName).getCollection())).findFirst();
                             op.ifPresent(ciCollectionVo -> syncCiCollectionMap.put(ciId + "#" + collectionName + "#" + pk, ciCollectionVo));
                         }
                     }
@@ -419,7 +420,7 @@ public class CiSyncManager {
                                     if (!(subDataList.get(i) instanceof JSONObject)) {
                                         String value = subDataList.getString(i);
                                         GlobalAttrItemVo item = globalAttrVo.getItem(value);
-                                        if (item!=null) {
+                                        if (item != null) {
                                             globalAttrItemList.add(item);
                                         } else {
                                             throw new GlobalAttrItemIsNotExistsException(globalAttrVo, value);
@@ -430,7 +431,7 @@ public class CiSyncManager {
                                 //其他标值
                                 String value = dataObj.getString(mappingVo.getField(parentKey));
                                 GlobalAttrItemVo item = globalAttrVo.getItem(value);
-                                if (item!=null) {
+                                if (item != null) {
                                     globalAttrItemList.add(item);
                                 } else {
                                     throw new GlobalAttrItemIsNotExistsException(globalAttrVo, value);
@@ -441,7 +442,7 @@ public class CiSyncManager {
                     } else if (mappingVo.getAttrId() != null && attrMap.containsKey(mappingVo.getAttrId())) {
                         AttrVo attrVo = attrMap.get(mappingVo.getAttrId());
                         if (dataObj.containsKey(mappingVo.getField(parentKey))) {
-                            if (attrVo.isNeedTargetCi()) {
+                            if (Boolean.TRUE.equals(attrVo.isNeedTargetCi())) {
                                 //引用属性需要引用包含subset的数据
                                 if (dataObj.get(mappingVo.getField(parentKey)) instanceof JSONArray) {
                                     JSONArray subDataList = dataObj.getJSONArray(mappingVo.getField(parentKey));
