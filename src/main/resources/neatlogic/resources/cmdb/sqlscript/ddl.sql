@@ -801,6 +801,7 @@ CREATE TABLE IF NOT EXISTS `cmdb_sync_ci_collection` (
   `parent_key` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '父属性，可以为空',
   `collect_mode` enum('initiative','passive') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'collect mode',
   `is_auto_commit` tinyint DEFAULT NULL COMMENT '是否自动提交',
+  `is_allow_multiple` tinyint DEFAULT NULL COMMENT '是否允许更新多条数据',
   `match_mode` enum('key','level') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'key' COMMENT '匹配模式',
   `fcd` timestamp(3) NULL DEFAULT NULL COMMENT '创建时间',
   `fcu` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '创建人',

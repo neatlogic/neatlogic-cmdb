@@ -19,24 +19,25 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     <select id="getPassiveSyncCiCollectionByCiId" parameterType="java.lang.Long"
             resultMap="syncCiCollectionResultMap">
         SELECT a.id,
-               a.ci_id            AS ciId,
-               cc.name            AS ciName,
-               cc.label           AS ciLabel,
-               a.collection_name  AS collectionName,
-               a.parent_key       AS parentKey,
-               a.collect_mode     AS collectMode,
-               a.is_auto_commit   AS isAutoCommit,
-               a.last_sync_date   AS lastSyncDate,
-               a.match_mode       AS matchMode,
+               a.ci_id             AS ciId,
+               cc.name             AS ciName,
+               cc.label            AS ciLabel,
+               a.collection_name   AS collectionName,
+               a.parent_key        AS parentKey,
+               a.collect_mode      AS collectMode,
+               a.is_auto_commit    AS isAutoCommit,
+               a.is_allow_multiple AS isAllowMultiple,
+               a.last_sync_date    AS lastSyncDate,
+               a.match_mode        AS matchMode,
                a.description,
-               csm.id             AS mappingId,
-               csm.global_attr_id AS globalAttrId,
-               csm.attr_id        AS attrId,
-               csm.rel_id         AS relId,
+               csm.id              AS mappingId,
+               csm.global_attr_id  AS globalAttrId,
+               csm.attr_id         AS attrId,
+               csm.rel_id          AS relId,
                csm.direction,
                csm.field,
-               csu.attr_id        AS uniqueAttrId,
-               csm.action         as relAction
+               csu.attr_id         AS uniqueAttrId,
+               csm.action          as relAction
         FROM cmdb_sync_ci_collection a
                  JOIN cmdb_sync_mapping csm on a.id = csm.ci_collection_id
                  JOIN cmdb_ci cc ON a.ci_id = cc.id
@@ -157,6 +158,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         a.collection_name AS collectionName,
         a.collect_mode AS collectMode,
         a.is_auto_commit AS isAutoCommit,
+        a.is_allow_multiple AS isAllowMultiple,
         a.match_mode AS matchMode,
         a.fcu,
         a.fcd,
@@ -174,13 +176,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     <select id="getInitiativeSyncCiCollectionByCollectNameAndCiId"
             resultType="neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo">
         SELECT a.id,
-               a.ci_id           AS ciId,
-               b.label           AS ciLabel,
-               b.name            AS ciName,
-               a.collection_name AS collectionName,
-               a.collect_mode    AS collectMode,
-               a.is_auto_commit  AS isAutoCommit,
-               a.match_mode      AS matchMode,
+               a.ci_id             AS ciId,
+               b.label             AS ciLabel,
+               b.name              AS ciName,
+               a.collection_name   AS collectionName,
+               a.collect_mode      AS collectMode,
+               a.is_auto_commit    AS isAutoCommit,
+               a.is_allow_multiple AS isAllowMultiple,
+               a.match_mode        AS matchMode,
                a.fcu,
                a.fcd,
                a.lcu,
@@ -196,13 +199,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     <select id="getInitiativeSyncCiCollectionByCollectName" parameterType="java.lang.String"
             resultType="neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo">
         SELECT a.id,
-               a.ci_id           AS ciId,
-               b.label           AS ciLabel,
-               b.name            AS ciName,
-               a.collection_name AS collectionName,
-               a.collect_mode    AS collectMode,
-               a.is_auto_commit  AS isAutoCommit,
-               a.match_mode      AS matchMode,
+               a.ci_id             AS ciId,
+               b.label             AS ciLabel,
+               b.name              AS ciName,
+               a.collection_name   AS collectionName,
+               a.collect_mode      AS collectMode,
+               a.is_auto_commit    AS isAutoCommit,
+               a.is_allow_multiple AS isAllowMultiple,
+               a.match_mode        AS matchMode,
                a.fcu,
                a.fcd,
                a.lcu,
@@ -221,6 +225,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         <result property="collectionName" column="collectionName"/>
         <result property="collectMode" column="collectMode"/>
         <result property="isAutoCommit" column="isAutoCommit"/>
+        <result property="isAllowMultiple" column="isAllowMultiple"/>
         <result property="matchMode" column="matchMode"/>
         <result property="parentKey" column="parentKey"/>
         <result property="fcu" column="fcu"/>
@@ -254,6 +259,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         a.collection_name AS collectionName,
         a.collect_mode AS collectMode,
         a.is_auto_commit AS isAutoCommit,
+        a.is_allow_multiple AS isAllowMultiple,
         a.match_mode AS matchMode,
         a.parent_key AS parentKey,
         a.fcu,
@@ -339,6 +345,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         <result property="collectionName" column="collectionName"/>
         <result property="collectMode" column="collectMode"/>
         <result property="isAutoCommit" column="isAutoCommit"/>
+        <result property="isAllowMultiple" column="isAllowMultiple"/>
         <result property="lastSyncDate" column="lastSyncDate"/>
         <result property="matchMode" column="matchMode"/>
         <result property="parentKey" column="parentKey"/>
@@ -365,28 +372,29 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     <select id="getSyncCiCollectionByCollectionName" parameterType="java.lang.String"
             resultMap="syncCiCollectionResultMap">
         SELECT a.id,
-               a.ci_id            AS ciId,
-               cc.name            AS ciName,
-               cc.label           AS ciLabel,
-               a.collection_name  AS collectionName,
-               a.collect_mode     AS collectMode,
-               a.is_auto_commit   AS isAutoCommit,
-               a.last_sync_date   AS lastSyncDate,
-               a.match_mode       AS matchMode,
-               a.parent_key       AS parentKey,
+               a.ci_id             AS ciId,
+               cc.name             AS ciName,
+               cc.label            AS ciLabel,
+               a.collection_name   AS collectionName,
+               a.collect_mode      AS collectMode,
+               a.is_auto_commit    AS isAutoCommit,
+               a.is_allow_multiple AS isAllowMultiple,
+               a.last_sync_date    AS lastSyncDate,
+               a.match_mode        AS matchMode,
+               a.parent_key        AS parentKey,
                a.description,
-               a.fcd              AS fcd,
-               a.fcu              AS fcu,
-               a.lcd              AS lcd,
-               a.lcu              AS lcu,
-               csm.id             AS mappingId,
-               csm.global_attr_id AS globalAttrId,
-               csm.attr_id        AS attrId,
-               csm.rel_id         AS relId,
+               a.fcd               AS fcd,
+               a.fcu               AS fcu,
+               a.lcd               AS lcd,
+               a.lcu               AS lcu,
+               csm.id              AS mappingId,
+               csm.global_attr_id  AS globalAttrId,
+               csm.attr_id         AS attrId,
+               csm.rel_id          AS relId,
                csm.direction,
                csm.field,
-               csu.attr_id        AS uniqueAttrId,
-               csm.action         as relAction
+               csu.attr_id         AS uniqueAttrId,
+               csm.action          as relAction
         FROM cmdb_sync_ci_collection a
                  JOIN cmdb_sync_mapping csm on a.id = csm.ci_collection_id
                  JOIN cmdb_ci cc ON a.ci_id = cc.id
@@ -397,28 +405,29 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     <select id="getSyncCiCollectionByCiIdAndCollectionName"
             resultMap="syncCiCollectionResultMap">
         SELECT a.id,
-               a.ci_id            AS ciId,
-               cc.name            AS ciName,
-               cc.label           AS ciLabel,
-               a.collection_name  AS collectionName,
-               a.collect_mode     AS collectMode,
-               a.is_auto_commit   AS isAutoCommit,
-               a.last_sync_date   AS lastSyncDate,
-               a.match_mode       AS matchMode,
-               a.parent_key       AS parentKey,
+               a.ci_id             AS ciId,
+               cc.name             AS ciName,
+               cc.label            AS ciLabel,
+               a.collection_name   AS collectionName,
+               a.collect_mode      AS collectMode,
+               a.is_auto_commit    AS isAutoCommit,
+               a.is_allow_multiple AS isAllowMultiple,
+               a.last_sync_date    AS lastSyncDate,
+               a.match_mode        AS matchMode,
+               a.parent_key        AS parentKey,
                a.description,
-               a.fcd              AS fcd,
-               a.fcu              AS fcu,
-               a.lcd              AS lcd,
-               a.lcu              AS lcu,
-               csm.id             AS mappingId,
-               csm.global_attr_id AS globalAttrId,
-               csm.attr_id        AS attrId,
-               csm.rel_id         AS relId,
+               a.fcd               AS fcd,
+               a.fcu               AS fcu,
+               a.lcd               AS lcd,
+               a.lcu               AS lcu,
+               csm.id              AS mappingId,
+               csm.global_attr_id  AS globalAttrId,
+               csm.attr_id         AS attrId,
+               csm.rel_id          AS relId,
                csm.direction,
                csm.field,
-               csu.attr_id        AS uniqueAttrId,
-               csm.action         as relAction
+               csu.attr_id         AS uniqueAttrId,
+               csm.action          as relAction
         FROM cmdb_sync_ci_collection a
                  JOIN cmdb_sync_mapping csm on a.id = csm.ci_collection_id
                  JOIN cmdb_ci cc ON a.ci_id = cc.id
@@ -430,28 +439,29 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     <select id="getSyncCiCollectionById" parameterType="java.lang.Long"
             resultMap="syncCiCollectionResultMap">
         SELECT a.id,
-               a.ci_id            AS ciId,
-               cc.name            AS ciName,
-               cc.label           AS ciLabel,
-               a.collection_name  AS collectionName,
-               a.collect_mode     AS collectMode,
-               a.is_auto_commit   AS isAutoCommit,
-               a.last_sync_date   AS lastSyncDate,
-               a.match_mode       AS matchMode,
-               a.parent_key       AS parentKey,
+               a.ci_id             AS ciId,
+               cc.name             AS ciName,
+               cc.label            AS ciLabel,
+               a.collection_name   AS collectionName,
+               a.collect_mode      AS collectMode,
+               a.is_auto_commit    AS isAutoCommit,
+               a.is_allow_multiple AS isAllowMultiple,
+               a.last_sync_date    AS lastSyncDate,
+               a.match_mode        AS matchMode,
+               a.parent_key        AS parentKey,
                a.description,
-               a.fcd              AS fcd,
-               a.fcu              AS fcu,
-               a.lcd              AS lcd,
-               a.lcu              AS lcu,
-               csm.id             AS mappingId,
-               csm.global_attr_id AS globalAttrId,
-               csm.attr_id        AS attrId,
-               csm.rel_id         AS relId,
+               a.fcd               AS fcd,
+               a.fcu               AS fcu,
+               a.lcd               AS lcd,
+               a.lcu               AS lcu,
+               csm.id              AS mappingId,
+               csm.global_attr_id  AS globalAttrId,
+               csm.attr_id         AS attrId,
+               csm.rel_id          AS relId,
                csm.direction,
                csm.field,
-               csu.attr_id        AS uniqueAttrId,
-               csm.action         as relAction
+               csu.attr_id         AS uniqueAttrId,
+               csm.action          as relAction
         FROM cmdb_sync_ci_collection a
                  JOIN cmdb_sync_mapping csm on a.id = csm.ci_collection_id
                  JOIN cmdb_ci cc ON a.ci_id = cc.id
@@ -468,6 +478,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         a.collection_name AS collectionName,
         a.collect_mode AS collectMode,
         a.is_auto_commit AS isAutoCommit,
+        a.is_allow_multiple AS isAllowMultiple,
         a.last_sync_date AS lastSyncDate,
         a.match_mode AS matchMode,
         a.parent_key AS parentKey,
@@ -499,14 +510,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 
     <update id="updateSyncCiCollection" parameterType="neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo">
         update cmdb_sync_ci_collection
-        SET collect_mode   = #{collectMode},
-            is_auto_commit = #{isAutoCommit},
-            parent_key     = #{parentKey},
-            match_mode     = #{matchMode},
-            lcd            = NOW(3),
-            lcu            = #{lcu},
-            description    = #{description},
-            last_sync_date = null
+        SET collect_mode      = #{collectMode},
+            is_auto_commit    = #{isAutoCommit},
+            is_allow_multiple = #{isAllowMultiple},
+            parent_key        = #{parentKey},
+            match_mode        = #{matchMode},
+            lcd               = NOW(3),
+            lcu               = #{lcu},
+            description       = #{description},
+            last_sync_date    = null
         WHERE id = #{id}
     </update>
 
@@ -532,9 +544,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 
     <insert id="insertSyncCiCollection" parameterType="neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo">
         insert into cmdb_sync_ci_collection (id, ci_id, collection_name, parent_key, match_mode, collect_mode,
-                                             is_auto_commit, description, fcd,
+                                             is_auto_commit, is_allow_multiple, description, fcd,
                                              fcu)
         values (#{id}, #{ciId}, #{collectionName}, #{parentKey}, #{matchMode}, #{collectMode}, #{isAutoCommit},
+                #{isAllowMultiple},
                 #{description}, NOW(3),
                 #{fcu})
     </insert>

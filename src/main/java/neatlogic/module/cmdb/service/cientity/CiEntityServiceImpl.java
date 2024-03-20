@@ -1326,7 +1326,10 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 List<CiEntityVo> checkList = this.searchCiEntity(ciEntityConditionVo);
                 for (CiEntityVo checkCiEntity : checkList) {
                     if (!checkCiEntity.getId().equals(ciEntityTransactionVo.getCiEntityId())) {
-                        throw new CiUniqueRuleException(ciVo, String.join(",", valueList));
+                        //如果是更新，并且设置了跳过唯一规则校验，才忽略唯一规则报错
+                        if (!ciEntityTransactionVo.getAction().equals(TransactionActionType.UPDATE.getValue()) || !ciEntityTransactionVo.getSkipUniqueCheck()) {
+                            throw new CiUniqueRuleException(ciVo, String.join(",", valueList));
+                        }
                     }
                 }
             }
@@ -2086,7 +2089,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     }
                 }
                 //所有事务信息补充完毕后才能写入，因为对端配置项有可能被引用多次
-                for (Map.Entry<Long,CiEntityTransactionVo> entry : ciEntityTransactionMap.entrySet()) {
+                for (Map.Entry<Long, CiEntityTransactionVo> entry : ciEntityTransactionMap.entrySet()) {
                     Long ciEntityId = entry.getKey();
                     transactionMapper.insertCiEntityTransaction(entry.getValue());
                     //发送消息到消息队列
@@ -2167,7 +2170,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
     public void rebuildRelEntityIndex(RelDirectionType direction, Long relId, Long ciEntityId) {
         List<RelEntityVo> relEntityList;
         if (direction == RelDirectionType.FROM) {
-            relEntityMapper.clearRelEntityFromIndex(relId, ciEntityId,50);
+            relEntityMapper.clearRelEntityFromIndex(relId, ciEntityId, 50);
             relEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(ciEntityId, relId, Math.max(CiEntityVo.MAX_RELENTITY_COUNT + 1, 50));
             if (CollectionUtils.isNotEmpty(relEntityList)) {
                 for (int i = 0; i < relEntityList.size(); i++) {
@@ -2177,7 +2180,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 }
             }
         } else if (direction == RelDirectionType.TO) {
-            relEntityMapper.clearRelEntityToIndex(relId, ciEntityId,50);
+            relEntityMapper.clearRelEntityToIndex(relId, ciEntityId, 50);
             relEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(ciEntityId, relId, Math.max(CiEntityVo.MAX_RELENTITY_COUNT + 1, 50));
             if (CollectionUtils.isNotEmpty(relEntityList)) {
                 for (int i = 0; i < relEntityList.size(); i++) {

@@ -386,23 +386,27 @@ public class CiSyncManager {
                 //使用所有非引用属性去搜索配置项，没有则添加，发现一个则就修改，发现多个就抛异常
                 List<CiEntityVo> checkList = searchCiEntityWithCache(ciEntityConditionVo);
                 if (CollectionUtils.isNotEmpty(checkList) && checkList.size() > 1) {
-                    //补充异常信息
-                    CiVo c = ciMapper.getCiById(ciEntityConditionVo.getCiId());
-                    ciEntityConditionVo.setCiName(c.getName());
-                    ciEntityConditionVo.setCiLabel(c.getLabel());
-                    for (AttrFilterVo filter : ciEntityConditionVo.getAttrFilterList()) {
-                        AttrVo a = attrMapper.getAttrById(filter.getAttrId());
-                        filter.setLabel(a.getLabel());
-                        filter.setName(a.getName());
+                    if (syncCiCollectionVo.getIsAllowMultiple() == null || syncCiCollectionVo.getIsAllowMultiple().equals(0)) {
+                        //补充异常信息
+                        CiVo c = ciMapper.getCiById(ciEntityConditionVo.getCiId());
+                        ciEntityConditionVo.setCiName(c.getName());
+                        ciEntityConditionVo.setCiLabel(c.getLabel());
+                        for (AttrFilterVo filter : ciEntityConditionVo.getAttrFilterList()) {
+                            AttrVo a = attrMapper.getAttrById(filter.getAttrId());
+                            filter.setLabel(a.getLabel());
+                            filter.setName(a.getName());
+                        }
+                        throw new CiEntityDuplicateException(ciEntityConditionVo, dataObj);
+                    } else if (syncCiCollectionVo.getIsAllowMultiple().equals(1)) {
+                        ciEntityTransactionVo.setSkipUniqueCheck(true);
                     }
-                    throw new CiEntityDuplicateException(ciEntityConditionVo, dataObj);
                 }
                 ciEntityTransactionVo.setCiId(ciVo.getId());
                 ciEntityTransactionVo.setAllowCommit(syncCiCollectionVo.getIsAutoCommit().equals(1));
                 ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());//局部更新模式
                 if (CollectionUtils.isEmpty(checkList)) {
                     ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
-                } else if (checkList.size() == 1) {
+                } else {
                     ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
                     ciEntityTransactionVo.setCiEntityId(checkList.get(0).getId());
                 }

@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.sync;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.common.utils.CollectionUtils;
 import neatlogic.framework.auth.core.AuthAction;
@@ -28,7 +29,6 @@ import neatlogic.framework.restful.annotation.OperationType;
 import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.module.cmdb.dao.mapper.sync.SyncMapper;
 import neatlogic.module.cmdb.service.sync.SyncService;
 import org.springframework.stereotype.Service;
 
@@ -41,9 +41,6 @@ public class SaveSyncCiCollectionApi extends PrivateApiComponentBase {
 
     @Resource
     private SyncService syncService;
-
-    @Resource
-    private SyncMapper syncMapper;
 
 
     @Override
@@ -67,11 +64,13 @@ public class SaveSyncCiCollectionApi extends PrivateApiComponentBase {
             @Param(name = "parentKey", type = ApiParamType.STRING, desc = "父属性"),
             @Param(name = "mappingList", type = ApiParamType.JSONARRAY, desc = "映射内容"),
             @Param(name = "description", type = ApiParamType.STRING, xss = true, desc = "说明", maxLength = 500),
-            @Param(name = "uniqueAttrIdList", type = ApiParamType.JSONARRAY, desc = "唯一规则")})
+            @Param(name = "uniqueAttrIdList", type = ApiParamType.JSONARRAY, desc = "唯一规则"),
+            @Param(name = "isAutoCommit", type = ApiParamType.INTEGER, desc = "是否自动提交"),
+            @Param(name = "isAllowMultiple", type = ApiParamType.INTEGER, desc = "允许更新多条")})
     @Description(desc = "保存配置项集合映射设置")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        SyncCiCollectionVo syncCiCollectionVo = JSONObject.toJavaObject(jsonObj, SyncCiCollectionVo.class);
+        SyncCiCollectionVo syncCiCollectionVo = JSON.toJavaObject(jsonObj, SyncCiCollectionVo.class);
 
         if (CollectionUtils.isEmpty(syncCiCollectionVo.getMappingList())) {
             throw new SyncMappingNotFoundException();
