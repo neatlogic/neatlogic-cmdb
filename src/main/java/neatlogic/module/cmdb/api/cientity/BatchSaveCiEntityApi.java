@@ -104,7 +104,7 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
                     this.put("id", 330340423237635L);
                     this.put("ciId", 323010541453312L);
                     this.put("uuid", "2d327f1213d542bd8a26ace1efb5ab41");
-                    this.put("editMode", "global|partial");
+                    //this.put("editMode", "global|partial");
                     this.put("attrEntityData", new JSONObject() {{
                         this.put("attr_323010784722944", new JSONObject() {{
                             this.put("valueList", new JSONArray() {{
@@ -130,14 +130,12 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
                             this.put("valueList", new JSONObject() {{
                                 this.put("ciEntityUuid", "78a78bc87878abc787d8e7878712");
                                 this.put("ciId", "123123123123123");
-                                this.put("action", "replace(editMode=global才生效，replace模式代表要替换整个关系的值，否则只是补充)");
                             }});
                         }});
                         this.put("relto_1231231313123", new JSONObject() {{
                             this.put("valueList", new JSONObject() {{
                                 this.put("ciEntityUuid", "78a78bc87878abc787d8e7878712");
                                 this.put("ciId", "123123123123123");
-                                this.put("action", "replace(editMode=global才生效，replace模式代表要替换整个关系的值，否则只是补充)");
                             }});
                         }});
                     }});
@@ -152,24 +150,27 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
         simpleJson.put("ciEntityList", new JSONArray() {
             {
                 this.add(new JSONObject() {{
-                    this.put("ciName", $.t("term.cmdb.ciuniquename"));
-                    this.put("uuid", "2d327f1213d542bd8a26ace1efb5ab41");
-                    this.put("editMode", "global|partial");
+                    this.put("id", "配置项id，优先级高于uuid");
+                    this.put("uuid", "配置项uuid");
+                    //this.put("editMode", "global|partial");
                     this.put("entityData", new JSONObject() {{
-                        this.put("attrname1", new JSONArray() {{
+                        this.put("attrname1（引用型属性更新）", new JSONArray() {{
                             this.add(new JSONObject() {{
-                                this.put("uuid", "已存在的uuid或能作为唯一标识的属性值");
+                                this.put("id", "配置项id，优先级高于uuid");
+                                this.put("uuid", "配置项uuid");
                             }});
                         }});
-                        this.put("attrname2", new JSONArray() {{
+                        this.put("attrname3（引用型属性删除）", new JSONArray() );
+                        this.put("attrname2（普通属性更新）", new JSONArray() {{
                             this.add(new JSONObject() {{
-                                this.put("value", "普通文本属性值");
+                                this.put("value", "文本、数字、日期等属性值");
                             }});
                         }});
-                        this.put("relname2", new JSONArray() {{
+                        this.put("relname2（关系更新）", new JSONArray() {{
                             this.add(new JSONObject() {{
-                                this.put("uuid", "已存在的uuid或能作为唯一标识的属性值");
-                                this.put("action", "replace(editMode=global才生效，replace模式代表要替换整个关系的值，否则只是补充)");
+                                this.put("id", "目标配置项id");
+                                this.put("uuid", "目标配置项的uuid或能作为唯一标识的属性值");
+                                this.put("action", "insert（新增关系）|delete（删除关系）|replace（用新关系替换旧关系，如果需要清空关系，无需提供id或uuid属性）。注意：只要任意关系成员的action是replace，关系更新都使用replace模式");
                             }});
                         }});
                     }});
@@ -184,39 +185,32 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
 
     private JSONArray convertSimpleData(JSONObject jsonObj) {
         JSONArray ciEntityObjList = jsonObj.getJSONArray("ciEntityList");
-        Map<String, CiVo> ciMap = new HashMap<>();
         JSONArray returnCiEntityObjList = new JSONArray();
         for (int index = 0; index < ciEntityObjList.size(); index++) {
             JSONObject ciEntityObj = ciEntityObjList.getJSONObject(index);
             JSONObject returnCiEntityObj = new JSONObject();
             Long id = ciEntityObj.getLong("id");
             String uuid = ciEntityObj.getString("uuid");
-            String ciName = ciEntityObj.getString("ciName");
-            returnCiEntityObj.put("editMode", ciEntityObj.getString("editMode"));
-            if (StringUtils.isBlank(ciName)) {
-                throw new ParamNotExistsException("ciEntityList.ciName");
-            }
+            returnCiEntityObj.put("editMode", EditModeType.PARTIAL.getValue());
             JSONObject entityData = ciEntityObj.getJSONObject("entityData");
+            CiVo ciVo = null;
             if (id != null) {
+                ciVo = ciMapper.getCiByCiEntityId(id);
                 returnCiEntityObj.put("id", ciEntityObj.getLong("id"));
             }
             if (StringUtils.isNotBlank(uuid)) {
+                if (ciVo == null) {
+                    ciVo = ciMapper.getCiByCiEntityUuid(uuid);
+                }
                 returnCiEntityObj.put("uuid", Md5Util.isMd5(ciEntityObj.getString("uuid")) ? ciEntityObj.getString("uuid") : Md5Util.encryptMD5(ciEntityObj.getString("uuid")));
             }
-            ciName = ciName.toLowerCase();
-            CiVo ciVo = ciMap.get(ciName);
             if (ciVo == null) {
-                ciVo = ciMapper.getCiByName(ciName);
-                if (ciVo != null) {
-                    List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
-                    List<RelVo> relList = relMapper.getRelByCiId(ciVo.getId());
-                    ciVo.setAttrList(attrList);
-                    ciVo.setRelList(relList);
-                    ciMap.put(ciName, ciVo);
-                } else {
-                    throw new CiNotFoundException(ciName);
-                }
+                throw new CiNotFoundException();
             }
+            List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
+            List<RelVo> relList = relMapper.getRelByCiId(ciVo.getId());
+            ciVo.setAttrList(attrList);
+            ciVo.setRelList(relList);
             returnCiEntityObj.put("ciId", ciVo.getId());
             JSONObject attrEntityData = new JSONObject();
             JSONObject relEntityData = new JSONObject();
@@ -224,21 +218,25 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
             if (MapUtils.isNotEmpty(entityData)) {
                 for (String key : entityData.keySet()) {
                     JSONArray valueList = entityData.getJSONArray(key);
-                    if (CollectionUtils.isNotEmpty(valueList)) {
+                    if (valueList != null) {
                         boolean hasFoundAttr = false;
                         if (CollectionUtils.isNotEmpty(ciVo.getAttrList())) {
                             Optional<AttrVo> attrOp = ciVo.getAttrList().stream().filter(d -> d.getName().equalsIgnoreCase(key)).findFirst();
                             if (attrOp.isPresent()) {
                                 AttrVo attrVo = attrOp.get();
                                 JSONObject attrObj = new JSONObject();
-                                attrObj.put("saveMode", SaveModeType.MERGE.getValue());
+                                attrObj.put("saveMode", SaveModeType.REPLACE.getValue());
                                 attrObj.put("name", attrVo.getName());
                                 attrObj.put("label", attrVo.getLabel());
                                 attrObj.put("type", attrVo.getType());
                                 JSONArray returnValueList = new JSONArray();
                                 for (int vindex = 0; vindex < valueList.size(); vindex++) {
                                     JSONObject valueObj = valueList.getJSONObject(vindex);
-                                    if (valueObj.containsKey("uuid")) {
+                                    if (valueObj.getLong("id") != null) {
+                                        returnValueList.add(new JSONObject() {{
+                                            this.put("id", valueObj.getLong("id"));
+                                        }});
+                                    } else if (valueObj.containsKey("uuid")) {
                                         returnValueList.add(new JSONObject() {{
                                             this.put("uuid", Md5Util.isMd5(valueObj.getString("uuid")) ? valueObj.getString("uuid") : Md5Util.encryptMD5(valueObj.getString("uuid")));
                                         }});
@@ -259,18 +257,37 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
                                 JSONArray returnValueList = new JSONArray();
                                 for (int vindex = 0; vindex < valueList.size(); vindex++) {
                                     JSONObject valueObj = valueList.getJSONObject(vindex);
-                                    if (valueObj.containsKey("uuid")) {
+                                    if (valueObj.getLong("id") != null) {
+                                        returnValueList.add(new JSONObject() {{
+                                            this.put("ciEntityId", valueObj.getLong("id"));
+                                            this.put("ciId", relVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiId() : relVo.getFromCiId());
+                                            this.put("ciName", relVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiName() : relVo.getFromCiName());
+                                            this.put("action", valueObj.getString("action"));
+                                        }});
+                                    } else if (StringUtils.isNoneBlank(valueObj.getString("uuid"))) {
                                         returnValueList.add(new JSONObject() {{
                                             this.put("ciEntityUuid", Md5Util.isMd5(valueObj.getString("uuid")) ? valueObj.getString("uuid") : Md5Util.encryptMD5(valueObj.getString("uuid")));
                                             this.put("ciId", relVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiId() : relVo.getFromCiId());
                                             this.put("ciName", relVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiName() : relVo.getFromCiName());
                                             this.put("action", valueObj.getString("action"));
                                         }});
+                                    } else if (valueObj.getString("action") != null && valueObj.getString("action").equalsIgnoreCase("replace")) {
+                                        /*
+                                        一旦有一个replace成员，且不提供具体的cientityId，则意味需要清空关系
+                                         */
+                                        returnValueList = new JSONArray();
+                                        returnValueList.add(new JSONObject() {{
+                                            this.put("ciId", relVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiId() : relVo.getFromCiId());
+                                            this.put("ciName", relVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiName() : relVo.getFromCiName());
+                                            this.put("action", valueList.getJSONObject(0).getString("action"));
+                                        }});
+                                        break;
                                     }
-
                                 }
-                                relObj.put("valueList", returnValueList);
-                                relEntityData.put("rel" + relVo.getDirection() + "_" + relVo.getId(), relObj);
+                                if (CollectionUtils.isNotEmpty(returnValueList)) {
+                                    relObj.put("valueList", returnValueList);
+                                    relEntityData.put("rel" + relVo.getDirection() + "_" + relVo.getId(), relObj);
+                                }
                             }
                         }
                     }

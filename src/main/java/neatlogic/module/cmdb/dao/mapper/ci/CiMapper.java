@@ -30,6 +30,10 @@ import java.util.List;
 public interface CiMapper extends ICiCrossoverMapper {
     List<Long> getDownwardCiIdListByLR(@Param("lft") Integer lft, @Param("rht") Integer rht);
 
+    CiVo getCiByCiEntityId(Long id);
+
+    CiVo getCiByCiEntityUuid(String uuid);
+
     CiVo getCiBaseInfoById(Long ciId);
 
     List<CiVo> getCiTree();
