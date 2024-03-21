@@ -79,7 +79,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
-
+@Deprecated
 @Service
 public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
 
@@ -1852,4 +1852,9 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
     protected int myRedo(ProcessTaskStepVo currentProcessTaskStepVo) throws ProcessTaskException {
         return 0;
     }
+    @Override
+    public boolean isHidden() {
+        return true;
+    }
+
 }

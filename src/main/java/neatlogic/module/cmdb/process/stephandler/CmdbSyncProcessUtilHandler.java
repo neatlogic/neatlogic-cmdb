@@ -46,7 +46,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
-
+@Deprecated
 @Service
 public class CmdbSyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
 
