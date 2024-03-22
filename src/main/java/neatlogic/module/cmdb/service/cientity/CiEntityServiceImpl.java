@@ -1324,10 +1324,12 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             }
         }
 
-        // 排除掉没变化的关系并且刷新renew time
-        for (RelEntityVo relEntityVo : oldRelEntityList) {
-            Long targetId = relEntityVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? relEntityVo.getToCiEntityId() : relEntityVo.getFromCiEntityId();
-            ciEntityTransactionVo.removeRelEntityData(relEntityVo.getRelId(), relEntityVo.getDirection(), targetId);
+        // 排除掉没变化的关系
+        if (CollectionUtils.isNotEmpty(oldRelEntityList)) {
+            for (RelEntityVo relEntityVo : oldRelEntityList) {
+                Long targetId = relEntityVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? relEntityVo.getToCiEntityId() : relEntityVo.getFromCiEntityId();
+                ciEntityTransactionVo.removeRelEntityData(relEntityVo.getRelId(), relEntityVo.getDirection(), targetId);
+            }
         }
 
         //补充待删除关系进事务里
