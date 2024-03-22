@@ -1324,7 +1324,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             }
         }
 
-        // 排除掉没变化的关系并且刷新renew time
+        // 排除掉没变化的关系
         if (CollectionUtils.isNotEmpty(oldRelEntityList)) {
             for (RelEntityVo relEntityVo : oldRelEntityList) {
                 Long targetId = relEntityVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? relEntityVo.getToCiEntityId() : relEntityVo.getFromCiEntityId();
