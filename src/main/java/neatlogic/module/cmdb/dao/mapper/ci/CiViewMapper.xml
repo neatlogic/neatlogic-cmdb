@@ -50,9 +50,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         attr.`label` AS itemLabel,
         'attr' AS type,
         v.alias,
-        v.show_type AS showType,
+        IFNULL(v.show_type,'all') AS showType,
         v.allow_edit AS allowEdit,
-        IFNULL(v.sort, 999999) AS sort,
+        IFNULL(v.sort, 998) AS sort,
         if(ci.id = #{ciId}, 0, 1) AS isExtended,
         '' AS uniqueKey
         FROM
@@ -69,9 +69,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         rel.to_label AS itemLabel,<!-- 当前模型作为上游时需要显示下游目标名称 -->
         'relfrom' AS type,
         v.alias,
-        v.show_type AS showType,
+        IFNULL(v.show_type,'all') AS showType,
         v.allow_edit AS allowEdit,
-        IFNULL(v.sort, 999999) AS sort,
+        IFNULL(v.sort, 999) AS sort,
         if(ci.id = #{ciId}, 0, 1) AS isExtended,
         CONCAT(rel.from_ci_id,'-',rel.to_ci_id) AS uniqueKey
         FROM
@@ -87,9 +87,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         rel.from_label AS itemLabel,<!-- 当前模型作为下游时需要显示上游目标名称 -->
         'relto' AS type,
         v.alias,
-        v.show_type AS showType,
+        IFNULL(v.show_type,'all') AS showType,
         v.allow_edit AS allowEdit,
-        IFNULL(v.sort, 999999) AS sort,
+        IFNULL(v.sort, 999) AS sort,
         if(ci.id = #{ciId}, 0, 1) AS isExtended,
         CONCAT(rel.from_ci_id,'-',rel.to_ci_id) AS uniqueKey
         FROM
@@ -108,9 +108,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         cga.label as itemLabel,
         'global' as type,
         v.alias,
-        IFNULL(v.show_type,'none') AS showType,
+        IFNULL(v.show_type,'all') AS showType,
         v.allow_edit AS allowEdit,
-        IFNULL(v.sort, 999999) as sort,
+        IFNULL(v.sort, 997) as sort,
         0 AS isExtended,
         '' AS uniqueKey
         FROM cmdb_global_attr cga
@@ -123,9 +123,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         const.label AS itemLabel,
         'const' AS type,
         v.alias,
-        IFNULL(v.show_type,'none') AS showType,
+        IFNULL(v.show_type,const.show_type) AS showType,
         v.allow_edit AS allowEdit,
-        IFNULL(v.sort, 999999) as sort,
+        IFNULL(v.sort, const.sort) as sort,
         0 AS isExtended,
         '' AS uniqueKey
         FROM cmdb_viewconst const
