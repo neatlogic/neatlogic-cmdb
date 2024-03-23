@@ -19,10 +19,13 @@ package neatlogic.module.cmdb.matrix.handler;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import neatlogic.framework.cmdb.dto.customview.CustomViewAttrVo;
+import neatlogic.framework.cmdb.dto.customview.CustomViewConditionVo;
+import neatlogic.framework.cmdb.dto.customview.CustomViewConstAttrVo;
 import neatlogic.framework.cmdb.dto.customview.CustomViewVo;
 import neatlogic.framework.cmdb.exception.customview.CustomViewNotFoundException;
-import neatlogic.framework.dependency.core.DependencyManager;
 import neatlogic.framework.exception.type.ParamNotExistsException;
+import neatlogic.framework.matrix.constvalue.MatrixAttributeType;
 import neatlogic.framework.matrix.core.MatrixDataSourceHandlerBase;
 import neatlogic.framework.matrix.dto.MatrixAttributeVo;
 import neatlogic.framework.matrix.dto.MatrixCmdbCustomViewVo;
@@ -34,7 +37,6 @@ import neatlogic.module.cmdb.dao.mapper.customview.CustomViewMapper;
 import neatlogic.module.cmdb.matrix.constvalue.MatrixType;
 import neatlogic.module.cmdb.service.customview.CustomViewDataService;
 import neatlogic.module.cmdb.workerdispatcher.exception.CmdbDispatcherDispatchFailedException;
-import neatlogic.module.framework.dependency.handler.CiAttr2MatrixAttrDependencyHandler;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -46,6 +48,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase {
@@ -100,7 +103,7 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
                                     String uuid = showAttributeObj.getString("uuid");
                                     if (uuid != null) {
                                         oldShowAttributeUuidMap.put(showAttributeObj.getString("label"), uuid);
-                                        DependencyManager.delete(CiAttr2MatrixAttrDependencyHandler.class, uuid);
+//                                        DependencyManager.delete(CiAttr2MatrixAttrDependencyHandler.class, uuid);
                                     }
                                 }
                             }
@@ -131,9 +134,9 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
 //            }
 //        }
         JSONArray showAttributeArray = new JSONArray();
-        if (!showAttributeLabelArray.contains("const_id")) {
-            showAttributeLabelArray.add(0, "const_id");
-        }
+//        if (!showAttributeLabelArray.contains("const_id")) {
+//            showAttributeLabelArray.add(0, "const_id");
+//        }
         Iterator<Object> iterator = showAttributeLabelArray.iterator();
         while (iterator.hasNext()) {
             String showAttributeLabel = (String) iterator.next();
@@ -151,9 +154,9 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
 //            showAttributeObj.put("name", ciViewVo.getItemLabel());
             showAttributeObj.put("label", showAttributeLabel);
             showAttributeArray.add(showAttributeObj);
-            if (showAttributeLabel.startsWith("const_")) {
-                continue;
-            }
+//            if (showAttributeLabel.startsWith("const_")) {
+//                continue;
+//            }
 //            JSONObject dependencyConfig = new JSONObject();
 //            dependencyConfig.put("matrixUuid", matrixVo.getUuid());
 //            dependencyConfig.put("customViewId", customViewId);
@@ -258,79 +261,42 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
         }
         int sort = 0;
         List<MatrixAttributeVo> matrixAttributeList = new ArrayList<>();
-//        CiViewVo ciViewVo = new CiViewVo();
-//        ciViewVo.setCiId(ciId);
-//        List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo));
-//        if (CollectionUtils.isNotEmpty(ciViewList)) {
-//            List<AttrVo> attrList = attrMapper.getAttrByCiId(ciId);
-//            Map<Long, AttrVo> attrMap = attrList.stream().collect(Collectors.toMap(AttrVo::getId, e -> e));
-//            List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciId));
-//            Map<Long, RelVo> fromRelMap = relList.stream().filter(rel -> rel.getDirection().equals("from")).collect(Collectors.toMap(RelVo::getId, e -> e));
-//            Map<Long, RelVo> toRelMap = relList.stream().filter(rel -> rel.getDirection().equals("to")).collect(Collectors.toMap(RelVo::getId, e -> e));
-//            for (CiViewVo ciview : ciViewList) {
-//                MatrixAttributeVo matrixAttributeVo = new MatrixAttributeVo();
-//                matrixAttributeVo.setMatrixUuid(matrixUuid);
-//                matrixAttributeVo.setName(ciview.getItemLabel());
-//                matrixAttributeVo.setType(MatrixAttributeType.INPUT.getValue());
-//                matrixAttributeVo.setIsDeletable(0);
-//                matrixAttributeVo.setSort(sort++);
-//                matrixAttributeVo.setIsRequired(0);
-//                switch (ciview.getType()) {
-//                    case "attr":
-//                        matrixAttributeVo.setLabel("attr_" + ciview.getItemId());
-//                        AttrVo attrVo = attrMap.get(ciview.getItemId());
-//                        JSONObject attrConfig = new JSONObject();
-//                        attrConfig.put("attr", attrVo);
-//                        matrixAttributeVo.setConfig(attrConfig);
-//                        break;
-//                    case "relfrom":
-//                        matrixAttributeVo.setLabel("relfrom_" + ciview.getItemId());
-//                        RelVo fromRelVo = fromRelMap.get(ciview.getItemId());
-//                        JSONObject fromRelConfig = new JSONObject();
-//                        fromRelConfig.put("rel", fromRelVo);
-//                        matrixAttributeVo.setConfig(fromRelConfig);
-//                        break;
-//                    case "relto":
-//                        matrixAttributeVo.setLabel("relto_" + ciview.getItemId());
-//                        RelVo toRelVo = toRelMap.get(ciview.getItemId());
-//                        JSONObject toRelConfig = new JSONObject();
-//                        toRelConfig.put("rel", toRelVo);
-//                        matrixAttributeVo.setConfig(toRelConfig);
-//                        break;
-//                    case "const":
-//                        //固化属性需要特殊处理
-//                        String itemName = ciview.getItemName().replace("_", "");
-//                        matrixAttributeVo.setLabel("const_" + itemName);
-//                        if ("id".equals(itemName)) {
-//                            matrixAttributeVo.setPrimaryKey(1);
-//                        } else if ("ciLabel".equals(itemName)) {
-//                            // 不是虚拟模型的模型属性不能搜索
-//                            if (Objects.equals(ciVo.getIsAbstract(), 0)) {
-//                                matrixAttributeVo.setIsSearchable(0);
-//                            }
-//                            JSONObject config = new JSONObject();
-//                            config.put("ciId", ciId);
-//                            matrixAttributeVo.setConfig(config);
-//                        } else {
-//                            matrixAttributeVo.setIsSearchable(0);
-//                        }
-//                        break;
-//                    default:
-//                        break;
-//                }
-//                if (StringUtils.isBlank(matrixAttributeVo.getLabel())) {
-//                    continue;
-//                }
-//                if (MapUtils.isNotEmpty(showAttributeUuidMap)) {
-//                    String uuid = showAttributeUuidMap.get(matrixAttributeVo.getLabel());
-//                    if (uuid == null && Objects.equals(matrixAttributeVo.getPrimaryKey(), 0)) {
-//                        continue;
-//                    }
-//                    matrixAttributeVo.setUuid(uuid);
-//                }
-//                matrixAttributeList.add(matrixAttributeVo);
-//            }
-//        }
+        CustomViewConstAttrVo customViewConstAttrVo = new CustomViewConstAttrVo(customViewId);
+        CustomViewAttrVo customViewAttrVo = new CustomViewAttrVo(customViewId);
+        List<CustomViewConstAttrVo> constAttrList = customViewMapper.getCustomViewConstAttrByCustomViewId(customViewConstAttrVo);
+        for (CustomViewConstAttrVo constAttrVo : constAttrList) {
+            String uuid = showAttributeUuidMap.get(constAttrVo.getUuid());
+            if (uuid == null) {
+                continue;
+            }
+            MatrixAttributeVo matrixAttributeVo = new MatrixAttributeVo();
+            matrixAttributeVo.setUuid(uuid);
+            matrixAttributeVo.setLabel(constAttrVo.getUuid());
+            matrixAttributeVo.setName(constAttrVo.getAlias());
+            matrixAttributeVo.setMatrixUuid(matrixUuid);
+            matrixAttributeVo.setType(MatrixAttributeType.INPUT.getValue());
+            matrixAttributeVo.setIsDeletable(0);
+            matrixAttributeVo.setSort(sort++);
+            matrixAttributeVo.setIsRequired(0);
+            matrixAttributeList.add(matrixAttributeVo);
+        }
+        List<CustomViewAttrVo> attrList = customViewMapper.getCustomViewAttrByCustomViewId(customViewAttrVo);
+        for (CustomViewAttrVo attrVo : attrList) {
+            String uuid = showAttributeUuidMap.get(attrVo.getUuid());
+            if (uuid == null) {
+                continue;
+            }
+            MatrixAttributeVo matrixAttributeVo = new MatrixAttributeVo();
+            matrixAttributeVo.setUuid(uuid);
+            matrixAttributeVo.setLabel(attrVo.getUuid());
+            matrixAttributeVo.setName(attrVo.getAlias());
+            matrixAttributeVo.setMatrixUuid(matrixUuid);
+            matrixAttributeVo.setType(MatrixAttributeType.INPUT.getValue());
+            matrixAttributeVo.setIsDeletable(0);
+            matrixAttributeVo.setSort(sort++);
+            matrixAttributeVo.setIsRequired(0);
+            matrixAttributeList.add(matrixAttributeVo);
+        }
         return matrixAttributeList;
     }
 
@@ -346,7 +312,45 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
 
     @Override
     protected List<Map<String, JSONObject>> mySearchTableDataNew(MatrixDataVo dataVo) {
-        return null;
+        String matrixUuid = dataVo.getMatrixUuid();
+        MatrixCmdbCustomViewVo matrixCmdbCustomViewVo = matrixMapper.getMatrixCmdbCustomViewByMatrixUuid(matrixUuid);
+        if (matrixCmdbCustomViewVo == null) {
+            throw new MatrixCmdbCustomViewNotFoundException(matrixUuid);
+        }
+        List<Map<String, JSONObject>> resultList = new ArrayList<>();
+        MatrixVo matrixVo = matrixMapper.getMatrixByUuid(matrixUuid);
+        List<MatrixAttributeVo> matrixAttributeList = myGetAttributeList(matrixVo);
+        if (CollectionUtils.isEmpty(matrixAttributeList)) {
+            return resultList;
+        }
+        Map<String, String> attributeLabelMap = matrixAttributeList.stream().collect(Collectors.toMap(e -> e.getUuid(), e -> e.getLabel()));
+        List<String> attributeList = matrixAttributeList.stream().map(MatrixAttributeVo::getUuid).collect(Collectors.toList());
+        Map<String, String> attributeUuidMap = matrixAttributeList.stream().collect(Collectors.toMap(e -> e.getLabel(), e -> e.getUuid()));
+        CustomViewConditionVo customViewConditionVo = new CustomViewConditionVo();
+        customViewConditionVo.setCustomViewId(matrixCmdbCustomViewVo.getCustomViewId());
+        List<Map<String, Object>> mapList = customViewDataService.searchCustomViewData(customViewConditionVo);
+        for (Map<String, Object> map : mapList) {
+            if (MapUtils.isEmpty(map)) {
+                continue;
+            }
+            Map<String, JSONObject> rowDataMap = new HashMap<>();
+            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                String uuid = attributeUuidMap.get(entry.getKey());
+                if (StringUtils.isBlank(uuid)) {
+                    continue;
+                }
+                JSONObject resultObj = new JSONObject();
+                resultObj.put("type", MatrixAttributeType.INPUT.getValue());
+                resultObj.put("value", entry.getValue());
+                resultObj.put("text", entry.getValue());
+                rowDataMap.put(uuid, resultObj);
+//                if ("const_id".equals(entry.getKey())) {
+//                    rowDataMap.put("uuid", matrixAttributeValueHandle(null, entry.getValue()));
+//                }
+            }
+            resultList.add(rowDataMap);
+        }
+        return resultList;
     }
 
     @Override
