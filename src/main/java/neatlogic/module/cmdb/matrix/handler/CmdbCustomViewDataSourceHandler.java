@@ -69,7 +69,7 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
     @Override
     protected boolean mySaveMatrix(MatrixVo matrixVo) throws Exception {
         Long customViewId = matrixVo.getCustomViewId();
-        if (customViewId != null) {
+        if (customViewId == null) {
             throw new ParamNotExistsException("customViewId");
         }
         CustomViewVo customView = customViewMapper.getCustomViewById(customViewId);
@@ -265,12 +265,11 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
         CustomViewAttrVo customViewAttrVo = new CustomViewAttrVo(customViewId);
         List<CustomViewConstAttrVo> constAttrList = customViewMapper.getCustomViewConstAttrByCustomViewId(customViewConstAttrVo);
         for (CustomViewConstAttrVo constAttrVo : constAttrList) {
-            String uuid = showAttributeUuidMap.get(constAttrVo.getUuid());
-            if (uuid == null) {
-                continue;
-            }
             MatrixAttributeVo matrixAttributeVo = new MatrixAttributeVo();
-            matrixAttributeVo.setUuid(uuid);
+            String uuid = showAttributeUuidMap.get(constAttrVo.getUuid());
+            if (uuid != null) {
+                matrixAttributeVo.setUuid(uuid);
+            }
             matrixAttributeVo.setLabel(constAttrVo.getUuid());
             matrixAttributeVo.setName(constAttrVo.getAlias());
             matrixAttributeVo.setMatrixUuid(matrixUuid);
@@ -282,12 +281,11 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
         }
         List<CustomViewAttrVo> attrList = customViewMapper.getCustomViewAttrByCustomViewId(customViewAttrVo);
         for (CustomViewAttrVo attrVo : attrList) {
-            String uuid = showAttributeUuidMap.get(attrVo.getUuid());
-            if (uuid == null) {
-                continue;
-            }
             MatrixAttributeVo matrixAttributeVo = new MatrixAttributeVo();
-            matrixAttributeVo.setUuid(uuid);
+            String uuid = showAttributeUuidMap.get(attrVo.getUuid());
+            if (uuid != null) {
+                matrixAttributeVo.setUuid(uuid);
+            }
             matrixAttributeVo.setLabel(attrVo.getUuid());
             matrixAttributeVo.setName(attrVo.getAlias());
             matrixAttributeVo.setMatrixUuid(matrixUuid);
