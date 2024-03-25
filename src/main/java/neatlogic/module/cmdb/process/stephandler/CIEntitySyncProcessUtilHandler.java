@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Objects;
 
 //@Service
+@Deprecated
 public class CIEntitySyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
 
     @Override

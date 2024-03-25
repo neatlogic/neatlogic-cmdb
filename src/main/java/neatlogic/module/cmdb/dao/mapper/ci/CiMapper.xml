@@ -572,9 +572,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </collection>
     </resultMap>
 
-    <select id="getCiById" parameterType="java.lang.Long" resultMap="ciResultMap"
-            useCache="true">
-        SELECT a.`id`,
+    <sql id="ciColumn">
+        a.`id`,
                a.`name`,
                a.`label`,
                a.`description`,
@@ -596,94 +595,73 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                a.`file_id`                                                                       AS fileId,
                b.`attr_id`                                                                       AS uniqueAttrId,
                IF((select count(1) from cmdb_ci x where x.parent_ci_id = a.id) > 0, true, false) as hasChildren
+    </sql>
+
+    <select id="getCiByCiEntityUuid" parameterType="java.lang.String" resultMap="ciResultMap"
+            useCache="true">
+        SELECT
+        <include refid="ciColumn"></include>
         FROM `cmdb_ci` a
-                 LEFT JOIN `cmdb_ci_unique` b ON a.id = b.ci_id
-                 LEFT JOIN `cmdb_ci` c ON a.`parent_ci_id` = c.id
-                 LEFT JOIN `cmdb_citype` d ON a.`type_id` = d.id
+        LEFT JOIN `cmdb_ci_unique` b ON a.id = b.ci_id
+        LEFT JOIN `cmdb_ci` c ON a.`parent_ci_id` = c.id
+        LEFT JOIN `cmdb_citype` d ON a.`type_id` = d.id
+        JOIN cmdb_cientity e on a.id = e.ci_id
+        WHERE e.uuid = #{value}
+    </select>
+
+    <select id="getCiByCiEntityId" parameterType="java.lang.Long" resultMap="ciResultMap"
+            useCache="true">
+        SELECT
+        <include refid="ciColumn"></include>
+        FROM `cmdb_ci` a
+        LEFT JOIN `cmdb_ci_unique` b ON a.id = b.ci_id
+        LEFT JOIN `cmdb_ci` c ON a.`parent_ci_id` = c.id
+        LEFT JOIN `cmdb_citype` d ON a.`type_id` = d.id
+        JOIN cmdb_cientity e on a.id = e.ci_id
+        WHERE e.id = #{value}
+    </select>
+
+    <select id="getCiById" parameterType="java.lang.Long" resultMap="ciResultMap"
+            useCache="true">
+        SELECT
+        <include refid="ciColumn"></include>
+        FROM `cmdb_ci` a
+        LEFT JOIN `cmdb_ci_unique` b ON a.id = b.ci_id
+        LEFT JOIN `cmdb_ci` c ON a.`parent_ci_id` = c.id
+        LEFT JOIN `cmdb_citype` d ON a.`type_id` = d.id
         WHERE a.id = #{value}
     </select>
 
     <select id="getCiByName" parameterType="java.lang.String" resultMap="ciResultMap"
             useCache="true">
-        SELECT a.`id`,
-               a.`name`,
-               a.`label`,
-               a.`description`,
-               a.`icon`,
-               a.`type_id`      AS typeId,
-               d.`name`         AS typeName,
-               a.`is_private`   AS isPrivate,
-               a.`is_menu`      AS isMenu,
-               a.`parent_ci_id` AS parentCiId,
-               c.label          AS parentCiLabel,
-               c.name           AS parentCiName,
-               a.`is_abstract`  AS isAbstract,
-               a.`is_virtual`   AS isVirtual,
-               a.`expired_day`  AS expiredDay,
-               a.`name_attr_id` AS nameAttrId,
-               a.`lft`          AS lft,
-               a.`rht`          AS rht,
-               b.`attr_id`      AS uniqueAttrId
+        SELECT
+        <include refid="ciColumn"></include>
         FROM `cmdb_ci` a
-                 LEFT JOIN `cmdb_ci_unique` b ON a.id = b.ci_id
-                 LEFT JOIN `cmdb_ci` c ON a.`parent_ci_id` = c.id
-                 LEFT JOIN `cmdb_citype` d ON a.`type_id` = d.id
+        LEFT JOIN `cmdb_ci_unique` b ON a.id = b.ci_id
+        LEFT JOIN `cmdb_ci` c ON a.`parent_ci_id` = c.id
+        LEFT JOIN `cmdb_citype` d ON a.`type_id` = d.id
         WHERE a.name = #{value}
     </select>
 
     <select id="getCiByLabel" parameterType="java.lang.String" resultMap="ciResultMap"
             useCache="true">
-        SELECT a.`id`,
-               a.`name`,
-               a.`label`,
-               a.`description`,
-               a.`icon`,
-               a.`type_id`      AS typeId,
-               d.`name`         AS typeName,
-               a.`is_private`   AS isPrivate,
-               a.`is_menu`      AS isMenu,
-               a.`parent_ci_id` AS parentCiId,
-               c.label          AS parentCiLabel,
-               c.name           AS parentCiName,
-               a.`is_abstract`  AS isAbstract,
-               a.`is_virtual`   AS isVirtual,
-               a.`expired_day`  AS expiredDay,
-               a.`name_attr_id` AS nameAttrId,
-               a.`lft`          AS lft,
-               a.`rht`          AS rht,
-               b.`attr_id`      AS uniqueAttrId
+        SELECT
+        <include refid="ciColumn"></include>
         FROM `cmdb_ci` a
-                 LEFT JOIN `cmdb_ci_unique` b ON a.id = b.ci_id
-                 LEFT JOIN `cmdb_ci` c ON a.`parent_ci_id` = c.id
-                 LEFT JOIN `cmdb_citype` d ON a.`type_id` = d.id
+        LEFT JOIN `cmdb_ci_unique` b ON a.id = b.ci_id
+        LEFT JOIN `cmdb_ci` c ON a.`parent_ci_id` = c.id
+        LEFT JOIN `cmdb_citype` d ON a.`type_id` = d.id
         WHERE a.label = #{value}
     </select>
 
     <select id="getCiListByLabelList" parameterType="java.lang.String" resultMap="ciResultMap"
             useCache="true">
-        SELECT a.`id`,
-               a.`name`,
-               a.`label`,
-               a.`description`,
-               a.`icon`,
-               a.`type_id`      AS typeId,
-               d.`name`         AS typeName,
-               a.`is_private`   AS isPrivate,
-               a.`is_menu`      AS isMenu,
-               a.`parent_ci_id` AS parentCiId,
-               c.label          AS parentCiLabel,
-               c.name           AS parentCiName,
-               a.`is_abstract`  AS isAbstract,
-               a.`is_virtual`   AS isVirtual,
-               a.`expired_day`  AS expiredDay,
-               a.`name_attr_id` AS nameAttrId,
-               a.`lft`          AS lft,
-               a.`rht`          AS rht,
-               b.`attr_id`      AS uniqueAttrId
+        SELECT
+        <include refid="ciColumn"></include>
         FROM `cmdb_ci` a
-                 LEFT JOIN `cmdb_ci_unique` b ON a.id = b.ci_id
-                 LEFT JOIN `cmdb_ci` c ON a.`parent_ci_id` = c.id
-                 LEFT JOIN `cmdb_citype` d ON a.`type_id` = d.id
+        LEFT JOIN `cmdb_ci_unique` b ON a.id = b.ci_id
+        LEFT JOIN `cmdb_ci` c ON a.`parent_ci_id` = c.id
+        LEFT JOIN `cmdb_citype` d ON a.`type_id` = d.id
         WHERE a.label in
         <foreach collection="list" item="label" open="(" separator="," close=")">
             #{label}

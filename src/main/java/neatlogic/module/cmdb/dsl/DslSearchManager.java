@@ -21,6 +21,7 @@ import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.ci.RelVo;
 import neatlogic.framework.cmdb.enums.RelDirectionType;
 import neatlogic.framework.cmdb.exception.attr.AttrNotFoundException;
+import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.dsl.DslSyntaxIrregularException;
 import neatlogic.framework.common.util.PageUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
@@ -536,6 +537,9 @@ public class DslSearchManager {
         }
 
         CiVo ciVo = ciMapper.getCiById(ciId);
+        if (ciVo == null) {
+            throw new CiNotFoundException(ciId);
+        }
         List<CiVo> ciList = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
         List<Expression> ciExpressions = new ArrayList<>();
         for (CiVo ci : ciList) {

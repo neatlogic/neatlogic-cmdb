@@ -76,8 +76,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverService {
-    // private final static Logger logger = LoggerFactory.getLogger(CiEntityServiceImpl.class);
-    private final static String EXPRESSION_TYPE = "expression";
+    private static final String EXPRESSION_TYPE = "expression";
 
     @Resource
     private CiEntityMapper ciEntityMapper;
@@ -120,10 +119,6 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
 
     @Override
     public List<CiEntityVo> getCiEntityBaseInfoByName(Long ciId, String name) {
-//        CiEntityVo ciEntityVo = new CiEntityVo();
-//        ciEntityVo.setCiId(ciId);
-//        ciEntityVo.setName(name);
-//        return ciEntityMapper.getCiEntityBaseInfoByName(ciEntityVo);
         CiVo ciVo = ciMapper.getCiById(ciId);
         if (ciVo == null) {
             return new ArrayList<>();
@@ -133,7 +128,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         if (ciVo.getIsVirtual().equals(0)) {
             // 非虚拟模型
             List<CiVo> downwardCiList = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
-            Map<Long, CiVo> downwardCiMap = downwardCiList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
+            Map<Long, CiVo> downwardCiMap = downwardCiList.stream().collect(Collectors.toMap(CiVo::getId, e -> e));
             search.setIdList(new ArrayList<>(downwardCiMap.keySet()));
             return ciEntityMapper.getCiEntityListByCiIdListAndName(search);
         } else {
@@ -236,44 +231,6 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         return returnCiEntityVo;
     }
 
-    /**
-     * 正常版查询单个配置项，会join所有关系和属性表
-     *
-     * @param ciId            模型id
-     * @param ciEntityId      配置项id
-     * @param flattenAttr     是否返回空属性
-     * @param limitRelEntity  是否限制关系数量
-     * @param limitAttrEntity 是否限制引用属性数量
-     * @return 配置项信息
-     */
-    private CiEntityVo getCiEntityById(Long ciId, Long ciEntityId, Boolean flattenAttr, Boolean limitRelEntity, Boolean limitAttrEntity) {
-        CiVo ciVo = ciMapper.getCiById(ciId);
-        if (ciVo == null) {
-            throw new CiNotFoundException(ciId);
-        }
-        CiEntityVo ciEntityVo = new CiEntityVo();
-        List<CiVo> ciList;
-        if (ciVo.getIsVirtual().equals(0)) {
-            ciList = ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht());
-        } else {
-            ciList = new ArrayList<>();
-            ciList.add(ciVo);
-        }
-        List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
-        List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciVo.getId()));
-        ciEntityVo.setCiList(ciList);
-        ciEntityVo.setId(ciEntityId);
-        ciEntityVo.setCiId(ciVo.getId());
-        ciEntityVo.setCiLabel(ciVo.getLabel());
-        ciEntityVo.setCiName(ciVo.getName());
-
-        ciEntityVo.setAttrList(attrList);
-        ciEntityVo.setRelList(relList);
-        ciEntityVo.setLimitRelEntity(limitRelEntity);
-        ciEntityVo.setLimitAttrEntity(limitAttrEntity);
-        List<HashMap<String, Object>> resultList = ciEntityMapper.getCiEntityById(ciEntityVo);
-        return new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, attrList, relList).isFlattenAttr(flattenAttr).build().getCiEntity();
-    }
 
     @Override
     public CiEntityVo getCiEntityById(Long ciId, Long ciEntityId) {
@@ -696,7 +653,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             Optional<AttrEntityTransactionVo> op = attrEntityList.stream().filter(attr -> attr.getAttrId().equals(ciVo.getNameAttrId())).findFirst();
             if (op.isPresent()) {
                 AttrEntityTransactionVo attrEntityTransactionVo = op.get();
-                if (attrEntityTransactionVo.isNeedTargetCi()) {
+                if (Boolean.TRUE.equals(attrEntityTransactionVo.isNeedTargetCi())) {
                     List<Long> invokeCiEntityIdList = new ArrayList<>();
                     for (int i = 0; i < attrEntityTransactionVo.getValueList().size(); i++) {
                         try {
@@ -817,37 +774,20 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         List<RelEntityVo> oldRelEntityList = null;
         List<GlobalAttrEntityVo> oldGlobalAttrEntityList = null;
         if (oldEntity == null) {
-            /*
-            如果是单纯校验可能会没有旧配置项信息，这里重新获取一次
-             */
+            //如果是单纯校验可能会没有旧配置项信息，这里重新获取一次
             oldEntity = this.getCiEntityByIdLite(ciEntityTransactionVo.getCiId(), ciEntityTransactionVo.getCiEntityId(), true, false, false);
         }
         if (oldEntity != null) {
-            oldAttrEntityList = oldEntity.getAttrEntityList();
-            oldRelEntityList = oldEntity.getRelEntityList();
-            oldGlobalAttrEntityList = oldEntity.getGlobalAttrEntityList();
-        }
-        if (oldAttrEntityList == null) {
-            oldAttrEntityList = new ArrayList<>();
-        }
-        if (oldGlobalAttrEntityList == null) {
-            oldGlobalAttrEntityList = new ArrayList<>();
-        }
-        if (oldRelEntityList == null) {
-            oldRelEntityList = new ArrayList<>();
+            oldAttrEntityList = oldEntity.getAttrEntityList() == null ? new ArrayList<>() : oldEntity.getAttrEntityList();
+            oldRelEntityList = oldEntity.getRelEntityList() == null ? new ArrayList<>() : oldEntity.getRelEntityList();
+            oldGlobalAttrEntityList = oldEntity.getGlobalAttrEntityList() == null ? new ArrayList<>() : oldEntity.getGlobalAttrEntityList();
         }
 
         // 清除和模型属性不匹配的属性
         if (MapUtils.isNotEmpty(ciEntityTransactionVo.getAttrEntityData())) {
             for (AttrVo attrVo : attrList) {
                 JSONObject attrEntityData = ciEntityTransactionVo.getAttrEntityDataByAttrId(attrVo.getId());
-                if (attrEntityData == null) {
-                    //全局模式下，不提供属性代表需要删除，因此直接补充valueList为空的属性数据
-                    //FIXME 按照设计在global模式下，不提供的属性代表删除，但资源清单某些修改配置项的页面属性是不全的，会导致不提供的属性全部清空，要先确认没问题才补充以下逻辑
-                    /*if (ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
-                        ciEntityTransactionVo.addAttrEntityData(attrVo);
-                    }*/
-                } else {
+                if (attrEntityData != null) {
                     //修正属性基本信息，多余属性不要
                     JSONArray valueList = attrEntityData.getJSONArray("valueList");
                     //进行必要的值转换，例如密码转换成密文
@@ -862,7 +802,13 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     attrEntityData.put("type", attrVo.getType());
                     attrEntityData.put("ciId", attrVo.getCiId());
                     attrEntityData.put("targetCiId", attrVo.getTargetCiId());
-                }
+                } /*else {
+                    //全局模式下，不提供属性代表需要删除，因此直接补充valueList为空的属性数据
+                    // FIXME 按照设计在global模式下，不提供的属性代表删除，但资源清单某些修改配置项的页面属性是不全的，会导致不提供的属性全部清空，要先确认没问题才补充以下逻辑
+                    if (ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
+                        ciEntityTransactionVo.addAttrEntityData(attrVo);
+                    }
+                }*/
             }
         }
 
@@ -870,13 +816,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         if (MapUtils.isNotEmpty(ciEntityTransactionVo.getGlobalAttrEntityData())) {
             for (GlobalAttrVo globalAttrVo : globalAttrList) {
                 JSONObject globalAttrEntityData = ciEntityTransactionVo.getGlobalAttrEntityDataByAttrId(globalAttrVo.getId());
-                if (globalAttrEntityData == null) {
-                    //全局模式下，不提供属性代表需要删除，因此直接补充valueList为空的属性数据
-                    //FIXME 按照设计在global模式下，不提供的属性代表删除，但资源清单某些修改配置项的页面属性是不全的，会导致不提供的属性全部清空，要先确认没问题才补充以下逻辑
-                    /*if (ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
-                        ciEntityTransactionVo.addGlobalAttrEntityData(globalAttrVo);
-                    }*/
-                } else {
+                if (globalAttrEntityData != null) {
                     //修正属性基本信息，多余属性不要
                     JSONArray valueList = globalAttrEntityData.getJSONArray("valueList");
                     globalAttrEntityData.clear();
@@ -884,7 +824,13 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     globalAttrEntityData.put("label", globalAttrVo.getLabel());
                     globalAttrEntityData.put("name", globalAttrVo.getName());
                     globalAttrEntityData.put("id", globalAttrVo.getId());
-                }
+                } /*else {
+                    //全局模式下，不提供属性代表需要删除，因此直接补充valueList为空的属性数据
+                    //FIXME 按照设计在global模式下，不提供的属性代表删除，但资源清单某些修改配置项的页面属性是不全的，会导致不提供的属性全部清空，要先确认没问题才补充以下逻辑
+                    //if (ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
+                    //    ciEntityTransactionVo.addGlobalAttrEntityData(globalAttrVo);
+                    //}
+                }*/
             }
         }
 
@@ -926,9 +872,9 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 AttrEntityTransactionVo attrEntityTransactionVo = ciEntityTransactionVo.getAttrEntityTransactionByAttrId(attrVo.getId());
                 /* 更新模式是全局模式时才做属性必填校验： */
                 if (attrVo.getIsRequired().equals(1)) {
-                    if (/*ciEntityTransactionVo.getAction().equals(TransactionActionType.INSERT.getValue()) ||*/ ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
+                    if (ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
                         if (attrEntityTransactionVo == null) {
-                            if (attrVo.getAllowEdit() == null || attrVo.getAllowEdit().equals(1)) {
+                            if (!Objects.equals(attrVo.getAllowEdit(), 0)) {
                                 throw new AttrEntityValueEmptyException(ciVo, attrVo);
                             }
                         } else if (attrEntityTransactionVo.getSaveMode().equals(SaveModeType.REPLACE.getValue()) && CollectionUtils.isEmpty(attrEntityTransactionVo.getValueList())) {
@@ -987,7 +933,6 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                             }
                             //检查新值是否被别的配置项引用
                             if (CollectionUtils.isNotEmpty(toCiEntityIdList)) {
-                                //FIXME 这里的SQL有问题，有空再重写
                                 int attrEntityCount = ciEntityMapper.getAttrEntityCountByAttrIdAndValue(ciEntityTransactionVo.getCiEntityId(), attrVo.getId(), toCiEntityIdList);
                                 if (attrEntityCount > 0) {
                                     List<CiEntityVo> toCiEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(toCiEntityIdList);
@@ -1034,9 +979,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 isTo = true;
             }
             // 全局模式下，不存在关系信息代表删除，需要校验必填规则
-            if (/*(ciEntityTransactionVo.getAction().equals(TransactionActionType.INSERT.getValue())
-                    || ciEntityTransactionVo.getAction().equals(TransactionActionType.RECOVER.getValue()))
-                    || */ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
+            if (ciEntityTransactionVo.getEditMode().equals(EditModeType.GLOBAL.getValue())) {
                 if (CollectionUtils.isEmpty(fromRelEntityTransactionList)) {
                     if (isFrom && relVo.getToIsRequired().equals(1)) {
                         if (relVo.getAllowEdit() == null || relVo.getAllowEdit().equals(1)) {
@@ -1119,7 +1062,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         while (fromRelEntityIt.hasNext()) {
                             RelEntityVo oldFromRelEntityVo = fromRelEntityIt.next();
                             /*
-                            旧关系列表不存在事务列表的对象先放到待删除列表里
+                            旧关系列表存在，新事务列表不存在的对象，先放到待删除列表里
                              */
                             if (fromRelEntityTransactionList.stream().noneMatch(d -> new RelEntityVo(d).equals(oldFromRelEntityVo))) {
                                 needDeleteRelEntityList.add(oldFromRelEntityVo);
@@ -1136,7 +1079,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                             while (fromRelEntityIt.hasNext()) {
                                 RelEntityVo oldFromRelEntityVo = fromRelEntityIt.next();
                             /*
-                            旧关系列表不存在事务列表的对象先放到待删除列表里
+                            旧关系列表存在，新事务列表不存在的对象，先放到待删除列表里
                              */
                                 if (fromRelEntityTransactionList.stream().noneMatch(d -> new RelEntityVo(d).equals(oldFromRelEntityVo))) {
                                     needDeleteRelEntityList.add(oldFromRelEntityVo);
@@ -1145,13 +1088,13 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                             }
                         }
                     } else {
-                        /*
-                        如果没有replace或update的数据，fromRelEntityList主要用来校验RelRuleType=O的规则，因此取两条数据即可
-                         */
+                        //筛选出非删除数据
+                        fromRelEntityTransactionList = fromRelEntityTransactionList.stream().filter(d -> !Objects.equals(d.getAction(), RelActionType.DELETE.getValue())).collect(Collectors.toList());
+                        //如果没有replace或update的数据，fromRelEntityList主要用来校验RelRuleType=O的规则，因此取两条数据即可
                         fromRelEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(ciEntityTransactionVo.getCiEntityId(), relVo.getId(), 2L);
                     }
                     if (CollectionUtils.isNotEmpty(fromRelEntityTransactionList)) {
-                        if (fromRelEntityTransactionList.size() == 1) {
+                        if (fromRelEntityTransactionList.size() == 1 && CollectionUtils.isNotEmpty(fromRelEntityList)) {
                             // 检查关系是否允许重复
                             if (RelRuleType.O.getValue().equals(relVo.getToRule())) {
                                 if ((fromRelEntityList.size() == 1 && !fromRelEntityList.contains(new RelEntityVo(fromRelEntityTransactionList.get(0)))) || fromRelEntityList.size() > 1) {
@@ -1228,14 +1171,15 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                             }
                         }
                     } else {
-                        /*
-                        如果没有replace的数据，toRelEntityList主要用来校验RelRuleType=O的规则，因此取两条数据即可
-                         */
+                        //筛选出非删除数据
+                        toRelEntityTransactionList = toRelEntityTransactionList.stream().filter(d -> !Objects.equals(d.getAction(), RelActionType.DELETE.getValue())).collect(Collectors.toList());
+                        //如果没有replace或update的数据，fromRelEntityList主要用来校验RelRuleType=O的规则，因此取两条数据即可
                         toRelEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(ciEntityTransactionVo.getCiEntityId(), relVo.getId(), 2L);
+
                     }
                     if (toRelEntityTransactionList.size() == 1) {
                         // 检查关系是否允许重复
-                        if (RelRuleType.O.getValue().equals(relVo.getFromRule())) {
+                        if (RelRuleType.O.getValue().equals(relVo.getFromRule()) && CollectionUtils.isNotEmpty(toRelEntityList)) {
                             if ((toRelEntityList.size() == 1 && !toRelEntityList.contains(new RelEntityVo(toRelEntityTransactionList.get(0)))) || toRelEntityList.size() > 1) {
                                 throw new RelEntityMultipleException(relVo.getFromLabel());
                             }
@@ -1380,15 +1324,18 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             }
         }
 
-        // 排除掉没变化的关系并且刷新renew time
-        for (RelEntityVo relEntityVo : oldRelEntityList) {
-            Long targetId = relEntityVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? relEntityVo.getToCiEntityId() : relEntityVo.getFromCiEntityId();
-            ciEntityTransactionVo.removeRelEntityData(relEntityVo.getRelId(), relEntityVo.getDirection(), targetId);
+        // 排除掉没变化的关系
+        if (CollectionUtils.isNotEmpty(oldRelEntityList)) {
+            for (RelEntityVo relEntityVo : oldRelEntityList) {
+                Long targetId = relEntityVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? relEntityVo.getToCiEntityId() : relEntityVo.getFromCiEntityId();
+                ciEntityTransactionVo.removeRelEntityData(relEntityVo.getRelId(), relEntityVo.getDirection(), targetId);
+            }
         }
 
         //补充待删除关系进事务里
         for (RelEntityVo relEntityVo : needDeleteRelEntityList) {
-            Long targetCiId, targetCiEntityId;
+            Long targetCiId;
+            Long targetCiEntityId;
             String targetCiEntityName;
             if (relEntityVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
                 targetCiEntityId = relEntityVo.getToCiEntityId();
@@ -2031,7 +1978,10 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 for (RelEntityTransactionVo relEntityTransactionVo : relEntityTransactionList) {
                     //如果不是自己引用自己，则需要补充对端配置项事务，此块需要在真正删除数据前处理
                     if (!relEntityTransactionVo.getFromCiEntityId().equals(relEntityTransactionVo.getToCiEntityId())) {
-                        Long ciEntityId = null, ciId = null, sourceCiEntityId = ciEntityTransactionVo.getCiEntityId(), sourceCiId = ciEntityTransactionVo.getCiId();
+                        Long ciEntityId = null;
+                        Long ciId = null;
+                        Long sourceCiEntityId = ciEntityTransactionVo.getCiEntityId();
+                        Long sourceCiId = ciEntityTransactionVo.getCiId();
                         String sourceCiEntityName = ciEntityTransactionVo.getName();
                         if (relEntityTransactionVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
                             ciEntityId = relEntityTransactionVo.getToCiEntityId();
