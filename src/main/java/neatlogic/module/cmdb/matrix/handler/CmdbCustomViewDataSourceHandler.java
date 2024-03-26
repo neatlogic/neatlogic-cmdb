@@ -19,18 +19,15 @@ package neatlogic.module.cmdb.matrix.handler;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import neatlogic.framework.cmdb.dto.customview.CustomViewAttrVo;
-import neatlogic.framework.cmdb.dto.customview.CustomViewConditionVo;
-import neatlogic.framework.cmdb.dto.customview.CustomViewConstAttrVo;
-import neatlogic.framework.cmdb.dto.customview.CustomViewVo;
+import neatlogic.framework.cmdb.dto.customview.*;
 import neatlogic.framework.cmdb.exception.customview.CustomViewNotFoundException;
+import neatlogic.framework.common.constvalue.Expression;
 import neatlogic.framework.exception.type.ParamNotExistsException;
 import neatlogic.framework.matrix.constvalue.MatrixAttributeType;
+import neatlogic.framework.matrix.constvalue.SearchExpression;
 import neatlogic.framework.matrix.core.MatrixDataSourceHandlerBase;
-import neatlogic.framework.matrix.dto.MatrixAttributeVo;
-import neatlogic.framework.matrix.dto.MatrixCmdbCustomViewVo;
-import neatlogic.framework.matrix.dto.MatrixDataVo;
-import neatlogic.framework.matrix.dto.MatrixVo;
+import neatlogic.framework.matrix.dto.*;
+import neatlogic.framework.matrix.exception.MatrixAttributeNotFoundException;
 import neatlogic.framework.matrix.exception.MatrixCmdbCustomViewNotFoundException;
 import neatlogic.framework.util.UuidUtil;
 import neatlogic.module.cmdb.dao.mapper.customview.CustomViewMapper;
@@ -266,8 +263,11 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
         List<CustomViewConstAttrVo> constAttrList = customViewMapper.getCustomViewConstAttrByCustomViewId(customViewConstAttrVo);
         for (CustomViewConstAttrVo constAttrVo : constAttrList) {
             MatrixAttributeVo matrixAttributeVo = new MatrixAttributeVo();
-            String uuid = showAttributeUuidMap.get(constAttrVo.getUuid());
-            if (uuid != null) {
+            if (MapUtils.isNotEmpty(showAttributeUuidMap)) {
+                String uuid = showAttributeUuidMap.get(constAttrVo.getUuid());
+                if (uuid == null && Objects.equals(constAttrVo.getIsPrimary(), 0)) {
+                    continue;
+                }
                 matrixAttributeVo.setUuid(uuid);
             }
             matrixAttributeVo.setLabel(constAttrVo.getUuid());
@@ -277,13 +277,17 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
             matrixAttributeVo.setIsDeletable(0);
             matrixAttributeVo.setSort(sort++);
             matrixAttributeVo.setIsRequired(0);
+            matrixAttributeVo.setPrimaryKey(constAttrVo.getIsPrimary());
             matrixAttributeList.add(matrixAttributeVo);
         }
         List<CustomViewAttrVo> attrList = customViewMapper.getCustomViewAttrByCustomViewId(customViewAttrVo);
         for (CustomViewAttrVo attrVo : attrList) {
             MatrixAttributeVo matrixAttributeVo = new MatrixAttributeVo();
-            String uuid = showAttributeUuidMap.get(attrVo.getUuid());
-            if (uuid != null) {
+            if (MapUtils.isNotEmpty(showAttributeUuidMap)) {
+                String uuid = showAttributeUuidMap.get(attrVo.getUuid());
+                if (uuid == null && Objects.equals(attrVo.getIsPrimary(), 0)) {
+                    continue;
+                }
                 matrixAttributeVo.setUuid(uuid);
             }
             matrixAttributeVo.setLabel(attrVo.getUuid());
@@ -293,6 +297,7 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
             matrixAttributeVo.setIsDeletable(0);
             matrixAttributeVo.setSort(sort++);
             matrixAttributeVo.setIsRequired(0);
+            matrixAttributeVo.setPrimaryKey(attrVo.getIsPrimary());
             matrixAttributeList.add(matrixAttributeVo);
         }
         return matrixAttributeList;
@@ -321,18 +326,76 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
         if (CollectionUtils.isEmpty(matrixAttributeList)) {
             return resultList;
         }
-        Map<String, String> attributeLabelMap = matrixAttributeList.stream().collect(Collectors.toMap(e -> e.getUuid(), e -> e.getLabel()));
-        List<String> attributeList = matrixAttributeList.stream().map(MatrixAttributeVo::getUuid).collect(Collectors.toList());
+        List<Map<String, Object>> dataList = new ArrayList<>();
+        Map<String, MatrixAttributeVo> label2AttributeMap = matrixAttributeList.stream().collect(Collectors.toMap(e -> e.getLabel(), e -> e));
         Map<String, String> attributeUuidMap = matrixAttributeList.stream().collect(Collectors.toMap(e -> e.getLabel(), e -> e.getUuid()));
-        CustomViewConditionVo customViewConditionVo = new CustomViewConditionVo();
-        customViewConditionVo.setCustomViewId(matrixCmdbCustomViewVo.getCustomViewId());
-        List<Map<String, Object>> mapList = customViewDataService.searchCustomViewData(customViewConditionVo);
-        for (Map<String, Object> map : mapList) {
+        if (CollectionUtils.isNotEmpty(dataVo.getDefaultValue())) {
+            List<String> defaultValue = dataVo.getDefaultValue().toJavaList(String.class);
+            for (String primaryKeyAttrUuidAndValueListStr : defaultValue) {
+                List<String> primaryKeyAttrUuidAndValueList = new ArrayList<>();
+                if (primaryKeyAttrUuidAndValueListStr.contains("(&&)")) {
+                    String[] split = primaryKeyAttrUuidAndValueListStr.split("(&&)");
+                    for (String e : split) {
+                        primaryKeyAttrUuidAndValueList.add(e);
+                    }
+                } else {
+                    primaryKeyAttrUuidAndValueList.add(primaryKeyAttrUuidAndValueListStr);
+                }
+                List<MatrixFilterVo> filterList = new ArrayList<>();
+                for (String primaryKeyAttrUuidAndValue : primaryKeyAttrUuidAndValueList) {
+                    String[] split = primaryKeyAttrUuidAndValue.split("#");
+                    String uuid = split[0];
+                    String value = split[1];
+                    filterList.add(new MatrixFilterVo(uuid, SearchExpression.EQ.getExpression(), Arrays.asList(value)));
+                }
+                CustomViewConditionVo customViewConditionVo = new CustomViewConditionVo();
+                customViewConditionVo.setCustomViewId(matrixCmdbCustomViewVo.getCustomViewId());
+                List<CustomViewConditionFilterVo> attrFilterList = convertAttrFilter(matrixCmdbCustomViewVo.getCustomViewId(), matrixAttributeList, filterList, matrixUuid);
+                customViewConditionVo.setAttrFilterList(attrFilterList);
+                customViewConditionVo.setCurrentPage(dataVo.getCurrentPage());
+                customViewConditionVo.setPageSize(dataVo.getPageSize());
+                List<Map<String, Object>> mapList = customViewDataService.searchCustomViewData(customViewConditionVo);
+                dataList.add(mapList.get(0));
+            }
+        } else if (CollectionUtils.isNotEmpty(dataVo.getDefaultValueFilterList())) {
+            for (MatrixDefaultValueFilterVo defaultValueFilterVo : dataVo.getDefaultValueFilterList()) {
+                List<MatrixFilterVo> filterList = new ArrayList<>();
+                MatrixKeywordFilterVo valueFieldFilter = defaultValueFilterVo.getValueFieldFilter();
+                if (valueFieldFilter != null) {
+                    filterList.add(new MatrixFilterVo(valueFieldFilter.getUuid(), valueFieldFilter.getExpression(), Arrays.asList(valueFieldFilter.getValue())));
+                }
+                MatrixKeywordFilterVo textFieldFilter = defaultValueFilterVo.getTextFieldFilter();
+                if (textFieldFilter != null && (valueFieldFilter == null || !Objects.equals(valueFieldFilter.getUuid(), textFieldFilter.getUuid()))) {
+                    filterList.add(new MatrixFilterVo(textFieldFilter.getUuid(), textFieldFilter.getExpression(), Arrays.asList(textFieldFilter.getValue())));
+                }
+                CustomViewConditionVo customViewConditionVo = new CustomViewConditionVo();
+                customViewConditionVo.setCustomViewId(matrixCmdbCustomViewVo.getCustomViewId());
+                List<CustomViewConditionFilterVo> attrFilterList = convertAttrFilter(matrixCmdbCustomViewVo.getCustomViewId(), matrixAttributeList, filterList, matrixUuid);
+                customViewConditionVo.setAttrFilterList(attrFilterList);
+                customViewConditionVo.setCurrentPage(dataVo.getCurrentPage());
+                customViewConditionVo.setPageSize(dataVo.getPageSize());
+                List<Map<String, Object>> mapList = customViewDataService.searchCustomViewData(customViewConditionVo);
+                dataList.addAll(mapList);
+            }
+        } else {
+            CustomViewConditionVo customViewConditionVo = new CustomViewConditionVo();
+            customViewConditionVo.setCustomViewId(matrixCmdbCustomViewVo.getCustomViewId());
+            List<CustomViewConditionFilterVo> attrFilterList = convertAttrFilter(matrixCmdbCustomViewVo.getCustomViewId(), matrixAttributeList, dataVo.getFilterList(), matrixUuid);
+            customViewConditionVo.setAttrFilterList(attrFilterList);
+            customViewConditionVo.setCurrentPage(dataVo.getCurrentPage());
+            customViewConditionVo.setPageSize(dataVo.getPageSize());
+            dataList = customViewDataService.searchCustomViewData(customViewConditionVo);
+            dataVo.setRowNum(customViewConditionVo.getRowNum());
+        }
+
+        for (Map<String, Object> map : dataList) {
             if (MapUtils.isEmpty(map)) {
                 continue;
             }
+            List<String> primaryKeyAttrUuidAndValueList = new ArrayList<>();
             Map<String, JSONObject> rowDataMap = new HashMap<>();
             for (Map.Entry<String, Object> entry : map.entrySet()) {
+                MatrixAttributeVo attributeVo = label2AttributeMap.get(entry.getKey());
                 String uuid = attributeUuidMap.get(entry.getKey());
                 if (StringUtils.isBlank(uuid)) {
                     continue;
@@ -342,9 +405,30 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
                 resultObj.put("value", entry.getValue());
                 resultObj.put("text", entry.getValue());
                 rowDataMap.put(uuid, resultObj);
-//                if ("const_id".equals(entry.getKey())) {
-//                    rowDataMap.put("uuid", matrixAttributeValueHandle(null, entry.getValue()));
-//                }
+                if (Objects.equals(attributeVo.getPrimaryKey(), 1)) {
+                    primaryKeyAttrUuidAndValueList.add(uuid + "#" + entry.getValue());
+                }
+            }
+            if (CollectionUtils.isNotEmpty(primaryKeyAttrUuidAndValueList)) {
+                String value = String.join("&&", primaryKeyAttrUuidAndValueList);
+                JSONObject resultObj = new JSONObject();
+                resultObj.put("type", MatrixAttributeType.INPUT.getValue());
+                resultObj.put("value", value);
+                resultObj.put("text", value);
+                rowDataMap.put("uuid", resultObj);
+            } else {
+                // 没有设置主键时取第一个属性作为主键列
+                MatrixAttributeVo attributeVo = matrixAttributeList.get(0);
+                Object value = map.get(attributeVo.getLabel());
+                if (value == null) {
+                    value = "";
+                }
+                value = attributeVo.getUuid() + "#" + value;
+                JSONObject resultObj = new JSONObject();
+                resultObj.put("type", MatrixAttributeType.INPUT.getValue());
+                resultObj.put("value", value);
+                resultObj.put("text", value);
+                rowDataMap.put("uuid", resultObj);
             }
             resultList.add(rowDataMap);
         }
@@ -364,5 +448,59 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
     @Override
     protected void myDeleteTableRowData(String matrixUuid, List<String> uuidList) {
 
+    }
+
+    private List<CustomViewConditionFilterVo> convertAttrFilter(Long customViewId, List<MatrixAttributeVo> matrixAttributeList, List<MatrixFilterVo> filterList, String matrixUuid) {
+        List<CustomViewConditionFilterVo> customViewConditionFilterList = new ArrayList<>();
+        Map<String, String> attributeLabelMap = matrixAttributeList.stream().collect(Collectors.toMap(e -> e.getUuid(), e -> e.getLabel()));
+        List<String> attributeList = matrixAttributeList.stream().map(MatrixAttributeVo::getUuid).collect(Collectors.toList());
+        Map<String, String> uuid2TypeMap = new HashMap<>();
+        CustomViewConstAttrVo customViewConstAttrVo = new CustomViewConstAttrVo(customViewId);
+        CustomViewAttrVo customViewAttrVo = new CustomViewAttrVo(customViewId);
+        List<CustomViewConstAttrVo> constAttrList = customViewMapper.getCustomViewConstAttrByCustomViewId(customViewConstAttrVo);
+        for (CustomViewConstAttrVo constAttrVo : constAttrList) {
+            uuid2TypeMap.put(constAttrVo.getUuid(), "constattr");
+        }
+        List<CustomViewAttrVo> attrList = customViewMapper.getCustomViewAttrByCustomViewId(customViewAttrVo);
+        for (CustomViewAttrVo attrVo : attrList) {
+            uuid2TypeMap.put(attrVo.getUuid(), "attr");
+        }
+        for (MatrixFilterVo matrixFilterVo : filterList) {
+            if (matrixFilterVo == null) {
+                continue;
+            }
+            String uuid = matrixFilterVo.getUuid();
+            if (StringUtils.isBlank(uuid)) {
+                continue;
+            }
+            if (!attributeList.contains(uuid)) {
+                throw new MatrixAttributeNotFoundException(matrixUuid, uuid);
+            }
+            String attrUuid = attributeLabelMap.get(uuid);
+            List<String> valueList = matrixFilterVo.getValueList();
+            if (CollectionUtils.isEmpty(valueList)) {
+                if (!Objects.equals(matrixFilterVo.getExpression(), SearchExpression.NULL.getExpression())
+                        && !Objects.equals(matrixFilterVo.getExpression(), SearchExpression.NOTNULL.getExpression())) {
+                    continue;
+                }
+            }
+            JSONArray valueArray = new JSONArray();
+            for (String value : valueList) {
+                if (StringUtils.isNotBlank(value)) {
+                    valueArray.add(value);
+                }
+            }
+            String expression = matrixFilterVo.getExpression();
+            if (StringUtils.isBlank(expression)) {
+                expression = Expression.EQUAL.getExpression();
+            }
+            CustomViewConditionFilterVo customViewConditionFilterVo = new CustomViewConditionFilterVo();
+            customViewConditionFilterVo.setAttrUuid(attrUuid);
+            customViewConditionFilterVo.setType(uuid2TypeMap.get(attrUuid));
+            customViewConditionFilterVo.setExpression(expression);
+            customViewConditionFilterVo.setValueList(valueArray);
+            customViewConditionFilterList.add(customViewConditionFilterVo);
+        }
+        return customViewConditionFilterList;
     }
 }
