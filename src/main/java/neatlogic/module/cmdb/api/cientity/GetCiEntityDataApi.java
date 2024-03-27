@@ -227,8 +227,14 @@ public class GetCiEntityDataApi extends PrivateApiComponentBase {
                 relObj.put("direction", relEntityVo.getDirection());
                 if (relEntityVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
                     relObj.getJSONArray("value").add(relEntityVo.getToCiEntityId());
+                    relObj.put("ciName", relEntityVo.getToCiName());
+                    relObj.put("ciLabel", relEntityVo.getToCiLabel());
+                    relObj.put("ciId", relEntityVo.getToCiId());
                 } else {
                     relObj.getJSONArray("value").add(relEntityVo.getFromCiEntityId());
+                    relObj.put("ciName", relEntityVo.getFromCiName());
+                    relObj.put("ciLabel", relEntityVo.getFromCiLabel());
+                    relObj.put("ciId", relEntityVo.getFromCiId());
                 }
 
             }
@@ -253,9 +259,15 @@ public class GetCiEntityDataApi extends PrivateApiComponentBase {
                     if (rel.getDirection().equals(RelDirectionType.FROM.getValue())) {
                         relObj.put("name", rel.getToName());
                         relObj.put("label", rel.getToLabel());
+                        relObj.put("ciName", rel.getToCiName());
+                        relObj.put("ciLabel", rel.getToCiLabel());
+                        relObj.put("ciId", rel.getToCiId());
                     } else {
                         relObj.put("name", rel.getFromName());
                         relObj.put("label", rel.getFromLabel());
+                        relObj.put("ciName", rel.getFromCiName());
+                        relObj.put("ciLabel", rel.getFromCiLabel());
+                        relObj.put("ciId", rel.getFromCiId());
                     }
                     relObj.put("direction", rel.getDirection());
                     relObj.put("value", new JSONArray());

@@ -83,8 +83,6 @@ public class ListAllCiRelApi extends PrivateApiComponentBase {
         }
         List<CiRelVo> path = new ArrayList<>();
         List<CiRelPathVo> pathList = new ArrayList<>();
-        //RelDirectionType directionType = RelDirectionType.get(jsonObj.getString("direction"));
-        //if (directionType != null) {
         getRelPathByCiId(ciId, path, pathList);
         if (CollectionUtils.isNotEmpty(pathList) && (CollectionUtils.isNotEmpty(ciIdList) || endCiId != null)) {
 
@@ -99,46 +97,21 @@ public class ListAllCiRelApi extends PrivateApiComponentBase {
                         }
                     }
                 }
-                if (endCiId != null) {
-                    if (!pList.get(pList.size() - 1).getCiId().equals(endCiId)) {
-                        allMatch = false;
-                    }
+                if (endCiId != null && (!pList.get(pList.size() - 1).getCiId().equals(endCiId))) {
+                    allMatch = false;
                 }
                 if (!allMatch) {
                     pathList.remove(i);
                 }
             }
         }
-/*
-            for (List<CiRelVo> p : pathList) {
-                StringBuilder ps = new StringBuilder();
-                for (CiRelVo ciRelVo : p) {
-                    ps.append(ciRelVo.getCiLabel()).append("->");
-                }
-                System.out.println(ps);
-            }*/
-        //}
         return pathList;
-    }
-
-    public static void main(String[] a) {
-        List<CiRelVo> ciRelList = new ArrayList<>();
-        CiRelVo ciRelVo = new CiRelVo(123L);
-        ciRelVo.setCiName("adsafdf");
-        ciRelList.add(ciRelVo);
-        System.out.println(ciRelList.contains(new CiRelVo(123L)));
     }
 
 
     private void getRelPathByCiId(Long ciId, List<CiRelVo> ciRelList, List<CiRelPathVo> pathList) {
         if (!ciRelList.contains(new CiRelVo(ciId))) {// 出现回环，中断递归
             List<RelVo> relList = relMapper.getRelByCiId(ciId);
-            // List<RelVo> finalRelList = null;
-           /* if (direction == RelDirectionType.FROM) {
-                finalRelList = relList.stream().filter(d -> d.getDirection().equals(RelDirectionType.FROM.getValue())).collect(Collectors.toList());
-            } else if (direction == RelDirectionType.TO) {
-                finalRelList = relList.stream().filter(d -> d.getDirection().equals(RelDirectionType.TO.getValue())).collect(Collectors.toList());
-            }*/
             if (CollectionUtils.isNotEmpty(relList)) {
                 for (RelVo relVo : relList) {
                     CiRelVo ciRelVo = new CiRelVo();

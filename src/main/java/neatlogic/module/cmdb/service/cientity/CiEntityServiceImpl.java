@@ -188,7 +188,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             }
             //拼接引用属性数据
             Long attrEntityLimit = null;
-            if (limitAttrEntity) {
+            if (Boolean.TRUE.equals(limitAttrEntity)) {
                 attrEntityLimit = CiEntityVo.MAX_ATTRENTITY_COUNT;
             }
             if (CollectionUtils.isNotEmpty(attrList)) {
@@ -211,7 +211,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             }
             //拼接关系数据
             Long relEntityLimit = null;
-            if (limitRelEntity) {
+            if (Boolean.TRUE.equals(limitRelEntity)) {
                 relEntityLimit = CiEntityVo.MAX_RELENTITY_COUNT;
             }
             if (CollectionUtils.isNotEmpty(relList)) {

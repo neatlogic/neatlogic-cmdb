@@ -25,6 +25,8 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface RelMapper extends IRelCrossoverMapper {
+    List<RelVo> searchRel(RelVo relVo);
+
     RelVo getRelByCiIdAndRelName(@Param("ciId") Long ciId, @Param("relName") String relName);
 
     RelTypeVo getRelTypeByRelId(Long relId);

@@ -18,6 +18,44 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 <mapper namespace="neatlogic.module.cmdb.dao.mapper.ci.RelMapper">
     <cache-ref namespace="neatlogic.module.cmdb.dao.mapper.ci.CiMapper"/>
 
+    <select id="searchRel" parameterType="neatlogic.framework.cmdb.dto.ci.RelVo"
+            resultType="neatlogic.framework.cmdb.dto.ci.RelVo">
+        select rel.id,
+        rel.type_id as typeId,
+        rel.from_ci_id as fromCiId,
+        rel.from_name as fromName,
+        rel.from_label as fromLabel,
+        rel.to_ci_id as toCiId,
+        rel.to_name as toName,
+        rel.to_label as toLabel,
+        fromci.name as fromCiName,
+        fromci.label as fromCiLabel,
+        toci.name as toCiName,
+        toci.label as toCiLabel
+        from cmdb_rel rel
+        left join cmdb_ci fromci on rel.from_ci_id = fromci.id
+        left join cmdb_ci toci on rel.to_ci_id = toci.id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                rel.from_name like concat ('%',#{keyword},'%')
+                or
+                rel.to_name like concat ('%',#{keyword},'%')
+                or
+                rel.from_label like concat ('%',#{keyword},'%')
+                or
+                rel.to_label like concat ('%',#{keyword},'%')
+                or
+                fromci.name like concat ('%',#{keyword},'%')
+                or
+                fromci.label like concat ('%',#{keyword},'%')
+                or
+                toci.name like concat ('%',#{keyword},'%')
+                or
+                toci.label like concat ('%',#{keyword},'%')
+            </if>
+        </where>
+        limit #{startNum}, #{pageSize}
+    </select>
 
     <select id="getRelByCiIdAndRelName" resultType="neatlogic.framework.cmdb.dto.ci.RelVo" useCache="true">
         SELECT a.`id`,
@@ -416,26 +454,25 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 
     <select id="getRelBaseInfoByCiId" parameterType="java.lang.Long" resultMap="relDetailMap"
             useCache="true">
-        SELECT
-            `id`,
-            `type_id` AS typeId,
-            `input_type` AS inputType,
-            `from_ci_id` AS fromCiId,
-            `from_name` AS fromName,
-            `from_label` AS fromLabel,
-            `from_rule` AS fromRule,
-            `from_group_id` AS fromGroupId,
-            `from_is_unique` AS fromIsUnique,
-            `from_is_cascade_delete` AS fromIsCascadeDelete,
-            `from_is_required` AS fromIsRequired,
-            `to_ci_id` AS toCiId,
-            `to_name` AS toName,
-            `to_label` AS toLabel,
-            `to_rule` AS toRule,
-            `to_group_id` AS toGroupId,
-            `to_is_unique` AS toIsUnique,
-            `to_is_cascade_delete` AS toIsCascadeDelete,
-            `to_is_required` AS toIsRequired
+        SELECT `id`,
+               `type_id`                AS typeId,
+               `input_type`             AS inputType,
+               `from_ci_id`             AS fromCiId,
+               `from_name`              AS fromName,
+               `from_label`             AS fromLabel,
+               `from_rule`              AS fromRule,
+               `from_group_id`          AS fromGroupId,
+               `from_is_unique`         AS fromIsUnique,
+               `from_is_cascade_delete` AS fromIsCascadeDelete,
+               `from_is_required`       AS fromIsRequired,
+               `to_ci_id`               AS toCiId,
+               `to_name`                AS toName,
+               `to_label`               AS toLabel,
+               `to_rule`                AS toRule,
+               `to_group_id`            AS toGroupId,
+               `to_is_unique`           AS toIsUnique,
+               `to_is_cascade_delete`   AS toIsCascadeDelete,
+               `to_is_required`         AS toIsRequired
         FROM `cmdb_rel`
         WHERE `from_ci_id` = #{value}
            OR `to_ci_id` = #{value}

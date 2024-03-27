@@ -418,6 +418,9 @@ public class CiEntityBuilder {
         relObj.put("relId", relVo.getId());
         relObj.put("direction", relVo.getDirection());
         relObj.put("ciId", relVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiId() : relVo.getFromCiId());
+        relObj.put("ciName", relVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiName() : relVo.getFromCiName());
+        relObj.put("ciLabel", relVo.getDirection().equals(RelDirectionType.FROM.getValue()) ? relVo.getToCiLabel() : relVo.getFromCiLabel());
+
         JSONArray valueList = new JSONArray();
         for (RelEntityVo relEntityVo : relEntityList) {
             JSONObject valueDataObj = new JSONObject();
