@@ -27,13 +27,12 @@ import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.cientity.RelEntityVo;
 import neatlogic.framework.cmdb.dto.cientity.RelFilterVo;
 import neatlogic.framework.cmdb.dto.view.ViewConstVo;
-import neatlogic.framework.cmdb.enums.SearchExpression;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.utils.RelUtil;
-import neatlogic.framework.common.constvalue.Expression;
 import neatlogic.framework.dependency.core.DependencyManager;
 import neatlogic.framework.exception.type.ParamNotExistsException;
 import neatlogic.framework.matrix.constvalue.MatrixAttributeType;
+import neatlogic.framework.matrix.constvalue.SearchExpression;
 import neatlogic.framework.matrix.core.MatrixDataSourceHandlerBase;
 import neatlogic.framework.matrix.dto.*;
 import neatlogic.framework.matrix.exception.MatrixAttributeNotFoundException;
@@ -839,7 +838,10 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                     }
                     List<String> valueList = matrixFilterVo.getValueList();
                     if (CollectionUtils.isEmpty(valueList)) {
-                        continue;
+                        if (!Objects.equals(matrixFilterVo.getExpression(), SearchExpression.NULL.getExpression())
+                                && !Objects.equals(matrixFilterVo.getExpression(), SearchExpression.NOTNULL.getExpression())) {
+                            continue;
+                        }
                     }
                     switch (ciView.getType()) {
                         case "attr":
@@ -914,7 +916,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             List<MatrixFilterVo> filterList = dataVo.getFilterList();
             String keywordColumn = dataVo.getKeywordColumn();
             if (StringUtils.isNotBlank(keywordColumn) && StringUtils.isNotBlank(dataVo.getKeyword())) {
-                MatrixFilterVo matrixFilterVo = new MatrixFilterVo(keywordColumn, Expression.LIKE.getExpression(), Arrays.asList(dataVo.getKeyword()));
+                MatrixFilterVo matrixFilterVo = new MatrixFilterVo(keywordColumn, SearchExpression.LI.getExpression(), Arrays.asList(dataVo.getKeyword()));
                 filterList.add(matrixFilterVo);
             }
             boolean flag = true;
@@ -937,7 +939,10 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                     }
                     List<String> valueList = matrixFilterVo.getValueList();
                     if (CollectionUtils.isEmpty(valueList)) {
-                        continue;
+                        if (!Objects.equals(matrixFilterVo.getExpression(), SearchExpression.NULL.getExpression())
+                                && !Objects.equals(matrixFilterVo.getExpression(), SearchExpression.NOTNULL.getExpression())) {
+                            continue;
+                        }
                     }
                     switch (ciView.getType()) {
                         case "attr":
@@ -1041,12 +1046,16 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
     }
 
     private AttrFilterVo convertAttrFilter(AttrVo attrVo, String expression, List<String> valueList) {
-        if (StringUtils.isBlank(expression)) {
-            expression = Expression.EQUAL.getExpression();
-        }
         AttrFilterVo attrFilterVo = new AttrFilterVo();
         attrFilterVo.setAttrId(attrVo.getId());
         attrFilterVo.setExpression(expression);
+        if (Objects.equals(expression, SearchExpression.NULL.getExpression())
+                || Objects.equals(expression, SearchExpression.NOTNULL.getExpression())) {
+            return attrFilterVo;
+        }
+        if (StringUtils.isBlank(expression)) {
+            expression = SearchExpression.EQ.getExpression();
+        }
         if ("select".equals(attrVo.getType())) {
             CiVo targetCiVo = ciMapper.getCiById(attrVo.getTargetCiId());
             if (targetCiVo == null) {
@@ -1063,15 +1072,19 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                 List<CiEntityVo> ciEntityList = new ArrayList<>();
                 ciEntityVo.setName(value);
                 if (Objects.equals(targetCiVo.getIsVirtual(), 1)) {
-                    if (Objects.equals(expression, Expression.LIKE.getExpression())) {
+                    if (Objects.equals(expression, SearchExpression.LI.getExpression())
+                            || Objects.equals(expression, SearchExpression.NL.getExpression())) {
                         ciEntityList = ciEntityMapper.getVirtualCiEntityBaseInfoByLikeName(ciEntityVo);
-                    } else {
+                    } else if (Objects.equals(expression, SearchExpression.EQ.getExpression())
+                            || Objects.equals(expression, SearchExpression.NE.getExpression())) {
                         ciEntityList = ciEntityMapper.getVirtualCiEntityBaseInfoByName(ciEntityVo);
                     }
                 } else {
-                    if (Objects.equals(expression, Expression.LIKE.getExpression())) {
+                    if (Objects.equals(expression, SearchExpression.LI.getExpression())
+                            || Objects.equals(expression, SearchExpression.NL.getExpression())) {
                         ciEntityList = ciEntityMapper.getCiEntityListByCiIdListAndLikeName(ciEntityVo);
-                    } else {
+                    } else if (Objects.equals(expression, SearchExpression.EQ.getExpression())
+                            || Objects.equals(expression, SearchExpression.NE.getExpression())) {
                         ciEntityList = ciEntityMapper.getCiEntityListByCiIdListAndName(ciEntityVo);
                     }
                 }
@@ -1080,7 +1093,10 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                 }
             }
             if (CollectionUtils.isEmpty(newValueList)) {
-                return null;
+                if (Objects.equals(expression, SearchExpression.LI.getExpression())
+                        || Objects.equals(expression, SearchExpression.EQ.getExpression())) {
+                    return null;
+                }
             }
             attrFilterVo.setValueList(newValueList);
         } else {
@@ -1090,6 +1106,14 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
     }
 
     private RelFilterVo convertFromRelFilter(RelVo relVo, String expression, List<String> valueList, String direction) {
+        if (Objects.equals(expression, SearchExpression.NULL.getExpression())
+                || Objects.equals(expression, SearchExpression.NOTNULL.getExpression())) {
+            RelFilterVo relFilterVo = new RelFilterVo();
+            relFilterVo.setRelId(relVo.getId());
+            relFilterVo.setExpression(expression);
+            relFilterVo.setDirection(direction);
+            return relFilterVo;
+        }
         Long ciId = null;
         if ("from".equals(direction)) {
             ciId = relVo.getToCiId();
@@ -1103,7 +1127,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             return null;
         }
         if (StringUtils.isBlank(expression)) {
-            expression = Expression.EQUAL.getExpression();
+            expression = SearchExpression.EQ.getExpression();
         }
         List<Long> ciEntityIdList = new ArrayList<>();
         for (String value : valueList) {
@@ -1113,9 +1137,11 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             if ("from".equals(direction)) {
                 relEntityVo.setToCiEntityName(value);
                 List<RelEntityVo> relEntityList = new ArrayList<>();
-                if (Objects.equals(expression, Expression.LIKE.getExpression())) {
+                if (Objects.equals(expression, SearchExpression.LI.getExpression())
+                        || Objects.equals(expression, SearchExpression.NL.getExpression())) {
                     relEntityList = relEntityMapper.getRelEntityByRelIdAndLikeToCiEntityName(relEntityVo);
-                } else {
+                } else if (Objects.equals(expression, SearchExpression.EQ.getExpression())
+                        || Objects.equals(expression, SearchExpression.NE.getExpression())) {
                     relEntityList = relEntityMapper.getRelEntityByRelIdAndToCiEntityName(relEntityVo);
                 }
                 for (RelEntityVo relEntity : relEntityList) {
@@ -1124,9 +1150,11 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             } else if ("to".equals(direction)) {
                 relEntityVo.setFromCiEntityName(value);
                 List<RelEntityVo> relEntityList = new ArrayList<>();
-                if (Objects.equals(expression, Expression.LIKE.getExpression())) {
+                if (Objects.equals(expression, SearchExpression.LI.getExpression())
+                        || Objects.equals(expression, SearchExpression.NL.getExpression())) {
                     relEntityList = relEntityMapper.getRelEntityByRelIdAndLikeFromCiEntityName(relEntityVo);
-                } else {
+                } else if (Objects.equals(expression, SearchExpression.EQ.getExpression())
+                        || Objects.equals(expression, SearchExpression.NE.getExpression())) {
                     relEntityList = relEntityMapper.getRelEntityByRelIdAndFromCiEntityName(relEntityVo);
                 }
                 for (RelEntityVo relEntity : relEntityList) {
@@ -1135,7 +1163,15 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             }
         }
         if (CollectionUtils.isEmpty(ciEntityIdList)) {
-            return null;
+            if (Objects.equals(expression, SearchExpression.EQ.getExpression()) || Objects.equals(expression, SearchExpression.LI.getExpression())) {
+                return null;
+            }
+        }
+
+        if (Objects.equals(expression, SearchExpression.EQ.getExpression())) {
+            expression = SearchExpression.LI.getExpression();
+        } else if (Objects.equals(expression, SearchExpression.NE.getExpression())) {
+            expression = SearchExpression.NL.getExpression();
         }
         RelFilterVo relFilterVo = new RelFilterVo();
         relFilterVo.setRelId(relVo.getId());
