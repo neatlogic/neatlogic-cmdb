@@ -341,9 +341,15 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
                 dataList.addAll(mapList);
             }
         } else {
+            List<MatrixFilterVo> filterList = dataVo.getFilterList();
+            String keywordColumn = dataVo.getKeywordColumn();
+            if (StringUtils.isNotBlank(keywordColumn) && StringUtils.isNotBlank(dataVo.getKeyword())) {
+                MatrixFilterVo matrixFilterVo = new MatrixFilterVo(keywordColumn, Expression.LIKE.getExpression(), Arrays.asList(dataVo.getKeyword()));
+                filterList.add(matrixFilterVo);
+            }
             CustomViewConditionVo customViewConditionVo = new CustomViewConditionVo();
             customViewConditionVo.setCustomViewId(matrixCmdbCustomViewVo.getCustomViewId());
-            List<CustomViewConditionFilterVo> attrFilterList = convertAttrFilter(matrixCmdbCustomViewVo.getCustomViewId(), matrixAttributeList, dataVo.getFilterList(), matrixUuid);
+            List<CustomViewConditionFilterVo> attrFilterList = convertAttrFilter(matrixCmdbCustomViewVo.getCustomViewId(), matrixAttributeList, filterList, matrixUuid);
             customViewConditionVo.setAttrFilterList(attrFilterList);
             customViewConditionVo.setCurrentPage(dataVo.getCurrentPage());
             customViewConditionVo.setPageSize(dataVo.getPageSize());
