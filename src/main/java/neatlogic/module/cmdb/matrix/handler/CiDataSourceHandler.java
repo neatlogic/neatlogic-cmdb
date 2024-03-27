@@ -1048,9 +1048,9 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
     private AttrFilterVo convertAttrFilter(AttrVo attrVo, String expression, List<String> valueList) {
         AttrFilterVo attrFilterVo = new AttrFilterVo();
         attrFilterVo.setAttrId(attrVo.getId());
-        attrFilterVo.setExpression(expression);
         if (Objects.equals(expression, SearchExpression.NULL.getExpression())
                 || Objects.equals(expression, SearchExpression.NOTNULL.getExpression())) {
+            attrFilterVo.setExpression(expression);
             return attrFilterVo;
         }
         if (StringUtils.isBlank(expression)) {
@@ -1102,6 +1102,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         } else {
             attrFilterVo.setValueList(valueList);
         }
+        attrFilterVo.setExpression(expression);
         return attrFilterVo;
     }
 
