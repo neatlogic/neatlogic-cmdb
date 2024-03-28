@@ -44,6 +44,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -175,6 +176,71 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
     @Override
     protected JSONObject myImportMatrix(MatrixVo matrixVo, MultipartFile multipartFile) throws IOException {
         return null;
+    }
+
+    @Override
+    protected void myExportMatrix2CSV(MatrixVo matrixVo, OutputStream os) throws IOException {
+        String matrixUuid = matrixVo.getUuid();
+        MatrixCmdbCustomViewVo matrixCmdbCustomViewVo = matrixMapper.getMatrixCmdbCustomViewByMatrixUuid(matrixUuid);
+        if (matrixCmdbCustomViewVo == null) {
+            throw new MatrixCmdbCustomViewNotFoundException(matrixUuid);
+        }
+        List<MatrixAttributeVo> matrixAttributeList = myGetAttributeList(matrixVo);
+        Map<String, String> uuid2LabelMap = matrixAttributeList.stream().collect(Collectors.toMap(e -> e.getUuid(), e -> e.getLabel()));
+        JSONArray theadList = getTheadList(matrixAttributeList);
+        StringBuilder header = new StringBuilder();
+        List<String> headList = new ArrayList<>();
+        for (int i = 0; i < theadList.size(); i++) {
+            JSONObject obj = theadList.getJSONObject(i);
+            String title = obj.getString("title");
+            String key = obj.getString("key");
+            if (StringUtils.isNotBlank(title) && StringUtils.isNotBlank(key)) {
+                header.append(title).append(",");
+                String label = uuid2LabelMap.get(key);
+                if (StringUtils.isNotBlank(label)) {
+                    headList.add(label);
+                }
+            }
+        }
+        header.append("\n");
+        os.write(header.toString().getBytes("GBK"));
+        os.flush();
+        CustomViewConditionVo customViewConditionVo = new CustomViewConditionVo();
+        customViewConditionVo.setCustomViewId(matrixCmdbCustomViewVo.getCustomViewId());
+        customViewConditionVo.setCurrentPage(1);
+        customViewConditionVo.setPageSize(1000);
+        List<Map<String, Object>> dataList = customViewDataService.searchCustomViewData(customViewConditionVo);
+        Integer rowNum = customViewConditionVo.getRowNum();
+        if (rowNum > 0) {
+            int currentPage = 1;
+            Integer pageCount = customViewConditionVo.getPageCount();
+            while (currentPage <= pageCount) {
+                List<Map<String, Object>> list = new ArrayList<>();
+                if (currentPage == 1) {
+                    list = dataList;
+                } else {
+                    customViewConditionVo.setCurrentPage(currentPage);
+                    list = customViewDataService.searchCustomViewData(customViewConditionVo);
+                }
+                if (CollectionUtils.isNotEmpty(list)) {
+                    StringBuilder content = new StringBuilder();
+                    for (Map<String, Object> map : list) {
+                        for (String head : headList) {
+                            String value = null;
+                            Object obj = map.get(head);
+                            if (obj != null) {
+                                value = obj.toString();
+                            }
+                            content.append(value != null ? value.replaceAll("\n", "").replaceAll(",", "，") : StringUtils.EMPTY).append(",");
+                        }
+                        content.append("\n");
+                    }
+                    os.write(content.toString().getBytes("GBK"));
+                    os.flush();
+                }
+                currentPage++;
+            }
+        }
     }
 
     @Override
