@@ -939,6 +939,8 @@ CREATE TABLE IF NOT EXISTS `cmdb_viewconst` (
   `id` bigint NOT NULL COMMENT 'id',
   `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '名称',
   `label` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '显示名',
+  `sort` int DEFAULT NULL COMMENT '排序',
+  `show_type` enum('none','all','list','detail') COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='cmdb_viewconst';
 
