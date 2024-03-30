@@ -21,7 +21,6 @@ import neatlogic.framework.cmdb.auth.label.CIENTITY_MODIFY;
 import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
-import neatlogic.framework.cmdb.dto.transaction.TransactionVo;
 import neatlogic.framework.cmdb.enums.TransactionActionType;
 import neatlogic.framework.cmdb.enums.group.GroupType;
 import neatlogic.framework.cmdb.exception.cientity.CiEntityAuthException;
@@ -32,8 +31,9 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
@@ -42,7 +42,7 @@ import org.springframework.stereotype.Service;
 @OperationType(type = OperationTypeEnum.DELETE)
 public class DeleteCiEntityApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private CiEntityService ciEntityService;
 
     @Override
@@ -81,12 +81,10 @@ public class DeleteCiEntityApi extends PrivateApiComponentBase {
         if (needCommit) {
             needCommit = CiAuthChecker.chain().checkCiEntityTransactionPrivilege(oldCiEntityVo.getCiId()).checkCiEntityIsInGroup(id, GroupType.MAINTAIN).check();
         }
-        TransactionVo t = new TransactionVo();
         CiEntityVo ciEntityVo = new CiEntityVo();
         ciEntityVo.setId(id);
         ciEntityVo.setDescription(description);
-        ciEntityService.deleteCiEntity(ciEntityVo, needCommit);
-        return null;
+        return ciEntityService.deleteCiEntity(ciEntityVo, needCommit);
     }
 
 }

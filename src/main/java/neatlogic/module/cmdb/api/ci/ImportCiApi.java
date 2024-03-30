@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.ci;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
@@ -93,7 +94,7 @@ public class ImportCiApi extends PrivateBinaryStreamApiComponentBase {
     public Object myDoService(JSONObject paramObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
         MultipartFile multipartFile = multipartRequest.getFile("file");
-        CiVo newCiVo = JSONObject.toJavaObject(paramObj, CiVo.class);
+        CiVo newCiVo = JSON.toJavaObject(paramObj, CiVo.class);
         if (multipartFile != null) {
             ZipInputStream zin = new ZipInputStream(multipartFile.getInputStream());
             while (zin.getNextEntry() != null) {

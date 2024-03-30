@@ -18,9 +18,7 @@ package neatlogic.module.cmdb.api.ci;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
-import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
-import neatlogic.framework.cmdb.dto.ci.RelVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.Description;
 import neatlogic.framework.restful.annotation.Input;
@@ -31,8 +29,6 @@ import neatlogic.framework.restful.core.privateapi.PrivateBinaryStreamApiCompone
 import neatlogic.module.cmdb.service.ci.CiService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -50,7 +46,6 @@ import java.util.zip.ZipOutputStream;
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ExportCiApi extends PrivateBinaryStreamApiComponentBase {
-    private final static Logger logger = LoggerFactory.getLogger(ExportCiApi.class);
     @Resource
     private CiService ciService;
 
@@ -78,25 +73,24 @@ public class ExportCiApi extends PrivateBinaryStreamApiComponentBase {
         CiVo ciVo = ciService.getCiById(jsonObj.getLong("ciId"));
         if (ciVo != null) {
             //清空所有id信息
-            ciVo.setId(null);
             ciVo.setParentCiId(null);
             ciVo.setLft(null);
             ciVo.setRht(null);
             //清空所有继承属性和关系
             if (CollectionUtils.isNotEmpty(ciVo.getAttrList())) {
                 ciVo.getAttrList().removeIf(d -> d.getIsExtended().equals(1));
-                for (AttrVo attrVo : ciVo.getAttrList()) {
+                /*for (AttrVo attrVo : ciVo.getAttrList()) {
                     attrVo.setCiId(null);
                     attrVo.setId(null);
-                }
+                }*/
             }
             if (CollectionUtils.isNotEmpty(ciVo.getRelList())) {
                 ciVo.getRelList().removeIf(d -> d.getIsExtended().equals(1));
-                for (RelVo relVo : ciVo.getRelList()) {
+                /*for (RelVo relVo : ciVo.getRelList()) {
                     relVo.setToCiId(null);
                     relVo.setFromCiId(null);
                     relVo.setId(null);
-                }
+                }*/
             }
             response.setContentType("application/octet-stream");
             response.setHeader("Content-Disposition", "attachment;fileName=\"" + ciVo.getName() + ".model\"");
