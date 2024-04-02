@@ -18,9 +18,7 @@ package neatlogic.module.cmdb.notify.handler;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
 import neatlogic.framework.dto.ConditionParamVo;
-import neatlogic.framework.notify.core.NotifyHandlerType;
 import neatlogic.framework.notify.core.NotifyPolicyHandlerBase;
-import neatlogic.framework.notify.dto.NotifyTriggerTemplateVo;
 import neatlogic.framework.notify.dto.NotifyTriggerVo;
 import org.springframework.stereotype.Component;
 
@@ -54,11 +52,6 @@ public class CmdbNotifyPolicyHandler extends NotifyPolicyHandlerBase {
             returnList.add(new NotifyTriggerVo(triggerType));
         }
         return returnList;
-    }
-
-    @Override
-    protected List<NotifyTriggerTemplateVo> myNotifyTriggerTemplateList(NotifyHandlerType type) {
-        return new ArrayList<>();
     }
 
     @Override

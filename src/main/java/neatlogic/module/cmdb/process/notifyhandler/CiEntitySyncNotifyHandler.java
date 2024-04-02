@@ -3,9 +3,7 @@ package neatlogic.module.cmdb.process.notifyhandler;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.auth.label.CIENTITY_MODIFY;
 import neatlogic.framework.dto.ConditionParamVo;
-import neatlogic.framework.notify.core.NotifyHandlerType;
 import neatlogic.framework.notify.core.NotifyPolicyHandlerBase;
-import neatlogic.framework.notify.dto.NotifyTriggerTemplateVo;
 import neatlogic.framework.notify.dto.NotifyTriggerVo;
 import neatlogic.module.cmdb.process.stephandler.CmdbProcessStepHandlerType;
 
@@ -21,11 +19,6 @@ public class CiEntitySyncNotifyHandler extends NotifyPolicyHandlerBase {
 
     @Override
     protected List<NotifyTriggerVo> myNotifyTriggerList() {
-        return null;
-    }
-
-    @Override
-    protected List<NotifyTriggerTemplateVo> myNotifyTriggerTemplateList(NotifyHandlerType type) {
         return null;
     }
 
@@ -49,8 +42,4 @@ public class CiEntitySyncNotifyHandler extends NotifyPolicyHandlerBase {
         return CIENTITY_MODIFY.class.getSimpleName();
     }
 
-//    @Override
-//    public INotifyPolicyHandlerGroup getGroup() {
-//        return ProcessNotifyPolicyHandlerGroup.TASKSTEP;
-//    }
 }
