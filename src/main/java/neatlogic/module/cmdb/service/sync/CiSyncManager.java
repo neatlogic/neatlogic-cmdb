@@ -205,7 +205,7 @@ public class CiSyncManager {
                         } else {
                             //如果在当前的逻辑集合collectionName找不到映射配置，则根据ciId随便找一个物理集合相同的被动映射关系
                             // （之所以这样做是假设同一个模型在不同逻辑集合上的配置应该是一致的，所以只要物理集合一致即可）
-                            op = tmpSyncCiCollectionList.stream().filter(d -> getCollectionByName(d.getCollectionName()).getCollection().equals(getCollectionByName(collectionName).getCollection())).findFirst();
+                            op = tmpSyncCiCollectionList.stream().filter(d -> getCollectionByName(d.getCollectionName()).getCollection().equals(getCollectionByName(collectionName).getCollection()) && (StringUtils.isBlank(d.getParentKey()) || (StringUtils.isNotBlank(d.getParentKey()) && d.getParentKey().equals(pk)))).findFirst();
                             op.ifPresent(ciCollectionVo -> syncCiCollectionMap.put(ciId + "#" + collectionName + "#" + pk, ciCollectionVo));
                         }
                     }
@@ -820,7 +820,7 @@ public class CiSyncManager {
                                 }
 
                                 //#############测试用条件，使用后注释掉
-                                //criteriaList.add(Criteria.where("SERVICE_NAME").is("sgcrdb"));
+                                //criteriaList.add(Criteria.where("MGMT_IP").is("10.244.41.104"));
                                 //#############测试用条件
                                 finalCriteria.andOperator(criteriaList);
                                 query.addCriteria(finalCriteria);
