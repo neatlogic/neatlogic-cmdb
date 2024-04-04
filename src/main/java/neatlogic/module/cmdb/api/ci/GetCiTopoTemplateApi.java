@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.ci;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
@@ -91,12 +92,12 @@ public class GetCiTopoTemplateApi extends PrivateApiComponentBase {
         List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciId));
         JSONArray relObjList = new JSONArray();
         for (RelVo relVo : relList) {
-            JSONObject relObj = JSONObject.parseObject(JSONObject.toJSONString(relVo));
+            JSONObject relObj = JSON.parseObject(JSON.toJSONString(relVo));
             relObj.put("children", new JSONArray());
             relObj.put("loading", false);
             relObj.put("selected", false);
-            relObj.put("excludeCiIdList", parentObj.get("excludeCiIdList") != null ? JSONArray.parseArray(parentObj.getJSONArray("excludeCiIdList").toString()) : new JSONArray());
-            relObj.put("path", parentObj.get("path") != null ? JSONArray.parseArray(parentObj.getJSONArray("path").toString()) : new JSONArray());
+            relObj.put("excludeCiIdList", parentObj.get("excludeCiIdList") != null ? JSON.parseArray(parentObj.getJSONArray("excludeCiIdList").toString()) : new JSONArray());
+            relObj.put("path", parentObj.get("path") != null ? JSON.parseArray(parentObj.getJSONArray("path").toString()) : new JSONArray());
             if (parentObj.get("ciId") != null) {
                 relObj.getJSONArray("excludeCiIdList").add(parentObj.getLong("ciId"));
             }

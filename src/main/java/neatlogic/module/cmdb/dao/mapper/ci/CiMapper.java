@@ -36,6 +36,8 @@ public interface CiMapper extends ICiCrossoverMapper {
 
     CiVo getCiBaseInfoById(Long ciId);
 
+    CiTypeVo getCiTypeByName(String name);
+
     List<CiVo> getCiTree();
 
     Long getCiLock(Long ciId);

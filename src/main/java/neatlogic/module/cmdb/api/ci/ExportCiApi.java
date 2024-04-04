@@ -73,7 +73,6 @@ public class ExportCiApi extends PrivateBinaryStreamApiComponentBase {
         CiVo ciVo = ciService.getCiById(jsonObj.getLong("ciId"));
         if (ciVo != null) {
             //清空所有id信息
-            ciVo.setParentCiId(null);
             ciVo.setLft(null);
             ciVo.setRht(null);
             //清空所有继承属性和关系

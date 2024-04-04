@@ -56,7 +56,7 @@ import java.util.*;
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ExportCiForExcelApi extends PrivateBinaryStreamApiComponentBase {
-    private final static Logger logger = LoggerFactory.getLogger(ExportCiForExcelApi.class);
+    private static final Logger logger = LoggerFactory.getLogger(ExportCiForExcelApi.class);
 
     @Resource
     private CiMapper ciMapper;
@@ -179,7 +179,11 @@ public class ExportCiForExcelApi extends PrivateBinaryStreamApiComponentBase {
 
     private Map<String, Object> resourceConvertDataMap(RelVo relVo) {
         Map<String, Object> dataMap = new HashMap<>();
-        String name, label, ciLabel, isRequired, isUnique;
+        String name;
+        String label;
+        String ciLabel;
+        String isRequired;
+        String isUnique;
         if (relVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
             name = relVo.getToName();
             label = relVo.getToLabel();

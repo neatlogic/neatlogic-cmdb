@@ -24,7 +24,6 @@ import neatlogic.framework.cmdb.exception.ci.CiIsAbstractedException;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.ci.VirtualCiSettingFileNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.file.dao.mapper.FileMapper;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -47,8 +46,6 @@ public class SaveCiApi extends PrivateApiComponentBase {
     @Resource
     private CiService ciService;
 
-    @Resource
-    private FileMapper fileMapper;
 
     @Resource
     private CiMapper ciMapper;

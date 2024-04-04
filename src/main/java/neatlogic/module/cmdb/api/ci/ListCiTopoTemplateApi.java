@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.ci;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
@@ -59,7 +60,7 @@ public class ListCiTopoTemplateApi extends PrivateApiComponentBase {
     @Description(desc = "nmcac.listcitopotemplateapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        CiTopoTemplateVo ciTopoTemplateVo = JSONObject.toJavaObject(jsonObj,CiTopoTemplateVo.class);
+        CiTopoTemplateVo ciTopoTemplateVo = JSON.toJavaObject(jsonObj,CiTopoTemplateVo.class);
         return ciTopoTemplateMapper.getCiTopoTemplateByCiId(ciTopoTemplateVo);
     }
 }

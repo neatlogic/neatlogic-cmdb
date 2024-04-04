@@ -28,9 +28,7 @@ import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiViewMapper;
-import neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper;
 import neatlogic.module.cmdb.service.ci.CiService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -49,11 +47,6 @@ public class GetImportFieldListApi extends PrivateApiComponentBase {
     @Resource
     private CiService ciService;
 
-    @Resource
-    private GlobalAttrMapper globalAttrMapper;
-
-    @Resource
-    private CiMapper ciMapper;
 
     @Resource
     private CiViewMapper ciViewMapper;

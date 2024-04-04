@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.ci;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
@@ -65,7 +66,7 @@ public class SaveCiTreeApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         JSONArray nodeList = jsonObj.getJSONArray("nodeList");
         for (int i = 0; i < nodeList.size(); i++) {
-            CiVo ciVo = JSONObject.toJavaObject(nodeList.getJSONObject(i), CiVo.class);
+            CiVo ciVo = JSON.toJavaObject(nodeList.getJSONObject(i), CiVo.class);
             ciMapper.saveCiTreeItem(ciVo);
         }
         return null;

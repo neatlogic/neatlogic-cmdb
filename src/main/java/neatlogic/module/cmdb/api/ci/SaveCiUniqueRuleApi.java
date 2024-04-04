@@ -28,9 +28,9 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.service.ci.CiService;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,7 +39,7 @@ import java.util.List;
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveCiUniqueRuleApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private CiService ciService;
 
     @Override

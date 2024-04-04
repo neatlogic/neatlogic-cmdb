@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.ci;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
@@ -33,9 +34,10 @@ import neatlogic.module.cmdb.dao.mapper.ci.CiAuthMapper;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
@@ -43,7 +45,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class SaveCiAuthApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private CiAuthMapper ciAuthMapper;
 
     @Override
@@ -78,7 +80,7 @@ public class SaveCiAuthApi extends PrivateApiComponentBase {
         if (!CollectionUtils.isEmpty(authList)) {
             for (int i = 0; i < authList.size(); i++) {
                 JSONObject authObj = authList.getJSONObject(i);
-                CiAuthVo ciAuthVo = JSONObject.toJavaObject(authObj, CiAuthVo.class);
+                CiAuthVo ciAuthVo = JSON.toJavaObject(authObj, CiAuthVo.class);
                 ciAuthVo.setCiId(ciId);
                 if (StringUtils.isBlank(ciAuthVo.getAction()) || StringUtils.isBlank(ciAuthVo.getAuthType())
                         || StringUtils.isBlank(ciAuthVo.getAuthUuid())) {

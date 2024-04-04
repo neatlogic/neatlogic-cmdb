@@ -17,6 +17,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="neatlogic.module.cmdb.dao.mapper.ci.CiMapper">
     <cache type="neatlogic.framework.dao.cache.NeatLogicCache" flushInterval="30000" size="500"></cache>
+
+    <select id="getCiTypeByName" useCache="false" parameterType="java.lang.String"
+            resultType="neatlogic.framework.cmdb.dto.ci.CiTypeVo">
+        select id, name
+        from cmdb_citype
+        where name = #{value}
+        limit 1
+    </select>
+
     <select id="getCiTree" resultType="neatlogic.framework.cmdb.dto.ci.CiVo">
         SELECT a.name,
                a.label,

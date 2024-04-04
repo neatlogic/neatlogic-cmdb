@@ -17,6 +17,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="neatlogic.module.cmdb.dao.mapper.ci.RelMapper">
     <cache-ref namespace="neatlogic.module.cmdb.dao.mapper.ci.CiMapper"/>
+    <select id="getRelTypeByName" parameterType="java.lang.String"
+            resultType="neatlogic.framework.cmdb.dto.ci.RelTypeVo">
+        select id, name
+        from cmdb_reltype
+        where name = #{value}
+        limit 1
+    </select>
 
     <select id="searchRel" parameterType="neatlogic.framework.cmdb.dto.ci.RelVo"
             resultType="neatlogic.framework.cmdb.dto.ci.RelVo">

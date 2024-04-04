@@ -32,10 +32,10 @@ import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,13 +45,13 @@ import java.util.List;
 @Transactional // 需要启用事务，以便查询权限时激活一级缓存
 public class GetCiAttrRelListApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private CiMapper ciMapper;
 
-    @Autowired
+    @Resource
     private AttrMapper attrMapper;
 
-    @Autowired
+    @Resource
     private RelMapper relMapper;
 
     @Override

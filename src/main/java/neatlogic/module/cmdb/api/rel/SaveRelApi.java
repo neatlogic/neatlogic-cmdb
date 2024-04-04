@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.rel;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
@@ -32,9 +33,10 @@ import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
 
 /**
  * 保存关系接口，关系不能支持虚拟模型，原因：
@@ -47,7 +49,7 @@ import org.springframework.transaction.annotation.Transactional;
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveRelApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private RelMapper relMapper;
 
     @Override
@@ -85,10 +87,10 @@ public class SaveRelApi extends PrivateApiComponentBase {
             @Param(name = "toIsRequired", type = ApiParamType.INTEGER, isRequired = true, desc = "下游端是否必填"),
             @Param(name = "toIsCascadeDelete", type = ApiParamType.INTEGER, isRequired = true, desc = "下游端是否级联删除"),
             @Param(name = "relativeRelList", type = ApiParamType.JSONARRAY, desc = "级联关系配置")})
-    @Description(desc = "保存模型关系接口")
+    @Description(desc = "保存模型关系")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        RelVo relVo = JSONObject.toJavaObject(jsonObj, RelVo.class);
+        RelVo relVo = JSON.toJavaObject(jsonObj, RelVo.class);
         Long id = jsonObj.getLong("id");
         if (relMapper.checkRelByFromToName(relVo) > 0) {
             throw new RelIsExistsException(relVo.getFromName(), relVo.getToName());
