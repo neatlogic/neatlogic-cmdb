@@ -114,6 +114,22 @@ public class ImportCiApi extends PrivateBinaryStreamApiComponentBase {
                 }
                 zin.close();
             }
+            //重新排序，父模型先写入
+            newCiList.sort((o1, o2) -> {
+                // 先比较parentId
+                if (o1.getParentCiId() != null && o2.getParentCiId() != null) {
+                    int parentIdComparison = Long.compare(o1.getParentCiId(), o2.getParentCiId());
+                    if (parentIdComparison != 0) {
+                        return parentIdComparison;
+                    }
+                } else if (o1.getParentCiId() != null) {
+                    return -1; // o1的parentId不为空，o2的为空，o1排在前面
+                } else if (o2.getParentCiId() != null) {
+                    return 1; // o1的parentId为空，o2的不为空，o2排在前面
+                }
+                // parentId相等或者都为空时，按照id排序
+                return Long.compare(o1.getId(), o2.getId());
+            });
             if (CollectionUtils.isNotEmpty(newCiList)) {
                 for (CiVo ciVo : newCiList) {
                     //检查类型是否存在

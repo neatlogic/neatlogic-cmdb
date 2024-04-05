@@ -100,10 +100,12 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
         }
 
 
-        int lft = LRCodeManager.beforeAddTreeNode("cmdb_ci", "id", "parent_ci_id", ciVo.getParentCiId());
-        ciVo.setLft(lft);
-        ciVo.setRht(lft + 1);
+        //int lft = LRCodeManager.beforeAddTreeNode("cmdb_ci", "id", "parent_ci_id", ciVo.getParentCiId());
+        //ciVo.setLft(lft);
+        //ciVo.setRht(lft + 1);
         ciMapper.insertCi(ciVo);
+        //重建所有左右编码，性能差点但可靠
+        LRCodeManager.rebuildLeftRightCode("cmdb_ci", "id", "parent_ci_id");
         //如果父模型有配置显示视图，则复制一份，加快配置效率
         if (ciVo.getParentCiId() != null) {
             List<CiViewVo> ciViewList = ciViewMapper.getCiViewBaseInfoByCiId(ciVo.getParentCiId());
