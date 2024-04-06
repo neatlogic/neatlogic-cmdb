@@ -153,7 +153,7 @@ public class GetCiAttrListApi extends PrivateApiComponentBase {
         }
         if (isRequired != null && isRequired.equals(1)) {
             //唯一规则和必填等价
-            attrList.removeIf(attr -> (attr.getIsRequired() != null && attr.getIsRequired().equals(0) && attr.getIsUnique().equals(0)));
+            attrList.removeIf(attr -> (attr.getIsRequired() != null && attr.getIsRequired().equals(0) && attr.getIsCiUnique().equals(0)));
         }
         return attrList;
     }

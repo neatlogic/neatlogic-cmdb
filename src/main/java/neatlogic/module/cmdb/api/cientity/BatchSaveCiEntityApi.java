@@ -60,7 +60,6 @@ import java.util.*;
 @OperationType(type = OperationTypeEnum.UPDATE)
 @Transactional
 public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBatchSaveCiEntityApiCrossoverService {
-    //static Logger logger = LoggerFactory.getLogger(BatchSaveCiEntityApi.class);
 
     @Resource
     private CiEntityService ciEntityService;
