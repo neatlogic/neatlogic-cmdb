@@ -114,8 +114,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         cgai.sort as itemSort
         from cmdb_global_attr cga left join cmdb_global_attritem cgai on cga.id = cgai.attr_id
         <where>
+            <if test="name != null and name != ''">
+                and cga.name = #{name}
+            </if>
             <if test="isActive != null">
-                is_active = #{isActive}
+                and cga.is_active = #{isActive}
             </if>
         </where>
         order by cga.id desc, cgai.sort
