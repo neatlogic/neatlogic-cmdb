@@ -59,9 +59,11 @@ public class ListCiApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.ciidlist"),
+            @Param(name = "isRaw", type = ApiParamType.INTEGER, desc = "是否返回原始数据格式", rule = "0,1"),
             @Param(name = "excludeCiIdList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.excludeciid"),
             @Param(name = "isAbstract", type = ApiParamType.ENUM, rule = "0,1", desc = "term.cmdb.isabstractci"),
             @Param(name = "isVirtual", type = ApiParamType.ENUM, rule = "0,1", desc = "term.cmdb.isvirtualci"),
+            @Param(name = "needChildren", type = ApiParamType.INTEGER, rule = "0,1", desc = "如果提供的id是父节点，是否返回他的所有子节点")
     })
     @Output({@Param(explode = ValueTextVo[].class)})
     @Description(desc = "nmcac.listciapi.getname")
@@ -83,14 +85,24 @@ public class ListCiApi extends PrivateApiComponentBase {
         JSONArray jsonList = new JSONArray();
         Integer isAbstract = jsonObj.getInteger("isAbstract");
         Integer isVirtual = jsonObj.getInteger("isVirtual");
-        CI:
-        for (CiVo ciVo : ciList) {
-            if (CollectionUtils.isNotEmpty(excludeCiIdList)) {
-                for (int i = 0; i < excludeCiIdList.size(); i++) {
-                    if (excludeCiIdList.getLong(i).equals(ciVo.getId())) {
-                        continue CI;
-                    }
+        Integer isRaw = jsonObj.getInteger("isRaw");
+        Integer needChildren = jsonObj.getInteger("needChildren");
+        List<CiVo> finalCiList = new ArrayList<>();
+        if (needChildren != null && needChildren.equals(1)) {
+            for (CiVo ciVo : ciList) {
+                if (ciVo.getIsAbstract().equals(1)) {
+                    List<CiVo> childCIList = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
+                    finalCiList.addAll(childCIList);
+                } else {
+                    finalCiList.add(ciVo);
                 }
+            }
+        } else {
+            finalCiList = ciList;
+        }
+        for (CiVo ciVo : finalCiList) {
+            if (CollectionUtils.isNotEmpty(excludeCiIdList) && (excludeCiIdList.contains(ciVo.getId()))) {
+                continue;
             }
             if (isAbstract != null && !Objects.equals(isAbstract, ciVo.getIsAbstract())) {
                 continue;
@@ -99,8 +111,14 @@ public class ListCiApi extends PrivateApiComponentBase {
                 continue;
             }
             JSONObject valueObj = new JSONObject();
-            valueObj.put("value", ciVo.getId());
-            valueObj.put("text", ciVo.getLabel() + "(" + ciVo.getName() + ")");
+            if (isRaw == null || isRaw.equals(0)) {
+                valueObj.put("value", ciVo.getId());
+                valueObj.put("text", ciVo.getLabel() + "(" + ciVo.getName() + ")");
+            } else if (isRaw.equals(1)) {
+                valueObj.put("id", ciVo.getId());
+                valueObj.put("name", ciVo.getName());
+                valueObj.put("label", ciVo.getLabel());
+            }
             jsonList.add(valueObj);
         }
         return jsonList;

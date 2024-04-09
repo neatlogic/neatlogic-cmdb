@@ -316,11 +316,11 @@ public class CiSyncManager {
                         filterVo.setAttrId(syncMappingVo.getAttrId());
                         filterVo.setExpression(SearchExpression.EQ.getExpression());
                         String v = dataObj.getString(syncMappingVo.getField(parentKey));
-                        if (!attr.isNeedTargetCi()) {
+                        if (Boolean.FALSE.equals(attr.isNeedTargetCi())) {
                             if (StringUtils.isNotBlank(v)) {
-                                filterVo.setValueList(new ArrayList<String>() {{
-                                    this.add(v);
-                                }});
+                                List<String> valueList = new ArrayList<>();
+                                valueList.add(v);
+                                filterVo.setValueList(valueList);
                             } else {
                                 throw new CiUniqueAttrNotFoundException(syncCiCollectionVo, ciVo, syncMappingVo.getField(parentKey), dataObj);
                             }
@@ -340,15 +340,13 @@ public class CiSyncManager {
                             Long uAttrId = targetCiVo.getUniqueAttrIdList().get(0);
                             AttrVo targetNameAttrVo = attrMapper.getAttrById(uAttrId);
                             //如果引用了非subset数据，需要检查目标的名称属性是否可以写入数据（非表达式和引用属性），否则则放弃这个属性的导入
-                            if (!targetNameAttrVo.getType().equals("expression") && !targetNameAttrVo.isNeedTargetCi()) {
+                            if (!targetNameAttrVo.getType().equals("expression") && Boolean.FALSE.equals(targetNameAttrVo.isNeedTargetCi())) {
                                 CiEntityVo attrConditionVo = new CiEntityVo();
                                 attrConditionVo.setCiId(attr.getTargetCiId());
-                                attrConditionVo.setAttrIdList(new ArrayList<Long>() {{
-                                    this.add(0L);
-                                }});
-                                attrConditionVo.setRelIdList(new ArrayList<Long>() {{
-                                    this.add(0L);
-                                }});
+                                List<Long> noIdList = new ArrayList<>();
+                                noIdList.add(0L);
+                                attrConditionVo.setAttrIdList(noIdList);
+                                attrConditionVo.setRelIdList(noIdList);
                                 AttrFilterVo targetFilterVo = new AttrFilterVo();
                                 targetFilterVo.setAttrId(uAttrId);
                                 targetFilterVo.setExpression(SearchExpression.EQ.getExpression());
@@ -362,9 +360,9 @@ public class CiSyncManager {
                                     filterVo.setValueList(valueList);
                                 } else {
                                     //如果没有找到目标值，则需要放一个不可能存在的值进去，代表当前配置项是不存在的，否则会缺了一个条件导致匹配出错误数据
-                                    filterVo.setValueList(new ArrayList<String>() {{
-                                        this.add("0");
-                                    }});
+                                    List<String> noStringList = new ArrayList<>();
+                                    noStringList.add("0");
+                                    filterVo.setValueList(noStringList);
                                 }
                                 ciEntityConditionVo.addAttrFilter(filterVo);
                             } else {
@@ -472,13 +470,13 @@ public class CiSyncManager {
                                             }
                                             //补充所有普通值数据进数据集，方便子对象引用父模型属性
                                             JSONObject subDataWithPK = new JSONObject();
-                                            for (String subKey : subData.keySet()) {
-                                                subDataWithPK.put(mappingVo.getField(parentKey) + "." + subKey, subData.get(subKey));
+                                            for (Map.Entry<String, Object> entry : subData.entrySet()) {
+                                                subDataWithPK.put(mappingVo.getField(parentKey) + "." + entry.getKey(), entry.getValue());
                                             }
 
-                                            for (String key : dataObj.keySet()) {
-                                                if (!(dataObj.get(key) instanceof JSONArray)) {
-                                                    subDataWithPK.put(key, dataObj.get(key));
+                                            for (Map.Entry<String, Object> entry : dataObj.entrySet()) {
+                                                if (!(entry.getValue() instanceof JSONArray)) {
+                                                    subDataWithPK.put(entry.getKey(), entry.getValue());
                                                 }
                                             }
                                             CiEntityTransactionVo subCiEntityTransactionVo = generateCiEntityTransaction(subDataWithPK, subSyncCiCollectionVo, ciEntityTransactionMap, mappingVo.getField());
@@ -517,19 +515,19 @@ public class CiSyncManager {
                                     Long uniqueAttrId = targetCiVo.getUniqueAttrIdList().get(0);
                                     AttrVo targetNameAttrVo = attrMapper.getAttrById(uniqueAttrId);
                                     //如果引用了非subset数据，需要检查目标的名称属性是否可以写入数据（非表达式和引用属性），否则则放弃这个属性的导入
-                                    if (!targetNameAttrVo.getType().equals("expression") && !targetNameAttrVo.isNeedTargetCi()) {
+                                    if (!targetNameAttrVo.getType().equals("expression") && Boolean.FALSE.equals(targetNameAttrVo.isNeedTargetCi())) {
                                         CiEntityVo attrConditionVo = new CiEntityVo();
                                         attrConditionVo.setCiId(attrVo.getTargetCiId());
                                         AttrFilterVo filterVo = new AttrFilterVo();
                                         filterVo.setAttrId(uniqueAttrId);
                                         filterVo.setExpression(SearchExpression.EQ.getExpression());
-                                        filterVo.setValueList(new ArrayList<String>() {{
-                                            this.add(dataObj.getString(mappingVo.getField(parentKey)));
-                                        }});
+                                        List<String> valueList = new ArrayList<>();
+                                        valueList.add(dataObj.getString(mappingVo.getField(parentKey)));
+                                        filterVo.setValueList(valueList);
                                         attrConditionVo.addAttrFilter(filterVo);
                                         CiEntityTransactionVo attrCiEntityTransactionVo = new CiEntityTransactionVo();
                                         attrConditionVo.setId(attrCiEntityTransactionVo.getCiEntityId());
-                                        List<CiEntityVo> attrCiCheckList = searchCiEntityWithCache(attrConditionVo);//ciEntityService.searchCiEntity(attrConditionVo);
+                                        List<CiEntityVo> attrCiCheckList = searchCiEntityWithCache(attrConditionVo);
                                         if (CollectionUtils.isNotEmpty(attrCiCheckList) && attrCiCheckList.size() > 1) {
                                             //补充异常信息
                                             CiVo c = ciMapper.getCiById(attrConditionVo.getCiId());
@@ -625,13 +623,13 @@ public class CiSyncManager {
                                                 }
                                                 if (subSyncCiCollectionVo != null) {
                                                     JSONObject subDataWithPK = new JSONObject();
-                                                    for (String subKey : subData.keySet()) {
-                                                        subDataWithPK.put(mappingVo.getField(parentKey) + "." + subKey, subData.get(subKey));
+                                                    for (Map.Entry<String, Object> entry : subData.entrySet()) {
+                                                        subDataWithPK.put(mappingVo.getField(parentKey) + "." + entry.getKey(), entry.getValue());
                                                     }
                                                     //补充所有普通值数据进数据集，方便子对象引用父模型属性
-                                                    for (String key : dataObj.keySet()) {
-                                                        if (!(dataObj.get(key) instanceof JSONArray)) {
-                                                            subDataWithPK.put(key, dataObj.get(key));
+                                                    for (Map.Entry<String, Object> entry : dataObj.entrySet()) {
+                                                        if (!(entry.getValue() instanceof JSONArray)) {
+                                                            subDataWithPK.put(entry.getKey(), entry.getValue());
                                                         }
                                                     }
                                                     //检查下层映射配置，如果发现某些key不存在，那可能是跨层读取，这时需要使用jsonpath尝试寻找跨层数据放入当前节点
@@ -688,6 +686,7 @@ public class CiSyncManager {
             return null;
         }
 
+
         private CollectionVo getCollectionByName(String name) {
             if (CollectionUtils.isNotEmpty(collectionList)) {
                 Optional<CollectionVo> op = collectionList.stream().filter(c -> c.getName().equalsIgnoreCase(name)).findFirst();
@@ -724,8 +723,8 @@ public class CiSyncManager {
                                     ciEntityTransactionMap.put(ciEntityTransactionVo.getHash(), ciEntityTransactionVo);
                                 }
                                 List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
-                                for (Integer key : ciEntityTransactionMap.keySet()) {
-                                    ciEntityTransactionList.add(ciEntityTransactionMap.get(key));
+                                for (Map.Entry<Integer, CiEntityTransactionVo> entry : ciEntityTransactionMap.entrySet()) {
+                                    ciEntityTransactionList.add(entry.getValue());
                                 }
                                 ciEntityService.saveCiEntityWithoutTransaction(ciEntityTransactionList, syncCiCollectionVo.getTransactionGroup());
                             } catch (ApiRuntimeException ex) {
@@ -888,11 +887,11 @@ public class CiSyncManager {
                 BatchRunner<JSONObject> batchRunner = new BatchRunner<>();
                 BatchRunner.State state = batchRunner.execute(dataList, 3, data -> {
                     int tmpCount = count.addAndGet(1);
-                    long startTime = 0L;
+                    long localStartTime = 0L;
                     if (logger.isInfoEnabled()) {
                         logger.info("开始处理第" + tmpCount + "条数据");
-                        startTime = System.currentTimeMillis();
-                        logger.info("mongodb游标数据读取耗时：" + (System.currentTimeMillis() - startTime) + "ms");
+                        localStartTime = System.currentTimeMillis();
+                        logger.info("mongodb游标数据读取耗时：" + (System.currentTimeMillis() - localStartTime) + "ms");
                     }
 
                     JSONArray tmpDataList = new JSONArray();
@@ -905,28 +904,28 @@ public class CiSyncManager {
 
                         try {
                             if (logger.isInfoEnabled()) {
-                                startTime = System.currentTimeMillis();
+                                localStartTime = System.currentTimeMillis();
                             }
                             CiEntityTransactionVo ciEntityTransactionVo = this.generateCiEntityTransaction(dataObj, syncCiCollectionVo, ciEntityTransactionVoMap, null);
                             if (ciEntityTransactionVo != null && !ciEntityTransactionVoMap.containsKey(ciEntityTransactionVo.getHash())) {
                                 ciEntityTransactionVoMap.put(ciEntityTransactionVo.getHash(), ciEntityTransactionVo);
                             }
                             List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
-                            for (Integer key : ciEntityTransactionVoMap.keySet()) {
-                                ciEntityTransactionList.add(ciEntityTransactionVoMap.get(key));
+                            for (Map.Entry<Integer, CiEntityTransactionVo> entry : ciEntityTransactionVoMap.entrySet()) {
+                                ciEntityTransactionList.add(entry.getValue());
                             }
                             if (logger.isInfoEnabled()) {
-                                logger.info("创建了" + ciEntityTransactionList.size() + "个事务，耗时：" + (System.currentTimeMillis() - startTime) + "ms");
+                                logger.info("创建了" + ciEntityTransactionList.size() + "个事务，耗时：" + (System.currentTimeMillis() - localStartTime) + "ms");
                             }
 
                             if (logger.isInfoEnabled()) {
-                                startTime = System.currentTimeMillis();
+                                localStartTime = System.currentTimeMillis();
                             }
                             //清理豁免配置项列表，避免重复配置项无法更新
                             //syncCiCollectionVo.getTransactionGroup().clearExclude();
                             ciEntityService.saveCiEntityWithoutTransaction(ciEntityTransactionList, syncCiCollectionVo.getTransactionGroup());
                             if (logger.isInfoEnabled()) {
-                                logger.info("处理了" + ciEntityTransactionList.size() + "个事务，耗时：" + (System.currentTimeMillis() - startTime) + "ms");
+                                logger.info("处理了" + ciEntityTransactionList.size() + "个事务，耗时：" + (System.currentTimeMillis() - localStartTime) + "ms");
                             }
                         } catch (ApiRuntimeException ex) {
                             logger.warn(ex.getMessage(), ex);
@@ -937,7 +936,7 @@ public class CiSyncManager {
                         }
                     }
                     if (logger.isInfoEnabled()) {
-                        logger.info("第" + tmpCount + "条数据处理完成，耗时：" + (System.currentTimeMillis() - startTime) + "ms");
+                        logger.info("第" + tmpCount + "条数据处理完成，耗时：" + (System.currentTimeMillis() - localStartTime) + "ms");
                     }
                 }, "SYNC-BATCH-HANDLER");
                 if (!state.isSucceed()) {
@@ -974,20 +973,39 @@ public class CiSyncManager {
      */
     private static JSONArray flattenJson(JSONArray dataList, Set<String> fieldList, String parentKey) {
         Set<Object> finalDataList = new HashSet<>();
+        //判断同层是否有field，如果有，则把兄弟属性也设进去，以备下层映射使用
+
         for (int i = 0; i < dataList.size(); i++) {
             if (dataList.get(i) instanceof JSONObject) {
+                boolean isHit = false;
                 JSONObject data = dataList.getJSONObject(i);
                 JSONObject returnData = new JSONObject();
                 JSONArray returnDataList = new JSONArray();
 
-                for (String key : data.keySet()) {
+                for (Map.Entry<String, Object> entry : data.entrySet()) {
                     if (StringUtils.isNotBlank(parentKey)) {
-                        if (fieldList.contains(parentKey + "." + key)) {
-                            returnData.put(parentKey + "." + key, data.get(key));
+                        if (fieldList.contains(parentKey + "." + entry.getKey())) {
+                            returnData.put(parentKey + "." + entry.getKey(), entry.getValue());
+                            isHit = true;
                         }
                     } else {
-                        if (fieldList.contains(key)) {
-                            returnData.put(key, data.get(key));
+                        if (fieldList.contains(entry.getKey())) {
+                            returnData.put(entry.getKey(), entry.getValue());
+                            isHit = true;
+                        }
+                    }
+                }
+                //再次遍历，补充兄弟节点数据，仅需补充普通类型数据
+                if (isHit) {
+                    for (Map.Entry<String, Object> entry : data.entrySet()) {
+                        if (StringUtils.isNotBlank(parentKey)) {
+                            if (!fieldList.contains(parentKey + "." + entry.getKey()) && !entry.getKey().startsWith("_") && !(entry.getValue() instanceof JSONArray) && !(entry.getValue() instanceof JSONObject)) {
+                                returnData.put(parentKey + "." + entry.getKey(), entry.getValue());
+                            }
+                        } else {
+                            if (!fieldList.contains(entry.getKey()) && !entry.getKey().startsWith("_") && !(entry.getValue() instanceof JSONArray) && !(entry.getValue() instanceof JSONObject)) {
+                                returnData.put(entry.getKey(), entry.getValue());
+                            }
                         }
                     }
                 }
@@ -996,9 +1014,9 @@ public class CiSyncManager {
                     returnDataList.add(returnData);
                 }
 
-                for (String key : data.keySet()) {
-                    if (data.get(key) instanceof JSONArray) {
-                        JSONArray subDataList = flattenJson(data.getJSONArray(key), fieldList, StringUtils.isNotBlank(parentKey) ? parentKey + "." + key : key);
+                for (Map.Entry<String, Object> entry : data.entrySet()) {
+                    if (entry.getValue() instanceof JSONArray) {
+                        JSONArray subDataList = flattenJson(data.getJSONArray(entry.getKey()), fieldList, StringUtils.isNotBlank(parentKey) ? parentKey + "." + entry.getKey() : entry.getKey());
                         JSONArray tmpList = new JSONArray();
                         if (CollectionUtils.isNotEmpty(returnDataList)) {
                             for (int r = 0; r < returnDataList.size(); r++) {

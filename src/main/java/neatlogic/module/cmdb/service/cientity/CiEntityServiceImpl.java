@@ -1260,12 +1260,10 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             }
             if (CollectionUtils.isNotEmpty(ciEntityConditionVo.getAttrFilterList())) {
                 //检查是否存在不需要join所有属性和关系
-                ciEntityConditionVo.setAttrIdList(new ArrayList<Long>() {{
-                    this.add(0L);
-                }});
-                ciEntityConditionVo.setRelIdList(new ArrayList<Long>() {{
-                    this.add(0L);
-                }});
+                List<Long> noIdList = new ArrayList<>();
+                noIdList.add(0L);
+                ciEntityConditionVo.setAttrIdList(noIdList);
+                ciEntityConditionVo.setRelIdList(noIdList);
                 List<CiEntityVo> checkList = this.searchCiEntity(ciEntityConditionVo);
                 for (CiEntityVo checkCiEntity : checkList) {
                     if (!checkCiEntity.getId().equals(ciEntityTransactionVo.getCiEntityId())) {
@@ -1800,7 +1798,8 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 for (RelEntityVo item : relEntityList) {
                     //如果不是自己引用自己，则需要补充对端配置项事务，此块需要在真正删除数据前处理
                     if (!item.getFromCiEntityId().equals(item.getToCiEntityId())) {
-                        Long ciEntityId = null, ciId = null;
+                        Long ciEntityId = null;
+                        Long ciId = null;
                         //补充关系删除事务数据
                         RelVo relVo = relMapper.getRelById(item.getRelId());
                         boolean isCascadeDelete = false;
