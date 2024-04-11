@@ -149,13 +149,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     </select>
 
     <insert id="insertCiView" parameterType="neatlogic.framework.cmdb.dto.ci.CiViewVo">
-        INSERT INTO `cmdb_view` (`ci_id`,
-                                 `item_id`,
-                                 `type`,
-                                 `sort`,
-                                 `show_type`,
-                                 `allow_edit`,
-                                 `alias`)
+        INSERT IGNORE INTO `cmdb_view` (`ci_id`,
+                                        `item_id`,
+                                        `type`,
+                                        `sort`,
+                                        `show_type`,
+                                        `allow_edit`,
+                                        `alias`)
         VALUES (#{ciId},
                 #{itemId},
                 #{type},
