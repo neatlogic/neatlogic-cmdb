@@ -999,11 +999,11 @@ public class CiSyncManager {
                 if (isHit) {
                     for (Map.Entry<String, Object> entry : data.entrySet()) {
                         if (StringUtils.isNotBlank(parentKey)) {
-                            if (!fieldList.contains(parentKey + "." + entry.getKey()) && !entry.getKey().startsWith("_") && !(entry.getValue() instanceof JSONArray) && !(entry.getValue() instanceof JSONObject)) {
+                            if (!fieldList.contains(parentKey + "." + entry.getKey()) && !(entry.getValue() instanceof JSONArray) && !(entry.getValue() instanceof JSONObject)) {
                                 returnData.put(parentKey + "." + entry.getKey(), entry.getValue());
                             }
                         } else {
-                            if (!fieldList.contains(entry.getKey()) && !entry.getKey().startsWith("_") && !(entry.getValue() instanceof JSONArray) && !(entry.getValue() instanceof JSONObject)) {
+                            if (!fieldList.contains(entry.getKey()) && !(entry.getValue() instanceof JSONArray) && !(entry.getValue() instanceof JSONObject)) {
                                 returnData.put(entry.getKey(), entry.getValue());
                             }
                         }
