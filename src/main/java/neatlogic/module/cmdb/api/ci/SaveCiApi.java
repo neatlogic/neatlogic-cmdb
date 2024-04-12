@@ -15,7 +15,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.ci;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
@@ -89,7 +91,7 @@ public class SaveCiApi extends PrivateApiComponentBase {
     @Description(desc = "nmcac.saveciapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        CiVo ciVo = JSONObject.toJavaObject(jsonObj, CiVo.class);
+        CiVo ciVo = JSON.toJavaObject(jsonObj, CiVo.class);
         Long ciId = jsonObj.getLong("id");
         if (Objects.equals(ciVo.getIsVirtual(), 1)) {
             if (StringUtils.isBlank(ciVo.getViewXml())) {
@@ -110,12 +112,8 @@ public class SaveCiApi extends PrivateApiComponentBase {
             if (!CiAuthChecker.chain().checkCiManagePrivilege(ciId).check()) {
                 throw new CiAuthException();
             }
-            if (oldCiVo.getRht() - oldCiVo.getLft() > 1) {
-                oldCiVo.setHasChildren(true);
-            } else {
-                oldCiVo.setHasChildren(false);
-            }
-            oldCiVo.setHasData(ciSchemaMapper.checkTableHasData(ciVo.getCiTableName()) > 0);
+            oldCiVo.setHasChildren(oldCiVo.getRht() - oldCiVo.getLft() > 1);
+            oldCiVo.setHasData(ciSchemaMapper.checkTableHasData(TenantContext.get().getDataDbName(), ciVo.getCiTableName(false)) > 0);
             if ((oldCiVo.getHasChildren() || oldCiVo.getHasData()) && !Objects.equals(oldCiVo.getIsAbstract(), ciVo.getIsAbstract())) {
                 throw new CiIsAbstractedException(CiIsAbstractedException.Type.UPDATEABSTRACT, ciVo.getLabel());
             }

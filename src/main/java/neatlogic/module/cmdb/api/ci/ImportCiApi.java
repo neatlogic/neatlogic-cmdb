@@ -16,6 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 package neatlogic.module.cmdb.api.ci;
 
 import com.alibaba.fastjson.JSONObject;
+import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
 import neatlogic.framework.cmdb.dto.ci.*;
@@ -155,7 +156,7 @@ public class ImportCiApi extends PrivateBinaryStreamApiComponentBase {
                         } else {
                             oldCiVo.setHasChildren(false);
                         }
-                        oldCiVo.setHasData(ciSchemaMapper.checkTableHasData(ciVo.getCiTableName()) > 0);
+                        oldCiVo.setHasData(ciSchemaMapper.checkTableHasData(TenantContext.get().getDataDbName(), ciVo.getCiTableName(false)) > 0);
                         if ((oldCiVo.getHasChildren() || oldCiVo.getHasData()) && !Objects.equals(oldCiVo.getIsAbstract(), ciVo.getIsAbstract())) {
                             throw new CiIsAbstractedException(CiIsAbstractedException.Type.UPDATEABSTRACT, ciVo.getLabel());
                         }

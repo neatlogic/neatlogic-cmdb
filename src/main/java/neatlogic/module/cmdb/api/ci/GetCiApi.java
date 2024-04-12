@@ -16,6 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 package neatlogic.module.cmdb.api.ci;
 
 import com.alibaba.fastjson.JSONObject;
+import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
@@ -86,7 +87,7 @@ public class GetCiApi extends PrivateApiComponentBase {
             List<CiVo> childCiList = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
             ciVo.setChildren(childCiList.stream().filter(d -> !d.getId().equals(ciVo.getId())).collect(Collectors.toList()));
         }
-        ciVo.setHasData(ciSchemaMapper.checkTableHasData(ciVo.getCiTableName()) > 0);
+        ciVo.setHasData(ciSchemaMapper.checkTableHasData(TenantContext.get().getDataDbName(), ciVo.getCiTableName(false)) > 0);
         if (Objects.equals(ciVo.getIsVirtual(), 1) && ciVo.getFileId() != null) {
             ciVo.setFileVo(fileMapper.getFileById(ciVo.getFileId()));
         }

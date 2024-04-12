@@ -20,10 +20,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         ${value}
     </select>
 
-    <select id="checkTableHasData" parameterType="java.lang.String" resultType="int">
-        SELECT COUNT(1)
-        FROM ${value}
-        LIMIT 1
+
+    <select id="checkTableHasData" resultType="int">
+        SELECT TABLE_ROWS
+        FROM information_schema.TABLES
+        WHERE TABLE_SCHEMA = #{schema}
+          AND TABLE_NAME = #{table}
     </select>
 
     <select id="checkTableIsExists" resultType="int">
