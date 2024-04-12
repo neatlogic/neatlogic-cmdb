@@ -440,6 +440,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         a.ci_id AS ciId,
         a.`name`,
         a.`status`,
+        b.name as ciName,
+        b.label as ciLabel,
         b.type_id AS typeId,
         b.icon AS ciIcon,
         a.fcu,
