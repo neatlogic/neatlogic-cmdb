@@ -85,7 +85,9 @@ public class AttrServiceImpl implements AttrService {
             //由于以下操作是DDL操作，所以需要使用EscapeTransactionJob避开当前事务，否则在进行DDL操作之前事务就会提交，如果DDL出错，则上面的事务就无法回滚了
             int indexCount = ciSchemaMapper.getIndexCount(TenantContext.get().getDataDbName(), attrVo.getCiId());
             if (indexCount <= 60) {
-                EscapeTransactionJob.State s = new EscapeTransactionJob(() -> ciSchemaMapper.insertAttrToCiTable(ciVo.getId(), ciVo.getCiTableName(), attrVo)).execute();
+                EscapeTransactionJob.State s = new EscapeTransactionJob(() ->
+
+                        ciSchemaMapper.insertAttrToCiTable(ciVo.getId(), ciVo.getCiTableName(), attrVo)).execute();
                 if (!s.isSucceed()) {
                     throw new InsertAttrToSchemaException(attrVo.getName());
                 }
