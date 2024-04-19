@@ -28,6 +28,8 @@ import neatlogic.framework.matrix.constvalue.SearchExpression;
 import neatlogic.framework.matrix.core.MatrixDataSourceHandlerBase;
 import neatlogic.framework.matrix.dto.*;
 import neatlogic.framework.matrix.exception.MatrixAttributeNotFoundException;
+import neatlogic.framework.matrix.exception.MatrixAttributeUniqueIdentifierIsRequiredException;
+import neatlogic.framework.matrix.exception.MatrixAttributeUniqueIdentifierRepeatException;
 import neatlogic.framework.matrix.exception.MatrixCmdbCustomViewNotFoundException;
 import neatlogic.framework.util.UuidUtil;
 import neatlogic.module.cmdb.dao.mapper.customview.CustomViewMapper;
@@ -78,9 +80,9 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
         if (MapUtils.isEmpty(config)) {
             throw new ParamNotExistsException("config");
         }
-        JSONArray showAttributeLabelArray = config.getJSONArray("showAttributeLabelList");
-        if (CollectionUtils.isEmpty(showAttributeLabelArray)) {
-            throw new ParamNotExistsException("config.showAttributeLabelList");
+        JSONArray attributeMappingArray = config.getJSONArray("attributeMappingList");
+        if (CollectionUtils.isEmpty(attributeMappingArray)) {
+            throw new ParamNotExistsException("config.attributeMappingList");
         }
         Map<String, String> oldShowAttributeUuidMap = new HashMap<>();
         MatrixCmdbCustomViewVo oldMatrixCmdbCustomViewVo = matrixMapper.getMatrixCmdbCustomViewByMatrixUuid(matrixVo.getUuid());
@@ -88,9 +90,9 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
             if (customViewId.equals(oldMatrixCmdbCustomViewVo.getCustomViewId())) {
                 JSONObject oldConfig = oldMatrixCmdbCustomViewVo.getConfig();
                 if (MapUtils.isNotEmpty(oldConfig)) {
-                    JSONArray oldShowAttributeUuidArray = oldConfig.getJSONArray("showAttributeLabelList");
+                    JSONArray oldShowAttributeUuidArray = oldConfig.getJSONArray("attributeMappingList");
                     if (CollectionUtils.isNotEmpty(oldShowAttributeUuidArray)) {
-                        if (CollectionUtils.isEqualCollection(oldShowAttributeUuidArray, showAttributeLabelArray)) {
+                        if (CollectionUtils.isEqualCollection(oldShowAttributeUuidArray, attributeMappingArray)) {
                             return false;
                         }
                         JSONArray showAttributeArray = oldConfig.getJSONArray("showAttributeList");
@@ -110,11 +112,43 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
                 }
             }
         }
-
+        Map<String, String> uuidToNameMap = new HashMap<>();
+        CustomViewConstAttrVo customViewConstAttrVo = new CustomViewConstAttrVo(customViewId);
+        List<CustomViewConstAttrVo> constAttrList = customViewMapper.getCustomViewConstAttrByCustomViewId(customViewConstAttrVo);
+        for (CustomViewConstAttrVo constAttrVo : constAttrList) {
+            uuidToNameMap.put(constAttrVo.getUuid(), constAttrVo.getAlias());
+        }
+        CustomViewAttrVo customViewAttrVo = new CustomViewAttrVo(customViewId);
+        List<CustomViewAttrVo> attrList = customViewMapper.getCustomViewAttrByCustomViewId(customViewAttrVo);
+        for (CustomViewAttrVo attrVo : attrList) {
+            uuidToNameMap.put(attrVo.getUuid(), attrVo.getAlias());
+        }
+        List<String> uniqueIdentifierList = new ArrayList<>();
+        for (int i = 0; i < attributeMappingArray.size(); i++) {
+            JSONObject attributeMappingObj = attributeMappingArray.getJSONObject(i);
+            if (MapUtils.isEmpty(attributeMappingObj)) {
+                continue;
+            }
+            String label = attributeMappingObj.getString("label");
+            String name = uuidToNameMap.get(label);
+            if (StringUtils.isBlank(name)) {
+                continue;
+            }
+            String uniqueIdentifier = attributeMappingObj.getString("uniqueIdentifier");
+            if (StringUtils.isBlank(uniqueIdentifier)) {
+                throw new MatrixAttributeUniqueIdentifierIsRequiredException(matrixVo.getName(), name);
+            }
+            if (uniqueIdentifierList.contains(uniqueIdentifier)) {
+                throw new MatrixAttributeUniqueIdentifierRepeatException(matrixVo.getName(), name);
+            }
+            uniqueIdentifierList.add(uniqueIdentifier);
+        }
         JSONArray showAttributeArray = new JSONArray();
-        Iterator<Object> iterator = showAttributeLabelArray.iterator();
+        Iterator<Object> iterator = attributeMappingArray.iterator();
         while (iterator.hasNext()) {
-            String showAttributeLabel = (String) iterator.next();
+            JSONObject attributeMappingObj = (JSONObject) iterator.next();
+            String uniqueIdentifier = attributeMappingObj.getString("uniqueIdentifier");
+            String showAttributeLabel = attributeMappingObj.getString("label");
             JSONObject showAttributeObj = new JSONObject();
             String showAttributeUuid = oldShowAttributeUuidMap.get(showAttributeLabel);
             if (showAttributeUuid == null) {
@@ -122,6 +156,9 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
             }
             showAttributeObj.put("uuid", showAttributeUuid);
             showAttributeObj.put("label", showAttributeLabel);
+            String name = uuidToNameMap.get(showAttributeLabel);
+            showAttributeObj.put("name", name);
+            showAttributeObj.put("uniqueIdentifier", uniqueIdentifier);
             showAttributeArray.add(showAttributeObj);
         }
         config.put("showAttributeList", showAttributeArray);
@@ -141,6 +178,25 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
         CustomViewVo customView = customViewMapper.getCustomViewById(matrixCmdbCustomViewVo.getCustomViewId());
         if (customView != null) {
             config.put("customViewName", customView.getName());
+        }
+        JSONArray attributeMappingList = config.getJSONArray("attributeMappingList");
+        if (CollectionUtils.isEmpty(attributeMappingList)) {
+            attributeMappingList = new JSONArray();
+            JSONArray showAttributeList = config.getJSONArray("showAttributeList");
+            if (CollectionUtils.isNotEmpty(showAttributeList)) {
+                for (int i = 0; i < showAttributeList.size(); i++) {
+                    JSONObject showAttributeObj = showAttributeList.getJSONObject(i);
+                    if (MapUtils.isEmpty(showAttributeObj)) {
+                        continue;
+                    }
+                    String label = showAttributeObj.getString("label");
+                    JSONObject attributeMappingObj = new JSONObject();
+                    attributeMappingObj.put("label", label);
+                    attributeMappingObj.put("uniqueIdentifier", "");
+                    attributeMappingList.add(attributeMappingObj);
+                }
+            }
+            config.put("attributeMappingList", attributeMappingList);
         }
         matrixVo.setConfig(config);
     }
