@@ -36,6 +36,8 @@ import neatlogic.framework.matrix.constvalue.SearchExpression;
 import neatlogic.framework.matrix.core.MatrixDataSourceHandlerBase;
 import neatlogic.framework.matrix.dto.*;
 import neatlogic.framework.matrix.exception.MatrixAttributeNotFoundException;
+import neatlogic.framework.matrix.exception.MatrixAttributeUniqueIdentifierIsRequiredException;
+import neatlogic.framework.matrix.exception.MatrixAttributeUniqueIdentifierRepeatException;
 import neatlogic.framework.matrix.exception.MatrixCiNotFoundException;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.framework.util.UuidUtil;
@@ -111,9 +113,9 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         if (MapUtils.isEmpty(config)) {
             throw new ParamNotExistsException("config");
         }
-        JSONArray showAttributeLabelArray = config.getJSONArray("showAttributeLabelList");
-        if (CollectionUtils.isEmpty(showAttributeLabelArray)) {
-            throw new ParamNotExistsException("config.showAttributeLabelList");
+        JSONArray attributeMappingArray = config.getJSONArray("attributeMappingList");
+        if (CollectionUtils.isEmpty(attributeMappingArray)) {
+            throw new ParamNotExistsException("config.attributeMappingList");
         }
         Map<String, String> oldShowAttributeUuidMap = new HashMap<>();
         MatrixCiVo oldMatrixCiVo = matrixMapper.getMatrixCiByMatrixUuid(matrixVo.getUuid());
@@ -121,9 +123,9 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             if (ciId.equals(oldMatrixCiVo.getCiId())) {
                 JSONObject oldConfig = oldMatrixCiVo.getConfig();
                 if (MapUtils.isNotEmpty(oldConfig)) {
-                    JSONArray oldShowAttributeUuidArray = oldConfig.getJSONArray("showAttributeLabelList");
-                    if (CollectionUtils.isNotEmpty(oldShowAttributeUuidArray)) {
-                        if (CollectionUtils.isEqualCollection(oldShowAttributeUuidArray, showAttributeLabelArray)) {
+                    JSONArray oldAttributeMappingArray = oldConfig.getJSONArray("attributeMappingList");
+                    if (CollectionUtils.isNotEmpty(oldAttributeMappingArray)) {
+                        if (CollectionUtils.isEqualCollection(oldAttributeMappingArray, attributeMappingArray)) {
                             return false;
                         }
                         JSONArray showAttributeArray = oldConfig.getJSONArray("showAttributeList");
@@ -165,12 +167,41 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             }
         }
         JSONArray showAttributeArray = new JSONArray();
-        if (!showAttributeLabelArray.contains("const_id")) {
-            showAttributeLabelArray.add(0, "const_id");
+        List<String> uniqueIdentifierList = new ArrayList<>();
+        boolean flag = false;
+        for (int i = 0; i < attributeMappingArray.size(); i++) {
+            JSONObject attributeMappingObj = attributeMappingArray.getJSONObject(i);
+            if (MapUtils.isEmpty(attributeMappingObj)) {
+                continue;
+            }
+            String label = attributeMappingObj.getString("label");
+            CiViewVo ciViewVo = ciViewMap.get(label);
+            if (ciViewVo == null) {
+                continue;
+            }
+            String uniqueIdentifier = attributeMappingObj.getString("uniqueIdentifier");
+            if (StringUtils.isBlank(uniqueIdentifier)) {
+                throw new MatrixAttributeUniqueIdentifierIsRequiredException(matrixVo.getName(), ciViewVo.getItemLabel());
+            }
+            if (uniqueIdentifierList.contains(uniqueIdentifier)) {
+                throw new MatrixAttributeUniqueIdentifierRepeatException(matrixVo.getName(), ciViewVo.getItemLabel());
+            }
+            uniqueIdentifierList.add(uniqueIdentifier);
+            if (Objects.equals(attributeMappingObj.getString("label"), "const_id")) {
+                flag = true;
+            }
         }
-        Iterator<Object> iterator = showAttributeLabelArray.iterator();
+        if (!flag) {
+            JSONObject attributeMappingObj = new JSONObject();
+            attributeMappingObj.put("label", "const_id");
+            attributeMappingObj.put("uniqueIdentifier", "const_id");
+            attributeMappingArray.add(0, attributeMappingObj);
+        }
+        Iterator<Object> iterator = attributeMappingArray.iterator();
         while (iterator.hasNext()) {
-            String showAttributeLabel = (String) iterator.next();
+            JSONObject attributeMappingObj = (JSONObject) iterator.next();
+            String uniqueIdentifier = attributeMappingObj.getString("uniqueIdentifier");
+            String showAttributeLabel = attributeMappingObj.getString("label");
             JSONObject showAttributeObj = new JSONObject();
             String showAttributeUuid = oldShowAttributeUuidMap.get(showAttributeLabel);
             if (showAttributeUuid == null) {
@@ -184,6 +215,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             }
             showAttributeObj.put("name", ciViewVo.getItemLabel());
             showAttributeObj.put("label", showAttributeLabel);
+            showAttributeObj.put("uniqueIdentifier", uniqueIdentifier);
             showAttributeArray.add(showAttributeObj);
             if (showAttributeLabel.startsWith("const_")) {
                 continue;
@@ -211,6 +243,25 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         if (ciVo != null) {
             config.put("ciName", ciVo.getName());
             config.put("ciLabel", ciVo.getLabel());
+        }
+        JSONArray attributeMappingList = config.getJSONArray("attributeMappingList");
+        if (CollectionUtils.isEmpty(attributeMappingList)) {
+            attributeMappingList = new JSONArray();
+            JSONArray showAttributeList = config.getJSONArray("showAttributeList");
+            if (CollectionUtils.isNotEmpty(showAttributeList)) {
+                for (int i = 0; i < showAttributeList.size(); i++) {
+                    JSONObject showAttributeObj = showAttributeList.getJSONObject(i);
+                    if (MapUtils.isEmpty(showAttributeObj)) {
+                        continue;
+                    }
+                    String label = showAttributeObj.getString("label");
+                    JSONObject attributeMappingObj = new JSONObject();
+                    attributeMappingObj.put("label", label);
+                    attributeMappingObj.put("uniqueIdentifier", "");
+                    attributeMappingList.add(attributeMappingObj);
+                }
+            }
+            config.put("attributeMappingList", attributeMappingList);
         }
         matrixVo.setConfig(config);
     }
@@ -1210,16 +1261,20 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             throw new MatrixCiNotFoundException(matrixCiVo.getMatrixUuid());
         }
         JSONObject config = matrixCiVo.getConfig();
-        JSONArray showAttributeLabelArray = config.getJSONArray("showAttributeLabelList");
-        if (CollectionUtils.isNotEmpty(showAttributeLabelArray)) {
-            List<String> showAttributeUuidList = showAttributeLabelArray.toJavaList(String.class);
-            for (String uuid : showAttributeUuidList) {
-                if (uuid.startsWith("attr_")) {
-                    attrIdList.add(Long.valueOf(uuid.substring(5)));
-                } else if (uuid.startsWith("relfrom_")) {
-                    relIdList.add(Long.valueOf(uuid.substring(8)));
-                } else if (uuid.startsWith("relto_")) {
-                    relIdList.add(Long.valueOf(uuid.substring(6)));
+        JSONArray showAttributeList = config.getJSONArray("showAttributeList");
+        if (CollectionUtils.isNotEmpty(showAttributeList)) {
+            for (int i = 0; i < showAttributeList.size(); i++) {
+                JSONObject showAttributeObj = showAttributeList.getJSONObject(i);
+                if (MapUtils.isEmpty(showAttributeObj)) {
+                    continue;
+                }
+                String label = showAttributeObj.getString("label");
+                if (label.startsWith("attr_")) {
+                    attrIdList.add(Long.valueOf(label.substring(5)));
+                } else if (label.startsWith("relfrom_")) {
+                    relIdList.add(Long.valueOf(label.substring(8)));
+                } else if (label.startsWith("relto_")) {
+                    relIdList.add(Long.valueOf(label.substring(6)));
                 }
             }
             ciEntityVo.setAttrIdList(attrIdList);
