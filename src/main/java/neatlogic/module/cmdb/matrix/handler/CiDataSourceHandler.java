@@ -387,6 +387,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
     protected List<MatrixAttributeVo> myGetAttributeList(MatrixVo matrixVo) {
         Long ciId = null;
         Map<String, String> showAttributeUuidMap = new HashMap<>();
+        Map<String, String> showAttributeUniqueIdentifierMap = new HashMap<>();
         String matrixUuid = matrixVo.getUuid();
         if (StringUtils.isNotBlank(matrixUuid)) {
             MatrixCiVo matrixCiVo = matrixMapper.getMatrixCiByMatrixUuid(matrixUuid);
@@ -399,6 +400,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             for (int i = 0; i < showAttributeArray.size(); i++) {
                 JSONObject showAttributeObj = showAttributeArray.getJSONObject(i);
                 showAttributeUuidMap.put(showAttributeObj.getString("label"), showAttributeObj.getString("uuid"));
+                showAttributeUniqueIdentifierMap.put(showAttributeObj.getString("label"), showAttributeObj.getString("uniqueIdentifier"));
             }
         } else {
             ciId = matrixVo.getCiId();
@@ -473,6 +475,12 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                     continue;
                 }
                 if (MapUtils.isNotEmpty(showAttributeUuidMap)) {
+                    String uniqueIdentifier = showAttributeUniqueIdentifierMap.get(matrixAttributeVo.getLabel());
+                    if (StringUtils.isNotBlank(uniqueIdentifier)) {
+                        matrixAttributeVo.setUniqueIdentifier(uniqueIdentifier);
+                    } else {
+                        matrixAttributeVo.setUniqueIdentifier(StringUtils.EMPTY);
+                    }
                     String uuid = showAttributeUuidMap.get(matrixAttributeVo.getLabel());
                     if (uuid == null && Objects.equals(matrixAttributeVo.getPrimaryKey(), 0)) {
                         continue;
