@@ -166,7 +166,7 @@ public class UploadBatchImportFileApi extends PrivateBinaryStreamApiComponentBas
             fileVo.setUserUuid(userUuid);
             fileVo.setType(type);
             fileVo.setContentType(multipartFile.getContentType());
-            String filePath = FileUtil.saveData(tenantUuid, multipartFile.getInputStream(), fileVo.getId().toString(), fileVo.getContentType(), fileVo.getType().toLowerCase());
+            String filePath = FileUtil.saveData(tenantUuid, multipartFile.getInputStream(), fileVo);
             fileVo.setPath(filePath);
             fileMapper.insertFile(fileVo);
             fileTypeHandler.afterUpload(fileVo, paramObj);
