@@ -23,7 +23,6 @@ import neatlogic.framework.cmdb.crossover.IBatchSaveCiEntityApiCrossoverService;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.ci.RelVo;
-import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import neatlogic.framework.cmdb.enums.EditModeType;
 import neatlogic.framework.cmdb.enums.RelDirectionType;
@@ -32,7 +31,6 @@ import neatlogic.framework.cmdb.enums.TransactionActionType;
 import neatlogic.framework.cmdb.enums.group.GroupType;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.cientity.CiEntityAuthException;
-import neatlogic.framework.cmdb.exception.cientity.NewCiEntityNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.exception.type.ParamNotExistsException;
 import neatlogic.framework.restful.annotation.*;
@@ -46,6 +44,7 @@ import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
+import neatlogic.module.cmdb.utils.CiEntityUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -53,7 +52,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
@@ -159,7 +159,7 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
                                 this.put("uuid", "配置项uuid");
                             }});
                         }});
-                        this.put("attrname3（引用型属性删除）", new JSONArray() );
+                        this.put("attrname3（引用型属性删除）", new JSONArray());
                         this.put("attrname2（普通属性更新）", new JSONArray() {{
                             this.add(new JSONObject() {{
                                 this.put("value", "文本、数字、日期等属性值");
@@ -320,136 +320,17 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
         if (CollectionUtils.isEmpty(ciEntityObjList)) {
             throw new ParamNotExistsException("ciEntityList");
         }
-        List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
-        Map<String, CiEntityTransactionVo> ciEntityTransactionMap = new HashMap<>();
         //任意一个模型数据不能提交，则全部不能提交，保证数据一致性。
         boolean allowCommit = true;
-        // 先给所有没有id的ciEntity分配新的id
-        for (int ciindex = 0; ciindex < ciEntityObjList.size(); ciindex++) {
-            JSONObject ciEntityObj = ciEntityObjList.getJSONObject(ciindex);
-            Long id = ciEntityObj.getLong("id");
-            String uuid = ciEntityObj.getString("uuid");
-            if (StringUtils.isNotBlank(uuid)) {
-                CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
-                if (id != null) {
-                    ciEntityTransactionVo.setCiEntityId(id);
-                } else {
-                    CiEntityVo uuidCiEntityVo = ciEntityMapper.getCiEntityBaseInfoByUuid(uuid);
-                    if (uuidCiEntityVo != null) {
-                        ciEntityTransactionVo.setCiEntityId(uuidCiEntityVo.getId());
-                        ciEntityObj.put("id", uuidCiEntityVo.getId());
-                    }
-                }
-                ciEntityTransactionMap.put(uuid, ciEntityTransactionVo);
-            }
-        }
 
-        for (int ciindex = 0; ciindex < ciEntityObjList.size(); ciindex++) {
-            JSONObject ciEntityObj = ciEntityObjList.getJSONObject(ciindex);
-            Long ciId = ciEntityObj.getLong("ciId");
-            Long id = ciEntityObj.getLong("id");
-            String uuid = ciEntityObj.getString("uuid");
-            String description = ciEntityObj.getString("description");
-            CiEntityTransactionVo ciEntityTransactionVo;
+        List<CiEntityTransactionVo> ciEntityTransactionList = CiEntityUtils.generateCiEntityTransaction(ciEntityObjList);
 
-            if (id != null) {
-                ciEntityTransactionVo = new CiEntityTransactionVo();
-                ciEntityTransactionVo.setCiEntityId(id);
-                ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
-            } else if (StringUtils.isNotBlank(uuid)) {
-                ciEntityTransactionVo = ciEntityTransactionMap.get(uuid);
-                ciEntityTransactionVo.setCiEntityUuid(uuid);
-                ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
-            } else {
-                throw new ParamNotExistsException("id", "uuid");
-            }
-
-            if (Objects.equals(ciEntityObj.getString("editMode"), EditModeType.GLOBAL.getValue()) || Objects.equals(ciEntityObj.getString("editMode"), EditModeType.PARTIAL.getValue())) {
-                ciEntityTransactionVo.setEditMode(ciEntityObj.getString("editMode"));
-            }
-            ciEntityTransactionVo.setCiId(ciId);
-            ciEntityTransactionVo.setDescription(description);
-
-            // 解析属性数据
-            JSONObject attrObj = ciEntityObj.getJSONObject("attrEntityData");
-            //修正新配置项的uuid为id
-            if (MapUtils.isNotEmpty(attrObj)) {
-                for (String key : attrObj.keySet()) {
-                    JSONObject obj = attrObj.getJSONObject(key);
-                    JSONArray valueList = obj.getJSONArray("valueList");
-                    //删除没用的属性
-                    obj.remove("actualValueList");
-                    if (CollectionUtils.isNotEmpty(valueList)) {
-                        //因为可能需要删除某些成员，所以需要倒着循环
-                        for (int i = valueList.size() - 1; i >= 0; i--) {
-                            if (valueList.get(i) instanceof JSONObject) {
-                                JSONObject valueObj = valueList.getJSONObject(i);
-                                String attrCiEntityUuid = valueObj.getString("uuid");
-                                Long attrCiEntityId = valueObj.getLong("id");
-                                if (attrCiEntityId == null && StringUtils.isNotBlank(attrCiEntityUuid)) {
-                                    CiEntityTransactionVo tmpVo = ciEntityTransactionMap.get(attrCiEntityUuid);
-                                    if (tmpVo != null) {
-                                        //替换掉原来的ciEntityUuid为新的ciEntityId
-                                        valueList.set(i, tmpVo.getCiEntityId());
-                                    } else {
-                                        //使用uuid寻找配置项
-                                        CiEntityVo uuidCiEntityVo = ciEntityMapper.getCiEntityBaseInfoByUuid(attrCiEntityUuid);
-                                        if (uuidCiEntityVo == null) {
-                                            throw new NewCiEntityNotFoundException(attrCiEntityUuid);
-                                        } else {
-                                            valueList.set(i, uuidCiEntityVo.getId());
-                                        }
-                                    }
-                                } else if (attrCiEntityId != null) {
-                                    valueList.set(i, attrCiEntityId);
-                                } else {
-                                    valueList.remove(i);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            ciEntityTransactionVo.setAttrEntityData(attrObj);
-            //解析公共属性数据
-            JSONObject globalAttrObj = ciEntityObj.getJSONObject("globalAttrEntityData");
-            ciEntityTransactionVo.setGlobalAttrEntityData(globalAttrObj);
-
-            // 解析关系数据
-            JSONObject relObj = ciEntityObj.getJSONObject("relEntityData");
-            //修正新配置项的uuid为id
-            if (MapUtils.isNotEmpty(relObj)) {
-                for (String key : relObj.keySet()) {
-                    JSONObject obj = relObj.getJSONObject(key);
-                    JSONArray relDataList = obj.getJSONArray("valueList");
-                    if (CollectionUtils.isNotEmpty(relDataList)) {
-                        for (int i = 0; i < relDataList.size(); i++) {
-                            JSONObject relEntityObj = relDataList.getJSONObject(i);
-                            Long ciEntityId = relEntityObj.getLong("ciEntityId");
-                            String ciEntityUuid = relEntityObj.getString("ciEntityUuid");
-                            if (ciEntityId == null && StringUtils.isNotBlank(ciEntityUuid)) {
-                                CiEntityTransactionVo tmpVo = ciEntityTransactionMap.get(ciEntityUuid);
-                                if (tmpVo != null) {
-                                    relEntityObj.put("ciEntityId", tmpVo.getCiEntityId());
-                                } else {
-                                    CiEntityVo uuidCiEntityVo = ciEntityMapper.getCiEntityBaseInfoByUuid(ciEntityUuid);
-                                    if (uuidCiEntityVo == null) {
-                                        throw new NewCiEntityNotFoundException(relEntityObj.getString("ciEntityUuid"));
-                                    } else {
-                                        relEntityObj.put("ciEntityId", uuidCiEntityVo.getId());
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            ciEntityTransactionVo.setRelEntityData(relObj);
-
+        for (CiEntityTransactionVo ciEntityTransactionVo : ciEntityTransactionList) {
+            Long id = ciEntityTransactionVo.getCiEntityId();
+            Long ciId = ciEntityTransactionVo.getCiId();
             //判断权限
             if (ciEntityTransactionVo.getAction().equals(TransactionActionType.INSERT.getValue())) {
-                //boolean isInGroup = false;
-                //CiEntityVo newCiEntityVo = new CiEntityVo(ciEntityTransactionVo);
+
                 if (!CiAuthChecker.chain().checkCiEntityInsertPrivilege(ciId).check()) {
                     CiVo ciVo = ciMapper.getCiById(ciId);
                     throw new CiEntityAuthException(ciVo.getLabel(), TransactionActionType.INSERT.getText());
@@ -466,10 +347,9 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
                     allowCommit = false;
                 }
             }
-            if (!ciEntityTransactionList.contains(ciEntityTransactionVo)) {
-                ciEntityTransactionList.add(ciEntityTransactionVo);
-            }
         }
+
+
         if (CollectionUtils.isNotEmpty(ciEntityTransactionList)) {
             for (CiEntityTransactionVo t : ciEntityTransactionList) {
                 if (allowCommit) {
