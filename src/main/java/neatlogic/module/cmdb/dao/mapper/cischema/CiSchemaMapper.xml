@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     </select>
 
 
-    <select id="checkTableHasData" resultType="int">
+    <select id="checkTableHasData" resultType="java.lang.Integer">
         SELECT TABLE_ROWS
         FROM information_schema.TABLES
         WHERE TABLE_SCHEMA = #{schema}

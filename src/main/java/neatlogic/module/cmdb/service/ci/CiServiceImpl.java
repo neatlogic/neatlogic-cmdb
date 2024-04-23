@@ -135,7 +135,8 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
                     ciSchemaMapper.insertCiTable(ciVo.getId(), ciVo.getCiTableName());
                 } else {
                     //如果已存在但没有数据，重建表
-                    if (ciSchemaMapper.checkTableHasData(TenantContext.get().getDataDbName(), ciVo.getCiTableName(false)) <= 0) {
+                    Integer rc = ciSchemaMapper.checkTableHasData(TenantContext.get().getDataDbName(), ciVo.getCiTableName(false));
+                    if (rc == null || rc <= 0) {
                         ciSchemaMapper.deleteCiTable(ciVo.getId(), ciVo.getCiTableName());
                         ciSchemaMapper.insertCiTable(ciVo.getId(), ciVo.getCiTableName());
                         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());

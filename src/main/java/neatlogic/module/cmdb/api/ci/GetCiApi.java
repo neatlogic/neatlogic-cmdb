@@ -87,7 +87,8 @@ public class GetCiApi extends PrivateApiComponentBase {
             List<CiVo> childCiList = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
             ciVo.setChildren(childCiList.stream().filter(d -> !d.getId().equals(ciVo.getId())).collect(Collectors.toList()));
         }
-        ciVo.setHasData(ciSchemaMapper.checkTableHasData(TenantContext.get().getDataDbName(), ciVo.getCiTableName(false)) > 0);
+        Integer rc = ciSchemaMapper.checkTableHasData(TenantContext.get().getDataDbName(), ciVo.getCiTableName(false));
+        ciVo.setHasData(rc != null && rc > 0);
         if (Objects.equals(ciVo.getIsVirtual(), 1) && ciVo.getFileId() != null) {
             ciVo.setFileVo(fileMapper.getFileById(ciVo.getFileId()));
         }

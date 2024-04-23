@@ -156,7 +156,8 @@ public class ImportCiApi extends PrivateBinaryStreamApiComponentBase {
                         } else {
                             oldCiVo.setHasChildren(false);
                         }
-                        oldCiVo.setHasData(ciSchemaMapper.checkTableHasData(TenantContext.get().getDataDbName(), ciVo.getCiTableName(false)) > 0);
+                        Integer rc = ciSchemaMapper.checkTableHasData(TenantContext.get().getDataDbName(), ciVo.getCiTableName(false));
+                        oldCiVo.setHasData(rc != null && rc > 0);
                         if ((oldCiVo.getHasChildren() || oldCiVo.getHasData()) && !Objects.equals(oldCiVo.getIsAbstract(), ciVo.getIsAbstract())) {
                             throw new CiIsAbstractedException(CiIsAbstractedException.Type.UPDATEABSTRACT, ciVo.getLabel());
                         }

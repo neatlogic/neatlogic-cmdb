@@ -37,7 +37,7 @@ public interface CiSchemaMapper {
 
     int checkTableIsExists(@Param("schemaName") String schemaName, @Param("tableName") String tableName);
 
-    int checkTableHasData(@Param("schema") String schema, @Param("table") String table);
+    Integer checkTableHasData(@Param("schema") String schema, @Param("table") String table);
     //void updateSchemaAuditIsFailed(Long auditId);
 
     //void insertAttrSchema(@Param("tableName") String tableName, @Param("columnList") List<AttrVo.Column> columnList);
