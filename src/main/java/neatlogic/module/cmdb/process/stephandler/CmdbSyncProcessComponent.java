@@ -42,7 +42,6 @@ import neatlogic.framework.common.constvalue.Expression;
 import neatlogic.framework.common.constvalue.InputFrom;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.form.constvalue.FormHandler;
-import neatlogic.framework.form.service.IFormCrossoverService;
 import neatlogic.framework.process.constvalue.ProcessFlowDirection;
 import neatlogic.framework.process.constvalue.ProcessStepMode;
 import neatlogic.framework.process.constvalue.ProcessTaskAuditType;
@@ -58,6 +57,7 @@ import neatlogic.framework.process.stephandler.core.ProcessStepHandlerBase;
 import neatlogic.framework.process.stephandler.core.ProcessStepHandlerFactory;
 import neatlogic.framework.process.stephandler.core.ProcessStepThread;
 import neatlogic.framework.transaction.core.EscapeTransactionJob;
+import neatlogic.framework.util.FormUtil;
 import neatlogic.framework.util.UuidUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
@@ -1647,8 +1647,7 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
         if (originalValue == null) {
             return null;
         }
-        IFormCrossoverService formCrossoverService = CrossoverServiceFactory.getApi(IFormCrossoverService.class);
-        String handler = formCrossoverService.getFormAttributeHandler(attributeUuid, formConfig);
+        String handler = FormUtil.getFormAttributeHandler(attributeUuid, formConfig);
         if (handler == null) {
             return null;
         }
@@ -1668,7 +1667,7 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
         } else if (Objects.equals(handler, FormHandler.FORMRADIO.getHandler())
                 || Objects.equals(handler, FormHandler.FORMCHECKBOX.getHandler())
                 || Objects.equals(handler, FormHandler.FORMSELECT.getHandler())) {
-            return formCrossoverService.getFormSelectAttributeValueByOriginalValue(originalValue);
+            return FormUtil.getFormSelectAttributeValueByOriginalValue(originalValue);
         }
         return originalValue;
     }
