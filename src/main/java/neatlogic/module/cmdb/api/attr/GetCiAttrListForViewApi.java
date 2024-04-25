@@ -28,12 +28,15 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
@@ -90,6 +93,7 @@ public class GetCiAttrListForViewApi extends PrivateApiComponentBase {
         }
         List<AttrVo> resultList = new ArrayList<>();
         List<String> attrNameList = new ArrayList<>();
+        List<Long> targetCiIdList = new ArrayList<>();
         List<CiVo> upwardCiList = ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht());
         for (CiVo ci : upwardCiList) {
             List<AttrVo> attrList = attrMapper.getDeclaredAttrListByCiId(ci.getId());
@@ -98,10 +102,25 @@ public class GetCiAttrListForViewApi extends PrivateApiComponentBase {
                     continue;
                 }
                 attrNameList.add(attr.getName());
+                if (attr.getTargetCiId() != null) {
+                    targetCiIdList.add(attr.getTargetCiId());
+                }
                 resultList.add(attr);
             }
         }
-
+        if (CollectionUtils.isNotEmpty(targetCiIdList)) {
+            List<CiVo> targetCiList = ciMapper.getAllCi(targetCiIdList);
+            Map<Long, CiVo> targetCiMap = targetCiList.stream().collect(Collectors.toMap(CiVo::getId, e -> e));
+            for (AttrVo attr : resultList) {
+                if (attr.getTargetCiId() == null) {
+                    continue;
+                }
+                CiVo targetCi = targetCiMap.get(attr.getTargetCiId());
+                if (targetCi != null) {
+                    attr.setTargetCiName(targetCi.getName());
+                }
+            }
+        }
         return resultList;
     }
 }
