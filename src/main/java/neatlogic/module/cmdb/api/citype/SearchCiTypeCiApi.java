@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.citype;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
@@ -31,9 +32,9 @@ import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,7 +44,7 @@ import java.util.stream.Collectors;
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class SearchCiTypeCiApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private CiMapper ciMapper;
 
     @Override
@@ -71,7 +72,7 @@ public class SearchCiTypeCiApi extends PrivateApiComponentBase {
     @Description(desc = "nmcac.searchcitypeciapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        CiVo pCiVo = JSONObject.toJavaObject(jsonObj, CiVo.class);
+        CiVo pCiVo = JSON.toJavaObject(jsonObj, CiVo.class);
         //查询ciNameList的ciTypeIdList
         JSONArray ciNameList = jsonObj.getJSONArray("ciNameList");
         if (CollectionUtils.isNotEmpty(ciNameList)) {

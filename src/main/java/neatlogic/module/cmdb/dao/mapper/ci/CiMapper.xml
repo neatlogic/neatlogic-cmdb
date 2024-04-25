@@ -26,15 +26,47 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         limit 1
     </select>
 
-    <select id="getCiTree" resultType="neatlogic.framework.cmdb.dto.ci.CiVo">
-        SELECT a.name,
-               a.label,
-               a.icon,
-               a.id,
-               b.parent_ci_id       AS parentCiId,
-               IFNULL(b.sort, 9999) AS sort
+    <resultMap id="ciMap" type="neatlogic.framework.cmdb.dto.ci.CiVo">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="label" property="label"/>
+        <result column="description" property="description"/>
+        <result column="icon" property="icon"/>
+        <result column="ciIsMenu" property="isMenu"/>
+        <result column="typeId" property="typeId"/>
+        <result column="parentCiId" property="parentCiId"/>
+        <result column="isAbstract" property="isAbstract"/>
+        <result column="isVirtual" property="isVirtual"/>
+        <result column="sort" property="sort"/>
+        <collection property="authList" ofType="neatlogic.framework.cmdb.dto.ci.CiAuthVo">
+            <result column="authCiId" property="ciId"/>
+            <result column="authType" property="authType"/>
+            <result column="authAction" property="action"/>
+            <result column="authUuid" property="authUuid"/>
+        </collection>
+    </resultMap>
+
+
+    <select id="getCiTree" resultMap="ciMap">
+        SELECT a.`id`,
+               a.`name`,
+               a.`label`,
+               a.`description`,
+               a.`icon`,
+               a.`is_private`       AS isPrivate,
+               a.`is_menu`          AS ciIsMenu,
+               a.`type_id`          AS typeId,
+               a.`is_abstract`      AS isAbstract,
+               a.`is_virtual`       AS isVirtual,
+               b.`parent_ci_id`     AS parentCiId,
+               IFNULL(b.sort, 9999) AS sort,
+               c.ci_id              AS authCiId,
+               c.auth_type          AS authType,
+               c.action             AS authAction,
+               c.auth_uuid          AS authUuid
         FROM cmdb_ci a
                  LEFT JOIN cmdb_ci_tree b ON a.id = b.ci_id
+                 LEFT JOIN cmdb_ci_auth c ON a.id = c.ci_id
         order by sort, a.name
     </select>
 
