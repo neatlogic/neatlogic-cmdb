@@ -21,7 +21,6 @@ import neatlogic.framework.dto.RoleVo;
 import neatlogic.framework.dto.TeamVo;
 import neatlogic.framework.dto.UserVo;
 import neatlogic.framework.form.constvalue.FormHandler;
-import neatlogic.framework.form.service.IFormCrossoverService;
 import neatlogic.framework.process.constvalue.ProcessUserType;
 import neatlogic.framework.process.crossover.IProcessTaskCrossoverService;
 import neatlogic.framework.process.dao.mapper.ProcessTaskMapper;
@@ -32,6 +31,7 @@ import neatlogic.framework.process.dto.ProcessTaskStepVo;
 import neatlogic.framework.process.dto.ProcessTaskStepWorkerVo;
 import neatlogic.framework.process.exception.processtask.ProcessTaskException;
 import neatlogic.framework.process.workerdispatcher.core.WorkerDispatcherBase;
+import neatlogic.framework.util.FormUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.customview.CustomViewMapper;
@@ -428,8 +428,7 @@ public class CmdbDispatcher extends WorkerDispatcherBase {
         if (originalValue == null) {
             return null;
         }
-        IFormCrossoverService formCrossoverService = CrossoverServiceFactory.getApi(IFormCrossoverService.class);
-        String handler = formCrossoverService.getFormAttributeHandler(attributeUuid, formConfig);
+        String handler = FormUtil.getFormAttributeHandler(attributeUuid, formConfig);
         if (Objects.equals(handler, FormHandler.FORMUPLOAD.getHandler())) {
             JSONArray resultList = new JSONArray();
             if (originalValue instanceof JSONArray) {
@@ -446,7 +445,7 @@ public class CmdbDispatcher extends WorkerDispatcherBase {
         } else if (Objects.equals(handler, FormHandler.FORMRADIO.getHandler())
                 || Objects.equals(handler, FormHandler.FORMCHECKBOX.getHandler())
                 || Objects.equals(handler, FormHandler.FORMSELECT.getHandler())) {
-            return formCrossoverService.getFormSelectAttributeValueByOriginalValue(originalValue);
+            return FormUtil.getFormSelectAttributeValueByOriginalValue(originalValue);
         }
         return originalValue;
     }
