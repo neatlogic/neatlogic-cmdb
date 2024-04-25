@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.legalvalid;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.thread.NeatLogicThread;
@@ -53,13 +54,10 @@ import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.RelEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.legalvalid.IllegalCiEntityMapper;
-import neatlogic.module.cmdb.dao.mapper.legalvalid.LegalValidMapper;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -70,8 +68,7 @@ import java.util.stream.Collectors;
 
 @Component
 public class LegalValidManager {
-    private final static String EXPRESSION_TYPE = "expression";
-    private static final Logger logger = LoggerFactory.getLogger(LegalValidManager.class);
+    private static final String EXPRESSION_TYPE = "expression";
 
     private static AttrMapper attrMapper;
 
@@ -85,19 +82,17 @@ public class LegalValidManager {
 
     private static CiEntityService ciEntityService;
 
-    private static LegalValidMapper legalValidMapper;
 
     private static IllegalCiEntityMapper illegalCiEntityMapper;
 
     @Autowired
-    public LegalValidManager(AttrMapper _attrMapper, RelMapper _relMapper, CiMapper _ciMapper, CiEntityMapper _ciEntityMapper, RelEntityMapper _relEntityMapper, CiEntityService _ciEntityService, LegalValidMapper _legalValidMapper, IllegalCiEntityMapper _illegalCiEntityMapper) {
+    public LegalValidManager(AttrMapper _attrMapper, RelMapper _relMapper, CiMapper _ciMapper, CiEntityMapper _ciEntityMapper, RelEntityMapper _relEntityMapper, CiEntityService _ciEntityService, IllegalCiEntityMapper _illegalCiEntityMapper) {
         attrMapper = _attrMapper;
         relMapper = _relMapper;
         ciMapper = _ciMapper;
         ciEntityMapper = _ciEntityMapper;
         relEntityMapper = _relEntityMapper;
         ciEntityService = _ciEntityService;
-        legalValidMapper = _legalValidMapper;
         illegalCiEntityMapper = _illegalCiEntityMapper;
     }
 
@@ -170,7 +165,7 @@ public class LegalValidManager {
                 StringBuilder script = new StringBuilder();
                 JSONObject conditionObj = new JSONObject();
                 for (int i = 0; i < conditionGroupList.size(); i++) {
-                    ConditionGroupVo conditionGroupVo = JSONObject.toJavaObject(conditionGroupList.getJSONObject(i), ConditionGroupVo.class);
+                    ConditionGroupVo conditionGroupVo = JSON.toJavaObject(conditionGroupList.getJSONObject(i), ConditionGroupVo.class);
                     if (i > 0 && CollectionUtils.isNotEmpty(conditionGroupRelList)) {
                         if (conditionGroupRelList.size() >= i) {
                             String joinType = conditionGroupRelList.getString(i - 1);
@@ -216,7 +211,7 @@ public class LegalValidManager {
                 paramObj.put("data", dataObj);
                 paramObj.put("condition", conditionObj);
                 try {
-                    JavascriptUtil.runExpression(paramObj, script.toString());
+                    JavascriptUtil.runExpression(paramObj, script.toString(), errorList);
                 } catch (Exception e) {
                     errorList.add(new ApiRuntimeException(e.getMessage()));
                 }
