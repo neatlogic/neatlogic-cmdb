@@ -309,7 +309,7 @@ public class AttrExpressionRebuildManager {
                                             groupList.add(new ExpressionGroup(expression, relId, direction, ExpressionGroup.Type.REL, attrId, ExpressionGroupAttr.Type.ATTR));
                                         }
                                     } else {
-                                        groupList.add(new ExpressionGroup(expression, SnowflakeUtil.uniqueLong(), direction, ExpressionGroup.Type.REL, attrId, ExpressionGroupAttr.Type.ATTR));
+                                        groupList.add(new ExpressionGroup(expression, relId, direction, ExpressionGroup.Type.REL, attrId, ExpressionGroupAttr.Type.ATTR));
                                     }
 
                                 } else {
