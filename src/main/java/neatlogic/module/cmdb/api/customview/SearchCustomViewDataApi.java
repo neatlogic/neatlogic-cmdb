@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.customview;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
@@ -88,7 +89,7 @@ public class SearchCustomViewDataApi extends PrivateApiComponentBase {
         if (StringUtils.isBlank(mode)) {
             mode = "page";
         }
-        CustomViewConditionVo customViewConditionVo = JSONObject.toJavaObject(paramObj, CustomViewConditionVo.class);
+        CustomViewConditionVo customViewConditionVo = JSON.toJavaObject(paramObj, CustomViewConditionVo.class);
         CustomViewVo customViewVo = null;
         if (id != null) {
             customViewVo = customViewMapper.getCustomViewById(id);

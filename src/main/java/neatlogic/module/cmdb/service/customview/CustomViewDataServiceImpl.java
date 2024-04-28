@@ -81,8 +81,17 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
                     String expression = customViewAttr.getCondition().getString("expression");
                     if (StringUtils.isNotBlank(expression)) {
                         JSONArray valueList = customViewAttr.getCondition().getJSONArray("valueList");
-                        customViewConditionVo.addAttrFilter(new CustomViewConditionFilterVo(customViewAttr.getUuid(), expression, valueList));
+                        customViewConditionVo.addAttrFilter(new CustomViewConditionFilterVo(customViewAttr.getUuid(), customViewAttr.getAttrVo().getType(), expression, valueList));
                     }
+                }
+            }
+        }
+        //补充attrtype，搜索时需要使用
+        if (CollectionUtils.isNotEmpty(customViewConditionVo.getAttrFilterList())) {
+            for (CustomViewConditionFilterVo filterVo : customViewConditionVo.getAttrFilterList()) {
+                AttrVo attrVo = attrMap.get(filterVo.getAttrUuid());
+                if (attrVo != null) {
+                    filterVo.setAttrType(attrVo.getType());
                 }
             }
         }
@@ -150,8 +159,17 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
                                 valueList.add(cientityVo.getName());
                             }
                         }
-                        customViewConditionVo.addAttrFilter(new CustomViewConditionFilterVo(customViewAttr.getUuid(), expression, valueList));
+                        customViewConditionVo.addAttrFilter(new CustomViewConditionFilterVo(customViewAttr.getUuid(), customViewAttr.getAttrVo().getType(), expression, valueList));
                     }
+                }
+            }
+        }
+        //补充attrtype，搜索时需要使用
+        if (CollectionUtils.isNotEmpty(customViewConditionVo.getAttrFilterList())) {
+            for (CustomViewConditionFilterVo filterVo : customViewConditionVo.getAttrFilterList()) {
+                AttrVo attrVo = attrMap.get(filterVo.getAttrUuid());
+                if (attrVo != null) {
+                    filterVo.setAttrType(attrVo.getType());
                 }
             }
         }
@@ -250,8 +268,17 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
                     String expression = customViewAttr.getCondition().getString("expression");
                     if (StringUtils.isNotBlank(expression)) {
                         JSONArray valueList = customViewAttr.getCondition().getJSONArray("valueList");
-                        customViewConditionVo.addAttrFilter(new CustomViewConditionFilterVo(customViewAttr.getUuid(), expression, valueList));
+                        customViewConditionVo.addAttrFilter(new CustomViewConditionFilterVo(customViewAttr.getUuid(), customViewAttr.getAttrVo().getType(), expression, valueList));
                     }
+                }
+            }
+        }
+        //补充attrtype，搜索时需要使用
+        if (CollectionUtils.isNotEmpty(customViewConditionVo.getAttrFilterList())) {
+            for (CustomViewConditionFilterVo filterVo : customViewConditionVo.getAttrFilterList()) {
+                AttrVo attrVo = attrMap.get(filterVo.getAttrUuid());
+                if (attrVo != null) {
+                    filterVo.setAttrType(attrVo.getType());
                 }
             }
         }

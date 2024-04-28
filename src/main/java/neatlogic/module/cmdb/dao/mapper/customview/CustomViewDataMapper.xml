@@ -157,6 +157,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                                 (`${attrFilter.attrUuid}` IS NOT NULL AND
                                 `${attrFilter.attrUuid}` != '')
                             </when>
+                            <when test="attrFilter.expression == 'between' and (@neatlogic.framework.cmdb.dao.ognl.Between@parse(attrFilter.attrType, attrFilter.value)[0] != null or @neatlogic.framework.cmdb.dao.ognl.Between@parse(attrFilter.attrType, attrFilter.value)[1] != null)">
+                                <if test="@neatlogic.framework.cmdb.dao.ognl.Between@parse(attrFilter.attrType, attrFilter.value)[0] != null">
+                                    `${attrFilter.attrUuid}` &gt;=
+                                    ${@neatlogic.framework.cmdb.dao.ognl.Between@parse(attrFilter.attrType, attrFilter.value)[0]}
+                                </if>
+                                <if test="@neatlogic.framework.cmdb.dao.ognl.Between@parse(attrFilter.attrType, attrFilter.value)[0] != null and @neatlogic.framework.cmdb.dao.ognl.Between@parse(attrFilter.attrType, attrFilter.value)[1] != null">
+                                    and
+                                </if>
+                                <if test="@neatlogic.framework.cmdb.dao.ognl.Between@parse(attrFilter.attrType, attrFilter.value)[1] != null">
+                                    `${attrFilter.attrUuid}` &lt;=
+                                    ${@neatlogic.framework.cmdb.dao.ognl.Between@parse(attrFilter.attrType, attrFilter.value)[1]}
+                                </if>
+                            </when>
                         </choose>
                     </if>
                 </foreach>
