@@ -22,9 +22,9 @@ import neatlogic.framework.dto.TeamVo;
 import neatlogic.framework.dto.UserVo;
 import neatlogic.framework.form.constvalue.FormHandler;
 import neatlogic.framework.process.constvalue.ProcessUserType;
+import neatlogic.framework.process.crossover.IProcessTaskCrossoverMapper;
 import neatlogic.framework.process.crossover.IProcessTaskCrossoverService;
-import neatlogic.framework.process.dao.mapper.ProcessTaskMapper;
-import neatlogic.framework.process.dao.mapper.SelectContentByHashMapper;
+import neatlogic.framework.process.crossover.ISelectContentByHashCrossoverMapper;
 import neatlogic.framework.process.dto.ProcessTaskFormAttributeDataVo;
 import neatlogic.framework.process.dto.ProcessTaskFormVo;
 import neatlogic.framework.process.dto.ProcessTaskStepVo;
@@ -57,12 +57,6 @@ public class CmdbDispatcher extends WorkerDispatcherBase {
 
     @Resource
     private CustomViewMapper customViewMapper;
-
-    @Resource
-    private ProcessTaskMapper processTaskMapper;
-
-    @Resource
-    private SelectContentByHashMapper selectContentByHashMapper;
 
     @Resource
     private CiEntityService ciEntityService;
@@ -396,12 +390,14 @@ public class CmdbDispatcher extends WorkerDispatcherBase {
     }
 
     private Map<String, Object> formAttributeDataMap(Long processTaskId) {
+        IProcessTaskCrossoverMapper processTaskCrossoverMapper = CrossoverServiceFactory.getApi(IProcessTaskCrossoverMapper.class);
+        ISelectContentByHashCrossoverMapper selectContentByHashCrossoverMapper = CrossoverServiceFactory.getApi(ISelectContentByHashCrossoverMapper.class);
         Map<String, Object> formAttributeDataMap = new HashMap<>();
         String formConfig = null;
         // 如果工单有表单信息，则查询出表单配置及数据
-        ProcessTaskFormVo processTaskFormVo = processTaskMapper.getProcessTaskFormByProcessTaskId(processTaskId);
+        ProcessTaskFormVo processTaskFormVo = processTaskCrossoverMapper.getProcessTaskFormByProcessTaskId(processTaskId);
         if (processTaskFormVo != null) {
-            formConfig = selectContentByHashMapper.getProcessTaskFromContentByHash(processTaskFormVo.getFormContentHash());
+            formConfig = selectContentByHashCrossoverMapper.getProcessTaskFromContentByHash(processTaskFormVo.getFormContentHash());
             IProcessTaskCrossoverService processTaskCrossoverService = CrossoverServiceFactory.getApi(IProcessTaskCrossoverService.class);
             List<ProcessTaskFormAttributeDataVo> processTaskFormAttributeDataList = processTaskCrossoverService.getProcessTaskFormAttributeDataListByProcessTaskId(processTaskId);
             if (CollectionUtils.isNotEmpty(processTaskFormAttributeDataList)) {

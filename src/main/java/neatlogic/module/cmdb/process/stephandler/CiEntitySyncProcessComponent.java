@@ -31,8 +31,10 @@ import neatlogic.framework.common.constvalue.InputFrom;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.exception.core.ApiRuntimeException;
 import neatlogic.framework.process.constvalue.ProcessStepMode;
+import neatlogic.framework.process.crossover.IProcessTaskCrossoverMapper;
 import neatlogic.framework.process.crossover.IProcessTaskCrossoverService;
-import neatlogic.framework.process.dao.mapper.ProcessTaskStepDataMapper;
+import neatlogic.framework.process.crossover.IProcessTaskStepDataCrossoverMapper;
+import neatlogic.framework.process.crossover.ISelectContentByHashCrossoverMapper;
 import neatlogic.framework.process.dto.ProcessTaskFormAttributeDataVo;
 import neatlogic.framework.process.dto.ProcessTaskStepDataVo;
 import neatlogic.framework.process.dto.ProcessTaskStepVo;
@@ -60,9 +62,6 @@ import java.util.stream.Collectors;
 @Deprecated
 public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
     static Logger logger = LoggerFactory.getLogger(CiEntitySyncProcessComponent.class);
-
-    @Resource
-    private ProcessTaskStepDataMapper processTaskStepDataMapper;
 
     @Resource
     private CiEntityService ciEntityService;
@@ -113,9 +112,11 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
 
     @Override
     protected int myActive(ProcessTaskStepVo currentProcessTaskStepVo) {
+        IProcessTaskCrossoverMapper processTaskCrossoverMapper = CrossoverServiceFactory.getApi(IProcessTaskCrossoverMapper.class);
+        ISelectContentByHashCrossoverMapper selectContentByHashCrossoverMapper = CrossoverServiceFactory.getApi(ISelectContentByHashCrossoverMapper.class);
         ProcessTaskStepVo processTaskStepVo =
-                processTaskMapper.getProcessTaskStepBaseInfoById(currentProcessTaskStepVo.getId());
-        String stepConfig = selectContentByHashMapper.getProcessTaskStepConfigByHash(processTaskStepVo.getConfigHash());
+                processTaskCrossoverMapper.getProcessTaskStepBaseInfoById(currentProcessTaskStepVo.getId());
+        String stepConfig = selectContentByHashCrossoverMapper.getProcessTaskStepConfigByHash(processTaskStepVo.getConfigHash());
         // 获取参数
         Map<Long, JSONArray> syncCiEntityMap = new HashMap<>();
         Map<String, CiEntityTransactionVo> ciEntityTransactionMap = new HashMap<>();
@@ -308,7 +309,8 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
                 processTaskStepDataVo.setType("cientitysync");
                 processTaskStepDataVo.setData(auditData.toJSONString());
                 processTaskStepDataVo.setFcu(UserContext.get().getUserUuid());
-                processTaskStepDataMapper.replaceProcessTaskStepData(processTaskStepDataVo);
+                IProcessTaskStepDataCrossoverMapper processTaskStepDataCrossoverMapper = CrossoverServiceFactory.getApi(IProcessTaskStepDataCrossoverMapper.class);
+                processTaskStepDataCrossoverMapper.replaceProcessTaskStepData(processTaskStepDataVo);
             }
         }
 
