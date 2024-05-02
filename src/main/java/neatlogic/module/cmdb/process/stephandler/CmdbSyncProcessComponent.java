@@ -47,8 +47,7 @@ import neatlogic.framework.process.constvalue.ProcessStepMode;
 import neatlogic.framework.process.constvalue.ProcessTaskAuditType;
 import neatlogic.framework.process.constvalue.ProcessTaskOperationType;
 import neatlogic.framework.process.constvalue.automatic.FailPolicy;
-import neatlogic.framework.process.crossover.IProcessTaskCrossoverService;
-import neatlogic.framework.process.dao.mapper.ProcessTaskStepDataMapper;
+import neatlogic.framework.process.crossover.*;
 import neatlogic.framework.process.dto.*;
 import neatlogic.framework.process.exception.processtask.ProcessTaskException;
 import neatlogic.framework.process.exception.processtask.ProcessTaskNoPermissionException;
@@ -84,9 +83,6 @@ import java.util.stream.Collectors;
 public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
 
     private final Logger logger = LoggerFactory.getLogger(CmdbSyncProcessComponent.class);
-
-    @Resource
-    private ProcessTaskStepDataMapper processTaskStepDataMapper;
 
     @Resource
     private CiMapper ciMapper;
@@ -161,12 +157,14 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
         try {
             String configHash = currentProcessTaskStepVo.getConfigHash();
             if (StringUtils.isBlank(configHash)) {
-                ProcessTaskStepVo processTaskStepVo = processTaskMapper.getProcessTaskStepBaseInfoById(currentProcessTaskStepVo.getId());
+                IProcessTaskCrossoverMapper processTaskCrossoverMapper = CrossoverServiceFactory.getApi(IProcessTaskCrossoverMapper.class);
+                ProcessTaskStepVo processTaskStepVo = processTaskCrossoverMapper.getProcessTaskStepBaseInfoById(currentProcessTaskStepVo.getId());
                 configHash = processTaskStepVo.getConfigHash();
                 currentProcessTaskStepVo.setProcessStepUuid(processTaskStepVo.getProcessStepUuid());
             }
             // 获取工单当前步骤配置信息
-            String config = selectContentByHashMapper.getProcessTaskStepConfigByHash(configHash);
+            ISelectContentByHashCrossoverMapper selectContentByHashCrossoverMapper = CrossoverServiceFactory.getApi(ISelectContentByHashCrossoverMapper.class);
+            String config = selectContentByHashCrossoverMapper.getProcessTaskStepConfigByHash(configHash);
             if (StringUtils.isBlank(config)) {
                 myAutoComplete(currentProcessTaskStepVo);
                 return 0;
@@ -176,6 +174,8 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                 myAutoComplete(currentProcessTaskStepVo);
                 return 0;
             }
+
+            IProcessTaskStepDataCrossoverMapper processTaskStepDataCrossoverMapper = CrossoverServiceFactory.getApi(IProcessTaskStepDataCrossoverMapper.class);
             boolean flag = false;
             JSONArray errorMessageList = new JSONArray();
             try {
@@ -187,7 +187,7 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                     searchVo.setProcessTaskId(currentProcessTaskStepVo.getProcessTaskId());
                     searchVo.setProcessTaskStepId(currentProcessTaskStepVo.getId());
                     searchVo.setType("ciEntitySyncResult");
-                    ProcessTaskStepDataVo processTaskStepData = processTaskStepDataMapper.getProcessTaskStepData(searchVo);
+                    ProcessTaskStepDataVo processTaskStepData = processTaskStepDataCrossoverMapper.getProcessTaskStepData(searchVo);
                     if (processTaskStepData != null) {
                         myAutoComplete(currentProcessTaskStepVo);
                         return 1;
@@ -197,9 +197,9 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                 searchVo.setProcessTaskId(currentProcessTaskStepVo.getProcessTaskId());
                 searchVo.setProcessTaskStepId(currentProcessTaskStepVo.getId());
                 searchVo.setType("ciEntitySyncError");
-                ProcessTaskStepDataVo processTaskStepData = processTaskStepDataMapper.getProcessTaskStepData(searchVo);
+                ProcessTaskStepDataVo processTaskStepData = processTaskStepDataCrossoverMapper.getProcessTaskStepData(searchVo);
                 if (processTaskStepData != null) {
-                    processTaskStepDataMapper.deleteProcessTaskStepDataById(processTaskStepData.getId());
+                    processTaskStepDataCrossoverMapper.deleteProcessTaskStepDataById(processTaskStepData.getId());
                 }
                 List<CiEntitySyncConfigVo> configList = ciEntitySyncVo.getConfigList();
                 /* 重新构建configList配置信息 */
@@ -264,7 +264,7 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                         search.setProcessTaskId(currentProcessTaskStepVo.getProcessTaskId());
                         search.setProcessTaskStepId(currentProcessTaskStepVo.getId());
                         search.setType("ciEntitySyncResult");
-                        ProcessTaskStepDataVo oldProcessTaskStepData = processTaskStepDataMapper.getProcessTaskStepData(search);
+                        ProcessTaskStepDataVo oldProcessTaskStepData = processTaskStepDataCrossoverMapper.getProcessTaskStepData(search);
                         if (oldProcessTaskStepData != null) {
                             JSONObject dataObj = oldProcessTaskStepData.getData();
                             JSONArray transactionGroupList = dataObj.getJSONArray("transactionGroupList");
@@ -284,7 +284,7 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                             dataObj.put("transactionGroupList", transactionGroupList);
                             oldProcessTaskStepData.setData(dataObj.toJSONString());
                         }
-                        processTaskStepDataMapper.replaceProcessTaskStepData(oldProcessTaskStepData);
+                        processTaskStepDataCrossoverMapper.replaceProcessTaskStepData(oldProcessTaskStepData);
                     }).execute();
                     if (!s.isSucceed()) {
                         // 增加提醒
@@ -304,7 +304,8 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                         flag = true;
                     }
                     /* 处理历史记录 **/
-                    IProcessStepHandlerUtil.audit(currentProcessTaskStepVo, ProcessTaskAuditType.ACTIVE);
+                    IProcessStepHandlerCrossoverUtil processStepHandlerCrossoverUtil = CrossoverServiceFactory.getApi(IProcessStepHandlerCrossoverUtil.class);
+                    processStepHandlerCrossoverUtil.audit(currentProcessTaskStepVo, ProcessTaskAuditType.ACTIVE);
                 }
             } catch (Exception e) {
                 // 增加提醒
@@ -334,7 +335,7 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                 dataObj.put("errorList", errorMessageList);
                 processTaskStepDataVo.setData(dataObj.toJSONString());
                 processTaskStepDataVo.setFcu(UserContext.get().getUserUuid());
-                processTaskStepDataMapper.replaceProcessTaskStepData(processTaskStepDataVo);
+                processTaskStepDataCrossoverMapper.replaceProcessTaskStepData(processTaskStepDataVo);
                 String failPolicy = ciEntityConfig.getString("failPolicy");
                 if (FailPolicy.KEEP_ON.getValue().equals(failPolicy)) {
                     myAutoComplete(currentProcessTaskStepVo);
@@ -350,12 +351,13 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
     }
 
     private void myAutoComplete(ProcessTaskStepVo currentProcessTaskStepVo) {
-        List<Long> toProcessTaskStepIdList = processTaskMapper.getToProcessTaskStepIdListByFromIdAndType(currentProcessTaskStepVo.getId(), ProcessFlowDirection.FORWARD.getValue());
+        IProcessTaskCrossoverMapper processTaskCrossoverMapper = CrossoverServiceFactory.getApi(IProcessTaskCrossoverMapper.class);
+        List<Long> toProcessTaskStepIdList = processTaskCrossoverMapper.getToProcessTaskStepIdListByFromIdAndType(currentProcessTaskStepVo.getId(), ProcessFlowDirection.FORWARD.getValue());
         if (toProcessTaskStepIdList.size() == 1) {
             Long nextStepId = toProcessTaskStepIdList.get(0);
             IProcessStepHandler handler = ProcessStepHandlerFactory.getHandler(CmdbProcessStepHandlerType.CMDBSYNC.getHandler());
             try {
-                ProcessTaskStepVo processTaskStepVo = processTaskMapper.getProcessTaskStepBaseInfoById(currentProcessTaskStepVo.getId());
+                ProcessTaskStepVo processTaskStepVo = processTaskCrossoverMapper.getProcessTaskStepBaseInfoById(currentProcessTaskStepVo.getId());
                 JSONObject paramObj = processTaskStepVo.getParamObj();
                 paramObj.put("nextStepId", nextStepId);
                 paramObj.put("action", ProcessTaskOperationType.STEP_COMPLETE.getValue());
@@ -566,9 +568,11 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             Map<String, Object> formAttributeDataMap = new HashMap<>();
             String formConfig = null;
             // 如果工单有表单信息，则查询出表单配置及数据
-            ProcessTaskFormVo processTaskFormVo = processTaskMapper.getProcessTaskFormByProcessTaskId(processTaskId);
+            IProcessTaskCrossoverMapper processTaskCrossoverMapper = CrossoverServiceFactory.getApi(IProcessTaskCrossoverMapper.class);
+            ProcessTaskFormVo processTaskFormVo = processTaskCrossoverMapper.getProcessTaskFormByProcessTaskId(processTaskId);
             if (processTaskFormVo != null) {
-                formConfig = selectContentByHashMapper.getProcessTaskFromContentByHash(processTaskFormVo.getFormContentHash());
+                ISelectContentByHashCrossoverMapper selectContentByHashCrossoverMapper = CrossoverServiceFactory.getApi(ISelectContentByHashCrossoverMapper.class);
+                formConfig = selectContentByHashCrossoverMapper.getProcessTaskFromContentByHash(processTaskFormVo.getFormContentHash());
                 IProcessTaskCrossoverService processTaskCrossoverService = CrossoverServiceFactory.getApi(IProcessTaskCrossoverService.class);
                 List<ProcessTaskFormAttributeDataVo> processTaskFormAttributeDataList = processTaskCrossoverService.getProcessTaskFormAttributeDataListByProcessTaskId(processTaskId);
                 if (CollectionUtils.isNotEmpty(processTaskFormAttributeDataList)) {

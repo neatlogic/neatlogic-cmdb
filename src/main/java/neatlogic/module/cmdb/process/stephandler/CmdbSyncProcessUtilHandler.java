@@ -22,7 +22,7 @@ import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.notify.crossover.INotifyServiceCrossoverService;
 import neatlogic.framework.notify.dto.InvokeNotifyPolicyConfigVo;
 import neatlogic.framework.process.constvalue.ProcessTaskOperationType;
-import neatlogic.framework.process.dao.mapper.ProcessTaskStepDataMapper;
+import neatlogic.framework.process.crossover.IProcessTaskStepDataCrossoverMapper;
 import neatlogic.framework.process.dto.ProcessStepVo;
 import neatlogic.framework.process.dto.ProcessStepWorkerPolicyVo;
 import neatlogic.framework.process.dto.ProcessTaskStepDataVo;
@@ -53,9 +53,6 @@ public class CmdbSyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
     private final Logger logger = LoggerFactory.getLogger(CmdbSyncProcessUtilHandler.class);
 
     @Resource
-    private ProcessTaskStepDataMapper processTaskStepDataMapper;
-
-    @Resource
     private TransactionService transactionService;
 
     @Override
@@ -70,13 +67,14 @@ public class CmdbSyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
 
     @Override
     public Object getHandlerStepInitInfo(ProcessTaskStepVo currentProcessTaskStepVo) {
+        IProcessTaskStepDataCrossoverMapper processTaskStepDataCrossoverMapper = CrossoverServiceFactory.getApi(IProcessTaskStepDataCrossoverMapper.class);
         JSONObject resultObj = new JSONObject();
         /* 事务审计列表 **/
         ProcessTaskStepDataVo search = new ProcessTaskStepDataVo();
         search.setProcessTaskId(currentProcessTaskStepVo.getProcessTaskId());
         search.setProcessTaskStepId(currentProcessTaskStepVo.getId());
         search.setType("ciEntitySyncResult");
-        ProcessTaskStepDataVo processTaskStepData = processTaskStepDataMapper.getProcessTaskStepData(search);
+        ProcessTaskStepDataVo processTaskStepData = processTaskStepDataCrossoverMapper.getProcessTaskStepData(search);
         if (processTaskStepData != null) {
             JSONObject dataObj = processTaskStepData.getData();
             JSONArray transactionGroupArray = dataObj.getJSONArray("transactionGroupList");
@@ -103,7 +101,7 @@ public class CmdbSyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
         searchVo.setProcessTaskId(currentProcessTaskStepVo.getProcessTaskId());
         searchVo.setProcessTaskStepId(currentProcessTaskStepVo.getId());
         searchVo.setType("ciEntitySyncError");
-        ProcessTaskStepDataVo processTaskStepDataVo = processTaskStepDataMapper.getProcessTaskStepData(searchVo);
+        ProcessTaskStepDataVo processTaskStepDataVo = processTaskStepDataCrossoverMapper.getProcessTaskStepData(searchVo);
         if (processTaskStepDataVo != null) {
             JSONObject dataObj = processTaskStepDataVo.getData();
             if (MapUtils.isNotEmpty(dataObj)) {
