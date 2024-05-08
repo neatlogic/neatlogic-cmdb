@@ -30,7 +30,7 @@ import javax.annotation.Resource;
 @Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class getCiUniqueApi extends PrivateApiComponentBase {
+public class GetCiUniqueApi extends PrivateApiComponentBase {
 
     @Resource
     private CiMapper ciMapper;
