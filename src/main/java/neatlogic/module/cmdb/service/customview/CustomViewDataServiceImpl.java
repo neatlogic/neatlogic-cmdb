@@ -230,7 +230,7 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
                         String ciUuid = key.replace("_id", "");
                         CustomViewCiVo ciVo = customViewVo.getCustomCiByUuid(ciUuid);
                         if (ciVo != null) {
-                            ciVo.addCiEntity((Long) result.get(key), (String) result.get(ciUuid + "_name"));
+                            ciVo.addCiEntity(Long.parseLong(result.get(key).toString()), (String) result.get(ciUuid + "_name"));
                         }
                     }
                 }
