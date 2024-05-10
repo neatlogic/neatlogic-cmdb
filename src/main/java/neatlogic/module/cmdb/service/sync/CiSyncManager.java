@@ -498,7 +498,7 @@ public class CiSyncManager {
                                         }
                                     }
                                     if (CollectionUtils.isNotEmpty(attrValueList)) {
-                                        ciEntityTransactionVo.addAttrEntityData(attrMap.get(mappingVo.getAttrId()), attrValueList);
+                                        ciEntityTransactionVo.addAttrEntityData(attrMap.get(mappingVo.getAttrId()), attrValueList, mappingVo.getAction());
                                     }
                                 } else {
                                     //需要使用模型的唯一规则来查找配置项，如果找不到，或找到多个唯一表达式，就不做任何更新
@@ -564,7 +564,7 @@ public class CiSyncManager {
                                             attrValueList.add(attrCiEntityTransactionVo.getCiEntityId());
                                         }
 
-                                        ciEntityTransactionVo.addAttrEntityData(attrMap.get(mappingVo.getAttrId()), attrValueList);
+                                        ciEntityTransactionVo.addAttrEntityData(attrMap.get(mappingVo.getAttrId()), attrValueList, mappingVo.getAction());
                                     } else {
                                         throw new CiUniqueRuleAttrTypeIrregularException(targetCiVo, targetNameAttrVo);
                                     }
