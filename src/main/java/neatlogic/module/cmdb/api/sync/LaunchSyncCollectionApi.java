@@ -15,12 +15,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.sync;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
 import neatlogic.framework.cmdb.dto.sync.ObjectVo;
 import neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo;
+import neatlogic.framework.cmdb.dto.sync.SyncConditionVo;
 import neatlogic.framework.cmdb.enums.sync.CollectMode;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.exception.type.ParamNotExistsException;
@@ -69,6 +71,7 @@ public class LaunchSyncCollectionApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "term.cmdb.syncid"),
             @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.syncidlist"),
+            @Param(name = "conditionList", type = ApiParamType.JSONARRAY, desc = "条件列表"),
             @Param(name = "collectionList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.collectionlist"),
             @Param(name = "collectionObjList", type = ApiParamType.JSONARRAY, help = "需要包含category和type属性", desc = "term.cmdb.collectionobjlist"),
             @Param(name = "batchTag", type = ApiParamType.STRING, desc = "term.cmdb.batchtag"),
@@ -83,6 +86,7 @@ public class LaunchSyncCollectionApi extends PrivateApiComponentBase {
         JSONArray idList = jsonObj.getJSONArray("idList");
         JSONArray collectionList = jsonObj.getJSONArray("collectionList");
         JSONArray collectionObjList = jsonObj.getJSONArray("collectionObjList");
+        JSONArray conditionList = jsonObj.getJSONArray("conditionList");
         Long startTime = jsonObj.getLong("startTime");
         String batchTag = jsonObj.getString("batchTag");
         if (id == null && CollectionUtils.isEmpty(idList) && isAll == null && CollectionUtils.isEmpty(collectionList) && CollectionUtils.isEmpty(collectionObjList)) {
@@ -137,6 +141,13 @@ public class LaunchSyncCollectionApi extends PrivateApiComponentBase {
             }
         }
         if (CollectionUtils.isNotEmpty(syncCiCollectionList)) {
+            if (syncCiCollectionList.size() == 1 && CollectionUtils.isNotEmpty(conditionList)) {
+                List<SyncConditionVo> cList = new ArrayList<>();
+                for (int i = 0; i < conditionList.size(); i++) {
+                    cList.add(JSON.toJavaObject(conditionList.getJSONObject(i), SyncConditionVo.class));
+                }
+                syncCiCollectionList.get(0).setConditionList(cList);
+            }
             CiSyncManager.doSync(syncCiCollectionList, batchTag, startTime);
         }
         return null;

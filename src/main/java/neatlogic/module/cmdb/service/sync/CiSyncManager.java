@@ -803,6 +803,11 @@ public class CiSyncManager {
                             }
                             if (CollectionUtils.isNotEmpty(fieldList)) {
                                 Query query = new Query();
+                                //获取手动触发传入的条件
+                                if (CollectionUtils.isNotEmpty(syncCiCollectionVo.getConditionList())) {
+                                    criteriaList.add(syncCiCollectionVo.getCriteria());
+                                }
+                                //获取定时策略中传入的条件
                                 if (syncCiCollectionVo.getSyncPolicy() != null) {
                                     criteriaList.add(syncCiCollectionVo.getSyncPolicy().getCriteria());
                                 }
