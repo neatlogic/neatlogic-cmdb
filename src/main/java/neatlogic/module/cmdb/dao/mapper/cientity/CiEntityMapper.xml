@@ -336,7 +336,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo" useCache="false">
         SELECT id, `name`
         FROM ${ciTableName}
-        WHERE name LIKE CONCAT('%',#{name}, '%')
+        WHERE name LIKE CONCAT('%', #{name}, '%')
     </select>
 
     <select id="getCiEntityBaseInfoByName" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo"
@@ -1701,14 +1701,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 
     <delete id="deleteCiEntityBaseInfo" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo">
         DELETE
-            a,b,c,e,f,g
+        a,b,c,e,f,g,h,i,j
         FROM cmdb_cientity a
-                 LEFT JOIN cmdb_attrentity b ON a.id = b.`from_cientity_id`
-                 LEFT JOIN cmdb_relentity c ON a.id = c.`from_cientity_id` OR a.id = c.`to_cientity_id`
-                 LEFT JOIN cmdb_cientity_group e ON a.id = e.cientity_id
-                 LEFT JOIN cmdb_cientity_expiredtime f ON a.id = f.cientity_id
-                 LEFT JOIN cmdb_cientity_illegal g ON a.id = g.cientity_id
+        LEFT JOIN cmdb_attrentity b ON a.id = b.`from_cientity_id`
+        LEFT JOIN cmdb_relentity c ON a.id = c.`from_cientity_id` OR a.id = c.`to_cientity_id`
+        LEFT JOIN cmdb_cientity_group e ON a.id = e.cientity_id
+        LEFT JOIN cmdb_cientity_expiredtime f ON a.id = f.cientity_id
+        LEFT JOIN cmdb_cientity_illegal g ON a.id = g.cientity_id
+        LEFT JOIN cmdb_cientity_inspect h ON a.id = h.ci_entity_id
+        LEFT JOIN cmdb_cientity_alert i ON a.id = i.cientity_id
+        LEFT JOIN cmdb_cientity_globalattritem j ON a.id = j.cientity_id
         WHERE a.id = #{id}
+        <!--不是所有和cientity相关的表都能删除，例如cmdb_cientity_transaction，预防配置项删除后再恢复-->
     </delete>
 
     <update id="updateCiEntityInspectStatus" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo">
