@@ -890,7 +890,7 @@ public class CiSyncManager {
         private void dealWithDataBatch(SyncCiCollectionVo syncCiCollectionVo, Set<String> fieldList, List<JSONObject> dataList, AtomicInteger count) {
             if (CollectionUtils.isNotEmpty(dataList)) {
                 BatchRunner<JSONObject> batchRunner = new BatchRunner<>();
-                BatchRunner.State state = batchRunner.execute(dataList, 3, data -> {
+                BatchRunner.State state = batchRunner.execute(dataList, 5, data -> {
                     int tmpCount = count.addAndGet(1);
                     long localStartTime = 0L;
                     if (logger.isInfoEnabled()) {

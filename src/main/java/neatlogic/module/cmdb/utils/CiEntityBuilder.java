@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.utils;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
@@ -139,7 +140,7 @@ public class CiEntityBuilder {
                             JSONArray valueList = new JSONArray();
                             //例如附件型参数有可能是个数组，所以先尝试做转换，不行再当字符串处理
                             try {
-                                valueList = JSONArray.parseArray(value.toString());
+                                valueList = JSON.parseArray(value.toString());
                             } catch (Exception ignored) {
                                 valueList.add(value);
                             }
@@ -393,7 +394,7 @@ public class CiEntityBuilder {
                 if (attrVo.getType().equals("file")) {
                     try {
                         //例如附件型参数有可能是个数组，所以先尝试做转换，不行再当字符串处理
-                        valueList = JSONArray.parseArray(value.toString());
+                        valueList = JSON.parseArray(value.toString());
                     } catch (Exception ignored) {
                         valueList.add(value);
                     }
