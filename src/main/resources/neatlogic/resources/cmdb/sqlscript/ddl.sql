@@ -313,7 +313,7 @@ CREATE TABLE `cmdb_cientity_transaction`  (
   `ci_id` bigint NOT NULL COMMENT '引用ecmdb_ci的id',
   `ci_entity_id` bigint NOT NULL DEFAULT 0 COMMENT '引用ecmdb_ci_entity的id',
   `name` varchar(1024) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '名称',
-  `action` enum('insert','update','delete','recover') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '操作类型，I:insert,U:update;D:delete;S:recover;',
+  `action` enum('insert','update','delete','recover') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '操作类型，I:insert,U:update；D:delete；S:recover；',
   `edit_mode` enum('global','partial') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '编辑模式',
   `transaction_id` bigint NOT NULL COMMENT '事务id',
   `content` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT '修改内容，json格式',
@@ -1041,3 +1041,12 @@ CREATE TABLE `cmdb_viewconst`  (
   `show_type` enum('none','all','list','detail') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = 'cmdb_viewconst';
+
+-- ----------------------------
+-- Table structure for discovery_conf_combop
+-- ----------------------------
+CREATE TABLE `discovery_conf_combop`  (
+  `conf_id` bigint NOT NULL COMMENT '自动发现id',
+  `combop_id` bigint NOT NULL COMMENT '组合工具id',
+  PRIMARY KEY (`conf_id`, `combop_id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '自动发现关联组合工具表';
