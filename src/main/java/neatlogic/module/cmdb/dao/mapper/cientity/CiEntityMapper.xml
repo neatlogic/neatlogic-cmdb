@@ -110,11 +110,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                             <when test="rel.direction == 'from'">
                                 left join cmdb_relentity `rel_${idx}` on cientity.id = `rel_${idx}`.from_cientity_id
                                 and `rel_${idx}`.rel_id = #{rel.id}
-                                and ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
-                                `rel_${idx}`.to_cientity_id) or exists
-                                (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
-                                `rel_${idx}`.to_cientity_id
-                                and xx.expired_time &gt;= NOW()))
+                                <!--先去掉，提升性能
+                               and ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                               `rel_${idx}`.to_cientity_id) or exists
+                               (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                               `rel_${idx}`.to_cientity_id
+                               and xx.expired_time &gt;= NOW()))-->
                                 <if test="globalAttrFilterList != null and globalAttrFilterList.size () > 0">
                                     and
                                     <foreach collection="globalAttrFilterList" item="item" open="(" close=")"
@@ -135,11 +136,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                             <otherwise>
                                 left join cmdb_relentity `rel_${idx}` on cientity.id = `rel_${idx}`.to_cientity_id
                                 and `rel_${idx}`.rel_id = #{rel.id}
-                                and ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
-                                `rel_${idx}`.from_cientity_id) or exists
-                                (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
-                                `rel_${idx}`.from_cientity_id
-                                and xx.expired_time &gt;= NOW()))
+                                <!--先去掉，提升性能
+                               and ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                               `rel_${idx}`.from_cientity_id) or exists
+                               (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                               `rel_${idx}`.from_cientity_id
+                               and xx.expired_time &gt;= NOW()))-->
                                 <if test="globalAttrFilterList != null and globalAttrFilterList.size () > 0">
                                     and
                                     <foreach collection="globalAttrFilterList" item="item" open="(" close=")"
@@ -165,11 +167,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                                 left join cmdb_relentity `rel_${idx}` on `rel_${idx - 1}`.to_cientity_id =
                                 `rel_${idx}`.from_cientity_id and
                                 `rel_${idx}`.rel_id = #{rel.id}
-                                and ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
-                                `rel_${idx}`.to_cientity_id)
-                                or exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
-                                `rel_${idx}`.to_cientity_id
-                                and xx.expired_time &gt;= NOW()))
+                                <!--先去掉，提升性能
+                               and ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                               `rel_${idx}`.to_cientity_id)
+                               or exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                               `rel_${idx}`.to_cientity_id
+                               and xx.expired_time &gt;= NOW()))-->
                                 <if test="globalAttrFilterList != null and globalAttrFilterList.size () > 0">
                                     and
                                     <foreach collection="globalAttrFilterList" item="item" open="(" close=")"
@@ -191,11 +194,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                                 left join cmdb_relentity `rel_${idx}` on `rel_${idx - 1}`.from_cientity_id =
                                 `rel_${idx}`.to_cientity_id
                                 and `rel_${idx}`.rel_id = #{rel.id}
-                                and ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
-                                `rel_${idx}`.from_cientity_id) or exists
-                                (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
-                                `rel_${idx}`.from_cientity_id
-                                and xx.expired_time &gt;= NOW()))
+                                <!--先去掉，提升性能
+                               and ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                               `rel_${idx}`.from_cientity_id) or exists
+                               (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                               `rel_${idx}`.from_cientity_id
+                               and xx.expired_time &gt;= NOW()))-->
                                 <if test="globalAttrFilterList != null and globalAttrFilterList.size () > 0">
                                     and
                                     <foreach collection="globalAttrFilterList" item="item" open="(" close=")"
@@ -397,11 +401,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         FROM `cmdb_attrentity`
         WHERE attr_id = #{attrId}
         AND from_cientity_id = #{fromCiEntityId}
+        <!--先去掉，提升性能
         AND ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
-        `cmdb_attrentity`.to_cientity_id) or exists
-        (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
-        `cmdb_attrentity`.to_cientity_id
-        and xx.expired_time &gt;= NOW()))
+       `cmdb_attrentity`.to_cientity_id) or exists
+       (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+       `cmdb_attrentity`.to_cientity_id
+       and xx.expired_time &gt;= NOW()))-->
         ORDER BY from_index
         <if test="limit != null">
             LIMIT #{limit}
@@ -679,28 +684,28 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             <if test="attr.needTargetCi == true and ( @neatlogic.framework.cmdb.dao.ognl.IsAttrExistsInFilter@isExists(attr, attrFilterList) or @neatlogic.framework.cmdb.dao.ognl.IsAttrInAttrIdList@isExists(attr, attrIdList))">
                 LEFT JOIN `cmdb_attrentity` `cmdb_attrentity_${attr.id}` ON `ci_base`.id =
                 `cmdb_attrentity_${attr.id}`.from_cientity_id AND `cmdb_attrentity_${attr.id}`.attr_id = #{attr.id}
-                AND ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
-                `cmdb_attrentity_${attr.id}`.to_cientity_id) or exists
-                (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
-                `cmdb_attrentity_${attr.id}`.to_cientity_id
-                and xx.expired_time &gt;= NOW()))
-                <if test="limitAttrEntity == true">
-                    AND `cmdb_attrentity_${attr.id}`.`from_index` &lt;= (#{attr.maxAttrEntityCount} + 1)
-                </if>
-                <!--由于select部分语句并没有涉及以下表，而且是left join查询，去掉可以提升性能
-               <choose>
-                   <when test="attr.targetIsVirtual != 1">
-                       LEFT JOIN `cmdb_cientity` `cmdb_attr_cientity_${attr.id}` ON
-                       `cmdb_attrentity_${attr.id}`.to_cientity_id
-                       = `cmdb_attr_cientity_${attr.id}`.id
-                   </when>
-                   <otherwise>
-                       LEFT JOIN ${attr.targetCiTableName} `cmdb_attr_cientity_${attr.id}` ON
-                       `cmdb_attrentity_${attr.id}`.to_cientity_id
-                       = `cmdb_attr_cientity_${attr.id}`.id
-                   </otherwise>
-               </choose>
-               -->
+                <!--先去掉，提升性能AND ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+               `cmdb_attrentity_${attr.id}`.to_cientity_id) or exists
+               (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+               `cmdb_attrentity_${attr.id}`.to_cientity_id
+               and xx.expired_time &gt;= NOW()))-->
+               <if test="limitAttrEntity == true">
+                   AND `cmdb_attrentity_${attr.id}`.`from_index` &lt;= (#{attr.maxAttrEntityCount} + 1)
+               </if>
+               <!--由于select部分语句并没有涉及以下表，而且是left join查询，去掉可以提升性能
+              <choose>
+                  <when test="attr.targetIsVirtual != 1">
+                      LEFT JOIN `cmdb_cientity` `cmdb_attr_cientity_${attr.id}` ON
+                      `cmdb_attrentity_${attr.id}`.to_cientity_id
+                      = `cmdb_attr_cientity_${attr.id}`.id
+                  </when>
+                  <otherwise>
+                      LEFT JOIN ${attr.targetCiTableName} `cmdb_attr_cientity_${attr.id}` ON
+                      `cmdb_attrentity_${attr.id}`.to_cientity_id
+                      = `cmdb_attr_cientity_${attr.id}`.id
+                  </otherwise>
+              </choose>
+              -->
             </if>
         </foreach>
         <if test="attrCiEntityFilter != null ">
@@ -716,11 +721,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                     LEFT JOIN `cmdb_relentity` `cmdb_relentity_${rel.id}_${rel.direction}` ON `ci_base`.id =
                     `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
                     AND `cmdb_relentity_${rel.id}_${rel.direction}`.rel_id = #{rel.id}
+                    <!--先去掉，提升性能
                     AND ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
                     `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id) or exists
                     (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
                     `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
-                    AND xx.expired_time &gt;= NOW()))
+                    AND xx.expired_time &gt;= NOW()))-->
                     <if test="globalAttrFilterList != null and globalAttrFilterList.size() > 0">
                         AND
                         <foreach collection="globalAttrFilterList" item="item" open="(" close=")" separator="and">
@@ -790,11 +796,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                     LEFT JOIN `cmdb_relentity` `cmdb_relentity_${rel.id}_${rel.direction}` ON `ci_base`.id =
                     `cmdb_relentity_${rel.id}_${rel.direction}`.to_cientity_id
                     AND `cmdb_relentity_${rel.id}_${rel.direction}`.rel_id = #{rel.id}
+                    <!--先去掉，提升性能
                     AND ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
                     `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id) or exists
                     (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
                     `cmdb_relentity_${rel.id}_${rel.direction}`.from_cientity_id
-                    AND xx.expired_time &gt;= NOW()))
+                    AND xx.expired_time &gt;= NOW()))-->
                     <if test="globalAttrFilterList != null and globalAttrFilterList.size() > 0">
                         AND
                         <foreach collection="globalAttrFilterList" item="item" open="(" close=")" separator="and">
@@ -895,9 +902,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     <sql id="ciEntityConditionSql">
         <where>
             <!-- (`ci_base`.expired_time is null or `ci_base`.expired_time &gt;= NOW())-->
-            (not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id = `ci_base`.id) or exists
+           <!-- (not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id = `ci_base`.id) or exists
             (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id = `ci_base`.id
-            and xx.expired_time &gt;= NOW()))
+            and xx.expired_time &gt;= NOW()))-->
             <if test="name != null and name != ''">
                 AND `ci_base`.`name` LIKE CONCAT('%',#{name},'%')
             </if>
