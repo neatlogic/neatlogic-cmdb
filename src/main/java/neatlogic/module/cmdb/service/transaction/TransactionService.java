@@ -15,10 +15,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.service.transaction;
 
+import neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo;
+import neatlogic.framework.cmdb.dto.transaction.TransactionDetailVo;
 import neatlogic.framework.cmdb.dto.transaction.TransactionVo;
 
 import java.util.List;
 
 public interface TransactionService {
     List<TransactionVo> searchTransaction(TransactionVo transactionVo);
+
+    /**
+     * 获取配置项事务详细信息
+     * @param transactionVo
+     * @param ciEntityTransactionVo
+     * @param ciId
+     * @return
+     */
+    TransactionDetailVo getTransactionDetail(TransactionVo transactionVo, CiEntityTransactionVo ciEntityTransactionVo, Long ciId);
 }
