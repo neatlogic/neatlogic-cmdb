@@ -44,7 +44,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         left join cmdb_ci toci on rel.to_ci_id = toci.id
         <where>
             <if test="keyword != null and keyword != ''">
-                rel.from_name like concat ('%',#{keyword},'%')
+                ( rel.from_name like concat ('%',#{keyword},'%')
                 or
                 rel.to_name like concat ('%',#{keyword},'%')
                 or
@@ -58,7 +58,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 or
                 toci.name like concat ('%',#{keyword},'%')
                 or
-                toci.label like concat ('%',#{keyword},'%')
+                toci.label like concat ('%',#{keyword},'%'))
+            </if>
+            <if test="defaultValue != null and defaultValue.size() > 0">
+                and rel.id in
+                <foreach collection="defaultValue" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
             </if>
         </where>
         limit #{startNum}, #{pageSize}
