@@ -49,6 +49,8 @@ public interface TransactionMapper {
 
     CiEntityTransactionVo getCiEntityTransactionByTransactionIdAndCiEntityId(@Param("transactionId") Long transactionId, @Param("ciEntityId") Long ciEntityId);
 
+    CiEntityTransactionVo getCiEntityTransactionByTransactionId(Long transactionId);
+
     int updateTransactionStatus(TransactionVo transactionVo);
 
     void updateCiEntityTransactionContent(CiEntityTransactionVo ciEntityTransactionVo);

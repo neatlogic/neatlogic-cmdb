@@ -18,7 +18,6 @@ package neatlogic.module.cmdb.api.transaction;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
-import neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import neatlogic.framework.cmdb.dto.transaction.TransactionDetailVo;
 import neatlogic.framework.cmdb.dto.transaction.TransactionVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
@@ -30,11 +29,12 @@ import neatlogic.module.cmdb.service.transaction.TransactionService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
+public class GetCiEntityTransactionByGroupApi extends PrivateApiComponentBase {
 
     @Resource
     private TransactionMapper transactionMapper;
@@ -45,12 +45,12 @@ public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "/cmdb/cientitytransaction/get";
+        return "/cmdb/cientitytransactiongroup/get";
     }
 
     @Override
     public String getName() {
-        return "获取配置项事务详细信息";
+        return "根据事务组获取事务详细信息";
     }
 
     @Override
@@ -59,18 +59,14 @@ public class GetCiEntityTransactionApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "ciEntityId", isRequired = true, type = ApiParamType.LONG, desc = "配置项id"),
-            @Param(name = "transactionId", isRequired = true, type = ApiParamType.LONG, desc = "事务id")})
+            @Param(name = "transactionGroupId", isRequired = true, type = ApiParamType.LONG, desc = "事务组id")})
     @Output({@Param(explode = TransactionDetailVo.class, desc = "事务信息及详细修改信息")})
-    @Description(desc = "获取配置项事务详细信息")
+    @Description(desc = "根据事务组获取事务详细信息")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        Long ciEntityId = jsonObj.getLong("ciEntityId");
-        Long transactionId = jsonObj.getLong("transactionId");
-        TransactionVo transactionVo = transactionMapper.getTransactionById(transactionId);
-
-        CiEntityTransactionVo ciEntityTransactionVo = transactionMapper.getCiEntityTransactionByTransactionIdAndCiEntityId(transactionId, ciEntityId);
-        return transactionService.getTransactionDetail(transactionVo, ciEntityTransactionVo);
+        Long transactionGroupId = jsonObj.getLong("transactionGroupId");
+        List<TransactionVo> transactionList = transactionMapper.getTransactionByGroupId(transactionGroupId);
+        return transactionService.getTransactionDetailList(transactionList);
     }
 
     @Override

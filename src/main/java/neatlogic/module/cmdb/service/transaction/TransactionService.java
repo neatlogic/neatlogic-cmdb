@@ -26,10 +26,8 @@ public interface TransactionService {
 
     /**
      * 获取配置项事务详细信息
-     * @param transactionVo
-     * @param ciEntityTransactionVo
-     * @param ciId
-     * @return
      */
-    TransactionDetailVo getTransactionDetail(TransactionVo transactionVo, CiEntityTransactionVo ciEntityTransactionVo, Long ciId);
+    TransactionDetailVo getTransactionDetail(TransactionVo transactionVo, CiEntityTransactionVo ciEntityTransactionVo);
+
+    List<TransactionDetailVo> getTransactionDetailList(List<TransactionVo> transactionList);
 }

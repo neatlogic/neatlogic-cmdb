@@ -147,6 +147,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                b.transaction_id                                           AS ciEntityTransactionId,
                b.ci_entity_id                                             AS ciEntityId,
                b.ci_entity_uuid                                           AS ciEntityUuid,
+               b.name                                                     AS ciEntityName,
+               d.name                                                     AS ciName,
+               d.label                                                    AS ciLabel,
                b.edit_mode                                                AS editMode,
                b.snapshot                                                 AS snapshot,
                b.content                                                  AS content,
@@ -154,6 +157,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         FROM cmdb_transaction a
                  JOIN cmdb_cientity_transaction b ON a.id = b.`transaction_id`
                  JOIN cmdb_transactiongroup c ON a.id = c.transaction_id
+                 JOIN cmdb_ci d ON a.ci_id = d.id
         WHERE c.id = #{value}
         ORDER BY a.id
     </select>
@@ -180,13 +184,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                b.transaction_id                                           AS ciEntityTransactionId,
                b.ci_entity_id                                             AS ciEntityId,
                b.ci_entity_uuid                                           AS ciEntityUuid,
+               b.name                                                     AS ciEntityName,
+               d.name                                                     AS ciName,
+               d.label                                                    AS ciLabel,
                b.edit_mode                                                AS editMode,
                b.snapshot                                                 AS snapshot,
                b.content                                                  AS content,
                ct.id                                                      AS transactionGroupId
         FROM cmdb_transaction a
-                 JOIN cmdb_cientity_transaction b
-                      ON a.id = b.`transaction_id`
+                 JOIN cmdb_cientity_transaction b ON a.id = b.`transaction_id`
+                 JOIN cmdb_ci d ON a.ci_id = d.id
                  LEFT JOIN cmdb_transactiongroup ct on b.transaction_id = ct.transaction_id
         WHERE a.id = #{value}
     </select>
@@ -282,7 +289,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         LIMIT #{startNum}, #{pageSize}
     </select>
 
-    <select id="getTransactionByIdList"  resultMap="transactionDetailMap">
+    <select id="getTransactionByIdList" resultMap="transactionDetailMap">
         SELECT
         a.id,
         a.ci_id AS ciId,
@@ -386,6 +393,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         FROM `cmdb_cientity_transaction`
         WHERE transaction_id = #{transactionId}
           AND ci_entity_id = #{ciEntityId}
+    </select>
+
+    <select id="getCiEntityTransactionByTransactionId" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo">
+        SELECT `id`,
+               `ci_id`          AS ciId,
+               `ci_entity_id`   AS ciEntityId,
+               `ci_entity_uuid` AS ciEntityUuid,
+               `name`           AS name,
+               `action`,
+               `transaction_id` AS transactionId,
+               `snapshot`       AS snapshot,
+               `content`        AS content
+        FROM `cmdb_cientity_transaction`
+        WHERE transaction_id = #{value}
+        limit 1
     </select>
 
     <update id="updateTransactionStatus" parameterType="neatlogic.framework.cmdb.dto.transaction.TransactionVo">

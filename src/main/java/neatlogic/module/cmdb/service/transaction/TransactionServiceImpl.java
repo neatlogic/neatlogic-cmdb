@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.service.transaction;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
@@ -67,15 +68,26 @@ public class TransactionServiceImpl implements TransactionService, ITransactionC
         return new ArrayList<>();
     }
 
-    public TransactionDetailVo getTransactionDetail(TransactionVo transactionVo, CiEntityTransactionVo ciEntityTransactionVo, Long ciId) {
+    public List<TransactionDetailVo> getTransactionDetailList(List<TransactionVo> transactionList) {
+        List<TransactionDetailVo> transactionDetailList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(transactionList)) {
+            for (TransactionVo transactionVo : transactionList) {
+                CiEntityTransactionVo ciEntityTransactionVo = transactionMapper.getCiEntityTransactionByTransactionId(transactionVo.getId());
+                transactionDetailList.add(getTransactionDetail(transactionVo, ciEntityTransactionVo));
+            }
+        }
+        return transactionDetailList;
+    }
+
+    public TransactionDetailVo getTransactionDetail(TransactionVo transactionVo, CiEntityTransactionVo ciEntityTransactionVo) {
         JSONArray dataList = new JSONArray();
         JSONObject oldCiEntityObj = null;
         if (StringUtils.isNotBlank(ciEntityTransactionVo.getSnapshot())) {
-            oldCiEntityObj = JSONObject.parseObject(ciEntityTransactionVo.getSnapshot());
+            oldCiEntityObj = JSON.parseObject(ciEntityTransactionVo.getSnapshot());
         }
         if (!ciEntityTransactionVo.getAction().equals(TransactionActionType.DELETE.getValue())) {
             if (MapUtils.isNotEmpty(ciEntityTransactionVo.getAttrEntityData())) {
-                List<AttrVo> attrList = attrMapper.getAttrByCiId(ciId);
+                List<AttrVo> attrList = attrMapper.getAttrByCiId(transactionVo.getCiId());
 
                 JSONObject oldAttrEntityData = null;
                 if (MapUtils.isNotEmpty(oldCiEntityObj)) {
@@ -98,7 +110,7 @@ public class TransactionServiceImpl implements TransactionService, ITransactionC
                     } else {
                         //如果属性已删除，尝试使用snapshot数据还原原来的值
                         if (MapUtils.isNotEmpty(oldAttrEntityData) && oldAttrEntityData.containsKey(key)) {
-                            AttrVo attrVo = JSONObject.toJavaObject(oldAttrEntityData.getJSONObject(key), AttrVo.class);
+                            AttrVo attrVo = JSON.toJavaObject(oldAttrEntityData.getJSONObject(key), AttrVo.class);
                             dataObj.put("oldValue", buildAttrObj(attrVo, oldAttrEntityData.getJSONObject(key).getJSONArray("valueList")));
                         }
                         dataObj.put("action", "delattr");
@@ -219,7 +231,7 @@ public class TransactionServiceImpl implements TransactionService, ITransactionC
                         JSONObject dataObj = new JSONObject();
                         //如果属性已删除，尝试使用snapshot数据还原原来的值
                         //JSONObject oldAttrEntityData = attrData.getJSONObject(key);
-                        AttrVo attrVo = JSONObject.toJavaObject(attrData.getJSONObject(key), AttrVo.class);
+                        AttrVo attrVo = JSON.toJavaObject(attrData.getJSONObject(key), AttrVo.class);
                         dataObj.put("oldValue", buildAttrObj(attrVo, attrData.getJSONObject(key).getJSONArray("valueList")));
                         dataObj.put("action", "delattr");
                         dataObj.put("id", attrVo.getId());
