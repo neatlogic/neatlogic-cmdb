@@ -17,13 +17,14 @@ import neatlogic.module.cmdb.process.notifyhandler.CmdbSyncNotifyHandler;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-//@Service
-@Deprecated
+@Service
+//@Deprecated
 public class CIEntitySyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
 
     @Override
