@@ -13,10 +13,11 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 
-//@Component
+@Component
 public class CiEntityModifyHandler extends FormHandlerBase {
     private final static Logger logger = LoggerFactory.getLogger(CiEntityModifyHandler.class);
 
