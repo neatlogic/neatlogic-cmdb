@@ -15,8 +15,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.service.cientity;
 
+import com.alibaba.fastjson.JSONObject;
+import neatlogic.framework.cmdb.dto.ci.AttrVo;
+import neatlogic.framework.cmdb.dto.ci.CiViewVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
+import neatlogic.framework.cmdb.dto.ci.RelVo;
+import neatlogic.framework.cmdb.dto.cientity.AttrFilterVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
+import neatlogic.framework.cmdb.dto.cientity.RelFilterVo;
 import neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import neatlogic.framework.cmdb.dto.transaction.TransactionGroupVo;
 import neatlogic.framework.cmdb.dto.transaction.TransactionStatusVo;
@@ -25,6 +31,7 @@ import neatlogic.framework.cmdb.enums.RelDirectionType;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 public interface CiEntityService {
     CiEntityVo getCiEntityById(CiEntityVo ciEntityVo);
@@ -153,4 +160,34 @@ public interface CiEntityService {
 
     @Transactional
     void recoverTransactionGroup(Long transactionGroupId);
+
+    /**
+     * 根据模型id获取所有属性和关系map
+     *
+     * @param ciId      模型id
+     * @param attrMap   属性map
+     * @param relMap    关系map
+     * @param ciViewMap 显示map
+     */
+    void getCiViewMapAndAttrMapAndRelMap(Long ciId, Map<Long, AttrVo> attrMap, Map<Long, RelVo> relMap, Map<String, CiViewVo> ciViewMap);
+
+
+    RelFilterVo convertFromRelFilter(RelVo relVo, String expression, List<String> valueList, String direction);
+
+    AttrFilterVo convertAttrFilter(AttrVo attrVo, String expression, List<String> valueList);
+
+    /**
+     * 查询配置项，构造tbodyList的每一行
+     *
+     * @param viewConstNameList 回显的固化属性
+     * @param ciEntity 配置项
+     */
+    JSONObject getTbodyRowData(List<String> viewConstNameList, CiEntityVo ciEntity);
+
+    /**
+     * 查询配置项，构造tbodyList的每一行
+     *
+     * @param ciEntity 配置项
+     */
+    JSONObject getTbodyRowData(CiEntityVo ciEntity);
 }

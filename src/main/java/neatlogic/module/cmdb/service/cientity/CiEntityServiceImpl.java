@@ -18,6 +18,7 @@ package neatlogic.module.cmdb.service.cientity;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSONPath;
 import neatlogic.framework.asynchronization.threadlocal.InputFromContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
@@ -25,6 +26,7 @@ import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
 import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverService;
 import neatlogic.framework.cmdb.dto.attrexpression.RebuildAuditVo;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
+import neatlogic.framework.cmdb.dto.ci.CiViewVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.ci.RelVo;
 import neatlogic.framework.cmdb.dto.cientity.*;
@@ -52,6 +54,7 @@ import neatlogic.framework.util.$;
 import neatlogic.module.cmdb.attrexpression.AttrExpressionRebuildManager;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
+import neatlogic.module.cmdb.dao.mapper.ci.CiViewMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.AttrEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
@@ -102,6 +105,9 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
 
     @Resource
     private RelMapper relMapper;
+
+    @Resource
+    private CiViewMapper ciViewMapper;
 
     @Override
     public CiEntityVo getCiEntityBaseInfoById(Long ciEntityId) {
@@ -2327,5 +2333,232 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         }
     }
 
+    @Override
+    public void getCiViewMapAndAttrMapAndRelMap(Long ciId, Map<Long, AttrVo> attrMap, Map<Long, RelVo> relMap, Map<String, CiViewVo> ciViewMap) {
+        List<AttrVo> attrList = attrMapper.getAttrByCiId(ciId);
+        attrMap.putAll(attrList.stream().collect(Collectors.toMap(AttrVo::getId, e -> e)));
+        List<RelVo> relList = relMapper.getRelByCiId(ciId);
+        for (RelVo relVo : relList) {
+            relMap.put(relVo.getId(), relVo);
+        }
+        CiViewVo ciViewVo = new CiViewVo();
+        ciViewVo.setCiId(ciId);
+        List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo));
+        for (CiViewVo ciview : ciViewList) {
+            switch (ciview.getType()) {
+                case "attr":
+                    ciViewMap.put("attr_" + ciview.getItemId(), ciview);
+                    break;
+                case "relfrom":
+                    ciViewMap.put("relfrom_" + ciview.getItemId(), ciview);
+                    break;
+                case "relto":
+                    ciViewMap.put("relto_" + ciview.getItemId(), ciview);
+                    break;
+                case "const":
+                    //固化属性需要特殊处理
+                    ciViewMap.put("const_" + ciview.getItemName().replace("_", ""), ciview);
+                    break;
+            }
+        }
+    }
+
+    @Override
+    public AttrFilterVo convertAttrFilter(AttrVo attrVo, String expression, List<String> valueList) {
+        AttrFilterVo attrFilterVo = new AttrFilterVo();
+        attrFilterVo.setAttrId(attrVo.getId());
+        if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NULL.getExpression())
+                || Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NOTNULL.getExpression())) {
+            attrFilterVo.setExpression(expression);
+            return attrFilterVo;
+        }
+        if (StringUtils.isBlank(expression)) {
+            expression = neatlogic.framework.matrix.constvalue.SearchExpression.EQ.getExpression();
+        }
+        if ("select".equals(attrVo.getType())) {
+            CiVo targetCiVo = ciMapper.getCiById(attrVo.getTargetCiId());
+            if (targetCiVo == null) {
+                return null;
+            }
+            List<CiVo> downwardCiList = ciMapper.getDownwardCiListByLR(targetCiVo.getLft(), targetCiVo.getRht());
+            Map<Long, CiVo> downwardCiMap = downwardCiList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
+
+            CiEntityVo ciEntityVo = new CiEntityVo();
+            ciEntityVo.setCiId(targetCiVo.getId());
+            ciEntityVo.setIdList(new ArrayList<>(downwardCiMap.keySet()));
+            List<String> newValueList = new ArrayList<>();
+            for (String value : valueList) {
+                List<CiEntityVo> ciEntityList = new ArrayList<>();
+                ciEntityVo.setName(value);
+                if (Objects.equals(targetCiVo.getIsVirtual(), 1)) {
+                    if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.LI.getExpression())
+                            || Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NL.getExpression())) {
+                        ciEntityList = ciEntityMapper.getVirtualCiEntityBaseInfoByLikeName(ciEntityVo);
+                    } else if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.EQ.getExpression())
+                            || Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NE.getExpression())) {
+                        ciEntityList = ciEntityMapper.getVirtualCiEntityBaseInfoByName(ciEntityVo);
+                    }
+                } else {
+                    if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.LI.getExpression())
+                            || Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NL.getExpression())) {
+                        ciEntityList = ciEntityMapper.getCiEntityListByCiIdListAndLikeName(ciEntityVo);
+                    } else if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.EQ.getExpression())
+                            || Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NE.getExpression())) {
+                        ciEntityList = ciEntityMapper.getCiEntityListByCiIdListAndName(ciEntityVo);
+                    }
+                }
+                for (CiEntityVo ciEntity : ciEntityList) {
+                    newValueList.add(ciEntity.getId().toString());
+                }
+            }
+            if (CollectionUtils.isEmpty(newValueList)) {
+                if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.LI.getExpression())
+                        || Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.EQ.getExpression())) {
+                    return null;
+                }
+            }
+            attrFilterVo.setValueList(newValueList);
+        } else {
+            attrFilterVo.setValueList(valueList);
+        }
+        attrFilterVo.setExpression(expression);
+        return attrFilterVo;
+    }
+
+    @Override
+    public RelFilterVo convertFromRelFilter(RelVo relVo, String expression, List<String> valueList, String direction) {
+        if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NULL.getExpression())
+                || Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NOTNULL.getExpression())) {
+            RelFilterVo relFilterVo = new RelFilterVo();
+            relFilterVo.setRelId(relVo.getId());
+            relFilterVo.setExpression(expression);
+            relFilterVo.setDirection(direction);
+            return relFilterVo;
+        }
+        Long ciId = null;
+        if ("from".equals(direction)) {
+            ciId = relVo.getToCiId();
+        } else if ("to".equals(direction)) {
+            ciId = relVo.getFromCiId();
+        } else {
+            return null;
+        }
+        CiVo ciVo = ciMapper.getCiById(ciId);
+        if (ciVo == null) {
+            return null;
+        }
+        if (StringUtils.isBlank(expression)) {
+            expression = neatlogic.framework.matrix.constvalue.SearchExpression.EQ.getExpression();
+        }
+        List<Long> ciEntityIdList = new ArrayList<>();
+        for (String value : valueList) {
+            RelEntityVo relEntityVo = new RelEntityVo();
+            relEntityVo.setRelId(relVo.getId());
+            relEntityVo.setPageSize(100);
+            if ("from".equals(direction)) {
+                relEntityVo.setToCiEntityName(value);
+                List<RelEntityVo> relEntityList = new ArrayList<>();
+                if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.LI.getExpression())
+                        || Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NL.getExpression())) {
+                    relEntityList = relEntityMapper.getRelEntityByRelIdAndLikeToCiEntityName(relEntityVo);
+                } else if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.EQ.getExpression())
+                        || Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NE.getExpression())) {
+                    relEntityList = relEntityMapper.getRelEntityByRelIdAndToCiEntityName(relEntityVo);
+                }
+                for (RelEntityVo relEntity : relEntityList) {
+                    ciEntityIdList.add(relEntity.getToCiEntityId());
+                }
+            } else if ("to".equals(direction)) {
+                relEntityVo.setFromCiEntityName(value);
+                List<RelEntityVo> relEntityList = new ArrayList<>();
+                if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.LI.getExpression())
+                        || Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NL.getExpression())) {
+                    relEntityList = relEntityMapper.getRelEntityByRelIdAndLikeFromCiEntityName(relEntityVo);
+                } else if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.EQ.getExpression())
+                        || Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NE.getExpression())) {
+                    relEntityList = relEntityMapper.getRelEntityByRelIdAndFromCiEntityName(relEntityVo);
+                }
+                for (RelEntityVo relEntity : relEntityList) {
+                    ciEntityIdList.add(relEntity.getFromCiEntityId());
+                }
+            }
+        }
+        if (CollectionUtils.isEmpty(ciEntityIdList)) {
+            if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.EQ.getExpression()) || Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.LI.getExpression())) {
+                return null;
+            }
+        }
+
+        if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.EQ.getExpression())) {
+            expression = neatlogic.framework.matrix.constvalue.SearchExpression.LI.getExpression();
+        } else if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NE.getExpression())) {
+            expression = neatlogic.framework.matrix.constvalue.SearchExpression.NL.getExpression();
+        }
+        RelFilterVo relFilterVo = new RelFilterVo();
+        relFilterVo.setRelId(relVo.getId());
+        relFilterVo.setExpression(expression);
+        relFilterVo.setValueList(ciEntityIdList);
+        relFilterVo.setDirection(direction);
+        return relFilterVo;
+    }
+
+    @Override
+    public JSONObject getTbodyRowData(List<String> viewConstNameList, CiEntityVo ciEntity) {
+        JSONObject tbody = new JSONObject();
+        if (CollectionUtils.isNotEmpty(viewConstNameList)) {
+            String ciEntityToJSONString = JSON.toJSONString(ciEntity);
+            for (String viewConstName : viewConstNameList) {
+                Object viewConstValue = JSONPath.read(ciEntityToJSONString, viewConstName.replace("_", ""));
+                if (viewConstValue != null) {
+                    tbody.put("const" + viewConstName, viewConstValue);
+                } else {
+                    tbody.put("const" + viewConstName, "");
+                }
+            }
+        }
+        tbody.putAll(getTbodyRowData(ciEntity));
+        return tbody;
+    }
+
+    @Override
+    public JSONObject getTbodyRowData(CiEntityVo ciEntity) {
+        JSONObject tbody = new JSONObject();
+        JSONObject attrEntityData = ciEntity.getAttrEntityData();
+        if (MapUtils.isNotEmpty(attrEntityData)) {
+            for (Map.Entry<String, Object> entry : attrEntityData.entrySet()) {
+                JSONObject valueObj = (JSONObject) entry.getValue();
+                String key = entry.getKey();
+                if (StringUtils.isNotBlank(key)) {
+                    JSONArray actualValueArray = valueObj.getJSONArray("actualValueList");
+                    if (CollectionUtils.isNotEmpty(actualValueArray)) {
+                        List<String> actualValueList = actualValueArray.toJavaList(String.class);
+                        tbody.put(key, String.join(",", actualValueList));
+                    }
+                }
+            }
+        }
+        JSONObject relEntityData = ciEntity.getRelEntityData();
+        if (MapUtils.isNotEmpty(relEntityData)) {
+            for (Map.Entry<String, Object> entry : relEntityData.entrySet()) {
+                JSONObject relObj = (JSONObject) entry.getValue();
+                String key = entry.getKey();
+                if (StringUtils.isNotBlank(key)) {
+                    JSONArray valueArray = relObj.getJSONArray("valueList");
+                    if (CollectionUtils.isNotEmpty(valueArray)) {
+                        List<String> ciEntityNameList = new ArrayList<>();
+                        for (int j = 0; j < valueArray.size(); j++) {
+                            JSONObject valueObj = valueArray.getJSONObject(j);
+                            String ciEntityName = valueObj.getString("ciEntityName");
+                            if (StringUtils.isNotBlank(ciEntityName)) {
+                                ciEntityNameList.add(ciEntityName);
+                            }
+                        }
+                        tbody.put(key, String.join(",", ciEntityNameList));
+                    }
+                }
+            }
+        }
+        return tbody;
+    }
 
 }
