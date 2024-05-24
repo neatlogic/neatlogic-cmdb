@@ -56,7 +56,7 @@ public class SearchCiEntityCountApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "keyword", type = ApiParamType.STRING, isRequired = true, desc = "关键字")})
     @Output({@Param(name = "ciList", type = ApiParamType.JSONARRAY, desc = "模型列表"), @Param(name = "wordList", type = ApiParamType.JSONARRAY, desc = "分词结果")})
-    @Description(desc = "根据关键字搜索配置项数量接口")
+    @Description(desc = "根据关键字搜索配置项数量")
     @Override
     public Object myDoService(JSONObject jsonObj) {
         Set<String> wordSet = FullTextIndexUtil.sliceKeyword(jsonObj.getString("keyword"));
