@@ -111,6 +111,26 @@ public class NumberValueHandler implements IAttrValueHandler {
         return actualValueList;
     }
 
+    /**
+     * 将值转换成显示的形式
+     *
+     * @param valueList 数据库的数据
+     * @return 用于显示数据
+     */
+    @Override
+    public void transferValueListToDisplay(AttrVo attrVo, JSONArray valueList) {
+        if (CollectionUtils.isNotEmpty(valueList)) {
+            DecimalFormat df = new DecimalFormat("0.####");
+            for (int i = 0; i < valueList.size(); i++) {
+                try {
+                    valueList.set(i, df.parse(valueList.getString(i)));
+                } catch (Exception ignored) {
+
+                }
+            }
+        }
+    }
+
     @Override
     public boolean valid(AttrVo attrVo, JSONArray valueList) {
         if (CollectionUtils.isNotEmpty(valueList)) {

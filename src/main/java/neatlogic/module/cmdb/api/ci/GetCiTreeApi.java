@@ -89,7 +89,7 @@ public class GetCiTreeApi extends PrivateApiComponentBase {
         for (CiVo ciVo : ciList) {
             JSONObject ciObj = new JSONObject();
             ciObj.put("id", ciVo.getId());
-            ciObj.put("parentCiId", ciVo.getParentCiId());
+            ciObj.put("parentCiId", ciVo.getParentCiId(true));
             ciObj.put("icon", ciVo.getIcon());
             ciObj.put("name", ciVo.getName());
             ciObj.put("label", ciVo.getLabel());
