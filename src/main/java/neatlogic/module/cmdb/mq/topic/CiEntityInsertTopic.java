@@ -80,6 +80,9 @@ public class CiEntityInsertTopic extends TopicBase<CiEntityTransactionVo> {
 
     @Override
     protected JSONObject generateTopicContent(TopicVo topicVo, CiEntityTransactionVo content) {
+        if(topicVo == null){
+            return null;
+        }
         if (topicVo.getConfig() == null) {
             return null;
         }
