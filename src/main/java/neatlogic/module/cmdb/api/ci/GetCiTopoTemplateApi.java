@@ -96,6 +96,8 @@ public class GetCiTopoTemplateApi extends PrivateApiComponentBase {
             relObj.put("children", new JSONArray());
             relObj.put("loading", false);
             relObj.put("selected", false);
+            relObj.put("nodeKey", relVo.getId().toString());
+            relObj.put("relObj", relVo.getId());
             relObj.put("excludeCiIdList", parentObj.get("excludeCiIdList") != null ? JSON.parseArray(parentObj.getJSONArray("excludeCiIdList").toString()) : new JSONArray());
             relObj.put("path", parentObj.get("path") != null ? JSON.parseArray(parentObj.getJSONArray("path").toString()) : new JSONArray());
             if (parentObj.get("ciId") != null) {
@@ -120,6 +122,7 @@ public class GetCiTopoTemplateApi extends PrivateApiComponentBase {
             }
             JSONObject relPathObj = new JSONObject();
             relPathObj.put("relId", relVo.getId());
+            relPathObj.put("nodeKey", relVo.getId().toString());
             relPathObj.put("direction", relVo.getDirection());
             if (relVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
                 relPathObj.put("relName", relVo.getToName());
