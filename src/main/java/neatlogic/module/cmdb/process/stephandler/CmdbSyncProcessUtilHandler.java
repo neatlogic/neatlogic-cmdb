@@ -61,12 +61,12 @@ public class CmdbSyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
     }
 
     @Override
-    public Object getHandlerStepInfo(ProcessTaskStepVo currentProcessTaskStepVo) {
-        return getHandlerStepInitInfo(currentProcessTaskStepVo);
+    public Object getStartStepInfo(ProcessTaskStepVo currentProcessTaskStepVo) {
+        return getNonStartStepInfo(currentProcessTaskStepVo);
     }
 
     @Override
-    public Object getHandlerStepInitInfo(ProcessTaskStepVo currentProcessTaskStepVo) {
+    public Object getNonStartStepInfo(ProcessTaskStepVo currentProcessTaskStepVo) {
         IProcessTaskStepDataCrossoverMapper processTaskStepDataCrossoverMapper = CrossoverServiceFactory.getApi(IProcessTaskStepDataCrossoverMapper.class);
         JSONObject resultObj = new JSONObject();
         /* 事务审计列表 **/

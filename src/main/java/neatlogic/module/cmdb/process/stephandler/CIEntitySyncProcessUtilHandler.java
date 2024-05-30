@@ -34,12 +34,12 @@ public class CIEntitySyncProcessUtilHandler extends ProcessStepInternalHandlerBa
     }
 
     @Override
-    public Object getHandlerStepInfo(ProcessTaskStepVo currentProcessTaskStepVo) {
+    public Object getStartStepInfo(ProcessTaskStepVo currentProcessTaskStepVo) {
         return null;
     }
 
     @Override
-    public Object getHandlerStepInitInfo(ProcessTaskStepVo currentProcessTaskStepVo) {
+    public Object getNonStartStepInfo(ProcessTaskStepVo currentProcessTaskStepVo) {
         return null;
     }
 
