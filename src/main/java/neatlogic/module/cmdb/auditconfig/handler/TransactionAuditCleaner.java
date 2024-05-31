@@ -38,9 +38,11 @@ public class TransactionAuditCleaner extends AuditCleanerBase {
 
     @Override
     protected void myClean(int dayBefore) {
-        transactionMapper.deleteTransactionByDayBefore(dayBefore);
-        databaseFragmentMapper.rebuildTable(TenantContext.get().getDbName(), "cmdb_transaction");
-        databaseFragmentMapper.rebuildTable(TenantContext.get().getDbName(), "cmdb_cientity_transaction");
-        databaseFragmentMapper.rebuildTable(TenantContext.get().getDbName(), "cmdb_transactiongroup");
+        if (dayBefore > 0) {
+            transactionMapper.deleteTransactionByDayBefore(dayBefore);
+            databaseFragmentMapper.rebuildTable(TenantContext.get().getDbName(), "cmdb_transaction");
+            databaseFragmentMapper.rebuildTable(TenantContext.get().getDbName(), "cmdb_cientity_transaction");
+            databaseFragmentMapper.rebuildTable(TenantContext.get().getDbName(), "cmdb_transactiongroup");
+        }
     }
 }
