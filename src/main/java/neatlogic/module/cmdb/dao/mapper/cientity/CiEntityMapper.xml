@@ -565,16 +565,42 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     </sql>
 
     <sql id="ciEntityJoinLiteSql">
-        <!--这个SQL给searchCiEntityId和searchCiEntityIdCount专用，因为这两个sql不需要关注返回什么属性-->
-        <foreach collection="ciList" item="ci">
+        <!--这个SQL给searchCiEntityId和searchCiEntityIdCount专用，因为这两个sql不需要关注返回什么属性
+        为了提高性能，除了最后一张表必须要join，其他表需要根据条件是否存在再决定是否join
+        -->
+        <foreach collection="ciList" item="ci" index="index">
             <choose>
+                <when test="index == ciList.size() - 1">
+                    <choose>
+                        <when test="ci.isVirtual == 0">
+                            JOIN ${ci.ciTableName} ON `ci_base`.id = ${ci.ciTableName}.cientity_id
+                        </when>
+                        <otherwise>
+                            JOIN ${ci.ciTableName} ON `ci_base`.id = ${ci.ciTableName}.id
+                        </otherwise>
+                    </choose>
+                </when>
+                <otherwise>
+                    <if test="attrFilterList != null and attrFilterList.size() > 0 and @neatlogic.framework.cmdb.dao.ognl.IsCiExistsInFilter@isExists(ci, attrFilterList)">
+                        <choose>
+                            <when test="ci.isVirtual == 0">
+                                JOIN ${ci.ciTableName} ON `ci_base`.id = ${ci.ciTableName}.cientity_id
+                            </when>
+                            <otherwise>
+                                JOIN ${ci.ciTableName} ON `ci_base`.id = ${ci.ciTableName}.id
+                            </otherwise>
+                        </choose>
+                    </if>
+                </otherwise>
+            </choose>
+            <!--<choose>
                 <when test="ci.isVirtual == 0">
                     JOIN ${ci.ciTableName} ON `ci_base`.id = ${ci.ciTableName}.cientity_id
                 </when>
                 <otherwise>
                     JOIN ${ci.ciTableName} ON `ci_base`.id = ${ci.ciTableName}.id
                 </otherwise>
-            </choose>
+            </choose>-->
         </foreach>
         <foreach collection="attrList" item="attr">
             <if test="attr.needTargetCi == true and @neatlogic.framework.cmdb.dao.ognl.IsAttrExistsInFilter@isExists(attr, attrFilterList)">
@@ -1159,6 +1185,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             </if>
         </where>
     </sql>
+
 
     <sql id="ciEntityDriverSql">
         <choose>
