@@ -140,7 +140,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 #{tagId}
             </foreach>
         </if>
-        <if test="batchSearchList != null and batchSearchList.size() > 0 and searchField != null and searchField != ''">
+        <!--<if test="batchSearchList != null and batchSearchList.size() > 0 and searchField != null and searchField != ''">
             AND
             <if test="searchField == 'name'">
                 <foreach collection="batchSearchList" item="item" open="(" separator=" OR " close=")">
@@ -152,7 +152,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                     a.`ip` LIKE #{item}
                 </foreach>
             </if>
-        </if>
+        </if>-->
         <if test="inspectJobPhaseNodeStatusList !=null and inspectJobPhaseNodeStatusList.size() > 0">
             AND ajpn.status in
             <foreach collection="inspectJobPhaseNodeStatusList" item="status" open="(" close=")" separator=",">
@@ -181,8 +181,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 </otherwise>
             </choose>
         </if>
-        WHERE a.`name` LIKE CONCAT('%', #{keyword}, '%')
-        <include refid="resource_ipobject_where"/>
+        <if test="keywordList != null and keywordList.size() > 0">
+            JOIN fulltextindex_field_cmdb ffc ON ffc.target_id = a.id AND ffc.target_field = #{nameFieldAttrId}
+            JOIN fulltextindex_word fw ON ffc.word_id = fw.id
+            AND (fw.word IN
+            <foreach collection="keywordList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+            <!-- OR `a`.`name` LIKE CONCAT('%',#{keyword},'%') -->
+            )
+        </if>
+        <where>
+            <include refid="resource_ipobject_where"/>
+        </where>
     </select>
 
     <select id="getResourceCountByIpKeyword"
@@ -205,8 +216,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 </otherwise>
             </choose>
         </if>
-        WHERE a.`ip` LIKE CONCAT('%', #{keyword}, '%')
-        <include refid="resource_ipobject_where"/>
+        <if test="keywordList != null and keywordList.size() > 0">
+            JOIN fulltextindex_field_cmdb ffc ON ffc.target_id = a.id AND ffc.target_field = #{ipFieldAttrId}
+            JOIN fulltextindex_word fw ON ffc.word_id = fw.id
+            AND (fw.word IN
+            <foreach collection="keywordList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+            <!-- OR `a`.`ip` LIKE CONCAT('%',#{keyword},'%') -->
+            )
+        </if>
+        <where>
+            <include refid="resource_ipobject_where"/>
+        </where>
     </select>
 
     <select id="getResourceCount" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
@@ -232,10 +254,36 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 </otherwise>
             </choose>
         </if>
+        <if test="keywordList != null and keywordList.size() > 0">
+            JOIN fulltextindex_field_cmdb ffc ON ffc.target_id = a.id AND ffc.target_field IN (#{nameFieldAttrId}, #{ipFieldAttrId})
+            JOIN fulltextindex_word fw ON ffc.word_id = fw.id
+            AND (fw.word IN
+            <foreach collection="keywordList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+            )
+        </if>
+        <if test="batchSearchList != null and batchSearchList.size() > 0 and searchField != null and searchField != ''">
+            JOIN fulltextindex_field_cmdb ffc2 ON ffc2.target_id = a.id
+            <choose>
+                <when test="searchField == 'name'">
+                    AND ffc2.target_field = #{nameFieldAttrId}
+                </when>
+                <otherwise>
+                    AND ffc2.target_field = #{ipFieldAttrId}
+                </otherwise>
+            </choose>
+            JOIN fulltextindex_word fw2 ON ffc2.word_id = fw2.id
+            AND (fw2.word IN
+            <foreach collection="batchSearchList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+            )
+        </if>
         <where>
-            <if test="keyword != null and keyword != ''">
+            <!--<if test="keyword != null and keyword != ''">
                 AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%'))
-            </if>
+            </if>-->
             <include refid="resource_ipobject_where"/>
         </where>
     </select>
@@ -264,10 +312,36 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 </otherwise>
             </choose>
         </if>
+        <if test="keywordList != null and keywordList.size() > 0">
+            JOIN fulltextindex_field_cmdb ffc ON ffc.target_id = a.id AND ffc.target_field IN (#{nameFieldAttrId}, #{ipFieldAttrId})
+            JOIN fulltextindex_word fw ON ffc.word_id = fw.id
+            AND (fw.word IN
+            <foreach collection="keywordList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+            )
+        </if>
+        <if test="batchSearchList != null and batchSearchList.size() > 0 and searchField != null and searchField != ''">
+            JOIN fulltextindex_field_cmdb ffc2 ON ffc2.target_id = a.id
+            <choose>
+                <when test="searchField == 'name'">
+                    AND ffc2.target_field = #{nameFieldAttrId}
+                </when>
+                <otherwise>
+                    AND ffc2.target_field = #{ipFieldAttrId}
+                </otherwise>
+            </choose>
+            JOIN fulltextindex_word fw2 ON ffc2.word_id = fw2.id
+            AND (fw2.word IN
+            <foreach collection="batchSearchList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+            )
+        </if>
         <where>
-            <if test="keyword != null and keyword != ''">
+            <!--<if test="keyword != null and keyword != ''">
                 AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%'))
-            </if>
+            </if>-->
             <include refid="resource_ipobject_where"/>
         </where>
         <choose>
