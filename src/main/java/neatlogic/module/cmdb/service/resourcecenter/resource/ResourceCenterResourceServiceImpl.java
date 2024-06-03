@@ -45,6 +45,7 @@ import neatlogic.framework.config.ConfigManager;
 import neatlogic.framework.dao.mapper.DataBaseViewInfoMapper;
 import neatlogic.framework.dao.mapper.SchemaMapper;
 import neatlogic.framework.dto.DataBaseViewInfoVo;
+import neatlogic.framework.fulltextindex.utils.FullTextIndexUtil;
 import neatlogic.framework.store.mysql.DatabaseVendor;
 import neatlogic.framework.store.mysql.DatasourceManager;
 import neatlogic.framework.transaction.core.EscapeTransactionJob;
@@ -210,22 +211,27 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
     public void handleBatchSearchList(ResourceSearchVo searchVo) {
         List<String> batchSearchList = searchVo.getBatchSearchList();
         if (CollectionUtils.isNotEmpty(batchSearchList)) {
+            List<String> keywordList = new ArrayList<>();
             if (Objects.equals(searchVo.getSearchField(), "name")) {
-                List<String> list = new ArrayList<>();
+//                List<String> list = new ArrayList<>();
                 for (String keyword : batchSearchList) {
-                    list.add("%" + keyword + "%");
+//                    list.add("%" + keyword + "%");
+                    keywordList.addAll(FullTextIndexUtil.sliceKeyword(keyword));
                 }
-                searchVo.setBatchSearchList(list);
+//                searchVo.setBatchSearchList(list);
             } else if (Objects.equals(searchVo.getSearchField(), "ip")) {
-                List<String> list = new ArrayList<>();
+//                List<String> list = new ArrayList<>();
                 for (String keyword : batchSearchList) {
-                    if (keyword.contains("*")) {
-                        keyword = keyword.replace('*', '%');
-                    }
-                    list.add(keyword);
+//                    if (keyword.contains("*")) {
+//                        keyword = keyword.replace('*', '%');
+//                    }
+//                    list.add(keyword);
+                    keywordList.addAll(FullTextIndexUtil.sliceKeyword(keyword));
                 }
-                searchVo.setBatchSearchList(list);
+//                searchVo.setBatchSearchList(list);
             }
+//            searchVo.setKeyword(String.join(" ", keywordList));
+            searchVo.setBatchSearchList(keywordList);
         }
     }
 
