@@ -26,7 +26,6 @@ import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityConfigVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityFieldMappingVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
-import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceInfo;
 import neatlogic.framework.cmdb.enums.group.GroupType;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.dto.BasePageVo;
@@ -80,7 +79,7 @@ public class ResourceListApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "查询资源中心数据列表";
+        return "nmcarr.resourcelistapi.getname";
     }
 
     @Override
@@ -94,32 +93,31 @@ public class ResourceListApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "模糊搜索"),
-            @Param(name = "typeId", type = ApiParamType.LONG, desc = "类型id"),
-            @Param(name = "protocolIdList", type = ApiParamType.JSONARRAY, desc = "协议id列表"),
-            @Param(name = "stateIdList", type = ApiParamType.JSONARRAY, desc = "状态id列表"),
-            @Param(name = "vendorIdList", type = ApiParamType.JSONARRAY, desc = "厂商id列表"),
-            @Param(name = "envIdList", type = ApiParamType.JSONARRAY, desc = "环境id列表"),
-            @Param(name = "appSystemIdList", type = ApiParamType.JSONARRAY, desc = "应用系统id列表"),
-            @Param(name = "appModuleIdList", type = ApiParamType.JSONARRAY, desc = "应用模块id列表"),
-            @Param(name = "typeIdList", type = ApiParamType.JSONARRAY, desc = "资源类型id列表"),
-            @Param(name = "tagIdList", type = ApiParamType.JSONARRAY, desc = "标签id列表"),
-            @Param(name = "inspectStatusList", type = ApiParamType.JSONARRAY, desc = "巡检状态列表"),
-            @Param(name = "searchField", type = ApiParamType.STRING, desc = "批量搜索字段"),
-            @Param(name = "batchSearchList", type = ApiParamType.JSONARRAY, desc = "批量搜索值"),
-            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "用于回显的资源ID列表"),
-            @Param(name = "cmdbGroupType", type = ApiParamType.STRING, desc = "通过团体过滤权限"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
-            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true")
+            @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "common.keyword"),
+            @Param(name = "typeId", type = ApiParamType.LONG, desc = "common.typeid"),
+            @Param(name = "protocolIdList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.protocolidlist"),
+            @Param(name = "stateIdList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.stateidlist"),
+            @Param(name = "vendorIdList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.vendoridlist"),
+            @Param(name = "envIdList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.envidlist"),
+            @Param(name = "appSystemIdList", type = ApiParamType.JSONARRAY, desc = "term.appsystemidlist"),
+            @Param(name = "appModuleIdList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.appmoduleidlist"),
+            @Param(name = "typeIdList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.typeidlist"),
+            @Param(name = "tagIdList", type = ApiParamType.JSONARRAY, desc = "common.tagidlist"),
+            @Param(name = "inspectStatusList", type = ApiParamType.JSONARRAY, desc = "term.inspect.inspectstatuslist"),
+            @Param(name = "searchField", type = ApiParamType.STRING, desc = "term.cmdb.searchfield"),
+            @Param(name = "batchSearchList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.batchsearchlist"),
+            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "common.defaultvalue"),
+            @Param(name = "cmdbGroupType", type = ApiParamType.STRING, desc = "term.cmdb.cmdbgrouptype"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize"),
+            @Param(name = "rowNum", type = ApiParamType.INTEGER, desc = "common.rownum"),
+            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "common.isneedpage")
     })
     @Output({
             @Param(explode = BasePageVo.class),
-            @Param(name = "tbodyList", explode = ResourceVo[].class, desc = "数据列表"),
-            @Param(name = "errorList", explode = ResourceEntityVo[].class, desc = "数据初始化配置异常信息列表"),
-            @Param(name = "unavailableResourceInfoList", explode = ResourceInfo[].class, desc = "数据初始化配置异常信息列表")
+            @Param(name = "tbodyList", explode = ResourceVo[].class, desc = "common.tbodylist")
     })
-    @Description(desc = "查询资源中心数据列表")
+    @Description(desc = "nmcarr.resourcelistapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         List<ResourceVo> resourceList = new ArrayList<>();
@@ -168,11 +166,18 @@ public class ResourceListApi extends PrivateApiComponentBase {
                 }
             }
         }
-        int rowNum = resourceMapper.getResourceCount(searchVo);
-        if (rowNum == 0) {
-            return TableResultUtil.getResult(resourceList, searchVo);
+        if (Objects.equals(searchVo.getRowNum(), 0)) {
+            int rowNum = 0;
+            if (noFilterCondition(searchVo)) {
+                rowNum = resourceMapper.getAllResourceCount(searchVo);
+            } else {
+                rowNum = resourceMapper.getResourceCount(searchVo);
+            }
+            if (rowNum == 0) {
+                return TableResultUtil.getResult(resourceList, searchVo);
+            }
+            searchVo.setRowNum(rowNum);
         }
-        searchVo.setRowNum(rowNum);
         if (StringUtils.isNotBlank(searchVo.getKeyword())) {
             int ipKeywordCount = resourceMapper.getResourceCountByIpKeyword(searchVo);
             if (ipKeywordCount > 0) {
@@ -239,6 +244,51 @@ public class ResourceListApi extends PrivateApiComponentBase {
             }
         }
         return TableResultUtil.getResult(resultList, searchVo);
+    }
+
+    /**
+     * 判断是否有过滤条件
+     * @param searchVo
+     * @return
+     */
+    private boolean noFilterCondition(ResourceSearchVo searchVo) {
+        if (CollectionUtils.isNotEmpty(searchVo.getStateIdList())) {
+            return false;
+        }
+        if (CollectionUtils.isNotEmpty(searchVo.getVendorIdList())) {
+            return false;
+        }
+        if (CollectionUtils.isNotEmpty(searchVo.getEnvIdList())) {
+            return false;
+        }
+        if (searchVo.getExistNoEnv()) {
+            return false;
+        }
+        if (CollectionUtils.isNotEmpty(searchVo.getAppSystemIdList())) {
+            return false;
+        }
+        if (CollectionUtils.isNotEmpty(searchVo.getAppModuleIdList())) {
+            return false;
+        }
+        if (CollectionUtils.isNotEmpty(searchVo.getDefaultValue())) {
+            return false;
+        }
+        if (CollectionUtils.isNotEmpty(searchVo.getIdList())) {
+            return false;
+        }
+        if (CollectionUtils.isNotEmpty(searchVo.getInspectStatusList())) {
+            return false;
+        }
+        if (CollectionUtils.isNotEmpty(searchVo.getProtocolIdList())) {
+            return false;
+        }
+        if (CollectionUtils.isNotEmpty(searchVo.getTagIdList())) {
+            return false;
+        }
+        if (CollectionUtils.isNotEmpty(searchVo.getInspectJobPhaseNodeStatusList())) {
+            return false;
+        }
+        return true;
     }
 
 }

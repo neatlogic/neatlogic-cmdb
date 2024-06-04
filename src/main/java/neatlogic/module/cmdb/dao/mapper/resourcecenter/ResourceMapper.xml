@@ -166,9 +166,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             resultType="int">
         SELECT COUNT(DISTINCT a.`id`)
         FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
-        LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
-        LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
-        LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+        <if test="protocolIdList != null and protocolIdList.size() > 0">
+            LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
+            LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
+        </if>
+        <if test="tagIdList != null and tagIdList.size() > 0">
+            LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+        </if>
         <if test="isHasAuth == false">
             LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
             LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
@@ -201,9 +205,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             resultType="int">
         SELECT COUNT(DISTINCT a.`id`)
         FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
-        LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
-        LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
-        LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+        <if test="protocolIdList != null and protocolIdList.size() > 0">
+            LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
+            LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
+        </if>
+        <if test="tagIdList != null and tagIdList.size() > 0">
+            LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+        </if>
         <if test="isHasAuth == false">
             LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
             LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
@@ -235,9 +243,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             resultType="int">
         SELECT COUNT(DISTINCT a.`id`)
         FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
-        LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
-        LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
-        LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+        <if test="protocolIdList != null and protocolIdList.size() > 0">
+            LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
+            LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
+        </if>
+        <if test="tagIdList != null and tagIdList.size() > 0">
+            LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+        </if>
         <if test="inspectJobPhaseNodeStatusList !=null and inspectJobPhaseNodeStatusList.size() > 0">
             left join autoexec_job_resource_inspect ajri on ajri.resource_id=a.id
             left join autoexec_job_phase_node ajpn on ajpn.job_phase_id =ajri.phase_id AND ajpn.resource_id = a.id
@@ -288,14 +300,109 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </where>
     </select>
 
+    <select id="getAllResourceCount" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
+            resultType="int">
+        SELECT
+        <if test="isHasAuth == true">
+            COUNT(1)
+        </if>
+        <if test="isHasAuth == false">
+            COUNT(DISTINCT a.`id`)
+        </if>
+        FROM `cmdb_cientity` a
+        LEFT JOIN `cmdb_cientity_expiredtime` `ex` ON `ex`.`cientity_id` = `a`.`id`
+        <if test="isHasAuth == false">
+            LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
+            LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
+            <choose>
+                <when test="cmdbGroupType == 'autoexec'">
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
+                </when>
+                <otherwise>
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+                </otherwise>
+            </choose>
+        </if>
+        WHERE (`ex`.`cientity_id` IS NULL OR `ex`.`expired_time` >= NOW())
+        <if test="typeIdList != null and typeIdList.size() > 0">
+            <if test="isHasAuth == true">
+                AND a.`ci_id` IN
+                <foreach collection="typeIdList" item="typeId" open="(" separator="," close=")">
+                    #{typeId}
+                </foreach>
+            </if>
+            <if test="isHasAuth == false">
+                AND (
+                <choose>
+                    <when test="authedTypeIdList != null and authedTypeIdList.size() >0">
+                        a.`ci_id` IN
+                        <foreach collection="authedTypeIdList" item="authedTypeId" open="(" separator="," close=")">
+                            #{authedTypeId}
+                        </foreach>
+                    </when>
+                    <otherwise>
+                        1 = 0
+                    </otherwise>
+                </choose>
+                or (
+                cg.id  is not null and
+                a.`ci_id` IN
+                <foreach collection="typeIdList" item="typeId" open="(" separator="," close=")">
+                    #{typeId}
+                </foreach>
+                and
+                ((cga.auth_type = 'common' AND cga.auth_uuid = 'alluser')
+                <if test="authenticationInfo.userUuid != null and authenticationInfo.userUuid != ''">
+                    OR (
+                    cga.auth_type = 'user'
+                    AND
+                    cga.auth_uuid = #{authenticationInfo.userUuid}
+                    )
+                </if>
+                <if test="authenticationInfo.teamUuidList != null and authenticationInfo.teamUuidList.size() > 0">
+                    OR (
+                    cga.auth_type = 'team'
+                    AND
+                    cga.auth_uuid IN
+                    <foreach collection="authenticationInfo.teamUuidList" item="item" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                    )
+                </if>
+                <if test="authenticationInfo.roleUuidList != null and authenticationInfo.roleUuidList.size() > 0">
+                    OR (
+                    cga.auth_type = 'role'
+                    AND
+                    cga.auth_uuid IN
+                    <foreach collection="authenticationInfo.roleUuidList" item="item" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>)
+                </if>
+                )
+                )
+                )
+            </if>
+        </if>
+    </select>
+
     <select id="getResourceIdList" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultType="java.lang.Long">
         SELECT m.`id` FROM (
-        SELECT DISTINCT a.`id`, a.`name`, a.`ip`
+        SELECT DISTINCT a.`id`
+        <if test="isNameFieldSort != null and isNameFieldSort == 1">
+            , a.`name`
+        </if>
+        <if test="isIpFieldSort != null and isIpFieldSort == 1">
+            , a.`ip`
+        </if>
         FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
-        LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
-        LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
-        LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+        <if test="protocolIdList != null and protocolIdList.size() > 0">
+            LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
+            LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
+        </if>
+        <if test="tagIdList != null and tagIdList.size() > 0">
+            LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+        </if>
         <if test="inspectJobPhaseNodeStatusList !=null and inspectJobPhaseNodeStatusList.size() > 0">
             left join autoexec_job_resource_inspect ajri on ajri.resource_id=a.id
             left join autoexec_job_phase_node ajpn on ajpn.job_phase_id =ajri.phase_id AND ajpn.resource_id = a.id
