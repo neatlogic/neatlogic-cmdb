@@ -111,6 +111,7 @@ public class ResourceListApi extends PrivateApiComponentBase {
             @Param(name = "cmdbGroupType", type = ApiParamType.STRING, desc = "通过团体过滤权限"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
+            @Param(name = "rowNum", type = ApiParamType.INTEGER, desc = "总条数"),
             @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true")
     })
     @Output({
@@ -168,11 +169,18 @@ public class ResourceListApi extends PrivateApiComponentBase {
                 }
             }
         }
-        int rowNum = resourceMapper.getResourceCount(searchVo);
-        if (rowNum == 0) {
-            return TableResultUtil.getResult(resourceList, searchVo);
+        if (Objects.equals(searchVo.getRowNum(), 0)) {
+            int rowNum = 0;
+            if (noFilterCondition(searchVo)) {
+                rowNum = resourceMapper.getAllResourceCount(searchVo);
+            } else {
+                rowNum = resourceMapper.getResourceCount(searchVo);
+            }
+            if (rowNum == 0) {
+                return TableResultUtil.getResult(resourceList, searchVo);
+            }
+            searchVo.setRowNum(rowNum);
         }
-        searchVo.setRowNum(rowNum);
         if (StringUtils.isNotBlank(searchVo.getKeyword())) {
             int ipKeywordCount = resourceMapper.getResourceCountByIpKeyword(searchVo);
             if (ipKeywordCount > 0) {
@@ -239,6 +247,46 @@ public class ResourceListApi extends PrivateApiComponentBase {
             }
         }
         return TableResultUtil.getResult(resultList, searchVo);
+    }
+
+    private boolean noFilterCondition(ResourceSearchVo searchVo) {
+        if (CollectionUtils.isNotEmpty(searchVo.getStateIdList())) {
+            return false;
+        }
+        if (CollectionUtils.isNotEmpty(searchVo.getVendorIdList())) {
+            return false;
+        }
+        if (CollectionUtils.isNotEmpty(searchVo.getEnvIdList())) {
+            return false;
+        }
+        if (searchVo.getExistNoEnv()) {
+            return false;
+        }
+        if (CollectionUtils.isNotEmpty(searchVo.getAppSystemIdList())) {
+            return false;
+        }
+        if (CollectionUtils.isNotEmpty(searchVo.getAppModuleIdList())) {
+            return false;
+        }
+        if (CollectionUtils.isNotEmpty(searchVo.getDefaultValue())) {
+            return false;
+        }
+        if (CollectionUtils.isNotEmpty(searchVo.getIdList())) {
+            return false;
+        }
+        if (CollectionUtils.isNotEmpty(searchVo.getInspectStatusList())) {
+            return false;
+        }
+        if (CollectionUtils.isNotEmpty(searchVo.getProtocolIdList())) {
+            return false;
+        }
+        if (CollectionUtils.isNotEmpty(searchVo.getTagIdList())) {
+            return false;
+        }
+        if (CollectionUtils.isNotEmpty(searchVo.getInspectJobPhaseNodeStatusList())) {
+            return false;
+        }
+        return true;
     }
 
 }
