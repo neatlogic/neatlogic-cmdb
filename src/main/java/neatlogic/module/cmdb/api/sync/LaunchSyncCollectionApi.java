@@ -24,6 +24,8 @@ import neatlogic.framework.cmdb.dto.sync.ObjectVo;
 import neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo;
 import neatlogic.framework.cmdb.dto.sync.SyncConditionVo;
 import neatlogic.framework.cmdb.enums.sync.CollectMode;
+import neatlogic.framework.cmdb.exception.collection.CollectionObjectNotFoundException;
+import neatlogic.framework.cmdb.exception.sync.NoSyncToRunException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.exception.type.ParamNotExistsException;
 import neatlogic.framework.restful.annotation.*;
@@ -121,6 +123,8 @@ public class LaunchSyncCollectionApi extends PrivateApiComponentBase {
                         for (SyncCiCollectionVo syncCiCollection : syncCiCollectionList) {
                             pIdList.add(syncCiCollection.getId());
                         }
+                    } else {
+                        throw new CollectionObjectNotFoundException(category, type);
                     }
                 }
             }
@@ -149,6 +153,8 @@ public class LaunchSyncCollectionApi extends PrivateApiComponentBase {
                 syncCiCollectionList.get(0).setConditionList(cList);
             }
             CiSyncManager.doSync(syncCiCollectionList, batchTag, startTime);
+        } else {
+            throw new NoSyncToRunException();
         }
         return null;
     }
