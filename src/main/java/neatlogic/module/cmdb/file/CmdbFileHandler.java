@@ -16,24 +16,36 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 package neatlogic.module.cmdb.file;
 
 import com.alibaba.fastjson.JSONObject;
+import neatlogic.framework.cmdb.enums.group.GroupType;
 import neatlogic.framework.file.core.FileTypeHandlerBase;
 import neatlogic.framework.file.dto.FileVo;
 import neatlogic.module.cmdb.dao.mapper.batchimport.ImportMapper;
+import neatlogic.module.cmdb.service.ci.CiAuthChecker;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
 
 @Component
 public class CmdbFileHandler extends FileTypeHandlerBase {
-    @Autowired
+    @Resource
     private ImportMapper importMapper;
 
     @Override
     public boolean valid(String userUuid, FileVo fileVo, JSONObject jsonObj) {
-        if (fileVo != null && StringUtils.isNotBlank(userUuid)) {
-            return fileVo.getUserUuid().equals(userUuid);
+        Long ciEntityId = jsonObj.getLong("ciEntityId");
+        Long ciId = jsonObj.getLong("ciId");
+        if (ciEntityId == null || ciId == null) {
+            return false;
         }
-        return false;
+        boolean isValid = false;
+        if (fileVo != null && StringUtils.isNotBlank(userUuid)) {
+            isValid = fileVo.getUserUuid().equals(userUuid);
+        }
+        if (!isValid) {
+            isValid = CiAuthChecker.chain().checkCiEntityQueryPrivilege(ciId).checkCiEntityIsInGroup(ciEntityId, GroupType.READONLY, GroupType.MAINTAIN, GroupType.AUTOEXEC).check();
+        }
+        return isValid;
     }
 
     @Override
