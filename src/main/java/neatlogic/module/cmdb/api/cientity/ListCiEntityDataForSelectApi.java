@@ -107,7 +107,6 @@ public class ListCiEntityDataForSelectApi extends PrivateApiComponentBase {
             List<Long> attrIdList = new ArrayList<>();
             List<Long> relIdList = new ArrayList<>();
             List<String> valueList = null;
-            String expression = SearchExpression.LI.getExpression();
             String keyword = paramObj.getString("keyword");
             if(StringUtils.isNotBlank(keyword)) {
                 valueList = Collections.singletonList(keyword);
@@ -115,6 +114,10 @@ public class ListCiEntityDataForSelectApi extends PrivateApiComponentBase {
             JSONArray defaultValue = paramObj.getJSONArray("defaultValue");
             if(CollectionUtils.isNotEmpty(defaultValue)) {
                 valueList = defaultValue.toJavaList(String.class);
+            }
+            String expression = SearchExpression.LI.getExpression();
+            if(CollectionUtils.isNotEmpty(defaultValue)) {
+                expression = SearchExpression.EQ.getExpression();
             }
             boolean flag = true;
             switch (ciView.getType()) {
