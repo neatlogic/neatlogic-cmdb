@@ -160,9 +160,7 @@ public class CiSyncManager {
                         }
                     }
                 } else {
-                    if (logger.isInfoEnabled()) {
-                        logger.info("缓存命中，当前缓存大小：" + ciEntityCache.size());
-                    }
+                    logger.info("缓存命中，当前缓存大小：{}", ciEntityCache.size());
                 }
                 return ciEntityList;
             }
@@ -376,7 +374,7 @@ public class CiSyncManager {
                     throw new AttrNotFoundException(uniqueAttrId);
                 }
             }
-
+            logger.info("查询配置项过滤条件：{}", ciEntityConditionVo.getAttrFilterString());
             if (CollectionUtils.isNotEmpty(ciEntityConditionVo.getAttrFilterList())) {
                 CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
                 //searchCiEntityWithCache在查询不到配置项的情况下，会把输入条件放入cache中，用于避免新的配置项重复添加，因此需要和新配置项的id保持一致
@@ -713,6 +711,7 @@ public class CiSyncManager {
                         JSONArray tmpDataList = new JSONArray();
                         tmpDataList.add(singleDataObj);
                         JSONArray finalDataList = flattenJson(tmpDataList, fieldList, null);
+                        logger.info("开始处理单条数据，原始数据：{}，扁平化数据：{}", tmpDataList, finalDataList);
                         for (int i = 0; i < finalDataList.size(); i++) {
                             JSONObject dataObj = finalDataList.getJSONObject(i);
                             //用于存放一样的配置项事务，当关联到相同的配置项时只会增加一次
@@ -831,6 +830,7 @@ public class CiSyncManager {
                                 int batchSize = 100;//游标每次读取100条数据
                                 AtomicInteger count = new AtomicInteger(0);
                                 int counter = 0;
+                                logger.info("从mongodb查询需同步数据，集合名称：{}，过滤条件：{}", collectionVo.getCollection(), query.getQueryObject());
                                 try (MongoCursor<Document> cursor = mongoTemplate.getCollection(collectionVo.getCollection()).find(query.getQueryObject()).noCursorTimeout(true).batchSize(batchSize).cursor()) {
                                     List<JSONObject> dataList = new ArrayList<>();
                                     while (cursor.hasNext()) {
@@ -893,15 +893,11 @@ public class CiSyncManager {
                 BatchRunner.State state = batchRunner.execute(dataList, 5, data -> {
                     int tmpCount = count.addAndGet(1);
                     long localStartTime = 0L;
-                    if (logger.isInfoEnabled()) {
-                        logger.info("开始处理第" + tmpCount + "条数据");
-                        localStartTime = System.currentTimeMillis();
-                        logger.info("mongodb游标数据读取耗时：" + (System.currentTimeMillis() - localStartTime) + "ms");
-                    }
 
                     JSONArray tmpDataList = new JSONArray();
                     tmpDataList.add(data);
                     JSONArray finalDataList = flattenJson(tmpDataList, fieldList, null);
+                    logger.info("开始处理第{}条数据，原始数据：{}，扁平化数据：{}", tmpCount, tmpDataList, finalDataList);
                     for (int i = 0; i < finalDataList.size(); i++) {
                         JSONObject dataObj = finalDataList.getJSONObject(i);
                         //需要严格按照写入的先后顺序生成list，否则后期写入关系数据时，会因为被引用配置项还不存在而导致清除掉关系。
@@ -920,7 +916,7 @@ public class CiSyncManager {
                                 ciEntityTransactionList.add(entry.getValue());
                             }
                             if (logger.isInfoEnabled()) {
-                                logger.info("创建了" + ciEntityTransactionList.size() + "个事务，耗时：" + (System.currentTimeMillis() - localStartTime) + "ms");
+                                logger.info("为数据{}创建了{}个事务，耗时：{}ms", tmpCount, ciEntityTransactionList.size(), System.currentTimeMillis() - localStartTime);
                             }
 
                             if (logger.isInfoEnabled()) {
@@ -930,7 +926,7 @@ public class CiSyncManager {
                             //syncCiCollectionVo.getTransactionGroup().clearExclude();
                             ciEntityService.saveCiEntityWithoutTransaction(ciEntityTransactionList, syncCiCollectionVo.getTransactionGroup());
                             if (logger.isInfoEnabled()) {
-                                logger.info("处理了" + ciEntityTransactionList.size() + "个事务，耗时：" + (System.currentTimeMillis() - localStartTime) + "ms");
+                                logger.info("为数据{}处理了{}个事务，耗时：{}ms", tmpCount, ciEntityTransactionList.size(), System.currentTimeMillis() - localStartTime);
                             }
                         } catch (ApiRuntimeException ex) {
                             logger.warn(ex.getMessage(), ex);
@@ -940,9 +936,9 @@ public class CiSyncManager {
                             syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
                         }
                     }
-                    if (logger.isInfoEnabled()) {
-                        logger.info("第" + tmpCount + "条数据处理完成，耗时：" + (System.currentTimeMillis() - localStartTime) + "ms");
-                    }
+//                    if (logger.isInfoEnabled()) {
+//                        logger.info("第{}条数据处理完成，耗时：{}ms", tmpCount, System.currentTimeMillis() - localStartTime);
+//                    }
                 }, "SYNC-BATCH-HANDLER");
                 if (!state.isSucceed()) {
                     if (state.getException() != null) {
