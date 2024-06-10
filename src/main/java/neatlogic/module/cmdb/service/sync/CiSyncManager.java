@@ -830,13 +830,18 @@ public class CiSyncManager {
                                 int batchSize = 100;//游标每次读取100条数据
                                 AtomicInteger count = new AtomicInteger(0);
                                 int counter = 0;
-                                logger.info("从mongodb查询需同步数据，集合名称：{}，过滤条件：{}", collectionVo.getCollection(), query.getQueryObject());
+                                int sum = 0;
+                                if (logger.isInfoEnabled()) {
+                                    logger.info("从mongodb查询需同步数据，集合名称：{}，过滤条件：{}", collectionVo.getCollection(), query.getQueryObject());
+                                    logger.info("符合条件文档数量：{}", mongoTemplate.getCollection(collectionVo.getCollection()).countDocuments(query.getQueryObject()));
+                                }
                                 try (MongoCursor<Document> cursor = mongoTemplate.getCollection(collectionVo.getCollection()).find(query.getQueryObject()).noCursorTimeout(true).batchSize(batchSize).cursor()) {
                                     List<JSONObject> dataList = new ArrayList<>();
                                     while (cursor.hasNext()) {
                                         counter += 1;
+                                        sum += 1;
                                         String jsonStr = cursor.next().toJson();
-
+                                        logger.info("开始处理第{}个文档：{}", sum, jsonStr);
                                         if (StringUtils.isNotBlank(collectionVo.getDocroot())) {
                                             JSONArray objList = (JSONArray) JSONPath.read(jsonStr, "$." + collectionVo.getDocroot());
                                             for (int i = 0; i < objList.size(); i++) {
@@ -916,7 +921,7 @@ public class CiSyncManager {
                                 ciEntityTransactionList.add(entry.getValue());
                             }
                             if (logger.isInfoEnabled()) {
-                                logger.info("为数据{}创建了{}个事务，耗时：{}ms", tmpCount, ciEntityTransactionList.size(), System.currentTimeMillis() - localStartTime);
+                                logger.info("为第{}数据创建了{}个事务，耗时：{}ms", tmpCount, ciEntityTransactionList.size(), System.currentTimeMillis() - localStartTime);
                             }
 
                             if (logger.isInfoEnabled()) {
@@ -926,7 +931,7 @@ public class CiSyncManager {
                             //syncCiCollectionVo.getTransactionGroup().clearExclude();
                             ciEntityService.saveCiEntityWithoutTransaction(ciEntityTransactionList, syncCiCollectionVo.getTransactionGroup());
                             if (logger.isInfoEnabled()) {
-                                logger.info("为数据{}处理了{}个事务，耗时：{}ms", tmpCount, ciEntityTransactionList.size(), System.currentTimeMillis() - localStartTime);
+                                logger.info("为第{}数据处理了{}个事务，耗时：{}ms", tmpCount, ciEntityTransactionList.size(), System.currentTimeMillis() - localStartTime);
                             }
                         } catch (ApiRuntimeException ex) {
                             logger.warn(ex.getMessage(), ex);
