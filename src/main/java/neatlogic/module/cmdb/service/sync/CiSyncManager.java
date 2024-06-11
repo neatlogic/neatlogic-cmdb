@@ -844,6 +844,7 @@ public class CiSyncManager {
                                         logger.info("开始处理第{}个文档：{}", sum, jsonStr);
                                         if (StringUtils.isNotBlank(collectionVo.getDocroot())) {
                                             JSONArray objList = (JSONArray) JSONPath.read(jsonStr, "$." + collectionVo.getDocroot());
+                                            logger.info("从第{}个文档中提取 {} 位置的数据，得到{}条数据", sum, "$." + collectionVo.getDocroot(), objList.size());
                                             for (int i = 0; i < objList.size(); i++) {
                                                 dataList.add(objList.getJSONObject(i));
                                             }
