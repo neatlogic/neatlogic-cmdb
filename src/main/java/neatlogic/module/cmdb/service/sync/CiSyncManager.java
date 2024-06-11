@@ -160,7 +160,7 @@ public class CiSyncManager {
                         }
                     }
                 } else {
-                    logger.info("缓存命中，当前缓存大小：{}", ciEntityCache.size());
+                    logger.debug("缓存命中，当前缓存大小：{}", ciEntityCache.size());
                 }
                 return ciEntityList;
             }
@@ -374,7 +374,7 @@ public class CiSyncManager {
                     throw new AttrNotFoundException(uniqueAttrId);
                 }
             }
-            logger.info("查询配置项过滤条件：{}", ciEntityConditionVo.getAttrFilterString());
+            logger.debug("查询配置项过滤条件：{}", ciEntityConditionVo.getAttrFilterString());
             if (CollectionUtils.isNotEmpty(ciEntityConditionVo.getAttrFilterList())) {
                 CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
                 //searchCiEntityWithCache在查询不到配置项的情况下，会把输入条件放入cache中，用于避免新的配置项重复添加，因此需要和新配置项的id保持一致
@@ -831,6 +831,7 @@ public class CiSyncManager {
                                 AtomicInteger count = new AtomicInteger(0);
                                 int counter = 0;
                                 int sum = 0;
+                                int batchnum = 0;
                                 if (logger.isInfoEnabled()) {
                                     logger.info("从mongodb查询需同步数据，集合名称：{}，过滤条件：{}", collectionVo.getCollection(), query.getQueryObject());
                                     logger.info("符合条件文档数量：{}", mongoTemplate.getCollection(collectionVo.getCollection()).countDocuments(query.getQueryObject()));
@@ -855,6 +856,8 @@ public class CiSyncManager {
 
                                         //到达batchSize先处理一部分
                                         if (counter == batchSize) {
+                                            batchnum += 1;
+                                            logger.info("第{}批次，处理{}条数据", batchnum, dataList.size());
                                             dealWithDataBatch(syncCiCollectionVo, fieldList, dataList, count);
                                             dataList = new ArrayList<>();
                                             counter = 0;
@@ -862,6 +865,8 @@ public class CiSyncManager {
                                     }
                                     //处理剩余的数据
                                     if (CollectionUtils.isNotEmpty(dataList)) {
+                                        batchnum += 1;
+                                        logger.info("第{}批次，处理{}条数据", batchnum, dataList.size());
                                         dealWithDataBatch(syncCiCollectionVo, fieldList, dataList, count);
                                     }
                                     syncCiCollectionVo.getSyncAudit().setDataCount(count.get());
@@ -896,20 +901,23 @@ public class CiSyncManager {
         private void dealWithDataBatch(SyncCiCollectionVo syncCiCollectionVo, Set<String> fieldList, List<JSONObject> dataList, AtomicInteger count) {
             if (CollectionUtils.isNotEmpty(dataList)) {
                 BatchRunner<JSONObject> batchRunner = new BatchRunner<>();
-                BatchRunner.State state = batchRunner.execute(dataList, 5, data -> {
-                    int tmpCount = count.addAndGet(1);
+                BatchRunner.State state = batchRunner.execute(dataList, 5, (threadIndex, dataIndex, data) -> {
+                    count.addAndGet(1);
+                    //int tmpCount = count.addAndGet(1);
                     long localStartTime = 0L;
 
                     JSONArray tmpDataList = new JSONArray();
                     tmpDataList.add(data);
                     JSONArray finalDataList = flattenJson(tmpDataList, fieldList, null);
-                    logger.info("开始处理第{}条数据，原始数据：{}，扁平化数据：{}", tmpCount, tmpDataList, finalDataList);
+                    logger.info("线程{}处理第{}条数据，原始数据：{}，扁平化数据：{}", threadIndex + 1, dataIndex + 1, tmpDataList, finalDataList);
                     for (int i = 0; i < finalDataList.size(); i++) {
                         JSONObject dataObj = finalDataList.getJSONObject(i);
                         //需要严格按照写入的先后顺序生成list，否则后期写入关系数据时，会因为被引用配置项还不存在而导致清除掉关系。
                         Map<Integer, CiEntityTransactionVo> ciEntityTransactionVoMap = new LinkedHashMap<>();
 
                         try {
+                            long createTransactionTime = 0L;
+                            long saveTransactionTime = 0L;
                             if (logger.isInfoEnabled()) {
                                 localStartTime = System.currentTimeMillis();
                             }
@@ -922,17 +930,15 @@ public class CiSyncManager {
                                 ciEntityTransactionList.add(entry.getValue());
                             }
                             if (logger.isInfoEnabled()) {
-                                logger.info("为第{}数据创建了{}个事务，耗时：{}ms", tmpCount, ciEntityTransactionList.size(), System.currentTimeMillis() - localStartTime);
-                            }
-
-                            if (logger.isInfoEnabled()) {
+                                createTransactionTime = System.currentTimeMillis() - localStartTime;
                                 localStartTime = System.currentTimeMillis();
                             }
                             //清理豁免配置项列表，避免重复配置项无法更新
                             //syncCiCollectionVo.getTransactionGroup().clearExclude();
                             ciEntityService.saveCiEntityWithoutTransaction(ciEntityTransactionList, syncCiCollectionVo.getTransactionGroup());
                             if (logger.isInfoEnabled()) {
-                                logger.info("为第{}数据处理了{}个事务，耗时：{}ms", tmpCount, ciEntityTransactionList.size(), System.currentTimeMillis() - localStartTime);
+                                saveTransactionTime = System.currentTimeMillis() - localStartTime;
+                                logger.info("为第{}条数据创建了{}个事务，创建耗时{}ms，保存耗时{}ms", dataIndex + 1, ciEntityTransactionList.size(), createTransactionTime, saveTransactionTime);
                             }
                         } catch (ApiRuntimeException ex) {
                             logger.warn(ex.getMessage(), ex);

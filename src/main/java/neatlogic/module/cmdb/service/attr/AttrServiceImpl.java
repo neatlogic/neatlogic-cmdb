@@ -202,7 +202,7 @@ public class AttrServiceImpl implements AttrService {
                 TransactionGroupVo transactionGroupVo = new TransactionGroupVo();
                 //并发清理配置项数据，最高并发3个线程
                 int parallel = 3;
-                runner.execute(ciEntityList, parallel, item -> {
+                runner.execute(ciEntityList, parallel, (threadIndex, dataIndex, item) -> {
                     if (item != null && item.getAttrEntityData().containsKey("attr_" + attrVo.getId())) {
                         //写入事务
                         TransactionVo transactionVo = new TransactionVo();
