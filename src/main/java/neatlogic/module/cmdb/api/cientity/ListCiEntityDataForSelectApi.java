@@ -26,6 +26,7 @@ import neatlogic.framework.cmdb.dto.ci.RelVo;
 import neatlogic.framework.cmdb.dto.cientity.AttrFilterVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.cientity.RelFilterVo;
+import neatlogic.framework.cmdb.dto.view.ViewConstVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.dto.ValueTextVo;
 import neatlogic.framework.matrix.constvalue.SearchExpression;
@@ -34,6 +35,7 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
+import neatlogic.module.cmdb.dao.mapper.ci.CiViewMapper;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -57,6 +59,9 @@ public class ListCiEntityDataForSelectApi extends PrivateApiComponentBase {
 
     @Resource
     private CiMapper ciMapper;
+
+    @Resource
+    private CiViewMapper ciViewMapper;
 
     @Override
     public String getToken() {
@@ -108,15 +113,15 @@ public class ListCiEntityDataForSelectApi extends PrivateApiComponentBase {
             List<Long> relIdList = new ArrayList<>();
             List<String> valueList = null;
             String keyword = paramObj.getString("keyword");
-            if(StringUtils.isNotBlank(keyword)) {
+            if (StringUtils.isNotBlank(keyword)) {
                 valueList = Collections.singletonList(keyword);
             }
             JSONArray defaultValue = paramObj.getJSONArray("defaultValue");
-            if(CollectionUtils.isNotEmpty(defaultValue)) {
+            if (CollectionUtils.isNotEmpty(defaultValue)) {
                 valueList = defaultValue.toJavaList(String.class);
             }
             String expression = SearchExpression.LI.getExpression();
-            if(CollectionUtils.isNotEmpty(defaultValue)) {
+            if (CollectionUtils.isNotEmpty(defaultValue)) {
                 expression = SearchExpression.EQ.getExpression();
             }
             boolean flag = true;
@@ -164,10 +169,12 @@ public class ListCiEntityDataForSelectApi extends PrivateApiComponentBase {
                     //固化属性需要特殊处理
                     if ("const_id".equals(label)) {
                         List<Long> idList = new ArrayList<>();
-                        for (String value : valueList) {
-                            idList.add(Long.valueOf(value));
+                        if (CollectionUtils.isNotEmpty(valueList)) {
+                            for (String value : valueList) {
+                                idList.add(Long.valueOf(value));
+                            }
+                            ciEntityVo.setIdList(idList);
                         }
-                        ciEntityVo.setIdList(idList);
                     } else if ("const_ciLabel".equals(label)) {
                         List<CiVo> ciList = ciMapper.getCiListByLabelList(valueList);
                         List<Long> filterCiIdList = ciList.stream().map(CiVo::getId).collect(Collectors.toList());
@@ -184,10 +191,15 @@ public class ListCiEntityDataForSelectApi extends PrivateApiComponentBase {
             ciEntityVo.setRelFilterList(relFilters);
             ciEntityVo.setAttrIdList(attrIdList);
             ciEntityVo.setRelIdList(relIdList);
+            List<String> viewConstNameList = new ArrayList<>();
+            List<ViewConstVo> ciViewConstList = ciViewMapper.getAllCiViewConstList();
+            for (ViewConstVo viewConstVo : ciViewConstList) {
+                viewConstNameList.add(viewConstVo.getName());
+            }
             List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
             if (CollectionUtils.isNotEmpty(ciEntityList)) {
                 ciEntityList.forEach(ciEntity -> {
-                    JSONObject valueJson = ciEntityService.getTbodyRowData(ciEntity);
+                    JSONObject valueJson = ciEntityService.getTbodyRowData(viewConstNameList, ciEntity);
                     if (MapUtils.isNotEmpty(valueJson)) {
                         String value = valueJson.getString(label);
                         tbodyList.add(new ValueTextVo(value, value));
