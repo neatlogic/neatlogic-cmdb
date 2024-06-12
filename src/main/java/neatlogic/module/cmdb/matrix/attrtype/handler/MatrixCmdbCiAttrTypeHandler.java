@@ -34,9 +34,7 @@ import org.springframework.stereotype.Service;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 public class MatrixCmdbCiAttrTypeHandler extends MatrixAttrTypeBase {
@@ -54,7 +52,7 @@ public class MatrixCmdbCiAttrTypeHandler extends MatrixAttrTypeBase {
     }
 
     @Override
-    public void getRealValueBatch(MatrixAttributeVo matrixAttributeVo, Map<String, String> valueMap) {
+    public Set<String> getRealValueBatch(MatrixAttributeVo matrixAttributeVo, Map<String, String> valueMap) {
         JSONObject config = matrixAttributeVo.getConfig();
         String label = null;
         Long ciId = null;
@@ -66,7 +64,7 @@ public class MatrixCmdbCiAttrTypeHandler extends MatrixAttrTypeBase {
             }
 
             if (label == null || ciId == null) {
-                return;
+                return Collections.emptySet();
             }
             Object component = PrivateApiComponentFactory.getInstance("neatlogic.module.cmdb.api.cientity.ListCiEntityDataForSelectApi");
             Method method = component.getClass().getMethod("myDoService", JSONObject.class);
@@ -103,5 +101,6 @@ public class MatrixCmdbCiAttrTypeHandler extends MatrixAttrTypeBase {
             String error = ex.getMessage() == null ? ExceptionUtils.getStackTrace(ex) : ex.getMessage();
             logger.error(error);
         }
+        return Collections.emptySet();
     }
 }
