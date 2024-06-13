@@ -18,9 +18,7 @@ package neatlogic.module.cmdb.api.cientity;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
-import neatlogic.framework.cmdb.auth.label.CIENTITY_MODIFY;
 import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
-import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.crossover.IBatchDeleteCiEntityApiCrossoverService;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.enums.TransactionActionType;
@@ -32,20 +30,18 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@AuthAction(action = CMDB_BASE.class)
 @AuthAction(action = CI_MODIFY.class)
-@AuthAction(action = CIENTITY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.DELETE)
 public class BatchDeleteCiEntityApi extends PrivateApiComponentBase implements IBatchDeleteCiEntityApiCrossoverService {
 
-    @Autowired
+    @Resource
     private CiEntityService ciEntityService;
 
     @Override
