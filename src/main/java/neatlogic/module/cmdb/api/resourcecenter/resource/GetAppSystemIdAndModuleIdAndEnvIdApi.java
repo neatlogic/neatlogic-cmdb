@@ -18,7 +18,6 @@ package neatlogic.module.cmdb.api.resourcecenter.resource;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
-import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverMapper;
 import neatlogic.framework.cmdb.crossover.IResourceCrossoverMapper;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppEnvNotFoundException;
@@ -29,8 +28,11 @@ import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 
 /**
  * 根据应用名称、模块名称环境名称查询应用ID、模块ID、环境ID
@@ -42,6 +44,9 @@ import org.springframework.stereotype.Service;
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class GetAppSystemIdAndModuleIdAndEnvIdApi extends PrivateApiComponentBase {
+
+    @Resource
+    ResourceMapper resourceMapper;
 
     @Override
     public String getToken() {
@@ -89,12 +94,11 @@ public class GetAppSystemIdAndModuleIdAndEnvIdApi extends PrivateApiComponentBas
         result.put("sysId", appSystem.getId());
         result.put("moduleId", appModule.getId());
         if (StringUtils.isNotBlank(envName)) {
-            ICiEntityCrossoverMapper ciEntityCrossoverMapper = CrossoverServiceFactory.getApi(ICiEntityCrossoverMapper.class);
-            Long envId = ciEntityCrossoverMapper.getCiEntityIdByCiNameAndCiEntityName("APPEnv", envName);
-            if (envId == null) {
+            ResourceVo env = resourceMapper.getAppEnvByName(envName);
+            if (env == null) {
                 throw new AppEnvNotFoundException(envName);
             }
-            result.put("envId", envId);
+            result.put("envId", env.getId());
         }
         return result;
     }
