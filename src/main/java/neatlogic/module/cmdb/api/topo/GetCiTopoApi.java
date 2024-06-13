@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.topo;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.auth.core.AuthActionChecker;
@@ -25,7 +26,10 @@ import neatlogic.framework.cmdb.dto.ci.RelVo;
 import neatlogic.framework.cmdb.enums.CiAuthType;
 import neatlogic.framework.cmdb.enums.group.GroupType;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.graphviz.*;
+import neatlogic.framework.graphviz.Graphviz;
+import neatlogic.framework.graphviz.Layer;
+import neatlogic.framework.graphviz.Link;
+import neatlogic.framework.graphviz.Node;
 import neatlogic.framework.graphviz.enums.LayoutType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
@@ -34,13 +38,15 @@ import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
@@ -69,7 +75,7 @@ public class GetCiTopoApi extends PrivateApiComponentBase {
         return null;
     }
 
-    public static void main(String[] ag) {
+    /*public static void main(String[] ag) {
         Graphviz.Builder gb = new Graphviz.Builder(LayoutType.DOT);
         Random random = new Random();
         List<Node> nodeList = new ArrayList<>();
@@ -110,17 +116,17 @@ public class GetCiTopoApi extends PrivateApiComponentBase {
 
 
         System.out.println(gb.build().toString());
-    }
+    }*/
 
     @Input({@Param(name = "layout", type = ApiParamType.ENUM, member = LayoutType.class, isRequired = true),
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字"),
             @Param(name = "typeId", type = ApiParamType.LONG, desc = "类型id")})
     @Output({@Param(name = "topo", type = ApiParamType.STRING)})
-    @Description(desc = "获取模型拓扑接口")
+    @Description(desc = "获取模型拓扑")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         String layout = jsonObj.getString("layout");
-        CiVo ci = JSONObject.toJavaObject(jsonObj, CiVo.class);
+        CiVo ci = JSON.toJavaObject(jsonObj, CiVo.class);
         ci.setIsTypeShowInTopo(1);
         List<CiTypeVo> ciTypeList = ciMapper.searchCiTypeCi(ci);
 
