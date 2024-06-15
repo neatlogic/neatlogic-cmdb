@@ -252,6 +252,12 @@ public class ResourceListApi extends PrivateApiComponentBase {
      * @return
      */
     private boolean noFilterCondition(ResourceSearchVo searchVo) {
+        if (StringUtils.isNotBlank(searchVo.getKeyword())) {
+            return false;
+        }
+        if (CollectionUtils.isNotEmpty(searchVo.getBatchSearchList())) {
+            return false;
+        }
         if (CollectionUtils.isNotEmpty(searchVo.getStateIdList())) {
             return false;
         }
