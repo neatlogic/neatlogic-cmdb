@@ -581,7 +581,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                     </choose>
                 </when>
                 <otherwise>
-                    <if test="attrFilterList != null and attrFilterList.size() > 0 and @neatlogic.framework.cmdb.dao.ognl.IsCiExistsInFilter@isExists(ci, attrFilterList)">
+                    <if test="@neatlogic.framework.cmdb.dao.ognl.IsCiExistsInFilter@isExists(ci, attrFilterList, sortList)">
                         <choose>
                             <when test="ci.isVirtual == 0">
                                 JOIN ${ci.ciTableName} ON `ci_base`.id = ${ci.ciTableName}.cientity_id
