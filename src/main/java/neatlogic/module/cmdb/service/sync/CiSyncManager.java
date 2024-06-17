@@ -927,8 +927,10 @@ public class CiSyncManager {
                             if (logger.isInfoEnabled()) {
                                 localStartTime = System.currentTimeMillis();
                             }
+
                             CiEntityTransactionVo ciEntityTransactionVo = this.generateCiEntityTransaction(dataObj, syncCiCollectionVo, ciEntityTransactionVoMap, null);
-                            if (ciEntityTransactionVo != null && !ciEntityTransactionVoMap.containsKey(ciEntityTransactionVo.getHash())) {
+                            if (ciEntityTransactionVo != null /*&& !ciEntityTransactionVoMap.containsKey(ciEntityTransactionVo.getHash())*/) {
+                                //TODO 这里有可能会用根配置选项事务覆盖掉过程中产生的配置项事务，暂时先这样处理
                                 ciEntityTransactionVoMap.put(ciEntityTransactionVo.getHash(), ciEntityTransactionVo);
                             }
                             List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
