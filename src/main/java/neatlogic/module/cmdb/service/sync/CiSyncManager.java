@@ -285,6 +285,7 @@ public class CiSyncManager {
          * @return 配置项事务
          */
         private CiEntityTransactionVo generateCiEntityTransaction(JSONObject dataObj, SyncCiCollectionVo syncCiCollectionVo, Map<Integer, CiEntityTransactionVo> ciEntityTransactionMap, String parentKey) {
+            //System.out.println("##" + parentKey + "##" + dataObj);
             CiEntityVo ciEntityConditionVo = new CiEntityVo();
             Map<Long, GlobalAttrVo> globalAttrMap = getGlobalAttrMap(syncCiCollectionVo.getCiId());
             Map<Long, AttrVo> attrMap = getAttrMap(syncCiCollectionVo.getCiId());
@@ -445,6 +446,7 @@ public class CiSyncManager {
                                 //引用属性需要引用包含subset的数据
                                 if (dataObj.get(mappingVo.getField(parentKey)) instanceof JSONArray) {
                                     JSONArray subDataList = dataObj.getJSONArray(mappingVo.getField(parentKey));
+                                    //System.out.println("#attr##key=" + mappingVo.getField(parentKey) + ",data=" + subDataList);
                                     JSONArray attrValueList = new JSONArray();
                                     for (int i = 0; i < subDataList.size(); i++) {
                                         JSONObject subData;
@@ -593,6 +595,7 @@ public class CiSyncManager {
                                 subDataList = new JSONArray();
                                 subDataList.add(dataObj.getJSONObject(mappingVo.getField(parentKey)));
                             }
+                            //System.out.println("##rel##key=" + mappingVo.getField(parentKey) + ",data=" + subDataList);
                             if (CollectionUtils.isNotEmpty(subDataList)) {
                                 for (int i = 0; i < subDataList.size(); i++) {
                                     JSONObject subData;
@@ -634,6 +637,9 @@ public class CiSyncManager {
                                                     for (SyncMappingVo subMappingVo : subSyncCiCollectionVo.getMappingList()) {
                                                         if (!subDataWithPK.containsKey(subMappingVo.getField())) {
                                                             String realKey = subMappingVo.getField().replace(mappingVo.getField(parentKey), "");
+                                                            if (StringUtils.isBlank(realKey)) {
+                                                                continue;
+                                                            }
                                                             if (realKey.startsWith(".")) {
                                                                 realKey = "$" + realKey;
                                                             } else {
