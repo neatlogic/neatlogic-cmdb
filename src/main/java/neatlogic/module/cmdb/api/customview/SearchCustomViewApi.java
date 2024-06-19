@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.customview;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
@@ -72,7 +73,7 @@ public class SearchCustomViewApi extends PrivateApiComponentBase {
     @Description(desc = "nmcac.searchcustomviewapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        CustomViewVo customViewVo = JSONObject.toJavaObject(paramObj, CustomViewVo.class);
+        CustomViewVo customViewVo = JSON.toJavaObject(paramObj, CustomViewVo.class);
         String userUuid = UserContext.get().getUserUuid(true);
         customViewVo.setFcu(userUuid);
         if (AuthActionChecker.check(CUSTOMVIEW_MODIFY.class.getSimpleName())) {

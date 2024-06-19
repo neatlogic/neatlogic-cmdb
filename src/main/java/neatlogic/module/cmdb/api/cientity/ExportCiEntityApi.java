@@ -194,6 +194,7 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
 
         ciEntityVo.setPageSize(100);
         ciEntityVo.setCurrentPage(1);
+        ciEntityVo.setNeedRowNum(false);
         List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
         while (CollectionUtils.isNotEmpty(ciEntityList)) {
             for (CiEntityVo entity : ciEntityList) {
@@ -213,6 +214,7 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
                         AttrVo attrVo = new AttrVo();
                         attrVo.setConfig(attrObj.getJSONObject("config"));
                         attrVo.setTargetCiId(attrObj.getLong("targetCiId"));
+                        attrVo.setName(column);
                         if (handler != null) {
                             JSONArray valueList = attrObj.getJSONArray("valueList");
                             JSONArray newValueList = handler.transferValueListToExport(attrVo, valueList);

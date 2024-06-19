@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--Copyright (C) $today.year  深圳极向量科技有限公司 All Rights Reserved.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="neatlogic.module.cmdb.dao.mapper.cientity.CiEntityCachedMapper">
+    <cache type="neatlogic.framework.dao.cache.NeatLogicCache" flushInterval="60000" size="1000" readOnly="true"></cache>
+    <select id="getCiEntityBaseInfoById" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo" useCache="false">
+        SELECT cientity.id,
+               cientity.uuid,
+               cientity.ci_id AS ciId,
+               ci.type_id     AS typeId,
+               ci.icon        AS ciIcon,
+               cientity.`name`,
+               cientity.`status`,
+               cientity.fcu,
+               cientity.fcd,
+               cientity.lcu,
+               cientity.lcd
+        FROM cmdb_cientity cientity
+                 join cmdb_ci ci on cientity.ci_id = ci.id
+        WHERE cientity.id = #{value}
+    </select>
+
+    <select id="getCiEntityBaseInfoByIdList" resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo"
+            useCache="true">
+        SELECT
+        a.id,
+        a.uuid,
+        a.ci_id AS ciId,
+        a.`name`,
+        a.`status`,
+        b.name as ciName,
+        b.label as ciLabel,
+        b.type_id AS typeId,
+        b.icon AS ciIcon,
+        a.fcu,
+        a.fcd,
+        a.lcu,
+        a.lcd
+        FROM cmdb_cientity a JOIN cmdb_ci b ON a.ci_id = b.id
+        WHERE a.id IN
+        <foreach collection="ciEntityIdList" item="value" open="(" close=")" separator=",">
+            #{value}
+        </foreach>
+    </select>
+
+    <select id="getVirtualCiEntityBaseInfoByIdList" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo"
+            resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo" useCache="true">
+        SELECT id, name, ci_id AS ciId
+        FROM ${ciTableName} WHERE id IN
+        <foreach collection="idList" item="value" open="(" close=")" separator=",">
+            #{value}
+        </foreach>
+    </select>
+</mapper>

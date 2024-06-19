@@ -24,9 +24,11 @@ import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.enums.SearchExpression;
 import neatlogic.framework.cmdb.exception.attr.AttrValueIrregularException;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
-import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
+import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityCachedMapper;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
 import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -37,7 +39,7 @@ import java.util.Objects;
 
 @Service
 public class TableValueHandler implements IAttrValueHandler {
-
+    private static final Logger logger = LoggerFactory.getLogger(TableValueHandler.class);
     @Resource
     private CiEntityService ciEntityService;
 
@@ -45,7 +47,7 @@ public class TableValueHandler implements IAttrValueHandler {
     private CiMapper ciMapper;
 
     @Resource
-    private CiEntityMapper ciEntityMapper;
+    private CiEntityCachedMapper ciEntityCachedMapper;
 
     @Override
     public String getType() {
@@ -135,6 +137,10 @@ public class TableValueHandler implements IAttrValueHandler {
 
     @Override
     public JSONArray transferValueListToExport(AttrVo attrVo, JSONArray valueList) {
+        long time = 0L;
+        if (logger.isInfoEnabled()) {
+            time = System.currentTimeMillis();
+        }
         JSONArray returnValueList = new JSONArray();
         if (CollectionUtils.isNotEmpty(valueList) && attrVo.getTargetCiId() != null) {
             List<Long> ciEntityIdList = new ArrayList<>();
@@ -148,18 +154,21 @@ public class TableValueHandler implements IAttrValueHandler {
             CiVo ciVo = ciMapper.getCiById(attrVo.getTargetCiId());
             List<CiEntityVo> ciEntityList;
             if (ciVo.getIsVirtual().equals(0)) {
-                ciEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(ciEntityIdList);
+                ciEntityList = ciEntityCachedMapper.getCiEntityBaseInfoByIdList(ciEntityIdList);
             } else {
                 CiEntityVo ciEntityVo = new CiEntityVo();
                 ciEntityVo.setCiId(ciVo.getId());
                 ciEntityVo.setIdList(ciEntityIdList);
-                ciEntityList = ciEntityMapper.getVirtualCiEntityBaseInfoByIdList(ciEntityVo);
+                ciEntityList = ciEntityCachedMapper.getVirtualCiEntityBaseInfoByIdList(ciEntityVo);
             }
             if (CollectionUtils.isNotEmpty(ciEntityList)) {
                 for (CiEntityVo ciEntityVo : ciEntityList) {
                     returnValueList.add(ciEntityVo.getName());
                 }
             }
+        }
+        if (logger.isInfoEnabled()) {
+            logger.info("获取属性{}导出值耗时{}ms", attrVo.getName(), System.currentTimeMillis() - time);
         }
         return returnValueList;
     }
@@ -181,14 +190,14 @@ public class TableValueHandler implements IAttrValueHandler {
                         Long id = Long.valueOf(value);
                         CiEntityVo ciEntity = null;
                         if (ciVo.getIsVirtual().equals(0)) {
-                            ciEntity = ciEntityMapper.getCiEntityBaseInfoById(id);
+                            ciEntity = ciEntityCachedMapper.getCiEntityBaseInfoById(id);
                         } else {
                             CiEntityVo ciEntityVo = new CiEntityVo();
                             ciEntityVo.setCiId(ciVo.getId());
                             ciEntityVo.setIdList(new ArrayList<Long>() {{
                                 this.add(id);
                             }});
-                            List<CiEntityVo> ciEntityList = ciEntityMapper.getVirtualCiEntityBaseInfoByIdList(ciEntityVo);
+                            List<CiEntityVo> ciEntityList = ciEntityCachedMapper.getVirtualCiEntityBaseInfoByIdList(ciEntityVo);
                             if (CollectionUtils.isNotEmpty(ciEntityList)) {
                                 ciEntity = ciEntityList.get(0);
                             }

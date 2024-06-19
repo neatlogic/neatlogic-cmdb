@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.graph;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
@@ -71,7 +72,7 @@ public class SearchGraphApi extends PrivateApiComponentBase {
     @Description(desc = "nmcag.searchgraphapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        GraphVo graphVo = JSONObject.toJavaObject(jsonObj, GraphVo.class);
+        GraphVo graphVo = JSON.toJavaObject(jsonObj, GraphVo.class);
         String userUuid = UserContext.get().getUserUuid(true);
         graphVo.setFcu(userUuid);
         if (AuthActionChecker.check(CUSTOMVIEW_MODIFY.class.getSimpleName())) {

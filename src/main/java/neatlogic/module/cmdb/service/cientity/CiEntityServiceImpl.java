@@ -70,6 +70,8 @@ import neatlogic.module.cmdb.utils.CiEntityBuilder;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -79,6 +81,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverService {
+    private static final Logger logger = LoggerFactory.getLogger(CiEntityServiceImpl.class);
     private static final String EXPRESSION_TYPE = "expression";
 
     @Resource
@@ -297,6 +300,11 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
 
     @Override
     public List<CiEntityVo> searchCiEntity(CiEntityVo ciEntityVo) {
+        long time = 0L;
+        if (logger.isInfoEnabled()) {
+            time = System.currentTimeMillis();
+        }
+
         CiVo ciVo = ciMapper.getCiById(ciEntityVo.getCiId());
         if (ciVo == null) {
             throw new CiNotFoundException(ciEntityVo.getCiId());
@@ -362,9 +370,18 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         if (ciEntityVo.getIdList() == null) {
             ciEntityVo.setLimitRelEntity(false);
             ciEntityVo.setLimitAttrEntity(false);
-            int rowNum = ciEntityMapper.searchCiEntityIdCount(ciEntityVo);
-            ciEntityVo.setRowNum(rowNum);
+            if (ciEntityVo.getNeedRowNum()) {
+                int rowNum = ciEntityMapper.searchCiEntityIdCount(ciEntityVo);
+                if (logger.isInfoEnabled()) {
+                    logger.info("查询配置项行数，行数{}，耗时{}ms", rowNum, System.currentTimeMillis() - time);
+                }
+                ciEntityVo.setRowNum(rowNum);
+            }
+
             List<Long> ciEntityIdList = ciEntityMapper.searchCiEntityId(ciEntityVo);
+            if (logger.isInfoEnabled()) {
+                logger.info("查询配置项id列表，行数{}，耗时{}ms", ciEntityIdList.size(), System.currentTimeMillis() - time);
+            }
             if (CollectionUtils.isNotEmpty(ciEntityIdList)) {
                 ciEntityVo.setIdList(ciEntityIdList);
             }
@@ -373,6 +390,9 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             ciEntityVo.setLimitRelEntity(isLimitRelEntity != null ? isLimitRelEntity : true);
             ciEntityVo.setLimitAttrEntity(isLimitAttrEntity != null ? isLimitAttrEntity : true);
             List<HashMap<String, Object>> resultList = ciEntityMapper.searchCiEntity(ciEntityVo);
+            if (logger.isInfoEnabled()) {
+                logger.info("根据id查询配置项，行数{}，耗时{}ms", resultList.size(), System.currentTimeMillis() - time);
+            }
             List<GlobalAttrEntityVo> globalAttrList = globalAttrMapper.getGlobalAttrByCiEntityIdList(ciEntityVo.getIdList());
             ciEntityVo.setIdList(null);//清除id列表，避免ciEntityVo重用时数据没法更新
             List<CiEntityVo> ciEntityList = new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, attrList, relList).build().getCiEntityList();
@@ -385,6 +405,9 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         }
                     }
                 }
+            }
+            if (logger.isInfoEnabled()) {
+                logger.info("查询配置项总耗时，数据量{}，耗时{}ms", ciEntityList.size(), System.currentTimeMillis() - time);
             }
             return ciEntityList;
         }
