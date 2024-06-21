@@ -111,7 +111,7 @@ public class ListCiEntityDataForSelectApi extends PrivateApiComponentBase {
             List<RelFilterVo> relFilters = new ArrayList<>();
             List<Long> attrIdList = new ArrayList<>();
             List<Long> relIdList = new ArrayList<>();
-            List<String> valueList = null;
+            List<String> valueList = new ArrayList<>();
             String keyword = paramObj.getString("keyword");
             if (StringUtils.isNotBlank(keyword)) {
                 valueList = Collections.singletonList(keyword);
