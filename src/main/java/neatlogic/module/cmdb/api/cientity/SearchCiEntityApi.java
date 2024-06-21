@@ -151,6 +151,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
             jsonObj.put("ciId", ciVo.getId());
         }
         CiEntityVo ciEntityVo = JSON.toJavaObject(jsonObj, CiEntityVo.class);
+
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciEntityVo.getCiId());
         Map<Long, AttrVo> attrMap = new HashMap<>();
         for (AttrVo attrVo : attrList) {
@@ -456,6 +457,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
                     tbodyList.add(entityObj);
                 }
             }
+            returnObj.put("keywordList", ciEntityVo.getKeywordList());
             returnObj.put("pageSize", ciEntityVo.getPageSize());
             returnObj.put("pageCount", ciEntityVo.getPageCount());
             returnObj.put("rowNum", ciEntityVo.getRowNum());
