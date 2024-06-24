@@ -33,8 +33,9 @@ import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.service.attr.AttrService;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
@@ -42,9 +43,10 @@ import org.springframework.stereotype.Service;
 @OperationType(type = OperationTypeEnum.DELETE)
 public class DeleteAttrApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private AttrService attrService;
-    @Autowired
+
+    @Resource
     private AttrMapper attrMapper;
 
     @Override
