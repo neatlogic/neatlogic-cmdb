@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.customview;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
@@ -107,7 +108,7 @@ public class SaveCustomViewApi extends PrivateApiComponentBase {
             }
         }
         JSONObject config = jsonObj.getJSONObject("config");
-        CustomViewVo customViewVo = JSONObject.toJavaObject(jsonObj, CustomViewVo.class);
+        CustomViewVo customViewVo = JSON.toJavaObject(jsonObj, CustomViewVo.class);
         customViewVo.setCustomViewAuthList(null);
         if (customViewMapper.checkCustomViewNameIsExists(customViewVo) > 0) {
             throw new CustomViewNameIsExistsException(customViewVo.getName());

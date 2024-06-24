@@ -465,7 +465,7 @@ public class CustomViewBuilder {
                                                 .equals(0) ? "cientity_id" : "id"))));
             }
             //隐藏超时数据
-            plainSelect.withWhere(getExpiredExpression());
+            //plainSelect.withWhere(getExpiredExpression());
 
             //增加where条件，限制数据在自己模型，不要查出子模型数据
             /*plainSelect.withWhere(new EqualsTo()
@@ -536,7 +536,7 @@ public class CustomViewBuilder {
                 }*/
             }
             //隐藏超时数据
-            plainSelect.withWhere(getExpiredExpression());
+            //plainSelect.withWhere(getExpiredExpression());
             return select;
         }
     }
