@@ -33,21 +33,22 @@ import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
 import neatlogic.module.cmdb.service.rel.RelService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 
 @Service
 @AuthAction(action = CI_MODIFY.class)
 @OperationType(type = OperationTypeEnum.DELETE)
 public class DeleteRelApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private RelService relService;
 
-    @Autowired
+    @Resource
     private RelMapper relMapper;
 
-    @Autowired
+    @Resource
     private CiMapper ciMapper;
 
     @Override
@@ -66,7 +67,7 @@ public class DeleteRelApi extends PrivateApiComponentBase {
     }
 
     @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "关系id")})
-    @Description(desc = "删除模型关系接口")
+    @Description(desc = "删除模型关系")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long relId = jsonObj.getLong("id");

@@ -43,6 +43,7 @@ public class RelServiceImpl implements RelService {
 
     @Override
     @Transactional
+    //TODO 此方法需要参考deleteAttr优化
     public void deleteRel(RelVo relVo) {
         //删除所有relEntity属性值，需要生成事务
         RelEntityVo relEntityVo = new RelEntityVo();
