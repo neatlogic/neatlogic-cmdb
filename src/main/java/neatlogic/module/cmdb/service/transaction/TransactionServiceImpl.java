@@ -21,6 +21,7 @@ import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
 import neatlogic.framework.cmdb.crossover.ITransactionCrossoverService;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
+import neatlogic.framework.cmdb.dto.ci.RelVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.cientity.GlobalAttrEntityVo;
 import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
@@ -29,6 +30,7 @@ import neatlogic.framework.cmdb.dto.transaction.TransactionDetailVo;
 import neatlogic.framework.cmdb.dto.transaction.TransactionVo;
 import neatlogic.framework.cmdb.enums.TransactionActionType;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
+import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper;
 import neatlogic.module.cmdb.dao.mapper.transaction.TransactionMapper;
@@ -49,6 +51,9 @@ public class TransactionServiceImpl implements TransactionService, ITransactionC
 
     @Resource
     private AttrMapper attrMapper;
+
+    @Resource
+    private RelMapper relMapper;
 
     @Resource
     private CiEntityMapper ciEntityMapper;
@@ -82,6 +87,7 @@ public class TransactionServiceImpl implements TransactionService, ITransactionC
     public TransactionDetailVo getTransactionDetail(TransactionVo transactionVo, CiEntityTransactionVo ciEntityTransactionVo) {
         JSONArray dataList = new JSONArray();
         JSONObject oldCiEntityObj = null;
+        boolean allowRecover = true;
         if (StringUtils.isNotBlank(ciEntityTransactionVo.getSnapshot())) {
             oldCiEntityObj = JSON.parseObject(ciEntityTransactionVo.getSnapshot());
         }
@@ -109,6 +115,7 @@ public class TransactionServiceImpl implements TransactionService, ITransactionC
                         //如果整个newValueList都不存在表示原来使用的属性已经删除，这时候就不需要再显示新旧值了
                     } else {
                         //如果属性已删除，尝试使用snapshot数据还原原来的值
+                        allowRecover = false;
                         if (MapUtils.isNotEmpty(oldAttrEntityData) && oldAttrEntityData.containsKey(key)) {
                             AttrVo attrVo = JSON.toJavaObject(oldAttrEntityData.getJSONObject(key), AttrVo.class);
                             dataObj.put("oldValue", buildAttrObj(attrVo, oldAttrEntityData.getJSONObject(key).getJSONArray("valueList")));
@@ -145,6 +152,7 @@ public class TransactionServiceImpl implements TransactionService, ITransactionC
                             dataObj.put("oldValue", oldGlobalAttrEntityData.getJSONObject(key).getJSONArray("valueList"));
                         }
                     } else {
+                        allowRecover = false;
                         if (MapUtils.isNotEmpty(oldGlobalAttrEntityData) && oldGlobalAttrEntityData.containsKey(key)) {
                             JSONObject globalAttrObj = oldGlobalAttrEntityData.getJSONObject(key);
                             dataObj.put("name", globalAttrObj.getString("name"));
@@ -160,6 +168,7 @@ public class TransactionServiceImpl implements TransactionService, ITransactionC
             }
 
             if (MapUtils.isNotEmpty(ciEntityTransactionVo.getRelEntityData())) {
+                List<RelVo> relList = relMapper.getRelByCiId(transactionVo.getCiId());
                 JSONObject oldRelEntityData = null;
                 if (MapUtils.isNotEmpty(oldCiEntityObj)) {
                     oldRelEntityData = oldCiEntityObj.getJSONObject("relEntityData");
@@ -168,6 +177,9 @@ public class TransactionServiceImpl implements TransactionService, ITransactionC
                     JSONObject dataObj = new JSONObject();
                     JSONObject relObj = ciEntityTransactionVo.getRelEntityData().getJSONObject(key);
                     Long relId = Long.parseLong(key.split("_")[1]);
+                    if (relList.stream().noneMatch(d -> d.getId().equals(relId))) {
+                        allowRecover = false;
+                    }
                     dataObj.put("id", relId);
                     dataObj.put("name", relObj.getString("name"));
                     dataObj.put("label", relObj.getString("label"));
@@ -227,11 +239,15 @@ public class TransactionServiceImpl implements TransactionService, ITransactionC
             if (MapUtils.isNotEmpty(oldCiEntityObj)) {
                 JSONObject attrData = oldCiEntityObj.getJSONObject("attrEntityData");
                 if (MapUtils.isNotEmpty(attrData)) {
+                    List<AttrVo> attrList = attrMapper.getAttrByCiId(transactionVo.getCiId());
                     for (String key : attrData.keySet()) {
                         JSONObject dataObj = new JSONObject();
                         //如果属性已删除，尝试使用snapshot数据还原原来的值
                         //JSONObject oldAttrEntityData = attrData.getJSONObject(key);
                         AttrVo attrVo = JSON.toJavaObject(attrData.getJSONObject(key), AttrVo.class);
+                        if (attrList.stream().noneMatch(d -> d.getId().equals(attrVo.getId()))) {
+                            allowRecover = false;
+                        }
                         dataObj.put("oldValue", buildAttrObj(attrVo, attrData.getJSONObject(key).getJSONArray("valueList")));
                         dataObj.put("action", "delattr");
                         dataObj.put("id", attrVo.getId());
@@ -243,9 +259,14 @@ public class TransactionServiceImpl implements TransactionService, ITransactionC
                 }
                 JSONObject globalAttrData = oldCiEntityObj.getJSONObject("globalAttrEntityData");
                 if (MapUtils.isNotEmpty(globalAttrData)) {
+                    List<GlobalAttrVo> globalAttrList = globalAttrMapper.searchGlobalAttr(new GlobalAttrVo());
+
                     for (String key : globalAttrData.keySet()) {
                         JSONObject dataObj = new JSONObject();
-                        GlobalAttrEntityVo attrVo = JSONObject.toJavaObject(globalAttrData.getJSONObject(key), GlobalAttrEntityVo.class);
+                        GlobalAttrEntityVo attrVo = JSON.toJavaObject(globalAttrData.getJSONObject(key), GlobalAttrEntityVo.class);
+                        if (globalAttrList.stream().noneMatch(d -> d.getId().equals(attrVo.getAttrId()))) {
+                            allowRecover = false;
+                        }
                         dataObj.put("oldValue", attrVo.getValueObjList());
                         dataObj.put("action", "delglobalattr");
                         dataObj.put("id", attrVo.getAttrId());
@@ -257,9 +278,13 @@ public class TransactionServiceImpl implements TransactionService, ITransactionC
                 }
                 JSONObject relData = oldCiEntityObj.getJSONObject("relEntityData");
                 if (MapUtils.isNotEmpty(relData)) {
+                    List<RelVo> relList = relMapper.getRelByCiId(transactionVo.getCiId());
                     for (String key : relData.keySet()) {
                         JSONObject dataObj = new JSONObject();
                         JSONObject oldRelEntityData = relData.getJSONObject(key);
+                        if (relList.stream().noneMatch(d -> d.getId().equals(oldRelEntityData.getLong("relId")))) {
+                            allowRecover = false;
+                        }
                         dataObj.put("oldValue", oldRelEntityData.getJSONArray("valueList"));
                         dataObj.put("id", oldRelEntityData.getLong("relId"));
                         dataObj.put("name", oldRelEntityData.getString("name"));
@@ -272,7 +297,7 @@ public class TransactionServiceImpl implements TransactionService, ITransactionC
             }
 
         }
-        return new TransactionDetailVo(transactionVo, dataList);
+        return new TransactionDetailVo(transactionVo, dataList, allowRecover);
     }
 
     private JSONObject buildAttrObj(AttrVo attrVo, JSONArray valueList) {

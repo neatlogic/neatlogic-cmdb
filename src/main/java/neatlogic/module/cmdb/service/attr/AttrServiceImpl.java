@@ -34,6 +34,7 @@ import neatlogic.framework.cmdb.enums.TransactionStatus;
 import neatlogic.framework.cmdb.exception.attr.*;
 import neatlogic.framework.exception.core.ApiRuntimeException;
 import neatlogic.framework.transaction.core.EscapeTransactionJob;
+import neatlogic.framework.transaction.util.TransactionUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
@@ -162,7 +163,6 @@ public class AttrServiceImpl implements AttrService {
      * @param attrVo 属性对象
      */
     @Override
-    @Transactional
     public void deleteAttr(AttrVo attrVo) {
         CiVo attrCi = ciMapper.getCiById(attrVo.getCiId());
         //检查是否被表达式属性引用
@@ -203,57 +203,61 @@ public class AttrServiceImpl implements AttrService {
                 //并发清理配置项数据，最高并发3个线程
                 int parallel = 3;
                 runner.execute(ciEntityList, parallel, (threadIndex, dataIndex, item) -> {
-                    if (item != null && item.getAttrEntityData().containsKey("attr_" + attrVo.getId())) {
-                        //写入事务
-                        TransactionVo transactionVo = new TransactionVo();
-                        transactionVo.setCiId(item.getCiId());
-                        transactionVo.setStatus(TransactionStatus.COMMITED.getValue());
-                        transactionVo.setCreateUser(UserContext.get().getUserUuid(true));
-                        transactionVo.setCommitUser(UserContext.get().getUserUuid(true));
-                        transactionMapper.insertTransaction(transactionVo);
-                        //写入事务分组
-                        transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), transactionVo.getId());
-                        //写入配置项事务
-                        CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
-                        ciEntityTransactionVo.setCiEntityId(item.getId());
-                        ciEntityTransactionVo.setCiId(item.getCiId());
-                        ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
-                        ciEntityTransactionVo.setTransactionId(transactionVo.getId());
-                        //不用join的目的是避免触碰到mysql的join数量上限
-                        ciEntityTransactionVo.setOldCiEntityVo(ciEntityService.getCiEntityById(item.getCiId(), item.getId()));
-                        //必须使用局部修改模式，这样不需要提供其他属性
-                        ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
-                        //创建修改信息
-                        ciEntityTransactionVo.addAttrEntityData(attrVo);
-                        // 创建旧配置项快照
-                        ciEntityService.createSnapshot(ciEntityTransactionVo);
+                    //if (item != null && item.getAttrEntityData().containsKey("attr_" + attrVo.getId())) {
+                    //写入事务
+                    TransactionVo transactionVo = new TransactionVo();
+                    transactionVo.setCiId(item.getCiId());
+                    transactionVo.setStatus(TransactionStatus.COMMITED.getValue());
+                    transactionVo.setCreateUser(UserContext.get().getUserUuid(true));
+                    transactionVo.setCommitUser(UserContext.get().getUserUuid(true));
+                    transactionMapper.insertTransaction(transactionVo);
+                    //写入事务分组
+                    transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), transactionVo.getId());
+                    //写入配置项事务
+                    CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
+                    ciEntityTransactionVo.setCiEntityId(item.getId());
+                    ciEntityTransactionVo.setCiId(item.getCiId());
+                    ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
+                    ciEntityTransactionVo.setTransactionId(transactionVo.getId());
+                    //不用join的目的是避免触碰到mysql的join数量上限
+                    ciEntityTransactionVo.setOldCiEntityVo(ciEntityService.getCiEntityById(item.getCiId(), item.getId()));
+                    //必须使用局部修改模式，这样不需要提供其他属性
+                    ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
+                    //创建修改信息
+                    ciEntityTransactionVo.addAttrEntityData(attrVo);
+                    // 创建旧配置项快照
+                    ciEntityService.createSnapshot(ciEntityTransactionVo);
 
-                        //写入配置项事务
-                        transactionMapper.insertCiEntityTransaction(ciEntityTransactionVo);
-                    }
+                    //写入配置项事务
+                    transactionMapper.insertCiEntityTransaction(ciEntityTransactionVo);
+                    //}
                 }, "ATTRENTITY-BATCH-DELETER");
                 ciEntityVo.setCurrentPage(ciEntityVo.getCurrentPage() + 1);
                 ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
             }
         }
 
-        //删除引用属性数据
-        ciEntityMapper.deleteAttrEntityByAttrId(attrVo.getId());
+        org.springframework.transaction.TransactionStatus tx = TransactionUtil.openTx();
+        try {
+            //删除引用属性数据
+            ciEntityMapper.deleteAttrEntityByAttrId(attrVo.getId());
 
-        //删除模型属性
-        attrMapper.deleteAttrById(attrVo.getId());
+            //删除模型属性
+            attrMapper.deleteAttrById(attrVo.getId());
 
-        //某些类型的属性可能有删除后续操作
-        IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
-        handler.afterDelete(attrVo);
-
-        //物理删除字段
-        //由于以上事务中的dml操作包含了以下ddl操作的表，如果使用 EscapeTransactionJob会导致事务等待产生死锁，所以这里不再使用EscapeTransactionJob去保证事务一致性。即使ddl删除字段失败，以上事务也会提交
-        if (!attrVo.isNeedTargetCi()) {
-            ciSchemaMapper.deleteAttrFromCiTable(attrVo.getCiId(), attrCi.getCiTableName(), attrVo);
+            //某些类型的属性可能有删除后续操作
+            IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
+            handler.afterDelete(attrVo);
+            TransactionUtil.commitTx(tx);
+            //物理删除字段
+            //由于以上事务中的dml操作包含了以下ddl操作的表，如果使用 EscapeTransactionJob会导致事务等待产生死锁，所以这里不再使用EscapeTransactionJob去保证事务一致性。即使ddl删除字段失败，以上事务也会提交
+            if (!attrVo.isNeedTargetCi()) {
+                ciSchemaMapper.deleteAttrFromCiTable(attrVo.getCiId(), attrCi.getCiTableName(), attrVo);
+            }
+        } catch (Exception ex) {
+            TransactionUtil.rollbackTx(tx);
+            throw ex;
         }
-
-
     }
 
 
