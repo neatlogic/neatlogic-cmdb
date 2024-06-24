@@ -128,7 +128,7 @@ public class CustomViewBuilder {
         PlainSelect plainSelect = (PlainSelect) selectBody;
         plainSelect.addSelectItems(new SelectExpressionItem(new Column("id").withTable(new Table("ci_base"))));
         plainSelect.addSelectItems(new SelectExpressionItem(new Column("name").withTable(new Table("ci_base"))));
-       // Map<String, Boolean> ciHiddenMap = new HashMap<>();
+        // Map<String, Boolean> ciHiddenMap = new HashMap<>();
         for (CustomViewCiVo ciVo : customViewVo.getCiList()) {
             //ciHiddenMap.put(ciVo.getUuid(), ciVo.getIsHidden().equals(1));
             //if (ciVo.getIsHidden().equals(0)) {
@@ -144,10 +144,10 @@ public class CustomViewBuilder {
 
         plainSelect.addJoins(new Join().withRightItem(new SubSelect().withSelectBody(buildSubSelectForCi(startCustomViewCiVo).getSelectBody()).withAlias(new Alias("ci_" + startCustomViewCiVo.getUuid()))).addOnExpression(new EqualsTo().withLeftExpression(new Column().withTable(new Table("ci_base")).withColumnName("id")).withRightExpression(new Column().withTable(new Table("ci_" + startCustomViewCiVo.getUuid())).withColumnName("id"))));
         for (CustomViewAttrVo attrVo : customViewVo.getAttrList()) {
-            //if (!ciHiddenMap.get(attrVo.getCustomViewCiUuid())) {
-            plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getUuid() + "`")));
-            plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getUuid() + "_hash`")));
-            //}
+            if (attrVo.getAttrVo().getTargetCiId() == null) {
+                plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getUuid() + "`")));
+                plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getUuid() + "_hash`")));
+            }
         }
 
 
@@ -183,6 +183,68 @@ public class CustomViewBuilder {
                         Expression oldExpression = join.getOnExpression();
                         join.addOnExpression(new AndExpression().withLeftExpression(oldExpression).withRightExpression(new EqualsTo().withLeftExpression(new Column().withTable(new Table("ci_" + linkVo.getFromCustomViewCiUuid())).withColumnName(linkVo.getFromUuid() + "_hash")).withRightExpression(new Column().withTable(new Table("ci_" + linkVo.getToCustomViewCiUuid())).withColumnName(linkVo.getToUuid() + "_hash"))));
 
+                    }
+                } else if (linkVo.getFromType().equals(RelType.ATTR.getValue()) && linkVo.getToType().equals(RelType.CI.getValue())) {
+                    CustomViewAttrVo customViewAttrVo = customViewVo.getCustomCiByUuid(linkVo.getFromCustomViewCiUuid()).getAttrByUuid(linkVo.getFromUuid());
+                    if (customViewAttrVo != null) {
+                        Join join = new Join();
+                        if (linkVo.getJoinType().equalsIgnoreCase(JoinType.LEFTJOIN.getValue())) {
+                            join.withLeft(true);
+                        } else if (linkVo.getJoinType().equalsIgnoreCase(JoinType.RIGHTJOIN.getValue())) {
+                            join.withRight(true);
+                        }
+                        join.withRightItem(new Table().withName("cmdb_attrentity")
+                                        .withSchemaName(TenantContext.get().getDbName())
+                                        .withAlias(new Alias("attrentity_" + linkVo.getUuid())))
+                                .addOnExpression(new AndExpression()
+                                        .withLeftExpression(new EqualsTo()
+                                                .withLeftExpression(new Column()
+                                                        .withTable(new Table("ci_" + linkVo.getFromCustomViewCiUuid()))
+                                                        .withColumnName("id"))
+                                                .withRightExpression(new Column()
+                                                        .withTable(new Table("attrentity_" + linkVo.getUuid()))
+                                                        .withColumnName("from_cientity_id")))
+                                        .withRightExpression(new EqualsTo()
+                                                .withLeftExpression(new Column()
+                                                        .withTable(new Table("attrentity_" + linkVo.getUuid())).withColumnName("attr_id"))
+                                                .withRightExpression(new LongValue(customViewAttrVo.getAttrId()))));
+                        plainSelect.addJoins(join);
+
+                        if (!joinMap.containsKey(linkVo.getToCustomViewCiUuid())) {
+                            //关联目标模型
+                            Join join2 = new Join();
+                            joinMap.put(linkVo.getToCustomViewCiUuid(), new JoinWrapper(join2, joinMap.size()));
+
+                            if (linkVo.getJoinType().equalsIgnoreCase(JoinType.LEFTJOIN.getValue())) {
+                                join2.withLeft(true);
+                            } else if (linkVo.getJoinType().equalsIgnoreCase(JoinType.RIGHTJOIN.getValue())) {
+                                join2.withRight(true);
+                            }
+                            join2.withRightItem(new SubSelect()
+                                            .withSelectBody(buildSubSelectForCi(customViewCiVo)
+                                                    .getSelectBody())
+                                            .withAlias(new Alias("ci_" + customViewCiVo.getUuid())))
+                                    .addOnExpression(new EqualsTo()
+                                            .withLeftExpression(new Column()
+                                                    .withTable(new Table("attrentity_" + linkVo.getUuid()))
+                                                    .withColumnName("to_cientity_id"))
+                                            .withRightExpression(new Column()
+                                                    .withTable(new Table("ci_" + customViewCiVo.getUuid()))
+                                                    .withColumnName("id")));
+                            plainSelect.addJoins(join2);
+                        } else {
+                            JoinWrapper toJoinWrapper = joinMap.get(linkVo.getToCustomViewCiUuid());
+                            JoinWrapper fromJoinWrapper = joinMap.get(linkVo.getFromCustomViewCiUuid());
+                            Join join2 = (fromJoinWrapper != null && toJoinWrapper.getIndex() < fromJoinWrapper.getIndex()) ? fromJoinWrapper.getJoin() : toJoinWrapper.getJoin();
+                            Expression oldExpression = join2.getOnExpression();
+                            join2.addOnExpression(new AndExpression()
+                                    .withLeftExpression(oldExpression)
+                                    .withRightExpression(new EqualsTo()
+                                            .withLeftExpression(new Column()
+                                                    .withTable(new Table("attrentity_" + linkVo.getUuid()))
+                                                    .withColumnName("to_cientity_id")).withRightExpression(new Column()
+                                                    .withTable(new Table("ci_" + customViewCiVo.getUuid())).withColumnName("id"))));
+                        }
                     }
                 } else if (linkVo.getFromType().equals(RelType.REL.getValue()) && linkVo.getToType().equals(RelType.CI.getValue())) {
                     CustomViewRelVo customViewRelVo = customViewVo.getCustomCiByUuid(linkVo.getFromCustomViewCiUuid()).getRelByUuid(linkVo.getFromUuid());
@@ -251,14 +313,12 @@ public class CustomViewBuilder {
                 }
             }
         }
-        //System.out.println(sql);
-//        customViewService.buildCustomView(sql);
         EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
             if (Objects.equals(tableType, "BASE TABLE")) {
                 schemaMapper.deleteTable(TenantContext.get().getDataDbName() + "." + viewName);
             }
             String sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + "." + viewName + " AS " + selectSql;
-            //System.out.println(sql);
+            System.out.println(sql);
             if (logger.isDebugEnabled()) {
                 logger.debug(sql);
             }
@@ -367,7 +427,7 @@ public class CustomViewBuilder {
                 if (attrVo.getTargetCiId() == null) {
                     plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getId() + "`").withTable(new Table("cmdb_" + attrVo.getCiId()))).withAlias(new Alias("`" + viewAttrVo.getUuid() + "`")));
                     plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getId() + "_hash`").withTable(new Table("cmdb_" + attrVo.getCiId()))).withAlias(new Alias("`" + viewAttrVo.getUuid() + "_hash`")));
-                } else {
+                } /*else {
                     CiVo targetCiVo = ciService.getCiById(attrVo.getTargetCiId());
                     if (targetCiVo != null) {
                         plainSelect.addSelectItems(new SelectExpressionItem(new Column("name").withTable(new Table("attr_cientity_" + viewAttrVo.getUuid()))).withAlias(new Alias("`" + viewAttrVo.getUuid() + "`")));
@@ -386,11 +446,23 @@ public class CustomViewBuilder {
                             plainSelect.addJoins(new Join().withLeft(true).withRightItem(new Table().withName(targetCiVo.getCiTableName()).withAlias(new Alias("attr_cientity_" + viewAttrVo.getUuid()))).addOnExpression(new EqualsTo().withLeftExpression(new Column().withTable(new Table("attr_" + viewAttrVo.getUuid())).withColumnName("to_cientity_id")).withRightExpression(new Column().withTable(new Table("attr_cientity_" + viewAttrVo.getUuid())).withColumnName("id"))));
                         }
                     }
-                }
+                }*/
             }
             //生成主SQL，需要join所有父模型数据表
             for (CiVo ci : ciVo.getUpwardCiList()) {
-                plainSelect.addJoins(new Join().withRightItem(new Table().withName("cmdb_" + ci.getId()).withSchemaName(TenantContext.get().getDataDbName()).withAlias(new Alias("cmdb_" + ci.getId()))).addOnExpression(new EqualsTo().withLeftExpression(new Column().withTable(new Table("ci_base")).withColumnName("id")).withRightExpression(new Column().withTable(new Table("cmdb_" + ci.getId())).withColumnName(ci.getIsVirtual().equals(0) ? "cientity_id" : "id"))));
+                plainSelect.addJoins(new Join()
+                        .withRightItem(new Table()
+                                .withName("cmdb_" + ci.getId())
+                                .withSchemaName(TenantContext.get().getDataDbName())
+                                .withAlias(new Alias("cmdb_" + ci.getId())))
+                        .addOnExpression(new EqualsTo()
+                                .withLeftExpression(new Column()
+                                        .withTable(new Table("ci_base"))
+                                        .withColumnName("id"))
+                                .withRightExpression(new Column()
+                                        .withTable(new Table("cmdb_" + ci.getId()))
+                                        .withColumnName(ci.getIsVirtual()
+                                                .equals(0) ? "cientity_id" : "id"))));
             }
             //隐藏超时数据
             plainSelect.withWhere(getExpiredExpression());
@@ -442,7 +514,7 @@ public class CustomViewBuilder {
                 if (attrVo.getTargetCiId() == null) {
                     plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getId() + "`").withTable(new Table("cmdb_" + attrVo.getCiId()))).withAlias(new Alias("`" + viewAttrVo.getUuid() + "`")));
                     plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getId() + "_hash`").withTable(new Table("cmdb_" + attrVo.getCiId()))).withAlias(new Alias("`" + viewAttrVo.getUuid() + "_hash`")));
-                } else {
+                } /*else {
                     CiVo targetCiVo = ciService.getCiById(attrVo.getTargetCiId());
                     if (targetCiVo != null) {
                         plainSelect.addSelectItems(new SelectExpressionItem(new Column("name").withTable(new Table("attr_cientity_" + viewAttrVo.getUuid()))).withAlias(new Alias("`" + viewAttrVo.getUuid() + "`")));
@@ -461,7 +533,7 @@ public class CustomViewBuilder {
                             plainSelect.addJoins(new Join().withLeft(true).withRightItem(new Table().withName(targetCiVo.getCiTableName()).withAlias(new Alias("attr_cientity_" + viewAttrVo.getUuid()))).addOnExpression(new EqualsTo().withLeftExpression(new Column().withTable(new Table("attr_" + viewAttrVo.getUuid())).withColumnName("to_cientity_id")).withRightExpression(new Column().withTable(new Table("attr_cientity_" + viewAttrVo.getUuid())).withColumnName("id"))));
                         }
                     }
-                }
+                }*/
             }
             //隐藏超时数据
             plainSelect.withWhere(getExpiredExpression());

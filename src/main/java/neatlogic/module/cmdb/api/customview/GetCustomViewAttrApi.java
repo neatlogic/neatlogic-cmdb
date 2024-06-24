@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
@@ -53,7 +54,8 @@ public class GetCustomViewAttrApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "id", type = ApiParamType.LONG, desc = "common.id"),
-            @Param(name = "isHidden", type = ApiParamType.INTEGER, desc = "common.ishidden，", help = "1是，0否"),
+            @Param(name = "isHidden", type = ApiParamType.INTEGER, rule = "1,0", desc = "common.ishidden", help = "1是，0否"),
+            @Param(name = "isHasTargetCiId", type = ApiParamType.INTEGER, rule = "1,0", desc = "是否有目标模型", help = "1是，0否"),
             @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "common.defaultvalue")
     })
     @Output({
@@ -76,6 +78,7 @@ public class GetCustomViewAttrApi extends PrivateApiComponentBase {
             throw new ParamNotExistsException("id");
         }
         Integer isHidden = paramObj.getInteger("isHidden");
+        Integer isHasTargetCiId = paramObj.getInteger("isHasTargetCiId");
         CustomViewConstAttrVo customViewConstAttrVo = new CustomViewConstAttrVo(id);
         CustomViewAttrVo customViewAttrVo = new CustomViewAttrVo(id);
         if (isHidden != null) {
@@ -86,6 +89,13 @@ public class GetCustomViewAttrApi extends PrivateApiComponentBase {
         List<CustomViewAttrVo> attrList = customViewMapper.getCustomViewAttrByCustomViewId(customViewAttrVo);
         JSONObject returnObj = new JSONObject();
         returnObj.put("constAttrList", constAttrList);
+        if (isHasTargetCiId != null) {
+            if (isHasTargetCiId.equals(1)) {
+                attrList = attrList.stream().filter(attr -> attr.getAttrVo().getTargetCiId() != null).collect(Collectors.toList());
+            } else if (isHasTargetCiId.equals(0)) {
+                attrList = attrList.stream().filter(attr -> attr.getAttrVo().getTargetCiId() == null).collect(Collectors.toList());
+            }
+        }
         returnObj.put("attrList", attrList);
         return returnObj;
     }
