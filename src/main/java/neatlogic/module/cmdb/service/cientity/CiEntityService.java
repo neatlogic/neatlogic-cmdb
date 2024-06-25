@@ -23,6 +23,8 @@ import neatlogic.framework.cmdb.dto.ci.RelVo;
 import neatlogic.framework.cmdb.dto.cientity.AttrFilterVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.cientity.RelFilterVo;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrFilterVo;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
 import neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import neatlogic.framework.cmdb.dto.transaction.TransactionGroupVo;
 import neatlogic.framework.cmdb.dto.transaction.TransactionStatusVo;
@@ -168,13 +170,16 @@ public interface CiEntityService {
      * @param attrMap   属性map
      * @param relMap    关系map
      * @param ciViewMap 显示map
+     * @param globalAttrMap 全局属性map
      */
-    void getCiViewMapAndAttrMapAndRelMap(Long ciId, Map<Long, AttrVo> attrMap, Map<Long, RelVo> relMap, Map<String, CiViewVo> ciViewMap);
+    void getCiViewMapAndAttrMapAndRelMap(Long ciId, Map<Long, AttrVo> attrMap, Map<Long, RelVo> relMap, Map<String, CiViewVo> ciViewMap, Map<Long, GlobalAttrVo> globalAttrMap);
 
 
     RelFilterVo convertFromRelFilter(RelVo relVo, String expression, List<String> valueList, String direction);
 
     AttrFilterVo convertAttrFilter(AttrVo attrVo, String expression, List<String> valueList);
+
+    GlobalAttrFilterVo convertGlobalAttrFilter(GlobalAttrVo globalAttrVo, String expression, List<String> valueList);
 
     /**
      * 查询配置项，构造tbodyList的每一行

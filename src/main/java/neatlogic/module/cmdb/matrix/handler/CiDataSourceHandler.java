@@ -25,6 +25,8 @@ import neatlogic.framework.cmdb.dto.cientity.AttrFilterVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.cientity.RelEntityVo;
 import neatlogic.framework.cmdb.dto.cientity.RelFilterVo;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrFilterVo;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
 import neatlogic.framework.cmdb.dto.view.ViewConstVo;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.utils.RelUtil;
@@ -46,6 +48,7 @@ import neatlogic.module.cmdb.dao.mapper.ci.CiViewMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.RelEntityMapper;
+import neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper;
 import neatlogic.module.cmdb.matrix.constvalue.MatrixType;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
 import neatlogic.module.framework.dependency.handler.CiAttr2MatrixAttrDependencyHandler;
@@ -89,6 +92,9 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
 
     @Resource
     private CiViewMapper ciViewMapper;
+
+    @Resource
+    private GlobalAttrMapper globalAttrMapper;
 
     @Resource
     private CiEntityService ciEntityService;
@@ -162,6 +168,9 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                 case "const":
                     //固化属性需要特殊处理
                     ciViewMap.put("const_" + ciview.getItemName().replace("_", ""), ciview);
+                    break;
+                case "global":
+                    ciViewMap.put("global_" + ciview.getItemId(), ciview);
                     break;
             }
         }
@@ -419,6 +428,11 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciId));
             Map<Long, RelVo> fromRelMap = relList.stream().filter(rel -> rel.getDirection().equals("from")).collect(Collectors.toMap(RelVo::getId, e -> e));
             Map<Long, RelVo> toRelMap = relList.stream().filter(rel -> rel.getDirection().equals("to")).collect(Collectors.toMap(RelVo::getId, e -> e));
+
+            GlobalAttrVo searchVo = new GlobalAttrVo();
+            searchVo.setIsActive(1);
+            List<GlobalAttrVo> globalAttrList = globalAttrMapper.searchGlobalAttr(searchVo);
+            Map<Long, GlobalAttrVo> globalAttrMap = globalAttrList.stream().collect(Collectors.toMap(GlobalAttrVo::getId, e -> e));
             for (CiViewVo ciview : ciViewList) {
                 MatrixAttributeVo matrixAttributeVo = new MatrixAttributeVo();
                 matrixAttributeVo.setMatrixUuid(matrixUuid);
@@ -466,6 +480,14 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                         } else {
                             matrixAttributeVo.setIsSearchable(0);
                         }
+                        break;
+                    case "global":
+                        // 全局属性
+                        matrixAttributeVo.setLabel("global_" + ciview.getItemId());
+                        GlobalAttrVo globalAttrVo = globalAttrMap.get(ciview.getItemId());
+                        JSONObject globalConfig = new JSONObject();
+                        globalConfig.put("global", globalAttrVo);
+                        matrixAttributeVo.setConfig(globalConfig);
                         break;
                     default:
                         break;
@@ -572,7 +594,8 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                     Map<Long, AttrVo> attrMap = new HashMap<>();
                     Map<Long, RelVo> relMap = new HashMap<>();
                     Map<String, CiViewVo> ciViewMap = new HashMap<>();
-                    ciEntityService.getCiViewMapAndAttrMapAndRelMap(ciId, attrMap, relMap, ciViewMap);
+                    Map<Long, GlobalAttrVo> globalAttrMap = new HashMap<>();
+                    ciEntityService.getCiViewMapAndAttrMapAndRelMap(ciId, attrMap, relMap, ciViewMap, globalAttrMap);
                     for (MatrixFilterVo matrixFilterVo : filterList) {
                         if (matrixFilterVo == null) {
                             continue;
@@ -808,8 +831,9 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         ciEntityVo.setCiId(ciId);
         Map<Long, AttrVo> attrMap = new HashMap<>();
         Map<Long, RelVo> relMap = new HashMap<>();
+        Map<Long, GlobalAttrVo> globalAttrMap = new HashMap<>();
         Map<String, CiViewVo> ciViewMap = new HashMap<>();
-        ciEntityService.getCiViewMapAndAttrMapAndRelMap(ciId, attrMap, relMap, ciViewMap);
+        ciEntityService.getCiViewMapAndAttrMapAndRelMap(ciId, attrMap, relMap, ciViewMap, globalAttrMap);
         JSONArray tbodyArray = new JSONArray();
         JSONArray defaultValue = dataVo.getDefaultValue();
         if (CollectionUtils.isNotEmpty(defaultValue)) {
@@ -819,6 +843,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             for (MatrixDefaultValueFilterVo defaultValueFilterVo : dataVo.getDefaultValueFilterList()) {
                 List<AttrFilterVo> attrFilters = new ArrayList<>();
                 List<RelFilterVo> relFilters = new ArrayList<>();
+                List<GlobalAttrFilterVo> globalAttrFilters = new ArrayList<>();
                 List<MatrixFilterVo> filterList = new ArrayList<>();
                 MatrixKeywordFilterVo valueFieldFilter = defaultValueFilterVo.getValueFieldFilter();
                 if (valueFieldFilter != null) {
@@ -911,17 +936,31 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                                 ciEntityVo.setFilterCiIdList(filterCiIdList);
                             }
                             break;
+                        case "global":
+                            Long globalId = Long.valueOf(label.substring(7));
+                            GlobalAttrVo globalAttrVo = globalAttrMap.get(globalId);
+                            if (globalAttrVo != null) {
+                                GlobalAttrFilterVo globalAttrFilterVo = ciEntityService.convertGlobalAttrFilter(globalAttrVo, matrixFilterVo.getExpression(), valueList);
+                                if (globalAttrFilterVo != null) {
+                                    globalAttrFilters.add(globalAttrFilterVo);
+                                } else {
+                                    flag = false;
+                                }
+                            }
+                            break;
                     }
                 }
                 if (flag) {
                     ciEntityVo.setAttrFilterList(attrFilters);
                     ciEntityVo.setRelFilterList(relFilters);
+                    ciEntityVo.setGlobalAttrFilterList(globalAttrFilters);
                     tbodyArray.addAll(accessSearchCiEntity(matrixUuid, ciEntityVo));
                 }
             }
         } else {
             List<AttrFilterVo> attrFilters = new ArrayList<>();
             List<RelFilterVo> relFilters = new ArrayList<>();
+            List<GlobalAttrFilterVo> globalAttrFilters = new ArrayList<>();
             List<MatrixFilterVo> filterList = dataVo.getFilterList();
             String keywordColumn = dataVo.getKeywordColumn();
             if (StringUtils.isNotBlank(keywordColumn) && StringUtils.isNotBlank(dataVo.getKeyword())) {
@@ -1012,6 +1051,18 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                                 ciEntityVo.setFilterCiIdList(filterCiIdList);
                             }
                             break;
+                        case "global":
+                            Long globalId = Long.valueOf(label.substring(7));
+                            GlobalAttrVo globalAttrVo = globalAttrMap.get(globalId);
+                            if (globalAttrVo != null) {
+                                GlobalAttrFilterVo globalAttrFilterVo = ciEntityService.convertGlobalAttrFilter(globalAttrVo, matrixFilterVo.getExpression(), valueList);
+                                if (globalAttrFilterVo != null) {
+                                    globalAttrFilters.add(globalAttrFilterVo);
+                                } else {
+                                    flag = false;
+                                }
+                            }
+                            break;
                     }
                 }
             }
@@ -1021,6 +1072,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             }
             ciEntityVo.setAttrFilterList(attrFilters);
             ciEntityVo.setRelFilterList(relFilters);
+            ciEntityVo.setGlobalAttrFilterList(globalAttrFilters);
             //下面逻辑适用于下拉框滚动加载，也可以搜索，但是一页返回的数据量可能会小于pageSize，因为做了去重处理
             ciEntityVo.setCurrentPage(dataVo.getCurrentPage());
             ciEntityVo.setPageSize(dataVo.getPageSize());
