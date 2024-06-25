@@ -30,6 +30,8 @@ import neatlogic.framework.cmdb.dto.ci.CiViewVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.ci.RelVo;
 import neatlogic.framework.cmdb.dto.cientity.*;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrFilterVo;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo;
 import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
 import neatlogic.framework.cmdb.dto.transaction.*;
 import neatlogic.framework.cmdb.enums.*;
@@ -2357,13 +2359,18 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
     }
 
     @Override
-    public void getCiViewMapAndAttrMapAndRelMap(Long ciId, Map<Long, AttrVo> attrMap, Map<Long, RelVo> relMap, Map<String, CiViewVo> ciViewMap) {
+    public void getCiViewMapAndAttrMapAndRelMap(Long ciId, Map<Long, AttrVo> attrMap, Map<Long, RelVo> relMap, Map<String, CiViewVo> ciViewMap, Map<Long, GlobalAttrVo> globalAttrMap) {
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciId);
         attrMap.putAll(attrList.stream().collect(Collectors.toMap(AttrVo::getId, e -> e)));
         List<RelVo> relList = relMapper.getRelByCiId(ciId);
         for (RelVo relVo : relList) {
             relMap.put(relVo.getId(), relVo);
         }
+        GlobalAttrVo searchVo = new GlobalAttrVo();
+        searchVo.setIsActive(1);
+        List<GlobalAttrVo> globalAttrList = globalAttrMapper.searchGlobalAttr(searchVo);
+        globalAttrMap.putAll(globalAttrList.stream().collect(Collectors.toMap(GlobalAttrVo::getId, e -> e)));
+
         CiViewVo ciViewVo = new CiViewVo();
         ciViewVo.setCiId(ciId);
         List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo));
@@ -2381,6 +2388,9 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 case "const":
                     //固化属性需要特殊处理
                     ciViewMap.put("const_" + ciview.getItemName().replace("_", ""), ciview);
+                    break;
+                case "global":
+                    ciViewMap.put("global_" + ciview.getItemId(), ciview);
                     break;
             }
         }
@@ -2446,6 +2456,58 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         }
         attrFilterVo.setExpression(expression);
         return attrFilterVo;
+    }
+
+    @Override
+    public GlobalAttrFilterVo convertGlobalAttrFilter(GlobalAttrVo globalAttrVo, String expression, List<String> valueList) {
+        GlobalAttrFilterVo globalAttrFilterVo = new GlobalAttrFilterVo();
+        globalAttrFilterVo.setAttrId(globalAttrVo.getId());
+        if (StringUtils.isBlank(expression)) {
+            expression = neatlogic.framework.matrix.constvalue.SearchExpression.EQ.getExpression();
+        }
+        if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NULL.getExpression())
+                || Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NOTNULL.getExpression())) {
+            globalAttrFilterVo.setExpression(expression);
+            return globalAttrFilterVo;
+        }
+        List<Long> longValueList = new ArrayList<>();
+        List<GlobalAttrItemVo> itemList = globalAttrVo.getItemList();
+        Map<String, GlobalAttrItemVo> globalAttrItemMap = itemList.stream().collect(Collectors.toMap(GlobalAttrItemVo::getValue, e -> e));
+        for (String value : valueList) {
+            GlobalAttrItemVo globalAttrItemVo = globalAttrItemMap.get(value);
+            for (Map.Entry<String, GlobalAttrItemVo> entry : globalAttrItemMap.entrySet()) {
+                String key = entry.getKey();
+                if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.EQ.getExpression())
+                        || Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NE.getExpression())) {
+                    if (Objects.equals(key, value)) {
+                        globalAttrItemVo = entry.getValue();
+                    }
+                } else if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.LI.getExpression())
+                        || Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NL.getExpression())) {
+                    if (key.toLowerCase().contains(value.toLowerCase())) {
+                        globalAttrItemVo = entry.getValue();
+                    }
+                }
+            }
+            if (globalAttrItemVo == null) {
+                return null;
+            }
+            longValueList.add(globalAttrItemVo.getId());
+        }
+        if (CollectionUtils.isEmpty(longValueList)) {
+            return null;
+        }
+        globalAttrFilterVo.setValueList(longValueList);
+
+        if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.EQ.getExpression())) {
+            expression = neatlogic.framework.matrix.constvalue.SearchExpression.LI.getExpression();
+        } else if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NE.getExpression())) {
+            expression = neatlogic.framework.matrix.constvalue.SearchExpression.NL.getExpression();
+        }
+        globalAttrFilterVo.setExpression(expression);
+        globalAttrFilterVo.setName(globalAttrVo.getName());
+        globalAttrFilterVo.setLabel(globalAttrVo.getLabel());
+        return globalAttrFilterVo;
     }
 
     @Override
@@ -2577,6 +2639,26 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                             }
                         }
                         tbody.put(key, String.join(",", ciEntityNameList));
+                    }
+                }
+            }
+        }
+        JSONObject globalAttrEntityData = ciEntity.getGlobalAttrEntityData();
+        if (MapUtils.isNotEmpty(globalAttrEntityData)) {
+            for (Map.Entry<String, Object> entry : globalAttrEntityData.entrySet()) {
+                JSONObject valueObj = (JSONObject) entry.getValue();
+                String key = entry.getKey();
+                if (StringUtils.isNotBlank(key)) {
+                    JSONArray valueArray = valueObj.getJSONArray("valueList");
+                    if (CollectionUtils.isNotEmpty(valueArray)) {
+                        List<GlobalAttrItemVo> valueList = valueArray.toJavaList(GlobalAttrItemVo.class);
+                        if (CollectionUtils.isNotEmpty(valueList)) {
+                            List<String> list = new ArrayList<>();
+                            for (GlobalAttrItemVo globalAttrItemVo : valueList) {
+                                list.add(globalAttrItemVo.getValue());
+                            }
+                            tbody.put(key, String.join(",", list));
+                        }
                     }
                 }
             }

@@ -26,6 +26,8 @@ import neatlogic.framework.cmdb.dto.ci.RelVo;
 import neatlogic.framework.cmdb.dto.cientity.AttrFilterVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.cientity.RelFilterVo;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrFilterVo;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
 import neatlogic.framework.cmdb.dto.view.ViewConstVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.dto.ValueTextVo;
@@ -104,11 +106,13 @@ public class ListCiEntityDataForSelectApi extends PrivateApiComponentBase {
         Map<Long, AttrVo> attrMap = new HashMap<>();
         Map<Long, RelVo> relMap = new HashMap<>();
         Map<String, CiViewVo> ciViewMap = new HashMap<>();
-        ciEntityService.getCiViewMapAndAttrMapAndRelMap(ciId, attrMap, relMap, ciViewMap);
+        Map<Long, GlobalAttrVo> globalAttrMap = new HashMap<>();
+        ciEntityService.getCiViewMapAndAttrMapAndRelMap(ciId, attrMap, relMap, ciViewMap, globalAttrMap);
         CiViewVo ciView = ciViewMap.get(label);
         if (ciView != null) {
             List<AttrFilterVo> attrFilters = new ArrayList<>();
             List<RelFilterVo> relFilters = new ArrayList<>();
+            List<GlobalAttrFilterVo> globalAttrFilters = new ArrayList<>();
             List<Long> attrIdList = new ArrayList<>();
             List<Long> relIdList = new ArrayList<>();
             List<String> valueList = new ArrayList<>();
@@ -181,6 +185,18 @@ public class ListCiEntityDataForSelectApi extends PrivateApiComponentBase {
                         ciEntityVo.setFilterCiIdList(filterCiIdList);
                     }
                     break;
+                case "global":
+                    Long globalId = Long.valueOf(label.substring(7));
+                    GlobalAttrVo globalAttrVo = globalAttrMap.get(globalId);
+                    if (globalAttrVo != null) {
+                        GlobalAttrFilterVo globalAttrFilterVo = ciEntityService.convertGlobalAttrFilter(globalAttrVo, expression, valueList);
+                        if (globalAttrFilterVo != null) {
+                            globalAttrFilters.add(globalAttrFilterVo);
+                        } else {
+                            flag = false;
+                        }
+                    }
+                    break;
                 default:
                     break;
             }
@@ -189,6 +205,7 @@ public class ListCiEntityDataForSelectApi extends PrivateApiComponentBase {
             }
             ciEntityVo.setAttrFilterList(attrFilters);
             ciEntityVo.setRelFilterList(relFilters);
+            ciEntityVo.setGlobalAttrFilterList(globalAttrFilters);
             ciEntityVo.setAttrIdList(attrIdList);
             ciEntityVo.setRelIdList(relIdList);
             List<String> viewConstNameList = new ArrayList<>();
