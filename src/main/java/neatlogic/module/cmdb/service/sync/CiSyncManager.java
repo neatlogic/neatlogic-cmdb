@@ -479,6 +479,7 @@ public class CiSyncManager {
                                                     subDataWithPK.put(entry.getKey(), entry.getValue());
                                                 }
                                             }
+                                            logger.info("处理数据：{}", subDataWithPK);
                                             CiEntityTransactionVo subCiEntityTransactionVo = generateCiEntityTransaction(subDataWithPK, subSyncCiCollectionVo, ciEntityTransactionMap, mappingVo.getField());
                                             if (subCiEntityTransactionVo != null) {
                                                 if (ciEntityTransactionMap.containsKey(subCiEntityTransactionVo.getHash())) {
