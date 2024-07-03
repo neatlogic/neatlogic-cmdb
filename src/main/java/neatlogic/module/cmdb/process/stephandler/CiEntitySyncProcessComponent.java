@@ -93,7 +93,7 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
     public JSONObject getChartConfig() {
         return new JSONObject() {
             {
-                this.put("icon", "ts-m-cmdb");
+                this.put("icon", "tsfont-ci");
                 this.put("shape", "L-rectangle-50%:R-rectangle-50%");
                 this.put("width", 68);
                 this.put("height", 40);

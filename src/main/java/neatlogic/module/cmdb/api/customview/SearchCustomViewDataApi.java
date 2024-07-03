@@ -63,6 +63,20 @@ public class SearchCustomViewDataApi extends PrivateApiComponentBase {
         return null;
     }
 
+    @Override
+    public JSONObject example() {
+        String json = "{\"id\":" +
+                "588094621147136," +
+                "\"keyword\":\"\"," +
+                "\"pageSize\":20," +
+                "\"searchMode\":\"normal\"," +
+                "\"currentPage\":1," +
+                "\"attrFilterList\":[{" +
+                "\"attrName\":\"属性唯一标识（需要在视图“显示配置”中配置，attrName提供了attrUuid可以不必提供，系统会根据attrName自动补充attrUuid）\"," +
+                "\"attrUuid\":\"546d7fb7276e40f889cd131e22bb547a\",\"valueList\":[\"192.168.0.22\"],\"expression\":\"like\",\"type\":\"attr\"}]}";
+        return JSON.parseObject(json);
+    }
+
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "term.cmdb.viewid"),
             @Param(name = "name", type = ApiParamType.STRING, desc = "term.cmdb.viewname"),
             @Param(name = "searchMode", type = ApiParamType.ENUM, rule = "normal,group,data", isRequired = true, desc = "nmcac.searchcustomviewdataapi.input.param.desc.searchmode"),
@@ -76,7 +90,6 @@ public class SearchCustomViewDataApi extends PrivateApiComponentBase {
     @Output({@Param(name = "dataList", type = ApiParamType.JSONARRAY, desc = "nmcac.searchcustomviewdataapi.output.param.desc.datalist"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize")})
-    @Example(example = "{\"id\":588094621147136,\"keyword\":\"\",\"pageSize\":20,\"searchMode\":\"normal\",\"currentPage\":1,\"attrFilterList\":[{\"attrUuid\":\"546d7fb7276e40f889cd131e22bb547a\",\"valueList\":[\"192.168.0.22\"],\"expression\":\"like\",\"type\":\"attr\"}]}")
     @Description(desc = "nmcac.searchcustomviewdataapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
@@ -107,6 +120,9 @@ public class SearchCustomViewDataApi extends PrivateApiComponentBase {
             returnObj.put("dataCount", customViewConditionVo.getRowNum());
             returnObj.put("dataLimit", customViewConditionVo.getLimit());
         } else if (customViewConditionVo.getSearchMode().equals(SearchMode.GROUP.getValue())) {
+            if (StringUtils.isBlank(customViewConditionVo.getGroupBy())) {
+                throw new ParamNotExistsException("groupBy");
+            }
             returnObj.put("dataList", customViewDataService.searchCustomViewDataGroup(customViewConditionVo));
             returnObj.put("dataCount", customViewConditionVo.getRowNum());
             returnObj.put("dataLimit", customViewConditionVo.getLimit());

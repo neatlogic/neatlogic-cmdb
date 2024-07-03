@@ -32,10 +32,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -75,11 +72,14 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
         List<CustomViewConstAttrVo> customViewConstAttrList = customViewMapper.getCustomViewConstAttrByCustomViewId(new CustomViewConstAttrVo(customViewConditionVo.getCustomViewId()));
         //去掉所有引用属性
         customViewAttrList = customViewAttrList.stream().filter(attr -> attr.getAttrVo().getTargetCiId() == null).collect(Collectors.toList());
-
         Map<String, AttrVo> attrMap = new HashMap<>();
+        Map<String, CustomViewAttrVo> attrNameMap = new HashMap<>();
         if (CollectionUtils.isNotEmpty(customViewAttrList)) {
             for (CustomViewAttrVo customViewAttr : customViewAttrList) {
                 attrMap.put(customViewAttr.getUuid(), customViewAttr.getAttrVo());
+                if (StringUtils.isNotBlank(customViewAttr.getName())) {
+                    attrNameMap.put(customViewAttr.getName(), customViewAttr);
+                }
                 if (MapUtils.isNotEmpty(customViewAttr.getCondition())) {
                     String expression = customViewAttr.getCondition().getString("expression");
                     if (StringUtils.isNotBlank(expression)) {
@@ -89,12 +89,24 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
                 }
             }
         }
-        //补充attrtype，搜索时需要使用
+        //补充attrtype，搜索时需要使用，如果没有uuid的需要根据name来补充uuid，没有找到uuid的条件会被舍弃
         if (CollectionUtils.isNotEmpty(customViewConditionVo.getAttrFilterList())) {
-            for (CustomViewConditionFilterVo filterVo : customViewConditionVo.getAttrFilterList()) {
-                AttrVo attrVo = attrMap.get(filterVo.getAttrUuid());
-                if (attrVo != null) {
-                    filterVo.setAttrType(attrVo.getType());
+            Iterator<CustomViewConditionFilterVo> iterator = customViewConditionVo.getAttrFilterList().iterator();
+            while (iterator.hasNext()) {
+                CustomViewConditionFilterVo filterVo = iterator.next();
+                if (StringUtils.isBlank(filterVo.getAttrUuid()) && StringUtils.isNotBlank(filterVo.getAttrName())) {
+                    CustomViewAttrVo customAttrVo = attrNameMap.get(filterVo.getAttrName());
+                    if (customAttrVo != null) {
+                        filterVo.setAttrUuid(customAttrVo.getUuid());
+                    }
+                }
+                if (StringUtils.isNotBlank(filterVo.getAttrUuid())) {
+                    AttrVo attrVo = attrMap.get(filterVo.getAttrUuid());
+                    if (attrVo != null) {
+                        filterVo.setAttrType(attrVo.getType());
+                    }
+                } else {
+                    iterator.remove();
                 }
             }
         }
@@ -143,9 +155,13 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
         customViewAttrList = customViewAttrList.stream().filter(attr -> attr.getAttrVo().getTargetCiId() == null).collect(Collectors.toList());
         List<CustomViewConstAttrVo> customViewConstAttrList = customViewMapper.getCustomViewConstAttrByCustomViewId(new CustomViewConstAttrVo(customViewConditionVo.getCustomViewId()));
         Map<String, AttrVo> attrMap = new HashMap<>();
+        Map<String, CustomViewAttrVo> attrNameMap = new HashMap<>();
         if (CollectionUtils.isNotEmpty(customViewAttrList)) {
             for (CustomViewAttrVo customViewAttr : customViewAttrList) {
                 attrMap.put(customViewAttr.getUuid(), customViewAttr.getAttrVo());
+                if (StringUtils.isNotBlank(customViewAttr.getName())) {
+                    attrNameMap.put(customViewAttr.getName(), customViewAttr);
+                }
                 if (MapUtils.isNotEmpty(customViewAttr.getCondition())) {
                     String expression = customViewAttr.getCondition().getString("expression");
                     if (StringUtils.isNotBlank(expression)) {
@@ -169,12 +185,24 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
                 }
             }
         }
-        //补充attrtype，搜索时需要使用
+        //补充attrtype，搜索时需要使用，如果没有uuid的需要根据name来补充uuid，没有找到uuid的条件会被舍弃
         if (CollectionUtils.isNotEmpty(customViewConditionVo.getAttrFilterList())) {
-            for (CustomViewConditionFilterVo filterVo : customViewConditionVo.getAttrFilterList()) {
-                AttrVo attrVo = attrMap.get(filterVo.getAttrUuid());
-                if (attrVo != null) {
-                    filterVo.setAttrType(attrVo.getType());
+            Iterator<CustomViewConditionFilterVo> iterator = customViewConditionVo.getAttrFilterList().iterator();
+            while (iterator.hasNext()) {
+                CustomViewConditionFilterVo filterVo = iterator.next();
+                if (StringUtils.isBlank(filterVo.getAttrUuid()) && StringUtils.isNotBlank(filterVo.getAttrName())) {
+                    CustomViewAttrVo customAttrVo = attrNameMap.get(filterVo.getAttrName());
+                    if (customAttrVo != null) {
+                        filterVo.setAttrUuid(customAttrVo.getUuid());
+                    }
+                }
+                if (StringUtils.isNotBlank(filterVo.getAttrUuid())) {
+                    AttrVo attrVo = attrMap.get(filterVo.getAttrUuid());
+                    if (attrVo != null) {
+                        filterVo.setAttrType(attrVo.getType());
+                    }
+                } else {
+                    iterator.remove();
                 }
             }
         }
@@ -268,10 +296,14 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
 
         List<CustomViewConstAttrVo> customViewConstAttrList = customViewMapper.getCustomViewConstAttrByCustomViewId(new CustomViewConstAttrVo(customViewConditionVo.getCustomViewId()));
         Map<String, AttrVo> attrMap = new HashMap<>();
+        Map<String, CustomViewAttrVo> attrNameMap = new HashMap<>();
         //Map<String, CustomViewConstAttrVo> constAttrMap = new HashMap<>();
         if (CollectionUtils.isNotEmpty(customViewAttrList)) {
             for (CustomViewAttrVo customViewAttr : customViewAttrList) {
                 attrMap.put(customViewAttr.getUuid(), customViewAttr.getAttrVo());
+                if (StringUtils.isNotBlank(customViewAttr.getName())) {
+                    attrNameMap.put(customViewAttr.getName(), customViewAttr);
+                }
                 if (MapUtils.isNotEmpty(customViewAttr.getCondition())) {
                     String expression = customViewAttr.getCondition().getString("expression");
                     if (StringUtils.isNotBlank(expression)) {
@@ -279,14 +311,33 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
                         customViewConditionVo.addAttrFilter(new CustomViewConditionFilterVo(customViewAttr.getUuid(), customViewAttr.getAttrVo().getType(), expression, valueList));
                     }
                 }
+                //如果发现传入的groupby不是uuid，尝试转换成真实的uuid
+                //不成熟，先注释
+                /*if (customViewConditionVo.getGroupBy().length() != 32 && StringUtils.isNotBlank(customViewAttr.getName())) {
+                    if (customViewAttr.getName().equalsIgnoreCase(customViewConditionVo.getGroupBy())) {
+                        customViewConditionVo.setGroupBy(customViewAttr.getUuid());
+                    }
+                }*/
             }
         }
-        //补充attrtype，搜索时需要使用
+        //补充attrtype，搜索时需要使用，如果没有uuid的需要根据name来补充uuid，没有找到uuid的条件会被舍弃
         if (CollectionUtils.isNotEmpty(customViewConditionVo.getAttrFilterList())) {
-            for (CustomViewConditionFilterVo filterVo : customViewConditionVo.getAttrFilterList()) {
-                AttrVo attrVo = attrMap.get(filterVo.getAttrUuid());
-                if (attrVo != null) {
-                    filterVo.setAttrType(attrVo.getType());
+            Iterator<CustomViewConditionFilterVo> iterator = customViewConditionVo.getAttrFilterList().iterator();
+            while (iterator.hasNext()) {
+                CustomViewConditionFilterVo filterVo = iterator.next();
+                if (StringUtils.isBlank(filterVo.getAttrUuid()) && StringUtils.isNotBlank(filterVo.getAttrName())) {
+                    CustomViewAttrVo customAttrVo = attrNameMap.get(filterVo.getAttrName());
+                    if (customAttrVo != null) {
+                        filterVo.setAttrUuid(customAttrVo.getUuid());
+                    }
+                }
+                if (StringUtils.isNotBlank(filterVo.getAttrUuid())) {
+                    AttrVo attrVo = attrMap.get(filterVo.getAttrUuid());
+                    if (attrVo != null) {
+                        filterVo.setAttrType(attrVo.getType());
+                    }
+                } else {
+                    iterator.remove();
                 }
             }
         }
