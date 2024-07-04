@@ -405,7 +405,7 @@ public class AttrExpressionRebuildManager {
                         saveCiEntityVo.addAttrEntityData(attrVo.getId(), attrEntityObj);
                         //更新配置项名称
                         if (Objects.equals(ciVo.getNameAttrId(), attrVo.getId())) {
-                            saveCiEntityVo.setName(expressionValue.toString());
+                            saveCiEntityVo.setName(expressionV);
                             ciEntityService.updateCiEntityName(saveCiEntityVo);
                         }
                     }
