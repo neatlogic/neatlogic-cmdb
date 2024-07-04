@@ -264,7 +264,7 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
         CustomViewConditionVo customViewConditionVo = new CustomViewConditionVo();
         customViewConditionVo.setCustomViewId(matrixCmdbCustomViewVo.getCustomViewId());
         customViewConditionVo.setCurrentPage(1);
-        customViewConditionVo.setPageSize(1000);
+        customViewConditionVo.setPageSize(100);
         List<Map<String, Object>> dataList = customViewDataService.searchCustomViewData(customViewConditionVo);
         Integer rowNum = customViewConditionVo.getRowNum();
         if (rowNum > 0) {
@@ -279,6 +279,9 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
                     list = customViewDataService.searchCustomViewData(customViewConditionVo);
                 }
                 if (CollectionUtils.isNotEmpty(list)) {
+                    if (list.size() > customViewConditionVo.getPageSize()) {
+                        list = list.subList(0, customViewConditionVo.getPageSize());
+                    }
                     StringBuilder content = new StringBuilder();
                     for (Map<String, Object> map : list) {
                         for (String head : headList) {
@@ -536,6 +539,9 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
                 rowDataMap.put("uuid", resultObj);
             }
             resultList.add(rowDataMap);
+            if (resultList.size() == dataVo.getPageSize()) {
+                break;
+            }
         }
         return resultList;
     }
