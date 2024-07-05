@@ -91,6 +91,9 @@ public class DslSearchManager {
     }
 
     public DslSearchManager withCurrentPage(Integer currentPage) {
+        if (currentPage == null) {
+            currentPage = 1;
+        }
         this.currentPage = Math.max(1, currentPage);
         return this;
     }
@@ -101,6 +104,9 @@ public class DslSearchManager {
     }
 
     public DslSearchManager withPageSize(Integer pageSize) {
+        if (pageSize == null) {
+            pageSize = 20;
+        }
         this.pageSize = Math.max(1, pageSize);
         return this;
     }
