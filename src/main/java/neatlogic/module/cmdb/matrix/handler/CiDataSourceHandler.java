@@ -318,10 +318,9 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         JSONArray theadList = getTheadList(attributeVoList);
         StringBuilder header = new StringBuilder();
         List<String> headList = new ArrayList<>();
-        for (int i = 0; i < theadList.size(); i++) {
-            JSONObject obj = theadList.getJSONObject(i);
-            String title = obj.getString("title");
-            String key = obj.getString("key");
+        for (MatrixAttributeVo attributeVo : attributeVoList) {
+            String title = attributeVo.getName();
+            String key = attributeVo.getLabel();
             if (StringUtils.isNotBlank(title) && StringUtils.isNotBlank(key)) {
                 header.append(title).append(",");
                 headList.add(key);
