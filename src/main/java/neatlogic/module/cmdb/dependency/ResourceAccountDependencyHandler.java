@@ -1,14 +1,14 @@
 package neatlogic.module.cmdb.dependency;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.enums.CmdbFromType;
-import neatlogic.framework.dependency.core.CustomTableDependencyHandlerBase;
+import neatlogic.framework.dependency.core.CustomDependencyHandlerBase;
 import neatlogic.framework.dependency.core.IFromType;
 import neatlogic.framework.dependency.dto.DependencyInfoVo;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
-import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -20,7 +20,7 @@ import java.util.List;
  * @date 2022/3/11 5:14 下午
  */
 @Service
-public class ResourceAccountDependencyHandler extends CustomTableDependencyHandlerBase {
+public class ResourceAccountDependencyHandler extends CustomDependencyHandlerBase {
 
     @Resource
     ResourceAccountMapper resourceAccountMapper;
