@@ -22,6 +22,7 @@ import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.enums.SearchExpression;
 import neatlogic.framework.cmdb.exception.attr.AttrValueIrregularException;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 
@@ -100,7 +101,7 @@ public class EnumValueHandler implements IAttrValueHandler {
             JSONArray members = config.getJSONArray("members");
             for (int i = 0; i < valueList.size(); i++) {
                 String v = valueList.getString(i);
-                if (!members.contains(v)) {
+                if (StringUtils.isNotBlank(v) && !members.contains(v)) {
                     throw new AttrValueIrregularException(attrVo, v);
                 }
             }
