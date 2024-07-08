@@ -97,7 +97,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 datetime
             </when>
             <when test="attrVo.type == 'enum'">
-                char(30)
+                varchar(50)
             </when>
             <when test="attrVo.type == 'hyperlink'">
                 varchar(500)
@@ -148,7 +148,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                             timestamp
                         </when>
                         <when test="attrVo.type == 'enum'">
-                            char(30)
+                            varchar(50)
                         </when>
                         <when test="attrVo.type == 'hyperlink'">
                             varchar(500)
