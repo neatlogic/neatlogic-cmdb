@@ -142,7 +142,18 @@ public class CustomViewBuilder {
             //}
         }
 
-        plainSelect.addJoins(new Join().withRightItem(new SubSelect().withSelectBody(buildSubSelectForCi(startCustomViewCiVo).getSelectBody()).withAlias(new Alias("ci_" + startCustomViewCiVo.getUuid()))).addOnExpression(new EqualsTo().withLeftExpression(new Column().withTable(new Table("ci_base")).withColumnName("id")).withRightExpression(new Column().withTable(new Table("ci_" + startCustomViewCiVo.getUuid())).withColumnName("id"))));
+        plainSelect.addJoins(new Join()
+                .withRightItem(new SubSelect()
+                        .withSelectBody(buildSubSelectForCi(startCustomViewCiVo)
+                                .getSelectBody())
+                        .withAlias(new Alias("ci_" + startCustomViewCiVo.getUuid())))
+                .addOnExpression(new EqualsTo()
+                        .withLeftExpression(new Column()
+                                .withTable(new Table("ci_base"))
+                                .withColumnName("id"))
+                        .withRightExpression(new Column()
+                                .withTable(new Table("ci_" + startCustomViewCiVo.getUuid()))
+                                .withColumnName("id"))));
         for (CustomViewAttrVo attrVo : customViewVo.getAttrList()) {
             if (attrVo.getAttrVo().getTargetCiId() == null) {
                 plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getUuid() + "`")));
@@ -318,9 +329,9 @@ public class CustomViewBuilder {
                 schemaMapper.deleteTable(TenantContext.get().getDataDbName() + "." + viewName);
             }
             String sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + "." + viewName + " AS " + selectSql;
-            System.out.println(sql);
+            //System.out.println(sql);
             if (logger.isDebugEnabled()) {
-                logger.debug(sql);
+                logger.debug("创建自定义视图{}:", sql);
             }
             schemaMapper.insertView(sql);
         }).execute();
@@ -368,7 +379,8 @@ public class CustomViewBuilder {
             plainSelect.addSelectItems(new SelectExpressionItem(new Column("id").withTable(new Table("ci_base"))));
             plainSelect.addSelectItems(new SelectExpressionItem(new Column("name").withTable(new Table("ci_base"))));
             //plainSelect.addSelectItems(new SelectExpressionItem(new StringValue(ciVo.getName())).withAlias(new Alias("ciName")));
-            plainSelect.addSelectItems(new SelectExpressionItem(new Column("label").withTable(new Table("ci_info"))).withAlias(new Alias("ciName")));
+            plainSelect.addSelectItems(new SelectExpressionItem(new Column("label").withTable(new Table("ci_info")))
+                    .withAlias(new Alias("ciName")));
             Function lcdFuc = new Function();
             lcdFuc.setName("DATE_FORMAT");
             ExpressionList lcdExpressionList = new ExpressionList();
@@ -481,8 +493,8 @@ public class CustomViewBuilder {
             PlainSelect plainSelect = (PlainSelect) selectBody;
             plainSelect.addSelectItems(new SelectExpressionItem(new Column("id")));
             plainSelect.addSelectItems(new SelectExpressionItem(new Column("name")));
-            //plainSelect.addSelectItems(new SelectExpressionItem(new StringValue(ciVo.getName())).withAlias(new Alias("ciName")));
-            plainSelect.addSelectItems(new SelectExpressionItem(new Column("label").withTable(new Table("ci_info"))).withAlias(new Alias("ciName")));
+            //plainSelect.addSelectItems(new SelectExpressionItem(new Column("label").withTable(new Table("ci_info"))).withAlias(new Alias("ciName")));
+            plainSelect.addSelectItems(new SelectExpressionItem(new StringValue(ciVo.getName())).withAlias(new Alias("ciName")));
 
             plainSelect.addSelectItems(new SelectExpressionItem(new Column("uuid")));
 
