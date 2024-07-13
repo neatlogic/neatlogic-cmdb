@@ -354,7 +354,7 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
         for (CustomViewConstAttrVo constAttrVo : constAttrList) {
             MatrixAttributeVo matrixAttributeVo = new MatrixAttributeVo();
             if (MapUtils.isNotEmpty(showAttributeUuidMap)) {
-                String uniqueIdentifier = showAttributeUniqueIdentifierMap.get(matrixAttributeVo.getLabel());
+                String uniqueIdentifier = showAttributeUniqueIdentifierMap.get(constAttrVo.getUuid());
                 if (StringUtils.isNotBlank(uniqueIdentifier)) {
                     matrixAttributeVo.setUniqueIdentifier(uniqueIdentifier);
                 } else {
@@ -380,7 +380,7 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
         for (CustomViewAttrVo attrVo : attrList) {
             MatrixAttributeVo matrixAttributeVo = new MatrixAttributeVo();
             if (MapUtils.isNotEmpty(showAttributeUuidMap)) {
-                String uniqueIdentifier = showAttributeUniqueIdentifierMap.get(matrixAttributeVo.getLabel());
+                String uniqueIdentifier = showAttributeUniqueIdentifierMap.get(attrVo.getUuid());
                 if (StringUtils.isNotBlank(uniqueIdentifier)) {
                     matrixAttributeVo.setUniqueIdentifier(uniqueIdentifier);
                 } else {
