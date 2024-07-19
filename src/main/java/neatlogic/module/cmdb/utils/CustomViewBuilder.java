@@ -55,7 +55,7 @@ import java.util.*;
 
 @Component
 public class CustomViewBuilder {
-    private final static Logger logger = LoggerFactory.getLogger(CustomViewBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(CustomViewBuilder.class);
 
     private static CiService ciService;
     private static CustomViewService customViewService;
