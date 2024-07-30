@@ -236,6 +236,60 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
     }
 
     @Override
+    public void setIpFieldAttrIdAndNameFieldAttrId(ResourceSearchVo searchVo) {
+        ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
+        if (resourceEntityVo != null) {
+            ResourceEntityConfigVo config = resourceEntityVo.getConfig();
+            if (config != null) {
+                List<ResourceEntityFieldMappingVo> mappingList = config.getFieldMappingList();
+                if (CollectionUtils.isNotEmpty(mappingList)) {
+                    Long nameAttrId = null;
+                    Long ipAttrId = null;
+                    for (ResourceEntityFieldMappingVo mappingVo : mappingList) {
+                        if (Objects.equals(mappingVo.getField(), "name")) {
+                            CiVo ciVo = ciMapper.getCiByName(mappingVo.getFromCi());
+                            if (ciVo != null) {
+                                AttrVo attr = attrMapper.getAttrByCiIdAndName(ciVo.getId(), mappingVo.getFromAttr());
+                                if (attr != null) {
+                                    nameAttrId = attr.getId();
+                                }
+                            }
+                        } else if (Objects.equals(mappingVo.getField(), "ip")) {
+                            CiVo ciVo = ciMapper.getCiByName(mappingVo.getFromCi());
+                            if (ciVo != null) {
+                                AttrVo attr = attrMapper.getAttrByCiIdAndName(ciVo.getId(), mappingVo.getFromAttr());
+                                if (attr != null) {
+                                    ipAttrId = attr.getId();
+                                }
+                            }
+                        }
+                        if (nameAttrId != null && ipAttrId != null) {
+                            break;
+                        }
+                    }
+                    searchVo.setIpFieldAttrId(ipAttrId);
+                    searchVo.setNameFieldAttrId(nameAttrId);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void setIsIpFieldSortAndIsNameFieldSort(ResourceSearchVo searchVo) {
+        if (StringUtils.isNotBlank(searchVo.getKeyword())) {
+            int ipKeywordCount = resourceMapper.getResourceCountByIpKeyword(searchVo);
+            if (ipKeywordCount > 0) {
+                searchVo.setIsIpFieldSort(1);
+            } else {
+                int nameKeywordCount = resourceMapper.getResourceCountByNameKeyword(searchVo);
+                if (nameKeywordCount > 0) {
+                    searchVo.setIsNameFieldSort(1);
+                }
+            }
+        }
+    }
+
+    @Override
     public List<Long> getDownwardCiIdListByCiIdList(List<Long> idList) {
         Set<Long> ciIdSet = new HashSet<>();
         for (Long ciId : idList) {

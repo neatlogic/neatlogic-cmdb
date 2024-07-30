@@ -19,13 +19,8 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB;
-import neatlogic.framework.cmdb.dto.ci.AttrVo;
-import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
-import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityConfigVo;
-import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityFieldMappingVo;
-import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.enums.group.GroupType;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.dto.BasePageVo;
@@ -131,41 +126,7 @@ public class ResourceListApi extends PrivateApiComponentBase {
             searchVo = resourceCenterResourceService.assembleResourceSearchVo(jsonObj);
         }
         resourceCenterResourceService.handleBatchSearchList(searchVo);
-        ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
-        if (resourceEntityVo != null) {
-            ResourceEntityConfigVo config = resourceEntityVo.getConfig();
-            if (config != null) {
-                List<ResourceEntityFieldMappingVo> mappingList = config.getFieldMappingList();
-                if (CollectionUtils.isNotEmpty(mappingList)) {
-                    Long nameAttrId = null;
-                    Long ipAttrId = null;
-                    for (ResourceEntityFieldMappingVo mappingVo : mappingList) {
-                        if (Objects.equals(mappingVo.getField(), "name")) {
-                            CiVo ciVo = ciMapper.getCiByName(mappingVo.getFromCi());
-                            if (ciVo != null) {
-                                AttrVo attr = attrMapper.getAttrByCiIdAndName(ciVo.getId(), mappingVo.getFromAttr());
-                                if (attr != null) {
-                                    nameAttrId = attr.getId();
-                                }
-                            }
-                        } else if (Objects.equals(mappingVo.getField(), "ip")) {
-                            CiVo ciVo = ciMapper.getCiByName(mappingVo.getFromCi());
-                            if (ciVo != null) {
-                                AttrVo attr = attrMapper.getAttrByCiIdAndName(ciVo.getId(), mappingVo.getFromAttr());
-                                if (attr != null) {
-                                    ipAttrId = attr.getId();
-                                }
-                            }
-                        }
-                        if (nameAttrId != null && ipAttrId != null) {
-                            break;
-                        }
-                    }
-                    searchVo.setIpFieldAttrId(ipAttrId);
-                    searchVo.setNameFieldAttrId(nameAttrId);
-                }
-            }
-        }
+        resourceCenterResourceService.setIpFieldAttrIdAndNameFieldAttrId(searchVo);
         if (Objects.equals(searchVo.getRowNum(), 0)) {
             int rowNum = 0;
             if (noFilterCondition(searchVo)) {
@@ -178,17 +139,7 @@ public class ResourceListApi extends PrivateApiComponentBase {
             }
             searchVo.setRowNum(rowNum);
         }
-        if (StringUtils.isNotBlank(searchVo.getKeyword())) {
-            int ipKeywordCount = resourceMapper.getResourceCountByIpKeyword(searchVo);
-            if (ipKeywordCount > 0) {
-                searchVo.setIsIpFieldSort(1);
-            } else {
-                int nameKeywordCount = resourceMapper.getResourceCountByNameKeyword(searchVo);
-                if (nameKeywordCount > 0) {
-                    searchVo.setIsNameFieldSort(1);
-                }
-            }
-        }
+        resourceCenterResourceService.setIsIpFieldSortAndIsNameFieldSort(searchVo);
         List<Long> idList = resourceMapper.getResourceIdList(searchVo);
         if (CollectionUtils.isEmpty(idList)) {
             return TableResultUtil.getResult(resourceList, searchVo);
