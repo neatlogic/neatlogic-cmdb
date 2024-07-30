@@ -98,6 +98,7 @@ public class GetGraphTopoApi extends PrivateApiComponentBase {
             nb.withTooltip(graphVo.getName());
             nb.withLabel(graphVo.getName());
             nb.withImage(graphVo.getIcon());
+            nb.withHeight("0.85");
             nb.addClass("graphnode").addClass("normalnode");
             if (graphVo.getId().equals(graphId)) {
                 nb.addClass("corenode");

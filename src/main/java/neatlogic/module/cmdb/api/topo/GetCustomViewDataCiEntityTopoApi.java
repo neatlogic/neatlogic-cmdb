@@ -144,6 +144,7 @@ public class GetCustomViewDataCiEntityTopoApi extends PrivateApiComponentBase {
                                     new Node.Builder("CiEntity_" + ciEntityVo.getId());
                             nb.addClass("CiEntity_" + ciEntityVo.getCiId() + "_" + ciEntityVo.getId());// 必须按照这个格式写，前端会通过下划线来提取ciid和cientityid
                             nb.withTooltip(ciEntityVo.getName());
+                            nb.withHeight("0.85");
                             nb.withLabel(StringUtils.isNotBlank(ciEntityVo.getName()) ? ciEntityVo.getName() : "无名配置项");
                             nb.withImage(ciEntityVo.getCiIcon());
                             if (ciEntityId.equals(ciEntityVo.getId())) {

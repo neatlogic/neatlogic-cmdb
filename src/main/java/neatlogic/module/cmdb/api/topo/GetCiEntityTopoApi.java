@@ -322,6 +322,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                         if (ciEntityVo.getTypeId().equals(ciTypeVo.getId())) {
                             Node.Builder nb =
                                     new Node.Builder("CiEntity_" + ciEntityVo.getId());
+                            nb.withHeight("0.85");
                             nb.addClass("CiEntity_" + ciEntityVo.getCiId() + "_" + ciEntityVo.getId());// 必须按照这个格式写，前端会通过下划线来提取ciid和cientityid
                             if (StringUtils.isNotBlank(ciEntityVo.getName())) {
                                 nb.withTooltip(ciEntityVo.getName())
