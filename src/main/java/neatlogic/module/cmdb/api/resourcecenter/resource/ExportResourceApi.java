@@ -78,7 +78,7 @@ public class ExportResourceApi extends PrivateBinaryStreamApiComponentBase {
 
     @Override
     public String getName() {
-        return "导出资产清单列表";
+        return "nmcarr.exportresourceapi.getname";
     }
 
     @Override
@@ -87,24 +87,25 @@ public class ExportResourceApi extends PrivateBinaryStreamApiComponentBase {
     }
 
     @Input({
-            @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "模糊搜索"),
-            @Param(name = "typeId", type = ApiParamType.LONG, isRequired = true,  desc = "类型id"),
-            @Param(name = "protocolIdList", type = ApiParamType.JSONARRAY, desc = "协议id列表"),
-            @Param(name = "stateIdList", type = ApiParamType.JSONARRAY, desc = "状态id列表"),
-            @Param(name = "vendorIdList", type = ApiParamType.JSONARRAY, desc = "厂商id列表"),
-            @Param(name = "envIdList", type = ApiParamType.JSONARRAY, desc = "环境id列表"),
-            @Param(name = "appSystemIdList", type = ApiParamType.JSONARRAY, desc = "应用系统id列表"),
-            @Param(name = "appModuleIdList", type = ApiParamType.JSONARRAY, desc = "应用模块id列表"),
-            @Param(name = "typeIdList", type = ApiParamType.JSONARRAY, desc = "资源类型id列表"),
-            @Param(name = "tagIdList", type = ApiParamType.JSONARRAY, desc = "标签id列表"),
-            @Param(name = "inspectStatusList", type = ApiParamType.JSONARRAY, desc = "巡检状态列表"),
-            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "用于回显的资源ID列表")
+            @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "common.keyword"),
+            @Param(name = "typeId", type = ApiParamType.LONG, isRequired = true, desc = "common.typeid"),
+            @Param(name = "protocolIdList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.protocolidlist"),
+            @Param(name = "stateIdList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.stateidlist"),
+            @Param(name = "vendorIdList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.vendoridlist"),
+            @Param(name = "envIdList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.envidlist"),
+            @Param(name = "appSystemIdList", type = ApiParamType.JSONARRAY, desc = "term.appsystemidlist"),
+            @Param(name = "appModuleIdList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.appmoduleidlist"),
+            @Param(name = "typeIdList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.typeidlist"),
+            @Param(name = "tagIdList", type = ApiParamType.JSONARRAY, desc = "common.tagidlist"),
+            @Param(name = "inspectStatusList", type = ApiParamType.JSONARRAY, desc = "term.inspect.inspectstatuslist"),
+            @Param(name = "searchField", type = ApiParamType.STRING, desc = "term.cmdb.searchfield"),
+            @Param(name = "batchSearchList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.batchsearchlist"),
+            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "common.defaultvalue"),
     })
     @Description(desc = "导出资产清单列表")
     @Override
     public Object myDoService(JSONObject paramObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
-        ResourceSearchVo searchVo = JSONObject.toJavaObject(paramObj, ResourceSearchVo.class);
-        Long typeId = searchVo.getTypeId();
+        Long typeId = paramObj.getLong("typeId");
         CiVo ciVo = ciMapper.getCiById(typeId);
         if (ciVo == null) {
             throw new CiNotFoundException(typeId);
@@ -129,7 +130,7 @@ public class ExportResourceApi extends PrivateBinaryStreamApiComponentBase {
                 .withColumnList(getColumnList());
         Workbook workbook = builder.build();
         List<ResourceVo> resourceList = new ArrayList<>();
-        JSONArray defaultValue = searchVo.getDefaultValue();
+        JSONArray defaultValue = paramObj.getJSONArray("defaultValue");
         if (CollectionUtils.isNotEmpty(defaultValue)) {
             List<Long> idList = defaultValue.toJavaList(Long.class);
             resourceList = resourceMapper.getResourceListByIdList(idList);
@@ -139,12 +140,14 @@ public class ExportResourceApi extends PrivateBinaryStreamApiComponentBase {
                 sheetBuilder.addData(dataMap);
             }
         } else {
-            List<Long> typeIdList = resourceCenterResourceService.getDownwardCiIdListByCiIdList(Arrays.asList(typeId));
-            searchVo.setTypeIdList(typeIdList);
+            ResourceSearchVo searchVo = resourceCenterResourceService.assembleResourceSearchVo(paramObj);
+            resourceCenterResourceService.handleBatchSearchList(searchVo);
+            resourceCenterResourceService.setIpFieldAttrIdAndNameFieldAttrId(searchVo);
             int rowNum = resourceMapper.getResourceCount(searchVo);
             if (rowNum > 0) {
                 searchVo.setPageSize(100);
                 searchVo.setRowNum(rowNum);
+                resourceCenterResourceService.setIsIpFieldSortAndIsNameFieldSort(searchVo);
                 for (int i = 1; i <= searchVo.getPageCount(); i++) {
                     searchVo.setCurrentPage(i);
                     List<Long> idList = resourceMapper.getResourceIdList(searchVo);
