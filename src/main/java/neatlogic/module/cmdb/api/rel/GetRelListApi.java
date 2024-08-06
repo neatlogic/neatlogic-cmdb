@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.rel;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
@@ -27,23 +28,25 @@ import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class GetRelApi extends PrivateApiComponentBase {
+public class GetRelListApi extends PrivateApiComponentBase {
 
     @Resource
     private RelMapper relMapper;
 
     @Override
     public String getToken() {
-        return "/cmdb/rel/get";
+        return "/cmdb/rel/getlist";
     }
 
     @Override
     public String getName() {
-        return "获取关系详细信息";
+        return "获取关系列表";
     }
 
     @Override
@@ -51,11 +54,16 @@ public class GetRelApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "关系id")})
+    @Input({@Param(name = "idList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "id列表")})
     @Output({@Param(explode = RelVo[].class)})
-    @Description(desc = "获取关系详细信息接口")
+    @Description(desc = "获取关系列表")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        return relMapper.getRelById(jsonObj.getLong("id"));
+        JSONArray idList = jsonObj.getJSONArray("idList");
+        List<Long> relIdList = new ArrayList<>();
+        for (int i = 0; i < idList.size(); i++) {
+            relIdList.add(idList.getLong(i));
+        }
+        return relMapper.getRelByIdList(relIdList);
     }
 }

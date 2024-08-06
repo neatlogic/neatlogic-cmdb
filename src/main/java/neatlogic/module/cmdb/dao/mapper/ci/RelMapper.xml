@@ -574,10 +574,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     </insert>
 
     <delete id="deleteRelById" parameterType="java.lang.Long">
-        DELETE a,b
+        DELETE a,b,c,d
         FROM `cmdb_rel` a
                  LEFT JOIN `cmdb_relativerel` b ON a.id = b.rel_id
-        WHERE `id` = #{value}
+                 LEFT JOIN `cmdb_customview_rel` c on a.id = c.rel_id
+                 LEFT JOIN `cmdb_sync_mapping` d ON a.id = d.rel_id
+        WHERE a.`id` = #{value}
     </delete>
 
     <delete id="deleteRelativeRelByRelId" parameterType="java.lang.Long">

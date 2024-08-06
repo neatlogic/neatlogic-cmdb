@@ -25,9 +25,9 @@ import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,7 +36,7 @@ import java.util.List;
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class GetAttrListApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private AttrMapper attrMapper;
 
     @Override

@@ -26,6 +26,7 @@ import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.service.customview.CustomViewService;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -51,7 +52,7 @@ public class GetCustomViewApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "视图id", isRequired = true)})
     @Output({@Param(explode = CustomViewVo.class)})
-    @Description(desc = "获取自定义视图接口")
+    @Description(desc = "获取自定义视图")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long id = paramObj.getLong("id");
@@ -59,7 +60,17 @@ public class GetCustomViewApi extends PrivateApiComponentBase {
         if (!isAdmin) {
             //FIXME 增加权限判断
         }
-        return customViewService.getCustomViewById(id);
+        CustomViewVo customView = customViewService.getCustomViewById(id);
+        //去掉不存在的属性、关系等
+        if (customView.getConfig() != null) {
+            if (CollectionUtils.isNotEmpty(customView.getConfig().getJSONArray("nodes"))) {
+                for (int i = 0; i < customView.getConfig().getJSONArray("nodes").size(); i++) {
+                    JSONObject nodeObj = customView.getConfig().getJSONArray("nodes").getJSONObject(i);
+
+                }
+            }
+        }
+        return customView;
     }
 
     @Override
