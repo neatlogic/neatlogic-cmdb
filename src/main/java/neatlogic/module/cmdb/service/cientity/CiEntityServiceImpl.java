@@ -1860,39 +1860,41 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                                 }
                             } else {
                                 //补充关系对端事务
-                                TransactionVo toTransactionVo = new TransactionVo();
-                                toTransactionVo.setCiId(ciId);
-                                toTransactionVo.setInputFrom(transactionVo.getInputFrom());
-                                toTransactionVo.setStatus(TransactionStatus.COMMITED.getValue());
-                                toTransactionVo.setCreateUser(transactionVo.getCreateUser());
-                                toTransactionVo.setCommitUser(transactionVo.getCommitUser());
-                                toTransactionVo.setDescription(transactionVo.getDescription());
-                                CiEntityTransactionVo endCiEntityTransactionVo = new CiEntityTransactionVo();
                                 CiEntityVo oldCiEntityVo = this.getCiEntityByIdLite(ciId, ciEntityId, true, false, false);
-                                endCiEntityTransactionVo.setCiEntityId(ciEntityId);
-                                endCiEntityTransactionVo.setCiId(ciId);
-                                endCiEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
-                                endCiEntityTransactionVo.setTransactionId(toTransactionVo.getId());
-                                endCiEntityTransactionVo.setName(oldCiEntityVo.getName());
-                                endCiEntityTransactionVo.setOldCiEntityVo(oldCiEntityVo);
-                                createSnapshot(endCiEntityTransactionVo);
+                                if (oldCiEntityVo != null) {
+                                    TransactionVo toTransactionVo = new TransactionVo();
+                                    toTransactionVo.setCiId(ciId);
+                                    toTransactionVo.setInputFrom(transactionVo.getInputFrom());
+                                    toTransactionVo.setStatus(TransactionStatus.COMMITED.getValue());
+                                    toTransactionVo.setCreateUser(transactionVo.getCreateUser());
+                                    toTransactionVo.setCommitUser(transactionVo.getCommitUser());
+                                    toTransactionVo.setDescription(transactionVo.getDescription());
+                                    CiEntityTransactionVo endCiEntityTransactionVo = new CiEntityTransactionVo();
 
-                                //由于是补充对端关系，所以关系要取反
-                                endCiEntityTransactionVo.addRelEntityData(relVo, item.getDirection().equals(RelDirectionType.FROM.getValue()) ? RelDirectionType.TO.getValue() : RelDirectionType.FROM.getValue(), item.getDirection().equals(RelDirectionType.FROM.getValue()) ? item.getFromCiId() : item.getToCiId(), item.getDirection().equals(RelDirectionType.FROM.getValue()) ? item.getFromCiEntityId() : item.getToCiEntityId(), item.getDirection().equals(RelDirectionType.FROM.getValue()) ? item.getFromCiEntityName() : item.getToCiEntityName(), TransactionActionType.DELETE.getValue());
+                                    endCiEntityTransactionVo.setCiEntityId(ciEntityId);
+                                    endCiEntityTransactionVo.setCiId(ciId);
+                                    endCiEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
+                                    endCiEntityTransactionVo.setTransactionId(toTransactionVo.getId());
+                                    endCiEntityTransactionVo.setName(oldCiEntityVo.getName());
+                                    endCiEntityTransactionVo.setOldCiEntityVo(oldCiEntityVo);
+                                    createSnapshot(endCiEntityTransactionVo);
 
-                                transactionMapper.insertTransaction(toTransactionVo);
-                                transactionMapper.insertCiEntityTransaction(endCiEntityTransactionVo);
-                                transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), toTransactionVo.getId());
+                                    //由于是补充对端关系，所以关系要取反
+                                    endCiEntityTransactionVo.addRelEntityData(relVo, item.getDirection().equals(RelDirectionType.FROM.getValue()) ? RelDirectionType.TO.getValue() : RelDirectionType.FROM.getValue(), item.getDirection().equals(RelDirectionType.FROM.getValue()) ? item.getFromCiId() : item.getToCiId(), item.getDirection().equals(RelDirectionType.FROM.getValue()) ? item.getFromCiEntityId() : item.getToCiEntityId(), item.getDirection().equals(RelDirectionType.FROM.getValue()) ? item.getFromCiEntityName() : item.getToCiEntityName(), TransactionActionType.DELETE.getValue());
 
+                                    transactionMapper.insertTransaction(toTransactionVo);
+                                    transactionMapper.insertCiEntityTransaction(endCiEntityTransactionVo);
+                                    transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), toTransactionVo.getId());
+                                    //发送消息到消息队列
+                                    ITopic<CiEntityTransactionVo> topic = TopicFactory.getTopic("cmdb/cientity/update");
+                                    if (topic != null) {
+                                        topic.send(endCiEntityTransactionVo);
+                                    }
+                                }
                                 //正式删除关系数据
                                 relEntityMapper.deleteRelEntityByRelIdFromCiEntityIdToCiEntityId(item.getRelId(), item.getFromCiEntityId(), item.getToCiEntityId());
                                 //删除级联关系数据
                                 RelativeRelManager.delete(item);
-                                //发送消息到消息队列
-                                ITopic<CiEntityTransactionVo> topic = TopicFactory.getTopic("cmdb/cientity/update");
-                                if (topic != null) {
-                                    topic.send(endCiEntityTransactionVo);
-                                }
                             }
                             ciEntityTransactionSet.add(ciEntityId);
                         }
