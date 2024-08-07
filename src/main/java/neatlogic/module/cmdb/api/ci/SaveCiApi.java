@@ -19,7 +19,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.auth.core.AuthAction;
-import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
+import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.exception.ci.CiAuthException;
 import neatlogic.framework.cmdb.exception.ci.CiIsAbstractedException;
@@ -41,8 +41,8 @@ import javax.annotation.Resource;
 import java.util.Objects;
 
 @Service
-@AuthAction(action = CI_MODIFY.class)
-@OperationType(type = OperationTypeEnum.CREATE)
+@AuthAction(action = CMDB_BASE.class)
+@OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveCiApi extends PrivateApiComponentBase {
 
     @Resource

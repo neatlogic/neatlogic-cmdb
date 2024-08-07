@@ -15,9 +15,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.attr;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
-import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
+import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.exception.attr.AttrNameRepeatException;
 import neatlogic.framework.cmdb.exception.ci.CiAuthException;
@@ -36,7 +37,7 @@ import javax.annotation.Resource;
 
 @Service
 @Transactional
-@AuthAction(action = CI_MODIFY.class)
+@AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveAttrApi extends PrivateApiComponentBase {
 
@@ -83,7 +84,7 @@ public class SaveAttrApi extends PrivateApiComponentBase {
     @Description(desc = "nmcaa.saveattrapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        AttrVo attrVo = JSONObject.toJavaObject(jsonObj, AttrVo.class);
+        AttrVo attrVo = JSON.toJavaObject(jsonObj, AttrVo.class);
         Long attrId = jsonObj.getLong("id");
         if (!CiAuthChecker.chain().checkCiManagePrivilege(attrVo.getCiId()).check()) {
             throw new CiAuthException();
