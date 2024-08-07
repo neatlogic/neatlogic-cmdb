@@ -18,7 +18,7 @@ package neatlogic.module.cmdb.api.rel;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
-import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
+import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.ci.RelVo;
 import neatlogic.framework.cmdb.dto.ci.RelativeRelVo;
 import neatlogic.framework.cmdb.exception.ci.CiAuthException;
@@ -44,7 +44,7 @@ import javax.annotation.Resource;
  * 现在的实现方式都是直接join cmdb_cientity表，直接拿到真实的ci_id。但虚拟模型在cmdb_cientity中是没有数据的，这导致join的时候会找不到信息，误判成关系不存在。因此综合考虑关系暂不支持虚拟模型
  */
 @Service
-@AuthAction(action = CI_MODIFY.class)
+@AuthAction(action = CMDB_BASE.class)
 @Transactional
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveRelApi extends PrivateApiComponentBase {
@@ -70,6 +70,7 @@ public class SaveRelApi extends PrivateApiComponentBase {
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "id，不存在代表新增"),
             @Param(name = "typeId", type = ApiParamType.LONG, isRequired = true, desc = "关系类型"),
             @Param(name = "inputType", type = ApiParamType.ENUM, rule = "at,mt", desc = "录入方式"),
+            @Param(name = "fromCiId", type = ApiParamType.LONG, isRequired = true, desc = "来源模型id"),
             @Param(name = "fromLabel", type = ApiParamType.STRING, isRequired = true, xss = true, desc = "来源标签",
                     maxLength = 200),
             @Param(name = "fromTypeId", type = ApiParamType.LONG, desc = "来源类型id"),
@@ -78,6 +79,7 @@ public class SaveRelApi extends PrivateApiComponentBase {
             @Param(name = "fromIsUnique", type = ApiParamType.INTEGER, isRequired = true, desc = "上游端是否唯一"),
             @Param(name = "fromIsRequired", type = ApiParamType.INTEGER, isRequired = true, desc = "上游端是否必填"),
             @Param(name = "fromIsCascadeDelete", type = ApiParamType.INTEGER, isRequired = true, desc = "上游端是否级联删除"),
+            @Param(name = "toCiId", type = ApiParamType.LONG, isRequired = true, desc = "目标模型id"),
             @Param(name = "toLabel", type = ApiParamType.STRING, isRequired = true, xss = true, desc = "目标标签",
                     maxLength = 200),
             @Param(name = "toTypeId", type = ApiParamType.LONG, desc = "目标类型id"),
