@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.customview;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CUSTOMVIEW_MODIFY;
@@ -52,6 +53,7 @@ public class SearchPublicCustomViewApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字", xss = true),
             @Param(name = "tagId", type = ApiParamType.LONG, desc = "标签"),
+            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "回显值"),
             @Param(name = "currentPage",
                     type = ApiParamType.INTEGER,
                     desc = "当前页"),
@@ -67,7 +69,7 @@ public class SearchPublicCustomViewApi extends PrivateApiComponentBase {
     @Description(desc = "查询公共自定义视图接口")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        CustomViewVo customViewVo = JSONObject.toJavaObject(paramObj, CustomViewVo.class);
+        CustomViewVo customViewVo = JSON.toJavaObject(paramObj, CustomViewVo.class);
         customViewVo.setType(CustomViewType.PUBLIC.getValue());
         List<CustomViewVo> viewList = customViewService.searchCustomView(customViewVo);
         return TableResultUtil.getResult(viewList, customViewVo);

@@ -341,6 +341,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             <if test="keyword != null and keyword != ''">
                 AND cc.name LIKE CONCAT('%',#{keyword},'%')
             </if>
+            <if test="defaultValue != null and defaultValue.size() > 0">
+                AND cc.id in
+                <foreach collection="defaultValue" item="item" open="(" close=")" separator=",">#{item}</foreach>
+            </if>
             <if test="tagId != null">
                 AND cct.tag_id = #{tagId}
             </if>
