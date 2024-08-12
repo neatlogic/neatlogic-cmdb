@@ -107,7 +107,7 @@ public class SaveCustomViewApi extends PrivateApiComponentBase {
                 }
             }
         }
-        JSONObject config = jsonObj.getJSONObject("config");
+        //JSONObject config = jsonObj.getJSONObject("config");
         CustomViewVo customViewVo = JSON.toJavaObject(jsonObj, CustomViewVo.class);
         customViewVo.setCustomViewAuthList(null);
         if (customViewMapper.checkCustomViewNameIsExists(customViewVo) > 0) {

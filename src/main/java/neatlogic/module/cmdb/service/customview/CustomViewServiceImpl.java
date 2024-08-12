@@ -27,6 +27,7 @@ import neatlogic.framework.cmdb.exception.customview.CustomViewAttrNameIsExistsE
 import neatlogic.framework.cmdb.exception.customview.CustomViewEmptyException;
 import neatlogic.framework.cmdb.exception.customview.DeleteCustomViewFailedException;
 import neatlogic.framework.transaction.core.EscapeTransactionJob;
+import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.customview.CustomViewMapper;
 import neatlogic.module.cmdb.dao.mapper.tag.CmdbTagMapper;
 import neatlogic.module.cmdb.utils.CustomViewBuilder;
@@ -48,6 +49,9 @@ public class CustomViewServiceImpl implements CustomViewService, ICustomViewCros
 
     @Resource
     private CmdbTagMapper cmdbTagMapper;
+
+    @Resource
+    private AttrMapper attrMapper;
 
 
     @Override
@@ -242,6 +246,7 @@ public class CustomViewServiceImpl implements CustomViewService, ICustomViewCros
                 List<CustomViewAttrVo> attrList = new ArrayList<>();
                 List<CustomViewRelVo> relList = new ArrayList<>();
                 List<CustomViewConstAttrVo> constAttrList = new ArrayList<>();
+
                 for (int j = 0; j < contains.size(); j++) {
                     if (ciNodeMap.containsKey(contains.getString(j))) {
                         JSONObject ciNodeObj = ciNodeMap.get(contains.getString(j));
