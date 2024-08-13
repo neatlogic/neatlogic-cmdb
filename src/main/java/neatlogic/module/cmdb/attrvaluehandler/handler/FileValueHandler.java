@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.attrvaluehandler.handler;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
@@ -88,6 +89,21 @@ public class FileValueHandler implements IAttrValueHandler {
     }
 
     @Override
+    public Object transferValueListToInput(AttrVo attrVo, Object value) {
+        JSONArray valueList = new JSONArray();
+        if (value != null && value.toString().startsWith("[")) {
+            try {
+                valueList = JSON.parseArray(value.toString());
+            } catch (Exception ignored) {
+                valueList.add(value);
+            }
+        } else {
+            valueList.add(value);
+        }
+        return valueList;
+    }
+
+    @Override
     public JSONArray getActualValueList(AttrVo attrVo, JSONArray valueList) {
         List<Long> idList = new ArrayList<>();
         JSONArray returnList = new JSONArray();
@@ -141,7 +157,7 @@ public class FileValueHandler implements IAttrValueHandler {
 
     @Override
     public int getSort() {
-        return 11;
+        return 12;
     }
 
     /**

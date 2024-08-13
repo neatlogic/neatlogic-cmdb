@@ -99,6 +99,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             <when test="attrVo.type == 'enum'">
                 varchar(50)
             </when>
+            <when test="attrVo.type == 'set'">
+                SET(
+                <if test="attrVo.config != null and attrVo.config.members != null">
+                    <foreach collection="attrVo.config.members" item="member" separator=",">'${member}'</foreach>
+                </if>
+                )
+            </when>
             <when test="attrVo.type == 'hyperlink'">
                 varchar(500)
             </when>
@@ -107,7 +114,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         NULL COMMENT '${attrVo.label}',
         ADD COLUMN `${attrVo.id}_hash` CHAR(32) NULL COMMENT '${attrVo.label}值散列码'
         <choose>
-            <when test="attrVo.type == 'number' or attrVo.type == 'date' or attrVo.type == 'time' or attrVo.type == 'datetime' or attrVo.type == 'enum'">
+            <when test="attrVo.type == 'number' or attrVo.type == 'date' or attrVo.type == 'time' or attrVo.type == 'datetime' or attrVo.type == 'enum' or attrVo.type == 'set'">
                 ,ADD INDEX `index_${attrVo.id}` (`${attrVo.id}`) USING BTREE
             </when>
         </choose>
@@ -150,6 +157,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                         <when test="attrVo.type == 'enum'">
                             varchar(50)
                         </when>
+                        <when test="attrVo.type == 'set'">
+                            SET(
+                            <if test="attrVo.config != null and attrVo.config.members != null">
+                                <foreach collection="attrVo.config.members" item="member" separator=",">'${member}'
+                                </foreach>
+                            </if>
+                            )
+                        </when>
                         <when test="attrVo.type == 'hyperlink'">
                             varchar(500)
                         </when>
@@ -163,7 +178,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         <if test="ciVo.attrList!=null and ciVo.attrList.size() > 0">
             <foreach collection="ciVo.attrList" item="attrVo">
                 <if test="attrVo.ciId == ciVo.id and attrVo.targetCiId == null">
-                    <if test="attrVo.type == 'number' or attrVo.type == 'date' or attrVo.type == 'time' or attrVo.type == 'datetime' or attrVo.type == 'enum'">
+                    <if test="attrVo.type == 'number' or attrVo.type == 'date' or attrVo.type == 'time' or attrVo.type == 'datetime' or attrVo.type == 'enum' or attrVo.type == 'set'">
                         KEY `index_${attrVo.id}` (`${attrVo.id}`) USING BTREE,
                     </if>
                 </if>

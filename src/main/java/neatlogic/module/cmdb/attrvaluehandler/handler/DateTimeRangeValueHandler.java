@@ -171,7 +171,7 @@ public class DateTimeRangeValueHandler implements IAttrValueHandler {
 
     @Override
     public int getSort() {
-        return 9;
+        return 10;
     }
 
 }

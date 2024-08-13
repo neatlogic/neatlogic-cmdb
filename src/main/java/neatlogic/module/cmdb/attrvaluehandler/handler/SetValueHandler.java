@@ -16,34 +16,34 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 package neatlogic.module.cmdb.attrvaluehandler.handler;
 
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.enums.SearchExpression;
-import neatlogic.framework.cmdb.exception.validator.DatetimeAttrFormatIrregularException;
+import neatlogic.framework.cmdb.exception.attr.AttrValueIrregularException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.stereotype.Service;
 
-import java.text.ParseException;
+import java.util.Arrays;
 
 
 @Service
-public class TimeValueHandler implements IAttrValueHandler {
+public class SetValueHandler implements IAttrValueHandler {
 
     @Override
     public String getType() {
-        return "time";
+        return "set";
     }
 
     @Override
     public String getName() {
-        return "时间";
+        return "多选集合";
     }
 
     @Override
     public String getIcon() {
-        return "tsfont-sla";
+        return "tsfont-check-square";
     }
 
     @Override
@@ -88,69 +88,65 @@ public class TimeValueHandler implements IAttrValueHandler {
 
     @Override
     public SearchExpression[] getSupportExpression() {
-        return new SearchExpression[]{SearchExpression.BT, SearchExpression.NOTNULL, SearchExpression.NULL};
+        return new SearchExpression[]{SearchExpression.EQ, SearchExpression.NE, SearchExpression.LI, SearchExpression.NL, SearchExpression.NOTNULL, SearchExpression.NULL};
     }
 
     @Override
-    public void transferValueListToSave(AttrVo attrVo, JSONArray valueList) {
-        if (CollectionUtils.isNotEmpty(valueList)) {
-            int len = valueList.size();
-            for (int i = len - 1; i >= 0; i--) {
-                String v = valueList.getString(i);
-                if (StringUtils.isBlank(v)) {
-                    valueList.remove(i);
-                }
-            }
-        }
-        if (CollectionUtils.isNotEmpty(valueList)) {
-            for (int i = 0; i < valueList.size(); i++) {
-                try {
-                    DateUtils.parseDate(valueList.getString(i), "HH:mm:ss");
-                } catch (ParseException e) {
-                    throw new DatetimeAttrFormatIrregularException(attrVo, valueList.getString(i), "HH:mm:ss");
-                }
-            }
-        }
+    public int getSort() {
+        return 5;
     }
 
-    /*
     @Override
     public JSONArray getActualValueList(AttrVo attrVo, JSONArray valueList) {
         JSONArray returnList = new JSONArray();
-        for (int i = 0; i < valueList.size(); i++) {
-            try {
-                String v = valueList.getString(i);
-                if (v.contains(",")) {
-                    v = v.replace(",", "~");
-                }
-                returnList.add(v);
-            } catch (Exception ignored) {
-
+        if (CollectionUtils.isNotEmpty(valueList)) {
+            for (int i = 0; i < valueList.size(); i++) {
+                returnList.addAll(Arrays.asList(valueList.getString(i).split(",")));
             }
         }
         return returnList;
     }
 
+    @Override
+    public String getValue(JSONArray valueList) {
+        if (CollectionUtils.isNotEmpty(valueList)) {
+            String v = "";
+            for (int i = 0; i < valueList.size(); i++) {
+                if (StringUtils.isNotBlank(valueList.getString(i))) {
+                    if (StringUtils.isNotBlank(v)) {
+                        v += ",";
+                    }
+                    v += valueList.getString(i);
+                }
+            }
+            return v;
+        }
+        return null;
+    }
 
     @Override
-    public void transferValueListToDisplay(AttrVo attrVo, JSONArray valueList) {
-        for (int i = 0; i < valueList.size(); i++) {
-            try {
-                String v = valueList.getString(i);
-                if (v.contains(",")) {
-                    v = v.replace(",", "~");
-                }
-                valueList.set(i, v);
-            } catch (Exception ignored) {
+    public Object transferValueListToInput(AttrVo attrVo, Object value) {
+        if (value != null && StringUtils.isNotBlank(value.toString())) {
+            JSONArray newValue = new JSONArray();
+            newValue.addAll(Arrays.asList(value.toString().split(",")));
+            return newValue;
+        }
+        return value;
+    }
 
+    @Override
+    public boolean valid(AttrVo attrVo, JSONArray valueList) {
+        if (CollectionUtils.isNotEmpty(valueList)) {
+            JSONObject config = attrVo.getConfig();
+            JSONArray members = config.getJSONArray("members");
+            for (int i = 0; i < valueList.size(); i++) {
+                String v = valueList.getString(i);
+                if (StringUtils.isNotBlank(v) && !members.contains(v)) {
+                    throw new AttrValueIrregularException(attrVo, v);
+                }
             }
         }
-    }
-*/
-
-    @Override
-    public int getSort() {
-        return 8;
+        return true;
     }
 
 }

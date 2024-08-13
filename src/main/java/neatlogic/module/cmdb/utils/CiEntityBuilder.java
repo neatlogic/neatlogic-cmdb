@@ -19,6 +19,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
+import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.ci.RelVo;
@@ -260,25 +261,25 @@ public class CiEntityBuilder {
                         //处理属性
                         if (key.startsWith("attr_")) {
                             AttrVo attrVo = attrMap.get(attrId);
-                            if (!ciEntityVo.hasAttrEntityData(attrId)) {
-                                if (attrVo != null) {
+                            if (attrVo != null) {
+                                IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
+                                value = handler.transferValueListToInput(attrVo, value);
+                                if (!ciEntityVo.hasAttrEntityData(attrId)) {
                                     ciEntityVo.addAttrEntityData(attrId, buildAttrObj(ciEntityVo.getId(), attrVo, value));
-                                }
-                            } else {
-                                JSONArray valueList = new JSONArray();
-                                //例如附件型参数有可能是个数组，所以先尝试做转换，不行再当字符串处理
-                                if (value.toString().startsWith("[")) {
-                                    try {
-                                        valueList = JSONArray.parseArray(value.toString());
-                                    } catch (Exception ignored) {
-                                        valueList.add(value);
-                                    }
                                 } else {
-                                    valueList.add(value);
+                                   /* JSONArray valueList = new JSONArray();
+                                    //例如附件型参数有可能是个数组，所以先尝试做转换，不行再当字符串处理
+                                    if (value.toString().startsWith("[")) {
+                                        try {
+                                            valueList = JSON.parseArray(value.toString());
+                                        } catch (Exception ignored) {
+                                            valueList.add(value);
+                                        }
+                                    } else {
+                                        valueList.add(value);
+                                    }*/
+                                    ciEntityVo.addAttrEntityDataValue(attrId, value);
                                 }
-                                //JSONArray actualValueList = AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValueList(attrVo, valueList);
-                                //ciEntityVo.addAttrEntityDataValue(attrId, valueList, actualValueList);
-                                ciEntityVo.addAttrEntityDataValue(attrId, valueList);
                             }
                         }
                     } else if (key.startsWith("rel")) {//字段名范例：relfrom_12313131323或relto_131231231313

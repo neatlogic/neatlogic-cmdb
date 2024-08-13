@@ -180,7 +180,7 @@ public class SelectValueHandler implements IAttrValueHandler {
 
     @Override
     public int getSort() {
-        return 5;
+        return 6;
     }
 
     @Override

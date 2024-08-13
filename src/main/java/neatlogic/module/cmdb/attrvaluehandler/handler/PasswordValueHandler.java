@@ -90,7 +90,7 @@ public class PasswordValueHandler implements IAttrValueHandler {
 
     @Override
     public int getSort() {
-        return 10;
+        return 11;
     }
 
     @Override

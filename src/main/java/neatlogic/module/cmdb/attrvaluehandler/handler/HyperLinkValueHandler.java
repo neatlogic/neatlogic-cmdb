@@ -86,7 +86,7 @@ public class HyperLinkValueHandler implements IAttrValueHandler {
 
     @Override
     public int getSort() {
-        return 14;
+        return 15;
     }
 
 

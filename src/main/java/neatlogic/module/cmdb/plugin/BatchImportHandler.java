@@ -18,6 +18,8 @@ package neatlogic.module.cmdb.plugin;
 import com.alibaba.fastjson.JSONArray;
 import neatlogic.framework.asynchronization.thread.NeatLogicThread;
 import neatlogic.framework.asynchronization.threadlocal.InputFromContext;
+import neatlogic.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
+import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
 import neatlogic.framework.cmdb.dto.batchimport.ImportAuditVo;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiViewVo;
@@ -85,6 +87,7 @@ public class BatchImportHandler {
     private static CiEntityService ciEntityService;
 
     private static CiMapper ciMapper;
+    private AttrValueHandlerFactory attrValueHandlerFactory;
 
     @Autowired
     private void setCiMapper(CiMapper _ciMapper) {
@@ -159,6 +162,11 @@ public class BatchImportHandler {
         } else {
             return "";
         }
+    }
+
+    @Autowired
+    public void setAttrValueHandlerFactory(AttrValueHandlerFactory attrValueHandlerFactory) {
+        this.attrValueHandlerFactory = attrValueHandlerFactory;
     }
 
 
@@ -467,7 +475,15 @@ public class BatchImportHandler {
                                                             }
                                                         }
                                                     } else {
-                                                        valueList.add(content);
+                                                        IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attr.getType());
+                                                        if (handler != null) {
+                                                            Object newContent = handler.transferValueListToInput(attr, content);
+                                                            if (newContent instanceof JSONArray) {
+                                                                valueList.addAll((JSONArray) newContent);
+                                                            }
+                                                        } else {
+                                                            valueList.add(content);
+                                                        }
                                                     }
                                                     ciEntityTransactionVo.addAttrEntityData(attr, valueList);
 
@@ -552,7 +568,7 @@ public class BatchImportHandler {
                                     }
 
                                     if (MapUtils.isNotEmpty(rowError)) {
-                                        for (Map.Entry<Integer, String> entry : rowError.entrySet()) {
+                                        for (Entry<Integer, String> entry : rowError.entrySet()) {
                                             error += "</br><b class=\"text-danger\">第" + entry.getKey() + "行："
                                                     + entry.getValue() + "</b>";
                                         }
