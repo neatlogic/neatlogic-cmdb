@@ -43,7 +43,7 @@ public class SetValueHandler implements IAttrValueHandler {
 
     @Override
     public String getIcon() {
-        return "tsfont-check-square";
+        return "tsfont-check-square-o";
     }
 
     @Override
