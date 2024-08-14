@@ -78,6 +78,9 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
             for (CustomViewAttrVo customViewAttr : customViewAttrList) {
                 attrMap.put(customViewAttr.getUuid(), customViewAttr.getAttrVo());
                 if (StringUtils.isNotBlank(customViewAttr.getName())) {
+                    attrMap.put(customViewAttr.getName(), customViewAttr.getAttrVo());
+                }
+                if (StringUtils.isNotBlank(customViewAttr.getName())) {
                     attrNameMap.put(customViewAttr.getName(), customViewAttr);
                 }
                 if (MapUtils.isNotEmpty(customViewAttr.getCondition())) {
