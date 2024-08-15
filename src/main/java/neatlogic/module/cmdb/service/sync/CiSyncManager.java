@@ -312,6 +312,7 @@ public class CiSyncManager {
                 if (attr != null) {
                     if (dataObj.containsKey(syncMappingVo.getField(parentKey))) {
                         AttrFilterVo filterVo = new AttrFilterVo();
+                        filterVo.setType(attr.getType());
                         filterVo.setAttrId(syncMappingVo.getAttrId());
                         filterVo.setExpression(SearchExpression.EQ.getExpression());
                         String v = dataObj.getString(syncMappingVo.getField(parentKey));
@@ -348,6 +349,7 @@ public class CiSyncManager {
                                 attrConditionVo.setRelIdList(noIdList);
                                 AttrFilterVo targetFilterVo = new AttrFilterVo();
                                 targetFilterVo.setAttrId(uAttrId);
+                                targetFilterVo.setType(targetNameAttrVo.getType());
                                 targetFilterVo.setExpression(SearchExpression.EQ.getExpression());
                                 targetFilterVo.setValueList(new ArrayList<String>() {{
                                     this.add(v);
@@ -375,7 +377,7 @@ public class CiSyncManager {
                     throw new AttrNotFoundException(uniqueAttrId);
                 }
             }
-            logger.debug("查询配置项过滤条件：{}", ciEntityConditionVo.getAttrFilterString());
+            logger.info("查询配置项过滤条件：{}", ciEntityConditionVo.getAttrFilterString());
             if (CollectionUtils.isNotEmpty(ciEntityConditionVo.getAttrFilterList())) {
                 CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
                 //searchCiEntityWithCache在查询不到配置项的情况下，会把输入条件放入cache中，用于避免新的配置项重复添加，因此需要和新配置项的id保持一致
@@ -520,6 +522,7 @@ public class CiSyncManager {
                                         CiEntityVo attrConditionVo = new CiEntityVo();
                                         attrConditionVo.setCiId(attrVo.getTargetCiId());
                                         AttrFilterVo filterVo = new AttrFilterVo();
+                                        filterVo.setType(targetNameAttrVo.getType());
                                         filterVo.setAttrId(uniqueAttrId);
                                         filterVo.setExpression(SearchExpression.EQ.getExpression());
                                         List<String> valueList = new ArrayList<>();
