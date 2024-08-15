@@ -254,8 +254,11 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
     @Transactional
     public void updateCiNameAttrId(CiVo ciVo) {
         ciMapper.updateCiNameAttrId(ciVo);
-        AfterTransactionJob<CiVo> job = new AfterTransactionJob<>("UPDATE-CIENTITY-NAME-" + ciVo.getId());
-        job.execute(ciVo, dataCiVo -> ciEntityService.updateCiEntityNameForCi(dataCiVo));
+        //非抽象模型才需要更新名字表达式
+        if (ciVo.getIsAbstract().equals(0)) {
+            AfterTransactionJob<CiVo> job = new AfterTransactionJob<>("UPDATE-CIENTITY-NAME-" + ciVo.getId());
+            job.execute(ciVo, dataCiVo -> ciEntityService.updateCiEntityNameForCi(dataCiVo));
+        }
     }
 
 

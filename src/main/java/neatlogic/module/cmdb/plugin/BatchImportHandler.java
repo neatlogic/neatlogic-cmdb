@@ -480,6 +480,8 @@ public class BatchImportHandler {
                                                             Object newContent = handler.transferValueListToInput(attr, content);
                                                             if (newContent instanceof JSONArray) {
                                                                 valueList.addAll((JSONArray) newContent);
+                                                            } else {
+                                                                valueList.add(content);
                                                             }
                                                         } else {
                                                             valueList.add(content);

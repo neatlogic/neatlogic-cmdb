@@ -262,8 +262,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         ORDER BY lft
     </select>
 
-    <select id="getUpwardCiListByLR" resultType="neatlogic.framework.cmdb.dto.ci.CiVo" useCache="true">
-        SELECT a.`id`,
+    <sql id="ciBaseColumn">
+        a.`id`,
                a.`name`,
                a.`label`,
                a.`description`,
@@ -275,30 +275,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                a.`is_abstract`  AS isAbstract,
                a.`is_virtual`   AS isVirtual,
                a.`expired_day`  AS expiredDay,
+               a.`name_attr_id` AS nameAttrId,
                a.`lft`          AS lft,
                a.`rht`          AS rht
+    </sql>
+
+    <select id="getUpwardCiListByLR" resultType="neatlogic.framework.cmdb.dto.ci.CiVo" useCache="true">
+        SELECT
+        <include refid="ciBaseColumn"/>
         FROM `cmdb_ci` a
         WHERE a.lft &lt;= #{lft}
-          AND a.rht &gt;= #{rht}
+        AND a.rht &gt;= #{rht}
         ORDER BY lft
     </select>
 
 
     <select id="getAllCi" resultType="neatlogic.framework.cmdb.dto.ci.CiVo" useCache="true">
-        SELECT a.`id`,
-        a.`name`,
-        a.`label`,
-        a.`description`,
-        a.`icon`,
-        a.`parent_ci_id` AS parentCiId,
-        a.`type_id` AS typeId,
-        a.`is_private` AS isPrivate,
-        a.`is_menu` AS isMenu,
-        a.`is_abstract` AS isAbstract,
-        a.`is_virtual` AS isVirtual,
-        a.`expired_day` AS expiredDay,
-        a.`lft` AS lft,
-        a.`rht` AS rht
+        SELECT
+        <include refid="ciBaseColumn"/>
         FROM `cmdb_ci` a
         <where>
             <if test="idList != null and idList.size() > 0">
@@ -312,20 +306,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     </select>
 
     <select id="getAllAuthCi" resultType="neatlogic.framework.cmdb.dto.ci.CiVo" useCache="true">
-        SELECT a.`id`,
-        a.`name`,
-        a.`label`,
-        a.`description`,
-        a.`icon`,
-        a.`parent_ci_id` AS parentCiId,
-        a.`type_id` AS typeId,
-        a.`is_private` AS isPrivate,
-        a.`is_menu` AS isMenu,
-        a.`is_abstract` AS isAbstract,
-        a.`is_virtual` AS isVirtual,
-        a.`expired_day` AS expiredDay,
-        a.`lft` AS lft,
-        a.`rht` AS rht
+        SELECT
+        <include refid="ciBaseColumn"/>
         FROM `cmdb_ci` a
         left join cmdb_ci_auth cca on a.id =cca.ci_id
         where
@@ -360,19 +342,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     </select>
 
     <select id="getCiListByNameList" resultType="neatlogic.framework.cmdb.dto.ci.CiVo" useCache="true">
-        SELECT a.`id`,
-        a.`name`,
-        a.`label`,
-        a.`description`,
-        a.`icon`,
-        a.`parent_ci_id` AS parentCiId,
-        a.`type_id` AS typeId,
-        a.`is_private` AS isPrivate,
-        a.`is_menu` AS isMenu,
-        a.`is_abstract` AS isAbstract,
-        a.`is_virtual` AS isVirtual,
-        a.`lft` AS lft,
-        a.`rht` AS rht
+        SELECT
+        <include refid="ciBaseColumn"/>
         FROM `cmdb_ci` a
         WHERE a.`name` IN
         <foreach collection="list" open="(" close=")" separator="," item="item">
@@ -383,59 +354,32 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 
     <select id="getCiByTargetCiId" parameterType="java.lang.Long" resultType="neatlogic.framework.cmdb.dto.ci.CiVo"
             useCache="false">
-        SELECT a.`id`,
-               a.`name`,
-               a.`label`,
-               a.`description`,
-               a.`icon`,
-               a.`type_id`      AS typeId,
-               a.`is_private`   AS isPrivate,
-               a.`is_menu`      AS isMenu,
-               a.`parent_ci_id` AS parentCiId,
-               a.`is_abstract`  AS isAbstract,
-               a.`is_virtual`   AS isVirtual
+        SELECT
+        <include refid="ciBaseColumn"/>
         FROM `cmdb_ci` a
-                 JOIN `cmdb_attr` b ON a.id = b.ci_id
+        JOIN `cmdb_attr` b ON a.id = b.ci_id
         WHERE b.target_ci_id = #{value}
-          and a.id != #{value}
+        and a.id != #{value}
     </select>
 
     <select id="getCiByFromCiId" parameterType="java.lang.Long" resultType="neatlogic.framework.cmdb.dto.ci.CiVo"
             useCache="false">
-        SELECT a.`id`,
-               a.`name`,
-               a.`label`,
-               a.`description`,
-               a.`icon`,
-               a.`type_id`      AS typeId,
-               a.`is_private`   AS isPrivate,
-               a.`is_menu`      AS isMenu,
-               a.`parent_ci_id` AS parentCiId,
-               a.`is_abstract`  AS isAbstract,
-               a.`is_virtual`   AS isVirtual
+        SELECT
+        <include refid="ciBaseColumn"/>
         FROM `cmdb_ci` a
-                 JOIN `cmdb_rel` b ON a.id = b.to_ci_id
+        JOIN `cmdb_rel` b ON a.id = b.to_ci_id
         WHERE b.from_ci_id = #{value}
-          and a.id != #{value}
+        and a.id != #{value}
     </select>
 
     <select id="getCiByToCiId" parameterType="java.lang.Long" resultType="neatlogic.framework.cmdb.dto.ci.CiVo"
             useCache="false">
-        SELECT a.`id`,
-               a.`name`,
-               a.`label`,
-               a.`description`,
-               a.`icon`,
-               a.`type_id`      AS typeId,
-               a.`is_private`   AS isPrivate,
-               a.`is_menu`      AS isMenu,
-               a.`parent_ci_id` AS parentCiId,
-               a.`is_abstract`  AS isAbstract,
-               a.`is_virtual`   AS isVirtual
+        SELECT
+        <include refid="ciBaseColumn"/>
         FROM `cmdb_ci` a
-                 JOIN `cmdb_rel` b ON a.id = b.from_ci_id
+        JOIN `cmdb_rel` b ON a.id = b.from_ci_id
         WHERE b.to_ci_id = #{value}
-          and a.id != #{value}
+        and a.id != #{value}
     </select>
 
     <select id="checkCiNameIsExists" parameterType="neatlogic.framework.cmdb.dto.ci.CiVo" resultType="int"

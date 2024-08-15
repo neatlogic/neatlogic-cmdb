@@ -722,7 +722,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
 
     @Override
     public void updateCiEntityNameForCi(CiVo ciVo) {
-        if (ciVo.getNameAttrId() != null) {
+        if (ciVo.getNameAttrId() != null && Objects.equals(0, ciVo.getIsAbstract())) {
             CiEntityVo pCiEntityVo = new CiEntityVo();
             pCiEntityVo.setCiId(ciVo.getId());
             pCiEntityVo.setPageSize(100);
