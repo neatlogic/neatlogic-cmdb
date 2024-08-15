@@ -100,6 +100,16 @@ public class TableValueHandler implements IAttrValueHandler {
     }
 
     @Override
+    public boolean isNameAttr() {
+        return false;
+    }
+
+    @Override
+    public boolean isUniqueAttr() {
+        return true;
+    }
+
+    @Override
     public boolean isNeedWholeRow() {
         return true;
     }

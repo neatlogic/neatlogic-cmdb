@@ -94,6 +94,16 @@ public class ExpressionValueHandler implements IAttrValueHandler {
     }
 
     @Override
+    public boolean isNameAttr() {
+        return true;
+    }
+
+    @Override
+    public boolean isUniqueAttr() {
+        return false;
+    }
+
+    @Override
     public boolean isNeedWholeRow() {
         return false;
     }

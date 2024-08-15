@@ -85,6 +85,16 @@ public class DateTimeValueHandler implements IAttrValueHandler {
     }
 
     @Override
+    public boolean isNameAttr() {
+        return false;
+    }
+
+    @Override
+    public boolean isUniqueAttr() {
+        return false;
+    }
+
+    @Override
     public boolean isNeedWholeRow() {
         return false;
     }

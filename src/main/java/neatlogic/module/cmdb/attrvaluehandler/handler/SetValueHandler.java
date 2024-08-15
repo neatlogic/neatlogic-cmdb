@@ -68,7 +68,7 @@ public class SetValueHandler implements IAttrValueHandler {
 
     @Override
     public boolean isSimple() {
-        return true;
+        return false;
     }
 
     @Override
@@ -79,6 +79,16 @@ public class SetValueHandler implements IAttrValueHandler {
     @Override
     public boolean isNeedConfig() {
         return true;
+    }
+
+    @Override
+    public boolean isNameAttr() {
+        return false;
+    }
+
+    @Override
+    public boolean isUniqueAttr() {
+        return false;
     }
 
     @Override

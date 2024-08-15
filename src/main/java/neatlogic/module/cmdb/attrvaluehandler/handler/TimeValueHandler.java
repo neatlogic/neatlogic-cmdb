@@ -82,6 +82,16 @@ public class TimeValueHandler implements IAttrValueHandler {
     }
 
     @Override
+    public boolean isNameAttr() {
+        return false;
+    }
+
+    @Override
+    public boolean isUniqueAttr() {
+        return false;
+    }
+
+    @Override
     public boolean isNeedWholeRow() {
         return false;
     }

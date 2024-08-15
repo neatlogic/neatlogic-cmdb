@@ -18,7 +18,10 @@ package neatlogic.module.cmdb.api.ci;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
+import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
+import neatlogic.framework.cmdb.exception.attr.AttrNotAllowBeNameException;
+import neatlogic.framework.cmdb.exception.attr.AttrNotFoundException;
 import neatlogic.framework.cmdb.exception.ci.CiAuthException;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
@@ -28,6 +31,7 @@ import neatlogic.framework.restful.annotation.OperationType;
 import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
 import neatlogic.module.cmdb.service.ci.CiService;
 import org.springframework.stereotype.Service;
@@ -41,6 +45,9 @@ public class SaveCiNameAttrIdApi extends PrivateApiComponentBase {
 
     @Resource
     private CiService ciService;
+
+    @Resource
+    private AttrMapper attrMapper;
 
 
     @Override
@@ -73,8 +80,16 @@ public class SaveCiNameAttrIdApi extends PrivateApiComponentBase {
             if (!CiAuthChecker.chain().checkCiManagePrivilege(ciId).check()) {
                 throw new CiAuthException();
             }
-            ciVo.setNameAttrId(attrId);
-            ciService.updateCiNameAttrId(ciVo);
+            AttrVo attrVo = attrMapper.getAttrById(attrId);
+            if (attrVo == null) {
+                throw new AttrNotFoundException(attrId);
+            }
+            if (attrVo.getAllowBeName()) {
+                ciVo.setNameAttrId(attrId);
+                ciService.updateCiNameAttrId(ciVo);
+            } else {
+                throw new AttrNotAllowBeNameException();
+            }
         }
         return null;
     }

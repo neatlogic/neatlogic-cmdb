@@ -79,6 +79,16 @@ public class HyperLinkValueHandler implements IAttrValueHandler {
     }
 
     @Override
+    public boolean isNameAttr() {
+        return false;
+    }
+
+    @Override
+    public boolean isUniqueAttr() {
+        return false;
+    }
+
+    @Override
     public SearchExpression[] getSupportExpression() {
         return new SearchExpression[]{SearchExpression.NOTNULL, SearchExpression.NULL};
 

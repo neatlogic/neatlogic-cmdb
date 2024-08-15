@@ -86,6 +86,16 @@ public class NumberValueHandler implements IAttrValueHandler {
     }
 
     @Override
+    public boolean isNameAttr() {
+        return true;
+    }
+
+    @Override
+    public boolean isUniqueAttr() {
+        return true;
+    }
+
+    @Override
     public SearchExpression[] getSupportExpression() {
         return new SearchExpression[]{SearchExpression.BT, SearchExpression.NOTNULL, SearchExpression.NULL};
     }

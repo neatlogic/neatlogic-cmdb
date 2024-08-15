@@ -89,6 +89,16 @@ public class FileValueHandler implements IAttrValueHandler {
     }
 
     @Override
+    public boolean isNameAttr() {
+        return false;
+    }
+
+    @Override
+    public boolean isUniqueAttr() {
+        return false;
+    }
+
+    @Override
     public Object transferValueListToInput(AttrVo attrVo, Object value) {
         JSONArray valueList = new JSONArray();
         if (value != null && value.toString().startsWith("[")) {

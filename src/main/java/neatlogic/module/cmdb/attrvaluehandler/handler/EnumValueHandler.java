@@ -80,6 +80,16 @@ public class EnumValueHandler implements IAttrValueHandler {
     }
 
     @Override
+    public boolean isNameAttr() {
+        return true;
+    }
+
+    @Override
+    public boolean isUniqueAttr() {
+        return true;
+    }
+
+    @Override
     public boolean isNeedWholeRow() {
         return false;
     }
