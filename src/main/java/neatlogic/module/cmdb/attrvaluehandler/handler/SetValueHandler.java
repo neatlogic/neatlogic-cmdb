@@ -88,7 +88,7 @@ public class SetValueHandler implements IAttrValueHandler {
 
     @Override
     public SearchExpression[] getSupportExpression() {
-        return new SearchExpression[]{SearchExpression.EQ, SearchExpression.NE, SearchExpression.LI, SearchExpression.NL, SearchExpression.NOTNULL, SearchExpression.NULL};
+        return new SearchExpression[]{SearchExpression.LI, SearchExpression.NL, SearchExpression.NOTNULL, SearchExpression.NULL};
     }
 
     @Override
