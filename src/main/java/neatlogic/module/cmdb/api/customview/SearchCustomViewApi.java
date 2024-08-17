@@ -76,7 +76,7 @@ public class SearchCustomViewApi extends PrivateApiComponentBase {
         CustomViewVo customViewVo = JSON.toJavaObject(paramObj, CustomViewVo.class);
         String userUuid = UserContext.get().getUserUuid(true);
         customViewVo.setFcu(userUuid);
-        if (AuthActionChecker.check(CUSTOMVIEW_MODIFY.class.getSimpleName())) {
+        if (AuthActionChecker.check(CUSTOMVIEW_MODIFY.class)) {
             customViewVo.setAdmin(true);
         } else {
             AuthenticationInfoVo authenticationInfoVo = UserContext.get().getAuthenticationInfoVo();
