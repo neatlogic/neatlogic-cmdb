@@ -17,16 +17,16 @@ package neatlogic.module.cmdb.process.notifyhandler;
 
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.auth.label.CIENTITY_MODIFY;
-import neatlogic.framework.dto.ConditionParamVo;
-import neatlogic.framework.notify.core.NotifyPolicyHandlerBase;
-import neatlogic.framework.notify.dto.NotifyTriggerVo;
+import neatlogic.framework.process.constvalue.ProcessTaskGroupSearch;
+import neatlogic.framework.process.constvalue.ProcessUserType;
+import neatlogic.framework.process.notify.core.ProcessTaskNotifyHandlerBase;
 import neatlogic.module.cmdb.process.stephandler.CmdbProcessStepHandlerType;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
-public class CmdbSyncNotifyHandler extends NotifyPolicyHandlerBase {
+public class CmdbSyncNotifyHandler extends ProcessTaskNotifyHandlerBase {
 
     @Override
     public String getName() {
@@ -34,23 +34,10 @@ public class CmdbSyncNotifyHandler extends NotifyPolicyHandlerBase {
     }
 
     @Override
-    protected List<NotifyTriggerVo> myNotifyTriggerList() {
-        return null;
-    }
-
-    @Override
-    protected List<ConditionParamVo> mySystemParamList() {
-        return null;
-    }
-
-    @Override
-    protected List<ConditionParamVo> mySystemConditionOptionList() {
-        return null;
-    }
-
-    @Override
-    protected void myAuthorityConfig(JSONObject config) {
-
+    protected void myCustomAuthorityConfig(JSONObject config) {
+        List<String> excludeList = config.getJSONArray("excludeList").toJavaList(String.class);
+        excludeList.add(ProcessTaskGroupSearch.PROCESSUSERTYPE.getValue() + "#" + ProcessUserType.MINOR.getValue());
+        config.put("excludeList", excludeList);
     }
 
     @Override
