@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.legalvalid;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
@@ -54,10 +55,10 @@ public class SearchLegalValidApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "模型id")})
     @Output({@Param(explode = LegalValidVo[].class)})
-    @Description(desc = "搜索合规校验规则接口")
+    @Description(desc = "搜索合规校验规则")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        LegalValidVo legalValidVo = JSONObject.toJavaObject(jsonObj, LegalValidVo.class);
+        LegalValidVo legalValidVo = JSON.toJavaObject(jsonObj, LegalValidVo.class);
         return legalValidMapper.searchLegalValid(legalValidVo);
     }
 }

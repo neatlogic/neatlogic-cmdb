@@ -25,6 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.text.DecimalFormat;
+import java.text.ParseException;
 
 
 @Service
@@ -82,7 +83,7 @@ public class NumberValueHandler implements IAttrValueHandler {
 
     @Override
     public boolean isNeedConfig() {
-        return false;
+        return true;
     }
 
     @Override
@@ -105,14 +106,38 @@ public class NumberValueHandler implements IAttrValueHandler {
         return 2;
     }
 
+    public static void main(String[] a) throws ParseException {
+        DecimalFormat df = new DecimalFormat("0.##");
+        System.out.println(df.format(df.parse("12")));
+    }
+
     @Override
     public JSONArray getActualValueList(AttrVo attrVo, JSONArray valueList) {
+
+
         JSONArray actualValueList = new JSONArray();
         if (CollectionUtils.isNotEmpty(valueList)) {
             DecimalFormat df = new DecimalFormat("0.####");
+            if (attrVo.getConfig() != null && StringUtils.isNotBlank(attrVo.getConfig().getString("format"))) {
+                String format = attrVo.getConfig().getString("format");
+                switch (format) {
+                    case "1":
+                        df = new DecimalFormat("0.0");
+                        break;
+                    case "2":
+                        df = new DecimalFormat("0.00");
+                        break;
+                    case "3":
+                        df = new DecimalFormat("0.000");
+                        break;
+                    case "4":
+                        df = new DecimalFormat("0.0000");
+                        break;
+                }
+            }
             for (int i = 0; i < valueList.size(); i++) {
                 try {
-                    actualValueList.add(df.parse(valueList.getString(i)));
+                    actualValueList.add(df.format(df.parse(valueList.getString(i))));
                 } catch (Exception ignored) {
 
                 }
@@ -131,9 +156,26 @@ public class NumberValueHandler implements IAttrValueHandler {
     public void transferValueListToDisplay(AttrVo attrVo, JSONArray valueList) {
         if (CollectionUtils.isNotEmpty(valueList)) {
             DecimalFormat df = new DecimalFormat("0.####");
+            if (attrVo.getConfig() != null && StringUtils.isNotBlank(attrVo.getConfig().getString("format"))) {
+                String format = attrVo.getConfig().getString("format");
+                switch (format) {
+                    case "1":
+                        df = new DecimalFormat("0.0");
+                        break;
+                    case "2":
+                        df = new DecimalFormat("0.00");
+                        break;
+                    case "3":
+                        df = new DecimalFormat("0.000");
+                        break;
+                    case "4":
+                        df = new DecimalFormat("0.0000");
+                        break;
+                }
+            }
             for (int i = 0; i < valueList.size(); i++) {
                 try {
-                    valueList.set(i, df.parse(valueList.getString(i)));
+                    valueList.set(i, df.format(df.parse(valueList.getString(i))));
                 } catch (Exception ignored) {
 
                 }
@@ -163,9 +205,26 @@ public class NumberValueHandler implements IAttrValueHandler {
         JSONArray actualValueList = new JSONArray();
         if (CollectionUtils.isNotEmpty(valueList)) {
             DecimalFormat df = new DecimalFormat("0.####");
+            if (attrVo.getConfig() != null && StringUtils.isNotBlank(attrVo.getConfig().getString("format"))) {
+                String format = attrVo.getConfig().getString("format");
+                switch (format) {
+                    case "1":
+                        df = new DecimalFormat("0.0");
+                        break;
+                    case "2":
+                        df = new DecimalFormat("0.00");
+                        break;
+                    case "3":
+                        df = new DecimalFormat("0.000");
+                        break;
+                    case "4":
+                        df = new DecimalFormat("0.0000");
+                        break;
+                }
+            }
             for (int i = 0; i < valueList.size(); i++) {
                 try {
-                    actualValueList.add(df.parse(valueList.getString(i)));
+                    actualValueList.add(df.format(df.parse(valueList.getString(i))));
                 } catch (Exception ignored) {
 
                 }
