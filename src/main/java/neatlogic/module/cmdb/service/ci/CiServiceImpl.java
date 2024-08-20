@@ -18,6 +18,7 @@ package neatlogic.module.cmdb.service.ci;
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.cmdb.crossover.ICiCrossoverService;
+import neatlogic.framework.cmdb.crossover.ICiSchemaViewCrossoverMapper;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiViewVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
@@ -29,6 +30,7 @@ import neatlogic.framework.cmdb.exception.attr.AttrIsUsedInExpressionException;
 import neatlogic.framework.cmdb.exception.attr.AttrIsUsedInUniqueRuleException;
 import neatlogic.framework.cmdb.exception.ci.*;
 import neatlogic.framework.cmdb.utils.RelUtil;
+import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.dao.mapper.DataBaseViewInfoMapper;
 import neatlogic.framework.dao.mapper.SchemaMapper;
 import neatlogic.framework.dto.DataBaseViewInfoVo;
@@ -133,6 +135,11 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
                 if (ciSchemaMapper.checkTableIsExists(TenantContext.get().getDataDbName(), "cmdb_" + ciVo.getId()) <= 0) {
                     //创建配置项表
                     ciSchemaMapper.insertCiTable(ciVo.getId(), ciVo.getCiTableName());
+                    ICiSchemaViewCrossoverMapper mapper = CrossoverServiceFactory.getApi(ICiSchemaViewCrossoverMapper.class);
+                    if (mapper != null) {
+                        //补充物化视图
+                        mapper.createCiView(ciVo);
+                    }
                 } else {
                     //如果已存在但没有数据，重建表
                     Integer rc = ciSchemaMapper.checkTableHasData(TenantContext.get().getDataDbName(), ciVo.getCiTableName(false));
