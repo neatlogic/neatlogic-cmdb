@@ -191,7 +191,7 @@ public class NumberValueHandler implements IAttrValueHandler {
 
         int actualDecimalPlaces = bigDecimal.scale();
 
-        if (actualDecimalPlaces != decimalPlaces) {
+        if (actualDecimalPlaces > decimalPlaces) {
             throw new IllegalArgumentException("数字的小数位数不符合要求，期望: " + decimalPlaces + "，实际: " + actualDecimalPlaces);
         }
     }
