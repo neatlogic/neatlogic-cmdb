@@ -45,4 +45,9 @@ public class CmdbSyncNotifyHandler extends ProcessTaskNotifyHandlerBase {
         return CIENTITY_MODIFY.class.getSimpleName();
     }
 
+    @Override
+    public String getModuleGroup() {
+        return "process";
+    }
+
 }
