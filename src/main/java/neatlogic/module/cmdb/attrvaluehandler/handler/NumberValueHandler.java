@@ -24,8 +24,10 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.ParseException;
+import java.util.Objects;
 
 
 @Service
@@ -183,16 +185,52 @@ public class NumberValueHandler implements IAttrValueHandler {
         }
     }
 
+    private static void checkDecimalPlaces(String numberStr, int decimalPlaces) {
+        BigDecimal bigDecimal = new BigDecimal(numberStr);
+        bigDecimal = bigDecimal.stripTrailingZeros();
+
+        int actualDecimalPlaces = bigDecimal.scale();
+
+        if (actualDecimalPlaces != decimalPlaces) {
+            throw new IllegalArgumentException("数字的小数位数不符合要求，期望: " + decimalPlaces + "，实际: " + actualDecimalPlaces);
+        }
+    }
+
     @Override
     public boolean valid(AttrVo attrVo, JSONArray valueList) {
         if (CollectionUtils.isNotEmpty(valueList)) {
+            String format = "auto";
+            if (attrVo.getConfig() != null && StringUtils.isNotBlank(attrVo.getConfig().getString("format"))) {
+                format = attrVo.getConfig().getString("format");
+            }
             for (int i = 0; i < valueList.size(); i++) {
                 String v = valueList.getString(i);
                 if (StringUtils.isNotBlank(v)) {
-                    try {
-                        Double.parseDouble(v);
-                    } catch (Exception ex) {
-                        throw new AttrValueIrregularException(attrVo, v);
+                    if (!Objects.equals("auto", format)) {
+                        try {
+                            switch (format) {
+                                case "1":
+                                    checkDecimalPlaces(v, 1);
+                                    break;
+                                case "2":
+                                    checkDecimalPlaces(v, 2);
+                                    break;
+                                case "3":
+                                    checkDecimalPlaces(v, 3);
+                                    break;
+                                case "4":
+                                    checkDecimalPlaces(v, 4);
+                                    break;
+                            }
+                        } catch (IllegalArgumentException e) {
+                            throw new AttrValueIrregularException(attrVo, e);
+                        }
+                    } else {
+                        try {
+                            Double.parseDouble(v);
+                        } catch (Exception ex) {
+                            throw new AttrValueIrregularException(attrVo, v);
+                        }
                     }
                 }
             }
