@@ -135,7 +135,7 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
                 if (ciSchemaMapper.checkTableIsExists(TenantContext.get().getDataDbName(), "cmdb_" + ciVo.getId()) <= 0) {
                     //创建配置项表
                     ciSchemaMapper.insertCiTable(ciVo.getId(), ciVo.getCiTableName());
-                    ICiSchemaViewCrossoverMapper mapper = CrossoverServiceFactory.getApi(ICiSchemaViewCrossoverMapper.class);
+                    ICiSchemaViewCrossoverMapper mapper = CrossoverServiceFactory.tryToGetApi(ICiSchemaViewCrossoverMapper.class);
                     if (mapper != null) {
                         //补充物化视图
                         mapper.createCiView(ciVo);
