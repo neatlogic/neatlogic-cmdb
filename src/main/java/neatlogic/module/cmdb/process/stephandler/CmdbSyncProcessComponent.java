@@ -73,13 +73,12 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
 @Deprecated
-@Service
+//@Service
 public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
 
     private final Logger logger = LoggerFactory.getLogger(CmdbSyncProcessComponent.class);
