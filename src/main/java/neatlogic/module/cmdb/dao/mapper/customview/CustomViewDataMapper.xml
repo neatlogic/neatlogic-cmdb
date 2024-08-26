@@ -127,26 +127,32 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                                 </choose>
                             </when>
                             <when test="attrFilter.expression == 'like'">
-                                <if test="attrFilter.valueStringList != null and attrFilter.valueStringList.size() > 0">
-                                    <choose>
-                                        <when test="attrFilter.type != 'globalattr'">
+                                <choose>
+                                    <when test="attrFilter.type != 'globalattr'">
+                                        <!--由于mybatis没有JSONArray的typeHandler，因此需要先转换成List<String>再使用-->
+                                        <if test="attrFilter.valueStringList != null and attrFilter.valueStringList.size() > 0">
                                             <foreach collection="attrFilter.valueStringList" item="value" open="("
                                                      close=")" separator=" or ">
                                                 `${attrFilter.attrUuid}` LIKE CONCAT('%', #{value}, '%' )
                                             </foreach>
-                                        </when>
-                                        <otherwise>
+                                        </if>
+                                    </when>
+                                    <otherwise>
+                                        <!--全局属性需要用value值来搜索，这里用actualValueStringList来判断-->
+                                        <if test="attrFilter.actualValueStringList != null and attrFilter.actualValueStringList.size() > 0">
                                             <foreach collection="attrFilter.actualValueStringList" item="value" open="("
                                                      close=")" separator=" or ">
                                                 `${attrFilter.attrUuid}` LIKE CONCAT('%', #{value}, '%' )
                                             </foreach>
-                                        </otherwise>
-                                    </choose>
-                                </if>
+                                        </if>
+                                    </otherwise>
+                                </choose>
+
                             </when>
                             <when test="attrFilter.expression == 'notlike'">
                                 <choose>
                                     <when test="attrFilter.type != 'globalattr'">
+                                        <!--由于mybatis没有JSONArray的typeHandler，因此需要先转换成List<String>再使用-->
                                         <if test="attrFilter.valueStringList != null and attrFilter.valueStringList.size() > 0">
                                             (
                                             <foreach collection="attrFilter.valueStringList" item="value" open="("
@@ -159,6 +165,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                                         </if>
                                     </when>
                                     <otherwise>
+                                        <!--全局属性需要用value值来搜索，这里用actualValueStringList来判断-->
                                         <if test="attrFilter.actualValueStringList != null and attrFilter.actualValueStringList.size() > 0">
                                             (
                                             <foreach collection="attrFilter.actualValueStringList" item="value" open="("
