@@ -387,6 +387,16 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                     gb.addCluster(cb.build());
                 }
             }*/
+            List<CiEntityVo> inspectCiEntityList = new ArrayList<>();
+            List<CiEntityVo> monitorCiEntityList = new ArrayList<>();
+            for (CiEntityVo ciEntityVo : ciEntitySet) {
+                if (StringUtils.isNotBlank(ciEntityVo.getInspectStatus())) {
+                    inspectCiEntityList.add(ciEntityVo);
+                }
+                if (StringUtils.isNotBlank(ciEntityVo.getMonitorStatus())) {
+                    monitorCiEntityList.add(ciEntityVo);
+                }
+            }
 
 
             String dot = gb.build().toString();
@@ -394,6 +404,8 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
             if (logger.isDebugEnabled()) {
                 logger.debug(dot);
             }
+            returnObj.put("inspectCiEntityList", inspectCiEntityList);
+            returnObj.put("monitorCiEntityList", monitorCiEntityList);
             returnObj.put("dot", dot);
         }
         if (CollectionUtils.isNotEmpty(containRelIdSet)) {
