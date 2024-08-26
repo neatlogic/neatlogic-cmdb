@@ -391,9 +391,15 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
             List<CiEntityVo> monitorCiEntityList = new ArrayList<>();
             for (CiEntityVo ciEntityVo : ciEntitySet) {
                 if (StringUtils.isNotBlank(ciEntityVo.getInspectStatus())) {
-                    inspectCiEntityList.add(ciEntityVo);
+                    CiEntityVo c = new CiEntityVo();
+                    c.setId(ciEntityVo.getId());
+                    c.setInspectStatus(ciEntityVo.getInspectStatus());
+                    inspectCiEntityList.add(c);
                 }
                 if (StringUtils.isNotBlank(ciEntityVo.getMonitorStatus())) {
+                    CiEntityVo c = new CiEntityVo();
+                    c.setId(ciEntityVo.getId());
+                    c.setMonitorStatus(ciEntityVo.getMonitorStatus());
                     monitorCiEntityList.add(ciEntityVo);
                 }
             }
