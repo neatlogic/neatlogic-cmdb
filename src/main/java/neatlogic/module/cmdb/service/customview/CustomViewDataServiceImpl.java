@@ -22,10 +22,12 @@ import neatlogic.framework.cmdb.crossover.ICustomViewDataCrossoverService;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.customview.*;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo;
 import neatlogic.framework.cmdb.exception.customview.CustomViewNotFoundException;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.customview.CustomViewDataMapper;
 import neatlogic.module.cmdb.dao.mapper.customview.CustomViewMapper;
+import neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -48,6 +50,9 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
 
     @Resource
     private CiEntityMapper ciEntityMapper;
+
+    @Resource
+    private GlobalAttrMapper globalAttrMapper;
 
     @Override
     public CustomViewDataVo getCustomViewData(CustomViewConditionVo customViewConditionVo) {
@@ -87,7 +92,7 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
                     String expression = customViewAttr.getCondition().getString("expression");
                     if (StringUtils.isNotBlank(expression)) {
                         JSONArray valueList = customViewAttr.getCondition().getJSONArray("valueList");
-                        customViewConditionVo.addAttrFilter(new CustomViewConditionFilterVo(customViewAttr.getUuid(), customViewAttr.getAttrVo().getType(), expression, valueList));
+                        customViewConditionVo.addAttrFilter(new CustomViewConditionFilterVo(customViewAttr.getUuid(), "attr", customViewAttr.getAttrVo().getType(), expression, valueList));
                     }
                 }
             }
@@ -157,8 +162,35 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
         //去掉所有引用属性
         customViewAttrList = customViewAttrList.stream().filter(attr -> attr.getAttrVo().getTargetCiId() == null).collect(Collectors.toList());
         List<CustomViewConstAttrVo> customViewConstAttrList = customViewMapper.getCustomViewConstAttrByCustomViewId(new CustomViewConstAttrVo(customViewConditionVo.getCustomViewId()));
+        List<CustomViewGlobalAttrVo> customViewGlobalAttrList = customViewMapper.getCustomViewGlobalAttrByCustomViewId(new CustomViewGlobalAttrVo(customViewConditionVo.getCustomViewId()));
         Map<String, AttrVo> attrMap = new HashMap<>();
         Map<String, CustomViewAttrVo> attrNameMap = new HashMap<>();
+        if (CollectionUtils.isNotEmpty(customViewGlobalAttrList)) {
+            for (CustomViewGlobalAttrVo customViewGlobalAttrVo : customViewGlobalAttrList) {
+                if (customViewGlobalAttrVo.getGlobalAttrVo() != null && MapUtils.isNotEmpty(customViewGlobalAttrVo.getCondition())) {
+                    String expression = customViewGlobalAttrVo.getCondition().getString("expression");
+                    if (StringUtils.isNotBlank(expression)) {
+                        JSONArray valueList = customViewGlobalAttrVo.getCondition().getJSONArray("valueList");
+                        JSONArray valueStringList = new JSONArray();
+                        //全局属性需要用属性的名称来搜索，需要做转换
+                        if (CollectionUtils.isNotEmpty(valueList) && CollectionUtils.isNotEmpty(customViewGlobalAttrVo.getGlobalAttrVo().getItemList())) {
+                            for (int i = 0; i < valueList.size(); i++) {
+                                int finalI = i;
+                                Optional<GlobalAttrItemVo> item = customViewGlobalAttrVo.getGlobalAttrVo().getItemList().stream().filter(d -> Objects.equals(d.getId(), valueList.getLong(finalI))).findAny();
+                                item.ifPresent(globalAttrItemVo -> valueStringList.add(globalAttrItemVo.getValue()));
+                            }
+                        }
+                        CustomViewConditionFilterVo filterVo = new CustomViewConditionFilterVo();
+                        filterVo.setAttrUuid(customViewGlobalAttrVo.getUuid());
+                        filterVo.setType("globalattr");
+                        filterVo.setExpression(expression);
+                        filterVo.setValueList(valueList);
+                        filterVo.setActualValueList(valueStringList);
+                        customViewConditionVo.addAttrFilter(filterVo);
+                    }
+                }
+            }
+        }
         if (CollectionUtils.isNotEmpty(customViewAttrList)) {
             for (CustomViewAttrVo customViewAttr : customViewAttrList) {
                 attrMap.put(customViewAttr.getUuid(), customViewAttr.getAttrVo());
@@ -183,7 +215,7 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
                                 valueList.add(cientityVo.getName());
                             }
                         }
-                        customViewConditionVo.addAttrFilter(new CustomViewConditionFilterVo(customViewAttr.getUuid(), customViewAttr.getAttrVo().getType(), expression, valueList));
+                        customViewConditionVo.addAttrFilter(new CustomViewConditionFilterVo(customViewAttr.getUuid(), "attr", customViewAttr.getAttrVo().getType(), expression, valueList));
                     }
                 }
             }
@@ -212,6 +244,7 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
         List<CustomViewConditionFieldVo> customViewConditionFieldList = new ArrayList<>();
         customViewConditionFieldList.addAll(customViewAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "attr")).collect(Collectors.toList()));
         customViewConditionFieldList.addAll(customViewConstAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "constattr")).collect(Collectors.toList()));
+        customViewConditionFieldList.addAll(customViewGlobalAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "globalattr")).collect(Collectors.toList()));
         customViewConditionVo.setFieldList(customViewConditionFieldList);
 
         List<Map<String, Object>> dataList = customViewDataMapper.searchCustomViewData(customViewConditionVo);
@@ -311,7 +344,7 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
                     String expression = customViewAttr.getCondition().getString("expression");
                     if (StringUtils.isNotBlank(expression)) {
                         JSONArray valueList = customViewAttr.getCondition().getJSONArray("valueList");
-                        customViewConditionVo.addAttrFilter(new CustomViewConditionFilterVo(customViewAttr.getUuid(), customViewAttr.getAttrVo().getType(), expression, valueList));
+                        customViewConditionVo.addAttrFilter(new CustomViewConditionFilterVo(customViewAttr.getUuid(), "attr", customViewAttr.getAttrVo().getType(), expression, valueList));
                     }
                 }
                 //如果发现传入的groupby不是uuid，尝试转换成真实的uuid

@@ -33,6 +33,8 @@ public interface GlobalAttrMapper extends IGlobalAttrCrossoverMapper {
 
     List<GlobalAttrVo> getGlobalAttrByCiId(Long ciId);
 
+    List<GlobalAttrVo> getGlobalAttrByIdList(GlobalAttrVo globalAttrVo);
+
     GlobalAttrVo getGlobalAttrById(Long id);
 
     List<GlobalAttrVo> searchGlobalAttr(GlobalAttrVo globalAttrVo);

@@ -30,6 +30,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         WHERE customview_id = #{value}
     </select>
 
+    <select id="checkCustomViewGlobalAttrIsExists"
+            parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewGlobalAttrVo" resultType="int">
+        SELECT count(1)
+        FROM `cmdb_customview_globalattr`
+        WHERE customview_id = #{customViewId}
+          and name = #{name}
+    </select>
+
     <select id="checkCustomViewAttrIsExists" parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewAttrVo"
             resultType="int">
         SELECT count(1)
@@ -99,6 +107,28 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </collection>
     </resultMap>
 
+    <resultMap id="customViewGlobalAttrMap" type="neatlogic.framework.cmdb.dto.customview.CustomViewGlobalAttrVo">
+        <id property="uuid" column="uuid"/>
+        <result property="customViewCiUuid" column="customViewCiUuid"/>
+        <result property="customViewId" column="customViewId"/>
+        <result property="attrId" column="attrId"/>
+        <result property="alias" column="alias"/>
+        <result property="name" column="name"/>
+        <result property="sort" column="sort"/>
+        <result property="isHidden" column="isHidden"/>
+        <result property="conditionStr" column="conditionStr"/>
+        <association property="globalAttrVo" javaType="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo">
+            <id property="id" column="attrId"/>
+            <result property="name" column="attrName"/>
+            <result property="label" column="attrLabel"/>
+            <collection property="itemList" ofType="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo">
+                <id property="id" column="attrItemId"/>
+                <result property="value" column="attrItemValue"/>
+                <result property="sort" column="attrItemSort"/>
+            </collection>
+        </association>
+    </resultMap>
+
     <resultMap id="customViewAttrMap" type="neatlogic.framework.cmdb.dto.customview.CustomViewAttrVo">
         <id property="uuid" column="uuid"/>
         <result property="customViewCiUuid" column="customViewCiUuid"/>
@@ -145,6 +175,36 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         from cmdb_customview
         where name = #{name}
           and id != #{id}
+    </select>
+
+    <select id="getCustomViewGlobalAttrByCustomViewId"
+            parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewGlobalAttrVo"
+            resultMap="customViewGlobalAttrMap">
+        SELECT
+        a.`customview_id` AS customViewId,
+        a.`customview_ci_uuid` AS customViewCiUuid,
+        a.`uuid`,
+        a.`alias`,
+        a.`sort`,
+        a.`is_hidden` AS isHidden,
+        a.`is_primary` AS isPrimary,
+        a.`condition` AS conditionStr,
+        a.`name` AS name,
+        b.`id` AS attrId,
+        b.`name` AS attrName,
+        b.`label` AS attrLabel,
+        d.`id` AS attrItemId,
+        d.`value` AS attrItemValue,
+        d.`sort` AS attrItemSort
+        FROM `cmdb_customview_globalattr` a
+        JOIN `cmdb_global_attr` b ON a.attr_id = b.id
+        JOIN `cmdb_customview_ci` c ON a.customview_ci_uuid = c.uuid AND c.is_hidden = 0
+        LEFT JOIN `cmdb_global_attritem` d ON b.id = d.attr_id
+        WHERE a.customview_id = #{customViewId}
+        <if test="isHidden != null">
+            AND a.is_hidden = #{isHidden}
+        </if>
+        ORDER BY a.sort,d.sort
     </select>
 
     <select id="getCustomViewAttrByCustomViewId"
@@ -468,7 +528,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     </select>
 
     <select id="getAllIdList" resultType="java.lang.Long">
-        SELECT `id` FROM `cmdb_customview`
+        SELECT `id`
+        FROM `cmdb_customview`
     </select>
 
     <update id="updateCustomView" parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewVo">
@@ -564,6 +625,31 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 #{isPrimary})
     </insert>
 
+    <insert id="insertCustomViewGlobalAttr"
+            parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewGlobalAttrVo">
+        INSERT INTO cmdb_customview_globalattr
+        (customview_id,
+         customview_ci_uuid,
+         uuid,
+         attr_id,
+         alias,
+         name,
+         sort,
+         is_hidden,
+         is_primary,
+         `condition`)
+        VALUES (#{customViewId},
+                #{customViewCiUuid},
+                #{uuid},
+                #{attrId},
+                #{alias},
+                #{name},
+                #{sort},
+                #{isHidden},
+                #{isPrimary},
+                #{conditionStr})
+    </insert>
+
     <insert id="insertCustomViewAttr" parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewAttrVo">
         INSERT INTO cmdb_customview_attr
         (customview_id,
@@ -648,6 +734,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     <delete id="deleteCustomViewCiByCustomViewId" parameterType="java.lang.Long">
         DELETE
         FROM cmdb_customview_ci
+        WHERE customview_id = #{value}
+    </delete>
+
+    <delete id="deleteCustomViewGlobalAttrByCustomViewId" parameterType="java.lang.Long">
+        DELETE
+        FROM cmdb_customview_globalattr
         WHERE customview_id = #{value}
     </delete>
 

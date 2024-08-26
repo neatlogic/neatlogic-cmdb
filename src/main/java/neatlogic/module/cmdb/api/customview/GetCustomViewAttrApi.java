@@ -21,6 +21,7 @@ import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.customview.CustomViewAttrVo;
 import neatlogic.framework.cmdb.dto.customview.CustomViewConstAttrVo;
+import neatlogic.framework.cmdb.dto.customview.CustomViewGlobalAttrVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.exception.type.ParamNotExistsException;
 import neatlogic.framework.restful.annotation.*;
@@ -80,14 +81,18 @@ public class GetCustomViewAttrApi extends PrivateApiComponentBase {
         Integer isHidden = paramObj.getInteger("isHidden");
         Integer isHasTargetCiId = paramObj.getInteger("isHasTargetCiId");
         CustomViewConstAttrVo customViewConstAttrVo = new CustomViewConstAttrVo(id);
+        CustomViewGlobalAttrVo customViewGlobalAttrVo = new CustomViewGlobalAttrVo(id);
         CustomViewAttrVo customViewAttrVo = new CustomViewAttrVo(id);
         if (isHidden != null) {
+            customViewGlobalAttrVo.setIsHidden(isHidden);
             customViewConstAttrVo.setIsHidden(isHidden);
             customViewAttrVo.setIsHidden(isHidden);
         }
+        List<CustomViewGlobalAttrVo> globalAttrList = customViewMapper.getCustomViewGlobalAttrByCustomViewId(customViewGlobalAttrVo);
         List<CustomViewConstAttrVo> constAttrList = customViewMapper.getCustomViewConstAttrByCustomViewId(customViewConstAttrVo);
         List<CustomViewAttrVo> attrList = customViewMapper.getCustomViewAttrByCustomViewId(customViewAttrVo);
         JSONObject returnObj = new JSONObject();
+        returnObj.put("globalAttrList", globalAttrList);
         returnObj.put("constAttrList", constAttrList);
         if (isHasTargetCiId != null) {
             if (isHasTargetCiId.equals(1)) {

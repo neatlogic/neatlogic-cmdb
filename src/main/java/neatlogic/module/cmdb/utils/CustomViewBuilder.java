@@ -21,11 +21,13 @@ import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.ci.RelVo;
 import neatlogic.framework.cmdb.dto.customview.*;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
 import neatlogic.framework.cmdb.enums.RelDirectionType;
 import neatlogic.framework.cmdb.enums.customview.JoinType;
 import neatlogic.framework.cmdb.enums.customview.RelType;
 import neatlogic.framework.cmdb.exception.attr.AttrNotFoundException;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
+import neatlogic.framework.cmdb.exception.globalattr.GlobalAttrNotFoundException;
 import neatlogic.framework.cmdb.exception.rel.RelNotFoundException;
 import neatlogic.framework.dao.mapper.DataBaseViewInfoMapper;
 import neatlogic.framework.dao.mapper.SchemaMapper;
@@ -86,6 +88,15 @@ public class CustomViewBuilder {
                     throw new CiNotFoundException(customViewCiVo.getCiId());
                 }
                 ciMap.put(customViewCiVo.getCiId(), ciVo);
+            }
+            if (CollectionUtils.isNotEmpty(customViewCiVo.getGlobalAttrList())) {
+                for (CustomViewGlobalAttrVo customViewGlobalAttrVo : customViewCiVo.getGlobalAttrList()) {
+                    GlobalAttrVo attrVo = ciVo.getGlobalAttrById(customViewGlobalAttrVo.getAttrId());
+                    if (attrVo == null) {
+                        throw new GlobalAttrNotFoundException(customViewGlobalAttrVo.getAttrId());
+                    }
+                    customViewGlobalAttrVo.setGlobalAttrVo(attrVo);
+                }
             }
             if (CollectionUtils.isNotEmpty(customViewCiVo.getAttrList())) {
                 for (CustomViewAttrVo customViewAttrVo : customViewCiVo.getAttrList()) {
@@ -154,10 +165,20 @@ public class CustomViewBuilder {
                         .withRightExpression(new Column()
                                 .withTable(new Table("ci_" + startCustomViewCiVo.getUuid()))
                                 .withColumnName("id"))));
-        for (CustomViewAttrVo attrVo : customViewVo.getAttrList()) {
-            if (attrVo.getAttrVo().getTargetCiId() == null) {
+
+        if (CollectionUtils.isNotEmpty(customViewVo.getGlobalAttrList())) {
+            for (CustomViewGlobalAttrVo attrVo : customViewVo.getGlobalAttrList()) {
                 plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getUuid() + "`")));
                 plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getUuid() + "_hash`")));
+            }
+        }
+
+        if (CollectionUtils.isNotEmpty(customViewVo.getAttrList())) {
+            for (CustomViewAttrVo attrVo : customViewVo.getAttrList()) {
+                if (attrVo.getAttrVo().getTargetCiId() == null) {
+                    plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getUuid() + "`")));
+                    plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getUuid() + "_hash`")));
+                }
             }
         }
 
@@ -309,6 +330,7 @@ public class CustomViewBuilder {
             */
         String viewName = "customview_" + customViewVo.getId();
         String selectSql = select.toString();
+        System.out.println(selectSql);
         String md5 = Md5Util.encryptMD5(selectSql);
         String tableType = schemaMapper.checkTableOrViewIsExists(TenantContext.get().getDataDbName(), viewName);
         if (tableType != null) {
@@ -329,7 +351,7 @@ public class CustomViewBuilder {
                 schemaMapper.deleteTable(TenantContext.get().getDataDbName() + "." + viewName);
             }
             String sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + "." + viewName + " AS " + selectSql;
-            //System.out.println(sql);
+
             if (logger.isDebugEnabled()) {
                 logger.debug("创建自定义视图{}:", sql);
             }
@@ -434,6 +456,14 @@ public class CustomViewBuilder {
                 }
             }
 
+            if (CollectionUtils.isNotEmpty(customViewCiVo.getGlobalAttrList())) {
+                for (CustomViewGlobalAttrVo globalViewAttrVo : customViewCiVo.getGlobalAttrList()) {
+                    GlobalAttrVo attrVo = globalViewAttrVo.getGlobalAttrVo();
+                    plainSelect.addSelectItems(new SelectExpressionItem(new Column("`value`").withTable(new Table("globalattritem_" + attrVo.getId()))).withAlias(new Alias("`" + globalViewAttrVo.getUuid() + "`")));
+                    plainSelect.addSelectItems(new SelectExpressionItem(new Column("`id`").withTable(new Table("globalattritem_" + attrVo.getId()))).withAlias(new Alias("`" + globalViewAttrVo.getUuid() + "_hash`")));
+                }
+            }
+
             for (CustomViewAttrVo viewAttrVo : customViewCiVo.getAttrList()) {
                 AttrVo attrVo = viewAttrVo.getAttrVo();
                 if (attrVo.getTargetCiId() == null) {
@@ -475,6 +505,34 @@ public class CustomViewBuilder {
                                         .withTable(new Table("cmdb_" + ci.getId()))
                                         .withColumnName(ci.getIsVirtual()
                                                 .equals(0) ? "cientity_id" : "id"))));
+            }
+            //如果有全局属性，需要join全局属性表
+            if (CollectionUtils.isNotEmpty(customViewCiVo.getGlobalAttrList())) {
+                for (CustomViewGlobalAttrVo globalAttrVo : customViewCiVo.getGlobalAttrList()) {
+                    plainSelect.addJoins(new Join()
+                                    .withLeft(true)
+                                    .withRightItem(new Table()
+                                            .withName("cmdb_cientity_globalattritem")
+                                            .withSchemaName(TenantContext.get().getDbName())
+                                            .withAlias(new Alias("globalattr_" + globalAttrVo.getAttrId())))
+                                    .addOnExpression(new EqualsTo()
+                                            .withLeftExpression(new Column()
+                                                    .withTable(new Table("ci_base"))
+                                                    .withColumnName("id"))
+                                            .withRightExpression(new Column()
+                                                    .withTable(new Table("globalattr_" + globalAttrVo.getAttrId()))
+                                                    .withColumnName("cientity_id"))))
+                            .addJoins(new Join().withLeft(true).withRightItem(new Table().withName("cmdb_global_attritem")
+                                            .withSchemaName(TenantContext.get().getDbName())
+                                            .withAlias(new Alias("globalattritem_" + globalAttrVo.getAttrId())))
+                                    .addOnExpression(new EqualsTo()
+                                            .withLeftExpression(new Column()
+                                                    .withTable(new Table("globalattr_" + globalAttrVo.getAttrId()))
+                                                    .withColumnName("item_id"))
+                                            .withRightExpression(new Column()
+                                                    .withTable(new Table("globalattritem_" + globalAttrVo.getAttrId()))
+                                                    .withColumnName("id"))));
+                }
             }
             //隐藏超时数据
             //plainSelect.withWhere(getExpiredExpression());

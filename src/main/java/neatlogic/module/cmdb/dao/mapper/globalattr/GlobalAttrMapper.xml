@@ -64,7 +64,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                cga.is_active   AS isActive,
                cga.is_multiple AS isMultiple,
                cga.description As description,
-               cga.is_private AS isPrivate,
+               cga.is_private  AS isPrivate,
                cgai.id         as itemId,
                cgai.value      as itemValue,
                cgai.attr_id    as itemAttrId,
@@ -73,6 +73,32 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                  left join cmdb_global_attritem cgai on cga.id = cgai.attr_id
         where cga.id = #{value}
         order by cgai.sort
+    </select>
+
+    <select id="getGlobalAttrByIdList" parameterType="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo"
+            resultMap="globalAttrMap">
+        select cga.id,
+        cga.name,
+        cga.label,
+        cga.is_active AS isActive,
+        cga.is_multiple AS isMultiple,
+        cga.description As description,
+        cga.is_private AS isPrivate
+        <if test="needItem == 1">
+            ,cgai.id         as itemId,
+            cgai.value      as itemValue,
+            cgai.attr_id    as itemAttrId,
+            cgai.sort       as itemSort
+        </if>
+        from cmdb_global_attr cga
+        <if test="needItem  == 1">
+            left join cmdb_global_attritem cgai on cga.id = cgai.attr_id
+        </if>
+        where cga.id in
+        <foreach collection="idList" item="item" open="(" close=")" separator=",">#{item}</foreach>
+        <if test="needItem == 1">
+            order by cgai.sort
+        </if>
     </select>
 
     <select id="getGlobalAttrByCiId" parameterType="java.lang.Long" resultMap="globalAttrMap">
@@ -168,7 +194,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 
     <update id="updateGlobalAttr" parameterType="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo">
         update cmdb_global_attr
-        set label = #{label},
+        set label       = #{label},
             is_active   = #{isActive},
             is_multiple = #{isMultiple},
             description = #{description}

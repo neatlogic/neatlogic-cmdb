@@ -15,13 +15,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.customview;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
-import neatlogic.framework.cmdb.dto.customview.CustomViewAttrVo;
-import neatlogic.framework.cmdb.dto.customview.CustomViewConditionVo;
-import neatlogic.framework.cmdb.dto.customview.CustomViewConstAttrVo;
-import neatlogic.framework.cmdb.dto.customview.CustomViewVo;
+import neatlogic.framework.cmdb.dto.customview.*;
 import neatlogic.framework.cmdb.exception.customview.CustomViewNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
@@ -84,11 +82,11 @@ public class ExportCustomViewDataApi extends PrivateBinaryStreamApiComponentBase
     })
     @Output({@Param(name = "dataList", type = ApiParamType.JSONARRAY, desc = "结果集"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页大小")})
-    @Description(desc = "查询自定义视图数据接口")
+    @Description(desc = "查询自定义视图数据")
     //TODO 后续要对数据进行优化防止OOM
     @Override
     public Object myDoService(JSONObject paramObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
-        CustomViewConditionVo customViewConditionVo = JSONObject.toJavaObject(paramObj, CustomViewConditionVo.class);
+        CustomViewConditionVo customViewConditionVo = JSON.toJavaObject(paramObj, CustomViewConditionVo.class);
         Long customViewId = paramObj.getLong("id");
         CustomViewVo customViewVo = customViewMapper.getCustomViewById(customViewId);
         if (customViewVo == null) {
@@ -100,8 +98,12 @@ public class ExportCustomViewDataApi extends PrivateBinaryStreamApiComponentBase
         CustomViewConstAttrVo pCustomViewConstAttrVo = new CustomViewConstAttrVo();
         pCustomViewConstAttrVo.setCustomViewId(customViewId);
         pCustomViewConstAttrVo.setIsHidden(0);
+        CustomViewGlobalAttrVo pCustomViewGlobalAttrVo = new CustomViewGlobalAttrVo();
+        pCustomViewGlobalAttrVo.setCustomViewId(customViewId);
+        pCustomViewGlobalAttrVo.setIsHidden(0);
         List<CustomViewAttrVo> attrList = customViewMapper.getCustomViewAttrByCustomViewId(pCustomViewAttrVo);
         List<CustomViewConstAttrVo> constAttrList = customViewMapper.getCustomViewConstAttrByCustomViewId(pCustomViewConstAttrVo);
+        List<CustomViewGlobalAttrVo> globalAttrList = customViewMapper.getCustomViewGlobalAttrByCustomViewId(pCustomViewGlobalAttrVo);
         List<JSONObject> attrsList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(attrList)) {
             for (CustomViewAttrVo attrVo : attrList) {
@@ -114,6 +116,15 @@ public class ExportCustomViewDataApi extends PrivateBinaryStreamApiComponentBase
         }
         if (CollectionUtils.isNotEmpty(constAttrList)) {
             for (CustomViewConstAttrVo attrVo : constAttrList) {
+                JSONObject dataObj = new JSONObject();
+                dataObj.put("alias", attrVo.getAlias());
+                dataObj.put("uuid", attrVo.getUuid());
+                dataObj.put("sort", attrVo.getSort());
+                attrsList.add(dataObj);
+            }
+        }
+        if(CollectionUtils.isNotEmpty(globalAttrList)) {
+            for (CustomViewGlobalAttrVo attrVo : globalAttrList) {
                 JSONObject dataObj = new JSONObject();
                 dataObj.put("alias", attrVo.getAlias());
                 dataObj.put("uuid", attrVo.getUuid());

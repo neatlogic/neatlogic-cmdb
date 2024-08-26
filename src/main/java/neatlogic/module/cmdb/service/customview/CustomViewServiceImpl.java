@@ -22,10 +22,7 @@ import neatlogic.framework.cmdb.crossover.ICustomViewCrossoverService;
 import neatlogic.framework.cmdb.dto.customview.*;
 import neatlogic.framework.cmdb.dto.tag.TagVo;
 import neatlogic.framework.cmdb.enums.customview.RelType;
-import neatlogic.framework.cmdb.exception.customview.CreateCustomViewFailedException;
-import neatlogic.framework.cmdb.exception.customview.CustomViewAttrNameIsExistsException;
-import neatlogic.framework.cmdb.exception.customview.CustomViewEmptyException;
-import neatlogic.framework.cmdb.exception.customview.DeleteCustomViewFailedException;
+import neatlogic.framework.cmdb.exception.customview.*;
 import neatlogic.framework.transaction.core.EscapeTransactionJob;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.customview.CustomViewMapper;
@@ -106,6 +103,7 @@ public class CustomViewServiceImpl implements CustomViewService, ICustomViewCros
     public void updateCustomView(CustomViewVo customViewVo) {
         customViewMapper.updateCustomView(customViewVo);
         customViewMapper.deleteCustomViewCiByCustomViewId(customViewVo.getId());
+        customViewMapper.deleteCustomViewGlobalAttrByCustomViewId(customViewVo.getId());
         customViewMapper.deleteCustomViewAttrByCustomViewId(customViewVo.getId());
         customViewMapper.deleteCustomViewConstAttrByCustomViewId(customViewVo.getId());
         customViewMapper.deleteCustomViewRelByCustomViewId(customViewVo.getId());
@@ -120,6 +118,16 @@ public class CustomViewServiceImpl implements CustomViewService, ICustomViewCros
             for (CustomViewCiVo customViewCiVo : customViewVo.getCiList()) {
                 customViewCiVo.setCustomViewId(customViewVo.getId());
                 customViewMapper.insertCustomViewCi(customViewCiVo);
+                if (CollectionUtils.isNotEmpty(customViewCiVo.getGlobalAttrList())) {
+                    for (CustomViewGlobalAttrVo customViewGlobalAttrVo : customViewCiVo.getGlobalAttrList()) {
+                        if (StringUtils.isNotBlank(customViewGlobalAttrVo.getName()) && customViewMapper.checkCustomViewGlobalAttrIsExists(customViewGlobalAttrVo) > 0) {
+                            throw new CustomViewGlobalAttrNameIsExistsException(customViewGlobalAttrVo);
+                        }
+                        customViewGlobalAttrVo.setCustomViewId(customViewVo.getId());
+                        customViewGlobalAttrVo.setCustomViewCiUuid(customViewCiVo.getUuid());
+                        customViewMapper.insertCustomViewGlobalAttr(customViewGlobalAttrVo);
+                    }
+                }
                 if (CollectionUtils.isNotEmpty(customViewCiVo.getAttrList())) {
                     for (CustomViewAttrVo customViewAttrVo : customViewCiVo.getAttrList()) {
                         if (StringUtils.isNotBlank(customViewAttrVo.getName()) && customViewMapper.checkCustomViewAttrIsExists(customViewAttrVo) > 0) {
@@ -207,8 +215,10 @@ public class CustomViewServiceImpl implements CustomViewService, ICustomViewCros
         }
         Map<String, JSONObject> ciNodeMap = new HashMap<>();
         Map<String, JSONObject> attrNodeMap = new HashMap<>();
+        Map<String, JSONObject> globalAttrNodeMap = new HashMap<>();
         Map<String, JSONObject> relNodeMap = new HashMap<>();
         Map<String, JSONObject> constNodeMap = new HashMap<>();
+        Map<String, CustomViewGlobalAttrVo> globalAttrMap = new HashMap<>();
         Map<String, CustomViewAttrVo> attrMap = new HashMap<>();
         Map<String, CustomViewRelVo> relMap = new HashMap<>();
         Map<String, CustomViewCiVo> ciMap = new HashMap<>();
@@ -223,6 +233,9 @@ public class CustomViewServiceImpl implements CustomViewService, ICustomViewCros
             switch (nodeObj.getString("type")) {
                 case "Ci":
                     ciNodeMap.put(nodeObj.getString("uuid"), nodeObj);
+                    break;
+                case "GlobalAttr":
+                    globalAttrNodeMap.put(nodeObj.getString("uuid"), nodeObj);
                     break;
                 case "Attr":
                     attrNodeMap.put(nodeObj.getString("uuid"), nodeObj);
@@ -243,6 +256,7 @@ public class CustomViewServiceImpl implements CustomViewService, ICustomViewCros
                 JSONObject groupObj = groups.getJSONObject(i);
                 JSONArray contains = groupObj.getJSONArray("contain");
                 CustomViewCiVo customViewCiVo = null;
+                List<CustomViewGlobalAttrVo> globalAttrList = new ArrayList<>();
                 List<CustomViewAttrVo> attrList = new ArrayList<>();
                 List<CustomViewRelVo> relList = new ArrayList<>();
                 List<CustomViewConstAttrVo> constAttrList = new ArrayList<>();
@@ -253,6 +267,12 @@ public class CustomViewServiceImpl implements CustomViewService, ICustomViewCros
                         customViewCiVo = new CustomViewCiVo(ciNodeObj);
                         customViewCiVo.setCustomViewId(customViewVo.getId());
                         ciMap.put(customViewCiVo.getUuid(), customViewCiVo);
+                    } else if (globalAttrNodeMap.containsKey(contains.getString(j))) {
+                        JSONObject globalAttrNodeObj = globalAttrNodeMap.get(contains.getString(j));
+                        CustomViewGlobalAttrVo attrVo = new CustomViewGlobalAttrVo(globalAttrNodeObj);
+                        attrVo.setCustomViewId(customViewVo.getId());
+                        globalAttrMap.put(attrVo.getUuid(), attrVo);
+                        globalAttrList.add(attrVo);
                     } else if (attrNodeMap.containsKey(contains.getString(j))) {
                         JSONObject attrNodeObj = attrNodeMap.get(contains.getString(j));
                         CustomViewAttrVo attrVo = new CustomViewAttrVo(attrNodeObj);
@@ -274,6 +294,9 @@ public class CustomViewServiceImpl implements CustomViewService, ICustomViewCros
                     }
                 }
                 if (customViewCiVo != null) {
+                    for (CustomViewGlobalAttrVo attrVo : globalAttrList) {
+                        attrVo.setCustomViewCiUuid(customViewCiVo.getUuid());
+                    }
                     for (CustomViewAttrVo attrVo : attrList) {
                         attrVo.setCustomViewCiUuid(customViewCiVo.getUuid());
                     }
@@ -283,6 +306,7 @@ public class CustomViewServiceImpl implements CustomViewService, ICustomViewCros
                     for (CustomViewConstAttrVo constAttrVo : constAttrList) {
                         constAttrVo.setCustomViewCiUuid(customViewCiVo.getUuid());
                     }
+                    customViewCiVo.setGlobalAttrList(globalAttrList);
                     customViewCiVo.setAttrList(attrList);
                     customViewCiVo.setRelList(relList);
                     customViewCiVo.setConstAttrList(constAttrList);
@@ -311,6 +335,9 @@ public class CustomViewServiceImpl implements CustomViewService, ICustomViewCros
                 if (attrNodeMap.containsKey(tUuid)) {
                     customViewLinkVo.setToType(RelType.ATTR.getValue());
                     customViewLinkVo.setToCustomViewCiUuid(attrMap.get(tUuid).getCustomViewCiUuid());
+                } else if (globalAttrNodeMap.containsKey(tUuid)) {
+                    customViewLinkVo.setToType(RelType.GLOBALATTR.getValue());
+                    customViewLinkVo.setToCustomViewCiUuid(globalAttrMap.get(tUuid).getCustomViewCiUuid());
                 } else if (ciNodeMap.containsKey(tUuid)) {
                     customViewLinkVo.setToType(RelType.CI.getValue());
                     customViewLinkVo.setToCustomViewCiUuid(ciMap.get(tUuid).getUuid());

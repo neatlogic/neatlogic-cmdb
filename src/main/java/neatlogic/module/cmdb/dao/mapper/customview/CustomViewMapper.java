@@ -25,6 +25,8 @@ public interface CustomViewMapper {
 
     CustomViewTemplateVo getCustomViewTemplateById(Long customViewId);
 
+    int checkCustomViewGlobalAttrIsExists(CustomViewGlobalAttrVo customViewGlobalAttr);
+
     int checkCustomViewAttrIsExists(CustomViewAttrVo customViewAttrVo);
 
     CustomViewConstAttrVo getCustomViewConstAttrByUuid(@Param("customViewId") Long customViewId, @Param("uuid") String uuid);
@@ -49,6 +51,8 @@ public interface CustomViewMapper {
 
     int checkCustomViewNameIsExists(CustomViewVo customViewVo);
 
+    List<CustomViewGlobalAttrVo> getCustomViewGlobalAttrByCustomViewId(CustomViewGlobalAttrVo customViewGlobalAttrVo);
+
     List<Long> getAllIdList();
 
     int searchCustomViewCount(CustomViewVo customViewVo);
@@ -69,6 +73,8 @@ public interface CustomViewMapper {
 
     void insertCustomViewConstAttr(CustomViewConstAttrVo customViewConstAttrVo);
 
+    void insertCustomViewGlobalAttr(CustomViewGlobalAttrVo customViewGlobalAttrVo);
+
     void insertCustomViewAttr(CustomViewAttrVo customViewAttrVo);
 
     void insertCustomViewLink(CustomViewLinkVo customViewLinkVo);
@@ -78,6 +84,8 @@ public interface CustomViewMapper {
     void insertCustomViewAuth(CustomViewAuthVo customViewAuthVo);
 
     void deleteCustomViewCiByCustomViewId(Long customViewId);
+
+    void deleteCustomViewGlobalAttrByCustomViewId(Long customViewId);
 
     void deleteCustomViewAttrByCustomViewId(Long customViewId);
 

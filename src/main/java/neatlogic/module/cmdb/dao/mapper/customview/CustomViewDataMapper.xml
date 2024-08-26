@@ -91,7 +91,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             <if test="keyword != null and keyword != '' and fieldList != null and fieldList.size() > 0">
                 AND
                 <foreach collection="fieldList" item="field" separator="OR" open="(" close=")">
-                    <if test="field.type == 'attr' or field.type == 'constattr'">
+                    <if test="field.type == 'attr' or field.type == 'constattr' or field.type == 'globalattr'">
                         `${field.name}` LIKE CONCAT('%',
                         #{keyword},
                         '%'
@@ -127,27 +127,50 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                                 </choose>
                             </when>
                             <when test="attrFilter.expression == 'like'">
-                                <if test="attrFilter.valueList != null and attrFilter.valueList.size() > 0">
-                                    <foreach collection="attrFilter.valueList" item="value" open="(" close=")"
-                                             separator="or">
-                                        `${attrFilter.attrUuid}` LIKE
-                                        CONCAT('%',
-                                        #{value},
-                                        '%'
-                                        )
-                                    </foreach>
+                                <if test="attrFilter.valueStringList != null and attrFilter.valueStringList.size() > 0">
+                                    <choose>
+                                        <when test="attrFilter.type != 'globalattr'">
+                                            <foreach collection="attrFilter.valueStringList" item="value" open="("
+                                                     close=")" separator=" or ">
+                                                `${attrFilter.attrUuid}` LIKE CONCAT('%', #{value}, '%' )
+                                            </foreach>
+                                        </when>
+                                        <otherwise>
+                                            <foreach collection="attrFilter.actualValueStringList" item="value" open="("
+                                                     close=")" separator=" or ">
+                                                `${attrFilter.attrUuid}` LIKE CONCAT('%', #{value}, '%' )
+                                            </foreach>
+                                        </otherwise>
+                                    </choose>
                                 </if>
                             </when>
                             <when test="attrFilter.expression == 'notlike'">
-                                <if test="attrFilter.valueList != null and attrFilter.valueList.size() > 0">
-                                    (
-                                    <foreach collection="attrFilter.valueList" item="value" open="(" close=")"
-                                             separator="and">
-                                        `${attrFilter.attrUuid}` NOT LIKE
-                                        CONCAT('%',#{value},'%')
-                                    </foreach>
-                                    or `${attrFilter.attrUuid}` is null)
-                                </if>
+                                <choose>
+                                    <when test="attrFilter.type != 'globalattr'">
+                                        <if test="attrFilter.valueStringList != null and attrFilter.valueStringList.size() > 0">
+                                            (
+                                            <foreach collection="attrFilter.valueStringList" item="value" open="("
+                                                     close=")"
+                                                     separator=" and ">
+                                                `${attrFilter.attrUuid}` NOT LIKE
+                                                CONCAT('%',#{value},'%')
+                                            </foreach>
+                                            or `${attrFilter.attrUuid}` is null)
+                                        </if>
+                                    </when>
+                                    <otherwise>
+                                        <if test="attrFilter.actualValueStringList != null and attrFilter.actualValueStringList.size() > 0">
+                                            (
+                                            <foreach collection="attrFilter.actualValueStringList" item="value" open="("
+                                                     close=")"
+                                                     separator=" and ">
+                                                `${attrFilter.attrUuid}` NOT LIKE
+                                                CONCAT('%',#{value},'%')
+                                            </foreach>
+                                            or `${attrFilter.attrUuid}` is null)
+                                        </if>
+                                    </otherwise>
+                                </choose>
                             </when>
                             <when test="attrFilter.expression == 'is-null'">
                                 (`${attrFilter.attrUuid}` IS NULL OR
@@ -206,7 +229,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             <if test="keyword != null and keyword != '' and fieldList != null and fieldList.size() > 0">
                 AND
                 <foreach collection="fieldList" item="field" separator="OR" open="(" close=")">
-                    <if test="field.type == 'attr' or field.type == 'constattr'">
+                    <if test="field.type == 'attr' or field.type == 'constattr' or field.type == 'globalattr'">
                         `${field.name}` LIKE CONCAT('%',
                         #{keyword},
                         '%'
