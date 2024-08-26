@@ -330,7 +330,7 @@ public class CustomViewBuilder {
             */
         String viewName = "customview_" + customViewVo.getId();
         String selectSql = select.toString();
-        System.out.println(selectSql);
+        //System.out.println(selectSql);
         String md5 = Md5Util.encryptMD5(selectSql);
         String tableType = schemaMapper.checkTableOrViewIsExists(TenantContext.get().getDataDbName(), viewName);
         if (tableType != null) {
