@@ -25,7 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         b.`path`,
         b.`size`
         FROM
-        `cmdb_import_file` a JOIN `file` b ON a.`file_id` = b.`id`
+        `cmdb_import_file` a JOIN `file` b ON a.`file_id` = b.`id` AND b.type = 'cientityimport'
         <where>
             <if test="value != null and value != ''">
                 AND b.`user_uuid` = #{VALUE}
