@@ -31,10 +31,7 @@ import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrFilterVo;
 import neatlogic.framework.cmdb.enums.RelDirectionType;
 import neatlogic.framework.cmdb.exception.ci.CiTopoTemplateNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.graphviz.Graphviz;
-import neatlogic.framework.graphviz.Layer;
-import neatlogic.framework.graphviz.Link;
-import neatlogic.framework.graphviz.Node;
+import neatlogic.framework.graphviz.*;
 import neatlogic.framework.graphviz.enums.LayoutType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
@@ -97,6 +94,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
             @Param(name = "globalAttrFilterList", type = ApiParamType.JSONARRAY, desc = "nmcac.searchcientityapi.input.param.desc.globalattrfilterlist"),
             @Param(name = "disableRelList", type = ApiParamType.JSONARRAY, desc = "nmcat.getcientitytopoapi.input.param.desc.disablerellist"),
             @Param(name = "templateId", type = ApiParamType.LONG, desc = "term.autoexec.scenarioid"),
+            @Param(name = "isGroup", type = ApiParamType.INTEGER, desc = "是否按模型分组"),
             @Param(name = "level", type = ApiParamType.INTEGER, desc = "nmcat.getcientitytopoapi.input.param.desc.level"),
             @Param(name = "templateConfig", type = ApiParamType.JSONOBJECT, desc = "term.cmdb.templateconfig")})
     @Output({@Param(name = "topo", type = ApiParamType.STRING)})
@@ -105,6 +103,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         String layout = jsonObj.getString("layout");
         int isBackbone = jsonObj.getIntValue("isBackbone");
+        int isGroup = jsonObj.getIntValue("isGroup");
         Long templateId = jsonObj.getLong("templateId");
         JSONObject templateConfig = jsonObj.getJSONObject("templateConfig");
         // 所有需要绘制的配置项
@@ -138,6 +137,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                 disableRelIdList.add(disableRelObjList.getLong(i));
             }
         }
+        Map<Long, Cluster.Builder> clusterMap = new HashMap<>();
         //分组属性
        /* List<String> clusterAttrList = new ArrayList<>();
         clusterAttrList.add("tomcat#port");
@@ -179,12 +179,16 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                                 ciEntityVo.setName(relEntityVo.getToCiEntityName());
                                 ciEntityVo.setCiId(relEntityVo.getToCiId());
                                 ciEntityVo.setCiIcon(relEntityVo.getToCiIcon());
+                                ciEntityVo.setCiName(relEntityVo.getToCiName());
+                                ciEntityVo.setCiLabel(relEntityVo.getToCiLabel());
                             } else {
                                 ciEntityVo.setTypeId(relEntityVo.getFromCiTypeId());
                                 ciEntityVo.setId(relEntityVo.getFromCiEntityId());
                                 ciEntityVo.setName(relEntityVo.getFromCiEntityName());
                                 ciEntityVo.setCiId(relEntityVo.getFromCiId());
                                 ciEntityVo.setCiIcon(relEntityVo.getFromCiIcon());
+                                ciEntityVo.setCiName(relEntityVo.getFromCiName());
+                                ciEntityVo.setCiLabel(relEntityVo.getFromCiLabel());
                             }
                             if (canShowCiTypeIdSet.contains(ciEntityVo.getTypeId())) {
                                 ciEntitySet.add(ciEntityVo);
@@ -342,6 +346,13 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
 
                             ciEntityNodeSet.add("CiEntity_" + ciEntityVo.getId());
 
+                            if (isGroup == 1) {
+                                if (!clusterMap.containsKey(ciEntityVo.getCiId())) {
+                                    clusterMap.put(ciEntityVo.getCiId(), new Cluster.Builder("cluster_" + ciEntityVo.getCiId()).withLabel(ciEntityVo.getCiLabel()));
+                                }
+                                clusterMap.get(ciEntityVo.getCiId()).addNode(node);
+                            }
+
                             //根据分组属性计算分组
                            /* if (CollectionUtils.isNotEmpty(clusterAttrList)) {
                                 for (String clusterAttr : clusterAttrList) {
@@ -387,6 +398,13 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                     gb.addCluster(cb.build());
                 }
             }*/
+            if (MapUtils.isNotEmpty(clusterMap)) {
+                for (Map.Entry<Long, Cluster.Builder> entry : clusterMap.entrySet()) {
+                    Cluster.Builder cb = entry.getValue();
+                    cb.withStyle("filled");
+                    gb.addCluster(cb.build());
+                }
+            }
             List<CiEntityVo> inspectCiEntityList = new ArrayList<>();
             List<CiEntityVo> monitorCiEntityList = new ArrayList<>();
             for (CiEntityVo ciEntityVo : ciEntitySet) {
