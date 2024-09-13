@@ -95,6 +95,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
             @Param(name = "disableRelList", type = ApiParamType.JSONARRAY, desc = "nmcat.getcientitytopoapi.input.param.desc.disablerellist"),
             @Param(name = "templateId", type = ApiParamType.LONG, desc = "term.autoexec.scenarioid"),
             @Param(name = "isGroup", type = ApiParamType.INTEGER, desc = "是否按模型分组"),
+            @Param(name = "isRelLabel", type = ApiParamType.INTEGER, desc = "是否显示关系名称"),
             @Param(name = "level", type = ApiParamType.INTEGER, desc = "nmcat.getcientitytopoapi.input.param.desc.level"),
             @Param(name = "templateConfig", type = ApiParamType.JSONOBJECT, desc = "term.cmdb.templateconfig")})
     @Output({@Param(name = "topo", type = ApiParamType.STRING)})
@@ -104,6 +105,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
         String layout = jsonObj.getString("layout");
         int isBackbone = jsonObj.getIntValue("isBackbone");
         int isGroup = jsonObj.getIntValue("isGroup");
+        int isRelLabel = jsonObj.getIntValue("isRelLabel");
         Long templateId = jsonObj.getLong("templateId");
         JSONObject templateConfig = jsonObj.getJSONObject("templateConfig");
         // 所有需要绘制的配置项
@@ -383,8 +385,10 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                         Link.Builder lb = new Link.Builder(
                                 "CiEntity_" + relEntityVo.getFromCiEntityId(),
                                 "CiEntity_" + relEntityVo.getToCiEntityId());
-                        lb.withLabel(relEntityVo.getRelTypeName());
-                        lb.setFontSize(9);
+                        if (isRelLabel == 1) {
+                            lb.withLabel(relEntityVo.getRelTypeName());
+                            lb.setFontSize(9);
+                        }
                         gb.addLink(lb.build());
                     }
                 }

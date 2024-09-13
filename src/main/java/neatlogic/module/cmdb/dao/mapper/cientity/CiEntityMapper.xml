@@ -53,32 +53,34 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         FROM
         (
         SELECT
-        rel_id AS relId,
-        from_cientity_id AS fromCiEntityId,
-        to_cientity_id AS toCiEntityId,
+        x.rel_id AS relId,
+        x.from_cientity_id AS fromCiEntityId,
+        x.to_cientity_id AS toCiEntityId,
+        z.name AS relTypeName,
         'from' AS direction
         FROM
-        cmdb_relentity
+        cmdb_relentity x join cmdb_rel y on x.rel_id=y.id join cmdb_reltype z on y.type_id = z.id
         WHERE
-        from_cientity_id in
+        x.from_cientity_id in
         <foreach collection="idList" open="(" close=")" item="item" separator=",">#{item}</foreach>
         <if test="excludeRelIdList != null and excludeRelIdList.size() > 0">
-            and rel_id not in
+            and x.rel_id not in
             <foreach collection="excludeRelIdList" open="(" close=")" item="item" separator=",">#{item}</foreach>
         </if>
         UNION
         SELECT
-        rel_id AS relId,
-        from_cientity_id AS fromCiEntityId,
-        to_cientity_id AS toCiEntityId,
+        x.rel_id AS relId,
+        x.from_cientity_id AS fromCiEntityId,
+        x.to_cientity_id AS toCiEntityId,
+        z.name AS relTypeName,
         'to' AS direction
         FROM
-        cmdb_relentity
+        cmdb_relentity x join cmdb_rel y on x.rel_id=y.id join cmdb_reltype z on y.type_id = z.id
         WHERE
-        to_cientity_id in
+        x.to_cientity_id in
         <foreach collection="idList" open="(" close=")" item="item" separator=",">#{item}</foreach>
         <if test="excludeRelIdList != null and excludeRelIdList.size() > 0">
-            and rel_id not in
+            and x.rel_id not in
             <foreach collection="excludeRelIdList" open="(" close=")" item="item" separator=",">#{item}</foreach>
         </if>
         ) t
