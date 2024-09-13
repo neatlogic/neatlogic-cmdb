@@ -124,6 +124,8 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     List<Long> getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId(ResourceVo resourceVo);
 
+    Integer getAppInstanceResourceIdCountByAppSystemIdAndModuleIdAndEnvId(ResourceVo resourceVo);
+
     /**
      * 根据类型和IP列表查询资源
      *

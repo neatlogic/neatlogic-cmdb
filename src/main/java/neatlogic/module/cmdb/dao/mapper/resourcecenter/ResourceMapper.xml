@@ -1261,6 +1261,39 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </if>
     </select>
 
+    <select id="getAppInstanceResourceIdCountByAppSystemIdAndModuleIdAndEnvId"
+            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo"
+            resultType="java.lang.Integer">
+        SELECT count(1)
+        FROM @{DATA_SCHEMA}.`scence_appinstance_env_appmodule_appsystem` a
+        <where>
+            <choose>
+                <when test="appSystemId != null">
+                    AND a.`app_system_id` = #{appSystemId}
+                </when>
+                <otherwise>
+                    AND a.`app_system_id` IS NOT NULL
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="appModuleId != null">
+                    AND a.`app_module_id` = #{appModuleId}
+                </when>
+                <otherwise>
+                    AND a.`app_module_id` IS NOT NULL
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="envId != null">
+                    AND a.`env_id` = #{envId}
+                </when>
+                <otherwise>
+                    AND a.`env_id` IS NOT NULL
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
     <select id="getResourceIdByIpAndPortAndNameWithFilter"
             parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
         SELECT a.`id`
