@@ -119,7 +119,7 @@ public class ExportCiApi extends PrivateBinaryStreamApiComponentBase {
             response.setContentType("application/octet-stream");
             response.setHeader("Content-Disposition", "attachment;fileName=\"" + fileName + "\"");
             ServletOutputStream os = response.getOutputStream();
-            ZipOutputStream zos = new ZipOutputStream(os);
+            ZipOutputStream finalZip = new ZipOutputStream(os);
             for (Long id : idList) {
                 CiVo ciVo = ciService.getCiById(id);
                 if (ciVo != null) {
@@ -133,21 +133,31 @@ public class ExportCiApi extends PrivateBinaryStreamApiComponentBase {
                     if (CollectionUtils.isNotEmpty(ciVo.getRelList())) {
                         ciVo.getRelList().removeIf(d -> d.getIsExtended().equals(1));
                     }
-                    // 序列化 CiVo 对象
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    ObjectOutputStream oos = new ObjectOutputStream(baos);
+                    // 创建一个字节数组输出流，用来存储第一级ZIP文件
+                    ByteArrayOutputStream modelBaos = new ByteArrayOutputStream();
+                    ZipOutputStream modelZip = new ZipOutputStream(modelBaos);
+
+                    // 创建一个 .model.zip 文件，打包CiVo对象
+                    modelZip.putNextEntry(new ZipEntry(ciVo.getName()));
+                    ObjectOutputStream oos = new ObjectOutputStream(modelZip);
                     oos.writeObject(ciVo);
                     oos.flush();
+                    modelZip.closeEntry();
                     oos.close();
 
-                    // 将序列化后的 CiVo 对象作为 .model 文件放入外层 ZipOutputStream 中
-                    InputStream is = new ByteArrayInputStream(baos.toByteArray());
-                    zos.putNextEntry(new ZipEntry(ciVo.getName() + ".model"));
-                    IOUtils.copy(is, zos);
-                    zos.closeEntry();
+                    // 关闭第一级的ZIP
+                    modelZip.close();
+
+                    // 将生成的 .model.zip 作为字节数组
+                    byte[] modelZipBytes = modelBaos.toByteArray();
+                    // 在最终的ZIP文件中，添加这个 .model.zip 文件
+                    ZipEntry finalZipEntry = new ZipEntry(ciVo.getName() + ".model");
+                    finalZip.putNextEntry(finalZipEntry);
+                    finalZip.write(modelZipBytes);
+                    finalZip.closeEntry();
                 }
             }
-            zos.close();
+            finalZip.close();
         }
         return null;
     }
