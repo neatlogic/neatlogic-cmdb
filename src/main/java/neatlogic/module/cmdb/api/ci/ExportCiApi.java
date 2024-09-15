@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.ci;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
@@ -26,6 +27,7 @@ import neatlogic.framework.restful.annotation.OperationType;
 import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
+import neatlogic.framework.util.FileUtil;
 import neatlogic.module.cmdb.service.ci.CiService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
@@ -39,6 +41,10 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -65,51 +71,84 @@ public class ExportCiApi extends PrivateBinaryStreamApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid")
+    @Input({
+            //@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid"),
+            @Param(name = "idList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "id列表")
     })
     @Description(desc = "nmcac.exportciapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
-        CiVo ciVo = ciService.getCiById(jsonObj.getLong("ciId"));
-        if (ciVo != null) {
-            //清空所有id信息
-            ciVo.setLft(null);
-            ciVo.setRht(null);
-            //清空所有继承属性和关系
-            if (CollectionUtils.isNotEmpty(ciVo.getAttrList())) {
-                ciVo.getAttrList().removeIf(d -> d.getIsExtended().equals(1));
-                /*for (AttrVo attrVo : ciVo.getAttrList()) {
-                    attrVo.setCiId(null);
-                    attrVo.setId(null);
-                }*/
+        JSONArray paramIdList = jsonObj.getJSONArray("idList");
+        List<Long> idList = new ArrayList<>();
+        for (int i = 0; i < paramIdList.size(); i++) {
+            idList.add(paramIdList.getLong(i));
+        }
+        if (idList.size() == 1) {
+            CiVo ciVo = ciService.getCiById(idList.get(0));
+            if (ciVo != null) {
+                //清空所有id信息
+                ciVo.setLft(null);
+                ciVo.setRht(null);
+                //清空所有继承属性和关系
+                if (CollectionUtils.isNotEmpty(ciVo.getAttrList())) {
+                    ciVo.getAttrList().removeIf(d -> d.getIsExtended().equals(1));
+                }
+                if (CollectionUtils.isNotEmpty(ciVo.getRelList())) {
+                    ciVo.getRelList().removeIf(d -> d.getIsExtended().equals(1));
+                }
+                response.setContentType("application/octet-stream");
+                response.setHeader("Content-Disposition", "attachment;fileName=\"" + ciVo.getName() + ".model\"");
+                ServletOutputStream os = response.getOutputStream();
+                ZipOutputStream zos = new ZipOutputStream(os);
+                // 仅打包归档存储
+                zos.setMethod(ZipOutputStream.DEFLATED);
+                zos.setLevel(0);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ObjectOutputStream oos = new ObjectOutputStream(baos);
+                oos.writeObject(ciVo);
+                oos.flush();
+                oos.close();
+                InputStream is = new ByteArrayInputStream(baos.toByteArray());
+                zos.putNextEntry(new ZipEntry(ciVo.getName()));
+                IOUtils.copy(is, zos);
+                zos.closeEntry();
+                zos.close();
             }
-            if (CollectionUtils.isNotEmpty(ciVo.getRelList())) {
-                ciVo.getRelList().removeIf(d -> d.getIsExtended().equals(1));
-                /*for (RelVo relVo : ciVo.getRelList()) {
-                    relVo.setToCiId(null);
-                    relVo.setFromCiId(null);
-                    relVo.setId(null);
-                }*/
-            }
+        } else {
+            String fileName = FileUtil.getEncodedFileName("模型导入文件_" + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()) + ".zip");
             response.setContentType("application/octet-stream");
-            response.setHeader("Content-Disposition", "attachment;fileName=\"" + ciVo.getName() + ".model\"");
+            response.setHeader("Content-Disposition", "attachment;fileName=\"" + fileName + "\"");
             ServletOutputStream os = response.getOutputStream();
             ZipOutputStream zos = new ZipOutputStream(os);
-            // 仅打包归档存储
-            zos.setMethod(ZipOutputStream.DEFLATED);
-            zos.setLevel(0);
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(baos);
-            oos.writeObject(ciVo);
-            oos.flush();
-            oos.close();
-            InputStream is = new ByteArrayInputStream(baos.toByteArray());
-            zos.putNextEntry(new ZipEntry(ciVo.getName()));
-            IOUtils.copy(is, zos);
-            zos.closeEntry();
+            for (Long id : idList) {
+                CiVo ciVo = ciService.getCiById(id);
+                if (ciVo != null) {
+                    //清空所有id信息
+                    ciVo.setLft(null);
+                    ciVo.setRht(null);
+                    //清空所有继承属性和关系
+                    if (CollectionUtils.isNotEmpty(ciVo.getAttrList())) {
+                        ciVo.getAttrList().removeIf(d -> d.getIsExtended().equals(1));
+                    }
+                    if (CollectionUtils.isNotEmpty(ciVo.getRelList())) {
+                        ciVo.getRelList().removeIf(d -> d.getIsExtended().equals(1));
+                    }
+                    // 序列化 CiVo 对象
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    ObjectOutputStream oos = new ObjectOutputStream(baos);
+                    oos.writeObject(ciVo);
+                    oos.flush();
+                    oos.close();
+
+                    // 将序列化后的 CiVo 对象作为 .model 文件放入外层 ZipOutputStream 中
+                    InputStream is = new ByteArrayInputStream(baos.toByteArray());
+                    zos.putNextEntry(new ZipEntry(ciVo.getName() + ".model"));
+                    IOUtils.copy(is, zos);
+                    zos.closeEntry();
+                }
+            }
             zos.close();
         }
-
         return null;
     }
 

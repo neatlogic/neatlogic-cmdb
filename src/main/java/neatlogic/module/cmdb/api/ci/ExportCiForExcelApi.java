@@ -117,7 +117,7 @@ public class ExportCiForExcelApi extends PrivateBinaryStreamApiComponentBase {
         }
 
         Workbook workbook = builder.build();
-        String fileName = FileUtil.getEncodedFileName("配置模型属性_" + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()) + ".xlsx");
+        String fileName = FileUtil.getEncodedFileName("模型设置_" + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()) + ".xlsx");
         response.setContentType("application/vnd.ms-excel;charset=utf-8");
         response.setHeader("Content-Disposition", " attachment; filename=\"" + fileName + "\"");
         try (OutputStream os = response.getOutputStream()) {
