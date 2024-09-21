@@ -45,10 +45,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ObjectInputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.ZipInputStream;
 
 @Service
@@ -114,11 +111,6 @@ public class ValidateImportCiApi extends PrivateBinaryStreamApiComponentBase {
                     if (StringUtils.isNotBlank(ciVo.getTypeName()) && (ciMapper.getCiTypeByName(ciVo.getTypeName()) == null)) {
                         dataObj.getJSONArray("error").add("模型层级：" + ciVo.getTypeName() + "不存在");
                     }
-                    if (ciMapper.getCiBaseInfoById(ciVo.getId()) == null) {
-                        dataObj.put("_action", "insert");
-                    } else {
-                        dataObj.put("_action", "update");
-                    }
                     if (ciVo.getParentCiId() != null && !newCiMap.containsKey(ciVo.getParentCiId())) {
                         CiVo parentCiVo = ciMapper.getCiBaseInfoById(ciVo.getParentCiId());
                         if (parentCiVo == null) {
@@ -126,6 +118,7 @@ public class ValidateImportCiApi extends PrivateBinaryStreamApiComponentBase {
                             continue;
                         }
                     }
+                    boolean hasChange = false;
                     //检查关联属性是否存在
                     if (CollectionUtils.isNotEmpty(ciVo.getAttrList())) {
                         JSONArray attrList = new JSONArray();
@@ -134,10 +127,21 @@ public class ValidateImportCiApi extends PrivateBinaryStreamApiComponentBase {
                             attrObj.put("name", attrVo.getName());
                             attrObj.put("label", attrVo.getLabel());
                             attrObj.put("error", new JSONArray());
-                            if (attrMapper.getAttrById(attrVo.getId()) == null) {
+                            AttrVo oldAttrVo = attrMapper.getAttrById(attrVo.getId());
+                            if (oldAttrVo == null) {
                                 attrObj.put("_action", "insert");
+                                hasChange = true;
                             } else {
-                                attrObj.put("_action", "update");
+                                if (Objects.equals(oldAttrVo.getName(), attrVo.getName())
+                                        && Objects.equals(oldAttrVo.getLabel(), attrVo.getLabel())
+                                        && Objects.equals(oldAttrVo.getType(), attrVo.getType())
+                                        && Objects.equals(oldAttrVo.getIsRequired(), attrVo.getIsRequired())
+                                        && Objects.equals(oldAttrVo.getConfigStr(), attrVo.getConfigStr())) {
+                                    attrObj.put("_action", "same");
+                                } else {
+                                    attrObj.put("_action", "update");
+                                    hasChange = true;
+                                }
                             }
                             if (attrVo.getTargetCiId() != null && !newCiMap.containsKey(attrVo.getTargetCiId())) {
                                 CiVo targetCiVo = ciMapper.getCiBaseInfoById(attrVo.getTargetCiId());
@@ -154,10 +158,30 @@ public class ValidateImportCiApi extends PrivateBinaryStreamApiComponentBase {
                         JSONArray relList = new JSONArray();
                         for (RelVo relVo : ciVo.getRelList()) {
                             JSONObject relObj = new JSONObject();
-                            if (relMapper.getRelById(relVo.getId()) == null) {
+                            RelVo oldRelVo = relMapper.getRelById(relVo.getId());
+                            if (oldRelVo == null) {
                                 relObj.put("_action", "insert");
+                                hasChange = true;
                             } else {
-                                relObj.put("_action", "update");
+                                if (
+                                        Objects.equals(oldRelVo.getToCiId(), relVo.getToCiId())
+                                                && Objects.equals(oldRelVo.getFromCiId(), relVo.getFromCiId())
+                                                && Objects.equals(oldRelVo.getToName(), relVo.getToName())
+                                                && Objects.equals(oldRelVo.getToLabel(), relVo.getToLabel())
+                                                && Objects.equals(oldRelVo.getFromName(), relVo.getFromName())
+                                                && Objects.equals(oldRelVo.getFromLabel(), relVo.getFromLabel())
+                                                && Objects.equals(oldRelVo.getToIsRequired(), relVo.getToIsRequired())
+                                                && Objects.equals(oldRelVo.getFromIsRequired(), relVo.getFromIsRequired())
+                                                && Objects.equals(oldRelVo.getToRule(), relVo.getToRule())
+                                                && Objects.equals(oldRelVo.getFromRule(), relVo.getFromRule())
+                                                && Objects.equals(oldRelVo.getToGroupId(), relVo.getToGroupId())
+                                                && Objects.equals(oldRelVo.getFromGroupId(), relVo.getFromGroupId())
+                                ) {
+                                    relObj.put("_action", "same");
+                                } else {
+                                    relObj.put("_action", "update");
+                                    hasChange = true;
+                                }
                             }
                             relObj.put("fromCiName", relVo.getFromCiName());
                             relObj.put("fromCiLabel", relVo.getFromCiLabel());
@@ -190,6 +214,15 @@ public class ValidateImportCiApi extends PrivateBinaryStreamApiComponentBase {
                             relList.add(relObj);
                         }
                         dataObj.put("relList", relList);
+                    }
+                    if (ciMapper.getCiBaseInfoById(ciVo.getId()) == null) {
+                        dataObj.put("_action", "insert");
+                    } else {
+                        if (hasChange) {
+                            dataObj.put("_action", "update");
+                        } else {
+                            dataObj.put("_action", "same");
+                        }
                     }
                     dataList.add(dataObj);
                 }
