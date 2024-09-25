@@ -27,9 +27,7 @@ import neatlogic.module.cmdb.dao.mapper.globalsearch.GlobalSearchMapper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
@@ -59,8 +57,7 @@ public class SearchCiEntityCountApi extends PrivateApiComponentBase {
     @Description(desc = "根据关键字搜索配置项数量")
     @Override
     public Object myDoService(JSONObject jsonObj) {
-        Set<String> wordSet = FullTextIndexUtil.sliceKeyword(jsonObj.getString("keyword"));
-        List<String> wordList = new ArrayList<>(wordSet);
+        List<String> wordList = FullTextIndexUtil.sliceKeyword(jsonObj.getString("keyword"));
         JSONObject returnObj = new JSONObject();
         returnObj.put("ciList", globalSearchMapper.searchCiEntityCountByWord(wordList));
         returnObj.put("wordList", wordList);

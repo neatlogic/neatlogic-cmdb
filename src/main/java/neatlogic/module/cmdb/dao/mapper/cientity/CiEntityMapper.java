@@ -126,6 +126,8 @@ public interface CiEntityMapper extends ICiEntityCrossoverMapper {
      */
     List<CiEntityVo> getVirtualCiEntityBaseInfoByLikeName(CiEntityVo ciEntityVo);
 
+    List<String> getCiEntityNameByCiId(Long ciId);
+
     /**
      * 根据id列表返回多个配置项基本信息
      *

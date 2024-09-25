@@ -443,6 +443,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </foreach>
     </select>
 
+    <select id="getCiEntityNameByCiId" parameterType="java.lang.Long" resultType="java.lang.String" useCache="false">
+        SELECT name
+        from cmdb_cientity
+        where ci_id = #{value}
+    </select>
+
     <select id="getCiEntityBaseInfoByIdList" resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo"
             useCache="false">
         SELECT

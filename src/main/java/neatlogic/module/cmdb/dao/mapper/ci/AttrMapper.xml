@@ -34,6 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                attr.`is_required`        AS isRequired,
                attr.`is_unique`          AS isUnique,
                attr.`is_searchable`      AS isSearchAble,
+               attr.`is_term`            AS isTerm,
                attr.`input_type`         AS inputType,
                attr.`group_name`         AS groupName,
                attr.`is_private`         AS isPrivate,
@@ -60,6 +61,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                `is_required`   AS isRequired,
                `is_unique`     AS isUnique,
                `is_searchable` AS isSearchAble,
+               `is_term`       AS isTerm,
                `input_type`    AS inputType,
                `group_name`    AS groupName,
                `is_private`    AS isPrivate,
@@ -82,6 +84,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         a.`name`,
         a.`label`,
         a.`description`,
+        a.`target_ci_id` AS targetCiId,
         b.name as ciName,
         b.label as ciLabel
         FROM `cmdb_attr` a
@@ -100,6 +103,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         <where>
             <if test="validatorId != null">
                 a.validator_id = #{validatorId}
+            </if>
+            <if test="isTerm != null">
+                a.is_term = #{isTerm}
             </if>
         </where>
     </sql>
@@ -140,6 +146,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                a.`is_required`                                                 AS isRequired,
                a.`is_unique`                                                   AS isUnique,
                a.`is_searchable`                                               AS isSearchAble,
+               a.`is_term`                                                     AS isTerm,
                a.`input_type`                                                  AS inputType,
                a.`group_name`                                                  AS groupName,
                a.`is_private`                                                  AS isPrivate,
@@ -164,6 +171,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         a.`is_required` AS isRequired,
         a.`is_unique` AS isUnique,
         a.`is_searchable` AS isSearchAble,
+        a.`is_term` AS isTerm,
         a.`input_type` AS inputType,
         a.`group_name` AS groupName,
         a.`is_private` AS isPrivate,
@@ -209,6 +217,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                `is_required`                                                 AS isRequired,
                `is_unique`                                                   AS isUnique,
                `is_searchable`                                               AS isSearchAble,
+               `is_term`                                                     AS isTerm,
                `input_type`                                                  AS inputType,
                `group_name`                                                  AS groupName,
                `is_private`                                                  AS isPrivate,
@@ -231,6 +240,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         `is_required` AS isRequired,
         `is_unique` AS isUnique,
         `is_searchable` AS isSearchAble,
+        `is_term` AS isTerm,
         `input_type` AS inputType,
         `group_name` AS groupName,
         `is_private` AS isPrivate,
@@ -269,6 +279,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         attr.`is_required` AS isRequired,
         attr.`is_unique` AS isUnique,
         attr.`is_searchable` AS isSearchAble,
+        attr.`is_term` AS isTerm,
         attr.`input_type` AS inputType,
         attr.`group_name` AS groupName,
         attr.`is_private` AS isPrivate,
@@ -306,6 +317,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                `is_required`   AS isRequired,
                `is_unique`     AS isUnique,
                `is_searchable` AS isSearchAble,
+               `is_term`       AS isTerm,
                `input_type`    AS inputType,
                `group_name`    AS groupName,
                `is_private`    AS isPrivate,
@@ -337,6 +349,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             `is_required`   = #{isRequired},
             `is_unique`     = #{isUnique},
             `is_searchable` = #{isSearchAble},
+            `is_term`       = #{isTerm},
             `input_type`    = #{inputType},
             `group_name`    = #{groupName},
             `config`        = #{configStr,typeHandler=compressHandler}
@@ -369,7 +382,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                                  `input_type`,
                                  `group_name`,
                                  `is_private`,
-                                 `is_searchable`)
+                                 `is_searchable`,
+                                 `is_term`)
         VALUES (#{id},
                 #{ciId},
                 #{type},
@@ -384,7 +398,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 #{inputType},
                 #{groupName},
                 #{isPrivate},
-                #{isSearchAble})
+                #{isSearchAble},
+                #{isTerm})
     </insert>
 
     <delete id="deleteAttrExpressionRelByExpressionAttrId" parameterType="java.lang.Long">

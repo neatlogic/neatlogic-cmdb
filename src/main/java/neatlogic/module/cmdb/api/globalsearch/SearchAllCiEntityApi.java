@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.globalsearch;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
@@ -56,10 +57,10 @@ public class SearchAllCiEntityApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "keyword", type = ApiParamType.STRING, isRequired = true, desc = "关键字"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "页码，默认：1")})
-    @Description(desc = "配置项全局搜索接口")
+    @Description(desc = "配置项全局搜索")
     @Override
     public Object myDoService(JSONObject jsonObj) {
-        DocumentVo documentVo = JSONObject.toJavaObject(jsonObj, DocumentVo.class);
+        DocumentVo documentVo = JSON.toJavaObject(jsonObj, DocumentVo.class);
         documentVo.setType(CmdbFullTextIndexType.CIENTITY.getType());
         List<DocumentTypeVo> documentTypeList = GlobalSearchManager.searchDocument(documentVo);
         JSONObject returnObj = new JSONObject();

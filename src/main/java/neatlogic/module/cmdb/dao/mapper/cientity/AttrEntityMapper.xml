@@ -16,6 +16,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="neatlogic.module.cmdb.dao.mapper.cientity.AttrEntityMapper">
+    <select id="getAttrValueByCiId" parameterType="neatlogic.framework.cmdb.dto.ci.AttrVo" resultType="java.lang.String">
+        SELECT ${ciTableName}.`${id}`
+        FROM ${ciTableName}
+    </select>
+
     <select id="getAttrEntityByToCiEntityId" parameterType="java.lang.Long"
             resultType="neatlogic.framework.cmdb.dto.cientity.AttrEntityVo">
         SELECT from_cientity_id as fromCiEntityId,

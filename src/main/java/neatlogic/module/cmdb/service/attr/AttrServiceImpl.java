@@ -33,13 +33,17 @@ import neatlogic.framework.cmdb.enums.TransactionActionType;
 import neatlogic.framework.cmdb.enums.TransactionStatus;
 import neatlogic.framework.cmdb.exception.attr.*;
 import neatlogic.framework.exception.core.ApiRuntimeException;
+import neatlogic.framework.fulltextindex.core.FullTextIndexHandlerFactory;
+import neatlogic.framework.fulltextindex.core.IFullTextIndexHandler;
 import neatlogic.framework.transaction.core.EscapeTransactionJob;
 import neatlogic.framework.transaction.util.TransactionUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
+import neatlogic.module.cmdb.dao.mapper.cientity.AttrEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.cischema.CiSchemaMapper;
 import neatlogic.module.cmdb.dao.mapper.transaction.TransactionMapper;
+import neatlogic.module.cmdb.fulltextindex.enums.CmdbFullTextIndexType;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -59,6 +63,9 @@ public class AttrServiceImpl implements AttrService {
 
     @Resource
     private TransactionMapper transactionMapper;
+
+    @Resource
+    private AttrEntityMapper attrEntityMapper;
 
     @Resource
     private CiEntityMapper ciEntityMapper;
@@ -118,6 +125,13 @@ public class AttrServiceImpl implements AttrService {
 
         handler.afterUpdate(attrVo);
         if (!handler.isNeedTargetCi()) {
+            //补充字典到全文检索
+            if (Objects.equals(attrVo.getIsTerm(), 1)) {
+                IFullTextIndexHandler fullTextHandler = FullTextIndexHandlerFactory.getHandler(CmdbFullTextIndexType.CIENTITY.getType());
+                if (fullTextHandler != null) {
+                    fullTextHandler.initialTerms(attrVo);
+                }
+            }
             //由于以下操作是DDL操作，所以需要使用EscapeTransactionJob避开当前事务
             EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
                 try {

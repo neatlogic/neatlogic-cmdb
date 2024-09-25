@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.dao.mapper.cientity;
 
+import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.cientity.AttrEntityVo;
 import org.apache.ibatis.annotations.Param;
 
@@ -24,6 +25,8 @@ import java.util.List;
  *
  */
 public interface AttrEntityMapper {
+    List<String> getAttrValueByCiId(AttrVo attrVo);
+
     List<AttrEntityVo> getAttrEntityByFromCiIdAndAttrId(AttrEntityVo attrEntityVo);
 
     List<AttrEntityVo> getAttrEntityByToCiEntityId(Long ciEntityId);

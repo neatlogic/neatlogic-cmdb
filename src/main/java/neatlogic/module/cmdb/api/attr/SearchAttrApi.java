@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.attr;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
@@ -56,7 +57,7 @@ public class SearchAttrApi extends PrivateApiComponentBase {
     @Description(desc = "nmcaa.searchattrapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        AttrVo attrVo = JSONObject.toJavaObject(jsonObj, AttrVo.class);
+        AttrVo attrVo = JSON.toJavaObject(jsonObj, AttrVo.class);
         return attrMapper.searchAttr(attrVo);
     }
 }

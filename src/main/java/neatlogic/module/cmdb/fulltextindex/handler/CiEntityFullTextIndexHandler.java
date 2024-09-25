@@ -28,7 +28,9 @@ import neatlogic.framework.fulltextindex.core.IFullTextIndexType;
 import neatlogic.framework.fulltextindex.dto.fulltextindex.FullTextIndexTypeVo;
 import neatlogic.framework.fulltextindex.dto.fulltextindex.FullTextIndexVo;
 import neatlogic.framework.fulltextindex.dto.globalsearch.DocumentVo;
+import neatlogic.framework.fulltextindex.utils.FullTextIndexUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
+import neatlogic.module.cmdb.dao.mapper.cientity.AttrEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.fulltextindex.enums.CmdbFullTextIndexType;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
@@ -37,10 +39,7 @@ import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -55,9 +54,54 @@ public class CiEntityFullTextIndexHandler extends FullTextIndexHandlerBase {
     @Resource
     private AttrMapper attrMapper;
 
+    @Resource
+    private AttrEntityMapper attrEntityMapper;
+
     @Override
     protected String getModuleId() {
         return "cmdb";
+    }
+
+    /**
+     * 初始化专有名词入字典
+     */
+    @Override
+    public <T> void initialTerms(T attrVo) {
+        List<AttrVo> attrList = new ArrayList<>();
+        if (attrVo == null) {
+            AttrVo pAttrVo = new AttrVo();
+            pAttrVo.setIsTerm(1);
+            attrList = attrMapper.searchAttr(pAttrVo);
+        } else if (attrVo instanceof AttrVo) {
+            AttrVo pattrVo = (AttrVo) attrVo;
+            if (pattrVo.getCiId() != null) {
+                attrList.add(pattrVo);
+            }
+        }
+        Set<Long> ciIdSet = new HashSet<>();
+        if (CollectionUtils.isNotEmpty(attrList)) {
+            for (AttrVo attr : attrList) {
+                if (attr.getTargetCiId() == null) {
+                    List<String> wordList = attrEntityMapper.getAttrValueByCiId(attr);
+                    FullTextIndexUtil.addWord(wordList);
+                } else {
+                    if (!ciIdSet.contains(attr.getTargetCiId())) {
+                        List<String> wordList = ciEntityMapper.getCiEntityNameByCiId(attr.getTargetCiId());
+                        FullTextIndexUtil.addWord(wordList);
+                        ciIdSet.add(attr.getTargetCiId());
+                    }
+                }
+            }
+        }
+    }
+
+
+    /**
+     * 添加专有名词入字典
+     */
+    @Override
+    public void addTerms(String... term) {
+        FullTextIndexUtil.addWord(term);
     }
 
     @Override
@@ -67,6 +111,7 @@ public class CiEntityFullTextIndexHandler extends FullTextIndexHandlerBase {
         if (baseCiEntityVo != null) {
             CiEntityVo ciEntityVo = ciEntityService.getCiEntityById(baseCiEntityVo.getCiId(), ciEntityId);
             List<AttrEntityVo> attrEntityList = ciEntityVo.getAttrEntityList();
+            List<AttrVo> attrList = attrMapper.getAttrByCiId(ciEntityVo.getCiId());
             if (CollectionUtils.isNotEmpty(attrEntityList)) {
                 for (AttrEntityVo attrEntityVo : attrEntityList) {
                     /*
@@ -77,19 +122,31 @@ public class CiEntityFullTextIndexHandler extends FullTextIndexHandlerBase {
                       导致搜索结果异常，所以先排除掉expression属性的数据
                      */
                     if (!attrEntityVo.getAttrType().equalsIgnoreCase("expression") && (CollectionUtils.isNotEmpty(attrEntityVo.getValueList()))) {
-                            if (attrEntityVo.getToCiId() != null) {
-                                List<Long> ciEntityIdList = new ArrayList<>();
-                                for (int i = 0; i < attrEntityVo.getValueList().size(); i++) {
-                                    ciEntityIdList.add(attrEntityVo.getValueList().getLong(i));
-                                }
-                                List<CiEntityVo> targetCiEntityList = ciEntityService.getCiEntityByIdList(attrEntityVo.getToCiId(), ciEntityIdList);
-                                if (CollectionUtils.isNotEmpty(targetCiEntityList)) {
-                                    fullTextIndexVo.addFieldContent(attrEntityVo.getAttrId().toString(), new FullTextIndexVo.WordVo(targetCiEntityList.stream().map(CiEntityVo::getName).collect(Collectors.joining(","))));
-                                }
-                            } else {
-                                String word = attrEntityVo.getValueList().stream().map(Object::toString).collect(Collectors.joining(","));
-                                fullTextIndexVo.addFieldContent(attrEntityVo.getAttrId().toString(), new FullTextIndexVo.WordVo(word));
+                        AttrVo termAttrVo = null;
+                        Optional<AttrVo> attrOp = attrList.stream().filter(d -> Objects.equals(d.getIsTerm(), 1) && d.getId().equals(attrEntityVo.getAttrId())).findFirst();
+                        if (attrOp.isPresent()) {
+                            termAttrVo = attrOp.get();
+                        }
+                        if (attrEntityVo.getToCiId() != null) {
+                            List<Long> ciEntityIdList = new ArrayList<>();
+                            for (int i = 0; i < attrEntityVo.getValueList().size(); i++) {
+                                ciEntityIdList.add(attrEntityVo.getValueList().getLong(i));
                             }
+                            List<CiEntityVo> targetCiEntityList = ciEntityService.getCiEntityByIdList(attrEntityVo.getToCiId(), ciEntityIdList);
+                            if (CollectionUtils.isNotEmpty(targetCiEntityList)) {
+                                String v = targetCiEntityList.stream().map(CiEntityVo::getName).collect(Collectors.joining(","));
+                                fullTextIndexVo.addFieldContent(attrEntityVo.getAttrId().toString(), new FullTextIndexVo.WordVo(v));
+                                if (termAttrVo != null) {
+                                    this.addTerms(v.split(","));
+                                }
+                            }
+                        } else {
+                            String word = attrEntityVo.getValueList().stream().map(Object::toString).collect(Collectors.joining(","));
+                            fullTextIndexVo.addFieldContent(attrEntityVo.getAttrId().toString(), new FullTextIndexVo.WordVo(word));
+                            if (termAttrVo != null) {
+                                this.addTerms(word.split(","));
+                            }
+                        }
 
                     }
                 }
