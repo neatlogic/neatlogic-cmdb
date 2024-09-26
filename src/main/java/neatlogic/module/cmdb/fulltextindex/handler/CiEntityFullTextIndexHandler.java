@@ -110,6 +110,9 @@ public class CiEntityFullTextIndexHandler extends FullTextIndexHandlerBase {
         CiEntityVo baseCiEntityVo = ciEntityService.getCiEntityBaseInfoById(ciEntityId);
         if (baseCiEntityVo != null) {
             CiEntityVo ciEntityVo = ciEntityService.getCiEntityById(baseCiEntityVo.getCiId(), ciEntityId);
+            if (ciEntityVo == null) {
+                return;
+            }
             List<AttrEntityVo> attrEntityList = ciEntityVo.getAttrEntityList();
             List<AttrVo> attrList = attrMapper.getAttrByCiId(ciEntityVo.getCiId());
             if (CollectionUtils.isNotEmpty(attrEntityList)) {
