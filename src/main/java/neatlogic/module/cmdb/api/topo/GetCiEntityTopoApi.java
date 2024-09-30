@@ -127,7 +127,9 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
         if (CollectionUtils.isNotEmpty(globalAttrFilterObjList)) {
             for (int i = 0; i < globalAttrFilterObjList.size(); i++) {
                 GlobalAttrFilterVo globalAttrFilterVo = JSON.toJavaObject(globalAttrFilterObjList.getJSONObject(i), GlobalAttrFilterVo.class);
-                globalAttrFilterList.add(globalAttrFilterVo);
+                if (CollectionUtils.isNotEmpty(globalAttrFilterVo.getValueList())) {
+                    globalAttrFilterList.add(globalAttrFilterVo);
+                }
             }
         }
         Set<Long> disableRelIdList = new HashSet<>();
@@ -171,7 +173,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                 if (CollectionUtils.isNotEmpty(levelCiEntityIdList)) {
                     List<Long> tmpCiCiEntityIdList = new ArrayList<>();
                     List<Long> tmpExcludeRelIdList = new ArrayList<>();
-                    List<RelEntityVo> relEntityList = ciEntityMapper.getRelEntityByCiEntityIdList(levelCiEntityIdList, isBackbone == 1 ? excludeRelIdList : null);
+                    List<RelEntityVo> relEntityList = ciEntityMapper.getRelEntityByCiEntityIdList(levelCiEntityIdList, isBackbone == 1 ? excludeRelIdList : null, globalAttrFilterList);
                     if (CollectionUtils.isNotEmpty(relEntityList)) {
                         for (RelEntityVo relEntityVo : relEntityList) {
                             CiEntityVo ciEntityVo = new CiEntityVo();
