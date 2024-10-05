@@ -86,7 +86,7 @@ public class GetCiGlobalAttrListApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long ciId = jsonObj.getLong("ciId");
         int needAlias = jsonObj.getIntValue("needAlias");
-        int mergeAlias = jsonObj.getInteger("mergeAlias");
+        int mergeAlias = jsonObj.getIntValue("mergeAlias");
         if (ciId == null) {
             String ciName = jsonObj.getString("ciName");
             if (StringUtils.isBlank(ciName)) {
@@ -124,9 +124,9 @@ public class GetCiGlobalAttrListApi extends PrivateApiComponentBase {
             for (CiViewVo ciView : ciViewList) {
                 if (StringUtils.isNotBlank(ciView.getAlias()) && ciView.getType().equals("global")) {
                     Optional<GlobalAttrVo> op = attrList.stream().filter(d -> d.getId().equals(ciView.getItemId())).findFirst();
-                    if(mergeAlias==1) {
+                    if (mergeAlias == 1) {
                         op.ifPresent(attrVo -> attrVo.setLabel(ciView.getAlias()));
-                    }else{
+                    } else {
                         op.ifPresent(attrVo -> attrVo.setAlias(ciView.getAlias()));
                     }
                 }

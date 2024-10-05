@@ -85,10 +85,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         cga.description As description,
         cga.is_private AS isPrivate
         <if test="needItem == 1">
-            ,cgai.id         as itemId,
-            cgai.value      as itemValue,
-            cgai.attr_id    as itemAttrId,
-            cgai.sort       as itemSort
+            ,cgai.id as itemId,
+            cgai.value as itemValue,
+            cgai.attr_id as itemAttrId,
+            cgai.sort as itemSort
         </if>
         from cmdb_global_attr cga
         <if test="needItem  == 1">
@@ -108,24 +108,38 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                cga.is_active                 AS isActive,
                cga.is_multiple               AS isMultiple,
                cga.description               As description,
-               cgai.id                       as itemId,
-               cgai.value                    as itemValue,
-               cgai.attr_id                  as itemAttrId,
-               cgai.sort                     as itemSort,
                cview.alias                   AS alias,
                IFNULL(cview.sort, 999999)    AS `sort`,
                IFNULL(cview.`allow_edit`, 1) AS allowEdit
         from cmdb_global_attr cga
-                 left join cmdb_global_attritem cgai on cga.id = cgai.attr_id
                  LEFT JOIN cmdb_view cview
                            ON cga.id = cview.item_id AND cview.type = 'global' AND cview.ci_id = #{value}
         where cga.is_active = 1
-        order by sort, itemSort
+        order by sort
+    </select>
+
+
+    <select id="searchGlobalAttrItem" parameterType="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo"
+            resultType="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo">
+        select id, value, attr_id as attrId, sort
+        from cmdb_global_attritem
+        where attr_id = #{attrId}
+        <if test="keyword != null and keyword != ''">
+            and value like concat(#{keyword}, '%')
+        </if>
+        <if test="defaultValue != null and defaultValue.size() > 0">
+            AND `id` IN
+            <foreach collection="defaultValue" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        order by sort
+        limit #{startNum}, #{pageSize}
     </select>
 
 
     <select id="searchGlobalAttr" parameterType="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo"
-            resultMap="globalAttrMap">
+            resultType="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo">
         select
         cga.id,
         cga.name,
@@ -133,12 +147,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         cga.is_active AS isActive,
         cga.is_multiple AS isMultiple,
         cga.description As description,
-        cga.is_private AS isPrivate,
-        cgai.id as itemId,
-        cgai.value as itemValue,
-        cgai.attr_id as itemAttrId,
-        cgai.sort as itemSort
-        from cmdb_global_attr cga left join cmdb_global_attritem cgai on cga.id = cgai.attr_id
+        cga.is_private AS isPrivate
+        from cmdb_global_attr cga
         <where>
             <if test="name != null and name != ''">
                 and cga.name = #{name}
@@ -147,7 +157,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 and cga.is_active = #{isActive}
             </if>
         </where>
-        order by cga.id desc, cgai.sort
+        order by cga.id desc
     </select>
 
     <resultMap id="globalCiEntityAttrMap" type="neatlogic.framework.cmdb.dto.cientity.GlobalAttrEntityVo">

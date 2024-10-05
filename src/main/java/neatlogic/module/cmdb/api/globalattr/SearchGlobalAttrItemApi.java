@@ -19,30 +19,27 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
-import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.List;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class SearchGlobalAttrApi extends PrivateApiComponentBase {
+public class SearchGlobalAttrItemApi extends PrivateApiComponentBase {
 
     @Resource
     private GlobalAttrMapper globalAttrMapper;
 
     @Override
     public String getName() {
-        return "nmcag.searchglobalattrapi.getname";
+        return "nmcag.searchglobalattritemapi.getname";
     }
 
     @Override
@@ -50,20 +47,23 @@ public class SearchGlobalAttrApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "isActive", type = ApiParamType.INTEGER, desc = "common.isactive")})
-    @Output({@Param(explode = BasePageVo.class),
-            @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = GlobalAttrVo[].class)})
-    @Description(desc = "nmcag.searchglobalattrapi.getname")
+    @Input({
+            @Param(name = "attrId", type = ApiParamType.LONG, desc = "属性id", isRequired = true),
+            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "用于回显的参数列表"),
+            @Param(name = "keyword", type = ApiParamType.STRING, desc = "common.keyword"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage")
+    })
+    @Output({@Param(explode = GlobalAttrItemVo[].class)})
+    @Description(desc = "nmcag.searchglobalattritemapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        GlobalAttrVo globalAttrVo = JSON.toJavaObject(paramObj, GlobalAttrVo.class);
-        List<GlobalAttrVo> globalAttrList = globalAttrMapper.searchGlobalAttr(globalAttrVo);
-        return TableResultUtil.getResult(globalAttrList);
+        GlobalAttrItemVo globalAttrItemVo = JSON.toJavaObject(paramObj, GlobalAttrItemVo.class);
+        return globalAttrMapper.searchGlobalAttrItem(globalAttrItemVo);
     }
 
     @Override
     public String getToken() {
-        return "/cmdb/globalattr/search";
+        return "/cmdb/globalattritem/search";
     }
 
 
