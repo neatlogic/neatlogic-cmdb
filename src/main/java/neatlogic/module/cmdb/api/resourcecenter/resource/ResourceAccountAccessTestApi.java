@@ -94,7 +94,7 @@ public class ResourceAccountAccessTestApi extends PrivateApiComponentBase {
         }
         // 根据网段查找runner
         List<RunnerMapVo> runnerMapList = null;
-        List<GroupNetworkVo> networkVoList = runnerMapper.getAllNetworkMask();
+        List<GroupNetworkVo> networkVoList = runnerMapper.getAllNetworkMask(null);
         for (GroupNetworkVo networkVo : networkVoList) {
             if (IpUtil.isBelongSegment(resource.getIp(), networkVo.getNetworkIp(), networkVo.getMask())) {
                 RunnerGroupVo groupVo = runnerMapper.getRunnerMapGroupById(networkVo.getGroupId());
