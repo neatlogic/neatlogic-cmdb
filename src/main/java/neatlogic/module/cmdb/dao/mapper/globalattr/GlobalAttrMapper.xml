@@ -137,6 +137,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         limit #{startNum}, #{pageSize}
     </select>
 
+    <select id="getGlobalAttrItemById" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo">
+        select id, value, attr_id as attrId, sort
+        from cmdb_global_attritem
+        where id = #{value}
+    </select>
 
     <select id="searchGlobalAttr" parameterType="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo"
             resultType="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo">

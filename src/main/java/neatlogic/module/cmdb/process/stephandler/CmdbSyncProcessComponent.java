@@ -909,8 +909,9 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                     if (valueObj instanceof JSONObject) {
                         valueList.add(valueObj);
                     } else {
-//                        boolean flag = false;
-                        List<GlobalAttrItemVo> itemList = globalAttrVo.getItemList();
+                        GlobalAttrItemVo globalAttrItemVo = new GlobalAttrItemVo();
+                        globalAttrItemVo.setAttrId(globalAttrVo.getId());
+                        List<GlobalAttrItemVo> itemList = globalAttrMapper.searchGlobalAttrItem(globalAttrItemVo);
                         for (GlobalAttrItemVo item : itemList) {
                             if (Objects.equals(item.getValue(), valueObj)
                                     || Objects.equals(item.getId().toString(), valueObj.toString())) {
@@ -920,12 +921,8 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                                 jsonObj.put("sort", item.getSort());
                                 jsonObj.put("attrId", globalAttrVo.getId());
                                 valueList.add(jsonObj);
-//                                flag = true;
                             }
                         }
-//                        if (!flag) {
-//                            throw new GlobalAttrValueIrregularException(globalAttrVo, valueObj.toString());
-//                        }
                     }
                 }
             }
