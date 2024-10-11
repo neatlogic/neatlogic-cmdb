@@ -115,7 +115,6 @@ public class ValidateImportCiApi extends PrivateBinaryStreamApiComponentBase {
                         CiVo parentCiVo = ciMapper.getCiBaseInfoById(ciVo.getParentCiId());
                         if (parentCiVo == null) {
                             dataObj.getJSONArray("error").add("父模型：" + ciVo.getParentCiId() + "不存在");
-                            continue;
                         }
                     }
                     boolean hasChange = false;
