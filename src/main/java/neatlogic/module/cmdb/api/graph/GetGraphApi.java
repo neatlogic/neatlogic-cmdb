@@ -56,7 +56,7 @@ public class GetGraphApi extends PrivateApiComponentBase {
     @Input({@Param(name = "id", type = ApiParamType.LONG, isRequired = true, desc = "视图id")})
     @Output({@Param(explode = GraphVo.class)
     })
-    @Description(desc = "获取拓扑视图接口")
+    @Description(desc = "获取拓扑视图")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");

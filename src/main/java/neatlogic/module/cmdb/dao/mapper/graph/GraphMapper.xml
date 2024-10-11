@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         <result property="description" column="description"/>
         <result property="type" column="type"/>
         <result property="isActive" column="isActive"/>
-        <result property="configStr" column="configStr"/>
+        <result property="configStr" column="configStr" typeHandler="CompressHandler"/>
         <result property="fcu" column="fcu"/>
         <result property="fcd" column="fcd"/>
         <result property="lcu" column="lcu"/>

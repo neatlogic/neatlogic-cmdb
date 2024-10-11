@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.graph;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
@@ -72,7 +73,7 @@ public class SaveGraphApi extends PrivateApiComponentBase {
             @Param(name = "isActive", type = ApiParamType.INTEGER, desc = "是否激活", isRequired = true),
             @Param(name = "config", type = ApiParamType.JSONOBJECT, desc = "图形配置", isRequired = true)})
     @Output({@Param(explode = GraphVo.class)})
-    @Description(desc = "保存拓扑视图接口")
+    @Description(desc = "保存拓扑视图")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");
@@ -82,7 +83,7 @@ public class SaveGraphApi extends PrivateApiComponentBase {
                 throw new GraphPrivilegeSaveException();
             }
         }
-        GraphVo graphVo = JSONObject.toJavaObject(jsonObj, GraphVo.class);
+        GraphVo graphVo = JSON.toJavaObject(jsonObj, GraphVo.class);
         if (id != null) {
             GraphVo oldGraphVo = graphMapper.getGraphById(id);
             if (oldGraphVo == null) {
@@ -109,12 +110,12 @@ public class SaveGraphApi extends PrivateApiComponentBase {
             }
         }
         if (MapUtils.isNotEmpty(graphVo.getConfig())) {
-            JSONArray nodeObjList = graphVo.getConfig().getJSONObject("topo").getJSONArray("nodes");
+            JSONArray nodeObjList = graphVo.getConfig().getJSONObject("topo").getJSONArray("cells");
             if (CollectionUtils.isNotEmpty(nodeObjList)) {
                 for (int i = 0; i < nodeObjList.size(); i++) {
                     JSONObject nodeObj = nodeObjList.getJSONObject(i);
-                    String objType = nodeObj.getString("type");
-                    Long objId = nodeObj.getJSONObject("config").getLong("id");
+                    String objType = nodeObj.getString("shape");
+                    Long objId = nodeObj.getLong("id");
                     if (objType.equalsIgnoreCase("graph")) {
                         graphMapper.insertGraphRel(graphVo.getId(), objId);
                     } else if (objType.equalsIgnoreCase("cientity")) {
