@@ -24,6 +24,7 @@ import neatlogic.framework.cmdb.dto.ci.CiTopoTemplateVo;
 import neatlogic.framework.cmdb.dto.ci.CiTypeVo;
 import neatlogic.framework.cmdb.dto.ci.RelTypeVo;
 import neatlogic.framework.cmdb.dto.ci.RelVo;
+import neatlogic.framework.cmdb.dto.cientity.CiEntityStatusVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityTopoVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.cientity.RelEntityVo;
@@ -39,6 +40,7 @@ import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.ci.CiTopoTemplateMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiTypeMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
+import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityAlertMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -50,6 +52,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -70,6 +73,9 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
 
     @Resource
     private CiEntityMapper ciEntityMapper;
+
+    @Resource
+    private CiEntityAlertMapper ciEntityAlertMapper;
 
     @Override
     public String getToken() {
@@ -411,9 +417,10 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                     gb.addCluster(cb.build());
                 }
             }
-            List<CiEntityVo> inspectCiEntityList = new ArrayList<>();
-            List<CiEntityVo> monitorCiEntityList = new ArrayList<>();
-            for (CiEntityVo ciEntityVo : ciEntitySet) {
+            //List<CiEntityVo> inspectCiEntityList = new ArrayList<>();
+            //List<CiEntityVo> monitorCiEntityList = new ArrayList<>();
+            List<CiEntityStatusVo> ciEntityAlertList = ciEntityAlertMapper.listCiEntityStatus(ciEntitySet.stream().map(CiEntityVo::getId).collect(Collectors.toList()));
+            /*for (CiEntityVo ciEntityVo : ciEntitySet) {
                 if (StringUtils.isNotBlank(ciEntityVo.getInspectStatus())) {
                     CiEntityVo c = new CiEntityVo();
                     c.setId(ciEntityVo.getId());
@@ -426,7 +433,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                     c.setMonitorStatus(ciEntityVo.getMonitorStatus());
                     monitorCiEntityList.add(ciEntityVo);
                 }
-            }
+            }*/
 
 
             String dot = gb.build().toString();
@@ -434,8 +441,9 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
             if (logger.isDebugEnabled()) {
                 logger.debug(dot);
             }
-            returnObj.put("inspectCiEntityList", inspectCiEntityList);
-            returnObj.put("monitorCiEntityList", monitorCiEntityList);
+            //returnObj.put("inspectCiEntityList", inspectCiEntityList);
+            //returnObj.put("monitorCiEntityList", monitorCiEntityList);
+            returnObj.put("ciEntityAlertList", ciEntityAlertList);
             returnObj.put("dot", dot);
         }
         if (CollectionUtils.isNotEmpty(containRelIdSet)) {
