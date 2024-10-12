@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.cientity;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CIENTITY_ALERT_MODIFY;
@@ -78,7 +79,7 @@ public class SaveCiEntityAlertApi extends PrivateApiComponentBase {
     @Description(desc = "nmcac.savecientityalertapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        CiEntityAlertVo ciEntityAlertVo = JSONObject.toJavaObject(jsonObj, CiEntityAlertVo.class);
+        CiEntityAlertVo ciEntityAlertVo = JSON.toJavaObject(jsonObj, CiEntityAlertVo.class);
         String ciEntityUuid = jsonObj.getString("ciEntityUuid");
         if (!Md5Util.isMd5(ciEntityUuid)) {
             ciEntityUuid = Md5Util.encryptMD5(ciEntityUuid);

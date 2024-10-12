@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.cientity;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
@@ -93,7 +94,7 @@ public class SaveCiEntityAlertBatchApi extends PrivateApiComponentBase {
         JSONArray alertList = jsonObj.getJSONArray("alertList");
         for (int i = 0; i < alertList.size(); i++) {
             JSONObject alertObj = alertList.getJSONObject(i);
-            CiEntityAlertVo ciEntityAlertVo = JSONObject.toJavaObject(alertObj, CiEntityAlertVo.class);
+            CiEntityAlertVo ciEntityAlertVo = JSON.toJavaObject(alertObj, CiEntityAlertVo.class);
             String ciEntityUuid = alertObj.getString("ciEntityUuid");
             if (StringUtils.isBlank(ciEntityUuid)) {
                 throw new ParamNotExistsException("ciEntityUuid");
