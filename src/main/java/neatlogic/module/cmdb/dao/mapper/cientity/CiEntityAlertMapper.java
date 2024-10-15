@@ -35,4 +35,6 @@ public interface CiEntityAlertMapper {
     void insertCiEntityAlert(CiEntityAlertVo ciEntityAlertVo);
 
     void deleteCiEntityAlertById(Long id);
+
+    void deleteCiEntityAlertByCiEntityIdAndLevelList(@Param("ciEntityId") Long ciEntityId, @Param("levelList") List<Integer> levelList);
 }

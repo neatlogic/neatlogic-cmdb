@@ -18,9 +18,11 @@ package neatlogic.module.cmdb.api.cientity;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.ALERTLEVEL_MODIFY;
-import neatlogic.framework.cmdb.dto.cientity.AlertLevelVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.restful.annotation.*;
+import neatlogic.framework.restful.annotation.Description;
+import neatlogic.framework.restful.annotation.Input;
+import neatlogic.framework.restful.annotation.OperationType;
+import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.cientity.AlertLevelMapper;
@@ -52,12 +54,11 @@ public class DeleteAlertLevelApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "level", desc = "common.level", type = ApiParamType.INTEGER, isRequired = true)})
-    @Output({@Param(explode = AlertLevelVo[].class)})
+            @Param(name = "id", desc = "id", type = ApiParamType.LONG, isRequired = true)})
     @Description(desc = "nmcac.deletealertlevelapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        alertLevelMapper.deleteAlertLevel(jsonObj.getInteger("level"));
+        alertLevelMapper.deleteAlertLevelById(jsonObj.getLong("id"));
         return null;
     }
 

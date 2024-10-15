@@ -16,6 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 package neatlogic.module.cmdb.dao.mapper.cientity;
 
 import neatlogic.framework.cmdb.dto.cientity.AlertLevelVo;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -23,12 +24,22 @@ import java.util.List;
  *
  */
 public interface AlertLevelMapper {
-    AlertLevelVo getAlertLevel(Integer level);
+    int checkAlertLevelIsExists(AlertLevelVo alertLevelVo);
+
+    int checkAlertNameTypeIsExists(AlertLevelVo alertLevelVo);
+
+    List<AlertLevelVo> getAlertLevelByType(String type);
+
+    AlertLevelVo getAlertLevelByNameAndType(@Param("name") String name, @Param("type") String type);
+
+    AlertLevelVo getAlertLevelByLevel(Integer level);
+
+    AlertLevelVo getAlertLevelById(Long id);
 
     List<AlertLevelVo> searchAlertLevel();
 
     void saveAlertLevel(AlertLevelVo alertLevelVo);
 
-    void deleteAlertLevel(Integer level);
+    void deleteAlertLevelById(Long id);
 
 }

@@ -16,20 +16,28 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.publicapi;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
+import neatlogic.framework.cmdb.dto.cientity.AlertLevelVo;
+import neatlogic.framework.cmdb.dto.cientity.CiEntityAlertVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityInspectVo;
-import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
+import neatlogic.framework.cmdb.enums.alertlevel.AlertLevelType;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
+import neatlogic.module.cmdb.dao.mapper.cientity.AlertLevelMapper;
+import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityAlertMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
-import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
@@ -40,6 +48,12 @@ public class UpdateCiEntityInspectStatusApi extends PrivateApiComponentBase {
     @Resource
     private CiEntityMapper ciEntityMapper;
 
+
+    @Resource
+    private CiEntityAlertMapper ciEntityAlertMapper;
+
+    @Resource
+    private AlertLevelMapper alertLevelMapper;
 
     @Override
     public String getToken() {
@@ -65,14 +79,34 @@ public class UpdateCiEntityInspectStatusApi extends PrivateApiComponentBase {
     @Description(desc = "修改配置项巡检状态接口，自动化巡检时使用此接口更新巡检状态")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        CiEntityVo ciEntityVo = new CiEntityVo();
+        String status = paramObj.getString("inspectStatus");
+        Long ciEntityId = paramObj.getLong("ciEntityId");
+        /*CiEntityVo ciEntityVo = new CiEntityVo();
         ciEntityVo.setId(paramObj.getLong("ciEntityId"));
         ciEntityVo.setInspectTime(new Date(paramObj.getLong("inspectTime")));
         ciEntityVo.setInspectStatus(paramObj.getString("inspectStatus"));
 
-        ciEntityMapper.updateCiEntityInspectStatus(ciEntityVo);
+        ciEntityMapper.updateCiEntityInspectStatus(ciEntityVo);*/
         CiEntityInspectVo ciEntityInspectVo = new CiEntityInspectVo(paramObj);
         ciEntityMapper.insertCiEntityInspect(ciEntityInspectVo);
+
+        List<AlertLevelVo> levelList = alertLevelMapper.getAlertLevelByType(AlertLevelType.INSPECT.getValue());
+        if (CollectionUtils.isNotEmpty(levelList)) {
+            //删除所有巡检类告警
+            ciEntityAlertMapper.deleteCiEntityAlertByCiEntityIdAndLevelList(ciEntityId, levelList.stream().map(AlertLevelVo::getLevel).collect(Collectors.toList()));
+
+            if (!Objects.equals("normal", status)) {
+                //写入新告警
+                AlertLevelVo level = alertLevelMapper.getAlertLevelByNameAndType(status, AlertLevelType.INSPECT.getValue());
+                if (level != null) {
+                    CiEntityAlertVo ciEntityAlertVo = new CiEntityAlertVo();
+                    ciEntityAlertVo.setLevel(level.getLevel());
+                    ciEntityAlertVo.setCiEntityId(ciEntityId);
+                    ciEntityAlertVo.setAlertTime(new Date(paramObj.getLong("inspectTime")));
+                    ciEntityAlertMapper.insertCiEntityAlert(ciEntityAlertVo);
+                }
+            }
+        }
         return null;
     }
 

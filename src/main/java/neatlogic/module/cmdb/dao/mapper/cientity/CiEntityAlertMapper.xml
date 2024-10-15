@@ -148,6 +148,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 #{alertLink})
     </insert>
 
+    <delete id="deleteCiEntityAlertByCiEntityIdAndLevelList">
+        delete from cmdb_cientity_alert where cientity_id = #{ciEntityId}
+        and level in
+        <foreach collection="levelList" item="level" open="(" close=")" separator=",">
+            #{level}
+        </foreach>
+    </delete>
+
     <delete id="deleteCiEntityAlertById" parameterType="java.lang.Long">
         delete
         from cmdb_cientity_alert

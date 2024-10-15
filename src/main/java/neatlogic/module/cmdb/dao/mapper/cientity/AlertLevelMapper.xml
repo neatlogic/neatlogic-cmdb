@@ -16,16 +16,59 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="neatlogic.module.cmdb.dao.mapper.cientity.AlertLevelMapper">
-    <select id="getAlertLevel" parameterType="java.lang.Integer"
+    <select id="checkAlertLevelIsExists" parameterType="neatlogic.framework.cmdb.dto.cientity.AlertLevelVo"
+            resultType="int">
+        select count(1)
+        from cmdb_cientity_alertlevel
+        where id != #{id}
+          and level = #{level}
+    </select>
+
+    <select id="checkAlertNameTypeIsExists" parameterType="neatlogic.framework.cmdb.dto.cientity.AlertLevelVo"
+            resultType="int">
+        select count(1)
+        from cmdb_cientity_alertlevel
+        where id != #{id}
+          and name = #{name}
+          and type = #{type}
+    </select>
+
+    <select id="getAlertLevelByType" parameterType="java.lang.String"
             resultType="neatlogic.framework.cmdb.dto.cientity.AlertLevelVo">
-        select level, name, color
+        select id, level, name, label, type, color
+        from cmdb_cientity_alertlevel
+        where type = #{type}
+    </select>
+
+    <select id="getAlertLevelByNameAndType" resultType="neatlogic.framework.cmdb.dto.cientity.AlertLevelVo">
+        select id, level, name, label, type, color
+        from cmdb_cientity_alertlevel
+        where name = #{name}
+          and type = #{type}
+    </select>
+
+    <select id="getAlertLevelById" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.cientity.AlertLevelVo">
+        select id, level, name, label, type, color
+        from cmdb_cientity_alertlevel
+        where id = #{id}
+    </select>
+
+    <select id="getAlertLevelByLevel" parameterType="java.lang.Integer"
+            resultType="neatlogic.framework.cmdb.dto.cientity.AlertLevelVo">
+        select id, level, name, label, type, color
         from cmdb_cientity_alertlevel
         where level = #{value}
     </select>
 
     <select id="searchAlertLevel" parameterType="neatlogic.framework.cmdb.dto.cientity.AlertLevelVo"
             resultType="neatlogic.framework.cmdb.dto.cientity.AlertLevelVo">
-        select level, name, color
+        select id,
+               level,
+               name,
+               label,
+               type,
+               color
         from cmdb_cientity_alertlevel
         order by level
     </select>
@@ -39,23 +82,28 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 
     <sql id="searchAlertLevel">
         <where>
-            <if test="keyword != null">
-                name like concat('%',#{keyword},'%')
+            <if test="keyword != null and keyword != ''">
+                (name like concat('%',#{keyword},'%')
+                or label like concat('%', #{keyword}, '%')
+                )
             </if>
         </where>
     </sql>
 
     <insert id="saveAlertLevel" parameterType="neatlogic.framework.cmdb.dto.cientity.AlertLevelVo">
         insert into cmdb_cientity_alertlevel
-            (level, name, color)
-        values (#{level}, #{name}, #{color})
-        ON DUPLICATE KEY UPDATE name  = #{name},
-                                color = #{color}
+            (id, level, name, color, label, type)
+        values (#{id}, #{level}, #{name}, #{color}, #{label}, #{type})
+        ON DUPLICATE KEY UPDATE label = #{label},
+                                color = #{color},
+                                level = #{level},
+                                name  = #{name},
+                                type  =#{type}
     </insert>
 
-    <delete id="deleteAlertLevel" parameterType="java.lang.Integer">
+    <delete id="deleteAlertLevelById" parameterType="java.lang.Long">
         delete
         from cmdb_cientity_alertlevel
-        where level = #{value}
+        where id = #{id}
     </delete>
 </mapper>

@@ -20,6 +20,7 @@ import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.cientity.AlertLevelVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.exception.type.ParamNotExistsException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -51,12 +52,21 @@ public class GetAlertLevelApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "level", desc = "common.alertlevel", type = ApiParamType.INTEGER, isRequired = true)})
+    @Input({
+            @Param(name = "id", desc = "id", type = ApiParamType.LONG),
+            @Param(name = "level", desc = "common.alertlevel", type = ApiParamType.INTEGER)})
     @Output({@Param(explode = AlertLevelVo.class)})
     @Description(desc = "nmcac.getalertlevelapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        return alertLevelMapper.getAlertLevel(jsonObj.getInteger("level"));
+        Long id = jsonObj.getLong("id");
+        Integer level = jsonObj.getInteger("level");
+        if (id != null) {
+            return alertLevelMapper.getAlertLevelById(id);
+        } else if (level != null) {
+            return alertLevelMapper.getAlertLevelByLevel(level);
+        }
+        throw new ParamNotExistsException("id", "level");
     }
 
 }
