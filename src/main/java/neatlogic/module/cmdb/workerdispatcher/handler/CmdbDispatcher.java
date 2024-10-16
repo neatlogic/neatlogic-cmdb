@@ -24,7 +24,6 @@ import neatlogic.framework.form.constvalue.FormHandler;
 import neatlogic.framework.process.constvalue.ProcessUserType;
 import neatlogic.framework.process.crossover.IProcessTaskCrossoverMapper;
 import neatlogic.framework.process.crossover.IProcessTaskCrossoverService;
-import neatlogic.framework.process.crossover.ISelectContentByHashCrossoverMapper;
 import neatlogic.framework.process.dto.ProcessTaskFormAttributeDataVo;
 import neatlogic.framework.process.dto.ProcessTaskFormVo;
 import neatlogic.framework.process.dto.ProcessTaskStepVo;
@@ -391,18 +390,18 @@ public class CmdbDispatcher extends WorkerDispatcherBase {
 
     private Map<String, Object> formAttributeDataMap(Long processTaskId) {
         IProcessTaskCrossoverMapper processTaskCrossoverMapper = CrossoverServiceFactory.getApi(IProcessTaskCrossoverMapper.class);
-        ISelectContentByHashCrossoverMapper selectContentByHashCrossoverMapper = CrossoverServiceFactory.getApi(ISelectContentByHashCrossoverMapper.class);
+//        ISelectContentByHashCrossoverMapper selectContentByHashCrossoverMapper = CrossoverServiceFactory.getApi(ISelectContentByHashCrossoverMapper.class);
         Map<String, Object> formAttributeDataMap = new HashMap<>();
-        String formConfig = null;
+//        String formConfig = null;
         // 如果工单有表单信息，则查询出表单配置及数据
         ProcessTaskFormVo processTaskFormVo = processTaskCrossoverMapper.getProcessTaskFormByProcessTaskId(processTaskId);
-        if (processTaskFormVo != null) {
-            formConfig = selectContentByHashCrossoverMapper.getProcessTaskFromContentByHash(processTaskFormVo.getFormContentHash());
+        if (processTaskFormVo != null && StringUtils.isNotBlank(processTaskFormVo.getFormContent())) {
+//            formConfig = selectContentByHashCrossoverMapper.getProcessTaskFromContentByHash(processTaskFormVo.getFormContentHash());
             IProcessTaskCrossoverService processTaskCrossoverService = CrossoverServiceFactory.getApi(IProcessTaskCrossoverService.class);
             List<ProcessTaskFormAttributeDataVo> processTaskFormAttributeDataList = processTaskCrossoverService.getProcessTaskFormAttributeDataListByProcessTaskId(processTaskId);
             if (CollectionUtils.isNotEmpty(processTaskFormAttributeDataList)) {
                 for (ProcessTaskFormAttributeDataVo attributeDataVo : processTaskFormAttributeDataList) {
-                    Object dataObj = formAttributeDataAdaptsToCmdb(attributeDataVo.getAttributeUuid(), attributeDataVo.getDataObj(), formConfig);
+                    Object dataObj = formAttributeDataAdaptsToCmdb(attributeDataVo.getAttributeUuid(), attributeDataVo.getDataObj(), processTaskFormVo.getFormContent());
                     if (dataObj == null) {
                         continue;
                     }
