@@ -102,10 +102,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     <sql id="searchAttrCondition">
         <where>
             <if test="validatorId != null">
-                a.validator_id = #{validatorId}
+                and a.validator_id = #{validatorId}
             </if>
             <if test="isTerm != null">
-                a.is_term = #{isTerm}
+                and a.is_term = #{isTerm}
             </if>
         </where>
     </sql>
