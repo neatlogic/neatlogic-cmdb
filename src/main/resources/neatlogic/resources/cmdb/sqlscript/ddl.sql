@@ -6,28 +6,29 @@ CREATE TABLE `cmdb_attr`
     `id`            bigint                                                            NOT NULL COMMENT 'id',
     `ci_id`         bigint                                                            NOT NULL COMMENT '引用ecmdb_ci的id',
     `type`          varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci      NOT NULL COMMENT '值类型',
-    `prop_id`       bigint                                                            NULL     DEFAULT NULL COMMENT '属性id',
-    `target_ci_id`  bigint                                                            NULL     DEFAULT NULL COMMENT '目标模型id',
-    `expression`    varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci     NULL     DEFAULT NULL COMMENT '表达式',
+    `prop_id`       bigint                                                                     DEFAULT NULL COMMENT '属性id',
+    `target_ci_id`  bigint                                                                     DEFAULT NULL COMMENT '目标模型id',
+    `expression`    varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci              DEFAULT NULL COMMENT '表达式',
     `name`          varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci      NOT NULL COMMENT '英文名',
     `label`         varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci     NOT NULL COMMENT '录入时的label名称',
-    `description`   varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci     NULL     DEFAULT NULL COMMENT '描述',
-    `validator_id`  bigint                                                            NULL     DEFAULT 0 COMMENT '验证器组件id，需要在代码中实现验证器',
+    `description`   varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci              DEFAULT NULL COMMENT '描述',
+    `validator_id`  bigint                                                                     DEFAULT '0' COMMENT '验证器组件id，需要在代码中实现验证器',
     `is_required`   tinyint                                                           NOT NULL COMMENT '是否必填',
-    `is_searchable` tinyint                                                           NULL     DEFAULT NULL COMMENT '是否允许搜索',
-    `is_unique`     tinyint(1)                                                        NOT NULL DEFAULT 1 COMMENT '0不唯一，1同类唯一，2全局唯一',
+    `is_searchable` tinyint                                                                    DEFAULT NULL COMMENT '是否允许搜索',
+    `is_term`       tinyint                                                                    DEFAULT NULL COMMENT '是否专有名词',
+    `is_unique`     tinyint(1)                                                        NOT NULL DEFAULT '1' COMMENT '0不唯一，1同类唯一，2全局唯一',
     `input_type`    enum ('at','mt') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'mt' COMMENT '属性录入方式',
-    `group_name`    varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci      NULL     DEFAULT NULL COMMENT '属性分组',
-    `is_private`    tinyint(1)                                                        NULL     DEFAULT NULL COMMENT '私有属性',
-    `config`        text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci             NULL COMMENT '属性设置',
+    `group_name`    varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci               DEFAULT NULL COMMENT '属性分组',
+    `is_private`    tinyint(1)                                                                 DEFAULT NULL COMMENT '私有属性',
+    `config`        text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '属性设置',
     PRIMARY KEY (`id`) USING BTREE,
-    UNIQUE INDEX `uk_name` (`ci_id`, `name`) USING BTREE,
-    INDEX `idx_prop_id` (`prop_id`) USING BTREE,
-    INDEX `idx_name` (`name`) USING BTREE,
-    INDEX `idx_target_ci_id` (`target_ci_id`) USING BTREE
+    UNIQUE KEY `uk_name` (`ci_id`, `name`) USING BTREE,
+    KEY `idx_prop_id` (`prop_id`) USING BTREE,
+    KEY `idx_name` (`name`) USING BTREE,
+    KEY `idx_target_ci_id` (`target_ci_id`) USING BTREE
 ) ENGINE = InnoDB
-  CHARACTER SET = utf8mb4
-  COLLATE = utf8mb4_general_ci COMMENT = 'cmdb配置项属性表';
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_general_ci COMMENT ='cmdb配置项属性表';
 
 -- ----------------------------
 -- Table structure for cmdb_attrentity
@@ -243,21 +244,21 @@ CREATE TABLE `cmdb_cientity`
 -- ----------------------------
 CREATE TABLE `cmdb_cientity_alert`
 (
-    `id`            bigint                                                        NOT NULL,
-    `cientity_id`   bigint                                                        NULL DEFAULT NULL,
-    `cientity_uuid` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci     NULL DEFAULT NULL,
-    `ip`            varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci  NULL DEFAULT NULL,
-    `level`         int                                                           NULL DEFAULT NULL,
-    `alert_time`    timestamp(3)                                                  NULL DEFAULT NULL,
-    `metric_name`   varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-    `metric_value`  varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-    `alert_message` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-    `alert_link`    varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
+    `id`            bigint       NOT NULL,
+    `cientity_id`   bigint                                                        DEFAULT NULL,
+    `cientity_uuid` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci     DEFAULT NULL,
+    `ip`            varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci  DEFAULT NULL,
+    `level`         int                                                           DEFAULT NULL,
+    `alert_time`    timestamp(3) NULL                                             DEFAULT NULL,
+    `metric_name`   varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+    `metric_value`  varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+    `alert_message` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+    `alert_link`    varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
     PRIMARY KEY (`id`) USING BTREE,
-    INDEX `idx_cientity_id` (`cientity_id`) USING BTREE,
-    INDEX `idx_cientity_uuid` (`cientity_uuid`) USING BTREE
+    KEY `idx_cientity_id` (`cientity_id`) USING BTREE,
+    KEY `idx_cientity_uuid` (`cientity_uuid`) USING BTREE
 ) ENGINE = InnoDB
-  CHARACTER SET = utf8mb4
+  DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci;
 
 -- ----------------------------
@@ -265,12 +266,17 @@ CREATE TABLE `cmdb_cientity_alert`
 -- ----------------------------
 CREATE TABLE `cmdb_cientity_alertlevel`
 (
-    `level` int                                                          NOT NULL,
-    `name`  varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-    `color` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-    PRIMARY KEY (`level`) USING BTREE
+    `level` int    NOT NULL,
+    `name`  varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '唯一标识',
+    `color` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '颜色',
+    `label` varchar(255) COLLATE utf8mb4_general_ci                      DEFAULT NULL COMMENT '名称',
+    `type`  enum ('inspect','monitor') COLLATE utf8mb4_general_ci        DEFAULT NULL COMMENT '类型',
+    `id`    bigint NOT NULL COMMENT 'id',
+    PRIMARY KEY (`id`) USING BTREE,
+    UNIQUE KEY `uk2` (`level`) USING BTREE,
+    UNIQUE KEY `uk` (`name`, `type`) USING BTREE
 ) ENGINE = InnoDB
-  CHARACTER SET = utf8mb4
+  DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci;
 
 -- ----------------------------
@@ -451,6 +457,29 @@ CREATE TABLE `cmdb_customview_attr`
 ) ENGINE = InnoDB
   CHARACTER SET = utf8mb4
   COLLATE = utf8mb4_general_ci COMMENT = 'cmdb自定义视图属性表';
+
+-- ----------------------------
+-- Table structure for cmdb_customview_globalattr
+-- ----------------------------
+
+CREATE TABLE `cmdb_customview_globalattr`
+(
+    `customview_id`      bigint                                                    NOT NULL COMMENT '视图id',
+    `customview_ci_uuid` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '模型在视图中的唯一id',
+    `uuid`               char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'uuid',
+    `attr_id`            bigint                                                        DEFAULT NULL COMMENT '属性id',
+    `name`               varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '唯一标识',
+    `alias`              varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '别名',
+    `sort`               int                                                           DEFAULT NULL COMMENT '顺序',
+    `is_hidden`          tinyint                                                       DEFAULT '0' COMMENT '是否隐藏',
+    `is_primary`         tinyint                                                       DEFAULT '0' COMMENT '是否主键',
+    `condition`          text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '条件，json结构',
+    PRIMARY KEY (`customview_id`, `uuid`) USING BTREE,
+    KEY `idx_attr_id` (`attr_id`) USING BTREE,
+    KEY `idx_customviewci_id` (`customview_ci_uuid`) USING BTREE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_general_ci COMMENT ='cmdb自定义视图属性表';
 
 -- ----------------------------
 -- Table structure for cmdb_customview_auth
@@ -1158,13 +1187,13 @@ CREATE TABLE `cmdb_tag`
 -- ----------------------------
 CREATE TABLE `cmdb_topo_template`
 (
-    `id`         bigint NOT NULL COMMENT ' Id',
-    `ci_id`      bigint                                  DEFAULT NULL COMMENT '模型id',
-    `name`       varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '模板名称',
-    `is_active`  tinyint                                 DEFAULT NULL COMMENT '是否激活',
-    `config`     longtext COLLATE utf8mb4_general_ci COMMENT '配置',
-    `is_default` tinyint                                 DEFAULT NULL COMMENT '是否默认',
-    PRIMARY KEY (`id`),
+    `id`         bigint NOT NULL COMMENT 'id',
+    `ci_id`      bigint                                                        DEFAULT NULL COMMENT '模型id',
+    `name`       varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '模板名称',
+    `is_active`  tinyint                                                       DEFAULT NULL COMMENT '是否激活',
+    `config`     longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '配置',
+    `is_default` tinyint                                                       DEFAULT NULL COMMENT '是否默认',
+    PRIMARY KEY (`id`) USING BTREE,
     KEY `idx_ci` (`ci_id`) USING BTREE
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
