@@ -569,9 +569,10 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             // 如果工单有表单信息，则查询出表单配置及数据
             IProcessTaskCrossoverMapper processTaskCrossoverMapper = CrossoverServiceFactory.getApi(IProcessTaskCrossoverMapper.class);
             ProcessTaskFormVo processTaskFormVo = processTaskCrossoverMapper.getProcessTaskFormByProcessTaskId(processTaskId);
-            if (processTaskFormVo != null) {
-                ISelectContentByHashCrossoverMapper selectContentByHashCrossoverMapper = CrossoverServiceFactory.getApi(ISelectContentByHashCrossoverMapper.class);
-                formConfig = selectContentByHashCrossoverMapper.getProcessTaskFromContentByHash(processTaskFormVo.getFormContentHash());
+            if (processTaskFormVo != null && StringUtils.isNotBlank(processTaskFormVo.getFormContent())) {
+//                ISelectContentByHashCrossoverMapper selectContentByHashCrossoverMapper = CrossoverServiceFactory.getApi(ISelectContentByHashCrossoverMapper.class);
+//                formConfig = selectContentByHashCrossoverMapper.getProcessTaskFromContentByHash(processTaskFormVo.getFormContentHash());
+                formConfig = processTaskFormVo.getFormContent();
                 IProcessTaskCrossoverService processTaskCrossoverService = CrossoverServiceFactory.getApi(IProcessTaskCrossoverService.class);
                 List<ProcessTaskFormAttributeDataVo> processTaskFormAttributeDataList = processTaskCrossoverService.getProcessTaskFormAttributeDataListByProcessTaskId(processTaskId);
                 if (CollectionUtils.isNotEmpty(processTaskFormAttributeDataList)) {
