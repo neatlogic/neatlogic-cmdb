@@ -213,7 +213,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             JSONObject showAttributeObj = new JSONObject();
             String showAttributeUuid = oldShowAttributeUuidMap.get(showAttributeLabel);
             if (showAttributeUuid == null) {
-                showAttributeUuid = UuidUtil.randomUuid();
+                showAttributeUuid = UuidUtil.getCustomUUID(matrixVo.getLabel() + "_" + uniqueIdentifier);
             }
             showAttributeObj.put("uuid", showAttributeUuid);
             CiViewVo ciViewVo = ciViewMap.get(showAttributeLabel);
@@ -436,6 +436,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                 MatrixAttributeVo matrixAttributeVo = new MatrixAttributeVo();
                 matrixAttributeVo.setMatrixUuid(matrixUuid);
                 matrixAttributeVo.setName(ciview.getItemLabel());
+                matrixAttributeVo.setDefaultUniqueIdentifier(ciview.getItemName());
                 matrixAttributeVo.setType(MatrixAttributeType.INPUT.getValue());
                 matrixAttributeVo.setIsDeletable(0);
                 matrixAttributeVo.setSort(sort++);
