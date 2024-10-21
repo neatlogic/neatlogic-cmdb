@@ -46,9 +46,10 @@ import java.util.Objects;
 
 /**
  * 1、先根据resourceId 或 （ip、port、nodeName、nodeType)获取资产
- * 2、tagent 则通过ip 找账号， 否则根据资产绑定的账号找，找到即返回
- * 3、通过对应资产的os 找账号，找到即返回
- * 4、 找协议+用户的默认账号
+ * 2、tagent则通过ip找账号， 否则根据资产绑定的账号找，找到后return
+ * 3、通过对应资产的os找账号，找到后return
+ * 4、找协议（端口）+用户的默认账号，找到后return
+ * 5、如果账号id存在，则return对应账号
  */
 @Service
 @AuthAction(action = CMDB_BASE.class)
@@ -77,14 +78,15 @@ public class GetResourceAccountApi extends PrivateApiComponentBase {
     }
 
     @Input({
+            @Param(name = "protocol", type = ApiParamType.STRING, desc = "协议", isRequired = true),
+            @Param(name = "username", type = ApiParamType.STRING, desc = "账号名", isRequired = true),
             @Param(name = "resourceId", type = ApiParamType.LONG, desc = "资产id"),
             @Param(name = "host", type = ApiParamType.STRING, desc = "host ip"),
             @Param(name = "port", type = ApiParamType.INTEGER, desc = "端口"),
             @Param(name = "nodeName", type = ApiParamType.STRING, desc = "资产名"),
             @Param(name = "nodeType", type = ApiParamType.STRING, desc = "ci模型"),
-            @Param(name = "protocol", type = ApiParamType.STRING, desc = "协议", isRequired = true),
             @Param(name = "protocolPort", type = ApiParamType.INTEGER, desc = "协议端口"),
-            @Param(name = "username", type = ApiParamType.STRING, desc = "账号名", isRequired = true)
+            @Param(name = "accountId", type = ApiParamType.LONG, desc = "账号id")
     })
     @Output({
             @Param(type = ApiParamType.STRING, desc = "密码"),
@@ -101,6 +103,7 @@ public class GetResourceAccountApi extends PrivateApiComponentBase {
         String protocol = paramObj.getString("protocol");
         Integer protocolPort = paramObj.getInteger("protocolPort");
         String username = paramObj.getString("username");
+        Long accountId = paramObj.getLong("accountId");
 
         AccountProtocolVo protocolVo = resourceAccountMapper.getAccountProtocolVoByProtocolName(protocol);
         if (protocolVo == null) {
@@ -154,12 +157,20 @@ public class GetResourceAccountApi extends PrivateApiComponentBase {
             return removePasswordPlain(account);
         }
 
+        //如果账号id存在
+        if (accountId != null) {
+            AccountVo account = resourceAccountMapper.getAccountById(accountId);
+            if (account != null) {
+                return removePasswordPlain(account);
+            }
+        }
+
         throw new ResourceCenterAccountNotFoundException();
     }
 
-    private JSONObject removePasswordPlain(AccountBaseVo account){
+    private JSONObject removePasswordPlain(AccountBaseVo account) {
         JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(account));
-        jsonObject.put("passwordPlain",null);
+        jsonObject.put("passwordPlain", null);
         return jsonObject;
     }
 }
