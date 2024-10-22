@@ -199,11 +199,14 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
             //补充opType操作类型
             filter.put("cmdbGroupType", cmdbGroupType);
             ResourceSearchVo searchVo = resourceCenterResourceService.assembleResourceSearchVo(filter);
+            resourceCenterResourceService.handleBatchSearchList(searchVo);
+            resourceCenterResourceService.setIpFieldAttrIdAndNameFieldAttrId(searchVo);
             int rowNum = resourceMapper.getResourceCount(searchVo);
             // 先检查过滤器下是否存在资源
             if (rowNum > 0) {
                 searchVo.setRowNum(rowNum);
                 searchVo.setPageSize(100);
+                resourceCenterResourceService.setIsIpFieldSortAndIsNameFieldSort(searchVo);
                 for (int i = 1; i <= searchVo.getPageCount(); i++) {
                     searchVo.setCurrentPage(i);
                     List<Long> idList = resourceMapper.getResourceIdList(searchVo);
