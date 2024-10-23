@@ -1144,12 +1144,14 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                     continue;
                 }
                 String label = showAttributeObj.getString("label");
-                if (label.startsWith("attr_")) {
-                    attrIdList.add(Long.valueOf(label.substring(5)));
-                } else if (label.startsWith("relfrom_")) {
-                    relIdList.add(Long.valueOf(label.substring(8)));
-                } else if (label.startsWith("relto_")) {
-                    relIdList.add(Long.valueOf(label.substring(6)));
+                if (StringUtils.isNotBlank(label)) {
+                    if (label.startsWith("attr_")) {
+                        attrIdList.add(Long.valueOf(label.substring(5)));
+                    } else if (label.startsWith("relfrom_")) {
+                        relIdList.add(Long.valueOf(label.substring(8)));
+                    } else if (label.startsWith("relto_")) {
+                        relIdList.add(Long.valueOf(label.substring(6)));
+                    }
                 }
             }
             ciEntityVo.setAttrIdList(attrIdList);
