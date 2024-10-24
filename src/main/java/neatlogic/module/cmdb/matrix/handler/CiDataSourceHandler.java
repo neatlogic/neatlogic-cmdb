@@ -133,16 +133,16 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                         if (CollectionUtils.isEqualCollection(oldAttributeMappingArray, attributeMappingArray)) {
                             return false;
                         }
-                        JSONArray showAttributeArray = oldConfig.getJSONArray("showAttributeList");
-                        if (CollectionUtils.isNotEmpty(showAttributeArray)) {
-                            for (int i = 0; i < showAttributeArray.size(); i++) {
-                                JSONObject showAttributeObj = showAttributeArray.getJSONObject(i);
-                                if (MapUtils.isNotEmpty(showAttributeObj)) {
-                                    String uuid = showAttributeObj.getString("uuid");
-                                    if (uuid != null) {
-                                        oldShowAttributeUuidMap.put(showAttributeObj.getString("label"), uuid);
-                                        DependencyManager.delete(CiAttr2MatrixAttrDependencyHandler.class, uuid);
-                                    }
+                    }
+                    JSONArray showAttributeArray = oldConfig.getJSONArray("showAttributeList");
+                    if (CollectionUtils.isNotEmpty(showAttributeArray)) {
+                        for (int i = 0; i < showAttributeArray.size(); i++) {
+                            JSONObject showAttributeObj = showAttributeArray.getJSONObject(i);
+                            if (MapUtils.isNotEmpty(showAttributeObj)) {
+                                String uuid = showAttributeObj.getString("uuid");
+                                if (uuid != null) {
+                                    oldShowAttributeUuidMap.put(showAttributeObj.getString("label"), uuid);
+                                    DependencyManager.delete(CiAttr2MatrixAttrDependencyHandler.class, uuid);
                                 }
                             }
                         }
