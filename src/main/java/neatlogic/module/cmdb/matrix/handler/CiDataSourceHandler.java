@@ -133,16 +133,16 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                         if (CollectionUtils.isEqualCollection(oldAttributeMappingArray, attributeMappingArray)) {
                             return false;
                         }
-                        JSONArray showAttributeArray = oldConfig.getJSONArray("showAttributeList");
-                        if (CollectionUtils.isNotEmpty(showAttributeArray)) {
-                            for (int i = 0; i < showAttributeArray.size(); i++) {
-                                JSONObject showAttributeObj = showAttributeArray.getJSONObject(i);
-                                if (MapUtils.isNotEmpty(showAttributeObj)) {
-                                    String uuid = showAttributeObj.getString("uuid");
-                                    if (uuid != null) {
-                                        oldShowAttributeUuidMap.put(showAttributeObj.getString("label"), uuid);
-                                        DependencyManager.delete(CiAttr2MatrixAttrDependencyHandler.class, uuid);
-                                    }
+                    }
+                    JSONArray showAttributeArray = oldConfig.getJSONArray("showAttributeList");
+                    if (CollectionUtils.isNotEmpty(showAttributeArray)) {
+                        for (int i = 0; i < showAttributeArray.size(); i++) {
+                            JSONObject showAttributeObj = showAttributeArray.getJSONObject(i);
+                            if (MapUtils.isNotEmpty(showAttributeObj)) {
+                                String uuid = showAttributeObj.getString("uuid");
+                                if (uuid != null) {
+                                    oldShowAttributeUuidMap.put(showAttributeObj.getString("label"), uuid);
+                                    DependencyManager.delete(CiAttr2MatrixAttrDependencyHandler.class, uuid);
                                 }
                             }
                         }
@@ -259,14 +259,15 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             if (CollectionUtils.isNotEmpty(showAttributeList)) {
                 for (int i = 0; i < showAttributeList.size(); i++) {
                     JSONObject showAttributeObj = showAttributeList.getJSONObject(i);
-                    if (MapUtils.isEmpty(showAttributeObj)) {
-                        continue;
+                    if (MapUtils.isNotEmpty(showAttributeObj)) {
+                        String label = showAttributeObj.getString("label");
+                        if (StringUtils.isNotBlank(label)) {
+                            JSONObject attributeMappingObj = new JSONObject();
+                            attributeMappingObj.put("label", label);
+                            attributeMappingObj.put("uniqueIdentifier", "");
+                            attributeMappingList.add(attributeMappingObj);
+                        }
                     }
-                    String label = showAttributeObj.getString("label");
-                    JSONObject attributeMappingObj = new JSONObject();
-                    attributeMappingObj.put("label", label);
-                    attributeMappingObj.put("uniqueIdentifier", "");
-                    attributeMappingList.add(attributeMappingObj);
                 }
             }
             config.put("attributeMappingList", attributeMappingList);
@@ -1140,16 +1141,17 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         if (CollectionUtils.isNotEmpty(showAttributeList)) {
             for (int i = 0; i < showAttributeList.size(); i++) {
                 JSONObject showAttributeObj = showAttributeList.getJSONObject(i);
-                if (MapUtils.isEmpty(showAttributeObj)) {
-                    continue;
-                }
-                String label = showAttributeObj.getString("label");
-                if (label.startsWith("attr_")) {
-                    attrIdList.add(Long.valueOf(label.substring(5)));
-                } else if (label.startsWith("relfrom_")) {
-                    relIdList.add(Long.valueOf(label.substring(8)));
-                } else if (label.startsWith("relto_")) {
-                    relIdList.add(Long.valueOf(label.substring(6)));
+                if (MapUtils.isNotEmpty(showAttributeObj)) {
+                    String label = showAttributeObj.getString("label");
+                    if (StringUtils.isNotBlank(label)) {
+                        if (label.startsWith("attr_")) {
+                            attrIdList.add(Long.valueOf(label.substring(5)));
+                        } else if (label.startsWith("relfrom_")) {
+                            relIdList.add(Long.valueOf(label.substring(8)));
+                        } else if (label.startsWith("relto_")) {
+                            relIdList.add(Long.valueOf(label.substring(6)));
+                        }
+                    }
                 }
             }
             ciEntityVo.setAttrIdList(attrIdList);
