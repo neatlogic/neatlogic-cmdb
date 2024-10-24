@@ -1754,6 +1754,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 or `abbr_name` LIKE concat('%', #{keyword}, '%') or `app_module_abbr_name` LIKE concat('%', #{keyword},
                 '%'))
             </if>
+            and LP{id=maxLimitId}
         </where>
     </select>
 
@@ -1781,10 +1782,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         `name`,
         `abbr_name` AS abbrName
         from @{DATA_SCHEMA}.`scence_appsystem`
-        where `id` in
+        <where>`id` in
         <foreach collection="list" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>
+        and LP{id=maxLimitId}
+        </where>
+    </select>
+
+    <select id="getAppSystemLimitMaxId" resultType="java.lang.Long" useCache="false">
+        SELECT DISTINCT a.`id`
+        FROM @{DATA_SCHEMA}.`scence_appsystem_appmodule` a
+        ORDER BY a.`id` ASC
+        limit #{policyLimit}, 1
     </select>
 
     <select id="getAppModuleListByKeywordAndAppSystemIdList"
