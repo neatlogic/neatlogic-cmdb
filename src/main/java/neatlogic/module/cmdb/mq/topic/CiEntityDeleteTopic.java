@@ -71,6 +71,11 @@ public class CiEntityDeleteTopic extends TopicBase<CiEntityTransactionVo> {
     }
 
     @Override
+    public Boolean hasConfig() {
+        return true;
+    }
+
+    @Override
     protected JSONObject generateTopicContent(TopicVo topicVo, CiEntityTransactionVo content) {
         if (topicVo.getConfig() == null) {
             return null;

@@ -69,6 +69,11 @@ public class CiEntityInsertTopic extends TopicBase<CiEntityTransactionVo> {
     }
 
     @Override
+    public Boolean hasConfig() {
+        return true;
+    }
+
+    @Override
     public String getName() {
         return "cmdb/cientity/insert";
     }

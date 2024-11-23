@@ -74,6 +74,11 @@ public class CiEntityUpdateTopic extends TopicBase<CiEntityTransactionVo> {
         return "artemis";
     }
 
+    @Override
+    public Boolean hasConfig() {
+        return true;
+    }
+
     @Resource
     RelMapper relMapper;
 

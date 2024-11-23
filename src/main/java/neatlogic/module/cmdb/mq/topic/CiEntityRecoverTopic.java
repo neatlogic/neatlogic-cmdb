@@ -73,6 +73,11 @@ public class CiEntityRecoverTopic extends TopicBase<CiEntityTransactionVo> {
     }
 
     @Override
+    public Boolean hasConfig() {
+        return true;
+    }
+
+    @Override
     public String getLabel() {
         return "配置项恢复";
     }
