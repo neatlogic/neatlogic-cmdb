@@ -112,6 +112,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
             @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "nmcac.searchcientityapi.input.param.desc.needaction"),
             @Param(name = "needCheck", type = ApiParamType.BOOLEAN, desc = "nmcac.searchcientityapi.input.param.desc.needcheck"),
             @Param(name = "needError", type = ApiParamType.BOOLEAN, desc = "是否需要异常列"),
+            @Param(name = "needAccount", type = ApiParamType.BOOLEAN, desc = "是否需要返回账号"),
             @Param(name = "needExpand", type = ApiParamType.BOOLEAN, desc = "nmcac.searchcientityapi.input.param.desc.needexpand"),
             @Param(name = "needActionType", type = ApiParamType.BOOLEAN, desc = "nmcac.searchcientityapi.input.param.desc.needactiontype"),
             @Param(name = "relCiEntityId", type = ApiParamType.LONG, desc = "nmcac.searchcientityapi.input.param.desc.relcientityid"),
@@ -211,6 +212,8 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
             boolean needExpand = jsonObj.getBooleanValue("needExpand");
             boolean needError = jsonObj.getBooleanValue("needError");
             boolean needActionType = jsonObj.getBooleanValue("needActionType");
+            boolean needAccount = jsonObj.getBooleanValue("needAccount");
+
             JSONArray showAttrRelList = jsonObj.getJSONArray("showAttrRelList");
             Set<String> showAttrRelSet = new HashSet<>();
             if (CollectionUtils.isNotEmpty(showAttrRelList)) {
@@ -329,6 +332,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
             ciEntityVo.setAttrIdList(attrIdList);
             ciEntityVo.setRelIdList(relIdList);
             ciEntityVo.setGlobalAttrIdList(globalAttrIdList);
+            ciEntityVo.setNeedAccount(needAccount);
 
             List<CiEntityVo> ciEntityList;
             CiVo ciVo = ciMapper.getCiById(ciEntityVo.getCiId());

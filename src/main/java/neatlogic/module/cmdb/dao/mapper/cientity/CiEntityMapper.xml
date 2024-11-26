@@ -600,7 +600,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 ROUND(UNIX_TIMESTAMP(`ci_base`.`monitor_time`) * 1000) AS monitorTime,
                 `ci_base`.`monitor_status` AS monitorStatus,
                 ROUND(UNIX_TIMESTAMP(`ci_base`.`renew_time`) * 1000) AS renewTime,
-                cientity_account.`account` as `account`,
+                <choose>
+                    <when test="needAccount == true">
+                        cientity_account.`account` as `account`,
+                    </when>
+                    <otherwise>null as `account`,</otherwise>
+                </choose>
                 `ci_base`.`lcd` AS lcd,
                 `ci_base`.`lcu` AS lcu,
                 `ci_base`.`fcd` AS fcd,
@@ -950,6 +955,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 #{item}
             </foreach>
         </if>
+        <!-- 进入serachCiEntity阶段不需要再处理关键字
         <if test="keywordList != null and keywordList.size() > 0">
             JOIN fulltextindex_field_cmdb ffc ON ffc.target_id = `ci_base`.id JOIN fulltextindex_word fw ON ffc.word_id
             = fw.id AND (fw.word IN
@@ -958,8 +964,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             </foreach>
             OR `ci_base`.id = #{keyword} OR `ci_base`.`name` LIKE CONCAT('%',#{keyword},'%')
             )
-        </if>
-        <if test="ciList == null or ciList.size() != 1 or (ciList.size() == 1 and ciList[0].isVirtual == 0)">
+        </if>-->
+        <if test="needAccount == true and (ciList == null or ciList.size() != 1 or (ciList.size() == 1 and ciList[0].isVirtual == 0))">
             left join (
             select group_concat(CONCAT(cra.name,' (',cra.account,' / ',crrap.`name`,')')) as `account`,crra.resource_id
             from

@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.service.sync;
 
+import com.alibaba.nacos.common.utils.CollectionUtils;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.sync.*;
@@ -23,7 +24,6 @@ import neatlogic.framework.cmdb.exception.sync.SyncCiCollectionNotFoundException
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.sync.SyncAuditMapper;
 import neatlogic.module.cmdb.dao.mapper.sync.SyncMapper;
-import com.alibaba.nacos.common.utils.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -115,7 +115,7 @@ public class SyncServiceImpl implements SyncService {
                 syncAuditVo.setPageSize(100);
                 syncAuditVo.setCiCollectionId(ciCollectionVo.getId());
                 List<SyncAuditVo> syncAuditList = syncAuditMapper.searchSyncAudit(syncAuditVo);
-                if (syncAuditList.size() > 0) {
+                if (!syncAuditList.isEmpty()) {
                     ciCollectionVo.setStatus(syncAuditList.get(0).getStatus());
                     ciCollectionVo.setError(syncAuditList.get(0).getError());
                 }
