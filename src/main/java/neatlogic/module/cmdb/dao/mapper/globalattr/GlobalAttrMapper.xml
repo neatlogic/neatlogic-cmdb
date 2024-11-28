@@ -236,7 +236,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     </update>
 
     <insert id="insertGlobalAttrItem" parameterType="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo">
-        insert into cmdb_global_attritem
+        insert ignore into cmdb_global_attritem
             (id, value, attr_id, sort)
         values (#{id}, #{value}, #{attrId}, #{sort})
     </insert>

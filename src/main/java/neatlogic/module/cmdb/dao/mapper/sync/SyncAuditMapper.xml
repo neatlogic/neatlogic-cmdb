@@ -125,6 +125,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
           and a.status = 'doing'
     </select>
 
+    <update id="updateSyncAuditDataCount" parameterType="neatlogic.framework.cmdb.dto.sync.SyncAuditVo">
+        UPDATE
+            cmdb_sync_audit
+        SET data_count=#{dataCount}
+        WHERE id = #{id}
+    </update>
+
     <update id="updateSyncAuditStatus" parameterType="neatlogic.framework.cmdb.dto.sync.SyncAuditVo">
         UPDATE
         cmdb_sync_audit

@@ -421,7 +421,7 @@ public class CiSyncManager {
                                 for (int i = 0; i < subDataList.size(); i++) {
                                     if (!(subDataList.get(i) instanceof JSONObject)) {
                                         String value = subDataList.getString(i);
-                                        if(StringUtils.isNotBlank(value)) {
+                                        if (StringUtils.isNotBlank(value)) {
                                             GlobalAttrItemVo attrItem = new GlobalAttrItemVo();
                                             attrItem.setAttrId(globalAttrVo.getId());
                                             attrItem.setValue(value);
@@ -438,7 +438,7 @@ public class CiSyncManager {
                                 //其他标值
                                 String value = dataObj.getString(mappingVo.getField(parentKey));
                                 //GlobalAttrItemVo item = globalAttrVo.getItem(value);
-                                if(StringUtils.isNotBlank(value)) {
+                                if (StringUtils.isNotBlank(value)) {
                                     GlobalAttrItemVo attrItem = new GlobalAttrItemVo();
                                     attrItem.setAttrId(globalAttrVo.getId());
                                     attrItem.setValue(value);
@@ -922,8 +922,11 @@ public class CiSyncManager {
         private void dealWithDataBatch(SyncCiCollectionVo syncCiCollectionVo, Set<String> fieldList, List<JSONObject> dataList, AtomicInteger count) {
             if (CollectionUtils.isNotEmpty(dataList)) {
                 BatchRunner<JSONObject> batchRunner = new BatchRunner<>();
-                BatchRunner.State state = batchRunner.execute(dataList, 5, (threadIndex, dataIndex, data) -> {
+                BatchRunner.State state = batchRunner.execute(dataList, 1, (threadIndex, dataIndex, data) -> {
                     count.addAndGet(1);
+                    //临时更新处理数据量
+                    syncCiCollectionVo.getSyncAudit().setDataCount(count.get());
+                    syncAuditMapper.updateSyncAuditDataCount(syncCiCollectionVo.getSyncAudit());
                     //int tmpCount = count.addAndGet(1);
                     long localStartTime = 0L;
 

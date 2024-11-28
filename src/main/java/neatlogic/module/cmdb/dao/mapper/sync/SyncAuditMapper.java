@@ -32,6 +32,8 @@ public interface SyncAuditMapper {
 
     void updateSyncAuditStatus(SyncAuditVo syncAuditVo);
 
+    void updateSyncAuditDataCount(SyncAuditVo syncAuditVo);
+
     void deleteSyncAuditById(Long syncAuditId);
 
     void deleteAuditByDayBefore(int dayBefore);
