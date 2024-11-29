@@ -19,6 +19,7 @@ package neatlogic.module.cmdb.matrix.handler;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.customview.*;
 import neatlogic.framework.cmdb.exception.customview.CustomViewNotFoundException;
 import neatlogic.framework.common.constvalue.Expression;
@@ -572,9 +573,11 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
         for (CustomViewConstAttrVo constAttrVo : constAttrList) {
             uuid2TypeMap.put(constAttrVo.getUuid(), "constattr");
         }
+        Map<String, CustomViewAttrVo> uuid2CustomViewAttrVoMap = new HashMap<>();
         List<CustomViewAttrVo> attrList = customViewMapper.getCustomViewAttrByCustomViewId(customViewAttrVo);
         for (CustomViewAttrVo attrVo : attrList) {
             uuid2TypeMap.put(attrVo.getUuid(), "attr");
+            uuid2CustomViewAttrVoMap.put(attrVo.getUuid(), attrVo);
         }
         for (MatrixFilterVo matrixFilterVo : filterList) {
             if (matrixFilterVo == null) {
@@ -588,26 +591,41 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
                 throw new MatrixAttributeNotFoundException(matrixUuid, uuid);
             }
             String attrUuid = attributeLabelMap.get(uuid);
+            String expression = matrixFilterVo.getExpression();
             List<String> valueList = matrixFilterVo.getValueList();
             if (CollectionUtils.isEmpty(valueList)) {
-                if (!Objects.equals(matrixFilterVo.getExpression(), SearchExpression.NULL.getExpression())
-                        && !Objects.equals(matrixFilterVo.getExpression(), SearchExpression.NOTNULL.getExpression())) {
+                if (!Objects.equals(expression, SearchExpression.NULL.getExpression())
+                        && !Objects.equals(expression, SearchExpression.NOTNULL.getExpression())) {
                     continue;
                 }
             }
             JSONArray valueArray = new JSONArray();
-            for (String value : valueList) {
-                if (StringUtils.isNotBlank(value)) {
-                    valueArray.add(value);
+            String type = uuid2TypeMap.get(attrUuid);
+            if (Objects.equals(type, "attr")) {
+                CustomViewAttrVo customViewAttr = uuid2CustomViewAttrVoMap.get(attrUuid);
+                AttrVo attrVo = customViewAttr.getAttrVo();
+                if (Objects.equals(attrVo.getType(), "number")) {
+                    expression = SearchExpression.BT.getExpression();
+                    if (valueList.size() == 1) {
+                        valueArray.add(valueList.get(0) + "~" + valueList.get(0));
+                    } else if (valueList.size() == 2) {
+                        valueArray.add(valueList.get(0) + "~" + valueList.get(1));
+                    }
                 }
             }
-            String expression = matrixFilterVo.getExpression();
+            if (CollectionUtils.isEmpty(valueArray)) {
+                for (String value : valueList) {
+                    if (StringUtils.isNotBlank(value)) {
+                        valueArray.add(value);
+                    }
+                }
+            }
             if (StringUtils.isBlank(expression)) {
-                expression = Expression.EQUAL.getExpression();
+                expression = SearchExpression.EQ.getExpression();
             }
             CustomViewConditionFilterVo customViewConditionFilterVo = new CustomViewConditionFilterVo();
             customViewConditionFilterVo.setAttrUuid(attrUuid);
-            customViewConditionFilterVo.setType(uuid2TypeMap.get(attrUuid));
+            customViewConditionFilterVo.setType(type);
             customViewConditionFilterVo.setExpression(expression);
             customViewConditionFilterVo.setValueList(valueArray);
             customViewConditionFilterList.add(customViewConditionFilterVo);
