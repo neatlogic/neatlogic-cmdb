@@ -403,6 +403,33 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
             matrixAttributeVo.setPrimaryKey(attrVo.getIsPrimary());
             matrixAttributeList.add(matrixAttributeVo);
         }
+        CustomViewGlobalAttrVo customViewGlobalAttrVo = new CustomViewGlobalAttrVo(customViewId);
+        List<CustomViewGlobalAttrVo> globalAttrList = customViewMapper.getCustomViewGlobalAttrByCustomViewId(customViewGlobalAttrVo);
+        for (CustomViewGlobalAttrVo globalAttrVo : globalAttrList) {
+            MatrixAttributeVo matrixAttributeVo = new MatrixAttributeVo();
+            if (MapUtils.isNotEmpty(showAttributeUuidMap)) {
+                String uniqueIdentifier = showAttributeUniqueIdentifierMap.get(globalAttrVo.getUuid());
+                if (StringUtils.isNotBlank(uniqueIdentifier)) {
+                    matrixAttributeVo.setUniqueIdentifier(uniqueIdentifier);
+                } else {
+                    matrixAttributeVo.setUniqueIdentifier(StringUtils.EMPTY);
+                }
+                String uuid = showAttributeUuidMap.get(globalAttrVo.getUuid());
+                if (uuid == null && Objects.equals(globalAttrVo.getIsPrimary(), 0)) {
+                    continue;
+                }
+                matrixAttributeVo.setUuid(uuid);
+            }
+            matrixAttributeVo.setLabel(globalAttrVo.getUuid());
+            matrixAttributeVo.setName(globalAttrVo.getAlias());
+            matrixAttributeVo.setMatrixUuid(matrixUuid);
+            matrixAttributeVo.setType(MatrixAttributeType.INPUT.getValue());
+            matrixAttributeVo.setIsDeletable(0);
+            matrixAttributeVo.setSort(sort++);
+            matrixAttributeVo.setIsRequired(0);
+            matrixAttributeVo.setPrimaryKey(globalAttrVo.getIsPrimary());
+            matrixAttributeList.add(matrixAttributeVo);
+        }
         return matrixAttributeList;
     }
 
