@@ -740,13 +740,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             </foreach>
         </if>
         <if test="keywordList != null and keywordList.size() > 0">
-            JOIN fulltextindex_field_cmdb ffc ON ffc.target_id = `ci_base`.id JOIN fulltextindex_word fw ON ffc.word_id
-            = fw.id AND (fw.word IN
-            <foreach collection="keywordList" item="item" open="(" close=")" separator=",">
-                #{item}
-            </foreach>
-            OR `ci_base`.id = #{keyword} OR `ci_base`.`name` LIKE CONCAT('%',#{keyword},'%')
-            )
+            LEFT JOIN fulltextindex_field_cmdb ffc ON ffc.target_id = `ci_base`.id
+            LEFT JOIN fulltextindex_word fw ON ffc.word_id
+            = fw.id
         </if>
     </sql>
 
@@ -987,6 +983,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             <!-- (not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id = `ci_base`.id) or exists
              (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id = `ci_base`.id
              and xx.expired_time &gt;= NOW()))-->
+
+            <if test="keywordList != null and keywordList.size() > 0">
+                AND (fw.word IN
+                <foreach collection="keywordList" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+                OR `ci_base`.id = #{keyword} OR `ci_base`.`name` LIKE CONCAT('%',#{keyword},'%')
+                )
+            </if>
+
             <if test="name != null and name != ''">
                 AND `ci_base`.`name` LIKE CONCAT('%',#{name},'%')
             </if>
