@@ -22,14 +22,17 @@ import com.alibaba.fastjson.JSONPath;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.sync.CollectionVo;
+import neatlogic.framework.cmdb.dto.sync.SyncDataAuditVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.module.cmdb.dao.mapper.sync.SyncAuditMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -38,6 +41,8 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Service
@@ -47,6 +52,8 @@ public class SearchCollectionDataApi extends PrivateApiComponentBase {
     @Resource
     private MongoTemplate mongoTemplate;
 
+    @Resource
+    private SyncAuditMapper syncAuditMapper;
 
     @Override
     public String getName() {
@@ -60,6 +67,7 @@ public class SearchCollectionDataApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "collection", type = ApiParamType.STRING, isRequired = true, desc = "term.cmdb.collectionname"),
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "common.keyword"),
+            @Param(name = "hasError", type = ApiParamType.INTEGER, desc = "是否有异常"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize")
     })
@@ -71,6 +79,7 @@ public class SearchCollectionDataApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         String collection = paramObj.getString("collection");
+        Integer hasError = paramObj.getInteger("hasError");
         BasePageVo pageVo = JSON.toJavaObject(paramObj, BasePageVo.class);
         JSONObject resultObj = new JSONObject();
         CollectionVo collectionVo = mongoTemplate.findOne(new Query(Criteria.where("name").is(collection)), CollectionVo.class, "_dictionary");
@@ -79,6 +88,15 @@ public class SearchCollectionDataApi extends PrivateApiComponentBase {
         Query countQuery = new Query();
         JSONObject subsetData = new JSONObject();
         if (collectionVo != null) {
+            if (hasError != null) {
+                JSONObject headObj = new JSONObject();
+                headObj.put("key", "_error");
+                headObj.put("title", "异常");
+                headObj.put("type", "error");
+                headObj.put("className", "top");
+                theadList.add(headObj);
+            }
+
             List<Criteria> finalCriteria = new ArrayList<>();
 
             if (MapUtils.isNotEmpty(collectionVo.getFilter())) {
@@ -89,7 +107,7 @@ public class SearchCollectionDataApi extends PrivateApiComponentBase {
                 Pattern pattern = null;
                 if (StringUtils.isNotBlank(pageVo.getKeyword())) {
                     pattern = Pattern.compile("^.*" + pageVo.getKeyword() + ".*$", Pattern.CASE_INSENSITIVE);
-                    Criteria c = new Criteria();
+                    //Criteria c = new Criteria();
                 }
                 for (int i = 0; i < collectionVo.getFields().size(); i++) {
                     JSONObject fieldObj = collectionVo.getFields().getJSONObject(i);
@@ -127,24 +145,57 @@ public class SearchCollectionDataApi extends PrivateApiComponentBase {
                     query.addCriteria(new Criteria().andOperator(finalCriteria));
                     countQuery.addCriteria(new Criteria().andOperator(finalCriteria));
                 }
-
-                query.limit(pageVo.getPageSize());
-                if (pageVo.getCurrentPage() > 1) {
-                    query.skip((long) pageVo.getPageSize() * (pageVo.getCurrentPage() - 1));
+                boolean needSearch = false;
+                List<SyncDataAuditVo> dataAuditList = null;
+                if (hasError != null) {
+                    SyncDataAuditVo syncDataAuditVo = new SyncDataAuditVo();
+                    syncDataAuditVo.setPageSize(pageVo.getPageSize());
+                    syncDataAuditVo.setCurrentPage(pageVo.getCurrentPage());
+                    syncDataAuditVo.setCollectionName(collection);
+                    dataAuditList = syncAuditMapper.searchSyncDataAudit(syncDataAuditVo);
+                    List<ObjectId> dataIdList = new ArrayList<>();
+                    if (CollectionUtils.isNotEmpty(dataAuditList)) {
+                        for (SyncDataAuditVo dataAuditVo : dataAuditList) {
+                            dataIdList.add(new ObjectId(dataAuditVo.getDataId()));
+                        }
+                        int rowNum = syncAuditMapper.searchSyncDataAuditCount(syncDataAuditVo);
+                        pageVo.setRowNum(rowNum);
+                        needSearch = true;
+                    }
+                    query.addCriteria(Criteria.where("_id").in(dataIdList));
+                } else {
+                    needSearch = true;
+                    query.limit(pageVo.getPageSize());
+                    if (pageVo.getCurrentPage() > 1) {
+                        query.skip((long) pageVo.getPageSize() * (pageVo.getCurrentPage() - 1));
+                    }
+                    long rowNum = mongoTemplate.count(countQuery, collectionVo.getCollection());
+                    pageVo.setRowNum((int) rowNum);
                 }
-                List<JSONObject> resultList = mongoTemplate.find(query, JSONObject.class, collectionVo.getCollection());
-                if (StringUtils.isNotEmpty(collectionVo.getDocroot())) {
-                    List<JSONObject> finalResultList = new ArrayList<>();
-                    for (JSONObject obj : resultList) {
-                        JSONArray objList = (JSONArray) JSONPath.read(obj.toJSONString(), "$." + collectionVo.getDocroot());
-                        for (int i = 0; i < objList.size(); i++) {
-                            finalResultList.add(objList.getJSONObject(i));
+                List<JSONObject> resultList = null;
+                if (needSearch) {
+                    resultList = mongoTemplate.find(query, JSONObject.class, collectionVo.getCollection());
+                    if (StringUtils.isNotEmpty(collectionVo.getDocroot())) {
+                        List<JSONObject> finalResultList = new ArrayList<>();
+                        for (JSONObject obj : resultList) {
+                            JSONArray objList = (JSONArray) JSONPath.read(obj.toJSONString(), "$." + collectionVo.getDocroot());
+                            for (int i = 0; i < objList.size(); i++) {
+                                finalResultList.add(objList.getJSONObject(i));
+                            }
+                        }
+                        resultList = finalResultList;
+                    }
+                    if (CollectionUtils.isNotEmpty(dataAuditList)) {
+                        for (JSONObject obj : resultList) {
+                            if (obj.get("_id") instanceof ObjectId) {
+                                String dataId = ((ObjectId) obj.get("_id")).toString();
+                                Optional<SyncDataAuditVo> op = dataAuditList.stream().filter(d -> Objects.equals(d.getDataId(), dataId)).findFirst();
+                                op.ifPresent(syncDataAuditVo -> obj.put("_error", syncDataAuditVo.getErrorList()));
+                            }
                         }
                     }
-                    resultList = finalResultList;
                 }
-                long rowNum = mongoTemplate.count(countQuery, collectionVo.getCollection());
-                pageVo.setRowNum((int) rowNum);
+
                 resultObj.put("theadList", theadList);
                 resultObj.put("tbodyList", resultList);
                 resultObj.put("subTheadData", subsetData);

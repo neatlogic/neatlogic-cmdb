@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.transaction;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
@@ -62,6 +63,7 @@ public class SearchTransactionApi extends PrivateApiComponentBase {
     @Input({@Param(name = "ciId", type = ApiParamType.LONG, desc = "term.cmdb.ciid"),
             @Param(name = "ciEntityId", type = ApiParamType.LONG, desc = "term.cmdb.cientityid"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize"),
+            @Param(name = "userId", type = ApiParamType.STRING, desc = "操作人"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage"),
             @Param(name = "status", type = ApiParamType.ENUM, rule = "commited,uncommit,recover,expired", desc = "common.status"),
             @Param(name = "transactionGroupId", type = ApiParamType.LONG, desc = "term.cmdb.transactiongroupid"),
@@ -70,7 +72,7 @@ public class SearchTransactionApi extends PrivateApiComponentBase {
     @Description(desc = "nmcat.searchtransactionapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        TransactionVo transactionVo = JSONObject.toJavaObject(jsonObj, TransactionVo.class);
+        TransactionVo transactionVo = JSON.toJavaObject(jsonObj, TransactionVo.class);
         List<TransactionVo> transactionList = transactionService.searchTransaction(transactionVo);
         boolean needAction = jsonObj.getBooleanValue("needAction");
         if (needAction) {

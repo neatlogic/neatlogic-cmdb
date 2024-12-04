@@ -16,6 +16,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 package neatlogic.module.cmdb.dao.mapper.sync;
 
 import neatlogic.framework.cmdb.dto.sync.SyncAuditVo;
+import neatlogic.framework.cmdb.dto.sync.SyncDataAuditVo;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -26,9 +28,15 @@ public interface SyncAuditMapper {
 
     List<SyncAuditVo> searchSyncAudit(SyncAuditVo syncAuditVo);
 
+    List<SyncDataAuditVo> searchSyncDataAudit(SyncDataAuditVo syncDataAuditVo);
+
+    int searchSyncDataAuditCount(SyncDataAuditVo syncDataAuditVo);
+
     int searchSyncAuditCount(SyncAuditVo syncAuditVo);
 
     void insertSyncAudit(SyncAuditVo syncAuditVo);
+
+    void insertSyncDataAudit(SyncDataAuditVo syncDataAuditVo);
 
     void updateSyncAuditStatus(SyncAuditVo syncAuditVo);
 
@@ -37,5 +45,7 @@ public interface SyncAuditMapper {
     void deleteSyncAuditById(Long syncAuditId);
 
     void deleteAuditByDayBefore(int dayBefore);
+
+    void deleteSyncDataAuditByDataIdAndCollectionId(@Param("dataId") String dataId, @Param("ciCollectionId") Long collectionId);
 
 }

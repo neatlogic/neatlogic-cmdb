@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.sync;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
@@ -68,7 +69,7 @@ public class SearchSyncAuditApi extends PrivateApiComponentBase {
     @Description(desc = "搜索自动采集执行日志接口，如果提供了idList参数，将会直接返回日志列表，没有tbodyList包裹")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        SyncAuditVo syncAuditVo = JSONObject.toJavaObject(jsonObj, SyncAuditVo.class);
+        SyncAuditVo syncAuditVo = JSON.toJavaObject(jsonObj, SyncAuditVo.class);
         List<SyncAuditVo> syncAuditList = syncAuditMapper.searchSyncAudit(syncAuditVo);
         for (SyncAuditVo syncAudit : syncAuditList) {
             if (syncAudit.getTransactionGroupId() != null) {

@@ -59,6 +59,36 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </where>
     </sql>
 
+    <sql id="searchSyncDataAuditSql">
+        <where>
+            <if test="collectionName != null and collectionName != ''">
+                AND collection_name = #{collectionName}
+            </if>
+            <if test="ciCollectionId != null">
+                AND ci_collection_id = #{ciCollectionId}
+            </if>
+        </where>
+    </sql>
+
+    <select id="searchSyncDataAuditCount" parameterType="neatlogic.framework.cmdb.dto.sync.SyncDataAuditVo"
+            resultType="int">
+        select count(1)
+        from cmdb_sync_data_audit
+        <include refid="searchSyncDataAuditSql"></include>
+    </select>
+
+    <select id="searchSyncDataAudit" parameterType="neatlogic.framework.cmdb.dto.sync.SyncDataAuditVo"
+            resultType="neatlogic.framework.cmdb.dto.sync.SyncDataAuditVo">
+        select id,
+        ci_collection_id as ciCollectionId,
+        data_id as dataId,
+        collection_name as collectionName,
+        error as errorListStr
+        from cmdb_sync_data_audit
+        <include refid="searchSyncDataAuditSql"></include>
+        limit #{startNum},#{pageSize}
+    </select>
+
     <select id="searchSyncAuditCount" parameterType="neatlogic.framework.cmdb.dto.sync.SyncAuditVo" resultType="int">
         select count(a.id)
         from cmdb_sync_audit a
@@ -79,6 +109,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         a.status,
         a.transaction_group_id AS transactionGroupId,
         a.server_id AS serverId,
+        (select count(1) from cmdb_sync_data_audit x where x.audit_id = a.id) as errorDataCount,
         a.data_count AS dataCount,
         a.error AS error
         from cmdb_sync_audit a
@@ -162,6 +193,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 #{serverId})
     </insert>
 
+    <insert id="insertSyncDataAudit" parameterType="neatlogic.framework.cmdb.dto.sync.SyncDataAuditVo">
+        insert into cmdb_sync_data_audit
+        (id,
+         ci_collection_id,
+         collection_name,
+         data_id,
+         audit_id,
+         error)
+        values (#{id},
+                #{ciCollectionId},
+                #{collectionName},
+                #{dataId},
+                #{auditId},
+                #{errorListStr, typeHandler=CompressHandler})
+        ON DUPLICATE KEY UPDATE audit_id = #{auditId},
+                                error    = #{errorListStr, typeHandler=CompressHandler}
+    </insert>
+
     <delete id="deleteSyncAuditById" parameterType="java.lang.Long">
         delete
         from cmdb_sync_audit
@@ -172,5 +221,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         delete
         from cmdb_sync_audit
         where end_time &lt; DATE_SUB(CURRENT_DATE, INTERVAL #{value} DAY)
+    </delete>
+
+    <delete id="deleteSyncDataAuditByDataIdAndCollectionId">
+        delete
+        from cmdb_sync_data_audit
+        where data_id = #{dataId}
+          and ci_collection_id = #{ciCollectionId}
     </delete>
 </mapper>

@@ -61,6 +61,7 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -862,16 +863,27 @@ public class CiSyncManager {
                                     while (cursor.hasNext()) {
                                         counter += 1;
                                         sum += 1;
-                                        String jsonStr = cursor.next().toJson();
+                                        Document doc = cursor.next();
+                                        String id = null;
+                                        Object idObject = doc.get("_id");
+                                        if (idObject instanceof ObjectId) {
+                                            id = idObject.toString(); // 转换为字符串
+                                        }
+                                        String jsonStr = doc.toJson();
                                         logger.info("开始处理第{}个文档：{}", sum, jsonStr);
                                         if (StringUtils.isNotBlank(collectionVo.getDocroot())) {
                                             JSONArray objList = (JSONArray) JSONPath.read(jsonStr, "$." + collectionVo.getDocroot());
                                             logger.info("从第{}个文档中提取 {} 位置的数据，得到{}条数据", sum, "$." + collectionVo.getDocroot(), objList.size());
                                             for (int i = 0; i < objList.size(); i++) {
-                                                dataList.add(objList.getJSONObject(i));
+                                                JSONObject dataObj = objList.getJSONObject(i);
+                                                //记录mongodb原数据id
+                                                dataObj.put("_id", id);
+                                                dataList.add(dataObj);
                                             }
                                         } else {
                                             JSONObject orgDataObj = JSON.parseObject(jsonStr);
+                                            //记录mongodb原数据id
+                                            orgDataObj.put("_id", id);
                                             dataList.add(orgDataObj);
                                         }
 
@@ -907,11 +919,10 @@ public class CiSyncManager {
                     } finally {
                         syncCiCollectionVo.getSyncAudit().setStatus(SyncStatus.DONE.getValue());
                         syncAuditMapper.updateSyncAuditStatus(syncCiCollectionVo.getSyncAudit());
-                        //TODO 先改成不管有没有报错都更新最后执行时间
                         //如果没有异常才会更新最后同步时间，作为下一次同步的过滤
-                        //if (StringUtils.isBlank(syncCiCollectionVo.getSyncAudit().getError())) {
-                        syncMapper.updateSyncCiCollectionLastSyncDate(syncCiCollectionVo.getId());
-                        //}
+                        if (StringUtils.isBlank(syncCiCollectionVo.getSyncAudit().getError())) {
+                            syncMapper.updateSyncCiCollectionLastSyncDate(syncCiCollectionVo.getId());
+                        }
                     }
                 }
             }
@@ -924,6 +935,16 @@ public class CiSyncManager {
             if (CollectionUtils.isNotEmpty(dataList)) {
                 BatchRunner<JSONObject> batchRunner = new BatchRunner<>();
                 BatchRunner.State state = batchRunner.execute(dataList, 5, (threadIndex, dataIndex, data) -> {
+                    SyncDataAuditVo syncDataAuditVo = null;
+                    JSONArray dataErrorList = new JSONArray();
+                    if (data.containsKey("_id")) {
+                        syncDataAuditVo = new SyncDataAuditVo();
+                        syncDataAuditVo.setAuditId(syncCiCollectionVo.getSyncAudit().getId());
+                        syncDataAuditVo.setCollectionName(syncCiCollectionVo.getCollectionName());
+                        syncDataAuditVo.setDataId(data.getString("_id"));
+                        syncDataAuditVo.setCiCollectionId(syncCiCollectionVo.getId());
+                    }
+                    //try {
                     count.addAndGet(1);
                     //临时更新处理数据量
                     syncCiCollectionVo.getSyncAudit().setDataCount(count.get());
@@ -967,17 +988,26 @@ public class CiSyncManager {
                                 saveTransactionTime = System.currentTimeMillis() - localStartTime;
                                 logger.info("为第{}条数据创建了{}个事务，创建耗时{}ms，保存耗时{}ms", dataIndex + 1, ciEntityTransactionList.size(), createTransactionTime, saveTransactionTime);
                             }
-                        } catch (ApiRuntimeException ex) {
-                            logger.warn(ex.getMessage(), ex);
-                            syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
                         } catch (Exception ex) {
-                            logger.error(ex.getMessage(), ex);
-                            syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
+                            //logger.warn(ex.getMessage(), ex);
+                            //syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
+                            dataErrorList.add(ex.getMessage());
+                            //throw ex;
                         }
                     }
-//                    if (logger.isInfoEnabled()) {
-//                        logger.info("第{}条数据处理完成，耗时：{}ms", tmpCount, System.currentTimeMillis() - localStartTime);
-//                    }
+                    //} catch (Exception ex) {
+
+                    if (syncDataAuditVo != null) {
+                        if (CollectionUtils.isNotEmpty(dataErrorList)) {
+                            //记录异常数据
+                            syncDataAuditVo.setErrorList(dataErrorList);
+                            syncAuditMapper.insertSyncDataAudit(syncDataAuditVo);
+                        } else {
+                            //没有异常则删除异常数据
+                            syncAuditMapper.deleteSyncDataAuditByDataIdAndCollectionId(syncDataAuditVo.getDataId(), syncDataAuditVo.getCiCollectionId());
+                        }
+                    }
+                    //}
                 }, "SYNC-BATCH-HANDLER");
                 if (!state.isSucceed()) {
                     if (state.getException() != null) {

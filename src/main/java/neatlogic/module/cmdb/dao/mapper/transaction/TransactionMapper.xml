@@ -233,6 +233,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             <if test="transactionGroupId != null">
                 AND t.id = #{transactionGroupId}
             </if>
+            <if test="createUser != null and createUser != ''">
+                AND a.create_user = #{createUser}
+            </if>
+            <if test="commitUser != null and commitUser != ''">
+                AND a.commit_user = #{commitUser}
+            </if>
             <if test="createTimeRange != null">
                 <if test="createTimeRange.size() > 0">
                     AND a.create_time &gt;= STR_TO_DATE(#{createTimeRange[0]},'%Y-%m-%d')
