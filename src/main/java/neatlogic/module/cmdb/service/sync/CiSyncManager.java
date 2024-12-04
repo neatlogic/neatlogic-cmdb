@@ -907,10 +907,11 @@ public class CiSyncManager {
                     } finally {
                         syncCiCollectionVo.getSyncAudit().setStatus(SyncStatus.DONE.getValue());
                         syncAuditMapper.updateSyncAuditStatus(syncCiCollectionVo.getSyncAudit());
+                        //TODO 先改成不管有没有报错都更新最后执行时间
                         //如果没有异常才会更新最后同步时间，作为下一次同步的过滤
-                        if (StringUtils.isBlank(syncCiCollectionVo.getSyncAudit().getError())) {
-                            syncMapper.updateSyncCiCollectionLastSyncDate(syncCiCollectionVo.getId());
-                        }
+                        //if (StringUtils.isBlank(syncCiCollectionVo.getSyncAudit().getError())) {
+                        syncMapper.updateSyncCiCollectionLastSyncDate(syncCiCollectionVo.getId());
+                        //}
                     }
                 }
             }
