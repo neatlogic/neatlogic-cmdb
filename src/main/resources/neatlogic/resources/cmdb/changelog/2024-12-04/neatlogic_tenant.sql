@@ -1,0 +1,1 @@
+CREATE INDEX idx_name_prefix ON cmdb_cientity(name(500));

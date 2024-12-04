@@ -922,7 +922,7 @@ public class CiSyncManager {
         private void dealWithDataBatch(SyncCiCollectionVo syncCiCollectionVo, Set<String> fieldList, List<JSONObject> dataList, AtomicInteger count) {
             if (CollectionUtils.isNotEmpty(dataList)) {
                 BatchRunner<JSONObject> batchRunner = new BatchRunner<>();
-                BatchRunner.State state = batchRunner.execute(dataList, 1, (threadIndex, dataIndex, data) -> {
+                BatchRunner.State state = batchRunner.execute(dataList, 5, (threadIndex, dataIndex, data) -> {
                     count.addAndGet(1);
                     //临时更新处理数据量
                     syncCiCollectionVo.getSyncAudit().setDataCount(count.get());

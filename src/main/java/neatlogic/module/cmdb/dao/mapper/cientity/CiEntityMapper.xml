@@ -378,7 +378,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo" useCache="false">
         SELECT id, `name`
         FROM ${ciTableName}
-        WHERE name LIKE CONCAT('%', #{name}, '%')
+        WHERE name LIKE CONCAT(#{name}, '%')
     </select>
 
     <select id="getCiEntityBaseInfoByName" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo"
@@ -989,12 +989,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 <foreach collection="keywordList" item="item" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
-                OR `ci_base`.id = #{keyword} OR `ci_base`.`name` LIKE CONCAT('%',#{keyword},'%')
+                OR `ci_base`.id = #{keyword} OR `ci_base`.`name` LIKE CONCAT(#{keyword},'%')
                 )
             </if>
 
             <if test="name != null and name != ''">
-                AND `ci_base`.`name` LIKE CONCAT('%',#{name},'%')
+                AND `ci_base`.`name` LIKE CONCAT(#{name},'%')
             </if>
             <choose>
                 <when test="filterCiId != null">
@@ -1138,7 +1138,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                                         <choose>
                                             <when test="attrFilter.type != 'set'">
                                                 AND ${attrFilter.ciTableName}.`${attrFilter.attrId}` LIKE
-                                                CONCAT('%',#{attrFilter.value},'%')
+                                                CONCAT(#{attrFilter.value},'%')
                                             </when>
                                             <otherwise>
                                                 AND (
@@ -1154,7 +1154,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                                         <choose>
                                             <when test="attrFilter.type != 'set'">
                                                 AND ${attrFilter.ciTableName}.`${attrFilter.attrId}` NOT LIKE
-                                                CONCAT('%',#{attrFilter.value},'%')
+                                                CONCAT(#{attrFilter.value},'%')
                                             </when>
                                             <otherwise>
                                                 AND (
@@ -1566,7 +1566,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         FROM `cmdb_cientity`
         WHERE `ci_id` = #{id}
         <if test="keyword != null and keyword != ''">
-            AND name LIKE CONCAT('%', #{keyword}, '%')
+            AND name LIKE CONCAT(#{keyword}, '%')
         </if>
     </select>
 
@@ -1583,7 +1583,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         FROM cmdb_cientity
         WHERE ci_id = #{ciId}
         <if test="keyword != null and keyword != ''">
-            AND name LIKE CONCAT('%', #{keyword}, '%')
+            AND name LIKE CONCAT(#{keyword}, '%')
         </if>
         LIMIT #{startNum} , #{pageSize}
     </select>
@@ -1631,7 +1631,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         <foreach collection="idList" item="item" open="(" separator="," close=")">
             #{item}
         </foreach>
-        AND `name` LIKE CONCAT('%', #{name}, '%')
+        AND `name` LIKE CONCAT(#{name}, '%')
     </select>
 
     <select id="getDownwardCiEntityByLRLimitSize" resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo"
