@@ -250,9 +250,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     </delete>
 
     <delete id="deleteAuditByDayBefore" parameterType="int">
-        delete
-        from cmdb_sync_audit
-        where end_time &lt; DATE_SUB(CURRENT_DATE, INTERVAL #{value} DAY)
+        delete a,b
+        from cmdb_sync_audit a
+                 left join cmdb_sync_data_audit b on a.id = b.audit_id
+        where (a.status = 'done' or a.status = 'paused')
+          and a.end_time &lt; DATE_SUB(CURRENT_DATE, INTERVAL #{value} DAY)
     </delete>
 
     <delete id="deleteSyncDataAuditByDataIdAndCollectionId">
