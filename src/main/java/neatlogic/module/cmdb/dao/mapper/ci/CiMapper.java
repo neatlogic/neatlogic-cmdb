@@ -22,7 +22,6 @@ import neatlogic.framework.cmdb.dto.customview.CustomViewVo;
 import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.dto.AuthenticationInfoVo;
 import neatlogic.module.cmdb.annotation.CiId;
-import neatlogic.module.cmdb.annotation.DeleteCiView;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -124,7 +123,6 @@ public interface CiMapper extends ICiCrossoverMapper {
     void saveCiTreeItem(CiVo ciVo);
     //int insertCiNameExpression(@Param("ciId") Long ciId, @Param("attrId") Long attrId);
 
-    @DeleteCiView
     void deleteCiById(@CiId Long ciId);
 
     void deleteCiUniqueByCiId(Long ciId);

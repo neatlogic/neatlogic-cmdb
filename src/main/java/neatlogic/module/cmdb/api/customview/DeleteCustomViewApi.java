@@ -37,7 +37,7 @@ import javax.annotation.Resource;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
-@OperationType(type = OperationTypeEnum.SEARCH)
+@OperationType(type = OperationTypeEnum.DELETE)
 public class DeleteCustomViewApi extends PrivateApiComponentBase {
 
     @Resource
@@ -59,7 +59,7 @@ public class DeleteCustomViewApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "视图id", isRequired = true)})
     @Output({@Param(explode = CustomViewVo.class)})
-    @Description(desc = "删除自定义视图接口")
+    @Description(desc = "删除自定义视图")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long id = paramObj.getLong("id");

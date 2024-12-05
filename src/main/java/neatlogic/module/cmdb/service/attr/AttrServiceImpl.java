@@ -20,6 +20,7 @@ import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.batch.BatchRunner;
 import neatlogic.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
 import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
+import neatlogic.framework.cmdb.crossover.ICiSchemaViewCrossoverMapper;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.cientity.AttrFilterVo;
@@ -32,9 +33,11 @@ import neatlogic.framework.cmdb.enums.SearchExpression;
 import neatlogic.framework.cmdb.enums.TransactionActionType;
 import neatlogic.framework.cmdb.enums.TransactionStatus;
 import neatlogic.framework.cmdb.exception.attr.*;
+import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.exception.core.ApiRuntimeException;
 import neatlogic.framework.fulltextindex.core.FullTextIndexHandlerFactory;
 import neatlogic.framework.fulltextindex.core.IFullTextIndexHandler;
+import neatlogic.framework.transaction.core.AfterTransactionJob;
 import neatlogic.framework.transaction.core.EscapeTransactionJob;
 import neatlogic.framework.transaction.util.TransactionUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
@@ -122,6 +125,17 @@ public class AttrServiceImpl implements AttrService {
             if (!s.isSucceed()) {
                 throw new InsertAttrToSchemaException(attrVo.getName());
             }
+
+            //重建物化视图(商业版本功能)
+            AfterTransactionJob<CiVo> afterTransactionJob = new AfterTransactionJob<>("BUILD-CI-VIEW");
+            afterTransactionJob.execute(ciVo, ci -> {
+                ICiSchemaViewCrossoverMapper mapper = CrossoverServiceFactory.tryToGetApi(ICiSchemaViewCrossoverMapper.class);
+                if (mapper != null) {
+                    List<AttrVo> attrList = attrMapper.getAttrByCiId(ci.getId());
+                    ci.setAttrList(attrList);
+                    mapper.createCiView(ci);
+                }
+            });
         }
     }
 
@@ -188,6 +202,17 @@ public class AttrServiceImpl implements AttrService {
             if (!s.isSucceed()) {
                 throw new ApiRuntimeException(s.getError());
             }
+
+            //重建物化视图(商业版本功能)
+            AfterTransactionJob<CiVo> afterTransactionJob = new AfterTransactionJob<>("BUILD-CI-VIEW");
+            afterTransactionJob.execute(ciVo, ci -> {
+                ICiSchemaViewCrossoverMapper mapper = CrossoverServiceFactory.tryToGetApi(ICiSchemaViewCrossoverMapper.class);
+                if (mapper != null) {
+                    List<AttrVo> attrList = attrMapper.getAttrByCiId(ci.getId());
+                    ci.setAttrList(attrList);
+                    mapper.createCiView(ci);
+                }
+            });
         }
     }
 
@@ -294,6 +319,17 @@ public class AttrServiceImpl implements AttrService {
             TransactionUtil.rollbackTx(tx);
             throw ex;
         }
+
+        //重建物化视图(商业版本功能)
+        AfterTransactionJob<CiVo> afterTransactionJob = new AfterTransactionJob<>("BUILD-CI-VIEW");
+        afterTransactionJob.execute(attrCi, ci -> {
+            ICiSchemaViewCrossoverMapper mapper = CrossoverServiceFactory.tryToGetApi(ICiSchemaViewCrossoverMapper.class);
+            if (mapper != null) {
+                List<AttrVo> allAttrList = attrMapper.getAttrByCiId(ci.getId());
+                ci.setAttrList(allAttrList);
+                mapper.createCiView(ci);
+            }
+        });
     }
 
 

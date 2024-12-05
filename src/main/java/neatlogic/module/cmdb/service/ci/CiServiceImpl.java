@@ -276,9 +276,9 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
                 if (ciSchemaMapper.checkTableIsExists(TenantContext.get().getDataDbName(), "cmdb_" + ciVo.getId()) <= 0) {
                     //创建配置项表
                     ciSchemaMapper.insertCiTable(ciVo.getId(), ciVo.getCiTableName());
+                    //补充物化视图(商业版本功能)
                     ICiSchemaViewCrossoverMapper mapper = CrossoverServiceFactory.tryToGetApi(ICiSchemaViewCrossoverMapper.class);
                     if (mapper != null) {
-                        //补充物化视图
                         mapper.createCiView(ciVo);
                     }
                 } else {
@@ -289,7 +289,7 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
                         ciSchemaMapper.insertCiTable(ciVo.getId(), ciVo.getCiTableName());
                         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
                         for (AttrVo attrVo : attrList) {
-                            //这里的attrlist包含了所有集成模型的属性，不是自己模型的属性就不要添加
+                            //这里的attrList包含了所有集成模型的属性，不是自己模型的属性就不要添加
                             if (attrVo.getCiId().equals(ciVo.getId()) && attrVo.getTargetCiId() == null) {
                                 ciSchemaMapper.insertAttrToCiTable(ciVo.getId(), ciVo.getCiTableName(), attrVo);
                                 if (Objects.equals(attrVo.getIsSearchAble(), 1)) {
@@ -304,6 +304,12 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
                                     }
                                 }
                             }
+                        }
+                        //补充物化视图(商业版本功能)
+                        ICiSchemaViewCrossoverMapper mapper = CrossoverServiceFactory.tryToGetApi(ICiSchemaViewCrossoverMapper.class);
+                        if (mapper != null) {
+                            ciVo.setAttrList(attrList);
+                            mapper.createCiView(ciVo);
                         }
                     }
                 }
@@ -646,13 +652,18 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
     public void initCiTableView() {
         List<CiVo> ciList = ciMapper.searchCi(new CiVo());
         ciList.sort(Comparator.comparing(CiVo::getLft));
-        Map<Long, CiVo> ciMap = ciList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
+        Map<Long, CiVo> ciMap = ciList.stream().collect(Collectors.toMap(CiVo::getId, e -> e));
         for (CiVo ciVo : ciList) {
             if (ciVo.getIsVirtual().equals(0)) {
                 List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
                 ciVo.setAttrList(attrList);
                 // 生成动态表
                 ciSchemaMapper.initCiTable(ciVo.getId(), ciVo);
+                //补充物化视图(商业版本功能)
+                ICiSchemaViewCrossoverMapper mapper = CrossoverServiceFactory.tryToGetApi(ICiSchemaViewCrossoverMapper.class);
+                if (mapper != null) {
+                    mapper.createCiView(ciVo);
+                }
                 // 向动态表中插入数据
                 CiVo tempCi = ciVo;
                 List<Long> upwardIdList = new ArrayList<>();

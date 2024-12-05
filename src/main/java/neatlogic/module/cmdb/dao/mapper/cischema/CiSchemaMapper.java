@@ -18,7 +18,6 @@ package neatlogic.module.cmdb.dao.mapper.cischema;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.module.cmdb.annotation.CiId;
-import neatlogic.module.cmdb.annotation.CreateCiView;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -43,45 +42,30 @@ public interface CiSchemaMapper {
     //void insertAttrSchema(@Param("tableName") String tableName, @Param("columnList") List<AttrVo.Column> columnList);
     List<Map<String, String>> testCiViewSql(String sql);
 
-    @CreateCiView
+    //@CreateCiView
     void insertAttrToCiTable(@CiId Long ciId, @Param("tableName") String tableName, @Param("attrVo") AttrVo attrVo);
 
     void updateAttrConfig(@CiId Long ciId, @Param("tableName") String tableName, @Param("attrVo") AttrVo attrVo);
 
-    //@CreateCiView
+    //创建模型和编辑模型时使用
     void insertCiTable(@CiId Long ciId, @Param("tableName") String tableName);
 
     void insertCiView(String sql);
 
     void addAttrIndex(@Param("tableName") String tableName, @Param("attrId") Long attrId);
 
-    //void insertCiAttrSchema(@Param("tableName") String tableName);
-
-    //void insertRelSchema(@Param("tableName") String tableName);
-
-    //void insertCiEntity(@Param("tableName") String tableName, @Param("ciEntityVo") CiEntityVo ciEntityVo);
-
-    //void insertRelEntity(@Param("tableName") String tableName, @Param("ciEntityVo") CiEntityVo ciEntityVo);
-
-    //void replaceSchemaAudit(SchemaAuditVo schemaAuditvo);
     void deleteAttrIndex(@Param("tableName") String tableName, @Param("attrId") Long attrId);
 
-    @CreateCiView
+    //@CreateCiView
     void deleteAttrFromCiTable(@CiId Long ciId, @Param("tableName") String tableName, @Param("attrVo") AttrVo attrVo);
 
-    @CreateCiView
+    //@CreateCiView
     void initCiTable(@CiId Long ciId, @Param("ciVo") CiVo ciVo);
 
 
+    //@DeleteCiView
     void deleteCiTable(@CiId Long ciId, @Param("tableName") String tableName);
 
     void deleteCiView(@Param("tableName") String tableName);
-    //void deleteRelSchema(@Param("tableName") String tableName);
-
-    //void deleteCiEntityById(@Param("tableName") String tableName, @Param("ciEntityId") Long ciEntityId);
-
-    //void deleteCiEntityRelByCiEntityId(@Param("tableName") String tableName, @Param("ciEntityId") Long ciEntityId);
-
-    //void deleteSchemaAuditById(Long auditId);
 
 }
