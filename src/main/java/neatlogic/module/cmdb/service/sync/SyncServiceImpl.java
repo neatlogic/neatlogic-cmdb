@@ -116,6 +116,7 @@ public class SyncServiceImpl implements SyncService {
                 syncAuditVo.setCiCollectionId(ciCollectionVo.getId());
                 List<SyncAuditVo> syncAuditList = syncAuditMapper.searchSyncAudit(syncAuditVo);
                 if (!syncAuditList.isEmpty()) {
+                    ciCollectionVo.setLastAuditId(syncAuditList.get(0).getId());
                     ciCollectionVo.setStatus(syncAuditList.get(0).getStatus());
                     ciCollectionVo.setError(syncAuditList.get(0).getError());
                 }

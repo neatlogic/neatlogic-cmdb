@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.sync;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
@@ -73,7 +74,7 @@ public class SearchSyncCiCollectionApi extends PrivateApiComponentBase {
     @Description(desc = "nmcas.searchsynccicollectionapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        SyncCiCollectionVo syncCiCollectionVo = JSONObject.toJavaObject(jsonObj, SyncCiCollectionVo.class);
+        SyncCiCollectionVo syncCiCollectionVo = JSON.toJavaObject(jsonObj, SyncCiCollectionVo.class);
         if (StringUtils.isNotBlank(jsonObj.getString("collectionType")) && StringUtils.isBlank(jsonObj.getString("collectionName"))) {
             Query query = new Query();
             query.addCriteria(Criteria.where("collection").is(jsonObj.getString("collectionType")));

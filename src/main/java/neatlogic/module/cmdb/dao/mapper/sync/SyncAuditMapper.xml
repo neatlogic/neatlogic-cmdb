@@ -70,6 +70,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </where>
     </sql>
 
+    <select id="getSyncAuditById" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.sync.SyncAuditVo">
+        select id,
+               status,
+               data_count           as dataCount,
+               current_data_id      as currentDataId,
+               ci_collection_id     as ciCollectionId,
+               transaction_group_id as transactionGroupId,
+               config               as configStr
+        from cmdb_sync_audit
+        where id = #{value}
+    </select>
+
+    <select id="getSyncAuditStatusById" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.sync.SyncAuditVo">
+        select id, status
+        from cmdb_sync_audit
+        where id = #{value}
+    </select>
+
     <select id="searchSyncDataAuditCount" parameterType="neatlogic.framework.cmdb.dto.sync.SyncDataAuditVo"
             resultType="int">
         select count(1)
@@ -135,7 +155,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                a.error                AS error
         from cmdb_sync_audit a
         where a.server_id = #{value}
-          and a.status = 'doing'
+          and (a.status = 'doing' or a.status = 'pausing')
     </select>
 
     <select id="getDoingSyncByCiId" parameterType="java.lang.Long"
@@ -153,23 +173,33 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                  join cmdb_sync_ci_collection b on
             a.ci_collection_id = b.id
         where b.ci_id = #{value}
-          and a.status = 'doing'
+          and (a.status = 'doing' or a.status = 'pausing')
     </select>
 
     <update id="updateSyncAuditDataCount" parameterType="neatlogic.framework.cmdb.dto.sync.SyncAuditVo">
         UPDATE
             cmdb_sync_audit
-        SET data_count=#{dataCount}
+        SET data_count      = #{dataCount},
+            current_data_id = #{currentDataId}
         WHERE id = #{id}
     </update>
 
-    <update id="updateSyncAuditStatus" parameterType="neatlogic.framework.cmdb.dto.sync.SyncAuditVo">
+    <update id="updateSyncAuditToStart" parameterType="neatlogic.framework.cmdb.dto.sync.SyncAuditVo">
+        UPDATE
+            cmdb_sync_audit
+        SET status = #{status}
+        where id = #{id}
+    </update>
+
+    <update id="updateSyncAuditToEnd" parameterType="neatlogic.framework.cmdb.dto.sync.SyncAuditVo">
         UPDATE
         cmdb_sync_audit
         SET
         end_time = NOW(3),
-        status = #{status},
-        data_count=#{dataCount}
+        status = #{status}
+        <if test="dataCount != null">
+            ,data_count = #{dataCount}
+        </if>
         <if test="error != null and error != ''">
             ,error = #{error,typeHandler=CompressHandler}
         </if>
@@ -183,14 +213,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                                      input_from,
                                      status,
                                      transaction_group_id,
-                                     server_id)
+                                     server_id,
+                                     config)
         VALUES (#{id},
                 #{ciCollectionId},
                 NOW(3),
                 #{inputFrom},
                 #{status},
                 #{transactionGroupId},
-                #{serverId})
+                #{serverId},
+                #{configStr, typeHandler=CompressHandler})
     </insert>
 
     <insert id="insertSyncDataAudit" parameterType="neatlogic.framework.cmdb.dto.sync.SyncDataAuditVo">

@@ -72,6 +72,7 @@ public class LaunchSyncCollectionApi extends PrivateApiComponentBase {
     }
 
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "term.cmdb.syncid"),
+            @Param(name = "auditId", type = ApiParamType.LONG, desc = "执行记录id"),
             @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.syncidlist"),
             @Param(name = "conditionList", type = ApiParamType.JSONARRAY, desc = "条件列表"),
             @Param(name = "collectionList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.collectionlist"),
@@ -85,6 +86,7 @@ public class LaunchSyncCollectionApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Integer isAll = jsonObj.getInteger("isAll");
         Long id = jsonObj.getLong("id");
+        Long auditId = jsonObj.getLong("auditId");
         JSONArray idList = jsonObj.getJSONArray("idList");
         JSONArray collectionList = jsonObj.getJSONArray("collectionList");
         JSONArray collectionObjList = jsonObj.getJSONArray("collectionObjList");

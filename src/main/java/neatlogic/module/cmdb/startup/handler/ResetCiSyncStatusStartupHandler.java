@@ -48,7 +48,7 @@ public class ResetCiSyncStatusStartupHandler extends StartupBase {
             for (SyncAuditVo audit : auditList) {
                 audit.setStatus(SyncStatus.DONE.getValue());
                 audit.setError("系统重启，作业终止");
-                syncAuditMapper.updateSyncAuditStatus(audit);
+                syncAuditMapper.updateSyncAuditToEnd(audit);
             }
         }
         return 0;

@@ -245,7 +245,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     </resultMap>
 
     <select id="searchSyncCiCollection" parameterType="neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo"
-            resultType="neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo" resultMap="syncCiCollectionMap">
+            resultMap="syncCiCollectionMap">
         SELECT t.*,
         c.id as policyId,
         c.name AS policyName,

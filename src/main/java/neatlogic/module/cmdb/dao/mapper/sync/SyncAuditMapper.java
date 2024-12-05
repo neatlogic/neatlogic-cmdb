@@ -30,6 +30,10 @@ public interface SyncAuditMapper {
 
     List<SyncDataAuditVo> searchSyncDataAudit(SyncDataAuditVo syncDataAuditVo);
 
+    SyncAuditVo getSyncAuditStatusById(Long id);
+
+    SyncAuditVo getSyncAuditById(Long id);
+
     int searchSyncDataAuditCount(SyncDataAuditVo syncDataAuditVo);
 
     int searchSyncAuditCount(SyncAuditVo syncAuditVo);
@@ -38,7 +42,9 @@ public interface SyncAuditMapper {
 
     void insertSyncDataAudit(SyncDataAuditVo syncDataAuditVo);
 
-    void updateSyncAuditStatus(SyncAuditVo syncAuditVo);
+    void updateSyncAuditToEnd(SyncAuditVo syncAuditVo);
+
+    void updateSyncAuditToStart(SyncAuditVo syncAuditVo);
 
     void updateSyncAuditDataCount(SyncAuditVo syncAuditVo);
 
