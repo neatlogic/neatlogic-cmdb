@@ -62,7 +62,7 @@ public class SearchSyncAuditApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "ciCollectionId", type = ApiParamType.LONG, desc = "采集映射配置id"),
             @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "id列表，用于精确查找"),
-            @Param(name = "status", type = ApiParamType.ENUM, rule = "doing,done", desc = "状态"),
+            @Param(name = "status", type = ApiParamType.ENUM, rule = "doing,done,paused,pausing", desc = "状态"),
             @Param(name = "startTimeRange", type = ApiParamType.JSONARRAY, desc = "开始时间范围"),
             @Param(name = "endTimeRange", type = ApiParamType.JSONARRAY, desc = "结束时间范围")})
     @Output({@Param(name = "tbodyList", explode = SyncAuditVo[].class), @Param(explode = BasePageVo.class)})
