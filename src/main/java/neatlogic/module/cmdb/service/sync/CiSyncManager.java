@@ -20,6 +20,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSONPath;
 import com.mongodb.BasicDBObject;
+import com.mongodb.MongoCursorNotFoundException;
 import com.mongodb.client.MongoCursor;
 import neatlogic.framework.asynchronization.thread.NeatLogicThread;
 import neatlogic.framework.asynchronization.threadlocal.InputFromContext;
@@ -120,10 +121,12 @@ public class CiSyncManager {
         private final List<CollectionVo> collectionList;
         private final HashMap<Integer, Object> filterLock = new HashMap<>();
         private JSONObject singleDataObj;
+        private final int MAX_RETRY_TIMES = 5;//尝试重新获取cursor最大次数
 
         private String batchTag;//批量标签，用于确定一定范围数据
-
         private Long startTime;//结合批量标签一起使用，用于提高索引性能
+        private int retry_times = 0;//尝试重新获取cursor次数;
+
         private final String mode;//如果是batch模式，代表批量更新，如果是single模式，接受单条数据更新
         int CAPACITY = 5000;//缓存大小
         private final Map<Integer, List<CiEntityVo>> ciEntityCache = new LinkedHashMap<Integer, List<CiEntityVo>>(CAPACITY, 0.75F, true) {//用户缓存检索数据，提升效率
@@ -794,6 +797,42 @@ public class CiSyncManager {
         }
 
 
+        private Query buildQuery(SyncCiCollectionVo syncCiCollectionVo) {
+            CollectionVo collectionVo = getCollectionByName(syncCiCollectionVo.getCollectionName());
+            Criteria finalCriteria = new Criteria();
+            List<Criteria> criteriaList = new ArrayList<>();
+            criteriaList.add(collectionVo.getFilterCriteria());
+            Query query = new Query();
+            //获取手动触发传入的条件
+            if (CollectionUtils.isNotEmpty(syncCiCollectionVo.getConditionList())) {
+                criteriaList.add(syncCiCollectionVo.getCriteria());
+            }
+            //获取定时策略中传入的条件
+            if (syncCiCollectionVo.getSyncPolicy() != null) {
+                criteriaList.add(syncCiCollectionVo.getSyncPolicy().getCriteria());
+            }
+
+            if (StringUtils.isNotBlank(this.batchTag)) {
+                criteriaList.add(Criteria.where("_batch_tag").is(this.batchTag));
+                if (this.startTime != null) {
+                    criteriaList.add(Criteria.where("_renewtime").gte(convertToIsoDate(this.startTime)));
+                }
+            }
+
+            //如果有currentDataId，则从中断的位置开始执行
+            if (StringUtils.isNotBlank(syncCiCollectionVo.getSyncAudit().getCurrentDataId())) {
+                criteriaList.add(Criteria.where("_id").gt(new ObjectId(syncCiCollectionVo.getSyncAudit().getCurrentDataId())));
+            }
+
+            //#############测试用条件，使用后注释掉
+            //criteriaList.add(Criteria.where("MGMT_IP").is("10.244.41.104"));
+            //#############测试用条件
+            finalCriteria.andOperator(criteriaList);
+            query.addCriteria(finalCriteria);
+            return query;
+        }
+
+
         /**
          * 批量执行方式
          */
@@ -811,9 +850,9 @@ public class CiSyncManager {
                             throw new CiIsAbstractedException(CiIsAbstractedException.Type.DATA, ciVo.getLabel() + "(" + ciVo.getName() + ")");
                         }
 
-                        Criteria finalCriteria = new Criteria();
-                        List<Criteria> criteriaList = new ArrayList<>();
-                        criteriaList.add(collectionVo.getFilterCriteria());
+                        //Criteria finalCriteria = new Criteria();
+                        //List<Criteria> criteriaList = new ArrayList<>();
+                        //criteriaList.add(collectionVo.getFilterCriteria());
 
                         if (CollectionUtils.isNotEmpty(syncCiCollectionVo.getMappingList())) {
                             Set<String> fieldList = new HashSet<>();
@@ -823,37 +862,41 @@ public class CiSyncManager {
                                 }
                             }
                             if (CollectionUtils.isNotEmpty(fieldList)) {
-                                Query query = new Query();
-                                //获取手动触发传入的条件
-                                if (CollectionUtils.isNotEmpty(syncCiCollectionVo.getConditionList())) {
-                                    criteriaList.add(syncCiCollectionVo.getCriteria());
-                                }
-                                //获取定时策略中传入的条件
-                                if (syncCiCollectionVo.getSyncPolicy() != null) {
-                                    criteriaList.add(syncCiCollectionVo.getSyncPolicy().getCriteria());
-                                }
-                                //如果不提供批次标签，则只更新上次同步以来新的集合数据进行同步
-                                if (StringUtils.isBlank(this.batchTag)) {
-                                    if (syncCiCollectionVo.getLastSyncDate() != null) {
-                                        criteriaList.add(Criteria.where("_updatetime").gt(convertToIsoDate(syncCiCollectionVo.getLastSyncDate())));
-                                    }
-                                } else {
-                                    criteriaList.add(Criteria.where("_batch_tag").is(this.batchTag));
-                                    if (this.startTime != null) {
-                                        criteriaList.add(Criteria.where("_renewtime").gte(convertToIsoDate(this.startTime)));
-                                    }
-                                }
+                                Query query = buildQuery(syncCiCollectionVo);
+//                                Query query = new Query();
+//                                //获取手动触发传入的条件
+//                                if (CollectionUtils.isNotEmpty(syncCiCollectionVo.getConditionList())) {
+//                                    criteriaList.add(syncCiCollectionVo.getCriteria());
+//                                }
+//                                //获取定时策略中传入的条件
+//                                if (syncCiCollectionVo.getSyncPolicy() != null) {
+//                                    criteriaList.add(syncCiCollectionVo.getSyncPolicy().getCriteria());
+//                                }
+//                                //如果不提供批次标签，则只更新上次同步以来新的集合数据进行同步
+//                                if (StringUtils.isBlank(this.batchTag)) {
+//                                    //通过hash来判断数据是否有变化，不需要再使用_updatetime
+//                                    /*if (syncCiCollectionVo.getLastSyncDate() != null) {
+//                                        criteriaList.add(Criteria.where("_updatetime").gt(convertToIsoDate(syncCiCollectionVo.getLastSyncDate())));
+//                                    }*/
+//                                } else {
+//                                    criteriaList.add(Criteria.where("_batch_tag").is(this.batchTag));
+//                                    if (this.startTime != null) {
+//                                        criteriaList.add(Criteria.where("_renewtime").gte(convertToIsoDate(this.startTime)));
+//                                    }
+//                                }
+//
+//                                //如果有currentDataId，则从中断的位置开始执行
+//                                if (StringUtils.isNotBlank(syncCiCollectionVo.getSyncAudit().getCurrentDataId())) {
+//                                    criteriaList.add(Criteria.where("_id").gt(new ObjectId(syncCiCollectionVo.getSyncAudit().getCurrentDataId())));
+//                                }
+//
+//                                //#############测试用条件，使用后注释掉
+//                                //criteriaList.add(Criteria.where("MGMT_IP").is("10.244.41.104"));
+//                                //#############测试用条件
+//                                finalCriteria.andOperator(criteriaList);
+//                                query.addCriteria(finalCriteria);
 
-                                //如果有currentDataId，则从中断的位置开始执行
-                                if (StringUtils.isNotBlank(syncCiCollectionVo.getSyncAudit().getCurrentDataId())) {
-                                    criteriaList.add(Criteria.where("_id").gt(new ObjectId(syncCiCollectionVo.getSyncAudit().getCurrentDataId())));
-                                }
 
-                                //#############测试用条件，使用后注释掉
-                                //criteriaList.add(Criteria.where("MGMT_IP").is("10.244.41.104"));
-                                //#############测试用条件
-                                finalCriteria.andOperator(criteriaList);
-                                query.addCriteria(finalCriteria);
                                 int batchSize = 100;//游标每次读取100条数据
                                 int dc = syncCiCollectionVo.getSyncAudit().getDataCount() != null ? syncCiCollectionVo.getSyncAudit().getDataCount() : 0;
                                 AtomicInteger count = new AtomicInteger(dc);
@@ -864,61 +907,98 @@ public class CiSyncManager {
                                     logger.info("从mongodb查询需同步数据，集合名称：{}，过滤条件：{}", collectionVo.getCollection(), query.getQueryObject());
                                     logger.info("符合条件文档数量：{}", mongoTemplate.getCollection(collectionVo.getCollection()).countDocuments(query.getQueryObject()));
                                 }*/
-                                try (MongoCursor<Document> cursor = mongoTemplate.getCollection(collectionVo.getCollection())
-                                        .find(query.getQueryObject())
-                                        .sort(new BasicDBObject("_id", 1))
-                                        .noCursorTimeout(true)
-                                        .batchSize(batchSize).cursor()) {
-                                    List<JSONObject> dataList = new ArrayList<>();
-                                    while (cursor.hasNext()) {
-                                        counter += 1;
-                                        sum += 1;
-                                        Document doc = cursor.next();
-                                        String id = null;
-                                        Object idObject = doc.get("_id");
-                                        if (idObject instanceof ObjectId) {
-                                            id = idObject.toString(); // 转换为字符串
-                                        }
-                                        String jsonStr = doc.toJson();
-                                        logger.info("开始处理第{}个文档：{}", sum, jsonStr);
-                                        if (StringUtils.isNotBlank(collectionVo.getDocroot())) {
-                                            JSONArray objList = (JSONArray) JSONPath.read(jsonStr, "$." + collectionVo.getDocroot());
-                                            //logger.info("从第{}个文档中提取 {} 位置的数据，得到{}条数据", sum, "$." + collectionVo.getDocroot(), objList.size());
-                                            for (int i = 0; i < objList.size(); i++) {
-                                                JSONObject dataObj = objList.getJSONObject(i);
-                                                //记录mongodb原数据id
-                                                dataObj.put("_id", id);
-                                                dataList.add(dataObj);
+                                while (true) {
+                                    try (MongoCursor<Document> cursor = mongoTemplate.getCollection(collectionVo.getCollection())
+                                            .find(query.getQueryObject())
+                                            .sort(new BasicDBObject("_id", 1))
+                                            .noCursorTimeout(true)
+                                            .batchSize(batchSize).cursor()) {
+                                        List<JSONObject> dataList = new ArrayList<>();
+                                        while (cursor.hasNext()) {
+                                            //每次循环先检查状态，如果停止则直接跳出
+                                            SyncAuditVo auditStatus = syncAuditMapper.getSyncAuditStatusById(syncCiCollectionVo.getSyncAudit().getId());
+                                            if (auditStatus != null && auditStatus.getStatus().equals(SyncStatus.PAUSING.getValue())) {
+                                                syncCiCollectionVo.getSyncAudit().setStatus(SyncStatus.PAUSING.getValue());
+                                                break;
                                             }
-                                        } else {
-                                            JSONObject orgDataObj = JSON.parseObject(jsonStr);
-                                            //记录mongodb原数据id
-                                            orgDataObj.put("_id", id);
-                                            dataList.add(orgDataObj);
-                                        }
 
-                                        //到达batchSize先处理一部分
-                                        if (counter == batchSize) {
+                                            counter += 1;
+                                            sum += 1;
+                                            Document doc = cursor.next();
+                                            Object idObject = doc.get("_id");
+                                            if (idObject == null) {
+                                                throw new ApiRuntimeException("文档数据缺少系统字段_id");
+                                            }
+                                            String id = idObject.toString();
+                                            String jsonStr = doc.toJson();
+                                            //检查数据是否已经同步过，如果对比没有更新则不做同步
+                                            SyncDataHashVo hashVo = syncAuditMapper.getSyncDataHashById(id, syncCiCollectionVo.getCollectionName());
+                                            if (hashVo == null) {
+                                                hashVo = new SyncDataHashVo(id, jsonStr, syncCiCollectionVo.getCollectionName());
+                                                syncAuditMapper.saveSyncDataHash(hashVo);
+                                            } else {
+                                                SyncDataHashVo newHashVo = new SyncDataHashVo(id, jsonStr, syncCiCollectionVo.getCollectionName());
+                                                if (hashVo.getDataHash().equalsIgnoreCase(newHashVo.getDataHash())) {
+                                                    //如果hash相等，则刷新更新时间，然后跳过
+                                                    syncAuditMapper.saveSyncDataHash(hashVo);
+                                                    continue;
+                                                } else {
+                                                    //如果hash不相等，更新hash
+                                                    syncAuditMapper.saveSyncDataHash(hashVo);
+                                                }
+                                            }
+
+                                            logger.info("开始处理第{}个文档：{}", sum, jsonStr);
+                                            if (StringUtils.isNotBlank(collectionVo.getDocroot())) {
+                                                JSONArray objList = (JSONArray) JSONPath.read(jsonStr, "$." + collectionVo.getDocroot());
+                                                //logger.info("从第{}个文档中提取 {} 位置的数据，得到{}条数据", sum, "$." + collectionVo.getDocroot(), objList.size());
+                                                for (int i = 0; i < objList.size(); i++) {
+                                                    JSONObject dataObj = objList.getJSONObject(i);
+                                                    //记录mongodb原数据id
+                                                    dataObj.put("_id", id);
+                                                    dataList.add(dataObj);
+                                                }
+                                            } else {
+                                                JSONObject orgDataObj = JSON.parseObject(jsonStr);
+                                                //记录mongodb原数据id
+                                                orgDataObj.put("_id", id);
+                                                dataList.add(orgDataObj);
+                                            }
+
+                                            //到达batchSize先处理一部分
+                                            if (counter == batchSize) {
+                                                batchnum += 1;
+                                                //logger.info("第{}批次，处理{}条数据", batchnum, dataList.size());
+                                                dealWithDataBatch(syncCiCollectionVo, fieldList, dataList, count);
+                                                if (syncCiCollectionVo.getSyncAudit().getStatus().equals(SyncStatus.PAUSING.getValue())) {
+                                                    break;
+                                                }
+                                                dataList = new ArrayList<>();
+                                                counter = 0;
+                                            }
+                                        }
+                                        //处理剩余的数据
+                                        if (CollectionUtils.isNotEmpty(dataList)) {
                                             batchnum += 1;
                                             //logger.info("第{}批次，处理{}条数据", batchnum, dataList.size());
                                             dealWithDataBatch(syncCiCollectionVo, fieldList, dataList, count);
                                             if (syncCiCollectionVo.getSyncAudit().getStatus().equals(SyncStatus.PAUSING.getValue())) {
                                                 break;
                                             }
-                                            dataList = new ArrayList<>();
-                                            counter = 0;
                                         }
-                                    }
-                                    //处理剩余的数据
-                                    if (CollectionUtils.isNotEmpty(dataList)) {
-                                        batchnum += 1;
-                                        //logger.info("第{}批次，处理{}条数据", batchnum, dataList.size());
-                                        dealWithDataBatch(syncCiCollectionVo, fieldList, dataList, count);
-                                        if (syncCiCollectionVo.getSyncAudit().getStatus().equals(SyncStatus.PAUSING.getValue())) {
-                                            break;
+                                        syncCiCollectionVo.getSyncAudit().setDataCount(count.get());
+
+                                        //跳出死循环!!
+                                        break;
+                                    } catch (MongoCursorNotFoundException ex) {
+                                        //生成query重新获取cursor，重试超过指定次数抛异常
+                                        if (retry_times >= MAX_RETRY_TIMES) {
+                                            throw ex;
                                         }
+                                        retry_times += 1;
+                                        logger.error("{}\n第{}次尝试重新获取游标", ex.getMessage(), retry_times, ex);
+                                        query = buildQuery(syncCiCollectionVo);
                                     }
-                                    syncCiCollectionVo.getSyncAudit().setDataCount(count.get());
                                 }
                             }
                         }
@@ -1031,6 +1111,8 @@ public class CiSyncManager {
                         //记录异常数据
                         syncDataAuditVo.setErrorList(dataErrorList);
                         syncAuditMapper.insertSyncDataAudit(syncDataAuditVo);
+                        //如果有异常数据，删除hash的记录，这样下一次同步还会重新处理
+                        syncAuditMapper.deleteSyncDataHashById(syncDataAuditVo.getDataId(), syncCiCollectionVo.getCollectionName());
                     } else {
                         //没有异常则删除异常数据
                         syncAuditMapper.deleteSyncDataAuditByDataIdAndCollectionId(syncDataAuditVo.getDataId(), syncDataAuditVo.getCiCollectionId());
@@ -1235,24 +1317,24 @@ public class CiSyncManager {
             if (CollectionUtils.isNotEmpty(initiativeCollectList)) {
                 List<SyncCiCollectionVo> syncList = new ArrayList<>();
                 for (SyncCiCollectionVo syncCiCollectionVo : initiativeCollectList) {
-                    if (CollectionUtils.isEmpty(syncAuditMapper.getDoingSyncByCiId(syncCiCollectionVo.getCiId()))) {
-                        TransactionGroupVo transactionGroupVo = new TransactionGroupVo();
-                        SyncAuditVo syncAuditVo = new SyncAuditVo();
-                        syncAuditVo.setStatus(SyncStatus.DOING.getValue());
-                        syncAuditVo.setCiCollectionId(syncCiCollectionVo.getId());
-                        syncAuditVo.setTransactionGroupId(transactionGroupVo.getId());
-                        syncAuditVo.setInputFrom(InputFromContext.get().getInputFrom());
-                        if (StringUtils.isNotBlank(batchTag) && startTime != null) {
-                            JSONObject config = new JSONObject();
-                            config.put("batchTag", batchTag);
-                            config.put("startTime", startTime);
-                            syncAuditVo.setConfig(config);
-                        }
-                        syncAuditMapper.insertSyncAudit(syncAuditVo);
-                        syncCiCollectionVo.setSyncAudit(syncAuditVo);
-                        syncCiCollectionVo.setTransactionGroup(transactionGroupVo);
-                        syncList.add(syncCiCollectionVo);
+                    //if (CollectionUtils.isEmpty(syncAuditMapper.getDoingSyncByCiId(syncCiCollectionVo.getCiId()))) {
+                    TransactionGroupVo transactionGroupVo = new TransactionGroupVo();
+                    SyncAuditVo syncAuditVo = new SyncAuditVo();
+                    syncAuditVo.setStatus(SyncStatus.DOING.getValue());
+                    syncAuditVo.setCiCollectionId(syncCiCollectionVo.getId());
+                    syncAuditVo.setTransactionGroupId(transactionGroupVo.getId());
+                    syncAuditVo.setInputFrom(InputFromContext.get().getInputFrom());
+                    if (StringUtils.isNotBlank(batchTag) && startTime != null) {
+                        JSONObject config = new JSONObject();
+                        config.put("batchTag", batchTag);
+                        config.put("startTime", startTime);
+                        syncAuditVo.setConfig(config);
                     }
+                    syncAuditMapper.insertSyncAudit(syncAuditVo);
+                    syncCiCollectionVo.setSyncAudit(syncAuditVo);
+                    syncCiCollectionVo.setTransactionGroup(transactionGroupVo);
+                    syncList.add(syncCiCollectionVo);
+                    //}
                 }
                 if (CollectionUtils.isNotEmpty(syncList)) {
                     SyncHandler handler = new SyncHandler(syncList, batchTag, startTime);

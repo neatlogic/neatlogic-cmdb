@@ -176,6 +176,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
           and (a.status = 'doing' or a.status = 'pausing')
     </select>
 
+    <select id="getSyncDataHashById"
+            resultType="neatlogic.framework.cmdb.dto.sync.SyncDataHashVo">
+        select data_id         as dataId,
+               data_hash       as dataHash,
+               update_time     as updateTime,
+               collection_name as collectionName
+        from cmdb_sync_data_hash
+        where data_id = #{dataId}
+          and collection_name = #{collectionName}
+    </select>
+
     <update id="updateSyncAuditDataCount" parameterType="neatlogic.framework.cmdb.dto.sync.SyncAuditVo">
         UPDATE
             cmdb_sync_audit
@@ -243,6 +254,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                                 error    = #{errorListStr, typeHandler=CompressHandler}
     </insert>
 
+    <insert id="saveSyncDataHash" parameterType="neatlogic.framework.cmdb.dto.sync.SyncDataHashVo">
+        insert into cmdb_sync_data_hash
+        (data_id,
+         data_hash,
+         update_time,
+         collection_name)
+        values (#{dataId},
+                #{dataHash},
+                now(),
+                #{collectionName})
+        on duplicate key update data_hash   = #{dataHash},
+                                update_time = now()
+    </insert>
+
     <delete id="deleteSyncAuditById" parameterType="java.lang.Long">
         delete
         from cmdb_sync_audit
@@ -262,5 +287,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         from cmdb_sync_data_audit
         where data_id = #{dataId}
           and ci_collection_id = #{ciCollectionId}
+    </delete>
+
+    <delete id="deleteSyncDataHashById">
+        delete
+        from cmdb_sync_data_hash
+        where data_id = #{dataId}
+          and collection_name = #{collectionName}
     </delete>
 </mapper>

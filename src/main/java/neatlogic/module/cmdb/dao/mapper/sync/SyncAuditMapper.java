@@ -17,6 +17,7 @@ package neatlogic.module.cmdb.dao.mapper.sync;
 
 import neatlogic.framework.cmdb.dto.sync.SyncAuditVo;
 import neatlogic.framework.cmdb.dto.sync.SyncDataAuditVo;
+import neatlogic.framework.cmdb.dto.sync.SyncDataHashVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -34,6 +35,8 @@ public interface SyncAuditMapper {
 
     SyncAuditVo getSyncAuditById(Long id);
 
+    SyncDataHashVo getSyncDataHashById(@Param("dataId") String dataId, @Param("collectionName") String collectionName);
+
     int searchSyncDataAuditCount(SyncDataAuditVo syncDataAuditVo);
 
     int searchSyncAuditCount(SyncAuditVo syncAuditVo);
@@ -48,9 +51,13 @@ public interface SyncAuditMapper {
 
     void updateSyncAuditDataCount(SyncAuditVo syncAuditVo);
 
+    void saveSyncDataHash(SyncDataHashVo syncDataHashVo);
+
     void deleteSyncAuditById(Long syncAuditId);
 
     void deleteAuditByDayBefore(int dayBefore);
+
+    void deleteSyncDataHashById(@Param("dataId") String dataId, @Param("collectionName") String collectionName);
 
     void deleteSyncDataAuditByDataIdAndCollectionId(@Param("dataId") String dataId, @Param("ciCollectionId") Long collectionId);
 
