@@ -57,6 +57,8 @@ public interface SyncAuditMapper {
 
     void deleteAuditByDayBefore(int dayBefore);
 
+    void deleteDataHashByDayBefore(int dayBefore);
+
     void deleteSyncDataHashById(@Param("dataId") String dataId, @Param("collectionName") String collectionName);
 
     void deleteSyncDataAuditByDataIdAndCollectionId(@Param("dataId") String dataId, @Param("ciCollectionId") Long collectionId);

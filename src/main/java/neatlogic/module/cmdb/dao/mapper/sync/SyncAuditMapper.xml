@@ -282,6 +282,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
           and a.end_time &lt; DATE_SUB(CURRENT_DATE, INTERVAL #{value} DAY)
     </delete>
 
+    <delete id="deleteDataHashByDayBefore" parameterType="int">
+        delete
+        from cmdb_sync_data_hash
+        where update_time &lt; DATE_SUB(CURRENT_DATE, INTERVAL #{value} DAY)
+    </delete>
+
     <delete id="deleteSyncDataAuditByDataIdAndCollectionId">
         delete
         from cmdb_sync_data_audit

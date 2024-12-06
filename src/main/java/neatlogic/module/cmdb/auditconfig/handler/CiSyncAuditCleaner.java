@@ -38,7 +38,9 @@ public class CiSyncAuditCleaner extends AuditCleanerBase {
     @Override
     protected void myClean(int dayBefore) {
         syncAuditMapper.deleteAuditByDayBefore(dayBefore);
+        syncAuditMapper.deleteDataHashByDayBefore(dayBefore);
         databaseFragmentMapper.rebuildTable(TenantContext.get().getDbName(), "cmdb_sync_audit");
         databaseFragmentMapper.rebuildTable(TenantContext.get().getDbName(), "cmdb_sync_data_audit");
+        databaseFragmentMapper.rebuildTable(TenantContext.get().getDbName(), "cmdb_sync_data_hash");
     }
 }
