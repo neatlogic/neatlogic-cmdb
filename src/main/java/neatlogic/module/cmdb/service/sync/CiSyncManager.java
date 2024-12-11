@@ -48,7 +48,9 @@ import neatlogic.framework.cmdb.exception.globalattr.GlobalAttrItemIsNotExistsEx
 import neatlogic.framework.cmdb.exception.sync.*;
 import neatlogic.framework.cmdb.utils.RelUtil;
 import neatlogic.framework.common.constvalue.InputFrom;
+import neatlogic.framework.config.ConfigManager;
 import neatlogic.framework.exception.core.ApiRuntimeException;
+import neatlogic.module.cmdb.config.CmdbTenantConfig;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
@@ -121,7 +123,7 @@ public class CiSyncManager {
         private final List<CollectionVo> collectionList;
         private final HashMap<Integer, Object> filterLock = new HashMap<>();
         private JSONObject singleDataObj;
-        private final int MAX_RETRY_TIMES = 5;//尝试重新获取cursor最大次数
+        private final int MAX_RETRY_TIMES = Integer.parseInt(ConfigManager.getConfig(CmdbTenantConfig.SYNC_MONGODB_CURSOR_MAX_RETRY));//尝试重新获取cursor最大次数
 
         private String batchTag;//批量标签，用于确定一定范围数据
         private Long startTime;//结合批量标签一起使用，用于提高索引性能
@@ -1036,7 +1038,8 @@ public class CiSyncManager {
             if (CollectionUtils.isNotEmpty(dataList)) {
                 BatchRunner<JSONObject> batchRunner = new BatchRunner<>();
                 BatchRunner.State state = new BatchRunner.State();
-                batchRunner.execute(state, dataList, 5, (threadIndex, dataIndex, data) -> {
+                int batchCount = Integer.parseInt(ConfigManager.getConfig(CmdbTenantConfig.SYNC_BATCH_RUNNER_COUNT));
+                batchRunner.execute(state, dataList, batchCount, (threadIndex, dataIndex, data) -> {
                     SyncAuditVo auditStatus = syncAuditMapper.getSyncAuditStatusById(syncCiCollectionVo.getSyncAudit().getId());
                     if (auditStatus != null && auditStatus.getStatus().equals(SyncStatus.PAUSING.getValue())) {
                         state.setPausing(true);
