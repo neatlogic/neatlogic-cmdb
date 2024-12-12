@@ -26,9 +26,6 @@ import neatlogic.framework.form.exception.AttributeValidException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
-import java.util.Set;
-
 /**
  * @author linbq
  * @since 2021/8/24 14:13
@@ -318,7 +315,7 @@ public class AccountsHandler extends FormHandlerBase {
         tableObj.put("value", valueArray);
         if (CollectionUtils.isNotEmpty(valueArray)) {
             tableObj.put("theadList", theadList);
-            JSONArray tbodyList = new JSONArray();
+//            JSONArray tbodyList = new JSONArray();
             for (int i = 0; i < valueArray.size(); i++) {
                 JSONObject valueObj = valueArray.getJSONObject(i);
                 valueObj.remove("actionType");
@@ -326,18 +323,18 @@ public class AccountsHandler extends FormHandlerBase {
                 valueObj.remove("lcu");
                 valueObj.remove("fcuVo");
                 valueObj.remove("lcuVo");
-                Set<Map.Entry<String, Object>> entrySet = valueObj.entrySet();
-                JSONObject tbodyObj = new JSONObject();
-                for (Map.Entry<String, Object> entry : entrySet) {
-                    tbodyObj.put(entry.getKey(), new JSONObject() {
-                        {
-                            this.put("text", entry.getValue());
-                        }
-                    });
-                }
-                tbodyList.add(tbodyObj);
+//                Set<Map.Entry<String, Object>> entrySet = valueObj.entrySet();
+//                JSONObject tbodyObj = new JSONObject();
+//                for (Map.Entry<String, Object> entry : entrySet) {
+//                    tbodyObj.put(entry.getKey(), new JSONObject() {
+//                        {
+//                            this.put("text", entry.getValue());
+//                        }
+//                    });
+//                }
+//                tbodyList.add(tbodyObj);
             }
-            tableObj.put("tbodyList", tbodyList);
+            tableObj.put("tbodyList", valueArray);
         }
         return tableObj;
     }
