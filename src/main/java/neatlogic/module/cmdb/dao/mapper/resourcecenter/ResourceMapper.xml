@@ -1458,7 +1458,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     <select id="getAppEnvById" parameterType="java.lang.Long" resultMap="resourceCenterMap">
         SELECT
             a.`id`,
-            a.`value` AS NAME,
+            a.`value` AS name,
             a.`sort` AS envSeqNo
         FROM `cmdb_global_attritem` a
         JOIN `cmdb_global_attr` b ON b.`id` = a.`attr_id` AND b.`name` = 'app_environment'
@@ -1468,7 +1468,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     <select id="getAppEnvListByIdList" parameterType="java.lang.Long" resultMap="resourceCenterMap">
         SELECT
         a.`id`,
-        a.`value` AS NAME,
+        a.`value` AS name,
         a.`sort` AS envSeqNo
         FROM `cmdb_global_attritem` a
         JOIN `cmdb_global_attr` b ON b.`id` = a.`attr_id` AND b.`name` = 'app_environment'
@@ -1561,7 +1561,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     <select id="getAppEnvByName" parameterType="java.lang.String" resultMap="resourceCenterMap">
         SELECT
             a.`id`,
-            a.`value` AS NAME,
+            a.`value` AS name,
             a.`sort` AS envSeqNo
         FROM `cmdb_global_attritem` a
         JOIN `cmdb_global_attr` b ON b.`id` = a.`attr_id` AND b.`name` = 'app_environment'
@@ -1607,7 +1607,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     <select id="searchAppEnvListByIdList" parameterType="java.lang.Long" resultMap="resourceCenterMap">
         SELECT
         a.`id`,
-        a.`value` AS NAME,
+        a.`value` AS name,
         a.`sort` AS envSeqNo
         FROM `cmdb_global_attritem` a
         JOIN `cmdb_global_attr` b ON b.`id` = a.`attr_id` AND b.`name` = 'app_environment'

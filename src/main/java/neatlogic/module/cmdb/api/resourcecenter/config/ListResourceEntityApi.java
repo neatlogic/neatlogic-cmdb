@@ -29,6 +29,7 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import neatlogic.module.cmdb.utils.ResourceEntityFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -73,7 +74,7 @@ public class ListResourceEntityApi extends PrivateApiComponentBase {
         List<ResourceEntityVo> resultList = new ArrayList<>();
         List<String> viewNameList = ResourceEntityFactory.getViewNameList();
         List<ResourceEntityVo> resourceEntityList = resourceEntityMapper.getResourceEntityListByNameList(viewNameList);
-        Map<String, ResourceEntityVo> resourceEntityVoMap = resourceEntityList.stream().collect(Collectors.toMap(e -> e.getName(), e -> e));
+        Map<String, ResourceEntityVo> resourceEntityVoMap = resourceEntityList.stream().collect(Collectors.toMap(ResourceEntityVo::getName, e -> e));
         List<SceneEntityVo> sceneEntityList = ResourceEntityFactory.getSceneEntityList();
         for (SceneEntityVo sceneEntityVo : sceneEntityList) {
             ResourceEntityVo resourceEntityVo = resourceEntityVoMap.get(sceneEntityVo.getName());
@@ -84,6 +85,17 @@ public class ListResourceEntityApi extends PrivateApiComponentBase {
             resourceEntityVo.setName(sceneEntityVo.getName());
             resourceEntityVo.setLabel(sceneEntityVo.getLabel());
             resourceEntityVo.setDescription(sceneEntityVo.getDescription());
+            try {
+                resourceEntityMapper.getResourceEntityViewDataList(sceneEntityVo.getName(), 0, 1);
+            } catch (Exception e) {
+                resourceEntityVo.setStatus(Status.ERROR.getValue());
+                String error = resourceEntityVo.getError();
+                if (StringUtils.isNotBlank(error)) {
+                    resourceEntityVo.setError(error + e.getMessage());
+                } else {
+                    resourceEntityVo.setError(e.getMessage());
+                }
+            }
             resultList.add(resourceEntityVo);
         }
         return resultList;
