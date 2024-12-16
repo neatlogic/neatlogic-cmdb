@@ -369,6 +369,7 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
             }
             matrixAttributeVo.setLabel(constAttrVo.getUuid());
             matrixAttributeVo.setName(constAttrVo.getAlias());
+            matrixAttributeVo.setDefaultUniqueIdentifier(constAttrVo.getName());
             matrixAttributeVo.setMatrixUuid(matrixUuid);
             matrixAttributeVo.setType(MatrixAttributeType.INPUT.getValue());
             matrixAttributeVo.setIsDeletable(0);
@@ -395,6 +396,7 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
             }
             matrixAttributeVo.setLabel(attrVo.getUuid());
             matrixAttributeVo.setName(attrVo.getAlias());
+            matrixAttributeVo.setDefaultUniqueIdentifier(attrVo.getName());
             matrixAttributeVo.setMatrixUuid(matrixUuid);
             matrixAttributeVo.setType(MatrixAttributeType.INPUT.getValue());
             matrixAttributeVo.setIsDeletable(0);
@@ -422,6 +424,7 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
             }
             matrixAttributeVo.setLabel(globalAttrVo.getUuid());
             matrixAttributeVo.setName(globalAttrVo.getAlias());
+            matrixAttributeVo.setDefaultUniqueIdentifier(globalAttrVo.getName());
             matrixAttributeVo.setMatrixUuid(matrixUuid);
             matrixAttributeVo.setType(MatrixAttributeType.INPUT.getValue());
             matrixAttributeVo.setIsDeletable(0);
