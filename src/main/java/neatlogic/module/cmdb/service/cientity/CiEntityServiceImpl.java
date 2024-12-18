@@ -830,9 +830,11 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     attrEntityData.clear();
                     attrEntityData.put("saveMode", saveMode);
                     attrEntityData.put("valueList", valueList);
+                    attrEntityData.put("actualValueList", AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValueList(attrVo, valueList));
                     attrEntityData.put("label", attrVo.getLabel());
                     attrEntityData.put("name", attrVo.getName());
                     attrEntityData.put("type", attrVo.getType());
+                    attrEntityData.put("config", attrVo.getConfig(true));
                     attrEntityData.put("ciId", attrVo.getCiId());
                     attrEntityData.put("targetCiId", attrVo.getTargetCiId());
                 } /*else {

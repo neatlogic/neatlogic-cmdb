@@ -152,7 +152,7 @@ public class CiEntityFormImportFileHandler extends FileTypeHandlerBase {
 
     private JSONObject analyseWorkbook(Workbook wb, Long ciId, String action, String editMode) {
         JSONObject resultObj = new JSONObject();
-        List<CiEntityVo> successList = new ArrayList();
+        List<CiEntityVo> successList = new ArrayList<>();
         /* 用来记录整个表格读取过程中的错误 */
         String error = "";
         InputStream in = null;
