@@ -776,7 +776,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                     schemaMapper.deleteTable(TenantContext.get().getDataDbName() + "." + viewName);
                 }
                 String sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + "." + viewName + " AS " + selectSql;
-                schemaMapper.insertView(sql);
+//                schemaMapper.insertView(sql);
             }).execute();
             if (s.isSucceed()) {
                 DataBaseViewInfoVo dataBaseViewInfoVo = new DataBaseViewInfoVo();
