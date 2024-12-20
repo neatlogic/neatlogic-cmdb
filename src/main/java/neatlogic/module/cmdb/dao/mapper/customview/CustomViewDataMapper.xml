@@ -107,10 +107,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                             <when test="attrFilter.expression == 'equal'">
                                 <choose>
                                     <when test="attrFilter.type == 'attr'">
-                                        `${attrFilter.attrUuid}_hash` = #{attrFilter.value,typeHandler=Md5Handler}
+                                        `${attrFilter.attrUuid}_hash` IN
+                                        <foreach collection="attrFilter.valueStringList" item="valueString" open="(" close=")" separator=",">
+                                            #{valueString,typeHandler=Md5Handler}
+                                        </foreach>
                                     </when>
                                     <otherwise>
-                                        `${attrFilter.attrUuid}` = #{attrFilter.value}
+                                        `${attrFilter.attrUuid}` IN
+                                        <foreach collection="attrFilter.valueStringList" item="valueString" open="(" close=")" separator=",">
+                                            #{valueString}
+                                        </foreach>
                                     </otherwise>
                                 </choose>
                             </when>
