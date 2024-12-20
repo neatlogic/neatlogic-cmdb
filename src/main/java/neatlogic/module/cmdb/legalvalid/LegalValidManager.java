@@ -181,7 +181,6 @@ public class LegalValidManager {
                             conditionObj.put(conditionVo.getUuid(), conditionVo.getValueList());
                         }
                     }
-
                 }
                 //将配置项参数处理成指定格式，格式和表达式相关，不能随意修改格式
                 JSONObject paramObj = new JSONObject();
