@@ -51,7 +51,7 @@ import neatlogic.module.cmdb.dao.mapper.cientity.RelEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper;
 import neatlogic.module.cmdb.matrix.constvalue.MatrixType;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
-import neatlogic.module.framework.dependency.handler.CiAttr2MatrixAttrDependencyHandler;
+import neatlogic.module.cmdb.dependency.CiAttr2MatrixAttrDependencyHandler;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
