@@ -25,6 +25,7 @@ import neatlogic.framework.cmdb.exception.attr.AttrValueIrregularException;
 import neatlogic.framework.file.dao.mapper.FileMapper;
 import neatlogic.framework.file.dto.FileVo;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -196,14 +197,16 @@ public class FileValueHandler implements IAttrValueHandler {
         if (CollectionUtils.isNotEmpty(valueList)) {
             for (int i = 0; i < valueList.size(); i++) {
                 String value = valueList.getString(i);
-                try {
-                    Long fileId = Long.valueOf(value);
-                    FileVo fileVo = fileMapper.getFileById(fileId);
-                    if (fileVo == null) {
+                if (StringUtils.isNotBlank(value)) {
+                    try {
+                        Long fileId = Long.valueOf(value);
+                        FileVo fileVo = fileMapper.getFileById(fileId);
+                        if (fileVo == null) {
+                            throw new AttrValueIrregularException(attrVo, value);
+                        }
+                    } catch (NumberFormatException ex) {
                         throw new AttrValueIrregularException(attrVo, value);
                     }
-                } catch (NumberFormatException ex) {
-                    throw new AttrValueIrregularException(attrVo, value);
                 }
             }
         }
