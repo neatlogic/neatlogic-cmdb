@@ -30,6 +30,7 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.cmdb.service.customview.CustomViewService;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -76,14 +77,16 @@ public class SearchPublicCustomViewApi extends PrivateApiComponentBase {
         CustomViewVo customViewVo = JSON.toJavaObject(paramObj, CustomViewVo.class);
         customViewVo.setType(CustomViewType.PUBLIC.getValue());
         List<CustomViewVo> viewList = customViewService.searchCustomView(customViewVo);
-        List<Long> idList = viewList.stream().map(CustomViewVo::getId).collect(Collectors.toList());
-        Map<Object, Integer> countMap = DependencyManager.getBatchDependencyCount(CmdbFromType.CMDBCUSTOMVIEW, idList);
-        for (CustomViewVo customView : viewList) {
-            Integer count = countMap.get(customView.getId());
-            if (count == null) {
-                count = 0;
+        if (CollectionUtils.isNotEmpty(viewList)) {
+            List<Long> idList = viewList.stream().map(CustomViewVo::getId).collect(Collectors.toList());
+            Map<Object, Integer> countMap = DependencyManager.getBatchDependencyCount(CmdbFromType.CMDBCUSTOMVIEW, idList);
+            for (CustomViewVo customView : viewList) {
+                Integer count = countMap.get(customView.getId());
+                if (count == null) {
+                    count = 0;
+                }
+                customView.setReferenceCount(count);
             }
-            customView.setReferenceCount(count);
         }
         return TableResultUtil.getResult(viewList, customViewVo);
     }
