@@ -1372,10 +1372,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         <foreach collection="ciList" item="ci">
             <choose>
                 <when test="ci.isVirtual == 0">
-                    JOIN ${ci.ciTableName} ON `ci_base`.id = ${ci.ciTableName}.cientity_id
+                    LEFT JOIN ${ci.ciTableName} ON `ci_base`.id = ${ci.ciTableName}.cientity_id
                 </when>
                 <otherwise>
-                    JOIN ${ci.ciTableName} ON `ci_base`.id = ${ci.ciTableName}.id
+                    LEFT JOIN ${ci.ciTableName} ON `ci_base`.id = ${ci.ciTableName}.id
                 </otherwise>
             </choose>
         </foreach>
@@ -1683,16 +1683,31 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     </update>
 
     <update id="updateCiEntity" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo">
-        UPDATE ${ciTableName}
-        SET
+        <!--兼容数据残缺的场景-->
+        INSERT INTO ${ciTableName}
+        (
+        <foreach collection="attrEntityList" item="attr">
+            <if test="attr.isNeedTargetCi == false and attr.fromCiId == ciId">
+                `${attr.attrId}`,
+                `${attr.attrId}_hash`,
+            </if>
+        </foreach>
+        cientity_id
+        ) VALUES (
+        <foreach collection="attrEntityList" item="attr">
+            <if test="attr.isNeedTargetCi == false and attr.fromCiId == ciId">
+                #{attr.value},
+                #{attr.value, typeHandler=Md5Handler},
+            </if>
+        </foreach>
+        #{id}
+        ) ON DUPLICATE KEY UPDATE
         <foreach collection="attrEntityList" item="attr">
             <if test="attr.isNeedTargetCi == false and attr.fromCiId == ciId">
                 `${attr.attrId}` = #{attr.value},
                 `${attr.attrId}_hash` = #{attr.value,typeHandler=Md5Handler},
             </if>
         </foreach>
-        cientity_id = #{id}
-        WHERE
         cientity_id = #{id}
     </update>
 
