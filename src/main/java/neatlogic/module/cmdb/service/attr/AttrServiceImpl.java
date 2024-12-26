@@ -56,6 +56,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
 
 @Service
 public class AttrServiceImpl implements AttrService {
@@ -94,6 +95,7 @@ public class AttrServiceImpl implements AttrService {
         handler.afterInsert(attrVo);
         if (!handler.isNeedTargetCi()) {
             //由于以下操作是DDL操作，所以需要使用EscapeTransactionJob避开当前事务，否则在进行DDL操作之前事务就会提交，如果DDL出错，则上面的事务就无法回滚了
+            CountDownLatch latch = new CountDownLatch(1);
             EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
                 try {
                     if (ciSchemaMapper.checkColumnIsExists(TenantContext.get().getDataDbName(), attrVo.getCiId(), attrVo.getId()) == 0) {
@@ -120,6 +122,8 @@ public class AttrServiceImpl implements AttrService {
                     if (!ex.getMessage().contains("Duplicate")) {
                         throw ex;
                     }
+                } finally {
+                    latch.countDown();
                 }
             }).execute();
             if (!s.isSucceed()) {
@@ -131,9 +135,17 @@ public class AttrServiceImpl implements AttrService {
             afterTransactionJob.execute(ciVo, ci -> {
                 ICiSchemaViewCrossoverMapper mapper = CrossoverServiceFactory.tryToGetApi(ICiSchemaViewCrossoverMapper.class);
                 if (mapper != null) {
+                    try {
+                        latch.await();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                     List<AttrVo> attrList = attrMapper.getAttrByCiId(ci.getId());
-                    ci.setAttrList(attrList);
-                    mapper.createCiView(ci);
+                    CiVo ciViewVo = new CiVo();
+                    ciViewVo.setId(ciVo.getId());
+                    ciViewVo.setName(ciVo.getName());
+                    ciViewVo.setAttrList(attrList);
+                    mapper.createCiView(ciViewVo);
                 }
             });
         }
@@ -167,6 +179,7 @@ public class AttrServiceImpl implements AttrService {
                 }
             }
             //由于以下操作是DDL操作，所以需要使用EscapeTransactionJob避开当前事务
+            CountDownLatch latch = new CountDownLatch(1);
             EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
                 try {
                     if (ciSchemaMapper.checkColumnIsExists(TenantContext.get().getDataDbName(), attrVo.getCiId(), attrVo.getId()) == 0) {
@@ -196,6 +209,8 @@ public class AttrServiceImpl implements AttrService {
                     if (!ex.getMessage().contains("Duplicate")) {
                         throw ex;
                     }
+                } finally {
+                    latch.countDown();
                 }
             }).execute();
             //编辑属性只是尝试创建字段，如果创建不成功代表字段已经存在，所以无需处理执行结果
@@ -208,9 +223,17 @@ public class AttrServiceImpl implements AttrService {
             afterTransactionJob.execute(ciVo, ci -> {
                 ICiSchemaViewCrossoverMapper mapper = CrossoverServiceFactory.tryToGetApi(ICiSchemaViewCrossoverMapper.class);
                 if (mapper != null) {
+                    try {
+                        latch.await();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                     List<AttrVo> attrList = attrMapper.getAttrByCiId(ci.getId());
-                    ci.setAttrList(attrList);
-                    mapper.createCiView(ci);
+                    CiVo ciViewVo = new CiVo();
+                    ciViewVo.setId(ciVo.getId());
+                    ciViewVo.setName(ciVo.getName());
+                    ciViewVo.setAttrList(attrList);
+                    mapper.createCiView(ciViewVo);
                 }
             });
         }
@@ -326,8 +349,11 @@ public class AttrServiceImpl implements AttrService {
             ICiSchemaViewCrossoverMapper mapper = CrossoverServiceFactory.tryToGetApi(ICiSchemaViewCrossoverMapper.class);
             if (mapper != null) {
                 List<AttrVo> allAttrList = attrMapper.getAttrByCiId(ci.getId());
-                ci.setAttrList(allAttrList);
-                mapper.createCiView(ci);
+                CiVo ciViewVo = new CiVo();
+                ciViewVo.setId(ci.getId());
+                ciViewVo.setName(ci.getName());
+                ciViewVo.setAttrList(allAttrList);
+                mapper.createCiView(ciViewVo);
             }
         });
     }

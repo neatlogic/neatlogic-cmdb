@@ -68,7 +68,7 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
         JSONArray dataList = new JSONArray();
         if (CollectionUtils.isNotEmpty(newCiList)) {
             Map<Long, CiVo> newCiMap = new HashMap<>();
-            for(CiVo ciVo : newCiList){
+            for (CiVo ciVo : newCiList) {
                 newCiMap.put(ciVo.getId(), ciVo);
             }
             for (CiVo ciVo : newCiList) {
@@ -279,7 +279,10 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
                     //补充物化视图(商业版本功能)
                     ICiSchemaViewCrossoverMapper mapper = CrossoverServiceFactory.tryToGetApi(ICiSchemaViewCrossoverMapper.class);
                     if (mapper != null) {
-                        mapper.createCiView(ciVo);
+                        CiVo ciViewVo = new CiVo();
+                        ciViewVo.setId(ciVo.getId());
+                        ciViewVo.setName(ciVo.getName());
+                        mapper.createCiView(ciViewVo);
                     }
                 } else {
                     //如果已存在但没有数据，重建表
@@ -308,8 +311,11 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
                         //补充物化视图(商业版本功能)
                         ICiSchemaViewCrossoverMapper mapper = CrossoverServiceFactory.tryToGetApi(ICiSchemaViewCrossoverMapper.class);
                         if (mapper != null) {
-                            ciVo.setAttrList(attrList);
-                            mapper.createCiView(ciVo);
+                            CiVo ciViewVo = new CiVo();
+                            ciViewVo.setId(ciVo.getId());
+                            ciViewVo.setName(ciVo.getName());
+                            ciViewVo.setAttrList(attrList);
+                            mapper.createCiView(ciViewVo);
                         }
                     }
                 }
@@ -662,7 +668,11 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
                 //补充物化视图(商业版本功能)
                 ICiSchemaViewCrossoverMapper mapper = CrossoverServiceFactory.tryToGetApi(ICiSchemaViewCrossoverMapper.class);
                 if (mapper != null) {
-                    mapper.createCiView(ciVo);
+                    CiVo ciViewVo = new CiVo();
+                    ciViewVo.setId(ciVo.getId());
+                    ciViewVo.setName(ciVo.getName());
+                    ciViewVo.setAttrList(attrList);
+                    mapper.createCiView(ciViewVo);
                 }
                 // 向动态表中插入数据
                 CiVo tempCi = ciVo;
