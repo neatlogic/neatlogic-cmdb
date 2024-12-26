@@ -77,7 +77,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         FROM
         cmdb_rel rel
         JOIN cmdb_ci ci ON rel.from_ci_id = ci.id
-        JOIN cmdb_view v ON rel.id = v.`item_id` AND v.`type` = 'relfrom' AND v.ci_id = #{ciId}
+        LEFT JOIN cmdb_view v ON rel.id = v.`item_id` AND v.`type` = 'relfrom' AND v.ci_id = #{ciId}
         WHERE ci.lft &lt;= ( SELECT lft FROM `cmdb_ci` WHERE id = #{ciId} )
         AND ci.rht &gt;= ( SELECT rht FROM `cmdb_ci` WHERE id = #{ciId} )
         UNION
@@ -95,7 +95,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         FROM
         cmdb_rel rel
         JOIN cmdb_ci ci ON rel.to_ci_id = ci.id
-         JOIN cmdb_view v
+        LEFT JOIN cmdb_view v
         ON rel.id = v.`item_id`
         AND v.`type` = 'relto'
         AND v.ci_id = #{ciId}
