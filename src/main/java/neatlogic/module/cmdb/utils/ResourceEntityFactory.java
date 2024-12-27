@@ -109,7 +109,7 @@ public class ResourceEntityFactory {
 //        }
 //    }
     static {
-        Reflections ref = new Reflections("neatlogic.framework.cmdb.dto.resourcecenter.sceneviewfielddeclare");
+        Reflections ref = new Reflections("neatlogic");
         Set<Class<?>> classList = ref.getTypesAnnotatedWith(ResourceType.class, true);
         for (Class<?> c : classList) {
             SceneEntityVo sceneEntityVo = null;
