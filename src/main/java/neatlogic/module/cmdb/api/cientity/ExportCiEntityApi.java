@@ -130,7 +130,7 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
         CiVo ciVo = ciMapper.getCiById(ciId);
         CiViewVo ciViewVo = new CiViewVo();
         ciViewVo.setCiId(ciEntityVo.getCiId());
-        List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo));
+        List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo), ciViewVo.getCiId());
         List<String> headerList = new ArrayList<>();
         headerList.add("id");
         headerList.add("uuid");

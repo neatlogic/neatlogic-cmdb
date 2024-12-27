@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.cientity;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
@@ -82,7 +83,7 @@ public class SearchDeleteCiEntityApi extends PrivateApiComponentBase {
     @Description(desc = "nmcac.searchdeletecientityapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        TransactionVo pTransactionVo = JSONObject.toJavaObject(jsonObj, TransactionVo.class);
+        TransactionVo pTransactionVo = JSON.toJavaObject(jsonObj, TransactionVo.class);
         pTransactionVo.setAction(TransactionActionType.DELETE.getValue());
         pTransactionVo.setStatus(TransactionStatus.COMMITED.getValue());
         boolean needAction = jsonObj.getBooleanValue("needAction");
@@ -93,7 +94,7 @@ public class SearchDeleteCiEntityApi extends PrivateApiComponentBase {
         ciViewVo.setCiId(pTransactionVo.getCiId());
         ciViewVo.addShowType(ShowType.LIST.getValue());
         ciViewVo.addShowType(ShowType.ALL.getValue());
-        List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo));
+        List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo), ciViewVo.getCiId());
         JSONArray theadList = new JSONArray();
         if (needCheck) {
             // 增加复选列
@@ -103,9 +104,9 @@ public class SearchDeleteCiEntityApi extends PrivateApiComponentBase {
                 }
             });
         }
-        theadList.add(JSONObject.parse("{key:\"transactionId\",title:\"事务id\"}"));
-        theadList.add(JSONObject.parse("{key:\"deleteTime\",title:\"删除时间\"}"));
-        theadList.add(JSONObject.parse("{key:\"description\",title:\"备注\", width:300}"));
+        theadList.add(JSON.parse("{key:\"transactionId\",title:\"事务id\"}"));
+        theadList.add(JSON.parse("{key:\"deleteTime\",title:\"删除时间\"}"));
+        theadList.add(JSON.parse("{key:\"description\",title:\"备注\", width:300}"));
         if (CollectionUtils.isNotEmpty(ciViewList)) {
             for (CiViewVo ciview : ciViewList) {
                 JSONObject headObj = new JSONObject();
@@ -149,7 +150,7 @@ public class SearchDeleteCiEntityApi extends PrivateApiComponentBase {
             for (TransactionVo transactionVo : transactionList) {
                 CiEntityTransactionVo ciEntityTransactionVo = transactionVo.getCiEntityTransactionVo();
                 if (StringUtils.isNotBlank(ciEntityTransactionVo.getSnapshot())) {
-                    JSONObject entityObj = JSONObject.parseObject(ciEntityTransactionVo.getSnapshot());
+                    JSONObject entityObj = JSON.parseObject(ciEntityTransactionVo.getSnapshot());
                     entityObj.put("transactionId", transactionVo.getId());
                     entityObj.put("transactionGroupId", transactionVo.getTransactionGroupId());
                     entityObj.put("deleteTime", transactionVo.getCommitTime());

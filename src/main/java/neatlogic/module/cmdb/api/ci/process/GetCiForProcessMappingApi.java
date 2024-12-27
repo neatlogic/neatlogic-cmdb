@@ -144,7 +144,7 @@ public class GetCiForProcessMappingApi extends PrivateApiComponentBase {
         // 字段显示设置列表
         CiViewVo ciViewVo = new CiViewVo();
         ciViewVo.setCiId(ciId);
-        List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo));
+        List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo), ciViewVo.getCiId());
         ciVo.setViewList(ciViewList);
         return ciVo;
     }

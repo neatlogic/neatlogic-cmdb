@@ -116,7 +116,7 @@ public class ExportIllegalCiEntityApi extends PrivateBinaryStreamApiComponentBas
         illegalCiEntityVo.setCiIdList(downwardCiList.stream().map(CiVo::getId).collect(Collectors.toList()));
         CiViewVo ciViewVo = new CiViewVo();
         ciViewVo.setCiId(ciEntityVo.getCiId());
-        List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo));
+        List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo), ciViewVo.getCiId());
         List<String> headerList = new ArrayList<>();
         headerList.add("id");
         headerList.add("uuid");

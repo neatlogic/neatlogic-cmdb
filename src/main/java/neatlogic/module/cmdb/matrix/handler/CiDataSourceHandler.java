@@ -49,9 +49,9 @@ import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.RelEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper;
+import neatlogic.module.cmdb.dependency.CiAttr2MatrixAttrDependencyHandler;
 import neatlogic.module.cmdb.matrix.constvalue.MatrixType;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
-import neatlogic.module.cmdb.dependency.CiAttr2MatrixAttrDependencyHandler;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -153,7 +153,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         CiViewVo searchVo = new CiViewVo();
         searchVo.setCiId(ciId);
         Map<String, CiViewVo> ciViewMap = new HashMap<>();
-        List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(searchVo));
+        List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(searchVo), searchVo.getCiId());
         for (CiViewVo ciview : ciViewList) {
             switch (ciview.getType()) {
                 case "attr":
@@ -421,7 +421,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         List<MatrixAttributeVo> matrixAttributeList = new ArrayList<>();
         CiViewVo ciViewVo = new CiViewVo();
         ciViewVo.setCiId(ciId);
-        List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo));
+        List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo), ciViewVo.getCiId());
         if (CollectionUtils.isNotEmpty(ciViewList)) {
             List<AttrVo> attrList = attrMapper.getAttrByCiId(ciId);
             Map<Long, AttrVo> attrMap = attrList.stream().collect(Collectors.toMap(AttrVo::getId, e -> e));
@@ -611,7 +611,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                         String label = attributeLabelMap.get(uuid);
                         CiViewVo ciView = ciViewMap.get(label);
                         if (ciView != null) {
-                            List<String> valueList= matrixFilterVo.getValueList();
+                            List<String> valueList = matrixFilterVo.getValueList();
                             if (CollectionUtils.isEmpty(valueList)) {
                                 continue;
                             }
@@ -1106,7 +1106,6 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         resultList.addAll(tbodyList);
         return resultList;
     }
-
 
 
     @Override

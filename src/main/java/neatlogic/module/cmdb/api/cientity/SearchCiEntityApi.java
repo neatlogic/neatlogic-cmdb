@@ -229,7 +229,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
                 ciViewVo.addShowType(ShowType.LIST.getValue());
                 ciViewVo.addShowType(ShowType.ALL.getValue());
             }
-            List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo));
+            List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo), ciEntityVo.getCiId());
             List<Long> attrIdList = null, relIdList = null, globalAttrIdList = null;
             JSONArray theadList = new JSONArray();
             if (needCheck) {

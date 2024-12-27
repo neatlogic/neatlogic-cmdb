@@ -2384,7 +2384,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
 
         CiViewVo ciViewVo = new CiViewVo();
         ciViewVo.setCiId(ciId);
-        List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo));
+        List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo), ciViewVo.getCiId());
         for (CiViewVo ciview : ciViewList) {
             switch (ciview.getType()) {
                 case "attr":

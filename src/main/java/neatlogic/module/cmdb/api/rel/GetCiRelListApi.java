@@ -100,7 +100,7 @@ public class GetCiRelListApi extends PrivateApiComponentBase {
             ciViewVo.setCiId(ciId);
             ciViewVo.addShowType(showType);
             ciViewVo.addShowType(ShowType.ALL.getValue());
-            ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo));
+            ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo), ciViewVo.getCiId());
             Set<Long> relSet = new HashSet<>();
             for (CiViewVo ciView : ciViewList) {
                 if (ciView.getType().startsWith("rel")) {
@@ -111,7 +111,7 @@ public class GetCiRelListApi extends PrivateApiComponentBase {
         } else {
             CiViewVo ciViewVo = new CiViewVo();
             ciViewVo.setCiId(ciId);
-            ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo));
+            ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo), ciViewVo.getCiId());
         }
         if (needAlias == 1 && CollectionUtils.isNotEmpty(ciViewList)) {
             for (CiViewVo ciView : ciViewList) {
