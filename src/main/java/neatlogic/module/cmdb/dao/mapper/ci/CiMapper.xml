@@ -760,12 +760,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 
 
     <delete id="deleteCiById" parameterType="java.lang.Long">
-        DELETE a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u
+        DELETE a,b,c,e,f,g,h,i,j,k,l,m,n,o,p,q,r,t,u
         FROM `cmdb_ci` a
                  LEFT JOIN `cmdb_attr` b
                            ON a.`id` = b.`ci_id`
-                 LEFT JOIN `cmdb_rel` c ON a.`id` = c.`from_ci_id`
-                 LEFT JOIN `cmdb_rel` d ON a.`id` = d.`to_ci_id`
+                 LEFT JOIN `cmdb_rel` c ON a.`id` = c.`from_ci_id` OR a.`id` = c.`to_ci_id`
                  LEFT JOIN `cmdb_ci_auth` e ON a.id = e.`ci_id`
                  LEFT JOIN `cmdb_relgroup` f ON a.id = f.`ci_id`
                  LEFT JOIN `cmdb_view` g ON a.id = g.`ci_id`
@@ -780,7 +779,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                  LEFT JOIN `cmdb_ci_group` p ON a.id = p.`ci_id`
                  LEFT JOIN `cmdb_import_audit` q ON a.id = q.`ci_id`
                  LEFT JOIN `cmdb_relativerel` r ON c.`id` = r.`rel_id`
-                 LEFT JOIN `cmdb_relativerel` s ON d.`id` = s.`rel_id`
                  LEFT JOIN `cmdb_ci_tree` t ON a.id = t.ci_id OR a.id = t.parent_ci_id
                  LEFT JOIN `cmdb_topo_template` u ON a.id = u.ci_id
         WHERE a.id = #{value}
