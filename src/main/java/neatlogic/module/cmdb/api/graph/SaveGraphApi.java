@@ -115,10 +115,11 @@ public class SaveGraphApi extends PrivateApiComponentBase {
                 for (int i = 0; i < nodeObjList.size(); i++) {
                     JSONObject nodeObj = nodeObjList.getJSONObject(i);
                     String objType = nodeObj.getString("shape");
-                    Long objId = nodeObj.getLong("id");
                     if (objType.equalsIgnoreCase("graph")) {
+                        Long objId = nodeObj.getLong("id");
                         graphMapper.insertGraphRel(graphVo.getId(), objId);
                     } else if (objType.equalsIgnoreCase("cientity")) {
+                        Long objId = nodeObj.getLong("id");
                         graphMapper.insertGraphCiEntity(graphVo.getId(), objId);
                     }
                 }
