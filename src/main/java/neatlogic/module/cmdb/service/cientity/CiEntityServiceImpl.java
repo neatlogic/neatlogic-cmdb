@@ -418,7 +418,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
     }
 
     @Override
-    public List<CiEntityVo> ciEntityBuilderForSuZhouBank(CiEntityVo ciEntityVo, List<HashMap<String, Object>> resultList) {
+    public List<CiEntityVo> ciEntityBuilder(CiEntityVo ciEntityVo, List<HashMap<String, Object>> resultList) {
 
         CiVo ciVo = ciMapper.getCiById(ciEntityVo.getCiId());
         if (ciVo == null) {
