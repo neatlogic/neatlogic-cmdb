@@ -418,6 +418,45 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
     }
 
     @Override
+    public List<CiEntityVo> ciEntityBuilder(CiEntityVo ciEntityVo, List<HashMap<String, Object>> resultList) {
+
+        CiVo ciVo = ciMapper.getCiById(ciEntityVo.getCiId());
+        if (ciVo == null) {
+            throw new CiNotFoundException(ciEntityVo.getCiId());
+        }
+        List<CiVo> ciList = ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht());
+        List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
+        List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciVo.getId()));
+
+        if (CollectionUtils.isNotEmpty(ciEntityVo.getExcludeRelIdList())) {
+            relList.removeIf(d -> ciEntityVo.getExcludeRelIdList().contains(d.getId()));
+        }
+        //把条件的最大限制设到关系里
+        for (RelVo relVo : relList) {
+            relVo.setMaxRelEntityCount(ciEntityVo.getMaxRelEntityCount());
+        }
+        for (AttrVo attrVo : attrList) {
+            attrVo.setMaxAttrEntityCount(ciEntityVo.getMaxAttrEntityCount());
+        }
+
+        ciEntityVo.setCiList(ciList);
+        ciEntityVo.setAttrList(attrList);
+        ciEntityVo.setRelList(relList);
+
+        Boolean isLimitRelEntity = ciEntityVo.isLimitRelEntity();
+        Boolean isLimitAttrEntity = ciEntityVo.isLimitAttrEntity();
+
+        ciEntityVo.setLimitRelEntity(isLimitRelEntity != null ? isLimitRelEntity : true);
+        ciEntityVo.setLimitAttrEntity(isLimitAttrEntity != null ? isLimitAttrEntity : true);
+//        List<HashMap<String, Object>> resultList = ciEntityMapper.searchCiEntity(ciEntityVo);
+
+//        ciEntityVo.setIdList(null);//清除id列表，避免ciEntityVo重用时数据没法更新
+        List<CiEntityVo> ciEntityList = new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, ciEntityVo.getAttrList(), ciEntityVo.getRelList()).build().getCiEntityList();
+
+        return ciEntityList;
+    }
+
+    @Override
     public List<CiEntityVo> searchCiEntityBaseInfo(CiEntityVo ciEntityVo) {
         List<CiEntityVo> ciEntityList = ciEntityMapper.searchCiEntityBaseInfo(ciEntityVo);
         if (CollectionUtils.isNotEmpty(ciEntityList)) {
