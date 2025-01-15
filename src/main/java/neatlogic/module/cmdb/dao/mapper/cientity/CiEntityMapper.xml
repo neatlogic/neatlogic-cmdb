@@ -303,7 +303,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         WHERE NOT EXISTS (
         SELECT 1
         FROM fulltextindex_target_cmdb b
-        WHERE b.target_id = a.id
+        WHERE a.id = b.target_id and b.target_type = #{type}
         )
         LIMIT #{pageSize}
     </select>
