@@ -33,7 +33,6 @@ import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import neatlogic.module.cmdb.service.resourcecenter.account.ResourceCenterAccountService;
 import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -333,14 +332,14 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
                 }
             }
             for (ResourceVo vo : resourceVoList) {
-                AccountBaseVo account = resourceCenterAccountService.filterAccountByRules(accountByResourceList, tagentIpAccountMap, vo.getId(), protocolVo, vo.getIp(), resourceOSResourceMap, protocolDefaultAccountMap);
-                if (account == null) {
-                    if (StringUtils.isNotBlank(executeUser)) {
-                        resourceListWithoutAccountByExecuteUserAndProtocol.add(vo);
-                    } else {
-                        resourceListWithoutAccountByProtocol.add(vo);
-                    }
-                }
+                //AccountBaseVo account = resourceCenterAccountService.filterAccountByRules(accountByResourceList, tagentIpAccountMap, vo.getId(), protocolVo, vo.getIp(), resourceOSResourceMap, protocolDefaultAccountMap);
+//                if (account == null) {
+//                    if (StringUtils.isNotBlank(executeUser)) {
+//                        resourceListWithoutAccountByExecuteUserAndProtocol.add(vo);
+//                    } else {
+//                        resourceListWithoutAccountByProtocol.add(vo);
+//                    }
+//                }
             }
         } else {
             resourceIsNotFoundIdList.addAll(idList);

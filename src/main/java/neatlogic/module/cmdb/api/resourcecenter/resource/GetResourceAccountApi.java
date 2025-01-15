@@ -125,7 +125,7 @@ public class GetResourceAccountApi extends PrivateApiComponentBase {
             }
         }
 
-        //如果是tagent 则通过ip 找账号， 否则根据资产绑定的账号找
+        //如果是tagent 优先从主ip里面找账号没找到才去副ip列表找，但是副ip不允许存在多个账号
         if (!Objects.equals(protocol, Protocol.TAGENT.getValue())) {
             List<AccountVo> accountList = resourceAccountMapper.getResourceAccountByResourceIdAndProtocolAndProtocolPortAndUsername(resourceVo.getId(), protocol, protocolPort, username);
             if (CollectionUtils.isNotEmpty(accountList)) {
@@ -133,8 +133,13 @@ public class GetResourceAccountApi extends PrivateApiComponentBase {
                 return removePasswordPlain(account);
             }
         } else {
+            List<AccountBaseVo> accountMainList = tagentMapper.getAccountListByMainIpListAndProtocolId(Collections.singletonList(resourceVo.getIp()), protocolVo.getId());
+            if (CollectionUtils.isNotEmpty(accountMainList)) {
+                AccountBaseVo accountTagent = accountMainList.get(0);
+                return removePasswordPlain(accountTagent);
+            }
             List<AccountBaseVo> accountList = tagentMapper.getAccountListByIpListAndProtocolId(Collections.singletonList(resourceVo.getIp()), protocolVo.getId());
-            if (CollectionUtils.isNotEmpty(accountList)) {
+            if (CollectionUtils.isNotEmpty(accountList) && accountList.size() == 1) {
                 AccountBaseVo accountTagent = accountList.get(0);
                 return removePasswordPlain(accountTagent);
             }

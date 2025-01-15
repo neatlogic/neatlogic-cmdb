@@ -91,11 +91,12 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
 
     /**
      * 按以下规则顺序匹配account
-     * 1、tagent 直接通过ip在 account_ip 匹配账号， 其它则从resource_account(资产清单)中匹配账号
+     * 1、tagent 先获取主ip的账号，不存在再通过ip在 account_ip 匹配账号， 其它则从resource_account(资产清单)中匹配账号
      * 2、根据节点对应os资产获取账号
      * 3、通过 ”协议id“ 匹配默认账号
      *
      * @param accountByResourceList     通过执行节点的资产id+协议id+执行用户 查询回来的账号列表（tagent类型不适用）
+     * @param tagentMainIpAccountMap    通过执行节点的ip 查询回来的主ip对应账号列表（目前仅用于tagent类型的匹配）
      * @param tagentIpAccountMap        通过执行节点的ip 查询回来的账号列表（目前仅用于tagent类型的匹配）
      * @param resourceId                执行节点的资产id
      * @param ip                        执行节点的ip
@@ -104,12 +105,15 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
      * @return 匹配的账号
      */
     @Override
-    public AccountBaseVo filterAccountByRules(List<AccountVo> accountByResourceList, Map<String, AccountBaseVo> tagentIpAccountMap, Long resourceId, AccountProtocolVo protocolVo, String ip, Map<Long, Long> resourceOSResourceMap, Map<Long, AccountVo> protocolDefaultAccountMap) {
+    public AccountBaseVo filterAccountByRules(List<AccountVo> accountByResourceList, Map<String, AccountBaseVo> tagentMainIpAccountMap, Map<String, AccountBaseVo> tagentIpAccountMap, Long resourceId, AccountProtocolVo protocolVo, String ip, Map<Long, Long> resourceOSResourceMap, Map<Long, AccountVo> protocolDefaultAccountMap) {
         AccountBaseVo accountVo = null;
         Optional<AccountVo> accountOp;
         //1
         if (Objects.equals(protocolVo.getName(), Protocol.TAGENT.getValue()) || (protocolVo.getName() != null && protocolVo.getName().startsWith(Protocol.TAGENT.getValue() + "."))) {
-            accountVo = tagentIpAccountMap.get(ip);
+            accountVo = tagentMainIpAccountMap.get(ip);
+            if(accountVo == null) {
+                accountVo = tagentIpAccountMap.get(ip);
+            }
         } else {
             accountOp = accountByResourceList.stream().filter(o -> Objects.equals(o.getResourceId(), resourceId)).findFirst();
             if (accountOp.isPresent()) {

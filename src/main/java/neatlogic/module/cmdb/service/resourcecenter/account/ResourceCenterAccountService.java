@@ -34,6 +34,7 @@ public interface ResourceCenterAccountService {
      * 3、通过 ”组合工具配置的执行节点的ip+端口“ 匹配 账号表
      *
      * @param accountByResourceList     通过执行节点的资产id+协议id+执行用户 查询回来的账号列表
+     * @param tagentIpAccountMap        通过执行节点的ip 查询回来的账号列表（目前仅用于tagent类型的匹配）
      * @param tagentIpAccountMap        通过执行节点的ip 查询回来的站好列表
      * @param resourceId                执行节点的资产id
      * @param protocolVo                执行节点协议
@@ -42,7 +43,7 @@ public interface ResourceCenterAccountService {
      * @param protocolDefaultAccountMap 协议对应的默认账号
      * @return 匹配的账号
      */
-    AccountBaseVo filterAccountByRules(List<AccountVo> accountByResourceList, Map<String, AccountBaseVo> tagentIpAccountMap, Long resourceId, AccountProtocolVo protocolVo, String ip, Map<Long, Long> resourceOSResourceMap, Map<Long, AccountVo> protocolDefaultAccountMap);
+    AccountBaseVo filterAccountByRules(List<AccountVo> accountByResourceList, Map<String, AccountBaseVo> tagentMainIpAccountMap,Map<String, AccountBaseVo> tagentIpAccountMap, Long resourceId, AccountProtocolVo protocolVo, String ip, Map<Long, Long> resourceOSResourceMap, Map<Long, AccountVo> protocolDefaultAccountMap);
 
     /**
      * 删除账号
