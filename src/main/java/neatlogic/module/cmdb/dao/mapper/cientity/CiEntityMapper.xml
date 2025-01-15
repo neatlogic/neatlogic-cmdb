@@ -292,12 +292,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     <select id="getNotIndexCiEntityIdList"
             parameterType="neatlogic.framework.fulltextindex.dto.fulltextindex.FullTextIndexTypeVo"
             resultType="java.lang.Long" useCache="false">
-        select a.id
+        <!--select a.id
         from cmdb_cientity a
                  left join fulltextindex_target_cmdb b
                            on a.id = b.target_id and b.target_type = #{type}
         where b.target_id is null
-        limit #{pageSize}
+        limit #{pageSize}-->
+        SELECT a.id
+        FROM cmdb_cientity a
+        WHERE NOT EXISTS (
+        SELECT 1
+        FROM fulltextindex_target_cmdb b
+        WHERE b.target_id = a.id
+        )
+        LIMIT #{pageSize}
     </select>
 
     <select id="getAttrEntityCountByFromCiIdAndAttrId" resultType="int" useCache="false">
