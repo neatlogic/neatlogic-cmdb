@@ -21,7 +21,7 @@ import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.cientity.AlertLevelVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityAlertVo;
-import neatlogic.framework.cmdb.dto.cientity.CiEntityInspectVo;
+import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.enums.alertlevel.AlertLevelType;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
@@ -81,14 +81,14 @@ public class UpdateCiEntityInspectStatusApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         String status = paramObj.getString("inspectStatus");
         Long ciEntityId = paramObj.getLong("ciEntityId");
-        /*CiEntityVo ciEntityVo = new CiEntityVo();
+        CiEntityVo ciEntityVo = new CiEntityVo();
         ciEntityVo.setId(paramObj.getLong("ciEntityId"));
         ciEntityVo.setInspectTime(new Date(paramObj.getLong("inspectTime")));
         ciEntityVo.setInspectStatus(paramObj.getString("inspectStatus"));
 
-        ciEntityMapper.updateCiEntityInspectStatus(ciEntityVo);*/
-        CiEntityInspectVo ciEntityInspectVo = new CiEntityInspectVo(paramObj);
-        ciEntityMapper.insertCiEntityInspect(ciEntityInspectVo);
+        ciEntityMapper.updateCiEntityInspectStatus(ciEntityVo);
+        //CiEntityInspectVo ciEntityInspectVo = new CiEntityInspectVo(paramObj);
+        //ciEntityMapper.insertCiEntityInspect(ciEntityInspectVo);
 
         List<AlertLevelVo> levelList = alertLevelMapper.getAlertLevelByType(AlertLevelType.INSPECT.getValue());
         if (CollectionUtils.isNotEmpty(levelList)) {
