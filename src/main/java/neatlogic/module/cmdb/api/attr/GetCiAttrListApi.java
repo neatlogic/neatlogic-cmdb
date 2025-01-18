@@ -79,6 +79,7 @@ public class GetCiAttrListApi extends PrivateApiComponentBase {
             @Param(name = "allowEdit", type = ApiParamType.INTEGER, rule = "1,0", desc = "term.cmdb.allowedit"),
             @Param(name = "isRequired", type = ApiParamType.INTEGER, rule = "1,0", desc = "common.isrequired"),
             @Param(name = "isSimple", type = ApiParamType.BOOLEAN, rule = "true,false", desc = "term.cmdb.issimpleattribute"),
+            @Param(name = "isNeedTargetCi", type = ApiParamType.BOOLEAN, rule = "true,false", desc = "是否有目标模型"),
             @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "common.defaultvalue"),
             @Param(name = "needAlias", type = ApiParamType.INTEGER, desc = "term.cmdb.needalias", rule = "0,1"),
             @Param(name = "mergeAlias", type = ApiParamType.INTEGER, defaultValue = "1", desc = "term.cmdb.mergealias", rule = "0,1")
@@ -110,6 +111,7 @@ public class GetCiAttrListApi extends PrivateApiComponentBase {
         }
         String showType = jsonObj.getString("showType");
         Boolean isSimple = jsonObj.getBoolean("isSimple");
+        Boolean isNeedTargetCi = jsonObj.getBoolean("isNeedTargetCi");
         Integer allowEdit = jsonObj.getInteger("allowEdit");
         Integer isRequired = jsonObj.getInteger("isRequired");
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciId);
@@ -150,6 +152,9 @@ public class GetCiAttrListApi extends PrivateApiComponentBase {
         }
         if (isSimple != null) {
             attrList.removeIf(attr -> AttrValueHandlerFactory.getHandler(attr.getType()).isSimple() != isSimple);
+        }
+        if (isNeedTargetCi != null) {
+            attrList.removeIf(attr -> AttrValueHandlerFactory.getHandler(attr.getType()).isNeedTargetCi() != isNeedTargetCi);
         }
         if (isRequired != null && isRequired.equals(1)) {
             //唯一规则和必填等价
