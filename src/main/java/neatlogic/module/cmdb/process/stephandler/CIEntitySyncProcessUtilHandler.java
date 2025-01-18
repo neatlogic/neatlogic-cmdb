@@ -1,10 +1,12 @@
 package neatlogic.module.cmdb.process.stephandler;
 
+import neatlogic.framework.notify.core.INotifyPolicyHandler;
 import neatlogic.framework.process.constvalue.ProcessTaskOperationType;
 import neatlogic.framework.process.constvalue.ProcessTaskStepOperationType;
 import neatlogic.framework.process.dto.ProcessTaskStepVo;
 import neatlogic.framework.process.operationauth.core.IOperationType;
 import neatlogic.framework.process.stephandler.core.ProcessStepInternalHandlerBase;
+import neatlogic.module.cmdb.process.notifyhandler.CiEntitySyncNotifyHandler;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -47,6 +49,11 @@ public class CIEntitySyncProcessUtilHandler extends ProcessStepInternalHandlerBa
                 ProcessTaskOperationType.PROCESSTASK_TRANSFER,
                 ProcessTaskStepOperationType.STEP_ACCEPT
         };
+    }
+
+    @Override
+    public Class<? extends INotifyPolicyHandler> getNotifyPolicyHandlerClass() {
+        return CiEntitySyncNotifyHandler.class;
     }
 
     @Override
