@@ -195,6 +195,8 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
         ciEntityVo.setPageSize(100);
         ciEntityVo.setCurrentPage(1);
         ciEntityVo.setNeedRowNum(false);
+        ciEntityVo.setLimitAttrEntity(false);
+        ciEntityVo.setLimitRelEntity(false);
         List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
         while (CollectionUtils.isNotEmpty(ciEntityList)) {
             for (CiEntityVo entity : ciEntityList) {
