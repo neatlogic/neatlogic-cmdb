@@ -2292,12 +2292,12 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         CiVo ciVo = ciMapper.getCiById(ciEntityVo.getCiId());
         List<CiVo> ciList = ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht());
         ciEntityMapper.insertCiEntityBaseInfo(ciEntityVo);
+
         if (ciEntityVo.getExpiredDay() != null && ciEntityVo.getExpiredDay() > 0) {
             ciEntityMapper.insertCiEntityExpiredTime(ciEntityVo);
         } else {
             ciEntityMapper.deleteCiEntityExpiredTimeByCiEntityId(ciEntityVo.getId());
         }
-
         for (CiVo ci : ciList) {
             ciEntityVo.setCiId(ci.getId());
             ciEntityMapper.insertCiEntity(ciEntityVo);
