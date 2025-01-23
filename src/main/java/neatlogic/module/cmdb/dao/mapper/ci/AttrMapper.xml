@@ -352,7 +352,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             `is_term`       = #{isTerm},
             `input_type`    = #{inputType},
             `group_name`    = #{groupName},
-            `config`        = #{configStr,typeHandler=compressHandler}
+            `config`        = #{configStr, typeHandler=compressHandler}
         WHERE id = #{id}
     </update>
 

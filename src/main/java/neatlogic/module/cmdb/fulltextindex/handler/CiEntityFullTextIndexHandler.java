@@ -66,7 +66,7 @@ public class CiEntityFullTextIndexHandler extends FullTextIndexHandlerBase {
      * 初始化专有名词入字典
      */
     @Override
-    public <T> void initialTerms(T attrVo) {
+    protected <T> void myInitialTerms(T attrVo) {
         List<AttrVo> attrList = new ArrayList<>();
         if (attrVo == null) {
             AttrVo pAttrVo = new AttrVo();
