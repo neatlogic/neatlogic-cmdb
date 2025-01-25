@@ -210,7 +210,7 @@ public interface CiEntityMapper extends ICiEntityCrossoverMapper {
      * @param ciEntityVo 配置项对象
      * @return 数据集
      */
-    List<HashMap<String, Object>> getCiEntityById(CiEntityVo ciEntityVo);
+    //List<HashMap<String, Object>> getCiEntityById(CiEntityVo ciEntityVo);
 
     List<Long> getCiEntityIdByCiId(CiEntityVo ciEntityVo);
 

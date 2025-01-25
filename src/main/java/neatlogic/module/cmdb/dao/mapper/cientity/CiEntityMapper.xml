@@ -1402,6 +1402,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         WHERE ci_base.id = #{id}
     </select>
 
+    <!--会join所有关系和引用属性，慎用-->
     <select id="getCiEntityById" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo"
             resultType="java.util.HashMap" useCache="false">
         SELECT

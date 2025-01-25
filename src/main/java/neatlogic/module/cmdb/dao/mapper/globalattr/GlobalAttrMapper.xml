@@ -173,6 +173,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             <if test="isActive != null">
                 and cga.is_active = #{isActive}
             </if>
+            <if test="idList != null and idList.size() > 0">
+                and cga.id in
+                <foreach collection="idList" item="item" open="(" close=")" separator=",">#{item}</foreach>
+            </if>
         </where>
         order by cga.id desc
     </select>

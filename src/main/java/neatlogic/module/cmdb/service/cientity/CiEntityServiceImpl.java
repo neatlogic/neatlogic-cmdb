@@ -161,6 +161,31 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
      * @return 配置项信息
      */
     private CiEntityVo getCiEntityByIdLite(Long ciId, Long ciEntityId, Boolean flattenAttr, Boolean limitRelEntity, Boolean limitAttrEntity) {
+        return getCiEntityByIdLite(ciId, ciEntityId, flattenAttr, limitRelEntity, limitAttrEntity, null, null, null);
+    }
+
+    /**
+     * 精简版查询单个配置项，不会join关系和属性表，在应用层通过多次search进行数据拼接
+     *
+     * @param ciId             模型id
+     * @param ciEntityId       配置项id
+     * @param flattenAttr      是否返回空属性
+     * @param limitRelEntity   是否限制关系数量
+     * @param limitAttrEntity  是否限制引用属性数量
+     * @param globalAttrIdList 需要返回的全局属性，为空代表返回所有
+     * @param attrIdList       需要返回的引用属性，为空代表返回所有
+     * @param relIdList        需要返回的关系，为空代表返回所有
+     * @return 配置项信息
+     */
+    private CiEntityVo getCiEntityByIdLite(Long ciId, Long ciEntityId, Boolean flattenAttr, Boolean limitRelEntity, Boolean limitAttrEntity, List<Long> globalAttrIdList, List<Long> attrIdList, List<Long> relIdList) {
+        if (ciId == null) {
+            CiEntityVo ciEntityVo = ciEntityMapper.getCiEntityBaseInfoById(ciEntityId);
+            if (ciEntityVo != null) {
+                ciId = ciEntityVo.getCiId();
+            } else {
+                return null;
+            }
+        }
         CiVo ciVo = ciMapper.getCiById(ciId);
         if (ciVo == null) {
             throw new CiNotFoundException(ciId);
@@ -174,7 +199,13 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             ciList.add(ciVo);
         }
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
+        if (CollectionUtils.isNotEmpty(attrIdList)) {
+            attrList = attrList.stream().filter(d -> attrIdList.contains(d.getId())).collect(Collectors.toList());
+        }
         List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciVo.getId()));
+        if (CollectionUtils.isNotEmpty(relIdList)) {
+            relList = relList.stream().filter(d -> relIdList.contains(d.getId())).collect(Collectors.toList());
+        }
         ciEntityVo.setCiList(ciList);
         ciEntityVo.setId(ciEntityId);
         ciEntityVo.setCiId(ciVo.getId());
@@ -189,21 +220,27 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         List<HashMap<String, Object>> resultList = ciEntityMapper.getCiEntityByIdLite(ciEntityVo);
         CiEntityVo returnCiEntityVo = new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, attrList, relList).isFlattenAttr(flattenAttr).build().getCiEntity();
         if (returnCiEntityVo != null) {
-            //获取全局属性数据
+            //拼接全局属性数据
             GlobalAttrVo ga = new GlobalAttrVo();
             ga.setIsActive(1);
+            if (CollectionUtils.isNotEmpty(globalAttrIdList)) {
+                ga.setIdList(globalAttrIdList);
+            }
             List<GlobalAttrVo> activeGlobalAttrList = globalAttrMapper.searchGlobalAttr(ga);
-            List<GlobalAttrEntityVo> globalAttrList = globalAttrMapper.getGlobalAttrByCiEntityId(ciEntityVo.getId());
-            for (GlobalAttrVo globalAttrVo : activeGlobalAttrList) {
-                Optional<GlobalAttrEntityVo> op = globalAttrList.stream().filter(d -> d.getAttrId().equals(globalAttrVo.getId())).findFirst();
-                returnCiEntityVo.addGlobalAttrData(globalAttrVo.getId(), CiEntityBuilder.buildGlobalAttrObj(returnCiEntityVo.getId(), globalAttrVo, op.map(GlobalAttrEntityVo::getValueList).orElse(null)));
+            if (CollectionUtils.isEmpty(activeGlobalAttrList)) {
+                List<GlobalAttrEntityVo> globalAttrList = globalAttrMapper.getGlobalAttrByCiEntityId(ciEntityVo.getId());
+                for (GlobalAttrVo globalAttrVo : activeGlobalAttrList) {
+                    Optional<GlobalAttrEntityVo> op = globalAttrList.stream().filter(d -> d.getAttrId().equals(globalAttrVo.getId())).findFirst();
+                    returnCiEntityVo.addGlobalAttrData(globalAttrVo.getId(), CiEntityBuilder.buildGlobalAttrObj(returnCiEntityVo.getId(), globalAttrVo, op.map(GlobalAttrEntityVo::getValueList).orElse(null)));
+                }
             }
+
             //拼接引用属性数据
-            Long attrEntityLimit = null;
-            if (Boolean.TRUE.equals(limitAttrEntity)) {
-                attrEntityLimit = CiEntityVo.MAX_ATTRENTITY_COUNT;
-            }
             if (CollectionUtils.isNotEmpty(attrList)) {
+                Long attrEntityLimit = null;
+                if (Boolean.TRUE.equals(limitAttrEntity)) {
+                    attrEntityLimit = CiEntityVo.MAX_ATTRENTITY_COUNT;
+                }
                 for (AttrVo attrVo : attrList) {
                     if (attrVo.getTargetCiId() != null) {
                         List<AttrEntityVo> attrEntityList = ciEntityMapper.getAttrEntityByAttrIdAndFromCiEntityId(returnCiEntityVo.getId(), attrVo.getId(), attrEntityLimit != null ? attrEntityLimit + 1 : null);
@@ -222,11 +259,11 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 }
             }
             //拼接关系数据
-            Long relEntityLimit = null;
-            if (Boolean.TRUE.equals(limitRelEntity)) {
-                relEntityLimit = CiEntityVo.MAX_RELENTITY_COUNT;
-            }
             if (CollectionUtils.isNotEmpty(relList)) {
+                Long relEntityLimit = null;
+                if (Boolean.TRUE.equals(limitRelEntity)) {
+                    relEntityLimit = CiEntityVo.MAX_RELENTITY_COUNT;
+                }
                 for (RelVo relVo : relList) {
                     List<RelEntityVo> relEntityList;
                     if (relVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
@@ -251,7 +288,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
 
     @Override
     public CiEntityVo getCiEntityById(CiEntityVo ciEntityVo) {
-        return getCiEntityByIdLite(ciEntityVo.getCiId(), ciEntityVo.getId(), false, ciEntityVo.isLimitRelEntity(), ciEntityVo.isLimitAttrEntity());
+        return getCiEntityByIdLite(ciEntityVo.getCiId(), ciEntityVo.getId(), false, ciEntityVo.isLimitRelEntity(), ciEntityVo.isLimitAttrEntity(), ciEntityVo.getGlobalAttrIdList(), ciEntityVo.getAttrIdList(), ciEntityVo.getRelIdList());
     }
 
     @Override
@@ -371,6 +408,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         Boolean isLimitRelEntity = ciEntityVo.isLimitRelEntity();
         Boolean isLimitAttrEntity = ciEntityVo.isLimitAttrEntity();
         if (ciEntityVo.getIdList() == null) {
+            //查询id时需要把关系和引用属性限制去掉，否则条件中某些值可能会由于limit的限制导致无法命中
             ciEntityVo.setLimitRelEntity(false);
             ciEntityVo.setLimitAttrEntity(false);
             if (ciEntityVo.getNeedRowNum()) {
@@ -451,9 +489,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
 //        List<HashMap<String, Object>> resultList = ciEntityMapper.searchCiEntity(ciEntityVo);
 
 //        ciEntityVo.setIdList(null);//清除id列表，避免ciEntityVo重用时数据没法更新
-        List<CiEntityVo> ciEntityList = new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, ciEntityVo.getAttrList(), ciEntityVo.getRelList()).build().getCiEntityList();
-
-        return ciEntityList;
+        return new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, ciEntityVo.getAttrList(), ciEntityVo.getRelList()).build().getCiEntityList();
     }
 
     @Override
@@ -579,7 +615,8 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
     }
 
     @Override
-    public Long saveCiEntityWithoutTransaction(List<CiEntityTransactionVo> ciEntityTransactionList, TransactionGroupVo transactionGroupVo) {
+    public Long saveCiEntityWithoutTransaction
+            (List<CiEntityTransactionVo> ciEntityTransactionList, TransactionGroupVo transactionGroupVo) {
         for (CiEntityTransactionVo ciEntityTransactionVo : ciEntityTransactionList) {
             transactionGroupVo.addExclude(ciEntityTransactionVo.getCiEntityId());
         }
@@ -635,7 +672,8 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
 
     @Override
     @Transactional
-    public Long saveCiEntity(List<CiEntityTransactionVo> ciEntityTransactionList, TransactionGroupVo transactionGroupVo) {
+    public Long saveCiEntity(List<CiEntityTransactionVo> ciEntityTransactionList, TransactionGroupVo
+            transactionGroupVo) {
         return saveCiEntityWithoutTransaction(ciEntityTransactionList, transactionGroupVo);
     }
 
@@ -2409,7 +2447,8 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
     }
 
     @Override
-    public void getCiViewMapAndAttrMapAndRelMap(Long ciId, Map<Long, AttrVo> attrMap, Map<Long, RelVo> relMap, Map<String, CiViewVo> ciViewMap, Map<Long, GlobalAttrVo> globalAttrMap) {
+    public void getCiViewMapAndAttrMapAndRelMap(Long
+                                                        ciId, Map<Long, AttrVo> attrMap, Map<Long, RelVo> relMap, Map<String, CiViewVo> ciViewMap, Map<Long, GlobalAttrVo> globalAttrMap) {
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciId);
         attrMap.putAll(attrList.stream().collect(Collectors.toMap(AttrVo::getId, e -> e)));
         List<RelVo> relList = relMapper.getRelByCiId(ciId);
@@ -2509,7 +2548,8 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
     }
 
     @Override
-    public GlobalAttrFilterVo convertGlobalAttrFilter(GlobalAttrVo globalAttrVo, String expression, List<String> valueList) {
+    public GlobalAttrFilterVo convertGlobalAttrFilter(GlobalAttrVo globalAttrVo, String
+            expression, List<String> valueList) {
         GlobalAttrFilterVo globalAttrFilterVo = new GlobalAttrFilterVo();
         globalAttrFilterVo.setAttrId(globalAttrVo.getId());
         if (StringUtils.isBlank(expression)) {
@@ -2561,7 +2601,8 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
     }
 
     @Override
-    public RelFilterVo convertFromRelFilter(RelVo relVo, String expression, List<String> valueList, String direction) {
+    public RelFilterVo convertFromRelFilter(RelVo relVo, String expression, List<String> valueList, String
+            direction) {
         if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NULL.getExpression())
                 || Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NOTNULL.getExpression())) {
             RelFilterVo relFilterVo = new RelFilterVo();
