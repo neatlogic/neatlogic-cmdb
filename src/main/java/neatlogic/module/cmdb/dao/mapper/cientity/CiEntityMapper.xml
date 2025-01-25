@@ -1498,6 +1498,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         SELECT id from (
         SELECT
         DISTINCT ci_base.id AS id
+        <if test="keywordList != null and keywordList.size() > 0">
+            ,count(distinct fw.word) as match_count
+        </if>
         <if test="sortList != null and sortList.size() > 0">
             <foreach collection="sortList" item="sort">
                 ,${sort.ciTableName}.`${sort.attrId}`
@@ -1509,17 +1512,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </include>
         <include refid="ciEntityConditionSql">
         </include>
-        <choose>
-            <when test="sortList != null and sortList.size() > 0">
-                ORDER BY
-                <foreach collection="sortList" item="sort" separator=",">
-                    ${sort.ciTableName}.`${sort.attrId}` ${sort.type}
-                </foreach>
-            </when>
-            <otherwise>
-                ORDER BY ci_base.id DESC
-            </otherwise>
-        </choose>
+        <if test="keywordList != null and keywordList.size() > 0">
+            group by ci_base.id
+        </if>
+        <trim prefix="ORDER BY" suffixOverrides=",">
+            <if test="keywordList != null and keywordList.size() > 0">
+                match_count desc,
+            </if>
+            <choose>
+                <when test="sortList != null and sortList.size() > 0">
+                    <foreach collection="sortList" item="sort" separator=",">
+                        ${sort.ciTableName}.`${sort.attrId}` ${sort.type}
+                    </foreach>
+                </when>
+                <otherwise>
+                    ci_base.id DESC,
+                </otherwise>
+            </choose>
+        </trim>
         LIMIT #{startNum}, #{pageSize}
         ) t
     </select>
@@ -1550,17 +1560,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         <foreach collection="idList" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>
-        <choose>
-            <when test="sortList != null and sortList.size() > 0">
-                ORDER BY
-                <foreach collection="sortList" item="sort" separator=",">
-                    ${sort.ciTableName}.`${sort.attrId}` ${sort.type}
-                </foreach>
-            </when>
-            <otherwise>
-                ORDER BY ci_base.id DESC
-            </otherwise>
-        </choose>
+        <trim prefix="ORDER BY" suffixOverrides=",">
+            <if test="idList != null and idList.size() > 0">
+                FIELD(ci_base.id, <foreach collection="idList" separator="," item="item">#{item}</foreach>),
+            </if>
+            <choose>
+                <when test="sortList != null and sortList.size() > 0">
+                    <foreach collection="sortList" item="sort" separator=",">
+                        ${sort.ciTableName}.`${sort.attrId}` ${sort.type}
+                    </foreach>
+                </when>
+                <otherwise>
+                    ci_base.id DESC
+                </otherwise>
+            </choose>
+        </trim>
     </select>
 
 
