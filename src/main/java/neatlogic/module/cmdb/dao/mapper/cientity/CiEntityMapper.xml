@@ -1516,9 +1516,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             group by ci_base.id
         </if>
         <trim prefix="ORDER BY" suffixOverrides=",">
-            <if test="keywordList != null and keywordList.size() > 0">
-                match_count desc,
-            </if>
             <choose>
                 <when test="sortList != null and sortList.size() > 0">
                     <foreach collection="sortList" item="sort" separator=",">
@@ -1526,7 +1523,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                     </foreach>
                 </when>
                 <otherwise>
-                    ci_base.id DESC,
+                    <if test="keywordList != null and keywordList.size() > 0">
+                        match_count DESC,
+                    </if>
+                    ci_base.id DESC
                 </otherwise>
             </choose>
         </trim>
@@ -1561,9 +1561,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             #{id}
         </foreach>
         <trim prefix="ORDER BY" suffixOverrides=",">
-            <if test="idList != null and idList.size() > 0">
-                FIELD(ci_base.id, <foreach collection="idList" separator="," item="item">#{item}</foreach>),
-            </if>
             <choose>
                 <when test="sortList != null and sortList.size() > 0">
                     <foreach collection="sortList" item="sort" separator=",">
@@ -1571,6 +1568,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                     </foreach>
                 </when>
                 <otherwise>
+                    <if test="idList != null and idList.size() > 0">
+                        FIELD(ci_base.id, <foreach collection="idList" separator="," item="item">#{item}</foreach>),
+                    </if>
                     ci_base.id DESC
                 </otherwise>
             </choose>
