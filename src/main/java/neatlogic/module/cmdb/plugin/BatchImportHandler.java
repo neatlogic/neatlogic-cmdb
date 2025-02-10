@@ -518,7 +518,7 @@ public class BatchImportHandler {
                                                             List<CiEntityVo> targetCiEntityList = getCiEntityBaseInfoByName(rel.getDirection().equals(RelDirectionType.FROM.getValue()) ? rel.getToCiId() : rel.getFromCiId(), c);
                                                             if (CollectionUtils.isNotEmpty(targetCiEntityList)) {
                                                                 for (CiEntityVo entity : targetCiEntityList) {
-                                                                    ciEntityTransactionVo.addRelEntityData(rel, rel.getDirection(), ciId, entity.getId());
+                                                                    ciEntityTransactionVo.addRelEntityData(rel, rel.getDirection(), ciId, entity.getId(), null, RelActionType.REPLACE.getValue());
                                                                 }
                                                             } else {
                                                                 throw new CiEntityNotFoundException(c);
