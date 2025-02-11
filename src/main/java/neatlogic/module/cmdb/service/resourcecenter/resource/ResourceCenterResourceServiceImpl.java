@@ -740,79 +740,80 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
     @Override
     public String buildResourceView(String viewName, ResourceEntityConfigVo originalConfig) {
         String error = StringUtils.EMPTY;
-        ResourceEntityConfigVo config = null;
         try {
-            config = fieldMappingCheckValidityAndFillIdData(viewName, originalConfig);
-        } catch (ResourceViewFieldMappingException e) {
-            return e.getMessage();
-        }
-        String select = null;
-        if (Objects.equals(DatasourceManager.getDatabaseId(), DatabaseVendor.TIDB.getDatabaseId())) {
-            ResourceViewGenerateSqlUtilForTiDB resourceViewGenerateSqlUtilForTiDB = new ResourceViewGenerateSqlUtilForTiDB(config);
-            select = resourceViewGenerateSqlUtilForTiDB.getSql();
-        } else {
-            ResourceViewGenerateSqlUtil resourceViewGenerateSqlUtil = new ResourceViewGenerateSqlUtil(config);
-            select = resourceViewGenerateSqlUtil.getSql();
-        }
-        String md5 = Md5Util.encryptMD5(select);
-        String tableType = schemaMapper.checkTableOrViewIsExists(TenantContext.get().getDataDbName(), viewName);
-        if (tableType != null) {
-            if (Objects.equals(tableType, "SYSTEM VIEW")) {
-                return StringUtils.EMPTY;
-            } else if (Objects.equals(tableType, "VIEW")) {
+            ResourceEntityConfigVo config = fieldMappingCheckValidityAndFillIdData(viewName, originalConfig);
+            String select = null;
+            if (Objects.equals(DatasourceManager.getDatabaseId(), DatabaseVendor.TIDB.getDatabaseId())) {
+                ResourceViewGenerateSqlUtilForTiDB resourceViewGenerateSqlUtilForTiDB = new ResourceViewGenerateSqlUtilForTiDB(config);
+                select = resourceViewGenerateSqlUtilForTiDB.getSql();
+            } else {
+                ResourceViewGenerateSqlUtil resourceViewGenerateSqlUtil = new ResourceViewGenerateSqlUtil(config);
+                select = resourceViewGenerateSqlUtil.getSql();
+            }
+            String md5 = Md5Util.encryptMD5(select);
+            boolean needCreateView = true;
+            String tableType = schemaMapper.checkTableOrViewIsExists(TenantContext.get().getDataDbName(), viewName);
+            if (Objects.equals(tableType, "VIEW")) {
                 DataBaseViewInfoVo dataBaseViewInfoVo = dataBaseViewInfoMapper.getDataBaseViewInfoByViewName(viewName);
                 if (dataBaseViewInfoVo != null) {
                     // md5相同就不用更新视图了
                     if (Objects.equals(md5, dataBaseViewInfoVo.getMd5())) {
-                        return StringUtils.EMPTY;
+                        try {
+                            resourceEntityMapper.getResourceEntityViewDataList(viewName, 0, 1);
+                            needCreateView = false;
+                        } catch (Exception e) {
+                        }
                     }
                 }
             }
-        }
-        try {
-            String selectSql = select;
-            EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
-                if (Objects.equals(tableType, "BASE TABLE")) {
-                    schemaMapper.deleteTable(TenantContext.get().getDataDbName() + "." + viewName);
+            if (needCreateView) {
+                String selectSql = select;
+                EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
+                    if (Objects.equals(tableType, "BASE TABLE")) {
+                        schemaMapper.deleteTable(TenantContext.get().getDataDbName() + "." + viewName);
+                    }
+                    String sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + "." + viewName + " AS " + selectSql;
+                    schemaMapper.insertView(sql);
+                }).execute();
+                if (s.isSucceed()) {
+                    DataBaseViewInfoVo dataBaseViewInfoVo = new DataBaseViewInfoVo();
+                    dataBaseViewInfoVo.setViewName(viewName);
+                    dataBaseViewInfoVo.setMd5(md5);
+                    dataBaseViewInfoVo.setLcu(UserContext.get().getUserUuid());
+                    dataBaseViewInfoMapper.insertDataBaseViewInfo(dataBaseViewInfoVo);
+                } else {
+                    error = s.getError();
                 }
-                String sql = "CREATE OR REPLACE VIEW " + TenantContext.get().getDataDbName() + "." + viewName + " AS " + selectSql;
-                schemaMapper.insertView(sql);
-            }).execute();
-            if (s.isSucceed()) {
-                DataBaseViewInfoVo dataBaseViewInfoVo = new DataBaseViewInfoVo();
-                dataBaseViewInfoVo.setViewName(viewName);
-                dataBaseViewInfoVo.setMd5(md5);
-                dataBaseViewInfoVo.setLcu(UserContext.get().getUserUuid());
-                dataBaseViewInfoMapper.insertDataBaseViewInfo(dataBaseViewInfoVo);
-            } else {
-                return s.getError();
             }
         } catch (Exception ex) {
             error = ex.getMessage();
-            if (Objects.equals(tableType, "VIEW")) {
-                schemaMapper.deleteView(TenantContext.get().getDataDbName() + "." + viewName);
-            }
-            List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
-            Table table = new Table();
-            table.setName(viewName);
-            table.setSchemaName(TenantContext.get().getDataDbName());
-            List<ColumnDefinition> columnDefinitions = new ArrayList<>();
-            for (String columnName : fieldNameList) {
-                ColumnDefinition columnDefinition = new ColumnDefinition();
-                columnDefinition.setColumnName(columnName);
-                columnDefinition.setColDataType(new ColDataType("int"));
-                columnDefinitions.add(columnDefinition);
-            }
-            CreateTable createTable = new CreateTable();
-            createTable.setTable(table);
-            createTable.setColumnDefinitions(columnDefinitions);
-            createTable.setIfNotExists(true);
-            EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
-                schemaMapper.insertView(createTable.toString());
-            }).execute();
         } finally {
-            return error;
+            if (StringUtils.isNotBlank(error)) {
+                String tableType = schemaMapper.checkTableOrViewIsExists(TenantContext.get().getDataDbName(), viewName);
+                if (!Objects.equals(tableType, "BASE TABLE")) {
+                    schemaMapper.deleteView(TenantContext.get().getDataDbName() + "." + viewName);
+                    List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
+                    Table table = new Table();
+                    table.setName(viewName);
+                    table.setSchemaName(TenantContext.get().getDataDbName());
+                    List<ColumnDefinition> columnDefinitions = new ArrayList<>();
+                    for (String columnName : fieldNameList) {
+                        ColumnDefinition columnDefinition = new ColumnDefinition();
+                        columnDefinition.setColumnName(columnName);
+                        columnDefinition.setColDataType(new ColDataType("int"));
+                        columnDefinitions.add(columnDefinition);
+                    }
+                    CreateTable createTable = new CreateTable();
+                    createTable.setTable(table);
+                    createTable.setColumnDefinitions(columnDefinitions);
+                    createTable.setIfNotExists(true);
+                    EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
+                        schemaMapper.insertView(createTable.toString());
+                    }).execute();
+                }
+            }
         }
+        return error;
     }
 
     /**
