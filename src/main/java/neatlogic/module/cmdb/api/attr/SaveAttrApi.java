@@ -29,7 +29,6 @@ import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.service.attr.AttrService;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,7 +40,7 @@ import javax.annotation.Resource;
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveAttrApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private AttrMapper attrMapper;
 
 

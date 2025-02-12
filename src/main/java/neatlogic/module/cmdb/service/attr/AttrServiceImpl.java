@@ -42,7 +42,6 @@ import neatlogic.framework.transaction.core.EscapeTransactionJob;
 import neatlogic.framework.transaction.util.TransactionUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
-import neatlogic.module.cmdb.dao.mapper.cientity.AttrEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.cischema.CiSchemaMapper;
 import neatlogic.module.cmdb.dao.mapper.transaction.TransactionMapper;
@@ -68,8 +67,6 @@ public class AttrServiceImpl implements AttrService {
     @Resource
     private TransactionMapper transactionMapper;
 
-    @Resource
-    private AttrEntityMapper attrEntityMapper;
 
     @Resource
     private CiEntityMapper ciEntityMapper;
