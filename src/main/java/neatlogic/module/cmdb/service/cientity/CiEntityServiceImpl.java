@@ -227,7 +227,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 ga.setIdList(globalAttrIdList);
             }
             List<GlobalAttrVo> activeGlobalAttrList = globalAttrMapper.searchGlobalAttr(ga);
-            if (CollectionUtils.isEmpty(activeGlobalAttrList)) {
+            if (CollectionUtils.isNotEmpty(activeGlobalAttrList)) {
                 List<GlobalAttrEntityVo> globalAttrList = globalAttrMapper.getGlobalAttrByCiEntityId(ciEntityVo.getId());
                 for (GlobalAttrVo globalAttrVo : activeGlobalAttrList) {
                     Optional<GlobalAttrEntityVo> op = globalAttrList.stream().filter(d -> d.getAttrId().equals(globalAttrVo.getId())).findFirst();
