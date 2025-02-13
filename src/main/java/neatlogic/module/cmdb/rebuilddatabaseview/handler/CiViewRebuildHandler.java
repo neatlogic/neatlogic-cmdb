@@ -15,8 +15,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.rebuilddatabaseview.handler;
 
+import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.common.dto.BasePageVo;
+import neatlogic.framework.dao.mapper.SchemaMapper;
 import neatlogic.framework.rebuilddatabaseview.core.IRebuildDataBaseView;
 import neatlogic.framework.rebuilddatabaseview.core.ViewStatusInfo;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
@@ -26,6 +28,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 public class CiViewRebuildHandler implements IRebuildDataBaseView {
@@ -36,39 +39,81 @@ public class CiViewRebuildHandler implements IRebuildDataBaseView {
     @Resource
     private CiService ciService;
 
+    @Resource
+    private SchemaMapper schemaMapper;
+
     @Override
     public String getDescription() {
         return "重建配置项中虚拟模型视图";
     }
 
     @Override
-    public List<ViewStatusInfo> execute() {
+    public List<ViewStatusInfo> createViewIfNotExists() {
         List<ViewStatusInfo> resultList = new ArrayList<>();
         int rowNum = ciMapper.getVirtualCiCount();
-        if (rowNum == 0) {
-            return resultList;
-        }
-        BasePageVo searchVo = new BasePageVo();
-        searchVo.setRowNum(rowNum);
-        searchVo.setPageSize(100);
-        int pageCount = searchVo.getPageCount();
-        for (int currentPage = 1; currentPage <= pageCount; currentPage++) {
-            searchVo.setCurrentPage(currentPage);
-            List<CiVo> ciList = ciMapper.getVirtualCiList(searchVo);
-            for (CiVo ciVo : ciList) {
-                ViewStatusInfo viewStatusInfo = new ViewStatusInfo();
-                viewStatusInfo.setName("cmdb_" + ciVo.getId());
-                viewStatusInfo.setLabel(ciVo.getLabel() + "(" + ciVo.getName() + ")");
-                String viewXml = ciMapper.getCiViewXmlById(ciVo.getId());
-                ciVo.setViewXml(viewXml);
-                try {
-                    ciService.buildCiView(ciVo);
-                    viewStatusInfo.setStatus(ViewStatusInfo.Status.SUCCESS.toString());
-                } catch (Exception e) {
-                    viewStatusInfo.setStatus(ViewStatusInfo.Status.FAILURE.toString());
-                    viewStatusInfo.setError(e.getMessage());
+        if (rowNum > 0) {
+            BasePageVo searchVo = new BasePageVo();
+            searchVo.setRowNum(rowNum);
+            searchVo.setPageSize(100);
+            int pageCount = searchVo.getPageCount();
+            for (int currentPage = 1; currentPage <= pageCount; currentPage++) {
+                searchVo.setCurrentPage(currentPage);
+                List<CiVo> ciList = ciMapper.getVirtualCiList(searchVo);
+                for (CiVo ciVo : ciList) {
+                    String tableType = schemaMapper.checkTableOrViewIsExists(TenantContext.get().getDataDbName(), "cmdb_" + ciVo.getId());
+                    if (Objects.equals(tableType, "VIEW")) {
+                        continue;
+                    }
+                    ViewStatusInfo viewStatusInfo = new ViewStatusInfo();
+                    viewStatusInfo.setName("cmdb_" + ciVo.getId());
+                    viewStatusInfo.setLabel(ciVo.getLabel() + "(" + ciVo.getName() + ")");
+                    String viewXml = ciMapper.getCiViewXmlById(ciVo.getId());
+                    ciVo.setViewXml(viewXml);
+                    try {
+                        ciService.buildCiView(ciVo);
+                        viewStatusInfo.setStatus(ViewStatusInfo.Status.SUCCESS.toString());
+                    } catch (Exception e) {
+                        viewStatusInfo.setStatus(ViewStatusInfo.Status.FAILURE.toString());
+                        viewStatusInfo.setError(e.getMessage());
+                    }
+                    resultList.add(viewStatusInfo);
                 }
-                resultList.add(viewStatusInfo);
+            }
+        }
+        return resultList;
+    }
+
+    @Override
+    public List<ViewStatusInfo> createOrReplaceView() {
+        List<ViewStatusInfo> resultList = new ArrayList<>();
+        int rowNum = ciMapper.getVirtualCiCount();
+        if (rowNum > 0) {
+            BasePageVo searchVo = new BasePageVo();
+            searchVo.setRowNum(rowNum);
+            searchVo.setPageSize(100);
+            int pageCount = searchVo.getPageCount();
+            for (int currentPage = 1; currentPage <= pageCount; currentPage++) {
+                searchVo.setCurrentPage(currentPage);
+                List<CiVo> ciList = ciMapper.getVirtualCiList(searchVo);
+                for (CiVo ciVo : ciList) {
+//                    String tableType = schemaMapper.checkTableOrViewIsExists(TenantContext.get().getDataDbName(), "cmdb_" + ciVo.getId());
+//                    if (Objects.equals(tableType, "VIEW")) {
+//                        continue;
+//                    }
+                    ViewStatusInfo viewStatusInfo = new ViewStatusInfo();
+                    viewStatusInfo.setName("cmdb_" + ciVo.getId());
+                    viewStatusInfo.setLabel(ciVo.getLabel() + "(" + ciVo.getName() + ")");
+                    String viewXml = ciMapper.getCiViewXmlById(ciVo.getId());
+                    ciVo.setViewXml(viewXml);
+                    try {
+                        ciService.buildCiView(ciVo);
+                        viewStatusInfo.setStatus(ViewStatusInfo.Status.SUCCESS.toString());
+                    } catch (Exception e) {
+                        viewStatusInfo.setStatus(ViewStatusInfo.Status.FAILURE.toString());
+                        viewStatusInfo.setError(e.getMessage());
+                    }
+                    resultList.add(viewStatusInfo);
+                }
             }
         }
         return resultList;
