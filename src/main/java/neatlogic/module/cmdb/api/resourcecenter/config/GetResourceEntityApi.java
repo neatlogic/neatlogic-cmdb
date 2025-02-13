@@ -22,6 +22,7 @@ import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.SceneEntityVo;
 import neatlogic.framework.cmdb.exception.resourcecenter.ResourceCenterResourceFoundException;
+import neatlogic.framework.cmdb.resourcecenter.sceneview.core.SceneViewDefinitionFactory;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.dto.ValueTextVo;
 import neatlogic.framework.restful.annotation.*;
@@ -29,7 +30,6 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
-import neatlogic.module.cmdb.utils.ResourceEntityFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -73,7 +73,7 @@ public class GetResourceEntityApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         String name = paramObj.getString("name");
-        SceneEntityVo sceneEntityVo = ResourceEntityFactory.getSceneEntityByViewName(name);
+        SceneEntityVo sceneEntityVo = SceneViewDefinitionFactory.getSceneEntityByViewName(name);
         if (sceneEntityVo == null) {
             throw new ResourceCenterResourceFoundException(name);
         }
@@ -89,7 +89,7 @@ public class GetResourceEntityApi extends PrivateApiComponentBase {
         }
         resourceEntityVo.setLabel(sceneEntityVo.getLabel());
         resourceEntityVo.setDescription(sceneEntityVo.getDescription());
-        List<ValueTextVo> fieldList = ResourceEntityFactory.getFieldListByViewName(name);
+        List<ValueTextVo> fieldList = SceneViewDefinitionFactory.getFieldListByViewName(name);
         resourceEntityVo.setFieldList(fieldList);
         return resourceEntityVo;
     }

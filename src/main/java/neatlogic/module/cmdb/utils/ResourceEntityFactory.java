@@ -35,6 +35,7 @@ import java.util.*;
  * @author linbq
  * @since 2022/2/9 14:17
  **/
+@Deprecated
 public class ResourceEntityFactory {
     private static Logger logger = LoggerFactory.getLogger(ResourceEntityFactory.class);
     /**

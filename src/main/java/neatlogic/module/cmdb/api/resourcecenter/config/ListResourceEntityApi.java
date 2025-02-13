@@ -21,6 +21,7 @@ import neatlogic.framework.cmdb.auth.label.RESOURCECENTER_MODIFY;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.SceneEntityVo;
 import neatlogic.framework.cmdb.enums.resourcecenter.Status;
+import neatlogic.framework.cmdb.resourcecenter.sceneview.core.SceneViewDefinitionFactory;
 import neatlogic.framework.restful.annotation.Description;
 import neatlogic.framework.restful.annotation.OperationType;
 import neatlogic.framework.restful.annotation.Output;
@@ -28,7 +29,6 @@ import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
-import neatlogic.module.cmdb.utils.ResourceEntityFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -72,10 +72,10 @@ public class ListResourceEntityApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         List<ResourceEntityVo> resultList = new ArrayList<>();
-        List<String> viewNameList = ResourceEntityFactory.getViewNameList();
+        List<String> viewNameList = SceneViewDefinitionFactory.getViewNameList();
         List<ResourceEntityVo> resourceEntityList = resourceEntityMapper.getResourceEntityListByNameList(viewNameList);
         Map<String, ResourceEntityVo> resourceEntityVoMap = resourceEntityList.stream().collect(Collectors.toMap(ResourceEntityVo::getName, e -> e));
-        List<SceneEntityVo> sceneEntityList = ResourceEntityFactory.getSceneEntityList();
+        List<SceneEntityVo> sceneEntityList = SceneViewDefinitionFactory.getSceneEntityList();
         for (SceneEntityVo sceneEntityVo : sceneEntityList) {
             ResourceEntityVo resourceEntityVo = resourceEntityVoMap.get(sceneEntityVo.getName());
             if (resourceEntityVo == null) {

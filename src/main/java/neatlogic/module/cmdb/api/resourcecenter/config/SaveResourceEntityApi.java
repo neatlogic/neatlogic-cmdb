@@ -24,6 +24,7 @@ import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.SceneEntityVo;
 import neatlogic.framework.cmdb.enums.resourcecenter.Status;
 import neatlogic.framework.cmdb.exception.resourcecenter.ResourceCenterResourceFoundException;
+import neatlogic.framework.cmdb.resourcecenter.sceneview.core.SceneViewDefinitionFactory;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.Description;
 import neatlogic.framework.restful.annotation.Input;
@@ -34,7 +35,6 @@ import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
-import neatlogic.module.cmdb.utils.ResourceEntityFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -83,7 +83,7 @@ public class SaveResourceEntityApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         ResourceEntityVo resourceEntityVo = paramObj.toJavaObject(ResourceEntityVo.class);
-        SceneEntityVo sceneEntityVo = ResourceEntityFactory.getSceneEntityByViewName(resourceEntityVo.getName());
+        SceneEntityVo sceneEntityVo = SceneViewDefinitionFactory.getSceneEntityByViewName(resourceEntityVo.getName());
         if (sceneEntityVo == null) {
             throw new ResourceCenterResourceFoundException(resourceEntityVo.getName());
         }

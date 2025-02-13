@@ -1,13 +1,15 @@
 package neatlogic.module.cmdb.api.resourcecenter.appmodule;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
-import neatlogic.framework.cmdb.enums.resourcecenter.AppModuleResourceType;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
+import neatlogic.framework.cmdb.resourcecenter.appmoduleresource.core.AppModuleResourceFactory;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
@@ -16,8 +18,6 @@ import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
@@ -82,7 +82,7 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
             throw new CiNotFoundException("APPEnv");
         }
         //获取需要采集的模型
-        List<String> resourceTypeNameList = AppModuleResourceType.getNameList();
+        List<String> resourceTypeNameList = AppModuleResourceFactory.getNameList();
         List<CiVo> resourceCiVoList = new ArrayList<>();
         //获取应用环境实例list
         CiEntityVo envCiEntityVo = new CiEntityVo();

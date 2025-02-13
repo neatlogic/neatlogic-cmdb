@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB;
+import neatlogic.framework.cmdb.resourcecenter.sceneview.core.SceneViewDefinitionFactory;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.dao.mapper.SchemaMapper;
@@ -13,7 +14,6 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
-import neatlogic.module.cmdb.utils.ResourceEntityFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -48,7 +48,7 @@ public class getResourceEntityViewDataListApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         String name = paramObj.getString("name");
-        List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(name);
+        List<String> fieldNameList = SceneViewDefinitionFactory.getFieldNameListByViewName(name);
         JSONArray theadList = new JSONArray();
         List<String> columnNameList = schemaMapper.getTableOrViewAllColumnNameList(TenantContext.get().getDataDbName(), name);
         for (String fieldName : fieldNameList) {

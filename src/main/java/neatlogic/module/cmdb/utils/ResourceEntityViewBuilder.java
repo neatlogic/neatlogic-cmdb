@@ -29,6 +29,7 @@ import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.ResourceCenterConfigIrregularException;
 import neatlogic.framework.cmdb.exception.resourcecenter.ResourceCenterResourceFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.ResourceCenterViewConfigException;
+import neatlogic.framework.cmdb.resourcecenter.sceneview.core.SceneViewDefinitionFactory;
 import neatlogic.framework.cmdb.utils.SceneEntityGenerateSqlUtil;
 import neatlogic.framework.dao.mapper.DataBaseViewInfoMapper;
 import neatlogic.framework.dao.mapper.SchemaMapper;
@@ -142,7 +143,7 @@ public class ResourceEntityViewBuilder {
                 }
                 convertToResourceEntityVo(root);
             } else if (Objects.equals(type, ViewType.SCENE.getValue())) {
-                List<SceneEntityVo> sceneEntityList = ResourceEntityFactory.getSceneEntityList();
+                List<SceneEntityVo> sceneEntityList = SceneViewDefinitionFactory.getSceneEntityList();
                 for (SceneEntityVo sceneEntity : sceneEntityList) {
                     if (Objects.equals(sceneEntity.getName(), name)) {
                         sceneEntityVo = new SceneEntityVo();
@@ -961,7 +962,7 @@ public class ResourceEntityViewBuilder {
                 }
             }
             List<String> definedFieldList = sceneEntityAttrList.stream().map(SceneEntityAttrVo::getField).collect(Collectors.toList());
-            List<String> declaredFieldList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
+            List<String> declaredFieldList = SceneViewDefinitionFactory.getFieldNameListByViewName(viewName);
             List<String> undefinedFieldList = ListUtils.removeAll(declaredFieldList, definedFieldList);
             if (CollectionUtils.isNotEmpty(undefinedFieldList)) {
                 throw new ResourceCenterViewConfigException(viewName, String.join(",", undefinedFieldList));
@@ -984,7 +985,7 @@ public class ResourceEntityViewBuilder {
         if (StringUtils.isBlank(field)) {
             throw new ResourceCenterConfigIrregularException(viewName, joinType, "field");
         }
-        List<String> fieldList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
+        List<String> fieldList = SceneViewDefinitionFactory.getFieldNameListByViewName(viewName);
         if (!fieldList.contains(field)) {
             throw new ResourceCenterResourceFoundException(viewName, field);
         }
@@ -1021,7 +1022,7 @@ public class ResourceEntityViewBuilder {
         if (StringUtils.isBlank(field)) {
             throw new ResourceCenterConfigIrregularException(viewName, joinType, "field");
         }
-        List<String> fieldList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
+        List<String> fieldList = SceneViewDefinitionFactory.getFieldNameListByViewName(viewName);
         if (!fieldList.contains(field)) {
             throw new ResourceCenterResourceFoundException(viewName, field);
         }
@@ -1357,7 +1358,7 @@ public class ResourceEntityViewBuilder {
             if (Objects.equals(tableType, "VIEW")) {
                 schemaMapper.deleteView(TenantContext.get().getDataDbName() + "." + viewName);
             }
-            List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
+            List<String> fieldNameList = SceneViewDefinitionFactory.getFieldNameListByViewName(viewName);
             Table table = new Table();
             table.setName(viewName);
             table.setSchemaName(TenantContext.get().getDataDbName());
