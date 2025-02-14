@@ -19,12 +19,12 @@ import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.SceneEntityVo;
 import neatlogic.framework.cmdb.enums.resourcecenter.Status;
+import neatlogic.framework.cmdb.resourcecenter.sceneview.core.SceneViewDefinitionFactory;
 import neatlogic.framework.dao.mapper.SchemaMapper;
 import neatlogic.framework.rebuilddatabaseview.core.IRebuildDataBaseView;
 import neatlogic.framework.rebuilddatabaseview.core.ViewStatusInfo;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
-import neatlogic.module.cmdb.utils.ResourceEntityFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -53,7 +53,7 @@ public class ResourceViewRebuildHandler implements IRebuildDataBaseView {
     @Override
     public List<ViewStatusInfo> createViewIfNotExists() {
         List<ViewStatusInfo> resultList = new ArrayList<>();
-        List<SceneEntityVo> sceneEntityList = ResourceEntityFactory.getSceneEntityList();
+        List<SceneEntityVo> sceneEntityList = SceneViewDefinitionFactory.getSceneEntityList();
         for (SceneEntityVo sceneEntityVo : sceneEntityList) {
             String tableType = schemaMapper.checkTableOrViewIsExists(TenantContext.get().getDataDbName(), sceneEntityVo.getName());
             if (Objects.equals(tableType, "VIEW")) {
@@ -68,7 +68,7 @@ public class ResourceViewRebuildHandler implements IRebuildDataBaseView {
     @Override
     public List<ViewStatusInfo> createOrReplaceView() {
         List<ViewStatusInfo> resultList = new ArrayList<>();
-        List<SceneEntityVo> sceneEntityList = ResourceEntityFactory.getSceneEntityList();
+        List<SceneEntityVo> sceneEntityList = SceneViewDefinitionFactory.getSceneEntityList();
         for (SceneEntityVo sceneEntityVo : sceneEntityList) {
             ViewStatusInfo viewStatusInfo = rebuildSceneEntity(sceneEntityVo);
             resultList.add(viewStatusInfo);
