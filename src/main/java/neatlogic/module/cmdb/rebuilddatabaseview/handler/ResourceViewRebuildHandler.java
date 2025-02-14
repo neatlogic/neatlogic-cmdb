@@ -15,11 +15,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.rebuilddatabaseview.handler;
 
+import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.config.SceneEntityVo;
 import neatlogic.framework.cmdb.enums.resourcecenter.Status;
+import neatlogic.framework.cmdb.resourcecenter.sceneview.core.SceneViewDefinitionFactory;
+import neatlogic.framework.dao.mapper.SchemaMapper;
 import neatlogic.framework.rebuilddatabaseview.core.IRebuildDataBaseView;
 import neatlogic.framework.rebuilddatabaseview.core.ViewStatusInfo;
+import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -33,28 +39,71 @@ public class ResourceViewRebuildHandler implements IRebuildDataBaseView {
     @Resource
     private IResourceCenterResourceService resourceCenterResourceService;
 
+    @Resource
+    private ResourceEntityMapper resourceEntityMapper;
+
+    @Resource
+    private SchemaMapper schemaMapper;
+
     @Override
     public String getDescription() {
         return "重建资源中心视图";
     }
 
     @Override
-    public List<ViewStatusInfo> execute() {
+    public List<ViewStatusInfo> createViewIfNotExists() {
         List<ViewStatusInfo> resultList = new ArrayList<>();
-        List<ResourceEntityVo> resourceEntityList = resourceCenterResourceService.rebuildResourceEntity();
-        for (ResourceEntityVo resourceEntityVo : resourceEntityList) {
-            ViewStatusInfo viewStatusInfo = new ViewStatusInfo();
-            viewStatusInfo.setName(resourceEntityVo.getName());
-            viewStatusInfo.setLabel(resourceEntityVo.getLabel());
-            viewStatusInfo.setError(resourceEntityVo.getError());
-            if (Objects.equals(resourceEntityVo.getStatus(), Status.ERROR.getValue())) {
-                viewStatusInfo.setStatus(ViewStatusInfo.Status.FAILURE.toString());
-            } else {
-                viewStatusInfo.setStatus(ViewStatusInfo.Status.SUCCESS.toString());
+        List<SceneEntityVo> sceneEntityList = SceneViewDefinitionFactory.getSceneEntityList();
+        for (SceneEntityVo sceneEntityVo : sceneEntityList) {
+            String tableType = schemaMapper.checkTableOrViewIsExists(TenantContext.get().getDataDbName(), sceneEntityVo.getName());
+            if (Objects.equals(tableType, "VIEW")) {
+                continue;
             }
+            ViewStatusInfo viewStatusInfo = rebuildSceneEntity(sceneEntityVo);
             resultList.add(viewStatusInfo);
         }
         return resultList;
+    }
+
+    @Override
+    public List<ViewStatusInfo> createOrReplaceView() {
+        List<ViewStatusInfo> resultList = new ArrayList<>();
+        List<SceneEntityVo> sceneEntityList = SceneViewDefinitionFactory.getSceneEntityList();
+        for (SceneEntityVo sceneEntityVo : sceneEntityList) {
+            ViewStatusInfo viewStatusInfo = rebuildSceneEntity(sceneEntityVo);
+            resultList.add(viewStatusInfo);
+        }
+        return resultList;
+    }
+
+    private ViewStatusInfo rebuildSceneEntity(SceneEntityVo sceneEntityVo) {
+        ResourceEntityVo resourceEntityVo = new ResourceEntityVo();
+        resourceEntityVo.setName(sceneEntityVo.getName());
+        resourceEntityVo.setLabel(sceneEntityVo.getLabel());
+        String config = resourceEntityMapper.getResourceEntityConfigByName(resourceEntityVo.getName());
+        if (StringUtils.isNotBlank(config)) {
+            resourceEntityVo.setConfigStr(config);
+            String error = resourceCenterResourceService.buildResourceView(resourceEntityVo.getName(), resourceEntityVo.getConfig());
+            resourceEntityVo.setError(error);
+            if (StringUtils.isNotBlank(error)) {
+                resourceEntityVo.setStatus(Status.ERROR.getValue());
+            } else {
+                resourceEntityVo.setStatus(Status.READY.getValue());
+            }
+            resourceEntityMapper.updateResourceEntityStatusAndError(resourceEntityVo);
+        } else {
+            resourceEntityVo.setStatus(Status.PENDING.getValue());
+        }
+        ViewStatusInfo viewStatusInfo = new ViewStatusInfo();
+        viewStatusInfo.setName(resourceEntityVo.getName());
+        viewStatusInfo.setLabel(resourceEntityVo.getLabel());
+        viewStatusInfo.setError(resourceEntityVo.getError());
+        if (Objects.equals(resourceEntityVo.getStatus(), Status.ERROR.getValue())) {
+            viewStatusInfo.setStatus(ViewStatusInfo.Status.FAILURE.toString());
+        } else {
+            viewStatusInfo.setStatus(ViewStatusInfo.Status.SUCCESS.toString());
+        }
+        return viewStatusInfo;
     }
 
     @Override
