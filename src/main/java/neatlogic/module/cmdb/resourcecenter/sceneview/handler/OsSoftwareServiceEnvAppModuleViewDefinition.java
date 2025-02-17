@@ -18,6 +18,7 @@
 package neatlogic.module.cmdb.resourcecenter.sceneview.handler;
 
 import neatlogic.framework.cmdb.resourcecenter.sceneview.core.ISceneViewDefinition;
+import neatlogic.framework.cmdb.resourcecenter.sceneview.core.Ordered;
 import neatlogic.framework.cmdb.resourcecenter.sceneview.core.SceneViewFieldVo;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
@@ -38,6 +39,11 @@ public class OsSoftwareServiceEnvAppModuleViewDefinition implements ISceneViewDe
     @Override
     public String getLabel() {
         return "操作系统与软件服务、环境、模块场景";
+    }
+
+    @Override
+    public Ordered getOrdered() {
+        return Ordered.LOWEST_PRECEDENCE;
     }
 
     @Override

@@ -18,6 +18,7 @@
 package neatlogic.module.cmdb.resourcecenter.sceneview.handler;
 
 import neatlogic.framework.cmdb.resourcecenter.sceneview.core.ISceneViewDefinition;
+import neatlogic.framework.cmdb.resourcecenter.sceneview.core.Ordered;
 import neatlogic.framework.cmdb.resourcecenter.sceneview.core.SceneViewFieldVo;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
@@ -39,6 +40,11 @@ public class OsDetailClusterViewDefinition implements ISceneViewDefinition {
     @Override
     public String getLabel() {
         return "操作系统详情及集群场景";
+    }
+
+    @Override
+    public Ordered getOrdered() {
+        return Ordered.LOWEST_PRECEDENCE;
     }
 
     @Override
