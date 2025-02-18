@@ -389,6 +389,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             resultType="java.lang.Long">
         SELECT m.`id` FROM (
         SELECT DISTINCT a.`id`
+        <if test="keywordList != null and keywordList.size() > 0">
+            ,count(distinct fw.word) as match_count
+        </if>
         <if test="isNameFieldSort != null and isNameFieldSort == 1">
             , a.`name`
         </if>
@@ -451,17 +454,25 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             </if>-->
             <include refid="resource_ipobject_where"/>
         </where>
-        <choose>
-            <when test="isNameFieldSort != null and isNameFieldSort == 1">
-                ORDER BY LENGTH(a.`name`)
-            </when>
-            <when test="isIpFieldSort != null and isIpFieldSort == 1">
-                ORDER BY LENGTH(a.`ip`)
-            </when>
-            <otherwise>
-                ORDER BY a.`id`
-            </otherwise>
-        </choose>
+        <if test="keywordList != null and keywordList.size() > 0">
+            group by a.id
+        </if>
+        <trim prefix="ORDER BY" suffixOverrides=",">
+            <if test="keywordList != null and keywordList.size() > 0">
+                match_count DESC,
+            </if>
+            <choose>
+                <when test="isNameFieldSort != null and isNameFieldSort == 1">
+                    LENGTH(a.`name`)
+                </when>
+                <when test="isIpFieldSort != null and isIpFieldSort == 1">
+                    LENGTH(a.`ip`)
+                </when>
+                <otherwise>
+                    a.`id`
+                </otherwise>
+            </choose>
+        </trim>
         LIMIT #{startNum}, #{pageSize}
         ) m
     </select>
