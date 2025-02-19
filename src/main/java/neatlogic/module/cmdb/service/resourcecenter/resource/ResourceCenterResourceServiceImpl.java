@@ -744,7 +744,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         try {
             List<ResourceEntityRelLinkVo> relLinkList = getRelLinkListByRelNode(originalConfig.getRelNode());
             originalConfig.setRelLinkList(relLinkList);
-            List<ResourceEntityLeftJoinVo> leftJoinList = relListCheckValidityAndFillIdData(originalConfig);
+            List<ResourceEntityLeftJoinVo> leftJoinList = getLeftJoinList(originalConfig);
             ResourceEntityConfigVo config = fieldMappingCheckValidityAndFillIdData(viewName, originalConfig);
             config.setLeftJoinList(leftJoinList);
             if (Objects.equals(DatasourceManager.getDatabaseId(), DatabaseVendor.TIDB.getDatabaseId())) {
@@ -1174,7 +1174,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         }
     }
 
-    private List<ResourceEntityLeftJoinVo> relListCheckValidityAndFillIdData(ResourceEntityConfigVo config) {
+    private List<ResourceEntityLeftJoinVo> getLeftJoinList(ResourceEntityConfigVo config) {
         List<ResourceEntityLeftJoinVo> resultList = new ArrayList<>();
         List<ResourceEntityRelLinkVo> relLinkList = config.getRelLinkList();
         if (CollectionUtils.isNotEmpty(relLinkList)) {
