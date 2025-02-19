@@ -19,6 +19,8 @@ import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityConfigVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityRelNodeVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.SceneEntityVo;
 import neatlogic.framework.cmdb.exception.resourcecenter.ResourceCenterResourceFoundException;
@@ -27,6 +29,7 @@ import neatlogic.framework.common.dto.ValueTextVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.framework.util.UuidUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import neatlogic.module.cmdb.utils.ResourceEntityFactory;
@@ -85,6 +88,17 @@ public class GetResourceEntityApi extends PrivateApiComponentBase {
             CiVo ciVo = ciMapper.getCiById(resourceEntityVo.getCiId());
             if (ciVo != null) {
                 resourceEntityVo.setCi(ciVo);
+                ResourceEntityConfigVo config = resourceEntityVo.getConfig();
+                if (config != null) {
+                    ResourceEntityRelNodeVo relNode = config.getRelNode();
+                    if (relNode == null) {
+                        relNode = new ResourceEntityRelNodeVo();
+                        relNode.setUuid(UuidUtil.randomUuid());
+                        relNode.setCiName(ciVo.getName());
+                        relNode.setCiLabel(ciVo.getLabel());
+                        config.setRelNode(relNode);
+                    }
+                }
             }
         }
         resourceEntityVo.setLabel(sceneEntityVo.getLabel());

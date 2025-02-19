@@ -83,9 +83,9 @@ public class ResourceViewRebuildHandler implements IRebuildDataBaseView {
         String config = resourceEntityMapper.getResourceEntityConfigByName(resourceEntityVo.getName());
         if (StringUtils.isNotBlank(config)) {
             resourceEntityVo.setConfigStr(config);
-            String error = resourceCenterResourceService.buildResourceView(resourceEntityVo.getName(), resourceEntityVo.getConfig());
-            resourceEntityVo.setError(error);
-            if (StringUtils.isNotBlank(error)) {
+            String sql = resourceCenterResourceService.buildResourceView(resourceEntityVo);
+//            resourceEntityVo.setError(error);
+            if (StringUtils.isNotBlank(resourceEntityVo.getError())) {
                 resourceEntityVo.setStatus(Status.ERROR.getValue());
             } else {
                 resourceEntityVo.setStatus(Status.READY.getValue());

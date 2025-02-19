@@ -110,14 +110,15 @@ public class SaveResourceEntityApi extends PrivateApiComponentBase {
             resourceEntityMapper.insertResourceEntity(resourceEntityVo);
         }
         if (!configEquals) {
-            String error = resourceCenterResourceService.buildResourceView(resourceEntityVo.getName(), resourceEntityVo.getConfig());
-            resourceEntityVo.setError(error);
-            if (StringUtils.isNotBlank(error)) {
+            String sql = resourceCenterResourceService.buildResourceView(resourceEntityVo);
+//            resourceEntityVo.setError(error);
+            if (StringUtils.isNotBlank(resourceEntityVo.getError())) {
                 resourceEntityVo.setStatus(Status.ERROR.getValue());
             } else {
                 resourceEntityVo.setStatus(Status.READY.getValue());
             }
             resourceEntityMapper.updateResourceEntityStatusAndError(resourceEntityVo);
+            return sql;
         }
         return null;
     }

@@ -27,12 +27,10 @@ import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.*;
-import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityConfigVo;
-import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityFieldMappingVo;
-import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
-import neatlogic.framework.cmdb.dto.resourcecenter.config.SceneEntityVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.config.*;
 import neatlogic.framework.cmdb.dto.tag.TagVo;
 import neatlogic.framework.cmdb.enums.CmdbTenantConfig;
+import neatlogic.framework.cmdb.enums.RelDirectionType;
 import neatlogic.framework.cmdb.enums.resourcecenter.AppModuleResourceType;
 import neatlogic.framework.cmdb.enums.resourcecenter.Status;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
@@ -687,9 +685,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 //            }
             String config = resourceEntityMapper.getResourceEntityConfigByName(resourceEntityVo.getName());
             resourceEntityVo.setConfigStr(config);
-            String error = buildResourceView(resourceEntityVo.getName(), resourceEntityVo.getConfig());
-            resourceEntityVo.setError(error);
-            if (StringUtils.isNotBlank(error)) {
+            String sql = buildResourceView(resourceEntityVo);
+//            resourceEntityVo.setError(error);
+            if (StringUtils.isNotBlank(resourceEntityVo.getError())) {
                 resourceEntityVo.setStatus(Status.ERROR.getValue());
             } else {
                 resourceEntityVo.setStatus(Status.READY.getValue());
@@ -738,11 +736,17 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
     }
 
     @Override
-    public String buildResourceView(String viewName, ResourceEntityConfigVo originalConfig) {
+    public String buildResourceView(ResourceEntityVo resourceEntityVo) {
+        String viewName = resourceEntityVo.getName();
+        ResourceEntityConfigVo originalConfig = resourceEntityVo.getConfig();
+        String select = null;
         String error = StringUtils.EMPTY;
         try {
+            List<ResourceEntityRelLinkVo> relLinkList = getRelLinkListByRelNode(originalConfig.getRelNode());
+            originalConfig.setRelLinkList(relLinkList);
+            List<ResourceEntityLeftJoinVo> leftJoinList = relListCheckValidityAndFillIdData(originalConfig);
             ResourceEntityConfigVo config = fieldMappingCheckValidityAndFillIdData(viewName, originalConfig);
-            String select = null;
+            config.setLeftJoinList(leftJoinList);
             if (Objects.equals(DatasourceManager.getDatabaseId(), DatabaseVendor.TIDB.getDatabaseId())) {
                 ResourceViewGenerateSqlUtilForTiDB resourceViewGenerateSqlUtilForTiDB = new ResourceViewGenerateSqlUtilForTiDB(config);
                 select = resourceViewGenerateSqlUtilForTiDB.getSql();
@@ -811,9 +815,10 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                         schemaMapper.insertView(createTable.toString());
                     }).execute();
                 }
+                resourceEntityVo.setError(error);
             }
         }
-        return error;
+        return select;
     }
 
     /**
@@ -991,6 +996,82 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                         }
                     }
                 }
+            } else if (Objects.equals(type, "newRel")) {
+                String uuid = fieldMappingVo.getUuid();
+                String ciName = fieldMappingVo.getCiName();
+                String attr = fieldMappingVo.getAttr();
+                if (StringUtils.isBlank(attr)) {
+                    throw new ResourceViewFieldMappingException(viewName, field, "attr", attr);
+                }
+                List<ResourceEntityRelLinkVo> relLinkList = config.getRelLinkList();
+                if (CollectionUtils.isNotEmpty(relLinkList)) {
+                    for (ResourceEntityRelLinkVo relLinkVo : relLinkList) {
+                        if (Objects.equals(relLinkVo.getRightUuid(), uuid)) {
+                            CiVo rightCiVo = ciMapper.getCiByName(ciName);
+                            if (rightCiVo == null) {
+                                throw new ResourceViewFieldMappingException(viewName, field, "ciName", ciName);
+                            }
+                            newFieldMappingVo.setType("rel");
+                            newFieldMappingVo.setDirection(relLinkVo.getDirection());
+                            if (Objects.equals(relLinkVo.getDirection(), RelDirectionType.FROM.getValue())) {
+                                CiVo fromCiVo = rightCiVo;
+                                newFieldMappingVo.setFromCi(fromCiVo.getName());
+                                newFieldMappingVo.setFromCiId(fromCiVo.getId());
+                                String fromAttr = attr;
+                                newFieldMappingVo.setFromAttr(fromAttr);
+                                if (!defaultAttrList.contains(fromAttr)) {
+                                    AttrVo fromAttrVo = getAttrVo(fromCiVo, fromAttr);
+                                    if (fromAttrVo == null) {
+                                        throw new ResourceViewFieldMappingException(viewName, field, "attr", attr);
+                                    }
+                                    if (fromAttrVo.getTargetCiId() != null) {
+                                        throw new ResourceViewFieldMappingException(viewName, field, "attr", attr);
+                                    }
+                                    newFieldMappingVo.setFromAttrId(fromAttrVo.getId());
+                                    newFieldMappingVo.setFromAttrCiId(fromAttrVo.getCiId());
+                                }
+                                newFieldMappingVo.setFromCiAlias(relLinkVo.getRightCiAlias());
+
+                                String toCi = relLinkVo.getLeftCi();
+                                CiVo toCiVo = ciMapper.getCiByName(toCi);
+                                newFieldMappingVo.setToCi(toCiVo.getName());
+                                newFieldMappingVo.setToCiId(toCiVo.getId());
+                                newFieldMappingVo.setToCiIsVirtual(toCiVo.getIsVirtual());
+                                newFieldMappingVo.setToCiAlias(relLinkVo.getLeftCiAlias());
+                            } else if (Objects.equals(relLinkVo.getDirection(), RelDirectionType.TO.getValue())) {
+                                CiVo toCiVo = rightCiVo;
+                                newFieldMappingVo.setToCi(toCiVo.getName());
+                                newFieldMappingVo.setToCiId(toCiVo.getId());
+                                newFieldMappingVo.setToCiIsVirtual(toCiVo.getIsVirtual());
+                                newFieldMappingVo.setToCiAlias(relLinkVo.getRightCiAlias());
+                                String toAttr = attr;
+                                if (StringUtils.isBlank(toAttr)) {
+                                    newFieldMappingVo.setToAttr("_id");
+                                } else {
+                                    newFieldMappingVo.setToAttr(toAttr);
+                                    if (!defaultAttrList.contains(toAttr)) {
+                                        AttrVo toAttrVo = getAttrVo(toCiVo, toAttr);
+                                        if (toAttrVo == null) {
+                                            throw new ResourceViewFieldMappingException(viewName, field, "attr", attr);
+                                        }
+                                        if (toAttrVo.getTargetCiId() != null) {
+                                            throw new ResourceViewFieldMappingException(viewName, field, "attr", attr);
+                                        }
+                                        newFieldMappingVo.setToAttrId(toAttrVo.getId());
+                                        newFieldMappingVo.setToAttrCiId(toAttrVo.getCiId());
+                                        newFieldMappingVo.setToAttrCiName(toAttrVo.getCiName());
+                                    }
+                                }
+                                String fromCi = relLinkVo.getLeftCi();
+                                CiVo fromCiVo = ciMapper.getCiByName(fromCi);
+                                newFieldMappingVo.setFromCi(fromCiVo.getName());
+                                newFieldMappingVo.setFromCiId(fromCiVo.getId());
+                                newFieldMappingVo.setFromCiAlias(relLinkVo.getLeftCiAlias());
+                            }
+                            break;
+                        }
+                    }
+                }
             } else if (Objects.equals(type, "globalAttr")) {
                 String fromCi = fieldMappingVo.getFromCi();
                 if (StringUtils.isBlank(fromCi)) {
@@ -1032,6 +1113,107 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 //        }
         newConfig.setFieldMappingList(resultList);
         return newConfig;
+    }
+
+    private List<ResourceEntityRelLinkVo> getRelLinkListByRelNode(ResourceEntityRelNodeVo relNode) {
+        List<ResourceEntityRelLinkVo> relLinkList = new ArrayList<>();
+        if (relNode != null) {
+            Map<String, Map<ResourceEntityRelNodeVo, String>> map = new HashMap<>();
+            List<ResourceEntityRelNodeVo> children = relNode.getChildren();
+            if (CollectionUtils.isNotEmpty(children)) {
+                for (ResourceEntityRelNodeVo child : children) {
+                    addRelLinkListByRelNode(relLinkList, relNode, child, map);
+                }
+            }
+        }
+        return relLinkList;
+    }
+
+    private void addRelLinkListByRelNode(List<ResourceEntityRelLinkVo> relLinkList, ResourceEntityRelNodeVo leftNode, ResourceEntityRelNodeVo rightNode, Map<String, Map<ResourceEntityRelNodeVo, String>> map) {
+        {
+            ResourceEntityRelLinkVo relLinkVo = new ResourceEntityRelLinkVo();
+            {
+                Map<ResourceEntityRelNodeVo, String> relNodeAliasMap = map.computeIfAbsent(leftNode.getCiName(), key -> new HashMap<>());
+                int size = relNodeAliasMap.size();
+                String alias = relNodeAliasMap.get(leftNode);
+                if (alias == null) {
+                    if (size == 0) {
+                        alias = StringUtils.EMPTY;
+                    } else {
+                        alias = "alias_" + (size + 1);
+                    }
+                    relNodeAliasMap.put(leftNode, alias);
+                }
+                relLinkVo.setLeftCi(leftNode.getCiName());
+                relLinkVo.setLeftCiAlias(alias);
+            }
+            {
+                Map<ResourceEntityRelNodeVo, String> relNodeAliasMap = map.computeIfAbsent(rightNode.getCiName(), key -> new HashMap<>());
+                int size = relNodeAliasMap.size();
+                String alias = relNodeAliasMap.get(rightNode);
+                if (alias == null) {
+                    if (size == 0) {
+                        alias = StringUtils.EMPTY;
+                    } else {
+                        alias = "_alias_" + (size + 1);
+                    }
+                    relNodeAliasMap.put(rightNode, alias);
+                }
+                relLinkVo.setRightCi(rightNode.getCiName());
+                relLinkVo.setRightCiAlias(alias);
+                relLinkVo.setRightUuid(rightNode.getUuid());
+            }
+            relLinkVo.setDirection(rightNode.getDirection());
+            relLinkList.add(relLinkVo);
+        }
+        List<ResourceEntityRelNodeVo> children = rightNode.getChildren();
+        if (CollectionUtils.isNotEmpty(children)) {
+            for (ResourceEntityRelNodeVo child : children) {
+                addRelLinkListByRelNode(relLinkList, rightNode, child, map);
+            }
+        }
+    }
+
+    private List<ResourceEntityLeftJoinVo> relListCheckValidityAndFillIdData(ResourceEntityConfigVo config) {
+        List<ResourceEntityLeftJoinVo> resultList = new ArrayList<>();
+        List<ResourceEntityRelLinkVo> relLinkList = config.getRelLinkList();
+        if (CollectionUtils.isNotEmpty(relLinkList)) {
+            for (ResourceEntityRelLinkVo linkVo : relLinkList) {
+                String leftCi = linkVo.getLeftCi();
+                String rightCi = linkVo.getRightCi();
+                CiVo leftCiVo = ciMapper.getCiByName(leftCi);
+                if (leftCiVo == null) {
+                    throw new CiNotFoundException(leftCi);
+                }
+                CiVo rightCiVo = ciMapper.getCiByName(rightCi);
+                if (rightCiVo == null) {
+                    throw new CiNotFoundException(rightCi);
+                }
+                String direction = linkVo.getDirection();
+                if (Objects.equals(direction, RelDirectionType.FROM.getValue())) {
+                    ResourceEntityLeftJoinVo leftJoinVo = new ResourceEntityLeftJoinVo();
+                    leftJoinVo.setDirection(direction);
+                    leftJoinVo.setFromCi(rightCiVo.getName());
+                    leftJoinVo.setFromCiId(rightCiVo.getId());
+                    leftJoinVo.setFromCiAlias(linkVo.getRightCiAlias());
+                    leftJoinVo.setToCi(leftCiVo.getName());
+                    leftJoinVo.setToCiId(leftCiVo.getId());
+                    leftJoinVo.setToCiAlias(linkVo.getLeftCiAlias());
+                    resultList.add(leftJoinVo);
+                } else if (Objects.equals(direction, RelDirectionType.TO.getValue())) {
+                    ResourceEntityLeftJoinVo leftJoinVo = new ResourceEntityLeftJoinVo();
+                    leftJoinVo.setDirection(direction);
+                    leftJoinVo.setFromCi(leftCiVo.getName());
+                    leftJoinVo.setFromCiId(leftCiVo.getId());
+                    leftJoinVo.setFromCiAlias(linkVo.getLeftCiAlias());
+                    leftJoinVo.setToCi(rightCiVo.getName());
+                    leftJoinVo.setToCiId(rightCiVo.getId());
+                    leftJoinVo.setToCiAlias(linkVo.getRightCiAlias());
+                    resultList.add(leftJoinVo);
+                }
+            }
+        }
+        return resultList;
     }
 
     private AttrVo getAttrVo(CiVo ciVo, String attrName) {
