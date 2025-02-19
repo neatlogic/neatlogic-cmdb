@@ -392,12 +392,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         <if test="keywordList != null and keywordList.size() > 0">
             ,count(distinct fw.word) as match_count
         </if>
-        <if test="isNameFieldSort != null and isNameFieldSort == 1">
-            , a.`name`
-        </if>
-        <if test="isIpFieldSort != null and isIpFieldSort == 1">
-            , a.`ip`
-        </if>
         FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
         <if test="protocolIdList != null and protocolIdList.size() > 0">
             LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
@@ -461,17 +455,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             <if test="keywordList != null and keywordList.size() > 0">
                 match_count DESC,
             </if>
-            <choose>
-                <when test="isNameFieldSort != null and isNameFieldSort == 1">
-                    LENGTH(a.`name`)
-                </when>
-                <when test="isIpFieldSort != null and isIpFieldSort == 1">
-                    LENGTH(a.`ip`)
-                </when>
-                <otherwise>
-                    a.`id`
-                </otherwise>
-            </choose>
+            a.`id` DESC
         </trim>
         LIMIT #{startNum}, #{pageSize}
         ) m
