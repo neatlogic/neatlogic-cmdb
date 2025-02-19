@@ -702,7 +702,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 //配置项不存在直接返回0L，代表什么都不需要做
                 return 0L;
                 //throw new CiEntityNotFoundException(ciEntityTransactionVo.getCiEntityId());
-            } else if (oldCiEntityVo.getIsLocked().equals(1)) {
+            } else if (transactionGroupVo.isNeedLock() && oldCiEntityVo.getIsLocked().equals(1)) {
                 throw new CiEntityIsLockedException(ciEntityTransactionVo.getCiEntityId());
             }
             ciEntityTransactionVo.setOldCiEntityVo(oldCiEntityVo);
@@ -711,7 +711,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             createSnapshot(ciEntityTransactionVo);
         }
         //锁定当前配置项
-        if (ciEntityTransactionVo.getOldCiEntityVo() != null) {
+        if (transactionGroupVo.isNeedLock() && ciEntityTransactionVo.getOldCiEntityVo() != null) {
             ciEntityTransactionVo.getOldCiEntityVo().setIsLocked(1);
             ciEntityMapper.updateCiEntityLockById(ciEntityTransactionVo.getOldCiEntityVo());
         }
@@ -2176,8 +2176,10 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             }
 
             // 解除配置项修改锁定
-            ciEntityVo.setIsLocked(0);
-            ciEntityMapper.updateCiEntityLockById(ciEntityVo);
+            if (transactionGroupVo.isNeedLock()) {
+                ciEntityVo.setIsLocked(0);
+                ciEntityMapper.updateCiEntityLockById(ciEntityVo);
+            }
 
             //修改事务状态
             if (ciEntityTransactionVo.getAction().equals(TransactionActionType.RECOVER.getValue())) {
