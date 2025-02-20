@@ -20,6 +20,7 @@ package neatlogic.module.cmdb.resourcecenter.datasource.handler;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.ApplicationListDisplayVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceTypeVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
@@ -28,6 +29,7 @@ import neatlogic.framework.cmdb.resourcecenter.datasource.core.Ordered;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
+import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import org.apache.commons.collections4.CollectionUtils;
@@ -51,7 +53,11 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
     private ResourceMapper resourceMapper;
 
     @Resource
+    private ResourceEntityMapper resourceEntityMapper;
+
+    @Resource
     private IResourceCenterResourceService resourceCenterResourceService;
+
     @Override
     public Ordered getOrdered() {
         return Ordered.LOWEST_PRECEDENCE;
@@ -60,9 +66,9 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
     @Override
     public JSONArray getAppResourceList(Long appSystemId, Long appModuleId, Long envId, List<Long> resourceTypeIdList, Integer currentPage, Integer pageSize) {
         JSONArray tableList = new JSONArray();
-        String configStr = resourceMapper.getApplicationListDisplayConfig();
-        if (StringUtils.isBlank(configStr)) {
-            JSONObject config = JSONObject.parseObject(configStr);
+        ApplicationListDisplayVo applicationListDisplay = resourceEntityMapper.getApplicationListDisplay();
+        if (applicationListDisplay != null) {
+            JSONObject config = applicationListDisplay.getConfig();
             if (MapUtils.isNotEmpty(config)) {
                 JSONArray tableArray = config.getJSONArray("tableList");
                 if (CollectionUtils.isNotEmpty(tableArray)) {

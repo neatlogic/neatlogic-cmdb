@@ -51,6 +51,28 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         LIMIT #{startNum}, #{pageSize}
     </select>
 
+    <select id="getApplicationListDisplay" resultType="neatlogic.framework.cmdb.dto.resourcecenter.ApplicationListDisplayVo">
+        SELECT
+            `id`,
+            `app_system_id` AS appSystemId,
+            `app_module_id` AS appModuleId
+            `env_id` AS envId,
+            `config` AS configStr,
+        FROM `cmdb_resourcecenter_applicationlist_display`
+        WHERE `app_system_id` IS NULL
+          AND `app_module_id` IS NULL
+          AND `env_id` IS NULL
+    </select>
+
+    <select id="getAssetListDisplay" resultType="neatlogic.framework.cmdb.dto.resourcecenter.AssetListDisplayVo">
+        SELECT
+            `id`,
+            `root_ci_name` AS rootCiName,
+            `config` AS configStr,
+        FROM `cmdb_resourcecenter_assetlist_display`
+        LIMIT 1
+    </select>
+
     <insert id="insertResourceEntity"
             parameterType="neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
         INSERT INTO cmdb_resourcecenter_entity (`name`, `label`, `status`, `error`, `init_time`, `ci_id`, `config`, `description`)
@@ -80,6 +102,42 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     <insert id="insertResourceTypeCi" parameterType="java.lang.Long">
         INSERT INTO `cmdb_resourcecenter_type_ci` (`ci_id`)
         VALUES (#{value})
+    </insert>
+
+    <insert id="insertApplicationListDisplay" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ApplicationListDisplayVo">
+        INSERT INTO `cmdb_resourcecenter_applicationlist_display` (
+            `id`,
+            `app_system_id`,
+            `app_module_id`,
+            `env_id`,
+            `config`
+        )
+        VALUES
+            (
+                #{id},
+                #{appSystemId},
+                #{appModuleId},
+                #{envId},
+                #{configStr, typeHandler=CompressHandler}
+            )
+        ON DUPLICATE KEY UPDATE
+        `config` = #{configStr, typeHandler=CompressHandler}
+    </insert>
+
+    <insert id="insertAssetListDisplay" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.AssetListDisplayVo">
+        INSERT INTO `cmdb_resourcecenter_assetlist_display` (
+            `id`,
+            `root_ci_name`,
+            `config`
+        )
+        VALUES
+            (
+                #{id},
+                #{rootCiName},
+                #{configStr, typeHandler=CompressHandler}
+            )
+        ON DUPLICATE KEY UPDATE
+        `config` = #{configStr, typeHandler=CompressHandler}
     </insert>
 
     <update id="updateResourceEntity"

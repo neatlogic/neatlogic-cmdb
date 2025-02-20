@@ -2102,13 +2102,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             <include refid="resource_ipobject_where"/>
         </where>
     </select>
-
-    <select id="getApplicationListDisplayConfig" resultType="java.lang.String">
-        SELECT
-            `config`
-        FROM `cmdb_resourcecenter_applicationlist_display`
-        WHERE `appSystemId` IS NULL
-          AND `appModuleId` IS NULL
-          AND `envId` IS NULL
-    </select>
 </mapper>
