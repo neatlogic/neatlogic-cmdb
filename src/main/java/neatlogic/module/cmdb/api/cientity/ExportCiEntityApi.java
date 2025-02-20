@@ -40,6 +40,7 @@ import neatlogic.framework.util.excel.ExcelBuilder;
 import neatlogic.framework.util.excel.SheetBuilder;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiViewMapper;
+import neatlogic.module.cmdb.dsl.DslSearchManager;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
 import neatlogic.module.cmdb.service.group.GroupService;
@@ -96,6 +97,7 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
 
     @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid"),
             @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "common.keyword"),
+            @Param(name = "dsl", type = ApiParamType.STRING, desc = "nmcac.searchcientitybydslapi.input.param.desc.dsl"),
             @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "nmcac.exportcientityapi.input.param.desc.idlist"),
             @Param(name = "showAttrRelList", type = ApiParamType.JSONARRAY, desc = "nmcac.exportcientityapi.input.param.desc.showattrrellist"),
             @Param(name = "attrFilterList", type = ApiParamType.STRING, desc = "nmcac.exportcientityapi.input.param.desc.attrfilterlist"),
@@ -105,6 +107,7 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
         JSONArray idList = jsonObj.getJSONArray("idList");
+        String dsl = jsonObj.getString("dsl");
         CiEntityVo ciEntityVo = JSON.toJavaObject(jsonObj, CiEntityVo.class);
         JSONArray showAttrRelList = jsonObj.getJSONArray("showAttrRelList");
         Set<String> showAttrRelSet = new HashSet<>();
@@ -197,7 +200,21 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
         ciEntityVo.setNeedRowNum(false);
         ciEntityVo.setLimitAttrEntity(false);
         ciEntityVo.setLimitRelEntity(false);
-        List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
+        List<CiEntityVo> ciEntityList = searchCiEntity(ciEntityVo);
+        /*if (StringUtils.isBlank(dsl)) {
+            ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
+        } else {
+            DslSearchManager searchManager = DslSearchManager.build(ciEntityVo.getCiId(), dsl)
+                    .withNeedRowCount(true);
+            if (CollectionUtils.isNotEmpty(ciEntityVo.getGroupIdList())) {
+                searchManager.withGroupIdList(ciEntityVo.getGroupIdList());
+            }
+            List<Long> sqlIdList = searchManager.search();
+            ciEntityVo.setIdList(sqlIdList);
+            ciEntityVo.setRowNum(searchManager.getRowNum());
+            ciEntityVo.setPageCount(searchManager.getPageCount());
+            ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
+        }*/
         while (CollectionUtils.isNotEmpty(ciEntityList)) {
             for (CiEntityVo entity : ciEntityList) {
                 Map<String, Object> dataMap = new HashMap<>();
@@ -268,7 +285,7 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
             //如果从外部传入idList，就不需要进一步查询下一页数据了
             if (CollectionUtils.isEmpty(idList)) {
                 ciEntityVo.setCurrentPage(ciEntityVo.getCurrentPage() + 1);
-                ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
+                ciEntityList = searchCiEntity(ciEntityVo);
             } else {
                 break;
             }
@@ -291,4 +308,23 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
         return null;
     }
 
+
+    private List<CiEntityVo> searchCiEntity(CiEntityVo ciEntityVo) {
+        List<CiEntityVo> ciEntityList = null;
+        if (StringUtils.isNotBlank(ciEntityVo.getDsl())) {
+            DslSearchManager searchManager = DslSearchManager.build(ciEntityVo.getCiId(), ciEntityVo.getDsl())
+                    .withCurrentPage(ciEntityVo.getCurrentPage()).withPageSize(ciEntityVo.getPageSize());
+            if (CollectionUtils.isNotEmpty(ciEntityVo.getGroupIdList())) {
+                searchManager.withGroupIdList(ciEntityVo.getGroupIdList());
+            }
+            List<Long> sqlIdList = searchManager.search();
+            if (CollectionUtils.isNotEmpty(sqlIdList)) {
+                ciEntityVo.setIdList(sqlIdList);
+                ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
+            }
+        } else {
+            ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
+        }
+        return ciEntityList;
+    }
 }
