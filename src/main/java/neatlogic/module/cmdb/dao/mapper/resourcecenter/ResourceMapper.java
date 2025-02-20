@@ -214,4 +214,6 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
     List<SoftwareServiceOSVo> getOsResourceListByResourceIdList(List<Long> resourceIdList);
 
     List<Long> getResourceTypeIdListByAuth(ResourceSearchVo searchVo);
+
+    String getApplicationListDisplayConfig();
 }

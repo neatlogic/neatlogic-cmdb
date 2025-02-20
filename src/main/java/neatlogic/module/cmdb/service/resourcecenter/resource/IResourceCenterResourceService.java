@@ -41,6 +41,8 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
 
     ResourceSearchVo assembleResourceSearchVo(JSONObject jsonObj,boolean isIncludeSon);
 
+    void assembleResourceSearchVo(ResourceSearchVo searchVo, boolean isIncludeSon);
+
     /**
      * 处理批量搜索关键字
      * @param resourceSearchVo

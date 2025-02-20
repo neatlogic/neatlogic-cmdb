@@ -206,6 +206,49 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
     }
 
     @Override
+    public void assembleResourceSearchVo(ResourceSearchVo searchVo, boolean isIncludeSon) {
+        boolean isHasAuth = AuthActionChecker.check(CI_MODIFY.class, CIENTITY_MODIFY.class);
+        Long typeId = searchVo.getTypeId();
+        List<Long> typeIdList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(searchVo.getTypeIdList())) {
+            typeIdList.addAll(searchVo.getTypeIdList());
+        }
+        if (typeId != null && !typeIdList.contains(typeId)) {
+            typeIdList.add(typeId);
+        }
+        if (CollectionUtils.isNotEmpty(typeIdList)) {
+            Set<Long> authedCiIdSet = new HashSet<>();
+            Set<Long> ciIdSet = new HashSet<>();
+            for (Long ciId : typeIdList) {
+                CiVo ciVo = ciMapper.getCiById(ciId);
+                if (ciVo == null) {
+                    throw new CiNotFoundException(ciId);
+                }
+                if (!isHasAuth) {
+                    List<CiVo> authedCiList;
+                    authedCiList = ciMapper.getDownwardCiEntityQueryCiListByLR(ciVo.getLft(), ciVo.getRht(), UserContext.get().getAuthenticationInfoVo(), searchVo.getIsHasAuth());
+                    if (CollectionUtils.isNotEmpty(authedCiList)) {
+                        if (isIncludeSon) {
+                            List<CiVo> inCludeSonCiList = ciMapper.getBatchDownwardCiListByCiList(authedCiList);
+                            Set<Long> ciIdList = inCludeSonCiList.stream().map(CiVo::getId).collect(Collectors.toSet());
+                            authedCiIdSet.addAll(ciIdList);
+                        } else {
+                            authedCiIdSet.addAll(authedCiList.stream().map(CiVo::getId).collect(Collectors.toSet()));
+                        }
+                    }
+                }
+                List<CiVo> ciList = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
+                List<Long> ciIdList = ciList.stream().map(CiVo::getId).collect(Collectors.toList());
+                ciIdSet.addAll(ciIdList);
+
+            }
+            searchVo.setAuthedTypeIdList(new ArrayList<>(authedCiIdSet));
+            searchVo.setTypeIdList(new ArrayList<>(ciIdSet));
+        }
+        searchVo.setIsHasAuth(AuthActionChecker.check(CI_MODIFY.class, CIENTITY_MODIFY.class) || Objects.equals("0", ConfigManager.getConfig(CmdbTenantConfig.IS_RESOURCECENTER_AUTH)));
+    }
+
+    @Override
     public void handleBatchSearchList(ResourceSearchVo searchVo) {
         List<String> batchSearchList = searchVo.getBatchSearchList();
         if (CollectionUtils.isNotEmpty(batchSearchList)) {
