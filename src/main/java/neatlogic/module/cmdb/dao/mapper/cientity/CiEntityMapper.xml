@@ -1008,12 +1008,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 <if test="keywordId != null">
                     OR `ci_base`.id = #{keywordId}
                 </if>
-                OR `ci_base`.`name` LIKE CONCAT('%', #{keyword}, '%')
+                <!-- 去掉可以提升检索性能
+                OR `ci_base`.`name` LIKE CONCAT('%', #{keyword}, '%')-->
                 )
             </if>
 
             <if test="name != null and name != ''">
-                AND `ci_base`.`name` LIKE CONCAT('%', #{name}, '%')
+                AND `ci_base`.`name` LIKE CONCAT(#{name}, '%')
             </if>
             <choose>
                 <when test="filterCiId != null">
