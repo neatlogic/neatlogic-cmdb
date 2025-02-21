@@ -33,7 +33,6 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
-import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -50,15 +49,10 @@ import java.util.List;
 public class AppResourceListApi extends PrivateApiComponentBase {
 
     @Resource
-    private IResourceCenterResourceService resourceCenterResourceService;
-
-    @Resource
     private CiEntityMapper ciEntityMapper;
 
     @Resource
     private CiMapper ciMapper;
-
-    private IResourceCenterDataSource resourceCenterDataSource = ResourceCenterDataSourceFactory.getResourceCenterDataSource();
 
     @Override
     public String getToken() {
@@ -114,6 +108,8 @@ public class AppResourceListApi extends PrivateApiComponentBase {
             }
             typeIdList.add(typeId);
         }
+
+        IResourceCenterDataSource resourceCenterDataSource = ResourceCenterDataSourceFactory.getResourceCenterDataSource();
         JSONArray tableList = resourceCenterDataSource.getAppResourceList(appSystemId, appModuleId, envId, typeIdList, currentPage, pageSize);
         resultObj.put("tableList", tableList);
         return resultObj;

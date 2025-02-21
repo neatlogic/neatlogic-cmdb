@@ -55,20 +55,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         SELECT
             `id`,
             `app_system_id` AS appSystemId,
-            `app_module_id` AS appModuleId
+            `app_module_id` AS appModuleId,
             `env_id` AS envId,
-            `config` AS configStr,
+            `config` AS configStr
         FROM `cmdb_resourcecenter_applicationlist_display`
         WHERE `app_system_id` IS NULL
           AND `app_module_id` IS NULL
           AND `env_id` IS NULL
+        LIMIT 1
     </select>
 
     <select id="getAssetListDisplay" resultType="neatlogic.framework.cmdb.dto.resourcecenter.AssetListDisplayVo">
         SELECT
             `id`,
             `root_ci_name` AS rootCiName,
-            `config` AS configStr,
+            `config` AS configStr
         FROM `cmdb_resourcecenter_assetlist_display`
         LIMIT 1
     </select>
@@ -137,6 +138,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 #{configStr, typeHandler=CompressHandler}
             )
         ON DUPLICATE KEY UPDATE
+        `root_ci_name` = #{rootCiName},
         `config` = #{configStr, typeHandler=CompressHandler}
     </insert>
 

@@ -20,17 +20,22 @@ package neatlogic.module.cmdb.api.resourcecenter.config;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.RESOURCECENTER_MODIFY;
+import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.AssetListDisplayVo;
+import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.SnowflakeUtil;
+import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 @Service
 @AuthAction(action = RESOURCECENTER_MODIFY.class)
@@ -40,6 +45,9 @@ public class SaveAssertListDisplayApi extends PrivateApiComponentBase {
 
     @Resource
     private ResourceEntityMapper resourceEntityMapper;
+
+    @Resource
+    private CiMapper ciMapper;
 
     @Override
     public String getName() {
@@ -62,10 +70,26 @@ public class SaveAssertListDisplayApi extends PrivateApiComponentBase {
         if (id != null) {
             assetListDisplayVo.setId(id);
         } else {
-            assetListDisplayVo.setId(SnowflakeUtil.uniqueLong());
+            AssetListDisplayVo assetListDisplay = resourceEntityMapper.getAssetListDisplay();
+            if (assetListDisplay != null) {
+                assetListDisplayVo.setId(assetListDisplay.getId());
+            } else {
+                assetListDisplayVo.setId(SnowflakeUtil.uniqueLong());
+            }
         }
         assetListDisplayVo.setRootCiName(rootCiName);
         assetListDisplayVo.setConfig(config);
+        CiVo ciVo = ciMapper.getCiByName(rootCiName);
+        if (ciVo == null) {
+            throw new CiNotFoundException(rootCiName);
+        }
+        List<Long> ciIdList = resourceEntityMapper.getAllResourceTypeCiIdList();
+        if (!ciIdList.contains(ciVo.getId())) {
+            if (CollectionUtils.isNotEmpty(ciIdList)) {
+                resourceEntityMapper.deleteResourceTypeCi();
+            }
+            resourceEntityMapper.insertResourceTypeCi(ciVo.getId());
+        }
         resourceEntityMapper.insertAssetListDisplay(assetListDisplayVo);
         return null;
     }

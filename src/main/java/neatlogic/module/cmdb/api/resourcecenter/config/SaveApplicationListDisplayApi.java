@@ -60,7 +60,12 @@ public class SaveApplicationListDisplayApi extends PrivateApiComponentBase {
         if (id != null) {
             applicationListDisplayVo.setId(id);
         } else {
-            applicationListDisplayVo.setId(SnowflakeUtil.uniqueLong());
+            ApplicationListDisplayVo applicationListDisplay = resourceEntityMapper.getApplicationListDisplay();
+            if (applicationListDisplay != null) {
+                applicationListDisplayVo.setId(applicationListDisplay.getId());
+            } else {
+                applicationListDisplayVo.setId(SnowflakeUtil.uniqueLong());
+            }
         }
         applicationListDisplayVo.setConfig(config);
         resourceEntityMapper.insertApplicationListDisplay(applicationListDisplayVo);

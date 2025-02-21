@@ -41,6 +41,10 @@ public class ResourceEntityFactory {
      * 视图名称与字段列表映射关系
      */
     private static Map<String, List<ValueTextVo>> fieldMap = new HashMap<>();
+    /**
+     * 视图名称与字段别名列表映射关系
+     */
+    private static Map<String, List<ValueTextVo>> fieldAliasMap = new HashMap<>();
     private static List<ResourceEntityVo> resourceEntityList = new ArrayList<>();
     /**
      * 视图信息列表
@@ -137,6 +141,7 @@ public class ResourceEntityFactory {
                     if (StringUtils.isNotBlank(rf.name())) {
                         EntityField ef = field.getAnnotation(EntityField.class);
                         fieldMap.computeIfAbsent(sceneEntityVo.getName(), key -> new ArrayList<>()).add(new ValueTextVo(rf.name(), ef.name()));
+                        fieldAliasMap.computeIfAbsent(sceneEntityVo.getName(), key -> new ArrayList<>()).add(new ValueTextVo(rf.name(), field.getName()));
                     }
                 }
 //                Annotation[] annotations = field.getDeclaredAnnotations();
@@ -171,6 +176,7 @@ public class ResourceEntityFactory {
                             if (StringUtils.isNotBlank(rf.name())) {
                                 EntityField ef = field.getAnnotation(EntityField.class);
                                 fieldMap.computeIfAbsent(sceneEntityVo.getName(), key -> new ArrayList<>()).add(new ValueTextVo(rf.name(), ef.name()));
+                                fieldAliasMap.computeIfAbsent(sceneEntityVo.getName(), key -> new ArrayList<>()).add(new ValueTextVo(rf.name(), field.getName()));
                             }
                         }
                     }
@@ -223,6 +229,14 @@ public class ResourceEntityFactory {
             return new ArrayList<>();
         }
         return new ArrayList<>(fieldList);
+    }
+
+    public static List<ValueTextVo> getFieldAliasListByViewName(String viewName) {
+        List<ValueTextVo> fieldAliasList = fieldAliasMap.get(viewName);
+        if (fieldAliasList == null) {
+            return new ArrayList<>();
+        }
+        return new ArrayList<>(fieldAliasList);
     }
 
     public static List<String> getViewNameList() {
