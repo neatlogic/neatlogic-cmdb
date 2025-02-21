@@ -1,23 +1,22 @@
 package neatlogic.module.cmdb.api.resourcecenter.appmodule;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
-import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.enums.resourcecenter.AppModuleResourceType;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
-import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
@@ -35,9 +34,6 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
 
     @Resource
     private CiMapper ciMapper;
-
-    @Resource
-    private CiEntityMapper ciEntityMapper;
 
     @Resource
     ResourceMapper resourceMapper;
@@ -77,18 +73,25 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
         JSONArray returnArray = new JSONArray();
         Long appModuleId = paramObj.getLong("appModuleId");
         //获取应用环境模型
-        CiVo envCiVo = ciMapper.getCiByName("APPEnv");
-        if (envCiVo == null) {
-            throw new CiNotFoundException("APPEnv");
-        }
+//        CiVo envCiVo = ciMapper.getCiByName("APPEnv");
+//        if (envCiVo == null) {
+//            throw new CiNotFoundException("APPEnv");
+//        }
         //获取需要采集的模型
         List<String> resourceTypeNameList = AppModuleResourceType.getNameList();
         List<CiVo> resourceCiVoList = new ArrayList<>();
+        List<ResourceVo> envResourceList = new ArrayList<>();
         //获取应用环境实例list
-        CiEntityVo envCiEntityVo = new CiEntityVo();
-        envCiEntityVo.setCiId(envCiVo.getId());
-        List<Long> envIdList = ciEntityMapper.getCiEntityIdByCiId(envCiEntityVo);
-        List<ResourceVo> envResourceList = resourceMapper.searchAppEnvListByIdList(envIdList);
+//        CiEntityVo envCiEntityVo = new CiEntityVo();
+//        envCiEntityVo.setCiId(envCiVo.getId());
+//        List<Long> envIdList = ciEntityMapper.getCiEntityIdByCiId(envCiEntityVo);
+        BasePageVo search = new BasePageVo();
+        search.setCurrentPage(1);
+        search.setPageSize(100);
+        List<Long> envIdList = resourceMapper.searchAppEnvIdList(search);
+        if (CollectionUtils.isNotEmpty(envIdList)) {
+            envResourceList = resourceMapper.searchAppEnvListByIdList(envIdList);
+        }
         //获取数据库所有的模型，用于通过id去获得对应的模型
         Map<Long, CiVo> allCiVoMap = new HashMap<>();
         List<CiVo> allCiVoList = ciMapper.getAllCi(null);
