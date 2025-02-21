@@ -44,6 +44,14 @@ public interface CiEntityMapper extends ICiEntityCrossoverMapper {
     List<Long> getNotIndexCiEntityIdList(FullTextIndexTypeVo fullTextIndexTypeVo);
 
     /**
+     * 查询所有配置项id用于重建索引
+     *
+     * @param fullTextIndexTypeVo 索引类型
+     * @return 配置项id列表
+     */
+    List<Long> searchCiEntityIdForFulltextIndex(FullTextIndexTypeVo fullTextIndexTypeVo);
+
+    /**
      * 检查引用属性是否有值
      *
      * @param fromCiId 模型id

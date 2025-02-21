@@ -27,6 +27,8 @@ import neatlogic.framework.cmdb.dto.cientity.AttrEntityVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.cientity.RelEntityVo;
 import neatlogic.framework.cmdb.enums.RelDirectionType;
+import neatlogic.framework.fulltextindex.core.FullTextIndexHandlerFactory;
+import neatlogic.framework.fulltextindex.core.IFullTextIndexHandler;
 import neatlogic.framework.transaction.core.AfterTransactionJob;
 import neatlogic.framework.util.SnowflakeUtil;
 import neatlogic.framework.util.javascript.JavascriptUtil;
@@ -35,6 +37,7 @@ import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.AttrEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.AttrExpressionRebuildAuditMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.RelEntityMapper;
+import neatlogic.module.cmdb.fulltextindex.enums.CmdbFullTextIndexType;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -88,7 +91,14 @@ public class AttrExpressionRebuildManager {
                 while (!Thread.currentThread().isInterrupted()) {
                     try {
                         rebuildAuditVo = rebuildQueue.take();
-                        new Builder(rebuildAuditVo).execute();
+                        try {
+                            new Builder(rebuildAuditVo).execute();
+                        } finally {
+                            if (rebuildAuditVo.getLock() != null) {
+                                //System.out.println("重建表达式解除锁" + rebuildAuditVo.getLock());
+                                rebuildAuditVo.getLock().release();
+                            }
+                        }
                         //CachedThreadPool.execute(new Builder(rebuildAuditVo));
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
@@ -220,6 +230,11 @@ public class AttrExpressionRebuildManager {
                         if (CollectionUtils.isNotEmpty(changeCiEntityList)) {
                             for (CiEntityVo ciEntityVo : changeCiEntityList) {
                                 updateExpressionAttr(ciEntityVo);
+                                IFullTextIndexHandler handler = FullTextIndexHandlerFactory.getHandler(CmdbFullTextIndexType.CIENTITY);
+                                if (handler != null) {
+                                    //重建受影响端配置项索引
+                                    handler.createIndex(ciEntityVo.getId());
+                                }
                             }
                         }
                     }
@@ -231,7 +246,6 @@ public class AttrExpressionRebuildManager {
                         updateExpressionAttr(new CiEntityVo(attrEntityVo.getFromCiId(), attrEntityVo.getFromCiEntityId()));
                     }
                 }
-
             } else if (rebuildAuditVo.getCiId() != null && rebuildAuditVo.getCiEntityId() != null && rebuildAuditVo.getType().equals(RebuildAuditVo.Type.INVOKE.getValue())) {
                 if (CollectionUtils.isNotEmpty(rebuildAuditVo.getAttrIdList())) {
                     //如果修改的属性中没有表达式属性，则不做任何修改
@@ -426,12 +440,28 @@ public class AttrExpressionRebuildManager {
         }
     }
 
-
     public static void rebuild(RebuildAuditVo rebuildAuditVo) {
+        //System.out.println("重建表达式开始");
         attrExpressionRebuildAuditMapper.insertAttrExpressionRebuildAudit(rebuildAuditVo);
         AfterTransactionJob<RebuildAuditVo> job = new AfterTransactionJob<>("CIENTITY-EXPRESSION-ATTR-BUILDER");
-        job.execute(rebuildAuditVo, rebuildQueue::offer);
+        job.execute(rebuildAuditVo, rebuildAuditVo1 -> {
+            if (rebuildAuditVo1.getLock() != null) {
+                try {
+                    //System.out.println("重建表达式尝试获取锁：" + rebuildAuditVo1.getLock());
+                    rebuildAuditVo1.getLock().acquire();
+                    //System.out.println("重建表达式成功获取锁：" + rebuildAuditVo1.getLock());
+                } catch (InterruptedException ignored) {
+
+                }
+            }
+            rebuildQueue.offer(rebuildAuditVo1);
+        });
     }
+
+
+    /*public static void rebuild(RebuildAuditVo rebuildAuditVo) {
+        rebuild(rebuildAuditVo, null);
+    }*/
 
     public static void rebuild(List<RebuildAuditVo> rebuildAuditList) {
         if (CollectionUtils.isNotEmpty(rebuildAuditList)) {
@@ -441,6 +471,13 @@ public class AttrExpressionRebuildManager {
             AfterTransactionJob<List<RebuildAuditVo>> job = new AfterTransactionJob<>("CIENTITY-EXPRESSION-ATTR-BUILDER");
             job.execute(rebuildAuditList, pRebuildAuditList -> {
                 for (RebuildAuditVo auditVo : pRebuildAuditList) {
+                    if (auditVo.getLock() != null) {
+                        try {
+                            auditVo.getLock().acquire();
+                        } catch (InterruptedException ignored) {
+
+                        }
+                    }
                     rebuildQueue.offer(auditVo);
                 }
             });

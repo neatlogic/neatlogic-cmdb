@@ -289,6 +289,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         ${value}
     </select>
 
+    <select id="searchCiEntityIdForFulltextIndex" resultType="java.lang.Long" useCache="false"
+            parameterType="neatlogic.framework.fulltextindex.dto.fulltextindex.FullTextIndexTypeVo">
+        SELECT a.id
+        FROM cmdb_cientity a
+        ORDER BY id
+        limit #{startNum}, #{pageSize}
+    </select>
+
     <select id="getNotIndexCiEntityIdList"
             parameterType="neatlogic.framework.fulltextindex.dto.fulltextindex.FullTextIndexTypeVo"
             resultType="java.lang.Long" useCache="false">
@@ -997,7 +1005,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 <foreach collection="keywordList" item="item" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
-                OR `ci_base`.id = #{keyword} OR `ci_base`.`name` LIKE CONCAT('%', #{keyword}, '%')
+                <if test="keywordId != null">
+                    OR `ci_base`.id = #{keywordId}
+                </if>
+                OR `ci_base`.`name` LIKE CONCAT('%', #{keyword}, '%')
                 )
             </if>
 

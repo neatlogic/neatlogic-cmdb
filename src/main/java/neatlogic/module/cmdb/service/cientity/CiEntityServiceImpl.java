@@ -80,6 +80,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.concurrent.Semaphore;
 import java.util.stream.Collectors;
 
 @Service
@@ -2167,8 +2168,10 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 rebuildRelEntityIndex(rebuildRelEntityList);
             }
 
+            //定义锁，控制计算属性和全文索引的执行顺序
+            Semaphore lock = new Semaphore(1);
             //重新计算所有表达式属性的值
-            AttrExpressionRebuildManager.rebuild(new RebuildAuditVo(ciEntityVo, RebuildAuditVo.Type.INVOKE));
+            AttrExpressionRebuildManager.rebuild(new RebuildAuditVo(ciEntityVo, RebuildAuditVo.Type.INVOKE, lock));
 
             //重新计算引用了当前配置项的所有表达式属性的值
             if (ciEntityTransactionVo.getAction().equals(TransactionActionType.UPDATE.getValue())) {
@@ -2197,7 +2200,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             //创建全文检索索引
             IFullTextIndexHandler handler = FullTextIndexHandlerFactory.getHandler(CmdbFullTextIndexType.CIENTITY);
             if (handler != null) {
-                handler.createIndex(ciEntityVo.getId());
+                handler.createIndex(ciEntityVo.getId(), lock);
             }
 
             //发送消息到消息队列
