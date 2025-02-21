@@ -16,6 +16,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 package neatlogic.module.cmdb.fulltextindex.handler;
 
 import com.alibaba.fastjson.JSONObject;
+import neatlogic.framework.asynchronization.thread.NeatLogicThread;
+import neatlogic.framework.asynchronization.threadpool.CachedThreadPool;
 import neatlogic.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
 import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
@@ -40,10 +42,13 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.concurrent.Semaphore;
 import java.util.stream.Collectors;
 
 @Service
 public class CiEntityFullTextIndexHandler extends FullTextIndexHandlerBase {
+    private static final Semaphore semaphore = new Semaphore(5);
+
 
     @Resource
     private CiEntityService ciEntityService;
@@ -118,13 +123,18 @@ public class CiEntityFullTextIndexHandler extends FullTextIndexHandlerBase {
             if (CollectionUtils.isNotEmpty(attrEntityList)) {
                 for (AttrEntityVo attrEntityVo : attrEntityList) {
                     /*
+                      2025-2-21前的策略
                       由于expression属性的计算是异步进行的，
                       在处理全文检索索引的时候，
                       表达式字段可能还没计算完毕，
                       这会导致索引数据错误获取到修改前的记录，
                       导致搜索结果异常，所以先排除掉expression属性的数据
                      */
-                    if (!attrEntityVo.getAttrType().equalsIgnoreCase("expression") && (CollectionUtils.isNotEmpty(attrEntityVo.getValueList()))) {
+                    /*
+                      2025-2-21后的策略
+                      由于增加了线程锁，创建索引的线程会等待表达式字段重建完毕才会进行，因此不需要再限制表达式属性
+                     */
+                    if (/*!attrEntityVo.getAttrType().equalsIgnoreCase("expression") &&*/ (CollectionUtils.isNotEmpty(attrEntityVo.getValueList()))) {
                         AttrVo termAttrVo = null;
                         Optional<AttrVo> attrOp = attrList.stream().filter(d -> Objects.equals(d.getIsTerm(), 1) && d.getId().equals(attrEntityVo.getAttrId())).findFirst();
                         if (attrOp.isPresent()) {
@@ -232,13 +242,34 @@ public class CiEntityFullTextIndexHandler extends FullTextIndexHandlerBase {
 
     @Override
     public void myRebuildIndex(FullTextIndexTypeVo fullTextIndexTypeVo) {
-        fullTextIndexTypeVo.setPageSize(100);
-        List<Long> ciEntityIdList = ciEntityMapper.getNotIndexCiEntityIdList(fullTextIndexTypeVo);
+        CiEntityFullTextIndexHandler handler = this;
+        fullTextIndexTypeVo.setPageSize(500);
+        fullTextIndexTypeVo.setCurrentPage(1);
+        //为了增量重建索引时，能实现补充缺少属性的效果，因此不管全量重建还是增量重建，都需要遍历所有配置项
+        List<Long> ciEntityIdList = ciEntityMapper.searchCiEntityIdForFulltextIndex(fullTextIndexTypeVo);
+        //List<Long> ciEntityIdList = ciEntityMapper.getNotIndexCiEntityIdList(fullTextIndexTypeVo);
         while (CollectionUtils.isNotEmpty(ciEntityIdList)) {
             for (Long ciEntityId : ciEntityIdList) {
-                this.createIndex(ciEntityId, true);
+                try {
+                    semaphore.acquire();
+                    CachedThreadPool.execute(new NeatLogicThread("FULLTEXTINDEX-REBUILD-CIENTITY-" + ciEntityId) {
+                        @Override
+                        protected void execute() {
+                            try {
+                                handler.createIndex(ciEntityId, true);
+                            } finally {
+                                semaphore.release();
+                            }
+                        }
+                    });
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
             }
-            ciEntityIdList = ciEntityMapper.getNotIndexCiEntityIdList(fullTextIndexTypeVo);
+            //ciEntityIdList = ciEntityMapper.getNotIndexCiEntityIdList(fullTextIndexTypeVo);
+            fullTextIndexTypeVo.setCurrentPage(fullTextIndexTypeVo.getCurrentPage() + 1);
+            ciEntityIdList = ciEntityMapper.searchCiEntityIdForFulltextIndex(fullTextIndexTypeVo);
         }
     }
+
 }

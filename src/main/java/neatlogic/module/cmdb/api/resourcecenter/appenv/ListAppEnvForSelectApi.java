@@ -83,16 +83,20 @@ public class ListAppEnvForSelectApi extends PrivateApiComponentBase {
                 searchVo.setRowNum(rowNum);
                 if (searchVo.getNeedPage()) {
                     List<Long> idList = resourceMapper.searchAppEnvIdList(searchVo);
-                    List<ResourceVo> resourceList = resourceMapper.searchAppEnvListByIdList(idList);
-                    return TableResultUtil.getResult(resourceList, searchVo);
+                    if (CollectionUtils.isNotEmpty(idList)) {
+                        List<ResourceVo> resourceList = resourceMapper.searchAppEnvListByIdList(idList);
+                        return TableResultUtil.getResult(resourceList, searchVo);
+                    }
                 } else {
                     List<ResourceVo> allResourceList = new ArrayList<>();
                     int pageCount = searchVo.getPageCount();
                     for (int currentPage = 1; currentPage <= pageCount; currentPage++) {
                         searchVo.setCurrentPage(currentPage);
                         List<Long> idList = resourceMapper.searchAppEnvIdList(searchVo);
-                        List<ResourceVo> resourceList = resourceMapper.searchAppEnvListByIdList(idList);
-                        allResourceList.addAll(resourceList);
+                        if (CollectionUtils.isNotEmpty(idList)) {
+                            List<ResourceVo> resourceList = resourceMapper.searchAppEnvListByIdList(idList);
+                            allResourceList.addAll(resourceList);
+                        }
                     }
                     return TableResultUtil.getResult(allResourceList, searchVo);
                 }
