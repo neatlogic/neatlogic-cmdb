@@ -19,11 +19,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
-import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
-import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
-import neatlogic.framework.cmdb.exception.resourcecenter.AppModuleNotFoundException;
-import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
 import neatlogic.framework.cmdb.resourcecenter.datasource.core.IResourceCenterDataSource;
 import neatlogic.framework.cmdb.resourcecenter.datasource.core.ResourceCenterDataSourceFactory;
 import neatlogic.framework.common.constvalue.ApiParamType;
@@ -31,11 +27,8 @@ import neatlogic.framework.exception.type.ParamNotExistsException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
-import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,12 +40,6 @@ import java.util.List;
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class AppResourceListApi extends PrivateApiComponentBase {
-
-    @Resource
-    private CiEntityMapper ciEntityMapper;
-
-    @Resource
-    private CiMapper ciMapper;
 
     @Override
     public String getToken() {
@@ -74,8 +61,8 @@ public class AppResourceListApi extends PrivateApiComponentBase {
             @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "应用模块id"),
             @Param(name = "envId", type = ApiParamType.LONG, desc = "环境id,envId=-2表示无配置环境"),
             @Param(name = "typeId", type = ApiParamType.LONG, desc = "类型id"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目")
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, defaultValue = "1", desc = "当前页"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER,  defaultValue = "20", desc = "每页数据条目")
     })
     @Output({
             @Param(name = "tableList", type = ApiParamType.JSONARRAY, desc = "资源环境列表")
@@ -91,24 +78,13 @@ public class AppResourceListApi extends PrivateApiComponentBase {
         Long appSystemId = paramObj.getLong("appSystemId");
         Long appModuleId = paramObj.getLong("appModuleId");
         Long envId = paramObj.getLong("envId");
-        Long typeId = paramObj.getLong("typeId");
         Integer currentPage = paramObj.getInteger("currentPage");
         Integer pageSize = paramObj.getInteger("pageSize");
-        if (appSystemId != null && ciEntityMapper.getCiEntityBaseInfoById(appSystemId) == null) {
-            throw new AppSystemNotFoundException(appSystemId);
-        }
-        if (appModuleId != null && ciEntityMapper.getCiEntityBaseInfoById(appModuleId) == null) {
-            throw new AppModuleNotFoundException(appModuleId);
-        }
+        Long typeId = paramObj.getLong("typeId");
         List<Long> typeIdList = new ArrayList<>();
         if (typeId != null) {
-            CiVo ciVo = ciMapper.getCiById(typeId);
-            if (ciVo == null) {
-                throw new CiNotFoundException(typeId);
-            }
             typeIdList.add(typeId);
         }
-
         IResourceCenterDataSource resourceCenterDataSource = ResourceCenterDataSourceFactory.getResourceCenterDataSource();
         JSONArray tableList = resourceCenterDataSource.getAppResourceList(appSystemId, appModuleId, envId, typeIdList, currentPage, pageSize);
         resultObj.put("tableList", tableList);

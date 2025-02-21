@@ -27,6 +27,9 @@ import neatlogic.framework.cmdb.dto.resourcecenter.ResourceTypeVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityConfigVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
+import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
+import neatlogic.framework.cmdb.exception.resourcecenter.AppModuleNotFoundException;
+import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
 import neatlogic.framework.cmdb.resourcecenter.datasource.core.IResourceCenterDataSource;
 import neatlogic.framework.cmdb.resourcecenter.datasource.core.Ordered;
 import neatlogic.framework.common.dto.ValueTextVo;
@@ -70,7 +73,21 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
     }
 
     @Override
-    public JSONArray getAppResourceList(Long appSystemId, Long appModuleId, Long envId, List<Long> resourceTypeIdList, Integer currentPage, Integer pageSize) {
+    public JSONArray getAppResourceList(Long appSystemId, Long appModuleId, Long envId, List<Long> typeIdList, Integer currentPage, Integer pageSize) {
+        if (appSystemId != null && ciEntityMapper.getCiEntityBaseInfoById(appSystemId) == null) {
+            throw new AppSystemNotFoundException(appSystemId);
+        }
+        if (appModuleId != null && ciEntityMapper.getCiEntityBaseInfoById(appModuleId) == null) {
+            throw new AppModuleNotFoundException(appModuleId);
+        }
+        if (CollectionUtils.isNotEmpty(typeIdList)) {
+            for (Long typeId : typeIdList) {
+                CiVo ciVo = ciMapper.getCiById(typeId);
+                if (ciVo == null) {
+                    throw new CiNotFoundException(typeId);
+                }
+            }
+        }
         JSONArray tableList = new JSONArray();
         ApplicationListDisplayVo applicationListDisplay = resourceEntityMapper.getApplicationListDisplay();
         if (applicationListDisplay != null) {
@@ -93,16 +110,16 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
                     }
                     if (CollectionUtils.isNotEmpty(ciNameList)) {
                         List<CiVo> resourceCiVoList = ciMapper.getCiListByNameList(ciNameList);
-                        if (CollectionUtils.isEmpty(resourceTypeIdList) && CollectionUtils.isNotEmpty(resourceCiVoList)) {
+                        if (CollectionUtils.isEmpty(typeIdList) && CollectionUtils.isNotEmpty(resourceCiVoList)) {
                             List<CiVo> downwardCiList = ciMapper.getBatchDownwardCiListByCiList(resourceCiVoList);
                             for (CiVo downwardCi : downwardCiList) {
                                 // 找出叶子节点模型
                                 if (downwardCi.getRht() != null && downwardCi.getLft() != null && (downwardCi.getRht() - downwardCi.getLft() == 1)) {
-                                    resourceTypeIdList.add(downwardCi.getId());
+                                    typeIdList.add(downwardCi.getId());
                                 }
                             }
                         }
-                        if (CollectionUtils.isNotEmpty(resourceTypeIdList)) {
+                        if (CollectionUtils.isNotEmpty(typeIdList)) {
                             ResourceSearchVo searchVo = new ResourceSearchVo();
                             searchVo.setAppSystemIdList(Collections.singletonList(appSystemId));
                             if (appModuleId != null) {
@@ -113,7 +130,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
                             }
                             searchVo.setCurrentPage(currentPage);
                             searchVo.setPageSize(pageSize);
-                            List<CiVo> ciList = ciMapper.getAllCi(resourceTypeIdList);
+                            List<CiVo> ciList = ciMapper.getAllCi(typeIdList);
                             for (CiVo ciVo : ciList) {
                                 String resourceTypeName = getResourceTypeName(resourceCiVoList, ciVo);
                                 if (StringUtils.isNotBlank(resourceTypeName)) {
