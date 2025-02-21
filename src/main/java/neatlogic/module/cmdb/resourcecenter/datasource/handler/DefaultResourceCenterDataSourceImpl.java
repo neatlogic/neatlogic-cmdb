@@ -79,14 +79,16 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
                 JSONArray tableSettingList = config.getJSONArray("tableSettingList");
                 if (CollectionUtils.isNotEmpty(tableSettingList)) {
                     List<String> ciNameList = new ArrayList<>();
-                    Map<String, JSONArray> ciName2TheadListMap = new HashMap<>();
+                    Map<String, List<String>> ciName2FieldListMap = new HashMap<>();
                     for (int i = 0; i < tableSettingList.size(); i++) {
                         JSONObject tableObj = tableSettingList.getJSONObject(i);
                         if (MapUtils.isNotEmpty(tableObj)) {
                             String ciName = tableObj.getString("ciName");
-                            JSONArray fieldList = tableObj.getJSONArray("fieldList");
-                            ciName2TheadListMap.put(ciName, fieldList);
                             ciNameList.add(ciName);
+                            JSONArray fieldList = tableObj.getJSONArray("fieldList");
+                            if (CollectionUtils.isNotEmpty(fieldList)) {
+                                ciName2FieldListMap.put(ciName, fieldList.toJavaList(String.class));
+                            }
                         }
                     }
                     if (CollectionUtils.isNotEmpty(ciNameList)) {
@@ -120,7 +122,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
                                     resourceCenterResourceService.assembleResourceSearchVo(searchVo, false);
                                     List<ResourceVo> resourceList = getResourceList(searchVo);
                                     if (CollectionUtils.isNotEmpty(resourceList)) {
-                                        JSONArray fieldList = ciName2TheadListMap.get(resourceTypeName);
+                                        List<String> fieldList = ciName2FieldListMap.get(resourceTypeName);
                                         JSONObject tableObj = TableResultUtil.getResult(getTheadList(fieldList), resourceList, searchVo);
                                         tableObj.put("type", resourceTypeVo);
                                         tableList.add(tableObj);
@@ -137,10 +139,19 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
 
     @Override
     public List<ResourceVo> getResourceList(ResourceSearchVo searchVo) {
-        List<ResourceVo> resourceList = new ArrayList<>();
+        List<ResourceVo> resultList = new ArrayList<>();
         List<Long> idList = resourceMapper.getResourceIdList(searchVo);
         if (CollectionUtils.isNotEmpty(idList)) {
-            resourceList = resourceMapper.getResourceListByIdList(idList);
+            List<ResourceVo> resourceList = resourceMapper.getResourceListByIdList(idList);
+            //排序
+            for (Long id : idList) {
+                for (ResourceVo resourceVo : resourceList) {
+                    if (Objects.equals(id, resourceVo.getId())) {
+                        resultList.add(resourceVo);
+                        break;
+                    }
+                }
+            }
             if (Objects.equals(searchVo.getRowNum(), 0)) {
                 int rowNum = 0;
                 if (noFilterCondition(searchVo)) {
@@ -150,8 +161,10 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
                 }
                 searchVo.setRowNum(rowNum);
             }
+        } else {
+            searchVo.setRowNum(0);
         }
-        return resourceList;
+        return resultList;
     }
 
     @Override
@@ -360,17 +373,19 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
     }
 
     @Override
-    public JSONArray getTheadList(JSONArray fieldNameList) {
+    public JSONArray getTheadList(List<String> fieldNameList) {
         JSONArray theadList = new JSONArray();
+        if (CollectionUtils.isNotEmpty(fieldNameList)) {
+            fieldNameList = ResourceEntityFactory.getFieldNameListByViewName("scence_ipobject_detail");
+        }
         if (CollectionUtils.isNotEmpty(fieldNameList)) {
             List<ValueTextVo> fieldList = ResourceEntityFactory.getFieldListByViewName("scence_ipobject_detail");
             Map<Object, String> field2TitleMap = fieldList.stream().collect(Collectors.toMap(ValueTextVo::getValue, ValueTextVo::getText));
             List<ValueTextVo> fieldAliasList = ResourceEntityFactory.getFieldAliasListByViewName("scence_ipobject_detail");
             Map<Object, String> field2KeyMap = fieldAliasList.stream().collect(Collectors.toMap(ValueTextVo::getValue, ValueTextVo::getText));
-            for (int i = 0; i < fieldNameList.size(); i++) {
-                String field = fieldNameList.getString(i);
-                String title = field2TitleMap.get(field);
-                String key = field2KeyMap.get(field);
+            for (String fieldName : fieldNameList) {
+                String title = field2TitleMap.get(fieldName);
+                String key = field2KeyMap.get(fieldName);
                 if (StringUtils.isNotBlank(key) && StringUtils.isNotBlank(title)) {
                     JSONObject thead = new JSONObject();
                     thead.put("key", key);

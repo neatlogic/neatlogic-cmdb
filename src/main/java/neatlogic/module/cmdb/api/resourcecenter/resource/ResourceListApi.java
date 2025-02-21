@@ -19,9 +19,12 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB;
+import neatlogic.framework.cmdb.dto.resourcecenter.AssetListDisplayVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.enums.group.GroupType;
+import neatlogic.framework.cmdb.resourcecenter.datasource.core.IResourceCenterDataSource;
+import neatlogic.framework.cmdb.resourcecenter.datasource.core.ResourceCenterDataSourceFactory;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.restful.annotation.*;
@@ -39,7 +42,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 查询资源中心数据列表接口
@@ -115,8 +122,8 @@ public class ResourceListApi extends PrivateApiComponentBase {
     @Description(desc = "nmcarr.resourcelistapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        List<ResourceVo> resourceList = new ArrayList<>();
-        List<ResourceVo> resultList = new ArrayList<>();
+//        List<ResourceVo> resourceList = new ArrayList<>();
+//        List<ResourceVo> resultList = new ArrayList<>();
         ResourceSearchVo searchVo;
         JSONArray defaultValue = jsonObj.getJSONArray("defaultValue");
         if (CollectionUtils.isNotEmpty(defaultValue)) {
@@ -127,41 +134,46 @@ public class ResourceListApi extends PrivateApiComponentBase {
         }
         resourceCenterResourceService.handleBatchSearchList(searchVo);
         resourceCenterResourceService.setIpFieldAttrIdAndNameFieldAttrId(searchVo);
-        if (Objects.equals(searchVo.getRowNum(), 0)) {
-            int rowNum = 0;
-            if (noFilterCondition(searchVo)) {
-                rowNum = resourceMapper.getAllResourceCount(searchVo);
-            } else {
-                rowNum = resourceMapper.getResourceCount(searchVo);
-            }
-            if (rowNum == 0) {
-                return TableResultUtil.getResult(resourceList, searchVo);
-            }
-            searchVo.setRowNum(rowNum);
-        }
-        resourceCenterResourceService.setIsIpFieldSortAndIsNameFieldSort(searchVo);
-        List<Long> idList = resourceMapper.getResourceIdList(searchVo);
-        if (CollectionUtils.isEmpty(idList)) {
-            return TableResultUtil.getResult(resourceList, searchVo);
-        }
-        resourceList = resourceMapper.getResourceListByIdList(idList);
-        if (CollectionUtils.isNotEmpty(resourceList)) {
-            resourceCenterResourceService.addTagAndAccountInformation(resourceList);
+//        if (Objects.equals(searchVo.getRowNum(), 0)) {
+//            int rowNum = 0;
+//            if (noFilterCondition(searchVo)) {
+//                rowNum = resourceMapper.getAllResourceCount(searchVo);
+//            } else {
+//                rowNum = resourceMapper.getResourceCount(searchVo);
+//            }
+//            if (rowNum == 0) {
+//                return TableResultUtil.getResult(resourceList, searchVo);
+//            }
+//            searchVo.setRowNum(rowNum);
+//        }
+//        resourceCenterResourceService.setIsIpFieldSortAndIsNameFieldSort(searchVo);
+//        List<Long> idList = resourceMapper.getResourceIdList(searchVo);
+//        if (CollectionUtils.isEmpty(idList)) {
+//            return TableResultUtil.getResult(resourceList, searchVo);
+//        }
+//        resourceList = resourceMapper.getResourceListByIdList(idList);
+//        if (CollectionUtils.isNotEmpty(resourceList)) {
+//            resourceCenterResourceService.addTagAndAccountInformation(resourceList);
+//        }
+        IResourceCenterDataSource resourceCenterDataSource = ResourceCenterDataSourceFactory.getResourceCenterDataSource();
+        List<ResourceVo> resultList = resourceCenterDataSource.getResourceList(searchVo);
+        if (CollectionUtils.isNotEmpty(resultList)) {
+            resourceCenterResourceService.addTagAndAccountInformation(resultList);
         }
 
-        Set<Long> typeIdList = new HashSet<>();
+        Set<Long> typeIdList = resultList.stream().map(ResourceVo::getTypeId).collect(Collectors.toSet());
         List<Long> canDeleteTypeIdList = new ArrayList<>();
         List<Long> canEditTypeIdList = new ArrayList<>();
         //排序
-        for (Long id : idList) {
-            for (ResourceVo resourceVo : resourceList) {
-                if (Objects.equals(id, resourceVo.getId())) {
-                    resultList.add(resourceVo);
-                    typeIdList.add(resourceVo.getTypeId());
-                    break;
-                }
-            }
-        }
+//        for (Long id : idList) {
+//            for (ResourceVo resourceVo : resourceList) {
+//                if (Objects.equals(id, resourceVo.getId())) {
+//                    resultList.add(resourceVo);
+//                    typeIdList.add(resourceVo.getTypeId());
+//                    break;
+//                }
+//            }
+//        }
 
         //补充配置项权限
         Set<Long> withoutCiAuthCiEntityList = new HashSet<>();
@@ -194,7 +206,19 @@ public class ResourceListApi extends PrivateApiComponentBase {
                 resourceVo.setIsCanDelete(true);
             }
         }
-        return TableResultUtil.getResult(resultList, searchVo);
+        List<String> fieldNameList = null;
+        AssetListDisplayVo assetListDisplay = resourceEntityMapper.getAssetListDisplay();
+        if (assetListDisplay != null) {
+            JSONObject config = assetListDisplay.getConfig();
+            if (config != null) {
+                JSONArray fieldList = config.getJSONArray("fieldList");
+                if (CollectionUtils.isNotEmpty(fieldList)) {
+                    fieldNameList = fieldList.toJavaList(String.class);
+                }
+            }
+        }
+        JSONArray theadList = resourceCenterDataSource.getTheadList(fieldNameList);
+        return TableResultUtil.getResult(theadList, resultList, searchVo);
     }
 
     /**
