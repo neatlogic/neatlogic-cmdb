@@ -601,18 +601,18 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         }
     }
 
-    @Override
-    public List<ResourceVo> getAppModuleList(ResourceSearchVo searchVo) {
-        int count = resourceMapper.searchAppModuleCount(searchVo);
-        if (count > 0) {
-            searchVo.setRowNum(count);
-            List<Long> idList = resourceMapper.searchAppModuleIdList(searchVo);
-            if (CollectionUtils.isNotEmpty(idList)) {
-                return resourceMapper.searchAppModule(idList);
-            }
-        }
-        return new ArrayList<>();
-    }
+//    @Override
+//    public List<ResourceVo> getAppModuleList(ResourceSearchVo searchVo) {
+//        int count = resourceMapper.searchAppModuleCount(searchVo);
+//        if (count > 0) {
+//            searchVo.setRowNum(count);
+//            List<Long> idList = resourceMapper.searchAppModuleIdList(searchVo);
+//            if (CollectionUtils.isNotEmpty(idList)) {
+//                return resourceMapper.searchAppModule(idList);
+//            }
+//        }
+//        return new ArrayList<>();
+//    }
 
     @Override
     public Collection<AppEnvVo> getAppEnvList(ResourceSearchVo searchVo) {

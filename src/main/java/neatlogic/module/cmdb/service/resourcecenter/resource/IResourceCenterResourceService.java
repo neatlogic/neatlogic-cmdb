@@ -132,7 +132,7 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
      * @param searchVo resourceSearchVo
      * @return 模块列表
      */
-    List<ResourceVo> getAppModuleList(ResourceSearchVo searchVo);
+//    List<ResourceVo> getAppModuleList(ResourceSearchVo searchVo);
 
 
     /**

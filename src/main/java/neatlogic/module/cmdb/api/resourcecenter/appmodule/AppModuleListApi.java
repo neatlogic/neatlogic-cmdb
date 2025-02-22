@@ -20,6 +20,8 @@ import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
+import neatlogic.framework.cmdb.resourcecenter.datasource.core.IResourceCenterDataSource;
+import neatlogic.framework.cmdb.resourcecenter.datasource.core.ResourceCenterDataSourceFactory;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.restful.annotation.*;
@@ -30,6 +32,7 @@ import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterReso
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @author linbq
@@ -73,6 +76,9 @@ public class AppModuleListApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         ResourceSearchVo searchVo = paramObj.toJavaObject(ResourceSearchVo.class);
-        return TableResultUtil.getResult(resourceCenterResourceService.getAppModuleList(searchVo), searchVo);
+        IResourceCenterDataSource resourceCenterDataSource = ResourceCenterDataSourceFactory.getResourceCenterDataSource();
+        List<ResourceVo> tbodyList = resourceCenterDataSource.getAppModuleList(searchVo);
+        return TableResultUtil.getResult(tbodyList, searchVo);
+//        return TableResultUtil.getResult(resourceCenterResourceService.getAppModuleList(searchVo), searchVo);
     }
 }

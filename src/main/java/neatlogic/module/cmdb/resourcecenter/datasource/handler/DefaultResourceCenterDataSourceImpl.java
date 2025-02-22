@@ -21,10 +21,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
-import neatlogic.framework.cmdb.dto.resourcecenter.ApplicationListDisplayVo;
-import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
-import neatlogic.framework.cmdb.dto.resourcecenter.ResourceTypeVo;
-import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.*;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityConfigVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
@@ -32,6 +29,7 @@ import neatlogic.framework.cmdb.exception.resourcecenter.AppModuleNotFoundExcept
 import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
 import neatlogic.framework.cmdb.resourcecenter.datasource.core.IResourceCenterDataSource;
 import neatlogic.framework.cmdb.resourcecenter.datasource.core.Ordered;
+import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.common.dto.ValueTextVo;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
@@ -412,6 +410,200 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             }
         }
         return theadList;
+    }
+
+    @Override
+    public List<AppSystemVo> getAppSystemListForTree(BasePageVo searchVo) {
+        List<AppSystemVo> appSystemList = new ArrayList<>();
+        String keyword = searchVo.getKeyword();
+        int count = resourceMapper.getAppSystemIdListCountByKeyword(keyword);
+        if (count > 0) {
+            searchVo.setRowNum(count);
+            List<Long> appSystemIdList = resourceMapper.getAppSystemIdListByKeyword(searchVo);
+            if (CollectionUtils.isEmpty(appSystemIdList)) {
+                return appSystemList;
+            }
+            appSystemList = resourceMapper.getAppSystemListByIdList(appSystemIdList);
+            List<Long> hasModuleAppSystemIdList = resourceMapper.getHasModuleAppSystemIdListByAppSystemIdList(appSystemIdList);
+            if (CollectionUtils.isNotEmpty(hasModuleAppSystemIdList)) {
+                for (AppSystemVo appSystemVo : appSystemList) {
+                    if (hasModuleAppSystemIdList.contains(appSystemVo.getId())) {
+                        appSystemVo.setIsHasModule(1);
+                    }
+                }
+            }
+            if (StringUtils.isNotEmpty(keyword)) {
+                List<AppModuleVo> appModuleList = resourceMapper.getAppModuleListByKeywordAndAppSystemIdList(keyword, appSystemIdList);
+                if (CollectionUtils.isNotEmpty(appModuleList)) {
+                    Map<Long, List<AppModuleVo>> appModuleMap = new HashMap<>();
+                    for (AppModuleVo appModuleVo : appModuleList) {
+                        appModuleMap.computeIfAbsent(appModuleVo.getAppSystemId(), key -> new ArrayList<>()).add(appModuleVo);
+                    }
+                    for (AppSystemVo appSystemVo : appSystemList) {
+                        List<AppModuleVo> appModuleVoList = appModuleMap.get(appSystemVo.getId());
+                        if (CollectionUtils.isNotEmpty(appModuleVoList)) {
+                            appSystemVo.setAppModuleList(appModuleVoList);
+                            appSystemVo.setIsHasModule(1);
+                        }
+                    }
+                }
+            }
+        }
+        return appSystemList;
+    }
+
+    @Override
+    public List<ResourceVo> getAppSystemListForSelect(BasePageVo searchVo) {
+        List<ResourceVo> resourceList = new ArrayList<>();
+        JSONArray defaultValue = searchVo.getDefaultValue();
+        if (CollectionUtils.isNotEmpty(defaultValue)) {
+            List<Long> idList = defaultValue.toJavaList(Long.class);
+            resourceList = resourceMapper.searchAppSystemListByIdList(idList);
+        } else {
+            int rowNum = resourceMapper.searchAppSystemCount(searchVo);
+            if (rowNum > 0) {
+                searchVo.setRowNum(rowNum);
+                if (searchVo.getNeedPage()) {
+                    List<Long> idList = resourceMapper.searchAppSystemIdList(searchVo);
+                    resourceList = resourceMapper.searchAppSystemListByIdList(idList);
+                } else {
+                    int pageCount = searchVo.getPageCount();
+                    for (int currentPage = 1; currentPage <= pageCount; currentPage++) {
+                        searchVo.setCurrentPage(currentPage);
+                        List<Long> idList = resourceMapper.searchAppSystemIdList(searchVo);
+                        List<ResourceVo> list = resourceMapper.searchAppSystemListByIdList(idList);
+                        resourceList.addAll(list);
+                    }
+                }
+            }
+        }
+        return resourceList;
+    }
+
+    @Override
+    public List<AppModuleVo> getAppModuleListForTree(Long appSystemId) {
+        List<AppModuleVo> appModuleList = resourceMapper.getAppModuleListByAppSystemId(appSystemId);
+        if (CollectionUtils.isNotEmpty(appModuleList)) {
+            Map<Long, Long> appEnvCountMap = new HashMap<>();
+            List<Map<String, Long>> appEnvCountMapList = resourceMapper.getAppEnvCountMapByAppSystemIdGroupByAppModuleId(appSystemId);
+            for (Map<String, Long> map : appEnvCountMapList) {
+                Long count = map.get("count");
+                Long appModuleId = map.get("appModuleId");
+                appEnvCountMap.put(appModuleId, count);
+            }
+            for (AppModuleVo appModuleVo : appModuleList) {
+                Long count = appEnvCountMap.get(appModuleVo.getId());
+                if (count == null) {
+                    appModuleVo.setIsHasEnv(0);
+                } else if (count == 0) {
+                    appModuleVo.setIsHasEnv(0);
+                } else {
+                    appModuleVo.setIsHasEnv(1);
+                }
+            }
+        }
+        return appModuleList;
+    }
+
+    @Override
+    public List<ResourceVo> getAppModuleList(ResourceSearchVo searchVo) {
+        int count = resourceMapper.searchAppModuleCount(searchVo);
+        if (count > 0) {
+            searchVo.setRowNum(count);
+            List<Long> idList = resourceMapper.searchAppModuleIdList(searchVo);
+            if (CollectionUtils.isNotEmpty(idList)) {
+                return resourceMapper.searchAppModule(idList);
+            }
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<ResourceVo> getAppEnvListForSelect(BasePageVo searchVo) {
+        List<ResourceVo> appEnvList = new ArrayList<>();
+        JSONArray defaultValue = searchVo.getDefaultValue();
+        if (CollectionUtils.isNotEmpty(defaultValue)) {
+            List<Long> idList = defaultValue.toJavaList(Long.class);
+            appEnvList = resourceMapper.searchAppEnvListByIdList(idList);
+        } else {
+            int rowNum = resourceMapper.searchAppEnvCount(searchVo);
+            if (rowNum > 0) {
+                searchVo.setRowNum(rowNum);
+                if (searchVo.getNeedPage()) {
+                    List<Long> idList = resourceMapper.searchAppEnvIdList(searchVo);
+                    if (CollectionUtils.isNotEmpty(idList)) {
+                        appEnvList = resourceMapper.searchAppEnvListByIdList(idList);
+                    }
+                } else {
+                    int pageCount = searchVo.getPageCount();
+                    for (int currentPage = 1; currentPage <= pageCount; currentPage++) {
+                        searchVo.setCurrentPage(currentPage);
+                        List<Long> idList = resourceMapper.searchAppEnvIdList(searchVo);
+                        if (CollectionUtils.isNotEmpty(idList)) {
+                            List<ResourceVo> list = resourceMapper.searchAppEnvListByIdList(idList);
+                            appEnvList.addAll(list);
+                        }
+                    }
+                }
+            }
+        }
+        return appEnvList;
+    }
+
+    @Override
+    public List<ResourceVo> getStateListForSelect(BasePageVo searchVo) {
+        List<ResourceVo> stateList = new ArrayList<>();
+        JSONArray defaultValue = searchVo.getDefaultValue();
+        if (CollectionUtils.isNotEmpty(defaultValue)) {
+            List<Long> idList = defaultValue.toJavaList(Long.class);
+            stateList = resourceMapper.searchStateListByIdList(idList);
+        } else {
+            int rowNum = resourceMapper.searchStateCount(searchVo);
+            if (rowNum > 0) {
+                searchVo.setRowNum(rowNum);
+                if (searchVo.getNeedPage()) {
+                    List<Long> idList = resourceMapper.searchStateIdList(searchVo);
+                    stateList = resourceMapper.searchStateListByIdList(idList);
+                } else {
+                    int pageCount = searchVo.getPageCount();
+                    for (int currentPage = 1; currentPage <= pageCount; currentPage++) {
+                        searchVo.setCurrentPage(currentPage);
+                        List<Long> idList = resourceMapper.searchStateIdList(searchVo);
+                        List<ResourceVo> list = resourceMapper.searchStateListByIdList(idList);
+                        stateList.addAll(list);
+                    }
+                }
+            }
+        }
+        return stateList;
+    }
+
+    @Override
+    public List<ResourceVo> getVendorListForSelect(BasePageVo searchVo) {
+        List<ResourceVo> vendorList = new ArrayList<>();
+        JSONArray defaultValue = searchVo.getDefaultValue();
+        if (CollectionUtils.isNotEmpty(defaultValue)) {
+            List<Long> idList = defaultValue.toJavaList(Long.class);
+            vendorList = resourceMapper.searchVendorListByIdList(idList);
+        } else {
+            int rowNum = resourceMapper.searchVendorCount(searchVo);
+            if (rowNum > 0) {
+                searchVo.setRowNum(rowNum);
+                if (searchVo.getNeedPage()) {
+                    List<Long> idList = resourceMapper.searchVendorIdList(searchVo);
+                    vendorList = resourceMapper.searchVendorListByIdList(idList);
+                } else {
+                    int pageCount = searchVo.getPageCount();
+                    for (int currentPage = 1; currentPage <= pageCount; currentPage++) {
+                        searchVo.setCurrentPage(currentPage);
+                        List<Long> idList = resourceMapper.searchVendorIdList(searchVo);
+                        List<ResourceVo> list = resourceMapper.searchVendorListByIdList(idList);
+                        vendorList.addAll(list);
+                    }
+                }
+            }
+        }
+        return vendorList;
     }
 
     /**
