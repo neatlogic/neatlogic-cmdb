@@ -727,6 +727,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 //                builder.buildView();
 //            }
             String config = resourceEntityMapper.getResourceEntityConfigByName(resourceEntityVo.getName());
+            resourceEntityVo.setError(null);
             resourceEntityVo.setConfigStr(config);
             String sql = buildResourceView(resourceEntityVo);
 //            resourceEntityVo.setError(error);

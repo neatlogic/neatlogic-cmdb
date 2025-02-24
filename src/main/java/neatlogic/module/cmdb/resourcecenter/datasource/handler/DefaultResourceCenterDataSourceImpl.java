@@ -390,7 +390,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
     @Override
     public JSONArray getTheadList(List<String> fieldNameList) {
         JSONArray theadList = new JSONArray();
-        if (CollectionUtils.isNotEmpty(fieldNameList)) {
+        if (CollectionUtils.isEmpty(fieldNameList)) {
             fieldNameList = ResourceEntityFactory.getFieldNameListByViewName("scence_ipobject_detail");
         }
         if (CollectionUtils.isNotEmpty(fieldNameList)) {

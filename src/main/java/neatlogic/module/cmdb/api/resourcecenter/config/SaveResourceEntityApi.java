@@ -40,7 +40,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Objects;
 
 /**
  * @author linbq
@@ -100,16 +99,17 @@ public class SaveResourceEntityApi extends PrivateApiComponentBase {
         boolean configEquals = false;
         ResourceEntityVo oldResourceEntityVo = resourceEntityMapper.getResourceEntityByName(resourceEntityVo.getName());
         if (oldResourceEntityVo != null) {
-            configEquals = Objects.equals(resourceEntityVo.getConfigStr(), oldResourceEntityVo.getConfigStr());
-            if (configEquals) {
-                return null;
-            }
+//            configEquals = Objects.equals(resourceEntityVo.getConfigStr(), oldResourceEntityVo.getConfigStr());
+//            if (configEquals) {
+//                return null;
+//            }
             resourceEntityMapper.updateResourceEntityLabelAndDescription(resourceEntityVo);
         } else {
             resourceEntityVo.setStatus(Status.PENDING.getValue());
             resourceEntityMapper.insertResourceEntity(resourceEntityVo);
         }
         if (!configEquals) {
+            resourceEntityVo.setError(null);
             String sql = resourceCenterResourceService.buildResourceView(resourceEntityVo);
 //            resourceEntityVo.setError(error);
             if (StringUtils.isNotBlank(resourceEntityVo.getError())) {
