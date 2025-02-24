@@ -1199,7 +1199,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         FROM @{DATA_SCHEMA}.`scence_ipobject_env_appmodule_appsystem` a
         WHERE a.`app_system_id` = #{appSystemId}
           AND a.`app_module_id` = #{appModuleId}
-          AND a.`env_id` = #{envId}
+          <if test="envId != null and envId != -2">
+            AND a.`env_id` = #{envId}
+          </if>
+          <if test="envId == -2">
+            AND a.`env_id` is null
+          </if>
           AND a.`inspect_status` IN
           <foreach collection="inspectStatusList" item="inspectStatus" open="(" separator="," close=")">
             #{inspectStatus}
