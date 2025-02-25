@@ -24,7 +24,6 @@ import neatlogic.framework.cmdb.dto.sync.ObjectVo;
 import neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo;
 import neatlogic.framework.cmdb.dto.sync.SyncConditionVo;
 import neatlogic.framework.cmdb.enums.sync.CollectMode;
-import neatlogic.framework.cmdb.exception.collection.CollectionObjectNotFoundException;
 import neatlogic.framework.cmdb.exception.sync.NoSyncToRunException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.exception.type.ParamNotExistsException;
@@ -125,9 +124,11 @@ public class LaunchSyncCollectionApi extends PrivateApiComponentBase {
                         for (SyncCiCollectionVo syncCiCollection : syncCiCollectionList) {
                             pIdList.add(syncCiCollection.getId());
                         }
-                    } else {
+                    } /*
+                    为了兼容接口，有报错也不返回
+                    else {
                         throw new CollectionObjectNotFoundException(category, type);
-                    }
+                    }*/
                 }
             }
         }
