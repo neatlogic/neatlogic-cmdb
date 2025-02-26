@@ -111,8 +111,22 @@ public class VirtualCiSqlBuilder {
                         String columnName;
                         if (selectExpressionItem.getAlias() != null) {
                             columnName = selectExpressionItem.getAlias().getName();
+                            if (columnName.length() > 2) {
+                                char sChar = columnName.charAt(0);
+                                char eChar = columnName.charAt(columnName.length() - 1);
+                                if (sChar == eChar && (sChar == '`' || sChar == '"' || sChar == '\'')) {
+                                    columnName = columnName.substring(1, columnName.length() - 1);
+                                }
+                            }
                         } else {
                             columnName = selectExpressionItem.toString();
+                            if (columnName.length() > 2) {
+                                char sChar = columnName.charAt(0);
+                                char eChar = columnName.charAt(columnName.length() - 1);
+                                if (sChar == eChar && sChar == '`') {
+                                    columnName = columnName.substring(1, columnName.length() - 1);
+                                }
+                            }
                         }
                         if (columnName.equalsIgnoreCase("id")) {
                             hasId[0] = true;
@@ -276,7 +290,9 @@ public class VirtualCiSqlBuilder {
         FromItem fromItem = select.getFromItem();
         if (fromItem instanceof Table) {
             Table table = (Table) select.getFromItem();
-            table.setSchemaName(schema);
+            if (StringUtils.isBlank(table.getSchemaName())) {
+                table.setSchemaName(schema);
+            }
         } else if (fromItem instanceof SubSelect) {
             SubSelect subselect = (SubSelect) select.getFromItem();
             fillUpSchema(subselect.getSelectBody());
@@ -287,7 +303,9 @@ public class VirtualCiSqlBuilder {
             for (Join j : select.getJoins()) {
                 if (j.getRightItem() instanceof Table) {
                     Table t = (Table) j.getRightItem();
-                    t.setSchemaName(schema);
+                    if (StringUtils.isBlank(t.getSchemaName())) {
+                        t.setSchemaName(schema);
+                    }
                 } else if (j.getRightItem() instanceof SubSelect) {
                     SubSelect subselect = (SubSelect) j.getRightItem();
                     fillUpSchema(subselect.getSelectBody());

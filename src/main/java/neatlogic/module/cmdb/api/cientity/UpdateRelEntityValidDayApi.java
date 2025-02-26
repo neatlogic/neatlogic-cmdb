@@ -15,7 +15,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.cientity;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.cientity.RelEntityVo;
 import neatlogic.framework.cmdb.enums.TransactionActionType;
 import neatlogic.framework.cmdb.enums.group.GroupType;
@@ -27,19 +29,18 @@ import neatlogic.framework.restful.annotation.OperationType;
 import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.module.cmdb.dao.mapper.cientity.RelEntityMapper;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
-import com.alibaba.fastjson.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class UpdateRelEntityValidDayApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private RelEntityMapper relEntityMapper;
 
     @Override

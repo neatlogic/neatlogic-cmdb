@@ -64,10 +64,10 @@ import java.util.stream.Collectors;
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearchCiEntityApiCrossoverService {//FIXME 内部暂时使用Crossover的方式调用该接口
+    static final String IP_OBJECT = "IPObject";
+    static final String PARENT = "parent";
+    static final String CHILD = "child";
 
-    private final String IP_OBJECT = "IPObject";
-    private final String PARENT = "parent";
-    private final String CHILD = "child";
     @Resource
     private CiEntityService ciEntityService;
 
@@ -136,6 +136,8 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
     @Description(desc = "nmcac.searchcientityapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
+
+
         Long ciId = jsonObj.getLong("ciId");
         String ciName = jsonObj.getString("ciName");
         String dsl = jsonObj.getString("dsl");
@@ -230,7 +232,9 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
                 ciViewVo.addShowType(ShowType.ALL.getValue());
             }
             List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo), ciEntityVo.getCiId());
-            List<Long> attrIdList = null, relIdList = null, globalAttrIdList = null;
+            List<Long> attrIdList = null;
+            List<Long> relIdList = null;
+            List<Long> globalAttrIdList = null;
             JSONArray theadList = new JSONArray();
             if (needCheck) {
                 // 增加复选列
@@ -315,6 +319,8 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
                             headObj.put("key", "const_" + ciview.getItemName().replace("_", ""));
                             theadList.add(headObj);
                             break;
+                        default:
+                            break;
                     }
                 }
             }
@@ -364,7 +370,11 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
             }
             JSONArray tbodyList = new JSONArray();
             if (CollectionUtils.isNotEmpty(ciEntityList)) {
-                boolean canEdit = false, canDelete = false, canViewPassword = false, canTransaction = false, hasResourceCenterAccountModify = false;
+                boolean canEdit = false;
+                boolean canDelete = false;
+                boolean canViewPassword = false;
+                boolean canTransaction = false;
+                boolean hasResourceCenterAccountModify = false;
                 List<Long> canAccountManagementIdList = new ArrayList<>();
                 List<Long> hasMaintainCiEntityIdList = new ArrayList<>();
                 List<Long> hasReadCiEntityIdList = new ArrayList<>();
