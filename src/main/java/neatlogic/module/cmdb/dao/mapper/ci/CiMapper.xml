@@ -548,7 +548,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         <result column="fileId" property="fileId"></result>
         <result column="nameAttrId" property="nameAttrId"></result>
         <result column="expiredDay" property="expiredDay"></result>
-        <result column="viewXml" property="viewXml"/>
+        <result column="viewXml" property="viewXml" typeHandler="neatlogic.framework.dao.plugin.CompressHandler"/>
         <result column="lft" property="lft"></result>
         <result column="rht" property="rht"></result>
         <result column="hasChildren" property="hasChildren"></result>
