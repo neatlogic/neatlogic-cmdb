@@ -29,6 +29,7 @@ import neatlogic.framework.dao.mapper.runner.RunnerMapper;
 import neatlogic.framework.dto.runner.GroupNetworkVo;
 import neatlogic.framework.dto.runner.RunnerGroupVo;
 import neatlogic.framework.dto.runner.RunnerMapVo;
+import neatlogic.framework.exception.core.ApiRuntimeException;
 import neatlogic.framework.exception.runner.RunnerGroupRunnerNotFoundException;
 import neatlogic.framework.exception.runner.RunnerNotMatchException;
 import neatlogic.framework.integration.authentication.enums.AuthenticateType;
@@ -78,6 +79,7 @@ public class ResourceAccountAccessTestApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "resourceId", type = ApiParamType.LONG, isRequired = true, desc = "资源id"),
+            @Param(name = "runnerId", type = ApiParamType.LONG, desc = "执行器id"),
             @Param(name = "accountIdList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "账号ID列表"),
     })
     @Output({
@@ -87,6 +89,7 @@ public class ResourceAccountAccessTestApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long resourceId = paramObj.getLong("resourceId");
+        Long runnerId = paramObj.getLong("runnerId");
         List<Long> accountIdList = paramObj.getJSONArray("accountIdList").toJavaList(Long.class);
         ResourceVo resource = resourceMapper.getResourceById(resourceId);
         if (resource == null) {
@@ -107,10 +110,15 @@ public class ResourceAccountAccessTestApi extends PrivateApiComponentBase {
         if (CollectionUtils.isEmpty(runnerMapList)) {
             throw new RunnerNotMatchException();
         }
-        // 随机分配runner
-//        int runnerMapIndex = RandomUtils.nextInt() * runnerMapList.size();
-        int runnerMapIndex = new Random().nextInt(runnerMapList.size());
-        RunnerMapVo runnerMapVo = runnerMapList.get(runnerMapIndex);
+        // 如果没有指定则随机分配runner
+        RunnerMapVo runnerMapVo = null;
+        if (runnerId != null) {
+            runnerMapVo = runnerMapper.getRunnerMapByRunnerMapId(runnerId);
+        }
+        if (runnerMapVo == null) {
+            int runnerMapIndex = new Random().nextInt(runnerMapList.size());
+            runnerMapVo = runnerMapList.get(runnerMapIndex);
+        }
         List<AccountAccessTestVo> accessTestVoList = new ArrayList<>();
         List<AccountVo> accountList = resourceAccountMapper.getAccountListByIdList(accountIdList);
         if (!accountList.isEmpty()) {
@@ -129,12 +137,20 @@ public class ResourceAccountAccessTestApi extends PrivateApiComponentBase {
         JSONObject paramJson = new JSONObject();
         paramJson.put("accountList", accessTestVoList);
         HttpRequestUtil request = HttpRequestUtil.post(url).setPayload(paramJson.toJSONString()).setAuthType(AuthenticateType.BUILDIN).sendRequest();
+
+        if (request.getResponseCode() != 200) {
+            String errMsg = String.format("test account failed, ResponseCode:%d, ErrorMsg: %s, Exception: %s, Result: %s", request.getResponseCode(), request.getErrorMsg(), request.getError(), request.getResult());
+            throw new ApiRuntimeException(errMsg);
+        }
         JSONObject resultJson = request.getResultJson();
         String error = request.getError();
         if (StringUtils.isNotBlank(error)) {
             throw new ResourceAccountAccessTestException(error);
         }
-        return resultJson.getJSONArray("Return");
+        JSONObject result = new JSONObject();
+        result.put("result", resultJson.getJSONArray("Return"));
+        result.put("runner", runnerMapVo.getName() + "(" + runnerMapVo.getId() + ")");
+        return result;
     }
 
 }
