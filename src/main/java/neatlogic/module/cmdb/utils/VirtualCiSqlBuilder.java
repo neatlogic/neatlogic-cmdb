@@ -149,7 +149,7 @@ public class VirtualCiSqlBuilder {
             }
             if (CollectionUtils.isNotEmpty(columnList)) {
                 for (String attrName : attrMap.keySet()) {
-                    isExist = false;
+                    boolean isExist = false;
                     for (String columnName : columnList) {
                         if (columnName.equalsIgnoreCase(attrName)) {
                             isExist = true;
