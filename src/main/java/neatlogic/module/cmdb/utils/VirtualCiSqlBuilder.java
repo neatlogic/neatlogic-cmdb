@@ -120,10 +120,13 @@ public class VirtualCiSqlBuilder {
                             }
                         } else {
                             columnName = selectExpressionItem.toString();
+                            if (columnName.contains(".")) {
+                                columnName = columnName.substring(columnName.lastIndexOf(".") + 1);
+                            }
                             if (columnName.length() > 2) {
                                 char sChar = columnName.charAt(0);
                                 char eChar = columnName.charAt(columnName.length() - 1);
-                                if (sChar == eChar && sChar == '`') {
+                                if (sChar == '`' && eChar == '`') {
                                     columnName = columnName.substring(1, columnName.length() - 1);
                                 }
                             }
@@ -146,7 +149,14 @@ public class VirtualCiSqlBuilder {
             }
             if (CollectionUtils.isNotEmpty(columnList)) {
                 for (String attrName : attrMap.keySet()) {
-                    if (!columnList.contains(attrName)) {
+                    boolean isExist = false;
+                    for (String columnName : columnList) {
+                        if (columnName.equalsIgnoreCase(attrName)) {
+                            isExist = true;
+                            break;
+                        }
+                    }
+                    if (!isExist) {
                         throw new CiViewSqlFieldNotExistsException(attrName);
                     }
                 }
@@ -233,6 +243,13 @@ public class VirtualCiSqlBuilder {
      * @param selectBody select主体
      */
     private void fillUpAlias(SelectBody selectBody) {
+        if (selectBody instanceof SetOperationList) {
+            SetOperationList setOpList = (SetOperationList) selectBody;
+            for (SelectBody select : setOpList.getSelects()) {
+                fillUpAlias(select);
+            }
+            return;
+        }
         PlainSelect select = (PlainSelect) selectBody;
         List<SelectItem> newItemList = new ArrayList<>();
         for (SelectItem selectItem : select.getSelectItems()) {
@@ -285,6 +302,13 @@ public class VirtualCiSqlBuilder {
      * @param selectBody select主体
      */
     private void fillUpSchema(SelectBody selectBody) {
+        if (selectBody instanceof SetOperationList) {
+            SetOperationList setOpList = (SetOperationList) selectBody;
+            for (SelectBody select : setOpList.getSelects()) {
+                fillUpSchema(select);
+            }
+            return;
+        }
         PlainSelect select = (PlainSelect) selectBody;
         //处理from
         FromItem fromItem = select.getFromItem();

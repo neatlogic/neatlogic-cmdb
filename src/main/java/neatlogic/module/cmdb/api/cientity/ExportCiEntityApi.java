@@ -48,6 +48,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -215,82 +216,6 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
             ciEntityVo.setPageCount(searchManager.getPageCount());
             ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
         }*/
-        while (CollectionUtils.isNotEmpty(ciEntityList)) {
-            for (CiEntityVo entity : ciEntityList) {
-                Map<String, Object> dataMap = new HashMap<>();
-                dataMap.put("id", entity.getId());
-                dataMap.put("uuid", entity.getUuid());
-                dataMap.put("name", entity.getName());
-                dataMap.put("ciId", entity.getCiId());
-                dataMap.put("ciName", entity.getCiName());
-                dataMap.put("ciLabel", entity.getCiLabel());
-                dataMap.put("type", entity.getTypeId());
-                dataMap.put("typeName", entity.getTypeName());
-                for (String column : columnList) {
-                    if (entity.getAttrEntityData().containsKey(column)) {
-                        JSONObject attrObj = entity.getAttrEntityData().getJSONObject(column);
-                        IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrObj.getString("type"));
-                        AttrVo attrVo = new AttrVo();
-                        attrVo.setConfig(attrObj.getJSONObject("config"));
-                        attrVo.setTargetCiId(attrObj.getLong("targetCiId"));
-                        attrVo.setName(column);
-                        if (handler != null) {
-                            JSONArray valueList = attrObj.getJSONArray("valueList");
-                            JSONArray newValueList = handler.transferValueListToExport(attrVo, valueList);
-                            if (CollectionUtils.isNotEmpty(valueList)) {
-                                String tmpValue = "";
-                                for (int v = 0; v < newValueList.size(); v++) {
-                                    if (newValueList.get(v) != null) {
-                                        if (StringUtils.isNotBlank(tmpValue)) {
-                                            tmpValue += ",";
-                                        }
-                                        tmpValue += newValueList.getString(v);
-                                    }
-                                }
-                                dataMap.put(column, tmpValue);
-                            }
-                        }
-                    } else if (entity.getRelEntityData().containsKey(column)) {
-                        JSONArray valueList = entity.getRelEntityData().getJSONObject(column).getJSONArray("valueList");
-                        if (CollectionUtils.isNotEmpty(valueList)) {
-                            String relCiEntityName = "";
-                            for (int i = 0; i < valueList.size(); i++) {
-                                if (StringUtils.isNotBlank(relCiEntityName)) {
-                                    relCiEntityName += ",";
-                                }
-                                relCiEntityName += valueList.getJSONObject(i).getString("ciEntityName");
-                            }
-                            dataMap.put(column, relCiEntityName);
-                        }
-                    } else if (entity.getGlobalAttrEntityData().containsKey(column)) {
-                        JSONObject attrObj = entity.getGlobalAttrEntityData().getJSONObject(column);
-                        JSONArray valueList = attrObj.getJSONArray("valueList");
-                        if (CollectionUtils.isNotEmpty(valueList)) {
-                            String tmpValue = "";
-                            for (int v = 0; v < valueList.size(); v++) {
-                                JSONObject valueObj = valueList.getJSONObject(v);
-                                if (StringUtils.isNotBlank(valueObj.getString("value"))) {
-                                    if (StringUtils.isNotBlank(tmpValue)) {
-                                        tmpValue += ",";
-                                    }
-                                    tmpValue += valueObj.getString("value");
-                                }
-                            }
-                            dataMap.put(column, tmpValue);
-                        }
-                    }
-                }
-                sheetBuilder.addData(dataMap);
-            }
-            //如果从外部传入idList，就不需要进一步查询下一页数据了
-            if (CollectionUtils.isEmpty(idList)) {
-                ciEntityVo.setCurrentPage(ciEntityVo.getCurrentPage() + 1);
-                ciEntityList = searchCiEntity(ciEntityVo);
-            } else {
-                break;
-            }
-        }
-
 
         String fileNameEncode = ciVo.getId() + "_" + ciVo.getLabel() + ".xlsx";
         if (request.getHeader("User-Agent").toLowerCase().contains("msie") || request.getHeader("User-Agent").contains("Gecko")) {
@@ -300,8 +225,87 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
         }
         response.setContentType("application/vnd.ms-excel;charset=utf-8");
         response.setHeader("Content-Disposition", " attachment; filename=\"" + fileNameEncode + "\"");
+
         try (OutputStream os = response.getOutputStream()) {
+            while (CollectionUtils.isNotEmpty(ciEntityList)) {
+                for (CiEntityVo entity : ciEntityList) {
+                    Map<String, Object> dataMap = new HashMap<>();
+                    dataMap.put("id", entity.getId());
+                    dataMap.put("uuid", entity.getUuid());
+                    dataMap.put("name", entity.getName());
+                    dataMap.put("ciId", entity.getCiId());
+                    dataMap.put("ciName", entity.getCiName());
+                    dataMap.put("ciLabel", entity.getCiLabel());
+                    dataMap.put("type", entity.getTypeId());
+                    dataMap.put("typeName", entity.getTypeName());
+                    for (String column : columnList) {
+                        if (entity.getAttrEntityData().containsKey(column)) {
+                            JSONObject attrObj = entity.getAttrEntityData().getJSONObject(column);
+                            IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrObj.getString("type"));
+                            AttrVo attrVo = new AttrVo();
+                            attrVo.setConfig(attrObj.getJSONObject("config"));
+                            attrVo.setTargetCiId(attrObj.getLong("targetCiId"));
+                            attrVo.setName(column);
+                            if (handler != null) {
+                                JSONArray valueList = attrObj.getJSONArray("valueList");
+                                JSONArray newValueList = handler.transferValueListToExport(attrVo, valueList);
+                                if (CollectionUtils.isNotEmpty(valueList)) {
+                                    String tmpValue = "";
+                                    for (int v = 0; v < newValueList.size(); v++) {
+                                        if (newValueList.get(v) != null) {
+                                            if (StringUtils.isNotBlank(tmpValue)) {
+                                                tmpValue += ",";
+                                            }
+                                            tmpValue += newValueList.getString(v);
+                                        }
+                                    }
+                                    dataMap.put(column, tmpValue);
+                                }
+                            }
+                        } else if (entity.getRelEntityData().containsKey(column)) {
+                            JSONArray valueList = entity.getRelEntityData().getJSONObject(column).getJSONArray("valueList");
+                            if (CollectionUtils.isNotEmpty(valueList)) {
+                                String relCiEntityName = "";
+                                for (int i = 0; i < valueList.size(); i++) {
+                                    if (StringUtils.isNotBlank(relCiEntityName)) {
+                                        relCiEntityName += ",";
+                                    }
+                                    relCiEntityName += valueList.getJSONObject(i).getString("ciEntityName");
+                                }
+                                dataMap.put(column, relCiEntityName);
+                            }
+                        } else if (entity.getGlobalAttrEntityData().containsKey(column)) {
+                            JSONObject attrObj = entity.getGlobalAttrEntityData().getJSONObject(column);
+                            JSONArray valueList = attrObj.getJSONArray("valueList");
+                            if (CollectionUtils.isNotEmpty(valueList)) {
+                                String tmpValue = "";
+                                for (int v = 0; v < valueList.size(); v++) {
+                                    JSONObject valueObj = valueList.getJSONObject(v);
+                                    if (StringUtils.isNotBlank(valueObj.getString("value"))) {
+                                        if (StringUtils.isNotBlank(tmpValue)) {
+                                            tmpValue += ",";
+                                        }
+                                        tmpValue += valueObj.getString("value");
+                                    }
+                                }
+                                dataMap.put(column, tmpValue);
+                            }
+                        }
+                    }
+                    sheetBuilder.addData(dataMap);
+
+                }
+                ((SXSSFSheet) workbook.getSheetAt(0)).flushRows();
+                //如果从外部传入idList，就不需要进一步查询下一页数据了
+                if (CollectionUtils.isEmpty(idList)) {
+                    ciEntityVo.setCurrentPage(ciEntityVo.getCurrentPage() + 1);
+                    ciEntityList = searchCiEntity(ciEntityVo);
+                } else {
+                    break;
+                }
+            }
             workbook.write(os);
+            ((SXSSFWorkbook) workbook).dispose(); // 清理内存缓存
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
         }
