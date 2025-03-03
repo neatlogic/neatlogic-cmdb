@@ -21,7 +21,7 @@ import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
 import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
-import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
+import neatlogic.framework.cmdb.auth.label.CIENTITY_EXPORT;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiViewVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
@@ -64,7 +64,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Service
-@AuthAction(action = CMDB_BASE.class)
+@AuthAction(action = CIENTITY_EXPORT.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
     private static final Logger logger = LoggerFactory.getLogger(ExportCiEntityApi.class);
