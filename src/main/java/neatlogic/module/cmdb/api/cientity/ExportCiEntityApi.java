@@ -293,7 +293,6 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
                         }
                     }
                     sheetBuilder.addData(dataMap);
-
                 }
                 ((SXSSFSheet) workbook.getSheetAt(0)).flushRows();
                 //如果从外部传入idList，就不需要进一步查询下一页数据了
@@ -305,9 +304,13 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
                 }
             }
             workbook.write(os);
-            ((SXSSFWorkbook) workbook).dispose(); // 清理内存缓存
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
+        } finally {
+            if (workbook != null) {
+                ((SXSSFWorkbook) workbook).dispose(); // 清理内存缓存
+                workbook.close();
+            }
         }
         return null;
     }
