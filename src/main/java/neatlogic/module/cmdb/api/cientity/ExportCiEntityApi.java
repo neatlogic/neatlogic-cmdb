@@ -68,6 +68,7 @@ import java.util.*;
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
     private static final Logger logger = LoggerFactory.getLogger(ExportCiEntityApi.class);
+
     @Resource
     private CiEntityService ciEntityService;
 
@@ -293,8 +294,8 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
                         }
                     }
                     sheetBuilder.addData(dataMap);
+                    ((SXSSFSheet) workbook.getSheetAt(0)).flushRows();
                 }
-                ((SXSSFSheet) workbook.getSheetAt(0)).flushRows();
                 //如果从外部传入idList，就不需要进一步查询下一页数据了
                 if (CollectionUtils.isEmpty(idList)) {
                     ciEntityVo.setCurrentPage(ciEntityVo.getCurrentPage() + 1);
