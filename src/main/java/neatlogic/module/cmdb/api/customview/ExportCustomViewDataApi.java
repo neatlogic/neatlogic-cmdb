@@ -164,7 +164,7 @@ public class ExportCustomViewDataApi extends PrivateBinaryStreamApiComponentBase
         response.setHeader("Content-Disposition", " attachment; filename=\"" + fileNameEncode + "\"");
         try (OutputStream os = response.getOutputStream()) {
             while (CollectionUtils.isNotEmpty(dataList)) {
-                //由于展示页面的特殊性，查询sql用的是pageSizePlus，所以要去掉租后一条数据
+                //由于展示页面的特殊性，查询sql用的是pageSizePlus，所以要去掉最后一条数据
                 for (int i = 0; i < Math.min(customViewConditionVo.getPageSize(), dataList.size()); i++) {
                     sheetBuilder.addData(dataList.get(i));
                     ((SXSSFSheet) workbook.getSheetAt(0)).flushRows();
