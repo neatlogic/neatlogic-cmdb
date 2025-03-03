@@ -32,6 +32,7 @@ import neatlogic.module.cmdb.service.customview.CustomViewDataService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +54,7 @@ import java.util.Map;
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ExportCustomViewDataApi extends PrivateBinaryStreamApiComponentBase {
-    private final static Logger logger = LoggerFactory.getLogger(ExportCustomViewDataApi.class);
+    private static final Logger logger = LoggerFactory.getLogger(ExportCustomViewDataApi.class);
     @Resource
     private CustomViewDataService customViewDataService;
 
@@ -83,7 +84,6 @@ public class ExportCustomViewDataApi extends PrivateBinaryStreamApiComponentBase
     @Output({@Param(name = "dataList", type = ApiParamType.JSONARRAY, desc = "结果集"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页大小")})
     @Description(desc = "查询自定义视图数据")
-    //TODO 后续要对数据进行优化防止OOM
     @Override
     public Object myDoService(JSONObject paramObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
         CustomViewConditionVo customViewConditionVo = JSON.toJavaObject(paramObj, CustomViewConditionVo.class);
@@ -123,7 +123,7 @@ public class ExportCustomViewDataApi extends PrivateBinaryStreamApiComponentBase
                 attrsList.add(dataObj);
             }
         }
-        if(CollectionUtils.isNotEmpty(globalAttrList)) {
+        if (CollectionUtils.isNotEmpty(globalAttrList)) {
             for (CustomViewGlobalAttrVo attrVo : globalAttrList) {
                 JSONObject dataObj = new JSONObject();
                 dataObj.put("alias", attrVo.getAlias());
@@ -154,28 +154,32 @@ public class ExportCustomViewDataApi extends PrivateBinaryStreamApiComponentBase
         customViewConditionVo.setPageSize(100);
         customViewConditionVo.setCurrentPage(1);
         List<Map<String, Object>> dataList = customViewDataService.searchCustomViewData(customViewConditionVo);
-        while (CollectionUtils.isNotEmpty(dataList)) {
-            //由于展示页面的特殊性，查询sql用的是pageSizePlus，所以要去掉租后一条数据
-            for (int i = 0; i < Math.min(customViewConditionVo.getPageSize(), dataList.size()); i++) {
-                sheetBuilder.addData(dataList.get(i));
-            }
-            customViewConditionVo.setCurrentPage(customViewConditionVo.getCurrentPage() + 1);
-            dataList = customViewDataService.searchCustomViewData(customViewConditionVo);
-        }
-
         String fileNameEncode = customViewVo.getName() + ".xlsx";
-        boolean flag = request.getHeader("User-Agent").indexOf("Gecko") > 0;
-        if (request.getHeader("User-Agent").toLowerCase().indexOf("msie") > 0 || flag) {
+        if (request.getHeader("User-Agent").toLowerCase().contains("msie") || request.getHeader("User-Agent").contains("Gecko")) {
             fileNameEncode = URLEncoder.encode(fileNameEncode, "UTF-8");// IE浏览器
         } else {
-            fileNameEncode = new String(fileNameEncode.replace(" ", "").getBytes(StandardCharsets.UTF_8), "ISO8859-1");
+            fileNameEncode = new String(fileNameEncode.replace(" ", "").getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
         }
         response.setContentType("application/vnd.ms-excel;charset=utf-8");
         response.setHeader("Content-Disposition", " attachment; filename=\"" + fileNameEncode + "\"");
-        try (OutputStream os = response.getOutputStream();) {
+        try (OutputStream os = response.getOutputStream()) {
+            while (CollectionUtils.isNotEmpty(dataList)) {
+                //由于展示页面的特殊性，查询sql用的是pageSizePlus，所以要去掉租后一条数据
+                for (int i = 0; i < Math.min(customViewConditionVo.getPageSize(), dataList.size()); i++) {
+                    sheetBuilder.addData(dataList.get(i));
+                    ((SXSSFSheet) workbook.getSheetAt(0)).flushRows();
+                }
+                customViewConditionVo.setCurrentPage(customViewConditionVo.getCurrentPage() + 1);
+                dataList = customViewDataService.searchCustomViewData(customViewConditionVo);
+            }
             workbook.write(os);
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
+        } finally {
+            if (workbook != null) {
+                ((SXSSFWorkbook) workbook).dispose(); // 清理内存缓存
+                workbook.close();
+            }
         }
         return null;
     }
