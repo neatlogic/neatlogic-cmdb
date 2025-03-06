@@ -17,13 +17,18 @@ package neatlogic.module.cmdb.notify.handler;
 
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
+import neatlogic.framework.cmdb.dto.ci.CiVo;
+import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.dto.ConditionParamVo;
+import neatlogic.framework.notify.core.INotifyTriggerType;
 import neatlogic.framework.notify.core.NotifyPolicyHandlerBase;
 import neatlogic.framework.notify.dto.NotifyTriggerVo;
+import neatlogic.module.cmdb.notify.enums.CmdbNotifyParam;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class CmdbNotifyPolicyHandler extends NotifyPolicyHandlerBase {
@@ -56,7 +61,11 @@ public class CmdbNotifyPolicyHandler extends NotifyPolicyHandlerBase {
 
     @Override
     protected List<ConditionParamVo> mySystemParamList() {
-        return new ArrayList<>();
+        List<ConditionParamVo> notifyPolicyParamList = new ArrayList<>();
+        for (CmdbNotifyParam param : CmdbNotifyParam.values()) {
+            notifyPolicyParamList.add(createConditionParam(param));
+        }
+        return notifyPolicyParamList;
     }
 
     @Override
@@ -67,5 +76,45 @@ public class CmdbNotifyPolicyHandler extends NotifyPolicyHandlerBase {
     @Override
     protected void myAuthorityConfig(JSONObject config) {
 
+    }
+
+    @Override
+    public JSONObject convertData(Object object, INotifyTriggerType notifyTriggerType) {
+        JSONObject returnData = super.convertData(object, notifyTriggerType);
+        //JSONObject returnData = new JSONObject();
+        CiVo ciVo = null;
+        CiEntityVo ciEntityVo = null;
+        List<CiEntityVo> ciEntityList = null;
+        if (object instanceof CiVo) {
+            ciVo = (CiVo) object;
+        } else if (object instanceof CiEntityVo) {
+            ciEntityVo = (CiEntityVo) object;
+        } else if (object instanceof List<?>) {
+            ciEntityList = (List<CiEntityVo>) object;
+        } else if (object instanceof Map) {
+            Map<String, Object> dataMap = (Map<String, Object>) object;
+            if (dataMap.containsKey("ciVo")) {
+                ciVo = (CiVo) dataMap.get("ciVo");
+            }
+            if (dataMap.containsKey("ciEntityVo")) {
+                ciEntityVo = (CiEntityVo) dataMap.get("ciEntityVo");
+            }
+            if (dataMap.containsKey("ciEntityList")) {
+                ciEntityList = (List<CiEntityVo>) dataMap.get("ciEntityList");
+            }
+        }
+        if (ciVo != null) {
+            returnData.put("ciId", ciVo.getId());
+            returnData.put("ciName", ciVo.getName());
+            returnData.put("ciLabel", ciVo.getLabel());
+        }
+        if (ciEntityVo != null) {
+            returnData.put("ciEntityId", ciEntityVo.getId());
+            returnData.put("ciEntityName", ciEntityVo.getName());
+        }
+        if (ciEntityList != null) {
+            returnData.put("invalidCiEntityList", ciEntityList);
+        }
+        return returnData;
     }
 }

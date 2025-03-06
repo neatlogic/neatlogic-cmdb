@@ -47,6 +47,7 @@ import neatlogic.framework.cmdb.utils.RelUtil;
 import neatlogic.framework.cmdb.validator.core.IValidator;
 import neatlogic.framework.cmdb.validator.core.ValidatorFactory;
 import neatlogic.framework.exception.core.ApiRuntimeException;
+import neatlogic.framework.util.NotifyPolicyUtil;
 import neatlogic.framework.util.javascript.JavascriptUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
@@ -54,6 +55,8 @@ import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.RelEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.legalvalid.IllegalCiEntityMapper;
+import neatlogic.module.cmdb.notify.handler.CmdbNotifyPolicyHandler;
+import neatlogic.module.cmdb.notify.handler.CmdbNotifyTriggerType;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -62,6 +65,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -103,13 +107,15 @@ public class LegalValidManager {
                 CiEntityVo pCiEntityVo = new CiEntityVo();
                 pCiEntityVo.setCiId(legalValidVo.getCiId());
                 pCiEntityVo.setPageSize(100);
-                //检查是否存在不需要join所有属性和关系
+                //以下搜索只是检查是否存在，因此不需要join关联属性和关系
                 pCiEntityVo.setAttrIdList(new ArrayList<Long>() {{
                     this.add(0L);
                 }});
                 pCiEntityVo.setRelIdList(new ArrayList<Long>() {{
                     this.add(0L);
                 }});
+                CiVo ciVo = ciMapper.getCiBaseInfoById(legalValidVo.getCiId());
+                List<CiEntityVo> unlegalCiEntityList = new ArrayList<>();
                 List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(pCiEntityVo);
                 while (CollectionUtils.isNotEmpty(ciEntityList)) {
                     for (CiEntityVo ciEntityVo : ciEntityList) {
@@ -131,6 +137,7 @@ public class LegalValidManager {
                                 illegalCiEntityVo.setLegalValidId(legalValidVo.getId());
                                 illegalCiEntityVo.setError(errorMsgList);
                                 illegalCiEntityMapper.insertCiEntityIllegal(illegalCiEntityVo);
+                                unlegalCiEntityList.add(ciEntityVo);
                             }
                         } else if (legalValidVo.getType().equals(LegalValidType.CUSTOM.getValue())) {
                             List<ApiRuntimeException> errorList = validateCiEntity(ciEntityVo, legalValidVo.getRule());
@@ -145,11 +152,19 @@ public class LegalValidManager {
                                 illegalCiEntityVo.setLegalValidId(legalValidVo.getId());
                                 illegalCiEntityVo.setError(errorMsgList);
                                 illegalCiEntityMapper.insertCiEntityIllegal(illegalCiEntityVo);
+                                unlegalCiEntityList.add(ciEntityVo);
                             }
                         }
                     }
                     pCiEntityVo.setCurrentPage(pCiEntityVo.getCurrentPage() + 1);
                     ciEntityList = ciEntityService.searchCiEntity(pCiEntityVo);
+                }
+                //发送通知
+                if (CollectionUtils.isNotEmpty(unlegalCiEntityList) && ciVo != null) {
+                    NotifyPolicyUtil.executeAsync(CmdbNotifyPolicyHandler.class, CmdbNotifyTriggerType.CIENTITYINVALID, new HashMap<String, Object>() {{
+                        this.put("ciVo", ciVo);
+                        this.put("ciEntityList", unlegalCiEntityList);
+                    }});
                 }
             }
         });

@@ -2235,6 +2235,8 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     topic.send(ciEntityTransactionVo);
                 }
             }
+
+
             return ciEntityVo.getId();
         }
     }
