@@ -352,6 +352,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         if (ciVo == null) {
             throw new CiNotFoundException(ciEntityVo.getCiId());
         }
+        ciEntityVo.setIsVirtual(ciVo.getIsVirtual());
         List<CiVo> ciList = ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht());
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
         List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciVo.getId()));
