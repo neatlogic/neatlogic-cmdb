@@ -51,6 +51,7 @@ public class SearchGlobalAttrItemApi extends PrivateApiComponentBase {
             @Param(name = "attrId", type = ApiParamType.LONG, desc = "属性id", isRequired = true),
             @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "用于回显的参数列表"),
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "common.keyword"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage")
     })
     @Output({@Param(explode = GlobalAttrItemVo[].class)})
