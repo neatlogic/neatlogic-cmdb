@@ -71,15 +71,15 @@ public class ClearExpiredRelEntityScheduleJob extends JobBase {
 
     @Override
     public void reloadJob(JobObject jobObject) {
-        String tenantUuid = jobObject.getTenantUuid();
-        JobObject newJobObject = new JobObject.Builder("1", this.getGroupName(), this.getClassName(), tenantUuid).withCron(CRON_EXPRESSION).build();
-        schedulerManager.loadJob(newJobObject);
+        schedulerManager.loadJob(jobObject);
     }
 
     @Override
     public void initJob(String tenantUuid) {
-        JobObject newJobObject = new JobObject.Builder("1", this.getGroupName(), this.getClassName(), tenantUuid).withCron(CRON_EXPRESSION).build();
-        schedulerManager.loadJob(newJobObject);
+        JobObject jobObject = new JobObject.Builder("EXPIRED-RELENTITY-CLEARER", this.getGroupName(), this.getClassName(), tenantUuid)
+                .withCron(CRON_EXPRESSION)
+                .build();
+        this.reloadJob(jobObject);
     }
 
     private RelVo getRelById(Long relId) {

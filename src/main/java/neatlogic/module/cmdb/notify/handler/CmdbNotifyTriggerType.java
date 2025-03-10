@@ -16,21 +16,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 package neatlogic.module.cmdb.notify.handler;
 
 import neatlogic.framework.notify.core.INotifyTriggerType;
-import neatlogic.framework.util.I18n;
 
 public enum CmdbNotifyTriggerType implements INotifyTriggerType {
 
-    CIMODITY("cimodity", new I18n("模型修改"), new I18n("模型基础配置、属性、关系和授权相关发生变化时触发通知")),
-    CIDELETE("cidelete", new I18n("模型删除"), new I18n("模型被删除时触发通知")),
-    CIENTITYMODITY("cientitymodify", new I18n("配置项修改"), new I18n("配置项发生变化并且生效时触发通知")),
-    CIENTITYDELETE("cientitydelete", new I18n("配置项删除"), new I18n("配置项删除并生效时触发通知")),
-    CIENTITYINSERT("cientityinsert", new I18n("配置项添加"), new I18n("配置项添加并且生效时触发通知"));
+    CIMODITY("cimodity", "模型修改", "模型基础配置、属性、关系和授权相关发生变化时触发通知"),
+    CIDELETE("cidelete", "模型删除", "模型被删除时触发通知"),
+    CIENTITYMODITY("cientitymodify", "配置项修改", "配置项发生变化并且生效时触发通知"),
+    CIENTITYDELETE("cientitydelete", "配置项删除", "配置项删除并生效时触发通知"),
+    CIENTITYINSERT("cientityinsert", "配置项添加", "配置项添加并且生效时触发通知"),
+    CIENTITYINVALID("cientityinvalid", "配置项不合规", "发现配置项不合规时发送通知");
 
     private final String trigger;
-    private final I18n text;
-    private final I18n description;
+    private final String text;
+    private final String description;
 
-    CmdbNotifyTriggerType(String _trigger, I18n _text, I18n _description) {
+    CmdbNotifyTriggerType(String _trigger, String _text, String _description) {
         this.trigger = _trigger;
         this.text = _text;
         this.description = _description;
@@ -43,12 +43,12 @@ public enum CmdbNotifyTriggerType implements INotifyTriggerType {
 
     @Override
     public String getText() {
-        return text.toString();
+        return text;
     }
 
     @Override
     public String getDescription() {
-        return description.toString();
+        return description;
     }
 
     public static String getText(String trigger) {
