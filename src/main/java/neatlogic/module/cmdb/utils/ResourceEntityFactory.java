@@ -18,7 +18,6 @@ package neatlogic.module.cmdb.utils;
 import neatlogic.framework.cmdb.annotation.ResourceField;
 import neatlogic.framework.cmdb.annotation.ResourceType;
 import neatlogic.framework.cmdb.annotation.ResourceTypes;
-import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.SceneEntityVo;
 import neatlogic.framework.common.dto.ValueTextVo;
 import neatlogic.framework.restful.annotation.EntityField;
@@ -45,7 +44,7 @@ public class ResourceEntityFactory {
      * 视图名称与字段别名列表映射关系
      */
     private static Map<String, List<ValueTextVo>> fieldAliasMap = new HashMap<>();
-    private static List<ResourceEntityVo> resourceEntityList = new ArrayList<>();
+//    private static List<ResourceEntityVo> resourceEntityList = new ArrayList<>();
     /**
      * 视图信息列表
      */
@@ -129,6 +128,7 @@ public class ResourceEntityFactory {
                     sceneEntityVo = new SceneEntityVo();
                     sceneEntityVo.setName(rt.name());
                     sceneEntityVo.setLabel(rt.label());
+                    sceneEntityVo.setIsMultiple(rt.isMultiple());
                     sceneEntityVo.setDescription(String.join("；", rt.functionPathList()));
                 }
             }
@@ -169,6 +169,7 @@ public class ResourceEntityFactory {
                     SceneEntityVo sceneEntityVo = new SceneEntityVo();
                     sceneEntityVo.setName(rt.name());
                     sceneEntityVo.setLabel(rt.label());
+                    sceneEntityVo.setIsMultiple(rt.isMultiple());
                     sceneEntityVo.setDescription(String.join("；", rt.functionPathList()));
                     for (Field field : c.getDeclaredFields()) {
                         ResourceField rf = field.getAnnotation(ResourceField.class);
@@ -191,12 +192,28 @@ public class ResourceEntityFactory {
         sceneEntityList.sort(Comparator.comparingInt(e -> viewNameList.indexOf(e.getName())));
     }
 
-    public static List<ResourceEntityVo> getResourceEntityList() {
-        return resourceEntityList;
-    }
+//    public static List<ResourceEntityVo> getResourceEntityList() {
+//        return resourceEntityList;
+//    }
 
     public static List<SceneEntityVo> getSceneEntityList() {
-        return sceneEntityList;
+        List<SceneEntityVo> resultList = new ArrayList<>();
+        for (SceneEntityVo sceneEntity : sceneEntityList) {
+            if (Objects.equals(sceneEntity.getIsMultiple(), false)) {
+                resultList.add(sceneEntity);
+            }
+        }
+        return resultList;
+    }
+
+    public static List<SceneEntityVo> getMultipleSceneEntityList() {
+        List<SceneEntityVo> resultList = new ArrayList<>();
+        for (SceneEntityVo sceneEntity : sceneEntityList) {
+            if (Objects.equals(sceneEntity.getIsMultiple(), true)) {
+                resultList.add(sceneEntity);
+            }
+        }
+        return resultList;
     }
 
     public static SceneEntityVo getSceneEntityByViewName(String viewName) {
@@ -206,6 +223,7 @@ public class ResourceEntityFactory {
                 sceneEntityVo = new SceneEntityVo();
                 sceneEntityVo.setName(sceneEntity.getName());
                 sceneEntityVo.setLabel(sceneEntity.getLabel());
+                sceneEntityVo.setIsMultiple(sceneEntity.getIsMultiple());
                 sceneEntityVo.setDescription(sceneEntity.getDescription());
             }
         }

@@ -30,6 +30,8 @@ public interface ResourceEntityMapper extends IResourceEntityCrossoverMapper {
 
     List<ResourceEntityVo> getResourceEntityListByNameList(List<String> nameList);
 
+    List<ResourceEntityVo> getResourceEntityList();
+
     String getResourceEntityConfigByName(String name);
 
     List<Long> getAllResourceTypeCiIdList(ResourceSearchVo searchVo);

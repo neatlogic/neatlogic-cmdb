@@ -713,6 +713,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
     }
 
     @Override
+    @Deprecated
     public List<ResourceEntityVo> rebuildResourceEntity() {
         List<String> viewNameList = ResourceEntityFactory.getViewNameList();
         List<ResourceEntityVo> resourceEntityList = resourceEntityMapper.getResourceEntityListByNameList(viewNameList);
@@ -789,7 +790,14 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             List<ResourceEntityRelLinkVo> relLinkList = getRelLinkListByRelNode(originalConfig.getRelNode());
             originalConfig.setRelLinkList(relLinkList);
             List<ResourceEntityLeftJoinVo> leftJoinList = getLeftJoinList(originalConfig);
-            ResourceEntityConfigVo config = fieldMappingCheckValidityAndFillIdData(viewName, originalConfig);
+            List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
+            if (CollectionUtils.isEmpty(fieldNameList)) {
+                String sceneTemplateName = originalConfig.getSceneTemplateName();
+                if (StringUtils.isNotBlank(sceneTemplateName)) {
+                    fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(sceneTemplateName);
+                }
+            }
+            ResourceEntityConfigVo config = fieldMappingCheckValidityAndFillIdData(viewName, fieldNameList, originalConfig);
             config.setLeftJoinList(leftJoinList);
             if (Objects.equals(DatasourceManager.getDatabaseId(), DatabaseVendor.TIDB.getDatabaseId())) {
                 ResourceViewGenerateSqlUtilForTiDB resourceViewGenerateSqlUtilForTiDB = new ResourceViewGenerateSqlUtilForTiDB(config);
@@ -872,13 +880,12 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
      * @param config
      * @return
      */
-    private ResourceEntityConfigVo fieldMappingCheckValidityAndFillIdData(String viewName, ResourceEntityConfigVo config) {
+    private ResourceEntityConfigVo fieldMappingCheckValidityAndFillIdData(String viewName, List<String> fieldNameList, ResourceEntityConfigVo config) {
         ResourceEntityConfigVo newConfig = new ResourceEntityConfigVo();
         String mainCi = config.getMainCi();
         if (StringUtils.isBlank(mainCi)) {
             throw new ResourceViewFieldMappingException(viewName);
         }
-        List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
         List<ResourceEntityFieldMappingVo> fieldMappingList = config.getFieldMappingList();
         if (CollectionUtils.isEmpty(fieldMappingList)) {
             throw new ResourceViewFieldMappingException(viewName, fieldNameList);

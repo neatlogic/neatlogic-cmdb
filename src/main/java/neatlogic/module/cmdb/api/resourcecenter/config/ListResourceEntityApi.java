@@ -18,6 +18,7 @@ package neatlogic.module.cmdb.api.resourcecenter.config;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.RESOURCECENTER_MODIFY;
+import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityConfigVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.SceneEntityVo;
 import neatlogic.framework.cmdb.enums.resourcecenter.Status;
@@ -97,6 +98,37 @@ public class ListResourceEntityApi extends PrivateApiComponentBase {
                 }
             }
             resultList.add(resourceEntityVo);
+        }
+        // 扩展视图
+        List<ResourceEntityVo> allResourceEntityList = resourceEntityMapper.getResourceEntityList();
+        for (ResourceEntityVo resourceEntityVo : allResourceEntityList) {
+            SceneEntityVo sceneEntityVo = ResourceEntityFactory.getSceneEntityByViewName(resourceEntityVo.getName());
+            if (sceneEntityVo == null) {
+                String config = resourceEntityMapper.getResourceEntityConfigByName(resourceEntityVo.getName());
+                if (StringUtils.isNotBlank(config)) {
+                    ResourceEntityConfigVo resourceEntityConfigVo = JSONObject.parseObject(config, ResourceEntityConfigVo.class);
+                    if (resourceEntityConfigVo != null) {
+                        String sceneTemplateName = resourceEntityConfigVo.getSceneTemplateName();
+                        if (StringUtils.isNotBlank(sceneTemplateName)) {
+                            SceneEntityVo sceneTemplate = ResourceEntityFactory.getSceneEntityByViewName(sceneTemplateName);
+                            if (sceneTemplate != null) {
+                                try {
+                                    resourceEntityMapper.getResourceEntityViewDataList(resourceEntityVo.getName(), 0, 1);
+                                } catch (Exception e) {
+                                    resourceEntityVo.setStatus(Status.ERROR.getValue());
+                                    String error = resourceEntityVo.getError();
+                                    if (StringUtils.isNotBlank(error)) {
+                                        resourceEntityVo.setError(error + e.getMessage());
+                                    } else {
+                                        resourceEntityVo.setError(e.getMessage());
+                                    }
+                                }
+                                resultList.add(resourceEntityVo);
+                            }
+                        }
+                    }
+                }
+            }
         }
         return resultList;
     }

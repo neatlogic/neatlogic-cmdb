@@ -32,6 +32,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </foreach>
     </select>
 
+    <select id="getResourceEntityList" resultType="neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
+        SELECT `name`, `label`, `status`, `error`, `init_time` AS initTime, `ci_id` AS ciId, `description`
+        FROM `cmdb_resourcecenter_entity`
+    </select>
+
     <select id="getResourceEntityConfigByName" parameterType="java.lang.String" resultType="java.lang.String">
         SELECT `config`
         FROM `cmdb_resourcecenter_entity`
@@ -77,7 +82,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     <insert id="insertResourceEntity"
             parameterType="neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
         INSERT INTO cmdb_resourcecenter_entity (`name`, `label`, `status`, `error`, `init_time`, `ci_id`, `config`, `description`)
-        VALUES (#{name}, #{label}, #{status}, #{error}, NOW(3), #{ciId}, #{xml}, #{configStr} #{description})
+        VALUES (#{name}, #{label}, #{status}, #{error}, NOW(3), #{ciId}, #{configStr}, #{description})
         ON DUPLICATE KEY UPDATE
         <if test="label != null">
             `label` = #{label},

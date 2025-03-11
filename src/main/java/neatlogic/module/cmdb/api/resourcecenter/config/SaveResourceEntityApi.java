@@ -23,13 +23,15 @@ import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityConfigVo
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.SceneEntityVo;
 import neatlogic.framework.cmdb.enums.resourcecenter.Status;
-import neatlogic.framework.cmdb.exception.resourcecenter.ResourceCenterResourceFoundException;
+import neatlogic.framework.cmdb.exception.resourcecenter.ResourceEntityNameRepeatException;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.dto.FieldValidResultVo;
 import neatlogic.framework.restful.annotation.Description;
 import neatlogic.framework.restful.annotation.Input;
 import neatlogic.framework.restful.annotation.OperationType;
 import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
+import neatlogic.framework.restful.core.IValid;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
@@ -40,7 +42,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Objects;
 
 /**
  * @author linbq
@@ -82,28 +83,38 @@ public class SaveResourceEntityApi extends PrivateApiComponentBase {
     @Description(desc = "nmcarc.saveresourceentityapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        ResourceEntityVo resourceEntityVo = paramObj.toJavaObject(ResourceEntityVo.class);
+        String name = paramObj.getString("name");
+        String label = paramObj.getString("label");
+        String configStr = paramObj.getString("config");
+        ResourceEntityVo resourceEntityVo = new ResourceEntityVo();
+        resourceEntityVo.setName(name);
+        resourceEntityVo.setLabel(label);
+        resourceEntityVo.setConfigStr(configStr);
+//        ResourceEntityVo resourceEntityVo = paramObj.toJavaObject(ResourceEntityVo.class);
         SceneEntityVo sceneEntityVo = ResourceEntityFactory.getSceneEntityByViewName(resourceEntityVo.getName());
-        if (sceneEntityVo == null) {
-            throw new ResourceCenterResourceFoundException(resourceEntityVo.getName());
-        }
+//        if (sceneEntityVo == null) {
+//            throw new ResourceCenterResourceFoundException(resourceEntityVo.getName());
+//        }
         ResourceEntityConfigVo config = resourceEntityVo.getConfig();
         String mainCi = config.getMainCi();
         if (StringUtils.isNotBlank(mainCi)) {
             CiVo mainCiVo = ciMapper.getCiByName(mainCi);
             if (mainCiVo != null) {
                 resourceEntityVo.setCiId(mainCiVo.getId());
+                resourceEntityVo.setCi(mainCiVo);
             }
         }
-        resourceEntityVo.setDescription(sceneEntityVo.getDescription());
-        resourceEntityVo.setLabel(sceneEntityVo.getLabel());
+        if (sceneEntityVo != null) {
+            resourceEntityVo.setDescription(sceneEntityVo.getDescription());
+            resourceEntityVo.setLabel(sceneEntityVo.getLabel());
+        }
         boolean configEquals = false;
         ResourceEntityVo oldResourceEntityVo = resourceEntityMapper.getResourceEntityByName(resourceEntityVo.getName());
         if (oldResourceEntityVo != null) {
-            configEquals = Objects.equals(resourceEntityVo.getConfigStr(), oldResourceEntityVo.getConfigStr());
-            if (configEquals) {
-                return null;
-            }
+//            configEquals = Objects.equals(resourceEntityVo.getConfigStr(), oldResourceEntityVo.getConfigStr());
+//            if (configEquals) {
+//                return null;
+//            }
             resourceEntityMapper.updateResourceEntityLabelAndDescription(resourceEntityVo);
         } else {
             resourceEntityVo.setStatus(Status.PENDING.getValue());
@@ -122,5 +133,20 @@ public class SaveResourceEntityApi extends PrivateApiComponentBase {
             return sql;
         }
         return null;
+    }
+
+    public IValid name() {
+        return value -> {
+            String name = value.getString("name");
+            SceneEntityVo sceneEntityVo = ResourceEntityFactory.getSceneEntityByViewName(name);
+            if (sceneEntityVo != null) {
+                return new FieldValidResultVo(new ResourceEntityNameRepeatException(name));
+            }
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName(name);
+            if (resourceEntityVo != null) {
+                return new FieldValidResultVo(new ResourceEntityNameRepeatException(name));
+            }
+            return new FieldValidResultVo();
+        };
     }
 }

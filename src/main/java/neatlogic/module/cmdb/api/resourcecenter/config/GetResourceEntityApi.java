@@ -33,6 +33,7 @@ import neatlogic.framework.util.UuidUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import neatlogic.module.cmdb.utils.ResourceEntityFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -77,13 +78,17 @@ public class GetResourceEntityApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         String name = paramObj.getString("name");
         SceneEntityVo sceneEntityVo = ResourceEntityFactory.getSceneEntityByViewName(name);
-        if (sceneEntityVo == null) {
-            throw new ResourceCenterResourceFoundException(name);
-        }
+//        if (sceneEntityVo == null) {
+//            throw new ResourceCenterResourceFoundException(name);
+//        }
         ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName(name);
         if (resourceEntityVo == null) {
-            resourceEntityVo = new ResourceEntityVo();
-            resourceEntityVo.setName(sceneEntityVo.getName());
+            if (sceneEntityVo != null) {
+                resourceEntityVo = new ResourceEntityVo();
+                resourceEntityVo.setName(sceneEntityVo.getName());
+            } else {
+                throw new ResourceCenterResourceFoundException(name);
+            }
         } else if (resourceEntityVo.getCiId() != null) {
             CiVo ciVo = ciMapper.getCiById(resourceEntityVo.getCiId());
             if (ciVo != null) {
@@ -101,10 +106,25 @@ public class GetResourceEntityApi extends PrivateApiComponentBase {
                 }
             }
         }
-        resourceEntityVo.setLabel(sceneEntityVo.getLabel());
-        resourceEntityVo.setDescription(sceneEntityVo.getDescription());
-        List<ValueTextVo> fieldList = ResourceEntityFactory.getFieldListByViewName(name);
-        resourceEntityVo.setFieldList(fieldList);
+        if (sceneEntityVo != null) {
+            resourceEntityVo.setLabel(sceneEntityVo.getLabel());
+            resourceEntityVo.setDescription(sceneEntityVo.getDescription());
+            List<ValueTextVo> fieldList = ResourceEntityFactory.getFieldListByViewName(name);
+            resourceEntityVo.setFieldList(fieldList);
+        } else {
+            ResourceEntityConfigVo config = resourceEntityVo.getConfig();
+            if (config != null) {
+                String sceneTemplateName = config.getSceneTemplateName();
+                if (StringUtils.isNotBlank(sceneTemplateName)) {
+                    SceneEntityVo sceneTemplate = ResourceEntityFactory.getSceneEntityByViewName(sceneTemplateName);
+                    if (sceneTemplate == null) {
+                        throw new ResourceCenterResourceFoundException(sceneTemplateName);
+                    }
+                    List<ValueTextVo> fieldList = ResourceEntityFactory.getFieldListByViewName(sceneTemplateName);
+                    resourceEntityVo.setFieldList(fieldList);
+                }
+            }
+        }
         return resourceEntityVo;
     }
 }
