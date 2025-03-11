@@ -47,7 +47,7 @@ public class ListAssetListAllTheadApi extends PrivateApiComponentBase {
     @Description(desc = "获取资产清单所有表头列表")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        List<ValueTextVo> fieldList = ResourceEntityFactory.getFieldListByViewName("scence_ipobject_detail");
+        List<ValueTextVo> fieldList = ResourceEntityFactory.getFieldListByViewName("scence_application_asset_list_detail");
         return TableResultUtil.getResult(fieldList);
     }
 
