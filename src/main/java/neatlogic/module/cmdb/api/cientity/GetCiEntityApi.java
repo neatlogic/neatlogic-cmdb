@@ -24,6 +24,7 @@ import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.enums.CiAuthType;
 import neatlogic.framework.cmdb.enums.TransactionActionType;
 import neatlogic.framework.cmdb.enums.group.GroupType;
+import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.cientity.CiEntityAuthException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
@@ -101,6 +102,9 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
         }
         boolean needAction = jsonObj.getBooleanValue("needAction");
         CiVo ciVo = ciMapper.getCiById(ciId);
+        if (ciVo == null) {
+            throw new CiNotFoundException(ciId);
+        }
         CiEntityVo pCiEntityVo = new CiEntityVo();
         pCiEntityVo.setId(ciEntityId);
         pCiEntityVo.setCiId(ciId);
