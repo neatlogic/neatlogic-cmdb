@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.topo;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
@@ -40,7 +41,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,7 +63,7 @@ public class GetCustomViewDataCiEntityTopoApi extends PrivateApiComponentBase {
     private CiEntityMapper ciEntityMapper;
 
 
-    @Autowired
+    @Resource
     private CiTypeMapper ciTypeMapper;
 
     @Override
@@ -86,11 +86,11 @@ public class GetCustomViewDataCiEntityTopoApi extends PrivateApiComponentBase {
             @Param(name = "ciEntityId", type = ApiParamType.LONG, isRequired = true, desc = "配置项id"),
             @Param(name = "level", type = ApiParamType.INTEGER, desc = "自动展开关系层数，默认是1")})
     @Output({@Param(name = "topo", type = ApiParamType.STRING)})
-    @Description(desc = "获取自定义视图配置项拓扑接口")
+    @Description(desc = "获取自定义视图配置项拓扑")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         String layout = jsonObj.getString("layout");
-        CustomViewConditionVo customViewConditionVo = JSONObject.toJavaObject(jsonObj, CustomViewConditionVo.class);
+        CustomViewConditionVo customViewConditionVo = JSON.toJavaObject(jsonObj, CustomViewConditionVo.class);
         CustomViewVo customViewVo = customViewDataService.getCustomViewCiEntityById(customViewConditionVo);
         //提取cientityid，补充层次等属性
         Set<Long> ciEntityIdList = new HashSet<>();
