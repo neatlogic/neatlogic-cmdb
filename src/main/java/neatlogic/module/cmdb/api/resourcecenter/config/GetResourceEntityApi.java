@@ -77,24 +77,27 @@ public class GetResourceEntityApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         String name = paramObj.getString("name");
-        SceneEntityVo sceneEntityVo = ResourceEntityFactory.getSceneEntityByViewName(name);
-//        if (sceneEntityVo == null) {
-//            throw new ResourceCenterResourceFoundException(name);
-//        }
         ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName(name);
         if (resourceEntityVo == null) {
-            if (sceneEntityVo != null) {
-                resourceEntityVo = new ResourceEntityVo();
-                resourceEntityVo.setName(sceneEntityVo.getName());
-            } else {
+            SceneEntityVo sceneEntityVo = ResourceEntityFactory.getSceneEntityByViewName(name);
+            if (sceneEntityVo == null) {
                 throw new ResourceCenterResourceFoundException(name);
             }
-        } else if (resourceEntityVo.getCiId() != null) {
-            CiVo ciVo = ciMapper.getCiById(resourceEntityVo.getCiId());
-            if (ciVo != null) {
-                resourceEntityVo.setCi(ciVo);
-                ResourceEntityConfigVo config = resourceEntityVo.getConfig();
-                if (config != null) {
+            resourceEntityVo = new ResourceEntityVo();
+            resourceEntityVo.setName(sceneEntityVo.getName());
+            resourceEntityVo.setLabel(sceneEntityVo.getLabel());
+            resourceEntityVo.setDescription(sceneEntityVo.getDescription());
+            resourceEntityVo.setIsMultiple(sceneEntityVo.getIsMultiple());
+            List<ValueTextVo> fieldList = ResourceEntityFactory.getFieldListByViewName(name);
+            resourceEntityVo.setFieldList(fieldList);
+            return resourceEntityVo;
+        }
+        ResourceEntityConfigVo config = resourceEntityVo.getConfig();
+        if (config != null) {
+            if (StringUtils.isNotBlank(config.getMainCi())) {
+                CiVo ciVo = ciMapper.getCiByName(config.getMainCi());
+                if (ciVo != null) {
+                    resourceEntityVo.setCi(ciVo);
                     ResourceEntityRelNodeVo relNode = config.getRelNode();
                     if (relNode == null) {
                         relNode = new ResourceEntityRelNodeVo();
@@ -105,22 +108,21 @@ public class GetResourceEntityApi extends PrivateApiComponentBase {
                     }
                 }
             }
-        }
-        if (sceneEntityVo != null) {
-            resourceEntityVo.setLabel(sceneEntityVo.getLabel());
-            resourceEntityVo.setDescription(sceneEntityVo.getDescription());
-            List<ValueTextVo> fieldList = ResourceEntityFactory.getFieldListByViewName(name);
-            resourceEntityVo.setFieldList(fieldList);
-        } else {
-            ResourceEntityConfigVo config = resourceEntityVo.getConfig();
-            if (config != null) {
-                String sceneTemplateName = config.getSceneTemplateName();
-                if (StringUtils.isNotBlank(sceneTemplateName)) {
-                    SceneEntityVo sceneTemplate = ResourceEntityFactory.getSceneEntityByViewName(sceneTemplateName);
-                    if (sceneTemplate == null) {
-                        throw new ResourceCenterResourceFoundException(sceneTemplateName);
-                    }
+            String sceneTemplateName = config.getSceneTemplateName();
+            if (StringUtils.isNotBlank(sceneTemplateName)) {
+                resourceEntityVo.setIsMultiple(true);
+                SceneEntityVo sceneTemplate = ResourceEntityFactory.getSceneEntityByViewName(sceneTemplateName);
+                if (sceneTemplate != null) {
+                    resourceEntityVo.setIsMultiple(sceneTemplate.getIsMultiple());
                     List<ValueTextVo> fieldList = ResourceEntityFactory.getFieldListByViewName(sceneTemplateName);
+                    resourceEntityVo.setFieldList(fieldList);
+                }
+            } else {
+                resourceEntityVo.setIsMultiple(false);
+                SceneEntityVo sceneEntityVo = ResourceEntityFactory.getSceneEntityByViewName(name);
+                if (sceneEntityVo != null) {
+                    resourceEntityVo.setIsMultiple(sceneEntityVo.getIsMultiple());
+                    List<ValueTextVo> fieldList = ResourceEntityFactory.getFieldListByViewName(name);
                     resourceEntityVo.setFieldList(fieldList);
                 }
             }
