@@ -1101,7 +1101,11 @@ public class CiSyncManager {
                         } catch (Exception ex) {
                             //logger.warn(ex.getMessage(), ex);
                             //syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
-                            dataErrorList.add(ex.getMessage());
+                            if (StringUtils.isNotBlank(ex.getMessage())) {
+                                dataErrorList.add(ex.getMessage());
+                            } else {
+                                dataErrorList.add(ExceptionUtils.getStackTrace(ex));
+                            }
                             //throw ex;
                         }
                     }
