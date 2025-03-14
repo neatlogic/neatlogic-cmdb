@@ -312,6 +312,7 @@ public class CiSyncManager {
                 SyncMappingVo syncMappingVo = syncCiCollectionVo.getMappingByAttrId(uniqueAttrId);
                 AttrVo attr = attrMap.get(uniqueAttrId);
                 if (attr == null) {
+                    System.out.println("找不到属性id了：" + uniqueAttrId);
                     throw new AttrNotFoundException(uniqueAttrId);
                 }
                 if (syncMappingVo == null) {
