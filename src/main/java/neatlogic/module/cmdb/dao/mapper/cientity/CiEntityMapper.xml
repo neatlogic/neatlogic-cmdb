@@ -999,7 +999,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             <!-- (not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id = `ci_base`.id) or exists
              (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id = `ci_base`.id
              and xx.expired_time &gt;= NOW()))-->
-
+            <if test="includeIdList != null and includeIdList.size() > 0">
+                AND `ci_base`.id in
+                <foreach collection="includeIdList" item="includeId" open="(" close=")" separator=",">
+                    #{includeId}
+                </foreach>
+            </if>
             <if test="keywordList != null and keywordList.size() > 0">
                 AND (fw.word IN
                 <foreach collection="keywordList" item="item" open="(" close=")" separator=",">
