@@ -311,6 +311,9 @@ public class CiSyncManager {
             for (Long uniqueAttrId : ciVo.getUniqueAttrIdList()) {
                 SyncMappingVo syncMappingVo = syncCiCollectionVo.getMappingByAttrId(uniqueAttrId);
                 AttrVo attr = attrMap.get(uniqueAttrId);
+                if (attr == null) {
+                    throw new AttrNotFoundException(uniqueAttrId);
+                }
                 if (syncMappingVo == null) {
                     throw new CiUniqueAttrNotFoundException(ciVo, attr);
                 }
