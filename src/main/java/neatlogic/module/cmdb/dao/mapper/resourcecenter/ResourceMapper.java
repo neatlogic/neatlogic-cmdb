@@ -46,6 +46,12 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     List<ResourceVo> getResourceListByIdList(List<Long> idList);
 
+    int getAppResourceCount(ResourceSearchVo searchVo);
+
+    List<Long> getAppResourceIdList(ResourceSearchVo searchVo);
+
+    List<ResourceVo> getAppResourceListByIdList(@Param("idList") List<Long> idList, @Param("viewName") String viewName);
+
     int getIpObjectResourceCountByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(ResourceSearchVo searchVo);
 
     List<Long> getIpObjectResourceIdListByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(ResourceSearchVo searchVo);

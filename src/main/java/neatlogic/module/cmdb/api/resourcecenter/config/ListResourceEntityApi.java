@@ -86,6 +86,7 @@ public class ListResourceEntityApi extends PrivateApiComponentBase {
             resourceEntityVo.setName(sceneEntityVo.getName());
             resourceEntityVo.setLabel(sceneEntityVo.getLabel());
             resourceEntityVo.setDescription(sceneEntityVo.getDescription());
+            resourceEntityVo.setIsMultiple(sceneEntityVo.getIsMultiple());
             try {
                 resourceEntityMapper.getResourceEntityViewDataList(sceneEntityVo.getName(), 0, 1);
             } catch (Exception e) {
@@ -112,6 +113,7 @@ public class ListResourceEntityApi extends PrivateApiComponentBase {
                         if (StringUtils.isNotBlank(sceneTemplateName)) {
                             SceneEntityVo sceneTemplate = ResourceEntityFactory.getSceneEntityByViewName(sceneTemplateName);
                             if (sceneTemplate != null) {
+                                resourceEntityVo.setIsMultiple(sceneTemplate.getIsMultiple());
                                 try {
                                     resourceEntityMapper.getResourceEntityViewDataList(resourceEntityVo.getName(), 0, 1);
                                 } catch (Exception e) {
@@ -130,6 +132,7 @@ public class ListResourceEntityApi extends PrivateApiComponentBase {
                 }
             }
         }
+        resultList.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
         return resultList;
     }
 }

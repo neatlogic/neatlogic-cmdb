@@ -61,6 +61,7 @@ public class AppResourceListApi extends PrivateApiComponentBase {
             @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "应用模块id"),
             @Param(name = "envId", type = ApiParamType.LONG, desc = "环境id,envId=-2表示无配置环境"),
             @Param(name = "typeId", type = ApiParamType.LONG, desc = "类型id"),
+            @Param(name = "viewName", type = ApiParamType.LONG, desc = "视图名称"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, defaultValue = "1", desc = "当前页"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER,  defaultValue = "20", desc = "每页数据条目")
     })
@@ -85,8 +86,9 @@ public class AppResourceListApi extends PrivateApiComponentBase {
         if (typeId != null) {
             typeIdList.add(typeId);
         }
+        String viewName = paramObj.getString("viewName");
         IResourceCenterDataSource resourceCenterDataSource = ResourceCenterDataSourceFactory.getResourceCenterDataSource();
-        JSONArray tableList = resourceCenterDataSource.getAppResourceList(appSystemId, appModuleId, envId, typeIdList, currentPage, pageSize);
+        JSONArray tableList = resourceCenterDataSource.getAppResourceList(appSystemId, appModuleId, envId, typeIdList, viewName, currentPage, pageSize);
         resultObj.put("tableList", tableList);
         return resultObj;
     }

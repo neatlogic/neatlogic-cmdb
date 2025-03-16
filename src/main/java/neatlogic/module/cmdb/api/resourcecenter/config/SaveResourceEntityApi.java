@@ -86,10 +86,12 @@ public class SaveResourceEntityApi extends PrivateApiComponentBase {
         String name = paramObj.getString("name");
         String label = paramObj.getString("label");
         String configStr = paramObj.getString("config");
+        String description = paramObj.getString("description");
         ResourceEntityVo resourceEntityVo = new ResourceEntityVo();
         resourceEntityVo.setName(name);
         resourceEntityVo.setLabel(label);
         resourceEntityVo.setConfigStr(configStr);
+        resourceEntityVo.setDescription(description);
 //        ResourceEntityVo resourceEntityVo = paramObj.toJavaObject(ResourceEntityVo.class);
         SceneEntityVo sceneEntityVo = ResourceEntityFactory.getSceneEntityByViewName(resourceEntityVo.getName());
 //        if (sceneEntityVo == null) {

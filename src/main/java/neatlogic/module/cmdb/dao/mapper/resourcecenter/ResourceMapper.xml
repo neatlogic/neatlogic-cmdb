@@ -497,30 +497,41 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         <id column="id" property="id"/>
         <result column="name" property="name"/>
         <result column="abbr_name" property="abbrName"/>
+        <result column="ip" property="ip"/>
         <result column="type_id" property="typeId"/>
         <result column="type_name" property="typeName"/>
         <result column="type_label" property="typeLabel"/>
-        <result column="inspect_status" property="inspectStatus"/>
-        <result column="inspect_time" property="inspectTime"/>
-        <result column="env_seq_no" property="envSeqNo"/>
-        <result column="monitor_status" property="monitorStatus"/>
-        <result column="monitor_time" property="monitorTime"/>
-        <result column="maintenance_window" property="maintenanceWindow"/>
-        <result column="description" property="description"/>
         <result column="fcu" property="fcu"/>
         <result column="fcd" property="fcd"/>
         <result column="lcu" property="lcu"/>
         <result column="lcd" property="lcd"/>
+        <result column="maintenance_window" property="maintenanceWindow"/>
+        <result column="description" property="description"/>
         <result column="network_area" property="networkArea"/>
+        <result column="inspect_status" property="inspectStatus"/>
+        <result column="inspect_time" property="inspectTime"/>
+        <result column="monitor_status" property="monitorStatus"/>
+        <result column="monitor_time" property="monitorTime"/>
         <result column="port" property="port"/>
-        <result column="ip" property="ip"/>
+        <!--<result column="bg_id" property="bgId"/>
+        <result column="bg_name" property="bgName"/>
+        <result column="allip_id" property="allipId"/>
+        <result column="allip_ip" property="allipIp"/>
+        <result column="allip_label" property="allipLabel"/>
+        <result column="user_id" property="userId"/>
+        <result column="user_uuid" property="userUuid"/>
+        <result column="user_name" property="userName"/>-->
         <result column="state_id" property="stateId"/>
         <result column="state_name" property="stateName"/>
         <result column="state_label" property="stateLabel"/>
+        <result column="vendor_id" property="vendorId"/>
+        <result column="vendor_name" property="vendorName"/>
+        <result column="vendor_label" property="vendorLabel"/>
         <result column="datacenter_id" property="dataCenterId"/>
         <result column="datacenter_name" property="dataCenterName"/>
         <result column="env_id" property="envId"/>
         <result column="env_name" property="envName"/>
+        <result column="env_seq_no" property="envSeqNo"/>
         <result column="app_module_id" property="appModuleId"/>
         <result column="app_module_name" property="appModuleName"/>
         <result column="app_module_abbr_name" property="appModuleAbbrName"/>
@@ -584,6 +595,98 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
         WHERE a.`id` IN
         <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getAppResourceCount" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="int">
+        SELECT COUNT(1)
+        FROM @{DATA_SCHEMA}.`${viewName}` a
+        <where>
+        <if test="appSystemId != null">
+            AND a.`app_system_id` = #{appSystemId}
+        </if>
+        <if test="appModuleId != null">
+            AND a.`app_module_id` = #{appModuleId}
+        </if>
+        <if test="envId != null and envId != -2">
+            AND a.`env_id` = #{envId}
+        </if>
+        <if test="envId == -2">
+            AND a.`env_id` is null
+        </if>
+        </where>
+    </select>
+
+    <select id="getAppResourceIdList" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
+        SELECT DISTINCT a.`id`
+        FROM @{DATA_SCHEMA}.`${viewName}` a
+        <where>
+            <if test="appSystemId != null">
+                AND a.`app_system_id` = #{appSystemId}
+            </if>
+            <if test="appModuleId != null">
+                AND a.`app_module_id` = #{appModuleId}
+            </if>
+            <if test="envId != null and envId != -2">
+                AND a.`env_id` = #{envId}
+            </if>
+            <if test="envId == -2">
+                AND a.`env_id` is null
+            </if>
+        </where>
+        ORDER BY a.`id` DESC
+        LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="getAppResourceListByIdList" resultMap="resourceCenterMap">
+        SELECT
+        a.`id`,
+        a.`name`,
+        a.`ip`,
+        a.`type_id`,
+        a.`type_name`,
+        a.`type_label`,
+        a.`fcu`,
+        a.`fcd`,
+        a.`lcu`,
+        a.`lcd`,
+        a.`maintenance_window`,
+        a.`description`,
+        a.`network_area`,
+        a.`inspect_status`,
+        a.`inspect_time`,
+        a.`monitor_status`,
+        a.`monitor_time`,
+        a.`port`,
+        a.`bg_id`,
+        a.`bg_name`,
+        a.`allip_id`,
+        a.`allip_ip`,
+        a.`allip_label`,
+        a.`user_id`,
+        a.`user_uuid`,
+        a.`user_name`,
+        a.`state_id`,
+        a.`state_name`,
+        a.`state_label`,
+        a.`vendor_id`,
+        a.`vendor_name`,
+        a.`vendor_label`,
+        a.`datacenter_id`,
+        a.`datacenter_name`,
+        a.`env_id`,
+        a.`env_name`,
+        a.`env_seq_no`,
+        a.`app_module_id`,
+        a.`app_module_name`,
+        a.`app_module_abbr_name`,
+        a.`app_system_id`,
+        a.`app_system_name`,
+        a.`app_system_abbr_name`
+        FROM @{DATA_SCHEMA}.`${viewName}` a
+        WHERE a.`id` IN
+        <foreach collection="idList" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
     </select>

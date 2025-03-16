@@ -20,6 +20,8 @@ package neatlogic.module.cmdb.api.resourcecenter.config;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.RESOURCECENTER_MODIFY;
+import neatlogic.framework.cmdb.resourcecenter.datasource.core.IResourceCenterDataSource;
+import neatlogic.framework.cmdb.resourcecenter.datasource.core.ResourceCenterDataSourceFactory;
 import neatlogic.framework.common.dto.ValueTextVo;
 import neatlogic.framework.restful.annotation.Description;
 import neatlogic.framework.restful.annotation.Input;
@@ -28,7 +30,6 @@ import neatlogic.framework.restful.annotation.Output;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.TableResultUtil;
-import neatlogic.module.cmdb.utils.ResourceEntityFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -47,8 +48,9 @@ public class ListAssetListAllTheadApi extends PrivateApiComponentBase {
     @Description(desc = "获取资产清单所有表头列表")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        List<ValueTextVo> fieldList = ResourceEntityFactory.getFieldListByViewName("scence_application_asset_list_detail");
-        return TableResultUtil.getResult(fieldList);
+        IResourceCenterDataSource resourceCenterDataSource = ResourceCenterDataSourceFactory.getResourceCenterDataSource();
+        List<ValueTextVo> appAssertAllTheadList = resourceCenterDataSource.getAssertAllTheadList();
+        return TableResultUtil.getResult(appAssertAllTheadList);
     }
 
     @Override
