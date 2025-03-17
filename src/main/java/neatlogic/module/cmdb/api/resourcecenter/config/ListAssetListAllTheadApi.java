@@ -30,11 +30,10 @@ import neatlogic.framework.restful.annotation.Output;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.TableResultUtil;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Service
+//@Service
 @AuthAction(action = RESOURCECENTER_MODIFY.class)
 @OperationType(type = OperationTypeEnum.OPERATE)
 public class ListAssetListAllTheadApi extends PrivateApiComponentBase {

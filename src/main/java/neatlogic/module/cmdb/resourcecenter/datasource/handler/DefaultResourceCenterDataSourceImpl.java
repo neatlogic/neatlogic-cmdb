@@ -157,12 +157,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
                     JSONObject resultObj = new JSONObject();
                     CiEntityVo ciEntityVo = cacheData.getObject(bgVo.getBgId().toString(), CiEntityVo.class);
                     if (ciEntityVo != null) {
-                        resultObj.put("id", ciEntityVo.getId());
-                        resultObj.put("name", ciEntityVo.getName());
-                        resultObj.put("ciId", ciEntityVo.getCiId());
-                        resultObj.put("ciName", ciEntityVo.getCiName());
-                        resultObj.put("ciLabel", ciEntityVo.getCiLabel());
-                        resultObj.put("ciIcon", ciEntityVo.getCiIcon());
+                        resultObj = getResultObj(ciEntityVo);
                     } else {
                         resultObj.put("id", bgVo.getBgId());
                         resultObj.put("name", bgVo.getBgName());
@@ -180,12 +175,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
                     JSONObject resultObj = new JSONObject();
                     CiEntityVo ciEntityVo = cacheData.getObject(ipVo.getId().toString(), CiEntityVo.class);
                     if (ciEntityVo != null) {
-                        resultObj.put("id", ciEntityVo.getId());
-                        resultObj.put("name", ciEntityVo.getName());
-                        resultObj.put("ciId", ciEntityVo.getCiId());
-                        resultObj.put("ciName", ciEntityVo.getCiName());
-                        resultObj.put("ciLabel", ciEntityVo.getCiLabel());
-                        resultObj.put("ciIcon", ciEntityVo.getCiIcon());
+                        resultObj = getResultObj(ciEntityVo);
                     } else {
                         resultObj.put("id", ipVo.getId());
                         resultObj.put("name", ipVo.getIp());
@@ -203,12 +193,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
                     JSONObject resultObj = new JSONObject();
                     CiEntityVo ciEntityVo = cacheData.getObject(ownerVo.getUserId().toString(), CiEntityVo.class);
                     if (ciEntityVo != null) {
-                        resultObj.put("id", ciEntityVo.getId());
-                        resultObj.put("name", ciEntityVo.getName());
-                        resultObj.put("ciId", ciEntityVo.getCiId());
-                        resultObj.put("ciName", ciEntityVo.getCiName());
-                        resultObj.put("ciLabel", ciEntityVo.getCiLabel());
-                        resultObj.put("ciIcon", ciEntityVo.getCiIcon());
+                        resultObj = getResultObj(ciEntityVo);
                     } else {
                         resultObj.put("id", ownerVo.getUserId());
                         resultObj.put("name", ownerVo.getUserName());
@@ -225,12 +210,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             JSONObject resultObj = new JSONObject();
             CiEntityVo ciEntityVo = cacheData.getObject(resourceVo.getStateId().toString(), CiEntityVo.class);
             if (ciEntityVo != null) {
-                resultObj.put("id", ciEntityVo.getId());
-                resultObj.put("name", ciEntityVo.getName());
-                resultObj.put("ciId", ciEntityVo.getCiId());
-                resultObj.put("ciName", ciEntityVo.getCiName());
-                resultObj.put("ciLabel", ciEntityVo.getCiLabel());
-                resultObj.put("ciIcon", ciEntityVo.getCiIcon());
+                resultObj = getResultObj(ciEntityVo);
             } else {
                 resultObj.put("id", resourceVo.getStateId());
                 resultObj.put("name", resourceVo.getStateName());
@@ -244,12 +224,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             JSONObject resultObj = new JSONObject();
             CiEntityVo ciEntityVo = cacheData.getObject(resourceVo.getVendorId().toString(), CiEntityVo.class);
             if (ciEntityVo != null) {
-                resultObj.put("id", ciEntityVo.getId());
-                resultObj.put("name", ciEntityVo.getName());
-                resultObj.put("ciId", ciEntityVo.getCiId());
-                resultObj.put("ciName", ciEntityVo.getCiName());
-                resultObj.put("ciLabel", ciEntityVo.getCiLabel());
-                resultObj.put("ciIcon", ciEntityVo.getCiIcon());
+                resultObj = getResultObj(ciEntityVo);
             } else {
                 resultObj.put("id", resourceVo.getVendorId());
                 resultObj.put("name", resourceVo.getVendorName());
@@ -264,12 +239,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             JSONObject resultObj = new JSONObject();
             CiEntityVo ciEntityVo = cacheData.getObject(resourceVo.getDataCenterId().toString(), CiEntityVo.class);
             if (ciEntityVo != null) {
-                resultObj.put("id", ciEntityVo.getId());
-                resultObj.put("name", ciEntityVo.getName());
-                resultObj.put("ciId", ciEntityVo.getCiId());
-                resultObj.put("ciName", ciEntityVo.getCiName());
-                resultObj.put("ciLabel", ciEntityVo.getCiLabel());
-                resultObj.put("ciIcon", ciEntityVo.getCiIcon());
+                resultObj = getResultObj(ciEntityVo);
             } else {
                 resultObj.put("id", resourceVo.getDataCenterId());
                 resultObj.put("name", resourceVo.getDataCenterName());
@@ -291,21 +261,12 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
                     resultObj.put("type", "globalAttr");
                 } else if (obj instanceof CiEntityVo) {
                     CiEntityVo ciEntityVo = (CiEntityVo) obj;
-                    resultObj.put("id", ciEntityVo.getId());
-                    resultObj.put("name", ciEntityVo.getName());
-                    resultObj.put("ciId", ciEntityVo.getCiId());
-                    resultObj.put("ciName", ciEntityVo.getCiName());
-                    resultObj.put("ciLabel", ciEntityVo.getCiLabel());
-                    resultObj.put("ciIcon", ciEntityVo.getCiIcon());
+                    resultObj = getResultObj(ciEntityVo);
                     resultObj.put("type", "attr");
                 }
             } else {
                 resultObj.put("id", resourceVo.getEnvId());
                 resultObj.put("name", resourceVo.getEnvName());
-                resultObj.put("ciId", "");
-                resultObj.put("ciName", "");
-                resultObj.put("ciLabel", "");
-                resultObj.put("ciIcon", "");
             }
             return resultObj;
         });
@@ -316,13 +277,8 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             JSONObject resultObj = new JSONObject();
             CiEntityVo ciEntityVo = cacheData.getObject(resourceVo.getAppModuleId().toString(), CiEntityVo.class);
             if (ciEntityVo != null) {
-                resultObj.put("id", ciEntityVo.getId());
-                resultObj.put("name", ciEntityVo.getName());
+                resultObj = getResultObj(ciEntityVo);
                 resultObj.put("abbrName", resourceVo.getAppModuleAbbrName());
-                resultObj.put("ciId", ciEntityVo.getCiId());
-                resultObj.put("ciName", ciEntityVo.getCiName());
-                resultObj.put("ciLabel", ciEntityVo.getCiLabel());
-                resultObj.put("ciIcon", ciEntityVo.getCiIcon());
             } else {
                 resultObj.put("id", resourceVo.getAppModuleId());
                 resultObj.put("name", resourceVo.getAppModuleName());
@@ -337,13 +293,8 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             JSONObject resultObj = new JSONObject();
             CiEntityVo ciEntityVo = cacheData.getObject(resourceVo.getAppSystemId().toString(), CiEntityVo.class);
             if (ciEntityVo != null) {
-                resultObj.put("id", ciEntityVo.getId());
-                resultObj.put("name", ciEntityVo.getName());
+                resultObj = getResultObj(ciEntityVo);
                 resultObj.put("abbrName", resourceVo.getAppSystemAbbrName());
-                resultObj.put("ciId", ciEntityVo.getCiId());
-                resultObj.put("ciName", ciEntityVo.getCiName());
-                resultObj.put("ciLabel", ciEntityVo.getCiLabel());
-                resultObj.put("ciIcon", ciEntityVo.getCiIcon());
             } else {
                 resultObj.put("id", resourceVo.getAppSystemId());
                 resultObj.put("name", resourceVo.getAppSystemName());
@@ -355,6 +306,17 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
         map.put(new ValueTextVo("accountList", "账号"), (resourceVo, cacheData) -> resourceVo.getAccountList());
     }
 
+    private JSONObject getResultObj(CiEntityVo ciEntityVo) {
+        JSONObject resultObj = new JSONObject();
+        resultObj.put("id", ciEntityVo.getId());
+        resultObj.put("name", ciEntityVo.getName());
+        resultObj.put("ciId", ciEntityVo.getCiId());
+        resultObj.put("ciName", ciEntityVo.getCiName());
+        resultObj.put("ciLabel", ciEntityVo.getCiLabel());
+        resultObj.put("ciIcon", ciEntityVo.getCiIcon());
+        resultObj.put("isVirtual", ciEntityVo.getIsVirtual());
+        return resultObj;
+    }
     @Override
     public Ordered getOrdered() {
         return Ordered.LOWEST_PRECEDENCE;
@@ -568,7 +530,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
                 if (CollectionUtils.isNotEmpty(fieldMappingList)) {
                     for (ResourceEntityFieldMappingVo fieldMappingVo : fieldMappingList) {
                         if (Objects.equals(fieldMappingVo.getField(), "env_id")) {
-                            List<Long> envIdList = resourceList.stream().filter(Objects::nonNull).map(ResourceVo::getAppSystemId).filter(Objects::nonNull).collect(Collectors.toList());
+                            List<Long> envIdList = resourceList.stream().filter(Objects::nonNull).map(ResourceVo::getEnvId).filter(Objects::nonNull).collect(Collectors.toList());
                             if (Objects.equals(fieldMappingVo.getType(), "globalAttr")) {
                                 for (Long envId : envIdList) {
                                     GlobalAttrItemVo globalAttrItemVo = globalAttrMapper.getGlobalAttrItemById(envId);

@@ -27,12 +27,12 @@ import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
 
-@Service
+//@Service
+@Deprecated
 @AuthAction(action = CMDB.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveResourceTypeApi extends PrivateApiComponentBase {

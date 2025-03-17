@@ -19,10 +19,8 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB;
-import neatlogic.framework.cmdb.dto.resourcecenter.AssetListDisplayVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
-import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.enums.group.GroupType;
 import neatlogic.framework.cmdb.resourcecenter.datasource.core.IResourceCenterDataSource;
 import neatlogic.framework.cmdb.resourcecenter.datasource.core.ResourceCenterDataSourceFactory;
@@ -43,7 +41,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -155,9 +156,9 @@ public class ResourceListApi extends PrivateApiComponentBase {
 //        }
         IResourceCenterDataSource resourceCenterDataSource = ResourceCenterDataSourceFactory.getResourceCenterDataSource();
         List<ResourceVo> resultList = resourceCenterDataSource.getResourceList(searchVo);
-//        if (CollectionUtils.isNotEmpty(resultList)) {
-//            resourceCenterResourceService.addTagAndAccountInformation(resultList);
-//        }
+        if (CollectionUtils.isNotEmpty(resultList)) {
+            resourceCenterResourceService.addTagAndAccountInformation(resultList);
+        }
 
         Set<Long> typeIdList = resultList.stream().map(ResourceVo::getTypeId).collect(Collectors.toSet());
         List<Long> canDeleteTypeIdList = new ArrayList<>();
@@ -204,29 +205,7 @@ public class ResourceListApi extends PrivateApiComponentBase {
                 resourceVo.setIsCanDelete(true);
             }
         }
-        List<String> fieldList = null;
-        AssetListDisplayVo assetListDisplay = resourceEntityMapper.getAssetListDisplay();
-        if (assetListDisplay != null) {
-            JSONObject config = assetListDisplay.getConfig();
-            if (config != null) {
-                JSONArray fieldArray = config.getJSONArray("fieldList");
-                if (CollectionUtils.isNotEmpty(fieldArray)) {
-                    fieldList = fieldArray.toJavaList(String.class);
-                }
-            }
-        }
-        JSONArray theadList = resourceCenterDataSource.getTheadList(fieldList);
-        ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
-        JSONArray tbodyList = resourceCenterDataSource.getTbodyList(fieldList, resultList, resourceEntityVo);
-        Map<Long, ResourceVo> resourceMap = resultList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
-        for (int i = 0; i < tbodyList.size(); i++) {
-            JSONObject tbodyObj = tbodyList.getJSONObject(i);
-            Long id = tbodyObj.getLong("id");
-            ResourceVo resourceVo = resourceMap.get(id);
-            tbodyObj.put("isCanEdit", resourceVo.getIsCanEdit());
-            tbodyObj.put("isCanDelete", resourceVo.getIsCanDelete());
-        }
-        return TableResultUtil.getResult(theadList, tbodyList, searchVo);
+        return TableResultUtil.getResult(resultList, searchVo);
     }
 
     /**

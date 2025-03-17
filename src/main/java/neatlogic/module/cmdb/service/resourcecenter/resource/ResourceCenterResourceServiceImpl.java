@@ -871,23 +871,23 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             if (StringUtils.isNotBlank(error)) {
                 String tableType = schemaMapper.checkTableOrViewIsExists(TenantContext.get().getDataDbName(), viewName);
                 if (!Objects.equals(tableType, "BASE TABLE")) {
-                    schemaMapper.deleteView(TenantContext.get().getDataDbName() + "." + viewName);
-                    List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
-                    Table table = new Table();
-                    table.setName(viewName);
-                    table.setSchemaName(TenantContext.get().getDataDbName());
-                    List<ColumnDefinition> columnDefinitions = new ArrayList<>();
-                    for (String columnName : fieldNameList) {
-                        ColumnDefinition columnDefinition = new ColumnDefinition();
-                        columnDefinition.setColumnName(columnName);
-                        columnDefinition.setColDataType(new ColDataType("int"));
-                        columnDefinitions.add(columnDefinition);
-                    }
-                    CreateTable createTable = new CreateTable();
-                    createTable.setTable(table);
-                    createTable.setColumnDefinitions(columnDefinitions);
-                    createTable.setIfNotExists(true);
                     EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
+                        schemaMapper.deleteView(TenantContext.get().getDataDbName() + "." + viewName);
+                        List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
+                        Table table = new Table();
+                        table.setName(viewName);
+                        table.setSchemaName(TenantContext.get().getDataDbName());
+                        List<ColumnDefinition> columnDefinitions = new ArrayList<>();
+                        for (String columnName : fieldNameList) {
+                            ColumnDefinition columnDefinition = new ColumnDefinition();
+                            columnDefinition.setColumnName(columnName);
+                            columnDefinition.setColDataType(new ColDataType("int"));
+                            columnDefinitions.add(columnDefinition);
+                        }
+                        CreateTable createTable = new CreateTable();
+                        createTable.setTable(table);
+                        createTable.setColumnDefinitions(columnDefinitions);
+                        createTable.setIfNotExists(true);
                         schemaMapper.insertView(createTable.toString());
                     }).execute();
                 }
