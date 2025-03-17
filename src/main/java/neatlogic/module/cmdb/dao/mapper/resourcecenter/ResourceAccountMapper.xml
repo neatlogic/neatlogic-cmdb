@@ -622,11 +622,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         set password = #{password}
         where id = #{id}
     </update>
-    <update id="resetAccountDefaultByProtocolId">
+    <update id="resetAccountDefaultByProtocolIdAndAccount">
         update `cmdb_resourcecenter_account`
         set is_default = 0
-        where protocol_id = #{value}
-          and is_default = 1
+        where protocol_id = #{protocolId}
+          and is_default = 1 and `account` = #{account}
     </update>
 
     <insert id="insertAccount" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.AccountVo">
