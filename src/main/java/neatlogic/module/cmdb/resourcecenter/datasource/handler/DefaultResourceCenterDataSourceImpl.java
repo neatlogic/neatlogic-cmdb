@@ -463,7 +463,8 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
                                     searchVo.setRowNum(rowNum);
                                     List<Long> resourceIdList = resourceMapper.getAppResourceIdList(searchVo);
                                     if (CollectionUtils.isNotEmpty(resourceIdList)) {
-                                        List<ResourceVo> resourceList = resourceMapper.getAppResourceListByIdList(resourceIdList, name);
+                                        searchVo.setIdList(resourceIdList);
+                                        List<ResourceVo> resourceList = resourceMapper.getAppResourceListByIdList(searchVo);
                                         if (CollectionUtils.isNotEmpty(resourceList)) {
                                             List<String> fieldList = viewName2FieldListMap.get(name);
                                             JSONArray theadList = getTheadList(fieldList);
@@ -939,10 +940,10 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
     public List<ValueTextVo> getAppAssertAllTheadList() {
         List<ValueTextVo> resultList = new ArrayList<>();
         for (ValueTextVo valueTextVo : map.keySet()) {
-            if (Objects.equals(valueTextVo.getValue(), "tag")) {
+            if (Objects.equals(valueTextVo.getValue(), "tagList")) {
                 continue;
             }
-            if (Objects.equals(valueTextVo.getValue(), "account")) {
+            if (Objects.equals(valueTextVo.getValue(), "accountList")) {
                 continue;
             }
             resultList.add(valueTextVo);
