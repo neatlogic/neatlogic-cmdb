@@ -351,8 +351,8 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             }
             return resultObj;
         });
-        map.put(new ValueTextVo("tag", "标签"), (resourceVo, cacheData) -> resourceVo.getTagList());
-        map.put(new ValueTextVo("account", "账号"), (resourceVo, cacheData) -> resourceVo.getAccountList());
+        map.put(new ValueTextVo("tagList", "标签"), (resourceVo, cacheData) -> resourceVo.getTagList());
+        map.put(new ValueTextVo("accountList", "账号"), (resourceVo, cacheData) -> resourceVo.getAccountList());
     }
 
     @Override
@@ -523,7 +523,8 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
         return tableList;
     }
 
-    private JSONArray getTbodyList(List<String> fieldList, List<ResourceVo> resourceList, ResourceEntityVo resourceEntityVo) {
+    @Override
+    public JSONArray getTbodyList(List<String> fieldList, List<ResourceVo> resourceList, ResourceEntityVo resourceEntityVo) {
         JSONArray tbodyList = new JSONArray();
         Map<Object, ValueTextVo> keyMap = new HashMap<>();
         for (ValueTextVo key : map.keySet()) {
@@ -601,16 +602,20 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
                                 if (Objects.equals(fieldMappingVo.getType(), "attr") && StringUtils.isNotBlank(fieldMappingVo.getToCi())) {
                                     CiVo ciVo = ciMapper.getCiByName(fieldMappingVo.getToCi());
                                     if (ciVo != null) {
-                                        CiEntityVo searchVo = new CiEntityVo();
-                                        searchVo.setCiId(ciVo.getId());
-                                        searchVo.setIdList(userIdList);
-                                        List<CiEntityVo> virtualCiEntityList = ciEntityCachedMapper.getVirtualCiEntityBaseInfoByIdList(searchVo);
-                                        for (CiEntityVo virtualCiEntity : virtualCiEntityList) {
-                                            virtualCiEntity.setCiId(ciVo.getId());
-                                            virtualCiEntity.setCiName(ciVo.getName());
-                                            virtualCiEntity.setCiLabel(ciVo.getLabel());
-                                            virtualCiEntity.setCiIcon(ciVo.getIcon());
-                                            cacheData.put(virtualCiEntity.getId().toString(), virtualCiEntity);
+                                        if (Objects.equals(ciVo.getIsVirtual(), 1)) {
+                                            CiEntityVo searchVo = new CiEntityVo();
+                                            searchVo.setCiId(ciVo.getId());
+                                            searchVo.setIdList(userIdList);
+                                            List<CiEntityVo> virtualCiEntityList = ciEntityCachedMapper.getVirtualCiEntityBaseInfoByIdList(searchVo);
+                                            for (CiEntityVo virtualCiEntity : virtualCiEntityList) {
+                                                virtualCiEntity.setCiId(ciVo.getId());
+                                                virtualCiEntity.setCiName(ciVo.getName());
+                                                virtualCiEntity.setCiLabel(ciVo.getLabel());
+                                                virtualCiEntity.setCiIcon(ciVo.getIcon());
+                                                cacheData.put(virtualCiEntity.getId().toString(), virtualCiEntity);
+                                            }
+                                        } else {
+                                            ciEntityIdSet.addAll(userIdList);
                                         }
                                     }
                                 }
@@ -634,16 +639,20 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
                                 if (Objects.equals(fieldMappingVo.getType(), "attr") && StringUtils.isNotBlank(fieldMappingVo.getToCi())) {
                                     CiVo ciVo = ciMapper.getCiByName(fieldMappingVo.getToCi());
                                     if (ciVo != null) {
-                                        CiEntityVo searchVo = new CiEntityVo();
-                                        searchVo.setCiId(ciVo.getId());
-                                        searchVo.setIdList(bgIdList);
-                                        List<CiEntityVo> virtualCiEntityList = ciEntityCachedMapper.getVirtualCiEntityBaseInfoByIdList(searchVo);
-                                        for (CiEntityVo virtualCiEntity : virtualCiEntityList) {
-                                            virtualCiEntity.setCiId(ciVo.getId());
-                                            virtualCiEntity.setCiName(ciVo.getName());
-                                            virtualCiEntity.setCiLabel(ciVo.getLabel());
-                                            virtualCiEntity.setCiIcon(ciVo.getIcon());
-                                            cacheData.put(virtualCiEntity.getId().toString(), virtualCiEntity);
+                                        if (Objects.equals(ciVo.getIsVirtual(), 1)) {
+                                            CiEntityVo searchVo = new CiEntityVo();
+                                            searchVo.setCiId(ciVo.getId());
+                                            searchVo.setIdList(bgIdList);
+                                            List<CiEntityVo> virtualCiEntityList = ciEntityCachedMapper.getVirtualCiEntityBaseInfoByIdList(searchVo);
+                                            for (CiEntityVo virtualCiEntity : virtualCiEntityList) {
+                                                virtualCiEntity.setCiId(ciVo.getId());
+                                                virtualCiEntity.setCiName(ciVo.getName());
+                                                virtualCiEntity.setCiLabel(ciVo.getLabel());
+                                                virtualCiEntity.setCiIcon(ciVo.getIcon());
+                                                cacheData.put(virtualCiEntity.getId().toString(), virtualCiEntity);
+                                            }
+                                        } else {
+                                            ciEntityIdSet.addAll(bgIdList);
                                         }
                                     }
                                 }
@@ -660,6 +669,12 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
                 cacheData.put(ciEntityVo.getId().toString(), ciEntityVo);
             }
         }
+        if (fieldList.contains("tagList")) {
+            resourceCenterResourceService.addTagInformation(resourceList);
+        }
+        if (fieldList.contains("accountList")) {
+            resourceCenterResourceService.addAccountInformation(resourceList);
+        }
         for (ResourceVo resourceVo : resourceList) {
             JSONObject tbodyObj = new JSONObject();
             for (String field : fieldList) {
@@ -668,6 +683,9 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
                     BiFunction<ResourceVo, JSONObject, Object> biFunction = map.get(key);
                     tbodyObj.put(key.getValue().toString(), biFunction.apply(resourceVo, cacheData));
                 }
+            }
+            if (!fieldList.contains("id")) {
+                tbodyObj.put("id", resourceVo.getId());
             }
             tbodyList.add(tbodyObj);
         }
@@ -910,7 +928,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
     }
 
     @Override
-    public JSONArray getTheadList(List<String> fieldNameList) {
+    public JSONArray getTheadList(List<String> fieldList) {
         JSONArray theadList = new JSONArray();
 //        if (CollectionUtils.isEmpty(fieldNameList)) {
 //            fieldNameList = ResourceEntityFactory.getFieldNameListByViewName("scence_ipobject_detail");
@@ -935,8 +953,8 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
         for (ValueTextVo key : map.keySet()) {
             keyMap.put(key.getValue(), key);
         }
-        for (String fieldName : fieldNameList) {
-            ValueTextVo valueTextVo = keyMap.get(fieldName);
+        for (String field : fieldList) {
+            ValueTextVo valueTextVo = keyMap.get(field);
             if (valueTextVo != null) {
                 JSONObject thead = new JSONObject();
                 thead.put("key", valueTextVo.getValue());

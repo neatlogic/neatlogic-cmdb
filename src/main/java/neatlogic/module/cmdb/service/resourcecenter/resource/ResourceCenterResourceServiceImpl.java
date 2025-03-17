@@ -601,18 +601,42 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         }
     }
 
-//    @Override
-//    public List<ResourceVo> getAppModuleList(ResourceSearchVo searchVo) {
-//        int count = resourceMapper.searchAppModuleCount(searchVo);
-//        if (count > 0) {
-//            searchVo.setRowNum(count);
-//            List<Long> idList = resourceMapper.searchAppModuleIdList(searchVo);
-//            if (CollectionUtils.isNotEmpty(idList)) {
-//                return resourceMapper.searchAppModule(idList);
-//            }
-//        }
-//        return new ArrayList<>();
-//    }
+    @Override
+    public void addTagInformation(List<ResourceVo> resourceList) {
+        List<Long> idList = resourceList.stream().filter(Objects::nonNull).map(ResourceVo::getId).filter(Objects::nonNull).collect(Collectors.toList());
+        Map<Long, List<TagVo>> tagMap = getResourceTagByResourceIdList(idList);
+        for (ResourceVo resourceVo : resourceList) {
+            List<TagVo> tagList = tagMap.get(resourceVo.getId());
+            if (CollectionUtils.isNotEmpty(tagList)) {
+                resourceVo.setTagList(tagList.stream().map(TagVo::getName).collect(Collectors.toList()));
+            }
+        }
+    }
+
+    @Override
+    public void addAccountInformation(List<ResourceVo> resourceList) {
+        List<Long> idList = resourceList.stream().map(ResourceVo::getId).collect(Collectors.toList());
+        Map<Long, List<AccountVo>> accountMap = getResourceAccountByResourceIdList(idList);
+        for (ResourceVo resourceVo : resourceList) {
+            List<AccountVo> accountList = accountMap.get(resourceVo.getId());
+            if (CollectionUtils.isNotEmpty(accountList)) {
+                resourceVo.setAccountList(accountList);
+            }
+        }
+    }
+
+    @Override
+    public List<ResourceVo> getAppModuleList(ResourceSearchVo searchVo) {
+        int count = resourceMapper.searchAppModuleCount(searchVo);
+        if (count > 0) {
+            searchVo.setRowNum(count);
+            List<Long> idList = resourceMapper.searchAppModuleIdList(searchVo);
+            if (CollectionUtils.isNotEmpty(idList)) {
+                return resourceMapper.searchAppModule(idList);
+            }
+        }
+        return new ArrayList<>();
+    }
 
     @Override
     public Collection<AppEnvVo> getAppEnvList(ResourceSearchVo searchVo) {

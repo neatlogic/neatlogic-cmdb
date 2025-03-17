@@ -127,12 +127,26 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
     void addTagAndAccountInformation(List<ResourceVo> resourceList);
 
     /**
+     * 添加标签和账号信息
+     *
+     * @param resourceList
+     */
+    void addTagInformation(List<ResourceVo> resourceList);
+
+    /**
+     * 添加标签和账号信息
+     *
+     * @param resourceList
+     */
+    void addAccountInformation(List<ResourceVo> resourceList);
+
+    /**
      * 获取模块列表
      *
      * @param searchVo resourceSearchVo
      * @return 模块列表
      */
-//    List<ResourceVo> getAppModuleList(ResourceSearchVo searchVo);
+    List<ResourceVo> getAppModuleList(ResourceSearchVo searchVo);
 
 
     /**
