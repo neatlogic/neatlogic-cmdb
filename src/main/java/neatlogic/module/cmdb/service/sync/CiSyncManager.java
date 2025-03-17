@@ -311,76 +311,75 @@ public class CiSyncManager {
             for (Long uniqueAttrId : ciVo.getUniqueAttrIdList()) {
                 SyncMappingVo syncMappingVo = syncCiCollectionVo.getMappingByAttrId(uniqueAttrId);
                 AttrVo attr = attrMap.get(uniqueAttrId);
+                if (attr == null) {
+                    System.out.println("找不到属性id了：" + uniqueAttrId);
+                    throw new AttrNotFoundException(uniqueAttrId);
+                }
                 if (syncMappingVo == null) {
                     throw new CiUniqueAttrNotFoundException(ciVo, attr);
                 }
-
-                if (attr != null) {
-                    if (dataObj.containsKey(syncMappingVo.getField(parentKey))) {
-                        AttrFilterVo filterVo = new AttrFilterVo();
-                        filterVo.setType(attr.getType());
-                        filterVo.setAttrId(syncMappingVo.getAttrId());
-                        filterVo.setExpression(SearchExpression.EQ.getExpression());
-                        String v = dataObj.getString(syncMappingVo.getField(parentKey));
-                        if (Boolean.FALSE.equals(attr.isNeedTargetCi())) {
-                            if (StringUtils.isNotBlank(v)) {
-                                List<String> valueList = new ArrayList<>();
-                                valueList.add(v);
+                if (dataObj.containsKey(syncMappingVo.getField(parentKey))) {
+                    AttrFilterVo filterVo = new AttrFilterVo();
+                    filterVo.setType(attr.getType());
+                    filterVo.setAttrId(syncMappingVo.getAttrId());
+                    filterVo.setExpression(SearchExpression.EQ.getExpression());
+                    String v = dataObj.getString(syncMappingVo.getField(parentKey));
+                    if (Boolean.FALSE.equals(attr.isNeedTargetCi())) {
+                        if (StringUtils.isNotBlank(v)) {
+                            List<String> valueList = new ArrayList<>();
+                            valueList.add(v);
+                            filterVo.setValueList(valueList);
+                        } else {
+                            throw new CiUniqueAttrNotFoundException(syncCiCollectionVo, ciVo, syncMappingVo.getField(parentKey), dataObj);
+                        }
+                        ciEntityConditionVo.addAttrFilter(filterVo);
+                    } else {
+                        //如果是引用属性，需要被引用模型的唯一属性只有一个才能成功定位引用配置项
+                        CiVo targetCiVo = getCi(attr.getTargetCiId());
+                        if (targetCiVo == null) {
+                            throw new CiNotFoundException(attr.getTargetCiId());
+                        }
+                        if (CollectionUtils.isEmpty(targetCiVo.getUniqueAttrIdList())) {
+                            throw new CiUniqueRuleNotFoundException(targetCiVo);
+                        }
+                        if (targetCiVo.getUniqueAttrIdList().size() > 1) {
+                            throw new CiMultipleUniqueRuleException(targetCiVo);
+                        }
+                        Long uAttrId = targetCiVo.getUniqueAttrIdList().get(0);
+                        AttrVo targetNameAttrVo = attrMapper.getAttrById(uAttrId);
+                        //如果引用了非subset数据，需要检查目标的名称属性是否可以写入数据（非表达式和引用属性），否则则放弃这个属性的导入
+                        if (!targetNameAttrVo.getType().equals("expression") && Boolean.FALSE.equals(targetNameAttrVo.isNeedTargetCi())) {
+                            CiEntityVo attrConditionVo = new CiEntityVo();
+                            attrConditionVo.setCiId(attr.getTargetCiId());
+                            List<Long> noIdList = new ArrayList<>();
+                            noIdList.add(0L);
+                            attrConditionVo.setAttrIdList(noIdList);
+                            attrConditionVo.setRelIdList(noIdList);
+                            AttrFilterVo targetFilterVo = new AttrFilterVo();
+                            targetFilterVo.setAttrId(uAttrId);
+                            targetFilterVo.setType(targetNameAttrVo.getType());
+                            targetFilterVo.setExpression(SearchExpression.EQ.getExpression());
+                            targetFilterVo.setValueList(new ArrayList<String>() {{
+                                this.add(v);
+                            }});
+                            attrConditionVo.addAttrFilter(targetFilterVo);
+                            List<CiEntityVo> attrCiCheckList = searchCiEntityWithCache(attrConditionVo);//ciEntityService.searchCiEntity(attrConditionVo);
+                            if (CollectionUtils.isNotEmpty(attrCiCheckList)) {
+                                List<String> valueList = attrCiCheckList.stream().map(d -> d.getId().toString()).collect(Collectors.toList());
                                 filterVo.setValueList(valueList);
                             } else {
-                                throw new CiUniqueAttrNotFoundException(syncCiCollectionVo, ciVo, syncMappingVo.getField(parentKey), dataObj);
+                                //如果没有找到目标值，则需要放一个不可能存在的值进去，代表当前配置项是不存在的，否则会缺了一个条件导致匹配出错误数据
+                                List<String> noStringList = new ArrayList<>();
+                                noStringList.add("0");
+                                filterVo.setValueList(noStringList);
                             }
                             ciEntityConditionVo.addAttrFilter(filterVo);
                         } else {
-                            //如果是引用属性，需要被引用模型的唯一属性只有一个才能成功定位引用配置项
-                            CiVo targetCiVo = getCi(attr.getTargetCiId());
-                            if (targetCiVo == null) {
-                                throw new CiNotFoundException(attr.getTargetCiId());
-                            }
-                            if (CollectionUtils.isEmpty(targetCiVo.getUniqueAttrIdList())) {
-                                throw new CiUniqueRuleNotFoundException(targetCiVo);
-                            }
-                            if (targetCiVo.getUniqueAttrIdList().size() > 1) {
-                                throw new CiMultipleUniqueRuleException(targetCiVo);
-                            }
-                            Long uAttrId = targetCiVo.getUniqueAttrIdList().get(0);
-                            AttrVo targetNameAttrVo = attrMapper.getAttrById(uAttrId);
-                            //如果引用了非subset数据，需要检查目标的名称属性是否可以写入数据（非表达式和引用属性），否则则放弃这个属性的导入
-                            if (!targetNameAttrVo.getType().equals("expression") && Boolean.FALSE.equals(targetNameAttrVo.isNeedTargetCi())) {
-                                CiEntityVo attrConditionVo = new CiEntityVo();
-                                attrConditionVo.setCiId(attr.getTargetCiId());
-                                List<Long> noIdList = new ArrayList<>();
-                                noIdList.add(0L);
-                                attrConditionVo.setAttrIdList(noIdList);
-                                attrConditionVo.setRelIdList(noIdList);
-                                AttrFilterVo targetFilterVo = new AttrFilterVo();
-                                targetFilterVo.setAttrId(uAttrId);
-                                targetFilterVo.setType(targetNameAttrVo.getType());
-                                targetFilterVo.setExpression(SearchExpression.EQ.getExpression());
-                                targetFilterVo.setValueList(new ArrayList<String>() {{
-                                    this.add(v);
-                                }});
-                                attrConditionVo.addAttrFilter(targetFilterVo);
-                                List<CiEntityVo> attrCiCheckList = searchCiEntityWithCache(attrConditionVo);//ciEntityService.searchCiEntity(attrConditionVo);
-                                if (CollectionUtils.isNotEmpty(attrCiCheckList)) {
-                                    List<String> valueList = attrCiCheckList.stream().map(d -> d.getId().toString()).collect(Collectors.toList());
-                                    filterVo.setValueList(valueList);
-                                } else {
-                                    //如果没有找到目标值，则需要放一个不可能存在的值进去，代表当前配置项是不存在的，否则会缺了一个条件导致匹配出错误数据
-                                    List<String> noStringList = new ArrayList<>();
-                                    noStringList.add("0");
-                                    filterVo.setValueList(noStringList);
-                                }
-                                ciEntityConditionVo.addAttrFilter(filterVo);
-                            } else {
-                                throw new CiUniqueRuleAttrTypeIrregularException(targetCiVo, targetNameAttrVo);
-                            }
+                            throw new CiUniqueRuleAttrTypeIrregularException(targetCiVo, targetNameAttrVo);
                         }
-                    } else {
-                        throw new CiUniqueAttrNotFoundException(syncCiCollectionVo, ciVo, syncMappingVo.getField(parentKey), dataObj);
                     }
                 } else {
-                    throw new AttrNotFoundException(uniqueAttrId);
+                    throw new CiUniqueAttrNotFoundException(syncCiCollectionVo, ciVo, syncMappingVo.getField(parentKey), dataObj);
                 }
             }
             logger.info("查询配置项过滤条件：{}", ciEntityConditionVo.getAttrFilterString());
@@ -1101,7 +1100,11 @@ public class CiSyncManager {
                         } catch (Exception ex) {
                             //logger.warn(ex.getMessage(), ex);
                             //syncCiCollectionVo.getSyncAudit().appendError(ex.getMessage());
-                            dataErrorList.add(ex.getMessage());
+                            if (StringUtils.isNotBlank(ex.getMessage())) {
+                                dataErrorList.add(ex.getMessage());
+                            } else {
+                                dataErrorList.add(ExceptionUtils.getStackTrace(ex));
+                            }
                             //throw ex;
                         }
                     }
