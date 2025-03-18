@@ -615,6 +615,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         <if test="envId == -2">
             AND a.`env_id` is null
         </if>
+        <if test="inspectStatusList != null and inspectStatusList.size() > 0">
+            AND a.`inspect_status` IN
+            <foreach collection="inspectStatusList" item="inspectStatus" open="(" separator="," close=")">
+                #{inspectStatus}
+            </foreach>
+        </if>
         </where>
     </select>
 
@@ -633,6 +639,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             </if>
             <if test="envId == -2">
                 AND a.`env_id` is null
+            </if>
+            <if test="inspectStatusList != null and inspectStatusList.size() > 0">
+                AND a.`inspect_status` IN
+                <foreach collection="inspectStatusList" item="inspectStatus" open="(" separator="," close=")">
+                    #{inspectStatus}
+                </foreach>
             </if>
         </where>
         ORDER BY a.`id` DESC

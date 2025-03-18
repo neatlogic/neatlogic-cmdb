@@ -19,7 +19,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
-import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import neatlogic.framework.cmdb.resourcecenter.datasource.core.IResourceCenterDataSource;
 import neatlogic.framework.cmdb.resourcecenter.datasource.core.ResourceCenterDataSourceFactory;
 import neatlogic.framework.common.constvalue.ApiParamType;
@@ -60,8 +59,7 @@ public class AppResourceListApi extends PrivateApiComponentBase {
             @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用id"),
             @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "应用模块id"),
             @Param(name = "envId", type = ApiParamType.LONG, desc = "环境id,envId=-2表示无配置环境"),
-            @Param(name = "typeId", type = ApiParamType.LONG, desc = "类型id"),
-            @Param(name = "viewName", type = ApiParamType.LONG, desc = "视图名称"),
+            @Param(name = "viewName", type = ApiParamType.STRING, desc = "视图名称"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, defaultValue = "1", desc = "当前页"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER,  defaultValue = "20", desc = "每页数据条目")
     })
@@ -72,12 +70,11 @@ public class AppResourceListApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONObject resultObj = new JSONObject();
-        ResourceSearchVo searchVo = paramObj.toJavaObject(ResourceSearchVo.class);
-        if (searchVo.getAppSystemId() == null && searchVo.getAppModuleId() == null) {
-            throw new ParamNotExistsException("应用id（appSystemId）", "应用模块id（appModuleId）");
-        }
         Long appSystemId = paramObj.getLong("appSystemId");
         Long appModuleId = paramObj.getLong("appModuleId");
+        if (appSystemId == null && appModuleId == null) {
+            throw new ParamNotExistsException("应用id（appSystemId）", "应用模块id（appModuleId）");
+        }
         Long envId = paramObj.getLong("envId");
         Integer currentPage = paramObj.getInteger("currentPage");
         Integer pageSize = paramObj.getInteger("pageSize");

@@ -32,6 +32,7 @@ import neatlogic.framework.cmdb.exception.resourcecenter.AppModuleNotFoundExcept
 import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
 import neatlogic.framework.cmdb.resourcecenter.datasource.core.IResourceCenterDataSource;
 import neatlogic.framework.cmdb.resourcecenter.datasource.core.Ordered;
+import neatlogic.framework.common.constvalue.InspectStatus;
 import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.common.dto.ValueTextVo;
 import neatlogic.framework.util.TableResultUtil;
@@ -135,15 +136,29 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
 
         map.put(new ValueTextVo("inspect", "巡检状态"), (resourceVo, cacheData) -> {
             JSONObject resultObj = new JSONObject();
-            resultObj.put("inspectStatus", resourceVo.getInspectStatus());
-            resultObj.put("inspectTime", resourceVo.getInspectTime());
+            if (StringUtils.isNotBlank(resourceVo.getInspectStatus())) {
+                JSONObject statusJson = InspectStatus.getInspectStatusJson(resourceVo.getInspectStatus());
+                if (MapUtils.isNotEmpty(statusJson)) {
+                    resultObj.putAll(statusJson);
+                }
+            }
+            if (resourceVo.getInspectTime() != null) {
+                resultObj.put("time", resourceVo.getInspectTime());
+            }
             return resultObj;
         });
 //        map.put(new ValueTextVo("inspectTime", "巡检时间"), (resourceVo, cacheData) -> resourceVo.getInspectTime());
         map.put(new ValueTextVo("monitor", "监控状态"), (resourceVo, cacheData) -> {
             JSONObject resultObj = new JSONObject();
-            resultObj.put("monitorStatus", resourceVo.getMonitorStatus());
-            resultObj.put("monitorTime", resourceVo.getMonitorTime());
+            if (StringUtils.isNotBlank(resourceVo.getMonitorStatus())) {
+                JSONObject statusJson = InspectStatus.getInspectStatusJson(resourceVo.getMonitorStatus());
+                if (MapUtils.isNotEmpty(statusJson)) {
+                    resultObj.putAll(statusJson);
+                }
+            }
+            if (resourceVo.getMonitorTime() != null) {
+                resultObj.put("time", resourceVo.getMonitorTime());
+            }
             return resultObj;
         });
 //        map.put(new ValueTextVo("monitorTime", "监控时间"), (resourceVo, cacheData) -> resourceVo.getMonitorTime());
@@ -575,6 +590,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
                                                 virtualCiEntity.setCiName(ciVo.getName());
                                                 virtualCiEntity.setCiLabel(ciVo.getLabel());
                                                 virtualCiEntity.setCiIcon(ciVo.getIcon());
+                                                virtualCiEntity.setIsVirtual(ciVo.getIsVirtual());
                                                 cacheData.put(virtualCiEntity.getId().toString(), virtualCiEntity);
                                             }
                                         } else {
@@ -612,6 +628,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
                                                 virtualCiEntity.setCiName(ciVo.getName());
                                                 virtualCiEntity.setCiLabel(ciVo.getLabel());
                                                 virtualCiEntity.setCiIcon(ciVo.getIcon());
+                                                virtualCiEntity.setIsVirtual(ciVo.getIsVirtual());
                                                 cacheData.put(virtualCiEntity.getId().toString(), virtualCiEntity);
                                             }
                                         } else {
