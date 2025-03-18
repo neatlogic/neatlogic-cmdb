@@ -15,10 +15,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.tagent.register.handler;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.mongodb.client.result.InsertOneResult;
 import neatlogic.framework.tagent.dto.TagentVo;
 import neatlogic.framework.tagent.register.core.AfterRegisterBase;
 import org.apache.commons.lang3.StringUtils;
+import org.bson.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -31,6 +36,8 @@ import javax.annotation.Resource;
  */
 @Service
 public class AddCollectionHandler extends AfterRegisterBase {
+    private static final Logger logger = LoggerFactory.getLogger(AddCollectionHandler.class);
+
     @Resource
     private MongoTemplate mongoTemplate;
 
@@ -42,12 +49,15 @@ public class AddCollectionHandler extends AfterRegisterBase {
      */
     @Override
     public void myExecute(TagentVo tagentVo) {
+        if(logger.isDebugEnabled()) {
+            logger.debug("AddCollectionHandler insert mongodb init! {}", JSON.toJSONString(tagentVo));
+        }
         if (StringUtils.isNotBlank(tagentVo.getOsType()) && StringUtils.isNotBlank(tagentVo.getIp())) {
             Criteria criteria = new Criteria();
             criteria.andOperator(Criteria.where("MGMT_IP").is(tagentVo.getIp()));
             Query query = new Query(criteria);
             JSONObject oldData = mongoTemplate.findOne(query, JSONObject.class, "COLLECT_OS");
-            JSONObject dataObj = new JSONObject();
+            Document dataObj = new Document();
             dataObj.put("_OBJ_CATEGORY", "OS");
             dataObj.put("_OBJ_TYPE", tagentVo.getOsType());
             dataObj.put("OS_TYPE", tagentVo.getOsType());
@@ -55,8 +65,20 @@ public class AddCollectionHandler extends AfterRegisterBase {
             dataObj.put("CPU_ARCH", tagentVo.getOsbit());
             dataObj.put("HOSTNAME", tagentVo.getName());
             dataObj.put("VERSION", tagentVo.getOsVersion());
+            if(logger.isDebugEnabled()) {
+                logger.debug("AddCollectionHandler insert mongodb start! {}", JSON.toJSONString(dataObj));
+            }
             if (oldData == null) {
-                mongoTemplate.insert(dataObj, "COLLECT_OS");
+                InsertOneResult result = mongoTemplate.getCollection("COLLECT_OS").insertOne(dataObj);
+                if (result.getInsertedId() == null) {
+                    logger.error("AddCiEntityHandler insert mongodb COLLECT_OS collection failed!");
+                }else{
+                    logger.debug("AddCiEntityHandler insert mongodb COLLECT_OS collection succeed!");
+                }
+            }else{
+                if(logger.isDebugEnabled()) {
+                    logger.debug("AddCollectionHandler COLLECT_OS collection no need to insert! {}", JSON.toJSONString(oldData));
+                }
             }
         }
     }

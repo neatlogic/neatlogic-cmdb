@@ -15,15 +15,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.tagent.register.handler;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo;
 import neatlogic.framework.cmdb.enums.sync.CollectMode;
 import neatlogic.framework.tagent.dto.TagentVo;
 import neatlogic.framework.tagent.register.core.AfterRegisterBase;
+import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import neatlogic.module.cmdb.dao.mapper.sync.SyncMapper;
 import neatlogic.module.cmdb.service.sync.CiSyncManager;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -35,10 +40,11 @@ import java.util.stream.Collectors;
  */
 @Service
 public class AddCiEntityHandler extends AfterRegisterBase {
-
+    private static final Logger logger = LoggerFactory.getLogger(AddCiEntityHandler.class);
     @Resource
     private SyncMapper syncMapper;
-
+    @Resource
+    private ResourceMapper resourceMapper;
 
     /**
      * 需要满足以下条件才能完成同步：
@@ -51,20 +57,40 @@ public class AddCiEntityHandler extends AfterRegisterBase {
      */
     @Override
     public void myExecute(TagentVo tagentVo) {
-        if (StringUtils.isNotBlank(tagentVo.getOsType())) {
-            List<SyncCiCollectionVo> tmpList = syncMapper.getSyncCiCollectionByCollectionName(tagentVo.getOsType());
-            List<SyncCiCollectionVo> ciCollectionList = tmpList.stream().filter(d -> d.getCollectMode().equals(CollectMode.INITIATIVE.getValue())).collect(Collectors.toList());
-            if (CollectionUtils.isNotEmpty(ciCollectionList)) {
-                //组装成mongodb约定的数据格式
-                JSONObject dataObj = new JSONObject();
-                dataObj.put("_OBJ_CATEGORY", "OS");
-                dataObj.put("_OBJ_TYPE", tagentVo.getOsType());
-                dataObj.put("OS_TYPE", tagentVo.getOsType());
-                dataObj.put("MGMT_IP", tagentVo.getIp());
-                dataObj.put("CPU_ARCH", tagentVo.getOsbit());
-                dataObj.put("HOSTNAME", tagentVo.getName());
-                dataObj.put("VERSION", tagentVo.getOsVersion());
-                CiSyncManager.doSync(dataObj, ciCollectionList);
+        String tagentStr;
+        if(logger.isDebugEnabled()) {
+            tagentStr = JSON.toJSONString(tagentVo);
+            logger.debug("AddCiEntityHandler init! {}", tagentStr);
+        }
+        if (StringUtils.isNotBlank(tagentVo.getOsType()) && StringUtils.isNotBlank(tagentVo.getIp())) {
+            //资产清单不存在才同步入cmdb
+            ResourceVo resourceVo = resourceMapper.getResourceByIpAndPort(tagentVo.getIp(),null);
+            if (resourceVo == null) {
+                List<SyncCiCollectionVo> tmpList = syncMapper.getSyncCiCollectionByCollectionName(tagentVo.getOsType());
+                List<SyncCiCollectionVo> ciCollectionList = tmpList.stream().filter(d -> d.getCollectMode().equals(CollectMode.INITIATIVE.getValue())).collect(Collectors.toList());
+                if (CollectionUtils.isNotEmpty(ciCollectionList)) {
+                    //组装成mongodb约定的数据格式
+                    JSONObject dataObj = new JSONObject();
+                    dataObj.put("_OBJ_CATEGORY", "OS");
+                    dataObj.put("_OBJ_TYPE", tagentVo.getOsType());
+                    dataObj.put("OS_TYPE", tagentVo.getOsType());
+                    dataObj.put("MGMT_IP", tagentVo.getIp());
+                    dataObj.put("CPU_ARCH", tagentVo.getOsbit());
+                    dataObj.put("HOSTNAME", tagentVo.getName());
+                    dataObj.put("VERSION", tagentVo.getOsVersion());
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("AddCiEntityHandler sync mongodb to cmdb start! {},{}", JSON.toJSONString(dataObj), JSON.toJSONString(ciCollectionList));
+                    }
+                    CiSyncManager.doSync(dataObj, ciCollectionList);
+                }else{
+                    if(logger.isDebugEnabled()) {
+                        logger.debug("AddCiEntityHandler os collectMode is not initiative, no need to sync! ");
+                    }
+                }
+            }else{
+                if(logger.isDebugEnabled()) {
+                    logger.debug("AddCiEntityHandler os exist, no need to sync! ");
+                }
             }
         }
 
