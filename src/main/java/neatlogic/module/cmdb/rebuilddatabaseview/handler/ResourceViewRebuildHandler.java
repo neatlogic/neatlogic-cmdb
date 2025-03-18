@@ -55,15 +55,6 @@ public class ResourceViewRebuildHandler implements IRebuildDataBaseView {
     @Override
     public List<ViewStatusInfo> createViewIfNotExists() {
         List<ViewStatusInfo> resultList = new ArrayList<>();
-//        List<SceneEntityVo> sceneEntityList = ResourceEntityFactory.getSceneEntityList();
-//        for (SceneEntityVo sceneEntityVo : sceneEntityList) {
-//            String tableType = schemaMapper.checkTableOrViewIsExists(TenantContext.get().getDataDbName(), sceneEntityVo.getName());
-//            if (Objects.equals(tableType, "VIEW")) {
-//                continue;
-//            }
-//            ViewStatusInfo viewStatusInfo = rebuildSceneEntity(sceneEntityVo);
-//            resultList.add(viewStatusInfo);
-//        }
         List<ResourceEntityVo> resourceEntityList = resourceEntityMapper.getResourceEntityList();
         for (ResourceEntityVo resourceEntityVo : resourceEntityList) {
             String tableType = schemaMapper.checkTableOrViewIsExists(TenantContext.get().getDataDbName(), resourceEntityVo.getName());
@@ -99,11 +90,6 @@ public class ResourceViewRebuildHandler implements IRebuildDataBaseView {
     @Override
     public List<ViewStatusInfo> createOrReplaceView() {
         List<ViewStatusInfo> resultList = new ArrayList<>();
-//        List<SceneEntityVo> sceneEntityList = ResourceEntityFactory.getSceneEntityList();
-//        for (SceneEntityVo sceneEntityVo : sceneEntityList) {
-//            ViewStatusInfo viewStatusInfo = rebuildSceneEntity(sceneEntityVo);
-//            resultList.add(viewStatusInfo);
-//        }
         List<ResourceEntityVo> resourceEntityList = resourceEntityMapper.getResourceEntityList();
         for (ResourceEntityVo resourceEntityVo : resourceEntityList) {
             String config = resourceEntityMapper.getResourceEntityConfigByName(resourceEntityVo.getName());
@@ -133,15 +119,9 @@ public class ResourceViewRebuildHandler implements IRebuildDataBaseView {
     }
 
     private ViewStatusInfo rebuildSceneEntity(ResourceEntityVo resourceEntityVo) {
-//        ResourceEntityVo resourceEntityVo = new ResourceEntityVo();
-//        resourceEntityVo.setName(sceneEntityVo.getName());
-//        resourceEntityVo.setLabel(sceneEntityVo.getLabel());
-//        String config = resourceEntityMapper.getResourceEntityConfigByName(resourceEntityVo.getName());
         if (resourceEntityVo.getConfig() != null) {
-//            resourceEntityVo.setConfigStr(config);
             resourceEntityVo.setError(null);
             String sql = resourceCenterResourceService.buildResourceView(resourceEntityVo);
-//            resourceEntityVo.setError(error);
             if (StringUtils.isNotBlank(resourceEntityVo.getError())) {
                 resourceEntityVo.setStatus(Status.ERROR.getValue());
             } else {

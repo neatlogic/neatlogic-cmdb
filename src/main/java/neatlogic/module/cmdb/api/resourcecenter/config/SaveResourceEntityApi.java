@@ -92,11 +92,8 @@ public class SaveResourceEntityApi extends PrivateApiComponentBase {
         resourceEntityVo.setLabel(label);
         resourceEntityVo.setConfigStr(configStr);
         resourceEntityVo.setDescription(description);
-//        ResourceEntityVo resourceEntityVo = paramObj.toJavaObject(ResourceEntityVo.class);
         SceneEntityVo sceneEntityVo = ResourceEntityFactory.getSceneEntityByViewName(resourceEntityVo.getName());
-//        if (sceneEntityVo == null) {
-//            throw new ResourceCenterResourceFoundException(resourceEntityVo.getName());
-//        }
+
         ResourceEntityConfigVo config = resourceEntityVo.getConfig();
         String mainCi = config.getMainCi();
         if (StringUtils.isNotBlank(mainCi)) {
@@ -110,7 +107,7 @@ public class SaveResourceEntityApi extends PrivateApiComponentBase {
             resourceEntityVo.setDescription(sceneEntityVo.getDescription());
             resourceEntityVo.setLabel(sceneEntityVo.getLabel());
         }
-        boolean configEquals = false;
+//        boolean configEquals = false;
         ResourceEntityVo oldResourceEntityVo = resourceEntityMapper.getResourceEntityByName(resourceEntityVo.getName());
         if (oldResourceEntityVo != null) {
 //            configEquals = Objects.equals(resourceEntityVo.getConfigStr(), oldResourceEntityVo.getConfigStr());
@@ -122,10 +119,9 @@ public class SaveResourceEntityApi extends PrivateApiComponentBase {
             resourceEntityVo.setStatus(Status.PENDING.getValue());
             resourceEntityMapper.insertResourceEntity(resourceEntityVo);
         }
-        if (!configEquals) {
+//        if (!configEquals) {
             resourceEntityVo.setError(null);
             String sql = resourceCenterResourceService.buildResourceView(resourceEntityVo);
-//            resourceEntityVo.setError(error);
             if (StringUtils.isNotBlank(resourceEntityVo.getError())) {
                 resourceEntityVo.setStatus(Status.ERROR.getValue());
             } else {
@@ -133,8 +129,8 @@ public class SaveResourceEntityApi extends PrivateApiComponentBase {
             }
             resourceEntityMapper.updateResourceEntityStatusAndError(resourceEntityVo);
             return sql;
-        }
-        return null;
+//        }
+//        return null;
     }
 
     public IValid name() {

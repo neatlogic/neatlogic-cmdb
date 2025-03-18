@@ -520,30 +520,6 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             return new ArrayList<>();
         });
 
-//        searchMap.put("StorageDevice", (searchVo) -> {
-//            int rowNum = resourceCenterMapper.getStorageResourceCount(searchVo);
-//            if (rowNum > 0) {
-//                searchVo.setRowNum(rowNum);
-//                List<Long> idList = resourceCenterMapper.getStorageResourceIdList(searchVo);
-//                if (CollectionUtils.isNotEmpty(idList)) {
-//                    return resourceCenterMapper.getStorageResourceListByIdList(idList, TenantContext.get().getDataDbName());
-//                }
-//            }
-//            return new ArrayList<>();
-//        });
-//
-//        searchMap.put("NetworkDevice", (searchVo) -> {
-//            int rowNum = resourceCenterMapper.getNetDevResourceCount(searchVo);
-//            if (rowNum > 0) {
-//                searchVo.setRowNum(rowNum);
-//                List<Long> idList = resourceCenterMapper.getNetDevResourceIdList(searchVo);
-//                if (CollectionUtils.isNotEmpty(idList)) {
-//                    return resourceCenterMapper.getNetDevResourceListByIdList(idList, TenantContext.get().getDataDbName());
-//                }
-//            }
-//            return new ArrayList<>();
-//        });
-
         searchMap.put("APPIns", (searchVo) -> {
             int rowNum = resourceMapper.getIpObjectResourceCountByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(searchVo);
             if (rowNum > 0) {
@@ -742,20 +718,10 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         List<String> viewNameList = ResourceEntityFactory.getViewNameList();
         List<ResourceEntityVo> resourceEntityList = resourceEntityMapper.getResourceEntityListByNameList(viewNameList);
         for (ResourceEntityVo resourceEntityVo : resourceEntityList) {
-//            resourceEntityVo.setError("");
-//            resourceEntityVo.setStatus(Status.PENDING.getValue());
-//            resourceEntityMapper.updateResourceEntityStatusAndError(resourceEntityVo);
-//            String xml = resourceEntityMapper.getResourceEntityXmlByName(resourceEntityVo.getName());
-//            if (StringUtils.isNotBlank(xml)) {
-//                resourceEntityVo.setXml(xml);
-//                ResourceEntityViewBuilder builder = new ResourceEntityViewBuilder(resourceEntityVo);
-//                builder.buildView();
-//            }
             String config = resourceEntityMapper.getResourceEntityConfigByName(resourceEntityVo.getName());
             resourceEntityVo.setError(null);
             resourceEntityVo.setConfigStr(config);
             String sql = buildResourceView(resourceEntityVo);
-//            resourceEntityVo.setError(error);
             if (StringUtils.isNotBlank(resourceEntityVo.getError())) {
                 resourceEntityVo.setStatus(Status.ERROR.getValue());
             } else {
@@ -1183,9 +1149,6 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             }
             resultList.add(newFieldMappingVo);
         }
-//        if (CollectionUtils.isNotEmpty(fieldNameList)) {
-//            throw new ResourceViewFieldMappingException(viewName, fieldNameList);
-//        }
         newConfig.setFieldMappingList(resultList);
         return newConfig;
     }

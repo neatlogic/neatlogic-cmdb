@@ -513,14 +513,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         <result column="monitor_status" property="monitorStatus"/>
         <result column="monitor_time" property="monitorTime"/>
         <result column="port" property="port"/>
-        <!--<result column="bg_id" property="bgId"/>
-        <result column="bg_name" property="bgName"/>
-        <result column="allip_id" property="allipId"/>
-        <result column="allip_ip" property="allipIp"/>
-        <result column="allip_label" property="allipLabel"/>
-        <result column="user_id" property="userId"/>
-        <result column="user_uuid" property="userUuid"/>
-        <result column="user_name" property="userName"/>-->
         <result column="state_id" property="stateId"/>
         <result column="state_name" property="stateName"/>
         <result column="state_label" property="stateLabel"/>

@@ -41,11 +41,6 @@ public class ResourceEntityFactory {
      */
     private static Map<String, List<ValueTextVo>> fieldMap = new HashMap<>();
     /**
-     * 视图名称与字段别名列表映射关系
-     */
-    private static Map<String, List<ValueTextVo>> fieldAliasMap = new HashMap<>();
-//    private static List<ResourceEntityVo> resourceEntityList = new ArrayList<>();
-    /**
      * 视图信息列表
      */
     private static List<SceneEntityVo> sceneEntityList = new ArrayList<>();
@@ -54,63 +49,6 @@ public class ResourceEntityFactory {
      */
     private static List<String> viewNameList = new ArrayList<>();
 
-//    static {
-//        Reflections ref = new Reflections("neatlogic.framework.cmdb.dto.resourcecenter.entity", new TypeAnnotationsScanner(), new SubTypesScanner(true));
-//        Set<Class<?>> classList = ref.getTypesAnnotatedWith(ResourceType.class, true);
-//        for (Class<?> c : classList) {
-//            ResourceEntityVo resourceEntityVo = null;
-//            Annotation[] classAnnotations = c.getDeclaredAnnotations();
-//            for (Annotation annotation : classAnnotations) {
-//                if (annotation instanceof ResourceType) {
-//                    ResourceType rt = (ResourceType) annotation;
-//                    resourceEntityVo = new ResourceEntityVo();
-//                    resourceEntityVo.setName(rt.name());
-//                    resourceEntityVo.setLabel(rt.label());
-//                }
-//            }
-//            if (resourceEntityVo == null) {
-//                continue;
-//            }
-//            for (Field field : c.getDeclaredFields()) {
-//                Annotation[] annotations = field.getDeclaredAnnotations();
-//                for (Annotation annotation : annotations) {
-//                    if (annotation instanceof ResourceField) {
-//                        ResourceField rf = (ResourceField) annotation;
-//                        if (StringUtils.isNotBlank(rf.name())) {
-//                            ResourceEntityAttrVo attr = new ResourceEntityAttrVo();
-//                            attr.setField(rf.name());
-//                            resourceEntityVo.addAttr(attr);
-//                        }
-//                    }
-//                }
-//            }
-//            resourceEntityVo.setType(ViewType.RESOURCE.getValue());
-//            resourceEntityList.add(resourceEntityVo);
-//        }
-//        classList = ref.getTypesAnnotatedWith(ResourceTypes.class, true);
-//        for (Class<?> c : classList) {
-//            ResourceTypes resourceTypes = c.getAnnotation(ResourceTypes.class);
-//            if (resourceTypes != null) {
-//                for (ResourceType rt : resourceTypes.value()) {
-//                    ResourceEntityVo resourceEntityVo = new ResourceEntityVo();
-//                    resourceEntityVo.setName(rt.name());
-//                    resourceEntityVo.setLabel(rt.label());
-//                    for (Field field : c.getDeclaredFields()) {
-//                        ResourceField rf = field.getAnnotation(ResourceField.class);
-//                        if (rf != null) {
-//                            if (StringUtils.isNotBlank(rf.name())) {
-//                                ResourceEntityAttrVo attr = new ResourceEntityAttrVo();
-//                                attr.setField(rf.name());
-//                                resourceEntityVo.addAttr(attr);
-//                            }
-//                        }
-//                    }
-//                    resourceEntityVo.setType(ViewType.RESOURCE.getValue());
-//                    resourceEntityList.add(resourceEntityVo);
-//                }
-//            }
-//        }
-//    }
     static {
         Reflections ref = new Reflections("neatlogic");
         Set<Class<?>> classList = ref.getTypesAnnotatedWith(ResourceType.class, true);
@@ -141,18 +79,8 @@ public class ResourceEntityFactory {
                     if (StringUtils.isNotBlank(rf.name())) {
                         EntityField ef = field.getAnnotation(EntityField.class);
                         fieldMap.computeIfAbsent(sceneEntityVo.getName(), key -> new ArrayList<>()).add(new ValueTextVo(rf.name(), ef.name()));
-                        fieldAliasMap.computeIfAbsent(sceneEntityVo.getName(), key -> new ArrayList<>()).add(new ValueTextVo(rf.name(), field.getName()));
                     }
                 }
-//                Annotation[] annotations = field.getDeclaredAnnotations();
-//                for (Annotation annotation : annotations) {
-//                    if (annotation instanceof ResourceField) {
-//                        ResourceField rf = (ResourceField) annotation;
-//                        if (StringUtils.isNotBlank(rf.name())) {
-//                            fieldMap.computeIfAbsent(sceneEntityVo.getName(), key -> new ArrayList<>()).add(new ValueTextVo(rf.name(), "aaa"));
-//                        }
-//                    }
-//                }
             }
             sceneEntityList.add(sceneEntityVo);
         }
@@ -177,7 +105,6 @@ public class ResourceEntityFactory {
                             if (StringUtils.isNotBlank(rf.name())) {
                                 EntityField ef = field.getAnnotation(EntityField.class);
                                 fieldMap.computeIfAbsent(sceneEntityVo.getName(), key -> new ArrayList<>()).add(new ValueTextVo(rf.name(), ef.name()));
-                                fieldAliasMap.computeIfAbsent(sceneEntityVo.getName(), key -> new ArrayList<>()).add(new ValueTextVo(rf.name(), field.getName()));
                             }
                         }
                     }
@@ -191,10 +118,6 @@ public class ResourceEntityFactory {
         viewNameList = Arrays.asList(viewNameArray);
         sceneEntityList.sort(Comparator.comparingInt(e -> viewNameList.indexOf(e.getName())));
     }
-
-//    public static List<ResourceEntityVo> getResourceEntityList() {
-//        return resourceEntityList;
-//    }
 
     public static List<SceneEntityVo> getSceneEntityList() {
         List<SceneEntityVo> resultList = new ArrayList<>();
@@ -247,14 +170,6 @@ public class ResourceEntityFactory {
             return new ArrayList<>();
         }
         return new ArrayList<>(fieldList);
-    }
-
-    public static List<ValueTextVo> getFieldAliasListByViewName(String viewName) {
-        List<ValueTextVo> fieldAliasList = fieldAliasMap.get(viewName);
-        if (fieldAliasList == null) {
-            return new ArrayList<>();
-        }
-        return new ArrayList<>(fieldAliasList);
     }
 
     public static List<String> getViewNameList() {
