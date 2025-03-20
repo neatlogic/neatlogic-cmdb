@@ -20,11 +20,13 @@ import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.ci.CiTypeVo;
+import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.customview.CustomViewCiVo;
 import neatlogic.framework.cmdb.dto.customview.CustomViewConditionVo;
 import neatlogic.framework.cmdb.dto.customview.CustomViewLinkVo;
 import neatlogic.framework.cmdb.dto.customview.CustomViewVo;
+import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.graphviz.Graphviz;
 import neatlogic.framework.graphviz.Layer;
@@ -34,6 +36,7 @@ import neatlogic.framework.graphviz.enums.LayoutType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiTypeMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.service.customview.CustomViewDataService;
@@ -61,6 +64,9 @@ public class GetCustomViewDataCiEntityTopoApi extends PrivateApiComponentBase {
 
     @Resource
     private CiEntityMapper ciEntityMapper;
+
+    @Resource
+    private CiMapper ciMapper;
 
 
     @Resource
@@ -98,6 +104,17 @@ public class GetCustomViewDataCiEntityTopoApi extends PrivateApiComponentBase {
         for (CustomViewCiVo ciVo : customViewVo.getCiList()) {
             if (ciVo.getIsHidden().equals(0) && CollectionUtils.isNotEmpty(ciVo.getCiEntityList())) {
                 ciEntityIdList.addAll(ciVo.getCiEntityList().stream().map(cientity -> cientity.getLong("id")).collect(Collectors.toList()));
+            }
+            //补充模型的子模型到isHiddenMap，否则继承的子模型没法显示
+            CiVo ci = ciMapper.getCiById(ciVo.getCiId());
+            if (ci == null) {
+                throw new CiNotFoundException(ciVo.getCiId());
+            }
+            List<Long> childCiIdList = ciMapper.getDownwardCiIdListByLR(ci.getLft(), ci.getRht());
+            if (CollectionUtils.isNotEmpty(childCiIdList)) {
+                for (Long childCiId : childCiIdList) {
+                    isHiddenMap.put(childCiId, ciVo.getIsHidden().equals(1));
+                }
             }
             isHiddenMap.put(ciVo.getCiId(), ciVo.getIsHidden().equals(1));
         }
