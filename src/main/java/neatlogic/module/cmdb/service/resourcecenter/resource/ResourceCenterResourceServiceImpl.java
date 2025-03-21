@@ -512,7 +512,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             int rowNum = resourceTempMapper.getOsResourceCountByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(searchVo);
             if (rowNum > 0) {
                 searchVo.setRowNum(rowNum);
-                List<Long> idList = resourceMapper.getOsResourceIdListByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(searchVo);
+                List<Long> idList = resourceTempMapper.getOsResourceIdListByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(searchVo);
                 if (CollectionUtils.isNotEmpty(idList)) {
                     return resourceTempMapper.getOsResourceListByIdList(idList);
                 }
@@ -526,7 +526,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 searchVo.setRowNum(rowNum);
                 List<Long> idList = resourceTempMapper.getIpObjectResourceIdListByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(searchVo);
                 if (CollectionUtils.isNotEmpty(idList)) {
-                    return resourceMapper.getAppInstanceResourceListByIdList(idList);
+                    return resourceMapper.getResourceListByIdList(idList);
                 }
             }
             return new ArrayList<>();

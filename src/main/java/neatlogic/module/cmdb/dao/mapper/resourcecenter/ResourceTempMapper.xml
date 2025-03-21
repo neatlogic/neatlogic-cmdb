@@ -278,4 +278,31 @@
             #{id}
         </foreach>
     </select>
+
+    <select id="getOsResourceIdListByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId"
+            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
+        SELECT distinct a.`id`
+        FROM @{DATA_SCHEMA}.`scence_os_softwareservice_env_appmodule_appsystem` a
+        <if test="inspectStatusList != null and inspectStatusList.size() > 0">
+            JOIN `cmdb_cientity` b on b.`id` = a.`resource_id` and b.`inspect_status` IN
+            <foreach collection="inspectStatusList" item="inspectStatus" open="(" separator="," close=")">
+                #{inspectStatus}
+            </foreach>
+        </if>
+        WHERE a.`type_id` = #{typeId}
+        <if test="appSystemId != null">
+            AND a.`app_system_id` = #{appSystemId}
+        </if>
+        <if test="appModuleId != null">
+            AND a.`app_module_id` = #{appModuleId}
+        </if>
+        <if test="envId != null and envId != -2">
+            AND a.`env_id` = #{envId}
+        </if>
+        <if test="envId == -2">
+            AND a.`env_id` is null
+        </if>
+        ORDER BY a.`id` DESC
+        LIMIT #{startNum}, #{pageSize}
+    </select>
 </mapper>

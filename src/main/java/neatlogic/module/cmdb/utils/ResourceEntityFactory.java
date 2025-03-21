@@ -174,8 +174,4 @@ public class ResourceEntityFactory {
         }
         return new ArrayList<>(fieldList);
     }
-
-    public static List<String> getViewNameList() {
-        return new ArrayList<>(viewNameList);
-    }
 }

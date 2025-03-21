@@ -42,4 +42,6 @@ public interface ResourceTempMapper {
     List<ResourceVo> getDbInstanceResourceListByIdList(List<Long> idList);
 
     List<ResourceVo> getOsResourceListByIdList(List<Long> idList);
+
+    List<Long> getOsResourceIdListByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(ResourceSearchVo searchVo);
 }

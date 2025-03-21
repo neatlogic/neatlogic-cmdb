@@ -7,7 +7,6 @@ import neatlogic.framework.cmdb.auth.label.CMDB;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
-import neatlogic.framework.cmdb.enums.resourcecenter.AppModuleResourceType;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.resourcecenter.datasource.core.IResourceCenterDataSource;
 import neatlogic.framework.cmdb.resourcecenter.datasource.core.ResourceCenterDataSourceFactory;
@@ -80,8 +79,8 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
 //            throw new CiNotFoundException("APPEnv");
 //        }
         //获取需要采集的模型
-        List<String> resourceTypeNameList = AppModuleResourceType.getNameList();
-        List<CiVo> resourceCiVoList = new ArrayList<>();
+//        List<String> resourceTypeNameList = AppModuleResourceType.getNameList();
+//        List<CiVo> resourceCiVoList = new ArrayList<>();
         List<ResourceVo> envResourceList = new ArrayList<>();
         //获取应用环境实例list
 //        CiEntityVo envCiEntityVo = new CiEntityVo();
@@ -99,9 +98,9 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
         List<CiVo> allCiVoList = ciMapper.getAllCi(null);
         for (CiVo ci : allCiVoList) {
             allCiVoMap.put(ci.getId(), ci);
-            if (resourceTypeNameList.contains(ci.getName())) {
-                resourceCiVoList.add(ci);
-            }
+//            if (resourceTypeNameList.contains(ci.getName())) {
+//                resourceCiVoList.add(ci);
+//            }
         }
         ResourceSearchVo searchVo = new ResourceSearchVo();
         searchVo.setAppModuleId(appModuleId);

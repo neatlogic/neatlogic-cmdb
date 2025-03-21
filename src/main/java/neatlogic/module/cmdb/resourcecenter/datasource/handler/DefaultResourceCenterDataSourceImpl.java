@@ -28,7 +28,6 @@ import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityConfigVo
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityFieldMappingVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.SceneEntityVo;
-import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppModuleNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
 import neatlogic.framework.cmdb.resourcecenter.datasource.core.IResourceCenterDataSource;
@@ -77,13 +76,12 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
     @Resource
     private IResourceCenterResourceService resourceCenterResourceService;
 
-    private final Map<ValueTextVo, BiFunction<ResourceVo, JSONObject, Object>> map = new HashMap<>();//BiFunction
+    private final Map<ValueTextVo, BiFunction<ResourceVo, JSONObject, Object>> headFieldHandlerMap = new LinkedHashMap<>();
 
     @PostConstruct
     public void init() {
-        map.put(new ValueTextVo("id", "ID"), (resourceVo, cacheData) -> resourceVo.getId());
-        map.put(new ValueTextVo("name", "名称"), (resourceVo, cacheData) -> resourceVo.getName());
-        map.put(new ValueTextVo("ip", "IP地址"), (resourceVo, cacheData) -> {
+        headFieldHandlerMap.put(new ValueTextVo("id", "ID"), (resourceVo, cacheData) -> resourceVo.getId());
+        headFieldHandlerMap.put(new ValueTextVo("ip", "IP地址"), (resourceVo, cacheData) -> {
             JSONObject resultObj = new JSONObject();
             resultObj.put("ip", resourceVo.getIp());
             resultObj.put("port", resourceVo.getPort());
@@ -91,7 +89,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             resultObj.put("id", resourceVo.getId());
             return resultObj;
         });
-        map.put(new ValueTextVo("ci", "模型"), (resourceVo, cacheData) -> {
+        headFieldHandlerMap.put(new ValueTextVo("ci", "模型"), (resourceVo, cacheData) -> {
             if (resourceVo.getTypeId() == null) {
                 return null;
             }
@@ -109,49 +107,8 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             }
             return resultObj;
         });
-
-        map.put(new ValueTextVo("fcu", "创建者"), (resourceVo, cacheData) -> {
-            String fcu = resourceVo.getFcu();
-            if (StringUtils.isNotBlank(fcu)) {
-                JSONObject resultObj = new JSONObject();
-                resultObj.put("uuid", fcu);
-                resultObj.put("initType", "user");
-                return resultObj;
-            }
-            return null;
-        });
-        map.put(new ValueTextVo("fcd", "创建日期"), (resourceVo, cacheData) -> resourceVo.getFcd());
-        map.put(new ValueTextVo("lcu", "修改者"), (resourceVo, cacheData) -> {
-            String lcu = resourceVo.getLcu();
-            if (StringUtils.isNotBlank(lcu)) {
-                JSONObject resultObj = new JSONObject();
-                resultObj.put("uuid", lcu);
-                resultObj.put("initType", "user");
-                return resultObj;
-            }
-            return null;
-        });
-        map.put(new ValueTextVo("lcd", "修改日期"), (resourceVo, cacheData) -> resourceVo.getLcd());
-
-        map.put(new ValueTextVo("maintenanceWindow", "维护窗口"), (resourceVo, cacheData) -> resourceVo.getMaintenanceWindow());
-        map.put(new ValueTextVo("description", "描述"), (resourceVo, cacheData) -> resourceVo.getDescription());
-        map.put(new ValueTextVo("networkArea", "网络区域"), (resourceVo, cacheData) -> resourceVo.getNetworkArea());
-
-        map.put(new ValueTextVo("inspect", "巡检状态"), (resourceVo, cacheData) -> {
-            JSONObject resultObj = new JSONObject();
-            if (StringUtils.isNotBlank(resourceVo.getInspectStatus())) {
-                JSONObject statusJson = InspectStatus.getInspectStatusJson(resourceVo.getInspectStatus());
-                if (MapUtils.isNotEmpty(statusJson)) {
-                    resultObj.putAll(statusJson);
-                }
-            }
-            if (resourceVo.getInspectTime() != null) {
-                resultObj.put("time", resourceVo.getInspectTime());
-            }
-            return resultObj;
-        });
-//        map.put(new ValueTextVo("inspectTime", "巡检时间"), (resourceVo, cacheData) -> resourceVo.getInspectTime());
-        map.put(new ValueTextVo("monitor", "监控状态"), (resourceVo, cacheData) -> {
+        headFieldHandlerMap.put(new ValueTextVo("name", "名称"), (resourceVo, cacheData) -> resourceVo.getName());
+        headFieldHandlerMap.put(new ValueTextVo("monitor", "监控状态"), (resourceVo, cacheData) -> {
             JSONObject resultObj = new JSONObject();
             if (StringUtils.isNotBlank(resourceVo.getMonitorStatus())) {
                 JSONObject statusJson = InspectStatus.getInspectStatusJson(resourceVo.getMonitorStatus());
@@ -164,107 +121,20 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             }
             return resultObj;
         });
-//        map.put(new ValueTextVo("monitorTime", "监控时间"), (resourceVo, cacheData) -> resourceVo.getMonitorTime());
-
-//        map.put(new ValueTextVo("port", "端口"), (resourceVo, cacheData) -> resourceVo.getPort());
-        map.put(new ValueTextVo("businessGroupList", "所属部门"), (resourceVo, cacheData) -> {
-            JSONArray resultList = new JSONArray();
-            List<BgVo> bgList = resourceVo.getBgList();
-            if (CollectionUtils.isNotEmpty(bgList)) {
-                for (BgVo bgVo : bgList) {
-                    JSONObject resultObj = new JSONObject();
-                    CiEntityVo ciEntityVo = cacheData.getObject(bgVo.getBgId().toString(), CiEntityVo.class);
-                    if (ciEntityVo != null) {
-                        resultObj = getResultObj(ciEntityVo);
-                    } else {
-                        resultObj.put("id", bgVo.getBgId());
-                        resultObj.put("name", bgVo.getBgName());
-                    }
-                    resultList.add(resultObj);
-                }
-            }
-            return resultList;
-        });
-        map.put(new ValueTextVo("allIpList", "IP列表"), (resourceVo, cacheData) -> {
-            JSONArray resultList = new JSONArray();
-            List<IpVo> ipList = resourceVo.getAllIp();
-            if (CollectionUtils.isNotEmpty(ipList)) {
-                for (IpVo ipVo : ipList) {
-                    JSONObject resultObj = new JSONObject();
-                    CiEntityVo ciEntityVo = cacheData.getObject(ipVo.getId().toString(), CiEntityVo.class);
-                    if (ciEntityVo != null) {
-                        resultObj = getResultObj(ciEntityVo);
-                    } else {
-                        resultObj.put("id", ipVo.getId());
-                        resultObj.put("name", ipVo.getIp());
-                    }
-                    resultList.add(resultObj);
-                }
-            }
-            return resultList;
-        });
-        map.put(new ValueTextVo("ownerList", "所有者"), (resourceVo, cacheData) -> {
-            JSONArray resultList = new JSONArray();
-            List<OwnerVo> ownerList = resourceVo.getOwnerList();
-            if (CollectionUtils.isNotEmpty(ownerList)) {
-                for (OwnerVo ownerVo : ownerList) {
-                    JSONObject resultObj = new JSONObject();
-                    CiEntityVo ciEntityVo = cacheData.getObject(ownerVo.getUserId().toString(), CiEntityVo.class);
-                    if (ciEntityVo != null) {
-                        resultObj = getResultObj(ciEntityVo);
-                    } else {
-                        resultObj.put("id", ownerVo.getUserId());
-                        resultObj.put("name", ownerVo.getUserName());
-                    }
-                    resultList.add(resultObj);
-                }
-            }
-            return resultList;
-        });
-        map.put(new ValueTextVo("state", "资产状态"), (resourceVo, cacheData) -> {
-            if (resourceVo.getStateId() == null) {
-                return null;
-            }
+        headFieldHandlerMap.put(new ValueTextVo("inspect", "巡检状态"), (resourceVo, cacheData) -> {
             JSONObject resultObj = new JSONObject();
-            CiEntityVo ciEntityVo = cacheData.getObject(resourceVo.getStateId().toString(), CiEntityVo.class);
-            if (ciEntityVo != null) {
-                resultObj = getResultObj(ciEntityVo);
-            } else {
-                resultObj.put("id", resourceVo.getStateId());
-                resultObj.put("name", resourceVo.getStateName());
+            if (StringUtils.isNotBlank(resourceVo.getInspectStatus())) {
+                JSONObject statusJson = InspectStatus.getInspectStatusJson(resourceVo.getInspectStatus());
+                if (MapUtils.isNotEmpty(statusJson)) {
+                    resultObj.putAll(statusJson);
+                }
+            }
+            if (resourceVo.getInspectTime() != null) {
+                resultObj.put("time", resourceVo.getInspectTime());
             }
             return resultObj;
         });
-        map.put(new ValueTextVo("vendor", "厂商"), (resourceVo, cacheData) -> {
-            if (resourceVo.getVendorId() == null) {
-                return null;
-            }
-            JSONObject resultObj = new JSONObject();
-            CiEntityVo ciEntityVo = cacheData.getObject(resourceVo.getVendorId().toString(), CiEntityVo.class);
-            if (ciEntityVo != null) {
-                resultObj = getResultObj(ciEntityVo);
-            } else {
-                resultObj.put("id", resourceVo.getVendorId());
-                resultObj.put("name", resourceVo.getVendorName());
-            }
-            return resultObj;
-
-        });
-        map.put(new ValueTextVo("dataCenter", "数据中心"), (resourceVo, cacheData) -> {
-            if (resourceVo.getDataCenterId() == null) {
-                return null;
-            }
-            JSONObject resultObj = new JSONObject();
-            CiEntityVo ciEntityVo = cacheData.getObject(resourceVo.getDataCenterId().toString(), CiEntityVo.class);
-            if (ciEntityVo != null) {
-                resultObj = getResultObj(ciEntityVo);
-            } else {
-                resultObj.put("id", resourceVo.getDataCenterId());
-                resultObj.put("name", resourceVo.getDataCenterName());
-            }
-            return resultObj;
-        });
-        map.put(new ValueTextVo("appEnvironment", "应用环境"), (resourceVo, cacheData) -> {
+        headFieldHandlerMap.put(new ValueTextVo("appEnvironment", "应用环境"), (resourceVo, cacheData) -> {
             if (resourceVo.getEnvId() == null) {
                 return null;
             }
@@ -288,7 +158,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             }
             return resultObj;
         });
-        map.put(new ValueTextVo("appModule", "应用模块"), (resourceVo, cacheData) -> {
+        headFieldHandlerMap.put(new ValueTextVo("appModule", "应用模块"), (resourceVo, cacheData) -> {
             if (resourceVo.getAppModuleId() == null) {
                 return null;
             }
@@ -304,7 +174,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             }
             return resultObj;
         });
-        map.put(new ValueTextVo("appSystem", "应用系统"), (resourceVo, cacheData) -> {
+        headFieldHandlerMap.put(new ValueTextVo("appSystem", "应用系统"), (resourceVo, cacheData) -> {
             if (resourceVo.getAppSystemId() == null) {
                 return null;
             }
@@ -320,8 +190,130 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             }
             return resultObj;
         });
-        map.put(new ValueTextVo("tagList", "标签"), (resourceVo, cacheData) -> resourceVo.getTagList());
-        map.put(new ValueTextVo("accountList", "账号"), (resourceVo, cacheData) -> resourceVo.getAccountList());
+        headFieldHandlerMap.put(new ValueTextVo("allIpList", "IP列表"), (resourceVo, cacheData) -> {
+            JSONArray resultList = new JSONArray();
+            List<IpVo> ipList = resourceVo.getAllIp();
+            if (CollectionUtils.isNotEmpty(ipList)) {
+                for (IpVo ipVo : ipList) {
+                    JSONObject resultObj = new JSONObject();
+                    CiEntityVo ciEntityVo = cacheData.getObject(ipVo.getId().toString(), CiEntityVo.class);
+                    if (ciEntityVo != null) {
+                        resultObj = getResultObj(ciEntityVo);
+                    } else {
+                        resultObj.put("id", ipVo.getId());
+                        resultObj.put("name", ipVo.getIp());
+                    }
+                    resultList.add(resultObj);
+                }
+            }
+            return resultList;
+        });
+        headFieldHandlerMap.put(new ValueTextVo("businessGroupList", "所属部门"), (resourceVo, cacheData) -> {
+            JSONArray resultList = new JSONArray();
+            List<BgVo> bgList = resourceVo.getBgList();
+            if (CollectionUtils.isNotEmpty(bgList)) {
+                for (BgVo bgVo : bgList) {
+                    JSONObject resultObj = new JSONObject();
+                    CiEntityVo ciEntityVo = cacheData.getObject(bgVo.getBgId().toString(), CiEntityVo.class);
+                    if (ciEntityVo != null) {
+                        resultObj = getResultObj(ciEntityVo);
+                    } else {
+                        resultObj.put("id", bgVo.getBgId());
+                        resultObj.put("name", bgVo.getBgName());
+                    }
+                    resultList.add(resultObj);
+                }
+            }
+            return resultList;
+        });
+        headFieldHandlerMap.put(new ValueTextVo("ownerList", "所有者"), (resourceVo, cacheData) -> {
+            JSONArray resultList = new JSONArray();
+            List<OwnerVo> ownerList = resourceVo.getOwnerList();
+            if (CollectionUtils.isNotEmpty(ownerList)) {
+                for (OwnerVo ownerVo : ownerList) {
+                    JSONObject resultObj = new JSONObject();
+                    CiEntityVo ciEntityVo = cacheData.getObject(ownerVo.getUserId().toString(), CiEntityVo.class);
+                    if (ciEntityVo != null) {
+                        resultObj = getResultObj(ciEntityVo);
+                    } else {
+                        resultObj.put("id", ownerVo.getUserId());
+                        resultObj.put("name", ownerVo.getUserName());
+                    }
+                    resultList.add(resultObj);
+                }
+            }
+            return resultList;
+        });
+        headFieldHandlerMap.put(new ValueTextVo("state", "资产状态"), (resourceVo, cacheData) -> {
+            if (resourceVo.getStateId() == null) {
+                return null;
+            }
+            JSONObject resultObj = new JSONObject();
+            CiEntityVo ciEntityVo = cacheData.getObject(resourceVo.getStateId().toString(), CiEntityVo.class);
+            if (ciEntityVo != null) {
+                resultObj = getResultObj(ciEntityVo);
+            } else {
+                resultObj.put("id", resourceVo.getStateId());
+                resultObj.put("name", resourceVo.getStateName());
+            }
+            return resultObj;
+        });
+        headFieldHandlerMap.put(new ValueTextVo("networkArea", "网络区域"), (resourceVo, cacheData) -> resourceVo.getNetworkArea());
+        headFieldHandlerMap.put(new ValueTextVo("maintenanceWindow", "维护窗口"), (resourceVo, cacheData) -> resourceVo.getMaintenanceWindow());
+        headFieldHandlerMap.put(new ValueTextVo("tagList", "标签"), (resourceVo, cacheData) -> resourceVo.getTagList());
+        headFieldHandlerMap.put(new ValueTextVo("accountList", "账号"), (resourceVo, cacheData) -> resourceVo.getAccountList());
+        headFieldHandlerMap.put(new ValueTextVo("description", "描述"), (resourceVo, cacheData) -> resourceVo.getDescription());
+        headFieldHandlerMap.put(new ValueTextVo("vendor", "厂商"), (resourceVo, cacheData) -> {
+            if (resourceVo.getVendorId() == null) {
+                return null;
+            }
+            JSONObject resultObj = new JSONObject();
+            CiEntityVo ciEntityVo = cacheData.getObject(resourceVo.getVendorId().toString(), CiEntityVo.class);
+            if (ciEntityVo != null) {
+                resultObj = getResultObj(ciEntityVo);
+            } else {
+                resultObj.put("id", resourceVo.getVendorId());
+                resultObj.put("name", resourceVo.getVendorName());
+            }
+            return resultObj;
+
+        });
+        headFieldHandlerMap.put(new ValueTextVo("dataCenter", "数据中心"), (resourceVo, cacheData) -> {
+            if (resourceVo.getDataCenterId() == null) {
+                return null;
+            }
+            JSONObject resultObj = new JSONObject();
+            CiEntityVo ciEntityVo = cacheData.getObject(resourceVo.getDataCenterId().toString(), CiEntityVo.class);
+            if (ciEntityVo != null) {
+                resultObj = getResultObj(ciEntityVo);
+            } else {
+                resultObj.put("id", resourceVo.getDataCenterId());
+                resultObj.put("name", resourceVo.getDataCenterName());
+            }
+            return resultObj;
+        });
+        headFieldHandlerMap.put(new ValueTextVo("fcu", "创建者"), (resourceVo, cacheData) -> {
+            String fcu = resourceVo.getFcu();
+            if (StringUtils.isNotBlank(fcu)) {
+                JSONObject resultObj = new JSONObject();
+                resultObj.put("uuid", fcu);
+                resultObj.put("initType", "user");
+                return resultObj;
+            }
+            return null;
+        });
+        headFieldHandlerMap.put(new ValueTextVo("fcd", "创建日期"), (resourceVo, cacheData) -> resourceVo.getFcd());
+        headFieldHandlerMap.put(new ValueTextVo("lcu", "修改者"), (resourceVo, cacheData) -> {
+            String lcu = resourceVo.getLcu();
+            if (StringUtils.isNotBlank(lcu)) {
+                JSONObject resultObj = new JSONObject();
+                resultObj.put("uuid", lcu);
+                resultObj.put("initType", "user");
+                return resultObj;
+            }
+            return null;
+        });
+        headFieldHandlerMap.put(new ValueTextVo("lcd", "修改日期"), (resourceVo, cacheData) -> resourceVo.getLcd());
     }
 
     private JSONObject getResultObj(CiEntityVo ciEntityVo) {
@@ -338,88 +330,6 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
     @Override
     public Ordered getOrdered() {
         return Ordered.LOWEST_PRECEDENCE;
-    }
-
-//    @Override
-    private JSONArray getAppResourceList2(Long appSystemId, Long appModuleId, Long envId, List<Long> typeIdList, Integer currentPage, Integer pageSize) {
-        if (appSystemId != null && ciEntityCachedMapper.getCiEntityBaseInfoById(appSystemId) == null) {
-            throw new AppSystemNotFoundException(appSystemId);
-        }
-        if (appModuleId != null && ciEntityCachedMapper.getCiEntityBaseInfoById(appModuleId) == null) {
-            throw new AppModuleNotFoundException(appModuleId);
-        }
-        if (CollectionUtils.isNotEmpty(typeIdList)) {
-            for (Long typeId : typeIdList) {
-                CiVo ciVo = ciMapper.getCiById(typeId);
-                if (ciVo == null) {
-                    throw new CiNotFoundException(typeId);
-                }
-            }
-        }
-        JSONArray tableList = new JSONArray();
-        ApplicationListDisplayVo applicationListDisplay = resourceEntityMapper.getApplicationListDisplay();
-        if (applicationListDisplay != null) {
-            JSONObject config = applicationListDisplay.getConfig();
-            if (MapUtils.isNotEmpty(config)) {
-                JSONArray tableSettingList = config.getJSONArray("tableSettingList");
-                if (CollectionUtils.isNotEmpty(tableSettingList)) {
-                    List<String> ciNameList = new ArrayList<>();
-                    Map<String, List<String>> ciName2FieldListMap = new HashMap<>();
-                    for (int i = 0; i < tableSettingList.size(); i++) {
-                        JSONObject tableObj = tableSettingList.getJSONObject(i);
-                        if (MapUtils.isNotEmpty(tableObj)) {
-                            String ciName = tableObj.getString("ciName");
-                            ciNameList.add(ciName);
-                            JSONArray fieldList = tableObj.getJSONArray("fieldList");
-                            if (CollectionUtils.isNotEmpty(fieldList)) {
-                                ciName2FieldListMap.put(ciName, fieldList.toJavaList(String.class));
-                            }
-                        }
-                    }
-                    if (CollectionUtils.isNotEmpty(ciNameList)) {
-                        List<CiVo> resourceCiVoList = ciMapper.getCiListByNameList(ciNameList);
-                        if (CollectionUtils.isEmpty(typeIdList) && CollectionUtils.isNotEmpty(resourceCiVoList)) {
-                            List<CiVo> downwardCiList = ciMapper.getBatchDownwardCiListByCiList(resourceCiVoList);
-                            for (CiVo downwardCi : downwardCiList) {
-                                // 找出叶子节点模型
-                                if (downwardCi.getRht() != null && downwardCi.getLft() != null && (downwardCi.getRht() - downwardCi.getLft() == 1)) {
-                                    typeIdList.add(downwardCi.getId());
-                                }
-                            }
-                        }
-                        if (CollectionUtils.isNotEmpty(typeIdList)) {
-                            ResourceSearchVo searchVo = new ResourceSearchVo();
-                            searchVo.setAppSystemIdList(Collections.singletonList(appSystemId));
-                            if (appModuleId != null) {
-                                searchVo.setAppModuleIdList(Collections.singletonList(appModuleId));
-                            }
-                            if (envId != null) {
-                                searchVo.setEnvIdList(Collections.singletonList(envId));
-                            }
-                            searchVo.setCurrentPage(currentPage);
-                            searchVo.setPageSize(pageSize);
-                            List<CiVo> ciList = ciMapper.getAllCi(typeIdList);
-                            for (CiVo ciVo : ciList) {
-                                String resourceTypeName = getResourceTypeName(resourceCiVoList, ciVo);
-                                if (StringUtils.isNotBlank(resourceTypeName)) {
-                                    ResourceTypeVo resourceTypeVo = new ResourceTypeVo(ciVo.getId(), ciVo.getParentCiId(), ciVo.getLabel(), ciVo.getName());
-                                    searchVo.setTypeIdList(Collections.singletonList(ciVo.getId()));
-                                    resourceCenterResourceService.assembleResourceSearchVo(searchVo, false);
-                                    List<ResourceVo> resourceList = getResourceList(searchVo);
-                                    if (CollectionUtils.isNotEmpty(resourceList)) {
-                                        List<String> fieldList = ciName2FieldListMap.get(resourceTypeName);
-                                        JSONObject tableObj = TableResultUtil.getResult(getTheadList(fieldList), resourceList, searchVo);
-                                        tableObj.put("type", resourceTypeVo);
-                                        tableList.add(tableObj);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return tableList;
     }
 
     @Override
@@ -542,11 +452,6 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
                 searchVo.setCurrentPage(i);
                 List<Long> resourceIdList = resourceMapper.getAppResourceIdList(searchVo);
                 resultList.addAll(resourceIdList);
-//                if (CollectionUtils.isNotEmpty(resourceIdList)) {
-//                    searchVo.setIdList(resourceIdList);
-//                    List<ResourceVo> resourceList = resourceMapper.getAppResourceListByIdList(searchVo);
-//                    resultList.addAll(resourceList);
-//                }
                 if (needPage) {
                     break;
                 }
@@ -559,12 +464,11 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
     public JSONArray getTbodyList(List<String> fieldList, List<ResourceVo> resourceList, ResourceEntityVo resourceEntityVo) {
         JSONArray tbodyList = new JSONArray();
         Map<Object, ValueTextVo> keyMap = new HashMap<>();
-        for (ValueTextVo key : map.keySet()) {
+        for (ValueTextVo key : headFieldHandlerMap.keySet()) {
             keyMap.put(key.getValue(), key);
         }
         JSONObject cacheData = new JSONObject();
         cacheData.put("resourceEntityVo", resourceEntityVo);
-        //ci ip state vendor dataCenter appEnvironment appModule appSystem allIpList
         if (fieldList.contains("ci")) {
             List<Long> ciIdList = resourceList.stream().filter(Objects::nonNull).map(ResourceVo::getTypeId).filter(Objects::nonNull).collect(Collectors.toList());
             List<CiVo> ciList = ciMapper.getCiByIdList(ciIdList);
@@ -621,7 +525,6 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             List<Long> ipIdList = resourceList.stream().filter(Objects::nonNull).map(ResourceVo::getAllIp).filter(Objects::nonNull).flatMap(List::stream).filter(Objects::nonNull).map(IpVo::getId).collect(Collectors.toList());
             ciEntityIdSet.addAll(ipIdList);
         }
-        // businessGroupList ownerList
         if (fieldList.contains("ownerList")) {
             List<Long> userIdList = resourceList.stream().filter(Objects::nonNull).map(ResourceVo::getOwnerList).filter(Objects::nonNull).flatMap(List::stream).filter(Objects::nonNull).map(OwnerVo::getUserId).collect(Collectors.toList());
             if (CollectionUtils.isNotEmpty(userIdList)) {
@@ -714,7 +617,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             for (String field : fieldList) {
                 ValueTextVo key = keyMap.get(field);
                 if (key != null) {
-                    BiFunction<ResourceVo, JSONObject, Object> biFunction = map.get(key);
+                    BiFunction<ResourceVo, JSONObject, Object> biFunction = headFieldHandlerMap.get(key);
                     tbodyObj.put(key.getValue().toString(), biFunction.apply(resourceVo, cacheData));
                 }
             }
@@ -964,27 +867,8 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
     @Override
     public JSONArray getTheadList(List<String> fieldList) {
         JSONArray theadList = new JSONArray();
-//        if (CollectionUtils.isEmpty(fieldNameList)) {
-//            fieldNameList = ResourceEntityFactory.getFieldNameListByViewName("scence_ipobject_detail");
-//        }
-//        if (CollectionUtils.isNotEmpty(fieldNameList)) {
-//            List<ValueTextVo> fieldList = ResourceEntityFactory.getFieldListByViewName("scence_ipobject_detail");
-//            Map<Object, String> field2TitleMap = fieldList.stream().collect(Collectors.toMap(ValueTextVo::getValue, ValueTextVo::getText));
-//            List<ValueTextVo> fieldAliasList = ResourceEntityFactory.getFieldAliasListByViewName("scence_ipobject_detail");
-//            Map<Object, String> field2KeyMap = fieldAliasList.stream().collect(Collectors.toMap(ValueTextVo::getValue, ValueTextVo::getText));
-//            for (String fieldName : fieldNameList) {
-//                String title = field2TitleMap.get(fieldName);
-//                String key = field2KeyMap.get(fieldName);
-//                if (StringUtils.isNotBlank(key) && StringUtils.isNotBlank(title)) {
-//                    JSONObject thead = new JSONObject();
-//                    thead.put("key", key);
-//                    thead.put("title", title);
-//                    theadList.add(thead);
-//                }
-//            }
-//        }
         Map<Object, ValueTextVo> keyMap = new HashMap<>();
-        for (ValueTextVo key : map.keySet()) {
+        for (ValueTextVo key : headFieldHandlerMap.keySet()) {
             keyMap.put(key.getValue(), key);
         }
         for (String field : fieldList) {
@@ -1001,16 +885,14 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
 
     @Override
     public List<ValueTextVo> getAssertAllTheadList() {
-        Set<ValueTextVo> keySet = map.keySet();
-        List<ValueTextVo> resultList = new ArrayList<>(keySet);
-        resultList.sort((o1, o2) -> o1.getText().compareToIgnoreCase(o2.getText()));
-        return resultList;
+        Set<ValueTextVo> keySet = headFieldHandlerMap.keySet();
+        return new ArrayList<>(keySet);
     }
 
     @Override
     public List<ValueTextVo> getAppAssertAllTheadList() {
         List<ValueTextVo> resultList = new ArrayList<>();
-        for (ValueTextVo valueTextVo : map.keySet()) {
+        for (ValueTextVo valueTextVo : headFieldHandlerMap.keySet()) {
             if (Objects.equals(valueTextVo.getValue(), "tagList")) {
                 continue;
             }
@@ -1019,7 +901,6 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             }
             resultList.add(valueTextVo);
         }
-        resultList.sort((o1, o2) -> o1.getText().compareToIgnoreCase(o2.getText()));
         return resultList;
     }
 
@@ -1250,6 +1131,19 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
         return viewName2TypeIdListMap;
     }
 
+    @Override
+    public List<Long> getAppSystemIdListById(Long id) {
+        List<Long> appSystemIdList = new ArrayList<>();
+        List<ResourceEntityVo> appViewList = getAppViewList();
+        if (CollectionUtils.isNotEmpty(appViewList)) {
+            for (ResourceEntityVo resourceEntityVo : appViewList) {
+                List<Long> list = resourceMapper.getAppSystemIdListById(resourceEntityVo.getName(), id);
+                appSystemIdList.addAll(list);
+            }
+        }
+        return appSystemIdList;
+    }
+
     private List<ResourceEntityVo> getAppViewList() {
         List<ResourceEntityVo> resultList = new ArrayList<>();
         List<ResourceEntityVo> resourceEntityList = resourceEntityMapper.getResourceEntityList();
@@ -1259,7 +1153,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
                 String config = resourceEntityMapper.getResourceEntityConfigByName(resourceEntityVo.getName());
                 if (StringUtils.isNotBlank(config)) {
                     ResourceEntityConfigVo resourceEntityConfigVo = JSONObject.parseObject(config, ResourceEntityConfigVo.class);
-                    if (Objects.equals(resourceEntityConfigVo.getSceneTemplateName(), "")) {
+                    if (Objects.equals(resourceEntityConfigVo.getSceneTemplateName(), "scence_application_asset_list_detail")) {
                         resourceEntityVo.setConfig(resourceEntityConfigVo);
                         resultList.add(resourceEntityVo);
                     }
@@ -1319,15 +1213,5 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
         }
         return true;
     }
-
-    public String getResourceTypeName(List<CiVo> resourceCiVoList, CiVo resourceCiVo) {
-        for (CiVo ciVo : resourceCiVoList) {
-            if (ciVo.getLft() <= resourceCiVo.getLft() && ciVo.getRht() >= resourceCiVo.getRht()) {
-                return ciVo.getName();
-            }
-        }
-        return null;
-    }
-
 
 }

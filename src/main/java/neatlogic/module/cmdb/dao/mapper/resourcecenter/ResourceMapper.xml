@@ -1033,11 +1033,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </if>
     </select>
 
-    <select id="getResourceAppSystemIdListByResourceId" parameterType="java.lang.Long" resultType="java.lang.Long">
+    <!--<select id="getResourceAppSystemIdListByResourceId" parameterType="java.lang.Long" resultType="java.lang.Long">
         SELECT a.`app_system_id`
         FROM @{DATA_SCHEMA}.`scence_os_softwareservice_env_appmodule_appsystem` a
         WHERE a.`id` = #{id}
-    </select>
+    </select>-->
 
     <select id="getResourceAppSystemListByResourceIdList" parameterType="java.lang.Long"
             resultType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo">
@@ -1079,11 +1079,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </foreach>
     </select>
 
-    <select id="getAppSystemIdByResourceId" parameterType="java.lang.Long" resultType="java.lang.Long">
+    <!--<select id="getAppSystemIdByResourceId" parameterType="java.lang.Long" resultType="java.lang.Long">
         SELECT a.`app_system_id`
         FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
         WHERE a.`id` = #{id}
-    </select>
+    </select>-->
 
     <select id="getResourceTypeIdListByAppSystemIdAndModuleIdAndEnvIdAndInspectStatusList"
             parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
@@ -2032,5 +2032,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 AND a.`env_id` is null
             </if>
         </where>
+    </select>
+
+    <select id="getAppSystemIdListById" resultType="java.lang.Long">
+        SELECT
+        DISTINCT a.`app_system_id`
+        FROM @{DATA_SCHEMA}.`${viewName}` a
+        where a.`id` = #{id}
+        AND a.`app_system_id` is not null
     </select>
 </mapper>

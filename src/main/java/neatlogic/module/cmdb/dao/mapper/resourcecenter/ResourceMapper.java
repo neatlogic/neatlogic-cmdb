@@ -98,13 +98,13 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     List<ResourceVo> getAppModuleListByIdListSimple(@Param("idList") List<Long> idList, @Param("needOrder") boolean needOrder);
 
-    Set<Long> getResourceAppSystemIdListByResourceId(Long id);
+//    Set<Long> getResourceAppSystemIdListByResourceId(Long id);
 
     List<ResourceVo> getResourceAppSystemListByResourceIdList(List<Long> id);
 
     List<ResourceVo> getResourceListByResourceVoList(@Param("resourceList") List<ResourceVo> resourceList,@Param("searchVo") ResourceSearchVo searchVo);
 
-    Long getAppSystemIdByResourceId(Long id);
+//    Long getAppSystemIdByResourceId(Long id);
 
     Set<Long> getResourceTypeIdListByAppSystemIdAndModuleIdAndEnvIdAndInspectStatusList(ResourceSearchVo searchVo);
 
@@ -206,4 +206,6 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
     List<Long> getResourceTypeIdListByAuth(ResourceSearchVo searchVo);
 
     List<Long> getAppResourceTypeIdListByViewNameAndAppSystemId(@Param("viewName") String viewName, @Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId);
+
+    List<Long> getAppSystemIdListById(@Param("viewName") String viewName, @Param("id") Long id);
 }
