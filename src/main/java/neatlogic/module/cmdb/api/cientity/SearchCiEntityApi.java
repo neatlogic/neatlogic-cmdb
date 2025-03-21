@@ -101,6 +101,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
 
     @Input({@Param(name = "ciId", type = ApiParamType.LONG, desc = "term.cmdb.ciid"),
             @Param(name = "ciName", type = ApiParamType.STRING, desc = "term.cmdb.ciuniquename"),
+            @Param(name = "name", type = ApiParamType.STRING, desc = "名称，用于匹配配置项名称"),
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "common.keyword"),
             @Param(name = "dsl", type = ApiParamType.STRING, desc = "nmcac.searchcientitybydslapi.input.param.desc.dsl"),
             @Param(name = "groupId", type = ApiParamType.LONG, desc = "nmcac.searchcientityapi.input.param.desc.groupid"),
@@ -136,8 +137,6 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
     @Description(desc = "nmcac.searchcientityapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-
-
         Long ciId = jsonObj.getLong("ciId");
         String ciName = jsonObj.getString("ciName");
         String dsl = jsonObj.getString("dsl");
