@@ -1126,7 +1126,7 @@ public class CiSyncManager {
                         syncAuditMapper.deleteSyncDataAuditByDataIdAndCollectionId(syncDataAuditVo.getDataId(), syncDataAuditVo.getCiCollectionId());
                     }
                     //}
-                }, "SYNC-BATCH-HANDLER");
+                }, "SYNC-BATCH-HANDLER-FOR-SAVECIENTITY");
                 /*if (state.isPaused()) {
                     SyncAuditVo auditVo = syncCiCollectionVo.getSyncAudit();
                     auditVo.setStatus(SyncStatus.PAUSED.getValue());
