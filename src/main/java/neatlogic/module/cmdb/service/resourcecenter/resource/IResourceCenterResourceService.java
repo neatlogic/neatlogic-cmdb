@@ -88,7 +88,7 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
      * @param idList         资产id列表
      * @param resourceVoList 资产列表
      */
-    void addResourceAccount(List<Long> idList, List<ResourceVo> resourceVoList);
+//    void addResourceAccount(List<Long> idList, List<ResourceVo> resourceVoList);
 
     /**
      * 补充资产的标签信息
@@ -96,7 +96,7 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
      * @param idList         资产id列表
      * @param resourceVoList 资产列表
      */
-    void addResourceTag(List<Long> idList, List<ResourceVo> resourceVoList);
+//    void addResourceTag(List<Long> idList, List<ResourceVo> resourceVoList);
 
 
     /**
@@ -106,6 +106,7 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
      * @param searchVo resourceSearchVo
      * @return tableList
      */
+    @Deprecated
     JSONArray getAppModuleResourceList(ResourceSearchVo searchVo);
 
     /**
@@ -115,6 +116,7 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
      * @param resourceCiVo     模型
      * @return 模型名称
      */
+    @Deprecated
     public String getResourceTypeName(List<CiVo> resourceCiVoList, CiVo resourceCiVo);
 
     /**
@@ -159,7 +161,7 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
      * 重建资源中心视图
      * @return
      */
-    List<ResourceEntityVo> rebuildResourceEntity();
+//    List<ResourceEntityVo> rebuildResourceEntity();
 
     /**
      * 构建单个视图

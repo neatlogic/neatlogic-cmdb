@@ -35,6 +35,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     <select id="getResourceEntityList" resultType="neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
         SELECT `name`, `label`, `status`, `error`, `init_time` AS initTime, `ci_id` AS ciId, `description`
         FROM `cmdb_resourcecenter_entity`
+        WHERE `config` IS NOT NULL
     </select>
 
     <select id="getResourceEntityConfigByName" parameterType="java.lang.String" resultType="java.lang.String">

@@ -34,6 +34,7 @@ import javax.annotation.Resource;
  * @since 2021/6/17 11:54
  **/
 @Service
+@Deprecated
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class AppModuleResourceListApi extends PrivateApiComponentBase {

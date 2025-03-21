@@ -32,7 +32,6 @@ import neatlogic.framework.cmdb.dto.tag.TagVo;
 import neatlogic.framework.cmdb.enums.CmdbTenantConfig;
 import neatlogic.framework.cmdb.enums.RelDirectionType;
 import neatlogic.framework.cmdb.enums.resourcecenter.AppModuleResourceType;
-import neatlogic.framework.cmdb.enums.resourcecenter.Status;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppModuleNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
@@ -380,46 +379,46 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         return resourceTagVoMap;
     }
 
-    @Override
-    public void addResourceAccount(List<Long> idList, List<ResourceVo> resourceVoList) {
-        Map<Long, List<AccountVo>> resourceAccountVoMap = new HashMap<>();
-        List<ResourceAccountVo> resourceAccountVoList = resourceAccountMapper.getResourceAccountListByResourceIdList(idList);
-        if (CollectionUtils.isNotEmpty(resourceAccountVoList)) {
-            Set<Long> accountIdSet = resourceAccountVoList.stream().map(ResourceAccountVo::getAccountId).collect(Collectors.toSet());
-            List<AccountVo> accountList = resourceAccountMapper.getAccountListByIdList(new ArrayList<>(accountIdSet));
-            Map<Long, AccountVo> accountMap = accountList.stream().collect(Collectors.toMap(AccountVo::getId, e -> e));
-            for (ResourceAccountVo resourceAccountVo : resourceAccountVoList) {
-                resourceAccountVoMap.computeIfAbsent(resourceAccountVo.getResourceId(), k -> new ArrayList<>()).add(accountMap.get(resourceAccountVo.getAccountId()));
-            }
-        }
-        for (ResourceVo resourceVo : resourceVoList) {
-            List<AccountVo> accountVoList = resourceAccountVoMap.get(resourceVo.getId());
-            if (CollectionUtils.isNotEmpty(accountVoList)) {
-                resourceVo.setAccountList(accountVoList);
-            }
-        }
-    }
+//    @Override
+//    public void addResourceAccount(List<Long> idList, List<ResourceVo> resourceVoList) {
+//        Map<Long, List<AccountVo>> resourceAccountVoMap = new HashMap<>();
+//        List<ResourceAccountVo> resourceAccountVoList = resourceAccountMapper.getResourceAccountListByResourceIdList(idList);
+//        if (CollectionUtils.isNotEmpty(resourceAccountVoList)) {
+//            Set<Long> accountIdSet = resourceAccountVoList.stream().map(ResourceAccountVo::getAccountId).collect(Collectors.toSet());
+//            List<AccountVo> accountList = resourceAccountMapper.getAccountListByIdList(new ArrayList<>(accountIdSet));
+//            Map<Long, AccountVo> accountMap = accountList.stream().collect(Collectors.toMap(AccountVo::getId, e -> e));
+//            for (ResourceAccountVo resourceAccountVo : resourceAccountVoList) {
+//                resourceAccountVoMap.computeIfAbsent(resourceAccountVo.getResourceId(), k -> new ArrayList<>()).add(accountMap.get(resourceAccountVo.getAccountId()));
+//            }
+//        }
+//        for (ResourceVo resourceVo : resourceVoList) {
+//            List<AccountVo> accountVoList = resourceAccountVoMap.get(resourceVo.getId());
+//            if (CollectionUtils.isNotEmpty(accountVoList)) {
+//                resourceVo.setAccountList(accountVoList);
+//            }
+//        }
+//    }
 
-    @Override
-    public void addResourceTag(List<Long> idList, List<ResourceVo> resourceVoList) {
-        Map<Long, List<TagVo>> resourceTagVoMap = new HashMap<>();
-        List<ResourceTagVo> resourceTagVoList = resourceTagMapper.getResourceTagListByResourceIdList(idList);
-        if (CollectionUtils.isNotEmpty(resourceTagVoList)) {
-            Set<Long> tagIdSet = resourceTagVoList.stream().map(ResourceTagVo::getTagId).collect(Collectors.toSet());
-            List<TagVo> tagList = resourceTagMapper.getTagListByIdList(new ArrayList<>(tagIdSet));
-            Map<Long, TagVo> tagMap = tagList.stream().collect(Collectors.toMap(TagVo::getId, e -> e));
-            for (ResourceTagVo resourceTagVo : resourceTagVoList) {
-                resourceTagVoMap.computeIfAbsent(resourceTagVo.getResourceId(), k -> new ArrayList<>()).add(tagMap.get(resourceTagVo.getTagId()));
-            }
-        }
-
-        for (ResourceVo resourceVo : resourceVoList) {
-            List<TagVo> tagVoList = resourceTagVoMap.get(resourceVo.getId());
-            if (CollectionUtils.isNotEmpty(tagVoList)) {
-                resourceVo.setTagList(tagVoList.stream().map(TagVo::getName).collect(Collectors.toList()));
-            }
-        }
-    }
+//    @Override
+//    public void addResourceTag(List<Long> idList, List<ResourceVo> resourceVoList) {
+//        Map<Long, List<TagVo>> resourceTagVoMap = new HashMap<>();
+//        List<ResourceTagVo> resourceTagVoList = resourceTagMapper.getResourceTagListByResourceIdList(idList);
+//        if (CollectionUtils.isNotEmpty(resourceTagVoList)) {
+//            Set<Long> tagIdSet = resourceTagVoList.stream().map(ResourceTagVo::getTagId).collect(Collectors.toSet());
+//            List<TagVo> tagList = resourceTagMapper.getTagListByIdList(new ArrayList<>(tagIdSet));
+//            Map<Long, TagVo> tagMap = tagList.stream().collect(Collectors.toMap(TagVo::getId, e -> e));
+//            for (ResourceTagVo resourceTagVo : resourceTagVoList) {
+//                resourceTagVoMap.computeIfAbsent(resourceTagVo.getResourceId(), k -> new ArrayList<>()).add(tagMap.get(resourceTagVo.getTagId()));
+//            }
+//        }
+//
+//        for (ResourceVo resourceVo : resourceVoList) {
+//            List<TagVo> tagVoList = resourceTagVoMap.get(resourceVo.getId());
+//            if (CollectionUtils.isNotEmpty(tagVoList)) {
+//                resourceVo.setTagList(tagVoList.stream().map(TagVo::getName).collect(Collectors.toList()));
+//            }
+//        }
+//    }
 
     /**
      * 获取对应模块的应用清单列表
@@ -428,6 +427,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
      * @param searchVo
      * @return
      */
+    @Deprecated
     @Override
     public JSONArray getAppModuleResourceList(ResourceSearchVo searchVo) {
         JSONArray tableList = new JSONArray();
@@ -494,6 +494,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
     }
 
     @PostConstruct
+    @Deprecated
     public void searchDispatcherInit() {
         searchMap.put("ipObject", (searchVo) -> {
             int rowNum = resourceTempMapper.getIpObjectResourceCountByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(searchVo);
@@ -544,7 +545,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         });
 
     }
-
+    @Deprecated
     public String getResourceTypeName(List<CiVo> resourceCiVoList, CiVo resourceCiVo) {
         for (CiVo ciVo : resourceCiVoList) {
             if (ciVo.getLft() <= resourceCiVo.getLft() && ciVo.getRht() >= resourceCiVo.getRht()) {
@@ -711,63 +712,62 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 //        return null;
 //    }
 
-    @Override
-    @Deprecated
-    public List<ResourceEntityVo> rebuildResourceEntity() {
-        List<String> viewNameList = ResourceEntityFactory.getViewNameList();
-        List<ResourceEntityVo> resourceEntityList = resourceEntityMapper.getResourceEntityListByNameList(viewNameList);
-        for (ResourceEntityVo resourceEntityVo : resourceEntityList) {
-            String config = resourceEntityMapper.getResourceEntityConfigByName(resourceEntityVo.getName());
-            resourceEntityVo.setError(null);
-            resourceEntityVo.setConfigStr(config);
-            String sql = buildResourceView(resourceEntityVo);
-            if (StringUtils.isNotBlank(resourceEntityVo.getError())) {
-                resourceEntityVo.setStatus(Status.ERROR.getValue());
-            } else {
-                resourceEntityVo.setStatus(Status.READY.getValue());
-            }
-            resourceEntityMapper.updateResourceEntityStatusAndError(resourceEntityVo);
-        }
-        List<SceneEntityVo> sceneEntityList = ResourceEntityFactory.getSceneEntityList();
-        for (SceneEntityVo sceneEntityVo : sceneEntityList) {
-            String viewName = sceneEntityVo.getName();
-            String tableType = schemaMapper.checkTableOrViewIsExists(TenantContext.get().getDataDbName(), viewName);
-            if (tableType == null) {
-                List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
-                Table table = new Table();
-                table.setName(viewName);
-                table.setSchemaName(TenantContext.get().getDataDbName());
-                List<ColumnDefinition> columnDefinitions = new ArrayList<>();
-                for (String columnName : fieldNameList) {
-                    ColumnDefinition columnDefinition = new ColumnDefinition();
-                    columnDefinition.setColumnName(columnName);
-                    columnDefinition.setColDataType(new ColDataType("int"));
-                    columnDefinitions.add(columnDefinition);
-                }
-                CreateTable createTable = new CreateTable();
-                createTable.setTable(table);
-                createTable.setColumnDefinitions(columnDefinitions);
-                createTable.setIfNotExists(true);
-                EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
-                    schemaMapper.insertView(createTable.toString());
-                }).execute();
-            }
-        }
-        resourceEntityList = resourceEntityMapper.getResourceEntityListByNameList(viewNameList);
-        Map<String, ResourceEntityVo> resourceEntityVoMap = resourceEntityList.stream().collect(Collectors.toMap(e -> e.getName(), e -> e));
-        List<ResourceEntityVo> resultList = new ArrayList<>();
-        for (SceneEntityVo sceneEntityVo : sceneEntityList) {
-            ResourceEntityVo resourceEntityVo = resourceEntityVoMap.get(sceneEntityVo.getName());
-            if (resourceEntityVo == null) {
-                resourceEntityVo = new ResourceEntityVo();
-                resourceEntityVo.setName(sceneEntityVo.getName());
-                resourceEntityVo.setLabel(sceneEntityVo.getLabel());
-                resourceEntityVo.setStatus(Status.PENDING.getValue());
-            }
-            resultList.add(resourceEntityVo);
-        }
-        return resultList;
-    }
+//    @Override
+//    public List<ResourceEntityVo> rebuildResourceEntity() {
+//        List<String> viewNameList = ResourceEntityFactory.getViewNameList();
+//        List<ResourceEntityVo> resourceEntityList = resourceEntityMapper.getResourceEntityListByNameList(viewNameList);
+//        for (ResourceEntityVo resourceEntityVo : resourceEntityList) {
+//            String config = resourceEntityMapper.getResourceEntityConfigByName(resourceEntityVo.getName());
+//            resourceEntityVo.setError(null);
+//            resourceEntityVo.setConfigStr(config);
+//            String sql = buildResourceView(resourceEntityVo);
+//            if (StringUtils.isNotBlank(resourceEntityVo.getError())) {
+//                resourceEntityVo.setStatus(Status.ERROR.getValue());
+//            } else {
+//                resourceEntityVo.setStatus(Status.READY.getValue());
+//            }
+//            resourceEntityMapper.updateResourceEntityStatusAndError(resourceEntityVo);
+//        }
+//        List<SceneEntityVo> sceneEntityList = ResourceEntityFactory.getSceneEntityList();
+//        for (SceneEntityVo sceneEntityVo : sceneEntityList) {
+//            String viewName = sceneEntityVo.getName();
+//            String tableType = schemaMapper.checkTableOrViewIsExists(TenantContext.get().getDataDbName(), viewName);
+//            if (tableType == null) {
+//                List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
+//                Table table = new Table();
+//                table.setName(viewName);
+//                table.setSchemaName(TenantContext.get().getDataDbName());
+//                List<ColumnDefinition> columnDefinitions = new ArrayList<>();
+//                for (String columnName : fieldNameList) {
+//                    ColumnDefinition columnDefinition = new ColumnDefinition();
+//                    columnDefinition.setColumnName(columnName);
+//                    columnDefinition.setColDataType(new ColDataType("int"));
+//                    columnDefinitions.add(columnDefinition);
+//                }
+//                CreateTable createTable = new CreateTable();
+//                createTable.setTable(table);
+//                createTable.setColumnDefinitions(columnDefinitions);
+//                createTable.setIfNotExists(true);
+//                EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
+//                    schemaMapper.insertView(createTable.toString());
+//                }).execute();
+//            }
+//        }
+//        resourceEntityList = resourceEntityMapper.getResourceEntityListByNameList(viewNameList);
+//        Map<String, ResourceEntityVo> resourceEntityVoMap = resourceEntityList.stream().collect(Collectors.toMap(e -> e.getName(), e -> e));
+//        List<ResourceEntityVo> resultList = new ArrayList<>();
+//        for (SceneEntityVo sceneEntityVo : sceneEntityList) {
+//            ResourceEntityVo resourceEntityVo = resourceEntityVoMap.get(sceneEntityVo.getName());
+//            if (resourceEntityVo == null) {
+//                resourceEntityVo = new ResourceEntityVo();
+//                resourceEntityVo.setName(sceneEntityVo.getName());
+//                resourceEntityVo.setLabel(sceneEntityVo.getLabel());
+//                resourceEntityVo.setStatus(Status.PENDING.getValue());
+//            }
+//            resultList.add(resourceEntityVo);
+//        }
+//        return resultList;
+//    }
 
     @Override
     public String buildResourceView(ResourceEntityVo resourceEntityVo) {

@@ -67,6 +67,7 @@ public class ResourceEntityFactory {
                     sceneEntityVo.setName(rt.name());
                     sceneEntityVo.setLabel(rt.label());
                     sceneEntityVo.setIsMultiple(rt.isMultiple());
+                    sceneEntityVo.setModuleId(rt.moduleId());
                     sceneEntityVo.setDescription(String.join("；", rt.functionPathList()));
                 }
             }
@@ -98,6 +99,7 @@ public class ResourceEntityFactory {
                     sceneEntityVo.setName(rt.name());
                     sceneEntityVo.setLabel(rt.label());
                     sceneEntityVo.setIsMultiple(rt.isMultiple());
+                    sceneEntityVo.setModuleId(rt.moduleId());
                     sceneEntityVo.setDescription(String.join("；", rt.functionPathList()));
                     for (Field field : c.getDeclaredFields()) {
                         ResourceField rf = field.getAnnotation(ResourceField.class);
@@ -147,6 +149,7 @@ public class ResourceEntityFactory {
                 sceneEntityVo.setName(sceneEntity.getName());
                 sceneEntityVo.setLabel(sceneEntity.getLabel());
                 sceneEntityVo.setIsMultiple(sceneEntity.getIsMultiple());
+                sceneEntityVo.setModuleId(sceneEntity.getModuleId());
                 sceneEntityVo.setDescription(sceneEntity.getDescription());
             }
         }

@@ -85,7 +85,7 @@ public class AppResourceListApi extends PrivateApiComponentBase {
         }
         String viewName = paramObj.getString("viewName");
         IResourceCenterDataSource resourceCenterDataSource = ResourceCenterDataSourceFactory.getResourceCenterDataSource();
-        JSONArray tableList = resourceCenterDataSource.getAppResourceList(appSystemId, appModuleId, envId, typeIdList, viewName, currentPage, pageSize);
+        JSONArray tableList = resourceCenterDataSource.getAppResourceList(appSystemId, appModuleId, envId, null, viewName, currentPage, pageSize);
         resultObj.put("tableList", tableList);
         return resultObj;
     }

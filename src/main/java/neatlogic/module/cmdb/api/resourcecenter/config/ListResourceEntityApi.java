@@ -22,6 +22,8 @@ import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityConfigVo
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.SceneEntityVo;
 import neatlogic.framework.cmdb.enums.resourcecenter.Status;
+import neatlogic.framework.common.util.ModuleUtil;
+import neatlogic.framework.dto.module.ModuleVo;
 import neatlogic.framework.restful.annotation.Description;
 import neatlogic.framework.restful.annotation.OperationType;
 import neatlogic.framework.restful.annotation.Output;
@@ -73,12 +75,11 @@ public class ListResourceEntityApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         List<ResourceEntityVo> resultList = new ArrayList<>();
-        List<String> viewNameList = ResourceEntityFactory.getViewNameList();
-        List<ResourceEntityVo> resourceEntityList = resourceEntityMapper.getResourceEntityListByNameList(viewNameList);
-        Map<String, ResourceEntityVo> resourceEntityVoMap = resourceEntityList.stream().collect(Collectors.toMap(ResourceEntityVo::getName, e -> e));
+        List<ResourceEntityVo> allResourceEntityList = resourceEntityMapper.getResourceEntityList();
+        Map<String, ResourceEntityVo> resourceEntityVoMap = allResourceEntityList.stream().collect(Collectors.toMap(ResourceEntityVo::getName, e -> e));
         List<SceneEntityVo> sceneEntityList = ResourceEntityFactory.getSceneEntityList();
         for (SceneEntityVo sceneEntityVo : sceneEntityList) {
-            ResourceEntityVo resourceEntityVo = resourceEntityVoMap.get(sceneEntityVo.getName());
+            ResourceEntityVo resourceEntityVo = resourceEntityVoMap.remove(sceneEntityVo.getName());
             if (resourceEntityVo == null) {
                 resourceEntityVo = new ResourceEntityVo();
                 resourceEntityVo.setStatus(Status.PENDING.getValue());
@@ -87,6 +88,13 @@ public class ListResourceEntityApi extends PrivateApiComponentBase {
             resourceEntityVo.setLabel(sceneEntityVo.getLabel());
             resourceEntityVo.setDescription(sceneEntityVo.getDescription());
             resourceEntityVo.setIsMultiple(sceneEntityVo.getIsMultiple());
+            resourceEntityVo.setModuleId(sceneEntityVo.getModuleId());
+            ModuleVo moduleVo = ModuleUtil.getModuleById(sceneEntityVo.getModuleId());
+            if (moduleVo != null) {
+                resourceEntityVo.setModuleName(moduleVo.getName());
+            } else {
+                resourceEntityVo.setModuleName(sceneEntityVo.getModuleId());
+            }
             try {
                 resourceEntityMapper.getResourceEntityViewDataList(sceneEntityVo.getName(), 0, 1);
             } catch (Exception e) {
@@ -101,8 +109,8 @@ public class ListResourceEntityApi extends PrivateApiComponentBase {
             resultList.add(resourceEntityVo);
         }
         // 扩展视图
-        List<ResourceEntityVo> allResourceEntityList = resourceEntityMapper.getResourceEntityList();
-        for (ResourceEntityVo resourceEntityVo : allResourceEntityList) {
+        for (Map.Entry<String, ResourceEntityVo> entry : resourceEntityVoMap.entrySet()) {
+            ResourceEntityVo resourceEntityVo = entry.getValue();
             SceneEntityVo sceneEntityVo = ResourceEntityFactory.getSceneEntityByViewName(resourceEntityVo.getName());
             if (sceneEntityVo == null) {
                 String config = resourceEntityMapper.getResourceEntityConfigByName(resourceEntityVo.getName());
@@ -114,6 +122,13 @@ public class ListResourceEntityApi extends PrivateApiComponentBase {
                             SceneEntityVo sceneTemplate = ResourceEntityFactory.getSceneEntityByViewName(sceneTemplateName);
                             if (sceneTemplate != null) {
                                 resourceEntityVo.setIsMultiple(sceneTemplate.getIsMultiple());
+                                resourceEntityVo.setModuleId(sceneTemplate.getModuleId());
+                                ModuleVo moduleVo = ModuleUtil.getModuleById(sceneTemplate.getModuleId());
+                                if (moduleVo != null) {
+                                    resourceEntityVo.setModuleName(moduleVo.getName());
+                                } else {
+                                    resourceEntityVo.setModuleName(sceneTemplate.getModuleId());
+                                }
                                 try {
                                     resourceEntityMapper.getResourceEntityViewDataList(resourceEntityVo.getName(), 0, 1);
                                 } catch (Exception e) {
