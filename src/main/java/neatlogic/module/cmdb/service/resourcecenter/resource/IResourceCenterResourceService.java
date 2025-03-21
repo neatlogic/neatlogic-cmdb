@@ -20,13 +20,11 @@ import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.crossover.IResourceCenterResourceCrossoverService;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.AccountVo;
-import neatlogic.framework.cmdb.dto.resourcecenter.AppEnvVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.dto.tag.TagVo;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -140,13 +138,13 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
      */
     void addAccountInformation(List<ResourceVo> resourceList);
 
-    /**
-     * 获取模块列表
-     *
-     * @param searchVo resourceSearchVo
-     * @return 模块列表
-     */
-    List<ResourceVo> getAppModuleList(ResourceSearchVo searchVo);
+//    /**
+//     * 获取模块列表
+//     *
+//     * @param searchVo resourceSearchVo
+//     * @return 模块列表
+//     */
+//    List<ResourceVo> getAppModuleList(ResourceSearchVo searchVo);
 
 
     /**
@@ -155,7 +153,7 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
      * @param searchVo resourceSearchVo
      * @return 应用巡检批量巡检时的环境列表
      */
-    Collection<AppEnvVo> getAppEnvList(ResourceSearchVo searchVo);
+//    Collection<AppEnvVo> getAppEnvList(ResourceSearchVo searchVo);
 
     /**
      * 重建资源中心视图

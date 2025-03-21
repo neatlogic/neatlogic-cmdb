@@ -27,6 +27,7 @@ import neatlogic.framework.cmdb.dto.resourcecenter.*;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityConfigVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityFieldMappingVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.config.SceneEntityVo;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppModuleNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
@@ -42,6 +43,7 @@ import neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
+import neatlogic.module.cmdb.utils.ResourceEntityFactory;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -78,7 +80,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
 
     @PostConstruct
     public void init() {
-        map.put(new ValueTextVo("id", "ID"), (resourceVo, cacheData) -> resourceVo.getId().toString());
+        map.put(new ValueTextVo("id", "ID"), (resourceVo, cacheData) -> resourceVo.getId());
         map.put(new ValueTextVo("name", "名称"), (resourceVo, cacheData) -> resourceVo.getName());
         map.put(new ValueTextVo("ip", "IP地址"), (resourceVo, cacheData) -> {
             JSONObject resultObj = new JSONObject();
@@ -427,23 +429,15 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
         if (appModuleId != null && ciEntityCachedMapper.getCiEntityBaseInfoById(appModuleId) == null) {
             throw new AppModuleNotFoundException(appModuleId);
         }
-//        if (CollectionUtils.isNotEmpty(typeIdList)) {
-//            for (Long typeId : typeIdList) {
-//                CiVo ciVo = ciMapper.getCiById(typeId);
-//                if (ciVo == null) {
-//                    throw new CiNotFoundException(typeId);
-//                }
-//            }
-//        }
         JSONArray tableList = new JSONArray();
+        List<String> viewNameList = new ArrayList<>();
+        Map<String, List<String>> viewName2FieldListMap = new HashMap<>();
         ApplicationListDisplayVo applicationListDisplay = resourceEntityMapper.getApplicationListDisplay();
         if (applicationListDisplay != null) {
             JSONObject config = applicationListDisplay.getConfig();
             if (MapUtils.isNotEmpty(config)) {
                 JSONArray tableSettingList = config.getJSONArray("tableSettingList");
                 if (CollectionUtils.isNotEmpty(tableSettingList)) {
-                    List<String> viewNameList = new ArrayList<>();
-                    Map<String, List<String>> viewName2FieldListMap = new HashMap<>();
                     for (int i = 0; i < tableSettingList.size(); i++) {
                         JSONObject tableObj = tableSettingList.getJSONObject(i);
                         if (MapUtils.isNotEmpty(tableObj)) {
@@ -458,47 +452,133 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
                             }
                         }
                     }
-                    if (CollectionUtils.isNotEmpty(viewNameList)) {
-                        ResourceSearchVo searchVo = new ResourceSearchVo();
-                        searchVo.setAppSystemId(appSystemId);
-                        if (appModuleId != null) {
-                            searchVo.setAppModuleId(appModuleId);
-                        }
-                        if (envId != null) {
-                            searchVo.setEnvId(envId);
-                        }
-                        searchVo.setCurrentPage(currentPage);
-                        searchVo.setPageSize(pageSize);
-                        for (String name : viewNameList) {
-                            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName(name);
-                            if (resourceEntityVo != null) {
-                                searchVo.setViewName(name);
-                                int rowNum = resourceMapper.getAppResourceCount(searchVo);
-                                if (rowNum > 0) {
-                                    searchVo.setRowNum(rowNum);
-                                    List<Long> resourceIdList = resourceMapper.getAppResourceIdList(searchVo);
-                                    if (CollectionUtils.isNotEmpty(resourceIdList)) {
-                                        searchVo.setIdList(resourceIdList);
-                                        List<ResourceVo> resourceList = resourceMapper.getAppResourceListByIdList(searchVo);
-                                        if (CollectionUtils.isNotEmpty(resourceList)) {
-                                            List<String> fieldList = viewName2FieldListMap.get(name);
-                                            JSONArray theadList = getTheadList(fieldList);
-                                            JSONArray tbodyList = getTbodyList(fieldList, resourceList, resourceEntityVo);
-                                            JSONObject tableObj = TableResultUtil.getResult(theadList, tbodyList, searchVo);
-                                            tableObj.put("type", new JSONObject());
-                                            tableObj.put("viewName", name);
-                                            tableObj.put("viewLabel", resourceEntityVo.getLabel());
-                                            tableList.add(tableObj);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
                 }
             }
         }
+        if (CollectionUtils.isNotEmpty(viewNameList)) {
+            ResourceSearchVo searchVo = new ResourceSearchVo();
+            searchVo.setAppSystemId(appSystemId);
+            if (appModuleId != null) {
+                searchVo.setAppModuleId(appModuleId);
+            }
+            if (envId != null) {
+                searchVo.setEnvId(envId);
+            }
+            searchVo.setCurrentPage(currentPage);
+            searchVo.setPageSize(pageSize);
+            for (String name : viewNameList) {
+                ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName(name);
+                if (resourceEntityVo != null) {
+                    searchVo.setViewName(name);
+                    List<ResourceVo> resourceList = getAppResourceList(searchVo, true);
+                    if (CollectionUtils.isNotEmpty(resourceList)) {
+                        List<String> fieldList = viewName2FieldListMap.get(name);
+                        JSONArray theadList = getTheadList(fieldList);
+                        JSONArray tbodyList = getTbodyList(fieldList, resourceList, resourceEntityVo);
+                        JSONObject tableObj = TableResultUtil.getResult(theadList, tbodyList, searchVo);
+//                                    tableObj.put("type", new JSONObject());
+                        tableObj.put("viewName", name);
+                        tableObj.put("viewLabel", resourceEntityVo.getLabel());
+                        tableList.add(tableObj);
+                    }
+                }
+            }
+//            ResourceSearchVo searchVo = new ResourceSearchVo();
+//            searchVo.setAppSystemId(appSystemId);
+//            if (appModuleId != null) {
+//                searchVo.setAppModuleId(appModuleId);
+//            }
+//            if (envId != null) {
+//                searchVo.setEnvId(envId);
+//            }
+//            searchVo.setCurrentPage(currentPage);
+//            searchVo.setPageSize(pageSize);
+//            for (String name : viewNameList) {
+//                ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName(name);
+//                if (resourceEntityVo != null) {
+//                    searchVo.setViewName(name);
+//                    int rowNum = resourceMapper.getAppResourceCount(searchVo);
+//                    if (rowNum > 0) {
+//                        searchVo.setRowNum(rowNum);
+//                        List<Long> resourceIdList = resourceMapper.getAppResourceIdList(searchVo);
+//                        if (CollectionUtils.isNotEmpty(resourceIdList)) {
+//                            searchVo.setIdList(resourceIdList);
+//                            List<ResourceVo> resourceList = resourceMapper.getAppResourceListByIdList(searchVo);
+//                            if (CollectionUtils.isNotEmpty(resourceList)) {
+//                                List<String> fieldList = viewName2FieldListMap.get(name);
+//                                JSONArray theadList = getTheadList(fieldList);
+//                                JSONArray tbodyList = getTbodyList(fieldList, resourceList, resourceEntityVo);
+//                                JSONObject tableObj = TableResultUtil.getResult(theadList, tbodyList, searchVo);
+//                                tableObj.put("type", new JSONObject());
+//                                tableObj.put("viewName", name);
+//                                tableObj.put("viewLabel", resourceEntityVo.getLabel());
+//                                tableList.add(tableObj);
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+        }
         return tableList;
+    }
+
+    @Override
+    public List<ResourceVo> getAppResourceList(ResourceSearchVo searchVo, boolean needPage) {
+        List<ResourceVo> resultList = new ArrayList<>();
+        int rowNum = resourceMapper.getAppResourceCount(searchVo);
+        if (rowNum > 0) {
+            searchVo.setRowNum(rowNum);
+            if (needPage) {
+                searchVo.setPageSize(100);
+            }
+            Integer pageCount = searchVo.getPageCount();
+            for (int i = 1; i <= pageCount; i++) {
+                if (needPage && !Objects.equals(i, searchVo.getCurrentPage())) {
+                    continue;
+                }
+                searchVo.setCurrentPage(i);
+                List<Long> resourceIdList = resourceMapper.getAppResourceIdList(searchVo);
+                if (CollectionUtils.isNotEmpty(resourceIdList)) {
+                    searchVo.setIdList(resourceIdList);
+                    List<ResourceVo> resourceList = resourceMapper.getAppResourceListByIdList(searchVo);
+                    resultList.addAll(resourceList);
+                }
+                if (needPage) {
+                    break;
+                }
+            }
+        }
+        return resultList;
+    }
+
+    @Override
+    public List<Long> getAppResourceIdList(ResourceSearchVo searchVo, boolean needPage) {
+        List<Long> resultList = new ArrayList<>();
+        int rowNum = resourceMapper.getAppResourceCount(searchVo);
+        if (rowNum > 0) {
+            searchVo.setRowNum(rowNum);
+            if (needPage) {
+                searchVo.setPageSize(100);
+            }
+            Integer pageCount = searchVo.getPageCount();
+            for (int i = 1; i <= pageCount; i++) {
+                if (needPage && !Objects.equals(i, searchVo.getCurrentPage())) {
+                    continue;
+                }
+                searchVo.setCurrentPage(i);
+                List<Long> resourceIdList = resourceMapper.getAppResourceIdList(searchVo);
+                resultList.addAll(resourceIdList);
+//                if (CollectionUtils.isNotEmpty(resourceIdList)) {
+//                    searchVo.setIdList(resourceIdList);
+//                    List<ResourceVo> resourceList = resourceMapper.getAppResourceListByIdList(searchVo);
+//                    resultList.addAll(resourceList);
+//                }
+                if (needPage) {
+                    break;
+                }
+            }
+        }
+        return resultList;
     }
 
     @Override
@@ -1108,6 +1188,13 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
     }
 
     @Override
+    public List<AppEnvVo> getAppEnvListByAppSystemId(Long appSystemId) {
+        List<AppEnvVo> appEnvList = resourceMapper.getAppEnvListByAppSystemId(appSystemId);
+        appEnvList.sort(Comparator.comparing(AppEnvVo::getSeqNo));
+        return appEnvList;
+    }
+
+    @Override
     public List<ResourceVo> getStateListForSelect(BasePageVo searchVo) {
         List<ResourceVo> stateList = new ArrayList<>();
         JSONArray defaultValue = searchVo.getDefaultValue();
@@ -1161,6 +1248,51 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             }
         }
         return vendorList;
+    }
+
+    @Override
+    public Map<String, List<Long>> getAppResourceTypeIdListByAppSystemId(Long appSystemId) {
+        Map<String, List<Long>> viewName2TypeIdListMap = new HashMap<>();
+        List<ResourceEntityVo> appViewList = getAppViewList();
+        if (CollectionUtils.isNotEmpty(appViewList)) {
+            for (ResourceEntityVo resourceEntityVo : appViewList) {
+                List<Long> typeIdList = resourceMapper.getAppResourceTypeIdListByViewNameAndAppSystemId(resourceEntityVo.getName(), appSystemId, null, null);
+                viewName2TypeIdListMap.put(resourceEntityVo.getName(), typeIdList);
+            }
+        }
+        return viewName2TypeIdListMap;
+    }
+
+    @Override
+    public Map<String, List<Long>> getAppResourceTypeIdListByAppSystemIdAndAppModuleIdAndEnvId(Long appSystemId, Long appModuleId, Long envId) {
+        Map<String, List<Long>> viewName2TypeIdListMap = new HashMap<>();
+        List<ResourceEntityVo> appViewList = getAppViewList();
+        if (CollectionUtils.isNotEmpty(appViewList)) {
+            for (ResourceEntityVo resourceEntityVo : appViewList) {
+                List<Long> typeIdList = resourceMapper.getAppResourceTypeIdListByViewNameAndAppSystemId(resourceEntityVo.getName(), appSystemId, appModuleId, envId);
+                viewName2TypeIdListMap.put(resourceEntityVo.getName(), typeIdList);
+            }
+        }
+        return viewName2TypeIdListMap;
+    }
+
+    private List<ResourceEntityVo> getAppViewList() {
+        List<ResourceEntityVo> resultList = new ArrayList<>();
+        List<ResourceEntityVo> resourceEntityList = resourceEntityMapper.getResourceEntityList();
+        for (ResourceEntityVo resourceEntityVo : resourceEntityList) {
+            SceneEntityVo sceneEntityVo = ResourceEntityFactory.getSceneEntityByViewName(resourceEntityVo.getName());
+            if (sceneEntityVo == null) {
+                String config = resourceEntityMapper.getResourceEntityConfigByName(resourceEntityVo.getName());
+                if (StringUtils.isNotBlank(config)) {
+                    ResourceEntityConfigVo resourceEntityConfigVo = JSONObject.parseObject(config, ResourceEntityConfigVo.class);
+                    if (Objects.equals(resourceEntityConfigVo.getSceneTemplateName(), "")) {
+                        resourceEntityVo.setConfig(resourceEntityConfigVo);
+                        resultList.add(resourceEntityVo);
+                    }
+                }
+            }
+        }
+        return resultList;
     }
 
     /**
@@ -1222,4 +1354,6 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
         }
         return null;
     }
+
+
 }

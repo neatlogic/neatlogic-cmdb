@@ -59,7 +59,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </foreach>
     </select>
 
-    <select id="getAppEnvListByAppSystemIdAndModuleIdList"
+    <!--<select id="getAppEnvListByAppSystemIdAndModuleIdList"
             resultType="neatlogic.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo">
         SELECT DISTINCT
         a.env_id AS envId,
@@ -85,5 +85,5 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 and a.`app_module_id` is not null
             </otherwise>
         </choose>
-    </select>
+    </select>-->
 </mapper>

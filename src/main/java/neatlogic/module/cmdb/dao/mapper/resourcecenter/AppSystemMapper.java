@@ -16,10 +16,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 package neatlogic.module.cmdb.dao.mapper.resourcecenter;
 
 import neatlogic.framework.cmdb.crossover.IAppSystemMapper;
-import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppEnvironmentVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppModuleVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.entity.AppSystemVo;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -37,6 +35,6 @@ public interface AppSystemMapper extends IAppSystemMapper {
 
     List<AppModuleVo> getAppModuleListByIdList(List<Long> idList);
 
-    List<AppEnvironmentVo> getAppEnvListByAppSystemIdAndModuleIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleIdList") List<Long> appModuleIdList);
+//    List<AppEnvironmentVo> getAppEnvListByAppSystemIdAndModuleIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleIdList") List<Long> appModuleIdList);
 
 }
