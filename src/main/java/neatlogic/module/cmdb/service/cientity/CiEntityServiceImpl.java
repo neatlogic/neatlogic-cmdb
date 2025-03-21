@@ -81,6 +81,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Semaphore;
 import java.util.stream.Collectors;
 
@@ -437,6 +438,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             //如果限制了关系和引用属性个数，可以直接用search方式搜索，否则需要单个返回配置项，避免多个关系和属性笛卡尔积导致OOM
             if (ciEntityVo.isLimitRelEntity() && ciEntityVo.isLimitRelEntity()) {
                 List<HashMap<String, Object>> resultList = ciEntityMapper.searchCiEntity(ciEntityVo);
+
                 if (logger.isInfoEnabled()) {
                     logger.info("根据id查询配置项，行数{}，耗时{}ms", resultList.size(), System.currentTimeMillis() - time);
                 }
@@ -459,22 +461,23 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 return ciEntityList;
             } else {
                 BatchRunner<Long> runner = new BatchRunner<>();
-                List<CiEntityVo> ciEntityList = new ArrayList<>();
+                //List<CiEntityVo> ciEntityList = new ArrayList<>();
+                Queue<CiEntityVo> ciEntityQueue = new ConcurrentLinkedQueue<>();
                 if (logger.isInfoEnabled()) {
                     time = System.currentTimeMillis();
                 }
                 runner.execute(ciEntityVo.getIdList(), 10, (threadIndex, dataIndex, item) -> {
                     long startTime = System.currentTimeMillis();
-                    ciEntityList.add(getCiEntityByIdLite(ciEntityVo.getCiId(), item, false, ciEntityVo.isLimitRelEntity(), ciEntityVo.isLimitAttrEntity(), ciEntityVo.getGlobalAttrIdList(), ciEntityVo.getAttrIdList(), ciEntityVo.getRelIdList()));
+                    ciEntityQueue.add(getCiEntityByIdLite(ciEntityVo.getCiId(), item, false, ciEntityVo.isLimitRelEntity(), ciEntityVo.isLimitAttrEntity(), ciEntityVo.getGlobalAttrIdList(), ciEntityVo.getAttrIdList(), ciEntityVo.getRelIdList()));
                     if (logger.isInfoEnabled()) {
                         logger.info("查询单个配置项，耗时{}ms", System.currentTimeMillis() - startTime);
                     }
                 }, "GET-CIENTITY-FOR-SEARCH");
                 ciEntityVo.setIdList(null);//清除id列表，避免ciEntityVo重用时数据没法更新
                 if (logger.isInfoEnabled()) {
-                    logger.info("查询配置项总耗时，数据量{}，耗时{}ms", ciEntityList.size(), System.currentTimeMillis() - time);
+                    logger.info("查询配置项总耗时，数据量{}，耗时{}ms", ciEntityQueue.size(), System.currentTimeMillis() - time);
                 }
-                return ciEntityList;
+                return new ArrayList<>(ciEntityQueue);
             }
 
         }

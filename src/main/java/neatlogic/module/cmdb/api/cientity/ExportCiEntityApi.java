@@ -49,7 +49,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -232,7 +231,7 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
             }
             response.setContentType("application/vnd.ms-excel;charset=utf-8");
             response.setHeader("Content-Disposition", " attachment; filename=\"" + fileNameEncode + "\"");
-
+            int sum = 0;
             try (OutputStream os = response.getOutputStream()) {
                 while (CollectionUtils.isNotEmpty(ciEntityList)) {
                     for (CiEntityVo entity : ciEntityList) {
@@ -300,7 +299,8 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
                             }
                         }
                         sheetBuilder.addData(dataMap);
-                        ((SXSSFSheet) workbook.getSheetAt(0)).flushRows();
+                        sum += 1;
+                        //((SXSSFSheet) workbook.getSheetAt(0)).flushRows();
                     }
                     //如果从外部传入idList，就不需要进一步查询下一页数据了
                     if (CollectionUtils.isEmpty(idList)) {
@@ -310,6 +310,7 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
                         break;
                     }
                 }
+                //System.out.println("总共：" + sum);
                 workbook.write(os);
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
@@ -344,6 +345,7 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
         } else {
             ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
         }
+        //System.out.println("查询到：" + ciEntityList.size());
         return ciEntityList;
     }
 }
