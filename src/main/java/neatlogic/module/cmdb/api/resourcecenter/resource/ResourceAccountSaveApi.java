@@ -82,7 +82,7 @@ public class ResourceAccountSaveApi extends PrivateApiComponentBase {
         int successCount = 0;
         List<String> failureReasonList = new ArrayList<>();
         Long resourceId = paramObj.getLong("resourceId");
-        if (resourceMapper.checkResourceIsExists(resourceId) == 0) {
+        if (resourceMapper.checkResourceIsExists(resourceId) == null) {
             throw new ResourceNotFoundException(resourceId);
         }
         // 查询该资产绑定的公有账号列表，再根据账号ID解绑

@@ -19,7 +19,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceTempMapper">
 
-
     <select id="getIpObjectResourceTypeIdListByAppModuleIdAndEnvId"
             parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
         SELECT a.`type_id`

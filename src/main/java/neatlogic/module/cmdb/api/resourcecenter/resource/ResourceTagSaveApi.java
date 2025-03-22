@@ -83,7 +83,7 @@ public class ResourceTagSaveApi extends PrivateApiComponentBase {
         if (CollectionUtils.isEmpty(tagArray)) {
             return null;
         }
-        if (resourceMapper.checkResourceIsExists(resourceId) == 0) {
+        if (resourceMapper.checkResourceIsExists(resourceId) == null) {
             throw new ResourceNotFoundException(resourceId);
         }
         List<String> tagList = tagArray.toJavaList(String.class);
