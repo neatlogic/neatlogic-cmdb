@@ -72,7 +72,7 @@ public class ResourceAccountListApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long resourceId = paramObj.getLong("resourceId");
-        if (resourceMapper.checkResourceIsExists(resourceId) == null) {
+        if (resourceMapper.getResourceIdByResourceId(resourceId) == null) {
             throw new ResourceNotFoundException(resourceId);
         }
         String protocol = paramObj.getString("protocol");
