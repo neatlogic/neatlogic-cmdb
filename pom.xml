@@ -19,8 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     <parent>
         <groupId>com.neatlogic</groupId>
         <artifactId>neatlogic-parent</artifactId>
-        <version>${revision}</version>
-        <relativePath>../neatlogic-parent</relativePath>
+        <version>[3.0.0,4.0.0)</version>
     </parent>
     <artifactId>neatlogic-cmdb</artifactId>
     <version>0.3.0.0-SNAPSHOT</version>
