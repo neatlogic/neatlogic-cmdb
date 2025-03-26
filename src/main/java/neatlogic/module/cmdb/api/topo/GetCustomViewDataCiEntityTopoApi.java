@@ -98,7 +98,7 @@ public class GetCustomViewDataCiEntityTopoApi extends PrivateApiComponentBase {
         String layout = jsonObj.getString("layout");
         CustomViewConditionVo customViewConditionVo = JSON.toJavaObject(jsonObj, CustomViewConditionVo.class);
         CustomViewVo customViewVo = customViewDataService.getCustomViewCiEntityById(customViewConditionVo);
-        //提取cientityid，补充层次等属性
+        //提取cientityId，补充层次等属性
         Set<Long> ciEntityIdList = new HashSet<>();
         Map<Long, Boolean> isHiddenMap = new HashMap<>();
         for (CustomViewCiVo ciVo : customViewVo.getCiList()) {
