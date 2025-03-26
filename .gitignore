@@ -8,4 +8,5 @@ bin
 .classpath
 .externalToolBuilders
 .idea
+.flattened-pom.xml
 .DS_Store
