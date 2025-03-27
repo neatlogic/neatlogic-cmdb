@@ -20,18 +20,10 @@ package neatlogic.module.cmdb.api;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
-import neatlogic.framework.cmdb.dto.ci.CiVo;
-import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.restful.annotation.OperationType;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.util.NotifyPolicyUtil;
-import neatlogic.module.cmdb.notify.handler.CmdbNotifyPolicyHandler;
-import neatlogic.module.cmdb.notify.handler.CmdbNotifyTriggerType;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
@@ -41,23 +33,8 @@ public class TestApi extends PrivateApiComponentBase {
 
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        //发送通知
-        /*NotifyPolicyUtil.execute(CmdbNotifyPolicyHandler.class.getSimpleName(), CmdbNotifyTriggerType.CIMODITY, DeployJobMessageHandler.class
-                , notifyPolicyVo, null, null, receiverMap
-                , jobInfo, null, notifyAuditMessage);
-
-        NotifyPolicyUtil.execute(notifyPolicyVo.getHandler(), trigger, DeployJobMessageHandler.class
-                , notifyPolicyVo, null, null, receiverMap
-                , jobInfo, null, notifyAuditMessage);*/
-        CiVo ciVo = new CiVo();
-        ciVo.setName("ciName");
-        ciVo.setLabel("模型名称");
-        List<CiEntityVo> ciEntityList = new ArrayList<>();
-        ciEntityList.add(new CiEntityVo(){{this.setName("aaa");}});
-        ciEntityList.add(new CiEntityVo(){{this.setName("bbb");}});
-        NotifyPolicyUtil.executeAsync(CmdbNotifyPolicyHandler.class, CmdbNotifyTriggerType.CIENTITYINVALID, ciEntityList);
-
-        return CmdbNotifyPolicyHandler.class.getName();
+        System.out.println(paramObj);
+        return paramObj;
     }
 
     @Override
