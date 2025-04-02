@@ -245,9 +245,12 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             } else if (Objects.equals(searchVo.getSearchField(), "ip")) {
 //                List<String> list = new ArrayList<>();
                 for (String keyword : batchSearchList) {
-//                    if (keyword.contains("*")) {
-//                        keyword = keyword.replace('*', '%');
-//                    }
+                    if (keyword.endsWith("*")) {
+                        keyword = keyword.substring(0, keyword.length() - 1);
+                        if (keyword.endsWith(".")) {
+                            keyword = keyword.substring(0, keyword.length() - 1);
+                        }
+                    }
 //                    list.add(keyword);
                     keywordList.addAll(FullTextIndexUtil.sliceKeyword(keyword));
                 }
