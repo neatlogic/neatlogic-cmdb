@@ -30,14 +30,9 @@ import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.TableResultUtil;
-import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
-import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
-import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
-import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
 import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -60,18 +55,6 @@ public class ResourceListApi extends PrivateApiComponentBase {
 
     @Resource
     private IResourceCenterResourceService resourceCenterResourceService;
-
-    @Resource
-    private ResourceMapper resourceMapper;
-
-    @Resource
-    private ResourceEntityMapper resourceEntityMapper;
-
-    @Resource
-    private AttrMapper attrMapper;
-
-    @Resource
-    private CiMapper ciMapper;
 
     @Override
     public String getToken() {
@@ -121,8 +104,6 @@ public class ResourceListApi extends PrivateApiComponentBase {
     @Description(desc = "nmcarr.resourcelistapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-//        List<ResourceVo> resourceList = new ArrayList<>();
-//        List<ResourceVo> resultList = new ArrayList<>();
         ResourceSearchVo searchVo;
         JSONArray defaultValue = jsonObj.getJSONArray("defaultValue");
         if (CollectionUtils.isNotEmpty(defaultValue)) {
@@ -133,27 +114,6 @@ public class ResourceListApi extends PrivateApiComponentBase {
         }
         resourceCenterResourceService.handleBatchSearchList(searchVo);
         resourceCenterResourceService.setIpFieldAttrIdAndNameFieldAttrId(searchVo);
-//        if (Objects.equals(searchVo.getRowNum(), 0)) {
-//            int rowNum = 0;
-//            if (noFilterCondition(searchVo)) {
-//                rowNum = resourceMapper.getAllResourceCount(searchVo);
-//            } else {
-//                rowNum = resourceMapper.getResourceCount(searchVo);
-//            }
-//            if (rowNum == 0) {
-//                return TableResultUtil.getResult(resourceList, searchVo);
-//            }
-//            searchVo.setRowNum(rowNum);
-//        }
-//        resourceCenterResourceService.setIsIpFieldSortAndIsNameFieldSort(searchVo);
-//        List<Long> idList = resourceMapper.getResourceIdList(searchVo);
-//        if (CollectionUtils.isEmpty(idList)) {
-//            return TableResultUtil.getResult(resourceList, searchVo);
-//        }
-//        resourceList = resourceMapper.getResourceListByIdList(idList);
-//        if (CollectionUtils.isNotEmpty(resourceList)) {
-//            resourceCenterResourceService.addTagAndAccountInformation(resourceList);
-//        }
         IResourceCenterDataSource resourceCenterDataSource = ResourceCenterDataSourceFactory.getResourceCenterDataSource();
         List<ResourceVo> resultList = resourceCenterDataSource.getResourceList(searchVo);
         if (CollectionUtils.isNotEmpty(resultList)) {
@@ -163,16 +123,6 @@ public class ResourceListApi extends PrivateApiComponentBase {
         Set<Long> typeIdList = resultList.stream().map(ResourceVo::getTypeId).collect(Collectors.toSet());
         List<Long> canDeleteTypeIdList = new ArrayList<>();
         List<Long> canEditTypeIdList = new ArrayList<>();
-        //排序
-//        for (Long id : idList) {
-//            for (ResourceVo resourceVo : resourceList) {
-//                if (Objects.equals(id, resourceVo.getId())) {
-//                    resultList.add(resourceVo);
-//                    typeIdList.add(resourceVo.getTypeId());
-//                    break;
-//                }
-//            }
-//        }
 
         //补充配置项权限
         Set<Long> withoutCiAuthCiEntityList = new HashSet<>();
@@ -206,57 +156,6 @@ public class ResourceListApi extends PrivateApiComponentBase {
             }
         }
         return TableResultUtil.getResult(resultList, searchVo);
-    }
-
-    /**
-     * 判断是否有过滤条件
-     * @param searchVo
-     * @return
-     */
-    private boolean noFilterCondition(ResourceSearchVo searchVo) {
-        if (StringUtils.isNotBlank(searchVo.getKeyword())) {
-            return false;
-        }
-        if (CollectionUtils.isNotEmpty(searchVo.getBatchSearchList())) {
-            return false;
-        }
-        if (CollectionUtils.isNotEmpty(searchVo.getStateIdList())) {
-            return false;
-        }
-        if (CollectionUtils.isNotEmpty(searchVo.getVendorIdList())) {
-            return false;
-        }
-        if (CollectionUtils.isNotEmpty(searchVo.getEnvIdList())) {
-            return false;
-        }
-        if (searchVo.getExistNoEnv()) {
-            return false;
-        }
-        if (CollectionUtils.isNotEmpty(searchVo.getAppSystemIdList())) {
-            return false;
-        }
-        if (CollectionUtils.isNotEmpty(searchVo.getAppModuleIdList())) {
-            return false;
-        }
-        if (CollectionUtils.isNotEmpty(searchVo.getDefaultValue())) {
-            return false;
-        }
-        if (CollectionUtils.isNotEmpty(searchVo.getIdList())) {
-            return false;
-        }
-        if (CollectionUtils.isNotEmpty(searchVo.getInspectStatusList())) {
-            return false;
-        }
-        if (CollectionUtils.isNotEmpty(searchVo.getProtocolIdList())) {
-            return false;
-        }
-        if (CollectionUtils.isNotEmpty(searchVo.getTagIdList())) {
-            return false;
-        }
-        if (CollectionUtils.isNotEmpty(searchVo.getInspectJobPhaseNodeStatusList())) {
-            return false;
-        }
-        return true;
     }
 
 }

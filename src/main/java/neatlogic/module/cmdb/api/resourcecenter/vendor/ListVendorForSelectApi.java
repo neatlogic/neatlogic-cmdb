@@ -68,32 +68,5 @@ public class ListVendorForSelectApi extends PrivateApiComponentBase {
         IResourceCenterDataSource resourceCenterDataSource = ResourceCenterDataSourceFactory.getResourceCenterDataSource();
         List<ResourceVo> tbodyList = resourceCenterDataSource.getVendorListForSelect(searchVo);
         return TableResultUtil.getResult(tbodyList, searchVo);
-//        JSONArray defaultValue = searchVo.getDefaultValue();
-//        if (CollectionUtils.isNotEmpty(defaultValue)) {
-//            List<Long> idList = defaultValue.toJavaList(Long.class);
-//            List<ResourceVo> resourceList = resourceMapper.searchVendorListByIdList(idList);
-//            return TableResultUtil.getResult(resourceList);
-//        } else {
-//            int rowNum = resourceMapper.searchVendorCount(searchVo);
-//            if (rowNum > 0) {
-//                searchVo.setRowNum(rowNum);
-//                if (searchVo.getNeedPage()) {
-//                    List<Long> idList = resourceMapper.searchVendorIdList(searchVo);
-//                    List<ResourceVo> resourceList = resourceMapper.searchVendorListByIdList(idList);
-//                    return TableResultUtil.getResult(resourceList, searchVo);
-//                } else {
-//                    List<ResourceVo> allResourceList = new ArrayList<>();
-//                    int pageCount = searchVo.getPageCount();
-//                    for (int currentPage = 1; currentPage <= pageCount; currentPage++) {
-//                        searchVo.setCurrentPage(currentPage);
-//                        List<Long> idList = resourceMapper.searchVendorIdList(searchVo);
-//                        List<ResourceVo> resourceList = resourceMapper.searchVendorListByIdList(idList);
-//                        allResourceList.addAll(resourceList);
-//                    }
-//                    return TableResultUtil.getResult(allResourceList, searchVo);
-//                }
-//            }
-//        }
-//        return null;
     }
 }
