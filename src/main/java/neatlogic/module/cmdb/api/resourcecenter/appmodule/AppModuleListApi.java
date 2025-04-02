@@ -28,10 +28,8 @@ import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.TableResultUtil;
-import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -42,9 +40,6 @@ import java.util.List;
 @AuthAction(action = CMDB.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class AppModuleListApi extends PrivateApiComponentBase {
-
-    @Resource
-    private IResourceCenterResourceService resourceCenterResourceService;
 
     @Override
     public String getToken() {
@@ -79,6 +74,5 @@ public class AppModuleListApi extends PrivateApiComponentBase {
         IResourceCenterDataSource resourceCenterDataSource = ResourceCenterDataSourceFactory.getResourceCenterDataSource();
         List<ResourceVo> tbodyList = resourceCenterDataSource.getAppModuleList(searchVo);
         return TableResultUtil.getResult(tbodyList, searchVo);
-//        return TableResultUtil.getResult(resourceCenterResourceService.getAppModuleList(searchVo), searchVo);
     }
 }

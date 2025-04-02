@@ -66,40 +66,6 @@ public class ListAppSystemForTreeApi extends PrivateApiComponentBase {
         BasePageVo searchVo = paramObj.toJavaObject(BasePageVo.class);
         IResourceCenterDataSource resourceCenterDataSource = ResourceCenterDataSourceFactory.getResourceCenterDataSource();
         List<AppSystemVo> tbodyList = resourceCenterDataSource.getAppSystemListForTree(searchVo);
-//        String keyword = searchVo.getKeyword();
-//        int count = resourceMapper.getAppSystemIdListCountByKeyword(keyword);
-//        if (count > 0) {
-//            searchVo.setRowNum(count);
-//            List<Long> appSystemIdList = resourceMapper.getAppSystemIdListByKeyword(searchVo);
-//            if (CollectionUtils.isEmpty(appSystemIdList)) {
-//                return TableResultUtil.getResult(tbodyList, searchVo);
-//            }
-//            tbodyList = resourceMapper.getAppSystemListByIdList(appSystemIdList);
-//            List<Long> hasModuleAppSystemIdList = resourceMapper.getHasModuleAppSystemIdListByAppSystemIdList(appSystemIdList);
-//            if (CollectionUtils.isNotEmpty(hasModuleAppSystemIdList)) {
-//                for (AppSystemVo appSystemVo : tbodyList) {
-//                    if (hasModuleAppSystemIdList.contains(appSystemVo.getId())) {
-//                        appSystemVo.setIsHasModule(1);
-//                    }
-//                }
-//            }
-//            if (StringUtils.isNotEmpty(searchVo.getKeyword())) {
-//                List<AppModuleVo> appModuleList = resourceMapper.getAppModuleListByKeywordAndAppSystemIdList(keyword, appSystemIdList);
-//                if (CollectionUtils.isNotEmpty(appModuleList)) {
-//                    Map<Long, List<AppModuleVo>> appModuleMap = new HashMap<>();
-//                    for (AppModuleVo appModuleVo : appModuleList) {
-//                        appModuleMap.computeIfAbsent(appModuleVo.getAppSystemId(), key -> new ArrayList<>()).add(appModuleVo);
-//                    }
-//                    for (AppSystemVo appSystemVo : tbodyList) {
-//                        List<AppModuleVo> appModuleVoList = appModuleMap.get(appSystemVo.getId());
-//                        if (CollectionUtils.isNotEmpty(appModuleVoList)) {
-//                            appSystemVo.setAppModuleList(appModuleVoList);
-//                            appSystemVo.setIsHasModule(1);
-//                        }
-//                    }
-//                }
-//            }
-//        }
         return TableResultUtil.getResult(tbodyList, searchVo);
     }
 }

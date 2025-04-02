@@ -59,26 +59,5 @@ public class ListAppModuleListForTreeApi extends PrivateApiComponentBase {
         Long appSystemId = paramObj.getLong("appSystemId");
         IResourceCenterDataSource resourceCenterDataSource = ResourceCenterDataSourceFactory.getResourceCenterDataSource();
         return resourceCenterDataSource.getAppModuleListForTree(appSystemId);
-//        List<AppModuleVo> tbodyList = resourceMapper.getAppModuleListByAppSystemId(appSystemId);
-//        if (CollectionUtils.isNotEmpty(tbodyList)) {
-//            Map<Long, Long> appEnvCountMap = new HashMap<>();
-//            List<Map<String, Long>> appEnvCountMapList = resourceMapper.getAppEnvCountMapByAppSystemIdGroupByAppModuleId(appSystemId);
-//            for (Map<String, Long> map : appEnvCountMapList) {
-//                Long count = map.get("count");
-//                Long appModuleId = map.get("appModuleId");
-//                appEnvCountMap.put(appModuleId, count);
-//            }
-//            for (AppModuleVo appModuleVo : tbodyList) {
-//                Long count = appEnvCountMap.get(appModuleVo.getId());
-//                if (count == null) {
-//                    appModuleVo.setIsHasEnv(0);
-//                } else if (count == 0) {
-//                    appModuleVo.setIsHasEnv(0);
-//                } else {
-//                    appModuleVo.setIsHasEnv(1);
-//                }
-//            }
-//        }
-//        return tbodyList;
     }
 }

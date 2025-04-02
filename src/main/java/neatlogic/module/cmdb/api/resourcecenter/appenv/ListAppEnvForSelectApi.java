@@ -69,36 +69,5 @@ public class ListAppEnvForSelectApi extends PrivateApiComponentBase {
         IResourceCenterDataSource resourceCenterDataSource = ResourceCenterDataSourceFactory.getResourceCenterDataSource();
         List<ResourceVo> tbodyList = resourceCenterDataSource.getAppEnvListForSelect(searchVo);
         return TableResultUtil.getResult(tbodyList, searchVo);
-//        JSONArray defaultValue = searchVo.getDefaultValue();
-//        if (CollectionUtils.isNotEmpty(defaultValue)) {
-//            List<Long> idList = defaultValue.toJavaList(Long.class);
-//            List<ResourceVo> resourceList = resourceMapper.searchAppEnvListByIdList(idList);
-//            return TableResultUtil.getResult(resourceList);
-//        } else {
-//            int rowNum = resourceMapper.searchAppEnvCount(searchVo);
-//            if (rowNum > 0) {
-//                searchVo.setRowNum(rowNum);
-//                if (searchVo.getNeedPage()) {
-//                    List<Long> idList = resourceMapper.searchAppEnvIdList(searchVo);
-//                    if (CollectionUtils.isNotEmpty(idList)) {
-//                        List<ResourceVo> resourceList = resourceMapper.searchAppEnvListByIdList(idList);
-//                        return TableResultUtil.getResult(resourceList, searchVo);
-//                    }
-//                } else {
-//                    List<ResourceVo> allResourceList = new ArrayList<>();
-//                    int pageCount = searchVo.getPageCount();
-//                    for (int currentPage = 1; currentPage <= pageCount; currentPage++) {
-//                        searchVo.setCurrentPage(currentPage);
-//                        List<Long> idList = resourceMapper.searchAppEnvIdList(searchVo);
-//                        if (CollectionUtils.isNotEmpty(idList)) {
-//                            List<ResourceVo> resourceList = resourceMapper.searchAppEnvListByIdList(idList);
-//                            allResourceList.addAll(resourceList);
-//                        }
-//                    }
-//                    return TableResultUtil.getResult(allResourceList, searchVo);
-//                }
-//            }
-//        }
-//        return null;
     }
 }
