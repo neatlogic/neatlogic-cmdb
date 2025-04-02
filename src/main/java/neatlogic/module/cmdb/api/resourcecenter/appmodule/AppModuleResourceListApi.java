@@ -18,29 +18,23 @@ package neatlogic.module.cmdb.api.resourcecenter.appmodule;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
-import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.exception.type.ParamNotExistsException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.Resource;
 
 /**
  * @author linbq
  * @since 2021/6/17 11:54
  **/
-@Service
+//@Service
 @Deprecated
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class AppModuleResourceListApi extends PrivateApiComponentBase {
 
-    @Resource
-    private IResourceCenterResourceService resourceCenterResourceService;
+//    @Resource
+//    private IResourceCenterResourceService resourceCenterResourceService;
 
     @Override
     public String getToken() {
@@ -73,11 +67,11 @@ public class AppModuleResourceListApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONObject resultObj = new JSONObject();
-        ResourceSearchVo searchVo = paramObj.toJavaObject(ResourceSearchVo.class);
-        if (searchVo.getAppSystemId() == null && searchVo.getAppModuleId() == null) {
-            throw new ParamNotExistsException("应用id（appSystemId）", "应用模块id（appModuleId）");
-        }
-        resultObj.put("tableList", resourceCenterResourceService.getAppModuleResourceList(searchVo));
+//        ResourceSearchVo searchVo = paramObj.toJavaObject(ResourceSearchVo.class);
+//        if (searchVo.getAppSystemId() == null && searchVo.getAppModuleId() == null) {
+//            throw new ParamNotExistsException("应用id（appSystemId）", "应用模块id（appModuleId）");
+//        }
+//        resultObj.put("tableList", resourceCenterResourceService.getAppModuleResourceList(searchVo));
         return resultObj;
     }
 }

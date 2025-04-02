@@ -15,10 +15,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.service.resourcecenter.resource;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.crossover.IResourceCenterResourceCrossoverService;
-import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.AccountVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
@@ -83,43 +81,6 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
     Map<Long, List<TagVo>> getResourceTagByResourceIdList(List<Long> idList);
 
     /**
-     * 补充资产的账号信息
-     *
-     * @param idList         资产id列表
-     * @param resourceVoList 资产列表
-     */
-//    void addResourceAccount(List<Long> idList, List<ResourceVo> resourceVoList);
-
-    /**
-     * 补充资产的标签信息
-     *
-     * @param idList         资产id列表
-     * @param resourceVoList 资产列表
-     */
-//    void addResourceTag(List<Long> idList, List<ResourceVo> resourceVoList);
-
-
-    /**
-     * 获取对应模块的应用清单列表
-     * 其中清单列表有 系统 存储设备 网络设备 应用实例 应用实例集群 DB实例 DB实例集群 访问入口
-     *
-     * @param searchVo resourceSearchVo
-     * @return tableList
-     */
-    @Deprecated
-    JSONArray getAppModuleResourceList(ResourceSearchVo searchVo);
-
-    /**
-     * 获取对应的资产类型名称
-     *
-     * @param resourceCiVoList 模型列表
-     * @param resourceCiVo     模型
-     * @return 模型名称
-     */
-    @Deprecated
-    public String getResourceTypeName(List<CiVo> resourceCiVoList, CiVo resourceCiVo);
-
-    /**
      * 添加标签和账号信息
      *
      * @param resourceList
@@ -139,29 +100,6 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
      * @param resourceList
      */
     void addAccountInformation(List<ResourceVo> resourceList);
-
-//    /**
-//     * 获取模块列表
-//     *
-//     * @param searchVo resourceSearchVo
-//     * @return 模块列表
-//     */
-//    List<ResourceVo> getAppModuleList(ResourceSearchVo searchVo);
-
-
-    /**
-     * 获取应用巡检批量巡检时的环境列表（环境会包含模块列表，模块还会包含模型列表）
-     *
-     * @param searchVo resourceSearchVo
-     * @return 应用巡检批量巡检时的环境列表
-     */
-//    Collection<AppEnvVo> getAppEnvList(ResourceSearchVo searchVo);
-
-    /**
-     * 重建资源中心视图
-     * @return
-     */
-//    List<ResourceEntityVo> rebuildResourceEntity();
 
     /**
      * 构建单个视图
