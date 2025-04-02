@@ -13,16 +13,15 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
-package neatlogic.module.cmdb.api.resourcecenter.appenv;
+package neatlogic.module.cmdb.api.resourcecenter.resourcetype;
 
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB;
-import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.ResourceTypeVo;
 import neatlogic.framework.cmdb.resourcecenter.datasource.core.IResourceCenterDataSource;
 import neatlogic.framework.cmdb.resourcecenter.datasource.core.ResourceCenterDataSourceFactory;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -31,19 +30,25 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * 查询资源类型树列表接口
+ *
+ * @author linbq
+ * @since 2021/5/27 16:14
+ **/
 @Service
 @AuthAction(action = CMDB.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class ListAppEnvForSelectApi extends PrivateApiComponentBase {
+public class ResourceTypeListTreeApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "resourcecenter/appenv/list/forselect";
+        return "resourcecenter/resourcetype/listtree";
     }
 
     @Override
     public String getName() {
-        return "查询资源环境列表";
+        return "查询所有资产类型列表树";
     }
 
     @Override
@@ -52,22 +57,17 @@ public class ListAppEnvForSelectApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "默认值列表"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
-            @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
-            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true")
+            @Param(name = "keyword", type = ApiParamType.STRING, desc = "common.keyword")
     })
     @Output({
-            @Param(explode = BasePageVo.class),
-            @Param(name = "tbodyList", explode = ResourceVo[].class, desc = "资源环境列表")
+            @Param(explode = ResourceTypeVo[].class, desc = "common.tbodylist")
     })
-    @Description(desc = "查询资源环境列表")
+    @Description(desc = "nmcarr.resourcetypetreeapi.getname")
     @Override
-    public Object myDoService(JSONObject paramObj) throws Exception {
-        BasePageVo searchVo = paramObj.toJavaObject(BasePageVo.class);
+    public Object myDoService(JSONObject jsonObj) throws Exception {
+        String keyword = jsonObj.getString("keyword");
         IResourceCenterDataSource resourceCenterDataSource = ResourceCenterDataSourceFactory.getResourceCenterDataSource();
-        List<ResourceVo> tbodyList = resourceCenterDataSource.getAppEnvListForSelect(searchVo);
-        return TableResultUtil.getResult(tbodyList, searchVo);
+        List<ResourceTypeVo> tbodyList = resourceCenterDataSource.getResourceTypeListTree(keyword);
+        return TableResultUtil.getResult(tbodyList);
     }
 }

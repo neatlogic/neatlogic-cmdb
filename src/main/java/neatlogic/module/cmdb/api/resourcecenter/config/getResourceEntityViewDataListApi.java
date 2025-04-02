@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB;
+import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityConfigVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.dao.mapper.SchemaMapper;
@@ -14,6 +15,8 @@ import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import neatlogic.module.cmdb.utils.ResourceEntityFactory;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -49,6 +52,18 @@ public class getResourceEntityViewDataListApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         String name = paramObj.getString("name");
         List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(name);
+        if (CollectionUtils.isEmpty(fieldNameList)) {
+            String config = resourceEntityMapper.getResourceEntityConfigByName(name);
+            if (StringUtils.isNotBlank(config)) {
+                ResourceEntityConfigVo resourceEntityConfigVo = JSONObject.parseObject(config, ResourceEntityConfigVo.class);
+                if (resourceEntityConfigVo != null) {
+                    String sceneTemplateName = resourceEntityConfigVo.getSceneTemplateName();
+                    if (StringUtils.isNotBlank(sceneTemplateName)) {
+                        fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(sceneTemplateName);
+                    }
+                }
+            }
+        }
         JSONArray theadList = new JSONArray();
         List<String> columnNameList = schemaMapper.getTableOrViewAllColumnNameList(TenantContext.get().getDataDbName(), name);
         for (String fieldName : fieldNameList) {

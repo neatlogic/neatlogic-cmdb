@@ -32,6 +32,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </foreach>
     </select>
 
+    <select id="getResourceEntityList" resultType="neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
+        SELECT `name`, `label`, `status`, `error`, `init_time` AS initTime, `ci_id` AS ciId, `description`
+        FROM `cmdb_resourcecenter_entity`
+        WHERE `config` IS NOT NULL
+    </select>
+
     <select id="getResourceEntityConfigByName" parameterType="java.lang.String" resultType="java.lang.String">
         SELECT `config`
         FROM `cmdb_resourcecenter_entity`
@@ -51,10 +57,33 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         LIMIT #{startNum}, #{pageSize}
     </select>
 
+    <select id="getApplicationListDisplay" resultType="neatlogic.framework.cmdb.dto.resourcecenter.ApplicationListDisplayVo">
+        SELECT
+            `id`,
+            `app_system_id` AS appSystemId,
+            `app_module_id` AS appModuleId,
+            `env_id` AS envId,
+            `config` AS configStr
+        FROM `cmdb_resourcecenter_applicationlist_display`
+        WHERE `app_system_id` IS NULL
+          AND `app_module_id` IS NULL
+          AND `env_id` IS NULL
+        LIMIT 1
+    </select>
+
+    <select id="getAssetListDisplay" resultType="neatlogic.framework.cmdb.dto.resourcecenter.AssetListDisplayVo">
+        SELECT
+            `id`,
+            `root_ci_name` AS rootCiName,
+            `config` AS configStr
+        FROM `cmdb_resourcecenter_assetlist_display`
+        LIMIT 1
+    </select>
+
     <insert id="insertResourceEntity"
             parameterType="neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
         INSERT INTO cmdb_resourcecenter_entity (`name`, `label`, `status`, `error`, `init_time`, `ci_id`, `config`, `description`)
-        VALUES (#{name}, #{label}, #{status}, #{error}, NOW(3), #{ciId}, #{xml}, #{configStr} #{description})
+        VALUES (#{name}, #{label}, #{status}, #{error}, NOW(3), #{ciId}, #{configStr}, #{description})
         ON DUPLICATE KEY UPDATE
         <if test="label != null">
             `label` = #{label},
@@ -80,6 +109,43 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     <insert id="insertResourceTypeCi" parameterType="java.lang.Long">
         INSERT INTO `cmdb_resourcecenter_type_ci` (`ci_id`)
         VALUES (#{value})
+    </insert>
+
+    <insert id="insertApplicationListDisplay" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ApplicationListDisplayVo">
+        INSERT INTO `cmdb_resourcecenter_applicationlist_display` (
+            `id`,
+            `app_system_id`,
+            `app_module_id`,
+            `env_id`,
+            `config`
+        )
+        VALUES
+            (
+                #{id},
+                #{appSystemId},
+                #{appModuleId},
+                #{envId},
+                #{configStr, typeHandler=CompressHandler}
+            )
+        ON DUPLICATE KEY UPDATE
+        `config` = #{configStr, typeHandler=CompressHandler}
+    </insert>
+
+    <insert id="insertAssetListDisplay" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.AssetListDisplayVo">
+        INSERT INTO `cmdb_resourcecenter_assetlist_display` (
+            `id`,
+            `root_ci_name`,
+            `config`
+        )
+        VALUES
+            (
+                #{id},
+                #{rootCiName},
+                #{configStr, typeHandler=CompressHandler}
+            )
+        ON DUPLICATE KEY UPDATE
+        `root_ci_name` = #{rootCiName},
+        `config` = #{configStr, typeHandler=CompressHandler}
     </insert>
 
     <update id="updateResourceEntity"

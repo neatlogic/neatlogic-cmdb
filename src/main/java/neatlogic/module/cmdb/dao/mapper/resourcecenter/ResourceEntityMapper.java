@@ -16,6 +16,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 package neatlogic.module.cmdb.dao.mapper.resourcecenter;
 
 import neatlogic.framework.cmdb.crossover.IResourceEntityCrossoverMapper;
+import neatlogic.framework.cmdb.dto.resourcecenter.ApplicationListDisplayVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.AssetListDisplayVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import org.apache.ibatis.annotations.Param;
@@ -28,6 +30,8 @@ public interface ResourceEntityMapper extends IResourceEntityCrossoverMapper {
 
     List<ResourceEntityVo> getResourceEntityListByNameList(List<String> nameList);
 
+    List<ResourceEntityVo> getResourceEntityList();
+
     String getResourceEntityConfigByName(String name);
 
     List<Long> getAllResourceTypeCiIdList(ResourceSearchVo searchVo);
@@ -36,9 +40,17 @@ public interface ResourceEntityMapper extends IResourceEntityCrossoverMapper {
 
     List<Map<String, Object>> getResourceEntityViewDataList(@Param("name") String name, @Param("startNum") int startNum, @Param("pageSize") int pageSize);
 
+    ApplicationListDisplayVo getApplicationListDisplay();
+
+    AssetListDisplayVo getAssetListDisplay();
+
     void insertResourceEntity(ResourceEntityVo resourceEntityVo);
 
     void insertResourceTypeCi(Long ciId);
+
+    int insertApplicationListDisplay(ApplicationListDisplayVo applicationListDisplayVo);
+
+    int insertAssetListDisplay(AssetListDisplayVo assetListDisplayVo);
 
     void updateResourceEntity(ResourceEntityVo resourceEntityVo);
 

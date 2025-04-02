@@ -15,7 +15,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.service.resourcecenter.resource;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
@@ -24,20 +23,13 @@ import neatlogic.framework.cmdb.auth.label.CIENTITY_MODIFY;
 import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
-import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.*;
-import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityConfigVo;
-import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityFieldMappingVo;
-import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
-import neatlogic.framework.cmdb.dto.resourcecenter.config.SceneEntityVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.config.*;
 import neatlogic.framework.cmdb.dto.tag.TagVo;
 import neatlogic.framework.cmdb.enums.CmdbTenantConfig;
-import neatlogic.framework.cmdb.enums.resourcecenter.AppModuleResourceType;
-import neatlogic.framework.cmdb.enums.resourcecenter.Status;
+import neatlogic.framework.cmdb.enums.RelDirectionType;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
-import neatlogic.framework.cmdb.exception.resourcecenter.AppModuleNotFoundException;
-import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.ResourceViewFieldMappingException;
 import neatlogic.framework.cmdb.utils.ResourceViewGenerateSqlUtil;
 import neatlogic.framework.cmdb.utils.ResourceViewGenerateSqlUtilForTiDB;
@@ -50,15 +42,11 @@ import neatlogic.framework.store.mysql.DatabaseVendor;
 import neatlogic.framework.store.mysql.DatasourceManager;
 import neatlogic.framework.transaction.core.EscapeTransactionJob;
 import neatlogic.framework.util.Md5Util;
-import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper;
-import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
-import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
-import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
-import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceTagMapper;
+import neatlogic.module.cmdb.dao.mapper.resourcecenter.*;
 import neatlogic.module.cmdb.utils.ResourceEntityFactory;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
@@ -68,7 +56,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -109,13 +96,6 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 
     @Resource
     private DataBaseViewInfoMapper dataBaseViewInfoMapper;
-
-    public static final Map<String, Action<ResourceSearchVo>> searchMap = new HashMap<>();
-
-    @FunctionalInterface
-    public interface Action<T> {
-        List<ResourceVo> execute(T t);
-    }
 
     @Override
     public ResourceSearchVo assembleResourceSearchVo(JSONObject jsonObj) {
@@ -205,6 +185,49 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 //        searchVo.setIdList(resourceIdList);
         searchVo.setIsHasAuth(AuthActionChecker.check(CI_MODIFY.class, CIENTITY_MODIFY.class) || Objects.equals("0", ConfigManager.getConfig(CmdbTenantConfig.IS_RESOURCECENTER_AUTH)));
         return searchVo;
+    }
+
+    @Override
+    public void assembleResourceSearchVo(ResourceSearchVo searchVo, boolean isIncludeSon) {
+        boolean isHasAuth = AuthActionChecker.check(CI_MODIFY.class, CIENTITY_MODIFY.class);
+        Long typeId = searchVo.getTypeId();
+        List<Long> typeIdList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(searchVo.getTypeIdList())) {
+            typeIdList.addAll(searchVo.getTypeIdList());
+        }
+        if (typeId != null && !typeIdList.contains(typeId)) {
+            typeIdList.add(typeId);
+        }
+        if (CollectionUtils.isNotEmpty(typeIdList)) {
+            Set<Long> authedCiIdSet = new HashSet<>();
+            Set<Long> ciIdSet = new HashSet<>();
+            for (Long ciId : typeIdList) {
+                CiVo ciVo = ciMapper.getCiById(ciId);
+                if (ciVo == null) {
+                    throw new CiNotFoundException(ciId);
+                }
+                if (!isHasAuth) {
+                    List<CiVo> authedCiList;
+                    authedCiList = ciMapper.getDownwardCiEntityQueryCiListByLR(ciVo.getLft(), ciVo.getRht(), UserContext.get().getAuthenticationInfoVo(), searchVo.getIsHasAuth());
+                    if (CollectionUtils.isNotEmpty(authedCiList)) {
+                        if (isIncludeSon) {
+                            List<CiVo> inCludeSonCiList = ciMapper.getBatchDownwardCiListByCiList(authedCiList);
+                            Set<Long> ciIdList = inCludeSonCiList.stream().map(CiVo::getId).collect(Collectors.toSet());
+                            authedCiIdSet.addAll(ciIdList);
+                        } else {
+                            authedCiIdSet.addAll(authedCiList.stream().map(CiVo::getId).collect(Collectors.toSet()));
+                        }
+                    }
+                }
+                List<CiVo> ciList = ciMapper.getDownwardCiListByLR(ciVo.getLft(), ciVo.getRht());
+                List<Long> ciIdList = ciList.stream().map(CiVo::getId).collect(Collectors.toList());
+                ciIdSet.addAll(ciIdList);
+
+            }
+            searchVo.setAuthedTypeIdList(new ArrayList<>(authedCiIdSet));
+            searchVo.setTypeIdList(new ArrayList<>(ciIdSet));
+        }
+        searchVo.setIsHasAuth(AuthActionChecker.check(CI_MODIFY.class, CIENTITY_MODIFY.class) || Objects.equals("0", ConfigManager.getConfig(CmdbTenantConfig.IS_RESOURCECENTER_AUTH)));
     }
 
     @Override
@@ -340,46 +363,46 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         return resourceTagVoMap;
     }
 
-    @Override
-    public void addResourceAccount(List<Long> idList, List<ResourceVo> resourceVoList) {
-        Map<Long, List<AccountVo>> resourceAccountVoMap = new HashMap<>();
-        List<ResourceAccountVo> resourceAccountVoList = resourceAccountMapper.getResourceAccountListByResourceIdList(idList);
-        if (CollectionUtils.isNotEmpty(resourceAccountVoList)) {
-            Set<Long> accountIdSet = resourceAccountVoList.stream().map(ResourceAccountVo::getAccountId).collect(Collectors.toSet());
-            List<AccountVo> accountList = resourceAccountMapper.getAccountListByIdList(new ArrayList<>(accountIdSet));
-            Map<Long, AccountVo> accountMap = accountList.stream().collect(Collectors.toMap(AccountVo::getId, e -> e));
-            for (ResourceAccountVo resourceAccountVo : resourceAccountVoList) {
-                resourceAccountVoMap.computeIfAbsent(resourceAccountVo.getResourceId(), k -> new ArrayList<>()).add(accountMap.get(resourceAccountVo.getAccountId()));
-            }
-        }
-        for (ResourceVo resourceVo : resourceVoList) {
-            List<AccountVo> accountVoList = resourceAccountVoMap.get(resourceVo.getId());
-            if (CollectionUtils.isNotEmpty(accountVoList)) {
-                resourceVo.setAccountList(accountVoList);
-            }
-        }
-    }
+//    @Override
+//    public void addResourceAccount(List<Long> idList, List<ResourceVo> resourceVoList) {
+//        Map<Long, List<AccountVo>> resourceAccountVoMap = new HashMap<>();
+//        List<ResourceAccountVo> resourceAccountVoList = resourceAccountMapper.getResourceAccountListByResourceIdList(idList);
+//        if (CollectionUtils.isNotEmpty(resourceAccountVoList)) {
+//            Set<Long> accountIdSet = resourceAccountVoList.stream().map(ResourceAccountVo::getAccountId).collect(Collectors.toSet());
+//            List<AccountVo> accountList = resourceAccountMapper.getAccountListByIdList(new ArrayList<>(accountIdSet));
+//            Map<Long, AccountVo> accountMap = accountList.stream().collect(Collectors.toMap(AccountVo::getId, e -> e));
+//            for (ResourceAccountVo resourceAccountVo : resourceAccountVoList) {
+//                resourceAccountVoMap.computeIfAbsent(resourceAccountVo.getResourceId(), k -> new ArrayList<>()).add(accountMap.get(resourceAccountVo.getAccountId()));
+//            }
+//        }
+//        for (ResourceVo resourceVo : resourceVoList) {
+//            List<AccountVo> accountVoList = resourceAccountVoMap.get(resourceVo.getId());
+//            if (CollectionUtils.isNotEmpty(accountVoList)) {
+//                resourceVo.setAccountList(accountVoList);
+//            }
+//        }
+//    }
 
-    @Override
-    public void addResourceTag(List<Long> idList, List<ResourceVo> resourceVoList) {
-        Map<Long, List<TagVo>> resourceTagVoMap = new HashMap<>();
-        List<ResourceTagVo> resourceTagVoList = resourceTagMapper.getResourceTagListByResourceIdList(idList);
-        if (CollectionUtils.isNotEmpty(resourceTagVoList)) {
-            Set<Long> tagIdSet = resourceTagVoList.stream().map(ResourceTagVo::getTagId).collect(Collectors.toSet());
-            List<TagVo> tagList = resourceTagMapper.getTagListByIdList(new ArrayList<>(tagIdSet));
-            Map<Long, TagVo> tagMap = tagList.stream().collect(Collectors.toMap(TagVo::getId, e -> e));
-            for (ResourceTagVo resourceTagVo : resourceTagVoList) {
-                resourceTagVoMap.computeIfAbsent(resourceTagVo.getResourceId(), k -> new ArrayList<>()).add(tagMap.get(resourceTagVo.getTagId()));
-            }
-        }
-
-        for (ResourceVo resourceVo : resourceVoList) {
-            List<TagVo> tagVoList = resourceTagVoMap.get(resourceVo.getId());
-            if (CollectionUtils.isNotEmpty(tagVoList)) {
-                resourceVo.setTagList(tagVoList.stream().map(TagVo::getName).collect(Collectors.toList()));
-            }
-        }
-    }
+//    @Override
+//    public void addResourceTag(List<Long> idList, List<ResourceVo> resourceVoList) {
+//        Map<Long, List<TagVo>> resourceTagVoMap = new HashMap<>();
+//        List<ResourceTagVo> resourceTagVoList = resourceTagMapper.getResourceTagListByResourceIdList(idList);
+//        if (CollectionUtils.isNotEmpty(resourceTagVoList)) {
+//            Set<Long> tagIdSet = resourceTagVoList.stream().map(ResourceTagVo::getTagId).collect(Collectors.toSet());
+//            List<TagVo> tagList = resourceTagMapper.getTagListByIdList(new ArrayList<>(tagIdSet));
+//            Map<Long, TagVo> tagMap = tagList.stream().collect(Collectors.toMap(TagVo::getId, e -> e));
+//            for (ResourceTagVo resourceTagVo : resourceTagVoList) {
+//                resourceTagVoMap.computeIfAbsent(resourceTagVo.getResourceId(), k -> new ArrayList<>()).add(tagMap.get(resourceTagVo.getTagId()));
+//            }
+//        }
+//
+//        for (ResourceVo resourceVo : resourceVoList) {
+//            List<TagVo> tagVoList = resourceTagVoMap.get(resourceVo.getId());
+//            if (CollectionUtils.isNotEmpty(tagVoList)) {
+//                resourceVo.setTagList(tagVoList.stream().map(TagVo::getName).collect(Collectors.toList()));
+//            }
+//        }
+//    }
 
     /**
      * 获取对应模块的应用清单列表
@@ -388,155 +411,133 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
      * @param searchVo
      * @return
      */
-    @Override
-    public JSONArray getAppModuleResourceList(ResourceSearchVo searchVo) {
-        JSONArray tableList = new JSONArray();
-        List<CiVo> resourceCiVoList = ciMapper.getCiListByNameList(AppModuleResourceType.getNameList());
-        List<Long> resourceTypeIdList = new ArrayList<>();
-        Long appSystemId = searchVo.getAppSystemId();
-        Long appModuleId = searchVo.getAppModuleId();
-        Long typeId = searchVo.getTypeId();
-        if (typeId != null) {
-            CiVo ciVo = ciMapper.getCiById(typeId);
-            if (ciVo == null) {
-                throw new CiNotFoundException(typeId);
-            }
-            resourceTypeIdList.add(typeId);
-        } else if (CollectionUtils.isNotEmpty(searchVo.getTypeIdList())) {
-            resourceTypeIdList.addAll(searchVo.getTypeIdList());
-            searchVo.setTypeIdList(null);
-        } else if (appModuleId != null) {
-            CiEntityVo ciEntityVo = ciEntityMapper.getCiEntityBaseInfoById(appModuleId);
-            if (ciEntityVo == null) {
-                throw new AppModuleNotFoundException(appModuleId);
-            }
-            Set<Long> resourceTypeIdSet = resourceMapper.getIpObjectResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
-            resourceTypeIdList.addAll(resourceTypeIdSet);
-            if (CollectionUtils.isNotEmpty(resourceTypeIdSet)) {
-                resourceTypeIdSet = resourceMapper.getOsResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
-                resourceTypeIdList.addAll(resourceTypeIdSet);
-            }
-        } else if (appSystemId != null) {
-            CiEntityVo ciEntityVo = ciEntityMapper.getCiEntityBaseInfoById(appSystemId);
-            if (ciEntityVo == null) {
-                throw new AppSystemNotFoundException(appSystemId);
-            }
-            Set<Long> resourceTypeIdSet = resourceMapper.getIpObjectResourceTypeIdListByAppSystemIdAndEnvId(searchVo);
-            resourceTypeIdList.addAll(resourceTypeIdSet);
-            if (CollectionUtils.isNotEmpty(resourceTypeIdSet)) {
-                resourceTypeIdSet = resourceMapper.getOsResourceTypeIdListByAppSystemIdAndEnvId(searchVo);
-                resourceTypeIdList.addAll(resourceTypeIdSet);
-            }
-        }
+//    @Deprecated
+//    @Override
+//    public JSONArray getAppModuleResourceList(ResourceSearchVo searchVo) {
+//        JSONArray tableList = new JSONArray();
+//        List<CiVo> resourceCiVoList = ciMapper.getCiListByNameList(AppModuleResourceType.getNameList());
+//        List<Long> resourceTypeIdList = new ArrayList<>();
+//        Long appSystemId = searchVo.getAppSystemId();
+//        Long appModuleId = searchVo.getAppModuleId();
+//        Long typeId = searchVo.getTypeId();
+//        if (typeId != null) {
+//            CiVo ciVo = ciMapper.getCiById(typeId);
+//            if (ciVo == null) {
+//                throw new CiNotFoundException(typeId);
+//            }
+//            resourceTypeIdList.add(typeId);
+//        } else if (CollectionUtils.isNotEmpty(searchVo.getTypeIdList())) {
+//            resourceTypeIdList.addAll(searchVo.getTypeIdList());
+//            searchVo.setTypeIdList(null);
+//        } else if (appModuleId != null) {
+//            CiEntityVo ciEntityVo = ciEntityMapper.getCiEntityBaseInfoById(appModuleId);
+//            if (ciEntityVo == null) {
+//                throw new AppModuleNotFoundException(appModuleId);
+//            }
+//            Set<Long> resourceTypeIdSet = resourceTempMapper.getIpObjectResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
+//            resourceTypeIdList.addAll(resourceTypeIdSet);
+//            if (CollectionUtils.isNotEmpty(resourceTypeIdSet)) {
+//                resourceTypeIdSet = resourceTempMapper.getOsResourceTypeIdListByAppModuleIdAndEnvId(searchVo);
+//                resourceTypeIdList.addAll(resourceTypeIdSet);
+//            }
+//        } else if (appSystemId != null) {
+//            CiEntityVo ciEntityVo = ciEntityMapper.getCiEntityBaseInfoById(appSystemId);
+//            if (ciEntityVo == null) {
+//                throw new AppSystemNotFoundException(appSystemId);
+//            }
+//            Set<Long> resourceTypeIdSet = resourceTempMapper.getIpObjectResourceTypeIdListByAppSystemIdAndEnvId(searchVo);
+//            resourceTypeIdList.addAll(resourceTypeIdSet);
+//            if (CollectionUtils.isNotEmpty(resourceTypeIdSet)) {
+//                resourceTypeIdSet = resourceTempMapper.getOsResourceTypeIdListByAppSystemIdAndEnvId(searchVo);
+//                resourceTypeIdList.addAll(resourceTypeIdSet);
+//            }
+//        }
+//
+//        if (CollectionUtils.isNotEmpty(resourceTypeIdList)) {
+//            List<CiVo> ciList = ciMapper.getAllCi(resourceTypeIdList);
+//            for (CiVo ciVo : ciList) {
+//                ResourceTypeVo resourceTypeVo = new ResourceTypeVo(ciVo.getId(), ciVo.getParentCiId(), ciVo.getLabel(), ciVo.getName());
+//                String resourceTypeName = getResourceTypeName(resourceCiVoList, ciVo);
+//                if (StringUtils.isBlank(resourceTypeName)) {
+//                    continue;
+//                }
+//                String actionKey = AppModuleResourceType.getAction(resourceTypeName);
+//                if (StringUtils.isBlank(actionKey)) {
+//                    continue;
+//                }
+//                searchVo.setTypeId(ciVo.getId());
+//                List<ResourceVo> returnList = searchMap.get(actionKey).execute(searchVo);
+//                if (CollectionUtils.isNotEmpty(returnList)) {
+//                    JSONObject tableObj = TableResultUtil.getResult(returnList, searchVo);
+//                    tableObj.put("type", resourceTypeVo);
+//                    tableList.add(tableObj);
+//                }
+//            }
+//        }
+//        return tableList;
+//    }
 
-        if (CollectionUtils.isNotEmpty(resourceTypeIdList)) {
-            List<CiVo> ciList = ciMapper.getAllCi(resourceTypeIdList);
-            for (CiVo ciVo : ciList) {
-                ResourceTypeVo resourceTypeVo = new ResourceTypeVo(ciVo.getId(), ciVo.getParentCiId(), ciVo.getLabel(), ciVo.getName());
-                String resourceTypeName = getResourceTypeName(resourceCiVoList, ciVo);
-                if (StringUtils.isBlank(resourceTypeName)) {
-                    continue;
-                }
-                String actionKey = AppModuleResourceType.getAction(resourceTypeName);
-                if (StringUtils.isBlank(actionKey)) {
-                    continue;
-                }
-                searchVo.setTypeId(ciVo.getId());
-                List<ResourceVo> returnList = searchMap.get(actionKey).execute(searchVo);
-                if (CollectionUtils.isNotEmpty(returnList)) {
-                    JSONObject tableObj = TableResultUtil.getResult(returnList, searchVo);
-                    tableObj.put("type", resourceTypeVo);
-                    tableList.add(tableObj);
-                }
-            }
-        }
-        return tableList;
-    }
-
-    @PostConstruct
-    public void searchDispatcherInit() {
-        searchMap.put("ipObject", (searchVo) -> {
-            int rowNum = resourceMapper.getIpObjectResourceCountByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(searchVo);
-            if (rowNum > 0) {
-                searchVo.setRowNum(rowNum);
-                List<Long> idList = resourceMapper.getIpObjectResourceIdListByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(searchVo);
-                if (CollectionUtils.isNotEmpty(idList)) {
-                    return resourceMapper.getResourceListByIdList(idList);
-                }
-            }
-            return new ArrayList<>();
-        });
-
-        searchMap.put("OS", (searchVo) -> {
-            int rowNum = resourceMapper.getOsResourceCountByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(searchVo);
-            if (rowNum > 0) {
-                searchVo.setRowNum(rowNum);
-                List<Long> idList = resourceMapper.getOsResourceIdListByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(searchVo);
-                if (CollectionUtils.isNotEmpty(idList)) {
-                    return resourceMapper.getOsResourceListByIdList(idList);
-                }
-            }
-            return new ArrayList<>();
-        });
-
-//        searchMap.put("StorageDevice", (searchVo) -> {
-//            int rowNum = resourceCenterMapper.getStorageResourceCount(searchVo);
+//    @PostConstruct
+//    @Deprecated
+//    public void searchDispatcherInit() {
+//        searchMap.put("ipObject", (searchVo) -> {
+//            int rowNum = resourceTempMapper.getIpObjectResourceCountByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(searchVo);
 //            if (rowNum > 0) {
 //                searchVo.setRowNum(rowNum);
-//                List<Long> idList = resourceCenterMapper.getStorageResourceIdList(searchVo);
+//                List<Long> idList = resourceTempMapper.getIpObjectResourceIdListByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(searchVo);
 //                if (CollectionUtils.isNotEmpty(idList)) {
-//                    return resourceCenterMapper.getStorageResourceListByIdList(idList, TenantContext.get().getDataDbName());
+//                    return resourceMapper.getResourceListByIdList(idList);
 //                }
 //            }
 //            return new ArrayList<>();
 //        });
 //
-//        searchMap.put("NetworkDevice", (searchVo) -> {
-//            int rowNum = resourceCenterMapper.getNetDevResourceCount(searchVo);
+//        searchMap.put("OS", (searchVo) -> {
+//            int rowNum = resourceTempMapper.getOsResourceCountByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(searchVo);
 //            if (rowNum > 0) {
 //                searchVo.setRowNum(rowNum);
-//                List<Long> idList = resourceCenterMapper.getNetDevResourceIdList(searchVo);
+//                List<Long> idList = resourceTempMapper.getOsResourceIdListByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(searchVo);
 //                if (CollectionUtils.isNotEmpty(idList)) {
-//                    return resourceCenterMapper.getNetDevResourceListByIdList(idList, TenantContext.get().getDataDbName());
+//                    return resourceTempMapper.getOsResourceListByIdList(idList);
 //                }
 //            }
 //            return new ArrayList<>();
 //        });
-
-        searchMap.put("APPIns", (searchVo) -> {
-            int rowNum = resourceMapper.getIpObjectResourceCountByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(searchVo);
-            if (rowNum > 0) {
-                searchVo.setRowNum(rowNum);
-                List<Long> idList = resourceMapper.getIpObjectResourceIdListByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(searchVo);
-                if (CollectionUtils.isNotEmpty(idList)) {
-                    return resourceMapper.getAppInstanceResourceListByIdList(idList);
-                }
-            }
-            return new ArrayList<>();
-        });
-
-        searchMap.put("DBIns", (searchVo) -> {
-            int rowNum = resourceMapper.getIpObjectResourceCountByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(searchVo);
-            if (rowNum > 0) {
-                searchVo.setRowNum(rowNum);
-                List<Long> idList = resourceMapper.getIpObjectResourceIdListByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(searchVo);
-                if (CollectionUtils.isNotEmpty(idList)) {
-                    return resourceMapper.getDbInstanceResourceListByIdList(idList);
-                }
-            }
-            return new ArrayList<>();
-        });
-
-    }
-
-    public String getResourceTypeName(List<CiVo> resourceCiVoList, CiVo resourceCiVo) {
-        for (CiVo ciVo : resourceCiVoList) {
-            if (ciVo.getLft() <= resourceCiVo.getLft() && ciVo.getRht() >= resourceCiVo.getRht()) {
-                return ciVo.getName();
-            }
-        }
-        return null;
-    }
+//
+//        searchMap.put("APPIns", (searchVo) -> {
+//            int rowNum = resourceTempMapper.getIpObjectResourceCountByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(searchVo);
+//            if (rowNum > 0) {
+//                searchVo.setRowNum(rowNum);
+//                List<Long> idList = resourceTempMapper.getIpObjectResourceIdListByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(searchVo);
+//                if (CollectionUtils.isNotEmpty(idList)) {
+//                    return resourceMapper.getResourceListByIdList(idList);
+//                }
+//            }
+//            return new ArrayList<>();
+//        });
+//
+//        searchMap.put("DBIns", (searchVo) -> {
+//            int rowNum = resourceTempMapper.getIpObjectResourceCountByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(searchVo);
+//            if (rowNum > 0) {
+//                searchVo.setRowNum(rowNum);
+//                List<Long> idList = resourceTempMapper.getIpObjectResourceIdListByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(searchVo);
+//                if (CollectionUtils.isNotEmpty(idList)) {
+//                    return resourceTempMapper.getDbInstanceResourceListByIdList(idList);
+//                }
+//            }
+//            return new ArrayList<>();
+//        });
+//
+//    }
+//    @Deprecated
+//    public String getResourceTypeName(List<CiVo> resourceCiVoList, CiVo resourceCiVo) {
+//        for (CiVo ciVo : resourceCiVoList) {
+//            if (ciVo.getLft() <= resourceCiVo.getLft() && ciVo.getRht() >= resourceCiVo.getRht()) {
+//                return ciVo.getName();
+//            }
+//        }
+//        return null;
+//    }
 
     /**
      * 添加标签和账号信息
@@ -561,188 +562,48 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
     }
 
     @Override
-    public List<ResourceVo> getAppModuleList(ResourceSearchVo searchVo) {
-        int count = resourceMapper.searchAppModuleCount(searchVo);
-        if (count > 0) {
-            searchVo.setRowNum(count);
-            List<Long> idList = resourceMapper.searchAppModuleIdList(searchVo);
-            if (CollectionUtils.isNotEmpty(idList)) {
-                return resourceMapper.searchAppModule(idList);
+    public void addTagInformation(List<ResourceVo> resourceList) {
+        List<Long> idList = resourceList.stream().filter(Objects::nonNull).map(ResourceVo::getId).filter(Objects::nonNull).collect(Collectors.toList());
+        Map<Long, List<TagVo>> tagMap = getResourceTagByResourceIdList(idList);
+        for (ResourceVo resourceVo : resourceList) {
+            List<TagVo> tagList = tagMap.get(resourceVo.getId());
+            if (CollectionUtils.isNotEmpty(tagList)) {
+                resourceVo.setTagList(tagList.stream().map(TagVo::getName).collect(Collectors.toList()));
             }
         }
-        return new ArrayList<>();
     }
 
     @Override
-    public Collection<AppEnvVo> getAppEnvList(ResourceSearchVo searchVo) {
-        CiEntityVo ciEntityVo = ciEntityMapper.getCiEntityBaseInfoById(searchVo.getAppSystemId());
-        if (ciEntityVo == null) {
-            throw new AppSystemNotFoundException(searchVo.getAppSystemId());
-        }
-        Set<Long> resourceTypeIdSet = resourceMapper.getIpObjectResourceTypeIdListByAppSystemIdAndEnvId(searchVo);
-        List<Long> resourceTypeIdList = new ArrayList<>(resourceTypeIdSet);
-        if (CollectionUtils.isNotEmpty(resourceTypeIdSet)) {
-            resourceTypeIdSet = resourceMapper.getOsResourceTypeIdListByAppSystemIdAndEnvId(searchVo);
-            resourceTypeIdList.addAll(resourceTypeIdSet);
-        }
-
-        if (CollectionUtils.isNotEmpty(resourceTypeIdList)) {
-            Map<Long, AppEnvVo> returnEnvMap = new HashMap<>();
-            Map<Long, Set<Long>> envIdModuleIdSetMap = new HashMap<>();
-            Map<Long, List<AppModuleVo>> envIdModuleListMap = new HashMap<>();
-            Map<Long, Set<Long>> envModuleIdCiIdSetMap = new HashMap<>();
-            Map<Long, List<CiVo>> envModuleIdCiListMap = new HashMap<>();
-            List<CiVo> ciList = ciMapper.getAllCi(resourceTypeIdList);
-            List<CiVo> resourceCiVoList = ciMapper.getCiListByNameList(AppModuleResourceType.getNameList());
-
-            for (CiVo ciVo : ciList) {
-                List<AppEnvVo> appEnvList = new ArrayList<>();
-                String resourceTypeName = getResourceTypeName(resourceCiVoList, ciVo);
-                if (StringUtils.isBlank(resourceTypeName)) {
-                    continue;
-                }
-                String actionKey = AppModuleResourceType.getAction(resourceTypeName);
-                if (StringUtils.isBlank(actionKey)) {
-                    continue;
-                }
-                searchVo.setTypeId(ciVo.getId());
-                if (actionKey.equals("OS")) {
-                    appEnvList.addAll(resourceMapper.getOsEnvListByAppSystemIdAndTypeId(searchVo));
-                } else {
-                    appEnvList.addAll(resourceMapper.getIpObjectEnvListByAppSystemIdAndTypeId(searchVo));
-                }
-
-                /*数据处理
-                1、returnEnvMap           环境List
-                2、envIdModuleIdSetMap    环境id对应的 模块id列表
-                3、envModuleIdCiIdSetMap  环境id+模块id对应的 模型id列表
-                 */
-                if (CollectionUtils.isNotEmpty(appEnvList)) {
-                    for (AppEnvVo envVo : appEnvList) {
-                        //未配置情况，环境id设为-2，因为id为-1的一般都是代表 所有 的意思
-                        if (envVo.getId() == null) {
-                            envVo.setId(-2L);
-                            envVo.setName("未配置");
-                            envVo.setSeqNo(9999);
-                        }
-                        Long envId = envVo.getId();
-                        returnEnvMap.put(envId, envVo);
-                        List<AppModuleVo> appModuleList = envVo.getAppModuleList();
-                        Set<Long> appModuleIdSet = appModuleList.stream().map(AppModuleVo::getId).collect(Collectors.toSet());
-                        if (envIdModuleIdSetMap.containsKey(envId)) {
-                            for (AppModuleVo moduleVo : appModuleList) {
-                                if (envIdModuleIdSetMap.get(envId).contains(moduleVo.getId())) {
-                                    List<CiVo> ciVoList = moduleVo.getCiList();
-                                    for (CiVo ci : ciVoList) {
-                                        if (CollectionUtils.isNotEmpty(envModuleIdCiIdSetMap.get(envId + moduleVo.getId())) && !envModuleIdCiIdSetMap.get(envId + moduleVo.getId()).contains(ci.getId())) {
-                                            envModuleIdCiIdSetMap.get(envId + moduleVo.getId()).add(ci.getId());
-                                            envModuleIdCiListMap.get(envId + moduleVo.getId()).add(ci);
-                                        }
-                                    }
-                                } else {
-                                    envIdModuleIdSetMap.get(envId).add(moduleVo.getId());
-                                    envIdModuleListMap.get(envId).add(moduleVo);
-                                    envModuleIdCiIdSetMap.put(envId + moduleVo.getId(), moduleVo.getCiList().stream().map(CiVo::getId).collect(Collectors.toSet()));
-                                    envModuleIdCiListMap.put(envId + moduleVo.getId(), moduleVo.getCiList());
-                                }
-                            }
-                            envIdModuleIdSetMap.get(envId).addAll(appModuleIdSet);
-                        } else {
-                            envIdModuleIdSetMap.put(envId, appModuleIdSet);
-                            envIdModuleListMap.put(envId, appModuleList);
-                            for (AppModuleVo moduleVo : appModuleList) {
-                                envModuleIdCiIdSetMap.put(envId + moduleVo.getId(), moduleVo.getCiList().stream().map(CiVo::getId).collect(Collectors.toSet()));
-                                envModuleIdCiListMap.put(envId + moduleVo.getId(), moduleVo.getCiList());
-                            }
-                        }
-                    }
-                }
+    public void addAccountInformation(List<ResourceVo> resourceList) {
+        List<Long> idList = resourceList.stream().map(ResourceVo::getId).collect(Collectors.toList());
+        Map<Long, List<AccountVo>> accountMap = getResourceAccountByResourceIdList(idList);
+        for (ResourceVo resourceVo : resourceList) {
+            List<AccountVo> accountList = accountMap.get(resourceVo.getId());
+            if (CollectionUtils.isNotEmpty(accountList)) {
+                resourceVo.setAccountList(accountList);
             }
-            for (Map.Entry<Long, AppEnvVo> entry : returnEnvMap.entrySet()) {
-                List<AppModuleVo> appModuleVoList = envIdModuleListMap.get(entry.getKey());
-                for (AppModuleVo appModuleVo : appModuleVoList) {
-                    List<CiVo> ciVoList = envModuleIdCiListMap.get(entry.getKey() + appModuleVo.getId());
-                    appModuleVo.setCiList(ciVoList);
-                }
-                entry.getValue().setAppModuleList(appModuleVoList);
-            }
-            return returnEnvMap.values().stream().sorted(Comparator.comparing(AppEnvVo::getSeqNo)).collect(Collectors.toList());
         }
-        return null;
     }
 
     @Override
-    public List<ResourceEntityVo> rebuildResourceEntity() {
-        List<String> viewNameList = ResourceEntityFactory.getViewNameList();
-        List<ResourceEntityVo> resourceEntityList = resourceEntityMapper.getResourceEntityListByNameList(viewNameList);
-        for (ResourceEntityVo resourceEntityVo : resourceEntityList) {
-//            resourceEntityVo.setError("");
-//            resourceEntityVo.setStatus(Status.PENDING.getValue());
-//            resourceEntityMapper.updateResourceEntityStatusAndError(resourceEntityVo);
-//            String xml = resourceEntityMapper.getResourceEntityXmlByName(resourceEntityVo.getName());
-//            if (StringUtils.isNotBlank(xml)) {
-//                resourceEntityVo.setXml(xml);
-//                ResourceEntityViewBuilder builder = new ResourceEntityViewBuilder(resourceEntityVo);
-//                builder.buildView();
-//            }
-            String config = resourceEntityMapper.getResourceEntityConfigByName(resourceEntityVo.getName());
-            resourceEntityVo.setConfigStr(config);
-            String error = buildResourceView(resourceEntityVo.getName(), resourceEntityVo.getConfig());
-            resourceEntityVo.setError(error);
-            if (StringUtils.isNotBlank(error)) {
-                resourceEntityVo.setStatus(Status.ERROR.getValue());
-            } else {
-                resourceEntityVo.setStatus(Status.READY.getValue());
-            }
-            resourceEntityMapper.updateResourceEntityStatusAndError(resourceEntityVo);
-        }
-        List<SceneEntityVo> sceneEntityList = ResourceEntityFactory.getSceneEntityList();
-        for (SceneEntityVo sceneEntityVo : sceneEntityList) {
-            String viewName = sceneEntityVo.getName();
-            String tableType = schemaMapper.checkTableOrViewIsExists(TenantContext.get().getDataDbName(), viewName);
-            if (tableType == null) {
-                List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
-                Table table = new Table();
-                table.setName(viewName);
-                table.setSchemaName(TenantContext.get().getDataDbName());
-                List<ColumnDefinition> columnDefinitions = new ArrayList<>();
-                for (String columnName : fieldNameList) {
-                    ColumnDefinition columnDefinition = new ColumnDefinition();
-                    columnDefinition.setColumnName(columnName);
-                    columnDefinition.setColDataType(new ColDataType("int"));
-                    columnDefinitions.add(columnDefinition);
-                }
-                CreateTable createTable = new CreateTable();
-                createTable.setTable(table);
-                createTable.setColumnDefinitions(columnDefinitions);
-                createTable.setIfNotExists(true);
-                EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
-                    schemaMapper.insertView(createTable.toString());
-                }).execute();
-            }
-        }
-        resourceEntityList = resourceEntityMapper.getResourceEntityListByNameList(viewNameList);
-        Map<String, ResourceEntityVo> resourceEntityVoMap = resourceEntityList.stream().collect(Collectors.toMap(e -> e.getName(), e -> e));
-        List<ResourceEntityVo> resultList = new ArrayList<>();
-        for (SceneEntityVo sceneEntityVo : sceneEntityList) {
-            ResourceEntityVo resourceEntityVo = resourceEntityVoMap.get(sceneEntityVo.getName());
-            if (resourceEntityVo == null) {
-                resourceEntityVo = new ResourceEntityVo();
-                resourceEntityVo.setName(sceneEntityVo.getName());
-                resourceEntityVo.setLabel(sceneEntityVo.getLabel());
-                resourceEntityVo.setStatus(Status.PENDING.getValue());
-            }
-            resultList.add(resourceEntityVo);
-        }
-        return resultList;
-    }
-
-    @Override
-    public String buildResourceView(String viewName, ResourceEntityConfigVo originalConfig) {
+    public String buildResourceView(ResourceEntityVo resourceEntityVo) {
+        String viewName = resourceEntityVo.getName();
+        ResourceEntityConfigVo originalConfig = resourceEntityVo.getConfig();
+        String select = null;
         String error = StringUtils.EMPTY;
         try {
-            ResourceEntityConfigVo config = fieldMappingCheckValidityAndFillIdData(viewName, originalConfig);
-            String select = null;
+            List<ResourceEntityRelLinkVo> relLinkList = getRelLinkListByRelNode(originalConfig.getRelNode());
+            originalConfig.setRelLinkList(relLinkList);
+            List<ResourceEntityLeftJoinVo> leftJoinList = getLeftJoinList(originalConfig);
+            List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
+            if (CollectionUtils.isEmpty(fieldNameList)) {
+                String sceneTemplateName = originalConfig.getSceneTemplateName();
+                if (StringUtils.isNotBlank(sceneTemplateName)) {
+                    fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(sceneTemplateName);
+                }
+            }
+            ResourceEntityConfigVo config = fieldMappingCheckValidityAndFillIdData(viewName, fieldNameList, originalConfig);
+            config.setLeftJoinList(leftJoinList);
             if (Objects.equals(DatasourceManager.getDatabaseId(), DatabaseVendor.TIDB.getDatabaseId())) {
                 ResourceViewGenerateSqlUtilForTiDB resourceViewGenerateSqlUtilForTiDB = new ResourceViewGenerateSqlUtilForTiDB(config);
                 select = resourceViewGenerateSqlUtilForTiDB.getSql();
@@ -791,29 +652,30 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             if (StringUtils.isNotBlank(error)) {
                 String tableType = schemaMapper.checkTableOrViewIsExists(TenantContext.get().getDataDbName(), viewName);
                 if (!Objects.equals(tableType, "BASE TABLE")) {
-                    schemaMapper.deleteView(TenantContext.get().getDataDbName() + "." + viewName);
-                    List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
-                    Table table = new Table();
-                    table.setName(viewName);
-                    table.setSchemaName(TenantContext.get().getDataDbName());
-                    List<ColumnDefinition> columnDefinitions = new ArrayList<>();
-                    for (String columnName : fieldNameList) {
-                        ColumnDefinition columnDefinition = new ColumnDefinition();
-                        columnDefinition.setColumnName(columnName);
-                        columnDefinition.setColDataType(new ColDataType("int"));
-                        columnDefinitions.add(columnDefinition);
-                    }
-                    CreateTable createTable = new CreateTable();
-                    createTable.setTable(table);
-                    createTable.setColumnDefinitions(columnDefinitions);
-                    createTable.setIfNotExists(true);
                     EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
+                        schemaMapper.deleteView(TenantContext.get().getDataDbName() + "." + viewName);
+                        List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
+                        Table table = new Table();
+                        table.setName(viewName);
+                        table.setSchemaName(TenantContext.get().getDataDbName());
+                        List<ColumnDefinition> columnDefinitions = new ArrayList<>();
+                        for (String columnName : fieldNameList) {
+                            ColumnDefinition columnDefinition = new ColumnDefinition();
+                            columnDefinition.setColumnName(columnName);
+                            columnDefinition.setColDataType(new ColDataType("int"));
+                            columnDefinitions.add(columnDefinition);
+                        }
+                        CreateTable createTable = new CreateTable();
+                        createTable.setTable(table);
+                        createTable.setColumnDefinitions(columnDefinitions);
+                        createTable.setIfNotExists(true);
                         schemaMapper.insertView(createTable.toString());
                     }).execute();
                 }
+                resourceEntityVo.setError(error);
             }
         }
-        return error;
+        return select;
     }
 
     /**
@@ -823,13 +685,12 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
      * @param config
      * @return
      */
-    private ResourceEntityConfigVo fieldMappingCheckValidityAndFillIdData(String viewName, ResourceEntityConfigVo config) {
+    private ResourceEntityConfigVo fieldMappingCheckValidityAndFillIdData(String viewName, List<String> fieldNameList, ResourceEntityConfigVo config) {
         ResourceEntityConfigVo newConfig = new ResourceEntityConfigVo();
         String mainCi = config.getMainCi();
         if (StringUtils.isBlank(mainCi)) {
             throw new ResourceViewFieldMappingException(viewName);
         }
-        List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
         List<ResourceEntityFieldMappingVo> fieldMappingList = config.getFieldMappingList();
         if (CollectionUtils.isEmpty(fieldMappingList)) {
             throw new ResourceViewFieldMappingException(viewName, fieldNameList);
@@ -991,6 +852,82 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                         }
                     }
                 }
+            } else if (Objects.equals(type, "newRel")) {
+                String uuid = fieldMappingVo.getUuid();
+                String ciName = fieldMappingVo.getCiName();
+                String attr = fieldMappingVo.getAttr();
+                if (StringUtils.isBlank(attr)) {
+                    throw new ResourceViewFieldMappingException(viewName, field, "attr", attr);
+                }
+                List<ResourceEntityRelLinkVo> relLinkList = config.getRelLinkList();
+                if (CollectionUtils.isNotEmpty(relLinkList)) {
+                    for (ResourceEntityRelLinkVo relLinkVo : relLinkList) {
+                        if (Objects.equals(relLinkVo.getRightUuid(), uuid)) {
+                            CiVo rightCiVo = ciMapper.getCiByName(ciName);
+                            if (rightCiVo == null) {
+                                throw new ResourceViewFieldMappingException(viewName, field, "ciName", ciName);
+                            }
+                            newFieldMappingVo.setType("rel");
+                            newFieldMappingVo.setDirection(relLinkVo.getDirection());
+                            if (Objects.equals(relLinkVo.getDirection(), RelDirectionType.FROM.getValue())) {
+                                CiVo fromCiVo = rightCiVo;
+                                newFieldMappingVo.setFromCi(fromCiVo.getName());
+                                newFieldMappingVo.setFromCiId(fromCiVo.getId());
+                                String fromAttr = attr;
+                                newFieldMappingVo.setFromAttr(fromAttr);
+                                if (!defaultAttrList.contains(fromAttr)) {
+                                    AttrVo fromAttrVo = getAttrVo(fromCiVo, fromAttr);
+                                    if (fromAttrVo == null) {
+                                        throw new ResourceViewFieldMappingException(viewName, field, "attr", attr);
+                                    }
+                                    if (fromAttrVo.getTargetCiId() != null) {
+                                        throw new ResourceViewFieldMappingException(viewName, field, "attr", attr);
+                                    }
+                                    newFieldMappingVo.setFromAttrId(fromAttrVo.getId());
+                                    newFieldMappingVo.setFromAttrCiId(fromAttrVo.getCiId());
+                                }
+                                newFieldMappingVo.setFromCiAlias(relLinkVo.getRightCiAlias());
+
+                                String toCi = relLinkVo.getLeftCi();
+                                CiVo toCiVo = ciMapper.getCiByName(toCi);
+                                newFieldMappingVo.setToCi(toCiVo.getName());
+                                newFieldMappingVo.setToCiId(toCiVo.getId());
+                                newFieldMappingVo.setToCiIsVirtual(toCiVo.getIsVirtual());
+                                newFieldMappingVo.setToCiAlias(relLinkVo.getLeftCiAlias());
+                            } else if (Objects.equals(relLinkVo.getDirection(), RelDirectionType.TO.getValue())) {
+                                CiVo toCiVo = rightCiVo;
+                                newFieldMappingVo.setToCi(toCiVo.getName());
+                                newFieldMappingVo.setToCiId(toCiVo.getId());
+                                newFieldMappingVo.setToCiIsVirtual(toCiVo.getIsVirtual());
+                                newFieldMappingVo.setToCiAlias(relLinkVo.getRightCiAlias());
+                                String toAttr = attr;
+                                if (StringUtils.isBlank(toAttr)) {
+                                    newFieldMappingVo.setToAttr("_id");
+                                } else {
+                                    newFieldMappingVo.setToAttr(toAttr);
+                                    if (!defaultAttrList.contains(toAttr)) {
+                                        AttrVo toAttrVo = getAttrVo(toCiVo, toAttr);
+                                        if (toAttrVo == null) {
+                                            throw new ResourceViewFieldMappingException(viewName, field, "attr", attr);
+                                        }
+                                        if (toAttrVo.getTargetCiId() != null) {
+                                            throw new ResourceViewFieldMappingException(viewName, field, "attr", attr);
+                                        }
+                                        newFieldMappingVo.setToAttrId(toAttrVo.getId());
+                                        newFieldMappingVo.setToAttrCiId(toAttrVo.getCiId());
+                                        newFieldMappingVo.setToAttrCiName(toAttrVo.getCiName());
+                                    }
+                                }
+                                String fromCi = relLinkVo.getLeftCi();
+                                CiVo fromCiVo = ciMapper.getCiByName(fromCi);
+                                newFieldMappingVo.setFromCi(fromCiVo.getName());
+                                newFieldMappingVo.setFromCiId(fromCiVo.getId());
+                                newFieldMappingVo.setFromCiAlias(relLinkVo.getLeftCiAlias());
+                            }
+                            break;
+                        }
+                    }
+                }
             } else if (Objects.equals(type, "globalAttr")) {
                 String fromCi = fieldMappingVo.getFromCi();
                 if (StringUtils.isBlank(fromCi)) {
@@ -1027,11 +964,109 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             }
             resultList.add(newFieldMappingVo);
         }
-//        if (CollectionUtils.isNotEmpty(fieldNameList)) {
-//            throw new ResourceViewFieldMappingException(viewName, fieldNameList);
-//        }
         newConfig.setFieldMappingList(resultList);
         return newConfig;
+    }
+
+    private List<ResourceEntityRelLinkVo> getRelLinkListByRelNode(ResourceEntityRelNodeVo relNode) {
+        List<ResourceEntityRelLinkVo> relLinkList = new ArrayList<>();
+        if (relNode != null) {
+            Map<String, Map<ResourceEntityRelNodeVo, String>> map = new HashMap<>();
+            List<ResourceEntityRelNodeVo> children = relNode.getChildren();
+            if (CollectionUtils.isNotEmpty(children)) {
+                for (ResourceEntityRelNodeVo child : children) {
+                    addRelLinkListByRelNode(relLinkList, relNode, child, map);
+                }
+            }
+        }
+        return relLinkList;
+    }
+
+    private void addRelLinkListByRelNode(List<ResourceEntityRelLinkVo> relLinkList, ResourceEntityRelNodeVo leftNode, ResourceEntityRelNodeVo rightNode, Map<String, Map<ResourceEntityRelNodeVo, String>> map) {
+        {
+            ResourceEntityRelLinkVo relLinkVo = new ResourceEntityRelLinkVo();
+            {
+                Map<ResourceEntityRelNodeVo, String> relNodeAliasMap = map.computeIfAbsent(leftNode.getCiName(), key -> new HashMap<>());
+                int size = relNodeAliasMap.size();
+                String alias = relNodeAliasMap.get(leftNode);
+                if (alias == null) {
+                    if (size == 0) {
+                        alias = StringUtils.EMPTY;
+                    } else {
+                        alias = "alias_" + (size + 1);
+                    }
+                    relNodeAliasMap.put(leftNode, alias);
+                }
+                relLinkVo.setLeftCi(leftNode.getCiName());
+                relLinkVo.setLeftCiAlias(alias);
+            }
+            {
+                Map<ResourceEntityRelNodeVo, String> relNodeAliasMap = map.computeIfAbsent(rightNode.getCiName(), key -> new HashMap<>());
+                int size = relNodeAliasMap.size();
+                String alias = relNodeAliasMap.get(rightNode);
+                if (alias == null) {
+                    if (size == 0) {
+                        alias = StringUtils.EMPTY;
+                    } else {
+                        alias = "_alias_" + (size + 1);
+                    }
+                    relNodeAliasMap.put(rightNode, alias);
+                }
+                relLinkVo.setRightCi(rightNode.getCiName());
+                relLinkVo.setRightCiAlias(alias);
+                relLinkVo.setRightUuid(rightNode.getUuid());
+            }
+            relLinkVo.setDirection(rightNode.getDirection());
+            relLinkList.add(relLinkVo);
+        }
+        List<ResourceEntityRelNodeVo> children = rightNode.getChildren();
+        if (CollectionUtils.isNotEmpty(children)) {
+            for (ResourceEntityRelNodeVo child : children) {
+                addRelLinkListByRelNode(relLinkList, rightNode, child, map);
+            }
+        }
+    }
+
+    private List<ResourceEntityLeftJoinVo> getLeftJoinList(ResourceEntityConfigVo config) {
+        List<ResourceEntityLeftJoinVo> resultList = new ArrayList<>();
+        List<ResourceEntityRelLinkVo> relLinkList = config.getRelLinkList();
+        if (CollectionUtils.isNotEmpty(relLinkList)) {
+            for (ResourceEntityRelLinkVo linkVo : relLinkList) {
+                String leftCi = linkVo.getLeftCi();
+                String rightCi = linkVo.getRightCi();
+                CiVo leftCiVo = ciMapper.getCiByName(leftCi);
+                if (leftCiVo == null) {
+                    throw new CiNotFoundException(leftCi);
+                }
+                CiVo rightCiVo = ciMapper.getCiByName(rightCi);
+                if (rightCiVo == null) {
+                    throw new CiNotFoundException(rightCi);
+                }
+                String direction = linkVo.getDirection();
+                if (Objects.equals(direction, RelDirectionType.FROM.getValue())) {
+                    ResourceEntityLeftJoinVo leftJoinVo = new ResourceEntityLeftJoinVo();
+                    leftJoinVo.setDirection(direction);
+                    leftJoinVo.setFromCi(rightCiVo.getName());
+                    leftJoinVo.setFromCiId(rightCiVo.getId());
+                    leftJoinVo.setFromCiAlias(linkVo.getRightCiAlias());
+                    leftJoinVo.setToCi(leftCiVo.getName());
+                    leftJoinVo.setToCiId(leftCiVo.getId());
+                    leftJoinVo.setToCiAlias(linkVo.getLeftCiAlias());
+                    resultList.add(leftJoinVo);
+                } else if (Objects.equals(direction, RelDirectionType.TO.getValue())) {
+                    ResourceEntityLeftJoinVo leftJoinVo = new ResourceEntityLeftJoinVo();
+                    leftJoinVo.setDirection(direction);
+                    leftJoinVo.setFromCi(leftCiVo.getName());
+                    leftJoinVo.setFromCiId(leftCiVo.getId());
+                    leftJoinVo.setFromCiAlias(linkVo.getLeftCiAlias());
+                    leftJoinVo.setToCi(rightCiVo.getName());
+                    leftJoinVo.setToCiId(rightCiVo.getId());
+                    leftJoinVo.setToCiAlias(linkVo.getRightCiAlias());
+                    resultList.add(leftJoinVo);
+                }
+            }
+        }
+        return resultList;
     }
 
     private AttrVo getAttrVo(CiVo ciVo, String attrName) {

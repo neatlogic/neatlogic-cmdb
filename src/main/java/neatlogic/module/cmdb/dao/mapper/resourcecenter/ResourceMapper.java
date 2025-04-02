@@ -46,27 +46,13 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     List<ResourceVo> getResourceListByIdList(List<Long> idList);
 
-    int getIpObjectResourceCountByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(ResourceSearchVo searchVo);
+    int getAppResourceCount(ResourceSearchVo searchVo);
 
-    List<Long> getIpObjectResourceIdListByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(ResourceSearchVo searchVo);
+    List<Long> getAppResourceIdList(ResourceSearchVo searchVo);
 
-    int getOsResourceCountByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(ResourceSearchVo searchVo);
-
-    List<Long> getOsResourceIdListByAppSystemIdAndAppModuleIdAndEnvIdAndTypeId(ResourceSearchVo searchVo);
-
-    int getOsResourceCountByAppSystemIdAndAppModuleIdListAndEnvIdAndTypeId(ResourceSearchVo searchVo);
-
-    List<Long> getOsResourceIdListByAppSystemIdAndAppModuleIdListAndEnvIdAndTypeId(ResourceSearchVo searchVo);
-
-    List<ResourceVo> getAppInstanceResourceListByIdList(@Param("idList") List<Long> idList);
-
-    List<ResourceVo> getAppInstanceResourceListByIdListAndKeyword(@Param("idList") List<Long> idList, @Param("keyword") String keyword);
+    List<ResourceVo> getAppResourceListByIdList(ResourceSearchVo searchVo);
 
     List<ResourceVo> getAppInstanceResourceListByIdListSimple(List<Long> idList);
-
-    List<ResourceVo> getDbInstanceResourceListByIdList(List<Long> idList);
-
-    List<ResourceVo> getOsResourceListByIdList(List<Long> idList);
 
     Long getResourceIdByIpAndPortAndName(ResourceSearchVo searchVo);
 
@@ -80,11 +66,11 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     int checkResourceIsExists(Long id);
 
+    Long getResourceIdByResourceId(Long id);
+
     List<Long> checkResourceIdListIsExists(List<Long> idList);
 
     List<Long> getHasModuleAppSystemIdListByAppSystemIdList(@Param("appSystemIdList") List<Long> appSystemIdList);
-
-    List<Long> getHasEnvAppSystemIdListByAppSystemIdList(@Param("appSystemIdList") List<Long> appSystemIdList);
 
     int searchAppModuleCount(ResourceSearchVo searchVo);
 
@@ -96,35 +82,15 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     List<Long> getAppSystemModuleIdListByAppSystemIdAndAppModuleIdList(@Param("appSystemId") Long appSystemId, @Param("appModuleIdList") JSONArray appModuleIdList);
 
-    List<Long> getAppSystemModuleIdListByAppSystemIdAndAppModuleIdListAndEnvId(@Param("appSystemId") Long appSystemId, @Param("envId") Long envId, @Param("appModuleIdList") JSONArray appModuleIdList);
-
     List<ModuleVo> getAppModuleListByAppSystemIdList(ResourceSearchVo searchVo);
 
     List<ResourceVo> getAppModuleListByIdListSimple(@Param("idList") List<Long> idList, @Param("needOrder") boolean needOrder);
 
-    Set<Long> getIpObjectResourceTypeIdListByAppModuleIdAndEnvId(ResourceSearchVo searchVo);
-
-    Set<Long> getOsResourceTypeIdListByAppModuleIdAndEnvId(ResourceSearchVo searchVo);
-
-    Set<Long> getIpObjectResourceTypeIdListByAppSystemIdAndEnvId(ResourceSearchVo searchVo);
-
-    Set<Long> getOsResourceTypeIdListByAppSystemIdAndEnvId(ResourceSearchVo searchVo);
-
-    Set<Long> getResourceAppSystemIdListByResourceId(Long id);
-
-    List<ResourceVo> getResourceAppSystemListByResourceIdList(List<Long> id);
-
     List<ResourceVo> getResourceListByResourceVoList(@Param("resourceList") List<ResourceVo> resourceList,@Param("searchVo") ResourceSearchVo searchVo);
-
-    Long getAppSystemIdByResourceId(Long id);
 
     Set<Long> getResourceTypeIdListByAppSystemIdAndModuleIdAndEnvIdAndInspectStatusList(ResourceSearchVo searchVo);
 
     List<Long> getResourceIdListByAppSystemIdAndModuleIdAndEnvId(ResourceVo resourceVo);
-
-    List<Long> getAppInstanceResourceIdListByAppSystemIdAndModuleIdAndEnvId(ResourceVo resourceVo);
-
-    Integer getAppInstanceResourceIdCountByAppSystemIdAndModuleIdAndEnvId(ResourceVo resourceVo);
 
     /**
      * 根据类型和IP列表查询资源
@@ -199,19 +165,17 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     List<AppSystemVo> getAppSystemListByKeyword(BasePageVo searchVo);
 
-    List<AppEnvVo> getOsEnvListByAppSystemIdAndTypeId(ResourceSearchVo searchVo);
-
-    List<AppEnvVo> getIpObjectEnvListByAppSystemIdAndTypeId(ResourceSearchVo searchVo);
+    List<AppEnvVo> getAppEnvListByAppSystemId(Long appSystemId);
 
     List<AppEnvVo> getAppEnvListByAppSystemIdAndAppModuleId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId);
 
     List<Map<String, Long>> getAppEnvCountMapByAppSystemIdGroupByAppModuleId(Long appSystemId);
 
-    List<ResourceVo> getOsResourceListenPortListByResourceIdList(List<Long> resourceIdList);
-
-    List<ResourceVo> getSoftwareResourceListenPortListByResourceIdList(List<Long> resourceIdList);
-
     List<SoftwareServiceOSVo> getOsResourceListByResourceIdList(List<Long> resourceIdList);
 
     List<Long> getResourceTypeIdListByAuth(ResourceSearchVo searchVo);
+
+    List<Long> getAppResourceTypeIdListByViewNameAndAppSystemId(@Param("viewName") String viewName, @Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId);
+
+    List<Long> getAppSystemIdListById(@Param("viewName") String viewName, @Param("id") Long id);
 }

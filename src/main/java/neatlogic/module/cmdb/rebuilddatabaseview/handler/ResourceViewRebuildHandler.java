@@ -15,7 +15,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.rebuilddatabaseview.handler;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
+import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityConfigVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.SceneEntityVo;
 import neatlogic.framework.cmdb.enums.resourcecenter.Status;
@@ -53,13 +55,33 @@ public class ResourceViewRebuildHandler implements IRebuildDataBaseView {
     @Override
     public List<ViewStatusInfo> createViewIfNotExists() {
         List<ViewStatusInfo> resultList = new ArrayList<>();
-        List<SceneEntityVo> sceneEntityList = ResourceEntityFactory.getSceneEntityList();
-        for (SceneEntityVo sceneEntityVo : sceneEntityList) {
-            String tableType = schemaMapper.checkTableOrViewIsExists(TenantContext.get().getDataDbName(), sceneEntityVo.getName());
+        List<ResourceEntityVo> resourceEntityList = resourceEntityMapper.getResourceEntityList();
+        for (ResourceEntityVo resourceEntityVo : resourceEntityList) {
+            String tableType = schemaMapper.checkTableOrViewIsExists(TenantContext.get().getDataDbName(), resourceEntityVo.getName());
             if (Objects.equals(tableType, "VIEW")) {
                 continue;
             }
-            ViewStatusInfo viewStatusInfo = rebuildSceneEntity(sceneEntityVo);
+            String config = resourceEntityMapper.getResourceEntityConfigByName(resourceEntityVo.getName());
+            SceneEntityVo sceneEntityVo = ResourceEntityFactory.getSceneEntityByViewName(resourceEntityVo.getName());
+            if (sceneEntityVo == null) {
+                if (StringUtils.isBlank(config)) {
+                    continue;
+                }
+                ResourceEntityConfigVo resourceEntityConfigVo = JSONObject.parseObject(config, ResourceEntityConfigVo.class);
+                if (resourceEntityConfigVo == null) {
+                    continue;
+                }
+                String sceneTemplateName = resourceEntityConfigVo.getSceneTemplateName();
+                if (StringUtils.isBlank(sceneTemplateName)) {
+                    continue;
+                }
+                SceneEntityVo sceneTemplate = ResourceEntityFactory.getSceneEntityByViewName(sceneTemplateName);
+                if (sceneTemplate == null) {
+                    continue;
+                }
+            }
+            resourceEntityVo.setConfigStr(config);
+            ViewStatusInfo viewStatusInfo = rebuildSceneEntity(resourceEntityVo);
             resultList.add(viewStatusInfo);
         }
         return resultList;
@@ -68,24 +90,39 @@ public class ResourceViewRebuildHandler implements IRebuildDataBaseView {
     @Override
     public List<ViewStatusInfo> createOrReplaceView() {
         List<ViewStatusInfo> resultList = new ArrayList<>();
-        List<SceneEntityVo> sceneEntityList = ResourceEntityFactory.getSceneEntityList();
-        for (SceneEntityVo sceneEntityVo : sceneEntityList) {
-            ViewStatusInfo viewStatusInfo = rebuildSceneEntity(sceneEntityVo);
+        List<ResourceEntityVo> resourceEntityList = resourceEntityMapper.getResourceEntityList();
+        for (ResourceEntityVo resourceEntityVo : resourceEntityList) {
+            String config = resourceEntityMapper.getResourceEntityConfigByName(resourceEntityVo.getName());
+            SceneEntityVo sceneEntityVo = ResourceEntityFactory.getSceneEntityByViewName(resourceEntityVo.getName());
+            if (sceneEntityVo == null) {
+                if (StringUtils.isBlank(config)) {
+                    continue;
+                }
+                ResourceEntityConfigVo resourceEntityConfigVo = JSONObject.parseObject(config, ResourceEntityConfigVo.class);
+                if (resourceEntityConfigVo == null) {
+                    continue;
+                }
+                String sceneTemplateName = resourceEntityConfigVo.getSceneTemplateName();
+                if (StringUtils.isBlank(sceneTemplateName)) {
+                    continue;
+                }
+                SceneEntityVo sceneTemplate = ResourceEntityFactory.getSceneEntityByViewName(sceneTemplateName);
+                if (sceneTemplate == null) {
+                    continue;
+                }
+            }
+            resourceEntityVo.setConfigStr(config);
+            ViewStatusInfo viewStatusInfo = rebuildSceneEntity(resourceEntityVo);
             resultList.add(viewStatusInfo);
         }
         return resultList;
     }
 
-    private ViewStatusInfo rebuildSceneEntity(SceneEntityVo sceneEntityVo) {
-        ResourceEntityVo resourceEntityVo = new ResourceEntityVo();
-        resourceEntityVo.setName(sceneEntityVo.getName());
-        resourceEntityVo.setLabel(sceneEntityVo.getLabel());
-        String config = resourceEntityMapper.getResourceEntityConfigByName(resourceEntityVo.getName());
-        if (StringUtils.isNotBlank(config)) {
-            resourceEntityVo.setConfigStr(config);
-            String error = resourceCenterResourceService.buildResourceView(resourceEntityVo.getName(), resourceEntityVo.getConfig());
-            resourceEntityVo.setError(error);
-            if (StringUtils.isNotBlank(error)) {
+    private ViewStatusInfo rebuildSceneEntity(ResourceEntityVo resourceEntityVo) {
+        if (resourceEntityVo.getConfig() != null) {
+            resourceEntityVo.setError(null);
+            String sql = resourceCenterResourceService.buildResourceView(resourceEntityVo);
+            if (StringUtils.isNotBlank(resourceEntityVo.getError())) {
                 resourceEntityVo.setStatus(Status.ERROR.getValue());
             } else {
                 resourceEntityVo.setStatus(Status.READY.getValue());

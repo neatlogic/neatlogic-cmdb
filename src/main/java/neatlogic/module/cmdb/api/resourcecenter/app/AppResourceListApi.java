@@ -13,21 +13,23 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
-package neatlogic.module.cmdb.api.resourcecenter.appmodule;
+package neatlogic.module.cmdb.api.resourcecenter.app;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
-import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
+import neatlogic.framework.cmdb.resourcecenter.datasource.core.IResourceCenterDataSource;
+import neatlogic.framework.cmdb.resourcecenter.datasource.core.ResourceCenterDataSourceFactory;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.exception.type.ParamNotExistsException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author linbq
@@ -36,19 +38,16 @@ import javax.annotation.Resource;
 @Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class AppModuleResourceListApi extends PrivateApiComponentBase {
-
-    @Resource
-    private IResourceCenterResourceService resourceCenterResourceService;
+public class AppResourceListApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "resourcecenter/appmodule/resource/list";
+        return "resourcecenter/app/resource/list";
     }
 
     @Override
     public String getName() {
-        return "查询应用模块中资源列表";
+        return "查询应用中资源列表";
     }
 
     @Override
@@ -60,10 +59,9 @@ public class AppModuleResourceListApi extends PrivateApiComponentBase {
             @Param(name = "appSystemId", type = ApiParamType.LONG, desc = "应用id"),
             @Param(name = "appModuleId", type = ApiParamType.LONG, desc = "应用模块id"),
             @Param(name = "envId", type = ApiParamType.LONG, desc = "环境id,envId=-2表示无配置环境"),
-            @Param(name = "typeId", type = ApiParamType.LONG, desc = "类型id"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
-            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目"),
-            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "是否需要分页，默认true")
+            @Param(name = "viewName", type = ApiParamType.STRING, desc = "视图名称"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, defaultValue = "1", desc = "当前页"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER,  defaultValue = "20", desc = "每页数据条目")
     })
     @Output({
             @Param(name = "tableList", type = ApiParamType.JSONARRAY, desc = "资源环境列表")
@@ -72,11 +70,23 @@ public class AppModuleResourceListApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONObject resultObj = new JSONObject();
-        ResourceSearchVo searchVo = paramObj.toJavaObject(ResourceSearchVo.class);
-        if (searchVo.getAppSystemId() == null && searchVo.getAppModuleId() == null) {
+        Long appSystemId = paramObj.getLong("appSystemId");
+        Long appModuleId = paramObj.getLong("appModuleId");
+        if (appSystemId == null && appModuleId == null) {
             throw new ParamNotExistsException("应用id（appSystemId）", "应用模块id（appModuleId）");
         }
-        resultObj.put("tableList", resourceCenterResourceService.getAppModuleResourceList(searchVo));
+        Long envId = paramObj.getLong("envId");
+        Integer currentPage = paramObj.getInteger("currentPage");
+        Integer pageSize = paramObj.getInteger("pageSize");
+        Long typeId = paramObj.getLong("typeId");
+        List<Long> typeIdList = new ArrayList<>();
+        if (typeId != null) {
+            typeIdList.add(typeId);
+        }
+        String viewName = paramObj.getString("viewName");
+        IResourceCenterDataSource resourceCenterDataSource = ResourceCenterDataSourceFactory.getResourceCenterDataSource();
+        JSONArray tableList = resourceCenterDataSource.getAppResourceList(appSystemId, appModuleId, envId, null, viewName, currentPage, pageSize);
+        resultObj.put("tableList", tableList);
         return resultObj;
     }
 }

@@ -15,32 +15,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.resourcecenter.state;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
+import neatlogic.framework.cmdb.resourcecenter.datasource.core.IResourceCenterDataSource;
+import neatlogic.framework.cmdb.resourcecenter.datasource.core.ResourceCenterDataSourceFactory;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.TableResultUtil;
-import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @AuthAction(action = CMDB.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ListStateForSelectApi extends PrivateApiComponentBase {
-
-    @Resource
-    private ResourceMapper resourceMapper;
 
     @Override
     public String getToken() {
@@ -71,32 +65,8 @@ public class ListStateForSelectApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         BasePageVo searchVo = paramObj.toJavaObject(BasePageVo.class);
-        JSONArray defaultValue = searchVo.getDefaultValue();
-        if (CollectionUtils.isNotEmpty(defaultValue)) {
-            List<Long> idList = defaultValue.toJavaList(Long.class);
-            List<ResourceVo> resourceList = resourceMapper.searchStateListByIdList(idList);
-            return TableResultUtil.getResult(resourceList);
-        } else {
-            int rowNum = resourceMapper.searchStateCount(searchVo);
-            if (rowNum > 0) {
-                searchVo.setRowNum(rowNum);
-                if (searchVo.getNeedPage()) {
-                    List<Long> idList = resourceMapper.searchStateIdList(searchVo);
-                    List<ResourceVo> resourceList = resourceMapper.searchStateListByIdList(idList);
-                    return TableResultUtil.getResult(resourceList, searchVo);
-                } else {
-                    List<ResourceVo> allResourceList = new ArrayList<>();
-                    int pageCount = searchVo.getPageCount();
-                    for (int currentPage = 1; currentPage <= pageCount; currentPage++) {
-                        searchVo.setCurrentPage(currentPage);
-                        List<Long> idList = resourceMapper.searchStateIdList(searchVo);
-                        List<ResourceVo> resourceList = resourceMapper.searchStateListByIdList(idList);
-                        allResourceList.addAll(resourceList);
-                    }
-                    return TableResultUtil.getResult(allResourceList, searchVo);
-                }
-            }
-        }
-        return null;
+        IResourceCenterDataSource resourceCenterDataSource = ResourceCenterDataSourceFactory.getResourceCenterDataSource();
+        List<ResourceVo> tbodyList = resourceCenterDataSource.getStateListForSelect(searchVo);
+        return TableResultUtil.getResult(tbodyList, searchVo);
     }
 }
