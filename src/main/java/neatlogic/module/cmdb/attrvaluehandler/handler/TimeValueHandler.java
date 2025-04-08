@@ -90,7 +90,7 @@ public class TimeValueHandler implements IAttrValueHandler {
 
     @Override
     public boolean isUniqueAttr() {
-        return false;
+        return true;
     }
 
     @Override

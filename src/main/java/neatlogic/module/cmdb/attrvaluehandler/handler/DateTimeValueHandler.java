@@ -91,7 +91,7 @@ public class DateTimeValueHandler implements IAttrValueHandler {
 
     @Override
     public boolean isUniqueAttr() {
-        return false;
+        return true;
     }
 
     @Override
