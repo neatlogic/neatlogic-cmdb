@@ -175,7 +175,13 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     List<Long> getResourceTypeIdListByAuth(ResourceSearchVo searchVo);
 
-    List<Long> getAppResourceTypeIdListByViewNameAndAppSystemId(@Param("viewName") String viewName, @Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("envId") Long envId);
+    List<Long> getAppResourceTypeIdListByViewNameAndAppSystemId(
+            @Param("viewName") String viewName,
+            @Param("appSystemId") Long appSystemId,
+            @Param("appModuleId") Long appModuleId,
+            @Param("envId") Long envId,
+            @Param("inspectStatusList") List<String> inspectStatusList
+    );
 
     List<Long> getAppSystemIdListById(@Param("viewName") String viewName, @Param("id") Long id);
 }

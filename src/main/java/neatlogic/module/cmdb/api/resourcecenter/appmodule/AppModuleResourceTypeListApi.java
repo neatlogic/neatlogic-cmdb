@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
-import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.resourcecenter.datasource.core.IResourceCenterDataSource;
@@ -83,8 +82,6 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
         for (CiVo ci : allCiVoList) {
             allCiVoMap.put(ci.getId(), ci);
         }
-        ResourceSearchVo searchVo = new ResourceSearchVo();
-        searchVo.setAppModuleId(appModuleId);
         //无配置环境
         ResourceVo noSettingEnvResourceVo = new ResourceVo();
         noSettingEnvResourceVo.setId(-2L);
@@ -92,13 +89,10 @@ public class AppModuleResourceTypeListApi extends PrivateApiComponentBase {
         envResourceList.add(noSettingEnvResourceVo);
         for (ResourceVo envResource : envResourceList) {
             JSONObject returnObj = new JSONObject();
-            searchVo.setEnvId(envResource.getId());
             Set<Long> typeIdSet = new HashSet<>();
             IResourceCenterDataSource resourceCenterDataSource = ResourceCenterDataSourceFactory.getResourceCenterDataSource();
             Map<String, List<Long>> viewName2TypeIdListMap = resourceCenterDataSource.getAppResourceTypeIdListByAppSystemIdAndAppModuleIdAndEnvId(null, appModuleId, envResource.getId());
             for (Map.Entry<String, List<Long>> entry : viewName2TypeIdListMap.entrySet()) {
-                String viewName = entry.getKey();
-                searchVo.setViewName(viewName);
                 typeIdSet.addAll(entry.getValue());
             }
             Set<CiVo> returnCiVoSet = new HashSet<>();
