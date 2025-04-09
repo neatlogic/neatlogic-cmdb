@@ -649,6 +649,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         for (CiEntityTransactionVo ciEntityTransactionVo : ciEntityTransactionList) {
             transactionGroupVo.addExclude(ciEntityTransactionVo.getCiEntityId());
         }
+        boolean hasTransaction = false;
         if (CollectionUtils.isNotEmpty(ciEntityTransactionList)) {
             //批量更新时为了防止后续更新干扰，需要提前生成所有配置项的snapshot
             for (int i = ciEntityTransactionList.size() - 1; i >= 0; i--) {
@@ -672,11 +673,13 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     createSnapshot(ciEntityTransactionVo);
                 }
             }
+
             for (CiEntityTransactionVo ciEntityTransactionVo : ciEntityTransactionList) {
                 try {
                     Long transactionId = saveCiEntity(ciEntityTransactionVo, transactionGroupVo);
                     if (transactionId > 0L) {
                         transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), transactionId);
+                        hasTransaction = true;
                     }
                 } catch (Exception e) {
                     if (CollectionUtils.isNotEmpty(ciEntityTransactionVo.getConfigurationPathList())
@@ -696,7 +699,11 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 }
             }
         }
-        return transactionGroupVo.getId();
+        if (hasTransaction) {
+            return transactionGroupVo.getId();
+        } else {
+            return 0L;
+        }
     }
 
     @Override

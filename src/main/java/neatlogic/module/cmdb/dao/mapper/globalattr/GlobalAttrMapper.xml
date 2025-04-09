@@ -148,6 +148,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         limit #{startNum}, #{pageSize}
     </select>
 
+    <select id="getGlobalAttrItemByAttrIdAndValue"
+            resultType="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo">
+        select id, value, attr_id as attrId, sort
+        from cmdb_global_attritem
+        where attr_id = #{attrId}
+          and value = #{value}
+        limit 1
+    </select>
+
     <select id="getGlobalAttrItemById" parameterType="java.lang.Long"
             resultType="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo">
         select id, value, attr_id as attrId, sort

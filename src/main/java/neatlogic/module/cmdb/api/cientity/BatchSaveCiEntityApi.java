@@ -23,6 +23,8 @@ import neatlogic.framework.cmdb.crossover.IBatchSaveCiEntityApiCrossoverService;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.ci.RelVo;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
 import neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import neatlogic.framework.cmdb.enums.EditModeType;
 import neatlogic.framework.cmdb.enums.RelDirectionType;
@@ -42,6 +44,7 @@ import neatlogic.framework.util.UuidUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
+import neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
 import neatlogic.module.cmdb.utils.CiEntityUtils;
@@ -74,6 +77,9 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
     @Resource
     private RelMapper relMapper;
 
+    @Resource
+    private GlobalAttrMapper globalAttrMapper;
+
     @Override
     public String getToken() {
         return "/cmdb/cientity/batchsave";
@@ -91,19 +97,20 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
 
     @Override
     public JSONObject example() {
-        JSONObject defaultJson = new JSONObject();
+        JSONObject defaultJson = new JSONObject(true);
         defaultJson.put("needCommit", true);
         defaultJson.put("isSimple", false);
         defaultJson.put("ciEntityList", new JSONArray() {
             {
-                this.add(new JSONObject() {{
+                this.add(new JSONObject(true) {{
 
                     this.put("id", 330340423237635L);
                     this.put("ciId", 323010541453312L);
                     this.put("uuid", "2d327f1213d542bd8a26ace1efb5ab41");
+                    this.put("description", "变更说明");
                     //this.put("editMode", "global|partial");
-                    this.put("attrEntityData", new JSONObject() {{
-                        this.put("attr_323010784722944", new JSONObject() {{
+                    this.put("attrEntityData", new JSONObject(true) {{
+                        this.put("attr_323010784722944", new JSONObject(true) {{
                             this.put("valueList", new JSONArray() {{
                                 this.add($.t("common.testenv"));
                             }});
@@ -111,9 +118,9 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
                             this.put("label", "attrlabel");
                             this.put("type", "text");
                         }});
-                        this.put("attr_323010784722945", new JSONObject() {{
+                        this.put("attr_323010784722945", new JSONObject(true) {{
                             this.put("valueList", new JSONArray() {{
-                                this.add(new JSONObject() {{
+                                this.add(new JSONObject(true) {{
                                     this.put("uuid", "12313139343434");
                                 }});
                             }});
@@ -122,60 +129,80 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
                             this.put("type", "select");
                         }});
                     }});
-                    this.put("relEntityData", new JSONObject() {{
-                        this.put("relfrom_123131313123", new JSONObject() {{
-                            this.put("valueList", new JSONObject() {{
+                    this.put("relEntityData", new JSONObject(true) {{
+                        this.put("relfrom_123131313123", new JSONObject(true) {{
+                            this.put("valueList", new JSONObject(true) {{
                                 this.put("ciEntityUuid", "78a78bc87878abc787d8e7878712");
                                 this.put("ciId", "123123123123123");
                             }});
                         }});
-                        this.put("relto_1231231313123", new JSONObject() {{
-                            this.put("valueList", new JSONObject() {{
+                        this.put("relto_1231231313123", new JSONObject(true) {{
+                            this.put("valueList", new JSONObject(true) {{
                                 this.put("ciEntityUuid", "78a78bc87878abc787d8e7878712");
                                 this.put("ciId", "123123123123123");
                             }});
                         }});
                     }});
-
+                    this.put("globalAttrEntityData", new JSONObject(true) {{
+                        this.put("global_123131313123", new JSONObject(true) {{
+                            this.put("valueList", new JSONObject(true) {{
+                                this.put("value", "属性值");
+                            }});
+                            this.put("name", "globalattrname");
+                            this.put("label", "globalattrlabel");
+                        }});
+                    }});
                 }});
             }
         });
 
-        JSONObject simpleJson = new JSONObject();
+        JSONObject simpleJson = new JSONObject(true);
         simpleJson.put("needCommit", true);
         simpleJson.put("isSimple", true);
         simpleJson.put("ciEntityList", new JSONArray() {
             {
-                this.add(new JSONObject() {{
+                this.add(new JSONObject(true) {{
                     this.put("id", "配置项id，优先级高于uuid");
                     this.put("uuid", "配置项uuid");
                     this.put("ciId", "模型id");
+                    this.put("description", "变更说明");
                     //this.put("editMode", "global|partial");
-                    this.put("entityData", new JSONObject() {{
+                    this.put("entityData", new JSONObject(true) {{
                         this.put("attrname1（引用型属性更新）", new JSONArray() {{
-                            this.add(new JSONObject() {{
+                            this.add(new JSONObject(true) {{
                                 this.put("id", "配置项id，优先级高于uuid");
                                 this.put("uuid", "配置项uuid");
                             }});
                         }});
                         this.put("attrname3（引用型属性删除）", new JSONArray());
                         this.put("attrname2（普通属性更新）", new JSONArray() {{
-                            this.add(new JSONObject() {{
+                            this.add(new JSONObject(true) {{
                                 this.put("value", "文本、数字、日期等属性值");
                             }});
                         }});
                         this.put("relname2（关系更新）", new JSONArray() {{
-                            this.add(new JSONObject() {{
+                            this.add(new JSONObject(true) {{
                                 this.put("id", "目标配置项id");
                                 this.put("uuid", "目标配置项的uuid或能作为唯一标识的属性值");
                                 this.put("action", "insert（新增关系）|delete（删除关系）|replace（用新关系替换旧关系，如果需要清空关系，无需提供id或uuid属性）。注意：只要任意关系成员的action是replace，关系更新都使用replace模式");
+                            }});
+                        }});
+                        this.put("globalattrname1（全局属性删除）", new JSONArray() {{
+                            this.add(new JSONObject(true) {{
+                                this.put("value", "");
+                            }});
+                        }});
+                        this.put("globalattrname2（全局属性更新）", new JSONArray() {{
+                            this.add(new JSONObject(true) {{
+                                this.put("value", "属性值");
                             }});
                         }});
                     }});
                 }});
             }
         });
-        return new JSONObject() {{
+
+        return new JSONObject(true) {{
             this.put($.t("common.example") + 1, defaultJson);
             this.put($.t("common.example") + 2, simpleJson);
         }};
@@ -190,7 +217,9 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
             Long id = ciEntityObj.getLong("id");
             String uuid = ciEntityObj.getString("uuid");
             Long ciId = ciEntityObj.getLong("ciId");
+            String description = ciEntityObj.getString("description");
             returnCiEntityObj.put("editMode", EditModeType.PARTIAL.getValue());
+            returnCiEntityObj.put("description", description);
             JSONObject entityData = ciEntityObj.getJSONObject("entityData");
             CiVo ciVo = null;
             if (id != null) {
@@ -211,12 +240,16 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
             }
             List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
             List<RelVo> relList = relMapper.getRelByCiId(ciVo.getId());
+            List<GlobalAttrVo> globalAttrList = globalAttrMapper.searchGlobalAttr(new GlobalAttrVo() {{
+                this.setIsActive(1);
+            }});
             ciVo.setAttrList(attrList);
             ciVo.setRelList(relList);
+            ciVo.setGlobalAttrList(globalAttrList);
             returnCiEntityObj.put("ciId", ciVo.getId());
             JSONObject attrEntityData = new JSONObject();
             JSONObject relEntityData = new JSONObject();
-            //JSONObject globalAttrData = new JSONObject();
+            JSONObject globalAttrEntityData = new JSONObject();
             if (MapUtils.isNotEmpty(entityData)) {
                 for (String key : entityData.keySet()) {
                     JSONArray valueList = entityData.getJSONArray(key);
@@ -257,8 +290,8 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
                                 RelVo relVo = relOp.get();
                                 JSONObject relObj = new JSONObject();
                                 JSONArray returnValueList = new JSONArray();
-                                for (int vindex = 0; vindex < valueList.size(); vindex++) {
-                                    JSONObject valueObj = valueList.getJSONObject(vindex);
+                                for (int vIndex = 0; vIndex < valueList.size(); vIndex++) {
+                                    JSONObject valueObj = valueList.getJSONObject(vIndex);
                                     if (valueObj.getLong("id") != null) {
                                         returnValueList.add(new JSONObject() {{
                                             this.put("ciEntityId", valueObj.getLong("id"));
@@ -289,7 +322,38 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
                                 if (CollectionUtils.isNotEmpty(returnValueList)) {
                                     relObj.put("valueList", returnValueList);
                                     relEntityData.put("rel" + relVo.getDirection() + "_" + relVo.getId(), relObj);
+                                    hasFoundAttr = true;
                                 }
+                            }
+                        }
+
+                        if (!hasFoundAttr && CollectionUtils.isNotEmpty(globalAttrList)) {
+                            Optional<GlobalAttrVo> attrOp = ciVo.getGlobalAttrList().stream().filter(d -> d.getName().equalsIgnoreCase(key)).findFirst();
+                            if (attrOp.isPresent()) {
+                                GlobalAttrVo attrVo = attrOp.get();
+                                JSONObject attrObj = new JSONObject();
+                                attrObj.put("name", attrVo.getName());
+                                attrObj.put("label", attrVo.getLabel());
+                                attrObj.put("attrId", attrVo.getId());
+                                JSONArray returnValueList = new JSONArray();
+                                for (int vIndex = 0; vIndex < valueList.size(); vIndex++) {
+                                    JSONObject valueObj = valueList.getJSONObject(vIndex);
+                                    if (valueObj.containsKey("value")) {
+                                        String v = valueObj.getString("value");
+                                        GlobalAttrItemVo item = globalAttrMapper.getGlobalAttrItemByAttrIdAndValue(attrVo.getId(), v);
+                                        if (item != null) {
+                                            valueObj.put("attrId", attrVo.getId());
+                                            returnValueList.add(new JSONObject() {{
+                                                this.put("attrId", attrVo.getId());
+                                                this.put("id", item.getId());
+                                                this.put("value", item.getValue());
+                                            }});
+                                        }
+
+                                    }
+                                }
+                                attrObj.put("valueList", returnValueList);
+                                globalAttrEntityData.put("global_" + attrVo.getId(), attrObj);
                             }
                         }
                     }
@@ -298,6 +362,7 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
             }
             returnCiEntityObj.put("relEntityData", relEntityData);
             returnCiEntityObj.put("attrEntityData", attrEntityData);
+            returnCiEntityObj.put("globalAttrEntityData", globalAttrEntityData);
             returnCiEntityObjList.add(returnCiEntityObj);
         }
         return returnCiEntityObjList;
