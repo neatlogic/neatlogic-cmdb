@@ -18,7 +18,7 @@ package neatlogic.module.cmdb.api.resourcecenter.app;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
-import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
+import neatlogic.framework.cmdb.auth.label.CMDB;
 import neatlogic.framework.cmdb.resourcecenter.datasource.core.IResourceCenterDataSource;
 import neatlogic.framework.cmdb.resourcecenter.datasource.core.ResourceCenterDataSourceFactory;
 import neatlogic.framework.common.constvalue.ApiParamType;
@@ -36,7 +36,7 @@ import java.util.List;
  * @since 2021/6/17 11:54
  **/
 @Service
-@AuthAction(action = CMDB_BASE.class)
+@AuthAction(action = CMDB.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class AppResourceListApi extends PrivateApiComponentBase {
 
