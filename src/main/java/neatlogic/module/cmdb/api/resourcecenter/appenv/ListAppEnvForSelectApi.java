@@ -66,8 +66,10 @@ public class ListAppEnvForSelectApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         BasePageVo searchVo = paramObj.toJavaObject(BasePageVo.class);
+        Boolean needPage = paramObj.getBoolean("needPage");
+        needPage = needPage == null || needPage;
         IResourceCenterDataSource resourceCenterDataSource = ResourceCenterDataSourceFactory.getResourceCenterDataSource();
-        List<ResourceVo> tbodyList = resourceCenterDataSource.getAppEnvListForSelect(searchVo);
+        List<ResourceVo> tbodyList = resourceCenterDataSource.getAppEnvListForSelect(searchVo, needPage);
         return TableResultUtil.getResult(tbodyList, searchVo);
     }
 }
