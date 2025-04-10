@@ -1016,7 +1016,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
     }
 
     @Override
-    public List<ResourceVo> getAppEnvListForSelect(BasePageVo searchVo) {
+    public List<ResourceVo> getAppEnvListForSelect(BasePageVo searchVo, boolean needPage) {
         List<ResourceVo> appEnvList = new ArrayList<>();
         JSONArray defaultValue = searchVo.getDefaultValue();
         if (CollectionUtils.isNotEmpty(defaultValue)) {
@@ -1026,12 +1026,13 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             int rowNum = resourceMapper.searchAppEnvCount(searchVo);
             if (rowNum > 0) {
                 searchVo.setRowNum(rowNum);
-                if (searchVo.getNeedPage()) {
+                if (needPage) {
                     List<Long> idList = resourceMapper.searchAppEnvIdList(searchVo);
                     if (CollectionUtils.isNotEmpty(idList)) {
                         appEnvList = resourceMapper.searchAppEnvListByIdList(idList);
                     }
                 } else {
+                    searchVo.setPageSize(100);
                     int pageCount = searchVo.getPageCount();
                     for (int currentPage = 1; currentPage <= pageCount; currentPage++) {
                         searchVo.setCurrentPage(currentPage);
@@ -1048,10 +1049,44 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
     }
 
     @Override
-    public List<AppEnvVo> getAppEnvListByAppSystemId(Long appSystemId) {
-        List<AppEnvVo> appEnvList = resourceMapper.getAppEnvListByAppSystemId(appSystemId);
-        appEnvList.sort(Comparator.comparing(AppEnvVo::getSeqNo));
-        return appEnvList;
+    public List<AppEnvVo> getAppEnvListByAppSystemIdAndInspectStatusList(Long appSystemId, List<String> inspectStatusList) {
+        List<AppEnvVo> resultList = new ArrayList<>();
+        Map<Long, AppEnvVo> appEnvMap = new HashMap<>();
+        Map<Long, AppModuleVo> appModuleMap = new HashMap<>();
+        Map<Long, Set<Long>> appEnvId2AppModuleIdListMap = new HashMap<>();
+        List<ResourceEntityVo> appViewList = getAppViewList();
+        for (ResourceEntityVo resourceEntityVo : appViewList) {
+            List<AppEnvVo> appEnvList = resourceMapper.getAppEnvListByViewNameAndAppSystemIdAndInspectStatusList(resourceEntityVo.getName(), appSystemId, inspectStatusList);
+            for (AppEnvVo appEnvVo : appEnvList) {
+                appEnvMap.put(appEnvVo.getId(), appEnvVo);
+                List<AppModuleVo> appModuleList = appEnvVo.getAppModuleList();
+                if (CollectionUtils.isNotEmpty(appModuleList)) {
+                    for (AppModuleVo appModuleVo : appModuleList) {
+                        appModuleMap.put(appModuleVo.getId(), appModuleVo);
+                        appEnvId2AppModuleIdListMap.computeIfAbsent(appEnvVo.getId(), key -> new HashSet<>()).add(appModuleVo.getId());
+                    }
+
+                }
+            }
+        }
+        for (Map.Entry<Long, AppEnvVo> entry : appEnvMap.entrySet()) {
+            AppEnvVo appEnvVo = entry.getValue();
+            List<AppModuleVo> appModuleList = new ArrayList<>();
+            Set<Long> appModuleIdSet = appEnvId2AppModuleIdListMap.get(appEnvVo.getId());
+            for (Long appModuleId : appModuleIdSet) {
+                AppModuleVo appModuleVo = appModuleMap.get(appModuleId);
+                AppModuleVo appModule = new AppModuleVo();
+                appModule.setId(appModuleVo.getId());
+                appModule.setName(appModuleVo.getName());
+                appModule.setAbbrName(appModuleVo.getAbbrName());
+                appModuleList.add(appModule);
+            }
+            appModuleList.sort(Comparator.comparing(AppModuleVo::getId));
+            appEnvVo.setAppModuleList(appModuleList);
+            resultList.add(appEnvVo);
+        }
+        resultList.sort(Comparator.comparing(AppEnvVo::getSeqNo));
+        return resultList;
     }
 
     @Override
