@@ -812,12 +812,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         where a.`id` = #{value}
     </select>
 
-    <select id="checkResourceIsExists" parameterType="java.lang.Long" resultType="int">
-        SELECT COUNT(DISTINCT a.`id`)
-        FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
-        WHERE a.`id` = #{value}
-    </select>
-
     <select id="getResourceIdByResourceId" parameterType="java.lang.Long" resultType="java.lang.Long">
         SELECT a.`id`
         FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a

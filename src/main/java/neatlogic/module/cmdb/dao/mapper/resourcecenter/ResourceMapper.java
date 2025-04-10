@@ -64,8 +64,6 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     ResourceVo getResourceById(Long id);
 
-    int checkResourceIsExists(Long id);
-
     Long getResourceIdByResourceId(Long id);
 
     List<Long> checkResourceIdListIsExists(List<Long> idList);
