@@ -44,9 +44,11 @@ import neatlogic.framework.transaction.core.EscapeTransactionJob;
 import neatlogic.framework.util.Md5Util;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
-import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper;
-import neatlogic.module.cmdb.dao.mapper.resourcecenter.*;
+import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
+import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
+import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
+import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceTagMapper;
 import neatlogic.module.cmdb.utils.ResourceEntityFactory;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
@@ -84,9 +86,6 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 
     @Resource
     private GlobalAttrMapper globalAttrMapper;
-
-    @Resource
-    private CiEntityMapper ciEntityMapper;
 
     @Resource
     private ResourceEntityMapper resourceEntityMapper;
