@@ -8,8 +8,4 @@ public class AbstractCiTargetCiIdAttrNotFoundException extends ApiRuntimeExcepti
     public AbstractCiTargetCiIdAttrNotFoundException(CiVo ciVo) {
         super("nmcpe.abstractcitargetciidattrnotfoundexception.abstractcitargetciidattrnotfoundexception", ciVo.getLabel(), ciVo.getName());
     }
-
-    public AbstractCiTargetCiIdAttrNotFoundException(CiVo ciVo, String configurationPath, String actualPath) {
-        super("nmcpe.abstractcitargetciidattrnotfoundexception.abstractcitargetciidattrnotfoundexception_b", ciVo.getLabel(), ciVo.getName(), configurationPath, actualPath);
-    }
 }

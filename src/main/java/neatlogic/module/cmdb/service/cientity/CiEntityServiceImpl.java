@@ -67,7 +67,6 @@ import neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper;
 import neatlogic.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import neatlogic.module.cmdb.fulltextindex.enums.CmdbFullTextIndexType;
 import neatlogic.module.cmdb.group.CiEntityGroupManager;
-import neatlogic.module.cmdb.process.exception.DataConversionAppendPathException;
 import neatlogic.module.cmdb.relativerel.RelativeRelManager;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
 import neatlogic.module.cmdb.utils.CiEntityBuilder;
@@ -675,27 +674,10 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             }
 
             for (CiEntityTransactionVo ciEntityTransactionVo : ciEntityTransactionList) {
-                try {
-                    Long transactionId = saveCiEntity(ciEntityTransactionVo, transactionGroupVo);
-                    if (transactionId > 0L) {
-                        transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), transactionId);
-                        hasTransaction = true;
-                    }
-                } catch (Exception e) {
-                    if (CollectionUtils.isNotEmpty(ciEntityTransactionVo.getConfigurationPathList())
-                            || CollectionUtils.isNotEmpty(ciEntityTransactionVo.getActualPathList())) {
-                        String configurationPath = "";
-                        if (CollectionUtils.isNotEmpty(ciEntityTransactionVo.getConfigurationPathList())) {
-                            configurationPath = String.join(",", ciEntityTransactionVo.getConfigurationPathList());
-                        }
-                        String actualPath = "";
-                        if (CollectionUtils.isNotEmpty(ciEntityTransactionVo.getActualPathList())) {
-                            actualPath = String.join(",", ciEntityTransactionVo.getActualPathList());
-                        }
-                        throw new DataConversionAppendPathException(e, configurationPath, actualPath);
-                    } else {
-                        throw e;
-                    }
+                Long transactionId = saveCiEntity(ciEntityTransactionVo, transactionGroupVo);
+                if (transactionId > 0L) {
+                    transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), transactionId);
+                    hasTransaction = true;
                 }
             }
         }

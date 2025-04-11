@@ -1049,21 +1049,19 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
     }
 
     @Override
-    public List<AppEnvVo> getAppEnvListByAppSystemIdAndInspectStatusList(Long appSystemId, List<String> inspectStatusList) {
+    public List<AppEnvVo> getAppEnvListByAppSystemIdAndAppModuleIdAndInspectStatusList(Long appSystemId, Long appModuleId, List<String> inspectStatusList) {
         List<AppEnvVo> resultList = new ArrayList<>();
         Map<Long, AppEnvVo> appEnvMap = new HashMap<>();
-        Map<Long, AppModuleVo> appModuleMap = new HashMap<>();
-        Map<Long, Set<Long>> appEnvId2AppModuleIdListMap = new HashMap<>();
+        Map<Long, List<AppModuleVo>> appEnvId2AppModuleListMap = new HashMap<>();
         List<ResourceEntityVo> appViewList = getAppViewList();
         for (ResourceEntityVo resourceEntityVo : appViewList) {
-            List<AppEnvVo> appEnvList = resourceMapper.getAppEnvListByViewNameAndAppSystemIdAndInspectStatusList(resourceEntityVo.getName(), appSystemId, inspectStatusList);
+            List<AppEnvVo> appEnvList = resourceMapper.getAppEnvListByViewNameAndAppSystemIdAndAppModuleIdAndInspectStatusList(resourceEntityVo.getName(), appSystemId, appModuleId, inspectStatusList);
             for (AppEnvVo appEnvVo : appEnvList) {
                 appEnvMap.put(appEnvVo.getId(), appEnvVo);
                 List<AppModuleVo> appModuleList = appEnvVo.getAppModuleList();
                 if (CollectionUtils.isNotEmpty(appModuleList)) {
                     for (AppModuleVo appModuleVo : appModuleList) {
-                        appModuleMap.put(appModuleVo.getId(), appModuleVo);
-                        appEnvId2AppModuleIdListMap.computeIfAbsent(appEnvVo.getId(), key -> new HashSet<>()).add(appModuleVo.getId());
+                        appEnvId2AppModuleListMap.computeIfAbsent(appEnvVo.getId(), key -> new ArrayList<>()).add(appModuleVo);
                     }
 
                 }
@@ -1071,18 +1069,30 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
         }
         for (Map.Entry<Long, AppEnvVo> entry : appEnvMap.entrySet()) {
             AppEnvVo appEnvVo = entry.getValue();
-            List<AppModuleVo> appModuleList = new ArrayList<>();
-            Set<Long> appModuleIdSet = appEnvId2AppModuleIdListMap.get(appEnvVo.getId());
-            for (Long appModuleId : appModuleIdSet) {
-                AppModuleVo appModuleVo = appModuleMap.get(appModuleId);
-                AppModuleVo appModule = new AppModuleVo();
-                appModule.setId(appModuleVo.getId());
-                appModule.setName(appModuleVo.getName());
-                appModule.setAbbrName(appModuleVo.getAbbrName());
-                appModuleList.add(appModule);
+            Map<Long, AppModuleVo> appModuleMap = new HashMap<>();
+            List<AppModuleVo> appModuleList = appEnvId2AppModuleListMap.get(appEnvVo.getId());
+            for (AppModuleVo appModuleVo : appModuleList) {
+                AppModuleVo appModule = appModuleMap.get(appModuleVo.getId());
+                if (appModule == null) {
+                    appModule = new AppModuleVo();
+                    appModule.setId(appModuleVo.getId());
+                    appModule.setName(appModuleVo.getName());
+                    appModule.setAbbrName(appModuleVo.getAbbrName());
+                    List<CiVo> ciList = new ArrayList<>();
+                    if (CollectionUtils.isNotEmpty(appModuleVo.getCiList())) {
+                        ciList.addAll(appModuleVo.getCiList());
+                    }
+                    appModule.setCiList(ciList);
+                    appModuleMap.put(appModuleVo.getId(), appModule);
+                } else {
+                    if (CollectionUtils.isNotEmpty(appModuleVo.getCiList())) {
+                        appModule.getCiList().addAll(appModuleVo.getCiList());
+                    }
+                }
             }
-            appModuleList.sort(Comparator.comparing(AppModuleVo::getId));
-            appEnvVo.setAppModuleList(appModuleList);
+            List<AppModuleVo> mergeAppModuleList = new ArrayList<>(appModuleMap.values());
+            mergeAppModuleList.sort(Comparator.comparing(AppModuleVo::getId));
+            appEnvVo.setAppModuleList(mergeAppModuleList);
             resultList.add(appEnvVo);
         }
         resultList.sort(Comparator.comparing(AppEnvVo::getSeqNo));
