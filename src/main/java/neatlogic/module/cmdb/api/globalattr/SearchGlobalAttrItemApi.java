@@ -20,11 +20,15 @@ import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
+import neatlogic.framework.cmdb.exception.globalattr.GlobalAttrNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.exception.type.ParamNotExistsException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -48,7 +52,8 @@ public class SearchGlobalAttrItemApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "attrId", type = ApiParamType.LONG, desc = "属性id", isRequired = true),
+            @Param(name = "attrId", type = ApiParamType.LONG, desc = "属性id"),
+            @Param(name = "attrName", type = ApiParamType.STRING, desc = "属性唯一标识"),
             @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "用于回显的参数列表"),
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "common.keyword"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize"),
@@ -58,7 +63,19 @@ public class SearchGlobalAttrItemApi extends PrivateApiComponentBase {
     @Description(desc = "nmcag.searchglobalattritemapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
+        Long attrId = paramObj.getLong("attrId");
+        String attrName = paramObj.getString("attrName");
+        if (attrId == null && StringUtils.isBlank(attrName)) {
+            throw new ParamNotExistsException("attrId", "attrName");
+        }
         GlobalAttrItemVo globalAttrItemVo = JSON.toJavaObject(paramObj, GlobalAttrItemVo.class);
+        if (attrId == null && StringUtils.isNotBlank(attrName)) {
+            GlobalAttrVo globalAttrVo = globalAttrMapper.getGlobalAttrByName(attrName);
+            if (globalAttrVo == null) {
+                throw new GlobalAttrNotFoundException(attrName);
+            }
+            globalAttrItemVo.setAttrId(globalAttrVo.getId());
+        }
         return globalAttrMapper.searchGlobalAttrItem(globalAttrItemVo);
     }
 

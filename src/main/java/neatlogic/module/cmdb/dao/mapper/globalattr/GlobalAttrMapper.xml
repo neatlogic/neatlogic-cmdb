@@ -57,6 +57,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </collection>
     </resultMap>
 
+    <select id="getGlobalAttrByName" parameterType="java.lang.String" resultType="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo">
+        select cga.id,
+               cga.name,
+               cga.label,
+               cga.is_active   AS isActive,
+               cga.is_multiple AS isMultiple,
+               cga.description As description,
+               cga.is_private  AS isPrivate
+        from cmdb_global_attr cga
+        where cga.name = #{value}
+        limit 1
+    </select>
+
     <select id="getGlobalAttrById" parameterType="java.lang.Long" resultMap="globalAttrMap">
         select cga.id,
                cga.name,
