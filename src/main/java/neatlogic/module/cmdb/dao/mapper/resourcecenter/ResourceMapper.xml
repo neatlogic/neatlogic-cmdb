@@ -1021,7 +1021,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
           AND a.`env_id` = #{envId}
         ORDER BY a.`id`
         DESC
-            LIMIT #{startNum}, #{pageSize}
     </select>
 
     <select id="getResourceIdByIpAndPortAndNameWithFilter"
