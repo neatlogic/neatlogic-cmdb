@@ -352,6 +352,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                     list = ciEntityList;
                 } else {
                     ciEntityVo.setCurrentPage(currentPage);
+                    ciEntityVo.setGlobalAttrStrictMode(true);
                     list = ciEntityService.searchCiEntity(ciEntityVo);
                 }
                 if (CollectionUtils.isNotEmpty(list)) {
@@ -1162,6 +1163,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         try {
             MatrixCiVo matrixCiVo = matrixMapper.getMatrixCiByMatrixUuid(matrixUuid);
             setAttrIdListAndRelIdListFromMatrixConfig(matrixCiVo, ciEntityVo);
+            ciEntityVo.setGlobalAttrStrictMode(true);
             List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
             if (CollectionUtils.isNotEmpty(ciEntityList)) {
                 List<String> viewConstNameList = new ArrayList<>();
