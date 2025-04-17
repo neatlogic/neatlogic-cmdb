@@ -105,7 +105,6 @@ public class CreateDiscoveryJobApi extends PrivateApiComponentBase {
         autoexecJobActionCrossoverService.validateAndCreateJobFromCombop(autoexecJobVo);
         IAutoexecJobActionHandler fireAction = AutoexecJobActionHandlerFactory.getAction(JobAction.FIRE.getValue());
         autoexecJobVo.setAction(JobAction.FIRE.getValue());
-        autoexecJobVo.setIsFirstFire(1);
         fireAction.doService(autoexecJobVo);
         JSONObject resultObj = new JSONObject();
         resultObj.put("jobId", autoexecJobVo.getId());
