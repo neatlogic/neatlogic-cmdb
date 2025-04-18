@@ -176,6 +176,7 @@ public class CmdbDispatcher extends WorkerDispatcherBase {
                     ciEntityConditionVo.addAttrFilter(filterVo);
                 }
             }
+            ciEntityConditionVo.setGlobalAttrStrictMode(true);
             List<CiEntityVo> checkList = ciEntityService.searchCiEntity(ciEntityConditionVo);
             if (CollectionUtils.isEmpty(checkList)) {
                 throw new CmdbDispatcherDispatchFailedException(ci, ciEntityConditionVo.getAttrFilterList());

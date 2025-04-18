@@ -759,6 +759,7 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             ciEntityConditionVo.addAttrFilter(filterVo);
         }
         if (CollectionUtils.isNotEmpty(ciEntityConditionVo.getAttrFilterList())) {
+            ciEntityConditionVo.setGlobalAttrStrictMode(true);
             List<CiEntityVo> checkList = ciEntityService.searchCiEntity(ciEntityConditionVo);
             if (CollectionUtils.isNotEmpty(checkList)) {
                 return checkList.get(0).getId();
