@@ -2585,7 +2585,17 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             }
             attrFilterVo.setValueList(newValueList);
         } else {
-            attrFilterVo.setValueList(valueList);
+            List<String> newValueList = new ArrayList<>();
+            if (Objects.equals(expression, "notequal")) {
+                for (String value : valueList) {
+                    newValueList.add(value);
+                    newValueList.add(value.toLowerCase());
+                    newValueList.add(value.toUpperCase());
+                }
+            } else {
+                newValueList.addAll(valueList);
+            }
+            attrFilterVo.setValueList(new ArrayList<>(newValueList));
         }
         attrFilterVo.setExpression(expression);
         return attrFilterVo;
