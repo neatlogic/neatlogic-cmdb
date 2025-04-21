@@ -19,8 +19,9 @@ import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.ci.RelVo;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
 import neatlogic.framework.cmdb.enums.RelDirectionType;
-import neatlogic.framework.cmdb.exception.attr.AttrNotFoundException;
+import neatlogic.framework.cmdb.exception.attr.GlobalAttrOrAttrNotFoundException;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.dsl.DslSyntaxIrregularException;
 import neatlogic.framework.common.util.PageUtil;
@@ -28,6 +29,7 @@ import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
+import neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper;
 import neatlogic.module.cmdb.dsl.core.CalculateExpression;
 import neatlogic.module.cmdb.dsl.core.SearchExpression;
 import neatlogic.module.cmdb.dsl.core.SearchItem;
@@ -61,7 +63,7 @@ public class DslSearchManager {
     private static CiService ciService;
     private static AttrMapper attrMapper;
     private static RelMapper relMapper;
-
+    private static GlobalAttrMapper globalAttrMapper;
     private static CiMapper ciMapper;
 
     private Integer currentPage;
@@ -82,12 +84,13 @@ public class DslSearchManager {
     private final Map<Integer, CalculateExpression> calculateExpressionMap = new HashMap<>();
 
     @Autowired
-    public DslSearchManager(CiService _ciService, AttrMapper _attrMapper, RelMapper _relMapper, CiEntityMapper _ciEntityMapper, CiMapper _ciMapper) {
+    public DslSearchManager(CiService _ciService, AttrMapper _attrMapper, RelMapper _relMapper, CiEntityMapper _ciEntityMapper, CiMapper _ciMapper, GlobalAttrMapper _globalAttrMapper) {
         ciService = _ciService;
         attrMapper = _attrMapper;
         relMapper = _relMapper;
         ciEntityMapper = _ciEntityMapper;
         ciMapper = _ciMapper;
+        globalAttrMapper = _globalAttrMapper;
     }
 
     public DslSearchManager withCurrentPage(Integer currentPage) {
@@ -153,9 +156,15 @@ public class DslSearchManager {
         if (!attrName.contains(".")) {
             AttrVo attrVo = attrMapper.getAttrByCiIdAndName(this.ciId, attrName);
             if (attrVo == null) {
-                throw new AttrNotFoundException(attrName);
+                GlobalAttrVo globalAttrVo = globalAttrMapper.getGlobalAttrByName(attrName);
+                if (globalAttrVo != null) {
+                    this.searchItemMap.put(attrName, new SearchItem(ciId, globalAttrVo));
+                } else {
+                    throw new GlobalAttrOrAttrNotFoundException(attrName);
+                }
+            } else {
+                this.searchItemMap.put(attrName, new SearchItem(ciId, attrVo));
             }
-            this.searchItemMap.put(attrName, new SearchItem(ciId, attrVo));
         } else {
             String[] attrNames = attrName.split("\\.");
             Long currentCiId = ciId;
@@ -351,8 +360,13 @@ public class DslSearchManager {
      * 根据属性情况补充需要join的表
      */
     private void supplyJoinForSelectFragment(SelectFragment selectFragment, SearchItem searchItem) {
-        if (searchItem.getAttrVo() != null && !selectFragment.isAttrExists(searchItem.getAttrVo().getId())) {
-            selectFragment.addAttrToCheckSet(searchItem.getAttrVo().getId());
+        if ((searchItem.getAttrVo() != null && !selectFragment.isAttrExists(searchItem.getAttrVo().getId()))
+                || (searchItem.getGlobalAttrVo() != null && !selectFragment.isAttrExists(searchItem.getGlobalAttrVo().getId()))) {
+            if (searchItem.getAttrVo() != null) {
+                selectFragment.addAttrToCheckSet(searchItem.getAttrVo().getId());
+            } else if (searchItem.getGlobalAttrVo() != null) {
+                selectFragment.addAttrToCheckSet(searchItem.getGlobalAttrVo().getId());
+            }
             SelectBody selectBody = selectFragment.getSelect().getSelectBody();
             PlainSelect plainSelect = (PlainSelect) selectBody;
             //普通属性直接join对应的cmdb_xxx表
@@ -430,6 +444,44 @@ public class DslSearchManager {
                                         .withRightExpression(new Column()
                                                 .withTable(new Table(searchItem.getTargetCiEntityAlias()))
                                                 .withColumnName("id"))));
+            } else if (searchItem.getGlobalAttrVo() != null) {
+                //Join全局属性时，为了性能考虑都没有加left join，这会导致全局属性为空的配置项不在匹配范围内
+                plainSelect.addSelectItems(new SelectExpressionItem(new Column("value").withTable(new Table(searchItem.getGlobalAttrItemAlias()))).withAlias(new Alias(searchItem.getAlias())));
+                plainSelect.addJoins(new Join().withRightItem(new Table().withName("cmdb_cientity_globalattritem")
+                                .withSchemaName(TenantContext.get().getDbName())
+                                .withAlias(new Alias(searchItem.getCiEntityGlobalAttrItemAlias())))
+                        .addOnExpression(new AndExpression().withLeftExpression(
+                                new EqualsTo()
+                                        .withLeftExpression(new Column()
+                                                .withTable(new Table("ci_base"))
+                                                .withColumnName("id"))
+                                        .withRightExpression(new Column()
+                                                .withTable(new Table(searchItem.getCiEntityGlobalAttrItemAlias()))
+                                                .withColumnName("cientity_id"))).withRightExpression(
+                                new EqualsTo()
+                                        .withLeftExpression(new Column()
+                                                .withTable(new Table(searchItem.getCiEntityGlobalAttrItemAlias()))
+                                                .withColumnName("attr_id"))
+                                        .withRightExpression(new LongValue(searchItem.getGlobalAttrVo().getId())))
+                        )
+                );
+                plainSelect.addJoins(new Join().withRightItem(new Table().withName("cmdb_global_attritem")
+                                .withSchemaName(TenantContext.get().getDbName())
+                                .withAlias(new Alias(searchItem.getGlobalAttrItemAlias())))
+                        .addOnExpression(new AndExpression().withLeftExpression(
+                                        new EqualsTo()
+                                                .withLeftExpression(new Column().withTable(new Table(searchItem.getCiEntityGlobalAttrItemAlias()))
+                                                        .withColumnName("item_id"))
+                                                .withRightExpression(new Column()
+                                                        .withTable(new Table(searchItem.getGlobalAttrItemAlias()))
+                                                        .withColumnName("id"))).withRightExpression(
+                                        new EqualsTo()
+                                                .withLeftExpression(new Column()
+                                                        .withTable(new Table(searchItem.getGlobalAttrItemAlias()))
+                                                        .withColumnName("attr_id"))
+                                                .withRightExpression(new LongValue(searchItem.getGlobalAttrVo().getId()))
+                                )
+                        ));
             }
         }
     }
@@ -462,7 +514,7 @@ public class DslSearchManager {
                 }
                 //检查是否需要补充属性，如果是关系，则直接使用配置项名称作为返回值
                 SelectFragment selectFragment = this.ciSelectMap.get(searchItem.getCiPath());
-                if (searchItem.getAttrVo() != null) {
+                if (searchItem.getAttrVo() != null || searchItem.getGlobalAttrVo() != null) {
                     this.supplyJoinForSelectFragment(selectFragment, searchItem);
                 }
             }
@@ -569,6 +621,7 @@ public class DslSearchManager {
             }
             plainSelect.setLimit(limit);
         }
+        System.out.println(select.toString());
         return select.toString();
     }
 
@@ -611,7 +664,7 @@ public class DslSearchManager {
                 }
                 //检查是否需要补充属性，如果是关系，则直接使用配置项名称作为返回值
                 SelectFragment selectFragment = this.ciSelectMap.get(searchItem.getCiPath());
-                if (searchItem.getAttrVo() != null) {
+                if (searchItem.getAttrVo() != null || searchItem.getGlobalAttrVo() != null) {
                     this.supplyJoinForSelectFragment(selectFragment, searchItem);
                 }
             }
@@ -705,7 +758,6 @@ public class DslSearchManager {
         } else {
             plainSelect.withWhere(new InExpression().withLeftExpression(new Column().withTable(new Table("ci_base")).withColumnName("ci_id")).withRightItemsList(ciExpressionList));
         }
-
         return select.toString();
     }
 

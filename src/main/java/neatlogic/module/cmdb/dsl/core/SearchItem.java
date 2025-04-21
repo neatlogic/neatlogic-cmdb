@@ -17,6 +17,7 @@ package neatlogic.module.cmdb.dsl.core;
 
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.RelVo;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
 import neatlogic.framework.util.SnowflakeUtil;
 import org.apache.commons.lang3.StringUtils;
 
@@ -31,6 +32,7 @@ public class SearchItem {
     private Long ciId;
     private RelVo relVo;
     private AttrVo attrVo;
+    private GlobalAttrVo globalAttrVo;
     private SearchItem next;
     private SearchItem prev;
     //在sql语句中属性的别名
@@ -45,6 +47,32 @@ public class SearchItem {
     private String relEntityAlias;
     //目标cientity表的alias
     private String targetCiEntityAlias;
+
+    private String ciEntityGlobalAttrItemAlias;
+    private String globalAttrItemAlias;
+
+    public GlobalAttrVo getGlobalAttrVo() {
+        return globalAttrVo;
+    }
+
+    public void setGlobalAttrVo(GlobalAttrVo globalAttrVo) {
+        this.globalAttrVo = globalAttrVo;
+    }
+
+    public String getCiEntityGlobalAttrItemAlias() {
+        if (StringUtils.isBlank(ciEntityGlobalAttrItemAlias)) {
+            ciEntityGlobalAttrItemAlias = "cientity_globalattr_item_" + SnowflakeUtil.uniqueLong();
+        }
+        return ciEntityGlobalAttrItemAlias;
+    }
+
+
+    public String getGlobalAttrItemAlias() {
+        if (StringUtils.isBlank(globalAttrItemAlias)) {
+            globalAttrItemAlias = "globalattr_item_" + SnowflakeUtil.uniqueLong();
+        }
+        return globalAttrItemAlias;
+    }
 
 
     public String getAlias() {
@@ -98,6 +126,11 @@ public class SearchItem {
     public SearchItem(Long ciId, AttrVo attrVo) {
         this.ciId = ciId;
         this.attrVo = attrVo;
+    }
+
+    public SearchItem(Long ciId, GlobalAttrVo globalAttrVo) {
+        this.ciId = ciId;
+        this.globalAttrVo = globalAttrVo;
     }
 
     public RelVo getRelVo() {
