@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.group;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
@@ -22,10 +23,12 @@ import neatlogic.framework.cmdb.auth.label.GROUP_MODIFY;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.group.GroupAuthVo;
 import neatlogic.framework.cmdb.dto.group.GroupVo;
+import neatlogic.framework.cmdb.exception.group.GroupNameIsExistsException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.module.cmdb.dao.mapper.group.GroupMapper;
 import neatlogic.module.cmdb.service.group.GroupService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -41,6 +44,9 @@ public class SaveGroupApi extends PrivateApiComponentBase {
 
     @Resource
     private GroupService groupService;
+
+    @Resource
+    private GroupMapper groupMapper;
 
 
     @Override
@@ -103,7 +109,7 @@ public class SaveGroupApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");
-        GroupVo groupVo = JSONObject.toJavaObject(jsonObj, GroupVo.class);
+        GroupVo groupVo = JSON.toJavaObject(jsonObj, GroupVo.class);
         //转换权限格式
         List<GroupAuthVo> groupAuthList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(groupVo.getAuthList())) {
@@ -113,6 +119,9 @@ public class SaveGroupApi extends PrivateApiComponentBase {
                 authVo.setAuthUuid(auth.split("#")[1]);
                 groupAuthList.add(authVo);
             }
+        }
+        if (groupMapper.checkGroupNameIsExists(groupVo) > 0) {
+            throw new GroupNameIsExistsException(groupVo.getName());
         }
         groupVo.setGroupAuthList(groupAuthList);
         if (id == null) {

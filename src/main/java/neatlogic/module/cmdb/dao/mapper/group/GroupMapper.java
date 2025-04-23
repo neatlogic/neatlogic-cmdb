@@ -24,6 +24,8 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface GroupMapper {
+    int checkGroupNameIsExists(GroupVo groupVo);
+
     List<GroupVo> getDoingGroupByServerId(GroupVo groupVo);
 
     int getCiEntityCountByGroupId(Long groupId);

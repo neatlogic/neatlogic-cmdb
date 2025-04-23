@@ -18,6 +18,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 <mapper namespace="neatlogic.module.cmdb.dao.mapper.group.GroupMapper">
     <cache-ref namespace="neatlogic.module.cmdb.dao.mapper.ci.CiMapper"/>
 
+    <select id="checkGroupNameIsExists" parameterType="neatlogic.framework.cmdb.dto.group.GroupVo" resultType="int">
+        select count(1)
+        from cmdb_group
+        where name = #{name}
+          and id != #{id}
+    </select>
+
     <select id="getActiveGroupByCiId" parameterType="java.lang.Long"
             resultType="neatlogic.framework.cmdb.dto.group.GroupVo"
             useCache="true">
@@ -124,21 +131,37 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </where>
     </sql>
 
-    <select id="searchGroup" parameterType="neatlogic.framework.cmdb.dto.group.GroupVo"
-            resultType="neatlogic.framework.cmdb.dto.group.GroupVo" useCache="false">
+
+    <select id="searchGroup" parameterType="neatlogic.framework.cmdb.dto.group.GroupVo" resultMap="groupResultMap"
+            useCache="false">
+        select
+        x.*,
+        b.id as ciGroupId,
+        b.ci_id as ciId,
+        b.rule as ruleStr,
+        c.group_id as authGroupId,
+        c.auth_type as authType,
+        c.auth_uuid as authUuid,
+        d.name as ciName,
+        d.label as ciLabel,
+        d.icon as ciIcon
+        from (
         select a.id,
         a.is_active as isActive,
         a.name,
         a.type,
         a.description,
         a.cientity_count AS ciEntityCount,
-        a.error,
-        a.status
+        a.status AS status,
+        a.error as error
         from cmdb_group a
         <include refid="searchGroupCondition"></include>
         <if test="idList == null or idList.size() == 0">
-            LIMIT #{startNum},#{pageSize}
-        </if>
+            LIMIT #{startNum}, #{pageSize}
+        </if>) x
+        left join cmdb_ci_group b on x.id = b.group_id
+        left join cmdb_group_auth c on x.id = c.group_id
+        left join cmdb_ci d on b.ci_id = d.id
     </select>
 
     <select id="searchGroupCount" parameterType="neatlogic.framework.cmdb.dto.group.GroupVo" resultType="int"
@@ -160,7 +183,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         <collection property="ciGroupList" ofType="neatlogic.framework.cmdb.dto.group.CiGroupVo">
             <id property="id" column="ciGroupId"/>
             <result property="ciId" column="ciId"/>
-            <result property="ruleStr" column="ruleStr"/>
+            <result property="ciName" column="ciName"/>
+            <result property="ciLabel" column="ciLabel"/>
+            <result property="ciIcon" column="ciIcon"/>
+            <result property="ruleStr" column="ruleStr" typeHandler="neatlogic.framework.dao.plugin.CompressHandler"/>
         </collection>
         <collection property="groupAuthList" ofType="neatlogic.framework.cmdb.dto.group.GroupAuthVo">
             <result property="groupId" column="authGroupId"/>
@@ -344,7 +370,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 
     <insert id="insertCiGroup" parameterType="neatlogic.framework.cmdb.dto.group.CiGroupVo">
         insert into cmdb_ci_group (id, ci_id, group_id, rule)
-        values (#{id}, #{ciId}, #{groupId}, #{ruleStr})
+        values (#{id}, #{ciId}, #{groupId}, #{ruleStr, typeHandler=CompressHandler})
     </insert>
 
     <insert id="insertCiEntityGroup" parameterType="neatlogic.framework.cmdb.dto.group.CiEntityGroupVo">

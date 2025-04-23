@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.group;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
@@ -24,7 +25,7 @@ import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.util.CardResultUtil;
+import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.cmdb.dao.mapper.group.GroupMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -68,14 +69,14 @@ public class SearchGroupApi extends PrivateApiComponentBase {
     @Description(desc = "搜索团体信息接口，如果提供了idList参数，将会直接返回团体列表，没有tbodyList包裹")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        GroupVo groupVo = JSONObject.toJavaObject(jsonObj, GroupVo.class);
+        GroupVo groupVo = JSON.toJavaObject(jsonObj, GroupVo.class);
         List<GroupVo> groupList = groupMapper.searchGroup(groupVo);
         if (CollectionUtils.isEmpty(groupVo.getIdList())) {
             if (CollectionUtils.isNotEmpty(groupList)) {
                 int rowNum = groupMapper.searchGroupCount(groupVo);
                 groupVo.setRowNum(rowNum);
             }
-            return CardResultUtil.getResult(groupList, groupVo);
+            return TableResultUtil.getResult(groupList, groupVo);
         } else {
             return groupList;
         }

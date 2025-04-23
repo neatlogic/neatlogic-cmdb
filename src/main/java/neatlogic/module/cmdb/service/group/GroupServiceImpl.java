@@ -50,6 +50,8 @@ public class GroupServiceImpl implements GroupService {
         groupMapper.insertGroup(groupVo);
         if (CollectionUtils.isNotEmpty(groupVo.getCiGroupList())) {
             for (CiGroupVo ciGroupVo : groupVo.getCiGroupList()) {
+                //可能是复制，因此只要是添加先清空id，避免用到老id
+                ciGroupVo.setId(null);
                 ciGroupVo.setGroupId(groupVo.getId());
                 groupMapper.insertCiGroup(ciGroupVo);
             }
