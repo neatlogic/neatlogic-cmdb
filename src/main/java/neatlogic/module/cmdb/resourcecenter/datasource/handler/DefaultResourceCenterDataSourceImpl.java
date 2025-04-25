@@ -659,7 +659,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
                         if (config != null) {
                             CiVo ciVo = ciMapper.getCiByName(config.getMainCi());
                             if (ciVo != null) {
-                                searchVo.setViewName("cmdb_" + ciVo.getId());
+                                searchVo.setViewName(ciVo.getCiTableName(false));
                                 rowNum = resourceMapper.getAllResourceCount(searchVo);
                             }
                         }
