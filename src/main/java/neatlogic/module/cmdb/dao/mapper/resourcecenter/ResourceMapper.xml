@@ -1119,6 +1119,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         <if test="port == null">
             and a.`port` is null
         </if>
+        LIMIT 1
     </select>
 
     <select id="getAppSystemById" parameterType="java.lang.Long" resultMap="resourceCenterMap">
