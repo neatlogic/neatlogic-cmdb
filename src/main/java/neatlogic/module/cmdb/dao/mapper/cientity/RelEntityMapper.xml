@@ -237,6 +237,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
           AND a.rel_id = #{relId}
     </select>
 
+    <select id="getRelEntityCountByFromCiEntityIdAndRelId" resultType="int">
+        select count(1)
+        from cmdb_relentity
+        where rel_id = #{relId}
+          and from_cientity_id = #{fromCiEntityId}
+    </select>
+
+    <select id="getRelEntityCountByToCiEntityIdAndRelId" resultType="int">
+        select count(1)
+        from cmdb_relentity
+        where rel_id = #{relId}
+          and to_cientity_id = #{toCiEntityId}
+    </select>
+
     <select id="getRelEntityByFromCiEntityIdAndRelId" resultType="neatlogic.framework.cmdb.dto.cientity.RelEntityVo">
         SELECT
         a.`id`,

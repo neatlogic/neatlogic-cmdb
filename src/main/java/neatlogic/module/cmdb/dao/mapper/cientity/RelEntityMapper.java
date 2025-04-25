@@ -53,6 +53,12 @@ public interface RelEntityMapper {
     List<RelEntityVo> getRelEntityByFromCiEntityIdAndRelId(@Param("fromCiEntityId") Long fromCiEntityId,
                                                            @Param("relId") Long relId, @Param("limit") Long limit);
 
+    int getRelEntityCountByFromCiEntityIdAndRelId(@Param("fromCiEntityId") Long fromCiEntityId,
+                                                  @Param("relId") Long relId);
+
+    int getRelEntityCountByToCiEntityIdAndRelId(@Param("toCiEntityId") Long toCiEntityId,
+                                                  @Param("relId") Long relId);
+
     RelEntityVo getRelEntityByFromCiEntityIdAndToCiEntityIdAndRelId(@Param("fromCiEntityId") Long fromCiEntityId, @Param("toCiEntityId") Long toCiEntityId, @Param("relId") Long relId);
 
     List<RelEntityVo> getRelEntityByToCiEntityIdAndRelId(@Param("toCiEntityId") Long toCiEntityId,
