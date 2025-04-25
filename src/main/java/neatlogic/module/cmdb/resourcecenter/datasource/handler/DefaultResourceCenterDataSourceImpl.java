@@ -28,6 +28,7 @@ import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityConfigVo
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityFieldMappingVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.SceneEntityVo;
+import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppModuleNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
 import neatlogic.framework.cmdb.resourcecenter.datasource.core.IResourceCenterDataSource;
@@ -652,7 +653,17 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             if (Objects.equals(searchVo.getRowNum(), 0)) {
                 int rowNum = 0;
                 if (noFilterCondition(searchVo)) {
-                    rowNum = resourceMapper.getAllResourceCount(searchVo);
+                    ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
+                    if (resourceEntityVo != null) {
+                        ResourceEntityConfigVo config = resourceEntityVo.getConfig();
+                        if (config != null) {
+                            CiVo ciVo = ciMapper.getCiByName(config.getMainCi());
+                            if (ciVo != null) {
+                                searchVo.setViewName(ciVo.getCiTableName(false));
+                                rowNum = resourceMapper.getAllResourceCount(searchVo);
+                            }
+                        }
+                    }
                 } else {
                     rowNum = resourceMapper.getResourceCount(searchVo);
                 }
@@ -670,10 +681,23 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             keyword = keyword.toLowerCase();
         }
         List<ResourceTypeVo> resultList = new ArrayList<>();
-        List<Long> ciIdList = resourceEntityMapper.getAllResourceTypeCiIdList();
-        if (CollectionUtils.isEmpty(ciIdList)) {
+//        List<Long> ciIdList = resourceEntityMapper.getAllResourceTypeCiIdList();
+//        if (CollectionUtils.isEmpty(ciIdList)) {
+//            return resultList;
+//        }
+        AssetListDisplayVo assetListDisplayVo = resourceEntityMapper.getAssetListDisplay();
+        if (assetListDisplayVo == null) {
             return resultList;
         }
+        String rootCiName = assetListDisplayVo.getRootCiName();
+        if (StringUtils.isBlank(rootCiName)) {
+            return resultList;
+        }
+        CiVo rootCiVo = ciMapper.getCiByName(rootCiName);
+        if (rootCiVo == null) {
+            throw new CiNotFoundException(rootCiName);
+        }
+        List<Long> ciIdList = Collections.singletonList(rootCiVo.getId());
         List<CiVo> authCiVoList = new ArrayList<>();
         ResourceSearchVo searchVo = new ResourceSearchVo();
         searchVo.setTypeIdList(ciIdList);
