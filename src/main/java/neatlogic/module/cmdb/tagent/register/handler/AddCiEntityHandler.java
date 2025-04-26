@@ -63,8 +63,8 @@ public class AddCiEntityHandler extends AfterRegisterBase {
             logger.debug("AddCiEntityHandler init! {}", tagentStr);
         }
         if (StringUtils.isNotBlank(tagentVo.getOsType()) && StringUtils.isNotBlank(tagentVo.getIp())) {
-            //资产清单不存在才同步入cmdb
-            ResourceVo resourceVo = resourceMapper.getResourceByIpAndPort(tagentVo.getIp(),null);
+            //ip在scence_os视图中不存在才同步入cmdb
+            ResourceVo resourceVo = resourceMapper.getOSByIp(tagentVo.getIp());
             if (resourceVo == null) {
                 List<SyncCiCollectionVo> tmpList = syncMapper.getSyncCiCollectionByCollectionName(tagentVo.getOsType());
                 List<SyncCiCollectionVo> ciCollectionList = tmpList.stream().filter(d -> d.getCollectMode().equals(CollectMode.INITIATIVE.getValue())).collect(Collectors.toList());

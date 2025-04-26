@@ -103,6 +103,8 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     ResourceVo getResourceByIpAndPort(@Param("ip") String ip, @Param("port") Integer port);
 
+    ResourceVo getOSByIp(String ip);
+
     ResourceVo getAppSystemById(Long id);
 
     ResourceVo getAppSystemByName(String name);

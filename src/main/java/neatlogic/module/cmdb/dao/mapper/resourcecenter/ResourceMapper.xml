@@ -1123,6 +1123,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         LIMIT 1
     </select>
 
+    <select id="getOSByIp" parameterType="java.lang.String" resultType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo">
+        SELECT
+        a.`id`,
+        a.`name`,
+        a.`ip`,
+        a.`type_id` AS typeId,
+        a.`type_name` AS typeName,
+        a.`type_label` AS typeLabel
+        FROM
+        @{DATA_SCHEMA}.`scence_os` a
+        WHERE a.`ip` = #{ip}
+        LIMIT 1
+    </select>
+
     <select id="getAppSystemById" parameterType="java.lang.Long" resultMap="resourceCenterMap">
         select `id`,
                `name`,

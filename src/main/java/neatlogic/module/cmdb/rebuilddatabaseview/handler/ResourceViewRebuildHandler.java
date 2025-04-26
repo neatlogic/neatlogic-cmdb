@@ -55,10 +55,12 @@ public class ResourceViewRebuildHandler implements IRebuildDataBaseView {
     @Override
     public List<ViewStatusInfo> createViewIfNotExists() {
         List<ViewStatusInfo> resultList = new ArrayList<>();
+        List<String> viewNameList = new ArrayList<>();
         List<ResourceEntityVo> resourceEntityList = resourceEntityMapper.getResourceEntityList();
         for (ResourceEntityVo resourceEntityVo : resourceEntityList) {
             String tableType = schemaMapper.checkTableOrViewIsExists(TenantContext.get().getDataDbName(), resourceEntityVo.getName());
             if (Objects.equals(tableType, "VIEW")) {
+                viewNameList.add(resourceEntityVo.getName());
                 continue;
             }
             String config = resourceEntityMapper.getResourceEntityConfigByName(resourceEntityVo.getName());
@@ -83,6 +85,19 @@ public class ResourceViewRebuildHandler implements IRebuildDataBaseView {
             resourceEntityVo.setConfigStr(config);
             ViewStatusInfo viewStatusInfo = rebuildSceneEntity(resourceEntityVo);
             resultList.add(viewStatusInfo);
+            viewNameList.add(resourceEntityVo.getName());
+        }
+        List<SceneEntityVo> sceneEntityList = ResourceEntityFactory.getSceneEntityList();
+        for (SceneEntityVo sceneEntityVo : sceneEntityList) {
+            if (viewNameList.contains(sceneEntityVo.getName())) {
+                continue;
+            }
+            ResourceEntityVo resourceEntityVo = new ResourceEntityVo();
+            resourceEntityVo.setName(sceneEntityVo.getName());
+            resourceEntityVo.setLabel(sceneEntityVo.getLabel());
+            resourceEntityVo.setConfigStr("{}");
+            ViewStatusInfo viewStatusInfo = rebuildSceneEntity(resourceEntityVo);
+            resultList.add(viewStatusInfo);
         }
         return resultList;
     }
@@ -90,6 +105,7 @@ public class ResourceViewRebuildHandler implements IRebuildDataBaseView {
     @Override
     public List<ViewStatusInfo> createOrReplaceView() {
         List<ViewStatusInfo> resultList = new ArrayList<>();
+        List<String> viewNameList = new ArrayList<>();
         List<ResourceEntityVo> resourceEntityList = resourceEntityMapper.getResourceEntityList();
         for (ResourceEntityVo resourceEntityVo : resourceEntityList) {
             String config = resourceEntityMapper.getResourceEntityConfigByName(resourceEntityVo.getName());
@@ -112,6 +128,19 @@ public class ResourceViewRebuildHandler implements IRebuildDataBaseView {
                 }
             }
             resourceEntityVo.setConfigStr(config);
+            ViewStatusInfo viewStatusInfo = rebuildSceneEntity(resourceEntityVo);
+            resultList.add(viewStatusInfo);
+            viewNameList.add(resourceEntityVo.getName());
+        }
+        List<SceneEntityVo> sceneEntityList = ResourceEntityFactory.getSceneEntityList();
+        for (SceneEntityVo sceneEntityVo : sceneEntityList) {
+            if (viewNameList.contains(sceneEntityVo.getName())) {
+                continue;
+            }
+            ResourceEntityVo resourceEntityVo = new ResourceEntityVo();
+            resourceEntityVo.setName(sceneEntityVo.getName());
+            resourceEntityVo.setLabel(sceneEntityVo.getLabel());
+            resourceEntityVo.setConfigStr("{}");
             ViewStatusInfo viewStatusInfo = rebuildSceneEntity(resourceEntityVo);
             resultList.add(viewStatusInfo);
         }

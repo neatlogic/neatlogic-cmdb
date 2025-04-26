@@ -90,6 +90,9 @@ public class GetResourceEntityApi extends PrivateApiComponentBase {
             resourceEntityVo.setIsMultiple(sceneEntityVo.getIsMultiple());
             List<ValueTextVo> fieldList = ResourceEntityFactory.getFieldListByViewName(name);
             resourceEntityVo.setFieldList(fieldList);
+            ResourceEntityConfigVo config = new ResourceEntityConfigVo();
+            config.setRelNode(new ResourceEntityRelNodeVo());
+            resourceEntityVo.setConfig(config);
             return resourceEntityVo;
         }
         ResourceEntityConfigVo config = resourceEntityVo.getConfig();

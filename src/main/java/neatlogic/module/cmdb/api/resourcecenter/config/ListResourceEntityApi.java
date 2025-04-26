@@ -82,11 +82,11 @@ public class ListResourceEntityApi extends PrivateApiComponentBase {
             ResourceEntityVo resourceEntityVo = resourceEntityVoMap.remove(sceneEntityVo.getName());
             if (resourceEntityVo == null) {
                 resourceEntityVo = new ResourceEntityVo();
+                resourceEntityVo.setName(sceneEntityVo.getName());
+                resourceEntityVo.setLabel(sceneEntityVo.getLabel());
+                resourceEntityVo.setDescription(sceneEntityVo.getDescription());
                 resourceEntityVo.setStatus(Status.PENDING.getValue());
             }
-            resourceEntityVo.setName(sceneEntityVo.getName());
-            resourceEntityVo.setLabel(sceneEntityVo.getLabel());
-            resourceEntityVo.setDescription(sceneEntityVo.getDescription());
             resourceEntityVo.setIsMultiple(sceneEntityVo.getIsMultiple());
             resourceEntityVo.setModuleId(sceneEntityVo.getModuleId());
             ModuleVo moduleVo = ModuleUtil.getModuleById(sceneEntityVo.getModuleId());
