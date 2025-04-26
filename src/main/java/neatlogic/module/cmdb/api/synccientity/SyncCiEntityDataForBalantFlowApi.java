@@ -17,6 +17,7 @@
 
 package neatlogic.module.cmdb.api.synccientity;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.InputFromContext;
@@ -109,6 +110,7 @@ public class SyncCiEntityDataForBalantFlowApi extends PrivateApiComponentBase {
             @Param(name = "syncCiList", type = ApiParamType.JSONARRAY, isRequired = true, minSize = 1, desc = "同步模型列表"),
             @Param(name = "integrationName", type = ApiParamType.STRING, isRequired = true, desc = "集成名称"),
             @Param(name = "integrationParam", type = ApiParamType.STRING, desc = "集成输入参数"),
+            @Param(name = "listeningNameList", type = ApiParamType.JSONARRAY, desc = "监听列表", help = "配置项名称"),
             @Param(name = "integrationRequestMaxCount", type = ApiParamType.INTEGER, defaultValue = "10000", desc = "集成请求最大次数，默认是10000"),
 
     })
@@ -119,6 +121,11 @@ public class SyncCiEntityDataForBalantFlowApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         JSONObject resultObj = new JSONObject();
+        List<String> listeningNameList = new ArrayList<>();
+        JSONArray listeningNameArray = paramObj.getJSONArray("listeningNameList");
+        if (CollectionUtils.isNotEmpty(listeningNameArray)) {
+            listeningNameList = listeningNameArray.toJavaList(String.class);
+        }
         JSONArray syncCiList = paramObj.getJSONArray("syncCiList");
         List<CiMappingVo> ciMappingList = checkSyncCiList(syncCiList);
         resultObj.put("ciMappingList", ciMappingList);
@@ -131,6 +138,9 @@ public class SyncCiEntityDataForBalantFlowApi extends PrivateApiComponentBase {
                 if (handler == null) {
                     throw new IntegrationHandlerNotFoundException(supplierIntegrationVo.getHandler());
                 }
+                JSONArray insertList = new JSONArray();
+                JSONArray updateList = new JSONArray();
+                JSONArray listeningList = new JSONArray();
                 JSONObject integrationParam = paramObj.getJSONObject("integrationParam");
                 if (MapUtils.isNotEmpty(integrationParam)) {
                     supplierIntegrationVo.getParamObj().putAll(integrationParam);
@@ -148,13 +158,9 @@ public class SyncCiEntityDataForBalantFlowApi extends PrivateApiComponentBase {
                     if (MapUtils.isNotEmpty(dataObj)) {
                         JSONObject returnObj = dataObj.getJSONObject("Return");
                         if (MapUtils.isNotEmpty(returnObj)) {
-                            System.out.println("returnObj = " + returnObj);
                             Long id = returnObj.getLong("id");
-                            System.out.println("id = " + id);
                             String name = returnObj.getString("name");
-                            System.out.println("name = " + name);
                             JSONArray columnList = returnObj.getJSONArray("columnList");
-                            System.out.println("columnList = " + columnList);
                             if (MapUtils.isEmpty(label2CiIdMap)) {
                                 if (CollectionUtils.isNotEmpty(columnList)) {
                                     for (int i = 0; i < columnList.size(); i++) {
@@ -169,26 +175,39 @@ public class SyncCiEntityDataForBalantFlowApi extends PrivateApiComponentBase {
                                 }
                             }
                             JSONArray resultList = returnObj.getJSONArray("resultList");
-                            System.out.println("resultList = " + resultList);
                             if (CollectionUtils.isNotEmpty(resultList)) {
-                                List<Long> transactionGroupIdList = savePageCiEntityList(label2CiIdMap, resultList, ciMappingList);
+                                List<Long> transactionGroupIdList = savePageCiEntityList(label2CiIdMap, resultList, ciMappingList, listeningNameList, insertList, updateList, listeningList);
                                 resultObj.put("transactionGroupIdList", transactionGroupIdList);
                             }
+                        } else {
+                            break;
                         }
                     }
+                }
+                resultObj.put("insertList", insertList);
+                resultObj.put("updateList", updateList);
+                if (CollectionUtils.isNotEmpty(listeningList)) {
+                    resultObj.put("listeningList", listeningList);
                 }
             }
         }
         return resultObj;
     }
-    private List<Long> savePageCiEntityList(Map<String, Long> label2CiIdMap, JSONArray resultList, List<CiMappingVo> ciMappingList) {
+    private List<Long> savePageCiEntityList(
+            Map<String, Long> label2CiIdMap,
+            JSONArray resultList,
+            List<CiMappingVo> ciMappingList,
+            List<String> listeningNameList,
+            JSONArray insertList,
+            JSONArray updateList,
+            JSONArray listeningList
+    ) {
         List<Long> transactionGroupIdList = new ArrayList<>();
         for (int i = 0; i < resultList.size(); i++) {
             JSONObject row = resultList.getJSONObject(i);
             Long ciEntityId = row.getLong("ciEntityId");
             JSONArray attrList = row.getJSONArray("attrList");
             if (CollectionUtils.isNotEmpty(attrList)) {
-                System.out.println("attrList = " + attrList);
                 for (int j = 0; j < attrList.size(); j++) {
                     JSONObject attrObj = attrList.getJSONObject(i);
                     if (MapUtils.isNotEmpty(attrObj)) {
@@ -202,8 +221,8 @@ public class SyncCiEntityDataForBalantFlowApi extends PrivateApiComponentBase {
                 for (CiMappingVo ciMappingVo : ciMappingList) {
                     JSONObject positioningError = new JSONObject();
                     List<CiEntityTransactionVo> ciEntityTransactionList = new ArrayList<>();
-                    CiEntityTransactionVo ciEntityTransactionVo = createCiEntityTransactionVo(attrList, ciMappingVo, ciEntityTransactionList, positioningError);
-                    Long transactionGroupId = saveRowCiEntityList(ciEntityTransactionList);
+                    CiEntityTransactionVo ciEntityTransactionVo = generateCiEntityTransactionVo(attrList, ciMappingVo, ciEntityTransactionList, positioningError);
+                    Long transactionGroupId = saveRowCiEntityList(ciEntityTransactionList, listeningNameList, insertList, updateList, listeningList);
                     transactionGroupIdList.add(transactionGroupId);
                 }
             }
@@ -211,9 +230,8 @@ public class SyncCiEntityDataForBalantFlowApi extends PrivateApiComponentBase {
         return transactionGroupIdList;
     }
 
-    private CiEntityTransactionVo createCiEntityTransactionVo(JSONArray attrList, CiMappingVo ciMappingVo, List<CiEntityTransactionVo> ciEntityTransactionList, JSONObject positioningError) {
+    private CiEntityTransactionVo generateCiEntityTransactionVo(JSONArray attrList, CiMappingVo ciMappingVo, List<CiEntityTransactionVo> ciEntityTransactionList, JSONObject positioningError) {
         CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
-        ciEntityTransactionVo.setCiEntityId(-1L);
         ciEntityTransactionVo.setCiId(ciMappingVo.getCiId());
         ciEntityTransactionVo.setAllowCommit(true);
         ciEntityTransactionVo.setEditMode(EditModeType.PARTIAL.getValue());
@@ -226,7 +244,16 @@ public class SyncCiEntityDataForBalantFlowApi extends PrivateApiComponentBase {
             ciEntityTransactionVo.setCiEntityId(ciEntityId);
             ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
         } else {
+            ciEntityTransactionVo.getCiEntityId();
             ciEntityTransactionVo.setCiEntityUuid(UuidUtil.randomUuid());
+            JSONObject nameAttrEntityData = ciEntityTransactionVo.getAttrEntityDataByAttrId(ciMappingVo.getNameAttrId());
+            if (MapUtils.isNotEmpty(nameAttrEntityData)) {
+                JSONArray valueArray = nameAttrEntityData.getJSONArray("valueList");
+                if (CollectionUtils.isNotEmpty(valueArray)) {
+                    List<String> valueList = valueArray.toJavaList(String.class);
+                    ciEntityTransactionVo.setName(String.join(",", valueList));
+                }
+            }
             ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
         }
         /* 关系 */
@@ -262,20 +289,27 @@ public class SyncCiEntityDataForBalantFlowApi extends PrivateApiComponentBase {
         JSONObject relEntityData = new JSONObject();
         for (RelMappingVo relMappingVo : relMappingList) {
             CiMappingVo valueMapping = relMappingVo.getValueMapping();
-            CiEntityTransactionVo ciEntityTransactionVo = createCiEntityTransactionVo(attrList, valueMapping, ciEntityTransactionList, positioningError);
+            CiEntityTransactionVo ciEntityTransactionVo = generateCiEntityTransactionVo(attrList, valueMapping, ciEntityTransactionList, positioningError);
             {
                 String key = "rel" + relMappingVo.getDirection() + "_" + relMappingVo.getId();
                 JSONArray valueList = new JSONArray();
                 JSONObject valueObj = new JSONObject();
-                String action = "append";
-                // 关系选择追加模式时，设置action为insert，否则设置为replace
-                if (Objects.equals(action, "append")) {
-                    valueObj.put("action", RelActionType.INSERT.getValue());
-                } else {
-                    valueObj.put("action", RelActionType.REPLACE.getValue());
-                }
-                if (ciEntityTransactionVo.getCiEntityId() != -1) {
+//                if (Objects.equals(relMappingVo.getDirection(), RelDirectionType.FROM.getValue())) {
+//                    if (Objects.equals(relMappingVo.getFromRule(), RelRuleType.N.getValue())) {
+//                        valueObj.put("action", RelActionType.INSERT.getValue());
+//                    } else {
+//                        valueObj.put("action", RelActionType.REPLACE.getValue());
+//                    }
+//                } else if (Objects.equals(relMappingVo.getDirection(), RelDirectionType.TO.getValue())) {
+//                    if (Objects.equals(relMappingVo.getToRule(), RelRuleType.N.getValue())) {
+//                        valueObj.put("action", RelActionType.INSERT.getValue());
+//                    } else {
+//                        valueObj.put("action", RelActionType.REPLACE.getValue());
+//                    }
+//                }
+                if (Objects.equals(ciEntityTransactionVo.getAction(), TransactionActionType.INSERT.getValue())) {
                     valueObj.put("_relId", relMappingVo.getId());
+                    valueObj.put("ciEntityId", ciEntityTransactionVo.getCiEntityId());
                     valueObj.put("ciEntityUuid", ciEntityTransactionVo.getCiEntityUuid());
                     valueObj.put("ciEntityName", "新的配置项");
                     valueObj.put("ciId", valueMapping.getCiId());
@@ -293,23 +327,27 @@ public class SyncCiEntityDataForBalantFlowApi extends PrivateApiComponentBase {
                 }
             }
             {
-                String key = "rel";
-                if (Objects.equals(relMappingVo.getDirection(), RelDirectionType.FROM.getValue())) {
-                    key = RelDirectionType.TO.getValue() + "_" + relMappingVo.getId();
-                } else if (Objects.equals(relMappingVo.getDirection(), RelDirectionType.TO.getValue())) {
-                    key = RelDirectionType.FROM.getValue() + "_" + relMappingVo.getId();
-                }
                 JSONArray valueList = new JSONArray();
                 JSONObject valueObj = new JSONObject();
-                String action = "append";
-                // 关系选择追加模式时，设置action为insert，否则设置为replace
-                if (Objects.equals(action, "append")) {
-                    valueObj.put("action", RelActionType.INSERT.getValue());
-                } else {
-                    valueObj.put("action", RelActionType.REPLACE.getValue());
+                String key = "rel";
+                if (Objects.equals(relMappingVo.getDirection(), RelDirectionType.FROM.getValue())) {
+                    key += RelDirectionType.TO.getValue() + "_" + relMappingVo.getId();
+//                    if (Objects.equals(relMappingVo.getToRule(), RelRuleType.N.getValue())) {
+//                        valueObj.put("action", RelActionType.INSERT.getValue());
+//                    } else {
+//                        valueObj.put("action", RelActionType.REPLACE.getValue());
+//                    }
+                } else if (Objects.equals(relMappingVo.getDirection(), RelDirectionType.TO.getValue())) {
+                    key += RelDirectionType.FROM.getValue() + "_" + relMappingVo.getId();
+//                    if (Objects.equals(relMappingVo.getFromRule(), RelRuleType.N.getValue())) {
+//                        valueObj.put("action", RelActionType.INSERT.getValue());
+//                    } else {
+//                        valueObj.put("action", RelActionType.REPLACE.getValue());
+//                    }
                 }
-                if (upperCiEntityTransactionVo.getCiEntityId() != -1) {
+                if (Objects.equals(ciEntityTransactionVo.getAction(), TransactionActionType.INSERT.getValue())) {
                     valueObj.put("_relId", relMappingVo.getId());
+                    valueObj.put("ciEntityId", upperCiEntityTransactionVo.getCiEntityId());
                     valueObj.put("ciEntityUuid", upperCiEntityTransactionVo.getCiEntityUuid());
                     valueObj.put("ciEntityName", "来源配置项");
                     valueObj.put("ciId", upperCiEntityTransactionVo.getCiId());
@@ -417,9 +455,6 @@ public class SyncCiEntityDataForBalantFlowApi extends PrivateApiComponentBase {
             positioningError.put("ciId", ciId);
             positioningError.put("ciName", ciName);
             positioningError.put("ciLabel", ciLabel);
-//            positioningError.put("newConfig", mainConfigObj);
-//            positioningError.put("configurationPath", mainConfigObj.getConfigurationPath());
-//            positioningError.put("actualPath", mainConfigObj.getActualPath());
             throw new AttrTypeNotFoundException(attrVo.getType());
         }
         if (CollectionUtils.isEmpty(valueList)) {
@@ -460,9 +495,6 @@ public class SyncCiEntityDataForBalantFlowApi extends PrivateApiComponentBase {
                 positioningError.put("ciId", ciId);
                 positioningError.put("ciName", ciName);
                 positioningError.put("ciLabel", ciLabel);
-//                positioningError.put("newConfig", mainConfigObj);
-//                positioningError.put("configurationPath", mainConfigObj.getConfigurationPath());
-//                positioningError.put("actualPath", mainConfigObj.getActualPath());
                 throw new CiNotFoundException(attrVo.getTargetCiId().toString());
             }
             for (String valueStr : stringValueList) {
@@ -509,9 +541,6 @@ public class SyncCiEntityDataForBalantFlowApi extends PrivateApiComponentBase {
                             positioningError.put("ciId", ciId);
                             positioningError.put("ciName", ciName);
                             positioningError.put("ciLabel", ciLabel);
-//                            positioningError.put("newConfig", mainConfigObj);
-//                            positioningError.put("configurationPath", mainConfigObj.getConfigurationPath());
-//                            positioningError.put("actualPath", mainConfigObj.getActualPath());
                             throw new AttrValueIrregularException(attrVo, valueStr);
                         }
                         for (CiEntityVo ciEntity : ciEntityList) {
@@ -528,9 +557,6 @@ public class SyncCiEntityDataForBalantFlowApi extends PrivateApiComponentBase {
                         positioningError.put("ciId", ciId);
                         positioningError.put("ciName", ciName);
                         positioningError.put("ciLabel", ciLabel);
-//                        positioningError.put("newConfig", mainConfigObj);
-//                        positioningError.put("configurationPath", mainConfigObj.getConfigurationPath());
-//                        positioningError.put("actualPath", mainConfigObj.getActualPath());
                         throw new AttrValueIrregularException(attrVo, valueStr);
                     }
                     for (CiEntityVo ciEntity : ciEntityList) {
@@ -552,11 +578,11 @@ public class SyncCiEntityDataForBalantFlowApi extends PrivateApiComponentBase {
             CiEntityTransactionVo ciEntityTransactionVo,
             JSONObject positioningError
     ) {
-        ICiCrossoverMapper ciCrossoverMapper = CrossoverServiceFactory.getApi(ICiCrossoverMapper.class);
+//        ICiCrossoverMapper ciCrossoverMapper = CrossoverServiceFactory.getApi(ICiCrossoverMapper.class);
         IAttrCrossoverMapper attrCrossoverMapper = CrossoverServiceFactory.getApi(IAttrCrossoverMapper.class);
         ICiEntityCrossoverService ciEntityCrossoverService = CrossoverServiceFactory.getApi(ICiEntityCrossoverService.class);
-        CiVo ciVo = ciCrossoverMapper.getCiById(ciMappingVo.getCiId());
-        List<Long> uniqueAttrIdList = ciVo.getUniqueAttrIdList();
+//        CiVo ciVo = ciCrossoverMapper.getCiById(ciMappingVo.getCiId());
+        List<Long> uniqueAttrIdList = ciMappingVo.getUniqueAttrIdList();
         if (CollectionUtils.isEmpty(uniqueAttrIdList)) {
             return null;
         }
@@ -569,7 +595,7 @@ public class SyncCiEntityDataForBalantFlowApi extends PrivateApiComponentBase {
         ciEntityConditionVo.setRelIdList(new ArrayList<Long>() {{
             this.add(0L);
         }});
-        for (Long attrId : ciVo.getUniqueAttrIdList()) {
+        for (Long attrId : uniqueAttrIdList) {
             List<String> valueList = new ArrayList<>();
             AttrEntityTransactionVo attrEntityTransaction = ciEntityTransactionVo.getAttrEntityTransactionByAttrId(attrId);
             if (attrEntityTransaction != null) {
@@ -582,15 +608,12 @@ public class SyncCiEntityDataForBalantFlowApi extends PrivateApiComponentBase {
                 positioningError.put("ciId", ciMappingVo.getCiId());
                 positioningError.put("ciName", ciMappingVo.getCiName());
                 positioningError.put("ciLabel", ciMappingVo.getCiLabel());
-//                positioningError.put("newConfig", mainConfigObj);
-//                positioningError.put("configurationPath", mainConfigObj.getConfigurationPath());
-//                positioningError.put("actualPath", mainConfigObj.getActualPath());
                 AttrVo attr = attrCrossoverMapper.getAttrById(attrId);
                 if (attr == null) {
-                    throw new AttrNotFoundException(ciVo.getName(), attrId.toString());
+                    throw new AttrNotFoundException(ciMappingVo.getCiName(), attrId.toString());
                 }
-                attr.setCiName(ciVo.getName());
-                attr.setCiLabel(ciVo.getLabel());
+                attr.setCiName(ciMappingVo.getCiName());
+                attr.setCiLabel(ciMappingVo.getCiLabel());
                 throw new CiUniqueAttrNotFoundException(attr);
             }
             AttrFilterVo filterVo = new AttrFilterVo();
@@ -622,11 +645,6 @@ public class SyncCiEntityDataForBalantFlowApi extends PrivateApiComponentBase {
     private JSONObject buildGlobalAttrEntityData(JSONArray attrList, List<GlobalAttrMappingVo> globalAttrMappingList, CiMappingVo ciMappingVo, JSONObject positioningError) {
         IGlobalAttrCrossoverMapper globalAttrCrossoverMapper = CrossoverServiceFactory.getApi(IGlobalAttrCrossoverMapper.class);
         JSONObject globalAttrEntityData = new JSONObject();
-//        List<String> noMappingKeyList = new ArrayList<>();
-//        GlobalAttrVo searchVo = new GlobalAttrVo();
-//        searchVo.setIsActive(1);
-//        List<GlobalAttrVo> globalAttrList = globalAttrCrossoverMapper.searchGlobalAttr(searchVo);
-//        for (GlobalAttrVo globalAttrVo : globalAttrList) {
         for (GlobalAttrMappingVo globalAttrMappingVo : globalAttrMappingList) {
             JSONArray valueArray = new JSONArray();
             AttrValueMappingVo valueMapping = globalAttrMappingVo.getValueMapping();
@@ -657,16 +675,6 @@ public class SyncCiEntityDataForBalantFlowApi extends PrivateApiComponentBase {
             }
             if (CollectionUtils.isNotEmpty(valueArray)) {
                 String key = "global_" + globalAttrMappingVo.getId();
-//            DataConversionMappingVo mappingObj = mappingMap.get(key);
-//            if (mappingObj == null) {
-//                noMappingKeyList.add(key);
-//                continue;
-//            }
-//            JSONArray valueArray = mappingObj.getValueList();
-//            if (CollectionUtils.isEmpty(valueArray)) {
-//                noMappingKeyList.add(key);
-//                continue;
-//            }
                 List<String> valueArrayStrList = new ArrayList<>();
                 JSONArray valueList = new JSONArray();
                 for (int i = 0; i < valueArray.size(); i++) {
@@ -694,9 +702,6 @@ public class SyncCiEntityDataForBalantFlowApi extends PrivateApiComponentBase {
                     positioningError.put("ciId", ciMappingVo.getCiId());
                     positioningError.put("ciName", ciMappingVo.getCiName());
                     positioningError.put("ciLabel", ciMappingVo.getCiLabel());
-//                positioningError.put("newConfig", mainConfigObj);
-//                positioningError.put("configurationPath", mainConfigObj.getConfigurationPath());
-//                positioningError.put("actualPath", mainConfigObj.getActualPath());
                     GlobalAttrVo globalAttrVo = new GlobalAttrVo();
                     globalAttrVo.setId(globalAttrMappingVo.getId());
                     globalAttrVo.setName(globalAttrMappingVo.getName());
@@ -708,26 +713,78 @@ public class SyncCiEntityDataForBalantFlowApi extends PrivateApiComponentBase {
                 globalAttrEntityData.put(key, globalAttrEntity);
             }
         }
-//        if (Objects.equals(mainConfigObj.getEditMode(), EditModeType.GLOBAL.getValue())) {
-//            for (String key : noMappingKeyList) {
-//                JSONObject globalAttrEntity = new JSONObject();
-//                globalAttrEntity.put("valueList", new JSONArray());
-//                globalAttrEntityData.put(key, globalAttrEntity);
-//            }
-//        }
         return globalAttrEntityData;
     }
 
-    private Long saveRowCiEntityList(List<CiEntityTransactionVo> ciEntityTransactionList) {
-        for (CiEntityTransactionVo ciEntityTransactionVo : ciEntityTransactionList) {
-            if (ciEntityTransactionVo.getCiEntityId() == -1L) {
-                ciEntityTransactionVo.setCiEntityId(null);
+    private Long saveRowCiEntityList(
+            List<CiEntityTransactionVo> ciEntityTransactionList,
+            List<String> listeningNameList,
+            JSONArray insertList,
+            JSONArray updateList,
+            JSONArray listeningList
+    ) {
+        for (CiEntityTransactionVo ciEntityTransaction : ciEntityTransactionList) {
+            CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
+            ciEntityTransactionVo.setCiEntityUuid(ciEntityTransaction.getCiEntityUuid());
+            ciEntityTransactionVo.setName(ciEntityTransaction.getName());
+            ciEntityTransactionVo.setCiId(ciEntityTransaction.getCiId());
+            ciEntityTransactionVo.setAllowCommit(ciEntityTransaction.isAllowCommit());
+            ciEntityTransactionVo.setEditMode(ciEntityTransaction.getEditMode());
+            ciEntityTransactionVo.setDescription(ciEntityTransaction.getDescription());
+            ciEntityTransactionVo.setCiEntityId(ciEntityTransaction.getCiEntityId());
+            ciEntityTransactionVo.setAction(ciEntityTransaction.getAction());
+            ciEntityTransactionVo.setAttrEntityData(JSON.parseObject(JSON.toJSONString(ciEntityTransaction.getAttrEntityData())));
+            ciEntityTransactionVo.setRelEntityData(JSON.parseObject(JSON.toJSONString(ciEntityTransaction.getRelEntityData())));
+            ciEntityTransactionVo.setGlobalAttrEntityData(JSON.parseObject(JSON.toJSONString(ciEntityTransaction.getGlobalAttrEntityData())));
+            boolean flag = ciEntityService.validateCiEntityTransaction(ciEntityTransactionVo);
+            if (flag) {
+                if (Objects.equals(ciEntityTransaction.getAction(), TransactionActionType.INSERT.getValue())) {
+                    JSONObject jsonObj = new JSONObject();
+                    jsonObj.put("ciId", ciEntityTransaction.getCiId());
+                    jsonObj.put("ciEntityId", ciEntityTransaction.getCiEntityId());
+                    jsonObj.put("ciEntityUuid", ciEntityTransaction.getCiEntityUuid());
+                    jsonObj.put("ciEntityName", ciEntityTransaction.getName());
+                    insertList.add(jsonObj);
+                } else if (Objects.equals(ciEntityTransaction.getAction(), TransactionActionType.UPDATE.getValue())) {
+                    JSONObject jsonObj = new JSONObject();
+                    jsonObj.put("ciId", ciEntityTransaction.getCiId());
+                    jsonObj.put("ciEntityId", ciEntityTransaction.getCiEntityId());
+                    jsonObj.put("ciEntityUuid", ciEntityTransaction.getCiEntityUuid());
+                    jsonObj.put("ciEntityName", ciEntityTransaction.getName());
+                    updateList.add(jsonObj);
+                }
+            } else {
+                if (listeningNameList.contains(ciEntityTransaction.getName())) {
+                    JSONObject jsonObj = new JSONObject();
+                    jsonObj.put("ciId", ciEntityTransaction.getCiId());
+                    jsonObj.put("ciEntityId", ciEntityTransaction.getCiEntityId());
+                    jsonObj.put("ciEntityUuid", ciEntityTransaction.getCiEntityUuid());
+                    jsonObj.put("ciEntityName", ciEntityTransaction.getName());
+                    JSONObject newData = new JSONObject();
+                    newData.put("attrEntityData", JSON.parseObject(JSON.toJSONString(ciEntityTransaction.getAttrEntityData())));
+                    newData.put("relEntityData", JSON.parseObject(JSON.toJSONString(ciEntityTransaction.getRelEntityData())));
+                    newData.put("globalAttrEntityData", JSON.parseObject(JSON.toJSONString(ciEntityTransaction.getGlobalAttrEntityData())));
+                    jsonObj.put("newData", newData);
+                    CiEntityVo pCiEntityVo = new CiEntityVo();
+                    pCiEntityVo.setId(ciEntityTransaction.getCiEntityId());
+                    pCiEntityVo.setCiId(ciEntityTransaction.getCiId());
+                    pCiEntityVo.setLimitRelEntity(true);
+                    pCiEntityVo.setLimitAttrEntity(true);
+                    CiEntityVo ciEntityVo = ciEntityService.getCiEntityById(pCiEntityVo);
+                    if (ciEntityVo != null) {
+                        JSONObject oldData = new JSONObject();
+                        oldData.put("attrEntityData", ciEntityVo.getAttrEntityData());
+                        oldData.put("relEntityData", ciEntityVo.getRelEntityData());
+                        oldData.put("globalAttrEntityData", ciEntityVo.getGlobalAttrEntityData());
+                        jsonObj.put("oldData", oldData);
+                    }
+                    listeningList.add(jsonObj);
+                }
             }
-            ciEntityService.validateCiEntityTransaction(ciEntityTransactionVo);
         }
         InputFromContext.init(InputFrom.RESTFUL);
         TransactionGroupVo transactionGroupVo = new TransactionGroupVo();
-        transactionGroupVo.setNeedLock(false);
+//        transactionGroupVo.setNeedLock(false);
         ciEntityTransactionList.sort((o1, o2) -> {
             if (o1.getCiId() < o2.getCiId()) {
                 return -1;
@@ -737,10 +794,11 @@ public class SyncCiEntityDataForBalantFlowApi extends PrivateApiComponentBase {
                 return o1.getCiEntityId().compareTo(o2.getCiEntityId());
             }
         });
-        System.out.println("ciEntityTransactionList = " + JSONObject.toJSONString(ciEntityTransactionList));
+//        System.out.println("ciEntityTransactionList = " + JSONObject.toJSONString(ciEntityTransactionList));
         Long transactionGroupId = ciEntityService.saveCiEntity(ciEntityTransactionList, transactionGroupVo);
         return transactionGroupId;
     }
+
     @Override
     public String getToken() {
         return "cmdb/data/sync";
@@ -771,6 +829,8 @@ public class SyncCiEntityDataForBalantFlowApi extends PrivateApiComponentBase {
         ciMappingVo.setCiId(ciVo.getId());
         ciMappingVo.setCiName(ciVo.getName());
         ciMappingVo.setCiLabel(ciVo.getLabel());
+        ciMappingVo.setUniqueAttrIdList(ciVo.getUniqueAttrIdList());
+        ciMappingVo.setNameAttrId(ciVo.getNameAttrId());
         String description = syncCiObj.getString("description");
         ciMappingVo.setDescription(description);
         JSONArray attrArray = syncCiObj.getJSONArray("attrList");
@@ -952,6 +1012,8 @@ public class SyncCiEntityDataForBalantFlowApi extends PrivateApiComponentBase {
                     relMappingVo.setToName(relVo.getToName());
                     relMappingVo.setToLabel(relVo.getToLabel());
                     relMappingVo.setDirection(relVo.getDirection());
+                    relMappingVo.setFromRule(relVo.getFromRule());
+                    relMappingVo.setToRule(relVo.getToRule());
                     JSONObject valueMapping = relObj.getJSONObject("valueMapping");
                     if (valueMapping == null) {
                         throw new ParamNotExistsException("valueMapping");
@@ -974,6 +1036,8 @@ public class SyncCiEntityDataForBalantFlowApi extends PrivateApiComponentBase {
         private List<RelMappingVo> relList;
         private List<GlobalAttrMappingVo> globalAttrList;
         private String description;
+        private List<Long> uniqueAttrIdList;
+        private Long nameAttrId;
 
         public Long getCiId() {
             return ciId;
@@ -1029,6 +1093,22 @@ public class SyncCiEntityDataForBalantFlowApi extends PrivateApiComponentBase {
 
         public void setDescription(String description) {
             this.description = description;
+        }
+
+        public List<Long> getUniqueAttrIdList() {
+            return uniqueAttrIdList;
+        }
+
+        public void setUniqueAttrIdList(List<Long> uniqueAttrIdList) {
+            this.uniqueAttrIdList = uniqueAttrIdList;
+        }
+
+        public Long getNameAttrId() {
+            return nameAttrId;
+        }
+
+        public void setNameAttrId(Long nameAttrId) {
+            this.nameAttrId = nameAttrId;
         }
     }
 
@@ -1103,8 +1183,10 @@ public class SyncCiEntityDataForBalantFlowApi extends PrivateApiComponentBase {
         private Long id;
         private String fromName;
         private String fromLabel;
+        private String fromRule;
         private String toName;
         private String toLabel;
+        private String toRule;
         private CiMappingVo valueMapping;
 
         private String direction;
@@ -1163,6 +1245,22 @@ public class SyncCiEntityDataForBalantFlowApi extends PrivateApiComponentBase {
 
         public void setDirection(String direction) {
             this.direction = direction;
+        }
+
+        public String getFromRule() {
+            return fromRule;
+        }
+
+        public void setFromRule(String fromRule) {
+            this.fromRule = fromRule;
+        }
+
+        public String getToRule() {
+            return toRule;
+        }
+
+        public void setToRule(String toRule) {
+            this.toRule = toRule;
         }
     }
 
