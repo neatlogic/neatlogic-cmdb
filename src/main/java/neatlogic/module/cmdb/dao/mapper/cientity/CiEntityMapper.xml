@@ -83,6 +83,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 and `ccgi`.attr_id = #{item.attrId}))
             </foreach>
         </if>
+        <!--过期配置项过滤开始-->
+        and ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+        x.to_cientity_id) or exists
+        (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+        x.to_cientity_id
+        and xx.expired_time &gt;= NOW()))
+        <!--过期配置项过滤结束-->
         UNION
         SELECT
         x.rel_id AS relId,
@@ -115,6 +122,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 and `ccgi`.attr_id = #{item.attrId}))
             </foreach>
         </if>
+        <!--过期配置项过滤开始-->
+        and ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+        x.from_cientity_id) or exists
+        (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+        x.from_cientity_id
+        and xx.expired_time &gt;= NOW()))
+        <!--过期配置项过滤结束-->
         ) t
         JOIN cmdb_cientity from_cientity ON t.fromCiEntityId = from_cientity.id
         JOIN cmdb_cientity to_cientity ON t.toCiEntityId = to_cientity.id

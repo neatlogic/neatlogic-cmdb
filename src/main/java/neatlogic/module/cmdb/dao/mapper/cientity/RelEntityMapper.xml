@@ -239,16 +239,29 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 
     <select id="getRelEntityCountByFromCiEntityIdAndRelId" resultType="int">
         select count(1)
-        from cmdb_relentity
-        where rel_id = #{relId}
-          and from_cientity_id = #{fromCiEntityId}
+        from cmdb_relentity x
+        where x.rel_id = #{relId}
+        and x.from_cientity_id = #{fromCiEntityId}
+        <!--过期配置项过滤开始-->
+        and ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+        x.to_cientity_id) or exists
+        (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+        x.to_cientity_id
+        and xx.expired_time &gt;= NOW()))
+        <!--过期配置项过滤结束-->
     </select>
 
     <select id="getRelEntityCountByToCiEntityIdAndRelId" resultType="int">
         select count(1)
-        from cmdb_relentity
-        where rel_id = #{relId}
-          and to_cientity_id = #{toCiEntityId}
+        from cmdb_relentity x
+        where x.rel_id = #{relId}
+        and x.to_cientity_id = #{toCiEntityId}
+        <!--过期配置项过滤开始-->
+        and ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+        x.from_cientity_id) or exists
+        (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+        x.from_cientity_id and xx.expired_time &gt;= NOW()))
+        <!--过期配置项过滤结束-->
     </select>
 
     <select id="getRelEntityByFromCiEntityIdAndRelId" resultType="neatlogic.framework.cmdb.dto.cientity.RelEntityVo">
