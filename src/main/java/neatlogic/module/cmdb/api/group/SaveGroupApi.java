@@ -67,7 +67,7 @@ public class SaveGroupApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "id，提供代表修改，不提供代表添加"),
             @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "名称", maxLength = 50, xss = true),
-            @Param(name = "isActive", type = ApiParamType.INTEGER, isRequired = true, desc = "是否激活，1：激活，0：禁用"),
+            //@Param(name = "isActive", type = ApiParamType.INTEGER, isRequired = true, desc = "是否激活，1：激活，0：禁用"),
             @Param(name = "description", type = ApiParamType.STRING, maxLength = 300, xss = true, desc = "描述"),
             @Param(name = "ciGroupList", type = ApiParamType.JSONARRAY, desc = "模型规则列表"),
             @Param(name = "authList", type = ApiParamType.JSONARRAY, desc = "授权列表")})
@@ -110,6 +110,7 @@ public class SaveGroupApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         Long id = jsonObj.getLong("id");
         GroupVo groupVo = JSON.toJavaObject(jsonObj, GroupVo.class);
+        groupVo.setIsActive(1);
         //转换权限格式
         List<GroupAuthVo> groupAuthList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(groupVo.getAuthList())) {
