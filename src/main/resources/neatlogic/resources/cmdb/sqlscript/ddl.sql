@@ -903,8 +903,8 @@ CREATE TABLE `cmdb_reltype`
 CREATE TABLE `cmdb_resourcecenter_account`
 (
     `id`          bigint                                                                     NOT NULL COMMENT '主键id',
-    `name`        varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci              NOT NULL COMMENT '名称',
-    `account`     varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci               NULL DEFAULT NULL COMMENT '账号',
+    `name`        varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci              NOT NULL COMMENT '名称',
+    `account`     varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci               NULL DEFAULT NULL COMMENT '账号',
     `password`    text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci                      NULL COMMENT '密码',
     `protocol_id` bigint                                                                     NOT NULL COMMENT '协议id',
     `type`        enum ('public','private') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '类型',
