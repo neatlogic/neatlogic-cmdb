@@ -56,7 +56,7 @@ public class AccountProtocolSaveApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "id", type = ApiParamType.LONG,  desc = "common.id"),
-            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, desc = "common.name"),
+            @Param(name = "name", type = ApiParamType.STRING, isRequired = true, maxLength = 50, desc = "common.name"),
             @Param(name = "port", type = ApiParamType.INTEGER, desc = "term.cmdb.port"),
     })
     @Output({
