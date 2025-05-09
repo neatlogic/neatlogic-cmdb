@@ -26,6 +26,7 @@ import neatlogic.framework.cmdb.enums.TransactionActionType;
 import neatlogic.framework.cmdb.enums.group.GroupType;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.cientity.CiEntityAuthException;
+import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
@@ -111,6 +112,9 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
         pCiEntityVo.setLimitRelEntity(limitRelEntity);
         pCiEntityVo.setLimitAttrEntity(limitAttrEntity);
         CiEntityVo ciEntityVo = ciEntityService.getCiEntityById(pCiEntityVo);
+        if (ciEntityVo == null) {
+            throw new CiEntityNotFoundException(ciEntityId);
+        }
         ciEntityVo.setIsVirtual(ciVo.getIsVirtual());
         if (!CiAuthChecker.chain().checkCiEntityQueryPrivilege(ciEntityVo.getCiId()).checkCiEntityIsInGroup(ciEntityVo.getId(), GroupType.READONLY, GroupType.MAINTAIN, GroupType.AUTOEXEC).check()) {
             throw new CiEntityAuthException(ciEntityVo.getCiLabel(), TransactionActionType.VIEW.getText());
