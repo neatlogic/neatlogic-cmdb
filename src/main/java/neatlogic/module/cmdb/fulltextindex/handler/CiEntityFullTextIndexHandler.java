@@ -114,7 +114,8 @@ public class CiEntityFullTextIndexHandler extends FullTextIndexHandlerBase {
         Long ciEntityId = fullTextIndexVo.getTargetId();
         CiEntityVo baseCiEntityVo = ciEntityService.getCiEntityBaseInfoById(ciEntityId);
         if (baseCiEntityVo != null) {
-            CiEntityVo ciEntityVo = ciEntityService.getCiEntityById(baseCiEntityVo.getCiId(), ciEntityId);
+            CiEntityVo ciEntityVo = ciEntityService.getCiEntityById(baseCiEntityVo.getCiId(), ciEntityId, 100, 100);
+
             if (ciEntityVo == null) {
                 return;
             }
