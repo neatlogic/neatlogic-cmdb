@@ -1100,6 +1100,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         <if test="name != null and name != ''">
             and a.`name` = #{name}
         </if>
+        limit 1
     </select>
 
     <select id="getResourceByIpAndPort"
