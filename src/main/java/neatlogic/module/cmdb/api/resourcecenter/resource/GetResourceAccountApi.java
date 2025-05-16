@@ -33,6 +33,7 @@ import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.tagent.dao.mapper.TagentMapper;
+import neatlogic.framework.tagent.dto.TagentVo;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import org.apache.commons.collections4.CollectionUtils;
@@ -125,7 +126,6 @@ public class GetResourceAccountApi extends PrivateApiComponentBase {
             }
         }
 
-        //如果是tagent 优先从主ip里面找账号没找到才去副ip列表找，但是副ip不允许存在多个账号
         if (!Objects.equals(protocol, Protocol.TAGENT.getValue())) {
             List<AccountVo> accountList = resourceAccountMapper.getResourceAccountByResourceIdAndProtocolAndProtocolPortAndUsername(resourceVo.getId(), protocol, protocolPort, username);
             if (CollectionUtils.isNotEmpty(accountList)) {
@@ -133,16 +133,21 @@ public class GetResourceAccountApi extends PrivateApiComponentBase {
                 return removePasswordPlain(account);
             }
         } else {
-            List<AccountBaseVo> accountMainList = tagentMapper.getAccountListByMainIpListAndProtocolId(Collections.singletonList(resourceVo.getIp()), protocolVo.getId());
-            if (CollectionUtils.isNotEmpty(accountMainList)) {
-                AccountBaseVo accountTagent = accountMainList.get(0);
+            //如果是tagent 优先从主ip里面找账号没找到才根据副ip找主ip的账号(不允许存在多个主ip)
+            AccountBaseVo accountTagent = null;
+            TagentVo tagentVo = tagentMapper.getTagentByIpAndPort(resourceVo.getIp(), protocolVo.getPort());
+            if(tagentVo != null){
+                accountTagent = tagentMapper.getAccountByTagentId(tagentVo.getId());
+            }else {
+                List<AccountBaseVo> tagentAccountByIpList = tagentMapper.getAccountListByIncludeIpListAndProtocolId(Collections.singletonList(resourceVo.getIp()), protocolVo.getId());
+                if(CollectionUtils.isNotEmpty(tagentAccountByIpList) && tagentAccountByIpList.size() == 1){
+                    accountTagent = tagentAccountByIpList.get(0);
+                }
+            }
+            if(accountTagent != null){
                 return removePasswordPlain(accountTagent);
             }
-            List<AccountBaseVo> accountList = tagentMapper.getAccountListByIpListAndProtocolId(Collections.singletonList(resourceVo.getIp()), protocolVo.getId());
-            if (CollectionUtils.isNotEmpty(accountList) && accountList.size() == 1) {
-                AccountBaseVo accountTagent = accountList.get(0);
-                return removePasswordPlain(accountTagent);
-            }
+
         }
 
         //通过对应资产的os 找账号

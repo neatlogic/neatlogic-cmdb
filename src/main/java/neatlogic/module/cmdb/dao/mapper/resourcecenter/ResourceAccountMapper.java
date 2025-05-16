@@ -44,17 +44,9 @@ public interface ResourceAccountMapper extends IResourceAccountCrossoverMapper {
 
     List<Long> checkAccountIdListIsExists(List<Long> idList);
 
-    AccountVo getResourceAccountByIpAndPort(@Param("host") String host, @Param("port") Integer port);
-
     AccountVo getAccountByTagentIpAndPort(@Param("ip") String ip, @Param("port") Integer port);
 
-    List<AccountVo> getAccountListByIpListAndProtocolId(@Param("ipList") List<String> ipList, @Param("protocolId") Long protocolId);
-
     AccountVo getAccountByTagentId(Long id);
-
-    List<AccountVo> getAccountListByIpAndProtocolNameAndAccountAndProtocolPort(@Param("ip") String ip, @Param("protocolName") String protocolName, @Param("account") String account, @Param("protocolPort") Integer protocolPort);
-
-    List<AccountVo> getAccountListByProtocolNameAndAccountAndProtocolPort(@Param("protocolName") String protocolName, @Param("account") String account, @Param("protocolPort") Integer protocolPort);
 
     List<AccountVo> getResourceAccountListByResourceIdAndTypeAndProtocol(@Param("resourceId") Long resourceId, @Param("type") String type, @Param("protocol") String protocol);
 
@@ -96,8 +88,6 @@ public interface ResourceAccountMapper extends IResourceAccountCrossoverMapper {
 
     AccountProtocolVo getAccountProtocolVoByNameAndPort(@Param("name") String name, @Param("port") Integer port);
 
-    List<String> getAccountIpByIpListAndPort(@Param("ipList") List<String> ipList, @Param("port") Integer port);
-
     List<AccountVo> getResourceAccountByResourceIdAndProtocolAndProtocolPortAndUsername(@Param("resourceId") Long resourceId, @Param("protocol") String protocol, @Param("protocolPort") Integer protocolPort, @Param("username") String username);
 
     List<TagVo> getTagListByAccountId(Long id);
@@ -116,12 +106,6 @@ public interface ResourceAccountMapper extends IResourceAccountCrossoverMapper {
 
     int insertAccountProtocol(AccountProtocolVo searchVo);
 
-    int insertAccountIp(AccountIpVo ipVo);
-
-    int deleteAccountIpByAccountId(Long value);
-
-    int deleteAccountIpByAccountIdList(List<Long> list);
-
     int deleteAccountById(Long id);
 
     int deleteAccountByIdList(List<Long> list);
@@ -139,7 +123,5 @@ public interface ResourceAccountMapper extends IResourceAccountCrossoverMapper {
     int deleteResourceAccountByAccountId(Long accountId);
 
     int deleteResourceAccountByAccountIdList(List<Long> list);
-
-    int deleteAccountIpByIpList(@Param("ipList") List<String> resourceIpList);
 
 }

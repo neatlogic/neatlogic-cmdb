@@ -16,18 +16,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 package neatlogic.module.cmdb.service.resourcecenter.account;
 
 import neatlogic.framework.cmdb.crossover.IResourceCenterAccountCrossoverService;
-import neatlogic.framework.cmdb.dto.resourcecenter.*;
+import neatlogic.framework.cmdb.dto.resourcecenter.AccountBaseVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.AccountProtocolVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.AccountVo;
 import neatlogic.framework.cmdb.enums.resourcecenter.Protocol;
 import neatlogic.framework.tagent.dao.mapper.TagentMapper;
-import neatlogic.framework.tagent.dto.TagentVo;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @author lvzk
@@ -41,53 +44,6 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
     ResourceAccountMapper resourceAccountMapper;
     @Resource
     TagentMapper tagentMapper;
-
-    @Override
-    public void refreshAccountIpByAccountId(Long accountId) {
-        resourceAccountMapper.deleteAccountIpByAccountId(accountId);
-        //账号是否被resource引用
-        List<ResourceAccountVo> resourceAccountVoList = resourceAccountMapper.getResourceAccountListByAccountId(accountId);
-        if (CollectionUtils.isNotEmpty(resourceAccountVoList)) {
-            List<ResourceVo> resourceVoList = resourceMapper.getResourceByIdList(resourceAccountVoList.stream().map(ResourceAccountVo::getResourceId).collect(Collectors.toList()));
-            for (ResourceVo resourceVo : resourceVoList) {
-                resourceAccountMapper.insertAccountIp(new AccountIpVo(accountId, resourceVo.getIp()));
-            }
-        }
-        //账号是否被tagent引用
-        List<TagentVo> tagentVoList = tagentMapper.getTagentByAccountId(accountId);
-        if (CollectionUtils.isNotEmpty(tagentVoList)) {
-            for (TagentVo tagentVo : tagentVoList) {
-                resourceAccountMapper.insertAccountIp(new AccountIpVo(tagentVo.getAccountId(), tagentVo.getIp()));
-            }
-        }
-    }
-
-    @Override
-    public void refreshAccountIpByResourceIdList(List<Long> resourceIdList) {
-        List<ResourceAccountVo> resourceAccountVoList = resourceAccountMapper.getResourceAccountListByResourceIdList(resourceIdList);
-        List<ResourceVo> resourceVoList = resourceMapper.getResourceByIdList(resourceAccountVoList.stream().map(ResourceAccountVo::getResourceId).collect(Collectors.toList()));
-        //账号是否被resource引用
-        if (CollectionUtils.isNotEmpty(resourceVoList)) {
-            List<String> resourceIpList = resourceVoList.stream().map(ResourceVo::getIp).collect(Collectors.toList());
-            resourceAccountMapper.deleteAccountIpByIpList(resourceIpList);
-            HashMap<Long, ResourceVo> resourceVoHashMap = new HashMap<>();
-            for (ResourceVo resourceVo : resourceVoList) {
-                resourceVoHashMap.put(resourceVo.getId(), resourceVo);
-            }
-            for (ResourceAccountVo resourceAccountVo : resourceAccountVoList) {
-                if (resourceVoHashMap.containsKey(resourceAccountVo.getResourceId())) {
-                    resourceAccountMapper.insertAccountIp(new AccountIpVo(resourceAccountVo.getAccountId(), resourceVoHashMap.get(resourceAccountVo.getResourceId()).getIp()));
-                }
-            }
-            //账号是否被tagent引用
-            List<TagentVo> tagentVoList = tagentMapper.getTagentByIpList(resourceIpList);
-            if (CollectionUtils.isNotEmpty(tagentVoList)) {
-                for (TagentVo tagentVo : tagentVoList) {
-                    resourceAccountMapper.insertAccountIp(new AccountIpVo(tagentVo.getAccountId(), tagentVo.getIp()));
-                }
-            }
-        }
-    }
 
     /**
      * 按以下规则顺序匹配account

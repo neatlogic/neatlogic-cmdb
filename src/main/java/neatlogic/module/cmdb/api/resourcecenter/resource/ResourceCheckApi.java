@@ -310,7 +310,7 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
             List<AccountVo> accountByResourceList = new ArrayList<>();
             if (Objects.equals(protocolVo.getName(), Protocol.TAGENT.getValue()) || (protocolVo.getName() != null && protocolVo.getName().startsWith(Protocol.TAGENT.getValue() + "."))) {
                 Long getAccountListByIpListAndProtocolId = System.currentTimeMillis();
-                List<AccountBaseVo> tagentAccountByIpList = tagentMapper.getAccountListByIpListAndProtocolId(resourceVoList.stream().map(ResourceVo::getIp).collect(toList()), protocolId);
+                List<AccountBaseVo> tagentAccountByIpList = tagentMapper.getAccountListByIncludeIpListAndProtocolId(resourceVoList.stream().map(ResourceVo::getIp).collect(toList()), protocolId);
                 logger.warn((System.currentTimeMillis() - getAccountListByIpListAndProtocolId) + " ##getAccountListByIpListAndProtocolId:-------------------------------------------------------------------------------");
                 System.out.println((System.currentTimeMillis() - getAccountListByIpListAndProtocolId) + " ##getAccountListByIpListAndProtocolId:-------------------------------------------------------------------------------");
 
