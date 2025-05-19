@@ -24,8 +24,8 @@ import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.auth.label.ADMIN;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.sync.ObjectVo;
+import neatlogic.framework.cmdb.exception.sync.CollectionNameFieldValueRepeatException;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.exception.core.ApiRuntimeException;
 import neatlogic.framework.exception.integration.IntegrationHandlerNotFoundException;
 import neatlogic.framework.integration.core.IIntegrationHandler;
 import neatlogic.framework.integration.core.IntegrationHandlerFactory;
@@ -257,9 +257,9 @@ public class SyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCompone
                         JSONArray fields = new JSONArray();
                         for (Map.Entry<Long, JSONArray> entry : ciId2AttrListMap.entrySet()) {
                             Long key = entry.getKey();
-                            if (Objects.equals(key, balantflowCiId)) {
-                                fields.addAll(entry.getValue());
-                            } else {
+//                            if (Objects.equals(key, balantflowCiId)) {
+//                                fields.addAll(entry.getValue());
+//                            } else {
                                 String ciName = ciId2CiName.get(key);
                                 String desc = "模型_" + key;
                                 if (StringUtils.isNotBlank(ciName)) {
@@ -272,7 +272,7 @@ public class SyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCompone
                                 fieldObj.put("type", "JsonArray");
                                 fieldObj.put("subset", entry.getValue());
                                 fields.add(fieldObj);
-                            }
+//                            }
                         }
                         dictionaryObj.put("fields", fields);
                         JSONObject balantflowObj = new JSONObject();
@@ -300,12 +300,12 @@ public class SyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCompone
             List<JSONObject> collectionVoList = mongoTemplate.find(query, JSONObject.class, "_dictionary");
             if (CollectionUtils.isNotEmpty(collectionVoList)) {
                 if (collectionVoList.size() > 1) {
-                    throw new ApiRuntimeException(name + "已存在多个");
+                    throw new CollectionNameFieldValueRepeatException("_dictionary", name);
                 }
                 JSONObject collectionObj = collectionVoList.get(0);
                 String _id = collectionObj.getString("_id");
                 if (!Objects.equals(_id, id)) {
-                    throw new ApiRuntimeException(name + "已存在");
+                    throw new CollectionNameFieldValueRepeatException("_dictionary", name);
                 }
                 collectionObj = JSONObject.parseObject(collectionObj.toJSONString());
                 if (!Objects.equals(
