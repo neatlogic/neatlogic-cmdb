@@ -53,6 +53,8 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -62,6 +64,7 @@ public class SyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCompone
 
     private final static Logger logger = LoggerFactory.getLogger(SyncCiEntityDataToMongoDBForBalantFlowApi.class);
 
+    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     @Resource
     private MongoTemplate mongoTemplate;
 
@@ -145,6 +148,7 @@ public class SyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCompone
             boolean flag = false;
             Map<Long, Long> attrId2CiIdMap = new HashMap<>();
             JSONArray dictionaryList = new JSONArray();
+            LocalDateTime now = LocalDateTime.now();
             int integrationRequestMaxCount = paramObj.getInteger("integrationRequestMaxCount");
             for (int currentPage = 1; currentPage <= integrationRequestMaxCount; currentPage++) {
                 supplierIntegrationVo.getParamObj().put("currentPage", currentPage);
@@ -179,7 +183,7 @@ public class SyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCompone
                         }
                         JSONArray resultList = returnObj.getJSONArray("resultList");
                         if (CollectionUtils.isNotEmpty(resultList)) {
-                            savePageData(resultList, attrId2CiIdMap, dictionaryList);
+                            savePageData(resultList, attrId2CiIdMap, dictionaryList, now);
                         }
                     } else {
                         break;
@@ -346,13 +350,14 @@ public class SyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCompone
     private void savePageData(
             JSONArray resultList,
             Map<Long, Long> attrId2CiIdMap,
-            JSONArray dictionaryList
+            JSONArray dictionaryList,
+            LocalDateTime localDateTime
     ) {
         for (int i = 0; i < resultList.size(); i++) {
             JSONObject row = resultList.getJSONObject(i);
             JSONArray attrList = row.getJSONArray("attrList");
             if (CollectionUtils.isNotEmpty(attrList)) {
-                saveRowData(attrList, attrId2CiIdMap, dictionaryList);
+                saveRowData(attrList, attrId2CiIdMap, dictionaryList, localDateTime);
             }
         }
     }
@@ -360,7 +365,8 @@ public class SyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCompone
     private void saveRowData(
             JSONArray attrList,
             Map<Long, Long> attrId2CiIdMap,
-            JSONArray dictionaryList
+            JSONArray dictionaryList,
+            LocalDateTime localDateTime
     ) {
         for (int i = 0; i < attrList.size(); i++) {
             JSONObject attrObj = attrList.getJSONObject(i);
@@ -382,7 +388,7 @@ public class SyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCompone
             JSONObject dictionaryObj = dictionaryList.getJSONObject(i);
             String collection = dictionaryObj.getString("collection");
             if (StringUtils.isNotBlank(collection)) {
-                JSONObject dataObj = generateData(attrList, dictionaryObj, ciId2DictionaryMap);
+                JSONObject dataObj = generateData(attrList, dictionaryObj, ciId2DictionaryMap, localDateTime);
                 mongoTemplate.insert(dataObj, collection);
             }
         }
@@ -391,7 +397,8 @@ public class SyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCompone
     private JSONObject generateData(
             JSONArray attrList,
             JSONObject dictionaryObj,
-            Map<Long, JSONObject> ciId2DictionaryMap
+            Map<Long, JSONObject> ciId2DictionaryMap,
+            LocalDateTime localDateTime
     ) {
         JSONObject dataObj = new JSONObject();
         JSONArray fields = dictionaryObj.getJSONArray("fields");
@@ -449,6 +456,7 @@ public class SyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCompone
         String _OBJ_TYPE = dictionaryObj.getString("_OBJ_TYPE");
         dataObj.put("_OBJ_TYPE", _OBJ_TYPE);
         dataObj.put("dictionaryName", dictionaryObj.getString("name"));
+        dataObj.put("insertTime", localDateTime.format(dateTimeFormatter));
         return dataObj;
     }
 
