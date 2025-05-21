@@ -25,6 +25,7 @@ import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import neatlogic.framework.cmdb.dto.transaction.TransactionGroupVo;
 import neatlogic.framework.cmdb.enums.EditModeType;
+import neatlogic.framework.cmdb.enums.RelActionType;
 import neatlogic.framework.cmdb.enums.TransactionActionType;
 import neatlogic.framework.cmdb.exception.cientity.NewCiEntityNotFoundException;
 import neatlogic.framework.common.constvalue.InputFrom;
@@ -250,6 +251,7 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
                                         if (CollectionUtils.isNotEmpty(relDataList)) {
                                             for (int i = 0; i < relDataList.size(); i++) {
                                                 JSONObject relEntityObj = relDataList.getJSONObject(i);
+                                                relEntityObj.put("action", RelActionType.REPLACE.getValue());
                                                 if (relEntityObj.getLong("ciEntityId") == null && StringUtils.isNotBlank(relEntityObj.getString("ciEntityUuid"))) {
                                                     CiEntityTransactionVo tmpVo = ciEntityTransactionMap.get(relEntityObj.getString("ciEntityUuid"));
                                                     if (tmpVo != null) {
