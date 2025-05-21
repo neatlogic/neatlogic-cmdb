@@ -250,6 +250,7 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
                                         if (CollectionUtils.isNotEmpty(relDataList)) {
                                             for (int i = 0; i < relDataList.size(); i++) {
                                                 JSONObject relEntityObj = relDataList.getJSONObject(i);
+                                                relEntityObj.put("action", "replace");
                                                 if (relEntityObj.getLong("ciEntityId") == null && StringUtils.isNotBlank(relEntityObj.getString("ciEntityUuid"))) {
                                                     CiEntityTransactionVo tmpVo = ciEntityTransactionMap.get(relEntityObj.getString("ciEntityUuid"));
                                                     if (tmpVo != null) {
