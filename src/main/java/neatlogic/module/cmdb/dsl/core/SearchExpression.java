@@ -132,8 +132,8 @@ public class SearchExpression {
             return new StringValue(value);
         } else if (valueType == ValueType.NUMBER_ARRAY) {
             if (StringUtils.isNotBlank(value) && value.startsWith("[") && value.endsWith("]")) {
-                value = value.substring(1, value.length() - 1);
-                String[] vs = value.split(",");
+                String newvalue = value.substring(1, value.length() - 1);
+                String[] vs = newvalue.split(",");
                 if (vs.length > 0) {
                     List<Expression> expressionList = new ArrayList<>();
                     for (String v : vs) {
@@ -157,8 +157,8 @@ public class SearchExpression {
             return new ExpressionList();
         } else if (valueType == ValueType.STRING_ARRAY) {
             if (StringUtils.isNotBlank(value) && value.startsWith("[") && value.endsWith("]")) {
-                value = value.substring(1, value.length() - 1);
-                String[] vs = value.split(",");
+                String newvalue = value.substring(1, value.length() - 1);
+                String[] vs = newvalue.split(",");
                 if (vs.length > 0) {
                     List<Expression> expressionList = new ArrayList<>();
                     for (String v : vs) {
