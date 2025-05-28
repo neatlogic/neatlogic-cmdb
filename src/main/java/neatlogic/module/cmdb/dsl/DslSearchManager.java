@@ -53,10 +53,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class DslSearchManager {
@@ -321,6 +318,10 @@ public class DslSearchManager {
 
         if (this.needRowCount) {
             String buildSql = this.buildCountSql();
+            System.out.println("#######1");
+            System.out.println(sql);
+            System.out.println("#######2");
+            System.out.println(buildSql);
             this.rowCount = ciEntityMapper.searchCiEntityIdCountBySql(buildSql);
         }
         return ciEntityMapper.searchCiEntityIdBySql(sql);
@@ -784,6 +785,13 @@ public class DslSearchManager {
                         Object expressionValue = searchExpression.getExpressionValue(searchItemMap);
                         if (expressionValue instanceof ItemsList) {
                             ((InExpression) expression).withLeftExpression(new Column().withColumnName(searchItem.getAlias())).withRightItemsList((ItemsList) expressionValue);
+                        }else{
+                            // 把单值转换为 ItemsList
+                            List<Expression> exprList = Collections.singletonList((Expression) expressionValue);
+                            ItemsList itemsList = new ExpressionList(exprList);
+                            ((InExpression) expression)
+                                    .withLeftExpression(new Column().withColumnName(searchItem.getAlias()))
+                                    .withRightItemsList(itemsList);
                         }
                     }
                     return expression;
