@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.sync;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.SYNC_MODIFY;
@@ -64,7 +65,7 @@ public class SaveObjectApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long id = paramObj.getLong("id");
-        ObjectVo objectVo = JSONObject.toJavaObject(paramObj, ObjectVo.class);
+        ObjectVo objectVo = JSON.toJavaObject(paramObj, ObjectVo.class);
         if (objectVo.getCiId() != null) {
             CiVo ciVo = ciMapper.getCiById(objectVo.getCiId());
             if (ciVo == null) {
