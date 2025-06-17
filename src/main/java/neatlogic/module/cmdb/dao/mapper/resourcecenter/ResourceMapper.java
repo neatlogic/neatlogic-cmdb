@@ -56,7 +56,13 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     Long getResourceIdByIpAndPortAndName(ResourceSearchVo searchVo);
 
+    List<Long> getResourceIdListByIpAndPortAndName(ResourceSearchVo searchVo);
+
+    List<ResourceVo> getResourceListByIpAndPortAndName(ResourceSearchVo searchVo);
+
     Long getResourceIdByIpAndPortAndNameWithFilter(ResourceSearchVo searchVo);
+
+    List<ResourceVo> getResourceListByIpAndPortAndNameWithFilter(ResourceSearchVo searchVo);
 
     List<ResourceVo> getResourceByIdList(List<Long> idList);
 
