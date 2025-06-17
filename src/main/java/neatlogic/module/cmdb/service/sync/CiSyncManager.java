@@ -312,11 +312,12 @@ public class CiSyncManager {
                 SyncMappingVo syncMappingVo = syncCiCollectionVo.getMappingByAttrId(uniqueAttrId);
                 AttrVo attr = attrMap.get(uniqueAttrId);
                 if (attr == null) {
-                    System.out.println("找不到属性id了：" + uniqueAttrId);
+                    //System.out.println("找不到属性id了：" + uniqueAttrId);
                     throw new AttrNotFoundException(uniqueAttrId);
                 }
                 if (syncMappingVo == null) {
-                    throw new CiUniqueAttrNotFoundException(ciVo, attr);
+                    //throw new CiUniqueAttrNotFoundException(ciVo, attr);
+                    throw new ApiRuntimeException("配置项模型:{0}({1})-集合:{4}的映射配置中，唯一属性{2}({3})缺少匹配字段，请补充配置。", ciVo.getLabel(), ciVo.getName(), attr.getLabel(), attr.getName(), syncCiCollectionVo.getCollectionName());
                 }
                 if (dataObj.containsKey(syncMappingVo.getField(parentKey))) {
                     AttrFilterVo filterVo = new AttrFilterVo();
