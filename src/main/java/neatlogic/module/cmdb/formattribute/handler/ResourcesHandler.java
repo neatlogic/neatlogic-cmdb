@@ -15,12 +15,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.formattribute.handler;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.AccountProtocolVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.dto.tag.TagVo;
 import neatlogic.framework.cmdb.enums.FormHandler;
 import neatlogic.framework.common.constvalue.ParamType;
@@ -42,6 +44,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -148,13 +151,28 @@ public class ResourcesHandler extends FormHandlerBase {
         if ("input".equals(type)) {
             JSONArray inputNodeArray = dataObj.getJSONArray("inputNodeList");
             if (CollectionUtils.isNotEmpty(inputNodeArray)) {
-                List<ResourceSearchVo> resourceIsNotFoundList = new ArrayList<>();
-                List<ResourceSearchVo> inputNodeList = inputNodeArray.toJavaList(ResourceSearchVo.class);
-                for (ResourceSearchVo node : inputNodeList) {
-                    Long resourceId = resourceMapper.getResourceIdByIpAndPortAndName(node);
-                    if (resourceId == null) {
-                        resourceIsNotFoundList.add(node);
+                List<ResourceVo> resourceIsNotFoundList = new ArrayList<>();
+                ResourceSearchVo searchVo = new ResourceSearchVo();
+                searchVo.setIsHasAuth(true);
+                List<ResourceVo> nodeList = new ArrayList<>();
+                for (int i = 0; i < inputNodeArray.size(); i++) {
+                    JSONObject inputNodeObj = inputNodeArray.getJSONObject(i);
+                    ResourceVo node = JSON.toJavaObject(inputNodeObj, ResourceVo.class);
+                    nodeList.add(node);
+                    if (nodeList.size() > 100) {
+                        searchVo.setInputNodeList(nodeList);
+                        List<ResourceVo> resourceList = resourceMapper.getResourceListByIpAndPortAndName(searchVo);
+                        List<ResourceVo> notExistsNodeList = notExistsNodeList(nodeList, resourceList);
+                        resourceIsNotFoundList.addAll(notExistsNodeList);
+                        nodeList.clear();
                     }
+                }
+                if (CollectionUtils.isNotEmpty(nodeList)) {
+                    searchVo.setInputNodeList(nodeList);
+                    List<ResourceVo> resourceList = resourceMapper.getResourceListByIpAndPortAndName(searchVo);
+                    List<ResourceVo> notExistsNodeList = notExistsNodeList(nodeList, resourceList);
+                    resourceIsNotFoundList.addAll(notExistsNodeList);
+                    nodeList.clear();
                 }
                 if (CollectionUtils.isNotEmpty(resourceIsNotFoundList)) {
                     resultObj.put("result", false);
@@ -163,6 +181,26 @@ public class ResourcesHandler extends FormHandlerBase {
             }
         }
         return resultObj;
+    }
+
+    private List<ResourceVo> notExistsNodeList(List<ResourceVo> nodeList, List<ResourceVo> resourceList) {
+        List<ResourceVo> notExistsNodeList = new ArrayList<>();
+        for (ResourceVo node : nodeList) {
+            boolean flag = false;
+            for (ResourceVo resourceVo : resourceList) {
+                if (Objects.equals(node.getIp(), resourceVo.getIp())
+                        && Objects.equals(node.getPort(), resourceVo.getPort())
+                        && (node.getName() == null || Objects.equals(node.getName(), resourceVo.getName()))
+                ) {
+                    flag = true;
+                    break;
+                }
+            }
+            if (!flag) {
+                notExistsNodeList.add(node);
+            }
+        }
+        return notExistsNodeList;
     }
 
     @Override
