@@ -20,7 +20,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
        xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:tx="http://www.springframework.org/schema/tx"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:neatlogic="http://neatlogic.com/schema/neatlogic"
-       xmlns:mongo="http://www.springframework.org/schema/data/mongo"
        xsi:schemaLocation="http://www.springframework.org/schema/aop
 		http://www.springframework.org/schema/aop/spring-aop.xsd 
 		http://www.springframework.org/schema/beans 
@@ -32,9 +31,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 		http://www.springframework.org/schema/tx 
 		http://www.springframework.org/schema/tx/spring-tx.xsd
 		http://neatlogic.com/schema/neatlogic
-		https://neatlogic.com/schema/neatlogic.xsd
-        http://www.springframework.org/schema/data/mongo
-        https://www.springframework.org/schema/data/mongo/spring-mongo.xsd">
+		https://neatlogic.com/schema/neatlogic.xsd">
 
     <neatlogic:module id="cmdb" name="term.cmdb.name" groupName="term.cmdb.groupname" group="cmdb" groupSort="3"
                       groupDescription="term.cmdb.groupdesc"/>
@@ -69,8 +66,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </property>
         <property name="databaseIdProvider" ref="neatLogicDatabaseIdProvider"/>
     </bean>
-
-    <mongo:repositories base-package="neatlogic.module.cmdb.repository"/>
 
 
 </beans>
