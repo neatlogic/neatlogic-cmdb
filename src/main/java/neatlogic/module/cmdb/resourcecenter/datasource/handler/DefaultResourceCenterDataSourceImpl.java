@@ -391,16 +391,17 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
                 ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName(name);
                 if (resourceEntityVo != null) {
                     searchVo.setViewName(name);
+                    List<String> fieldList = viewName2FieldListMap.get(name);
                     List<ResourceVo> resourceList = getAppResourceList(searchVo, true);
+                    JSONArray tbodyList = new JSONArray();
                     if (CollectionUtils.isNotEmpty(resourceList)) {
-                        List<String> fieldList = viewName2FieldListMap.get(name);
-                        JSONArray theadList = getTheadList(fieldList);
-                        JSONArray tbodyList = getTbodyList(fieldList, resourceList, resourceEntityVo);
-                        JSONObject tableObj = TableResultUtil.getResult(theadList, tbodyList, searchVo);
-                        tableObj.put("viewName", name);
-                        tableObj.put("viewLabel", resourceEntityVo.getLabel());
-                        tableList.add(tableObj);
+                        tbodyList = getTbodyList(fieldList, resourceList, resourceEntityVo);
                     }
+                    JSONArray theadList = getTheadList(fieldList);
+                    JSONObject tableObj = TableResultUtil.getResult(theadList, tbodyList, searchVo);
+                    tableObj.put("viewName", name);
+                    tableObj.put("viewLabel", resourceEntityVo.getLabel());
+                    tableList.add(tableObj);
                 }
             }
         }
