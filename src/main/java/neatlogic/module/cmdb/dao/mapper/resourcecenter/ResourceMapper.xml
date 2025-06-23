@@ -1165,15 +1165,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 </otherwise>
             </choose>
         </if>
-        WHERE
-        <if test="keyword != null and keyword != ''">
-            AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%'))
-        </if>
-        <include refid="resource_ipobject_where"/>
-        <choose>
-            <when test="inputNodeList != null and inputNodeList.size() > 0">
-                <foreach collection="inputNodeList" item="item" open="(" separator="OR" close=")">
-                    (
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <include refid="resource_ipobject_where"/>
+            AND
+            <choose>
+                <when test="inputNodeList != null and inputNodeList.size() > 0">
+                    <foreach collection="inputNodeList" item="item" open="(" separator="OR" close=")">
+                        (
                         a.`ip` = #{item.ip}
                         <choose>
                             <when test="item.port != null and item.port != ''">
@@ -1186,13 +1187,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                         <if test="item.name != null and item.name != ''">
                             and a.`name` = #{item.name}
                         </if>
-                    )
-                </foreach>
-            </when>
-            <otherwise>
-                1 != 1
-            </otherwise>
-        </choose>
+                        )
+                    </foreach>
+                </when>
+                <otherwise>
+                    1 != 1
+                </otherwise>
+            </choose>
+        </where>
     </select>
 
     <select id="getResourceListByTypeIdListAndIpList"
