@@ -105,9 +105,14 @@ public class CheckResourceInputNodeListApi extends PrivateApiComponentBase {
                     searchVo.setCmdbGroupType(cmdbGroupType);
                     List<Long> idList =  resourceMapper.getResourceIdListByDynamicCondition(searchVo, sqlSb.toString());
                     if (CollectionUtils.isEmpty(idList)) {
-                        nonExistList.add(inputNodeObj);
+                        if (!nonExistList.contains(inputNodeObj)) {
+                            nonExistList.add(inputNodeObj);
+                        }
+
                     } else {
-                        existList.add(inputNodeObj);
+                        if (!existList.contains(inputNodeObj)) {
+                            existList.add(inputNodeObj);
+                        }
                     }
                 }
             } else {
@@ -184,9 +189,13 @@ public class CheckResourceInputNodeListApi extends PrivateApiComponentBase {
             inputNodeObj.put("port", node.getPort());
             inputNodeObj.put("name", node.getName());
             if (flag) {
-                existList.add(inputNodeObj);
+                if (!existList.contains(inputNodeObj)) {
+                    existList.add(inputNodeObj);
+                }
             } else {
-                nonExistList.add(inputNodeObj);
+                if (!nonExistList.contains(inputNodeObj)) {
+                    nonExistList.add(inputNodeObj);
+                }
             }
         }
     }
