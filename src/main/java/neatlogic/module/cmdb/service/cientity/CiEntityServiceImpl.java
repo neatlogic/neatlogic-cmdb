@@ -2039,7 +2039,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             this.deleteCiEntity(deleteCiEntityVo);
 
             //修改事务状态
-            transactionVo.setCommitUser(UserContext.get().getUserId(true));
+            transactionVo.setCommitUser(UserContext.get().getUserUuid(true));
             transactionVo.setStatus(TransactionStatus.COMMITED.getValue());
             transactionMapper.updateTransactionStatus(transactionVo);
 
