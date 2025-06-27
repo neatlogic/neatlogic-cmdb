@@ -97,7 +97,6 @@ public class CreateDiscoveryJobApi extends PrivateApiComponentBase {
         autoexecJobVo.setOperationId(discoverConfCombopVo.getCombopId());
         autoexecJobVo.setOperationType(CombopOperationType.COMBOP.getValue());
         autoexecJobVo.setName(config.getString("name"));
-        autoexecJobVo.setRoundCount(64);
         autoexecJobVo.setParam(param);
         IAutoexecJobActionCrossoverService autoexecJobActionCrossoverService = CrossoverServiceFactory.getApi(IAutoexecJobActionCrossoverService.class);
         autoexecJobActionCrossoverService.validateAndCreateJobFromCombop(autoexecJobVo);
