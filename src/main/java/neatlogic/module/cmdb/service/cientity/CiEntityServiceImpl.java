@@ -163,7 +163,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
      * @return 配置项信息
      */
     private CiEntityVo getCiEntityByIdLite(Long ciId, Long ciEntityId, Boolean flattenAttr, Boolean limitRelEntity, Boolean limitAttrEntity) {
-        return getCiEntityByIdLite(ciId, ciEntityId, flattenAttr, limitRelEntity, limitAttrEntity, null, null, null);
+        return getCiEntityByIdLite(ciId, ciEntityId, flattenAttr, limitRelEntity, limitAttrEntity, null, null, null, null, null);
     }
 
     /**
@@ -179,7 +179,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
      * @param relIdList        需要返回的关系，为空代表返回所有
      * @return 配置项信息
      */
-    private CiEntityVo getCiEntityByIdLite(Long ciId, Long ciEntityId, Boolean flattenAttr, Boolean limitRelEntity, Boolean limitAttrEntity, List<Long> globalAttrIdList, List<Long> attrIdList, List<Long> relIdList) {
+    private CiEntityVo getCiEntityByIdLite(Long ciId, Long ciEntityId, Boolean flattenAttr, Boolean limitRelEntity, Boolean limitAttrEntity, List<Long> globalAttrIdList, List<Long> attrIdList, List<Long> relIdList, Integer maxAttrEntity, Integer maxRelEntity) {
         if (ciId == null) {
             CiEntityVo ciEntityVo = ciEntityMapper.getCiEntityBaseInfoById(ciEntityId);
             if (ciEntityVo != null) {
@@ -241,7 +241,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             if (CollectionUtils.isNotEmpty(attrList)) {
                 Long attrEntityLimit = null;
                 if (Boolean.TRUE.equals(limitAttrEntity)) {
-                    attrEntityLimit = CiEntityVo.MAX_ATTRENTITY_COUNT;
+                    attrEntityLimit = maxAttrEntity == null ? CiEntityVo.MAX_ATTRENTITY_COUNT : maxAttrEntity;
                 }
                 for (AttrVo attrVo : attrList) {
                     if (attrVo.getTargetCiId() != null) {
@@ -264,7 +264,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             if (CollectionUtils.isNotEmpty(relList)) {
                 Long relEntityLimit = null;
                 if (Boolean.TRUE.equals(limitRelEntity)) {
-                    relEntityLimit = CiEntityVo.MAX_RELENTITY_COUNT;
+                    relEntityLimit = maxRelEntity == null ? CiEntityVo.MAX_RELENTITY_COUNT : maxRelEntity;
                 }
                 for (RelVo relVo : relList) {
                     List<RelEntityVo> relEntityList;
@@ -282,6 +282,11 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         return returnCiEntityVo;
     }
 
+    @Override
+    public CiEntityVo getCiEntityById(Long ciId, Long ciEntityId, Integer maxAttrEntity, Integer maxRelEntity) {
+        return getCiEntityByIdLite(ciId, ciEntityId, false, true, true, null, null, null, maxAttrEntity, maxRelEntity);
+    }
+
 
     @Override
     public CiEntityVo getCiEntityById(Long ciId, Long ciEntityId) {
@@ -290,7 +295,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
 
     @Override
     public CiEntityVo getCiEntityById(CiEntityVo ciEntityVo) {
-        return getCiEntityByIdLite(ciEntityVo.getCiId(), ciEntityVo.getId(), false, ciEntityVo.isLimitRelEntity(), ciEntityVo.isLimitAttrEntity(), ciEntityVo.getGlobalAttrIdList(), ciEntityVo.getAttrIdList(), ciEntityVo.getRelIdList());
+        return getCiEntityByIdLite(ciEntityVo.getCiId(), ciEntityVo.getId(), false, ciEntityVo.isLimitRelEntity(), ciEntityVo.isLimitAttrEntity(), ciEntityVo.getGlobalAttrIdList(), ciEntityVo.getAttrIdList(), ciEntityVo.getRelIdList(), null, null);
     }
 
     @Override
@@ -467,7 +472,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 }
                 runner.execute(ciEntityVo.getIdList(), 10, (threadIndex, dataIndex, item) -> {
                     long startTime = System.currentTimeMillis();
-                    ciEntityQueue.add(getCiEntityByIdLite(ciEntityVo.getCiId(), item, false, ciEntityVo.isLimitRelEntity(), ciEntityVo.isLimitAttrEntity(), ciEntityVo.getGlobalAttrIdList(), ciEntityVo.getAttrIdList(), ciEntityVo.getRelIdList()));
+                    ciEntityQueue.add(getCiEntityByIdLite(ciEntityVo.getCiId(), item, false, ciEntityVo.isLimitRelEntity(), ciEntityVo.isLimitAttrEntity(), ciEntityVo.getGlobalAttrIdList(), ciEntityVo.getAttrIdList(), ciEntityVo.getRelIdList(), null, null));
                     if (logger.isInfoEnabled()) {
                         logger.info("查询单个配置项，耗时{}ms", System.currentTimeMillis() - startTime);
                     }
@@ -2034,7 +2039,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             this.deleteCiEntity(deleteCiEntityVo);
 
             //修改事务状态
-            transactionVo.setCommitUser(UserContext.get().getUserId(true));
+            transactionVo.setCommitUser(UserContext.get().getUserUuid(true));
             transactionVo.setStatus(TransactionStatus.COMMITED.getValue());
             transactionMapper.updateTransactionStatus(transactionVo);
 

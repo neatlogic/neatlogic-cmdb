@@ -78,6 +78,8 @@ public interface CiEntityService {
 
     List<CiEntityVo> getCiEntityBaseInfoByName(Long ciId, String name);
 
+    CiEntityVo getCiEntityById(Long ciId, Long ciEntityId, Integer maxAttrEntity, Integer maxRelEntity);
+
     /**
      * 获取单个配置项详细信息
      *

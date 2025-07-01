@@ -39,13 +39,11 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
 
 @Service
-@Transactional
 @AuthAction(action = SYNC_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class CreateDiscoveryJobApi extends PrivateApiComponentBase {
@@ -99,7 +97,6 @@ public class CreateDiscoveryJobApi extends PrivateApiComponentBase {
         autoexecJobVo.setOperationId(discoverConfCombopVo.getCombopId());
         autoexecJobVo.setOperationType(CombopOperationType.COMBOP.getValue());
         autoexecJobVo.setName(config.getString("name"));
-        autoexecJobVo.setRoundCount(64);
         autoexecJobVo.setParam(param);
         IAutoexecJobActionCrossoverService autoexecJobActionCrossoverService = CrossoverServiceFactory.getApi(IAutoexecJobActionCrossoverService.class);
         autoexecJobActionCrossoverService.validateAndCreateJobFromCombop(autoexecJobVo);

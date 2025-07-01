@@ -21,6 +21,7 @@ import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.dto.condition.ConditionGroupRelVo;
 import neatlogic.framework.dto.condition.ConditionGroupVo;
@@ -34,7 +35,9 @@ import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @AuthAction(action = CMDB.class)
@@ -102,45 +105,60 @@ public class CheckResourceInputNodeListApi extends PrivateApiComponentBase {
                     searchVo.setCmdbGroupType(cmdbGroupType);
                     List<Long> idList =  resourceMapper.getResourceIdListByDynamicCondition(searchVo, sqlSb.toString());
                     if (CollectionUtils.isEmpty(idList)) {
-                        nonExistList.add(inputNodeObj);
+                        if (!nonExistList.contains(inputNodeObj)) {
+                            nonExistList.add(inputNodeObj);
+                        }
+
                     } else {
-                        existList.add(inputNodeObj);
+                        if (!existList.contains(inputNodeObj)) {
+                            existList.add(inputNodeObj);
+                        }
                     }
                 }
             } else {
                 // 简单模式
+                List<ResourceVo> nodeList = new ArrayList<>();
                 ResourceSearchVo searchVo = resourceCenterResourceService.assembleResourceSearchVo(filter);
+                searchVo.setCmdbGroupType(cmdbGroupType);
                 for (int i = 0; i < inputNodeList.size(); i++) {
                     JSONObject inputNodeObj = inputNodeList.getJSONObject(i);
-                    ResourceSearchVo node = JSON.toJavaObject(inputNodeObj, ResourceSearchVo.class);
-                    searchVo.setCmdbGroupType(cmdbGroupType);
-                    searchVo.setIp(node.getIp());
-                    searchVo.setPort(node.getPort());
-                    searchVo.setName(node.getName());
-                    Long resourceId = resourceMapper.getResourceIdByIpAndPortAndNameWithFilter(searchVo);
-                    if (resourceId == null) {
-                        nonExistList.add(inputNodeObj);
-                    } else {
-                        existList.add(inputNodeObj);
+                    ResourceVo node = JSON.toJavaObject(inputNodeObj, ResourceVo.class);
+                    nodeList.add(node);
+                    if (nodeList.size() > 100) {
+                        searchVo.setInputNodeList(nodeList);
+                        List<ResourceVo> resourceList = resourceMapper.getResourceListByIpAndPortAndNameWithFilter(searchVo);
+                        existsOrNot(nodeList, resourceList, existList, nonExistList);
+                        nodeList.clear();
                     }
+                }
+                if (CollectionUtils.isNotEmpty(nodeList)) {
+                    searchVo.setInputNodeList(nodeList);
+                    List<ResourceVo> resourceList = resourceMapper.getResourceListByIpAndPortAndNameWithFilter(searchVo);
+                    existsOrNot(nodeList, resourceList, existList, nonExistList);
+                    nodeList.clear();
                 }
             }
         } else {
             // 没有过滤条件
+            List<ResourceVo> nodeList = new ArrayList<>();
             ResourceSearchVo searchVo = resourceCenterResourceService.assembleResourceSearchVo(new JSONObject());
+            searchVo.setCmdbGroupType(cmdbGroupType);
             for (int i = 0; i < inputNodeList.size(); i++) {
                 JSONObject inputNodeObj = inputNodeList.getJSONObject(i);
-                ResourceSearchVo node = JSON.toJavaObject(inputNodeObj, ResourceSearchVo.class);
-                searchVo.setCmdbGroupType(cmdbGroupType);
-                searchVo.setIp(node.getIp());
-                searchVo.setPort(node.getPort());
-                searchVo.setName(node.getName());
-                Long resourceId = resourceMapper.getResourceIdByIpAndPortAndName(searchVo);
-                if (resourceId == null) {
-                    nonExistList.add(inputNodeObj);
-                } else {
-                    existList.add(inputNodeObj);
+                ResourceVo node = JSON.toJavaObject(inputNodeObj, ResourceVo.class);
+                nodeList.add(node);
+                if (nodeList.size() > 100) {
+                    searchVo.setInputNodeList(nodeList);
+                    List<ResourceVo> resourceList = resourceMapper.getResourceListByIpAndPortAndName(searchVo);
+                    existsOrNot(nodeList, resourceList, existList, nonExistList);
+                    nodeList.clear();
                 }
+            }
+            if (CollectionUtils.isNotEmpty(nodeList)) {
+                searchVo.setInputNodeList(nodeList);
+                List<ResourceVo> resourceList = resourceMapper.getResourceListByIpAndPortAndName(searchVo);
+                existsOrNot(nodeList, resourceList, existList, nonExistList);
+                nodeList.clear();
             }
         }
         JSONObject resultObj = new JSONObject();
@@ -152,5 +170,33 @@ public class CheckResourceInputNodeListApi extends PrivateApiComponentBase {
     @Override
     public String getToken() {
         return "resourcecenter/resource/inputnodelist/check";
+    }
+
+    private void existsOrNot(List<ResourceVo> nodeList, List<ResourceVo> resourceList, JSONArray existList, JSONArray nonExistList) {
+        for (ResourceVo node : nodeList) {
+            boolean flag = false;
+            for (ResourceVo resourceVo : resourceList) {
+                if (Objects.equals(node.getIp(), resourceVo.getIp())
+                        && Objects.equals(node.getPort(), resourceVo.getPort())
+                        && (node.getName() == null || Objects.equals(node.getName(), resourceVo.getName()))
+                ) {
+                    flag = true;
+                    break;
+                }
+            }
+            JSONObject inputNodeObj = new JSONObject();
+            inputNodeObj.put("ip", node.getIp());
+            inputNodeObj.put("port", node.getPort());
+            inputNodeObj.put("name", node.getName());
+            if (flag) {
+                if (!existList.contains(inputNodeObj)) {
+                    existList.add(inputNodeObj);
+                }
+            } else {
+                if (!nonExistList.contains(inputNodeObj)) {
+                    nonExistList.add(inputNodeObj);
+                }
+            }
+        }
     }
 }

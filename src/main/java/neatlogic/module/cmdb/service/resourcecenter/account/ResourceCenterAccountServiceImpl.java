@@ -15,14 +15,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.service.resourcecenter.account;
 
+import com.alibaba.fastjson.JSONObject;
+import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.cmdb.crossover.IResourceCenterAccountCrossoverService;
 import neatlogic.framework.cmdb.dto.resourcecenter.*;
+import neatlogic.framework.cmdb.dto.tag.TagVo;
+import neatlogic.framework.cmdb.enums.resourcecenter.AccountType;
 import neatlogic.framework.cmdb.enums.resourcecenter.Protocol;
+import neatlogic.framework.cmdb.exception.resourcecenter.*;
+import neatlogic.framework.exception.type.ParamNotExistsException;
 import neatlogic.framework.tagent.dao.mapper.TagentMapper;
-import neatlogic.framework.tagent.dto.TagentVo;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
+import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceTagMapper;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -35,59 +43,15 @@ import java.util.stream.Collectors;
  **/
 @Service
 public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountService, IResourceCenterAccountCrossoverService {
+
+    @Resource
+    private ResourceTagMapper resourceTagMapper;
     @Resource
     ResourceMapper resourceMapper;
     @Resource
     ResourceAccountMapper resourceAccountMapper;
     @Resource
     TagentMapper tagentMapper;
-
-    @Override
-    public void refreshAccountIpByAccountId(Long accountId) {
-        resourceAccountMapper.deleteAccountIpByAccountId(accountId);
-        //账号是否被resource引用
-        List<ResourceAccountVo> resourceAccountVoList = resourceAccountMapper.getResourceAccountListByAccountId(accountId);
-        if (CollectionUtils.isNotEmpty(resourceAccountVoList)) {
-            List<ResourceVo> resourceVoList = resourceMapper.getResourceByIdList(resourceAccountVoList.stream().map(ResourceAccountVo::getResourceId).collect(Collectors.toList()));
-            for (ResourceVo resourceVo : resourceVoList) {
-                resourceAccountMapper.insertAccountIp(new AccountIpVo(accountId, resourceVo.getIp()));
-            }
-        }
-        //账号是否被tagent引用
-        List<TagentVo> tagentVoList = tagentMapper.getTagentByAccountId(accountId);
-        if (CollectionUtils.isNotEmpty(tagentVoList)) {
-            for (TagentVo tagentVo : tagentVoList) {
-                resourceAccountMapper.insertAccountIp(new AccountIpVo(tagentVo.getAccountId(), tagentVo.getIp()));
-            }
-        }
-    }
-
-    @Override
-    public void refreshAccountIpByResourceIdList(List<Long> resourceIdList) {
-        List<ResourceAccountVo> resourceAccountVoList = resourceAccountMapper.getResourceAccountListByResourceIdList(resourceIdList);
-        List<ResourceVo> resourceVoList = resourceMapper.getResourceByIdList(resourceAccountVoList.stream().map(ResourceAccountVo::getResourceId).collect(Collectors.toList()));
-        //账号是否被resource引用
-        if (CollectionUtils.isNotEmpty(resourceVoList)) {
-            List<String> resourceIpList = resourceVoList.stream().map(ResourceVo::getIp).collect(Collectors.toList());
-            resourceAccountMapper.deleteAccountIpByIpList(resourceIpList);
-            HashMap<Long, ResourceVo> resourceVoHashMap = new HashMap<>();
-            for (ResourceVo resourceVo : resourceVoList) {
-                resourceVoHashMap.put(resourceVo.getId(), resourceVo);
-            }
-            for (ResourceAccountVo resourceAccountVo : resourceAccountVoList) {
-                if (resourceVoHashMap.containsKey(resourceAccountVo.getResourceId())) {
-                    resourceAccountMapper.insertAccountIp(new AccountIpVo(resourceAccountVo.getAccountId(), resourceVoHashMap.get(resourceAccountVo.getResourceId()).getIp()));
-                }
-            }
-            //账号是否被tagent引用
-            List<TagentVo> tagentVoList = tagentMapper.getTagentByIpList(resourceIpList);
-            if (CollectionUtils.isNotEmpty(tagentVoList)) {
-                for (TagentVo tagentVo : tagentVoList) {
-                    resourceAccountMapper.insertAccountIp(new AccountIpVo(tagentVo.getAccountId(), tagentVo.getIp()));
-                }
-            }
-        }
-    }
 
     /**
      * 按以下规则顺序匹配account
@@ -148,5 +112,181 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
             resourceAccountMapper.deleteAccountTagByAccountIdList(accountIdList);
 //            resourceAccountMapper.deleteAccountIpByAccountIdList(accountIdList);
         }
+    }
+
+    @Override
+    public JSONObject saveAccount(Long id, AccountVo paramAccountVo) {
+        AccountProtocolVo protocolVo = resourceAccountMapper.getAccountProtocolVoByProtocolId(paramAccountVo.getProtocolId());
+        if (protocolVo == null) {
+            throw new ResourceCenterAccountProtocolNotFoundException(paramAccountVo.getProtocolId());
+        }
+        paramAccountVo.setProtocol(protocolVo.getName());
+        if (!StringUtils.equals(protocolVo.getName(), "tagent") && StringUtils.isEmpty(paramAccountVo.getAccount())) {
+            throw new ResourceCenterAccountNameIsNotNullException();
+        }
+        String type = paramAccountVo.getType();
+        if (Objects.equals(type, AccountType.PUBLIC.getValue())) {
+            if (resourceAccountMapper.checkAccountNameIsRepeats(paramAccountVo) > 0) {
+                throw new ResourceCenterAccountNameRepeatsException(paramAccountVo.getName());
+            }
+        } else {
+            // 如果是私有类型账号，需要校验该资产中所有公有和私有账号中是否存在账号及协议都相同的，如果存在则不能更新
+            Long resourceId = paramAccountVo.getResourceId();
+            if (resourceId == null) {
+                throw new ParamNotExistsException("resourceId");
+            }
+            List<AccountVo> accountVoList = resourceAccountMapper.getResourceAccountListByResourceId(resourceId);
+            for (AccountVo accountVo : accountVoList) {
+                if (Objects.equals(paramAccountVo.getName(), accountVo.getName()) && !Objects.equals(paramAccountVo.getId(), accountVo.getId())) {
+                    throw new ResourceCenterAccountNameRepeatsException(paramAccountVo.getName());
+                }
+            }
+            List<String> failureReasonList = check(resourceId, paramAccountVo);
+            if (CollectionUtils.isNotEmpty(failureReasonList)) {
+                JSONObject resultObj = new JSONObject();
+                resultObj.put("failureReasonList", failureReasonList);
+                return resultObj;
+            }
+            List<ResourceAccountVo> resourceAccountVoList = new ArrayList<>();
+            resourceAccountVoList.add(new ResourceAccountVo(resourceId, paramAccountVo.getId()));
+            resourceAccountMapper.insertIgnoreResourceAccount(resourceAccountVoList);
+        }
+        List<Long> tagIdList = paramAccountVo.getTagIdList();
+        List<AccountTagVo> accountTagVoList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(tagIdList)) {
+            List<Long> searchTagIdList = null;
+            List<Long> insertTagIdList = new ArrayList<>(tagIdList);
+            List<TagVo> tagVoList = resourceTagMapper.searchTagListByIdList(tagIdList);
+            searchTagIdList = tagVoList.stream().map(TagVo::getId).collect(Collectors.toList());
+            insertTagIdList.removeAll(searchTagIdList);
+            if (CollectionUtils.isNotEmpty(insertTagIdList)) {
+                List<Long> notFoundTagIdList = new ArrayList<>(insertTagIdList);
+                if (CollectionUtils.isNotEmpty(notFoundTagIdList)) {
+                    throw new ResourceCenterTagNotFoundException(notFoundTagIdList);
+                }
+            }
+            resourceAccountMapper.deleteAccountTagByAccountId(paramAccountVo.getId());
+            for (Long tagId : tagIdList) {
+                accountTagVoList.add(new AccountTagVo(paramAccountVo.getId(), tagId));
+                if (accountTagVoList.size() > 100) {
+                    resourceAccountMapper.insertIgnoreAccountTag(accountTagVoList);
+                    accountTagVoList.clear();
+                }
+            }
+            if (CollectionUtils.isNotEmpty(accountTagVoList)) {
+                resourceAccountMapper.insertIgnoreAccountTag(accountTagVoList);
+            }
+        }
+        paramAccountVo.setLcu(UserContext.get().getUserUuid());
+
+        //一个协议只能存一个默认账号。例如，ssh协议当前默认账号为app，如果在编辑root账号时，把root设置为默认账号，需要替换掉原有的app默认账号表示标识。root代替app成为了新的ssh协议默认账号。
+        if (Objects.equals(type, AccountType.PUBLIC.getValue()) && paramAccountVo.getIsDefault() == 1) {
+            resourceAccountMapper.resetAccountDefaultByProtocolIdAndAccount(paramAccountVo.getProtocolId(), paramAccountVo.getAccount());
+        }
+
+        if (id != null) {
+            AccountVo oldVo = resourceAccountMapper.getAccountById(id);
+            if (oldVo == null) {
+                throw new ResourceCenterAccountNotFoundException(id);
+            }
+            paramAccountVo.setProtocolId(protocolVo.getId());
+            resourceAccountMapper.updateAccount(paramAccountVo);
+        } else {
+            if (Objects.equals(protocolVo.getName(), "tagent")) {
+                throw new ResourceCenterAccountNotCreateTagentAccountException();
+            }
+            paramAccountVo.setFcu(UserContext.get().getUserUuid());
+            resourceAccountMapper.insertAccount(paramAccountVo);
+        }
+
+        JSONObject resultObj = new JSONObject();
+        resultObj.put("id", paramAccountVo.getId());
+        return resultObj;
+    }
+
+    @Override
+    public JSONObject saveResourceAccount(Long resourceId, List<Long> accountIdList) {
+        int successCount = 0;
+        List<String> failureReasonList = new ArrayList<>();
+        // 查询该资产绑定的公有账号列表，再根据账号ID解绑
+        List<AccountVo> accountList = resourceAccountMapper.getResourceAccountListByResourceIdAndType(resourceId, AccountType.PUBLIC.getValue());
+        if (CollectionUtils.isNotEmpty(accountList)) {
+            List<Long> accountIds = accountList.stream().map(AccountVo::getId).collect(Collectors.toList());
+            resourceAccountMapper.deleteResourceAccountByResourceIdListAndAccountIdList(Collections.singletonList(resourceId), accountIds);
+        }
+        if (CollectionUtils.isEmpty(accountIdList)) {
+            return null;
+        }
+        Map<String, AccountVo> accountVoMap = new HashMap<>();
+        List<Long> existAccountIdList = new ArrayList<>();
+        Set<Long> excludeAccountIdSet = new HashSet<>();
+        List<AccountVo> accountVoList = resourceAccountMapper.getAccountListByIdList(accountIdList);
+        for (AccountVo accountVo : accountVoList) {
+            existAccountIdList.add(accountVo.getId());
+            String key = accountVo.getProtocol() + "#" + accountVo.getAccount();
+            AccountVo account = accountVoMap.get(key);
+            if (account == null) {
+                accountVoMap.put(key, accountVo);
+            } else {
+                failureReasonList.add("选中项中\"" + accountVo.getName() + "（" + accountVo.getProtocol() + "/" + accountVo.getAccount() + "）\"与\"" + account.getName() + "（" + account.getProtocol() + "/" + account.getAccount() + "）\"的协议相同且用户名相同，同一资产不可绑定多个协议相同且用户名相同的账号");
+                excludeAccountIdSet.add(accountVo.getId());
+                excludeAccountIdSet.add(account.getId());
+            }
+        }
+        if (accountIdList.size() > existAccountIdList.size()) {
+            List<Long> notFoundIdList = ListUtils.removeAll(accountIdList, existAccountIdList);
+            if (CollectionUtils.isNotEmpty(notFoundIdList)) {
+                StringBuilder stringBuilder = new StringBuilder();
+                for (Long accountId : notFoundIdList) {
+                    stringBuilder.append(accountId);
+                    stringBuilder.append("、");
+                }
+                stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+                throw new ResourceCenterAccountNotFoundException(stringBuilder.toString());
+            }
+        }
+        accountIdList.removeAll(excludeAccountIdSet);
+        List<ResourceAccountVo> resourceAccountVoList = new ArrayList<>();
+        for (Long accountId : accountIdList) {
+            resourceAccountVoList.add(new ResourceAccountVo(resourceId, accountId));
+            successCount++;
+            if (resourceAccountVoList.size() > 100) {
+                resourceAccountMapper.insertIgnoreResourceAccount(resourceAccountVoList);
+                resourceAccountVoList.clear();
+            }
+        }
+        if (CollectionUtils.isNotEmpty(resourceAccountVoList)) {
+            resourceAccountMapper.insertIgnoreResourceAccount(resourceAccountVoList);
+        }
+
+        JSONObject resultObj = new JSONObject();
+        resultObj.put("successCount", successCount);
+        resultObj.put("failureCount", failureReasonList.size());
+        resultObj.put("failureReasonList", failureReasonList);
+        return resultObj;
+    }
+
+    /**
+     * 校验该资产中所有公有和私有账号中是否存在账号及协议都相同的
+     *
+     * @param resourceId   资产ID
+     * @param newAccountVo 新账号信息
+     */
+    private List<String> check(Long resourceId, AccountVo newAccountVo) {
+        List<String> failureReasonList = new ArrayList<>();
+        Map<String, AccountVo> accountVoMap = new HashMap<>();
+        List<AccountVo> accountVoList = resourceAccountMapper.getResourceAccountListByResourceId(resourceId);
+        accountVoList.removeIf(accountVo -> Objects.equals(accountVo.getId(), newAccountVo.getId()));
+        accountVoList.add(newAccountVo);
+        for (AccountVo accountVo : accountVoList) {
+            String key = accountVo.getProtocol() + "#" + accountVo.getAccount();
+            AccountVo account = accountVoMap.get(key);
+            if (account == null) {
+                accountVoMap.put(key, accountVo);
+            } else {
+                failureReasonList.add("选中项中\"" + accountVo.getName() + "（" + accountVo.getProtocol() + "/" + accountVo.getAccount() + "）\"与\"" + account.getName() + "（" + account.getProtocol() + "/" + account.getAccount() + "）\"");
+            }
+        }
+        return failureReasonList;
     }
 }

@@ -666,7 +666,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                             JOIN ${ci.ciTableName} FORCE INDEX(PRIMARY) ON `ci_base`.id = ${ci.ciTableName}.cientity_id
                         </when>
                         <otherwise>
-                            JOIN ${ci.ciTableName} FORCE INDEX(PRIMARY) ON `ci_base`.id = ${ci.ciTableName}.id
+                            JOIN ${ci.ciTableName} ON `ci_base`.id = ${ci.ciTableName}.id
                         </otherwise>
                     </choose>
                 </when>
@@ -677,7 +677,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                                 JOIN ${ci.ciTableName} FORCE INDEX(PRIMARY) ON `ci_base`.id = ${ci.ciTableName}.cientity_id
                             </when>
                             <otherwise>
-                                JOIN ${ci.ciTableName} FORCE INDEX(PRIMARY) ON `ci_base`.id = ${ci.ciTableName}.id
+                                JOIN ${ci.ciTableName} ON `ci_base`.id = ${ci.ciTableName}.id
                             </otherwise>
                         </choose>
                     </if>
@@ -788,7 +788,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                     JOIN ${ci.ciTableName} FORCE INDEX(PRIMARY) ON `ci_base`.id = ${ci.ciTableName}.cientity_id
                 </when>
                 <otherwise>
-                    JOIN ${ci.ciTableName} FORCE INDEX(PRIMARY) ON `ci_base`.id = ${ci.ciTableName}.id
+                    JOIN ${ci.ciTableName} ON `ci_base`.id = ${ci.ciTableName}.id
                 </otherwise>
             </choose>
         </foreach>
@@ -1412,7 +1412,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                     LEFT JOIN ${ci.ciTableName} FORCE INDEX(PRIMARY) ON `ci_base`.id = ${ci.ciTableName}.cientity_id
                 </when>
                 <otherwise>
-                    LEFT JOIN ${ci.ciTableName} FORCE INDEX(PRIMARY) ON `ci_base`.id = ${ci.ciTableName}.id
+                    LEFT JOIN ${ci.ciTableName} ON `ci_base`.id = ${ci.ciTableName}.id
                 </otherwise>
             </choose>
         </foreach>

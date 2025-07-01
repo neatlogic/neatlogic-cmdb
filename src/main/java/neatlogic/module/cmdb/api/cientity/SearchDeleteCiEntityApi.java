@@ -105,6 +105,7 @@ public class SearchDeleteCiEntityApi extends PrivateApiComponentBase {
             });
         }
         theadList.add(JSON.parse("{key:\"transactionId\",title:\"事务id\"}"));
+        theadList.add(JSON.parse("{key:\"deleteUser\",title:\"操作人\"}"));
         theadList.add(JSON.parse("{key:\"deleteTime\",title:\"删除时间\"}"));
         theadList.add(JSON.parse("{key:\"description\",title:\"备注\", width:300}"));
         if (CollectionUtils.isNotEmpty(ciViewList)) {
@@ -154,6 +155,8 @@ public class SearchDeleteCiEntityApi extends PrivateApiComponentBase {
                     entityObj.put("transactionId", transactionVo.getId());
                     entityObj.put("transactionGroupId", transactionVo.getTransactionGroupId());
                     entityObj.put("deleteTime", transactionVo.getCommitTime());
+                    entityObj.put("deleteUser", transactionVo.getCommitUser());
+                    entityObj.put("deleteUserName", transactionVo.getCommitUserName());
                     entityObj.put("description", transactionVo.getDescription());
                     if (needAction) {
                         JSONObject actionData = new JSONObject();

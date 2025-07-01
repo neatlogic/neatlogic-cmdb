@@ -457,7 +457,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
                     } else if (ciEntityObjList != null && needAction) {
                         JSONObject actionData = new JSONObject();
                         //用于表单组件的判断，如果是更新或添加操作时才会出现编辑按钮
-                        if (entityObj.containsKey("actionType")
+                        if (entityObj.getString("actionType") != null
                                 && (entityObj.getString("actionType").equals("update")
                                 || entityObj.getString("actionType").equals("insert"))) {
                             actionData.put(CiAuthType.CIENTITYUPDATE.getValue(), true);

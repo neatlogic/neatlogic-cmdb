@@ -17,7 +17,7 @@ package neatlogic.module.cmdb.api.resourcecenter.resource;
 
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
-import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
+import neatlogic.framework.cmdb.auth.label.CMDB;
 import neatlogic.framework.cmdb.dto.resourcecenter.AccountAccessTestVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.AccountVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
@@ -49,7 +49,7 @@ import java.util.List;
 import java.util.Random;
 
 @Service
-@AuthAction(action = CMDB_BASE.class)
+@AuthAction(action = CMDB.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ResourceAccountAccessTestApi extends PrivateApiComponentBase {
 
@@ -69,7 +69,7 @@ public class ResourceAccountAccessTestApi extends PrivateApiComponentBase {
 
     @Override
     public String getName() {
-        return "测试账号可用性";
+        return "nmcarr.resourceaccountaccesstestapi.getname";
     }
 
     @Override
@@ -78,14 +78,14 @@ public class ResourceAccountAccessTestApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "resourceId", type = ApiParamType.LONG, isRequired = true, desc = "资源id"),
-            @Param(name = "runnerId", type = ApiParamType.LONG, desc = "执行器id"),
-            @Param(name = "accountIdList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "账号ID列表"),
+            @Param(name = "resourceId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.resourceid"),
+            @Param(name = "runnerId", type = ApiParamType.LONG, desc = "term.deploy.runnerid"),
+            @Param(name = "accountIdList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "term.cmdb.accountidlist"),
     })
     @Output({
             @Param(explode = AccountVo.class),
     })
-    @Description(desc = "测试账号可用性")
+    @Description(desc = "nmcarr.resourceaccountaccesstestapi.getname")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long resourceId = paramObj.getLong("resourceId");
