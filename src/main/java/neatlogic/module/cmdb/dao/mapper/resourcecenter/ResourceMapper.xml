@@ -300,6 +300,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </where>
     </select>
 
+    <select id="getResourceCountBySql" parameterType="java.lang.String" resultType="int">
+        ${sql}
+    </select>
+
     <select id="getAllResourceCount" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultType="int">
         SELECT
@@ -462,6 +466,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         ) m
     </select>
 
+    <select id="getResourceIdListBySql" parameterType="java.lang.String" resultType="java.lang.Long">
+        ${sq}
+    </select>
+
     <select id="getResourceIdListByDynamicCondition"
             parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultType="java.lang.Long">
@@ -590,6 +598,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         <foreach collection="list" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
+    </select>
+
+    <select id="getResourceListBySql" parameterType="java.lang.String" resultMap="resourceCenterMap">
+        ${sql}
     </select>
 
     <select id="getAppResourceCount" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="int">
