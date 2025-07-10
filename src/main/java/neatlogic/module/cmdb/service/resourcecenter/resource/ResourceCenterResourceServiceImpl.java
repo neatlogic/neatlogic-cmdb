@@ -737,10 +737,8 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 countFunction.withName("COUNT");
                 countFunction.withDistinct(true);
                 countFunction.setParameters(new ExpressionList().addExpressions(new Column("fw.word")));
-                SelectExpressionItem countDistinctItem = new SelectExpressionItem(countFunction).withAlias(new Alias("match_count"));
-                plainSelect.addSelectItems(countDistinctItem);
                 // 排序
-                OrderByElement orderByMatchCount = new OrderByElement().withExpression(new Column("match_count")).withAsc(false);
+                OrderByElement orderByMatchCount = new OrderByElement().withExpression(countFunction).withAsc(false);
                 plainSelect.addOrderByElements(orderByMatchCount);
             }
             // 分组
@@ -1351,6 +1349,17 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
      * @return
      */
     private PlainSelect supplementBusinessLogicByResourceSearchVo(ResourceQueryCriteriaVo queryCriteriaVo, PlainSelect plainSelect, Map<String, Column> filterItemFieldName2ColumnMap) {
+        /*
+        <if test="keywordList != null and keywordList.size() > 0">
+            JOIN fulltextindex_field_cmdb ffc ON ffc.target_id = a.id AND ffc.target_field IN (#{nameFieldAttrId}, #{ipFieldAttrId})
+            JOIN fulltextindex_word fw ON ffc.word_id = fw.id
+            AND (fw.word IN
+            <foreach collection="keywordList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+            )
+        </if>
+         */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getKeywordList()) && (queryCriteriaVo.getNameFieldAttrId() != null || queryCriteriaVo.getIpFieldAttrId() != null)) {
             Table ffcTable = new Table("fulltextindex_field_cmdb").withAlias(new Alias("ffc").withUseAs(false));
             {
@@ -1378,6 +1387,25 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 plainSelect.addJoins(join);
             }
         }
+        /*
+        <if test="batchSearchList != null and batchSearchList.size() > 0 and searchField != null and searchField != ''">
+            JOIN fulltextindex_field_cmdb ffc2 ON ffc2.target_id = a.id
+            <choose>
+                <when test="searchField == 'name'">
+                    AND ffc2.target_field = #{nameFieldAttrId}
+                </when>
+                <otherwise>
+                    AND ffc2.target_field = #{ipFieldAttrId}
+                </otherwise>
+            </choose>
+            JOIN fulltextindex_word fw2 ON ffc2.word_id = fw2.id
+            AND (fw2.word IN
+            <foreach collection="batchSearchList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+            )
+        </if>
+         */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getBatchSearchList()) && StringUtils.isNotBlank(queryCriteriaVo.getSearchField())) {
             Table ffc2Table = new Table("fulltextindex_field_cmdb").withAlias(new Alias("ffc2").withUseAs(false));
             {
@@ -1404,6 +1432,19 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 plainSelect.addJoins(join);
             }
         }
+        /*
+        <if test="protocolIdList != null and protocolIdList.size() > 0">
+            LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
+            LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
+        </if>
+
+        <if test="protocolIdList != null and protocolIdList.size() > 0">
+            AND c.`protocol_id` IN
+            <foreach collection="protocolIdList" item="protocolId" open="(" separator="," close=")">
+                #{protocolId}
+            </foreach>
+        </if>
+         */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getProtocolIdList())) {
             Table bTable = new Table("cmdb_resourcecenter_resource_account").withAlias(new Alias("b").withUseAs(false));
             {
@@ -1430,6 +1471,18 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 plainSelect.setWhere(inExpression);
             }
         }
+        /*
+        <if test="tagIdList != null and tagIdList.size() > 0">
+            LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+        </if>
+
+        <if test="tagIdList != null and tagIdList.size() > 0">
+            AND d.`tag_id` IN
+            <foreach collection="tagIdList" item="tagId" open="(" separator="," close=")">
+                #{tagId}
+            </foreach>
+        </if>
+         */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getTagIdList())) {
             Table dTable = new Table("cmdb_resourcecenter_resource_tag").withAlias(new Alias("d").withUseAs(false));
             {
@@ -1450,6 +1503,19 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 plainSelect.setWhere(inExpression);
             }
         }
+        /*
+        <if test="inspectJobPhaseNodeStatusList !=null and inspectJobPhaseNodeStatusList.size() > 0">
+            left join autoexec_job_resource_inspect ajri on ajri.resource_id=a.id
+            left join autoexec_job_phase_node ajpn on ajpn.job_phase_id =ajri.phase_id AND ajpn.resource_id = a.id
+        </if>
+
+        <if test="inspectStatusList != null and inspectStatusList.size() > 0">
+            AND a.`inspect_status` IN
+            <foreach collection="inspectStatusList" item="inspectStatus" open="(" separator="," close=")">
+                #{inspectStatus}
+            </foreach>
+        </if>
+         */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getInspectJobPhaseNodeStatusList())) {
             Table ajriTable = new Table("autoexec_job_resource_inspect").withAlias(new Alias("ajri").withUseAs(false));
             {
@@ -1477,6 +1543,20 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 plainSelect.setWhere(inExpression);
             }
         }
+        /*
+        <if test="isHasAuth == false">
+            LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
+            LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
+             <choose>
+                <when test="cmdbGroupType == 'autoexec'">
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
+                </when>
+                <otherwise>
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+                </otherwise>
+            </choose>
+        </if>
+         */
         if (Objects.equals(queryCriteriaVo.getIsHasAuth(), false)) {
             Table ccgTable = new Table("cmdb_cientity_group").withAlias(new Alias("ccg").withUseAs(false));
             {
@@ -1506,6 +1586,56 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 plainSelect.addJoins(join);
             }
         }
+        /*
+         <if test="typeIdList != null and typeIdList.size() > 0">
+            <if test="isHasAuth == true">
+                AND a.`type_id` IN
+                <foreach collection="typeIdList" item="typeId" open="(" separator="," close=")">
+                    #{typeId}
+                </foreach>
+            </if>
+            <if test="isHasAuth == false">
+                AND (
+                <choose>
+                    <when test="authedTypeIdList != null and authedTypeIdList.size() >0">
+                        a.`type_id` IN
+                        <foreach collection="authedTypeIdList" item="authedTypeId" open="(" separator="," close=")">
+                            #{authedTypeId}
+                        </foreach>
+                    </when>
+                    <otherwise>
+                        1 = 0
+                    </otherwise>
+                </choose>
+                or (
+                cg.id is not null and
+                a.`type_id` IN
+                <foreach collection="typeIdList" item="typeId" open="(" separator="," close=")">
+                    #{typeId}
+                </foreach>
+                and
+                ((cga.auth_type = 'common' AND cga.auth_uuid = 'alluser')
+                <if test="authenticationInfo != null">
+                    OR cga.auth_uuid IN (
+                    #{authenticationInfo.userUuid}
+                    <if test="authenticationInfo.teamUuidList != null and authenticationInfo.teamUuidList.size() > 0">
+                        <foreach collection="authenticationInfo.teamUuidList" item="item" open="," separator=",">
+                            #{item}
+                        </foreach>
+                    </if>
+                    <if test="authenticationInfo.roleUuidList != null and authenticationInfo.roleUuidList.size() > 0">
+                        <foreach collection="authenticationInfo.roleUuidList" item="item" open="," separator=",">
+                            #{item}
+                        </foreach>
+                    </if>
+                )
+                </if>
+                )
+                )
+                )
+            </if>
+        </if>
+         */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getTypeIdList())) {
             if (Objects.equals(queryCriteriaVo.getIsHasAuth(), true)) {
                 Column column = filterItemFieldName2ColumnMap.get("type_id");
@@ -1533,7 +1663,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                     orLeftExpression = new EqualsTo(new LongValue(1), new LongValue(0));
                 }
                 Expression orRightExpression = null;
-                IsNullExpression IsNullExpression = new IsNullExpression().withLeftExpression(new Column("cg.id")).withUseIsNull(false);
+                IsNullExpression IsNullExpression = new IsNullExpression().withLeftExpression(new Column("cg.id")).withNot(true);
                 Column column = filterItemFieldName2ColumnMap.get("type_id");
                 ExpressionList values = new ExpressionList();
                 for (Long typeId : queryCriteriaVo.getTypeIdList()) {
@@ -1542,6 +1672,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 InExpression inExpression = new InExpression(column, values);
                 orRightExpression = new AndExpression(IsNullExpression, inExpression);
                 Expression orLeftExpression2 = new AndExpression(new EqualsTo(new Column("cga.auth_type"), new StringValue("common")), new EqualsTo(new Column("cga.auth_uuid"), new StringValue("alluser")));
+                orLeftExpression2 = new Parenthesis(orLeftExpression2);
                 Expression orRightExpression2 = null;
                 if (queryCriteriaVo.getAuthenticationInfo() != null) {
                     List<String> uuidList = new ArrayList<>();
@@ -1564,19 +1695,27 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                     }
                 }
                 if (orRightExpression2 != null) {
-                    orRightExpression = new AndExpression(orRightExpression, new OrExpression(orLeftExpression2, orRightExpression2));
+                    orRightExpression = new AndExpression(orRightExpression, new Parenthesis(new OrExpression(orLeftExpression2, orRightExpression2)));
                 } else {
                     orRightExpression = new AndExpression(orRightExpression, orLeftExpression2);
                 }
                 OrExpression orExpression = new OrExpression(orLeftExpression, orRightExpression);
                 Expression where = plainSelect.getWhere();
                 if (where != null) {
-                    plainSelect.setWhere(new AndExpression(where, orExpression));
+                    plainSelect.setWhere(new AndExpression(where, new Parenthesis(orExpression)));
                 } else {
                     plainSelect.setWhere(orExpression);
                 }
             }
         }
+        /*
+        <if test="stateIdList != null and stateIdList.size() > 0">
+            AND a.`state_id` IN
+            <foreach collection="stateIdList" item="stateId" open="(" separator="," close=")">
+                #{stateId}
+            </foreach>
+        </if>
+         */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getStateIdList())) {
             Column column = filterItemFieldName2ColumnMap.get("state_id");
             ExpressionList values = new ExpressionList();
@@ -1591,6 +1730,14 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 plainSelect.setWhere(inExpression);
             }
         }
+        /*
+        <if test="vendorIdList != null and vendorIdList.size() > 0">
+            AND a.`vendor_id` IN
+            <foreach collection="vendorIdList" item="vendorId" open="(" separator="," close=")">
+                #{vendorId}
+            </foreach>
+        </if>
+         */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getVendorIdList())) {
             Column column = filterItemFieldName2ColumnMap.get("vendor_id");
             ExpressionList values = new ExpressionList();
@@ -1605,6 +1752,14 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 plainSelect.setWhere(inExpression);
             }
         }
+        /*
+        <if test="envIdList != null and envIdList.size() > 0">
+            AND a.`env_id` IN
+            <foreach collection="envIdList" item="envId" open="(" separator="," close=")">
+                #{envId}
+            </foreach>
+        </if>
+         */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getEnvIdList())) {
             Column column = filterItemFieldName2ColumnMap.get("env_id");
             ExpressionList values = new ExpressionList();
@@ -1619,6 +1774,11 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 plainSelect.setWhere(inExpression);
             }
         }
+        /*
+        <if test="isExistNoEnv">
+            AND a.`env_id` is null
+        </if>
+         */
         if (Objects.equals(queryCriteriaVo.getExistNoEnv(), true)) {
             Column column = filterItemFieldName2ColumnMap.get("env_id");
 
@@ -1631,6 +1791,14 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 plainSelect.setWhere(isNullExpression);
             }
         }
+        /*
+        <if test="appSystemIdList != null and appSystemIdList.size() > 0">
+            AND a.`app_system_id` IN
+            <foreach collection="appSystemIdList" item="appSystemId" open="(" separator="," close=")">
+                #{appSystemId}
+            </foreach>
+        </if>
+         */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getAppSystemIdList())) {
             Column column = filterItemFieldName2ColumnMap.get("app_system_id");
             ExpressionList values = new ExpressionList();
@@ -1645,6 +1813,14 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 plainSelect.setWhere(inExpression);
             }
         }
+        /*
+        <if test="appModuleIdList != null and appModuleIdList.size() > 0">
+            AND a.`app_module_id` IN
+            <foreach collection="appModuleIdList" item="appModuleId" open="(" separator="," close=")">
+                #{appModuleId}
+            </foreach>
+        </if>
+         */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getAppModuleIdList())) {
             Column column = filterItemFieldName2ColumnMap.get("app_module_id");
             ExpressionList values = new ExpressionList();
@@ -1659,6 +1835,14 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 plainSelect.setWhere(inExpression);
             }
         }
+        /*
+        <if test="defaultValue != null and defaultValue.size() > 0">
+            AND a.`id` IN
+            <foreach collection="defaultValue" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+         */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getDefaultValue())) {
             Column column = filterItemFieldName2ColumnMap.get("id");
             ExpressionList values = new ExpressionList();
@@ -1675,6 +1859,14 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 plainSelect.setWhere(inExpression);
             }
         }
+        /*
+        <if test="idList != null and idList.size() > 0">
+            AND a.`id` IN
+            <foreach collection="idList" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+         */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getIdList())) {
             Column column = filterItemFieldName2ColumnMap.get("id");
             ExpressionList values = new ExpressionList();
@@ -1689,6 +1881,14 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 plainSelect.setWhere(inExpression);
             }
         }
+        /*
+        <if test="inspectStatusList != null and inspectStatusList.size() > 0">
+            AND a.`inspect_status` IN
+            <foreach collection="inspectStatusList" item="inspectStatus" open="(" separator="," close=")">
+                #{inspectStatus}
+            </foreach>
+        </if>
+         */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getInspectStatusList())) {
             Column column = filterItemFieldName2ColumnMap.get("inspect_status");
             ExpressionList values = new ExpressionList();
