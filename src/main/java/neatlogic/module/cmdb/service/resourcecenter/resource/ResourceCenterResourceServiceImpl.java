@@ -603,23 +603,10 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
     @Override
     public String buildResourceView(ResourceEntityVo resourceEntityVo) {
         String viewName = resourceEntityVo.getName();
-        ResourceEntityConfigVo originalConfig = resourceEntityVo.getConfig();
         String select = null;
         String error = StringUtils.EMPTY;
         try {
-            List<ResourceEntityRelLinkVo> relLinkList = getRelLinkListByRelNode(originalConfig.getRelNode());
-            originalConfig.setRelLinkList(relLinkList);
-            List<ResourceEntityLeftJoinVo> leftJoinList = getLeftJoinList(originalConfig);
-            List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
-            if (CollectionUtils.isEmpty(fieldNameList)) {
-                String sceneTemplateName = originalConfig.getSceneTemplateName();
-                if (StringUtils.isNotBlank(sceneTemplateName)) {
-                    fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(sceneTemplateName);
-                }
-            }
-            ResourceEntityConfigVo config = fieldMappingCheckValidityAndFillIdData(viewName, fieldNameList, originalConfig);
-            config.setLeftJoinList(leftJoinList);
-            config.setSelectItemFieldNameList(new ArrayList<>(fieldNameList));
+            ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
             if (Objects.equals(DatasourceManager.getDatabaseId(), DatabaseVendor.TIDB.getDatabaseId())) {
                 ResourceViewGenerateSqlUtilForTiDB resourceViewGenerateSqlUtilForTiDB = new ResourceViewGenerateSqlUtilForTiDB(config);
                 select = resourceViewGenerateSqlUtilForTiDB.getSql().toString();
@@ -696,28 +683,15 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 
     @Override
     public String buildGetResourceIdListSql(ResourceSearchVo searchVo) {
-        ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
-        String viewName = resourceEntityVo.getName();
-        ResourceEntityConfigVo originalConfig = resourceEntityVo.getConfig();
-        PlainSelect plainSelect = null;
         try {
-            List<ResourceEntityRelLinkVo> relLinkList = getRelLinkListByRelNode(originalConfig.getRelNode());
-            originalConfig.setRelLinkList(relLinkList);
-            List<ResourceEntityLeftJoinVo> leftJoinList = getLeftJoinList(originalConfig);
-            List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
-            if (CollectionUtils.isEmpty(fieldNameList)) {
-                String sceneTemplateName = originalConfig.getSceneTemplateName();
-                if (StringUtils.isNotBlank(sceneTemplateName)) {
-                    fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(sceneTemplateName);
-                }
-            }
+            PlainSelect plainSelect = null;
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
+            ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
             ResourceQueryCriteriaVo queryCriteriaVo = new ResourceQueryCriteriaVo(searchVo);
             List<String> selectItemFieldNameList = new ArrayList<>();
             selectItemFieldNameList.add("id");
             List<String> filterItemFieldNameList = getFilterItemFieldNameList(queryCriteriaVo);
             filterItemFieldNameList.add("id");
-            ResourceEntityConfigVo config = fieldMappingCheckValidityAndFillIdData(viewName, fieldNameList, originalConfig);
-            config.setLeftJoinList(leftJoinList);
             config.setSelectItemFieldNameList(selectItemFieldNameList);
             config.setFilterItemFieldNameList(filterItemFieldNameList);
             Map<String, Column> filterItemFieldName2ColumnMap = new HashMap<>();
@@ -748,37 +722,24 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             plainSelect.addOrderByElements(orderById);
 
             plainSelect.setLimit(new Limit().withOffset(new LongValue(searchVo.getStartNum())).withRowCount(new LongValue(searchVo.getPageSize())));
+            return plainSelect.toString();
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
-
-        return plainSelect.toString();
+        return null;
     }
 
     @Override
     public String buildGetResourceCountSql(ResourceSearchVo searchVo) {
         try {
-            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
-            String viewName = resourceEntityVo.getName();
-            ResourceEntityConfigVo originalConfig = resourceEntityVo.getConfig();
             PlainSelect plainSelect = null;
-            List<ResourceEntityRelLinkVo> relLinkList = getRelLinkListByRelNode(originalConfig.getRelNode());
-            originalConfig.setRelLinkList(relLinkList);
-            List<ResourceEntityLeftJoinVo> leftJoinList = getLeftJoinList(originalConfig);
-            List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
-            if (CollectionUtils.isEmpty(fieldNameList)) {
-                String sceneTemplateName = originalConfig.getSceneTemplateName();
-                if (StringUtils.isNotBlank(sceneTemplateName)) {
-                    fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(sceneTemplateName);
-                }
-            }
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
+            ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
             ResourceQueryCriteriaVo queryCriteriaVo = new ResourceQueryCriteriaVo(searchVo);
             List<String> selectItemFieldNameList = new ArrayList<>();
             selectItemFieldNameList.add("id");
             List<String> filterItemFieldNameList = getFilterItemFieldNameList(queryCriteriaVo);
             filterItemFieldNameList.add("id");
-            ResourceEntityConfigVo config = fieldMappingCheckValidityAndFillIdData(viewName, fieldNameList, originalConfig);
-            config.setLeftJoinList(leftJoinList);
             config.setSelectItemFieldNameList(selectItemFieldNameList);
             config.setFilterItemFieldNameList(filterItemFieldNameList);
             Map<String, Column> filterItemFieldName2ColumnMap = new HashMap<>();
@@ -809,20 +770,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
     @Override
     public String buildGetResourceListSql(List<Long> idList, List<String> selectFieldNameList) {
         try {
-            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
-            String viewName = resourceEntityVo.getName();
-            ResourceEntityConfigVo originalConfig = resourceEntityVo.getConfig();
             PlainSelect plainSelect = null;
-            List<ResourceEntityRelLinkVo> relLinkList = getRelLinkListByRelNode(originalConfig.getRelNode());
-            originalConfig.setRelLinkList(relLinkList);
-            List<ResourceEntityLeftJoinVo> leftJoinList = getLeftJoinList(originalConfig);
-            List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
-            if (CollectionUtils.isEmpty(fieldNameList)) {
-                String sceneTemplateName = originalConfig.getSceneTemplateName();
-                if (StringUtils.isNotBlank(sceneTemplateName)) {
-                    fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(sceneTemplateName);
-                }
-            }
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
+            ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
             List<String> selectItemFieldNameList = new ArrayList<>();
             if (CollectionUtils.isNotEmpty(selectFieldNameList)) {
                 selectItemFieldNameList.addAll(selectFieldNameList);
@@ -831,8 +781,6 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             if (CollectionUtils.isNotEmpty(idList)) {
                 filterItemFieldNameList.add("id");
             }
-            ResourceEntityConfigVo config = fieldMappingCheckValidityAndFillIdData(viewName, fieldNameList, originalConfig);
-            config.setLeftJoinList(leftJoinList);
             config.setSelectItemFieldNameList(selectItemFieldNameList);
             config.setFilterItemFieldNameList(filterItemFieldNameList);
             Map<String, Column> filterItemFieldName2ColumnMap = new HashMap<>();
@@ -880,6 +828,24 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         return buildGetResourceListSql(idList, fieldNameList);
     }
 
+    private ResourceEntityConfigVo getResourceEntityConfigVo(ResourceEntityVo resourceEntityVo) {
+        String viewName = resourceEntityVo.getName();
+        ResourceEntityConfigVo originalConfig = resourceEntityVo.getConfig();
+        List<ResourceEntityRelLinkVo> relLinkList = getRelLinkListByRelNode(originalConfig.getRelNode());
+        originalConfig.setRelLinkList(relLinkList);
+        List<ResourceEntityLeftJoinVo> leftJoinList = getLeftJoinList(originalConfig);
+        List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
+        if (CollectionUtils.isEmpty(fieldNameList)) {
+            String sceneTemplateName = originalConfig.getSceneTemplateName();
+            if (StringUtils.isNotBlank(sceneTemplateName)) {
+                fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(sceneTemplateName);
+            }
+        }
+        ResourceEntityConfigVo config = fieldMappingCheckValidityAndFillIdData(viewName, fieldNameList, originalConfig);
+        config.setLeftJoinList(leftJoinList);
+        config.setSelectItemFieldNameList(new ArrayList<>(fieldNameList));
+        return config;
+    }
     /**
      * 对字段映射配置信息进行有效性检查及填充缺省数据
      *
