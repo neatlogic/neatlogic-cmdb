@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.service.resourcecenter.resource;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
@@ -50,12 +51,23 @@ import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceTagMapper;
 import neatlogic.module.cmdb.utils.ResourceEntityFactory;
+import net.sf.jsqlparser.expression.*;
+import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
+import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
+import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.InExpression;
+import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.select.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -69,6 +81,7 @@ import java.util.stream.Collectors;
 @Service
 public class ResourceCenterResourceServiceImpl implements IResourceCenterResourceService {
 
+    private final Logger logger = LoggerFactory.getLogger(ResourceCenterResourceServiceImpl.class);
     private final static List<String> defaultAttrList = Arrays.asList("_id", "_uuid", "_name", "_fcu", "_fcd", "_lcu", "_lcd", "_inspectStatus", "_inspectTime", "_monitorStatus", "_monitorTime", "_typeId", "_typeName", "_typeLabel");
 
     @Resource
@@ -606,12 +619,13 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             }
             ResourceEntityConfigVo config = fieldMappingCheckValidityAndFillIdData(viewName, fieldNameList, originalConfig);
             config.setLeftJoinList(leftJoinList);
+            config.setSelectItemFieldNameList(new ArrayList<>(fieldNameList));
             if (Objects.equals(DatasourceManager.getDatabaseId(), DatabaseVendor.TIDB.getDatabaseId())) {
                 ResourceViewGenerateSqlUtilForTiDB resourceViewGenerateSqlUtilForTiDB = new ResourceViewGenerateSqlUtilForTiDB(config);
-                select = resourceViewGenerateSqlUtilForTiDB.getSql();
+                select = resourceViewGenerateSqlUtilForTiDB.getSql().toString();
             } else {
                 ResourceViewGenerateSqlUtil resourceViewGenerateSqlUtil = new ResourceViewGenerateSqlUtil(config);
-                select = resourceViewGenerateSqlUtil.getSql();
+                select = resourceViewGenerateSqlUtil.getSql().toString();
             }
             String md5 = Md5Util.encryptMD5(select);
             boolean needCreateView = true;
@@ -678,6 +692,194 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             }
         }
         return select;
+    }
+
+    @Override
+    public String buildGetResourceIdListSql(ResourceSearchVo searchVo) {
+        ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
+        String viewName = resourceEntityVo.getName();
+        ResourceEntityConfigVo originalConfig = resourceEntityVo.getConfig();
+        PlainSelect plainSelect = null;
+        try {
+            List<ResourceEntityRelLinkVo> relLinkList = getRelLinkListByRelNode(originalConfig.getRelNode());
+            originalConfig.setRelLinkList(relLinkList);
+            List<ResourceEntityLeftJoinVo> leftJoinList = getLeftJoinList(originalConfig);
+            List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
+            if (CollectionUtils.isEmpty(fieldNameList)) {
+                String sceneTemplateName = originalConfig.getSceneTemplateName();
+                if (StringUtils.isNotBlank(sceneTemplateName)) {
+                    fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(sceneTemplateName);
+                }
+            }
+            ResourceQueryCriteriaVo queryCriteriaVo = new ResourceQueryCriteriaVo(searchVo);
+            List<String> selectItemFieldNameList = new ArrayList<>();
+            selectItemFieldNameList.add("id");
+            List<String> filterItemFieldNameList = getFilterItemFieldNameList(queryCriteriaVo);
+            filterItemFieldNameList.add("id");
+            ResourceEntityConfigVo config = fieldMappingCheckValidityAndFillIdData(viewName, fieldNameList, originalConfig);
+            config.setLeftJoinList(leftJoinList);
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            Map<String, Column> filterItemFieldName2ColumnMap = new HashMap<>();
+            if (Objects.equals(DatasourceManager.getDatabaseId(), DatabaseVendor.TIDB.getDatabaseId())) {
+                ResourceViewGenerateSqlUtilForTiDB resourceViewGenerateSqlUtilForTiDB = new ResourceViewGenerateSqlUtilForTiDB(config);
+                plainSelect = resourceViewGenerateSqlUtilForTiDB.getSql();
+                filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtilForTiDB.getFilterItemFieldName2ColumnMap();
+            } else {
+                ResourceViewGenerateSqlUtil resourceViewGenerateSqlUtil = new ResourceViewGenerateSqlUtil(config);
+                plainSelect = resourceViewGenerateSqlUtil.getSql();
+                filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtil.getFilterItemFieldName2ColumnMap();
+            }
+            plainSelect = supplementBusinessLogicByResourceSearchVo(queryCriteriaVo, plainSelect, filterItemFieldName2ColumnMap);
+            Column idColumn = filterItemFieldName2ColumnMap.get("id");
+            if (CollectionUtils.isNotEmpty(searchVo.getKeywordList()) && searchVo.getNameFieldAttrId() != null && searchVo.getIpFieldAttrId() != null) {
+                Function countFunction = new Function();
+                countFunction.withName("COUNT");
+                countFunction.withDistinct(true);
+                countFunction.setParameters(new ExpressionList().addExpressions(new Column("fw.word")));
+                SelectExpressionItem countDistinctItem = new SelectExpressionItem(countFunction).withAlias(new Alias("match_count"));
+                plainSelect.addSelectItems(countDistinctItem);
+                // 排序
+                OrderByElement orderByMatchCount = new OrderByElement().withExpression(new Column("match_count")).withAsc(false);
+                plainSelect.addOrderByElements(orderByMatchCount);
+            }
+            // 分组
+            plainSelect.addGroupByColumnReference(idColumn);
+            // 排序
+            OrderByElement orderById = new OrderByElement().withExpression(idColumn).withAsc(false);
+            plainSelect.addOrderByElements(orderById);
+
+            plainSelect.setLimit(new Limit().withOffset(new LongValue(searchVo.getStartNum())).withRowCount(new LongValue(searchVo.getPageSize())));
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+
+        return plainSelect.toString();
+    }
+
+    @Override
+    public String buildGetResourceCountSql(ResourceSearchVo searchVo) {
+        try {
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
+            String viewName = resourceEntityVo.getName();
+            ResourceEntityConfigVo originalConfig = resourceEntityVo.getConfig();
+            PlainSelect plainSelect = null;
+            List<ResourceEntityRelLinkVo> relLinkList = getRelLinkListByRelNode(originalConfig.getRelNode());
+            originalConfig.setRelLinkList(relLinkList);
+            List<ResourceEntityLeftJoinVo> leftJoinList = getLeftJoinList(originalConfig);
+            List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
+            if (CollectionUtils.isEmpty(fieldNameList)) {
+                String sceneTemplateName = originalConfig.getSceneTemplateName();
+                if (StringUtils.isNotBlank(sceneTemplateName)) {
+                    fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(sceneTemplateName);
+                }
+            }
+            ResourceQueryCriteriaVo queryCriteriaVo = new ResourceQueryCriteriaVo(searchVo);
+            List<String> selectItemFieldNameList = new ArrayList<>();
+            selectItemFieldNameList.add("id");
+            List<String> filterItemFieldNameList = getFilterItemFieldNameList(queryCriteriaVo);
+            filterItemFieldNameList.add("id");
+            ResourceEntityConfigVo config = fieldMappingCheckValidityAndFillIdData(viewName, fieldNameList, originalConfig);
+            config.setLeftJoinList(leftJoinList);
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            Map<String, Column> filterItemFieldName2ColumnMap = new HashMap<>();
+            if (Objects.equals(DatasourceManager.getDatabaseId(), DatabaseVendor.TIDB.getDatabaseId())) {
+                ResourceViewGenerateSqlUtilForTiDB resourceViewGenerateSqlUtilForTiDB = new ResourceViewGenerateSqlUtilForTiDB(config);
+                plainSelect = resourceViewGenerateSqlUtilForTiDB.getSql();
+                filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtilForTiDB.getFilterItemFieldName2ColumnMap();
+            } else {
+                ResourceViewGenerateSqlUtil resourceViewGenerateSqlUtil = new ResourceViewGenerateSqlUtil(config);
+                plainSelect = resourceViewGenerateSqlUtil.getSql();
+                filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtil.getFilterItemFieldName2ColumnMap();
+            }
+            plainSelect = supplementBusinessLogicByResourceSearchVo(queryCriteriaVo, plainSelect, filterItemFieldName2ColumnMap);
+            Column column = filterItemFieldName2ColumnMap.get("id");
+            Function countFunction = new Function();
+            countFunction.withName("COUNT");
+            countFunction.withDistinct(true);
+            countFunction.setParameters(new ExpressionList().addExpressions(column));
+            SelectExpressionItem countDistinctItem = new SelectExpressionItem(countFunction);
+            plainSelect.setSelectItems(Collections.singletonList(countDistinctItem));
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
+    public String buildGetResourceListSql(List<Long> idList, List<String> selectFieldNameList) {
+        try {
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
+            String viewName = resourceEntityVo.getName();
+            ResourceEntityConfigVo originalConfig = resourceEntityVo.getConfig();
+            PlainSelect plainSelect = null;
+            List<ResourceEntityRelLinkVo> relLinkList = getRelLinkListByRelNode(originalConfig.getRelNode());
+            originalConfig.setRelLinkList(relLinkList);
+            List<ResourceEntityLeftJoinVo> leftJoinList = getLeftJoinList(originalConfig);
+            List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
+            if (CollectionUtils.isEmpty(fieldNameList)) {
+                String sceneTemplateName = originalConfig.getSceneTemplateName();
+                if (StringUtils.isNotBlank(sceneTemplateName)) {
+                    fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(sceneTemplateName);
+                }
+            }
+            List<String> selectItemFieldNameList = new ArrayList<>();
+            if (CollectionUtils.isNotEmpty(selectFieldNameList)) {
+                selectItemFieldNameList.addAll(selectFieldNameList);
+            }
+            List<String> filterItemFieldNameList = new ArrayList<>();
+            if (CollectionUtils.isNotEmpty(idList)) {
+                filterItemFieldNameList.add("id");
+            }
+            ResourceEntityConfigVo config = fieldMappingCheckValidityAndFillIdData(viewName, fieldNameList, originalConfig);
+            config.setLeftJoinList(leftJoinList);
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            Map<String, Column> filterItemFieldName2ColumnMap = new HashMap<>();
+            if (Objects.equals(DatasourceManager.getDatabaseId(), DatabaseVendor.TIDB.getDatabaseId())) {
+                ResourceViewGenerateSqlUtilForTiDB resourceViewGenerateSqlUtilForTiDB = new ResourceViewGenerateSqlUtilForTiDB(config);
+                plainSelect = resourceViewGenerateSqlUtilForTiDB.getSql();
+                filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtilForTiDB.getFilterItemFieldName2ColumnMap();
+            } else {
+                ResourceViewGenerateSqlUtil resourceViewGenerateSqlUtil = new ResourceViewGenerateSqlUtil(config);
+                plainSelect = resourceViewGenerateSqlUtil.getSql();
+                filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtil.getFilterItemFieldName2ColumnMap();
+            }
+            Column column = filterItemFieldName2ColumnMap.get("id");
+            ExpressionList values = new ExpressionList();
+            for (Long id : idList) {
+                values.addExpressions(new LongValue(id));
+            }
+            InExpression inExpression = new InExpression(column, values);
+            Expression where = plainSelect.getWhere();
+            if (where != null) {
+                plainSelect.setWhere(new AndExpression(where, inExpression));
+            } else {
+                plainSelect.setWhere(inExpression);
+            }
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
+    public String buildGetResourceListSql(List<Long> idList) {
+        List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName("scence_ipobject_detail");
+        fieldNameList.remove("env_seq_no");
+        fieldNameList.remove("vendor_id");
+        fieldNameList.remove("vendor_name");
+        fieldNameList.remove("vendor_label");
+        fieldNameList.remove("datacenter_id");
+        fieldNameList.remove("datacenter_name");
+        fieldNameList.remove("fcu");
+        fieldNameList.remove("fcd");
+        fieldNameList.remove("lcu");
+        fieldNameList.remove("lcd");
+        return buildGetResourceListSql(idList, fieldNameList);
     }
 
     /**
@@ -1080,5 +1282,427 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             }
         }
         return null;
+    }
+
+    /**
+     * 根据queryCriteriaVo查询条件收集组装动态sql时，需要返回的条件列
+     * @param queryCriteriaVo
+     * @return
+     */
+    private List<String> getFilterItemFieldNameList(ResourceQueryCriteriaVo queryCriteriaVo) {
+        Set<String> filterItemFieldNameSet = new HashSet<>();
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getKeywordList())) {
+            filterItemFieldNameSet.add("id");
+        }
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getProtocolIdList())) {
+            filterItemFieldNameSet.add("id");
+        }
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getTagIdList())) {
+            filterItemFieldNameSet.add("id");
+        }
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getInspectJobPhaseNodeStatusList())) {
+            filterItemFieldNameSet.add("id");
+        }
+        if (Objects.equals(queryCriteriaVo.getIsHasAuth(), false)) {
+            filterItemFieldNameSet.add("id");
+        }
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getBatchSearchList()) && StringUtils.isNotBlank(queryCriteriaVo.getSearchField())) {
+            filterItemFieldNameSet.add("id");
+        }
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getTypeIdList())) {
+            filterItemFieldNameSet.add("type_id");
+        }
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getStateIdList())) {
+            filterItemFieldNameSet.add("state_id");
+        }
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getVendorIdList())) {
+            filterItemFieldNameSet.add("vendor_id");
+        }
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getEnvIdList())) {
+            filterItemFieldNameSet.add("env_id");
+        }
+        if (Objects.equals(queryCriteriaVo.getExistNoEnv(), true)) {
+            filterItemFieldNameSet.add("env_id");
+        }
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getAppSystemIdList())) {
+            filterItemFieldNameSet.add("app_system_id");
+            filterItemFieldNameSet.add("app_module_id");
+        }
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getAppModuleIdList())) {
+            filterItemFieldNameSet.add("app_module_id");
+        }
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getDefaultValue())) {
+            filterItemFieldNameSet.add("id");
+        }
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getIdList())) {
+            filterItemFieldNameSet.add("id");
+        }
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getInspectStatusList())) {
+            filterItemFieldNameSet.add("inspect_status");
+        }
+        return new ArrayList<>(filterItemFieldNameSet);
+    }
+
+    /**
+     * 根据queryCriteriaVo查询条件补充业务逻辑过滤条件，包括join表和where条件
+     * @param queryCriteriaVo
+     * @param plainSelect
+     * @param filterItemFieldName2ColumnMap
+     * @return
+     */
+    private PlainSelect supplementBusinessLogicByResourceSearchVo(ResourceQueryCriteriaVo queryCriteriaVo, PlainSelect plainSelect, Map<String, Column> filterItemFieldName2ColumnMap) {
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getKeywordList()) && (queryCriteriaVo.getNameFieldAttrId() != null || queryCriteriaVo.getIpFieldAttrId() != null)) {
+            Table ffcTable = new Table("fulltextindex_field_cmdb").withAlias(new Alias("ffc").withUseAs(false));
+            {
+                EqualsTo equalsTo = new EqualsTo(new Column(ffcTable, "target_id"), filterItemFieldName2ColumnMap.get("id"));
+                ExpressionList values = new ExpressionList();
+                if (queryCriteriaVo.getNameFieldAttrId() != null) {
+                    values.addExpressions(new LongValue(queryCriteriaVo.getNameFieldAttrId()));
+                }
+                if (queryCriteriaVo.getIpFieldAttrId() != null) {
+                    values.addExpressions(new LongValue(queryCriteriaVo.getIpFieldAttrId()));
+                }
+                InExpression inExpression = new InExpression(new Column(ffcTable, "target_field"), values);
+                Join join = new Join().withRightItem(ffcTable).addOnExpression(new AndExpression(equalsTo, inExpression));
+                plainSelect.addJoins(join);
+            }
+            Table fwTable = new Table("fulltextindex_word").withAlias(new Alias("fw").withUseAs(false));
+            {
+                EqualsTo equalsTo = new EqualsTo(new Column(fwTable, "id"), new Column(ffcTable,"word_id"));
+                ExpressionList values = new ExpressionList();
+                for (String keyword : queryCriteriaVo.getKeywordList()) {
+                    values.addExpressions(new StringValue(keyword));
+                }
+                InExpression inExpression = new InExpression(new Column(fwTable, "word"), values);
+                Join join = new Join().withRightItem(fwTable).addOnExpression(new AndExpression(equalsTo, inExpression));
+                plainSelect.addJoins(join);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getBatchSearchList()) && StringUtils.isNotBlank(queryCriteriaVo.getSearchField())) {
+            Table ffc2Table = new Table("fulltextindex_field_cmdb").withAlias(new Alias("ffc2").withUseAs(false));
+            {
+                EqualsTo equalsTo = new EqualsTo(new Column(ffc2Table, "target_id"), filterItemFieldName2ColumnMap.get("id"));
+                LongValue longValue = null;
+                if (Objects.equals(queryCriteriaVo.getSearchField(), "name")) {
+                    longValue = new LongValue(queryCriteriaVo.getNameFieldAttrId());
+                } else {
+                    longValue = new LongValue(queryCriteriaVo.getIpFieldAttrId());
+                }
+                EqualsTo equalsTo2 = new EqualsTo(new Column(ffc2Table, "target_field"), longValue);
+                Join join = new Join().withRightItem(ffc2Table).addOnExpression(new AndExpression(equalsTo, equalsTo2));
+                plainSelect.addJoins(join);
+            }
+            Table fw2Table = new Table("fulltextindex_word").withAlias(new Alias("fw2").withUseAs(false));
+            {
+                EqualsTo equalsTo = new EqualsTo(new Column(fw2Table, "id"), new Column(ffc2Table,"word_id"));
+                ExpressionList values = new ExpressionList();
+                for (String keyword : queryCriteriaVo.getBatchSearchList()) {
+                    values.addExpressions(new StringValue(keyword));
+                }
+                InExpression inExpression = new InExpression(new Column(fw2Table, "word"), values);
+                Join join = new Join().withRightItem(fw2Table).addOnExpression(new AndExpression(equalsTo, inExpression));
+                plainSelect.addJoins(join);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getProtocolIdList())) {
+            Table bTable = new Table("cmdb_resourcecenter_resource_account").withAlias(new Alias("b").withUseAs(false));
+            {
+                EqualsTo equalsTo = new EqualsTo(new Column(bTable, "resource_id"), filterItemFieldName2ColumnMap.get("id"));
+                Join join = new Join().withLeft(true).withRightItem(bTable).addOnExpression(equalsTo);
+                plainSelect.addJoins(join);
+            }
+            Table cTable = new Table("cmdb_resourcecenter_account").withAlias(new Alias("c").withUseAs(false));
+            {
+                EqualsTo equalsTo = new EqualsTo(new Column(cTable, "id"), new Column(bTable,"account_id"));
+                Join join = new Join().withLeft(true).withRightItem(cTable).addOnExpression(equalsTo);
+                plainSelect.addJoins(join);
+            }
+            Column column = new Column(cTable,"protocol_id");
+            ExpressionList values = new ExpressionList();
+            for (Long protocolId : queryCriteriaVo.getProtocolIdList()) {
+                values.addExpressions(new LongValue(protocolId));
+            }
+            InExpression inExpression = new InExpression(column, values);
+            Expression where = plainSelect.getWhere();
+            if (where != null) {
+                plainSelect.setWhere(new AndExpression(where, inExpression));
+            } else {
+                plainSelect.setWhere(inExpression);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getTagIdList())) {
+            Table dTable = new Table("cmdb_resourcecenter_resource_tag").withAlias(new Alias("d").withUseAs(false));
+            {
+                EqualsTo equalsTo = new EqualsTo(new Column(dTable, "resource_id"), filterItemFieldName2ColumnMap.get("id"));
+                Join join = new Join().withLeft(true).withRightItem(dTable).addOnExpression(equalsTo);
+                plainSelect.addJoins(join);
+            }
+            Column column = new Column(dTable, "tag_id");
+            ExpressionList values = new ExpressionList();
+            for (Long tagId : queryCriteriaVo.getTagIdList()) {
+                values.addExpressions(new LongValue(tagId));
+            }
+            InExpression inExpression = new InExpression(column, values);
+            Expression where = plainSelect.getWhere();
+            if (where != null) {
+                plainSelect.setWhere(new AndExpression(where, inExpression));
+            } else {
+                plainSelect.setWhere(inExpression);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getInspectJobPhaseNodeStatusList())) {
+            Table ajriTable = new Table("autoexec_job_resource_inspect").withAlias(new Alias("ajri").withUseAs(false));
+            {
+                EqualsTo equalsTo = new EqualsTo(new Column(ajriTable, "resource_id"), filterItemFieldName2ColumnMap.get("id"));
+                Join join = new Join().withLeft(true).withRightItem(ajriTable).addOnExpression(equalsTo);
+                plainSelect.addJoins(join);
+            }
+            Table ajpnTable = new Table("autoexec_job_phase_node").withAlias(new Alias("ajpn").withUseAs(false));
+            {
+                EqualsTo equalsTo = new EqualsTo(new Column(ajpnTable, "job_phase_id"), new Column(ajriTable,"phase_id"));
+                EqualsTo equalsTo2 = new EqualsTo(new Column(ajpnTable, "resource_id"), filterItemFieldName2ColumnMap.get("id"));
+                Join join = new Join().withLeft(true).withRightItem(ajpnTable).addOnExpression(new AndExpression(equalsTo, equalsTo2));
+                plainSelect.addJoins(join);
+            }
+            Column column = new Column(ajpnTable, "status");
+            ExpressionList values = new ExpressionList();
+            for (String status : queryCriteriaVo.getInspectJobPhaseNodeStatusList()) {
+                values.addExpressions(new StringValue(status));
+            }
+            InExpression inExpression = new InExpression(column, values);
+            Expression where = plainSelect.getWhere();
+            if (where != null) {
+                plainSelect.setWhere(new AndExpression(where, inExpression));
+            } else {
+                plainSelect.setWhere(inExpression);
+            }
+        }
+        if (Objects.equals(queryCriteriaVo.getIsHasAuth(), false)) {
+            Table ccgTable = new Table("cmdb_cientity_group").withAlias(new Alias("ccg").withUseAs(false));
+            {
+                EqualsTo equalsTo = new EqualsTo(new Column(ccgTable, "cientity_id"), filterItemFieldName2ColumnMap.get("id"));
+                Join join = new Join().withLeft(true).withRightItem(ccgTable).addOnExpression(equalsTo);
+                plainSelect.addJoins(join);
+            }
+            Table cgaTable = new Table("cmdb_group_auth").withAlias(new Alias("cga").withUseAs(false));
+            {
+                EqualsTo equalsTo = new EqualsTo(new Column(cgaTable, "group_id"), new Column(ccgTable,"group_id"));
+                Join join = new Join().withLeft(true).withRightItem(cgaTable).addOnExpression(equalsTo);
+                plainSelect.addJoins(join);
+            }
+            Table cgTable = new Table("cmdb_group").withAlias(new Alias("cg").withUseAs(false));
+            {
+                EqualsTo equalsTo = new EqualsTo(new Column(cgTable, "id"), new Column(cgaTable, "group_id"));
+                ExpressionList values = new ExpressionList();
+                if (Objects.equals(queryCriteriaVo.getCmdbGroupType(), "autoexec")) {
+                    values.addExpressions(new StringValue("autoexec"));
+                } else {
+                    values.addExpressions(new StringValue("autoexec"));
+                    values.addExpressions(new StringValue("readonly"));
+                    values.addExpressions(new StringValue("maintain"));
+                }
+                InExpression inExpression = new InExpression(new Column(cgTable, "type"), values);
+                Join join = new Join().withLeft(true).withRightItem(cgTable).addOnExpression(new AndExpression(equalsTo, inExpression));
+                plainSelect.addJoins(join);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getTypeIdList())) {
+            if (Objects.equals(queryCriteriaVo.getIsHasAuth(), true)) {
+                Column column = filterItemFieldName2ColumnMap.get("type_id");
+                ExpressionList values = new ExpressionList();
+                for (Long typeId : queryCriteriaVo.getTypeIdList()) {
+                    values.addExpressions(new LongValue(typeId));
+                }
+                InExpression inExpression = new InExpression(column, values);
+                Expression where = plainSelect.getWhere();
+                if (where != null) {
+                    plainSelect.setWhere(new AndExpression(where, inExpression));
+                } else {
+                    plainSelect.setWhere(inExpression);
+                }
+            } else if (Objects.equals(queryCriteriaVo.getIsHasAuth(), false)) {
+                Expression orLeftExpression = null;
+                if (CollectionUtils.isNotEmpty(queryCriteriaVo.getAuthedTypeIdList())) {
+                    Column column = filterItemFieldName2ColumnMap.get("type_id");
+                    ExpressionList values = new ExpressionList();
+                    for (Long authedTypeId : queryCriteriaVo.getAuthedTypeIdList()) {
+                        values.addExpressions(new LongValue(authedTypeId));
+                    }
+                    orLeftExpression = new InExpression(column, values);
+                } else {
+                    orLeftExpression = new EqualsTo(new LongValue(1), new LongValue(0));
+                }
+                Expression orRightExpression = null;
+                IsNullExpression IsNullExpression = new IsNullExpression().withLeftExpression(new Column("cg.id")).withUseIsNull(false);
+                Column column = filterItemFieldName2ColumnMap.get("type_id");
+                ExpressionList values = new ExpressionList();
+                for (Long typeId : queryCriteriaVo.getTypeIdList()) {
+                    values.addExpressions(new LongValue(typeId));
+                }
+                InExpression inExpression = new InExpression(column, values);
+                orRightExpression = new AndExpression(IsNullExpression, inExpression);
+                Expression orLeftExpression2 = new AndExpression(new EqualsTo(new Column("cga.auth_type"), new StringValue("common")), new EqualsTo(new Column("cga.auth_uuid"), new StringValue("alluser")));
+                Expression orRightExpression2 = null;
+                if (queryCriteriaVo.getAuthenticationInfo() != null) {
+                    List<String> uuidList = new ArrayList<>();
+                    if (StringUtils.isNotBlank(queryCriteriaVo.getAuthenticationInfo().getUserUuid())) {
+                        uuidList.add(queryCriteriaVo.getAuthenticationInfo().getUserUuid());
+                    }
+                    if (CollectionUtils.isNotEmpty(queryCriteriaVo.getAuthenticationInfo().getTeamUuidList())) {
+                        uuidList.addAll(queryCriteriaVo.getAuthenticationInfo().getTeamUuidList());
+                    }
+                    if (CollectionUtils.isNotEmpty(queryCriteriaVo.getAuthenticationInfo().getRoleUuidList())) {
+                        uuidList.addAll(queryCriteriaVo.getAuthenticationInfo().getRoleUuidList());
+                    }
+                    if (CollectionUtils.isNotEmpty(uuidList)) {
+                        Column column2 = new Column("cga.auth_uuid");
+                        ExpressionList values2 = new ExpressionList();
+                        for (String uuid : uuidList) {
+                            values2.addExpressions(new StringValue(uuid));
+                        }
+                        orRightExpression2 = new InExpression(column2, values2);
+                    }
+                }
+                if (orRightExpression2 != null) {
+                    orRightExpression = new AndExpression(orRightExpression, new OrExpression(orLeftExpression2, orRightExpression2));
+                } else {
+                    orRightExpression = new AndExpression(orRightExpression, orLeftExpression2);
+                }
+                OrExpression orExpression = new OrExpression(orLeftExpression, orRightExpression);
+                Expression where = plainSelect.getWhere();
+                if (where != null) {
+                    plainSelect.setWhere(new AndExpression(where, orExpression));
+                } else {
+                    plainSelect.setWhere(orExpression);
+                }
+            }
+        }
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getStateIdList())) {
+            Column column = filterItemFieldName2ColumnMap.get("state_id");
+            ExpressionList values = new ExpressionList();
+            for (Long stateId : queryCriteriaVo.getStateIdList()) {
+                values.addExpressions(new LongValue(stateId));
+            }
+            InExpression inExpression = new InExpression(column, values);
+            Expression where = plainSelect.getWhere();
+            if (where != null) {
+                plainSelect.setWhere(new AndExpression(where, inExpression));
+            } else {
+                plainSelect.setWhere(inExpression);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getVendorIdList())) {
+            Column column = filterItemFieldName2ColumnMap.get("vendor_id");
+            ExpressionList values = new ExpressionList();
+            for (Long vendorId : queryCriteriaVo.getVendorIdList()) {
+                values.addExpressions(new LongValue(vendorId));
+            }
+            InExpression inExpression = new InExpression(column, values);
+            Expression where = plainSelect.getWhere();
+            if (where != null) {
+                plainSelect.setWhere(new AndExpression(where, inExpression));
+            } else {
+                plainSelect.setWhere(inExpression);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getEnvIdList())) {
+            Column column = filterItemFieldName2ColumnMap.get("env_id");
+            ExpressionList values = new ExpressionList();
+            for (Long envId : queryCriteriaVo.getEnvIdList()) {
+                values.addExpressions(new LongValue(envId));
+            }
+            InExpression inExpression = new InExpression(column, values);
+            Expression where = plainSelect.getWhere();
+            if (where != null) {
+                plainSelect.setWhere(new AndExpression(where, inExpression));
+            } else {
+                plainSelect.setWhere(inExpression);
+            }
+        }
+        if (Objects.equals(queryCriteriaVo.getExistNoEnv(), true)) {
+            Column column = filterItemFieldName2ColumnMap.get("env_id");
+
+            IsNullExpression isNullExpression = new IsNullExpression();
+            isNullExpression.withLeftExpression(column).isUseIsNull();
+            Expression where = plainSelect.getWhere();
+            if (where != null) {
+                plainSelect.setWhere(new AndExpression(where, isNullExpression));
+            } else {
+                plainSelect.setWhere(isNullExpression);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getAppSystemIdList())) {
+            Column column = filterItemFieldName2ColumnMap.get("app_system_id");
+            ExpressionList values = new ExpressionList();
+            for (Long appSystemIdList : queryCriteriaVo.getAppSystemIdList()) {
+                values.addExpressions(new LongValue(appSystemIdList));
+            }
+            InExpression inExpression = new InExpression(column, values);
+            Expression where = plainSelect.getWhere();
+            if (where != null) {
+                plainSelect.setWhere(new AndExpression(where, inExpression));
+            } else {
+                plainSelect.setWhere(inExpression);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getAppModuleIdList())) {
+            Column column = filterItemFieldName2ColumnMap.get("app_module_id");
+            ExpressionList values = new ExpressionList();
+            for (Long appModuleIdList : queryCriteriaVo.getAppModuleIdList()) {
+                values.addExpressions(new LongValue(appModuleIdList));
+            }
+            InExpression inExpression = new InExpression(column, values);
+            Expression where = plainSelect.getWhere();
+            if (where != null) {
+                plainSelect.setWhere(new AndExpression(where, inExpression));
+            } else {
+                plainSelect.setWhere(inExpression);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getDefaultValue())) {
+            Column column = filterItemFieldName2ColumnMap.get("id");
+            ExpressionList values = new ExpressionList();
+            JSONArray defaultValue = queryCriteriaVo.getDefaultValue();
+            List<Long> idList = defaultValue.toJavaList(Long.class);
+            for (Long id : idList) {
+                values.addExpressions(new LongValue(id));
+            }
+            InExpression inExpression = new InExpression(column, values);
+            Expression where = plainSelect.getWhere();
+            if (where != null) {
+                plainSelect.setWhere(new AndExpression(where, inExpression));
+            } else {
+                plainSelect.setWhere(inExpression);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getIdList())) {
+            Column column = filterItemFieldName2ColumnMap.get("id");
+            ExpressionList values = new ExpressionList();
+            for (Long id : queryCriteriaVo.getIdList()) {
+                values.addExpressions(new LongValue(id));
+            }
+            InExpression inExpression = new InExpression(column, values);
+            Expression where = plainSelect.getWhere();
+            if (where != null) {
+                plainSelect.setWhere(new AndExpression(where, inExpression));
+            } else {
+                plainSelect.setWhere(inExpression);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getInspectStatusList())) {
+            Column column = filterItemFieldName2ColumnMap.get("inspect_status");
+            ExpressionList values = new ExpressionList();
+            for (String inspectStatus : queryCriteriaVo.getInspectStatusList()) {
+                values.addExpressions(new StringValue(inspectStatus));
+            }
+            InExpression inExpression = new InExpression(column, values);
+            Expression where = plainSelect.getWhere();
+            if (where != null) {
+                plainSelect.setWhere(new AndExpression(where, inExpression));
+            } else {
+                plainSelect.setWhere(inExpression);
+            }
+        }
+        return plainSelect;
     }
 }

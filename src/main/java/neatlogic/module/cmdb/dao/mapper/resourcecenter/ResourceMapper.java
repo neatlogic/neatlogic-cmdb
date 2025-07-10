@@ -36,15 +36,21 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     int getResourceCount(ResourceSearchVo searchVo);
 
+    int getResourceCountBySql(String sql);
+
     int getAllResourceCount(ResourceSearchVo searchVo);
 
     int getResourceCountByDynamicCondition(@Param("searchVo") ResourceSearchVo searchVo, @Param("conditionSql") String conditionSql);
 
     List<Long> getResourceIdList(ResourceSearchVo searchVo);
 
+    List<Long> getResourceIdListBySql(String sql);
+
     List<Long> getResourceIdListByDynamicCondition(@Param("searchVo") ResourceSearchVo searchVo, @Param("conditionSql") String conditionSql);
 
     List<ResourceVo> getResourceListByIdList(List<Long> idList);
+
+    List<ResourceVo> getResourceListBySql(String sql);
 
     int getAppResourceCount(ResourceSearchVo searchVo);
 

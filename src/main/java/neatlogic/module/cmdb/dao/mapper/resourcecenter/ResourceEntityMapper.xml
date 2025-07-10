@@ -16,6 +16,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper">
+    <!-- 缓存5分钟 -->
+    <cache type="neatlogic.framework.dao.cache.NeatLogicConcurrentSafeCache" flushInterval="300000" size="100"/>
+
     <select id="getResourceEntityByName" parameterType="java.lang.String"
             resultType="neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
         SELECT `name`, `label`, `status`, `error`, `init_time` AS initTime, `ci_id` AS ciId, `config` AS configStr, `description`

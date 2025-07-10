@@ -107,4 +107,12 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
      * @return
      */
     String buildResourceView(ResourceEntityVo resourceEntityVo);
+
+    String buildGetResourceIdListSql(ResourceSearchVo searchVo);
+
+    String buildGetResourceCountSql(ResourceSearchVo searchVo);
+
+    String buildGetResourceListSql(List<Long> idList, List<String> selectFieldNameList);
+
+    String buildGetResourceListSql(List<Long> idList);
 }
