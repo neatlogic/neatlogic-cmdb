@@ -109,21 +109,21 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
     String buildResourceView(ResourceEntityVo resourceEntityVo);
 
     /**
-     * 生成SQL等效于neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper#getResourceIdList(neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo)
+     * 生成SQL等效于{@link neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper#getResourceIdList(neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo)}
      * @param searchVo
      * @return
      */
     String buildGetResourceIdListSql(ResourceSearchVo searchVo);
 
     /**
-     * 生成SQL等效于neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper#getResourceCount(neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo)
+     * 生成SQL等效于{@link neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper#getResourceCount(neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo)}
      * @param searchVo
      * @return
      */
     String buildGetResourceCountSql(ResourceSearchVo searchVo);
 
     /**
-     * 生成SQL等效于neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper#getResourceListByIdList(java.util.List)
+     * 生成SQL等效于{@link neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper#getResourceListByIdList(java.util.List)}
      * @param idList
      * @param selectFieldNameList
      * @return
@@ -131,7 +131,7 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
     String buildGetResourceListSql(List<Long> idList, List<String> selectFieldNameList);
 
     /**
-     * 生成SQL等效于neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper#getResourceListByIdList(java.util.List)
+     * 生成SQL等效于{@link neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper#getResourceListByIdList(java.util.List)}
      * @param idList
      * @return
      */
