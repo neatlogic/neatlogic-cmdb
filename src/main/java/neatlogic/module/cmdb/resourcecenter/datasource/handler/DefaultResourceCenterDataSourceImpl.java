@@ -28,6 +28,7 @@ import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityConfigVo
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityFieldMappingVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.SceneEntityVo;
+import neatlogic.framework.cmdb.enums.CmdbTenantConfig;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppModuleNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
@@ -36,6 +37,7 @@ import neatlogic.framework.cmdb.resourcecenter.datasource.core.Ordered;
 import neatlogic.framework.common.constvalue.InspectStatus;
 import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.common.dto.ValueTextVo;
+import neatlogic.framework.config.ConfigManager;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityCachedMapper;
@@ -47,6 +49,8 @@ import neatlogic.module.cmdb.utils.ResourceEntityFactory;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
@@ -59,6 +63,7 @@ import java.util.stream.Collectors;
 @Component
 public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataSource {
 
+    private final Logger logger = LoggerFactory.getLogger(DefaultResourceCenterDataSourceImpl.class);
     @Resource
     private CiMapper ciMapper;
 
@@ -638,10 +643,26 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
 
     @Override
     public List<ResourceVo> getResourceList(ResourceSearchVo searchVo) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
         List<ResourceVo> resultList = new ArrayList<>();
-        List<Long> idList = resourceMapper.getResourceIdList(searchVo);
+        String getResourceIdListSql = resourceCenterResourceService.buildGetResourceIdListSql(searchVo);
+        List<Long> idList = resourceMapper.getResourceIdListBySql(getResourceIdListSql);
+        if (Objects.equals(enable, "1")) {
+            List<Long> oldIdList = resourceMapper.getResourceIdList(searchVo);
+            if (!Objects.equals(oldIdList, idList)) {
+                JSONObject errorObj = new JSONObject();
+                errorObj.put("idList", idList);
+                errorObj.put("oldIdList", oldIdList);
+                logger.error("资产清单新旧SQL获取idList结果不一致：{}", errorObj);
+            }
+        }
         if (CollectionUtils.isNotEmpty(idList)) {
-            List<ResourceVo> resourceList = resourceMapper.getResourceListByIdList(idList);
+            String getResourceListSql = resourceCenterResourceService.buildGetResourceListSql(idList);
+            List<ResourceVo> resourceList = resourceMapper.getResourceListBySql(getResourceListSql);
+            if (Objects.equals(enable, "1")) {
+                List<ResourceVo> oldResourceList = resourceMapper.getResourceListByIdList(idList);
+                checkResourceListIsEquals(resourceList, oldResourceList);
+            }
             //排序
             for (Long id : idList) {
                 for (ResourceVo resourceVo : resourceList) {
@@ -652,21 +673,31 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
                 }
             }
             if (Objects.equals(searchVo.getRowNum(), 0)) {
-                int rowNum = 0;
-                if (noFilterCondition(searchVo)) {
-                    ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
-                    if (resourceEntityVo != null) {
-                        ResourceEntityConfigVo config = resourceEntityVo.getConfig();
-                        if (config != null) {
-                            CiVo ciVo = ciMapper.getCiByName(config.getMainCi());
-                            if (ciVo != null) {
-                                searchVo.setViewName(ciVo.getCiTableName(false));
-                                rowNum = resourceMapper.getAllResourceCount(searchVo);
+                String getResourceCountSql = resourceCenterResourceService.buildGetResourceCountSql(searchVo);
+                int rowNum = resourceMapper.getResourceCountBySql(getResourceCountSql);
+                if (Objects.equals(enable, "1")) {
+                    int oldRowNum = 0;
+                    if (noFilterCondition(searchVo)) {
+                        ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
+                        if (resourceEntityVo != null) {
+                            ResourceEntityConfigVo config = resourceEntityVo.getConfig();
+                            if (config != null) {
+                                CiVo ciVo = ciMapper.getCiByName(config.getMainCi());
+                                if (ciVo != null) {
+                                    searchVo.setViewName(ciVo.getCiTableName(false));
+                                    oldRowNum = resourceMapper.getAllResourceCount(searchVo);
+                                }
                             }
                         }
+                    } else {
+                        oldRowNum = resourceMapper.getResourceCount(searchVo);
                     }
-                } else {
-                    rowNum = resourceMapper.getResourceCount(searchVo);
+                    if (oldRowNum != rowNum) {
+                        JSONObject errorObj = new JSONObject();
+                        errorObj.put("rowNum", rowNum);
+                        errorObj.put("oldRowNum", oldRowNum);
+                        logger.error("资产清单新旧SQL获取rowNum结果不一致：{}", errorObj);
+                    }
                 }
                 searchVo.setRowNum(rowNum);
             }
@@ -1287,4 +1318,31 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
         return true;
     }
 
+    private boolean checkResourceListIsEquals(List<ResourceVo> resourceList, List<ResourceVo> oldResourceList) {
+        if (oldResourceList.size() != resourceList.size()) {
+            JSONObject errorObj = new JSONObject();
+            errorObj.put("resourceList.size()", resourceList.size());
+            errorObj.put("oldResourceList.size()", oldResourceList.size());
+            logger.error("资产清单新旧SQL获取tbodyList结果不一致：{}", errorObj);
+            return false;
+        }
+        boolean flag = true;
+        resourceList.sort(Comparator.comparing(ResourceVo::getId));
+        oldResourceList.sort(Comparator.comparing(ResourceVo::getId));
+        for (int i = 0; i < resourceList.size(); i++) {
+            ResourceVo resourceVo = resourceList.get(i);
+            ResourceVo oldResourceVo = oldResourceList.get(i);
+            String resourceString = JSONObject.toJSONString(resourceVo);
+            String oldResourceString = JSONObject.toJSONString(oldResourceVo);
+            if (!Objects.equals(resourceString, oldResourceString)) {
+                JSONObject errorObj = new JSONObject();
+                errorObj.put("index", i);
+                errorObj.put("resourceVo", resourceVo);
+                errorObj.put("oldResourceVo", oldResourceVo);
+                logger.error("资产清单新旧SQL获取tbodyList结果不一致：{}", errorObj);
+                flag = false;
+            }
+        }
+        return flag;
+    }
 }

@@ -500,6 +500,10 @@ public class CiEntityFormImportFileHandler extends FileTypeHandlerBase {
                 }
             }
         } catch (Exception e) {
+            if (StringUtils.isNotBlank(error) && !error.endsWith("</br>")) {
+                error += "</br>";
+            }
+            error += "<b class='text-danger'>" + e.getMessage() + "</b>";
             logger.error(e.getMessage(), e);
         } finally {
             try {
