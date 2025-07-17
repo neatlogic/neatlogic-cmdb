@@ -308,6 +308,19 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         return getCiEntityByIdList(ciEntityVo);
     }
 
+    @Override
+    public List<CiEntityVo> getCiEntityNameByIdList(Long ciId, List<Long> ciEntityIdList) {
+        CiVo ciVo = ciMapper.getCiBaseInfoById(ciId);
+        if (ciVo.getIsVirtual().equals(0)) {
+            return ciEntityMapper.getCiEntityNameByIdList(ciEntityIdList);
+        } else {
+            CiEntityVo ciEntityVo = new CiEntityVo();
+            ciEntityVo.setCiId(ciId);
+            ciEntityVo.setIdList(ciEntityIdList);
+            return ciEntityMapper.getVirtualCiEntityBaseInfoByIdList(ciEntityVo);
+        }
+    }
+
 
     @Override
     public List<CiEntityVo> getCiEntityByIdList(CiEntityVo ciEntityVo) {

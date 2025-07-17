@@ -48,6 +48,8 @@ public interface CiEntityService {
     List<CiEntityVo> getCiEntityByIdList(Long ciId, List<Long> ciEntityIdList);
 
 
+    List<CiEntityVo> getCiEntityNameByIdList(Long ciId, List<Long> ciEntityIdList);
+
     List<CiEntityVo> getCiEntityByIdList(CiEntityVo ciEntityVo);
 
     List<Long> getCiEntityIdByCiId(CiEntityVo ciEntityVo);
