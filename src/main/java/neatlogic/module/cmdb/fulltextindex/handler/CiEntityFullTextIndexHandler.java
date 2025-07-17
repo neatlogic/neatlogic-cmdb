@@ -38,6 +38,7 @@ import neatlogic.module.cmdb.fulltextindex.enums.CmdbFullTextIndexType;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -146,12 +147,22 @@ public class CiEntityFullTextIndexHandler extends FullTextIndexHandlerBase {
                             for (int i = 0; i < attrEntityVo.getValueList().size(); i++) {
                                 ciEntityIdList.add(attrEntityVo.getValueList().getLong(i));
                             }
-                            List<CiEntityVo> targetCiEntityList = ciEntityService.getCiEntityByIdList(attrEntityVo.getToCiId(), ciEntityIdList);
+                            List<CiEntityVo> targetCiEntityList = ciEntityService.getCiEntityNameByIdList(attrEntityVo.getToCiId(), ciEntityIdList);
                             if (CollectionUtils.isNotEmpty(targetCiEntityList)) {
-                                String v = targetCiEntityList.stream().map(CiEntityVo::getName).collect(Collectors.joining(","));
-                                fullTextIndexVo.addFieldContent(attrEntityVo.getAttrId().toString(), new FullTextIndexVo.WordVo(v));
-                                if (termAttrVo != null) {
-                                    this.addTerms(v.split(","));
+                                String v = "";
+                                for (CiEntityVo targetCiEntityVo : targetCiEntityList) {
+                                    if (StringUtils.isNotBlank(targetCiEntityVo.getName())) {
+                                        if (StringUtils.isNotBlank(v)) {
+                                            v += ",";
+                                        }
+                                        v = v + targetCiEntityVo.getName();
+                                    }
+                                }
+                                if (StringUtils.isNotBlank(v)) {
+                                    fullTextIndexVo.addFieldContent(attrEntityVo.getAttrId().toString(), new FullTextIndexVo.WordVo(v));
+                                    if (termAttrVo != null) {
+                                        this.addTerms(v.split(","));
+                                    }
                                 }
                             }
                         } else {

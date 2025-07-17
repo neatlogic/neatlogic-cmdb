@@ -200,6 +200,8 @@ public interface CiEntityMapper extends ICiEntityCrossoverMapper {
      */
     List<AttrVo> getAttrListByToCiEntityId(Long toCiEntityId);
 
+    List<CiEntityVo> getCiEntityNameByIdList(@Param("idList") List<Long> idList);
+
     List<HashMap<String, Object>> searchCiEntity(CiEntityVo ciEntityVo);
 
     List<Long> searchCiEntityId(CiEntityVo ciEntityVo);

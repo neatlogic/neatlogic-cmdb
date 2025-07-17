@@ -116,7 +116,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         select id,
                name,
                label,
-               type_id as typeId,
+               type_id     as typeId,
+               is_virtual  as isVirtual,
+               is_abstract as isAbstract,
                icon,
                lft,
                rht
