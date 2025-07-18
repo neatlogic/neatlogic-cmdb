@@ -38,15 +38,9 @@ import java.util.Map;
 public interface CiEntityService {
     CiEntityVo getCiEntityById(CiEntityVo ciEntityVo);
 
-    /**
-     * 根据配置项id列表返回配置项
-     *
-     * @param ciId           模型id
-     * @param ciEntityIdList 配置项id列表
-     * @return 配置项列表
-     */
-    List<CiEntityVo> getCiEntityByIdList(Long ciId, List<Long> ciEntityIdList);
 
+
+    List<CiEntityVo> getCiEntityNameByIdList(Long ciId, List<Long> ciEntityIdList);
 
     List<CiEntityVo> getCiEntityByIdList(CiEntityVo ciEntityVo);
 

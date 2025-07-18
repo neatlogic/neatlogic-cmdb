@@ -138,7 +138,20 @@ public class TableValueHandler implements IAttrValueHandler {
                 }
             }
             if (CollectionUtils.isNotEmpty(ciEntityIdList)) {
-                List<CiEntityVo> ciEntityList = ciEntityService.getCiEntityByIdList(attrVo.getTargetCiId(), ciEntityIdList);
+                CiEntityVo ciEntityVo = new CiEntityVo();
+                ciEntityVo.setCiId(attrVo.getTargetCiId());
+                ciEntityVo.setIdList(ciEntityIdList);
+                if (CollectionUtils.isNotEmpty(attrVo.getConfig().getJSONArray("attrList"))) {
+                    List<Long> attrIdList = new ArrayList<>();
+                    for (int i = 0; i < attrVo.getConfig().getJSONArray("attrList").size(); i++) {
+                        JSONObject attrObj = attrVo.getConfig().getJSONArray("attrList").getJSONObject(i);
+                        if (Objects.equals(attrObj.getBooleanValue("isSelected"), true)) {
+                            attrIdList.add(attrObj.getLong("id"));
+                        }
+                    }
+                    ciEntityVo.setAttrIdList(attrIdList);
+                }
+                List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
                 returnList.addAll(ciEntityList);
             }
         }

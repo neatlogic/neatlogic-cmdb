@@ -298,14 +298,18 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         return getCiEntityByIdLite(ciEntityVo.getCiId(), ciEntityVo.getId(), false, ciEntityVo.isLimitRelEntity(), ciEntityVo.isLimitAttrEntity(), ciEntityVo.getGlobalAttrIdList(), ciEntityVo.getAttrIdList(), ciEntityVo.getRelIdList(), null, null);
     }
 
+
     @Override
-    public List<CiEntityVo> getCiEntityByIdList(Long ciId, List<Long> ciEntityIdList) {
-        CiEntityVo ciEntityVo = new CiEntityVo();
-        ciEntityVo.setCiId(ciId);
-        ciEntityVo.setIdList(ciEntityIdList);
-        ciEntityVo.setLimitAttrEntity(true);
-        ciEntityVo.setLimitRelEntity(true);
-        return getCiEntityByIdList(ciEntityVo);
+    public List<CiEntityVo> getCiEntityNameByIdList(Long ciId, List<Long> ciEntityIdList) {
+        CiVo ciVo = ciMapper.getCiBaseInfoById(ciId);
+        if (ciVo.getIsVirtual().equals(0)) {
+            return ciEntityMapper.getCiEntityNameByIdList(ciEntityIdList);
+        } else {
+            CiEntityVo ciEntityVo = new CiEntityVo();
+            ciEntityVo.setCiId(ciId);
+            ciEntityVo.setIdList(ciEntityIdList);
+            return ciEntityMapper.getVirtualCiEntityBaseInfoByIdList(ciEntityVo);
+        }
     }
 
 

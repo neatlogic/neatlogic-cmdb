@@ -66,6 +66,7 @@ import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.select.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -650,7 +651,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 }
             }
         } catch (Exception ex) {
-            error = ex.getMessage();
+            error = ExceptionUtils.getStackTrace(ex);
         } finally {
             if (StringUtils.isNotBlank(error)) {
                 String tableType = schemaMapper.checkTableOrViewIsExists(TenantContext.get().getDataDbName(), viewName);
@@ -841,9 +842,11 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(sceneTemplateName);
             }
         }
+        List<String> selectItemFieldNameList = new ArrayList<>(fieldNameList);
         ResourceEntityConfigVo config = fieldMappingCheckValidityAndFillIdData(viewName, fieldNameList, originalConfig);
         config.setLeftJoinList(leftJoinList);
-        config.setSelectItemFieldNameList(new ArrayList<>(fieldNameList));
+        config.setSelectItemFieldNameList(selectItemFieldNameList);
+        config.setFilterItemFieldNameList(new ArrayList<>());
         return config;
     }
     /**

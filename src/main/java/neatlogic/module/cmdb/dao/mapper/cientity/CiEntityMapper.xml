@@ -163,11 +163,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                                 left join cmdb_relentity `rel_${idx}` on cientity.id = `rel_${idx}`.from_cientity_id
                                 and `rel_${idx}`.rel_id = #{rel.id}
                                 <!--过期配置项过滤开始-->
-                               and ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
-                               `rel_${idx}`.to_cientity_id) or exists
-                               (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
-                               `rel_${idx}`.to_cientity_id
-                               and xx.expired_time &gt;= NOW()))
+                                and ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                                `rel_${idx}`.to_cientity_id) or exists
+                                (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                                `rel_${idx}`.to_cientity_id
+                                and xx.expired_time &gt;= NOW()))
                                 <!--过期配置项过滤结束-->
                                 <if test="globalAttrFilterList != null and globalAttrFilterList.size () > 0">
                                     and
@@ -190,11 +190,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                                 left join cmdb_relentity `rel_${idx}` on cientity.id = `rel_${idx}`.to_cientity_id
                                 and `rel_${idx}`.rel_id = #{rel.id}
                                 <!--过期配置项过滤开始-->
-                               and ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
-                               `rel_${idx}`.from_cientity_id) or exists
-                               (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
-                               `rel_${idx}`.from_cientity_id
-                               and xx.expired_time &gt;= NOW()))
+                                and ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                                `rel_${idx}`.from_cientity_id) or exists
+                                (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                                `rel_${idx}`.from_cientity_id
+                                and xx.expired_time &gt;= NOW()))
                                 <!--过期配置项过滤结束-->
                                 <if test="globalAttrFilterList != null and globalAttrFilterList.size () > 0">
                                     and
@@ -222,11 +222,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                                 `rel_${idx}`.from_cientity_id and
                                 `rel_${idx}`.rel_id = #{rel.id}
                                 <!--过期配置项过滤开始-->
-                               and ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
-                               `rel_${idx}`.to_cientity_id)
-                               or exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
-                               `rel_${idx}`.to_cientity_id
-                               and xx.expired_time &gt;= NOW()))
+                                and ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                                `rel_${idx}`.to_cientity_id)
+                                or exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                                `rel_${idx}`.to_cientity_id
+                                and xx.expired_time &gt;= NOW()))
                                 <!--过期配置项过滤结束-->
                                 <if test="globalAttrFilterList != null and globalAttrFilterList.size () > 0">
                                     and
@@ -250,11 +250,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                                 `rel_${idx}`.to_cientity_id
                                 and `rel_${idx}`.rel_id = #{rel.id}
                                 <!--过期配置项过滤开始-->
-                               and ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
-                               `rel_${idx}`.from_cientity_id) or exists
-                               (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
-                               `rel_${idx}`.from_cientity_id
-                               and xx.expired_time &gt;= NOW()))
+                                and ( not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                                `rel_${idx}`.from_cientity_id) or exists
+                                (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id =
+                                `rel_${idx}`.from_cientity_id
+                                and xx.expired_time &gt;= NOW()))
                                 <!--过期配置项过滤结束-->
                                 <if test="globalAttrFilterList != null and globalAttrFilterList.size () > 0">
                                     and
@@ -674,7 +674,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                     <if test="@neatlogic.framework.cmdb.dao.ognl.IsCiExistsInFilter@isExists(ci, attrFilterList, sortList)">
                         <choose>
                             <when test="ci.isVirtual == 0">
-                                JOIN ${ci.ciTableName} FORCE INDEX(PRIMARY) ON `ci_base`.id = ${ci.ciTableName}.cientity_id
+                                JOIN ${ci.ciTableName} FORCE INDEX(PRIMARY) ON `ci_base`.id =
+                                ${ci.ciTableName}.cientity_id
                             </when>
                             <otherwise>
                                 JOIN ${ci.ciTableName} ON `ci_base`.id = ${ci.ciTableName}.id
@@ -1573,6 +1574,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </include>
         <include refid="ciEntityConditionSql">
         </include>
+    </select>
+
+    <select id="getCiEntityNameByIdList" resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo">
+        select id,
+        ci_id as ciId,
+        name from cmdb_cientity where id in
+        <foreach collection="idList" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
     </select>
 
 
