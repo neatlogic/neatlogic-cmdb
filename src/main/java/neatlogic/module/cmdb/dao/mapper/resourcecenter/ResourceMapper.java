@@ -33,7 +33,7 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
     int getResourceCountByNameKeyword(ResourceSearchVo searchVo);
 
     int getResourceCountByIpKeyword(ResourceSearchVo searchVo);
-
+    @Deprecated
     int getResourceCount(ResourceSearchVo searchVo);
 
     int getResourceCountBySql(String sql);
@@ -42,12 +42,13 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     int getResourceCountByDynamicCondition(@Param("searchVo") ResourceSearchVo searchVo, @Param("conditionSql") String conditionSql);
 
+    @Deprecated
     List<Long> getResourceIdList(ResourceSearchVo searchVo);
 
     List<Long> getResourceIdListBySql(String sql);
 
     List<Long> getResourceIdListByDynamicCondition(@Param("searchVo") ResourceSearchVo searchVo, @Param("conditionSql") String conditionSql);
-
+    @Deprecated
     List<ResourceVo> getResourceListByIdList(List<Long> idList);
 
     List<ResourceVo> getResourceListBySql(String sql);

@@ -39,6 +39,9 @@ import neatlogic.framework.dao.mapper.DataBaseViewInfoMapper;
 import neatlogic.framework.dao.mapper.SchemaMapper;
 import neatlogic.framework.dto.DataBaseViewInfoVo;
 import neatlogic.framework.fulltextindex.utils.FullTextIndexUtil;
+import neatlogic.framework.sqlgenerator.$sql;
+import neatlogic.framework.sqlgenerator.ExpressionVo;
+import neatlogic.framework.sqlgenerator.JoinVo;
 import neatlogic.framework.store.mysql.DatabaseVendor;
 import neatlogic.framework.store.mysql.DatasourceManager;
 import neatlogic.framework.transaction.core.EscapeTransactionJob;
@@ -705,24 +708,20 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 plainSelect = resourceViewGenerateSqlUtil.getSql();
                 filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtil.getFilterItemFieldName2ColumnMap();
             }
-            plainSelect = supplementBusinessLogicByResourceSearchVo(queryCriteriaVo, plainSelect, filterItemFieldName2ColumnMap);
-            Column idColumn = filterItemFieldName2ColumnMap.get("id");
-            if (CollectionUtils.isNotEmpty(searchVo.getKeywordList()) && searchVo.getNameFieldAttrId() != null && searchVo.getIpFieldAttrId() != null) {
-                Function countFunction = new Function();
-                countFunction.withName("COUNT");
-                countFunction.withDistinct(true);
-                countFunction.setParameters(new ExpressionList().addExpressions(new Column("fw.word")));
-                // 排序
-                OrderByElement orderByMatchCount = new OrderByElement().withExpression(countFunction).withAsc(false);
-                plainSelect.addOrderByElements(orderByMatchCount);
-            }
-            // 分组
-            plainSelect.addGroupByColumnReference(idColumn);
-            // 排序
-            OrderByElement orderById = new OrderByElement().withExpression(idColumn).withAsc(false);
-            plainSelect.addOrderByElements(orderById);
 
-            plainSelect.setLimit(new Limit().withOffset(new LongValue(searchVo.getStartNum())).withRowCount(new LongValue(searchVo.getPageSize())));
+            List<JoinVo> joinList = getJoinList(queryCriteriaVo, filterItemFieldName2ColumnMap);
+            $sql.addJoinList(plainSelect, joinList);
+            List<ExpressionVo> whereExpressionList = getWhereExpressionList(queryCriteriaVo, filterItemFieldName2ColumnMap);
+            $sql.addWhereExpressionList(plainSelect, whereExpressionList);
+            if (CollectionUtils.isNotEmpty(searchVo.getKeywordList()) && searchVo.getNameFieldAttrId() != null && searchVo.getIpFieldAttrId() != null) {
+                $sql.addOrderBy(plainSelect, $sql.fun("COUNT", "fw.word").withDistinct(true), "desc");
+            }
+            Column idColumn = filterItemFieldName2ColumnMap.get("id");
+            // 分组
+            $sql.addGroupBy(plainSelect, idColumn.toString());
+            // 排序
+            $sql.addOrderBy(plainSelect, idColumn.toString(), "desc");
+            $sql.setLimit(plainSelect, searchVo.getStartNum(), searchVo.getPageSize());
             return plainSelect.toString();
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -753,14 +752,13 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 plainSelect = resourceViewGenerateSqlUtil.getSql();
                 filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtil.getFilterItemFieldName2ColumnMap();
             }
-            plainSelect = supplementBusinessLogicByResourceSearchVo(queryCriteriaVo, plainSelect, filterItemFieldName2ColumnMap);
+
+            List<JoinVo> joinList = getJoinList(queryCriteriaVo, filterItemFieldName2ColumnMap);
+            $sql.addJoinList(plainSelect, joinList);
+            List<ExpressionVo> whereExpressionList = getWhereExpressionList(queryCriteriaVo, filterItemFieldName2ColumnMap);
+            $sql.addWhereExpressionList(plainSelect, whereExpressionList);
             Column column = filterItemFieldName2ColumnMap.get("id");
-            Function countFunction = new Function();
-            countFunction.withName("COUNT");
-            countFunction.withDistinct(true);
-            countFunction.setParameters(new ExpressionList().addExpressions(column));
-            SelectExpressionItem countDistinctItem = new SelectExpressionItem(countFunction);
-            plainSelect.setSelectItems(Collections.singletonList(countDistinctItem));
+            $sql.setSelectColumn(plainSelect, $sql.fun("COUNT", column.toString()).withDistinct(true));
             return plainSelect.toString();
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -795,17 +793,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtil.getFilterItemFieldName2ColumnMap();
             }
             Column column = filterItemFieldName2ColumnMap.get("id");
-            ExpressionList values = new ExpressionList();
-            for (Long id : idList) {
-                values.addExpressions(new LongValue(id));
-            }
-            InExpression inExpression = new InExpression(column, values);
-            Expression where = plainSelect.getWhere();
-            if (where != null) {
-                plainSelect.setWhere(new AndExpression(where, inExpression));
-            } else {
-                plainSelect.setWhere(inExpression);
-            }
+            $sql.addWhereExpression(plainSelect, $sql.exp(column.toString(), "in", idList));
             return plainSelect.toString();
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -1752,7 +1740,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             Column column = filterItemFieldName2ColumnMap.get("env_id");
 
             IsNullExpression isNullExpression = new IsNullExpression();
-            isNullExpression.withLeftExpression(column).isUseIsNull();
+            isNullExpression.withLeftExpression(column);
             Expression where = plainSelect.getWhere();
             if (where != null) {
                 plainSelect.setWhere(new AndExpression(where, isNullExpression));
@@ -1873,5 +1861,362 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             }
         }
         return plainSelect;
+    }
+
+    private List<JoinVo> getJoinList(ResourceQueryCriteriaVo queryCriteriaVo, Map<String, Column> filterItemFieldName2ColumnMap) {
+        List<JoinVo> joinList = new ArrayList<>();
+        /*
+        <if test="keywordList != null and keywordList.size() > 0">
+            JOIN fulltextindex_field_cmdb ffc ON ffc.target_id = a.id AND ffc.target_field IN (#{nameFieldAttrId}, #{ipFieldAttrId})
+            JOIN fulltextindex_word fw ON ffc.word_id = fw.id
+            AND (fw.word IN
+            <foreach collection="keywordList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+            )
+        </if>
+         */
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getKeywordList()) && (queryCriteriaVo.getNameFieldAttrId() != null || queryCriteriaVo.getIpFieldAttrId() != null)) {
+            {
+                ExpressionVo expressionVo = $sql.exp(
+                        $sql.exp("ffc.target_id", "=", filterItemFieldName2ColumnMap.get("id").toString()),
+                        "and",
+                        $sql.exp("ffc.target_field", "in", Arrays.asList(queryCriteriaVo.getNameFieldAttrId(), queryCriteriaVo.getIpFieldAttrId())));
+                joinList.add($sql.join("join", "fulltextindex_field_cmdb", "ffc").withOn(expressionVo));
+            }
+            {
+                ExpressionVo expressionVo = $sql.exp(
+                        $sql.exp("fw.id", "=", "ffc.word_id"),
+                        "and",
+                        $sql.exp("fw.word", "in", queryCriteriaVo.getKeywordList()));
+                joinList.add($sql.join("join", "fulltextindex_word", "fw").withOn(expressionVo));
+            }
+        }
+        /*
+        <if test="batchSearchList != null and batchSearchList.size() > 0 and searchField != null and searchField != ''">
+            JOIN fulltextindex_field_cmdb ffc2 ON ffc2.target_id = a.id
+            <choose>
+                <when test="searchField == 'name'">
+                    AND ffc2.target_field = #{nameFieldAttrId}
+                </when>
+                <otherwise>
+                    AND ffc2.target_field = #{ipFieldAttrId}
+                </otherwise>
+            </choose>
+            JOIN fulltextindex_word fw2 ON ffc2.word_id = fw2.id
+            AND (fw2.word IN
+            <foreach collection="batchSearchList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+            )
+        </if>
+         */
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getBatchSearchList()) && StringUtils.isNotBlank(queryCriteriaVo.getSearchField())) {
+            {
+                Long fieldAttrId = null;
+                if (Objects.equals(queryCriteriaVo.getSearchField(), "name")) {
+                    fieldAttrId = queryCriteriaVo.getNameFieldAttrId();
+                } else {
+                    fieldAttrId = queryCriteriaVo.getIpFieldAttrId();
+                }
+                ExpressionVo expressionVo = $sql.exp(
+                        $sql.exp("ffc2.target_id", "=", filterItemFieldName2ColumnMap.get("id").toString()),
+                        "and",
+                        $sql.exp("ffc2.target_field", "=", fieldAttrId));
+                joinList.add($sql.join("join", "fulltextindex_field_cmdb", "ffc2").withOn(expressionVo));
+            }
+            {
+                ExpressionVo expressionVo = $sql.exp(
+                        $sql.exp("fw2.id", "=", "ffc2.word_id"),
+                        "and",
+                        $sql.exp("fw2.word", "in", queryCriteriaVo.getBatchSearchList()));
+                joinList.add($sql.join("join", "fulltextindex_word", "fw2").withOn(expressionVo));
+            }
+        }
+        /*
+        <if test="protocolIdList != null and protocolIdList.size() > 0">
+            LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
+            LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
+        </if>
+         */
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getProtocolIdList())) {
+            joinList.add($sql.join("left join", "cmdb_resourcecenter_resource_account", "b").withOn($sql.exp("b.resource_id", "=", filterItemFieldName2ColumnMap.get("id").toString())));
+            joinList.add($sql.join("left join", "cmdb_resourcecenter_account", "c").withOn($sql.exp("c.id", "=", "b.account_id")));
+        }
+        /*
+        <if test="tagIdList != null and tagIdList.size() > 0">
+            LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+        </if>
+         */
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getTagIdList())) {
+            joinList.add($sql.join("left join", "cmdb_resourcecenter_resource_tag", "d").withOn($sql.exp("d.resource_id", "=", filterItemFieldName2ColumnMap.get("id").toString())));
+        }
+        /*
+        <if test="inspectJobPhaseNodeStatusList !=null and inspectJobPhaseNodeStatusList.size() > 0">
+            left join autoexec_job_resource_inspect ajri on ajri.resource_id=a.id
+            left join autoexec_job_phase_node ajpn on ajpn.job_phase_id =ajri.phase_id AND ajpn.resource_id = a.id
+        </if>
+         */
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getInspectJobPhaseNodeStatusList())) {
+            joinList.add($sql.join("left join", "autoexec_job_resource_inspect", "ajri").withOn($sql.exp("ajri.resource_id", "=", filterItemFieldName2ColumnMap.get("id").toString())));
+            ExpressionVo expressionVo = $sql.exp($sql.exp("ajpn.job_phase_id", "=", "ajri.phase_id"), "and", $sql.exp("ajpn.resource_id", "=", filterItemFieldName2ColumnMap.get("id").toString()));
+            joinList.add($sql.join("left join", "autoexec_job_phase_node", "ajpn").withOn(expressionVo));
+        }
+        /*
+        <if test="isHasAuth == false">
+            LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
+            LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
+             <choose>
+                <when test="cmdbGroupType == 'autoexec'">
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
+                </when>
+                <otherwise>
+                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
+                </otherwise>
+            </choose>
+        </if>
+         */
+        if (Objects.equals(queryCriteriaVo.getIsHasAuth(), false)) {
+            joinList.add($sql.join("left join", "cmdb_cientity_group", "ccg").withOn($sql.exp("ccg.cientity_id", "=", filterItemFieldName2ColumnMap.get("id").toString())));
+            joinList.add($sql.join("left join", "cmdb_group_auth", "cga").withOn($sql.exp("cga.group_id", "=", "ccg.group_id")));
+
+            List<String> strList = new ArrayList<>();
+            if (Objects.equals(queryCriteriaVo.getCmdbGroupType(), "autoexec")) {
+                strList.add("autoexec");
+            } else {
+                strList.add("autoexec");
+                strList.add("readonly");
+                strList.add("maintain");
+            }
+            ExpressionVo expressionVo = $sql.exp(
+                    $sql.exp("cg.id", "=", "cga.group_id"),
+                    "and",
+                    $sql.exp("cg.type", "in", strList)
+            );
+            joinList.add($sql.join("left join", "cmdb_group", "cg").withOn(expressionVo));
+        }
+        return joinList;
+    }
+
+    private List<ExpressionVo> getWhereExpressionList(ResourceQueryCriteriaVo queryCriteriaVo, Map<String, Column> filterItemFieldName2ColumnMap) {
+        List<ExpressionVo> whereExpressionList = new ArrayList<>();
+        /*
+        <if test="protocolIdList != null and protocolIdList.size() > 0">
+            AND c.`protocol_id` IN
+            <foreach collection="protocolIdList" item="protocolId" open="(" separator="," close=")">
+                #{protocolId}
+            </foreach>
+        </if>
+         */
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getProtocolIdList())) {
+            whereExpressionList.add($sql.exp("c.protocol_id", "in", queryCriteriaVo.getProtocolIdList()));
+        }
+        /*
+        <if test="tagIdList != null and tagIdList.size() > 0">
+            AND d.`tag_id` IN
+            <foreach collection="tagIdList" item="tagId" open="(" separator="," close=")">
+                #{tagId}
+            </foreach>
+        </if>
+         */
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getTagIdList())) {
+            whereExpressionList.add($sql.exp("d.tag_id", "in", queryCriteriaVo.getTagIdList()));
+        }
+        /*
+        <if test="inspectStatusList != null and inspectStatusList.size() > 0">
+            AND a.`inspect_status` IN
+            <foreach collection="inspectStatusList" item="inspectStatus" open="(" separator="," close=")">
+                #{inspectStatus}
+            </foreach>
+        </if>
+         */
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getInspectJobPhaseNodeStatusList())) {
+            whereExpressionList.add($sql.exp("ajpn.status", "in", queryCriteriaVo.getInspectJobPhaseNodeStatusList()));
+        }
+        /*
+         <if test="typeIdList != null and typeIdList.size() > 0">
+            <if test="isHasAuth == true">
+                AND a.`type_id` IN
+                <foreach collection="typeIdList" item="typeId" open="(" separator="," close=")">
+                    #{typeId}
+                </foreach>
+            </if>
+            <if test="isHasAuth == false">
+                AND (
+                <choose>
+                    <when test="authedTypeIdList != null and authedTypeIdList.size() >0">
+                        a.`type_id` IN
+                        <foreach collection="authedTypeIdList" item="authedTypeId" open="(" separator="," close=")">
+                            #{authedTypeId}
+                        </foreach>
+                    </when>
+                    <otherwise>
+                        1 = 0
+                    </otherwise>
+                </choose>
+                or (
+                cg.id is not null and
+                a.`type_id` IN
+                <foreach collection="typeIdList" item="typeId" open="(" separator="," close=")">
+                    #{typeId}
+                </foreach>
+                and
+                ((cga.auth_type = 'common' AND cga.auth_uuid = 'alluser')
+                <if test="authenticationInfo != null">
+                    OR cga.auth_uuid IN (
+                    #{authenticationInfo.userUuid}
+                    <if test="authenticationInfo.teamUuidList != null and authenticationInfo.teamUuidList.size() > 0">
+                        <foreach collection="authenticationInfo.teamUuidList" item="item" open="," separator=",">
+                            #{item}
+                        </foreach>
+                    </if>
+                    <if test="authenticationInfo.roleUuidList != null and authenticationInfo.roleUuidList.size() > 0">
+                        <foreach collection="authenticationInfo.roleUuidList" item="item" open="," separator=",">
+                            #{item}
+                        </foreach>
+                    </if>
+                )
+                </if>
+                )
+                )
+                )
+            </if>
+        </if>
+         */
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getTypeIdList())) {
+            if (Objects.equals(queryCriteriaVo.getIsHasAuth(), true)) {
+                whereExpressionList.add($sql.exp(filterItemFieldName2ColumnMap.get("type_id").toString(), "in", queryCriteriaVo.getTypeIdList()));
+            } else if (Objects.equals(queryCriteriaVo.getIsHasAuth(), false)) {
+                ExpressionVo orLeftExpressionVo = null;
+                if (CollectionUtils.isNotEmpty(queryCriteriaVo.getAuthedTypeIdList())) {
+                    orLeftExpressionVo = $sql.exp(filterItemFieldName2ColumnMap.get("type_id").toString(), "in", queryCriteriaVo.getAuthedTypeIdList());
+                } else {
+                    orLeftExpressionVo = $sql.exp(1, "=", 0);
+                }
+                ExpressionVo orRightExpressionVo = $sql.exp($sql.exp("cg.id", "is not null"), "and", $sql.exp(filterItemFieldName2ColumnMap.get("type_id").toString(), "in", queryCriteriaVo.getTypeIdList()));
+
+                ExpressionVo orLeftExpressionVo2 = $sql.exp("(", $sql.exp("cga.auth_type", "=", "'common'"), "and", $sql.exp("cga.auth_uuid", "=", "'alluser'"), ")");
+                ExpressionVo orRightExpressionVo2 = null;
+                if (queryCriteriaVo.getAuthenticationInfo() != null) {
+                    List<String> uuidList = new ArrayList<>();
+                    if (StringUtils.isNotBlank(queryCriteriaVo.getAuthenticationInfo().getUserUuid())) {
+                        uuidList.add(queryCriteriaVo.getAuthenticationInfo().getUserUuid());
+                    }
+                    if (CollectionUtils.isNotEmpty(queryCriteriaVo.getAuthenticationInfo().getTeamUuidList())) {
+                        uuidList.addAll(queryCriteriaVo.getAuthenticationInfo().getTeamUuidList());
+                    }
+                    if (CollectionUtils.isNotEmpty(queryCriteriaVo.getAuthenticationInfo().getRoleUuidList())) {
+                        uuidList.addAll(queryCriteriaVo.getAuthenticationInfo().getRoleUuidList());
+                    }
+                    if (CollectionUtils.isNotEmpty(uuidList)) {
+                        orRightExpressionVo2 = $sql.exp("cga.auth_uuid", "in", uuidList);
+                    }
+                }
+                if (orRightExpressionVo2 != null) {
+                    orRightExpressionVo = $sql.exp(orRightExpressionVo, "and", $sql.exp("(", orLeftExpressionVo2, "or", orRightExpressionVo2, ")"));
+                } else {
+                    orRightExpressionVo = $sql.exp(orRightExpressionVo, "and", orLeftExpressionVo2);
+                }
+                ExpressionVo orExpressionVo = $sql.exp("(", orLeftExpressionVo, "or", orRightExpressionVo, ")");
+                whereExpressionList.add(orExpressionVo);
+            }
+        }
+        /*
+        <if test="stateIdList != null and stateIdList.size() > 0">
+            AND a.`state_id` IN
+            <foreach collection="stateIdList" item="stateId" open="(" separator="," close=")">
+                #{stateId}
+            </foreach>
+        </if>
+         */
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getStateIdList())) {
+            whereExpressionList.add($sql.exp(filterItemFieldName2ColumnMap.get("state_id").toString(), "in", queryCriteriaVo.getStateIdList()));
+        }
+        /*
+        <if test="vendorIdList != null and vendorIdList.size() > 0">
+            AND a.`vendor_id` IN
+            <foreach collection="vendorIdList" item="vendorId" open="(" separator="," close=")">
+                #{vendorId}
+            </foreach>
+        </if>
+         */
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getVendorIdList())) {
+            whereExpressionList.add($sql.exp(filterItemFieldName2ColumnMap.get("vendor_id").toString(), "in", queryCriteriaVo.getVendorIdList()));
+        }
+        /*
+        <if test="envIdList != null and envIdList.size() > 0">
+            AND a.`env_id` IN
+            <foreach collection="envIdList" item="envId" open="(" separator="," close=")">
+                #{envId}
+            </foreach>
+        </if>
+         */
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getEnvIdList())) {
+            whereExpressionList.add($sql.exp(filterItemFieldName2ColumnMap.get("env_id").toString(), "in", queryCriteriaVo.getEnvIdList()));
+        }
+        /*
+        <if test="isExistNoEnv">
+            AND a.`env_id` is null
+        </if>
+         */
+        if (Objects.equals(queryCriteriaVo.getExistNoEnv(), true)) {
+            whereExpressionList.add($sql.exp(filterItemFieldName2ColumnMap.get("env_id").toString(), "is null"));
+        }
+        /*
+        <if test="appSystemIdList != null and appSystemIdList.size() > 0">
+            AND a.`app_system_id` IN
+            <foreach collection="appSystemIdList" item="appSystemId" open="(" separator="," close=")">
+                #{appSystemId}
+            </foreach>
+        </if>
+         */
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getAppSystemIdList())) {
+            whereExpressionList.add($sql.exp(filterItemFieldName2ColumnMap.get("app_system_id").toString(), "in", queryCriteriaVo.getAppSystemIdList()));
+        }
+        /*
+        <if test="appModuleIdList != null and appModuleIdList.size() > 0">
+            AND a.`app_module_id` IN
+            <foreach collection="appModuleIdList" item="appModuleId" open="(" separator="," close=")">
+                #{appModuleId}
+            </foreach>
+        </if>
+         */
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getAppModuleIdList())) {
+            whereExpressionList.add($sql.exp(filterItemFieldName2ColumnMap.get("app_module_id").toString(), "in", queryCriteriaVo.getAppModuleIdList()));
+        }
+        /*
+        <if test="defaultValue != null and defaultValue.size() > 0">
+            AND a.`id` IN
+            <foreach collection="defaultValue" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+         */
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getDefaultValue())) {
+            whereExpressionList.add($sql.exp(filterItemFieldName2ColumnMap.get("id").toString(), "in", queryCriteriaVo.getDefaultValue()));
+        }
+        /*
+        <if test="idList != null and idList.size() > 0">
+            AND a.`id` IN
+            <foreach collection="idList" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+         */
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getIdList())) {
+            whereExpressionList.add($sql.exp(filterItemFieldName2ColumnMap.get("id").toString(), "in", queryCriteriaVo.getIdList()));
+        }
+        /*
+        <if test="inspectStatusList != null and inspectStatusList.size() > 0">
+            AND a.`inspect_status` IN
+            <foreach collection="inspectStatusList" item="inspectStatus" open="(" separator="," close=")">
+                #{inspectStatus}
+            </foreach>
+        </if>
+         */
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getInspectStatusList())) {
+            whereExpressionList.add($sql.exp(filterItemFieldName2ColumnMap.get("inspect_status").toString(), "in", queryCriteriaVo.getInspectStatusList()));
+        }
+        return whereExpressionList;
     }
 }
