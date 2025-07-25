@@ -238,7 +238,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             <include refid="resource_ipobject_where"/>
         </where>
     </select>
-
+    <!-- 该SQL语句已经改成在ResourceCenterResourceServiceImpl中动态生成 -->
     <select id="getResourceCount" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultType="int">
         SELECT COUNT(DISTINCT a.`id`)
@@ -389,7 +389,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             </if>
         </if>
     </select>
-
+    <!-- 该SQL语句已经改成在ResourceCenterResourceServiceImpl中动态生成 -->
     <select id="getResourceIdList" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultType="java.lang.Long">
         SELECT m.`id` FROM (
@@ -467,7 +467,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     </select>
 
     <select id="getResourceIdListBySql" parameterType="java.lang.String" resultType="java.lang.Long">
-        ${sq}
+        ${sql}
     </select>
 
     <select id="getResourceIdListByDynamicCondition"
@@ -557,7 +557,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             <result column="allip_label" property="label"/>
         </collection>
     </resultMap>
-
+    <!-- 该SQL语句已经改成在ResourceCenterResourceServiceImpl中动态生成 -->
     <select id="getResourceListByIdList" resultMap="resourceCenterMap">
         SELECT
         a.`id`,
