@@ -17,8 +17,9 @@ package neatlogic.module.cmdb.attrexpression;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import neatlogic.framework.asynchronization.queue.NeatLogicBlockingQueue;
+import neatlogic.framework.asynchronization.queue.NeatLogicNonBlockingQueue;
 import neatlogic.framework.asynchronization.thread.NeatLogicThread;
+import neatlogic.framework.asynchronization.threadpool.CachedThreadPool;
 import neatlogic.framework.cmdb.dto.attrexpression.AttrExpressionRelVo;
 import neatlogic.framework.cmdb.dto.attrexpression.RebuildAuditVo;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
@@ -46,7 +47,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import javax.script.Bindings;
 import javax.script.CompiledScript;
 import javax.script.ScriptException;
@@ -54,21 +54,27 @@ import javax.script.SimpleBindings;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
 public class AttrExpressionRebuildManager {
     private static final String EXPRESSION_TYPE = "expression";
     private static final Logger logger = LoggerFactory.getLogger(AttrExpressionRebuildManager.class);
-    private static final NeatLogicBlockingQueue<RebuildAuditVo> rebuildQueue = new NeatLogicBlockingQueue<>(new LinkedBlockingQueue<>());
+    private static final NeatLogicNonBlockingQueue<RebuildAuditVo> rebuildQueue = new NeatLogicNonBlockingQueue<>();
     private static RelEntityMapper relEntityMapper;
     private static AttrExpressionRebuildAuditMapper attrExpressionRebuildAuditMapper;
     private static AttrMapper attrMapper;
     private static CiMapper ciMapper;
     private static CiEntityService ciEntityService;
-
     private static AttrEntityMapper attrEntityMapper;
+    //标记删除线程是否已经启动
+    private static final AtomicBoolean isRunning = new AtomicBoolean(false);
+    //最多3个线程并发处理
+    private static final int MAX_CONCURRENT_WORKERS = 3;
+    // 当前运行的 worker 数量
+    private static final AtomicInteger activeWorkerCount = new AtomicInteger(0);
 
 
     @Autowired
@@ -81,8 +87,49 @@ public class AttrExpressionRebuildManager {
         attrExpressionRebuildAuditMapper = _attrExpressionRebuildAuditMapper;
     }
 
+    // 消费队列的逻辑
+    private static void consumeQueue() {
+        try {
+            while (true) {
+                RebuildAuditVo rebuildAuditVo = rebuildQueue.poll();
+                if (rebuildAuditVo == null) {
+                    break;
+                }
+                try {
+                    new Builder(rebuildAuditVo).execute();
+                } finally {
+                    if (rebuildAuditVo.getLock() != null) {
+                        //System.out.println("重建表达式解除锁" + rebuildAuditVo.getLock());
+                        rebuildAuditVo.getLock().release();
+                    }
+                }
+            }
+        } finally {
+            if (activeWorkerCount.decrementAndGet() == 0) {
+                // 所有线程退出后检查是否还有任务
+                isRunning.set(false);
+                if (!rebuildQueue.isEmpty() && isRunning.compareAndSet(false, true)) {
+                    startWorkers();
+                }
+            }
+        }
+    }
 
-    @PostConstruct
+    // 启动 worker 线程
+    private static void startWorkers() {
+        for (int i = 0; i < MAX_CONCURRENT_WORKERS; i++) {
+            CachedThreadPool.execute(new NeatLogicThread("ATTR-EXPRESSION-REBUILDER-" + i, false) {
+                @Override
+                protected void execute() {
+                    consumeQueue();
+                }
+            });
+            activeWorkerCount.incrementAndGet();
+        }
+    }
+
+
+    /*@PostConstruct
     public void init() {
         Thread t = new Thread(new NeatLogicThread("ATTR-EXPRESSION-REBUILD-MANAGER") {
             @Override
@@ -111,7 +158,7 @@ public class AttrExpressionRebuildManager {
         });
         t.setDaemon(true);
         t.start();
-    }
+    }*/
 
     static class ExpressionGroupAttr {
         public enum Type {
@@ -372,7 +419,11 @@ public class AttrExpressionRebuildManager {
                                                     groupValue.append(expressionGroupAttr.getAttr());
                                                 }
                                             }
-                                            dataObj.put(expressionGroup.getExpression(), groupValue.toString());
+                                            if (!dataObj.containsKey(expressionGroup.getExpression())) {
+                                                dataObj.put(expressionGroup.getExpression(), groupValue.toString());
+                                            } else {
+                                                dataObj.put(expressionGroup.getExpression(), dataObj.getString(expressionGroup.getExpression()) + "," + groupValue);
+                                            }
                                             expressionValueList.add(groupValue.toString());
                                         }
                                     }
@@ -404,6 +455,8 @@ public class AttrExpressionRebuildManager {
                                     Object v = se.eval(params);
                                     if (v != null) {
                                         expressionV = v.toString();
+                                    } else {
+                                        expressionV = "";
                                     }
                                 } catch (ScriptException e) {
                                     logger.warn(e.getMessage(), e);
@@ -440,6 +493,14 @@ public class AttrExpressionRebuildManager {
         }
     }
 
+
+    private static void offerRebuildAudit(RebuildAuditVo rebuildAuditVo) {
+        rebuildQueue.offer(rebuildAuditVo);
+        if (isRunning.compareAndSet(false, true)) {
+            startWorkers();
+        }
+    }
+
     public static void rebuild(RebuildAuditVo rebuildAuditVo) {
         //System.out.println("重建表达式开始");
         attrExpressionRebuildAuditMapper.insertAttrExpressionRebuildAudit(rebuildAuditVo);
@@ -454,7 +515,7 @@ public class AttrExpressionRebuildManager {
 
                 }
             }
-            rebuildQueue.offer(rebuildAuditVo1);
+            offerRebuildAudit(rebuildAuditVo1);
         });
     }
 
@@ -478,7 +539,7 @@ public class AttrExpressionRebuildManager {
 
                         }
                     }
-                    rebuildQueue.offer(auditVo);
+                    offerRebuildAudit(auditVo);
                 }
             });
         }
