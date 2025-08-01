@@ -136,4 +136,32 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
      * @return
      */
     String buildGetResourceListSql(List<Long> idList);
+
+    /**
+     * 生成SQL等效于{@link neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper#getResourceCountByNameKeyword(neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo)}
+     * @param searchVo
+     * @return
+     */
+    String buildGetResourceCountByNameKeywordSql(ResourceSearchVo searchVo);
+
+    /**
+     * 生成SQL等效于{@link neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper#getResourceCountByIpKeyword(neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo)}
+     * @param searchVo
+     * @return
+     */
+    String buildGetResourceCountByIpKeywordSql(ResourceSearchVo searchVo);
+
+    /**
+     * 生成SQL等效于{@link neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper#getAuthResourceList(neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo)}
+     * @param searchVo
+     * @return
+     */
+    String buildGetAuthResourceListSql(ResourceSearchVo searchVo);
+
+    /**
+     * 生成SQL等效于{@link neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper#getResourceListByIpAndPortAndNameWithFilter(neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo)}
+     * @param searchVo
+     * @return
+     */
+    String buildGetResourceListByIpAndPortAndNameWithFilterSql(ResourceSearchVo searchVo);
 }

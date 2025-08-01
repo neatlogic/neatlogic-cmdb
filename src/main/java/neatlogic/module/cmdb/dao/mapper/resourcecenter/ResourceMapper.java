@@ -29,9 +29,9 @@ import java.util.Map;
 import java.util.Set;
 
 public interface ResourceMapper extends IResourceCrossoverMapper {
-
+    @Deprecated
     int getResourceCountByNameKeyword(ResourceSearchVo searchVo);
-
+    @Deprecated
     int getResourceCountByIpKeyword(ResourceSearchVo searchVo);
     @Deprecated
     int getResourceCount(ResourceSearchVo searchVo);
@@ -53,6 +53,8 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     List<ResourceVo> getResourceListBySql(String sql);
 
+    List<ResourceVo> getResourceSimpleListBySql(String sql);
+
     int getAppResourceCount(ResourceSearchVo searchVo);
 
     List<Long> getAppResourceIdList(ResourceSearchVo searchVo);
@@ -67,7 +69,7 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     List<ResourceVo> getResourceListByIpAndPortAndName(ResourceSearchVo searchVo);
 
-    Long getResourceIdByIpAndPortAndNameWithFilter(ResourceSearchVo searchVo);
+//    Long getResourceIdByIpAndPortAndNameWithFilter(ResourceSearchVo searchVo);
 
     List<ResourceVo> getResourceListByIpAndPortAndNameWithFilter(ResourceSearchVo searchVo);
 
