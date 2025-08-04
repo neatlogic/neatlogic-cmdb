@@ -166,7 +166,7 @@ public class CiEntityFullTextIndexHandler extends FullTextIndexHandlerBase {
                                 }
                             }
                         } else {
-                            String word = attrEntityVo.getValueList().stream().map(Object::toString).collect(Collectors.joining(","));
+                            String word = attrEntityVo.getActualValueList().stream().map(Object::toString).collect(Collectors.joining(","));
                             fullTextIndexVo.addFieldContent(attrEntityVo.getAttrId().toString(), new FullTextIndexVo.WordVo(word));
                             if (termAttrVo != null) {
                                 this.addTerms(word.split(","));
