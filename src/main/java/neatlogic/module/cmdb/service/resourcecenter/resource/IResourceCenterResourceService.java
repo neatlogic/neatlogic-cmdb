@@ -164,4 +164,30 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
      * @return
      */
     String buildGetResourceListByIpAndPortAndNameWithFilterSql(ResourceSearchVo searchVo);
+
+    /**
+     * 生成SQL等效于{@link neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper#getResourceTypeIdListByAuth(neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo)}
+     * @param searchVo
+     * @return
+     */
+    String buildGetResourceTypeIdListByAuthSql(ResourceSearchVo searchVo);
+
+//    String buildGetResourceIdByIpAndPortAndNameSql();
+//    String buildGetResourceIdListByIpAndPortAndNameSql();
+//    String buildGetResourceListByIpAndPortAndNameSql();
+//    String buildGetResourceByIdListSql();
+//    String buildGetResourceByIdSql();
+//    String buildGetResourceIdByResourceIdSql();
+//    String buildCheckResourceIdListIsExistsSql();
+//    String buildGetResourceListByResourceVoListSql();
+//    String buildGetResourceIdListByAppSystemIdAndModuleIdAndEnvIdSql();
+//    String buildGetResourceListByTypeIdListAndIpListSql();
+//    String buildGetResourceByIpAndPortAndNameAndTypeNameSql();
+//    String buildGetResourceByIpAndPortSql();
+//    String buildSearchAccountComponentSql();
+//    String buildSearchAccountComponentCountSql();
+//    String buildGetAppEnvListByAppSystemIdAndAppModuleIdSql();
+//    String buildGetAppEnvCountMapByAppSystemIdGroupByAppModuleIdSql();
+//    String buildGetResourceCountByDynamicConditionSql();
+//    String buildGetResourceIdListByDynamicConditionSql();
 }

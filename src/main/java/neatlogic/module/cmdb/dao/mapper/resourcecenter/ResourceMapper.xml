@@ -1092,7 +1092,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </foreach>
     </select>
 
-    <select id="getResourceTypeIdListByAppSystemIdAndModuleIdAndEnvIdAndInspectStatusList"
+    <!--<select id="getResourceTypeIdListByAppSystemIdAndModuleIdAndEnvIdAndInspectStatusList"
             parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultType="java.lang.Long">
         SELECT
@@ -1110,7 +1110,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
           <foreach collection="inspectStatusList" item="inspectStatus" open="(" separator="," close=")">
             #{inspectStatus}
           </foreach>
-    </select>
+    </select>-->
 
     <select id="getResourceIdListByAppSystemIdAndModuleIdAndEnvId"
             parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo"
@@ -1161,7 +1161,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </if>
         limit 1
     </select>-->
-
+    <!-- 该SQL语句已经改成在ResourceCenterResourceServiceImpl中动态生成 -->
     <select id="getResourceListByIpAndPortAndNameWithFilter"
             parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo">
         SELECT a.`id`, a.`name`, a.`ip`, a.`port`
@@ -1910,6 +1910,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </foreach>
         and os_id is not null
     </select>
+    <!-- 该SQL语句已经改成在ResourceCenterResourceServiceImpl中动态生成 -->
     <select id="getResourceTypeIdListByAuth" resultType="java.lang.Long">
         SELECT DISTINCT a.`type_id`
         FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
