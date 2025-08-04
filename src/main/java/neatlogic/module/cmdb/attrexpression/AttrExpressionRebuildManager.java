@@ -76,7 +76,16 @@ public class AttrExpressionRebuildManager {
         attrEntityMapper = _attrEntityMapper;
         attrExpressionRebuildAuditMapper = _attrExpressionRebuildAuditMapper;
         manager = AsyncTaskManager.getInstance("ATTR-EXPRESSION-REBUILDER",
-                3, rebuildAuditVo -> new Builder(rebuildAuditVo).execute());
+                3, rebuildAuditVo -> {
+                    try {
+                        new Builder(rebuildAuditVo).execute();
+                    } finally {
+                        if (rebuildAuditVo.getLock() != null) {
+                            //System.out.println("重建表达式解除锁" + rebuildAuditVo.getLock());
+                            rebuildAuditVo.getLock().release();
+                        }
+                    }
+                });
     }
 
     static class ExpressionGroupAttr {
