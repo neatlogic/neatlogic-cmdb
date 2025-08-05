@@ -64,6 +64,8 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     Long getResourceIdByIpAndPortAndName(ResourceSearchVo searchVo);
 
+    Long getIdBySql(String sql);
+
     List<Long> getResourceIdListByIpAndPortAndName(ResourceSearchVo searchVo);
 
     List<ResourceVo> getResourceListByIpAndPortAndName(ResourceSearchVo searchVo);

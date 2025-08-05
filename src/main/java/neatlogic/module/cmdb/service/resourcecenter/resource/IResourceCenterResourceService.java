@@ -172,8 +172,8 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
      */
     String buildGetResourceTypeIdListByAuthSql(ResourceSearchVo searchVo);
 
-//    String buildGetResourceIdByIpAndPortAndNameSql();
-//    String buildGetResourceIdListByIpAndPortAndNameSql();
+    String buildGetResourceIdByIpAndPortAndNameSql(ResourceSearchVo searchVo);
+    String buildGetResourceIdListByIpAndPortAndNameSql(ResourceSearchVo searchVo);
 //    String buildGetResourceListByIpAndPortAndNameSql();
 //    String buildGetResourceByIdListSql();
 //    String buildGetResourceByIdSql();

@@ -792,15 +792,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         LIMIT 1
     </select>
 
+    <select id="getIdBySql" parameterType="java.lang.String" resultType="java.lang.Long">
+        ${sql}
+    </select>
+
     <select id="getResourceIdListByIpAndPortAndName"
             parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
         SELECT a.`id`
         FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
-        <if test="search.isHasAuth == false">
+        <if test="isHasAuth == false">
             LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
             LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
             <choose>
-                <when test="search.cmdbGroupType == 'autoexec'">
+                <when test="cmdbGroupType == 'autoexec'">
                     LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
                 </when>
                 <otherwise>
