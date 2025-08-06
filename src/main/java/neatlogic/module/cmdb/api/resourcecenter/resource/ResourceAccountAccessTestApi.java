@@ -22,6 +22,7 @@ import neatlogic.framework.cmdb.dto.resourcecenter.AccountAccessTestVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.AccountVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.exception.resourcecenter.ResourceAccountAccessTestException;
+import neatlogic.framework.cmdb.exception.resourcecenter.ResourceAccountAccessTestHostException;
 import neatlogic.framework.cmdb.exception.resourcecenter.ResourceNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.util.IpUtil;
@@ -37,6 +38,7 @@ import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.HttpRequestUtil;
+import neatlogic.framework.util.RegexUtils;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import org.apache.commons.collections4.CollectionUtils;
@@ -44,6 +46,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -52,6 +55,7 @@ import java.util.Random;
 @AuthAction(action = CMDB.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ResourceAccountAccessTestApi extends PrivateApiComponentBase {
+    private static final Random random = new Random();
 
     @Resource
     private ResourceMapper resourceMapper;
@@ -95,30 +99,38 @@ public class ResourceAccountAccessTestApi extends PrivateApiComponentBase {
         if (resource == null) {
             throw new ResourceNotFoundException(resourceId);
         }
-        // 根据网段查找runner
-        List<RunnerMapVo> runnerMapList = null;
-        List<GroupNetworkVo> networkVoList = runnerMapper.getAllNetworkMask(null);
-        for (GroupNetworkVo networkVo : networkVoList) {
-            if (IpUtil.isBelongSegment(resource.getIp(), networkVo.getNetworkIp(), networkVo.getMask())) {
-                RunnerGroupVo groupVo = runnerMapper.getRunnerMapGroupById(networkVo.getGroupId());
-                if (CollectionUtils.isEmpty(groupVo.getRunnerMapList())) {
-                    throw new RunnerGroupRunnerNotFoundException(groupVo.getName() + "(" + networkVo.getGroupId() + ") ");
-                }
-                runnerMapList = groupVo.getRunnerMapList();
-            }
-        }
-        if (CollectionUtils.isEmpty(runnerMapList)) {
-            throw new RunnerNotMatchException();
-        }
-        // 如果没有指定则随机分配runner
         RunnerMapVo runnerMapVo = null;
-        if (runnerId != null) {
+        if (runnerId == null) {
+            //如果没有指定runner则根据网段查找runner
+            List<RunnerMapVo> runnerMapList = null;
+            List<GroupNetworkVo> networkVoList = runnerMapper.getAllNetworkMask(null);
+            for (GroupNetworkVo networkVo : networkVoList) {
+                //如果不是ip，则尝试域名解析
+                if (StringUtils.isNotBlank(resource.getIp()) && !RegexUtils.isMatch(resource.getIp(), RegexUtils.IP)) {
+                    try {
+                        InetAddress addresses = InetAddress.getByName(resource.getIp());
+                        resource.setIp(addresses.getHostAddress());
+                    } catch (Exception ex) {
+                        throw new ResourceAccountAccessTestHostException(resource.getIp());
+                    }
+                }
+                if (IpUtil.isBelongSegment(resource.getIp(), networkVo.getNetworkIp(), networkVo.getMask())) {
+                    RunnerGroupVo groupVo = runnerMapper.getRunnerMapGroupById(networkVo.getGroupId());
+                    if (CollectionUtils.isEmpty(groupVo.getRunnerMapList())) {
+                        throw new RunnerGroupRunnerNotFoundException(groupVo.getName() + "(" + networkVo.getGroupId() + ") ");
+                    }
+                    runnerMapList = groupVo.getRunnerMapList();
+                }
+            }
+            if (CollectionUtils.isEmpty(runnerMapList)) {
+                throw new RunnerNotMatchException();
+            }
+            int runnerMapIndex = random.nextInt(runnerMapList.size());
+            runnerMapVo = runnerMapList.get(runnerMapIndex);
+        }else{
             runnerMapVo = runnerMapper.getRunnerMapByRunnerMapId(runnerId);
         }
-        if (runnerMapVo == null) {
-            int runnerMapIndex = new Random().nextInt(runnerMapList.size());
-            runnerMapVo = runnerMapList.get(runnerMapIndex);
-        }
+
         List<AccountAccessTestVo> accessTestVoList = new ArrayList<>();
         List<AccountVo> accountList = resourceAccountMapper.getAccountListByIdList(accountIdList);
         if (!accountList.isEmpty()) {
@@ -152,5 +164,4 @@ public class ResourceAccountAccessTestApi extends PrivateApiComponentBase {
         result.put("runner", runnerMapVo.getName() + "(" + runnerMapVo.getId() + ")");
         return result;
     }
-
 }
