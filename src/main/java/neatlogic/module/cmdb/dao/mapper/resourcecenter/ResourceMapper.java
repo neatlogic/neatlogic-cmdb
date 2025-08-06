@@ -50,6 +50,8 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
     @Deprecated
     List<ResourceVo> getResourceListByIdList(List<Long> idList);
 
+    ResourceVo getResourceBySql(String sql);
+
     List<ResourceVo> getResourceListBySql(String sql);
 
     List<ResourceVo> getResourceSimpleListBySql(String sql);

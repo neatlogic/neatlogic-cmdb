@@ -174,11 +174,12 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
 
     String buildGetResourceIdByIpAndPortAndNameSql(ResourceSearchVo searchVo);
     String buildGetResourceIdListByIpAndPortAndNameSql(ResourceSearchVo searchVo);
-//    String buildGetResourceListByIpAndPortAndNameSql();
-//    String buildGetResourceByIdListSql();
-//    String buildGetResourceByIdSql();
-//    String buildGetResourceIdByResourceIdSql();
-//    String buildCheckResourceIdListIsExistsSql();
+    String buildGetResourceListByIpAndPortAndNameSql(ResourceSearchVo searchVo);
+    String buildGetResourceByIdListSql(List<Long> idList);
+    String buildGetResourceByIdSql(Long id, List<String> selectFieldNameList);
+    String buildGetResourceByIdSql(Long id);
+    String buildGetResourceIdByResourceIdSql(Long id);
+    String buildCheckResourceIdListIsExistsSql(List<Long> idList);
 //    String buildGetResourceListByResourceVoListSql();
 //    String buildGetResourceIdListByAppSystemIdAndModuleIdAndEnvIdSql();
 //    String buildGetResourceListByTypeIdListAndIpListSql();

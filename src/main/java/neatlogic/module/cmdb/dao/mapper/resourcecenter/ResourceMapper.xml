@@ -600,6 +600,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </foreach>
     </select>
 
+    <select id="getResourceBySql" parameterType="java.lang.String" resultMap="resourceCenterMap">
+        ${sql}
+    </select>
+
     <select id="getResourceListBySql" parameterType="java.lang.String" resultMap="resourceCenterMap">
         ${sql}
     </select>
