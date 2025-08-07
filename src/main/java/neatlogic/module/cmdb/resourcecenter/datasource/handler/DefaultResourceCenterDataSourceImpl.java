@@ -674,7 +674,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             }
             if (Objects.equals(searchVo.getRowNum(), 0)) {
                 String getResourceCountSql = resourceCenterResourceService.buildGetResourceCountSql(searchVo);
-                int rowNum = resourceMapper.getResourceCountBySql(getResourceCountSql);
+                int rowNum = resourceMapper.getCountBySql(getResourceCountSql);
                 if (Objects.equals(enable, "1")) {
                     int oldRowNum = 0;
                     if (noFilterCondition(searchVo)) {

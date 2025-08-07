@@ -1374,6 +1374,332 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         return null;
     }
 
+    @Override
+    public String buildGetResourceIdListByAppSystemIdAndModuleIdAndEnvIdSql(ResourceVo resourceVo) {
+        try {
+            PlainSelect plainSelect = null;
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
+            ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
+            List<String> selectItemFieldNameList = new ArrayList<>();
+            selectItemFieldNameList.add("id");
+            List<String> filterItemFieldNameList = new ArrayList<>();
+            filterItemFieldNameList.add("id");
+            filterItemFieldNameList.add("app_system_id");
+            filterItemFieldNameList.add("app_module_id");
+            filterItemFieldNameList.add("env_id");
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            Map<String, Column> filterItemFieldName2ColumnMap = new HashMap<>();
+            if (Objects.equals(DatasourceManager.getDatabaseId(), DatabaseVendor.TIDB.getDatabaseId())) {
+                ResourceViewGenerateSqlUtilForTiDB resourceViewGenerateSqlUtilForTiDB = new ResourceViewGenerateSqlUtilForTiDB(config);
+                plainSelect = resourceViewGenerateSqlUtilForTiDB.getSql();
+                filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtilForTiDB.getFilterItemFieldName2ColumnMap();
+            } else {
+                ResourceViewGenerateSqlUtil resourceViewGenerateSqlUtil = new ResourceViewGenerateSqlUtil(config);
+                plainSelect = resourceViewGenerateSqlUtil.getSql();
+                filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtil.getFilterItemFieldName2ColumnMap();
+            }
+            Column appSystemIdColumn = filterItemFieldName2ColumnMap.get("app_system_id");
+            $sql.addWhereExpression(plainSelect, $sql.exp(appSystemIdColumn.toString(), "=", resourceVo.getAppSystemId()));
+            Column appModuleIdColumn = filterItemFieldName2ColumnMap.get("app_module_id");
+            $sql.addWhereExpression(plainSelect, $sql.exp(appModuleIdColumn.toString(), "=", resourceVo.getAppModuleId()));
+            Column envIdColumn = filterItemFieldName2ColumnMap.get("env_id");
+            $sql.addWhereExpression(plainSelect, $sql.exp(envIdColumn.toString(), "=", resourceVo.getEnvId()));
+            Column idColumn = filterItemFieldName2ColumnMap.get("id");
+            $sql.addOrderBy(plainSelect, idColumn.toString(), "desc");
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
+    public String buildGetResourceListByTypeIdListAndIpListSql(List<Long> typeIdList, List<String> ipList) {
+        try {
+            PlainSelect plainSelect = null;
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
+            ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
+            List<String> selectItemFieldNameList = new ArrayList<>();
+            selectItemFieldNameList.add("id");
+            selectItemFieldNameList.add("ip");
+            selectItemFieldNameList.add("name");
+            List<String> filterItemFieldNameList = new ArrayList<>();
+            filterItemFieldNameList.add("type_id");
+            filterItemFieldNameList.add("ip");
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            Map<String, Column> filterItemFieldName2ColumnMap = new HashMap<>();
+            if (Objects.equals(DatasourceManager.getDatabaseId(), DatabaseVendor.TIDB.getDatabaseId())) {
+                ResourceViewGenerateSqlUtilForTiDB resourceViewGenerateSqlUtilForTiDB = new ResourceViewGenerateSqlUtilForTiDB(config);
+                plainSelect = resourceViewGenerateSqlUtilForTiDB.getSql();
+                filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtilForTiDB.getFilterItemFieldName2ColumnMap();
+            } else {
+                ResourceViewGenerateSqlUtil resourceViewGenerateSqlUtil = new ResourceViewGenerateSqlUtil(config);
+                plainSelect = resourceViewGenerateSqlUtil.getSql();
+                filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtil.getFilterItemFieldName2ColumnMap();
+            }
+            Column typeIdColumn = filterItemFieldName2ColumnMap.get("type_id");
+            $sql.addWhereExpression(plainSelect, $sql.exp(typeIdColumn.toString(), "in", typeIdList));
+            Column ipColumn = filterItemFieldName2ColumnMap.get("ip");
+            $sql.addWhereExpression(plainSelect, $sql.exp(ipColumn.toString(), "in", ipList));
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
+    public String buildGetResourceByIpAndPortAndNameAndTypeNameSql(String ip, Integer port, String name, String typeName) {
+        try {
+            PlainSelect plainSelect = null;
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
+            ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
+            List<String> selectItemFieldNameList = new ArrayList<>();
+            selectItemFieldNameList.add("id");
+            selectItemFieldNameList.add("name");
+            selectItemFieldNameList.add("ip");
+            selectItemFieldNameList.add("port");
+//            selectItemFieldNameList.add("type_name");
+            List<String> filterItemFieldNameList = new ArrayList<>();
+//            filterItemFieldNameList.add("id");
+            filterItemFieldNameList.add("name");
+            filterItemFieldNameList.add("ip");
+            filterItemFieldNameList.add("port");
+            filterItemFieldNameList.add("type_name");
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            Map<String, Column> filterItemFieldName2ColumnMap = new HashMap<>();
+            if (Objects.equals(DatasourceManager.getDatabaseId(), DatabaseVendor.TIDB.getDatabaseId())) {
+                ResourceViewGenerateSqlUtilForTiDB resourceViewGenerateSqlUtilForTiDB = new ResourceViewGenerateSqlUtilForTiDB(config);
+                plainSelect = resourceViewGenerateSqlUtilForTiDB.getSql();
+                filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtilForTiDB.getFilterItemFieldName2ColumnMap();
+            } else {
+                ResourceViewGenerateSqlUtil resourceViewGenerateSqlUtil = new ResourceViewGenerateSqlUtil(config);
+                plainSelect = resourceViewGenerateSqlUtil.getSql();
+                filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtil.getFilterItemFieldName2ColumnMap();
+            }
+            $sql.addSelectColumn(plainSelect, filterItemFieldName2ColumnMap.get("type_name").toString(), "typeName");
+            $sql.addWhereExpression(plainSelect, $sql.exp(filterItemFieldName2ColumnMap.get("ip").toString(), "=", $sql.value(ip)));
+            if (port != null) {
+                $sql.addWhereExpression(plainSelect, $sql.exp(filterItemFieldName2ColumnMap.get("port").toString(), "=", port));
+            } else {
+                $sql.addWhereExpression(plainSelect, $sql.exp(filterItemFieldName2ColumnMap.get("port").toString(), "is null"));
+            }
+            if (StringUtils.isNotBlank(name)) {
+                $sql.addWhereExpression(plainSelect, $sql.exp(filterItemFieldName2ColumnMap.get("name").toString(), "=", $sql.value(name)));
+            }
+            if (StringUtils.isNotBlank(typeName)) {
+                $sql.addWhereExpression(plainSelect, $sql.exp(filterItemFieldName2ColumnMap.get("type_name").toString(), "=", $sql.value(typeName)));
+            }
+            $sql.setLimit(plainSelect, 1);
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
+    public String buildGetResourceByIpAndPortSql(String ip, Integer port) {
+        try {
+            PlainSelect plainSelect = null;
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
+            ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
+            List<String> selectItemFieldNameList = new ArrayList<>();
+            selectItemFieldNameList.add("id");
+            selectItemFieldNameList.add("name");
+            selectItemFieldNameList.add("ip");
+            selectItemFieldNameList.add("port");
+//            selectItemFieldNameList.add("type_name");
+            List<String> filterItemFieldNameList = new ArrayList<>();
+//            filterItemFieldNameList.add("id");
+//            filterItemFieldNameList.add("name");
+            filterItemFieldNameList.add("ip");
+            filterItemFieldNameList.add("port");
+            filterItemFieldNameList.add("type_name");
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            Map<String, Column> filterItemFieldName2ColumnMap = new HashMap<>();
+            if (Objects.equals(DatasourceManager.getDatabaseId(), DatabaseVendor.TIDB.getDatabaseId())) {
+                ResourceViewGenerateSqlUtilForTiDB resourceViewGenerateSqlUtilForTiDB = new ResourceViewGenerateSqlUtilForTiDB(config);
+                plainSelect = resourceViewGenerateSqlUtilForTiDB.getSql();
+                filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtilForTiDB.getFilterItemFieldName2ColumnMap();
+            } else {
+                ResourceViewGenerateSqlUtil resourceViewGenerateSqlUtil = new ResourceViewGenerateSqlUtil(config);
+                plainSelect = resourceViewGenerateSqlUtil.getSql();
+                filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtil.getFilterItemFieldName2ColumnMap();
+            }
+            $sql.addSelectColumn(plainSelect, filterItemFieldName2ColumnMap.get("type_name").toString(), "typeName");
+            $sql.addWhereExpression(plainSelect, $sql.exp(filterItemFieldName2ColumnMap.get("ip").toString(), "=", $sql.value(ip)));
+            if (port != null) {
+                $sql.addWhereExpression(plainSelect, $sql.exp(filterItemFieldName2ColumnMap.get("port").toString(), "=", port));
+            } else {
+                $sql.addWhereExpression(plainSelect, $sql.exp(filterItemFieldName2ColumnMap.get("port").toString(), "is null"));
+            }
+            $sql.setLimit(plainSelect, 1);
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
+    public String buildSearchAccountComponentSql(AccountComponentVo accountComponentVo) {
+        try {
+            PlainSelect plainSelect = null;
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
+            ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
+            List<String> selectItemFieldNameList = new ArrayList<>();
+            selectItemFieldNameList.add("id");
+            selectItemFieldNameList.add("name");
+            selectItemFieldNameList.add("ip");
+            List<String> filterItemFieldNameList = new ArrayList<>();
+            filterItemFieldNameList.add("id");
+            filterItemFieldNameList.add("name");
+            filterItemFieldNameList.add("ip");
+//            filterItemFieldNameList.add("port");
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            Map<String, Column> filterItemFieldName2ColumnMap = new HashMap<>();
+            if (Objects.equals(DatasourceManager.getDatabaseId(), DatabaseVendor.TIDB.getDatabaseId())) {
+                ResourceViewGenerateSqlUtilForTiDB resourceViewGenerateSqlUtilForTiDB = new ResourceViewGenerateSqlUtilForTiDB(config);
+                plainSelect = resourceViewGenerateSqlUtilForTiDB.getSql();
+                filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtilForTiDB.getFilterItemFieldName2ColumnMap();
+            } else {
+                ResourceViewGenerateSqlUtil resourceViewGenerateSqlUtil = new ResourceViewGenerateSqlUtil(config);
+                plainSelect = resourceViewGenerateSqlUtil.getSql();
+                filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtil.getFilterItemFieldName2ColumnMap();
+            }
+            $sql.addJoin(plainSelect, $sql.join("join", "cmdb_resourcecenter_resource_account", "b").withOn($sql.exp("b.resource_id", "=", filterItemFieldName2ColumnMap.get("id").toString())));
+            $sql.addJoin(plainSelect, $sql.join("join", "cmdb_resourcecenter_account", "c").withOn($sql.exp("c.id", "=", "b.account_id")));
+            $sql.addJoin(plainSelect, $sql.join("join", "cmdb_resourcecenter_account_protocol", "d").withOn($sql.exp("d.id", "=", "c.protocol_id")));
+//            $sql.addSelectColumn(plainSelect, filterItemFieldName2ColumnMap.get("type_name").toString(), "typeName");
+            $sql.addSelectColumn(plainSelect, "c.id", "accountId");
+            $sql.addSelectColumn(plainSelect, "c.name", "accountName");
+            $sql.addSelectColumn(plainSelect, "c.account", "account");
+            $sql.addSelectColumn(plainSelect, "d.id", "protocolId");
+            $sql.addSelectColumn(plainSelect, "d.name", "protocol");
+            $sql.addSelectColumn(plainSelect, "d.port", "port");
+            String keyword = accountComponentVo.getKeyword();
+            if (StringUtils.isNotBlank(keyword)) {
+//                keyword = "%" + keyword + "%";
+                Column nameColumn = filterItemFieldName2ColumnMap.get("name");
+                Column ipColumn = filterItemFieldName2ColumnMap.get("ip");
+                $sql.addWhereExpression(plainSelect,
+                        $sql.exp("(",
+                                $sql.exp(nameColumn.toString(), "like", "'%" + keyword + "%'"),
+                                "OR",
+                                $sql.exp(ipColumn.toString(), "=", $sql.value(keyword)),
+                                ")"
+                        )
+                );
+            }
+            $sql.setLimit(plainSelect, accountComponentVo.getStartNum(), accountComponentVo.getPageSize());
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
+    public String buildSearchAccountComponentCountSql(AccountComponentVo accountComponentVo) {
+        try {
+            PlainSelect plainSelect = null;
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
+            ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
+            List<String> selectItemFieldNameList = new ArrayList<>();
+//            selectItemFieldNameList.add("id");
+////            selectItemFieldNameList.add("name");
+////            selectItemFieldNameList.add("ip");
+            List<String> filterItemFieldNameList = new ArrayList<>();
+            filterItemFieldNameList.add("id");
+            filterItemFieldNameList.add("name");
+            filterItemFieldNameList.add("ip");
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            Map<String, Column> filterItemFieldName2ColumnMap = new HashMap<>();
+            if (Objects.equals(DatasourceManager.getDatabaseId(), DatabaseVendor.TIDB.getDatabaseId())) {
+                ResourceViewGenerateSqlUtilForTiDB resourceViewGenerateSqlUtilForTiDB = new ResourceViewGenerateSqlUtilForTiDB(config);
+                plainSelect = resourceViewGenerateSqlUtilForTiDB.getSql();
+                filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtilForTiDB.getFilterItemFieldName2ColumnMap();
+            } else {
+                ResourceViewGenerateSqlUtil resourceViewGenerateSqlUtil = new ResourceViewGenerateSqlUtil(config);
+                plainSelect = resourceViewGenerateSqlUtil.getSql();
+                filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtil.getFilterItemFieldName2ColumnMap();
+            }
+            $sql.addJoin(plainSelect, $sql.join("join", "cmdb_resourcecenter_resource_account", "b").withOn($sql.exp("b.resource_id", "=", filterItemFieldName2ColumnMap.get("id").toString())));
+            $sql.addJoin(plainSelect, $sql.join("join", "cmdb_resourcecenter_account", "c").withOn($sql.exp("c.id", "=", "b.account_id")));
+            $sql.addJoin(plainSelect, $sql.join("join", "cmdb_resourcecenter_account_protocol", "d").withOn($sql.exp("d.id", "=", "c.protocol_id")));
+            $sql.addSelectColumn(plainSelect, $sql.fun("count", "b.resource_id", "b.account_id").withDistinct(true));
+            String keyword = accountComponentVo.getKeyword();
+            if (StringUtils.isNotBlank(keyword)) {
+                Column nameColumn = filterItemFieldName2ColumnMap.get("name");
+                Column ipColumn = filterItemFieldName2ColumnMap.get("ip");
+                $sql.addWhereExpression(plainSelect,
+                        $sql.exp("(",
+                                $sql.exp(nameColumn.toString(), "like", "'%" + keyword + "%'"),
+                                "OR",
+                                $sql.exp(ipColumn.toString(), "=", $sql.value(keyword)),
+                                ")"
+                        )
+                );
+            }
+//            $sql.setLimit(plainSelect, accountComponentVo.getStartNum(), accountComponentVo.getPageSize());
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
+    public String buildGetAppEnvListByAppSystemIdAndAppModuleIdSql(Long appSystemId, Long appModuleId) {
+        try {
+            PlainSelect plainSelect = null;
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
+            ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
+            List<String> selectItemFieldNameList = new ArrayList<>();
+//            selectItemFieldNameList.add("id");
+            List<String> filterItemFieldNameList = new ArrayList<>();
+            filterItemFieldNameList.add("id");
+            filterItemFieldNameList.add("app_system_id");
+            filterItemFieldNameList.add("app_module_id");
+            filterItemFieldNameList.add("env_id");
+            filterItemFieldNameList.add("env_name");
+            filterItemFieldNameList.add("env_seq_no");
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            Map<String, Column> filterItemFieldName2ColumnMap = new HashMap<>();
+            if (Objects.equals(DatasourceManager.getDatabaseId(), DatabaseVendor.TIDB.getDatabaseId())) {
+                ResourceViewGenerateSqlUtilForTiDB resourceViewGenerateSqlUtilForTiDB = new ResourceViewGenerateSqlUtilForTiDB(config);
+                plainSelect = resourceViewGenerateSqlUtilForTiDB.getSql();
+                filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtilForTiDB.getFilterItemFieldName2ColumnMap();
+            } else {
+                ResourceViewGenerateSqlUtil resourceViewGenerateSqlUtil = new ResourceViewGenerateSqlUtil(config);
+                plainSelect = resourceViewGenerateSqlUtil.getSql();
+                filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtil.getFilterItemFieldName2ColumnMap();
+            }
+            $sql.setDistinct(plainSelect, true);
+            $sql.addSelectColumn(plainSelect, filterItemFieldName2ColumnMap.get("env_id").toString(), "id");
+            $sql.addSelectColumn(plainSelect, filterItemFieldName2ColumnMap.get("env_name").toString(), "name");
+            $sql.addSelectColumn(plainSelect, filterItemFieldName2ColumnMap.get("env_seq_no").toString(), "seqNo");
+            Column appSystemIdColumn = filterItemFieldName2ColumnMap.get("app_system_id");
+            $sql.addWhereExpression(plainSelect, $sql.exp(appSystemIdColumn.toString(), "=", appSystemId));
+            Column appModuleIdColumn = filterItemFieldName2ColumnMap.get("app_module_id");
+            $sql.addWhereExpression(plainSelect, $sql.exp(appModuleIdColumn.toString(), "=", appModuleId));
+            Column envIdColumn = filterItemFieldName2ColumnMap.get("env_id");
+            $sql.addWhereExpression(plainSelect, $sql.exp(envIdColumn.toString(), "is not null"));
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
     private ResourceEntityConfigVo getResourceEntityConfigVo(ResourceEntityVo resourceEntityVo) {
         String viewName = resourceEntityVo.getName();
         ResourceEntityConfigVo originalConfig = resourceEntityVo.getConfig();

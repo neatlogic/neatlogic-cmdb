@@ -17,6 +17,7 @@ package neatlogic.module.cmdb.service.resourcecenter.resource;
 
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.crossover.IResourceCenterResourceCrossoverService;
+import neatlogic.framework.cmdb.dto.resourcecenter.AccountComponentVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.AccountVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
@@ -181,13 +182,13 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
     String buildGetResourceIdByResourceIdSql(Long id);
     String buildCheckResourceIdListIsExistsSql(List<Long> idList);
 //    String buildGetResourceListByResourceVoListSql();
-//    String buildGetResourceIdListByAppSystemIdAndModuleIdAndEnvIdSql();
-//    String buildGetResourceListByTypeIdListAndIpListSql();
-//    String buildGetResourceByIpAndPortAndNameAndTypeNameSql();
-//    String buildGetResourceByIpAndPortSql();
-//    String buildSearchAccountComponentSql();
-//    String buildSearchAccountComponentCountSql();
-//    String buildGetAppEnvListByAppSystemIdAndAppModuleIdSql();
+    String buildGetResourceIdListByAppSystemIdAndModuleIdAndEnvIdSql(ResourceVo resourceVo);
+    String buildGetResourceListByTypeIdListAndIpListSql(List<Long> typeIdList, List<String> ipList);
+    String buildGetResourceByIpAndPortAndNameAndTypeNameSql(String ip, Integer port, String name, String typeName);
+    String buildGetResourceByIpAndPortSql(String ip, Integer port);
+    String buildSearchAccountComponentSql(AccountComponentVo accountComponentVo);
+    String buildSearchAccountComponentCountSql(AccountComponentVo accountComponentVo);
+    String buildGetAppEnvListByAppSystemIdAndAppModuleIdSql(Long appSystemId, Long appModuleId);
 //    String buildGetAppEnvCountMapByAppSystemIdGroupByAppModuleIdSql();
 //    String buildGetResourceCountByDynamicConditionSql();
 //    String buildGetResourceIdListByDynamicConditionSql();

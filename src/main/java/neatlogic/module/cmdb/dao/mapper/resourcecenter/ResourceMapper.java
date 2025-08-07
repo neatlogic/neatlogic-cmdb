@@ -37,6 +37,8 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     int getResourceCountBySql(String sql);
 
+    int getCountBySql(String sql);
+
     int getAllResourceCount(ResourceSearchVo searchVo);
 
     int getResourceCountByDynamicCondition(@Param("searchVo") ResourceSearchVo searchVo, @Param("conditionSql") String conditionSql);
@@ -51,6 +53,8 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
     List<ResourceVo> getResourceListByIdList(List<Long> idList);
 
     ResourceVo getResourceBySql(String sql);
+
+    ResourceVo getResourceSimpleBySql(String sql);
 
     List<ResourceVo> getResourceListBySql(String sql);
 
@@ -101,7 +105,7 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
     List<ModuleVo> getAppModuleListByAppSystemIdList(ResourceSearchVo searchVo);
 
     List<ResourceVo> getAppModuleListByIdListSimple(@Param("idList") List<Long> idList, @Param("needOrder") boolean needOrder);
-
+    // 该SQL语句可以使用 getResourceListByIpAndPortAndName 代替
     List<ResourceVo> getResourceListByResourceVoList(@Param("resourceList") List<ResourceVo> resourceList,@Param("searchVo") ResourceSearchVo searchVo);
 
 //    Set<Long> getResourceTypeIdListByAppSystemIdAndModuleIdAndEnvIdAndInspectStatusList(ResourceSearchVo searchVo);
@@ -140,6 +144,8 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
     List<AppEnvironmentVo> getAllAppEnv();
 
     List<AccountComponentVo> searchAccountComponent(AccountComponentVo accountComponentVo);
+
+    List<AccountComponentVo> searchAccountComponentListBySql(String sql);
 
     Integer searchAccountComponentCount(AccountComponentVo accountComponentVo);
 
@@ -186,6 +192,8 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
     List<AppEnvVo> getAppEnvListByViewNameAndAppSystemIdAndAppModuleIdAndInspectStatusList(@Param("viewName") String viewName, @Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("inspectStatusList") List<String> inspectStatusList);
 
     List<AppEnvVo> getAppEnvListByAppSystemIdAndAppModuleId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId);
+
+    List<AppEnvVo> getAppEnvListBySql(String sql);
 
     List<Map<String, Long>> getAppEnvCountMapByAppSystemIdGroupByAppModuleId(Long appSystemId);
 
