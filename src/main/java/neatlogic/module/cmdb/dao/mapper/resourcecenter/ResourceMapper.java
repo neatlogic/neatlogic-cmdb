@@ -197,6 +197,8 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     List<Map<String, Long>> getAppEnvCountMapByAppSystemIdGroupByAppModuleId(Long appSystemId);
 
+    List<Map<String, Object>> getMapListBySql(String sql);
+
     List<SoftwareServiceOSVo> getOsResourceListByResourceIdList(List<Long> resourceIdList);
 
     List<Long> getResourceTypeIdListByAuth(ResourceSearchVo searchVo);

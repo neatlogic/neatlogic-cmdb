@@ -1700,6 +1700,53 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         return null;
     }
 
+    @Override
+    public String buildGetAppEnvCountMapByAppSystemIdGroupByAppModuleIdSql(Long appSystemId) {
+        try {
+            PlainSelect plainSelect = null;
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
+            ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
+            List<String> selectItemFieldNameList = new ArrayList<>();
+//            selectItemFieldNameList.add("id");
+            List<String> filterItemFieldNameList = new ArrayList<>();
+            filterItemFieldNameList.add("id");
+            filterItemFieldNameList.add("app_system_id");
+            filterItemFieldNameList.add("app_module_id");
+            filterItemFieldNameList.add("env_id");
+//            filterItemFieldNameList.add("env_name");
+//            filterItemFieldNameList.add("env_seq_no");
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            Map<String, Column> filterItemFieldName2ColumnMap = new HashMap<>();
+            if (Objects.equals(DatasourceManager.getDatabaseId(), DatabaseVendor.TIDB.getDatabaseId())) {
+                ResourceViewGenerateSqlUtilForTiDB resourceViewGenerateSqlUtilForTiDB = new ResourceViewGenerateSqlUtilForTiDB(config);
+                plainSelect = resourceViewGenerateSqlUtilForTiDB.getSql();
+                filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtilForTiDB.getFilterItemFieldName2ColumnMap();
+            } else {
+                ResourceViewGenerateSqlUtil resourceViewGenerateSqlUtil = new ResourceViewGenerateSqlUtil(config);
+                plainSelect = resourceViewGenerateSqlUtil.getSql();
+                filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtil.getFilterItemFieldName2ColumnMap();
+            }
+//            $sql.setDistinct(plainSelect, true);
+            $sql.addSelectColumn(plainSelect, filterItemFieldName2ColumnMap.get("app_module_id").toString(), "appModuleId");
+            $sql.addSelectColumn(plainSelect, $sql.fun("count", filterItemFieldName2ColumnMap.get("env_id").toString()).withDistinct(true), "count");
+//            $sql.addSelectColumn(plainSelect, filterItemFieldName2ColumnMap.get("env_name").toString(), "name");
+//            $sql.addSelectColumn(plainSelect, filterItemFieldName2ColumnMap.get("env_seq_no").toString(), "seqNo");
+            Column appSystemIdColumn = filterItemFieldName2ColumnMap.get("app_system_id");
+            $sql.addWhereExpression(plainSelect, $sql.exp(appSystemIdColumn.toString(), "=", appSystemId));
+//            Column appModuleIdColumn = filterItemFieldName2ColumnMap.get("app_module_id");
+//            $sql.addWhereExpression(plainSelect, $sql.exp(appModuleIdColumn.toString(), "=", appModuleId));
+            Column envIdColumn = filterItemFieldName2ColumnMap.get("env_id");
+            $sql.addWhereExpression(plainSelect, $sql.exp(envIdColumn.toString(), "is not null"));
+            Column appModuleIdColumn = filterItemFieldName2ColumnMap.get("app_module_id");
+            $sql.addGroupBy(plainSelect, appModuleIdColumn.toString());
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
     private ResourceEntityConfigVo getResourceEntityConfigVo(ResourceEntityVo resourceEntityVo) {
         String viewName = resourceEntityVo.getName();
         ResourceEntityConfigVo originalConfig = resourceEntityVo.getConfig();

@@ -1837,6 +1837,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         GROUP BY a.`app_module_id`
     </select>
 
+    <select id="getMapListBySql" parameterType="java.lang.String" resultType="java.util.HashMap">
+        ${sql}
+    </select>
+
     <sql id="resource_ipobject_custom_where">
         <if test="searchVo.typeIdList != null and searchVo.typeIdList.size() > 0">
             <if test="searchVo.isHasAuth == true">
