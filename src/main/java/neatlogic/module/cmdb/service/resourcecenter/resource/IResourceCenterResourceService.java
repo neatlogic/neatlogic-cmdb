@@ -193,24 +193,4 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
 //    String buildGetResourceCountByDynamicConditionSql();
 //    String buildGetResourceIdListByDynamicConditionSql();
 
-    // InspectMapper
-//    String buildgetInspectResourceListByIdListSql();
-//    String buildgetInspectResourceCountSql();
-//    String buildgetInspectResourceCountByIpKeywordSql();
-//    String buildgetInspectResourceCountByNameKeywordSql();
-//    String buildgetInspectResourceIdListSql();
-//    String buildgetInspectAutoexecJobNodeResourceCountSql();
-//    String buildgetInspectAutoexecJobNodeResourceCountByIpKeywordSql();
-//    String buildgetInspectAutoexecJobNodeResourceCountByNameKeywordSql();
-//    String buildgetInspectAutoexecJobNodeResourceIdListSql();
-//    String buildgetInspectResourceListByIdListAndJobIdSql();
-    // InspectConfigFileMapper
-//    String buildgetInspectResourceCountSql();
-//    String buildgetInspectResourceIdListSql();
-//    String buildgetInspectResourceListByIdListSql();
-//    String buildgetInspectConfigFilePathCountSql();
-//    String buildgetInspectConfigFilePathIdListSql();
-//    String buildgetInspectConfigFilePathListSql();
-//    String buildgetInspectConfigFilePathListByJobIdSql();
-
 }
