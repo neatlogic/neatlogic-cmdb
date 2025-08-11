@@ -2095,6 +2095,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         }
         return null;
     }
+
     @Override
     public String buildGetInspectAutoexecJobNodeResourceCountSql(ResourceSearchVo searchVo, Long jobId) {
         try {
@@ -2282,6 +2283,64 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             } else if (Objects.equals(queryCriteriaVo.getIsIpFieldSort(), 1)) {
                 $sql.addOrderBy(plainSelect, $sql.fun("length", filterItemFieldName2ColumnMap.get("ip").toString()));
             }
+            $sql.addOrderBy(plainSelect, filterItemFieldName2ColumnMap.get("id").toString());
+            $sql.setLimit(plainSelect, searchVo.getStartNum(), searchVo.getPageSize());
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
+    public String buildGetInspectConfigFileResourceIdListSql(ResourceSearchVo searchVo) {
+        try {
+            PlainSelect plainSelect = null;
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
+            ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
+            ResourceQueryCriteriaVo queryCriteriaVo = new ResourceQueryCriteriaVo(searchVo);
+            List<String> selectItemFieldNameList = new ArrayList<>();
+            List<String> filterItemFieldNameList = getFilterItemFieldNameList(queryCriteriaVo);
+            filterItemFieldNameList.add("id");
+            if (CollectionUtils.isNotEmpty(queryCriteriaVo.getBatchSearchList()) && StringUtils.isNotBlank(queryCriteriaVo.getSearchField())) {
+                filterItemFieldNameList.add(queryCriteriaVo.getSearchField());
+            }
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            Map<String, Column> filterItemFieldName2ColumnMap = new HashMap<>();
+            if (Objects.equals(DatasourceManager.getDatabaseId(), DatabaseVendor.TIDB.getDatabaseId())) {
+                ResourceViewGenerateSqlUtilForTiDB resourceViewGenerateSqlUtilForTiDB = new ResourceViewGenerateSqlUtilForTiDB(config);
+                plainSelect = resourceViewGenerateSqlUtilForTiDB.getSql();
+                filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtilForTiDB.getFilterItemFieldName2ColumnMap();
+            } else {
+                ResourceViewGenerateSqlUtil resourceViewGenerateSqlUtil = new ResourceViewGenerateSqlUtil(config);
+                plainSelect = resourceViewGenerateSqlUtil.getSql();
+                filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtil.getFilterItemFieldName2ColumnMap();
+            }
+            /*
+            <if test="keyword != null and keyword != ''">
+                    AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%'))
+                </if>
+             */
+            if (StringUtils.isNotBlank(queryCriteriaVo.getKeyword())) {
+                String keyword = "'%" + queryCriteriaVo.getKeyword() + "%'";
+                $sql.addWhereExpression(plainSelect, $sql.exp("(",
+                        $sql.exp(filterItemFieldName2ColumnMap.get("name").toString(), "like", keyword),
+                        "or", $sql.exp(filterItemFieldName2ColumnMap.get("ip").toString(), "like", keyword),
+                        ")")
+                );
+            }
+            SqlVo sqlVo = getSqlVo2(queryCriteriaVo, filterItemFieldName2ColumnMap);
+            $sql.addSql(plainSelect, sqlVo);
+            $sql.addJoin(plainSelect, $sql.join("left join", "inspect_config_file_last_change_time", "g").withOn($sql.exp("g.`resource_id`", "=", filterItemFieldName2ColumnMap.get("id").toString())));
+            $sql.addSelectColumn(plainSelect, filterItemFieldName2ColumnMap.get("id").toString());
+            $sql.addGroupBy(plainSelect, filterItemFieldName2ColumnMap.get("id").toString());
+//            if (Objects.equals(queryCriteriaVo.getIsNameFieldSort(), 1)) {
+//                $sql.addOrderBy(plainSelect, $sql.fun("length", filterItemFieldName2ColumnMap.get("name").toString()));
+//            } else if (Objects.equals(queryCriteriaVo.getIsIpFieldSort(), 1)) {
+//                $sql.addOrderBy(plainSelect, $sql.fun("length", filterItemFieldName2ColumnMap.get("ip").toString()));
+//            }
+            $sql.addOrderBy(plainSelect, $sql.fun("max","g.`last_change_time`"), "desc");
             $sql.addOrderBy(plainSelect, filterItemFieldName2ColumnMap.get("id").toString());
             $sql.setLimit(plainSelect, searchVo.getStartNum(), searchVo.getPageSize());
             return plainSelect.toString();
