@@ -31,12 +31,12 @@ import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.RelEntityMapper;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
 
-@Service
+//@Service
+@Deprecated
 @AuthAction(action = CI_MODIFY.class)
 @OperationType(type = OperationTypeEnum.OPERATE)
 public class ResetRelEntityIndexApi extends PrivateApiComponentBase {

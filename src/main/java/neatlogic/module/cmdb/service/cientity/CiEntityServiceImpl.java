@@ -314,30 +314,20 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
 
 
     @Override
-    public List<CiEntityVo> getCiEntityByIdList(CiEntityVo ciEntityVo) {
-        if (CollectionUtils.isNotEmpty(ciEntityVo.getIdList())) {
-            List<CiVo> belongCiList = new ArrayList<>();
+    public List<CiEntityVo> getCiEntityByIdList(List<Long> ciEntityIdList) {
+        if (CollectionUtils.isNotEmpty(ciEntityIdList)) {
+            List<CiVo> belongCiList = ciMapper.getCiBaseInfoByCiEntityIdList(ciEntityIdList);
             List<CiEntityVo> ciEntityList = new ArrayList<>();
-            if (ciEntityVo.getCiId() != null) {
-                CiVo ciVo = ciMapper.getCiById(ciEntityVo.getCiId());
-                if (ciVo == null) {
-                    throw new CiNotFoundException(ciEntityVo.getCiId());
-                }
-                belongCiList.add(ciVo);
-            } else {
-                belongCiList = ciMapper.getCiBaseInfoByCiEntityIdList(ciEntityVo.getIdList());
-            }
             for (CiVo ciVo : belongCiList) {
                 List<CiVo> ciList = ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht());
                 List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
                 List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciVo.getId()));
+                CiEntityVo ciEntityVo = new CiEntityVo();
                 ciEntityVo.setCiList(ciList);
                 ciEntityVo.setAttrList(attrList);
                 ciEntityVo.setRelList(relList);
-                if (CollectionUtils.isNotEmpty(ciEntityVo.getIdList())) {
-                    List<HashMap<String, Object>> resultList = ciEntityMapper.searchCiEntity(ciEntityVo);
-                    ciEntityList.addAll(new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, attrList, relList).build().getCiEntityList());
-                }
+                ciEntityVo.setIdList(ciEntityIdList);
+                ciEntityList.addAll(getCiEntityByIdList(ciEntityVo));
             }
             return ciEntityList;
         }
@@ -444,9 +434,8 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             ciEntityVo.setLimitRelEntity(isLimitRelEntity != null ? isLimitRelEntity : true);
             ciEntityVo.setLimitAttrEntity(isLimitAttrEntity != null ? isLimitAttrEntity : true);
             //如果限制了关系和引用属性个数，可以直接用search方式搜索，否则需要单个返回配置项，避免多个关系和属性笛卡尔积导致OOM
-            if (ciEntityVo.isLimitRelEntity() && ciEntityVo.isLimitRelEntity()) {
+            /*if (ciEntityVo.isLimitRelEntity() && ciEntityVo.isLimitAttrEntity()) {
                 List<HashMap<String, Object>> resultList = ciEntityMapper.searchCiEntity(ciEntityVo);
-
                 if (logger.isInfoEnabled()) {
                     logger.info("根据id查询配置项，行数{}，耗时{}ms", resultList.size(), System.currentTimeMillis() - time);
                 }
@@ -467,29 +456,51 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     logger.info("查询配置项总耗时，数据量{}，耗时{}ms", ciEntityList.size(), System.currentTimeMillis() - time);
                 }
                 return ciEntityList;
-            } else {
-                BatchRunner<Long> runner = new BatchRunner<>();
-                //List<CiEntityVo> ciEntityList = new ArrayList<>();
-                Queue<CiEntityVo> ciEntityQueue = new ConcurrentLinkedQueue<>();
-                if (logger.isInfoEnabled()) {
-                    time = System.currentTimeMillis();
-                }
-                runner.execute(ciEntityVo.getIdList(), 10, (threadIndex, dataIndex, item) -> {
-                    long startTime = System.currentTimeMillis();
-                    ciEntityQueue.add(getCiEntityByIdLite(ciEntityVo.getCiId(), item, false, ciEntityVo.isLimitRelEntity(), ciEntityVo.isLimitAttrEntity(), ciEntityVo.getGlobalAttrIdList(), ciEntityVo.getAttrIdList(), ciEntityVo.getRelIdList(), null, null));
-                    if (logger.isInfoEnabled()) {
-                        logger.info("查询单个配置项，耗时{}ms", System.currentTimeMillis() - startTime);
-                    }
-                }, "GET-CIENTITY-FOR-SEARCH");
-                ciEntityVo.setIdList(null);//清除id列表，避免ciEntityVo重用时数据没法更新
-                if (logger.isInfoEnabled()) {
-                    logger.info("查询配置项总耗时，数据量{}，耗时{}ms", ciEntityQueue.size(), System.currentTimeMillis() - time);
-                }
-                return new ArrayList<>(ciEntityQueue);
+            } else {*/
+            //统一改成使用并发方式查询配置项列表，避免笛卡尔积过大，还可以去掉from_index和to_index的计算
+            return getCiEntityByIdList(ciEntityVo);
+            /*BatchRunner<Long> runner = new BatchRunner<>();
+            Queue<CiEntityVo> ciEntityQueue = new ConcurrentLinkedQueue<>();
+            if (logger.isInfoEnabled()) {
+                time = System.currentTimeMillis();
             }
+            runner.execute(ciEntityVo.getIdList(), 10, (threadIndex, dataIndex, item) -> {
+                long startTime = System.currentTimeMillis();
+                ciEntityQueue.add(getCiEntityByIdLite(ciEntityVo.getCiId(), item, false, ciEntityVo.isLimitRelEntity(), ciEntityVo.isLimitAttrEntity(), ciEntityVo.getGlobalAttrIdList(), ciEntityVo.getAttrIdList(), ciEntityVo.getRelIdList(), null, null));
+                if (logger.isInfoEnabled()) {
+                    logger.info("查询单个配置项，耗时{}ms", System.currentTimeMillis() - startTime);
+                }
+            }, "GET-CIENTITY-FOR-SEARCH");
+            ciEntityVo.setIdList(null);//清除id列表，避免ciEntityVo重用时数据没法更新
+            if (logger.isInfoEnabled()) {
+                logger.info("查询配置项总耗时，数据量{}，耗时{}ms", ciEntityQueue.size(), System.currentTimeMillis() - time);
+            }
+            return new ArrayList<>(ciEntityQueue);*/
+            //}
 
         }
         return new ArrayList<>();
+    }
+
+    private List<CiEntityVo> getCiEntityByIdList(CiEntityVo ciEntityVo) {
+        long time = 0L;
+        BatchRunner<Long> runner = new BatchRunner<>();
+        Queue<CiEntityVo> ciEntityQueue = new ConcurrentLinkedQueue<>();
+        if (logger.isInfoEnabled()) {
+            time = System.currentTimeMillis();
+        }
+        runner.execute(ciEntityVo.getIdList(), 10, (threadIndex, dataIndex, item) -> {
+            long startTime = System.currentTimeMillis();
+            ciEntityQueue.add(getCiEntityByIdLite(ciEntityVo.getCiId(), item, false, ciEntityVo.isLimitRelEntity(), ciEntityVo.isLimitAttrEntity(), ciEntityVo.getGlobalAttrIdList(), ciEntityVo.getAttrIdList(), ciEntityVo.getRelIdList(), null, null));
+            if (logger.isInfoEnabled()) {
+                logger.info("查询单个配置项，耗时{}ms", System.currentTimeMillis() - startTime);
+            }
+        }, "GET-CIENTITY-FOR-SEARCH");
+        ciEntityVo.setIdList(null);//清除id列表，避免ciEntityVo重用时数据没法更新
+        if (logger.isInfoEnabled()) {
+            logger.info("查询配置项总耗时，数据量{}，耗时{}ms", ciEntityQueue.size(), System.currentTimeMillis() - time);
+        }
+        return new ArrayList<>(ciEntityQueue);
     }
 
     @Override
@@ -2033,8 +2044,8 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         }
                     }
                 }
-                //重建关系序列
-                rebuildRelEntityIndex(relEntityList);
+                //重建关系序列(由于不需要直接join查询，无需重建索引)
+                //rebuildRelEntityIndex(relEntityList);
             }
             CiEntityVo deleteCiEntityVo = new CiEntityVo(ciEntityTransactionVo);
             //删除之前找到所有关联配置项，可能需要更新他们的表达式属性
@@ -2107,8 +2118,8 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 }
             }
 
-            //重建属性序列
-            rebuildAttrEntityIndex(rebuildAttrEntityList);
+            //重建属性序列(由于不需要直接join查询，无需重建索引)
+            //rebuildAttrEntityIndex(rebuildAttrEntityList);
 
             String topicName = "";
             /*
@@ -2210,8 +2221,8 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         topic.send(ciEntityTransactionMap.get(ciEntityId));
                     }
                 }
-                //重建关系序列
-                rebuildRelEntityIndex(rebuildRelEntityList);
+                //重建关系序列(由于不需要直接join查询，无需重建索引)
+                //rebuildRelEntityIndex(rebuildRelEntityList);
             }
 
             //定义锁，控制计算属性和全文索引的执行顺序
@@ -2282,7 +2293,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
     }
 
     /**
-     * 重建序列号优化搜索，至少创建50条数据索引，留下足够扩展控件。
+     * 重建序列号优化搜索，至少创建50条数据索引，留下足够扩展空间。
      */
     @Override
     public void rebuildRelEntityIndex(RelDirectionType direction, Long relId, Long ciEntityId) {
@@ -2310,6 +2321,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         }
     }
 
+
     private void rebuildAttrEntityIndex(List<AttrEntityVo> pAttrEntityList) {
         //在事务处理完毕后再处理所有索引重建，避免属性对象也是新添加配置项的场景中，由于数据写入的顺序问题导致找不到数据而无法重建索引的问题
         AfterTransactionJob<List<AttrEntityVo>> job = new AfterTransactionJob<>("REBUILD-ATTRENTITY-INDEX");
@@ -2321,6 +2333,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             }
         });
     }
+
 
     private void rebuildRelEntityIndex(List<RelEntityVo> pRelEntityList) {
         //在事务处理完毕后再处理所有关系索引重建，避免关系对象也是新添加的场景由于数据写入的顺序问题导致找不到数据而无法重建索引

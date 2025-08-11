@@ -202,7 +202,7 @@ public interface CiEntityMapper extends ICiEntityCrossoverMapper {
 
     List<CiEntityVo> getCiEntityNameByIdList(@Param("idList") List<Long> idList);
 
-    List<HashMap<String, Object>> searchCiEntity(CiEntityVo ciEntityVo);
+    //List<HashMap<String, Object>> searchCiEntity(CiEntityVo ciEntityVo);
 
     List<Long> searchCiEntityId(CiEntityVo ciEntityVo);
 
@@ -214,13 +214,6 @@ public interface CiEntityMapper extends ICiEntityCrossoverMapper {
      */
     List<HashMap<String, Object>> getCiEntityByIdLite(CiEntityVo ciEntityVo);
 
-    /**
-     * 查询单个配置项正常版，会join所有关系表和引用属性表，返回的数据量可能会很大
-     *
-     * @param ciEntityVo 配置项对象
-     * @return 数据集
-     */
-    //List<HashMap<String, Object>> getCiEntityById(CiEntityVo ciEntityVo);
 
     List<Long> getCiEntityIdByCiId(CiEntityVo ciEntityVo);
 

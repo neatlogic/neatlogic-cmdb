@@ -30,12 +30,12 @@ import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.AttrEntityMapper;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
 
-@Service
+//@Service
+@Deprecated
 @AuthAction(action = CI_MODIFY.class)
 @OperationType(type = OperationTypeEnum.OPERATE)
 public class ResetAttrEntityIndexApi extends PrivateApiComponentBase {

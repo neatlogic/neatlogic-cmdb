@@ -20,7 +20,6 @@ import neatlogic.framework.asynchronization.threadpool.CachedThreadPool;
 import neatlogic.framework.cmdb.dto.ci.RelativeRelItemVo;
 import neatlogic.framework.cmdb.dto.ci.RelativeRelVo;
 import neatlogic.framework.cmdb.dto.cientity.RelEntityVo;
-import neatlogic.framework.cmdb.enums.RelDirectionType;
 import neatlogic.framework.transaction.core.AfterTransactionJob;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.RelEntityMapper;
@@ -32,10 +31,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * 更新级联关系
@@ -66,13 +63,17 @@ public class RelativeRelManager {
         if (sourceRelEntityVo != null) {
             AfterTransactionJob<RelEntityVo> job = new AfterTransactionJob<>("RELATIVE-RELENTITY-DELETER");
             job.execute(sourceRelEntityVo, relEntityVo -> {
-                List<RelEntityVo> relativeRelList = relEntityMapper.getRelentityBySourceRelEntityId(relEntityVo.getId());
+                //由于不需要直接join查询，无需重建索引
+                //List<RelEntityVo> relativeRelList = relEntityMapper.getRelentityBySourceRelEntityId(relEntityVo.getId());
                 relEntityMapper.deleteRelEntityBySourceRelEntityId(relEntityVo.getId());
-                rebuildRelEntityIndex(relativeRelList);
+                //由于不需要直接join查询，无需重建索引
+                //rebuildRelEntityIndex(relativeRelList);
             });
         }
     }
 
+    /*
+    由于不需要直接join查询，无需重建索引
     private static void rebuildRelEntityIndex(List<RelEntityVo> relEntityList) {
         if (CollectionUtils.isNotEmpty(relEntityList)) {
             Set<String> fromSet = relEntityList.stream().map(rel -> rel.getRelId() + "_" + rel.getFromCiEntityId()).collect(Collectors.toSet());
@@ -89,6 +90,7 @@ public class RelativeRelManager {
             }
         }
     }
+     */
 
     private static final Pattern p = Pattern.compile("(([<|>])([^<>]+))");
 
@@ -169,9 +171,10 @@ public class RelativeRelManager {
                     }
                 }
             }
-            if (CollectionUtils.isNotEmpty(newRelEntityList)) {
+            //由于不需要直接join查询，无需重建索引
+            /*if (CollectionUtils.isNotEmpty(newRelEntityList)) {
                 rebuildRelEntityIndex(newRelEntityList);
-            }
+            }*/
         }
 
     }
