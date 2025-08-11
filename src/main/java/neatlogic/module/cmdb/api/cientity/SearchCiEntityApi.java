@@ -103,6 +103,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
             @Param(name = "ciName", type = ApiParamType.STRING, desc = "term.cmdb.ciuniquename"),
             @Param(name = "name", type = ApiParamType.STRING, desc = "名称，用于匹配配置项名称"),
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "common.keyword"),
+            @Param(name = "keywordAsName", type = ApiParamType.BOOLEAN, desc = "关键字同时匹配配置项名称"),
             @Param(name = "dsl", type = ApiParamType.STRING, desc = "nmcac.searchcientitybydslapi.input.param.desc.dsl"),
             @Param(name = "groupId", type = ApiParamType.LONG, desc = "nmcac.searchcientityapi.input.param.desc.groupid"),
             @Param(name = "attrFilterList", type = ApiParamType.JSONARRAY, desc = "nmcac.exportcientityapi.input.param.desc.attrfilterlist"),

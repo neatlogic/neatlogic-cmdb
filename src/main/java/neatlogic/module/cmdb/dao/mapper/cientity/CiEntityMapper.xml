@@ -1025,9 +1025,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                     OR `ci_base`.id = #{keywordId}
                 </if>
                 <!-- 真实模型去掉可以提升检索性能，但虚拟模型没有分词索引所以需要打开 -->
-                <if test="isVirtual == 1">
-                    OR `ci_base`.`name` LIKE CONCAT('%' ,#{keyword}, '%')
-                </if>
+                <choose>
+                    <when test="isVirtual == 1 ">
+                        OR `ci_base`.`name` LIKE CONCAT('%' ,#{keyword}, '%')
+                    </when>
+                    <when test="keywordAsName == true">
+                        OR `ci_base`.`name` LIKE CONCAT(#{keyword}, '%')
+                    </when>
+                </choose>
                 )
             </if>
             <if test="name != null and name != ''">

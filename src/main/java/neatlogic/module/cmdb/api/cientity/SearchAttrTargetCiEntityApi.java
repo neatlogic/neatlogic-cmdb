@@ -114,6 +114,7 @@ public class SearchAttrTargetCiEntityApi extends PrivateApiComponentBase {
         if (StringUtils.isNotBlank(keyword)) {
             //ciEntityVo.setName(keyword);
             ciEntityVo.setKeyword(keyword);
+            ciEntityVo.setKeywordAsName(true);
         }
         //不需要多余的属性和关系
         ciEntityVo.setAttrIdList(new ArrayList<Long>() {{
