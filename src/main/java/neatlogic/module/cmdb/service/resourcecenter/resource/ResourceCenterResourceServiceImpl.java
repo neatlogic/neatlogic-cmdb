@@ -2350,6 +2350,237 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         return null;
     }
 
+    @Override
+    public String buildGetInspectConfigFilePathCountSql(ResourceSearchVo searchVo) {
+        try {
+            PlainSelect plainSelect = null;
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
+            ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
+            List<String> selectItemFieldNameList = new ArrayList<>();
+            List<String> filterItemFieldNameList = new ArrayList<>();
+            filterItemFieldNameList.add("id");
+            filterItemFieldNameList.add("name");
+            filterItemFieldNameList.add("ip");
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            Map<String, Column> filterItemFieldName2ColumnMap = new HashMap<>();
+            if (Objects.equals(DatasourceManager.getDatabaseId(), DatabaseVendor.TIDB.getDatabaseId())) {
+                ResourceViewGenerateSqlUtilForTiDB resourceViewGenerateSqlUtilForTiDB = new ResourceViewGenerateSqlUtilForTiDB(config);
+                plainSelect = resourceViewGenerateSqlUtilForTiDB.getSql();
+                filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtilForTiDB.getFilterItemFieldName2ColumnMap();
+            } else {
+                ResourceViewGenerateSqlUtil resourceViewGenerateSqlUtil = new ResourceViewGenerateSqlUtil(config);
+                plainSelect = resourceViewGenerateSqlUtil.getSql();
+                filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtil.getFilterItemFieldName2ColumnMap();
+            }
+            $sql.addJoin(plainSelect, $sql.join("join", "inspect_config_file_path", "b").withOn($sql.exp("b.resource_id", "=", filterItemFieldName2ColumnMap.get("id").toString())));
+            /*
+            <if test="keyword != null and keyword != ''">
+                AND (a.`path` LIKE CONCAT('%', #{keyword}, '%')
+                OR b.`name` LIKE CONCAT('%', #{keyword}, '%')
+                OR b.`ip` LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+             */
+            if (StringUtils.isNotBlank(searchVo.getKeyword())) {
+                String keyword = "'%" + searchVo.getKeyword() + "%'";
+                ExpressionVo orExp = $sql.exp(
+                        $sql.exp(filterItemFieldName2ColumnMap.get("name").toString(), "like", keyword),
+                        "or", $sql.exp(filterItemFieldName2ColumnMap.get("ip").toString(), "like", keyword)
+                );
+                orExp = $sql.exp(orExp, "or", $sql.exp("b.path", "like", keyword));
+                $sql.addWhereExpression(plainSelect, $sql.exp("(", orExp, ")")
+                );
+            }
+            /*
+            <if test="timeRange != null">
+                <if test="timeRange.size() > 0">
+                    AND a.`inspect_time` &gt;= STR_TO_DATE(#{timeRange[0]}, '%Y-%m-%d %H:%i:%s')
+                </if>
+                <if test="timeRange.size() > 1">
+                    AND a.`inspect_time` &lt;= STR_TO_DATE(#{timeRange[1]}, '%Y-%m-%d %H:%i:%s')
+                </if>
+            </if>
+             */
+            List<String> timeRange = searchVo.getTimeRange();
+            if (CollectionUtils.isNotEmpty(timeRange)) {
+                $sql.addWhereExpression(plainSelect, $sql.exp("b.inspect_time", ">=", $sql.fun("STR_TO_DATE", $sql.value(timeRange.get(0)), "'%Y-%m-%d %H:%i:%s'")));
+                if (timeRange.size() > 1) {
+                    $sql.addWhereExpression(plainSelect, $sql.exp("b.inspect_time", "<=", $sql.fun("STR_TO_DATE", $sql.value(timeRange.get(1)), "'%Y-%m-%d %H:%i:%s'")));
+                }
+            }
+            $sql.addSelectColumn(plainSelect, $sql.fun("count", "b.id").withDistinct(true));
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
+    public String buildGetInspectConfigFilePathIdListSql(ResourceSearchVo searchVo) {
+        try {
+            PlainSelect plainSelect = null;
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
+            ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
+            List<String> selectItemFieldNameList = new ArrayList<>();
+            List<String> filterItemFieldNameList = new ArrayList<>();
+            filterItemFieldNameList.add("id");
+            filterItemFieldNameList.add("name");
+            filterItemFieldNameList.add("ip");
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            Map<String, Column> filterItemFieldName2ColumnMap = new HashMap<>();
+            if (Objects.equals(DatasourceManager.getDatabaseId(), DatabaseVendor.TIDB.getDatabaseId())) {
+                ResourceViewGenerateSqlUtilForTiDB resourceViewGenerateSqlUtilForTiDB = new ResourceViewGenerateSqlUtilForTiDB(config);
+                plainSelect = resourceViewGenerateSqlUtilForTiDB.getSql();
+                filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtilForTiDB.getFilterItemFieldName2ColumnMap();
+            } else {
+                ResourceViewGenerateSqlUtil resourceViewGenerateSqlUtil = new ResourceViewGenerateSqlUtil(config);
+                plainSelect = resourceViewGenerateSqlUtil.getSql();
+                filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtil.getFilterItemFieldName2ColumnMap();
+            }
+            $sql.addJoin(plainSelect, $sql.join("join", "inspect_config_file_path", "b").withOn($sql.exp("b.resource_id", "=", filterItemFieldName2ColumnMap.get("id").toString())));
+            /*
+            <if test="keyword != null and keyword != ''">
+                AND (a.`path` LIKE CONCAT('%', #{keyword}, '%')
+                OR b.`name` LIKE CONCAT('%', #{keyword}, '%')
+                OR b.`ip` LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+             */
+            if (StringUtils.isNotBlank(searchVo.getKeyword())) {
+                String keyword = "'%" + searchVo.getKeyword() + "%'";
+                ExpressionVo orExp = $sql.exp(
+                        $sql.exp(filterItemFieldName2ColumnMap.get("name").toString(), "like", keyword),
+                        "or", $sql.exp(filterItemFieldName2ColumnMap.get("ip").toString(), "like", keyword)
+                );
+                orExp = $sql.exp(orExp, "or", $sql.exp("b.path", "like", keyword));
+                $sql.addWhereExpression(plainSelect, $sql.exp("(", orExp, ")")
+                );
+            }
+            /*
+            <if test="timeRange != null">
+                <if test="timeRange.size() > 0">
+                    AND a.`inspect_time` &gt;= STR_TO_DATE(#{timeRange[0]}, '%Y-%m-%d %H:%i:%s')
+                </if>
+                <if test="timeRange.size() > 1">
+                    AND a.`inspect_time` &lt;= STR_TO_DATE(#{timeRange[1]}, '%Y-%m-%d %H:%i:%s')
+                </if>
+            </if>
+             */
+            List<String> timeRange = searchVo.getTimeRange();
+            if (CollectionUtils.isNotEmpty(timeRange)) {
+                $sql.addWhereExpression(plainSelect, $sql.exp("b.inspect_time", ">=", $sql.fun("STR_TO_DATE", $sql.value(timeRange.get(0)), "'%Y-%m-%d %H:%i:%s'")));
+                if (timeRange.size() > 1) {
+                    $sql.addWhereExpression(plainSelect, $sql.exp("b.inspect_time", "<=", $sql.fun("STR_TO_DATE", $sql.value(timeRange.get(1)), "'%Y-%m-%d %H:%i:%s'")));
+                }
+            }
+            $sql.addGroupBy(plainSelect, "b.id");
+            $sql.addOrderBy(plainSelect, $sql.fun("max", "b.inspect_time"), "desc");
+            $sql.addSelectColumn(plainSelect, "b.id");
+            $sql.setLimit(plainSelect, searchVo.getStartNum(), searchVo.getPageSize());
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
+    public String buildGetInspectConfigFilePathListSql(List<Long> idList) {
+        try {
+            PlainSelect plainSelect = null;
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
+            ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
+            List<String> selectItemFieldNameList = new ArrayList<>();
+            List<String> filterItemFieldNameList = new ArrayList<>();
+            filterItemFieldNameList.add("id");
+            filterItemFieldNameList.add("name");
+            filterItemFieldNameList.add("ip");
+            filterItemFieldNameList.add("port");
+            filterItemFieldNameList.add("type_label");
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            Map<String, Column> filterItemFieldName2ColumnMap = new HashMap<>();
+            if (Objects.equals(DatasourceManager.getDatabaseId(), DatabaseVendor.TIDB.getDatabaseId())) {
+                ResourceViewGenerateSqlUtilForTiDB resourceViewGenerateSqlUtilForTiDB = new ResourceViewGenerateSqlUtilForTiDB(config);
+                plainSelect = resourceViewGenerateSqlUtilForTiDB.getSql();
+                filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtilForTiDB.getFilterItemFieldName2ColumnMap();
+            } else {
+                ResourceViewGenerateSqlUtil resourceViewGenerateSqlUtil = new ResourceViewGenerateSqlUtil(config);
+                plainSelect = resourceViewGenerateSqlUtil.getSql();
+                filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtil.getFilterItemFieldName2ColumnMap();
+            }
+            $sql.setDistinct(plainSelect, true);
+            $sql.addSelectColumn(plainSelect, "b.id", "id");
+            $sql.addSelectColumn(plainSelect, "b.resource_id", "resourceId");
+            $sql.addSelectColumn(plainSelect, "b.path", "path");
+            $sql.addSelectColumn(plainSelect, "b.inspect_time", "inspectTime");
+            $sql.addSelectColumn(plainSelect, filterItemFieldName2ColumnMap.get("name").toString(), "resourceName");
+            $sql.addSelectColumn(plainSelect, filterItemFieldName2ColumnMap.get("ip").toString(), "resourceIP");
+            $sql.addSelectColumn(plainSelect, filterItemFieldName2ColumnMap.get("port").toString(), "resourcePort");
+            $sql.addSelectColumn(plainSelect, filterItemFieldName2ColumnMap.get("type_label").toString(), "resourceTypeLabel");
+            $sql.addJoin(plainSelect, $sql.join("join", "inspect_config_file_path", "b").withOn($sql.exp("b.resource_id", "=", filterItemFieldName2ColumnMap.get("id").toString())));
+            $sql.addWhereExpression(plainSelect, $sql.exp("b.id", "in", idList));
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
+    public String buildGetInspectConfigFilePathListByJobIdSql(Long jobId) {
+        try {
+            PlainSelect plainSelect = null;
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
+            ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
+            List<String> selectItemFieldNameList = new ArrayList<>();
+            List<String> filterItemFieldNameList = new ArrayList<>();
+            filterItemFieldNameList.add("id");
+            filterItemFieldNameList.add("name");
+            filterItemFieldNameList.add("ip");
+            filterItemFieldNameList.add("port");
+            filterItemFieldNameList.add("type_label");
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            Map<String, Column> filterItemFieldName2ColumnMap = new HashMap<>();
+            if (Objects.equals(DatasourceManager.getDatabaseId(), DatabaseVendor.TIDB.getDatabaseId())) {
+                ResourceViewGenerateSqlUtilForTiDB resourceViewGenerateSqlUtilForTiDB = new ResourceViewGenerateSqlUtilForTiDB(config);
+                plainSelect = resourceViewGenerateSqlUtilForTiDB.getSql();
+                filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtilForTiDB.getFilterItemFieldName2ColumnMap();
+            } else {
+                ResourceViewGenerateSqlUtil resourceViewGenerateSqlUtil = new ResourceViewGenerateSqlUtil(config);
+                plainSelect = resourceViewGenerateSqlUtil.getSql();
+                filterItemFieldName2ColumnMap = resourceViewGenerateSqlUtil.getFilterItemFieldName2ColumnMap();
+            }
+            $sql.setDistinct(plainSelect, true);
+            $sql.addSelectColumn(plainSelect, "b.id", "id");
+            $sql.addSelectColumn(plainSelect, "b.resource_id", "resourceId");
+            $sql.addSelectColumn(plainSelect, "b.path", "path");
+            $sql.addSelectColumn(plainSelect, "b.md5", "md5");
+            $sql.addSelectColumn(plainSelect, "b.inspect_time", "inspectTime");
+            $sql.addSelectColumn(plainSelect, "b.file_id", "fileId");
+            $sql.addSelectColumn(plainSelect, filterItemFieldName2ColumnMap.get("name").toString(), "resourceName");
+            $sql.addSelectColumn(plainSelect, filterItemFieldName2ColumnMap.get("ip").toString(), "resourceIP");
+            $sql.addSelectColumn(plainSelect, filterItemFieldName2ColumnMap.get("port").toString(), "resourcePort");
+            $sql.addSelectColumn(plainSelect, filterItemFieldName2ColumnMap.get("type_label").toString(), "resourceTypeLabel");
+            $sql.addSelectColumn(plainSelect, "c.id", "versionId");
+            $sql.addJoin(plainSelect, $sql.join("join", "inspect_config_file_path", "b").withOn($sql.exp("b.resource_id", "=", filterItemFieldName2ColumnMap.get("id").toString())));
+            $sql.addJoin(plainSelect, $sql.join("join", "inspect_config_file_version", "c").withOn($sql.exp(
+                    $sql.exp("c.`path_id`", "=", "b.`id`"),
+                    "and",
+                    $sql.exp("c.`file_id`", "=", "b.`file_id`")
+            )));
+            $sql.addWhereExpression(plainSelect, $sql.exp("c.job_id", "=", jobId));
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
     private ResourceEntityConfigVo getResourceEntityConfigVo(ResourceEntityVo resourceEntityVo) {
         String viewName = resourceEntityVo.getName();
         ResourceEntityConfigVo originalConfig = resourceEntityVo.getConfig();
