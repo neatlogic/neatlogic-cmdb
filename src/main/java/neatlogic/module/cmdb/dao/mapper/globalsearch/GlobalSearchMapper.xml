@@ -27,9 +27,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         join fulltextindex_target_cmdb b on cientity.id = b.target_id and b.target_type = 'cientity'
         join fulltextindex_field_cmdb c on b.target_id = c.target_id
         join fulltextindex_word d on c.word_id = d.id
-        where d.word in
-        <foreach collection="wordList" open="(" close=")" separator="," item="item">
-            #{item}
+        where
+        <foreach collection="wordList" open="(" close=")" separator=" or " item="item">
+            d.word like concat(#{item},'%')
         </foreach>
         group by ci.id
     </select>
