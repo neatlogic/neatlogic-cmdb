@@ -1035,9 +1035,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 </foreach>
             </if>
             <if test="keywordList != null and keywordList.size() > 0">
-                AND (fw.word IN
-                <foreach collection="keywordList" item="item" open="(" close=")" separator=",">
-                    #{item}
+                AND (
+                <foreach collection="keywordList" item="item" open="(" close=")" separator=" or ">
+                    fw.word like concat(#{item}, '%')
                 </foreach>
                 <if test="keywordId != null">
                     OR `ci_base`.id = #{keywordId}
