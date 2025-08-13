@@ -25,7 +25,7 @@ import neatlogic.framework.dao.mapper.SchemaMapper;
 import neatlogic.framework.rebuilddatabaseview.core.IRebuildDataBaseView;
 import neatlogic.framework.rebuilddatabaseview.core.ViewStatusInfo;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
-import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
+import neatlogic.module.cmdb.service.resourcecenter.resource.ResourceBuildSqlService;
 import neatlogic.module.cmdb.utils.ResourceEntityFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -39,7 +39,7 @@ import java.util.Objects;
 public class ResourceViewRebuildHandler implements IRebuildDataBaseView {
 
     @Resource
-    private IResourceCenterResourceService resourceCenterResourceService;
+    private ResourceBuildSqlService resourceBuildSqlService;
 
     @Resource
     private ResourceEntityMapper resourceEntityMapper;
@@ -150,7 +150,7 @@ public class ResourceViewRebuildHandler implements IRebuildDataBaseView {
     private ViewStatusInfo rebuildSceneEntity(ResourceEntityVo resourceEntityVo) {
         if (resourceEntityVo.getConfig() != null) {
             resourceEntityVo.setError(null);
-            String sql = resourceCenterResourceService.buildResourceView(resourceEntityVo);
+            String sql = resourceBuildSqlService.buildResourceView(resourceEntityVo);
             if (StringUtils.isNotBlank(resourceEntityVo.getError())) {
                 resourceEntityVo.setStatus(Status.ERROR.getValue());
             } else {

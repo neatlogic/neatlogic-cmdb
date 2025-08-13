@@ -35,7 +35,7 @@ import neatlogic.framework.restful.core.IValid;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
-import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
+import neatlogic.module.cmdb.service.resourcecenter.resource.ResourceBuildSqlService;
 import neatlogic.module.cmdb.utils.ResourceEntityFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -56,8 +56,9 @@ public class SaveResourceEntityApi extends PrivateApiComponentBase {
     private CiMapper ciMapper;
     @Resource
     private ResourceEntityMapper resourceEntityMapper;
+
     @Resource
-    private IResourceCenterResourceService resourceCenterResourceService;
+    private ResourceBuildSqlService resourceBuildSqlService;
 
     @Override
     public String getToken() {
@@ -121,7 +122,7 @@ public class SaveResourceEntityApi extends PrivateApiComponentBase {
         }
 //        if (!configEquals) {
             resourceEntityVo.setError(null);
-            String sql = resourceCenterResourceService.buildResourceView(resourceEntityVo);
+            String sql = resourceBuildSqlService.buildResourceView(resourceEntityVo);
             if (StringUtils.isNotBlank(resourceEntityVo.getError())) {
                 resourceEntityVo.setStatus(Status.ERROR.getValue());
             } else {
