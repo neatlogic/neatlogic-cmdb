@@ -22,6 +22,7 @@ import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthActionChecker;
 import neatlogic.framework.cmdb.auth.label.CIENTITY_MODIFY;
 import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
+import neatlogic.framework.cmdb.crossover.IResourceCenterResourceCrossoverService;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
@@ -85,7 +86,7 @@ import java.util.stream.Collectors;
  * @since 2021/11/22 14:41
  **/
 @Service
-public class ResourceCenterResourceServiceImpl implements IResourceCenterResourceService {
+public class ResourceCenterResourceServiceImpl implements IResourceCenterResourceService, IResourceCenterResourceCrossoverService {
 
     private final Logger logger = LoggerFactory.getLogger(ResourceCenterResourceServiceImpl.class);
     private final static List<String> defaultAttrList = Arrays.asList("_id", "_uuid", "_name", "_fcu", "_fcd", "_lcu", "_lcd", "_inspectStatus", "_inspectTime", "_monitorStatus", "_monitorTime", "_typeId", "_typeName", "_typeLabel");
