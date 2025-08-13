@@ -17,6 +17,46 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper">
 
+    <select id="getCountBySql" parameterType="java.lang.String" resultType="int">
+        ${sql}
+    </select>
+
+    <select id="getIdListBySql" parameterType="java.lang.String" resultType="java.lang.Long">
+        ${sql}
+    </select>
+
+    <select id="getResourceBySql" parameterType="java.lang.String" resultMap="resourceCenterMap">
+        ${sql}
+    </select>
+
+    <select id="getResourceSimpleBySql" parameterType="java.lang.String" resultType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo">
+        ${sql}
+    </select>
+
+    <select id="getResourceListBySql" parameterType="java.lang.String" resultMap="resourceCenterMap">
+        ${sql}
+    </select>
+
+    <select id="getResourceSimpleListBySql" parameterType="java.lang.String" resultType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo">
+        ${sql}
+    </select>
+
+    <select id="getIdBySql" parameterType="java.lang.String" resultType="java.lang.Long">
+        ${sql}
+    </select>
+
+    <select id="searchAccountComponentListBySql" parameterType="java.lang.String" resultType="neatlogic.framework.cmdb.dto.resourcecenter.AccountComponentVo">
+        ${sql}
+    </select>
+
+    <select id="getAppEnvListBySql" parameterType="java.lang.String" resultMap="appEnvMap">
+        ${sql}
+    </select>
+
+    <select id="getMapListBySql" parameterType="java.lang.String" resultType="java.util.HashMap">
+        ${sql}
+    </select>
+
     <sql id="resource_ipobject_where">
         <if test="typeIdList != null and typeIdList.size() > 0">
             <if test="isHasAuth == true">
@@ -300,14 +340,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </where>
     </select>
 
-    <select id="getResourceCountBySql" parameterType="java.lang.String" resultType="int">
-        ${sql}
-    </select>
-
-    <select id="getCountBySql" parameterType="java.lang.String" resultType="int">
-        ${sql}
-    </select>
-
     <select id="getAllResourceCount" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultType="int">
         SELECT
@@ -470,10 +502,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         ) m
     </select>
 
-    <select id="getResourceIdListBySql" parameterType="java.lang.String" resultType="java.lang.Long">
-        ${sql}
-    </select>
-
     <select id="getResourceIdListByDynamicCondition"
             parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultType="java.lang.Long">
@@ -602,22 +630,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         <foreach collection="list" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
-    </select>
-
-    <select id="getResourceBySql" parameterType="java.lang.String" resultMap="resourceCenterMap">
-        ${sql}
-    </select>
-
-    <select id="getResourceSimpleBySql" parameterType="java.lang.String" resultType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo">
-        ${sql}
-    </select>
-
-    <select id="getResourceListBySql" parameterType="java.lang.String" resultMap="resourceCenterMap">
-        ${sql}
-    </select>
-
-    <select id="getResourceSimpleListBySql" parameterType="java.lang.String" resultType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo">
-        ${sql}
     </select>
 
     <select id="getAppResourceCount" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="int">
@@ -802,10 +814,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             and a.`name` = #{name}
         </if>
         LIMIT 1
-    </select>
-
-    <select id="getIdBySql" parameterType="java.lang.String" resultType="java.lang.Long">
-        ${sql}
     </select>
 
     <select id="getResourceIdListByIpAndPortAndName"
@@ -1395,10 +1403,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </foreach>
     </select>
 
-    <select id="searchAccountComponentListBySql" parameterType="java.lang.String" resultType="neatlogic.framework.cmdb.dto.resourcecenter.AccountComponentVo">
-        ${sql}
-    </select>
-
     <select id="searchAccountComponent" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.AccountComponentVo"
             resultType="neatlogic.framework.cmdb.dto.resourcecenter.AccountComponentVo">
         SELECT
@@ -1823,10 +1827,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
           AND a.`env_id` IS NOT NULL
     </select>
 
-    <select id="getAppEnvListBySql" parameterType="java.lang.String" resultMap="appEnvMap">
-        ${sql}
-    </select>
-
     <select id="getAppEnvCountMapByAppSystemIdGroupByAppModuleId" parameterType="java.lang.Long" resultType="java.util.HashMap">
         SELECT
             a.`app_module_id` AS appModuleId,
@@ -1835,10 +1835,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         WHERE a.`app_system_id` = #{value}
           AND a.`env_id` IS NOT NULL
         GROUP BY a.`app_module_id`
-    </select>
-
-    <select id="getMapListBySql" parameterType="java.lang.String" resultType="java.util.HashMap">
-        ${sql}
     </select>
 
     <sql id="resource_ipobject_custom_where">

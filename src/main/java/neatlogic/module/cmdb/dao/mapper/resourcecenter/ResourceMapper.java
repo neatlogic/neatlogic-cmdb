@@ -28,29 +28,12 @@ import java.util.List;
 import java.util.Map;
 
 public interface ResourceMapper extends IResourceCrossoverMapper {
-    @Deprecated
-    int getResourceCountByNameKeyword(ResourceSearchVo searchVo);
-    @Deprecated
-    int getResourceCountByIpKeyword(ResourceSearchVo searchVo);
-    @Deprecated
-    int getResourceCount(ResourceSearchVo searchVo);
-
-    int getResourceCountBySql(String sql);
 
     int getCountBySql(String sql);
 
-    int getAllResourceCount(ResourceSearchVo searchVo);
+    Long getIdBySql(String sql);
 
-    int getResourceCountByDynamicCondition(@Param("searchVo") ResourceSearchVo searchVo, @Param("conditionSql") String conditionSql);
-
-    @Deprecated
-    List<Long> getResourceIdList(ResourceSearchVo searchVo);
-
-    List<Long> getResourceIdListBySql(String sql);
-
-    List<Long> getResourceIdListByDynamicCondition(@Param("searchVo") ResourceSearchVo searchVo, @Param("conditionSql") String conditionSql);
-    @Deprecated
-    List<ResourceVo> getResourceListByIdList(List<Long> idList);
+    List<Long> getIdListBySql(String sql);
 
     ResourceVo getResourceBySql(String sql);
 
@@ -59,6 +42,29 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
     List<ResourceVo> getResourceListBySql(String sql);
 
     List<ResourceVo> getResourceSimpleListBySql(String sql);
+
+    List<AccountComponentVo> searchAccountComponentListBySql(String sql);
+
+    List<AppEnvVo> getAppEnvListBySql(String sql);
+
+    List<Map<String, Object>> getMapListBySql(String sql);
+    @Deprecated
+    int getResourceCountByNameKeyword(ResourceSearchVo searchVo);
+    @Deprecated
+    int getResourceCountByIpKeyword(ResourceSearchVo searchVo);
+    @Deprecated
+    int getResourceCount(ResourceSearchVo searchVo);
+
+    int getAllResourceCount(ResourceSearchVo searchVo);
+
+    int getResourceCountByDynamicCondition(@Param("searchVo") ResourceSearchVo searchVo, @Param("conditionSql") String conditionSql);
+
+    @Deprecated
+    List<Long> getResourceIdList(ResourceSearchVo searchVo);
+
+    List<Long> getResourceIdListByDynamicCondition(@Param("searchVo") ResourceSearchVo searchVo, @Param("conditionSql") String conditionSql);
+    @Deprecated
+    List<ResourceVo> getResourceListByIdList(List<Long> idList);
 
     int getAppResourceCount(ResourceSearchVo searchVo);
 
@@ -69,8 +75,6 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
     List<ResourceVo> getAppInstanceResourceListByIdListSimple(List<Long> idList);
 
     Long getResourceIdByIpAndPortAndName(ResourceSearchVo searchVo);
-
-    Long getIdBySql(String sql);
 
     List<Long> getResourceIdListByIpAndPortAndName(ResourceSearchVo searchVo);
 
@@ -145,8 +149,6 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     List<AccountComponentVo> searchAccountComponent(AccountComponentVo accountComponentVo);
 
-    List<AccountComponentVo> searchAccountComponentListBySql(String sql);
-
     Integer searchAccountComponentCount(AccountComponentVo accountComponentVo);
 
     int searchAppEnvCount(BasePageVo searchVo);
@@ -193,11 +195,7 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     List<AppEnvVo> getAppEnvListByAppSystemIdAndAppModuleId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId);
 
-    List<AppEnvVo> getAppEnvListBySql(String sql);
-
     List<Map<String, Long>> getAppEnvCountMapByAppSystemIdGroupByAppModuleId(Long appSystemId);
-
-    List<Map<String, Object>> getMapListBySql(String sql);
 
     List<SoftwareServiceOSVo> getOsResourceListByResourceIdList(List<Long> resourceIdList);
 

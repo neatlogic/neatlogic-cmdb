@@ -650,7 +650,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
         String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
         List<ResourceVo> resultList = new ArrayList<>();
         String getResourceIdListSql = resourceBuildSqlService.buildGetResourceIdListSql(searchVo);
-        List<Long> idList = resourceMapper.getResourceIdListBySql(getResourceIdListSql);
+        List<Long> idList = resourceMapper.getIdListBySql(getResourceIdListSql);
         if (Objects.equals(enable, "1")) {
             List<Long> oldIdList = resourceMapper.getResourceIdList(searchVo);
             if (!Objects.equals(oldIdList, idList)) {
