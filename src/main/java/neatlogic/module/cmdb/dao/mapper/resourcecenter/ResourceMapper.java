@@ -26,17 +26,34 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public interface ResourceMapper extends IResourceCrossoverMapper {
 
-    int getResourceCountByNameKeyword(ResourceSearchVo searchVo);
+    int getCountBySql(String sql);
 
+    Long getIdBySql(String sql);
+
+    List<Long> getIdListBySql(String sql);
+
+    ResourceVo getResourceBySql(String sql);
+
+    ResourceVo getResourceSimpleBySql(String sql);
+
+    List<ResourceVo> getResourceListBySql(String sql);
+
+    List<ResourceVo> getResourceSimpleListBySql(String sql);
+
+    List<AccountComponentVo> searchAccountComponentListBySql(String sql);
+
+    List<AppEnvVo> getAppEnvListBySql(String sql);
+
+    List<Map<String, Object>> getMapListBySql(String sql);
+    @Deprecated
+    int getResourceCountByNameKeyword(ResourceSearchVo searchVo);
+    @Deprecated
     int getResourceCountByIpKeyword(ResourceSearchVo searchVo);
     @Deprecated
     int getResourceCount(ResourceSearchVo searchVo);
-
-    int getResourceCountBySql(String sql);
 
     int getAllResourceCount(ResourceSearchVo searchVo);
 
@@ -45,13 +62,9 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
     @Deprecated
     List<Long> getResourceIdList(ResourceSearchVo searchVo);
 
-    List<Long> getResourceIdListBySql(String sql);
-
     List<Long> getResourceIdListByDynamicCondition(@Param("searchVo") ResourceSearchVo searchVo, @Param("conditionSql") String conditionSql);
     @Deprecated
     List<ResourceVo> getResourceListByIdList(List<Long> idList);
-
-    List<ResourceVo> getResourceListBySql(String sql);
 
     int getAppResourceCount(ResourceSearchVo searchVo);
 
@@ -67,7 +80,7 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     List<ResourceVo> getResourceListByIpAndPortAndName(ResourceSearchVo searchVo);
 
-    Long getResourceIdByIpAndPortAndNameWithFilter(ResourceSearchVo searchVo);
+//    Long getResourceIdByIpAndPortAndNameWithFilter(ResourceSearchVo searchVo);
 
     List<ResourceVo> getResourceListByIpAndPortAndNameWithFilter(ResourceSearchVo searchVo);
 
@@ -96,10 +109,10 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
     List<ModuleVo> getAppModuleListByAppSystemIdList(ResourceSearchVo searchVo);
 
     List<ResourceVo> getAppModuleListByIdListSimple(@Param("idList") List<Long> idList, @Param("needOrder") boolean needOrder);
-
+    // 该SQL语句可以使用 getResourceListByIpAndPortAndName 代替
     List<ResourceVo> getResourceListByResourceVoList(@Param("resourceList") List<ResourceVo> resourceList,@Param("searchVo") ResourceSearchVo searchVo);
 
-    Set<Long> getResourceTypeIdListByAppSystemIdAndModuleIdAndEnvIdAndInspectStatusList(ResourceSearchVo searchVo);
+//    Set<Long> getResourceTypeIdListByAppSystemIdAndModuleIdAndEnvIdAndInspectStatusList(ResourceSearchVo searchVo);
 
     List<Long> getResourceIdListByAppSystemIdAndModuleIdAndEnvId(ResourceVo resourceVo);
 

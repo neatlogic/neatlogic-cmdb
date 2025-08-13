@@ -16,11 +16,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 package neatlogic.module.cmdb.service.resourcecenter.resource;
 
 import com.alibaba.fastjson.JSONObject;
-import neatlogic.framework.cmdb.crossover.IResourceCenterResourceCrossoverService;
 import neatlogic.framework.cmdb.dto.resourcecenter.AccountVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
-import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.dto.tag.TagVo;
 
 import java.util.List;
@@ -31,7 +29,7 @@ import java.util.Map;
  * @author laiwt
  * @since 2021/11/22 14:41
  **/
-public interface IResourceCenterResourceService extends IResourceCenterResourceCrossoverService {
+public interface IResourceCenterResourceService {
 
     ResourceSearchVo assembleResourceSearchVo(JSONObject jsonObj);
 
@@ -101,39 +99,4 @@ public interface IResourceCenterResourceService extends IResourceCenterResourceC
      */
     void addAccountInformation(List<ResourceVo> resourceList);
 
-    /**
-     * 构建单个视图
-     * @param resourceEntityVo
-     * @return
-     */
-    String buildResourceView(ResourceEntityVo resourceEntityVo);
-
-    /**
-     * 生成SQL等效于{@link neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper#getResourceIdList(neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo)}
-     * @param searchVo
-     * @return
-     */
-    String buildGetResourceIdListSql(ResourceSearchVo searchVo);
-
-    /**
-     * 生成SQL等效于{@link neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper#getResourceCount(neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo)}
-     * @param searchVo
-     * @return
-     */
-    String buildGetResourceCountSql(ResourceSearchVo searchVo);
-
-    /**
-     * 生成SQL等效于{@link neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper#getResourceListByIdList(java.util.List)}
-     * @param idList
-     * @param selectFieldNameList
-     * @return
-     */
-    String buildGetResourceListSql(List<Long> idList, List<String> selectFieldNameList);
-
-    /**
-     * 生成SQL等效于{@link neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper#getResourceListByIdList(java.util.List)}
-     * @param idList
-     * @return
-     */
-    String buildGetResourceListSql(List<Long> idList);
 }

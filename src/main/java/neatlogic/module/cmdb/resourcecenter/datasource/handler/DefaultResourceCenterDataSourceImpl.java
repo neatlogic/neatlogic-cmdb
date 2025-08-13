@@ -45,6 +45,7 @@ import neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
+import neatlogic.module.cmdb.service.resourcecenter.resource.ResourceBuildSqlService;
 import neatlogic.module.cmdb.utils.ResourceEntityFactory;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -81,6 +82,9 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
 
     @Resource
     private IResourceCenterResourceService resourceCenterResourceService;
+
+    @Resource
+    private ResourceBuildSqlService resourceBuildSqlService;
 
     private final Map<ValueTextVo, BiFunction<ResourceVo, JSONObject, Object>> headFieldHandlerMap = new LinkedHashMap<>();
 
@@ -645,8 +649,8 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
     public List<ResourceVo> getResourceList(ResourceSearchVo searchVo) {
         String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
         List<ResourceVo> resultList = new ArrayList<>();
-        String getResourceIdListSql = resourceCenterResourceService.buildGetResourceIdListSql(searchVo);
-        List<Long> idList = resourceMapper.getResourceIdListBySql(getResourceIdListSql);
+        String getResourceIdListSql = resourceBuildSqlService.buildGetResourceIdListSql(searchVo);
+        List<Long> idList = resourceMapper.getIdListBySql(getResourceIdListSql);
         if (Objects.equals(enable, "1")) {
             List<Long> oldIdList = resourceMapper.getResourceIdList(searchVo);
             if (!Objects.equals(oldIdList, idList)) {
@@ -657,7 +661,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             }
         }
         if (CollectionUtils.isNotEmpty(idList)) {
-            String getResourceListSql = resourceCenterResourceService.buildGetResourceListSql(idList);
+            String getResourceListSql = resourceBuildSqlService.buildGetResourceListSql(idList);
             List<ResourceVo> resourceList = resourceMapper.getResourceListBySql(getResourceListSql);
             if (Objects.equals(enable, "1")) {
                 List<ResourceVo> oldResourceList = resourceMapper.getResourceListByIdList(idList);
@@ -673,8 +677,8 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
                 }
             }
             if (Objects.equals(searchVo.getRowNum(), 0)) {
-                String getResourceCountSql = resourceCenterResourceService.buildGetResourceCountSql(searchVo);
-                int rowNum = resourceMapper.getResourceCountBySql(getResourceCountSql);
+                String getResourceCountSql = resourceBuildSqlService.buildGetResourceCountSql(searchVo);
+                int rowNum = resourceMapper.getCountBySql(getResourceCountSql);
                 if (Objects.equals(enable, "1")) {
                     int oldRowNum = 0;
                     if (noFilterCondition(searchVo)) {
