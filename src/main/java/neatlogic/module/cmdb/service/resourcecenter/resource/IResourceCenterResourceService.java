@@ -203,6 +203,7 @@ public interface IResourceCenterResourceService {
     String buildGetAppEnvListByAppSystemIdAndAppModuleIdSql(Long appSystemId, Long appModuleId);
 
     String buildGetAppEnvCountMapByAppSystemIdGroupByAppModuleIdSql(Long appSystemId);
+
 //    String buildGetResourceCountByDynamicConditionSql();
 //    String buildGetResourceIdListByDynamicConditionSql();
 
