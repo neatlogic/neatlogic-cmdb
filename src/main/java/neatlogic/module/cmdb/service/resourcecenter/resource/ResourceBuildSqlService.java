@@ -132,6 +132,20 @@ public interface ResourceBuildSqlService {
 //    String buildGetResourceCountByDynamicConditionSql();
 //    String buildGetResourceIdListByDynamicConditionSql();
 
+    String buildGetAppResourceCountSql(ResourceSearchVo searchVo);
+
+    String buildGetAppResourceIdListSql(ResourceSearchVo searchVo);
+
+    String buildGetAppResourceListByIdListSql(ResourceSearchVo searchVo, List<String> selectFieldNameList);
+
+    String buildGetAppResourceListByIdListSql(ResourceSearchVo searchVo);
+
+    String buildGetAppEnvListByViewNameAndAppSystemIdAndAppModuleIdAndInspectStatusListSql(String viewName, Long appSystemId, Long appModuleId, List<String> inspectStatusList);
+
+//    List<Long> buildGetAppResourceTypeIdListByViewNameAndAppSystemIdSql(String viewName, Long appSystemId, Long appModuleId, Long envId, List<String> inspectStatusList);
+
+//    List<Long> getAppSystemIdListById(@Param("viewName") String viewName, @Param("id") Long id);
+
     // InspectMapper
     String buildGetInspectResourceListByIdListSql(List<Long> idList, List<String> selectFieldNameList);
 
