@@ -1005,6 +1005,202 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
     }
 
     @Override
+    public String buildGetAppResourceCountSql(ResourceSearchVo searchVo) {
+        try {
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName(searchVo.getViewName());
+            ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
+            List<String> selectItemFieldNameList = new ArrayList<>();
+            selectItemFieldNameList.add("id");
+            List<String> filterItemFieldNameList = new ArrayList<>();
+            filterItemFieldNameList.add("id");
+            filterItemFieldNameList.add("app_system_id");
+            filterItemFieldNameList.add("app_module_id");
+            filterItemFieldNameList.add("env_id");
+            filterItemFieldNameList.add("type_id");
+            filterItemFieldNameList.add("inspect_status");
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            Map<String, Column> fieldName2ColumnMap = new HashMap<>();
+            PlainSelect plainSelect = getPlainSelect(config, fieldName2ColumnMap);
+            if (searchVo.getAppSystemId() != null) {
+                $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("app_system_id").toString(), "=", searchVo.getAppSystemId()));
+            }
+            if (searchVo.getAppModuleId() != null) {
+                $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("app_module_id").toString(), "=", searchVo.getAppModuleId()));
+            }
+            if (searchVo.getEnvId() != null) {
+                if (searchVo.getEnvId() != -2) {
+                    $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("env_id").toString(), "=", searchVo.getEnvId()));
+                } else {
+                    $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("env_id").toString(), "is null"));
+                }
+            }
+            if (searchVo.getTypeId() != null) {
+                $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("type_id").toString(), "=", searchVo.getTypeId()));
+            }
+            if (CollectionUtils.isNotEmpty(searchVo.getInspectStatusList())) {
+                $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("inspect_status").toString(), "in", searchVo.getInspectStatusList()));
+            }
+            Column column = fieldName2ColumnMap.get("id");
+            $sql.setSelectColumn(plainSelect, $sql.fun("COUNT", column.toString()).withDistinct(true));
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
+    public String buildGetAppResourceIdListSql(ResourceSearchVo searchVo) {
+        try {
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName(searchVo.getViewName());
+            ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
+            List<String> selectItemFieldNameList = new ArrayList<>();
+            selectItemFieldNameList.add("id");
+            List<String> filterItemFieldNameList = new ArrayList<>();
+            filterItemFieldNameList.add("id");
+            filterItemFieldNameList.add("app_system_id");
+            filterItemFieldNameList.add("app_module_id");
+            filterItemFieldNameList.add("env_id");
+            filterItemFieldNameList.add("type_id");
+            filterItemFieldNameList.add("inspect_status");
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            Map<String, Column> fieldName2ColumnMap = new HashMap<>();
+            PlainSelect plainSelect = getPlainSelect(config, fieldName2ColumnMap);
+            if (searchVo.getAppSystemId() != null) {
+                $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("app_system_id").toString(), "=", searchVo.getAppSystemId()));
+            }
+            if (searchVo.getAppModuleId() != null) {
+                $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("app_module_id").toString(), "=", searchVo.getAppModuleId()));
+            }
+            if (searchVo.getEnvId() != null) {
+                if (searchVo.getEnvId() != -2) {
+                    $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("env_id").toString(), "=", searchVo.getEnvId()));
+                } else {
+                    $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("env_id").toString(), "is null"));
+                }
+            }
+            if (searchVo.getTypeId() != null) {
+                $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("type_id").toString(), "=", searchVo.getTypeId()));
+            }
+            if (CollectionUtils.isNotEmpty(searchVo.getInspectStatusList())) {
+                $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("inspect_status").toString(), "in", searchVo.getInspectStatusList()));
+            }
+            $sql.setDistinct(plainSelect, true);
+            Column column = fieldName2ColumnMap.get("id");
+            $sql.addOrderBy(plainSelect, column.toString(), "desc");
+            $sql.setLimit(plainSelect, searchVo.getStartNum(), searchVo.getPageSize());
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
+    public String buildGetAppResourceListByIdListSql(ResourceSearchVo searchVo, List<String> selectFieldNameList) {
+        try {
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName(searchVo.getViewName());
+            ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
+            List<String> selectItemFieldNameList = new ArrayList<>();
+            if (CollectionUtils.isNotEmpty(selectFieldNameList)) {
+                selectItemFieldNameList.addAll(selectFieldNameList);
+            }
+            List<String> filterItemFieldNameList = new ArrayList<>();
+            filterItemFieldNameList.add("id");
+            filterItemFieldNameList.add("app_system_id");
+            filterItemFieldNameList.add("app_module_id");
+            filterItemFieldNameList.add("env_id");
+            filterItemFieldNameList.add("type_id");
+            filterItemFieldNameList.add("inspect_status");
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            Map<String, Column> fieldName2ColumnMap = new HashMap<>();
+            PlainSelect plainSelect = getPlainSelect(config, fieldName2ColumnMap);
+            if (searchVo.getAppSystemId() != null) {
+                $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("app_system_id").toString(), "=", searchVo.getAppSystemId()));
+            }
+            if (searchVo.getAppModuleId() != null) {
+                $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("app_module_id").toString(), "=", searchVo.getAppModuleId()));
+            }
+            if (searchVo.getEnvId() != null) {
+                if (searchVo.getEnvId() != -2) {
+                    $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("env_id").toString(), "=", searchVo.getEnvId()));
+                } else {
+                    $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("env_id").toString(), "is null"));
+                }
+            }
+            if (searchVo.getTypeId() != null) {
+                $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("type_id").toString(), "=", searchVo.getTypeId()));
+            }
+            if (CollectionUtils.isNotEmpty(searchVo.getInspectStatusList())) {
+                $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("inspect_status").toString(), "in", searchVo.getInspectStatusList()));
+            }
+            $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("id").toString(), "in", searchVo.getIdList()));
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
+    public String buildGetAppResourceListByIdListSql(ResourceSearchVo searchVo) {
+        ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName(searchVo.getViewName());
+        List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(resourceEntityVo.getConfig().getSceneTemplateName());
+        return buildGetAppResourceListByIdListSql(searchVo, fieldNameList);
+    }
+
+    @Override
+    public String buildGetAppEnvListByViewNameAndAppSystemIdAndAppModuleIdAndInspectStatusListSql(String viewName, Long appSystemId, Long appModuleId, List<String> inspectStatusList) {
+        try {
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName(viewName);
+            ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
+            List<String> selectItemFieldNameList = new ArrayList<>();
+            List<String> filterItemFieldNameList = new ArrayList<>();
+            filterItemFieldNameList.add("id");
+            filterItemFieldNameList.add("app_system_id");
+            filterItemFieldNameList.add("app_module_id");
+            filterItemFieldNameList.add("app_module_name");
+            filterItemFieldNameList.add("app_module_abbr_name");
+            filterItemFieldNameList.add("env_id");
+            filterItemFieldNameList.add("env_name");
+            filterItemFieldNameList.add("env_seq_no");
+            filterItemFieldNameList.add("type_id");
+            filterItemFieldNameList.add("type_name");
+            filterItemFieldNameList.add("type_label");
+            filterItemFieldNameList.add("inspect_status");
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            Map<String, Column> fieldName2ColumnMap = new HashMap<>();
+            PlainSelect plainSelect = getPlainSelect(config, fieldName2ColumnMap);
+            $sql.addSelectColumn(plainSelect, $sql.fun("IFNULL", fieldName2ColumnMap.get("env_id").toString(), -2), "id");
+            $sql.addSelectColumn(plainSelect, $sql.fun("IFNULL", fieldName2ColumnMap.get("env_name").toString(), "'未配置'"), "name");
+            $sql.addSelectColumn(plainSelect, $sql.fun("IFNULL", fieldName2ColumnMap.get("env_seq_no").toString(), 9999), "seqNo");
+            $sql.addSelectColumn(plainSelect, fieldName2ColumnMap.get("app_module_id").toString(), "moduleId");
+            $sql.addSelectColumn(plainSelect, fieldName2ColumnMap.get("app_module_name").toString(), "moduleName");
+            $sql.addSelectColumn(plainSelect, fieldName2ColumnMap.get("app_module_abbr_name").toString(), "moduleAbbrName");
+            $sql.addSelectColumn(plainSelect, fieldName2ColumnMap.get("type_id").toString(), "typeId");
+            $sql.addSelectColumn(plainSelect, fieldName2ColumnMap.get("type_name").toString(), "typeName");
+            $sql.addSelectColumn(plainSelect, fieldName2ColumnMap.get("type_label").toString(), "typeLabel");
+            $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("app_system_id").toString(), "=", appSystemId));
+            if (appModuleId != null) {
+                $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("app_module_id").toString(), "=", appModuleId));
+            } else {
+                $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("app_module_id").toString(), "is not null"));
+            }
+            if (CollectionUtils.isNotEmpty(inspectStatusList)) {
+                $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("inspect_status").toString(), "in", inspectStatusList));
+            }
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
     public String buildGetInspectResourceListByIdListSql(List<Long> idList, List<String> selectFieldNameList) {
         try {
             ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
