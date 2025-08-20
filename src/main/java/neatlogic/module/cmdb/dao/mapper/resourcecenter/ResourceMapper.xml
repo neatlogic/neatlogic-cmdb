@@ -1838,6 +1838,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     </select>
 
     <sql id="resource_ipobject_custom_where">
+        <if test="searchVo.idList != null and searchVo.idList.size() > 0">
+            AND sid.`id` IN
+            <foreach collection="searchVo.idList" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
         <if test="searchVo.typeIdList != null and searchVo.typeIdList.size() > 0">
             <if test="searchVo.isHasAuth == true">
                 AND sid.`type_id` IN
