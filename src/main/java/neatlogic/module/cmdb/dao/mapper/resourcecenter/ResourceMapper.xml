@@ -553,7 +553,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         <result column="inspect_time" property="inspectTime"/>
         <result column="monitor_status" property="monitorStatus"/>
         <result column="monitor_time" property="monitorTime"/>
-        <result column="port" property="port"/>
+        <result column="port" property="port" typeHandler="neatlogic.framework.dao.plugin.EmptyStringToNullIntegerTypeHandler"/>
         <result column="state_id" property="stateId"/>
         <result column="state_name" property="stateName"/>
         <result column="state_label" property="stateLabel"/>
