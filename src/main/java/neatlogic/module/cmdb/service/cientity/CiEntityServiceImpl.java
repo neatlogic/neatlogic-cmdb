@@ -489,7 +489,13 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         if (logger.isInfoEnabled()) {
             time = System.currentTimeMillis();
         }
-        runner.execute(ciEntityVo.getIdList(), 10, (threadIndex, dataIndex, item) -> {
+        List<Long> idList = new ArrayList<>();
+        for (Long id : ciEntityVo.getIdList()) {
+            if (!idList.contains(id)) {
+                idList.add(id);
+            }
+        }
+        runner.execute(idList, 10, (threadIndex, dataIndex, item) -> {
             long startTime = System.currentTimeMillis();
             ciEntityQueue.add(getCiEntityByIdLite(ciEntityVo.getCiId(), item, false, ciEntityVo.isLimitRelEntity(), ciEntityVo.isLimitAttrEntity(), ciEntityVo.getGlobalAttrIdList(), ciEntityVo.getAttrIdList(), ciEntityVo.getRelIdList(), null, null));
             if (logger.isInfoEnabled()) {
