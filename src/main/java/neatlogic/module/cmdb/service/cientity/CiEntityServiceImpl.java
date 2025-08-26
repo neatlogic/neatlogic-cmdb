@@ -496,8 +496,14 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             }
         }
         runner.execute(idList, 10, (threadIndex, dataIndex, item) -> {
-            long startTime = System.currentTimeMillis();
-            ciEntityQueue.add(getCiEntityByIdLite(ciEntityVo.getCiId(), item, false, ciEntityVo.isLimitRelEntity(), ciEntityVo.isLimitAttrEntity(), ciEntityVo.getGlobalAttrIdList(), ciEntityVo.getAttrIdList(), ciEntityVo.getRelIdList(), null, null));
+            long startTime = 0L;
+            if (logger.isInfoEnabled()) {
+                startTime = System.currentTimeMillis();
+            }
+            CiEntityVo ciEntityByIdLite = getCiEntityByIdLite(ciEntityVo.getCiId(), item, false, ciEntityVo.isLimitRelEntity(), ciEntityVo.isLimitAttrEntity(), ciEntityVo.getGlobalAttrIdList(), ciEntityVo.getAttrIdList(), ciEntityVo.getRelIdList(), null, null);
+            if (ciEntityByIdLite != null) {
+                ciEntityQueue.add(ciEntityByIdLite);
+            }
             if (logger.isInfoEnabled()) {
                 logger.info("查询单个配置项，耗时{}ms", System.currentTimeMillis() - startTime);
             }
@@ -506,7 +512,16 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         if (logger.isInfoEnabled()) {
             logger.info("查询配置项总耗时，数据量{}，耗时{}ms", ciEntityQueue.size(), System.currentTimeMillis() - time);
         }
-        return new ArrayList<>(ciEntityQueue);
+        List<CiEntityVo> resultList = new ArrayList<>();
+        for (Long id : idList) {
+            for (CiEntityVo ciEntity : ciEntityQueue) {
+                if (Objects.equals(ciEntity.getId(), id)) {
+                    resultList.add(ciEntity);
+                    break;
+                }
+            }
+        }
+        return resultList;
     }
 
     @Override
