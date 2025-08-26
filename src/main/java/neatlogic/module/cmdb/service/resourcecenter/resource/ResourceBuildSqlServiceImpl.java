@@ -1923,12 +1923,35 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         if (CollectionUtils.isEmpty(fieldMappingList)) {
             throw new ResourceViewFieldMappingException(viewName, fieldNameList);
         }
-        CiVo mainCiVo = ciMapper.getCiByName(mainCi);
+        Set<String> ciNameSet = new HashSet<>();
+        ciNameSet.add(mainCi);
+        for (ResourceEntityFieldMappingVo fieldMappingVo : fieldMappingList) {
+            String fromCi = fieldMappingVo.getFromCi();
+            if (StringUtils.isNotBlank(fromCi)) {
+                ciNameSet.add(fromCi);
+            }
+            String toCi = fieldMappingVo.getToCi();
+            if (StringUtils.isNotBlank(toCi)) {
+                ciNameSet.add(toCi);
+            }
+        }
+        Map<Long, List<AttrVo>> ciId2AttrListMap = new HashMap<>();
+        Map<String, CiVo> name2CiMap = new HashMap<>();
+        if (CollectionUtils.isNotEmpty(ciNameSet)) {
+            List<CiVo> ciList = ciMapper.getCiListByNameList(new ArrayList<>(ciNameSet));
+            for (CiVo ciVo : ciList) {
+                name2CiMap.put(ciVo.getName(), ciVo);
+                List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
+                ciId2AttrListMap.put(ciVo.getId(), attrList);
+            }
+        }
+        CiVo mainCiVo = name2CiMap.get(mainCi);
         if (mainCiVo == null) {
             throw new ResourceViewFieldMappingException(viewName, mainCi);
         }
         newConfig.setMainCi(mainCi);
         newConfig.setMainCiVo(mainCiVo);
+        Map<String, GlobalAttrVo> name2GlobalAttrMap = new HashMap<>();
         List<ResourceEntityFieldMappingVo> resultList = new ArrayList<>();
         for (ResourceEntityFieldMappingVo fieldMappingVo : fieldMappingList) {
             String field = fieldMappingVo.getField();
@@ -1944,7 +1967,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
                 if (StringUtils.isBlank(fromCi)) {
                     throw new ResourceViewFieldMappingException(viewName, field, "fromCi", fromCi);
                 }
-                CiVo fromCiVo = ciMapper.getCiByName(fromCi);
+                CiVo fromCiVo = name2CiMap.get(fromCi);
                 if (fromCiVo == null) {
                     throw new ResourceViewFieldMappingException(viewName, field, "fromCi", fromCi);
                 }
@@ -1963,7 +1986,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
                 if (StringUtils.isBlank(fromCi)) {
                     throw new ResourceViewFieldMappingException(viewName, field, "fromCi", fromCi);
                 }
-                CiVo fromCiVo = ciMapper.getCiByName(fromCi);
+                CiVo fromCiVo = name2CiMap.get(fromCi);
                 if (fromCiVo == null) {
                     throw new ResourceViewFieldMappingException(viewName, field, "fromCi", fromCi);
                 }
@@ -1971,7 +1994,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
                 if (StringUtils.isBlank(fromAttr)) {
                     throw new ResourceViewFieldMappingException(viewName, field, "fromAttr", fromAttr);
                 }
-                AttrVo fromAttrVo = getAttrVo(fromCiVo, fromAttr);
+                AttrVo fromAttrVo = getAttrVo(fromCiVo, fromAttr, ciId2AttrListMap);
                 if (fromAttrVo == null) {
                     throw new ResourceViewFieldMappingException(viewName, field, "fromAttr", fromAttr);
                 }
@@ -1985,7 +2008,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
                     if (StringUtils.isBlank(toCi)) {
                         throw new ResourceViewFieldMappingException(viewName, field, "toCi", toCi);
                     }
-                    CiVo toCiVo = ciMapper.getCiByName(toCi);
+                    CiVo toCiVo = name2CiMap.get(toCi);
                     if (toCiVo == null) {
                         throw new ResourceViewFieldMappingException(viewName, field, "toCi", toCi);
                     }
@@ -2005,7 +2028,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
                         newFieldMappingVo.setToAttrCiName(toCiVo.getName());
                     }
                     if (!defaultAttrList.contains(toAttr)) {
-                        AttrVo toAttrVo = getAttrVo(toCiVo, toAttr);
+                        AttrVo toAttrVo = getAttrVo(toCiVo, toAttr, ciId2AttrListMap);
                         if (toAttrVo == null) {
                             throw new ResourceViewFieldMappingException(viewName, field, "toAttr", toAttr);
                         }
@@ -2024,7 +2047,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
                 if (StringUtils.isBlank(fromCi)) {
                     throw new ResourceViewFieldMappingException(viewName, field, "fromCi", fromCi);
                 }
-                CiVo fromCiVo = ciMapper.getCiByName(fromCi);
+                CiVo fromCiVo = name2CiMap.get(fromCi);
                 if (fromCiVo == null) {
                     throw new ResourceViewFieldMappingException(viewName, field, "fromCi", fromCi);
                 }
@@ -2032,7 +2055,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
                 if (StringUtils.isBlank(toCi)) {
                     throw new ResourceViewFieldMappingException(viewName, field, "toCi", toCi);
                 }
-                CiVo toCiVo = ciMapper.getCiByName(toCi);
+                CiVo toCiVo = name2CiMap.get(toCi);
                 if (toCiVo == null) {
                     throw new ResourceViewFieldMappingException(viewName, field, "toCi", toCi);
                 }
@@ -2050,7 +2073,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
                     }
                     newFieldMappingVo.setFromAttr(fromAttr);
                     if (!defaultAttrList.contains(fromAttr)) {
-                        AttrVo fromAttrVo = getAttrVo(fromCiVo, fromAttr);
+                        AttrVo fromAttrVo = getAttrVo(fromCiVo, fromAttr, ciId2AttrListMap);
                         if (fromAttrVo == null) {
                             throw new ResourceViewFieldMappingException(viewName, field, "fromAttr", fromAttr);
                         }
@@ -2067,7 +2090,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
                     } else {
                         newFieldMappingVo.setToAttr(toAttr);
                         if (!defaultAttrList.contains(toAttr)) {
-                            AttrVo toAttrVo = getAttrVo(toCiVo, toAttr);
+                            AttrVo toAttrVo = getAttrVo(toCiVo, toAttr, ciId2AttrListMap);
                             if (toAttrVo == null) {
                                 throw new ResourceViewFieldMappingException(viewName, field, "toAttr", toAttr);
                             }
@@ -2091,7 +2114,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
                 if (CollectionUtils.isNotEmpty(relLinkList)) {
                     for (ResourceEntityRelLinkVo relLinkVo : relLinkList) {
                         if (Objects.equals(relLinkVo.getRightUuid(), uuid)) {
-                            CiVo rightCiVo = ciMapper.getCiByName(ciName);
+                            CiVo rightCiVo = name2CiMap.get(ciName);
                             if (rightCiVo == null) {
                                 throw new ResourceViewFieldMappingException(viewName, field, "ciName", ciName);
                             }
@@ -2104,7 +2127,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
                                 String fromAttr = attr;
                                 newFieldMappingVo.setFromAttr(fromAttr);
                                 if (!defaultAttrList.contains(fromAttr)) {
-                                    AttrVo fromAttrVo = getAttrVo(fromCiVo, fromAttr);
+                                    AttrVo fromAttrVo = getAttrVo(fromCiVo, fromAttr, ciId2AttrListMap);
                                     if (fromAttrVo == null) {
                                         throw new ResourceViewFieldMappingException(viewName, field, "attr", attr);
                                     }
@@ -2117,7 +2140,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
                                 newFieldMappingVo.setFromCiAlias(relLinkVo.getRightCiAlias());
 
                                 String toCi = relLinkVo.getLeftCi();
-                                CiVo toCiVo = ciMapper.getCiByName(toCi);
+                                CiVo toCiVo = name2CiMap.get(toCi);
                                 newFieldMappingVo.setToCi(toCiVo.getName());
                                 newFieldMappingVo.setToCiId(toCiVo.getId());
                                 newFieldMappingVo.setToCiIsVirtual(toCiVo.getIsVirtual());
@@ -2134,7 +2157,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
                                 } else {
                                     newFieldMappingVo.setToAttr(toAttr);
                                     if (!defaultAttrList.contains(toAttr)) {
-                                        AttrVo toAttrVo = getAttrVo(toCiVo, toAttr);
+                                        AttrVo toAttrVo = getAttrVo(toCiVo, toAttr, ciId2AttrListMap);
                                         if (toAttrVo == null) {
                                             throw new ResourceViewFieldMappingException(viewName, field, "attr", attr);
                                         }
@@ -2147,7 +2170,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
                                     }
                                 }
                                 String fromCi = relLinkVo.getLeftCi();
-                                CiVo fromCiVo = ciMapper.getCiByName(fromCi);
+                                CiVo fromCiVo = name2CiMap.get(fromCi);
                                 newFieldMappingVo.setFromCi(fromCiVo.getName());
                                 newFieldMappingVo.setFromCiId(fromCiVo.getId());
                                 newFieldMappingVo.setFromCiAlias(relLinkVo.getLeftCiAlias());
@@ -2161,7 +2184,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
                 if (StringUtils.isBlank(fromCi)) {
                     throw new ResourceViewFieldMappingException(viewName, field, "fromCi", fromCi);
                 }
-                CiVo fromCiVo = ciMapper.getCiByName(fromCi);
+                CiVo fromCiVo = name2CiMap.get(fromCi);
                 if (fromCiVo == null) {
                     throw new ResourceViewFieldMappingException(viewName, field, "fromCi", fromCi);
                 }
@@ -2169,10 +2192,13 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
                 if (StringUtils.isBlank(fromAttr)) {
                     throw new ResourceViewFieldMappingException(viewName, field, "fromAttr", fromAttr);
                 }
-                GlobalAttrVo globalAttrVo = new GlobalAttrVo();
-                globalAttrVo.setName(fromAttr);
-                if (globalAttrMapper.checkGlobalAttrNameIsUsed(globalAttrVo) == 0) {
-                    throw new ResourceViewFieldMappingException(viewName, field, "fromAttr", fromAttr);
+                GlobalAttrVo globalAttrVo = name2GlobalAttrMap.get(fromAttr);
+                if (globalAttrVo == null) {
+                    globalAttrVo = globalAttrMapper.getGlobalAttrByName(fromAttr);
+                    if (globalAttrVo == null) {
+                        throw new ResourceViewFieldMappingException(viewName, field, "fromAttr", fromAttr);
+                    }
+                    name2GlobalAttrMap.put(fromAttr, globalAttrVo);
                 }
                 String toAttr = fieldMappingVo.getToAttr();
                 if (StringUtils.isBlank(toAttr)) {
@@ -2259,14 +2285,32 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         List<ResourceEntityLeftJoinVo> resultList = new ArrayList<>();
         List<ResourceEntityRelLinkVo> relLinkList = config.getRelLinkList();
         if (CollectionUtils.isNotEmpty(relLinkList)) {
+            Set<String> ciNameSet = new HashSet<>();
             for (ResourceEntityRelLinkVo linkVo : relLinkList) {
                 String leftCi = linkVo.getLeftCi();
                 String rightCi = linkVo.getRightCi();
-                CiVo leftCiVo = ciMapper.getCiByName(leftCi);
+                if (StringUtils.isNotBlank(leftCi)) {
+                    ciNameSet.add(leftCi);
+                }
+                if (StringUtils.isNotBlank(rightCi)) {
+                    ciNameSet.add(rightCi);
+                }
+            }
+            Map<String, CiVo> name2CiMap = new HashMap<>();
+            if (CollectionUtils.isNotEmpty(ciNameSet)) {
+                List<CiVo> ciList = ciMapper.getCiListByNameList(new ArrayList<>(ciNameSet));
+                for (CiVo ciVo : ciList) {
+                    name2CiMap.put(ciVo.getName(), ciVo);
+                }
+            }
+            for (ResourceEntityRelLinkVo linkVo : relLinkList) {
+                String leftCi = linkVo.getLeftCi();
+                String rightCi = linkVo.getRightCi();
+                CiVo leftCiVo = name2CiMap.get(leftCi);
                 if (leftCiVo == null) {
                     throw new CiNotFoundException(leftCi);
                 }
-                CiVo rightCiVo = ciMapper.getCiByName(rightCi);
+                CiVo rightCiVo = name2CiMap.get(rightCi);
                 if (rightCiVo == null) {
                     throw new CiNotFoundException(rightCi);
                 }
@@ -2297,12 +2341,13 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         return resultList;
     }
 
-    private AttrVo getAttrVo(CiVo ciVo, String attrName) {
-        List<CiVo> upwardCiList = ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht());
-        for (CiVo ci : upwardCiList) {
-            AttrVo attr = attrMapper.getDeclaredAttrByCiIdAndName(ci.getId(), attrName);
-            if (attr != null) {
-                return attr;
+    private AttrVo getAttrVo(CiVo ciVo, String attrName, Map<Long, List<AttrVo>> ciId2AttrListMap) {
+        List<AttrVo> attrList = ciId2AttrListMap.get(ciVo.getId());
+        if (CollectionUtils.isNotEmpty(attrList)) {
+            for (AttrVo attr : attrList) {
+                if (Objects.equals(attr.getName(), attrName)) {
+                    return attr;
+                }
             }
         }
         return null;
