@@ -112,52 +112,55 @@ public class GetResourceAccountApi extends PrivateApiComponentBase {
             throw new ResourceCenterAccountProtocolNotFoundException(protocol);
         }
 
-        //先找到资产
-        ResourceVo resourceVo = null;
-        if (resourceId == null) {
-            resourceVo = resourceMapper.getResourceByIpAndPortAndNameAndTypeName(ip, port, nodeName, nodeType);
-            if (resourceVo == null) {
-                throw new ResourceNotFoundException(ip, port, nodeName, nodeType);
-            }
-        } else {
-            resourceVo = resourceMapper.getResourceById(resourceId);
-            if (resourceVo == null) {
-                throw new ResourceNotFoundException(resourceId);
-            }
-        }
-
-        if (!Objects.equals(protocol, Protocol.TAGENT.getValue())) {
-            List<AccountVo> accountList = resourceAccountMapper.getResourceAccountByResourceIdAndProtocolAndProtocolPortAndUsername(resourceVo.getId(), protocol, protocolPort, username);
-            if (CollectionUtils.isNotEmpty(accountList)) {
-                AccountVo account = accountList.get(0);
-                return removePasswordPlain(account);
-            }
-        } else {
-            //如果是tagent 优先从主ip里面找账号没找到才根据副ip找主ip的账号(不允许存在多个主ip)
-            AccountBaseVo accountTagent = null;
-            TagentVo tagentVo = tagentMapper.getTagentByIpAndPort(resourceVo.getIp(), protocolVo.getPort());
-            if(tagentVo != null){
-                accountTagent = tagentMapper.getAccountByTagentId(tagentVo.getId());
-            }else {
-                List<AccountBaseVo> tagentAccountByIpList = tagentMapper.getAccountListByIncludeIpListAndProtocolId(Collections.singletonList(resourceVo.getIp()), protocolVo.getId());
-                if(CollectionUtils.isNotEmpty(tagentAccountByIpList) && tagentAccountByIpList.size() == 1){
-                    accountTagent = tagentAccountByIpList.get(0);
+        //兼容runner阶段的工具
+        if(!Objects.equals("local",ip)) {
+            //先找到资产
+            ResourceVo resourceVo = null;
+            if (resourceId == null) {
+                resourceVo = resourceMapper.getResourceByIpAndPortAndNameAndTypeName(ip, port, nodeName, nodeType);
+                if (resourceVo == null) {
+                    throw new ResourceNotFoundException(ip, port, nodeName, nodeType);
+                }
+            } else {
+                resourceVo = resourceMapper.getResourceById(resourceId);
+                if (resourceVo == null) {
+                    throw new ResourceNotFoundException(resourceId);
                 }
             }
-            if(accountTagent != null){
-                return removePasswordPlain(accountTagent);
+
+            if (!Objects.equals(protocol, Protocol.TAGENT.getValue())) {
+                List<AccountVo> accountList = resourceAccountMapper.getResourceAccountByResourceIdAndProtocolAndProtocolPortAndUsername(resourceVo.getId(), protocol, protocolPort, username);
+                if (CollectionUtils.isNotEmpty(accountList)) {
+                    AccountVo account = accountList.get(0);
+                    return removePasswordPlain(account);
+                }
+            } else {
+                //如果是tagent 优先从主ip里面找账号没找到才根据副ip找主ip的账号(不允许存在多个主ip)
+                AccountBaseVo accountTagent = null;
+                TagentVo tagentVo = tagentMapper.getTagentByIpAndPort(resourceVo.getIp(), protocolVo.getPort());
+                if (tagentVo != null) {
+                    accountTagent = tagentMapper.getAccountByTagentId(tagentVo.getId());
+                } else {
+                    List<AccountBaseVo> tagentAccountByIpList = tagentMapper.getAccountListByIncludeIpListAndProtocolId(Collections.singletonList(resourceVo.getIp()), protocolVo.getId());
+                    if (CollectionUtils.isNotEmpty(tagentAccountByIpList) && tagentAccountByIpList.size() == 1) {
+                        accountTagent = tagentAccountByIpList.get(0);
+                    }
+                }
+                if (accountTagent != null) {
+                    return removePasswordPlain(accountTagent);
+                }
+
             }
 
-        }
-
-        //通过对应资产的os 找账号
-        List<SoftwareServiceOSVo> targetOsList = resourceMapper.getOsResourceListByResourceIdList(Collections.singletonList(resourceVo.getId()));
-        if (CollectionUtils.isNotEmpty(targetOsList)) {
-            SoftwareServiceOSVo targetOs = targetOsList.get(0);
-            List<AccountVo> accountList = resourceAccountMapper.getResourceAccountByResourceIdAndProtocolAndProtocolPortAndUsername(targetOs.getOsId(), protocol, protocolPort, username);
-            if (CollectionUtils.isNotEmpty(accountList)) {
-                AccountVo account = accountList.get(0);
-                return removePasswordPlain(account);
+            //通过对应资产的os 找账号
+            List<SoftwareServiceOSVo> targetOsList = resourceMapper.getOsResourceListByResourceIdList(Collections.singletonList(resourceVo.getId()));
+            if (CollectionUtils.isNotEmpty(targetOsList)) {
+                SoftwareServiceOSVo targetOs = targetOsList.get(0);
+                List<AccountVo> accountList = resourceAccountMapper.getResourceAccountByResourceIdAndProtocolAndProtocolPortAndUsername(targetOs.getOsId(), protocol, protocolPort, username);
+                if (CollectionUtils.isNotEmpty(accountList)) {
+                    AccountVo account = accountList.get(0);
+                    return removePasswordPlain(account);
+                }
             }
         }
 
