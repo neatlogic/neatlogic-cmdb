@@ -1201,6 +1201,73 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
     }
 
     @Override
+    public String buildGetAppResourceTypeIdListByViewNameAndAppSystemIdSql(String viewName, Long appSystemId, Long appModuleId, Long envId, List<String> inspectStatusList) {
+        try {
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName(viewName);
+            ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
+            List<String> selectItemFieldNameList = new ArrayList<>();
+            List<String> filterItemFieldNameList = new ArrayList<>();
+            filterItemFieldNameList.add("id");
+            filterItemFieldNameList.add("app_system_id");
+            filterItemFieldNameList.add("app_module_id");
+            filterItemFieldNameList.add("env_id");
+            filterItemFieldNameList.add("type_id");
+            filterItemFieldNameList.add("inspect_status");
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            Map<String, Column> fieldName2ColumnMap = new HashMap<>();
+            PlainSelect plainSelect = getPlainSelect(config, fieldName2ColumnMap);
+            $sql.setDistinct(plainSelect, true);
+            $sql.addSelectColumn(plainSelect, fieldName2ColumnMap.get("type_id").toString());
+            if (appSystemId != null) {
+                $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("app_system_id").toString(), "=", appSystemId));
+            }
+            if (appModuleId != null) {
+                $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("app_module_id").toString(), "=", appModuleId));
+            }
+            if (envId != null) {
+                if (envId != -2) {
+                    $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("env_id").toString(), "=", envId));
+                } else {
+                    $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("env_id").toString(), "is null"));
+                }
+            }
+            if (CollectionUtils.isNotEmpty(inspectStatusList)) {
+                $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("inspect_status").toString(), "in", inspectStatusList));
+            }
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
+    public String buildGetAppSystemIdListByIdSql(String viewName, Long id) {
+        try {
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName(viewName);
+            ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
+            List<String> selectItemFieldNameList = new ArrayList<>();
+            selectItemFieldNameList.add("app_system_id");
+            List<String> filterItemFieldNameList = new ArrayList<>();
+            filterItemFieldNameList.add("id");
+            filterItemFieldNameList.add("app_system_id");
+            filterItemFieldNameList.add("app_module_id");
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            Map<String, Column> fieldName2ColumnMap = new HashMap<>();
+            PlainSelect plainSelect = getPlainSelect(config, fieldName2ColumnMap);
+            $sql.setDistinct(plainSelect, true);
+            $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("id").toString(), "=", id));
+            $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("app_system_id").toString(), "is not null"));
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
     public String buildGetInspectResourceListByIdListSql(List<Long> idList, List<String> selectFieldNameList) {
         try {
             ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
@@ -2430,7 +2497,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         </if>
          */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getKeywordList()) && (queryCriteriaVo.getNameFieldAttrId() != null || queryCriteriaVo.getIpFieldAttrId() != null)) {
-            System.out.println("a");
+//            System.out.println("a");
             {
                 ExpressionVo expressionVo = $sql.exp(
                         $sql.exp("ffc.target_id", "=", fieldName2ColumnMap.get("id").toString()),
@@ -2469,10 +2536,10 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
             {
                 Long fieldAttrId = null;
                 if (Objects.equals(queryCriteriaVo.getSearchField(), "name")) {
-                    System.out.println("b");
+//                    System.out.println("b");
                     fieldAttrId = queryCriteriaVo.getNameFieldAttrId();
                 } else {
-                    System.out.println("c");
+//                    System.out.println("c");
                     fieldAttrId = queryCriteriaVo.getIpFieldAttrId();
                 }
                 ExpressionVo expressionVo = $sql.exp(
@@ -2503,7 +2570,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         </if>
          */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getProtocolIdList())) {
-            System.out.println("d");
+//            System.out.println("d");
             joinList.add($sql.join("left join", "cmdb_resourcecenter_resource_account", "b").withOn($sql.exp("b.resource_id", "=", fieldName2ColumnMap.get("id").toString())));
             joinList.add($sql.join("left join", "cmdb_resourcecenter_account", "c").withOn($sql.exp("c.id", "=", "b.account_id")));
             whereExpressionList.add($sql.exp("c.protocol_id", "in", queryCriteriaVo.getProtocolIdList()));
@@ -2521,7 +2588,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         </if>
          */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getTagIdList())) {
-            System.out.println("e");
+//            System.out.println("e");
             joinList.add($sql.join("left join", "cmdb_resourcecenter_resource_tag", "d").withOn($sql.exp("d.resource_id", "=", fieldName2ColumnMap.get("id").toString())));
             whereExpressionList.add($sql.exp("d.tag_id", "in", queryCriteriaVo.getTagIdList()));
         }
@@ -2539,7 +2606,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         </if>
          */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getInspectJobPhaseNodeStatusList())) {
-            System.out.println("f");
+//            System.out.println("f");
             joinList.add($sql.join("left join", "autoexec_job_resource_inspect", "ajri").withOn($sql.exp("ajri.resource_id", "=", fieldName2ColumnMap.get("id").toString())));
             ExpressionVo expressionVo = $sql.exp($sql.exp("ajpn.job_phase_id", "=", "ajri.phase_id"), "and", $sql.exp("ajpn.resource_id", "=", fieldName2ColumnMap.get("id").toString()));
             joinList.add($sql.join("left join", "autoexec_job_phase_node", "ajpn").withOn(expressionVo));
@@ -2565,10 +2632,10 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
 
             List<String> strList = new ArrayList<>();
             if (Objects.equals(queryCriteriaVo.getCmdbGroupType(), "autoexec")) {
-                System.out.println("g");
+//                System.out.println("g");
                 strList.add("autoexec");
             } else {
-                System.out.println("h");
+//                System.out.println("h");
                 strList.add("autoexec");
                 strList.add("readonly");
                 strList.add("maintain");
@@ -2632,15 +2699,15 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
          */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getTypeIdList())) {
             if (Objects.equals(queryCriteriaVo.getIsHasAuth(), true)) {
-                System.out.println("i");
+//                System.out.println("i");
                 whereExpressionList.add($sql.exp(fieldName2ColumnMap.get("type_id").toString(), "in", queryCriteriaVo.getTypeIdList()));
             } else if (Objects.equals(queryCriteriaVo.getIsHasAuth(), false)) {
                 ExpressionVo orLeftExpressionVo = null;
                 if (CollectionUtils.isNotEmpty(queryCriteriaVo.getAuthedTypeIdList())) {
-                    System.out.println("j");
+//                    System.out.println("j");
                     orLeftExpressionVo = $sql.exp(fieldName2ColumnMap.get("type_id").toString(), "in", queryCriteriaVo.getAuthedTypeIdList());
                 } else {
-                    System.out.println("k");
+//                    System.out.println("k");
                     orLeftExpressionVo = $sql.exp(1, "=", 0);
                 }
                 ExpressionVo orRightExpressionVo = $sql.exp($sql.exp("cg.id", "is not null"), "and", $sql.exp(fieldName2ColumnMap.get("type_id").toString(), "in", queryCriteriaVo.getTypeIdList()));
@@ -2648,7 +2715,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
                 ExpressionVo orLeftExpressionVo2 = $sql.exp("(", $sql.exp("cga.auth_type", "=", "'common'"), "and", $sql.exp("cga.auth_uuid", "=", "'alluser'"), ")");
                 ExpressionVo orRightExpressionVo2 = null;
                 if (queryCriteriaVo.getAuthenticationInfo() != null) {
-                    System.out.println("l");
+//                    System.out.println("l");
                     List<String> uuidList = new ArrayList<>();
                     if (StringUtils.isNotBlank(queryCriteriaVo.getAuthenticationInfo().getUserUuid())) {
                         uuidList.add(queryCriteriaVo.getAuthenticationInfo().getUserUuid());
@@ -2660,15 +2727,15 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
                         uuidList.addAll(queryCriteriaVo.getAuthenticationInfo().getRoleUuidList());
                     }
                     if (CollectionUtils.isNotEmpty(uuidList)) {
-                        System.out.println("m");
+//                        System.out.println("m");
                         orRightExpressionVo2 = $sql.exp("cga.auth_uuid", "in", uuidList);
                     }
                 }
                 if (orRightExpressionVo2 != null) {
-                    System.out.println("n");
+//                    System.out.println("n");
                     orRightExpressionVo = $sql.exp(orRightExpressionVo, "and", $sql.exp("(", orLeftExpressionVo2, "or", orRightExpressionVo2, ")"));
                 } else {
-                    System.out.println("o");
+//                    System.out.println("o");
                     orRightExpressionVo = $sql.exp(orRightExpressionVo, "and", orLeftExpressionVo2);
                 }
                 ExpressionVo orExpressionVo = $sql.exp("(", orLeftExpressionVo, "or", orRightExpressionVo, ")");
@@ -2684,7 +2751,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         </if>
          */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getStateIdList())) {
-            System.out.println("p");
+//            System.out.println("p");
             whereExpressionList.add($sql.exp(fieldName2ColumnMap.get("state_id").toString(), "in", queryCriteriaVo.getStateIdList()));
         }
         /*
@@ -2696,7 +2763,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         </if>
          */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getVendorIdList())) {
-            System.out.println("q");
+//            System.out.println("q");
             whereExpressionList.add($sql.exp(fieldName2ColumnMap.get("vendor_id").toString(), "in", queryCriteriaVo.getVendorIdList()));
         }
         /*
@@ -2708,7 +2775,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         </if>
          */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getEnvIdList())) {
-            System.out.println("r");
+//            System.out.println("r");
             whereExpressionList.add($sql.exp(fieldName2ColumnMap.get("env_id").toString(), "in", queryCriteriaVo.getEnvIdList()));
         }
         /*
@@ -2717,7 +2784,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         </if>
          */
         if (Objects.equals(queryCriteriaVo.getExistNoEnv(), true)) {
-            System.out.println("s");
+//            System.out.println("s");
             whereExpressionList.add($sql.exp(fieldName2ColumnMap.get("env_id").toString(), "is null"));
         }
         /*
@@ -2729,7 +2796,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         </if>
          */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getAppSystemIdList())) {
-            System.out.println("t");
+//            System.out.println("t");
             whereExpressionList.add($sql.exp(fieldName2ColumnMap.get("app_system_id").toString(), "in", queryCriteriaVo.getAppSystemIdList()));
         }
         /*
@@ -2741,7 +2808,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         </if>
          */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getAppModuleIdList())) {
-            System.out.println("u");
+//            System.out.println("u");
             whereExpressionList.add($sql.exp(fieldName2ColumnMap.get("app_module_id").toString(), "in", queryCriteriaVo.getAppModuleIdList()));
         }
         /*
@@ -2753,7 +2820,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         </if>
          */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getDefaultValue())) {
-            System.out.println("v");
+//            System.out.println("v");
             whereExpressionList.add($sql.exp(fieldName2ColumnMap.get("id").toString(), "in", queryCriteriaVo.getDefaultValue()));
         }
         /*
@@ -2765,7 +2832,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         </if>
          */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getIdList())) {
-            System.out.println("w");
+//            System.out.println("w");
             whereExpressionList.add($sql.exp(fieldName2ColumnMap.get("id").toString(), "in", queryCriteriaVo.getIdList()));
         }
         /*
@@ -2777,7 +2844,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         </if>
          */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getInspectStatusList())) {
-            System.out.println("x");
+//            System.out.println("x");
             whereExpressionList.add($sql.exp(fieldName2ColumnMap.get("inspect_status").toString(), "in", queryCriteriaVo.getInspectStatusList()));
         }
         sqlVo.withJoinList(joinList);
@@ -2807,10 +2874,10 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getBatchSearchList()) && StringUtils.isNotBlank(queryCriteriaVo.getSearchField())) {
             String columnName = null;
             if (Objects.equals(queryCriteriaVo.getSearchField(), "name")) {
-                System.out.println("b");
+//                System.out.println("b");
                 columnName = fieldName2ColumnMap.get("name").toString();
             } else {
-                System.out.println("c");
+//                System.out.println("c");
                 columnName = fieldName2ColumnMap.get("ip").toString();
             }
             ExpressionVo orExp = null;
@@ -2837,7 +2904,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         </if>
          */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getProtocolIdList())) {
-            System.out.println("d");
+//            System.out.println("d");
             joinList.add($sql.join("left join", "cmdb_resourcecenter_resource_account", "b").withOn($sql.exp("b.resource_id", "=", fieldName2ColumnMap.get("id").toString())));
             joinList.add($sql.join("left join", "cmdb_resourcecenter_account", "c").withOn($sql.exp("c.id", "=", "b.account_id")));
             whereExpressionList.add($sql.exp("c.protocol_id", "in", queryCriteriaVo.getProtocolIdList()));
@@ -2855,7 +2922,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         </if>
          */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getTagIdList())) {
-            System.out.println("e");
+//            System.out.println("e");
             joinList.add($sql.join("left join", "cmdb_resourcecenter_resource_tag", "d").withOn($sql.exp("d.resource_id", "=", fieldName2ColumnMap.get("id").toString())));
             whereExpressionList.add($sql.exp("d.tag_id", "in", queryCriteriaVo.getTagIdList()));
         }
@@ -2873,7 +2940,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         </if>
          */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getInspectJobPhaseNodeStatusList())) {
-            System.out.println("f");
+//            System.out.println("f");
             joinList.add($sql.join("left join", "autoexec_job_resource_inspect", "ajri").withOn($sql.exp("ajri.resource_id", "=", fieldName2ColumnMap.get("id").toString())));
             ExpressionVo expressionVo = $sql.exp($sql.exp("ajpn.job_phase_id", "=", "ajri.phase_id"), "and", $sql.exp("ajpn.resource_id", "=", fieldName2ColumnMap.get("id").toString()));
             joinList.add($sql.join("left join", "autoexec_job_phase_node", "ajpn").withOn(expressionVo));
@@ -2899,10 +2966,10 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
 
             List<String> strList = new ArrayList<>();
             if (Objects.equals(queryCriteriaVo.getCmdbGroupType(), "autoexec")) {
-                System.out.println("g");
+//                System.out.println("g");
                 strList.add("autoexec");
             } else {
-                System.out.println("h");
+//                System.out.println("h");
                 strList.add("autoexec");
                 strList.add("readonly");
                 strList.add("maintain");
@@ -2966,15 +3033,15 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
          */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getTypeIdList())) {
             if (Objects.equals(queryCriteriaVo.getIsHasAuth(), true)) {
-                System.out.println("i");
+//                System.out.println("i");
                 whereExpressionList.add($sql.exp(fieldName2ColumnMap.get("type_id").toString(), "in", queryCriteriaVo.getTypeIdList()));
             } else if (Objects.equals(queryCriteriaVo.getIsHasAuth(), false)) {
                 ExpressionVo orLeftExpressionVo = null;
                 if (CollectionUtils.isNotEmpty(queryCriteriaVo.getAuthedTypeIdList())) {
-                    System.out.println("j");
+//                    System.out.println("j");
                     orLeftExpressionVo = $sql.exp(fieldName2ColumnMap.get("type_id").toString(), "in", queryCriteriaVo.getAuthedTypeIdList());
                 } else {
-                    System.out.println("k");
+//                    System.out.println("k");
                     orLeftExpressionVo = $sql.exp(1, "=", 0);
                 }
                 ExpressionVo orRightExpressionVo = $sql.exp($sql.exp("cg.id", "is not null"), "and", $sql.exp(fieldName2ColumnMap.get("type_id").toString(), "in", queryCriteriaVo.getTypeIdList()));
@@ -2982,7 +3049,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
                 ExpressionVo orLeftExpressionVo2 = $sql.exp("(", $sql.exp("cga.auth_type", "=", "'common'"), "and", $sql.exp("cga.auth_uuid", "=", "'alluser'"), ")");
                 ExpressionVo orRightExpressionVo2 = null;
                 if (queryCriteriaVo.getAuthenticationInfo() != null) {
-                    System.out.println("l");
+//                    System.out.println("l");
                     List<String> uuidList = new ArrayList<>();
                     if (StringUtils.isNotBlank(queryCriteriaVo.getAuthenticationInfo().getUserUuid())) {
                         uuidList.add(queryCriteriaVo.getAuthenticationInfo().getUserUuid());
@@ -2994,15 +3061,15 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
                         uuidList.addAll(queryCriteriaVo.getAuthenticationInfo().getRoleUuidList());
                     }
                     if (CollectionUtils.isNotEmpty(uuidList)) {
-                        System.out.println("m");
+//                        System.out.println("m");
                         orRightExpressionVo2 = $sql.exp("cga.auth_uuid", "in", uuidList);
                     }
                 }
                 if (orRightExpressionVo2 != null) {
-                    System.out.println("n");
+//                    System.out.println("n");
                     orRightExpressionVo = $sql.exp(orRightExpressionVo, "and", $sql.exp("(", orLeftExpressionVo2, "or", orRightExpressionVo2, ")"));
                 } else {
-                    System.out.println("o");
+//                    System.out.println("o");
                     orRightExpressionVo = $sql.exp(orRightExpressionVo, "and", orLeftExpressionVo2);
                 }
                 ExpressionVo orExpressionVo = $sql.exp("(", orLeftExpressionVo, "or", orRightExpressionVo, ")");
@@ -3018,7 +3085,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         </if>
          */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getStateIdList())) {
-            System.out.println("p");
+//            System.out.println("p");
             whereExpressionList.add($sql.exp(fieldName2ColumnMap.get("state_id").toString(), "in", queryCriteriaVo.getStateIdList()));
         }
         /*
@@ -3030,7 +3097,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         </if>
          */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getVendorIdList())) {
-            System.out.println("q");
+//            System.out.println("q");
             whereExpressionList.add($sql.exp(fieldName2ColumnMap.get("vendor_id").toString(), "in", queryCriteriaVo.getVendorIdList()));
         }
         /*
@@ -3042,7 +3109,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         </if>
          */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getEnvIdList())) {
-            System.out.println("r");
+//            System.out.println("r");
             whereExpressionList.add($sql.exp(fieldName2ColumnMap.get("env_id").toString(), "in", queryCriteriaVo.getEnvIdList()));
         }
         /*
@@ -3054,7 +3121,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         </if>
          */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getAppSystemIdList())) {
-            System.out.println("t");
+//            System.out.println("t");
             whereExpressionList.add($sql.exp(fieldName2ColumnMap.get("app_system_id").toString(), "in", queryCriteriaVo.getAppSystemIdList()));
         }
         /*
@@ -3066,7 +3133,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         </if>
          */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getAppModuleIdList())) {
-            System.out.println("u");
+//            System.out.println("u");
             whereExpressionList.add($sql.exp(fieldName2ColumnMap.get("app_module_id").toString(), "in", queryCriteriaVo.getAppModuleIdList()));
         }
         /*
@@ -3078,7 +3145,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         </if>
          */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getInspectStatusList())) {
-            System.out.println("x");
+//            System.out.println("x");
             whereExpressionList.add($sql.exp(fieldName2ColumnMap.get("inspect_status").toString(), "in", queryCriteriaVo.getInspectStatusList()));
         }
         sqlVo.withJoinList(joinList);
@@ -3104,7 +3171,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         </if>
          */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getProtocolIdList())) {
-            System.out.println("d");
+//            System.out.println("d");
             joinList.add($sql.join("left join", "cmdb_resourcecenter_resource_account", "b").withOn($sql.exp("b.resource_id", "=", fieldName2ColumnMap.get("id").toString())));
             joinList.add($sql.join("left join", "cmdb_resourcecenter_account", "c").withOn($sql.exp("c.id", "=", "b.account_id")));
             whereExpressionList.add($sql.exp("c.protocol_id", "in", queryCriteriaVo.getProtocolIdList()));
@@ -3122,7 +3189,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         </if>
          */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getTagIdList())) {
-            System.out.println("e");
+//            System.out.println("e");
             joinList.add($sql.join("left join", "cmdb_resourcecenter_resource_tag", "d").withOn($sql.exp("d.resource_id", "=", fieldName2ColumnMap.get("id").toString())));
             whereExpressionList.add($sql.exp("d.tag_id", "in", queryCriteriaVo.getTagIdList()));
         }
@@ -3140,7 +3207,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         </if>
          */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getInspectJobPhaseNodeStatusList())) {
-            System.out.println("f");
+//            System.out.println("f");
             joinList.add($sql.join("left join", "autoexec_job_phase_node", "ajpn").withOn($sql.exp("ajpn.resource_id", "=", fieldName2ColumnMap.get("id").toString())));
             whereExpressionList.add($sql.exp("ajpn.status", "in", queryCriteriaVo.getInspectJobPhaseNodeStatusList()));
         }
@@ -3168,7 +3235,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         </if>
          */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getStateIdList())) {
-            System.out.println("p");
+//            System.out.println("p");
             whereExpressionList.add($sql.exp(fieldName2ColumnMap.get("state_id").toString(), "in", queryCriteriaVo.getStateIdList()));
         }
         /*
@@ -3180,7 +3247,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         </if>
          */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getVendorIdList())) {
-            System.out.println("q");
+//            System.out.println("q");
             whereExpressionList.add($sql.exp(fieldName2ColumnMap.get("vendor_id").toString(), "in", queryCriteriaVo.getVendorIdList()));
         }
         /*
@@ -3192,7 +3259,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         </if>
          */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getEnvIdList())) {
-            System.out.println("r");
+//            System.out.println("r");
             whereExpressionList.add($sql.exp(fieldName2ColumnMap.get("env_id").toString(), "in", queryCriteriaVo.getEnvIdList()));
         }
         /*
@@ -3204,7 +3271,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         </if>
          */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getAppSystemIdList())) {
-            System.out.println("t");
+//            System.out.println("t");
             whereExpressionList.add($sql.exp(fieldName2ColumnMap.get("app_system_id").toString(), "in", queryCriteriaVo.getAppSystemIdList()));
         }
         /*
@@ -3216,7 +3283,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         </if>
          */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getAppModuleIdList())) {
-            System.out.println("u");
+//            System.out.println("u");
             whereExpressionList.add($sql.exp(fieldName2ColumnMap.get("app_module_id").toString(), "in", queryCriteriaVo.getAppModuleIdList()));
         }
         /*
@@ -3228,7 +3295,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         </if>
          */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getInspectStatusList())) {
-            System.out.println("x");
+//            System.out.println("x");
             joinList.add($sql.join("left join", "autoexec_job_phase_node", "ajpn").withOn($sql.exp("ajpn.resource_id", "=", fieldName2ColumnMap.get("id").toString())));
             joinList.add($sql.join("left join", "cmdb_cientity_inspect", "cci").withOn($sql.exp(
                     $sql.exp("cci.ci_entity_id", "=", fieldName2ColumnMap.get("id").toString()),
