@@ -142,9 +142,9 @@ public interface ResourceBuildSqlService {
 
     String buildGetAppEnvListByViewNameAndAppSystemIdAndAppModuleIdAndInspectStatusListSql(String viewName, Long appSystemId, Long appModuleId, List<String> inspectStatusList);
 
-//    List<Long> buildGetAppResourceTypeIdListByViewNameAndAppSystemIdSql(String viewName, Long appSystemId, Long appModuleId, Long envId, List<String> inspectStatusList);
+    String buildGetAppResourceTypeIdListByViewNameAndAppSystemIdSql(String viewName, Long appSystemId, Long appModuleId, Long envId, List<String> inspectStatusList);
 
-//    List<Long> getAppSystemIdListById(@Param("viewName") String viewName, @Param("id") Long id);
+    String buildGetAppSystemIdListByIdSql(String viewName, Long id);
 
     // InspectMapper
     String buildGetInspectResourceListByIdListSql(List<Long> idList, List<String> selectFieldNameList);
