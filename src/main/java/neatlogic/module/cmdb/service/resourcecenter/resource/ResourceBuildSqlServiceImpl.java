@@ -17,6 +17,7 @@
 
 package neatlogic.module.cmdb.service.resourcecenter.resource;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.cmdb.crossover.IResourceBuildSqlCrossoverService;
@@ -24,6 +25,7 @@ import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.AccountComponentVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.ResourceConditionConfigVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.*;
@@ -997,6 +999,53 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
             $sql.addWhereExpression(plainSelect, $sql.exp(envIdColumn.toString(), "is not null"));
             Column appModuleIdColumn = fieldName2ColumnMap.get("app_module_id");
             $sql.addGroupBy(plainSelect, appModuleIdColumn.toString());
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
+    public String buildGetResourceCountByDynamicConditionSql(ResourceSearchVo searchVo) {
+        try {
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
+            ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
+            List<String> selectItemFieldNameList = new ArrayList<>();
+            List<String> filterItemFieldNameList = new ArrayList<>();
+            filterItemFieldNameList.add("id");
+            ResourceQueryCriteriaVo queryCriteriaVo = new ResourceQueryCriteriaVo(searchVo);
+            List<String> filterItemFieldNameList1 = getFilterItemFieldNameList(queryCriteriaVo);
+            System.out.println("filterItemFieldNameList1 = " + filterItemFieldNameList1);
+            filterItemFieldNameList.addAll(filterItemFieldNameList1);
+            JSONObject conditionConfigObj = new JSONObject();
+            conditionConfigObj.put("conditionGroupList", searchVo.getConditionGroupList());
+            conditionConfigObj.put("conditionGroupRelList", searchVo.getConditionGroupRelList());
+            ResourceConditionConfigVo resourceConditionConfigVo = conditionConfigObj.toJavaObject(ResourceConditionConfigVo.class);
+            List<String> filterItemFieldNameList2 = resourceConditionConfigVo.getFilterItemFieldNameList();
+            System.out.println("filterItemFieldNameList2 = " + filterItemFieldNameList2);
+            filterItemFieldNameList.addAll(filterItemFieldNameList2);
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            Map<String, Column> fieldName2ColumnMap = new HashMap<>();
+            PlainSelect plainSelect = getPlainSelect(config, fieldName2ColumnMap);
+            $sql.addSelectColumn(plainSelect, $sql.fun("count", fieldName2ColumnMap.get("id").toString()).withDistinct(true));
+            /*
+            <if test="keyword != null and keyword != ''">
+                    AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%'))
+                </if>
+             */
+            if (StringUtils.isNotBlank(queryCriteriaVo.getKeyword())) {
+                String keyword = "'%" + queryCriteriaVo.getKeyword() + "%'";
+                $sql.addWhereExpression(plainSelect, $sql.exp("(",
+                        $sql.exp(fieldName2ColumnMap.get("name").toString(), "like", keyword),
+                        "or", $sql.exp(fieldName2ColumnMap.get("ip").toString(), "like", keyword),
+                        ")")
+                );
+            }
+            SqlVo sqlVo = getSqlVoForResource(queryCriteriaVo, fieldName2ColumnMap);
+            resourceConditionConfigVo.buildConditionSqlVo(sqlVo, fieldName2ColumnMap);
+            $sql.addSql(plainSelect, sqlVo);
             return plainSelect.toString();
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
