@@ -129,8 +129,8 @@ public interface ResourceBuildSqlService {
 
     String buildGetAppEnvCountMapByAppSystemIdGroupByAppModuleIdSql(Long appSystemId);
 
-//    String buildGetResourceCountByDynamicConditionSql();
-//    String buildGetResourceIdListByDynamicConditionSql();
+    String buildGetResourceCountByDynamicConditionSql(ResourceSearchVo searchVo);
+//    String buildGetResourceIdListByDynamicConditionSql(ResourceSearchVo searchVo);
 
     String buildGetAppResourceCountSql(ResourceSearchVo searchVo);
 
