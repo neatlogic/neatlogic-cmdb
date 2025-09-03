@@ -143,6 +143,12 @@ public class ExportResourceApi extends PrivateBinaryStreamApiComponentBase {
             ResourceSearchVo searchVo = resourceCenterResourceService.assembleResourceSearchVo(paramObj);
             resourceCenterResourceService.handleBatchSearchList(searchVo);
             resourceCenterResourceService.setIpFieldAttrIdAndNameFieldAttrId(searchVo);
+            //是否存在前置条件
+            if (searchVo.getPreCondition() != null && searchVo.getPreCondition().isCustomCondition()) {
+                StringBuilder preSqlSb = new StringBuilder();
+                searchVo.getPreCondition().buildConditionWhereSql(preSqlSb, searchVo.getPreCondition());
+                searchVo.setPreConditionWhereSql(preSqlSb.toString());
+            }
             int rowNum = resourceMapper.getResourceCount(searchVo);
             if (rowNum > 0) {
                 searchVo.setPageSize(100);
@@ -172,6 +178,7 @@ public class ExportResourceApi extends PrivateBinaryStreamApiComponentBase {
 
     /**
      * 表头信息
+     *
      * @return
      */
     private List<String> getHeaderList() {
@@ -198,6 +205,7 @@ public class ExportResourceApi extends PrivateBinaryStreamApiComponentBase {
 
     /**
      * 每列对应的key
+     *
      * @return
      */
     private List<String> getColumnList() {
@@ -224,6 +232,7 @@ public class ExportResourceApi extends PrivateBinaryStreamApiComponentBase {
 
     /**
      * 资产对象转换成excel中一行数据dataMap
+     *
      * @param resourceVo 资产对象
      */
     private Map<String, Object> resourceConvertDataMap(ResourceVo resourceVo) {

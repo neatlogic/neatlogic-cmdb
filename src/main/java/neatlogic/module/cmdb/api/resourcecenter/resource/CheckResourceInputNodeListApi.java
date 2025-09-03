@@ -61,7 +61,7 @@ public class CheckResourceInputNodeListApi extends PrivateApiComponentBase {
     }
 
     @Input({
-            @Param(name = "filter", type = ApiParamType.JSONOBJECT, desc = "过滤条件", help="简单过滤条件和高级过滤条件都用这个字段"),
+            @Param(name = "filter", type = ApiParamType.JSONOBJECT, desc = "过滤条件", help = "简单过滤条件和高级过滤条件都用这个字段"),
             @Param(name = "cmdbGroupType", type = ApiParamType.STRING, desc = "通过团体过滤权限"),
             @Param(name = "inputNodeList", type = ApiParamType.JSONARRAY, isRequired = true, minSize = 1, desc = "输入节点列表"),
     })
@@ -103,7 +103,13 @@ public class CheckResourceInputNodeListApi extends PrivateApiComponentBase {
                     searchVo.setPort(node.getPort());
                     searchVo.setName(node.getName());
                     searchVo.setCmdbGroupType(cmdbGroupType);
-                    List<Long> idList =  resourceMapper.getResourceIdListByDynamicCondition(searchVo, sqlSb.toString());
+                    //是否存在前置条件
+                    if (searchVo.getPreCondition() != null && searchVo.getPreCondition().isCustomCondition()) {
+                        StringBuilder preSqlSb = new StringBuilder();
+                        searchVo.getPreCondition().buildConditionWhereSql(preSqlSb, searchVo.getPreCondition());
+                        searchVo.setPreConditionWhereSql(preSqlSb.toString());
+                    }
+                    List<Long> idList = resourceMapper.getResourceIdListByDynamicCondition(searchVo, sqlSb.toString());
                     if (CollectionUtils.isEmpty(idList)) {
                         if (!nonExistList.contains(inputNodeObj)) {
                             nonExistList.add(inputNodeObj);

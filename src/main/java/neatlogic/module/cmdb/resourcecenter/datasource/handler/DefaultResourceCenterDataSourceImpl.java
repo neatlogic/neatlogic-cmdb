@@ -337,6 +337,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
         resultObj.put("isVirtual", ciEntityVo.getIsVirtual());
         return resultObj;
     }
+
     @Override
     public Ordered getOrdered() {
         return Ordered.LOWEST_PRECEDENCE;
@@ -651,6 +652,12 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
         List<ResourceVo> resultList = new ArrayList<>();
         String getResourceIdListSql = resourceBuildSqlService.buildGetResourceIdListSql(searchVo);
         List<Long> idList = resourceMapper.getIdListBySql(getResourceIdListSql);
+        //是否存在前置条件
+        if (searchVo.getPreCondition() != null && searchVo.getPreCondition().isCustomCondition()) {
+            StringBuilder preSqlSb = new StringBuilder();
+            searchVo.getPreCondition().buildConditionWhereSql(preSqlSb, searchVo.getPreCondition());
+            searchVo.setPreConditionWhereSql(preSqlSb.toString());
+        }
         if (Objects.equals(enable, "1")) {
             List<Long> oldIdList = resourceMapper.getResourceIdList(searchVo);
             if (!Objects.equals(oldIdList, idList)) {
@@ -1273,6 +1280,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
 
     /**
      * 判断是否有过滤条件
+     *
      * @param searchVo
      * @return
      */

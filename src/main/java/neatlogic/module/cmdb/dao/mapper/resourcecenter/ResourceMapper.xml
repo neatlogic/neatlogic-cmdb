@@ -200,6 +200,84 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             </foreach>
         </if>
     </sql>
+
+    <sql id="resource_ipobject_pre_where">
+        <if test="preCondition != null and preCondition.typeIdList != null and preCondition.typeIdList.size() > 0">
+            AND a.`type_id` IN
+            <foreach collection="preCondition.typeIdList" item="typeId" open="(" separator="," close=")">
+                #{typeId}
+            </foreach>
+        </if>
+        <if test="preCondition != null and preCondition.stateIdList != null and preCondition.stateIdList.size() > 0">
+            AND a.`state_id` IN
+            <foreach collection="stateIdList" item="stateId" open="(" separator="," close=")">
+                #{stateId}
+            </foreach>
+        </if>
+        <if test="preCondition != null and preCondition.vendorIdList != null and preCondition.vendorIdList.size() > 0">
+            AND a.`vendor_id` IN
+            <foreach collection="vendorIdList" item="vendorId" open="(" separator="," close=")">
+                #{vendorId}
+            </foreach>
+        </if>
+        <if test="preCondition != null and preCondition.envIdList != null and preCondition.envIdList.size() > 0">
+            AND a.`env_id` IN
+            <foreach collection="envIdList" item="envId" open="(" separator="," close=")">
+                #{envId}
+            </foreach>
+        </if>
+        <if test="preCondition != null and preCondition.isExistNoEnv">
+            AND a.`env_id` is null
+        </if>
+        <if test="preCondition != null and preCondition.appSystemIdList != null and preCondition.appSystemIdList.size() > 0">
+            AND a.`app_system_id` IN
+            <foreach collection="preCondition.appSystemIdList" item="appSystemId" open="(" separator="," close=")">
+                #{appSystemId}
+            </foreach>
+        </if>
+        <if test="preCondition != null and preCondition.appModuleIdList != null and preCondition.appModuleIdList.size() > 0">
+            AND a.`app_module_id` IN
+            <foreach collection="preCondition.appModuleIdList" item="appModuleId" open="(" separator="," close=")">
+                #{appModuleId}
+            </foreach>
+        </if>
+        <if test="preCondition != null and preCondition.defaultValue != null and preCondition.defaultValue.size() > 0">
+            AND a.`id` IN
+            <foreach collection="preCondition.defaultValue" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+        <if test="preCondition != null and preCondition.idList != null and preCondition.idList.size() > 0">
+            AND a.`id` IN
+            <foreach collection="preCondition.idList" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+        <if test="preCondition != null and preCondition.inspectStatusList != null and preCondition.inspectStatusList.size() > 0">
+            AND a.`inspect_status` IN
+            <foreach collection="preCondition.inspectStatusList" item="inspectStatus" open="(" separator="," close=")">
+                #{inspectStatus}
+            </foreach>
+        </if>
+        <if test="preCondition != null and preCondition.protocolIdList != null and preCondition.protocolIdList.size() > 0">
+            AND c.`protocol_id` IN
+            <foreach collection="preCondition.protocolIdList" item="protocolId" open="(" separator="," close=")">
+                #{protocolId}
+            </foreach>
+        </if>
+        <if test="preCondition != null and preCondition.tagIdList != null and preCondition.tagIdList.size() > 0">
+            AND d.`tag_id` IN
+            <foreach collection="preCondition.tagIdList" item="tagId" open="(" separator="," close=")">
+                #{tagId}
+            </foreach>
+        </if>
+        <if test="preCondition != null and preCondition.inspectJobPhaseNodeStatusList !=null and preCondition.inspectJobPhaseNodeStatusList.size() > 0">
+            AND ajpn.status in
+            <foreach collection="preCondition.inspectJobPhaseNodeStatusList" item="status" open="(" close=")" separator=",">
+                #{status}
+            </foreach>
+        </if>
+    </sql>
     <!-- 该SQL语句已经改成在ResourceCenterResourceServiceImpl中动态生成 -->
     <select id="getResourceCountByNameKeyword"
             parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
@@ -337,6 +415,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%'))
             </if>-->
             <include refid="resource_ipobject_where"/>
+            <include refid="resource_ipobject_pre_where"/>
+            ${preConditionWhereSql}
         </where>
     </select>
 
@@ -488,6 +568,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%'))
             </if>-->
             <include refid="resource_ipobject_where"/>
+            <include refid="resource_ipobject_pre_where"/>
+            ${preConditionWhereSql}
         </where>
         <if test="keywordList != null and keywordList.size() > 0">
             group by a.id
@@ -529,6 +611,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             </if>
             <include refid="resource_ipobject_custom_where"/>
             ${conditionSql}
+            <include refid="resource_ipobject_pre_where"/>
+            ${searchVo.preConditionWhereSql}
         </where>
         ORDER BY sid.`id`
         LIMIT #{searchVo.startNum}, #{searchVo.pageSize}
@@ -1905,6 +1989,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </if>
     </sql>
 
+
+
     <select id="getResourceCountByDynamicCondition" resultType="java.lang.Integer">
         SELECT COUNT(DISTINCT sid.`id`)
         FROM @{DATA_SCHEMA}.`scence_ipobject_detail` sid
@@ -1930,6 +2016,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             </if>
             <include refid="resource_ipobject_custom_where"/>
             ${conditionSql}
+            <include refid="resource_ipobject_pre_where"/>
+            ${searchVo.preConditionWhereSql}
         </where>
     </select>
     <select id="getOsResourceListByResourceIdList"
