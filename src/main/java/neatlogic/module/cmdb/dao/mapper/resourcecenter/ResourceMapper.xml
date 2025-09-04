@@ -210,19 +210,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </if>
         <if test="preCondition != null and preCondition.stateIdList != null and preCondition.stateIdList.size() > 0">
             AND a.`state_id` IN
-            <foreach collection="stateIdList" item="stateId" open="(" separator="," close=")">
+            <foreach collection="preCondition.stateIdList" item="stateId" open="(" separator="," close=")">
                 #{stateId}
             </foreach>
         </if>
         <if test="preCondition != null and preCondition.vendorIdList != null and preCondition.vendorIdList.size() > 0">
             AND a.`vendor_id` IN
-            <foreach collection="vendorIdList" item="vendorId" open="(" separator="," close=")">
+            <foreach collection="preCondition.vendorIdList" item="vendorId" open="(" separator="," close=")">
                 #{vendorId}
             </foreach>
         </if>
         <if test="preCondition != null and preCondition.envIdList != null and preCondition.envIdList.size() > 0">
             AND a.`env_id` IN
-            <foreach collection="envIdList" item="envId" open="(" separator="," close=")">
+            <foreach collection="preCondition.envIdList" item="envId" open="(" separator="," close=")">
                 #{envId}
             </foreach>
         </if>
