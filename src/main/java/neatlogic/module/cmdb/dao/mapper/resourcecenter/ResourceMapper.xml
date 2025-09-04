@@ -666,7 +666,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 #{keyword}, '%'))
             </if>
             <include refid="resource_ipobject_where"/>
-            ${conditionSql}
+            ${conditionWhereSql}
             <if test="preCondition != null">
                 <include refid="resource_ipobject_pre_where"/>
                 ${preCondition.conditionWhereSql}
@@ -2005,7 +2005,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 #{keyword}, '%'))
             </if>
             <include refid="resource_ipobject_where"/>
-            ${conditionSql}
+            ${conditionWhereSql}
             <if test="preCondition != null">
                 <include refid="resource_ipobject_custom_pre_where"/>
                 ${preCondition.conditionWhereSql}
