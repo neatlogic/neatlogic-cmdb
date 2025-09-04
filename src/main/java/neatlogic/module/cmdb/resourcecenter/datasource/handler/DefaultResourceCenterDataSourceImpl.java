@@ -650,30 +650,30 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
     public List<ResourceVo> getResourceList(ResourceSearchVo searchVo) {
         String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
         List<ResourceVo> resultList = new ArrayList<>();
-        String getResourceIdListSql = resourceBuildSqlService.buildGetResourceIdListSql(searchVo);
-        List<Long> idList = resourceMapper.getIdListBySql(getResourceIdListSql);
+//        String getResourceIdListSql = resourceBuildSqlService.buildGetResourceIdListSql(searchVo);
+//        List<Long> idList = resourceMapper.getIdListBySql(getResourceIdListSql);
         //是否存在前置条件
         if (searchVo.getPreCondition() != null && searchVo.getPreCondition().isCustomCondition()) {
             StringBuilder preSqlSb = new StringBuilder();
             searchVo.getPreCondition().buildConditionWhereSql(preSqlSb, searchVo.getPreCondition());
             searchVo.setPreConditionWhereSql(preSqlSb.toString());
         }
-        if (Objects.equals(enable, "1")) {
-            List<Long> oldIdList = resourceMapper.getResourceIdList(searchVo);
-            if (!Objects.equals(oldIdList, idList)) {
-                JSONObject errorObj = new JSONObject();
-                errorObj.put("idList", idList);
-                errorObj.put("oldIdList", oldIdList);
-                logger.error("资产清单新旧SQL获取idList结果不一致：{}", errorObj);
-            }
-        }
+//        if (Objects.equals(enable, "1")) {
+            List<Long> idList = resourceMapper.getResourceIdList(searchVo);
+//            if (!Objects.equals(oldIdList, idList)) {
+//                JSONObject errorObj = new JSONObject();
+//                errorObj.put("idList", idList);
+//                errorObj.put("oldIdList", oldIdList);
+//                logger.error("资产清单新旧SQL获取idList结果不一致：{}", errorObj);
+//            }
+//        }
         if (CollectionUtils.isNotEmpty(idList)) {
-            String getResourceListSql = resourceBuildSqlService.buildGetResourceListSql(idList);
-            List<ResourceVo> resourceList = resourceMapper.getResourceListBySql(getResourceListSql);
-            if (Objects.equals(enable, "1")) {
-                List<ResourceVo> oldResourceList = resourceMapper.getResourceListByIdList(idList);
-                checkResourceListIsEquals(resourceList, oldResourceList);
-            }
+//            String getResourceListSql = resourceBuildSqlService.buildGetResourceListSql(idList);
+//            List<ResourceVo> resourceList = resourceMapper.getResourceListBySql(getResourceListSql);
+//            if (Objects.equals(enable, "1")) {
+                List<ResourceVo> resourceList = resourceMapper.getResourceListByIdList(idList);
+//                checkResourceListIsEquals(resourceList, oldResourceList);
+//            }
             //排序
             for (Long id : idList) {
                 for (ResourceVo resourceVo : resourceList) {

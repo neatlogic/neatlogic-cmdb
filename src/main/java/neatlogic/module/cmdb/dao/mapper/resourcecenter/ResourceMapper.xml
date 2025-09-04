@@ -278,6 +278,84 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             </foreach>
         </if>
     </sql>
+
+    <sql id="resource_ipobject_custom_pre_where">
+        <if test="searchVo.preCondition != null and searchVo.preCondition.typeIdList != null and searchVo.preCondition.typeIdList.size() > 0">
+            AND a.`type_id` IN
+            <foreach collection="searchVo.preCondition.typeIdList" item="typeId" open="(" separator="," close=")">
+                #{typeId}
+            </foreach>
+        </if>
+        <if test="preCondition != null and searchVo.preCondition.stateIdList != null and searchVo.preCondition.stateIdList.size() > 0">
+            AND a.`state_id` IN
+            <foreach collection="searchVo.preCondition.stateIdList" item="stateId" open="(" separator="," close=")">
+                #{stateId}
+            </foreach>
+        </if>
+        <if test="preCondition != null and searchVo.preCondition.vendorIdList != null and searchVo.preCondition.vendorIdList.size() > 0">
+            AND a.`vendor_id` IN
+            <foreach collection="searchVo.preCondition.vendorIdList" item="vendorId" open="(" separator="," close=")">
+                #{vendorId}
+            </foreach>
+        </if>
+        <if test="searchVo.preCondition != null and searchVo.preCondition.envIdList != null and searchVo.preCondition.envIdList.size() > 0">
+            AND a.`env_id` IN
+            <foreach collection="searchVo.preCondition.envIdList" item="envId" open="(" separator="," close=")">
+                #{envId}
+            </foreach>
+        </if>
+        <if test="searchVo.preCondition != null and searchVo.preCondition.isExistNoEnv">
+            AND a.`env_id` is null
+        </if>
+        <if test="searchVo.preCondition != null and searchVo.preCondition.appSystemIdList != null and searchVo.preCondition.appSystemIdList.size() > 0">
+            AND a.`app_system_id` IN
+            <foreach collection="searchVo.preCondition.appSystemIdList" item="appSystemId" open="(" separator="," close=")">
+                #{appSystemId}
+            </foreach>
+        </if>
+        <if test="searchVo.preCondition != null and searchVo.preCondition.appModuleIdList != null and searchVo.preCondition.appModuleIdList.size() > 0">
+            AND a.`app_module_id` IN
+            <foreach collection="searchVo.preCondition.appModuleIdList" item="appModuleId" open="(" separator="," close=")">
+                #{appModuleId}
+            </foreach>
+        </if>
+        <if test="searchVo.preCondition != null and searchVo.preCondition.defaultValue != null and searchVo.preCondition.defaultValue.size() > 0">
+            AND a.`id` IN
+            <foreach collection="searchVo.preCondition.defaultValue" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+        <if test="searchVo.preCondition != null and searchVo.preCondition.idList != null and searchVo.preCondition.idList.size() > 0">
+            AND a.`id` IN
+            <foreach collection="searchVo.preCondition.idList" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+        <if test="searchVo.preCondition != null and searchVo.preCondition.inspectStatusList != null and searchVo.preCondition.inspectStatusList.size() > 0">
+            AND a.`inspect_status` IN
+            <foreach collection="searchVo.preCondition.inspectStatusList" item="inspectStatus" open="(" separator="," close=")">
+                #{inspectStatus}
+            </foreach>
+        </if>
+        <if test="searchVo.preCondition != null and searchVo.preCondition.protocolIdList != null and searchVo.preCondition.protocolIdList.size() > 0">
+            AND c.`protocol_id` IN
+            <foreach collection="searchVo.preCondition.protocolIdList" item="protocolId" open="(" separator="," close=")">
+                #{protocolId}
+            </foreach>
+        </if>
+        <if test="searchVo.preCondition != null and searchVo.preCondition.tagIdList != null and searchVo.preCondition.tagIdList.size() > 0">
+            AND d.`tag_id` IN
+            <foreach collection="searchVo.preCondition.tagIdList" item="tagId" open="(" separator="," close=")">
+                #{tagId}
+            </foreach>
+        </if>
+        <if test="searchVo.preCondition != null and searchVo.preCondition.inspectJobPhaseNodeStatusList !=null and searchVo.preCondition.inspectJobPhaseNodeStatusList.size() > 0">
+            AND ajpn.status in
+            <foreach collection="searchVo.preCondition.inspectJobPhaseNodeStatusList" item="status" open="(" close=")" separator=",">
+                #{status}
+            </foreach>
+        </if>
+    </sql>
     <!-- 该SQL语句已经改成在ResourceCenterResourceServiceImpl中动态生成 -->
     <select id="getResourceCountByNameKeyword"
             parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
@@ -2016,7 +2094,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             </if>
             <include refid="resource_ipobject_custom_where"/>
             ${conditionSql}
-            <include refid="resource_ipobject_pre_where"/>
+            <include refid="resource_ipobject_custom_pre_where"/>
             ${searchVo.preConditionWhereSql}
         </where>
     </select>
