@@ -607,6 +607,12 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                     }
                 }
             } else {
+                //是否存在前置条件
+                if (searchVo.getPreCondition() != null && searchVo.getPreCondition().isCustomCondition()) {
+                    StringBuilder preSqlSb = new StringBuilder();
+                    searchVo.getPreCondition().buildConditionWhereSql(preSqlSb, searchVo.getPreCondition());
+                    searchVo.getPreCondition().setConditionWhereSql(preSqlSb.toString());
+                }
                 oldRowNum = resourceMapper.getResourceCount(searchVo);
             }
         }
@@ -637,6 +643,12 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             newIdList = resourceMapper.getIdListBySql(sql);
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            //是否存在前置条件
+            if (searchVo.getPreCondition() != null && searchVo.getPreCondition().isCustomCondition()) {
+                StringBuilder preSqlSb = new StringBuilder();
+                searchVo.getPreCondition().buildConditionWhereSql(preSqlSb, searchVo.getPreCondition());
+                searchVo.getPreCondition().setConditionWhereSql(preSqlSb.toString());
+            }
             oldIdList = resourceMapper.getResourceIdList(searchVo);
         }
         if (Objects.equals(enable, COMPARISON_ENABLED)) {
@@ -768,6 +780,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             return false;
         }
         if (CollectionUtils.isNotEmpty(searchVo.getInspectJobPhaseNodeStatusList())) {
+            return false;
+        }
+        if (CollectionUtils.isNotEmpty(searchVo.getConditionGroupList())) {
             return false;
         }
         return true;
