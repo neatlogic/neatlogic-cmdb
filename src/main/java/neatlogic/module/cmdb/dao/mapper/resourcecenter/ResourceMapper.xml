@@ -259,82 +259,82 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     </sql>
 
     <sql id="resource_ipobject_custom_pre_where">
-        <if test="searchVo.preCondition.typeIdList != null and searchVo.preCondition.typeIdList.size() > 0">
+        <if test="preCondition.typeIdList != null and preCondition.typeIdList.size() > 0">
             AND a.`type_id` IN
-            <foreach collection="searchVo.preCondition.typeIdList" item="typeId" open="(" separator="," close=")">
+            <foreach collection="preCondition.typeIdList" item="typeId" open="(" separator="," close=")">
                 #{typeId}
             </foreach>
         </if>
-        <if test="searchVo.preCondition != null and searchVo.preCondition.stateIdList != null and searchVo.preCondition.stateIdList.size() > 0">
+        <if test="preCondition != null and preCondition.stateIdList != null and preCondition.stateIdList.size() > 0">
             AND a.`state_id` IN
-            <foreach collection="searchVo.preCondition.stateIdList" item="stateId" open="(" separator="," close=")">
+            <foreach collection="preCondition.stateIdList" item="stateId" open="(" separator="," close=")">
                 #{stateId}
             </foreach>
         </if>
-        <if test="searchVo.preCondition.vendorIdList != null and searchVo.preCondition.vendorIdList.size() > 0">
+        <if test="preCondition.vendorIdList != null and preCondition.vendorIdList.size() > 0">
             AND a.`vendor_id` IN
-            <foreach collection="searchVo.preCondition.vendorIdList" item="vendorId" open="(" separator="," close=")">
+            <foreach collection="preCondition.vendorIdList" item="vendorId" open="(" separator="," close=")">
                 #{vendorId}
             </foreach>
         </if>
-        <if test="searchVo.preCondition.envIdList != null and searchVo.preCondition.envIdList.size() > 0">
+        <if test="preCondition.envIdList != null and preCondition.envIdList.size() > 0">
             AND a.`env_id` IN
-            <foreach collection="searchVo.preCondition.envIdList" item="envId" open="(" separator="," close=")">
+            <foreach collection="preCondition.envIdList" item="envId" open="(" separator="," close=")">
                 #{envId}
             </foreach>
         </if>
-        <if test="searchVo.preCondition.isExistNoEnv">
+        <if test="preCondition.isExistNoEnv">
             AND a.`env_id` is null
         </if>
-        <if test="searchVo.preCondition.appSystemIdList != null and searchVo.preCondition.appSystemIdList.size() > 0">
+        <if test="preCondition.appSystemIdList != null and preCondition.appSystemIdList.size() > 0">
             AND a.`app_system_id` IN
-            <foreach collection="searchVo.preCondition.appSystemIdList" item="appSystemId" open="(" separator=","
+            <foreach collection="preCondition.appSystemIdList" item="appSystemId" open="(" separator=","
                      close=")">
                 #{appSystemId}
             </foreach>
         </if>
-        <if test="searchVo.preCondition.appModuleIdList != null and searchVo.preCondition.appModuleIdList.size() > 0">
+        <if test="preCondition.appModuleIdList != null and preCondition.appModuleIdList.size() > 0">
             AND a.`app_module_id` IN
-            <foreach collection="searchVo.preCondition.appModuleIdList" item="appModuleId" open="(" separator=","
+            <foreach collection="preCondition.appModuleIdList" item="appModuleId" open="(" separator=","
                      close=")">
                 #{appModuleId}
             </foreach>
         </if>
-        <if test="searchVo.preCondition.defaultValue != null and searchVo.preCondition.defaultValue.size() > 0">
+        <if test="preCondition.defaultValue != null and preCondition.defaultValue.size() > 0">
             AND a.`id` IN
-            <foreach collection="searchVo.preCondition.defaultValue" item="id" open="(" separator="," close=")">
+            <foreach collection="preCondition.defaultValue" item="id" open="(" separator="," close=")">
                 #{id}
             </foreach>
         </if>
-        <if test="searchVo.preCondition.idList != null and searchVo.preCondition.idList.size() > 0">
+        <if test="preCondition.idList != null and preCondition.idList.size() > 0">
             AND a.`id` IN
-            <foreach collection="searchVo.preCondition.idList" item="id" open="(" separator="," close=")">
+            <foreach collection="preCondition.idList" item="id" open="(" separator="," close=")">
                 #{id}
             </foreach>
         </if>
-        <if test="searchVo.preCondition.inspectStatusList != null and searchVo.preCondition.inspectStatusList.size() > 0">
+        <if test="preCondition.inspectStatusList != null and preCondition.inspectStatusList.size() > 0">
             AND a.`inspect_status` IN
-            <foreach collection="searchVo.preCondition.inspectStatusList" item="inspectStatus" open="(" separator=","
+            <foreach collection="preCondition.inspectStatusList" item="inspectStatus" open="(" separator=","
                      close=")">
                 #{inspectStatus}
             </foreach>
         </if>
-        <if test="searchVo.preCondition.protocolIdList != null and searchVo.preCondition.protocolIdList.size() > 0">
+        <if test="preCondition.protocolIdList != null and preCondition.protocolIdList.size() > 0">
             AND c.`protocol_id` IN
-            <foreach collection="searchVo.preCondition.protocolIdList" item="protocolId" open="(" separator=","
+            <foreach collection="preCondition.protocolIdList" item="protocolId" open="(" separator=","
                      close=")">
                 #{protocolId}
             </foreach>
         </if>
-        <if test="searchVo.preCondition.tagIdList != null and searchVo.preCondition.tagIdList.size() > 0">
+        <if test="preCondition.tagIdList != null and preCondition.tagIdList.size() > 0">
             AND d.`tag_id` IN
-            <foreach collection="searchVo.preCondition.tagIdList" item="tagId" open="(" separator="," close=")">
+            <foreach collection="preCondition.tagIdList" item="tagId" open="(" separator="," close=")">
                 #{tagId}
             </foreach>
         </if>
-        <if test="searchVo.preCondition.inspectJobPhaseNodeStatusList !=null and searchVo.preCondition.inspectJobPhaseNodeStatusList.size() > 0">
+        <if test="preCondition.inspectJobPhaseNodeStatusList !=null and preCondition.inspectJobPhaseNodeStatusList.size() > 0">
             AND ajpn.status in
-            <foreach collection="searchVo.preCondition.inspectJobPhaseNodeStatusList" item="status" open="(" close=")"
+            <foreach collection="preCondition.inspectJobPhaseNodeStatusList" item="status" open="(" close=")"
                      separator=",">
                 #{status}
             </foreach>
