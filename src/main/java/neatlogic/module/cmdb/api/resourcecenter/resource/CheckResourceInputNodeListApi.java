@@ -94,6 +94,7 @@ public class CheckResourceInputNodeListApi extends PrivateApiComponentBase {
                 }
                 StringBuilder sqlSb = new StringBuilder();
                 searchVo.buildConditionWhereSql(sqlSb, searchVo);
+                searchVo.setConditionWhereSql(sqlSb.toString());
                 searchVo.setPageSize(1);
                 for (int i = 0; i < inputNodeList.size(); i++) {
                     JSONObject inputNodeObj = inputNodeList.getJSONObject(i);
@@ -109,7 +110,7 @@ public class CheckResourceInputNodeListApi extends PrivateApiComponentBase {
                         searchVo.getPreCondition().buildConditionWhereSql(preSqlSb, searchVo.getPreCondition());
                         searchVo.getPreCondition().setConditionWhereSql(preSqlSb.toString());
                     }
-                    List<Long> idList = resourceMapper.getResourceIdListByDynamicCondition(searchVo, sqlSb.toString());
+                    List<Long> idList = resourceMapper.getResourceIdListByDynamicCondition(searchVo);
                     if (CollectionUtils.isEmpty(idList)) {
                         if (!nonExistList.contains(inputNodeObj)) {
                             nonExistList.add(inputNodeObj);
