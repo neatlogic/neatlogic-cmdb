@@ -99,4 +99,9 @@ public interface IResourceCenterResourceService {
      */
     void addAccountInformation(List<ResourceVo> resourceList);
 
+    int getResourceCount(ResourceSearchVo searchVo);
+
+    List<Long> getResourceIdList(ResourceSearchVo searchVo);
+
+    List<ResourceVo> getResourceListByIdList(List<Long> idList);
 }
