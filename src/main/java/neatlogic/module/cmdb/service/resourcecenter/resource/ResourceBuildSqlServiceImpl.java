@@ -25,7 +25,7 @@ import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.AccountComponentVo;
-import neatlogic.framework.cmdb.dto.resourcecenter.ResourceCustomConditionConfigVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.ResourceConditionConfigVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.*;
@@ -1021,7 +1021,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
             JSONObject conditionConfigObj = new JSONObject();
             conditionConfigObj.put("conditionGroupList", searchVo.getConditionGroupList());
             conditionConfigObj.put("conditionGroupRelList", searchVo.getConditionGroupRelList());
-            ResourceCustomConditionConfigVo resourceConditionConfigVo = conditionConfigObj.toJavaObject(ResourceCustomConditionConfigVo.class);
+            ResourceConditionConfigVo resourceConditionConfigVo = conditionConfigObj.toJavaObject(ResourceConditionConfigVo.class);
             List<String> filterItemFieldNameList2 = resourceConditionConfigVo.getFilterItemFieldNameList();
             System.out.println("filterItemFieldNameList2 = " + filterItemFieldNameList2);
             filterItemFieldNameList.addAll(filterItemFieldNameList2);

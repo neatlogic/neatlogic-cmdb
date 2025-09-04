@@ -147,7 +147,7 @@ public class ExportResourceApi extends PrivateBinaryStreamApiComponentBase {
             if (searchVo.getPreCondition() != null && searchVo.getPreCondition().isCustomCondition()) {
                 StringBuilder preSqlSb = new StringBuilder();
                 searchVo.getPreCondition().buildConditionWhereSql(preSqlSb, searchVo.getPreCondition());
-                searchVo.setPreConditionWhereSql(preSqlSb.toString());
+                searchVo.getPreCondition().setConditionWhereSql(preSqlSb.toString());
             }
             int rowNum = resourceMapper.getResourceCount(searchVo);
             if (rowNum > 0) {

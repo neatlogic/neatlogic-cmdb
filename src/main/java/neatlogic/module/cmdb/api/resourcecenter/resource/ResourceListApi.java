@@ -105,13 +105,19 @@ public class ResourceListApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         ResourceSearchVo searchVo;
+        ResourceSearchVo preCondition = null;
         JSONArray defaultValue = jsonObj.getJSONArray("defaultValue");
+        //先处理前置过滤器
+        if (jsonObj.containsKey("preCondition")) {
+            preCondition = resourceCenterResourceService.assembleResourceSearchVo(jsonObj.getJSONObject("preCondition"));
+        }
         if (CollectionUtils.isNotEmpty(defaultValue)) {
             searchVo = new ResourceSearchVo();
             searchVo.setDefaultValue(defaultValue);
         } else {
             searchVo = resourceCenterResourceService.assembleResourceSearchVo(jsonObj);
         }
+        searchVo.setPreCondition(preCondition);
         resourceCenterResourceService.handleBatchSearchList(searchVo);
         resourceCenterResourceService.setIpFieldAttrIdAndNameFieldAttrId(searchVo);
         IResourceCenterDataSource resourceCenterDataSource = ResourceCenterDataSourceFactory.getResourceCenterDataSource();

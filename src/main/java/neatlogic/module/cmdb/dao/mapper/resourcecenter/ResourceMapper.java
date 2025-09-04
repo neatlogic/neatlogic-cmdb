@@ -57,12 +57,12 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     int getAllResourceCount(ResourceSearchVo searchVo);
 
-    int getResourceCountByDynamicCondition(@Param("searchVo") ResourceSearchVo searchVo, @Param("conditionSql") String conditionSql);
+    int getResourceCountByDynamicCondition(ResourceSearchVo searchVo);
 
     @Deprecated
     List<Long> getResourceIdList(ResourceSearchVo searchVo);
 
-    List<Long> getResourceIdListByDynamicCondition(@Param("searchVo") ResourceSearchVo searchVo, @Param("conditionSql") String conditionSql);
+    List<Long> getResourceIdListByDynamicCondition(ResourceSearchVo searchVo);
     @Deprecated
     List<ResourceVo> getResourceListByIdList(List<Long> idList);
 

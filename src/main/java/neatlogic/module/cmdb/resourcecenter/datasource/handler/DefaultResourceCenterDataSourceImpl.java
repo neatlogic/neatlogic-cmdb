@@ -656,7 +656,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
         if (searchVo.getPreCondition() != null && searchVo.getPreCondition().isCustomCondition()) {
             StringBuilder preSqlSb = new StringBuilder();
             searchVo.getPreCondition().buildConditionWhereSql(preSqlSb, searchVo.getPreCondition());
-            searchVo.setPreConditionWhereSql(preSqlSb.toString());
+            searchVo.getPreCondition().setConditionWhereSql(preSqlSb.toString());
         }
 //        if (Objects.equals(enable, "1")) {
             List<Long> idList = resourceMapper.getResourceIdList(searchVo);
