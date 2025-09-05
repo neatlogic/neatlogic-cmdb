@@ -594,27 +594,13 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             newRowNum = resourceMapper.getCountBySql(sql);
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
-            if (noFilterCondition(searchVo)) {
-                ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
-                if (resourceEntityVo != null) {
-                    ResourceEntityConfigVo config = resourceEntityVo.getConfig();
-                    if (config != null) {
-                        CiVo ciVo = ciMapper.getCiByName(config.getMainCi());
-                        if (ciVo != null) {
-                            searchVo.setViewName(ciVo.getCiTableName(false));
-                            oldRowNum = resourceMapper.getAllResourceCount(searchVo);
-                        }
-                    }
-                }
-            } else {
-                //是否存在前置条件
-                if (searchVo.getPreCondition() != null && searchVo.getPreCondition().isCustomCondition()) {
-                    StringBuilder preSqlSb = new StringBuilder();
-                    searchVo.getPreCondition().buildConditionWhereSql(preSqlSb, searchVo.getPreCondition());
-                    searchVo.getPreCondition().setConditionWhereSql(preSqlSb.toString());
-                }
-                oldRowNum = resourceMapper.getResourceCount(searchVo);
+            //是否存在前置条件
+            if (searchVo.getPreCondition() != null && searchVo.getPreCondition().isCustomCondition()) {
+                StringBuilder preSqlSb = new StringBuilder();
+                searchVo.getPreCondition().buildConditionWhereSql(preSqlSb, searchVo.getPreCondition());
+                searchVo.getPreCondition().setConditionWhereSql(preSqlSb.toString());
             }
+            oldRowNum = resourceMapper.getResourceCount(searchVo);
         }
         if (Objects.equals(enable, COMPARISON_ENABLED)) {
             if (oldRowNum != newRowNum) {
