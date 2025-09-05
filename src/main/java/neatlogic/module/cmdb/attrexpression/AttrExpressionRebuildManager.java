@@ -433,9 +433,9 @@ public class AttrExpressionRebuildManager {
         job.execute(rebuildAuditVo, rebuildAuditVo1 -> {
             if (rebuildAuditVo1.getLock() != null) {
                 try {
-                    //System.out.println("重建表达式尝试获取锁：" + rebuildAuditVo1.getLock());
+                    System.out.println("重建表达式尝试获取锁：" + rebuildAuditVo1.getLock());
                     rebuildAuditVo1.getLock().acquire();
-                    //System.out.println("重建表达式成功获取锁：" + rebuildAuditVo1.getLock());
+                    System.out.println("重建表达式成功获取锁：" + rebuildAuditVo1.getLock());
                 } catch (InterruptedException ignored) {
 
                 }
