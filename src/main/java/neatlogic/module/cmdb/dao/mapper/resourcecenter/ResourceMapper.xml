@@ -183,19 +183,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 #{tagId}
             </foreach>
         </if>
-        <!--<if test="batchSearchList != null and batchSearchList.size() > 0 and searchField != null and searchField != ''">
-            AND
-            <if test="searchField == 'name'">
-                <foreach collection="batchSearchList" item="item" open="(" separator=" OR " close=")">
-                    a.`name` LIKE #{item}
-                </foreach>
-            </if>
-            <if test="searchField == 'ip'">
-                <foreach collection="batchSearchList" item="item" open="(" separator=" OR " close=")">
-                    a.`ip` LIKE #{item}
-                </foreach>
-            </if>
-        </if>-->
+        <if test="keywordList != null and keywordList.size() > 0">
+            AND fw.word IN
+            <foreach collection="keywordList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <if test="batchSearchList != null and batchSearchList.size() > 0 and searchField != null and searchField != ''">
+            AND fw2.word IN
+            <foreach collection="batchSearchList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
         <if test="inspectJobPhaseNodeStatusList !=null and inspectJobPhaseNodeStatusList.size() > 0">
             AND ajpn.status in
             <foreach collection="inspectJobPhaseNodeStatusList" item="status" open="(" close=")" separator=",">
@@ -254,6 +253,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             AND d.`tag_id` IN
             <foreach collection="preCondition.tagIdList" item="tagId" open="(" separator="," close=")">
                 #{tagId}
+            </foreach>
+        </if>
+        <if test="preCondition.keywordList != null and preCondition.keywordList.size() > 0">
+            AND fw.word IN
+            <foreach collection="preCondition.keywordList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <if test="preCondition.batchSearchList != null and preCondition.batchSearchList.size() > 0 and preCondition.searchField != null and preCondition.searchField != ''">
+            AND fw2.word IN
+            <foreach collection="preCondition.batchSearchList" item="item" open="(" close=")" separator=",">
+                #{item}
             </foreach>
         </if>
     </sql>
@@ -362,11 +373,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             JOIN fulltextindex_field_cmdb ffc ON ffc.target_id = a.id AND ffc.target_field IN (#{nameFieldAttrId},
             #{ipFieldAttrId})
             JOIN fulltextindex_word fw ON ffc.word_id = fw.id
-            AND (fw.word IN
-            <foreach collection="keywordList" item="item" open="(" close=")" separator=",">
-                #{item}
-            </foreach>
-            )
         </if>
         <if test="batchSearchList != null and batchSearchList.size() > 0 and searchField != null and searchField != ''">
             JOIN fulltextindex_field_cmdb ffc2 ON ffc2.target_id = a.id
@@ -379,11 +385,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 </otherwise>
             </choose>
             JOIN fulltextindex_word fw2 ON ffc2.word_id = fw2.id
-            AND (fw2.word IN
-            <foreach collection="batchSearchList" item="item" open="(" close=")" separator=",">
-                #{item}
-            </foreach>
-            )
         </if>
         <where>
             <!--<if test="keyword != null and keyword != ''">

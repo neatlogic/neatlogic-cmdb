@@ -153,7 +153,7 @@ public class ExportResourceApi extends PrivateBinaryStreamApiComponentBase {
             if (rowNum > 0) {
                 searchVo.setPageSize(100);
                 searchVo.setRowNum(rowNum);
-                resourceCenterResourceService.setIsIpFieldSortAndIsNameFieldSort(searchVo);
+//                resourceCenterResourceService.setIsIpFieldSortAndIsNameFieldSort(searchVo);
                 for (int i = 1; i <= searchVo.getPageCount(); i++) {
                     searchVo.setCurrentPage(i);
                     List<Long> idList = resourceMapper.getResourceIdList(searchVo);

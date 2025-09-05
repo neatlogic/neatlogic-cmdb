@@ -600,6 +600,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 searchVo.getPreCondition().buildConditionWhereSql(preSqlSb, searchVo.getPreCondition());
                 searchVo.getPreCondition().setConditionWhereSql(preSqlSb.toString());
             }
+            StringBuilder sqlSb = new StringBuilder();
+            searchVo.buildConditionWhereSql(sqlSb, searchVo);
+            searchVo.setConditionWhereSql(sqlSb.toString());
             oldRowNum = resourceMapper.getResourceCount(searchVo);
         }
         if (Objects.equals(enable, COMPARISON_ENABLED)) {
@@ -635,6 +638,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 searchVo.getPreCondition().buildConditionWhereSql(preSqlSb, searchVo.getPreCondition());
                 searchVo.getPreCondition().setConditionWhereSql(preSqlSb.toString());
             }
+            StringBuilder sqlSb = new StringBuilder();
+            searchVo.buildConditionWhereSql(sqlSb, searchVo);
+            searchVo.setConditionWhereSql(sqlSb.toString());
             oldIdList = resourceMapper.getResourceIdList(searchVo);
         }
         if (Objects.equals(enable, COMPARISON_ENABLED)) {
