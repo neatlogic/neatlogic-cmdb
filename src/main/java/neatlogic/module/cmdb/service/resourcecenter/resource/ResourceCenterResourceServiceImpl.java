@@ -683,6 +683,30 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         return new ArrayList<>();
     }
 
+    @Override
+    public List<ResourceVo> getResourceListByIdList(List<Long> idList, List<String> selectFieldNameList) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        List<ResourceVo> newResourceList = new ArrayList<>();
+        List<ResourceVo> oldResourceList = new ArrayList<>();
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = resourceBuildSqlService.buildGetResourceListSql(idList, selectFieldNameList);
+            newResourceList = resourceMapper.getResourceListBySql(sql);
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldResourceList = resourceMapper.getResourceListByIdList(idList);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            checkResourceListIsEquals(newResourceList, oldResourceList);
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newResourceList;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldResourceList;
+        }
+        return new ArrayList<>();
+    }
+
 //    public Object example() {
 //        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
 //        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);

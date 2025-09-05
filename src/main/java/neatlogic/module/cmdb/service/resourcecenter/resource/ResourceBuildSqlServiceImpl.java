@@ -2595,6 +2595,11 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getInspectStatusList())) {
             filterItemFieldNameSet.add("inspect_status");
         }
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getInputNodeList())) {
+            filterItemFieldNameSet.add("name");
+            filterItemFieldNameSet.add("ip");
+            filterItemFieldNameSet.add("port");
+        }
         if (queryCriteriaVo.getConditionConfig() != null) {
             filterItemFieldNameSet.addAll(queryCriteriaVo.getConditionConfig().getFilterItemFieldNameList());
         }
@@ -2974,6 +2979,31 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getInspectStatusList())) {
 //            System.out.println("x");
             whereExpressionList.add($sql.exp(fieldName2ColumnMap.get("inspect_status").toString(), "in", queryCriteriaVo.getInspectStatusList()));
+        }
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getInputNodeList())) {
+            ExpressionVo orExp = null;
+            for (ResourceVo inputNode : queryCriteriaVo.getInputNodeList()) {
+                Column ipColumn = fieldName2ColumnMap.get("ip");
+                ExpressionVo andExp = $sql.exp(ipColumn.toString(), "=", $sql.value(inputNode.getIp()));
+                Column portColumn = fieldName2ColumnMap.get("port");
+                if (inputNode.getPort() != null) {
+                    andExp = $sql.exp(andExp, "and", $sql.exp(portColumn.toString(), "=", inputNode.getPort()));
+                } else {
+                    andExp = $sql.exp(andExp, "and", $sql.exp(portColumn.toString(), "is null"));
+                }
+                if (StringUtils.isNotBlank(inputNode.getName())) {
+                    Column nameColumn = fieldName2ColumnMap.get("name");
+                    andExp = $sql.exp(andExp, "and", $sql.exp(nameColumn.toString(), "=", $sql.value(inputNode.getName())));
+                }
+                andExp = $sql.exp("(", andExp, ")");
+                if (orExp == null) {
+                    orExp = andExp;
+                } else {
+                    orExp = $sql.exp(orExp, "or", andExp);
+                }
+            }
+            orExp = $sql.exp("(", orExp, ")");
+            whereExpressionList.add(orExp);
         }
         sqlVo.withAddJoinList(joinList);
         sqlVo.withAddWhereExpressionList(whereExpressionList);

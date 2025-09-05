@@ -23,19 +23,17 @@ import neatlogic.framework.cmdb.auth.label.CMDB;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.dto.condition.ConditionGroupRelVo;
-import neatlogic.framework.dto.condition.ConditionGroupVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -77,97 +75,36 @@ public class CheckResourceInputNodeListApi extends PrivateApiComponentBase {
         JSONArray inputNodeList = paramObj.getJSONArray("inputNodeList");
         JSONObject filter = paramObj.getJSONObject("filter");
         String cmdbGroupType = paramObj.getString("cmdbGroupType");
-        if (MapUtils.isNotEmpty(filter)) {
-            // 判断过滤条件是简单模式还是高级模式
-            if (filter.containsKey("conditionGroupList")) {
-                // 高级模式
-                ResourceSearchVo searchVo = new ResourceSearchVo();
-                JSONArray conditionGroupArray = filter.getJSONArray("conditionGroupList");
-                if (CollectionUtils.isNotEmpty(conditionGroupArray)) {
-                    List<ConditionGroupVo> conditionGroupList = conditionGroupArray.toJavaList(ConditionGroupVo.class);
-                    searchVo.setConditionGroupList(conditionGroupList);
-                }
-                JSONArray conditionGroupRelArray = filter.getJSONArray("conditionGroupRelList");
-                if (CollectionUtils.isNotEmpty(conditionGroupRelArray)) {
-                    List<ConditionGroupRelVo> conditionGroupRelList = conditionGroupRelArray.toJavaList(ConditionGroupRelVo.class);
-                    searchVo.setConditionGroupRelList(conditionGroupRelList);
-                }
-                StringBuilder sqlSb = new StringBuilder();
-                searchVo.buildConditionWhereSql(sqlSb, searchVo);
-                searchVo.setConditionWhereSql(sqlSb.toString());
-                searchVo.setPageSize(1);
-                for (int i = 0; i < inputNodeList.size(); i++) {
-                    JSONObject inputNodeObj = inputNodeList.getJSONObject(i);
-                    ResourceSearchVo node = JSON.toJavaObject(inputNodeObj, ResourceSearchVo.class);
-                    searchVo.setCmdbGroupType(cmdbGroupType);
-                    searchVo.setIp(node.getIp());
-                    searchVo.setPort(node.getPort());
-                    searchVo.setName(node.getName());
-                    searchVo.setCmdbGroupType(cmdbGroupType);
-                    //是否存在前置条件
-                    if (searchVo.getPreCondition() != null && searchVo.getPreCondition().isCustomCondition()) {
-                        StringBuilder preSqlSb = new StringBuilder();
-                        searchVo.getPreCondition().buildConditionWhereSql(preSqlSb, searchVo.getPreCondition());
-                        searchVo.getPreCondition().setConditionWhereSql(preSqlSb.toString());
-                    }
-//                    List<Long> idList = resourceMapper.getResourceIdListByDynamicCondition(searchVo);
-                    List<Long> idList = resourceMapper.getResourceIdList(searchVo);
-                    if (CollectionUtils.isEmpty(idList)) {
-                        if (!nonExistList.contains(inputNodeObj)) {
-                            nonExistList.add(inputNodeObj);
-                        }
-
-                    } else {
-                        if (!existList.contains(inputNodeObj)) {
-                            existList.add(inputNodeObj);
-                        }
-                    }
-                }
-            } else {
-                // 简单模式
-                List<ResourceVo> nodeList = new ArrayList<>();
-                ResourceSearchVo searchVo = resourceCenterResourceService.assembleResourceSearchVo(filter);
-                searchVo.setCmdbGroupType(cmdbGroupType);
-                for (int i = 0; i < inputNodeList.size(); i++) {
-                    JSONObject inputNodeObj = inputNodeList.getJSONObject(i);
-                    ResourceVo node = JSON.toJavaObject(inputNodeObj, ResourceVo.class);
-                    nodeList.add(node);
-                    if (nodeList.size() > 100) {
-                        searchVo.setInputNodeList(nodeList);
-                        List<ResourceVo> resourceList = resourceMapper.getResourceListByIpAndPortAndNameWithFilter(searchVo);
-                        existsOrNot(nodeList, resourceList, existList, nonExistList);
-                        nodeList.clear();
-                    }
-                }
-                if (CollectionUtils.isNotEmpty(nodeList)) {
-                    searchVo.setInputNodeList(nodeList);
-                    List<ResourceVo> resourceList = resourceMapper.getResourceListByIpAndPortAndNameWithFilter(searchVo);
-                    existsOrNot(nodeList, resourceList, existList, nonExistList);
-                    nodeList.clear();
-                }
-            }
-        } else {
-            // 没有过滤条件
-            List<ResourceVo> nodeList = new ArrayList<>();
-            ResourceSearchVo searchVo = resourceCenterResourceService.assembleResourceSearchVo(new JSONObject());
-            searchVo.setCmdbGroupType(cmdbGroupType);
-            for (int i = 0; i < inputNodeList.size(); i++) {
-                JSONObject inputNodeObj = inputNodeList.getJSONObject(i);
-                ResourceVo node = JSON.toJavaObject(inputNodeObj, ResourceVo.class);
-                nodeList.add(node);
-                if (nodeList.size() > 100) {
-                    searchVo.setInputNodeList(nodeList);
-                    List<ResourceVo> resourceList = resourceMapper.getResourceListByIpAndPortAndName(searchVo);
-                    existsOrNot(nodeList, resourceList, existList, nonExistList);
-                    nodeList.clear();
-                }
-            }
-            if (CollectionUtils.isNotEmpty(nodeList)) {
+        List<String> selectFieldNameList = Arrays.asList("id", "name", "ip", "port");
+        List<ResourceVo> nodeList = new ArrayList<>();
+        ResourceSearchVo searchVo = resourceCenterResourceService.assembleResourceSearchVo(filter);
+        searchVo.setCmdbGroupType(cmdbGroupType);
+        for (int i = 0; i < inputNodeList.size(); i++) {
+            JSONObject inputNodeObj = inputNodeList.getJSONObject(i);
+            ResourceVo node = JSON.toJavaObject(inputNodeObj, ResourceVo.class);
+            nodeList.add(node);
+            if (nodeList.size() > 100) {
                 searchVo.setInputNodeList(nodeList);
-                List<ResourceVo> resourceList = resourceMapper.getResourceListByIpAndPortAndName(searchVo);
+                searchVo.setPageSize(500);
+                List<ResourceVo> resourceList = new ArrayList<>();
+                List<Long> idList = resourceCenterResourceService.getResourceIdList(searchVo);
+                if (CollectionUtils.isNotEmpty(idList)) {
+                    resourceList = resourceCenterResourceService.getResourceListByIdList(idList, selectFieldNameList);
+                }
                 existsOrNot(nodeList, resourceList, existList, nonExistList);
                 nodeList.clear();
             }
+        }
+        if (CollectionUtils.isNotEmpty(nodeList)) {
+            searchVo.setInputNodeList(nodeList);
+            searchVo.setPageSize(500);
+            List<ResourceVo> resourceList = new ArrayList<>();
+            List<Long> idList = resourceCenterResourceService.getResourceIdList(searchVo);
+            if (CollectionUtils.isNotEmpty(idList)) {
+                resourceList = resourceCenterResourceService.getResourceListByIdList(idList, selectFieldNameList);
+            }
+            existsOrNot(nodeList, resourceList, existList, nonExistList);
+            nodeList.clear();
         }
         JSONObject resultObj = new JSONObject();
         resultObj.put("existList", existList);
