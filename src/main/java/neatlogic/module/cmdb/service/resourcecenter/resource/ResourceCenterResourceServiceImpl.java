@@ -590,6 +590,12 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         int oldRowNum = 0;
         int newRowNum = 0;
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            if (searchVo.getPreCondition() != null && searchVo.getPreCondition().isCustomCondition()) {
+                handleBatchSearchList(searchVo.getPreCondition());
+                setIpFieldAttrIdAndNameFieldAttrId(searchVo.getPreCondition());
+            }
+            handleBatchSearchList(searchVo);
+            setIpFieldAttrIdAndNameFieldAttrId(searchVo);
             String sql = resourceBuildSqlService.buildGetResourceCountSql(searchVo);
             newRowNum = resourceMapper.getCountBySql(sql);
         }
@@ -632,6 +638,12 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         List<Long> newIdList = new ArrayList<>();
         List<Long> oldIdList = new ArrayList<>();
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            if (searchVo.getPreCondition() != null && searchVo.getPreCondition().isCustomCondition()) {
+                handleBatchSearchList(searchVo.getPreCondition());
+                setIpFieldAttrIdAndNameFieldAttrId(searchVo.getPreCondition());
+            }
+            handleBatchSearchList(searchVo);
+            setIpFieldAttrIdAndNameFieldAttrId(searchVo);
             String sql = resourceBuildSqlService.buildGetResourceIdListSql(searchVo);
             newIdList = resourceMapper.getIdListBySql(sql);
         }
