@@ -110,7 +110,8 @@ public class CheckResourceInputNodeListApi extends PrivateApiComponentBase {
                         searchVo.getPreCondition().buildConditionWhereSql(preSqlSb, searchVo.getPreCondition());
                         searchVo.getPreCondition().setConditionWhereSql(preSqlSb.toString());
                     }
-                    List<Long> idList = resourceMapper.getResourceIdListByDynamicCondition(searchVo);
+//                    List<Long> idList = resourceMapper.getResourceIdListByDynamicCondition(searchVo);
+                    List<Long> idList = resourceMapper.getResourceIdList(searchVo);
                     if (CollectionUtils.isEmpty(idList)) {
                         if (!nonExistList.contains(inputNodeObj)) {
                             nonExistList.add(inputNodeObj);

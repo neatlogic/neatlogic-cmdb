@@ -390,9 +390,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%'))
             </if>-->
             <include refid="resource_ipobject_where"/>
+            <if test="conditionWhereSql != null and conditionWhereSql != ''">
+                ${conditionWhereSql}
+            </if>
             <if test="preCondition != null">
                 <include refid="resource_ipobject_pre_where"/>
-                ${preCondition.conditionWhereSql}
+                <if test="preCondition.conditionWhereSql != null and preCondition.conditionWhereSql != ''">
+                    ${preCondition.conditionWhereSql}
+                </if>
             </if>
         </where>
     </select>
@@ -540,9 +545,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%'))
             </if>-->
             <include refid="resource_ipobject_where"/>
+            <if test="conditionWhereSql != null and conditionWhereSql != ''">
+                ${conditionWhereSql}
+            </if>
             <if test="preCondition != null">
                 <include refid="resource_ipobject_pre_where"/>
-                ${preCondition.conditionWhereSql}
+                <if test="preCondition.conditionWhereSql != null and preCondition.conditionWhereSql != ''">
+                    ${preCondition.conditionWhereSql}
+                </if>
             </if>
         </where>
         <if test="keywordList != null and keywordList.size() > 0">

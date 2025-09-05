@@ -785,6 +785,11 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         if (CollectionUtils.isNotEmpty(searchVo.getConditionGroupList())) {
             return false;
         }
+        if (searchVo.getPreCondition() != null) {
+            if (!noFilterCondition(searchVo.getPreCondition())) {
+                return false;
+            }
+        }
         return true;
     }
 }

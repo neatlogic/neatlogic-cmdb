@@ -86,12 +86,14 @@ public class ListResourceCustomApi extends PrivateApiComponentBase {
         }
         resourceSearch.buildConditionWhereSql(sqlSb, resourceSearch);
         resourceSearch.setConditionWhereSql(sqlSb.toString());
-        int rowNum = resourceMapper.getResourceCountByDynamicCondition(resourceSearch);
+//        int rowNum = resourceMapper.getResourceCountByDynamicCondition(resourceSearch);
+        int rowNum = resourceMapper.getResourceCount(resourceSearch);
         if (rowNum == 0) {
             return TableResultUtil.getResult(resultList, resourceSearch);
         }
         resourceSearch.setRowNum(rowNum);
-        List<Long> idList = resourceMapper.getResourceIdListByDynamicCondition(resourceSearch);
+//        List<Long> idList = resourceMapper.getResourceIdListByDynamicCondition(resourceSearch);
+        List<Long> idList = resourceMapper.getResourceIdList(resourceSearch);
         if (CollectionUtils.isNotEmpty(idList)) {
             List<ResourceVo> resourceList = resourceMapper.getResourceListByIdList(idList);
             if (CollectionUtils.isNotEmpty(resourceList)) {
