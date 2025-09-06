@@ -57,55 +57,41 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     int getAllResourceCount(ResourceSearchVo searchVo);
 
-    @Deprecated
     int getResourceCountByDynamicCondition(@Param("searchVo") ResourceSearchVo searchVo, @Param("conditionSql") String conditionSql);
 
     @Deprecated
     List<Long> getResourceIdList(ResourceSearchVo searchVo);
 
-    @Deprecated
     List<Long> getResourceIdListByDynamicCondition(@Param("searchVo") ResourceSearchVo searchVo, @Param("conditionSql") String conditionSql);
     @Deprecated
     List<ResourceVo> getResourceListByIdList(List<Long> idList);
 
-    @Deprecated
     int getAppResourceCount(ResourceSearchVo searchVo);
 
-    @Deprecated
     List<Long> getAppResourceIdList(ResourceSearchVo searchVo);
 
-    @Deprecated
     List<ResourceVo> getAppResourceListByIdList(ResourceSearchVo searchVo);
 
     List<ResourceVo> getAppInstanceResourceListByIdListSimple(List<Long> idList);
 
-    @Deprecated
     Long getResourceIdByIpAndPortAndName(ResourceSearchVo searchVo);
 
-    @Deprecated
     List<Long> getResourceIdListByIpAndPortAndName(ResourceSearchVo searchVo);
 
-    @Deprecated
     List<ResourceVo> getResourceListByIpAndPortAndName(ResourceSearchVo searchVo);
 
 //    Long getResourceIdByIpAndPortAndNameWithFilter(ResourceSearchVo searchVo);
 
-    @Deprecated
     List<ResourceVo> getResourceListByIpAndPortAndNameWithFilter(ResourceSearchVo searchVo);
 
-    @Deprecated
     List<ResourceVo> getResourceByIdList(List<Long> idList);
 
-    @Deprecated
     List<ResourceVo> getAuthResourceList(ResourceSearchVo searchVo);
 
-    @Deprecated
     ResourceVo getResourceById(Long id);
 
-    @Deprecated
     Long getResourceIdByResourceId(Long id);
 
-    @Deprecated
     List<Long> checkResourceIdListIsExists(List<Long> idList);
 
     List<Long> getHasModuleAppSystemIdListByAppSystemIdList(@Param("appSystemIdList") List<Long> appSystemIdList);
@@ -128,7 +114,6 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
 //    Set<Long> getResourceTypeIdListByAppSystemIdAndModuleIdAndEnvIdAndInspectStatusList(ResourceSearchVo searchVo);
 
-    @Deprecated
     List<Long> getResourceIdListByAppSystemIdAndModuleIdAndEnvId(ResourceVo resourceVo);
 
     /**
@@ -138,13 +123,10 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
      * @param ipList
      * @return
      */
-    @Deprecated
     List<ResourceVo> getResourceListByTypeIdListAndIpList(@Param("typeIdList") List<Long> typeIdList, @Param("ipList") List<String> ipList);
 
-    @Deprecated
     ResourceVo getResourceByIpAndPortAndNameAndTypeName(@Param("ip") String ip, @Param("port") Integer port, @Param("name") String nodeName, @Param("typeName") String nodeType);
 
-    @Deprecated
     ResourceVo getResourceByIpAndPort(@Param("ip") String ip, @Param("port") Integer port);
 
     ResourceVo getOSByIp(String ip);
@@ -165,10 +147,8 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     List<AppEnvironmentVo> getAllAppEnv();
 
-    @Deprecated
     List<AccountComponentVo> searchAccountComponent(AccountComponentVo accountComponentVo);
 
-    @Deprecated
     Integer searchAccountComponentCount(AccountComponentVo accountComponentVo);
 
     int searchAppEnvCount(BasePageVo searchVo);
@@ -211,21 +191,16 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     List<AppSystemVo> getAppSystemListByKeyword(BasePageVo searchVo);
 
-    @Deprecated
     List<AppEnvVo> getAppEnvListByViewNameAndAppSystemIdAndAppModuleIdAndInspectStatusList(@Param("viewName") String viewName, @Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId, @Param("inspectStatusList") List<String> inspectStatusList);
 
-    @Deprecated
     List<AppEnvVo> getAppEnvListByAppSystemIdAndAppModuleId(@Param("appSystemId") Long appSystemId, @Param("appModuleId") Long appModuleId);
 
-    @Deprecated
     List<Map<String, Long>> getAppEnvCountMapByAppSystemIdGroupByAppModuleId(Long appSystemId);
 
     List<SoftwareServiceOSVo> getOsResourceListByResourceIdList(List<Long> resourceIdList);
 
-    @Deprecated
     List<Long> getResourceTypeIdListByAuth(ResourceSearchVo searchVo);
 
-    @Deprecated
     List<Long> getAppResourceTypeIdListByViewNameAndAppSystemId(
             @Param("viewName") String viewName,
             @Param("appSystemId") Long appSystemId,
@@ -234,6 +209,5 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
             @Param("inspectStatusList") List<String> inspectStatusList
     );
 
-    @Deprecated
     List<Long> getAppSystemIdListById(@Param("viewName") String viewName, @Param("id") Long id);
 }
