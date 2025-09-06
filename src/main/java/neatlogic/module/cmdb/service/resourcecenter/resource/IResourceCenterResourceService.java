@@ -16,9 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 package neatlogic.module.cmdb.service.resourcecenter.resource;
 
 import com.alibaba.fastjson.JSONObject;
-import neatlogic.framework.cmdb.dto.resourcecenter.AccountVo;
-import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
-import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.*;
 import neatlogic.framework.cmdb.dto.tag.TagVo;
 
 import java.util.List;
@@ -104,4 +102,65 @@ public interface IResourceCenterResourceService {
     List<Long> getResourceIdList(ResourceSearchVo searchVo);
 
     List<ResourceVo> getResourceListByIdList(List<Long> idList);
+
+    List<ResourceVo> getResourceListByIdList(List<Long> idList, List<String> selectFieldNameList);
+
+    int getResourceCountByNameKeyword(ResourceSearchVo searchVo);
+
+    int getResourceCountByIpKeyword(ResourceSearchVo searchVo);
+
+    int getAppResourceCount(ResourceSearchVo searchVo);
+
+    List<Long> getAppResourceIdList(ResourceSearchVo searchVo);
+
+    List<ResourceVo> getAppResourceListByIdList(ResourceSearchVo searchVo);
+
+    Long getResourceIdByIpAndPortAndName(ResourceSearchVo searchVo);
+
+    List<Long> getResourceIdListByIpAndPortAndName(ResourceSearchVo searchVo);
+
+    List<ResourceVo> getResourceListByIpAndPortAndName(ResourceSearchVo searchVo);
+
+    List<ResourceVo> getResourceListByIpAndPortAndNameWithFilter(ResourceSearchVo searchVo);
+
+    List<ResourceVo> getResourceByIdList(List<Long> idList);
+
+    List<ResourceVo> getAuthResourceList(ResourceSearchVo searchVo);
+
+    ResourceVo getResourceById(Long id);
+
+    Long getResourceIdByResourceId(Long id);
+
+    List<Long> checkResourceIdListIsExists(List<Long> idList);
+
+    List<Long> getResourceIdListByAppSystemIdAndModuleIdAndEnvId(ResourceVo resourceVo);
+
+    List<ResourceVo> getResourceListByTypeIdListAndIpList(List<Long> typeIdList, List<String> ipList);
+
+    ResourceVo getResourceByIpAndPortAndNameAndTypeName(String ip, Integer port, String name, String typeName);
+
+    ResourceVo getResourceByIpAndPort(String ip, Integer port);
+
+    List<AccountComponentVo> searchAccountComponent(AccountComponentVo accountComponentVo);
+
+    int searchAccountComponentCount(AccountComponentVo accountComponentVo);
+
+    List<AppEnvVo> getAppEnvListByViewNameAndAppSystemIdAndAppModuleIdAndInspectStatusList(String viewName, Long appSystemId, Long appModuleId, List<String> inspectStatusList);
+
+    List<AppEnvVo> getAppEnvListByAppSystemIdAndAppModuleId(Long appSystemId, Long appModuleId);
+
+    List<Map<String, Long>> getAppEnvCountMapByAppSystemIdGroupByAppModuleId(Long appSystemId);
+
+    List<Long> getResourceTypeIdListByAuth(ResourceSearchVo searchVo);
+
+    List<Long> getAppResourceTypeIdListByViewNameAndAppSystemId(
+            String viewName,
+            Long appSystemId,
+            Long appModuleId,
+            Long envId,
+            List<String> inspectStatusList
+    );
+
+    List<Long> getAppSystemIdListById(String viewName, Long id);
+
 }

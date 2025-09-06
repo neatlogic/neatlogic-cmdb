@@ -16,6 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 package neatlogic.module.cmdb.service.resourcecenter.resource;
 
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthActionChecker;
 import neatlogic.framework.cmdb.auth.label.CIENTITY_MODIFY;
@@ -679,6 +680,811 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         return new ArrayList<>();
     }
 
+    @Override
+    public List<ResourceVo> getResourceListByIdList(List<Long> idList, List<String> selectFieldNameList) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        List<ResourceVo> newResourceList = new ArrayList<>();
+        List<ResourceVo> oldResourceList = new ArrayList<>();
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = resourceBuildSqlService.buildGetResourceListSql(idList, selectFieldNameList);
+            newResourceList = resourceMapper.getResourceListBySql(sql);
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldResourceList = resourceMapper.getResourceListByIdList(idList);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            checkResourceListIsEquals(newResourceList, oldResourceList);
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newResourceList;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldResourceList;
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public int getResourceCountByNameKeyword(ResourceSearchVo searchVo) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        int newCount = 0;
+        int oldCount = 0;
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = resourceBuildSqlService.buildGetResourceCountByNameKeywordSql(searchVo);
+            newCount = resourceMapper.getCountBySql(sql);
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldCount = resourceMapper.getResourceCountByNameKeyword(searchVo);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            if (!Objects.equals(oldCount, newCount)) {
+                JSONObject resultObj = new JSONObject();
+                resultObj.put("newCount", newCount);
+                resultObj.put("oldCount", oldCount);
+                logger.error("资产清单新旧SQL获取结果不一致：{}", resultObj);
+            }
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newCount;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldCount;
+        }
+        return 0;
+    }
+
+    @Override
+    public int getResourceCountByIpKeyword(ResourceSearchVo searchVo) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        int newCount = 0;
+        int oldCount = 0;
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = resourceBuildSqlService.buildGetResourceCountByIpKeywordSql(searchVo);
+            newCount = resourceMapper.getCountBySql(sql);
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldCount = resourceMapper.getResourceCountByIpKeyword(searchVo);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            if (!Objects.equals(oldCount, newCount)) {
+                JSONObject resultObj = new JSONObject();
+                resultObj.put("newCount", newCount);
+                resultObj.put("oldCount", oldCount);
+                logger.error("资产清单新旧SQL获取结果不一致：{}", resultObj);
+            }
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newCount;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldCount;
+        }
+        return 0;
+    }
+
+    @Override
+    public int getAppResourceCount(ResourceSearchVo searchVo) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        int newCount = 0;
+        int oldCount = 0;
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = resourceBuildSqlService.buildGetAppResourceCountSql(searchVo);
+            newCount = resourceMapper.getCountBySql(sql);
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldCount = resourceMapper.getAppResourceCount(searchVo);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            if (!Objects.equals(oldCount, newCount)) {
+                JSONObject resultObj = new JSONObject();
+                resultObj.put("newCount", newCount);
+                resultObj.put("oldCount", oldCount);
+                logger.error("资产清单新旧SQL获取结果不一致：{}", resultObj);
+            }
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newCount;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldCount;
+        }
+        return 0;
+    }
+
+    @Override
+    public List<Long> getAppResourceIdList(ResourceSearchVo searchVo) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        List<Long> newIdList = new ArrayList<>();
+        List<Long> oldIdList = new ArrayList<>();
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = resourceBuildSqlService.buildGetAppResourceIdListSql(searchVo);
+            newIdList = resourceMapper.getIdListBySql(sql);
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldIdList = resourceMapper.getAppResourceIdList(searchVo);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            if (!Objects.equals(oldIdList, newIdList)) {
+                JSONObject resultObj = new JSONObject();
+                resultObj.put("idList", newIdList);
+                resultObj.put("oldIdList", oldIdList);
+                logger.error("资产清单新旧SQL获取结果不一致：{}", resultObj);
+            }
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newIdList;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldIdList;
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<ResourceVo> getAppResourceListByIdList(ResourceSearchVo searchVo) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        List<ResourceVo> newResourceList = new ArrayList<>();
+        List<ResourceVo> oldResourceList = new ArrayList<>();
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = resourceBuildSqlService.buildGetAppResourceListByIdListSql(searchVo);
+            newResourceList = resourceMapper.getResourceListBySql(sql);
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldResourceList = resourceMapper.getAppResourceListByIdList(searchVo);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            checkResourceListIsEquals(newResourceList, oldResourceList);
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newResourceList;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldResourceList;
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public Long getResourceIdByIpAndPortAndName(ResourceSearchVo searchVo) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        Long newId = null;
+        Long oldId = null;
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = resourceBuildSqlService.buildGetResourceIdByIpAndPortAndNameSql(searchVo);
+            newId = resourceMapper.getIdBySql(sql);
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldId = resourceMapper.getResourceIdByIpAndPortAndName(searchVo);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            if (!Objects.equals(newId, oldId)) {
+                JSONObject resultObj = new JSONObject();
+                resultObj.put("newId", newId);
+                resultObj.put("oldId", oldId);
+                logger.error("资产清单新旧SQL获取结果不一致：{}", resultObj);
+            }
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newId;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldId;
+        }
+        return null;
+    }
+
+    @Override
+    public List<Long> getResourceIdListByIpAndPortAndName(ResourceSearchVo searchVo) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        List<Long> newIdList = new ArrayList<>();
+        List<Long> oldIdList = new ArrayList<>();
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = resourceBuildSqlService.buildGetResourceIdListByIpAndPortAndNameSql(searchVo);
+            newIdList = resourceMapper.getIdListBySql(sql);
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldIdList = resourceMapper.getResourceIdListByIpAndPortAndName(searchVo);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            if (!Objects.equals(oldIdList, newIdList)) {
+                JSONObject resultObj = new JSONObject();
+                resultObj.put("idList", newIdList);
+                resultObj.put("oldIdList", oldIdList);
+                logger.error("资产清单新旧SQL获取结果不一致：{}", resultObj);
+            }
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newIdList;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldIdList;
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<ResourceVo> getResourceListByIpAndPortAndName(ResourceSearchVo searchVo) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        List<ResourceVo> newResourceList = new ArrayList<>();
+        List<ResourceVo> oldResourceList = new ArrayList<>();
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = resourceBuildSqlService.buildGetResourceListByIpAndPortAndNameSql(searchVo);
+            newResourceList = resourceMapper.getResourceSimpleListBySql(sql);
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldResourceList = resourceMapper.getResourceListByIpAndPortAndName(searchVo);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            checkResourceListIsEquals(newResourceList, oldResourceList);
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newResourceList;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldResourceList;
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<ResourceVo> getResourceListByIpAndPortAndNameWithFilter(ResourceSearchVo searchVo) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        List<ResourceVo> newResourceList = new ArrayList<>();
+        List<ResourceVo> oldResourceList = new ArrayList<>();
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = resourceBuildSqlService.buildGetResourceListByIpAndPortAndNameWithFilterSql(searchVo);
+            newResourceList = resourceMapper.getResourceSimpleListBySql(sql);
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldResourceList = resourceMapper.getResourceListByIpAndPortAndNameWithFilter(searchVo);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            checkResourceListIsEquals(newResourceList, oldResourceList);
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newResourceList;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldResourceList;
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<ResourceVo> getResourceByIdList(List<Long> idList) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        List<ResourceVo> newResourceList = new ArrayList<>();
+        List<ResourceVo> oldResourceList = new ArrayList<>();
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = resourceBuildSqlService.buildGetResourceByIdListSql(idList);
+            newResourceList = resourceMapper.getResourceListBySql(sql);
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldResourceList = resourceMapper.getResourceByIdList(idList);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            checkResourceListIsEquals(newResourceList, oldResourceList);
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newResourceList;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldResourceList;
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<ResourceVo> getAuthResourceList(ResourceSearchVo searchVo) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        List<ResourceVo> newResourceList = new ArrayList<>();
+        List<ResourceVo> oldResourceList = new ArrayList<>();
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = resourceBuildSqlService.buildGetAuthResourceListSql(searchVo);
+            newResourceList = resourceMapper.getResourceListBySql(sql);
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldResourceList = resourceMapper.getAuthResourceList(searchVo);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            checkResourceListIsEquals(newResourceList, oldResourceList);
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newResourceList;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldResourceList;
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public ResourceVo getResourceById(Long id) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        ResourceVo newResourceVo = null;
+        ResourceVo oldResourceVo = null;
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = resourceBuildSqlService.buildGetResourceByIdSql(id);
+            newResourceVo = resourceMapper.getResourceBySql(sql);
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldResourceVo = resourceMapper.getResourceById(id);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            List<ResourceVo> newResourceList = new ArrayList<>();
+            if (newResourceVo != null) {
+                newResourceList.add(newResourceVo);
+            }
+            List<ResourceVo> oldResourceList = new ArrayList<>();
+            if (oldResourceVo != null) {
+                oldResourceList.add(oldResourceVo);
+            }
+            checkResourceListIsEquals(newResourceList, oldResourceList);
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newResourceVo;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldResourceVo;
+        }
+        return null;
+    }
+
+    @Override
+    public Long getResourceIdByResourceId(Long id) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        Long newId = null;
+        Long oldId = null;
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = resourceBuildSqlService.buildGetResourceIdByResourceIdSql(id);
+            newId = resourceMapper.getIdBySql(sql);
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldId = resourceMapper.getResourceIdByResourceId(id);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            if (!Objects.equals(newId, oldId)) {
+                JSONObject resultObj = new JSONObject();
+                resultObj.put("newId", newId);
+                resultObj.put("oldId", oldId);
+                logger.error("资产清单新旧SQL获取结果不一致：{}", resultObj);
+            }
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newId;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldId;
+        }
+        return null;
+    }
+
+    @Override
+    public List<Long> checkResourceIdListIsExists(List<Long> idList) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        List<Long> newIdList = new ArrayList<>();
+        List<Long> oldIdList = new ArrayList<>();
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = resourceBuildSqlService.buildCheckResourceIdListIsExistsSql(idList);
+            newIdList = resourceMapper.getIdListBySql(sql);
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldIdList = resourceMapper.checkResourceIdListIsExists(idList);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            if (!Objects.equals(oldIdList, newIdList)) {
+                JSONObject resultObj = new JSONObject();
+                resultObj.put("idList", newIdList);
+                resultObj.put("oldIdList", oldIdList);
+                logger.error("资产清单新旧SQL获取结果不一致：{}", resultObj);
+            }
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newIdList;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldIdList;
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<Long> getResourceIdListByAppSystemIdAndModuleIdAndEnvId(ResourceVo resourceVo) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        List<Long> newIdList = new ArrayList<>();
+        List<Long> oldIdList = new ArrayList<>();
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = resourceBuildSqlService.buildGetResourceIdListByAppSystemIdAndModuleIdAndEnvIdSql(resourceVo);
+            newIdList = resourceMapper.getIdListBySql(sql);
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldIdList = resourceMapper.getResourceIdListByAppSystemIdAndModuleIdAndEnvId(resourceVo);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            if (!Objects.equals(oldIdList, newIdList)) {
+                JSONObject resultObj = new JSONObject();
+                resultObj.put("idList", newIdList);
+                resultObj.put("oldIdList", oldIdList);
+                logger.error("资产清单新旧SQL获取结果不一致：{}", resultObj);
+            }
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newIdList;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldIdList;
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<ResourceVo> getResourceListByTypeIdListAndIpList(List<Long> typeIdList, List<String> ipList) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        List<ResourceVo> newResourceList = new ArrayList<>();
+        List<ResourceVo> oldResourceList = new ArrayList<>();
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = resourceBuildSqlService.buildGetResourceListByTypeIdListAndIpListSql(typeIdList, ipList);
+            newResourceList = resourceMapper.getResourceSimpleListBySql(sql);
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldResourceList = resourceMapper.getResourceListByTypeIdListAndIpList(typeIdList, ipList);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            checkResourceListIsEquals(newResourceList, oldResourceList);
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newResourceList;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldResourceList;
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public ResourceVo getResourceByIpAndPortAndNameAndTypeName(String ip, Integer port, String name, String typeName) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        ResourceVo newResourceVo = null;
+        ResourceVo oldResourceVo = null;
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = resourceBuildSqlService.buildGetResourceByIpAndPortAndNameAndTypeNameSql(ip, port, name, typeName);
+            newResourceVo = resourceMapper.getResourceSimpleBySql(sql);
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldResourceVo = resourceMapper.getResourceByIpAndPortAndNameAndTypeName(ip, port, name, typeName);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            List<ResourceVo> newResourceList = new ArrayList<>();
+            if (newResourceVo != null) {
+                newResourceList.add(newResourceVo);
+            }
+            List<ResourceVo> oldResourceList = new ArrayList<>();
+            if (oldResourceVo != null) {
+                oldResourceList.add(oldResourceVo);
+            }
+            checkResourceListIsEquals(newResourceList, oldResourceList);
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newResourceVo;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldResourceVo;
+        }
+        return null;
+    }
+
+    @Override
+    public ResourceVo getResourceByIpAndPort(String ip, Integer port) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        ResourceVo newResourceVo = null;
+        ResourceVo oldResourceVo = null;
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = resourceBuildSqlService.buildGetResourceByIpAndPortSql(ip, port);
+            newResourceVo = resourceMapper.getResourceSimpleBySql(sql);
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldResourceVo = resourceMapper.getResourceByIpAndPort(ip, port);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            List<ResourceVo> newResourceList = new ArrayList<>();
+            if (newResourceVo != null) {
+                newResourceList.add(newResourceVo);
+            }
+            List<ResourceVo> oldResourceList = new ArrayList<>();
+            if (oldResourceVo != null) {
+                oldResourceList.add(oldResourceVo);
+            }
+            checkResourceListIsEquals(newResourceList, oldResourceList);
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newResourceVo;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldResourceVo;
+        }
+        return null;
+    }
+
+    @Override
+    public List<AccountComponentVo> searchAccountComponent(AccountComponentVo accountComponentVo) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        List<AccountComponentVo> newResourceList = new ArrayList<>();
+        List<AccountComponentVo> oldResourceList = new ArrayList<>();
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = resourceBuildSqlService.buildSearchAccountComponentSql(accountComponentVo);
+            newResourceList = resourceMapper.searchAccountComponentListBySql(sql);
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldResourceList = resourceMapper.searchAccountComponent(accountComponentVo);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            newResourceList.sort(Comparator.comparingLong(AccountComponentVo::getId));
+            Set<Long> idSet = new HashSet<>();
+            for (int i = newResourceList.size() - 1; i >= 0; i--) {
+                AccountComponentVo resourceVo = newResourceList.get(i);
+                if (idSet.contains(resourceVo.getId())) {
+                    newResourceList.remove(i);
+                } else {
+                    idSet.add(resourceVo.getId());
+                }
+            }
+            oldResourceList.sort(Comparator.comparingLong(AccountComponentVo::getId));
+            idSet = new HashSet<>();
+            for (int i = oldResourceList.size() - 1; i >= 0; i--) {
+                AccountComponentVo resourceVo = oldResourceList.get(i);
+                if (idSet.contains(resourceVo.getId())) {
+                    oldResourceList.remove(i);
+                } else {
+                    idSet.add(resourceVo.getId());
+                }
+            }
+            checkAccountComponentListIsEquals(newResourceList, oldResourceList);
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newResourceList;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldResourceList;
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public int searchAccountComponentCount(AccountComponentVo accountComponentVo) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        int newCount = 0;
+        int oldCount = 0;
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = resourceBuildSqlService.buildSearchAccountComponentCountSql(accountComponentVo);
+            newCount = resourceMapper.getCountBySql(sql);
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldCount = resourceMapper.searchAccountComponentCount(accountComponentVo);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            if (!Objects.equals(oldCount, newCount)) {
+                JSONObject resultObj = new JSONObject();
+                resultObj.put("newCount", newCount);
+                resultObj.put("oldCount", oldCount);
+                logger.error("资产清单新旧SQL获取结果不一致：{}", resultObj);
+            }
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newCount;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldCount;
+        }
+        return 0;
+    }
+
+    @Override
+    public List<AppEnvVo> getAppEnvListByViewNameAndAppSystemIdAndAppModuleIdAndInspectStatusList(String viewName, Long appSystemId, Long appModuleId, List<String> inspectStatusList) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        List<AppEnvVo> newResourceList = new ArrayList<>();
+        List<AppEnvVo> oldResourceList = new ArrayList<>();
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = resourceBuildSqlService.buildGetAppEnvListByViewNameAndAppSystemIdAndAppModuleIdAndInspectStatusListSql(viewName, appSystemId, appModuleId, inspectStatusList);
+            newResourceList = resourceMapper.getAppEnvListBySql(sql);
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldResourceList = resourceMapper.getAppEnvListByViewNameAndAppSystemIdAndAppModuleIdAndInspectStatusList(viewName, appSystemId, appModuleId, inspectStatusList);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            newResourceList.sort(Comparator.comparingLong(AppEnvVo::getId));
+            Set<Long> idSet = new HashSet<>();
+            for (int i = newResourceList.size() - 1; i >= 0; i--) {
+                AppEnvVo resourceVo = newResourceList.get(i);
+                if (idSet.contains(resourceVo.getId())) {
+                    newResourceList.remove(i);
+                } else {
+                    idSet.add(resourceVo.getId());
+                }
+            }
+            oldResourceList.sort(Comparator.comparingLong(AppEnvVo::getId));
+            idSet = new HashSet<>();
+            for (int i = oldResourceList.size() - 1; i >= 0; i--) {
+                AppEnvVo resourceVo = oldResourceList.get(i);
+                if (idSet.contains(resourceVo.getId())) {
+                    oldResourceList.remove(i);
+                } else {
+                    idSet.add(resourceVo.getId());
+                }
+            }
+            checkAppEnvListIsEquals(newResourceList, oldResourceList);
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newResourceList;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldResourceList;
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<AppEnvVo> getAppEnvListByAppSystemIdAndAppModuleId(Long appSystemId, Long appModuleId) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        List<AppEnvVo> newResourceList = new ArrayList<>();
+        List<AppEnvVo> oldResourceList = new ArrayList<>();
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = resourceBuildSqlService.buildGetAppEnvListByAppSystemIdAndAppModuleIdSql(appSystemId, appModuleId);
+            newResourceList = resourceMapper.getAppEnvListBySql(sql);
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldResourceList = resourceMapper.getAppEnvListByAppSystemIdAndAppModuleId(appSystemId, appModuleId);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            newResourceList.sort(Comparator.comparingLong(AppEnvVo::getId));
+            Set<Long> idSet = new HashSet<>();
+            for (int i = newResourceList.size() - 1; i >= 0; i--) {
+                AppEnvVo resourceVo = newResourceList.get(i);
+                if (idSet.contains(resourceVo.getId())) {
+                    newResourceList.remove(i);
+                } else {
+                    idSet.add(resourceVo.getId());
+                }
+            }
+            oldResourceList.sort(Comparator.comparingLong(AppEnvVo::getId));
+            idSet = new HashSet<>();
+            for (int i = oldResourceList.size() - 1; i >= 0; i--) {
+                AppEnvVo resourceVo = oldResourceList.get(i);
+                if (idSet.contains(resourceVo.getId())) {
+                    oldResourceList.remove(i);
+                } else {
+                    idSet.add(resourceVo.getId());
+                }
+            }
+            checkAppEnvListIsEquals(newResourceList, oldResourceList);
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newResourceList;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldResourceList;
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<Map<String, Long>> getAppEnvCountMapByAppSystemIdGroupByAppModuleId(Long appSystemId) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        List<Map<String, Object>> newResourceList = new ArrayList<>();
+        List<Map<String, Long>> oldResourceList = new ArrayList<>();
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = resourceBuildSqlService.buildGetAppEnvCountMapByAppSystemIdGroupByAppModuleIdSql(appSystemId);
+            newResourceList = resourceMapper.getMapListBySql(sql);
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldResourceList = resourceMapper.getAppEnvCountMapByAppSystemIdGroupByAppModuleId(appSystemId);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            checkMapListIsEquals(newResourceList, oldResourceList);
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            List<Map<String, Long>> resourceList = new ArrayList<>();
+            for (Map<String, Object> map : newResourceList) {
+                Map<String, Long> resource = new HashMap<>();
+                for (Map.Entry<String, Object> entry : map.entrySet()) {
+                    resource.put(entry.getKey(), (Long) entry.getValue());
+                }
+                resourceList.add(resource);
+            }
+            return resourceList;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldResourceList;
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<Long> getResourceTypeIdListByAuth(ResourceSearchVo searchVo) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        List<Long> newIdList = new ArrayList<>();
+        List<Long> oldIdList = new ArrayList<>();
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String getResourceIdListSql = resourceBuildSqlService.buildGetResourceTypeIdListByAuthSql(searchVo);
+            newIdList = resourceMapper.getIdListBySql(getResourceIdListSql);
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldIdList = resourceMapper.getResourceTypeIdListByAuth(searchVo);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            if (!Objects.equals(oldIdList, newIdList)) {
+                JSONObject resultObj = new JSONObject();
+                resultObj.put("idList", newIdList);
+                resultObj.put("oldIdList", oldIdList);
+                logger.error("资产清单新旧SQL获取结果不一致：{}", resultObj);
+            }
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newIdList;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldIdList;
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<Long> getAppResourceTypeIdListByViewNameAndAppSystemId(String viewName, Long appSystemId, Long appModuleId, Long envId, List<String> inspectStatusList) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        List<Long> newIdList = new ArrayList<>();
+        List<Long> oldIdList = new ArrayList<>();
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = resourceBuildSqlService.buildGetAppResourceTypeIdListByViewNameAndAppSystemIdSql(viewName, appSystemId, appModuleId, envId, inspectStatusList);
+            newIdList = resourceMapper.getIdListBySql(sql);
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldIdList = resourceMapper.getAppResourceTypeIdListByViewNameAndAppSystemId(viewName, appSystemId, appModuleId, envId, inspectStatusList);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            if (!Objects.equals(oldIdList, newIdList)) {
+                JSONObject resultObj = new JSONObject();
+                resultObj.put("idList", newIdList);
+                resultObj.put("oldIdList", oldIdList);
+                logger.error("资产清单新旧SQL获取结果不一致：{}", resultObj);
+            }
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newIdList;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldIdList;
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<Long> getAppSystemIdListById(String viewName, Long id) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        List<Long> newIdList = new ArrayList<>();
+        List<Long> oldIdList = new ArrayList<>();
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = resourceBuildSqlService.buildGetAppSystemIdListByIdSql(viewName, id);
+            newIdList = resourceMapper.getIdListBySql(sql);
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldIdList = resourceMapper.getAppSystemIdListById(viewName, id);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            if (!Objects.equals(oldIdList, newIdList)) {
+                JSONObject resultObj = new JSONObject();
+                resultObj.put("idList", newIdList);
+                resultObj.put("oldIdList", oldIdList);
+                logger.error("资产清单新旧SQL获取结果不一致：{}", resultObj);
+            }
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newIdList;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldIdList;
+        }
+        return new ArrayList<>();
+    }
+
 //    public Object example() {
 //        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
 //        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
@@ -713,14 +1519,98 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         for (int i = 0; i < resourceList.size(); i++) {
             ResourceVo resourceVo = resourceList.get(i);
             ResourceVo oldResourceVo = oldResourceList.get(i);
-            String resourceString = JSONObject.toJSONString(resourceVo);
-            String oldResourceString = JSONObject.toJSONString(oldResourceVo);
+            String resourceString = JSONObject.toJSONString(resourceVo, SerializerFeature.MapSortField);
+            String oldResourceString = JSONObject.toJSONString(oldResourceVo, SerializerFeature.MapSortField);
             if (!Objects.equals(resourceString, oldResourceString)) {
                 JSONObject errorObj = new JSONObject();
                 errorObj.put("index", i);
                 errorObj.put("resourceVo", resourceVo);
                 errorObj.put("oldResourceVo", oldResourceVo);
                 logger.error("资产清单新旧SQL获取tbodyList结果不一致：{}", errorObj);
+                flag = false;
+            }
+        }
+        return flag;
+    }
+
+    private boolean checkAccountComponentListIsEquals(List<AccountComponentVo> resourceList, List<AccountComponentVo> oldResourceList) {
+        if (oldResourceList.size() != resourceList.size()) {
+            JSONObject errorObj = new JSONObject();
+            errorObj.put("resourceList.size()", resourceList.size());
+            errorObj.put("oldResourceList.size()", oldResourceList.size());
+            logger.error("资产清单新旧SQL获取tbodyList结果不一致：{}", errorObj);
+            return false;
+        }
+        boolean flag = true;
+        resourceList.sort(Comparator.comparing(AccountComponentVo::getId));
+        oldResourceList.sort(Comparator.comparing(AccountComponentVo::getId));
+        for (int i = 0; i < resourceList.size(); i++) {
+            AccountComponentVo resourceVo = resourceList.get(i);
+            AccountComponentVo oldResourceVo = oldResourceList.get(i);
+            String resourceString = JSONObject.toJSONString(resourceVo, SerializerFeature.MapSortField);
+            String oldResourceString = JSONObject.toJSONString(oldResourceVo, SerializerFeature.MapSortField);
+            if (!Objects.equals(resourceString, oldResourceString)) {
+                JSONObject errorObj = new JSONObject();
+                errorObj.put("index", i);
+                errorObj.put("resourceVo", resourceVo);
+                errorObj.put("oldResourceVo", oldResourceVo);
+                logger.error("资产清单新旧SQL获取tbodyObj结果不一致：{}", errorObj);
+                flag = false;
+            }
+        }
+        return flag;
+    }
+
+    private boolean checkAppEnvListIsEquals(List<AppEnvVo> resourceList, List<AppEnvVo> oldResourceList) {
+        if (oldResourceList.size() != resourceList.size()) {
+            JSONObject errorObj = new JSONObject();
+            errorObj.put("resourceList.size()", resourceList.size());
+            errorObj.put("oldResourceList.size()", oldResourceList.size());
+            logger.error("资产清单新旧SQL获取tbodyList结果不一致：{}", errorObj);
+            return false;
+        }
+        boolean flag = true;
+        resourceList.sort(Comparator.comparing(AppEnvVo::getId));
+        oldResourceList.sort(Comparator.comparing(AppEnvVo::getId));
+        for (int i = 0; i < resourceList.size(); i++) {
+            AppEnvVo resourceVo = resourceList.get(i);
+            AppEnvVo oldResourceVo = oldResourceList.get(i);
+            String resourceString = JSONObject.toJSONString(resourceVo, SerializerFeature.MapSortField);
+            String oldResourceString = JSONObject.toJSONString(oldResourceVo, SerializerFeature.MapSortField);
+            if (!Objects.equals(resourceString, oldResourceString)) {
+                JSONObject errorObj = new JSONObject();
+                errorObj.put("index", i);
+                errorObj.put("resourceVo", resourceVo);
+                errorObj.put("oldResourceVo", oldResourceVo);
+                logger.error("资产清单新旧SQL获取tbodyObj结果不一致：{}", errorObj);
+                flag = false;
+            }
+        }
+        return flag;
+    }
+
+    private boolean checkMapListIsEquals(List<Map<String, Object>> resourceList, List<Map<String, Long>> oldResourceList) {
+        if (oldResourceList.size() != resourceList.size()) {
+            JSONObject errorObj = new JSONObject();
+            errorObj.put("resourceList.size()", resourceList.size());
+            errorObj.put("oldResourceList.size()", oldResourceList.size());
+            logger.error("资产清单新旧SQL获取tbodyList结果不一致：{}", errorObj);
+            return false;
+        }
+        boolean flag = true;
+//        resourceList.sort(Comparator.comparing(AppEnvVo::getId));
+//        oldResourceList.sort(Comparator.comparing(AppEnvVo::getId));
+        for (int i = 0; i < resourceList.size(); i++) {
+            Map<String, Object> resourceVo = resourceList.get(i);
+            Map<String, ?> oldResourceVo = oldResourceList.get(i);
+            String resourceString = JSONObject.toJSONString(resourceVo, SerializerFeature.MapSortField);
+            String oldResourceString = JSONObject.toJSONString(oldResourceVo, SerializerFeature.MapSortField);
+            if (!Objects.equals(resourceString, oldResourceString)) {
+                JSONObject errorObj = new JSONObject();
+                errorObj.put("index", i);
+                errorObj.put("resourceVo", resourceVo);
+                errorObj.put("oldResourceVo", oldResourceVo);
+                logger.error("资产清单新旧SQL获取tbodyObj结果不一致：{}", errorObj);
                 flag = false;
             }
         }
