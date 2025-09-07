@@ -104,6 +104,4 @@ public interface IResourceCenterResourceService {
     List<Long> getResourceIdList(ResourceSearchVo searchVo);
 
     List<ResourceVo> getResourceListByIdList(List<Long> idList);
-
-    List<ResourceVo> getResourceListByIdList(List<Long> idList, List<String> selectFieldNameList);
 }

@@ -590,29 +590,10 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         int oldRowNum = 0;
         int newRowNum = 0;
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
-            if (searchVo.getPreCondition() != null && searchVo.getPreCondition().isCustomCondition()) {
-                handleBatchSearchList(searchVo.getPreCondition());
-                setIpFieldAttrIdAndNameFieldAttrId(searchVo.getPreCondition());
-            }
-            handleBatchSearchList(searchVo);
-            setIpFieldAttrIdAndNameFieldAttrId(searchVo);
             String sql = resourceBuildSqlService.buildGetResourceCountSql(searchVo);
             newRowNum = resourceMapper.getCountBySql(sql);
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
-            //是否存在前置条件
-            if (searchVo.getPreCondition() != null && searchVo.getPreCondition().isCustomCondition()) {
-                StringBuilder preSqlSb = new StringBuilder();
-                searchVo.getPreCondition().buildConditionWhereSql(preSqlSb, searchVo.getPreCondition());
-                searchVo.getPreCondition().setConditionWhereSql(preSqlSb.toString());
-                handleBatchSearchList(searchVo.getPreCondition());
-                setIpFieldAttrIdAndNameFieldAttrId(searchVo.getPreCondition());
-            }
-            StringBuilder sqlSb = new StringBuilder();
-            searchVo.buildConditionWhereSql(sqlSb, searchVo);
-            searchVo.setConditionWhereSql(sqlSb.toString());
-            handleBatchSearchList(searchVo);
-            setIpFieldAttrIdAndNameFieldAttrId(searchVo);
             oldRowNum = resourceMapper.getResourceCount(searchVo);
         }
         if (Objects.equals(enable, COMPARISON_ENABLED)) {
@@ -638,29 +619,10 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         List<Long> newIdList = new ArrayList<>();
         List<Long> oldIdList = new ArrayList<>();
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
-            if (searchVo.getPreCondition() != null && searchVo.getPreCondition().isCustomCondition()) {
-                handleBatchSearchList(searchVo.getPreCondition());
-                setIpFieldAttrIdAndNameFieldAttrId(searchVo.getPreCondition());
-            }
-            handleBatchSearchList(searchVo);
-            setIpFieldAttrIdAndNameFieldAttrId(searchVo);
             String sql = resourceBuildSqlService.buildGetResourceIdListSql(searchVo);
             newIdList = resourceMapper.getIdListBySql(sql);
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
-            //是否存在前置条件
-            if (searchVo.getPreCondition() != null && searchVo.getPreCondition().isCustomCondition()) {
-                StringBuilder preSqlSb = new StringBuilder();
-                searchVo.getPreCondition().buildConditionWhereSql(preSqlSb, searchVo.getPreCondition());
-                searchVo.getPreCondition().setConditionWhereSql(preSqlSb.toString());
-                handleBatchSearchList(searchVo.getPreCondition());
-                setIpFieldAttrIdAndNameFieldAttrId(searchVo.getPreCondition());
-            }
-            StringBuilder sqlSb = new StringBuilder();
-            searchVo.buildConditionWhereSql(sqlSb, searchVo);
-            searchVo.setConditionWhereSql(sqlSb.toString());
-            handleBatchSearchList(searchVo);
-            setIpFieldAttrIdAndNameFieldAttrId(searchVo);
             oldIdList = resourceMapper.getResourceIdList(searchVo);
         }
         if (Objects.equals(enable, COMPARISON_ENABLED)) {
@@ -687,30 +649,6 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         List<ResourceVo> oldResourceList = new ArrayList<>();
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             String sql = resourceBuildSqlService.buildGetResourceListSql(idList);
-            newResourceList = resourceMapper.getResourceListBySql(sql);
-        }
-        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
-            oldResourceList = resourceMapper.getResourceListByIdList(idList);
-        }
-        if (Objects.equals(enable, COMPARISON_ENABLED)) {
-            checkResourceListIsEquals(newResourceList, oldResourceList);
-        }
-        if (Objects.equals(mode, JSQLPARSER_MODE)) {
-            return newResourceList;
-        } else if (Objects.equals(mode, MYBATIS_MODE)) {
-            return oldResourceList;
-        }
-        return new ArrayList<>();
-    }
-
-    @Override
-    public List<ResourceVo> getResourceListByIdList(List<Long> idList, List<String> selectFieldNameList) {
-        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
-        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
-        List<ResourceVo> newResourceList = new ArrayList<>();
-        List<ResourceVo> oldResourceList = new ArrayList<>();
-        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
-            String sql = resourceBuildSqlService.buildGetResourceListSql(idList, selectFieldNameList);
             newResourceList = resourceMapper.getResourceListBySql(sql);
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
@@ -817,14 +755,6 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         }
         if (CollectionUtils.isNotEmpty(searchVo.getInspectJobPhaseNodeStatusList())) {
             return false;
-        }
-        if (CollectionUtils.isNotEmpty(searchVo.getConditionGroupList())) {
-            return false;
-        }
-        if (searchVo.getPreCondition() != null) {
-            if (!noFilterCondition(searchVo.getPreCondition())) {
-                return false;
-            }
         }
         return true;
     }
