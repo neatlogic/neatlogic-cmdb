@@ -202,6 +202,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             </foreach>
         </if>
         <if test="inputNodeList != null and inputNodeList.size() > 0">
+            and
             <foreach collection="inputNodeList" item="item" open="(" separator="OR" close=")">
                 (
                 a.`ip` = #{item.ip}
