@@ -317,6 +317,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             JOIN fulltextindex_field_cmdb ffc ON ffc.target_id = a.id AND ffc.target_field = #{nameFieldAttrId}
             JOIN fulltextindex_word fw ON ffc.word_id = fw.id
         </if>
+        <if test="batchSearchList != null and batchSearchList.size() > 0 and searchField != null and searchField != ''">
+            JOIN fulltextindex_field_cmdb ffc2 ON ffc2.target_id = a.id
+            <choose>
+                <when test="searchField == 'name'">
+                    AND ffc2.target_field = #{nameFieldAttrId}
+                </when>
+                <otherwise>
+                    AND ffc2.target_field = #{ipFieldAttrId}
+                </otherwise>
+            </choose>
+            JOIN fulltextindex_word fw2 ON ffc2.word_id = fw2.id
+        </if>
         <where>
             <include refid="resource_ipobject_where"/>
         </where>
@@ -350,6 +362,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             JOIN fulltextindex_field_cmdb ffc ON ffc.target_id = a.id AND ffc.target_field = #{ipFieldAttrId}
             JOIN fulltextindex_word fw ON ffc.word_id = fw.id
         </if>
+        <if test="batchSearchList != null and batchSearchList.size() > 0 and searchField != null and searchField != ''">
+        JOIN fulltextindex_field_cmdb ffc2 ON ffc2.target_id = a.id
+        <choose>
+            <when test="searchField == 'name'">
+                AND ffc2.target_field = #{nameFieldAttrId}
+            </when>
+            <otherwise>
+                AND ffc2.target_field = #{ipFieldAttrId}
+            </otherwise>
+        </choose>
+        JOIN fulltextindex_word fw2 ON ffc2.word_id = fw2.id
+    </if>
         <where>
             <include refid="resource_ipobject_where"/>
         </where>
