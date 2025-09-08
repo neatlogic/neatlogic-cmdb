@@ -201,6 +201,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 #{status}
             </foreach>
         </if>
+        <if test="inputNodeList != null and inputNodeList.size() > 0">
+            <foreach collection="inputNodeList" item="item" open="(" separator="OR" close=")">
+                (
+                a.`ip` = #{item.ip}
+                <choose>
+                    <when test="item.port != null and item.port != ''">
+                        AND a.`port` = #{item.port}
+                    </when>
+                    <otherwise>
+                        AND a.`port` is null
+                    </otherwise>
+                </choose>
+                <if test="item.name != null and item.name != ''">
+                    and a.`name` = #{item.name}
+                </if>
+                )
+            </foreach>
+        </if>
     </sql>
 
     <sql id="resource_ipobject_pre_where">
@@ -297,12 +315,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         <if test="keywordList != null and keywordList.size() > 0">
             JOIN fulltextindex_field_cmdb ffc ON ffc.target_id = a.id AND ffc.target_field = #{nameFieldAttrId}
             JOIN fulltextindex_word fw ON ffc.word_id = fw.id
-            AND (fw.word IN
-            <foreach collection="keywordList" item="item" open="(" close=")" separator=",">
-                #{item}
-            </foreach>
-            <!-- OR `a`.`name` LIKE CONCAT('%',#{keyword},'%') -->
-            )
         </if>
         <where>
             <include refid="resource_ipobject_where"/>
@@ -336,12 +348,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         <if test="keywordList != null and keywordList.size() > 0">
             JOIN fulltextindex_field_cmdb ffc ON ffc.target_id = a.id AND ffc.target_field = #{ipFieldAttrId}
             JOIN fulltextindex_word fw ON ffc.word_id = fw.id
-            AND (fw.word IN
-            <foreach collection="keywordList" item="item" open="(" close=")" separator=",">
-                #{item}
-            </foreach>
-            <!-- OR `a`.`ip` LIKE CONCAT('%',#{keyword},'%') -->
-            )
         </if>
         <where>
             <include refid="resource_ipobject_where"/>
@@ -518,11 +524,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             JOIN fulltextindex_field_cmdb ffc ON ffc.target_id = a.id AND ffc.target_field IN (#{nameFieldAttrId},
             #{ipFieldAttrId})
             JOIN fulltextindex_word fw ON ffc.word_id = fw.id
-            AND (fw.word IN
-            <foreach collection="keywordList" item="item" open="(" close=")" separator=",">
-                #{item}
-            </foreach>
-            )
         </if>
         <if test="batchSearchList != null and batchSearchList.size() > 0 and searchField != null and searchField != ''">
             JOIN fulltextindex_field_cmdb ffc2 ON ffc2.target_id = a.id
@@ -535,29 +536,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 </otherwise>
             </choose>
             JOIN fulltextindex_word fw2 ON ffc2.word_id = fw2.id
-            AND (fw2.word IN
-            <foreach collection="batchSearchList" item="item" open="(" close=")" separator=",">
-                #{item}
-            </foreach>
-            )
-        </if>
-        <if test="inputNodeList != null and inputNodeList.size() > 0">
-            <foreach collection="inputNodeList" item="item" open="(" separator="OR" close=")">
-                (
-                a.`ip` = #{item.ip}
-                <choose>
-                    <when test="item.port != null and item.port != ''">
-                        AND a.`port` = #{item.port}
-                    </when>
-                    <otherwise>
-                        AND a.`port` is null
-                    </otherwise>
-                </choose>
-                <if test="item.name != null and item.name != ''">
-                    and a.`name` = #{item.name}
-                </if>
-                )
-            </foreach>
         </if>
         <where>
             <!--<if test="keyword != null and keyword != ''">
