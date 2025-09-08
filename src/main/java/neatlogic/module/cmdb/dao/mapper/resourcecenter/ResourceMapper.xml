@@ -418,9 +418,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             JOIN fulltextindex_word fw2 ON ffc2.word_id = fw2.id
         </if>
         <where>
-            <!--<if test="keyword != null and keyword != ''">
-                AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%'))
-            </if>-->
             <include refid="resource_ipobject_where"/>
             <if test="conditionWhereSql != null and conditionWhereSql != ''">
                 ${conditionWhereSql}
@@ -434,91 +431,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </where>
     </select>
 
-    <select id="getAllResourceCount" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
-            resultType="int">
-        SELECT
-        <if test="isHasAuth == true">
-            COUNT(1)
-        </if>
-        <if test="isHasAuth == false">
-            COUNT(DISTINCT a.`id`)
-        </if>
-        FROM @{DATA_SCHEMA}.`${viewName}` b
-        JOIN `cmdb_cientity` a on a.`id` = b.`cientity_id`
-        LEFT JOIN `cmdb_cientity_expiredtime` `ex` ON `ex`.`cientity_id` = `a`.`id`
-        <if test="isHasAuth == false">
-            LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
-            LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
-            <choose>
-                <when test="cmdbGroupType == 'autoexec'">
-                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
-                </when>
-                <otherwise>
-                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
-                </otherwise>
-            </choose>
-        </if>
-        WHERE (`ex`.`cientity_id` IS NULL OR `ex`.`expired_time` >= NOW())
-        <if test="typeIdList != null and typeIdList.size() > 0">
-            <if test="isHasAuth == true">
-                AND a.`ci_id` IN
-                <foreach collection="typeIdList" item="typeId" open="(" separator="," close=")">
-                    #{typeId}
-                </foreach>
-            </if>
-            <if test="isHasAuth == false">
-                AND (
-                <choose>
-                    <when test="authedTypeIdList != null and authedTypeIdList.size() >0">
-                        a.`ci_id` IN
-                        <foreach collection="authedTypeIdList" item="authedTypeId" open="(" separator="," close=")">
-                            #{authedTypeId}
-                        </foreach>
-                    </when>
-                    <otherwise>
-                        1 = 0
-                    </otherwise>
-                </choose>
-                or (
-                cg.id is not null and
-                a.`ci_id` IN
-                <foreach collection="typeIdList" item="typeId" open="(" separator="," close=")">
-                    #{typeId}
-                </foreach>
-                and
-                ((cga.auth_type = 'common' AND cga.auth_uuid = 'alluser')
-                <if test="authenticationInfo.userUuid != null and authenticationInfo.userUuid != ''">
-                    OR (
-                    cga.auth_type = 'user'
-                    AND
-                    cga.auth_uuid = #{authenticationInfo.userUuid}
-                    )
-                </if>
-                <if test="authenticationInfo.teamUuidList != null and authenticationInfo.teamUuidList.size() > 0">
-                    OR (
-                    cga.auth_type = 'team'
-                    AND
-                    cga.auth_uuid IN
-                    <foreach collection="authenticationInfo.teamUuidList" item="item" open="(" separator="," close=")">
-                        #{item}
-                    </foreach>
-                    )
-                </if>
-                <if test="authenticationInfo.roleUuidList != null and authenticationInfo.roleUuidList.size() > 0">
-                    OR (
-                    cga.auth_type = 'role'
-                    AND
-                    cga.auth_uuid IN
-                    <foreach collection="authenticationInfo.roleUuidList" item="item" open="(" separator="," close=")">
-                        #{item}
-                    </foreach>)
-                </if>
-                )
-                )
-                )
-            </if>
-        </if>
-    </select>
     <!-- 该SQL语句已经改成在ResourceCenterResourceServiceImpl中动态生成 -->
     <select id="getResourceIdList" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
             resultType="java.lang.Long">
@@ -563,9 +475,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             JOIN fulltextindex_word fw2 ON ffc2.word_id = fw2.id
         </if>
         <where>
-            <!--<if test="keyword != null and keyword != ''">
-                AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%'))
-            </if>-->
             <include refid="resource_ipobject_where"/>
             <if test="conditionWhereSql != null and conditionWhereSql != ''">
                 ${conditionWhereSql}
@@ -588,42 +497,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </trim>
         LIMIT #{startNum}, #{pageSize}
         ) m
-    </select>
-
-    <select id="getResourceIdListByDynamicCondition"
-            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
-            resultType="java.lang.Long">
-        SELECT DISTINCT a.`id`
-        FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
-        LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
-        LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
-        LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
-        <if test="isHasAuth == false">
-            LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
-            LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
-            <choose>
-                <when test="cmdbGroupType == 'autoexec'">
-                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
-                </when>
-                <otherwise>
-                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
-                </otherwise>
-            </choose>
-        </if>
-        <where>
-            <if test="keyword != null and keyword != ''">
-                AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%',
-                #{keyword}, '%'))
-            </if>
-            <include refid="resource_ipobject_where"/>
-            ${conditionWhereSql}
-            <if test="preCondition != null">
-                <include refid="resource_ipobject_pre_where"/>
-                ${preCondition.conditionWhereSql}
-            </if>
-        </where>
-        ORDER BY a.`id`
-        LIMIT #{startNum}, #{pageSize}
     </select>
 
     <resultMap id="resourceCenterMap" type="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo">
@@ -881,122 +754,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </foreach>
     </select>
 
-    <select id="getResourceIdByIpAndPortAndName"
-            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
-        SELECT a.`id`
-        FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
-        <if test="isHasAuth == false">
-            LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
-            LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
-            <choose>
-                <when test="cmdbGroupType == 'autoexec'">
-                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
-                </when>
-                <otherwise>
-                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
-                </otherwise>
-            </choose>
-        </if>
-        WHERE a.`ip` = #{ip}
-        <choose>
-            <when test="port != null and port != ''">
-                AND a.`port` = #{port}
-            </when>
-            <otherwise>
-                AND a.`port` is null
-            </otherwise>
-        </choose>
-        <if test="name != null and name != ''">
-            and a.`name` = #{name}
-        </if>
-        LIMIT 1
-    </select>
-
-    <select id="getResourceIdListByIpAndPortAndName"
-            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
-        SELECT a.`id`
-        FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
-        <if test="isHasAuth == false">
-            LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
-            LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
-            <choose>
-                <when test="cmdbGroupType == 'autoexec'">
-                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
-                </when>
-                <otherwise>
-                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
-                </otherwise>
-            </choose>
-        </if>
-        WHERE
-        <choose>
-            <when test="inputNodeList != null and inputNodeList.size() > 0">
-                <foreach collection="inputNodeList" item="item" open="(" separator="OR" close=")">
-                    (
-                    a.`ip` = #{item.ip}
-                    <choose>
-                        <when test="item.port != null and item.port != ''">
-                            AND a.`port` = #{item.port}
-                        </when>
-                        <otherwise>
-                            AND a.`port` is null
-                        </otherwise>
-                    </choose>
-                    <if test="item.name != null and item.name != ''">
-                        and a.`name` = #{item.name}
-                    </if>
-                    )
-                </foreach>
-            </when>
-            <otherwise>
-                1 != 1
-            </otherwise>
-        </choose>
-    </select>
-
-    <select id="getResourceListByIpAndPortAndName"
-            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
-            resultType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo">
-        SELECT a.`id`, a.`name`, a.`ip`, a.`port`, a.`type_name` AS typeName
-        FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
-        <if test="isHasAuth == false">
-            LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
-            LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
-            <choose>
-                <when test="cmdbGroupType == 'autoexec'">
-                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
-                </when>
-                <otherwise>
-                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
-                </otherwise>
-            </choose>
-        </if>
-        WHERE
-        <choose>
-            <when test="inputNodeList != null and inputNodeList.size() > 0">
-                <foreach collection="inputNodeList" item="item" open="(" separator="OR" close=")">
-                    (
-                    a.`ip` = #{item.ip}
-                    <choose>
-                        <when test="item.port != null and item.port != ''">
-                            AND a.`port` = #{item.port}
-                        </when>
-                        <otherwise>
-                            AND a.`port` is null
-                        </otherwise>
-                    </choose>
-                    <if test="item.name != null and item.name != ''">
-                        and a.`name` = #{item.name}
-                    </if>
-                    )
-                </foreach>
-            </when>
-            <otherwise>
-                1 != 1
-            </otherwise>
-        </choose>
-    </select>
-
     <select id="getResourceByIdList" parameterType="java.lang.Long" resultMap="resourceCenterMap">
         SELECT a.`id`, a.`name`, a.`ip`,a.`port`,a.`type_id`, a.`type_name`, a.`type_label`
         FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
@@ -1021,11 +778,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 </otherwise>
             </choose>
         </if>
-        where a.`id` in
-        <foreach collection="idList" item="id" separator="," close=")" open="(">
-            #{id}
-        </foreach>
-        <include refid="resource_ipobject_where"/>
+        <where>
+            <include refid="resource_ipobject_where"/>
+        </where>
     </select>
 
     <select id="getResourceById" parameterType="java.lang.Long" resultMap="resourceCenterMap">
@@ -1213,26 +968,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </foreach>
     </select>
 
-    <!--<select id="getResourceTypeIdListByAppSystemIdAndModuleIdAndEnvIdAndInspectStatusList"
-            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
-            resultType="java.lang.Long">
-        SELECT
-            a.type_id
-        FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
-        WHERE a.`app_system_id` = #{appSystemId}
-          AND a.`app_module_id` = #{appModuleId}
-          <if test="envId != null and envId != -2">
-            AND a.`env_id` = #{envId}
-          </if>
-          <if test="envId == -2">
-            AND a.`env_id` is null
-          </if>
-          AND a.`inspect_status` IN
-          <foreach collection="inspectStatusList" item="inspectStatus" open="(" separator="," close=")">
-            #{inspectStatus}
-          </foreach>
-    </select>-->
-
     <select id="getResourceIdListByAppSystemIdAndModuleIdAndEnvId"
             parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo"
             resultType="java.lang.Long">
@@ -1243,100 +978,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
           AND a.`env_id` = #{envId}
         ORDER BY a.`id`
         DESC
-    </select>
-
-    <!--<select id="getResourceIdByIpAndPortAndNameWithFilter"
-            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo" resultType="java.lang.Long">
-        SELECT a.`id`
-        FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
-        LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
-        LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
-        LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
-        <if test="isHasAuth == false">
-            LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
-            LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
-             <choose>
-                <when test="cmdbGroupType == 'autoexec'">
-                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
-                </when>
-                <otherwise>
-                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
-                </otherwise>
-            </choose>
-        </if>
-        WHERE a.`ip` = #{ip}
-        <if test="keyword != null and keyword != ''">
-            AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%'))
-        </if>
-        <include refid="resource_ipobject_where"/>
-        <choose>
-            <when test="port != null and port != ''">
-                AND a.`port` = #{port}
-            </when>
-            <otherwise>
-                AND a.`port` is null
-            </otherwise>
-        </choose>
-        <if test="name != null and name != ''">
-            and a.`name` = #{name}
-        </if>
-        limit 1
-    </select>-->
-    <!-- 该SQL语句已经改成在ResourceCenterResourceServiceImpl中动态生成 -->
-    <select id="getResourceListByIpAndPortAndNameWithFilter"
-            parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo"
-            resultType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo">
-        SELECT a.`id`, a.`name`, a.`ip`, a.`port`
-        FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
-        <if test="protocolIdList != null and protocolIdList.size() > 0">
-            LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
-            LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
-        </if>
-        <if test="tagIdList != null and tagIdList.size() > 0">
-            LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
-        </if>
-        <if test="isHasAuth == false">
-            LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
-            LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
-            <choose>
-                <when test="cmdbGroupType == 'autoexec'">
-                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
-                </when>
-                <otherwise>
-                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
-                </otherwise>
-            </choose>
-        </if>
-        <where>
-            <if test="keyword != null and keyword != ''">
-                AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%'))
-            </if>
-            <include refid="resource_ipobject_where"/>
-            AND
-            <choose>
-                <when test="inputNodeList != null and inputNodeList.size() > 0">
-                    <foreach collection="inputNodeList" item="item" open="(" separator="OR" close=")">
-                        (
-                        a.`ip` = #{item.ip}
-                        <choose>
-                            <when test="item.port != null and item.port != ''">
-                                AND a.`port` = #{item.port}
-                            </when>
-                            <otherwise>
-                                AND a.`port` is null
-                            </otherwise>
-                        </choose>
-                        <if test="item.name != null and item.name != ''">
-                            and a.`name` = #{item.name}
-                        </if>
-                        )
-                    </foreach>
-                </when>
-                <otherwise>
-                    1 != 1
-                </otherwise>
-            </choose>
-        </where>
     </select>
 
     <select id="getResourceListByTypeIdListAndIpList"
@@ -1931,37 +1572,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         GROUP BY a.`app_module_id`
     </select>
 
-    <select id="getResourceCountByDynamicCondition" resultType="java.lang.Integer">
-        SELECT COUNT(DISTINCT a.`id`)
-        FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
-        LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
-        LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
-        LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
-        <if test="isHasAuth == false">
-            LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
-            LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
-            <choose>
-                <when test="cmdbGroupType == 'autoexec'">
-                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
-                </when>
-                <otherwise>
-                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
-                </otherwise>
-            </choose>
-        </if>
-        <where>
-            <if test="keyword != null and keyword != ''">
-                AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%',
-                #{keyword}, '%'))
-            </if>
-            <include refid="resource_ipobject_where"/>
-            ${conditionWhereSql}
-            <if test="preCondition != null">
-                <include refid="resource_ipobject_pre_where"/>
-                ${preCondition.conditionWhereSql}
-            </if>
-        </where>
-    </select>
     <select id="getOsResourceListByResourceIdList"
             resultType="neatlogic.framework.cmdb.dto.resourcecenter.entity.SoftwareServiceOSVo">
         select id as resourceId,os_name as osName,os_id as osId from @{DATA_SCHEMA}.scence_softwareservice_os where id
@@ -1994,10 +1604,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 </otherwise>
             </choose>
         </if>
+        <if test="keywordList != null and keywordList.size() > 0">
+            JOIN fulltextindex_field_cmdb ffc ON ffc.target_id = a.id AND ffc.target_field = #{nameFieldAttrId}
+            JOIN fulltextindex_word fw ON ffc.word_id = fw.id
+        </if>
         <where>
-            <if test="keyword != null and keyword != ''">
-                AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%'))
-            </if>
             <include refid="resource_ipobject_where"/>
         </where>
     </select>

@@ -296,8 +296,6 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
             ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
             ResourceQueryCriteriaVo queryCriteriaVo = new ResourceQueryCriteriaVo(searchVo);
             queryCriteriaVo.setInspectJobPhaseNodeStatusList(null);
-            queryCriteriaVo.setBatchSearchList(null);
-            queryCriteriaVo.setIpFieldAttrId(null);
             List<String> selectItemFieldNameList = new ArrayList<>();
             selectItemFieldNameList.add("id");
             List<String> filterItemFieldNameList = getFilterItemFieldNameList(queryCriteriaVo);
@@ -324,8 +322,6 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
             ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
             ResourceQueryCriteriaVo queryCriteriaVo = new ResourceQueryCriteriaVo(searchVo);
             queryCriteriaVo.setInspectJobPhaseNodeStatusList(null);
-            queryCriteriaVo.setBatchSearchList(null);
-            queryCriteriaVo.setNameFieldAttrId(null);
             List<String> selectItemFieldNameList = new ArrayList<>();
             selectItemFieldNameList.add("id");
             List<String> filterItemFieldNameList = getFilterItemFieldNameList(queryCriteriaVo);
