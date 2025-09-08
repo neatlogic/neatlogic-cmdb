@@ -606,7 +606,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             //是否存在前置条件
-            initPreCondition(searchVo);
+            initConditionOld(searchVo);
             oldRowNum = resourceMapper.getResourceCount(searchVo);
         }
         if (Objects.equals(enable, COMPARISON_ENABLED)) {
@@ -630,12 +630,18 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
      *
      * @param searchVo 条件
      */
-    private void initPreCondition(ResourceSearchVo searchVo) {
-        if (searchVo.getPreCondition() != null && searchVo.getPreCondition().isCustomCondition()) {
-            if (StringUtils.isBlank(searchVo.getPreCondition().getConditionWhereSql())) {
-                StringBuilder preSqlSb = new StringBuilder();
-                searchVo.getPreCondition().buildConditionWhereSql(preSqlSb, searchVo.getPreCondition());
-                searchVo.getPreCondition().setConditionWhereSql(preSqlSb.toString());
+    private void initConditionOld(ResourceSearchVo searchVo) {
+        if (searchVo.getPreCondition() != null) {
+            if(searchVo.getPreCondition().isCustomCondition()) {
+                if (StringUtils.isBlank(searchVo.getPreCondition().getConditionWhereSql())) {
+                    StringBuilder preSqlSb = new StringBuilder();
+                    searchVo.getPreCondition().buildConditionWhereSql(preSqlSb, searchVo.getPreCondition());
+                    searchVo.getPreCondition().setConditionWhereSql(preSqlSb.toString());
+                }
+                if (searchVo.getPreCondition().getIpFieldAttrId() == null && searchVo.getPreCondition().getNameFieldAttrId() == null) {
+                    handleBatchSearchList(searchVo.getPreCondition());
+                    setIpFieldAttrIdAndNameFieldAttrId(searchVo.getPreCondition());
+                }
             }
             if (searchVo.getPreCondition().getIpFieldAttrId() == null && searchVo.getPreCondition().getNameFieldAttrId() == null) {
                 handleBatchSearchList(searchVo.getPreCondition());
@@ -675,7 +681,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             //是否存在前置条件
-            initPreCondition(searchVo);
+            initConditionOld(searchVo);
             oldIdList = resourceMapper.getResourceIdList(searchVo);
         }
         if (Objects.equals(enable, COMPARISON_ENABLED)) {
