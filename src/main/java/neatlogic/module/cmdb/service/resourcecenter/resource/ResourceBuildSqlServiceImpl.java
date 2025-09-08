@@ -1050,14 +1050,14 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
                     AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%'))
                 </if>
              */
-            if (StringUtils.isNotBlank(queryCriteriaVo.getKeyword())) {
-                String keyword = "'%" + queryCriteriaVo.getKeyword() + "%'";
-                $sql.addWhereExpression(plainSelect, $sql.exp("(",
-                        $sql.exp(fieldName2ColumnMap.get("name").toString(), "like", keyword),
-                        "or", $sql.exp(fieldName2ColumnMap.get("ip").toString(), "like", keyword),
-                        ")")
-                );
-            }
+//            if (StringUtils.isNotBlank(queryCriteriaVo.getKeyword())) {
+//                String keyword = "'%" + queryCriteriaVo.getKeyword() + "%'";
+//                $sql.addWhereExpression(plainSelect, $sql.exp("(",
+//                        $sql.exp(fieldName2ColumnMap.get("name").toString(), "like", keyword),
+//                        "or", $sql.exp(fieldName2ColumnMap.get("ip").toString(), "like", keyword),
+//                        ")")
+//                );
+//            }
             SqlVo sqlVo = getSqlVoForResource(queryCriteriaVo, fieldName2ColumnMap);
             resourceConditionConfigVo.buildConditionSqlVo(sqlVo, fieldName2ColumnMap);
             $sql.addSql(plainSelect, sqlVo);
@@ -1097,14 +1097,14 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
                     AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%'))
                 </if>
              */
-            if (StringUtils.isNotBlank(queryCriteriaVo.getKeyword())) {
-                String keyword = "'%" + queryCriteriaVo.getKeyword() + "%'";
-                $sql.addWhereExpression(plainSelect, $sql.exp("(",
-                        $sql.exp(fieldName2ColumnMap.get("name").toString(), "like", keyword),
-                        "or", $sql.exp(fieldName2ColumnMap.get("ip").toString(), "like", keyword),
-                        ")")
-                );
-            }
+//            if (StringUtils.isNotBlank(queryCriteriaVo.getKeyword())) {
+//                String keyword = "'%" + queryCriteriaVo.getKeyword() + "%'";
+//                $sql.addWhereExpression(plainSelect, $sql.exp("(",
+//                        $sql.exp(fieldName2ColumnMap.get("name").toString(), "like", keyword),
+//                        "or", $sql.exp(fieldName2ColumnMap.get("ip").toString(), "like", keyword),
+//                        ")")
+//                );
+//            }
             SqlVo sqlVo = getSqlVoForResource(queryCriteriaVo, fieldName2ColumnMap);
             resourceConditionConfigVo.buildConditionSqlVo(sqlVo, fieldName2ColumnMap);
             $sql.addSql(plainSelect, sqlVo);
