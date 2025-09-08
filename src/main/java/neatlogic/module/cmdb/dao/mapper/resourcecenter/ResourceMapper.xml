@@ -937,36 +937,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             order by CONVERT(a.abbr_name USING gbk) COLLATE gbk_chinese_ci ASC
         </if>
     </select>
-    <!-- 该SQL语句可以使用 getResourceListByIpAndPortAndName 代替 -->
-    <select id="getResourceListByResourceVoList" resultType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo">
-        SELECT a.name,a.`ip`,a.id,a.port,a.type_name as typeName
-        FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
-        <if test="searchVo.isHasAuth == false">
-            LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
-            LEFT JOIN cmdb_group_auth cga ON ccg.group_id = cga.group_id
-            <choose>
-                <when test="searchVo.cmdbGroupType == 'autoexec'">
-                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('autoexec')
-                </when>
-                <otherwise>
-                    LEFT JOIN cmdb_group cg ON cga.group_id = cg.id AND cg.type in ('readonly','maintain','autoexec')
-                </otherwise>
-            </choose>
-        </if>
-        WHERE
-        <foreach collection="resourceList" item="resource" separator="or" open="(" close=")">
-            a.ip = #{resource.ip}
-            <if test="resource.port != null">
-                and a.port = #{resource.port}
-            </if>
-            <if test="resource.port == null">
-                and a.port is null
-            </if>
-            <if test="resource.name != null">
-                and a.name = #{resource.name}
-            </if>
-        </foreach>
-    </select>
 
     <select id="getResourceIdListByAppSystemIdAndModuleIdAndEnvId"
             parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo"
