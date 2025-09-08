@@ -275,14 +275,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             </foreach>
         </if>
         <if test="preCondition.keywordList != null and preCondition.keywordList.size() > 0">
-            AND fw3.word IN
+            AND fw.word IN
             <foreach collection="preCondition.keywordList" item="item" open="(" close=")" separator=",">
-                #{item}
-            </foreach>
-        </if>
-        <if test="preCondition.batchSearchList != null and preCondition.batchSearchList.size() > 0 and preCondition.searchField != null and preCondition.searchField != ''">
-            AND fw3.word IN
-            <foreach collection="preCondition.batchSearchList" item="item" open="(" close=")" separator=",">
                 #{item}
             </foreach>
         </if>
@@ -405,11 +399,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             #{ipFieldAttrId})
             JOIN fulltextindex_word fw ON ffc.word_id = fw.id
         </if>
-        <if test="preCondition != null and preCondition.keywordList != null and preCondition.keywordList.size() > 0">
-            JOIN fulltextindex_field_cmdb ffc3 ON ffc3.target_id = a.id AND ffc3.target_field IN (#{nameFieldAttrId},
-            #{ipFieldAttrId})
-            JOIN fulltextindex_word fw3 ON ffc3.word_id = fw3.id
-        </if>
         <if test="batchSearchList != null and batchSearchList.size() > 0 and searchField != null and searchField != ''">
             JOIN fulltextindex_field_cmdb ffc2 ON ffc2.target_id = a.id
             <choose>
@@ -466,11 +455,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             JOIN fulltextindex_field_cmdb ffc ON ffc.target_id = a.id AND ffc.target_field IN (#{nameFieldAttrId},
             #{ipFieldAttrId})
             JOIN fulltextindex_word fw ON ffc.word_id = fw.id
-        </if>
-        <if test="preCondition != null and preCondition.keywordList != null and preCondition.keywordList.size() > 0">
-            JOIN fulltextindex_field_cmdb ffc3 ON ffc3.target_id = a.id AND ffc3.target_field IN (#{nameFieldAttrId},
-            #{ipFieldAttrId})
-            JOIN fulltextindex_word fw3 ON ffc3.word_id = fw3.id
         </if>
         <if test="batchSearchList != null and batchSearchList.size() > 0 and searchField != null and searchField != ''">
             JOIN fulltextindex_field_cmdb ffc2 ON ffc2.target_id = a.id
