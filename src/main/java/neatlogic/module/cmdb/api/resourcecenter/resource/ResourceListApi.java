@@ -118,8 +118,8 @@ public class ResourceListApi extends PrivateApiComponentBase {
             searchVo = resourceCenterResourceService.assembleResourceSearchVo(jsonObj);
         }
         searchVo.setPreCondition(preCondition);
-        resourceCenterResourceService.handleBatchSearchList(searchVo);
-        resourceCenterResourceService.setIpFieldAttrIdAndNameFieldAttrId(searchVo);
+//        resourceCenterResourceService.handleBatchSearchList(searchVo);
+//        resourceCenterResourceService.setIpFieldAttrIdAndNameFieldAttrId(searchVo);
         IResourceCenterDataSource resourceCenterDataSource = ResourceCenterDataSourceFactory.getResourceCenterDataSource();
         List<ResourceVo> resultList = resourceCenterDataSource.getResourceList(searchVo);
         if (CollectionUtils.isNotEmpty(resultList)) {

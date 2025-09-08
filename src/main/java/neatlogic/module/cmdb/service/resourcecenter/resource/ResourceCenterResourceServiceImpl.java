@@ -592,28 +592,40 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         int newRowNum = 0;
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             if (searchVo.getPreCondition() != null && searchVo.getPreCondition().isCustomCondition()) {
-                handleBatchSearchList(searchVo.getPreCondition());
-                setIpFieldAttrIdAndNameFieldAttrId(searchVo.getPreCondition());
+                if (searchVo.getPreCondition().getIpFieldAttrId() == null && searchVo.getPreCondition().getNameFieldAttrId() == null) {
+                    handleBatchSearchList(searchVo.getPreCondition());
+                    setIpFieldAttrIdAndNameFieldAttrId(searchVo.getPreCondition());
+                }
             }
-            handleBatchSearchList(searchVo);
-            setIpFieldAttrIdAndNameFieldAttrId(searchVo);
+            if (searchVo.getIpFieldAttrId() == null && searchVo.getNameFieldAttrId() == null) {
+                handleBatchSearchList(searchVo);
+                setIpFieldAttrIdAndNameFieldAttrId(searchVo);
+            }
             String sql = resourceBuildSqlService.buildGetResourceCountSql(searchVo);
             newRowNum = resourceMapper.getCountBySql(sql);
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             //是否存在前置条件
             if (searchVo.getPreCondition() != null && searchVo.getPreCondition().isCustomCondition()) {
-                StringBuilder preSqlSb = new StringBuilder();
-                searchVo.getPreCondition().buildConditionWhereSql(preSqlSb, searchVo.getPreCondition());
-                searchVo.getPreCondition().setConditionWhereSql(preSqlSb.toString());
-                handleBatchSearchList(searchVo.getPreCondition());
-                setIpFieldAttrIdAndNameFieldAttrId(searchVo.getPreCondition());
+                if (StringUtils.isBlank(searchVo.getPreCondition().getConditionWhereSql())) {
+                    StringBuilder preSqlSb = new StringBuilder();
+                    searchVo.getPreCondition().buildConditionWhereSql(preSqlSb, searchVo.getPreCondition());
+                    searchVo.getPreCondition().setConditionWhereSql(preSqlSb.toString());
+                }
+                if (searchVo.getPreCondition().getIpFieldAttrId() == null && searchVo.getPreCondition().getNameFieldAttrId() == null) {
+                    handleBatchSearchList(searchVo.getPreCondition());
+                    setIpFieldAttrIdAndNameFieldAttrId(searchVo.getPreCondition());
+                }
             }
-            StringBuilder sqlSb = new StringBuilder();
-            searchVo.buildConditionWhereSql(sqlSb, searchVo);
-            searchVo.setConditionWhereSql(sqlSb.toString());
-            handleBatchSearchList(searchVo);
-            setIpFieldAttrIdAndNameFieldAttrId(searchVo);
+            if (StringUtils.isBlank(searchVo.getConditionWhereSql())) {
+                StringBuilder sqlSb = new StringBuilder();
+                searchVo.buildConditionWhereSql(sqlSb, searchVo);
+                searchVo.setConditionWhereSql(sqlSb.toString());
+            }
+            if (searchVo.getIpFieldAttrId() == null && searchVo.getNameFieldAttrId() == null) {
+                handleBatchSearchList(searchVo);
+                setIpFieldAttrIdAndNameFieldAttrId(searchVo);
+            }
             oldRowNum = resourceMapper.getResourceCount(searchVo);
         }
         if (Objects.equals(enable, COMPARISON_ENABLED)) {
@@ -640,28 +652,40 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         List<Long> oldIdList = new ArrayList<>();
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             if (searchVo.getPreCondition() != null && searchVo.getPreCondition().isCustomCondition()) {
-                handleBatchSearchList(searchVo.getPreCondition());
-                setIpFieldAttrIdAndNameFieldAttrId(searchVo.getPreCondition());
+                if (searchVo.getPreCondition().getIpFieldAttrId() == null && searchVo.getPreCondition().getNameFieldAttrId() == null) {
+                    handleBatchSearchList(searchVo.getPreCondition());
+                    setIpFieldAttrIdAndNameFieldAttrId(searchVo.getPreCondition());
+                }
             }
-            handleBatchSearchList(searchVo);
-            setIpFieldAttrIdAndNameFieldAttrId(searchVo);
+            if (searchVo.getIpFieldAttrId() == null && searchVo.getNameFieldAttrId() == null) {
+                handleBatchSearchList(searchVo);
+                setIpFieldAttrIdAndNameFieldAttrId(searchVo);
+            }
             String sql = resourceBuildSqlService.buildGetResourceIdListSql(searchVo);
             newIdList = resourceMapper.getIdListBySql(sql);
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             //是否存在前置条件
             if (searchVo.getPreCondition() != null && searchVo.getPreCondition().isCustomCondition()) {
-                StringBuilder preSqlSb = new StringBuilder();
-                searchVo.getPreCondition().buildConditionWhereSql(preSqlSb, searchVo.getPreCondition());
-                searchVo.getPreCondition().setConditionWhereSql(preSqlSb.toString());
-                handleBatchSearchList(searchVo.getPreCondition());
-                setIpFieldAttrIdAndNameFieldAttrId(searchVo.getPreCondition());
+                if (StringUtils.isBlank(searchVo.getPreCondition().getConditionWhereSql())) {
+                    StringBuilder preSqlSb = new StringBuilder();
+                    searchVo.getPreCondition().buildConditionWhereSql(preSqlSb, searchVo.getPreCondition());
+                    searchVo.getPreCondition().setConditionWhereSql(preSqlSb.toString());
+                }
+                if (searchVo.getPreCondition().getIpFieldAttrId() == null && searchVo.getPreCondition().getNameFieldAttrId() == null) {
+                    handleBatchSearchList(searchVo.getPreCondition());
+                    setIpFieldAttrIdAndNameFieldAttrId(searchVo.getPreCondition());
+                }
             }
-            StringBuilder sqlSb = new StringBuilder();
-            searchVo.buildConditionWhereSql(sqlSb, searchVo);
-            searchVo.setConditionWhereSql(sqlSb.toString());
-            handleBatchSearchList(searchVo);
-            setIpFieldAttrIdAndNameFieldAttrId(searchVo);
+            if (StringUtils.isBlank(searchVo.getConditionWhereSql())) {
+                StringBuilder sqlSb = new StringBuilder();
+                searchVo.buildConditionWhereSql(sqlSb, searchVo);
+                searchVo.setConditionWhereSql(sqlSb.toString());
+            }
+            if (searchVo.getIpFieldAttrId() == null && searchVo.getNameFieldAttrId() == null) {
+                handleBatchSearchList(searchVo);
+                setIpFieldAttrIdAndNameFieldAttrId(searchVo);
+            }
             oldIdList = resourceMapper.getResourceIdList(searchVo);
         }
         if (Objects.equals(enable, COMPARISON_ENABLED)) {

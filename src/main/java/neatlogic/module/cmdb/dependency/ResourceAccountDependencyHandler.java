@@ -9,6 +9,7 @@ import neatlogic.framework.dependency.core.IFromType;
 import neatlogic.framework.dependency.dto.DependencyInfoVo;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
+import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -26,7 +27,7 @@ public class ResourceAccountDependencyHandler extends CustomDependencyHandlerBas
     ResourceAccountMapper resourceAccountMapper;
 
     @Resource
-    ResourceMapper resourceMapper;
+    private IResourceCenterResourceService resourceCenterResourceService;
 
     @Override
     protected String getTableName() {
@@ -73,7 +74,7 @@ public class ResourceAccountDependencyHandler extends CustomDependencyHandlerBas
         List<DependencyInfoVo> resultList = new ArrayList<>();
         List<Long> resourceIdList = resourceAccountMapper.getResourceIdListByAccountIdWithPage((Long) from, startNum, pageSize);
         if (resourceIdList.size() > 0) {
-            List<ResourceVo> resourceList = resourceMapper.getResourceListByIdList(resourceIdList);
+            List<ResourceVo> resourceList = resourceCenterResourceService.getResourceListByIdList(resourceIdList);
             for (ResourceVo vo : resourceList) {
                 DependencyInfoVo dependencyInfoVo = parse(vo);
                 if (dependencyInfoVo != null) {

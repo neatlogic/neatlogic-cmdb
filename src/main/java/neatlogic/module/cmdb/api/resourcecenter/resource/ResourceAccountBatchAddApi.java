@@ -33,6 +33,7 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
+import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.springframework.stereotype.Service;
@@ -52,7 +53,7 @@ import java.util.*;
 public class ResourceAccountBatchAddApi extends PrivateApiComponentBase {
 
     @Resource
-    private ResourceMapper resourceMapper;
+    private IResourceCenterResourceService resourceCenterResourceService;
     @Resource
     private ResourceAccountMapper resourceAccountMapper;
 
@@ -87,7 +88,7 @@ public class ResourceAccountBatchAddApi extends PrivateApiComponentBase {
         List<Long> resourceIdList = resourceIdArray.toJavaList(Long.class);
         Map<Long, ResourceVo> resourceVoMap = new HashMap<>();
         List<Long> existResourceIdList = new ArrayList<>();
-        List<ResourceVo> resourceVoList = resourceMapper.getResourceListByIdList(resourceIdList);
+        List<ResourceVo> resourceVoList = resourceCenterResourceService.getResourceListByIdList(resourceIdList);
         for (ResourceVo resourceVo : resourceVoList) {
             resourceVoMap.put(resourceVo.getId(), resourceVo);
             existResourceIdList.add(resourceVo.getId());

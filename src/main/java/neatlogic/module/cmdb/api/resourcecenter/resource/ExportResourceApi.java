@@ -133,7 +133,7 @@ public class ExportResourceApi extends PrivateBinaryStreamApiComponentBase {
         JSONArray defaultValue = paramObj.getJSONArray("defaultValue");
         if (CollectionUtils.isNotEmpty(defaultValue)) {
             List<Long> idList = defaultValue.toJavaList(Long.class);
-            resourceList = resourceMapper.getResourceListByIdList(idList);
+            resourceList = resourceCenterResourceService.getResourceListByIdList(idList);
             resourceCenterResourceService.addTagAndAccountInformation(resourceList);
             for (ResourceVo resourceVo : resourceList) {
                 Map<String, Object> dataMap = resourceConvertDataMap(resourceVo);
@@ -141,24 +141,24 @@ public class ExportResourceApi extends PrivateBinaryStreamApiComponentBase {
             }
         } else {
             ResourceSearchVo searchVo = resourceCenterResourceService.assembleResourceSearchVo(paramObj);
-            resourceCenterResourceService.handleBatchSearchList(searchVo);
-            resourceCenterResourceService.setIpFieldAttrIdAndNameFieldAttrId(searchVo);
-            //是否存在前置条件
-            if (searchVo.getPreCondition() != null && searchVo.getPreCondition().isCustomCondition()) {
-                StringBuilder preSqlSb = new StringBuilder();
-                searchVo.getPreCondition().buildConditionWhereSql(preSqlSb, searchVo.getPreCondition());
-                searchVo.getPreCondition().setConditionWhereSql(preSqlSb.toString());
-            }
-            int rowNum = resourceMapper.getResourceCount(searchVo);
+//            resourceCenterResourceService.handleBatchSearchList(searchVo);
+//            resourceCenterResourceService.setIpFieldAttrIdAndNameFieldAttrId(searchVo);
+//            //是否存在前置条件
+//            if (searchVo.getPreCondition() != null && searchVo.getPreCondition().isCustomCondition()) {
+//                StringBuilder preSqlSb = new StringBuilder();
+//                searchVo.getPreCondition().buildConditionWhereSql(preSqlSb, searchVo.getPreCondition());
+//                searchVo.getPreCondition().setConditionWhereSql(preSqlSb.toString());
+//            }
+            int rowNum = resourceCenterResourceService.getResourceCount(searchVo);
             if (rowNum > 0) {
                 searchVo.setPageSize(100);
                 searchVo.setRowNum(rowNum);
 //                resourceCenterResourceService.setIsIpFieldSortAndIsNameFieldSort(searchVo);
                 for (int i = 1; i <= searchVo.getPageCount(); i++) {
                     searchVo.setCurrentPage(i);
-                    List<Long> idList = resourceMapper.getResourceIdList(searchVo);
+                    List<Long> idList = resourceCenterResourceService.getResourceIdList(searchVo);
                     if (CollectionUtils.isNotEmpty(idList)) {
-                        resourceList = resourceMapper.getResourceListByIdList(idList);
+                        resourceList = resourceCenterResourceService.getResourceListByIdList(idList);
                         resourceCenterResourceService.addTagAndAccountInformation(resourceList);
                         for (ResourceVo resourceVo : resourceList) {
                             Map<String, Object> dataMap = resourceConvertDataMap(resourceVo);
