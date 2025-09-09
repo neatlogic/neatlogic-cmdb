@@ -394,7 +394,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 </otherwise>
             </choose>
         </if>
-        <if test="keywordList != null and keywordList.size() > 0">
+        <if test="(keywordList != null and keywordList.size() > 0) or (preCondition != null and preCondition.keywordList != null and preCondition.keywordList.size() > 0)">
             JOIN fulltextindex_field_cmdb ffc ON ffc.target_id = a.id AND ffc.target_field IN (#{nameFieldAttrId},
             #{ipFieldAttrId})
             JOIN fulltextindex_word fw ON ffc.word_id = fw.id
@@ -451,7 +451,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 </otherwise>
             </choose>
         </if>
-        <if test="keywordList != null and keywordList.size() > 0">
+        <if test="(keywordList != null and keywordList.size() > 0) or (preCondition != null and preCondition.keywordList != null and preCondition.keywordList.size() > 0)">
             JOIN fulltextindex_field_cmdb ffc ON ffc.target_id = a.id AND ffc.target_field IN (#{nameFieldAttrId},
             #{ipFieldAttrId})
             JOIN fulltextindex_word fw ON ffc.word_id = fw.id
