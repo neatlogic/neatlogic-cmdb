@@ -591,7 +591,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         int oldRowNum = 0;
         int newRowNum = 0;
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
-            if (searchVo.getPreCondition() != null && searchVo.getPreCondition().isCustomCondition()) {
+            if (searchVo.getPreCondition() != null) {
                 if (searchVo.getPreCondition().getIpFieldAttrId() == null && searchVo.getPreCondition().getNameFieldAttrId() == null) {
                     handleBatchSearchList(searchVo.getPreCondition());
                     setIpFieldAttrIdAndNameFieldAttrId(searchVo.getPreCondition());
@@ -638,10 +638,6 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                     searchVo.getPreCondition().buildConditionWhereSql(preSqlSb, searchVo.getPreCondition());
                     searchVo.getPreCondition().setConditionWhereSql(preSqlSb.toString());
                 }
-                if (searchVo.getPreCondition().getIpFieldAttrId() == null && searchVo.getPreCondition().getNameFieldAttrId() == null) {
-                    handleBatchSearchList(searchVo.getPreCondition());
-                    setIpFieldAttrIdAndNameFieldAttrId(searchVo.getPreCondition());
-                }
             }
             if (searchVo.getPreCondition().getIpFieldAttrId() == null && searchVo.getPreCondition().getNameFieldAttrId() == null) {
                 handleBatchSearchList(searchVo.getPreCondition());
@@ -666,7 +662,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         List<Long> newIdList = new ArrayList<>();
         List<Long> oldIdList = new ArrayList<>();
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
-            if (searchVo.getPreCondition() != null && searchVo.getPreCondition().isCustomCondition()) {
+            if (searchVo.getPreCondition() != null) {
                 if (searchVo.getPreCondition().getIpFieldAttrId() == null && searchVo.getPreCondition().getNameFieldAttrId() == null) {
                     handleBatchSearchList(searchVo.getPreCondition());
                     setIpFieldAttrIdAndNameFieldAttrId(searchVo.getPreCondition());
