@@ -377,28 +377,28 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             }
         }
         if (CollectionUtils.isNotEmpty(viewNameList)) {
-            ResourceSearchVo searchVo = new ResourceSearchVo();
-            if (appSystemId != null) {
-                searchVo.setAppSystemId(appSystemId);
-            }
-            if (appModuleId != null) {
-                searchVo.setAppModuleId(appModuleId);
-            }
-            if (envId != null) {
-                searchVo.setEnvId(envId);
-            }
-            if (currentPage != null) {
-                searchVo.setCurrentPage(currentPage);
-            }
-            if (pageSize != null) {
-                searchVo.setPageSize(pageSize);
-            }
-            if (CollectionUtils.isNotEmpty(inspectStatusList)) {
-                searchVo.setInspectStatusList(inspectStatusList);
-            }
             for (String name : viewNameList) {
                 ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName(name);
                 if (resourceEntityVo != null) {
+                    ResourceSearchVo searchVo = new ResourceSearchVo();
+                    if (appSystemId != null) {
+                        searchVo.setAppSystemId(appSystemId);
+                    }
+                    if (appModuleId != null) {
+                        searchVo.setAppModuleId(appModuleId);
+                    }
+                    if (envId != null) {
+                        searchVo.setEnvId(envId);
+                    }
+                    if (currentPage != null) {
+                        searchVo.setCurrentPage(currentPage);
+                    }
+                    if (pageSize != null) {
+                        searchVo.setPageSize(pageSize);
+                    }
+                    if (CollectionUtils.isNotEmpty(inspectStatusList)) {
+                        searchVo.setInspectStatusList(inspectStatusList);
+                    }
                     searchVo.setViewName(name);
                     List<String> fieldList = viewName2FieldListMap.get(name);
                     List<ResourceVo> resourceList = getAppResourceList(searchVo, true);
