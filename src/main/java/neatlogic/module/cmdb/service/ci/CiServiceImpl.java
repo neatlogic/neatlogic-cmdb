@@ -616,6 +616,15 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
                 }
             }
         });
+
+        //删除物化视图(商业版本功能)
+        AfterTransactionJob<CiVo> afterTransactionJob = new AfterTransactionJob<>("DELETE-CI-VIEW");
+        afterTransactionJob.execute(ciVo, ci -> {
+            ICiSchemaViewCrossoverMapper mapper = CrossoverServiceFactory.tryToGetApi(ICiSchemaViewCrossoverMapper.class);
+            if (mapper != null) {
+                mapper.deleteCiView(ci);
+            }
+        });
         return 0;
     }
 
