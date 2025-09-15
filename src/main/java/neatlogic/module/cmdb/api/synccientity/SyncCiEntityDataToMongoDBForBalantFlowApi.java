@@ -178,7 +178,7 @@ public class SyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCompone
                                 }
                             }
                             dictionaryList = generateDictionaryList(id, name, columnList, dictionaryConfigList);
-                            saveDictionaryList(dictionaryList);
+                            saveDictionaryList(dictionaryList, now);
                             flag = true;
                         }
                         JSONArray resultList = returnObj.getJSONArray("resultList");
@@ -201,6 +201,8 @@ public class SyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCompone
             JSONArray dictionaryConfigList
     ) {
         JSONArray dictionaryList = new JSONArray();
+        Set<Long> balantflowCiIdSet = new HashSet<>();
+        Map<Long, String> attrId2AttrLabelMap = new HashMap<>();
         Map<Long, JSONArray> ciId2AttrListMap = new LinkedHashMap<>();
         if (CollectionUtils.isNotEmpty(columnList)) {
             for (int i = 0; i < columnList.size(); i++) {
@@ -209,6 +211,7 @@ public class SyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCompone
                     Long ciId = columnObj.getLong("ciId");
                     Long attrId = columnObj.getLong("attrId");
                     String label = columnObj.getString("label");
+                    balantflowCiIdSet.add(ciId);
                     JSONObject attrObj = new JSONObject(true);
                     String name = HanyuPinyinUtil.format(label + "_" + attrId);
                     attrObj.put("name", name);
@@ -216,6 +219,7 @@ public class SyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCompone
                     attrObj.put("type", "String");
                     attrObj.put("attrId", attrId);
                     ciId2AttrListMap.computeIfAbsent(ciId, key -> new JSONArray()).add(attrObj);
+                    attrId2AttrLabelMap.put(attrId, label);
                 }
             }
         }
@@ -245,6 +249,11 @@ public class SyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCompone
                     String neatLogicCiName = dictionaryConfigObj.getString("neatLogicCiName");
                     Long balantflowCiId = dictionaryConfigObj.getLong("balantflowCiId");
                     String balantflowCiName = dictionaryConfigObj.getString("balantflowCiName");
+                    List<Long> multipleSelectTypeAttrIdList = new ArrayList<>();
+                    JSONArray multipleSelectTypeAttrIdArray = dictionaryConfigObj.getJSONArray("multipleSelectTypeAttrIdList");
+                    if (CollectionUtils.isNotEmpty(multipleSelectTypeAttrIdArray)) {
+                        multipleSelectTypeAttrIdList = multipleSelectTypeAttrIdArray.toJavaList(Long.class);
+                    }
                     if (StringUtils.isNotBlank(dictionaryName)) {
                         JSONObject dictionaryObj = new JSONObject();
                         String id = UuidUtil.getCustomUUID(dictionaryName);
@@ -259,26 +268,14 @@ public class SyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCompone
                         dictionaryObj.put("balantflowCiId", balantflowCiId);
                         dictionaryObj.put("balantflowCiName", balantflowCiName);
                         JSONArray fields = new JSONArray();
-                        for (Map.Entry<Long, JSONArray> entry : ciId2AttrListMap.entrySet()) {
-                            Long key = entry.getKey();
-//                            if (Objects.equals(key, balantflowCiId)) {
-//                                fields.addAll(entry.getValue());
-//                            } else {
-                                String ciName = ciId2CiName.get(key);
-                                String desc = "模型_" + key;
-                                if (StringUtils.isNotBlank(ciName)) {
-                                    desc = ciName;
-                                }
-                                String name = HanyuPinyinUtil.format(desc);
-                                JSONObject fieldObj = new JSONObject(true);
-                                fieldObj.put("name", name);
-                                fieldObj.put("desc", desc);
-                                fieldObj.put("type", "JsonArray");
-                                fieldObj.put("subset", entry.getValue());
+                        for (Long ciId : balantflowCiIdSet) {
+                            String ciName = ciId2CiName.get(ciId);
+                            JSONObject fieldObj = generateField(ciId, ciName, multipleSelectTypeAttrIdList, columnList);
+                            if (MapUtils.isNotEmpty(fieldObj)) {
                                 fields.add(fieldObj);
-//                            }
+                            }
+                            dictionaryObj.put("fields", fields);
                         }
-                        dictionaryObj.put("fields", fields);
                         JSONObject balantflowObj = new JSONObject();
                         balantflowObj.put("customViewId", customViewId);
                         balantflowObj.put("customViewName", customViewName);
@@ -294,9 +291,57 @@ public class SyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCompone
         return dictionaryList;
     }
 
-    private void saveDictionaryList(JSONArray dictionaryList) {
-        for (int i = 0; i < dictionaryList.size(); i++) {
-            JSONObject dictionaryObj = dictionaryList.getJSONObject(i);
+    private JSONObject generateField(Long balantflowCiId, String balantflowCiName, List<Long> multipleSelectTypeAttrIdList, JSONArray columnList) {
+        Map<Long, JSONArray> ciId2AttrListMap = new HashMap<>();
+        if (CollectionUtils.isNotEmpty(columnList)) {
+            for (int i = 0; i < columnList.size(); i++) {
+                JSONObject columnObj = columnList.getJSONObject(i);
+                if (MapUtils.isNotEmpty(columnObj)) {
+                    Long ciId = columnObj.getLong("ciId");
+                    Long attrId = columnObj.getLong("attrId");
+                    String label = columnObj.getString("label");
+                    JSONObject attrObj = new JSONObject(true);
+                    String name = HanyuPinyinUtil.format(label + "_" + attrId);
+                    attrObj.put("name", name);
+                    attrObj.put("desc", label + "_" + attrId);
+                    attrObj.put("attrId", attrId);
+                    if (multipleSelectTypeAttrIdList.contains(attrId)) {
+                        attrObj.put("type", "JsonArray");
+                        JSONArray subset = new JSONArray();
+                        JSONObject subObj = new JSONObject();
+                        subObj.put("name", name);
+                        subObj.put("desc", label + "_" + attrId);
+                        subObj.put("type", "String");
+                        subset.add(subObj);
+                        attrObj.put("subset", subset);
+                    } else {
+                        attrObj.put("type", "String");
+                    }
+                    ciId2AttrListMap.computeIfAbsent(ciId, key -> new JSONArray()).add(attrObj);
+                }
+            }
+        }
+        JSONArray subset = ciId2AttrListMap.get(balantflowCiId);
+        if (CollectionUtils.isNotEmpty(subset)) {
+            String desc = "模型_" + balantflowCiId;
+            if (StringUtils.isNotBlank(balantflowCiName)) {
+                desc = balantflowCiName;
+            }
+            String name = HanyuPinyinUtil.format(desc);
+            JSONObject fieldObj = new JSONObject(true);
+            fieldObj.put("ciId", balantflowCiId);
+            fieldObj.put("name", name);
+            fieldObj.put("desc", desc);
+            fieldObj.put("type", "JsonArray");
+            fieldObj.put("subset", subset);
+            return fieldObj;
+        }
+        return null;
+    }
+
+    private void saveDictionaryList(JSONArray dictionaryList, LocalDateTime localDateTime) {
+        if (CollectionUtils.isNotEmpty(dictionaryList)) {
+            JSONObject dictionaryObj = dictionaryList.getJSONObject(0);
             String id = dictionaryObj.getString("_id");
             String name = dictionaryObj.getString("name");
             Query query = new Query();
@@ -317,11 +362,16 @@ public class SyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCompone
                         Md5Util.encryptMD5(JSONObject.toJSONString(dictionaryObj, SerializerFeature.MapSortField))
                 )
                 ) {
+                    dictionaryObj.put("lcd", localDateTime.format(dateTimeFormatter));
                     mongoTemplate.findAndReplace(query, dictionaryObj, "_dictionary");
                 }
             } else {
+                dictionaryObj.put("fcd", localDateTime.format(dateTimeFormatter));
                 mongoTemplate.insert(dictionaryObj, "_dictionary");
             }
+        }
+        for (int i = 0; i < dictionaryList.size(); i++) {
+            JSONObject dictionaryObj = dictionaryList.getJSONObject(i);
             String _OBJ_CATEGORY = dictionaryObj.getString("_OBJ_CATEGORY");
             String _OBJ_TYPE = dictionaryObj.getString("_OBJ_TYPE");
             String neatLogicCiName = dictionaryObj.getString("neatLogicCiName");
@@ -355,14 +405,16 @@ public class SyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCompone
     ) {
         for (int i = 0; i < resultList.size(); i++) {
             JSONObject row = resultList.getJSONObject(i);
+            Long balantflowCiEntityId = row.getLong("ciEntityId");
             JSONArray attrList = row.getJSONArray("attrList");
             if (CollectionUtils.isNotEmpty(attrList)) {
-                saveRowData(attrList, attrId2CiIdMap, dictionaryList, localDateTime);
+                saveRowData(balantflowCiEntityId, attrList, attrId2CiIdMap, dictionaryList, localDateTime);
             }
         }
     }
 
     private void saveRowData(
+            Long balantflowCiEntityId,
             JSONArray attrList,
             Map<Long, Long> attrId2CiIdMap,
             JSONArray dictionaryList,
@@ -384,17 +436,18 @@ public class SyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCompone
                 ciId2DictionaryMap.put(ciId, dictionaryObj);
             }
         }
-        for (int i = 0; i < dictionaryList.size(); i++) {
-            JSONObject dictionaryObj = dictionaryList.getJSONObject(i);
+//        for (int i = 0; i < dictionaryList.size(); i++) {
+            JSONObject dictionaryObj = dictionaryList.getJSONObject(0);
             String collection = dictionaryObj.getString("collection");
             if (StringUtils.isNotBlank(collection)) {
-                JSONObject dataObj = generateData(attrList, dictionaryObj, ciId2DictionaryMap, localDateTime);
+                JSONObject dataObj = generateData(balantflowCiEntityId, attrList, dictionaryObj, ciId2DictionaryMap, localDateTime);
                 mongoTemplate.insert(dataObj, collection);
             }
-        }
+//        }
     }
 
     private JSONObject generateData(
+            Long balantflowCiEntityId,
             JSONArray attrList,
             JSONObject dictionaryObj,
             Map<Long, JSONObject> ciId2DictionaryMap,
@@ -406,30 +459,76 @@ public class SyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCompone
             for (int i = 0; i < fields.size(); i++) {
                 JSONObject fieldObj = fields.getJSONObject(i);
                 if (MapUtils.isNotEmpty(fieldObj)) {
+                    Long ciId = fieldObj.getLong("ciId");
                     String name = fieldObj.getString("name");
                     JSONArray subset = fieldObj.getJSONArray("subset");
                     if (CollectionUtils.isNotEmpty(subset)) {
                         JSONObject jsonObj = new JSONObject();
+                        JSONObject subDictionaryObj = ciId2DictionaryMap.get(ciId);
+                        if (MapUtils.isNotEmpty(subDictionaryObj)) {
+                            String _OBJ_CATEGORY = subDictionaryObj.getString("_OBJ_CATEGORY");
+                            jsonObj.put("_OBJ_CATEGORY", _OBJ_CATEGORY);
+                            String _OBJ_TYPE = subDictionaryObj.getString("_OBJ_TYPE");
+                            jsonObj.put("_OBJ_TYPE", _OBJ_TYPE);
+                        }
                         JSONArray jsonArray = new JSONArray();
                         for (int j = 0; j < subset.size(); j++) {
                             JSONObject subObj = subset.getJSONObject(j);
                             if (MapUtils.isNotEmpty(subObj)) {
                                 String subName = subObj.getString("name");
                                 Long attrId = subObj.getLong("attrId");
-                                for (int k = 0; k < attrList.size(); k++) {
-                                    JSONObject attrObj = attrList.getJSONObject(k);
-                                    if (MapUtils.isNotEmpty(attrObj)) {
-                                        if (Objects.equals(attrId, attrObj.getLong("attrId"))) {
-                                            Long ciId = attrObj.getLong("ciId");
-                                            JSONObject subDictionaryObj = ciId2DictionaryMap.get(ciId);
-                                            String _OBJ_CATEGORY = subDictionaryObj.getString("_OBJ_CATEGORY");
-                                            jsonObj.put("_OBJ_CATEGORY", _OBJ_CATEGORY);
-                                            String _OBJ_TYPE = subDictionaryObj.getString("_OBJ_TYPE");
-                                            jsonObj.put("_OBJ_TYPE", _OBJ_TYPE);
-                                            Object value = attrObj.get("value");
-                                            jsonObj.put(subName, value);
-                                            break;
+                                String type = subObj.getString("type");
+                                if (Objects.equals(type, "String")) {
+                                    for (int k = 0; k < attrList.size(); k++) {
+                                        JSONObject attrObj = attrList.getJSONObject(k);
+                                        if (MapUtils.isNotEmpty(attrObj)) {
+                                            if (Objects.equals(attrId, attrObj.getLong("attrId"))) {
+                                                String value = attrObj.getString("value");
+                                                jsonObj.put(subName, value);
+                                                break;
+                                            }
                                         }
+                                    }
+                                } else if (Objects.equals(type, "JsonArray")) {
+                                    String subName1 = null;
+                                    JSONArray subset1 = subObj.getJSONArray("subset");
+                                    if (CollectionUtils.isNotEmpty(subset1)) {
+                                        JSONObject subObj1 = subset1.getJSONObject(0);
+                                        if (MapUtils.isNotEmpty(subObj1)) {
+                                            subName1 = subObj1.getString("name");
+                                        }
+                                    }
+                                    List<String> valueList = new ArrayList<>();
+                                    for (int k = 0; k < attrList.size(); k++) {
+                                        JSONObject attrObj = attrList.getJSONObject(k);
+                                        if (MapUtils.isNotEmpty(attrObj)) {
+                                            if (Objects.equals(attrId, attrObj.getLong("attrId"))) {
+                                                Object value = attrObj.get("value");
+                                                if (value != null) {
+                                                    if (value instanceof String) {
+                                                        String str = (String) value;
+                                                        if (str.contains("<br>")) {
+                                                            String[] split = str.split("<br>");
+                                                            valueList.addAll(Arrays.asList(split));
+                                                        } else {
+                                                            valueList.add(str);
+                                                        }
+                                                    } else {
+                                                        valueList.add(value.toString());
+                                                    }
+                                                }
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    if (StringUtils.isNotBlank(subName1) && CollectionUtils.isNotEmpty(valueList)) {
+                                        JSONArray array = new JSONArray();
+                                        for (String value : valueList) {
+                                            JSONObject json = new JSONObject();
+                                            json.put(subName1, value);
+                                            array.add(json);
+                                        }
+                                        jsonObj.put(subName, array);
                                     }
                                 }
                             }
@@ -457,6 +556,7 @@ public class SyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCompone
         dataObj.put("_OBJ_TYPE", _OBJ_TYPE);
         dataObj.put("dictionaryName", dictionaryObj.getString("name"));
         dataObj.put("insertTime", localDateTime.format(dateTimeFormatter));
+        dataObj.put("balantflowCiEntityId", balantflowCiEntityId);
         return dataObj;
     }
 
