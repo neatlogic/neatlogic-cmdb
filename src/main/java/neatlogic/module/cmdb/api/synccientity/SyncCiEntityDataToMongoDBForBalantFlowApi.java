@@ -281,7 +281,7 @@ public class SyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCompone
                         balantflowObj.put("customViewName", customViewName);
                         dictionaryObj.put("balantflow", balantflowObj);
                         JSONObject filterObj = new JSONObject();
-//                        filterObj.put("dictionaryName", dictionaryName);
+                        filterObj.put("dictionaryName", dictionaryName);
                         dictionaryObj.put("filter", filterObj);
                         dictionaryList.add(dictionaryObj);
                     }
