@@ -484,7 +484,9 @@ public class SyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCompone
                                         if (MapUtils.isNotEmpty(attrObj)) {
                                             if (Objects.equals(attrId, attrObj.getLong("attrId"))) {
                                                 String value = attrObj.getString("value");
-                                                jsonObj.put(subName, value);
+                                                if (StringUtils.isNotBlank(value)) {
+                                                    jsonObj.put(subName, value.trim());
+                                                }
                                                 break;
                                             }
                                         }
@@ -506,12 +508,18 @@ public class SyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCompone
                                                 Object value = attrObj.get("value");
                                                 if (value != null) {
                                                     if (value instanceof String) {
-                                                        String str = (String) value;
-                                                        if (str.contains("<br>")) {
-                                                            String[] split = str.split("<br>");
-                                                            valueList.addAll(Arrays.asList(split));
+                                                        String valueStr = (String) value;
+                                                        if (valueStr.contains("<br>")) {
+                                                            String[] split = valueStr.split("<br>");
+                                                            for (String str : split) {
+                                                                if (StringUtils.isNotBlank(str)) {
+                                                                    valueList.add(str.trim());
+                                                                }
+                                                            }
                                                         } else {
-                                                            valueList.add(str);
+                                                            if (StringUtils.isNotBlank(valueStr)) {
+                                                                valueList.add(valueStr.trim());
+                                                            }
                                                         }
                                                     } else {
                                                         valueList.add(value.toString());
