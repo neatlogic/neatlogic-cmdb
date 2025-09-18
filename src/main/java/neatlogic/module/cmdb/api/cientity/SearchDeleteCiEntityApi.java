@@ -75,6 +75,8 @@ public class SearchDeleteCiEntityApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "ciId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.ciid"),
             @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "common.keyword"),
+            @Param(name = "ciEntityName", type = ApiParamType.STRING, desc = "term.cmdb.cientityname"),
+            @Param(name = "deleteUser", type = ApiParamType.STRING, desc = "common.actionuser"),
             @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "nmcac.searchcientityapi.input.param.desc.needaction"),
             @Param(name = "needCheck", type = ApiParamType.BOOLEAN, desc = "nmcac.searchcientityapi.input.param.desc.needcheck")})
     @Output({@Param(explode = BasePageVo.class),
@@ -84,8 +86,14 @@ public class SearchDeleteCiEntityApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
         TransactionVo pTransactionVo = JSON.toJavaObject(jsonObj, TransactionVo.class);
+        String deleteUser = jsonObj.getString("deleteUser");
+        if (StringUtils.isNotBlank(deleteUser)) {
+            deleteUser = deleteUser.replace("user#", "");
+            pTransactionVo.setCommitUser(deleteUser);
+        }
         pTransactionVo.setAction(TransactionActionType.DELETE.getValue());
         pTransactionVo.setStatus(TransactionStatus.COMMITED.getValue());
+
         boolean needAction = jsonObj.getBooleanValue("needAction");
         boolean needCheck = jsonObj.getBooleanValue("needCheck");
         List<TransactionVo> transactionList = transactionService.searchTransaction(pTransactionVo);

@@ -200,6 +200,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 
     <sql id="searchTransactionCondition">
         <where>
+            <if test="ciEntityName != null and ciEntityName != ''">
+                AND b.name like concat('%', #{ciEntityName}, '%')
+            </if>
             <if test="transactionId != null">
                 AND a.id = #{transactionId}
             </if>
@@ -241,26 +244,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             </if>
             <if test="createTimeRange != null">
                 <if test="createTimeRange.size() > 0">
-                    AND a.create_time &gt;= STR_TO_DATE(#{createTimeRange[0]},'%Y-%m-%d')
+                    AND a.create_time &gt;= STR_TO_DATE(#{createTimeRange[0]},'%Y-%m-%d %H:%i')
                 </if>
                 <if test="createTimeRange.size() > 1">
-                    AND a.create_time &lt;= STR_TO_DATE(#{createTimeRange[1]},'%Y-%m-%d')
+                    AND a.create_time &lt;= STR_TO_DATE(#{createTimeRange[1]},'%Y-%m-%d %H:%i')
                 </if>
             </if>
             <if test="commitTimeRange != null">
                 <if test="commitTimeRange.size() > 0">
-                    AND a.commit_time &gt;= STR_TO_DATE(#{commitTimeRange[0]},'%Y-%m-%d')
+                    AND a.commit_time &gt;= STR_TO_DATE(#{commitTimeRange[0]},'%Y-%m-%d %H:%i')
                 </if>
                 <if test="commitTimeRange.size() > 1">
-                    AND a.commit_time &lt;= STR_TO_DATE(#{commitTimeRange[1]},'%Y-%m-%d')
+                    AND a.commit_time &lt;= STR_TO_DATE(#{commitTimeRange[1]},'%Y-%m-%d %H:%i')
                 </if>
             </if>
             <if test="recoverTimeRange != null">
                 <if test="recoverTimeRange.size() > 0">
-                    AND a.recover_time &gt;= STR_TO_DATE(#{recoverTimeRange[0]},'%Y-%m-%d')
+                    AND a.recover_time &gt;= STR_TO_DATE(#{recoverTimeRange[0]},'%Y-%m-%d %H:%i')
                 </if>
                 <if test="recoverTimeRange.size() > 1">
-                    AND a.recover_time &lt;= STR_TO_DATE(#{recoverTimeRange[1]},'%Y-%m-%d')
+                    AND a.recover_time &lt;= STR_TO_DATE(#{recoverTimeRange[1]},'%Y-%m-%d %H:%i')
                 </if>
             </if>
         </where>
@@ -288,8 +291,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         cmdb_transaction a
         JOIN cmdb_ci ci ON a.ci_id = ci.id
         JOIN cmdb_cientity_transaction b ON a.id = b.`transaction_id` and b.ci_id = a.ci_id
-        LEFT JOIN cmdb_cientity c ON b.ci_entity_id = c.id and b.ci_id = c.ci_id
-        LEFT JOIN cmdb_transactiongroup t on a.id = t.transaction_id
+        <!--LEFT JOIN cmdb_cientity c ON b.ci_entity_id = c.id and b.ci_id = c.ci_id
+        LEFT JOIN cmdb_transactiongroup t on a.id = t.transaction_id-->
+        <if test="transactionGroupId != null">
+            LEFT JOIN cmdb_transactiongroup t on a.id = t.transaction_id
+        </if>
         <include refid="searchTransactionCondition"></include>
         ORDER BY a.id DESC
         LIMIT #{startNum}, #{pageSize}
